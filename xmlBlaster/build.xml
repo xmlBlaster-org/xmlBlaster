@@ -185,7 +185,7 @@ TODO
    <compiler id="msvc" name="msvc" extends="base-msvc">
       <!--  disable Microsoft Extensions   -->
       <!-- <compilerarg value="/Za"/> -->
-      <compilerarg value="-D${thread.impl}" />
+      <compilerarg value="-D${thread.impl}" />  <!-- -DBOOST or  -DOMNITHREAD -->
    </compiler>
 
    <compiler id="msvc-with-extensions" extends="base-msvc">
@@ -1517,6 +1517,8 @@ TODO
            <define name="UsePthread" value="1" if="sun" />
            <define name="_REENTRANT" value="1" if="sun" />
            <define name="PthreadDraftVersion" value="10" if="sun" />
+
+           <define name="BOOST_ASSERT_CONFIG" value="1" if="BOOST" /> <!-- To get error if compiler etc is not supported -->
          </defineset>
 
          <linker name="gcc"  if="use-gcc" />
@@ -1547,12 +1549,19 @@ TODO
          <linker name="CC"  if="use-CC">
            <linkerarg value="-mt"/>
            <linkerarg value="-lpthread"/>
+
+            <!-- purify CC -i -ldl -lpthread -lsocket -lposix4 -lnsl ... -->
+            <!-- build.sh -DCPP_LINK=static -DPURIFY=PURIFY -verbose cpp > build.log -->
+            <!-- syslibset dir="/lib" libs="socket,posix4,nsl" if="PURIFY" / -->
          </linker>
       </cc>
 
       <!-- Was only needed for "@version@" and "@build.timestamp@" replacement during compilation -->
       <delete file="${src.cpp.dir}/util/Global_CopyByAnt.cpp" />
-   </target>
+
+      <!-- SunOS and CPP_LINK=static: the lib is named xmlBlaster/lib/xmlBlaster.a -->
+      <copy file="${lib.dir}/xmlBlasterClient.a" tofile="${lib.dir}/libxmlBlasterClient.a" overwrite="false" />
+   </target>  <!-- cpp-lib -->
 
 
    <!-- =================================================================== -->
@@ -1694,9 +1703,11 @@ TODO
 
          <linker name="CC"> <!-- SunOS -->
             <!-- purify CC -i -ldl -lpthread -lsocket -lposix4 -lnsl ... -->
+            <!-- syslibset dir="/lib" libs="socket,posix4,nsl" if="PURIFY" /-->
 
             <!-- ORBIX -->
             <libset dir="${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/lib" libs="${ORBIX_LIBS}" if="ORBIX" />
+            <!-- libset dir="${CORBACPP_HOME}/shlib" libs="it_art_sc52" if="PURIFY" / -->
 
             <!-- XERCES XML parser -->
             <libset dir="${XMLCPP_HOME}/lib" libs="xerces-c${XMLCPP_VER}" />
@@ -1717,7 +1728,7 @@ TODO
          </linker>
 
       </cc>
-   </target>
+   </target>   <!-- compileCppExe -->
 
    <target name="cpp" depends="cpp-lib, cpp-demo, cpp-test" description="Compile C++ client library and test/demo clients"/>
 
