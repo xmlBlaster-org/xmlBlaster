@@ -20,7 +20,9 @@ import org.xmlBlaster.util.plugin.PluginManagerBase;
  */
 public class MsgDistributorPluginManager extends PluginManagerBase {
 
+   /** the default class name to use if nothing specified */
    private static final String defaultPluginName = "org.xmlBlaster.engine.distributor.plugins.ConsumableQueuePlugin";
+   /** This is the prefix of the name used in xmlBlaster.properties to register the plugins of this type */
    public static final String pluginPropertyName = "MsgDistributorPlugin";
 
    public MsgDistributorPluginManager(Global glob) {
@@ -31,7 +33,7 @@ public class MsgDistributorPluginManager extends PluginManagerBase {
     * Return a specific msgDistributor plugin. 
     * <p/>
     * This PluginManager exists once in the scope of a Global instance (check util.Global)
-    * @param typeVersion The type and version e.g. "ConsumerQueue,1.0"
+    * @param typeVersion The type and version e.g. "ConsumableQueue,1.0"
     * @return null if no plugin was loaded
     */
       public I_MsgDistributor getPlugin(String typeVersion, TopicHandler topicHandler) throws XmlBlasterException {
@@ -45,7 +47,7 @@ public class MsgDistributorPluginManager extends PluginManagerBase {
       /**
        * Enforced by PluginManagerBase. 
        * @return The name of the property in xmlBlaster.property "MsgDistributorPlugin"
-       * for "MsgDistributorPlugin[QueueConsumer][1.0]"
+       * for "MsgDistributorPlugin[ConsumableQueue][1.0]"
        */
       public String getPluginPropertyName() {
          return pluginPropertyName;

@@ -9,7 +9,11 @@ package org.xmlBlaster.engine.distributor.plugins;
 import org.jutils.log.LogChannel;
 
 /**
- * ConsumableQueueWorker
+ * ConsumableQueueWorker processes the distribution of messages on 
+ * topics which have a ConsumableQueue plugin defined.
+ * This runs in its own thread, so when it is stared, the invoker 
+ * thread can return without waiting for all messages to be processed.
+ * 
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  */
 public class ConsumableQueueWorker implements Runnable {

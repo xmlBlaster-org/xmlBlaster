@@ -6,6 +6,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.engine.distributor.plugins;
 
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import org.jutils.log.LogChannel;
@@ -54,14 +55,17 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
    }
 
    /**
-    * Invoked to distribute entries. This can either happen on publish, on 
-    * subscribe or when a dispatcher becomes alive again.
+    * Invoked on status changes when it shall start to distribute 
+    * entries. This can either happen on publish, on subscribe or when 
+    * a dispatcher becomes alive again. This method is synchronized to avoid 
+    * more threads running concurrently (see processHistoryQueue).
     */
-   private void toRunning() {
+   private synchronized void toRunning() {
       if (this.log.CALL) this.log.call(ME, "toRunning, isRunning='" + this.isRunning + "' isReady='" + this.isReady + "'");
       if (this.isRunning || !this.isReady) return;
       this.isRunning = true;
       try {
+         // the global owns a thread pool (Doug Lea's executor pattern)
          this.global.getDispatchWorkerPool().execute(new ConsumableQueueWorker(this.log, this));
       }
       catch (InterruptedException ex) {
@@ -72,13 +76,17 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
 
    /**
     * @see org.xmlBlaster.engine.distributor.I_MsgDistributor#distribute(org.xmlBlaster.engine.TopicHandler, org.xmlBlaster.authentication.SessionInfo, org.xmlBlaster.engine.MsgUnitWrapper)
-    * Invoked by the TopicHandler on publish or subscribe
+    * Invoked by the TopicHandler on publish or subscribe. Starts the distributor thread and 
+    * returnes immeditately. From here distribution is handled by another thread.
     **/
    public void distribute(MsgUnitWrapper msgUnitWrapper) {
       if (this.log.CALL) this.log.call(ME, "distribute");
       toRunning(); 
    }
    
+   /**
+    * Initializes the plugin
+    */
    synchronized public void init(Global global, PluginInfo pluginInfo)
       throws XmlBlasterException {
       this.global = global;
@@ -98,6 +106,9 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
       return this.pluginInfo.getVersion();
    }
 
+   /**
+    * It removes all subscriptions done on this topic
+    */
    synchronized public void shutdown() throws XmlBlasterException {
       if (this.log.CALL) this.log.call(ME, "shutdown");
       SubscriptionInfo[] subs = this.topicHandler.getSubscriptionInfoArr();
@@ -177,16 +188,29 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
       try {
          ArrayList lst = null;
          while (true) {
-            lst = this.topicHandler.getHistoryQueue().peek(-1, -1L);
-            if (this.log.TRACE) this.log.trace(ME, "processQueue: processing '" + lst.size() + "' entries from queue");
-            if (lst == null || lst.size() < 1) break;
+            synchronized(this) {
+               lst = this.topicHandler.getHistoryQueue().peek(-1, -1L);
+               if (this.log.TRACE) this.log.trace(ME, "processQueue: processing '" + lst.size() + "' entries from queue");
+               if (lst == null || lst.size() < 1) {
+                  this.isRunning = false;
+                  break;
+               }
+            }
+            
+
+            // SubscriptionInfo[] subInfoArr = this.topicHandler.getSubscriptionInfoArr();
+            SubscriptionInfo[] subInfoArr = this.topicHandler.getSubscriptionInfoArr();
+            ArrayList subInfoList = new ArrayList();
+            for (int i=0; i < subInfoArr.length; i++) subInfoList.add(subInfoArr[i]);
+            
             for (int i=0; i < lst.size(); i++) {
                if (!this.isReady) return;
                MsgQueueHistoryEntry entry = (MsgQueueHistoryEntry)lst.get(i);
                MsgUnitWrapper msgUnitWrapper = (entry).getMsgUnitWrapper();
                if (msgUnitWrapper != null) { 
-                  if (!this.distributeOneEntry(msgUnitWrapper, entry)) {
+                  if (!this.distributeOneEntry(msgUnitWrapper, entry, subInfoList)) {
                      this.isReady = false;
+                     this.isRunning = false;
                      return;
                   } 
                }
@@ -196,12 +220,10 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
          this.isReady = true;
       }
       catch (Throwable ex) {
-         this.isReady = false;         
+         this.isReady = false;
+         this.isRunning = false;
          ex.printStackTrace();
          this.log.error(ME, "processQueue: " + ex.getMessage());
-      }
-      finally {
-         this.isRunning = false;
       }
    }
 
@@ -211,13 +233,18 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
     * inside this method, the distribution is interrupted, a dead letter is 
     * generated and the entry is removed from the history queue.
     * 
+    * @param subInfoList contains the SubscriptionInfo objects to scan. Once the 
+    *        message is processed by one of the dispatchers, the associated 
+    *        SessionInfo is put at the end of the list to allow some simple
+    *        load balancing mechanism.
+    * 
     * @return true if the entry has been removed from the history queue. This happens
     * if the entry could be sent successfully, or if distribution was given up due to
     * an exception. It returns false if none of the subscribers were able to receive 
     * the message (to tell the invoker not to continue with distribution until
     * the next event.
     */
-   private boolean distributeOneEntry(MsgUnitWrapper msgUnitWrapper, MsgQueueHistoryEntry entry) { 
+   private boolean distributeOneEntry(MsgUnitWrapper msgUnitWrapper, MsgQueueHistoryEntry entry, List subInfoList) { 
       I_Queue srcQueue = this.topicHandler.getHistoryQueue();
       try {
 
@@ -232,9 +259,8 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
          // Take a copy of the map entries (a current snapshot)
          // If we would iterate over the map directly we can risk a java.util.ConcurrentModificationException
          // when one of the callback fails and the entry is removed by the callback worker thread
-         SubscriptionInfo[] subInfoArr = this.topicHandler.getSubscriptionInfoArr();
-         Set removeSet = null;
 
+         SubscriptionInfo[] subInfoArr = (SubscriptionInfo[])subInfoList.toArray(new SubscriptionInfo[subInfoList.size()]);
          for (int ii=0; ii<subInfoArr.length; ii++) {
             SubscriptionInfo sub = subInfoArr[ii];
             if (this.topicHandler.isDirtyRead(sub, msgUnitWrapper)) {
@@ -266,6 +292,10 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
                   return true; // because the entry has been removed from the history queue
                }
 
+               // put the current dispatcher at the end of the list for next invocation (round robin)
+               subInfoList.remove(subInfoArr[ii]);
+               subInfoList.add(subInfoArr[ii]);
+               
                MsgQueueUpdateEntry updateEntry = this.topicHandler.createEntryFromWrapper(msgUnitWrapper,sub);
 
                UpdateReturnQosServer retQos = doDistribute(sub, updateEntry);
