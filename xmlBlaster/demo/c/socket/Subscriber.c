@@ -17,6 +17,7 @@ See:    http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.ht
 static const char *updateExceptionErrorCode = 0;
 static const char *updateExceptionMessage = 0;
 static const char *subscribeToken = 0;
+static char *queryType;
 static int message_counter = 1;
 static long updateSleep = 0l;
 
@@ -170,14 +171,17 @@ int main(int argc, char** argv)
       if (domain) {
          sprintf(key, "<key domain='%.512s'/>", domain);
          subscribeToken = domain;
+         queryType = "DOMAIN";
       }
       else if (xpath) {
          sprintf(key, "<key queryType='XPATH'>%.512s</key>", xpath);
          subscribeToken = xpath;
+         queryType = "XPATH";
       }
       else {
          sprintf(key, "<key oid='%.512s'/>", oid);
          subscribeToken = oid;
+         queryType = "EXACT";
       }
 
       if (filterQuery) {
@@ -244,7 +248,13 @@ int main(int argc, char** argv)
       QosArr *resp;
       char key[256];
       const char *qos = "<qos/>";
-      sprintf(key, "<key oid='%.200s'/>", subscribeToken); /* TODO: use subscriptionId */
+      /* TODO: use subscriptionId */
+      if (!strcmp(queryType, "EXACT"))
+         sprintf(key, "<key oid='%.200s'/>", subscribeToken);
+      else if (!strcmp(queryType, "DOMAIN"))
+         sprintf(key, "<key domain='%.512s'/>", subscribeToken);
+      else
+         sprintf(key, "<key queryType='XPATH'>%.512s</key>", subscribeToken);
       printf("[client] UnSubscribe topic '%s' ...\n", subscribeToken);
       resp = xa->unSubscribe(xa, key, qos, &xmlBlasterException);
       if (resp) {
