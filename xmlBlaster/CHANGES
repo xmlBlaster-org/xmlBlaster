@@ -175,7 +175,7 @@ Changes for 0.79f [Jun, 17 2002]
       Global glob = Global.instance();
 
   - Log.java is deprecated to use directly, use Global with LogChannel instead:
-      glob.getProperty().getLog("corba").warn("X", "Y");
+      glob.getLog("corba").warn("X", "Y");
 
   - Testsuite: Ported from Junit 1.0 to Junit 3.7
 
