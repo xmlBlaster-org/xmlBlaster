@@ -161,9 +161,6 @@
   &lt;redeliver>4&lt;/redeliver> &lt;!-- Only sent if message sending had previous errors -->
   
   &lt;route> &lt;!-- Routing information in cluster environment -->
-     &lt;node id='heron'/>
-  &lt;/route>
-  &lt;route>
      &lt;node id='avalon' stratum='1' timestamp='1068026303739000001' dirtyRead='false'/>
      &lt;node id='heron' stratum='0' timestamp='1068026303773000001' dirtyRead='false'/>
   &lt;/route>
@@ -260,7 +257,7 @@ java javaclients.HelloWorldSubscribe -oid __sys__deadMessage
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 26</date>
-   <revision>$Revision: 1.19 $</revision>
+   <revision>$Revision: 1.20 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the update method invocation, this is done implicitly with subscribe tests and erase event tests</comment>
