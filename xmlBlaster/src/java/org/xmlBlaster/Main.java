@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.45 2000/06/20 13:32:57 ruff Exp $
+Version:   $Id: Main.java,v 1.46 2000/06/26 12:59:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -61,6 +61,8 @@ public class Main
    private I_XmlBlaster xmlBlasterImpl = null;
    /** Vector holding all protocol I_Driver.java implementations, e.g. CorbaDriver */
    private Vector protocols = new Vector();
+   /** command line arguments */
+   private String[] args = null;
 
    /**
     * true: If instance created by control panel<br />
@@ -88,6 +90,7 @@ public class Main
 
    private void init(String args[])
    {
+      this.args = args;
       try {
          XmlBlasterProperty.init(args);
       } catch(org.jutils.JUtilsException e) {
@@ -105,17 +108,6 @@ public class Main
          xmlBlasterImpl = new XmlBlasterImpl(authenticate);
 
          loadDrivers();
-
-         // Loop through protocol drivers and start them
-         for (int ii=0; ii<protocols.size(); ii++) {
-            I_Driver driver = (I_Driver)protocols.elementAt(ii);
-            try {
-               driver.init(args, authenticate, xmlBlasterImpl);
-            } catch (XmlBlasterException e) {
-               Log.error(ME, "Initializing of driver " + driver.getName() + " failed:" + e.reason);
-               continue;
-            }
-         }
 
          Log.info(ME, Memory.getStatistic());
 
@@ -167,38 +159,74 @@ public class Main
          }
          String protocol = token.substring(0, index).trim();
          String driverId = token.substring(index+1).trim();
-
-         // Load the protocol driver ...
          try {
-            if (Log.TRACE) Log.trace(ME, "Trying Class.forName('" + driverId + "') ...");
-            Class cl = java.lang.Class.forName(driverId);
-            I_Driver driver = (I_Driver)cl.newInstance();
-            protocols.addElement(driver);
-            Log.info(ME, "Found protocol driver '" + driverId + "'");
+            loadDriver(protocol, driverId);
          }
-         catch (IllegalAccessException e) {
-            Log.error(ME, "The driver class '" + driverId + "' is not accessible\n -> check the driver name and/or the CLASSPATH to the driver");
-         }
-         catch (SecurityException e) {
-            Log.error(ME, "No right to access the driver class or initializer '" + driverId + "'");
-         }
-         catch (Throwable e) {
-            Log.error(ME, "The driver class or initializer '" + driverId + "' is invalid\n -> check the driver name and/or the CLASSPATH to the driver file: " + e.toString());
+         catch (XmlBlasterException e) {
+            Log.error(ME, e.toString());
          }
       }
    }
 
 
    /**
-    *  Instructs the ORB to shut down, which causes all object adapters to shut down.
+    * Load a protocol driver. 
+    * <p />
+    * Usually invoked by entries in xmlBlaster.properties, but for example MainGUI.java
+    * uses this directly.
+    * @param protocol For example "IOR", "RMI", "XML-RPC"
+    * @param driverId The class name of the driver, for example "org.xmlBlaster.protocol.corba.CorbaDriver"
     */
-   public void shutdown(boolean wait_for_completion)
+   public I_Driver loadDriver(String protocol, String driverId) throws XmlBlasterException
+   {
+      // Load the protocol driver ...
+      I_Driver driver = null;
+      try {
+         if (Log.TRACE) Log.trace(ME, "Trying Class.forName('" + driverId + "') ...");
+         Class cl = java.lang.Class.forName(driverId);
+         driver = (I_Driver)cl.newInstance();
+         protocols.addElement(driver);
+         Log.info(ME, "Found '" + protocol + "' driver '" + driverId + "'");
+      }
+      catch (IllegalAccessException e) {
+         Log.error(ME, "The driver class '" + driverId + "' is not accessible\n -> check the driver name and/or the CLASSPATH to the driver");
+         throw new XmlBlasterException("Driver.NoClass", "The driver class '" + driverId + "' is not accessible\n -> check the driver name and/or the CLASSPATH to the driver");
+      }
+      catch (SecurityException e) {
+         Log.error(ME, "No right to access the driver class or initializer '" + driverId + "'");
+         throw new XmlBlasterException("Driver.NoAccess", "No right to access the driver class or initializer '" + driverId + "'");
+      }
+      catch (Throwable e) {
+         Log.error(ME, "The driver class or initializer '" + driverId + "' is invalid\n -> check the driver name and/or the CLASSPATH to the driver file: " + e.toString());
+         throw new XmlBlasterException("Driver.Invalid", "The driver class or initializer '" + driverId + "' is invalid\n -> check the driver name and/or the CLASSPATH to the driver file: " + e.toString());
+      }
+
+      // Start the driver
+      if (driver != null) {
+         try {
+            driver.init(args, authenticate, xmlBlasterImpl);
+         } catch (XmlBlasterException e) {
+            Log.error(ME, "Initializing of driver " + driver.getName() + " failed:" + e.reason);
+            throw new XmlBlasterException("Driver.NoInit", "Initializing of driver " + driver.getName() + " failed:" + e.reason);
+         }
+      }
+      return driver;
+   }
+
+
+   /**
+    * Instructs the ORB to shut down, which causes all object adapters to shut down.
+    * <p />
+    * The drivers are removed.
+    */
+   public void shutdown()
    {
       Log.info(ME, "Shutting down xmlBlaster ...");
       for (int ii=0; ii<protocols.size(); ii++) {
          I_Driver driver = (I_Driver)protocols.elementAt(ii);
          driver.shutdown();
       }
+      protocols.clear();
    }
 
 
@@ -273,7 +301,7 @@ public class Main
                }
             }
             else if (line.toLowerCase().equals("q")) {
-               shutdown(true);
+               shutdown();
                Log.exit(ME, "Good bye");
             }
             else // if (keyChar == '?' || Character.isLetter(keyChar) || Character.isDigit(keyChar))

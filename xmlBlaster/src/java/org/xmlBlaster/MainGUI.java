@@ -3,7 +3,7 @@ Name:      MainGUI.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: MainGUI.java,v 1.33 2000/06/25 18:32:39 ruff Exp $
+Version:   $Id: MainGUI.java,v 1.34 2000/06/26 12:59:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -11,18 +11,18 @@ import org.jutils.log.Log;
 import org.jutils.time.StopWatch;
 
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.engine.ClientInfo;
 import org.xmlBlaster.engine.RequestBroker;
-import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.protocol.I_XmlBlaster;
 
 import java.util.Vector;
 import java.awt.*;
 import java.awt.event.*;
 import jacorb.poa.gui.beans.FillLevelBar;
-import java.lang.*;
 
 
 /**
@@ -91,7 +91,7 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogListen
    /** Display XPath query results. */
    private TextArea queryOutput = null;
    /** A client accessing xmlBlaster to do some XPath query. */
-   private ClientQuery clientQuery = null;
+   private GuiQuery clientQuery = null;
    /** Remember previous query strings. */
    private QueryHistory queryHistory;
 
@@ -606,16 +606,17 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogListen
    private class XPathKeyListener implements KeyListener
    {
       /**
-         * Access XPath query string (event from KeyListener).
-         */
+       * Access XPath query string (event from KeyListener).
+       */
       public final void keyPressed(KeyEvent ev)
       {
          switch (ev.getKeyCode())
          {
             case KeyEvent.VK_ENTER:
-               //try {
-                  if (clientQuery == null)
-                     clientQuery = new ClientQuery("ClientQuery-local", "secret");
+               try {
+                  if (clientQuery == null) {
+                     clientQuery = new GuiQuery(xmlBlasterMain.getAuthenticate(), xmlBlasterMain.getXmlBlaster());
+                  }
                   queryOutput.setText("");
                   getQueryHistory().changedHistory(inputTextField.getText());
                   MessageUnit[] msgArr = clientQuery.get(inputTextField.getText());
@@ -640,10 +641,9 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogListen
                      else
                         queryOutput.setText("****** Sorry, no match ******");
                   }
-                  /*
                } catch(XmlBlasterException e) {
                   Log.error(ME, "XmlBlasterException: " + e.reason);
-               }    */
+               }
                break;
             case KeyEvent.VK_DOWN:
                displayHistory(getQueryHistory().getNext());
@@ -676,30 +676,30 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogListen
    /**
     * A client accessing xmlBlaster to do some XPath query.
     */
-   private class ClientQuery
+   private class GuiQuery
    {
-      // !!! change to native access !!!
-      private CorbaConnection corbaConnection = null;
-      private final String ME = "ClientQuery";
+      private final String ME = "__sys__GuiQuery";
       private String queryType = "XPATH";
       private StopWatch stop = new StopWatch();
-
+      /** Handle to login */
+      Authenticate authenticate = null;
+      /** The handle to access xmlBlaster */
+      private I_XmlBlaster xmlBlasterImpl = null;
+      /** The session id on successful authentication */
+      private String sessionId = null;
 
       /**
-       * Login to xmlBlaster
+       * Login to xmlBlaster and get a sessionId. 
        */
-      public ClientQuery(String loginName, String passwd)
+      public GuiQuery(Authenticate authenticate, I_XmlBlaster xmlBlasterImpl) throws XmlBlasterException
       {
-         try {
-            corbaConnection = new CorbaConnection();
-            corbaConnection.login(loginName, passwd, null);
-         }
-         catch (XmlBlasterException e) {
-             Log.error(ME, "Error occurred: " + e.toString());
-             e.printStackTrace();
-         }
+         this.xmlBlasterImpl = xmlBlasterImpl;
+         this.authenticate = authenticate;
+         String loginName = XmlBlasterProperty.get("__sys__GuiQuery.loginName", "__sys__GuiQuery");
+         String passwd = XmlBlasterProperty.get("__sys__GuiQuery.password", "secret");
+         sessionId = authenticate.login(loginName, passwd, "<qos></qos>", null); // synchronous access only, no callback.
+         Log.info(ME, "login for '" + loginName + "' successful.");
       }
-
 
       /**
        * Query xmlBlaster.
@@ -712,7 +712,7 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogListen
                             "</key>";
             String qos = "<qos>\n</qos>";
             stop.restart();
-            MessageUnit[] msgArr = corbaConnection.get(xmlKey, qos);
+            MessageUnit[] msgArr = xmlBlasterImpl.get(sessionId, xmlKey, qos);
             Log.info(ME, "Got " + msgArr.length + " messages for query '" + queryString + "'" + stop.nice());
             return msgArr;
          } catch(XmlBlasterException e) {
@@ -721,11 +721,9 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogListen
          }
       }
 
-
       /** Logout. */
-      void logout()
-      {
-         corbaConnection.logout();
+      void logout() {
+         try { authenticate.logout(sessionId); } catch (XmlBlasterException e) { }
       }
    }
 
