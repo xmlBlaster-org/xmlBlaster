@@ -3,13 +3,15 @@ Name:      AbstractCallbackExtended.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Easly extended class for protocol-unaware xmlBlaster clients.
-Version:   $Id: AbstractCallbackExtended.java,v 1.9 2002/05/01 21:40:01 ruff Exp $
+Version:   $Id: AbstractCallbackExtended.java,v 1.10 2002/06/02 21:27:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol;
+
+import org.jutils.log.LogChannel;
+
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -21,20 +23,23 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  * extend this class because one of the update methods is abstract.
  * <p>
  *
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  * @author "Michele Laghi" <michele.laghi@attglobal.net>
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public abstract class AbstractCallbackExtended implements I_CallbackExtended
 {
    private String ME = "AbstractCallbackExtended";
-   protected Global glob = null;
+   protected final Global glob;
+   protected final LogChannel log;
 
    /**
     * The constructor does nothing.
     */
-   public AbstractCallbackExtended()
+   public AbstractCallbackExtended(Global glob)
    {
+      this.glob = glob;
+      this.log = glob.getLog(null);
    }
 
    abstract I_ClientPlugin getSecurityPlugin();
@@ -68,15 +73,15 @@ public abstract class AbstractCallbackExtended implements I_CallbackExtended
          UpdateQos updateQos = new UpdateQos(glob, updateQosLiteral); // does the parsing
 
          // Now we know all about the received message, dump it or do some checks
-         if (Log.DUMP) Log.dump("UpdateKey", "\n" + updateKey.toXml());
-         if (Log.DUMP) Log.dump("content", "\n" + new String(content));
-         if (Log.DUMP) Log.dump("UpdateQos", "\n" + updateQos.toXml());
-         if (Log.TRACE) Log.trace(ME, "Received message [" + updateKey.getUniqueKey() + "] from publisher " + updateQos.getSender());
+         if (log.DUMP) log.dump("UpdateKey", "\n" + updateKey.toXml());
+         if (log.DUMP) log.dump("content", "\n" + new String(content));
+         if (log.DUMP) log.dump("UpdateQos", "\n" + updateQos.toXml());
+         if (log.TRACE) log.trace(ME, "Received message [" + updateKey.getUniqueKey() + "] from publisher " + updateQos.getSender());
 
          return update(cbSessionId, updateKey, content, updateQos);
       }
       catch (XmlBlasterException e) {
-         Log.error(ME + ".update", "Parsing error: " + e.toString());
+         log.error(ME + ".update", "Parsing error: " + e.toString());
          throw new XmlBlasterException("Parsing Error", "check the key passed" + e.toString());
       }
    }
@@ -92,7 +97,7 @@ public abstract class AbstractCallbackExtended implements I_CallbackExtended
          update(cbSessionId, updateKeyLiteral, content, updateQosLiteral);
       }
       catch (Throwable e) {
-         Log.error(ME, "Caught exception, can't deliver it to xmlBlaster server as we are in oneway mode: " + e.toString());
+         log.error(ME, "Caught exception, can't deliver it to xmlBlaster server as we are in oneway mode: " + e.toString());
       }
    }
 
@@ -112,14 +117,14 @@ public abstract class AbstractCallbackExtended implements I_CallbackExtended
    public String[] update(String cbSessionId, MessageUnit [] msgUnitArr) throws XmlBlasterException
    {
       if (msgUnitArr == null) {
-         Log.warn(ME, "Entering update() with null array.");
+         log.warn(ME, "Entering update() with null array.");
          return new String[0];
       }
       if (msgUnitArr.length == 0) {
-         Log.warn(ME, "Entering update() with 0 messages.");
+         log.warn(ME, "Entering update() with 0 messages.");
          return new String[0];
       }
-      if (Log.CALL) Log.call(ME, "Receiving update of " + msgUnitArr.length + " messages ...");
+      if (log.CALL) log.call(ME, "Receiving update of " + msgUnitArr.length + " messages ...");
 
       String[] retArr = new String[msgUnitArr.length];
       for (int ii=0; ii<msgUnitArr.length; ii++) {
@@ -138,7 +143,7 @@ public abstract class AbstractCallbackExtended implements I_CallbackExtended
          update(cbSessionId, msgUnitArr);
       }
       catch (Throwable e) {
-         Log.error(ME, "Caught exception, can't deliver it to xmlBlaster server as we are in oneway mode: " + e.toString());
+         log.error(ME, "Caught exception, can't deliver it to xmlBlaster server as we are in oneway mode: " + e.toString());
       }
    }
 
