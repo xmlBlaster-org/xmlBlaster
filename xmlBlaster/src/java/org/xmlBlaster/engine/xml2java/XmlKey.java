@@ -3,7 +3,7 @@ Name:      XmlKey.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKey.java,v 1.26 2002/08/10 18:31:45 ruff Exp $
+Version:   $Id: XmlKey.java,v 1.27 2002/08/30 07:51:30 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -597,7 +597,7 @@ public final class XmlKey
     * keyOid will be set properly if no error occurs
     * xmlToDom will be set properly if no error occurs
     */
-   private void loadDomTree() throws XmlBlasterException {
+   private synchronized void loadDomTree() throws XmlBlasterException {
       if (xmlToDom != null)
          return;       // DOM tree is already loaded
 
