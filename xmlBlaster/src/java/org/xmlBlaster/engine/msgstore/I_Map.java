@@ -126,7 +126,7 @@ public interface I_Map
    long getMaxNumOfBytes();
 
    /**
-    * Shutdown the implementation, sync with data store
+    * Shutdown the implementation, sync with data store, free resources
     * @param true: force shutdown, don't flush everything
     */
    void shutdown(boolean force);

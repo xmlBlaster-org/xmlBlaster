@@ -374,7 +374,7 @@ public interface I_Queue
    public long clear();
 
    /**
-    * Shutdown the implementation, sync with data store
+    * Shutdown the implementation, sync with data store, free resources
     * @param true: force shutdown, don't flush everything
     */
    public void shutdown(boolean force);
