@@ -883,17 +883,18 @@ public final class JdbcQueuePlugin implements I_Queue, I_Plugin, I_Map
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
+      // NOTE: Recursion problems when using getNumOfEntries() instead of this.numOfEntries
+      // if an exception is thrown in getNumOfEntries() which uses toXml to dump the problem ...
+
       sb.append(offset).append("<JdbcQueuePlugin id='").append(getStorageId().getId());
       sb.append("' type='").append(getType());
       sb.append("' version='").append(getVersion());
-      sb.append("' numOfEntries='").append(getNumOfEntries());
-      sb.append("' numOfBytes='").append(getNumOfBytes());
+      sb.append("' numOfEntries='").append(this.numOfEntries);
+      sb.append("' numOfBytes='").append(this.numOfBytes);
       sb.append("'>");
       sb.append(property.toXml(extraOffset+Constants.INDENT));
-      //sb.append(offset).append(" <maxNumOfEntries>").append(getMaxNumOfEntries()).append("</maxNumOfEntries>");
-      //sb.append(offset).append(" <maxNumOfBytes>").append(getMaxNumOfBytes()).append("</maxNumOfBytes>");
-      sb.append(offset).append(" <numOfDurables>").append(getNumOfDurableEntries()).append("</numOfDurables>");
-      sb.append(offset).append(" <sizeOfDurables>").append(getNumOfDurableBytes()).append("</sizeOfDurables>");
+      sb.append(offset).append(" <numOfDurables>").append(this.numOfDurableEntries).append("</numOfDurables>");
+      sb.append(offset).append(" <sizeOfDurables>").append(this.numOfDurableBytes).append("</sizeOfDurables>");
       sb.append(offset).append(" <associatedTable>").append(this.associatedTable).append("</associatedTable>");
       sb.append(offset).append("</JdbcQueuePlugin>");
       return sb.toString();
