@@ -76,7 +76,13 @@ public final class ClientDeliveryConnectionsHandler extends DeliveryConnectionsH
          statRetQos.setStateInfo(stateInfo);
          statRetQos.setState(state);
          if (log.TRACE) log.trace(ME, "Creating faked return for '" + msgQueueEntry.getMethodName() + "' invocation");
-         if (MethodName.PUBLISH == msgQueueEntry.getMethodName()) {
+
+         if (MethodName.PUBLISH_ONEWAY == msgQueueEntry.getMethodName()) {
+            MsgQueuePublishEntry entry = (MsgQueuePublishEntry)msgQueueEntry;
+            entry.setReturnObj(null);
+         }
+
+         else if (MethodName.PUBLISH == msgQueueEntry.getMethodName()) {
             MsgQueuePublishEntry entry = (MsgQueuePublishEntry)msgQueueEntry;
             if (!entry.getMsgKeyData().hasOid()) {
                entry.getMsgKeyData().setOid(entry.getMsgKeyData().generateOid(entry.getSender().getRelativeName()));
