@@ -1,0 +1,32 @@
+This is a demo on how to use xmlBlaster together with svg clients. In this
+case the svg clients are en extention to the batik package 
+(see http://xml.apache.org).
+
+To run the demo do the following:
+
+1) start xmlBlaster in one term
+   > java org.xmlBlaster.Main
+
+2) start another term and change to the directory 
+   $XMLBLASTER_HOME/demo/javaclients/svg/batik and invoke
+   > java javaclients.svg.batik.ExtendedApplication -svgMaster simple.svg -svgUser user1
+
+3) start another term and change to the same directory as in 2). Invoke
+   > java javaclients.svg.batik.ExtendedApplication -svgSlave simple.svg -svgUser user2
+
+
+enjoy
+
+Michele
+(laghi@swissinfo.org)
+
+
+Some additional notes:
+
+Only svg elements which have an 'id' attribute set which starts with
+'xmlBlaster.' are considered to be dynamic. This means that only these elements
+are allowed to be moved (by dragging with the mouse).
+
+
+
+
