@@ -124,7 +124,7 @@ build.bat c-lib   (on Windows)
      </pre>
      <p>
      This creates a shared C library <i>xmlBlaster/lib/libxmlBlasterClientC.sl</i> on
-     Linux or <i>xmlBlaster/lib/libxmlBlasterClientC.dll</i> on Windows.
+     Linux or <i>xmlBlaster/lib/xmlBlasterClientC.dll</i> on Windows.
      You can link your C or C++ client code with this library.
      <p>
      To compile the C client library and the demos in xmlBlaster/demo/c/socket
@@ -1057,7 +1057,7 @@ build.sh reportShow
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2003 05 29</date>
-   <revision>$Revision: 1.29 $</revision>
+   <revision>$Revision: 1.30 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
