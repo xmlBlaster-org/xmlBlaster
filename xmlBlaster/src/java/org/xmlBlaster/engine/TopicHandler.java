@@ -22,7 +22,6 @@ import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.engine.queuemsg.MsgQueueHistoryEntry;
 import org.xmlBlaster.engine.queuemsg.TopicEntry;
 //import org.xmlBlaster.engine.msgstore.I_ChangeCallback;
-import org.xmlBlaster.engine.msgstore.I_MapEntry;
 
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.Timeout;
@@ -306,7 +305,7 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
     * @return returns the instance of the queue
     * @throws XmlBlasterException
     */
-   public I_Queue initQueue(I_Queue queue, String queueName) throws XmlBlasterException {
+   private I_Queue initQueue(I_Queue queue, String queueName) throws XmlBlasterException {
       synchronized (this) {
          QueuePropertyBase prop = this.topicProperty.getHistoryQueueProperty();
          if (queue == null) {
@@ -318,7 +317,7 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
                queue.setNotifiedAboutAddOrRemove(true); // Entries are notified to support reference counting
             }
             else {
-               if (log.TRACE) log.trace(ME, queueName + " queuing of this topic is switched of with maxEntries=0");
+               if (log.TRACE) log.trace(ME, queueName + " queuing of this topic is switched off with maxEntries=0");
             }
          }
          else {
