@@ -3,7 +3,7 @@ Name:      TestXmlDb.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing xmldb
-Version:   $Id: TestXmlDb.java,v 1.5 2000/08/23 14:13:35 kron Exp $
+Version:   $Id: TestXmlDb.java,v 1.6 2000/08/26 14:50:16 kron Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -39,7 +39,7 @@ import org.xmlBlaster.engine.PMessageUnit;
 import test.framework.*;
 
 /**
- * This class tests the XmlDb-Features.
+ * This class tests the XmlDb.
  * <p>
  * Invoke examples:<br />
  * <pre>
@@ -72,7 +72,7 @@ public class TestXmlDb extends TestCase
    }
 
    // Test insert with durable-messages
-   public void insertMsg(String oid)
+   public void insertMsg(String oid, boolean durable)
    {
       MessageUnit mu;
       String key;
@@ -80,37 +80,49 @@ public class TestXmlDb extends TestCase
       key = "<?xml version='1.0' ?>\n"+"<key oid='"+oid+"'>\n"+"<person pid='10"+oid+"' gid='200'>\n" +"<name age='31' sex='f'>Lisa</name>\n"+
                "<surname>Schmid</surname>\n"+ "<adress>\n <street>Bakerstreet 2a</street>\n </adress>\n"+"</person>\n"+" </key>\n";
 
-      mu = new MessageUnit(key,content.getBytes(),qosD);
-      String result = xmldb.insert(mu,true);
+      if(durable){
+         mu = new MessageUnit(key,content.getBytes(),qosD);
+      }else{
+         mu = new MessageUnit(key,content.getBytes(),qos);
+      }
+      String result = xmldb.insert(mu);
 //      assertNotEquals("Can't insert MessageUnit with oid : "+result+" because Key exists", result, oid); 
    }
 
    public void testGet()
    {
+      Log.calls(ME,"Testcase ...... testGet()");
       // Add a MessageUnit with oid=100
-      insertMsg("100");
+      insertMsg("100",true);
 
       MessageUnit mu;
       PMessageUnit pmu = xmldb.get("100");
 
       if(pmu==null)
          assert("Can't get MessageUnit from xmldb with oid : 100",false);
+
+      //invoke a second insert with oid=100
+      xmldb.delete("100");
    }
 
    public void testDelete()
    {
+      Log.calls(ME,"Testcase ...... testDelete()");
       xmldb.delete("100");
       PMessageUnit pmu = xmldb.get("100");
 
       if(pmu!=null)
          assert("Can't delete MessageUnit from xmldb with oid : "+pmu.oid,false);
+      //invoke a second delete with oid=100
+      xmldb.delete("100");
    }
 
    public void testQuery()
    {
-      insertMsg("100");
-      insertMsg("101");
-      insertMsg("102");
+      Log.calls(ME,"Testcase ...... testQuery()");
+      insertMsg("100",true);
+      insertMsg("101",true);
+      insertMsg("102",true);
       Enumeration msgIter = xmldb.query("//key[@oid=\"101\"]");
       PMessageUnit pmu=null;
       while(msgIter.hasMoreElements())
@@ -127,8 +139,9 @@ public class TestXmlDb extends TestCase
 
    public void testInsertQuery()
    {
+      Log.calls(ME,"Testcase ...... testInsertQuery()");
       for(int i=100;i<200;i++){
-         insertMsg(String.valueOf(i));
+         insertMsg(String.valueOf(i),true);
       }
       Enumeration msgIter = xmldb.query("//key");
       PMessageUnit pmu=null;
@@ -147,9 +160,10 @@ public class TestXmlDb extends TestCase
 
    public void testInsertMsgPerSecond()
    {
+      Log.calls(ME,"Testcase ...... testInsertMsgPerSecond()");
       StopWatch stop = new StopWatch();
       for(int i=100;i<1100;i++){
-         insertMsg(String.valueOf(i));
+         insertMsg(String.valueOf(i),true);
       }
 
       if(stop.elapsed()<1000)
@@ -161,12 +175,58 @@ public class TestXmlDb extends TestCase
       }
 
       stop.restart();
+    
+      // Query-time-test
+      Enumeration msgIter = xmldb.query("//key");
+      Log.info(ME,"Time for a simple query (1000 MessageUnits):"+stop.toString());
+      PMessageUnit pmu=null;
+      int countMsg=0;
+      while(msgIter.hasMoreElements())
+      {
+         pmu = (PMessageUnit)msgIter.nextElement();
+         countMsg++;
+      }
+      assertEquals("Query-Test was failed.",new String("1000"),String.valueOf(countMsg));
 
+      stop.restart();
       // Delete MessageUnits 
       for(int i=100;i<1100;i++){
         xmldb.delete(String.valueOf(i));
       }      
-      Log.info(ME,"1000 MessageUnits deleted in : "+stop.toString());
+      Log.info(ME,"1000 MessageUnits deleted in: "+stop.toString());
+   }
+
+   /**
+   * Check the cache (RAM) with no durable Messages.
+   */
+   public void testCacheSize()
+   {
+      Log.calls(ME,"Testcase ...... testCacheSize()");
+      StopWatch stop = new StopWatch();
+      long varSize[] = {0L, 1000000L, 2000000L, 4000000L, 6000000L};
+
+      for(int r=0;r<5;r++)
+      {
+         Log.info(ME,"Testing Cachesize................................."+String.valueOf(varSize[r]/1000000)+"mb");
+         stop.restart();
+         xmldb.setMaxCacheSize(varSize[r]);
+
+         // Insert 1000 MessageUnits
+         for(int i=100;i<1100;i++){
+            insertMsg(String.valueOf(i),false);
+         }
+         Log.info(ME,"    Insert 1000 MUs....in..."+stop.toString());
+         stop.restart();
+
+         Enumeration msgIter = xmldb.query("//key");
+         Log.info(ME,"    Query 1000 MUs.....in..."+stop.toString());
+
+         stop.restart();
+         for(int i=100;i<1100;i++){
+           xmldb.delete(String.valueOf(i));
+         }
+         Log.info(ME,"    Delete 1000 MUs....in..."+stop.toString());
+      }
    }
 
    public void testCache()
@@ -179,17 +239,16 @@ public class TestXmlDb extends TestCase
    public static Test suite()
    {
        TestSuite suite= new TestSuite();
-       suite.addTest(new TestXmlDb("testGet"));
+      suite.addTest(new TestXmlDb("testGet"));
        suite.addTest(new TestXmlDb("testDelete"));
        suite.addTest(new TestXmlDb("testQuery"));
        suite.addTest(new TestXmlDb("testInsertQuery"));
        suite.addTest(new TestXmlDb("testInsertMsgPerSecond"));
+//       suite.addTest(new TestXmlDb("testCacheSize"));
        return suite;
    }
 
    /**
-    * Invoke: jaco testsuite.org.xmlBlaster.TestPersistence
-    * <p />
    */
    public static void main(String args[])
    {
@@ -199,11 +258,12 @@ public class TestXmlDb extends TestCase
          Log.panic(ME, e.toString());
       }
       TestXmlDb testXmldb = new TestXmlDb("TestXmlDb");
-      testXmldb.testGet();
+/*      testXmldb.testGet();
       testXmldb.testDelete();
       testXmldb.testQuery();
       testXmldb.testInsertQuery();
-      testXmldb.testInsertMsgPerSecond();
+      testXmldb.testInsertMsgPerSecond();*/
+      testXmldb.testCacheSize();
       Log.exit(TestXmlDb.ME, "Good bye");
    } 
    
