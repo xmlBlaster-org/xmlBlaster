@@ -3,7 +3,7 @@ Name:      CallbackAddress.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback address string and protocol string
-Version:   $Id: CallbackAddress.java,v 1.17 2002/05/30 16:30:04 ruff Exp $
+Version:   $Id: CallbackAddress.java,v 1.18 2002/06/23 10:45:05 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -76,6 +76,7 @@ public class CallbackAddress extends AddressBase
     * Configure property settings
     */
    private void initialize() {
+      this.hostname = glob.getCbHostname(); // don't use setHostname() as it would set isCardcodedHostname=true
       setPort(glob.getProperty().get("cb.port", getPort()));
       setType(glob.getProperty().get("cb.protocol", getType()));
       setCollectTime(glob.getProperty().get("cb.burstMode.collectTime", DEFAULT_collectTime)); // sync update()
