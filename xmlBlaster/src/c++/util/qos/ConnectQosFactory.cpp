@@ -33,6 +33,15 @@ ConnectQosFactory::ConnectQosFactory(Global& global)
    prep();
 }
 
+void ConnectQosFactory::prep()
+{
+   inSecurityService_ = false;
+   inServerRef_       = false;
+   inSession_         = false;
+   inIsPersistent_    = false;
+   serverRefType_     = "";
+   subFactory_        = NULL;
+}
 /*
 ConnectQosFactory::~ConnectQosFactory()
 {
@@ -108,6 +117,11 @@ void ConnectQosFactory::startElement(const string& name, const AttributeMap& att
    if (name.compare("duplicateUpdates") == 0) {
       connectQos_.setDuplicateUpdates(true);
       character_.erase();
+      return;
+   }
+
+   if (name.compare("persistent") == 0) {
+      connectQos_.setPersistent(true);
       return;
    }
 
@@ -193,6 +207,16 @@ void ConnectQosFactory::endElement(const string &name) {
       return;
    }
 
+   if(name.compare("persistent") == 0) {
+      inIsPersistent_ = false;
+      StringTrim::trim(character_);
+      if (!character_.empty())
+         if (character_ == "true") connectQos_.setPersistent(true);
+         else  connectQos_.setPersistent(false);
+      character_.erase();
+      return;
+   }
+
    if (inSession_) {
       sessionQosFactory_.endElement(name);
       return;
@@ -219,6 +243,7 @@ ConnectQosData ConnectQosFactory::readObject(const string& qos)
 {
    // this should be synchronized here ....
 //   userId_ = "";
+   prep();
    init(qos);
 //   ConnectQosData data(global_);
 //   connectQos_.setSecurityQos(securityQos_);

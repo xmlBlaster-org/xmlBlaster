@@ -72,4 +72,8 @@ namespace org { namespace xmlBlaster { namespace client { namespace qos {
       return data_;
    }
 
+   bool SubscribeReturnQos::isPersistent() const {
+      return data_.isPersistent();
+   }    
+
 }}}} // namespace

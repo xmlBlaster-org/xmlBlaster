@@ -257,6 +257,8 @@ string QueryQosData::toXml(const string& extraOffset) const
    if (!local_) ret += offset + " <local>false</local>";
    if (!initialUpdate_) ret += offset + " <initialUpdate>false</initialUpdate>";
    if (!notify_) ret += offset + " <notify>false</notify>";
+   if (isPersistent())
+      ret += offset + " <persistent/>";
 
    AccessFilterVector::const_iterator iter = filters_.begin();
    while (iter != filters_.end()) {

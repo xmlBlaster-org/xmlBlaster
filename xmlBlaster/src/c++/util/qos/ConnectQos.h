@@ -66,6 +66,7 @@ private:
    bool        ptp_;
    bool        clusterNode_;
    bool        duplicateUpdates_;
+   bool        persistent_;
 
    std::vector<org::xmlBlaster::util::qos::address::Address>         addresses_;
    std::vector<org::xmlBlaster::util::qos::address::CallbackAddress> cbAddresses_;
@@ -89,6 +90,7 @@ private:
       clientQueueProperties_  = data.clientQueueProperties_;
       sessionCbQueueProperty_ = data.sessionCbQueueProperty_;
       clientProperties_       = data.clientProperties_;
+      persistent_             = data.persistent_;
    }
 
 protected:
@@ -114,6 +116,9 @@ public:
    bool isDuplicateUpdates() const;
    void addServerRef(const org::xmlBlaster::util::ServerRef& serverRef);
    std::vector<ServerRef> getServerReferences() const;
+   bool isPersistent() const;
+   void setPersistent(bool persistent);
+   
    /**
     * returns the first found server reference
     * delivered with return QoS of a connect() call.

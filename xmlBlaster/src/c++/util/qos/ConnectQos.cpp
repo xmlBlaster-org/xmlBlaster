@@ -211,6 +211,23 @@ const ConnectQosData::ClientPropertyMap& ConnectQosData::getClientProperties() c
    return clientProperties_;
 }
 
+
+/**
+ * @param persistent mark a message as persistent
+ */
+void ConnectQosData::setPersistent(bool persistent)
+{
+   persistent_ = persistent;
+}
+
+/**
+ * @return true/false
+ */
+bool ConnectQosData::isPersistent() const
+{
+   return persistent_;
+}
+
 /**
  * Dump state of this object into a XML ASCII string.
  * <br>
@@ -234,6 +251,9 @@ string ConnectQosData::toXml(const string& extraOffset) const
 
    if (isDuplicateUpdates() == false)
       ret += offset2 + string("<duplicateUpdates>") + getBoolAsString(isDuplicateUpdates()) + string("</duplicateUpdates>");
+
+   if (isPersistent())
+      ret += offset + " <persistent/>";
 
    ret += sessionQos_.toXml(indent);
 

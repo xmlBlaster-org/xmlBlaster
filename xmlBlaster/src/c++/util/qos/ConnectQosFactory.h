@@ -54,19 +54,13 @@ private:
    bool inSecurityService_;
    bool inServerRef_;
    bool inSession_;
+   bool inIsPersistent_; // QosData
 
    org::xmlBlaster::util::qos::ConnectQos connectQos_;
    /** when the current parsing point should be handled by another qos factory*/
    XmlHandlerBase* subFactory_;
 
-   void prep()
-   {
-      inSecurityService_ = false;
-      inServerRef_       = false;
-      inSession_         = false;
-      serverRefType_     = "";
-      subFactory_        = NULL;
-   }
+   void prep();
 
 public:
    ConnectQosFactory(org::xmlBlaster::util::Global& global);

@@ -41,22 +41,22 @@ private:
    org::xmlBlaster::util::qos::storage::QueuePropertyFactory queuePropertyFactory_;
 
    /** helper flag for SAX parsing: parsing inside <state> ? */
-   bool inState_; // = false;
-   bool inSubscribe_; // = false;
-   bool inRedeliver_; // = false;
-   bool inTopic_; // false;
-   bool inQueue_; // =  false;
-   bool inPersistence_; // false;
-   bool inDestination_; // false;
-   bool inSender_; // false;
-   bool inPriority_; // false;
-   bool inExpiration_; // false;
-   bool inRcvTimestamp_;//  false;
-   bool inIsVolatile_; // false;
-   bool inIsPersistent_; // false;
-   bool inReadonly_; // false;
-   bool inRoute_; // false;
-   bool sendRemainingLife_; //  true;
+   bool inState_; // QosData
+   bool inSubscribe_;
+   bool inRedeliver_;
+   bool inTopic_;
+   bool inQueue_;
+   bool inPersistence_;
+   bool inDestination_;
+   bool inSender_;
+   bool inPriority_;
+   bool inExpiration_;
+   bool inRcvTimestamp_; // QosData
+   bool inIsVolatile_;
+   bool inIsPersistent_; // QosData
+   bool inReadonly_;
+   bool inRoute_;  // QosData
+   bool sendRemainingLife_;
    bool inQos_;
 
    std::string LIFE_TIME;

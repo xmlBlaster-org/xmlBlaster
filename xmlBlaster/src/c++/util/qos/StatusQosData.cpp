@@ -35,11 +35,12 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
 void StatusQosData::copy(const StatusQosData& data)
 {
-   state_             = data.state_;
-   stateInfo_         = data.stateInfo_;
-   subscriptionId_    = data.subscriptionId_;
-   keyOid_            = data.keyOid_;
-   rcvTimestamp_      = data.rcvTimestamp_;
+   state_          = data.state_;
+   stateInfo_      = data.stateInfo_;
+   subscriptionId_ = data.subscriptionId_;
+   keyOid_         = data.keyOid_;
+   rcvTimestamp_   = data.rcvTimestamp_;
+   persistent_     = data.persistent_;
 }
 
 StatusQosData::StatusQosData(Global& global)
@@ -47,6 +48,7 @@ StatusQosData::StatusQosData(Global& global)
 {
    state_ = Constants::STATE_OK;
    rcvTimestamp_ = 0;
+   persistent_ = false;
 }
 
 StatusQosData::StatusQosData(const StatusQosData& data)
@@ -143,6 +145,8 @@ string StatusQosData::toXml(const string& extraOffset) const
    if (!getKeyOid().empty())
       ret += offset + " <key oid='" + getKeyOid() + "'/>";
    ret += offset + "</qos>";
+   if (isPersistent())
+      ret += offset + " <persistent/>";
 
    if (ret.length() < 16)
       return "<qos/>";  // minimal footprint
@@ -163,6 +167,22 @@ Timestamp StatusQosData::getRcvTimestamp() const
 void StatusQosData::touchRcvTimestamp()
 {
    rcvTimestamp_ = TimestampFactory::getInstance().getTimestamp();
+}
+
+/**
+ * @param persistent mark a message as persistent
+ */
+void StatusQosData::setPersistent(bool persistent)
+{
+   persistent_ = persistent;
+}
+
+/**
+ * @return true/false
+ */
+bool StatusQosData::isPersistent() const
+{
+   return persistent_;
 }
 
 }}}} // namespace

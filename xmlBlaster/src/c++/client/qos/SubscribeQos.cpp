@@ -88,5 +88,9 @@ void SubscribeQos::setSubscriptionId(const string& subscriptionId)
    data_.setSubscriptionId(subscriptionId);
 }
 
+void SubscribeQos::setPersistent(bool persistent) {
+   data_.setPersistent(persistent);
+}
+
 }}}} // namespace
 

@@ -174,11 +174,14 @@ public:
           string("  <serverRef type='IOR'>\n") +
           string("  IOR:000000000000003749444c3a6f72672e786d6c426c61737465722e70726f746f636f6c2e636f7262612f73657276657249646c2f5365727665723a312e300000000000030000000000000043000100000000000a3132372e302e302e320082980000002b5374616e64617264496d706c4e616d652f786d6c426c61737465722d504f412f01110c332a141532012a0f000000000000000048000101000000000a3132372e302e302e320082980000002b5374616e64617264496d706c4e616d652f786d6c426c61737465722d504f412f01110c332a141532012a0f0000000000000000010000002c0000000000000001000000010000001c00000000000100010000000105010001000101090000000105010001\n") +
           string("  </serverRef>\n") +
+          string("  <persistent/>\n") +
           string(" </qos>\n");
 
       ConnectQosFactory factory(global_);
       for (int i=0; i < 2; i++) {
-                         ConnectQos connQos = factory.readObject(qos);
+         ConnectQos connQos = factory.readObject(qos);
+         assertEquals(log_, me, true, connQos.isPersistent(), "check 'persistent' flag");
+         
          log_.info(me, string("connect qos: ") + connQos.toXml());
       }
    }

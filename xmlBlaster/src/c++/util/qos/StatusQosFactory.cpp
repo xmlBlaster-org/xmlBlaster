@@ -15,10 +15,10 @@ using namespace org::xmlBlaster::util::parser;
 
 void StatusQosFactory::prep()
 {
-   inState_     = false;
-   inSubscribe_ = false;
-   inKey_       = false;
-   inQos_       = false;
+   inState_        = false;
+   inSubscribe_    = false;
+   inKey_          = false;
+   inQos_          = false;
 }
 
 StatusQosFactory::StatusQosFactory(Global& global)
@@ -98,6 +98,12 @@ void StatusQosFactory::startElement(const string &name, const AttributeMap& attr
       }
       return;
    }
+
+   if (name.compare("persistent") == 0) {
+      if (!inQos_) return;
+      statusQosData_.setPersistent(true);
+      return;
+   }
 }
 
 void StatusQosFactory::endElement(const string &name)
@@ -123,6 +129,17 @@ void StatusQosFactory::endElement(const string &name)
       return;
    }
    character_.erase();
+
+   if(name.compare("persistent") == 0) {
+      inIsPersistent_ = false;
+      StringTrim::trim(character_);
+      if (!character_.empty())
+         if (character_ == "true") statusQosData_.setPersistent(true);
+         else  statusQosData_.setPersistent(false);
+      // if (log.trace()) log.trace(ME, "Found persistent = " + msgQosData.getIsPersistent());
+      character_.erase();
+      return;
+   }
 }
 
 StatusQosData StatusQosFactory::readObject(const string& qos)

@@ -71,6 +71,14 @@ public:
    std::string getSubscriptionId() const;
 
    /**
+    * gets the subscription status: persistent (true) or not persistent 
+    * (false). If it is true it means that the subscription has implicitly
+    * made the associated session persistent and both are surviving a
+    * server crash. 
+    */
+   bool isPersistent() const;
+
+   /**
     * Dump state of this object into a XML ASCII std::string.
     * <br>
     * @param extraOffset indenting of tags for nice output

@@ -50,7 +50,6 @@ void MsgQosData::init()
    queueIndex_ = -1;
    queueSize_ = -1;
    fromPersistenceStore_ = false;
-   persistent_ = DEFAULT_persistent;
    forceUpdate_.setValue(global_.getProperty(), "forceUpdate");
    forceDestroy_.setValue(global_.getProperty(), "forceDestroy");
    lifeTime_ = -1;
@@ -64,13 +63,13 @@ void MsgQosData::init()
 
 void MsgQosData::copy(const MsgQosData& data)
 {
+   QosData::copy(data);
    subscriptionId_ = data.subscriptionId_;
    subscribable_ = data.subscribable_;
    redeliver_ = data.redeliver_;
    queueIndex_ = data.queueIndex_;
    queueSize_ = data.queueSize_;
    fromPersistenceStore_ = data.fromPersistenceStore_;
-   persistent_ = data.persistent_;
    forceUpdate_= data.forceUpdate_;
    forceDestroy_ = data.forceDestroy_;
    lifeTime_ = data.lifeTime_;
@@ -188,22 +187,6 @@ void MsgQosData::setSubscriptionId(const string& subscriptionId)
 string MsgQosData::getSubscriptionId() const
 {
    return subscriptionId_;
-}
-
-/**
- * @param persistent mark a message as persistent
- */
-void MsgQosData::setPersistent(bool persistent)
-{
-   persistent_ = persistent;
-}
-
-/**
- * @return true/false
- */
-bool MsgQosData::isPersistent() const
-{
-   return persistent_;
 }
 
 /**

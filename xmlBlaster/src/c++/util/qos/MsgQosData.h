@@ -34,23 +34,15 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/xmlBlasterDef.h>
 #include <util/qos/QosData.h>
 
-// #include <util/Constants.h>
 #include <util/Destination.h>
 #include <util/qos/SessionQos.h>
 #include <util/qos/TopicProperty.h>
-// #include <util/Timestamp.h>
 #include <util/PriorityEnum.h>
 #include <util/cluster/RouteInfo.h>
 #include <util/cluster/NodeId.h>
 #include <util/Prop.h>
 #include <vector>
 #include <string>
-
-
-
-// 
-
-
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
@@ -89,8 +81,6 @@ private:
 
    /** Internal use only, is this message sent from the persistence layer? */
    bool fromPersistenceStore_; // = false;
-
-   bool persistent_; // = DEFAULT_persistent;
 
    /**
     * Send message to subscriber even the content is the same as the previous?
@@ -193,16 +183,6 @@ public:
     * @return subscribeId or null if PtP message
     */
    std::string getSubscriptionId() const;
-
-   /**
-    * @param persistent mark a message as persistent
-    */
-   void setPersistent(bool persistent);
-
-   /**
-    * @return true/false
-    */
-   bool isPersistent() const;
 
    /**
     * Send message to subscriber even if the content is the same as the previous. 

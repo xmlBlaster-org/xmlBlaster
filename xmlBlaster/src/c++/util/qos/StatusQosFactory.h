@@ -43,6 +43,7 @@ private:
    bool inSubscribe_; //  = false;
    bool inKey_; //       = false;
    bool inQos_;
+   bool inIsPersistent_; // QosData
 
    void prep();
 

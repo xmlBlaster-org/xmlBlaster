@@ -75,6 +75,8 @@ protected:
    Timestamp rcvTimestamp_;
    bool rcvTimestampFound_; // = false;
 
+   bool persistent_; // = DEFAULT_persistent;
+
    /**
     * ArrayList containing org::xmlBlaster::util::cluster::RouteInfo objects
     */
@@ -82,6 +84,7 @@ protected:
 
 public:   typedef std::map<std::string, org::xmlBlaster::util::qos::ClientProperty> ClientPropertyMap;
 protected:
+
    ClientPropertyMap clientProperties_; 
 
    void copy(const QosData& data);
@@ -233,7 +236,15 @@ public:
 
    int size() const;
 
-   
+   /**
+    * @param persistent mark a message as persistent
+    */
+   void setPersistent(bool persistent);
+
+   /**
+    * @return true/false
+    */
+   bool isPersistent() const;
 
    // copy constructor plus assignment operator ...
 

@@ -55,6 +55,7 @@ void QosData::init()
    rcvTimestamp_ = 0;
    rcvTimestampFound_ = false;
    serialData_ = "";
+   persistent_ = DEFAULT_persistent;
 }
 
 void QosData::copy(const QosData& data)
@@ -65,6 +66,7 @@ void QosData::copy(const QosData& data)
    rcvTimestamp_ = data.rcvTimestamp_;
    rcvTimestampFound_ = data.rcvTimestampFound_;
    serialData_ = data.serialData_;
+   persistent_ = data.persistent_;
 }
 
 
@@ -227,6 +229,22 @@ void QosData::clearRoutes()
 int QosData::size() const
 {
    return toXml().size();
+}
+
+/**
+ * @param persistent mark a message as persistent
+ */
+void QosData::setPersistent(bool persistent)
+{
+   persistent_ = persistent;
+}
+
+/**
+ * @return true/false
+ */
+bool QosData::isPersistent() const
+{
+   return persistent_;
 }
 
 string QosData::dumpClientProperties(const string& extraOffset) const

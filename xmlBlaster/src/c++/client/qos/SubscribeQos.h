@@ -76,6 +76,14 @@ public:
    void setSubscriptionId(const std::string& subscriptionId);
 
    /**
+    * Sets the subscription to persistent (true) or not persistent (false).
+    * Setting this to true means that the subscription will implicitly
+    * make the associated session persistent and both will survive a
+    * server crash. 
+    */
+   void setPersistent(bool persistent);
+
+   /**
     * Add a client property key and value. 
     * @param name The unique key, a duplicate key will overwrite the old setting
     * @param value "vector<unsigned char>" and "unsigned char *" types are treated as a blob

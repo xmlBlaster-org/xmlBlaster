@@ -1,4 +1,6 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
+ 
+ o added persistent session+subscription support in c++
 
  o Global.detachJdbcManagerCommonTable() removed (was obsolete)
 
