@@ -3,7 +3,7 @@ Name:      BlasterHttpProxy.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This class contains some useful, static helper methods.
-Version:   $Id: BlasterHttpProxy.java,v 1.10 2000/05/03 17:08:04 ruff Exp $
+Version:   $Id: BlasterHttpProxy.java,v 1.11 2000/05/06 16:37:30 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -24,7 +24,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
  * <p />
  * You can also use this class to handle shared attributes for all servlets.
  * @author Konrad Krafft
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  */
 public class BlasterHttpProxy
 {
@@ -165,5 +165,21 @@ public class BlasterHttpProxy
          return null;
       }
       return pc.getCorbaConnection();
+   }
+
+
+   /**
+    * gives a HttpPushHandler by sessionId.
+    * <p />
+    * This push handler holds the persistent http connection to the browser
+    * @param sessionId
+    */
+   public static HttpPushHandler getHttpPushHandler(String sessionId) throws XmlBlasterException
+   {
+      ProxyConnection proxyConnection = getProxyConnectionBySessionId(sessionId);
+      if( proxyConnection == null ) {
+         throw new XmlBlasterException(ME+".SessionNotKnown", "Session not registered yet (sessionId="+sessionId+")");
+      }
+      return proxyConnection.getHttpPushHandler(sessionId);
    }
 }
