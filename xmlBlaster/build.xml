@@ -50,14 +50,16 @@ Else add it manually.
 
 <project default="usage" basedir=".">
  
-   <taskdef name="cc" classname="net.sf.antcontrib.cpptasks.CCTask" />
+   <taskdef resource="cpptasks.tasks"/> <!-- cc defineset compiler linker -->
+   <typedef resource="cpptasks.types"/>
+
+   <!-- taskdef name="cc" classname="net.sf.antcontrib.cpptasks.CCTask" />
    <typedef name="defineset" classname="net.sf.antcontrib.cpptasks.types.DefineSet" />
    <typedef name="libset" classname="net.sf.antcontrib.cpptasks.types.LibrarySet" />
- 
-   <taskdef name="foreach" classname="net.sf.antcontrib.logic.ForEach" />
-   <taskdef name="osfamily" classname="net.sf.antcontrib.platform.OsFamily" />
-   <taskdef name="switch" classname="net.sf.antcontrib.logic.Switch" />
-   <taskdef name="if" classname="net.sf.antcontrib.logic.IfTask" />
+   <typedef name="compiler" classname="net.sf.antcontrib.cpptasks.CompilerDef" />
+   <typedef name="linker" classname="net.sf.antcontrib.cpptasks.LinkerDef" / -->
+
+   <taskdef resource="net/sf/antcontrib/antcontrib.properties" />  <!-- if foreach osfamily switch if -->
   
    <!-- Allow any user specific values to override the defaults -->
    <property file="${user.home}/build.properties" />
@@ -110,11 +112,80 @@ Else add it manually.
    <property name="xmlblaster_home" value="."/>
    <property name="classpath" value="./lib/jacorb.jar:./lib/omquery.jar:./lib/parser.jar:./lib/xmlrpc.jar:./lib/jaxp.jar:./lib/test.jar:./lib/xtdash.jar:./lib/servlet.jar:./lib/gnu-regexp-1.0.8.jar:./lib/connector.jar:./lib/jaas.jar:./lib/jta-spec1_0_1.jar:./lib/jms.jar:./lib/ejb2.0.jar:./lib/jndi-jdk1_3_1.jar:./lib/jutils.jar:./lib/batik/js.jar:./lib/batik/batik.jar"/>
  
+   <!-- =================================================================== -->
+   <!-- General C++ compiling setup for VisialC++, Borland and GCC          -->
+   <!-- =================================================================== -->
+   <property name="compiler" value="gcc"/> <!-- "gcc" "VC6" "bcc" -->
+   <property name="debug" value="true" />
+   <property name="chmod.fail" value="true" />
+
+   <!-- condition property="windows">
+      <os family="windows"/>
+   </condition>
+   <condition property="linux">
+      <os family="unix" arch="x86"/>
+   </condition -->
+      <!-- ${os.name} = Linux -->
+
    <property name="src.cpp.dir" value="./src/c++"/>
-   <property name="CORBACPP_VER" value="2.3.6"/>
+   <property name="CORBACPP_VER" value="2.3.7"/>
    <property name="CORBACPP_HOME" value="/opt/local/mico"/>
-   <property name="XMLCPP_VER" value="1_6_0"/>
+   <property name="XMLCPP_VER" value="1_7_0"/>
    <property name="XMLCPP_HOME" value="/opt/local/xerces-c-src${XMLCPP_VER}"/>
+
+   <compiler id="base-msvc" name="msvc" if="use-msvc">
+      <defineset><define name="_WINDOWS" value="1" /></defineset>
+      <defineset define="DLL_EXPORT"/>
+      <compilerarg value="/GX" />
+      <compilerarg value="/GR" />
+      <compilerarg value="/TP" />
+      <compilerarg value="/MTd" />                  <!-- multi threading with debug -->
+      <!-- compilerarg value="/G6"/ -->                  <!-- target Pentium Pro -->
+      <compilerarg value="/W3"/>                    <!-- display many warnings -->
+      <compilerarg value="/O2" unless="is-debug"/>  <!-- maximize speed --> 
+      <!-- compilerarg value="/Ob2" unless="is-debug"/ --> <!-- auto-inlining -->
+      <defineset>      
+         <define name="_CRTDBG_MAP_ALLOC" if="is-debug"/>
+      </defineset>
+   </compiler>   
+
+   <compiler id="msvc" name="msvc" extends="base-msvc">
+      <!--  disable Microsoft Extensions   -->
+      <compilerarg value="/Za"/>
+   </compiler>   
+
+   <compiler id="msvc-with-extensions" extends="base-msvc">
+      <!--  enable Microsoft Extensions   -->
+      <compilerarg value="/Ze"/>
+   </compiler>
+
+   <compiler id="bcc" name="bcc" if="use-bcc">
+      <!--  target Pentium Pro   -->
+      <compilerarg value="-6"/>
+      <!--  zero length empty class member functions -->
+      <compilerarg value="-Vx"/>
+      <compilerarg value="-Ve"/>
+      <!--   align on quad word boundaries   -->
+      <compilerarg value="-a8"/>
+      <!--   byte size enums   -->
+      <compilerarg value="-b-"/>
+      <compilerarg value="-k"/>
+      <compilerarg value="-y" if="is-debug"/>
+      <compilerarg value="-vi"/>
+      <compilerarg value="-r-" if="is-debug"/>
+      <!--  maximize speed     --> 
+      <compilerarg value="-O2" unless="is-debug"/>
+   </compiler>   
+
+   <compiler id="gcc" name="gcc" if="use-gcc">
+      <compilerarg value="-Wall" />
+      <compilerarg value="-Wstrict-prototypes" />
+      <compilerarg value="-Wimplicit-int" />
+      <compilerarg value="-Werror-implicit-function-declaration" />
+   </compiler>
+
+
+
  
    <!-- =================================================================== -->
    <!-- Help on usage                                                       -->
@@ -138,10 +209,12 @@ Else add it manually.
       <echo message="   xmlBlaster  --> generates the xmlBlaster.jar file (default)"/>
       <echo message="   demo        --> generates the demo.jar file"/>
       <echo message="   testsuite   --> generates the testsuite.jar file"/>
-      <echo message="   cpp-lib     --> generates C++ libxmlBlasterClient.sl (shared library/dll)"/>
+      <echo message="   cpp-lib     --> generates C++ libxmlBlasterClient.sl (shared library .so .sl .dll)"/>
       <echo message="                   Check build.properties settings for C++ CORBA and C++ XML libraries"/>
       <echo message="   cpp-test    --> generates C++ test clients"/>
-      <echo message="   cpp-clean   --> cleans up C++ generated files (object files etc)"/>
+      <echo message="   cpp         --> builds cpp-lib and cpp-test"/>
+      <echo message="   cpp-clean   --> cleans up C++ generated files (object files, corba files etc)"/>
+      <echo message="   cpp-delete  --> like 'cpp-clean', but delete shared library and C++ test clients as well"/>
       <echo message="   all         --> generates xmlBlaster.jar (including demo and testsuite classes)"/>
       <echo message="   javadocs    --> generates the javadoc documentation"/>
       <echo message="   dist        --> generates the xmlBlaster distribution to run as a server"/>
@@ -648,33 +721,20 @@ Else add it manually.
             /opt/local/xmlBlaster/src/c++/client/CorbaConnection.o /opt/local/xmlBlaster/src/c++/util/CompatibleCorba.o /opt/local/xmlBlaster/src/c++/util/Log.o /opt/local/xmlBlaster/src/c++/generated/xmlBlaster.o
       -->
       <mkdir dir="${build.dir}/obj"/>
-      <cc debug="true" link="shared" outfile="${lib.dir}/xmlBlasterClient" objdir="${build.dir}/obj">
-         <compiler name="msvc" if="BUILD_WINDOWS">
-            <defineset><define name="_WINDOWS" value="1" /></defineset>
-            <defineset define="DLL_EXPORT"/>
-            <compilerarg value="/GX" />
-            <compilerarg value="/GR" />
-            <compilerarg value="/TP" />
-            <compilerarg value="/MTd" />
-         </compiler>
-         <compiler name="gcc" if="BUILD_UNIX">   <!-- -fPIC -Wall is set automatically -->
-            <compilerarg value="-Wimplicit-int"/>
-            <compilerarg value="-Werror-implicit-function-declaration"/>
-         </compiler>
-         <!-- libset libs="pthread, dl" / -->
-         <!-- linker name="gcc" if="BUILD_UNIX">
-            <linkerarg value="-shared"/>
-            <linkerarg value="-g"/>
-            <libset libs="pthread, ml"/>
-         </linker -->
+      <cc debug="true" link="shared"
+          outfile="${lib.dir}/xmlBlasterClient" objdir="${build.dir}/obj"
+          multithreaded="true" exceptions="true">
+         <compiler refid="gcc"/>
+         <compiler refid="msvc"/>
+         <compiler refid="bcc"/>
          <fileset dir="${src.cpp.dir}/generated" includes="*.cpp"/>
          <fileset dir="${src.cpp.dir}/util" includes="*.cpp" />
          <fileset dir="${src.cpp.dir}/client" includes="*.cpp" />
          <includepath location="${src.cpp.dir}" />
          <!-- sysincludepath location="${STL_HOME}/stlport" /-->
          <sysincludepath location="${CORBACPP_HOME}/include" />
-         <sysincludepath location="${CORBACPP_HOME}/include/windows" /> <!-- necessary for mico on win32 -->
-         <sysincludepath location="${XMLCPP_HOME}/src" />               <!-- win32 -->
+         <sysincludepath location="${CORBACPP_HOME}/include/windows" if="windows" /> <!-- necessary for mico on win32 -->
+         <sysincludepath location="${XMLCPP_HOME}/src" if="windows" />               <!-- xerces win32 -->
          <sysincludepath location="${XMLCPP_HOME}/include" />           <!-- xerces 1.6.0 -->
          <sysincludepath location="${XMLCPP_HOME}/include/xercesc" />   <!-- Since xerces 1.7.0 -->
          <defineset>
@@ -686,10 +746,12 @@ Else add it manually.
  
  
    <!-- =================================================================== -->
-   <!-- Corba/C++ integration - create C++ testclients                      -->
+   <!-- Corba/C++ integration - create C++ test clients                     -->
    <!-- See http://sourceforge.net/projects/ant-contrib/                    -->
    <!-- =================================================================== -->
-   <!-- g++ -g -Wall -I/opt/local/mico/include
+   <!--
+      Linux:
+        g++ -g -Wall -I/opt/local/mico/include
                      -I/opt/xerces-c-src1_5_1/include
                      -I/home/xmlblast/xmlBlaster/src/c++
                      -DMICO -c TestGet.cpp
@@ -702,6 +764,13 @@ Else add it manually.
  
        Using STLport 4.5.1 gives a problem when linking an executable (on Linux):
            /home/xmlblast/xmlBlaster/lib/libxmlBlasterClient.so: undefined reference to `CORBA::UserException::_print(_STL::basic_ostream<char, _STL::char_traits<char> > &) const'
+
+      Windows:
+       set CFLAGS=/c /nologo /D_WINDOWS /GX /GR /TP /MTd  /DMICO=1 /I.  /IE:\mico\include /IE:\mico\include\windows /nologo /D_WINDOWS /IE:\xmlBlaster\src\c++
+       cl.exe %CFLAGS% /FoE:\xmlBlaster\build\obj\Log.obj E:\xmlBlaster\src\c++\util\Log.cpp
+       cl.exe %CFLAGS% /FoE:\xmlBlaster\build\obj\xmlBlaster.obj E:\xmlBlaster\src\c++\generated\xmlBlaster.cpp
+       cl.exe %CFLAGS% /FoE:\xmlBlaster\build\obj\CompatibleCorba.obj E:\xmlBlaster\src\c++\util\CompatibleCorba.cpp
+       cl.exe %CFLAGS%  /IE:\xerces-c-src1_6_0\src /IE:\xerces-c-src1_6_0\include /FoE:\xmlBlaster\build\obj\CorbaConnection.obj E:\xmlBlaster\src\c++\client\CorbaConnection.cpp
    -->
    <target name="cpp-test" depends="prepare"> <!-- depends="prepare,cpp-lib" -->
       <foreach list="TestGet,TestSub,TestLogin,RamTest,clientPOA" target="compileCppExe" param="exeName" delimiter="," />
@@ -709,38 +778,51 @@ Else add it manually.
  
    <target name="compileCppExe">
       <echo message="Compiling of C++ test client '${testsuite.dir}/c++/bin/${exeName}' ..."/>
- 
-      <libset id="libs" libs="mico${CORBACPP_VER}, micocoss${CORBACPP_VER}, xerces-c${XMLCPP_VER}, xmlBlasterClient, pthread, dl, stdc++">
-         <!-- libstlport_gcc, -->
-         <!-- libpath location="${STL_HOME}/lib"/ -->
-         <libpath location="${CORBACPP_HOME}/lib"/>
-         <libpath location="${XMLCPP_HOME}/lib"/>
-         <libpath location="${lib.dir}"/>
-      </libset>
- 
+      <mkdir dir="${build.dir}/obj"/>
+      <mkdir dir="${testsuite.dir}/c++/bin"/>
+      <!-- echo message="TRYING: ${CORBACPP_HOME}/lib/libmico${CORBACPP_VER}.so"/ -->
       <cc debug="true" link="executable"
           outfile="${testsuite.dir}/c++/bin/${exeName}"
-          objdir="${build.dir}/obj">
-         <compiler name="msvc" if="BUILD_WINDOWS">
-            <defineset><define name="_WINDOWS" value="1" /></defineset>
-            <compilerarg value="/GX" />
-            <compilerarg value="/GR" />
-            <compilerarg value="/TP" />
-            <compilerarg value="/MTd" />
-         </compiler>
-         <compiler name="gcc" if="BUILD_UNIX">
-            <compilerarg value="-Wall" />
-            <compilerarg value="-Wstrict-prototypes" />
-            <compilerarg value="-Wimplicit-int" />
-            <compilerarg value="-Werror-implicit-function-declaration" />
-         </compiler>
+          objdir="${build.dir}/obj"
+          multithreaded="true" exceptions="true">
+         <compiler refid="gcc"/>
+         <compiler refid="msvc"/>
+         <compiler refid="bcc"/>
          <fileset dir="${testsuite.dir}/c++" includes="${exeName}.cpp"/>
          <includepath location="${src.cpp.dir}" />
          <!-- sysincludepath location="${STL_HOME}/stlport" / -->
          <sysincludepath location="${CORBACPP_HOME}/include" />
          <sysincludepath location="${XMLCPP_HOME}/include" />           <!-- xerces 1.6.0 -->
          <sysincludepath location="${XMLCPP_HOME}/include/xercesc" />   <!-- Since xerces 1.7.0 -->
-         <libset refid="libs"/>
+         <!-- libset refid="libs"/ -->
+         <!-- libset libs="shared">
+            <libpath location="${CORBACPP_HOME}/lib"/>
+            <fileset dir="${CORBACPP_HOME}/lib" includes="libmico${CORBACPP_VER}.so"/>
+            <fileset dir="${CORBACPP_HOME}/lib" includes="libmico${CORBACPP_VER}"/>
+            <fileset dir="${CORBACPP_HOME}/lib" includes="mico${CORBACPP_VER}"/>
+         </libset -->
+         <!-- fileset dir="${STL_HOME}/lib" includes="libstlport_gcc.so" /-->
+         <!-- fileset dir="${CORBACPP_HOME}/lib" includes="libmico${CORBACPP_VER}.so,libmicocoss${CORBACPP_VER}.so" />
+         <fileset dir="${XMLCPP_HOME}/lib" includes="libxerces-c${XMLCPP_VER}.so" />
+         <fileset dir="${lib.dir}" includes="libxmlBlasterClient.so" / -->
+
+         <!-- libset dir="${STL_HOME}/lib" libs="stlport_gcc" /-->
+         <libset dir="${CORBACPP_HOME}/lib" libs="mico${CORBACPP_VER},micocoss${CORBACPP_VER}" />
+         <libset dir="${XMLCPP_HOME}/lib" libs="xerces-c${XMLCPP_VER}" />
+         <libset dir="${lib.dir}" libs="xmlBlasterClient" />
+
+         <syslibset libs="dl"/>
+         <!-- syslibset libs="dl" if="unix"/ -->
+         <!-- syslibset caseSensitive="true"><include name="dl"/></syslibset --> <!-- if="linux" -->
+         <!-- syslibset includes="pthread,dl,stdc++" /-->
+
+         <!-- fileset id="libs" libs="mico${CORBACPP_VER}, micocoss${CORBACPP_VER}, xerces-c${XMLCPP_VER}, xmlBlasterClient, pthread, dl, stdc++">
+            <libstlport_gcc>
+            <libpath location="${STL_HOME}/lib"/>
+            <libpath location="${CORBACPP_HOME}/lib"/>
+            <libpath location="${XMLCPP_HOME}/lib"/>
+            <libpath location="${lib.dir}"/>
+         </fileset -->
          <defineset>
             <define name="MICO" value="1" />
          </defineset>
@@ -750,6 +832,8 @@ Else add it manually.
       </cc>
    </target>
  
+   <target name="cpp" depends="cpp-lib, cpp-test"/>
+
    <!-- =================================================================== -->
    <!-- Cleans everything                                                   -->
    <!-- =================================================================== -->
@@ -759,10 +843,16 @@ Else add it manually.
        <delete includeEmptyDirs="true" failonerror="false">
           <fileset dir="${src.cpp.dir}/generated" includes="*.o, *.cc, *.cpp, *.h"/>
           <fileset dir="${testsuite.dir}/c++" includes="*.o"/>
-          <fileset dir="${testsuite.dir}/c++/bin" includes="*"/>
        </delete>
     </target>
  
+    <target name="cpp-delete" depends="cpp-clean">
+       <delete includeEmptyDirs="true" failonerror="false">
+          <fileset dir="${lib.dir}" includes="*xmlBlasterClient.so,*xmlBlasterClient.sl,*xmlBlasterClient.dll"/>
+          <fileset dir="${testsuite.dir}/c++/bin" includes="*"/>
+       </delete>
+    </target>
+
     <target name="clean" depends="cpp-clean">
        <delete dir="${build.dir}"/>
        <delete includeEmptyDirs="true" failonerror="false">
@@ -771,7 +861,7 @@ Else add it manually.
        </delete>
     </target>
  
-    <target name="delete" depends="clean">
+    <target name="delete" depends="clean,cpp-delete">
        <delete dir="${dist.dir}"/>
        <delete dir="${dist-client.dir}"/>
    </target>
