@@ -439,7 +439,7 @@ public final class SubscriptionInfo implements I_AdminSubscription /* implements
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
-      sb.append(offset).append("  <subscription id='").append(getSubscriptionId()).append("'");
+      sb.append(offset).append("<subscription id='").append(getSubscriptionId()).append("'");
       sb.append(" sessionName='").append(getSessionInfo().getSessionName()).append("'");
       if (this.topicHandler != null) {
          sb.append(" oid='").append(topicHandler.getUniqueKey()).append("'");
@@ -466,7 +466,7 @@ public final class SubscriptionInfo implements I_AdminSubscription /* implements
             sb.append(offset).append(" <child>").append(child.getSubscriptionId()).append("</child>");
          }
       }
-      sb.append(offset).append("</SubscriptionInfo>");
+      sb.append(offset).append("</subscription>");
       return sb.toString();
    }
 
