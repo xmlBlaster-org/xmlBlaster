@@ -109,6 +109,9 @@ public interface I_Queue extends I_StorageProblemNotifier
     * the invocation, it will throw an exception. Full means here that the maximum number of entries OR the
     * maximum size in bytes has been exceeded. This means that the queue can be overloaded once.
     *
+    * You are not allowed to put identical entries twice. The behaviour is
+    * undefined.
+    *
     * @param msgQueueEntry the queue entry to put into the queue.
     * @param ignorePutInterceptor if set to 'true' the put will not inform the
     *        QueuePutListener that a put occurred.
@@ -121,10 +124,14 @@ public interface I_Queue extends I_StorageProblemNotifier
    Object put(I_QueueEntry queueEntry, boolean ignorePutInterceptor)
       throws XmlBlasterException;
 
+
    /**
     * Puts one queue entry on top of the queue. It does not wait. If the queue is ALREADY full at the time of
     * the invocation, it will throw an exception. Full means here that the maximum number of entries OR the
     * maximum size in bytes has been exceeded. This means that the queue can be overloaded once.
+    *
+    * You are not allowed to put identical entries twice. The behaviour is
+    * undefined.
     *
     * @param msgQueueEntries the queue entry to put into the queue.
     * @param ignorePutInterceptor if set to 'true' the put will not inform the

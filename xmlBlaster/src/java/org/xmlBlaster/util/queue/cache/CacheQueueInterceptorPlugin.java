@@ -1004,7 +1004,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
       XmlBlasterException e = null;
       this.isDown = true;
 //      this.glob.getJdbcQueueManager(this.queueId).unregisterListener(this);
-      this.persistentQueue.unRegisterStorageProblemListener(this);
+      if (this.persistentQueue != null) this.persistentQueue.unRegisterStorageProblemListener(this);
       try {
          if (this.persistentQueue != null && this.isConnected)
             this.persistentQueue.destroy();
