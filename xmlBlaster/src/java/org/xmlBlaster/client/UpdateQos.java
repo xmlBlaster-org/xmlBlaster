@@ -3,7 +3,7 @@ Name:      UpdateQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: UpdateQos.java,v 1.5 2002/06/18 13:51:53 ruff Exp $
+Version:   $Id: UpdateQos.java,v 1.6 2002/06/25 17:55:25 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -60,8 +60,8 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
 
    /** helper flag for SAX parsing: parsing inside <state> ? */
    private boolean inState = false;
-   /** the state of the message */
-   private String state = null;
+   /** the state of the message, defaults to "OK" if no state is returned */
+   private String state = Constants.STATE_OK;
 
    /** helper flag for SAX parsing: parsing inside <priority> ? */
    private boolean inPriority = false;
@@ -114,7 +114,6 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
    public UpdateQos(Global glob, String xmlQoS_literal) throws XmlBlasterException
    {
       if (Log.CALL) Log.call(ME, "Entering UpdateQos() (a message arrived)");
-      if (Log.DUMP) Log.dump(ME, "UpdateQos: " + xmlQoS_literal);
       init(xmlQoS_literal);
    }
 
@@ -153,6 +152,43 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
    public String getState()
    {
       return state;
+   }
+
+   /**
+    * True if the message is OK
+    */
+   public final boolean isOk()
+   {
+      return Constants.STATE_OK.equals(state);
+   }
+
+   /**
+    * True if the message was erased by timer or by a
+    * client invoking erase(). 
+    */
+   public final boolean isErased()
+   {
+      return Constants.STATE_ERASED.equals(state);
+   }
+
+   /**
+    * True if a timeout on this message occurred. 
+    * <p />
+    * Timeouts are spanned by the publisher and thrown by xmlBlaster
+    * on timeout to indicate for example
+    * STALE messages or any other user problem domain specific event.
+    */
+   public final boolean isTimeout()
+   {
+      return Constants.STATE_TIMEOUT.equals(state);
+   }
+
+   /**
+    * True on cluster forward problems
+    */
+   public final boolean isForwardError()
+   {
+      return Constants.STATE_FORWARD_ERROR.equals(state);
    }
 
    /**
@@ -255,8 +291,10 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
             for (int i = 0; i < len; i++) {
                if( attrs.getQName(i).equalsIgnoreCase("id") ) {
                   state = attrs.getValue(i).trim();
-                  break;
-               }
+               }/*
+               else if( attrs.getQName(i).equalsIgnoreCase("userInfo") ) {
+                  userInfo = attrs.getValue(i).trim();
+               }  */
             }
             // if (Log.TRACE) Log.trace(ME, "Found state tag");
          }
@@ -575,8 +613,9 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
       StringBuffer sb = new StringBuffer(512);
       sb.append("\n<qos>");
 
-      if (!org.xmlBlaster.engine.helper.Constants.STATE_OK.equals(state))
+      if (!org.xmlBlaster.engine.helper.Constants.STATE_OK.equals(state)) {
          sb.append("\n <state id='").append(state).append("'/>");
+      }
 
       sb.append("\n <sender>").append(msgUnitWrapper.getPublisherName()).append("</sender>");
       sb.append("\n <priority>").append(msgUnitWrapper.getPublishQos().getPriority()).append("</priority>");
