@@ -262,6 +262,7 @@ public class DbWatcher implements I_ChangeListener {
                           newGroupColValue = rs.getString(groupColName);
                           if (rs.wasNull()) newGroupColValue = "__NULL__";
                       }
+                      if (log.isLoggable(Level.FINEST)) log.finest("useGroupCol="+useGroupCol+", groupColName="+groupColName+", groupColValue="+groupColValue+", newGroupColValue="+newGroupColValue);
                       
                       if (!first && !groupColValue.equals(newGroupColValue)) {
                          first = false;
