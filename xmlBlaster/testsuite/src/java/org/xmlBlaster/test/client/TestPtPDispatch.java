@@ -11,6 +11,7 @@ import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
@@ -44,12 +45,30 @@ public class TestPtPDispatch extends TestCase {
          this.updateInterceptor = new MsgInterceptor(this.global, this.global.getLog("test"), null);
       }
       
-      public void init(boolean wantsPtP) throws XmlBlasterException {
+      public void init(boolean wantsPtP, boolean shutdownCb) throws XmlBlasterException {
          this.updateInterceptor.clear();
          ConnectQos qos = new ConnectQos(this.global);
          qos.setSessionName(this.sessionName);
          qos.setPtpAllowed(wantsPtP);
+         qos.getSessionCbQueueProperty().setMaxEntries(1);
+         qos.getSessionCbQueueProperty().setMaxEntriesCache(1);
+         CallbackAddress cbAddress = new CallbackAddress(this.global);
+         cbAddress.setRetries(-1);
+         cbAddress.setPingInterval(-1);
+         cbAddress.setDelay(5000L);
+         qos.addCallbackAddress(cbAddress);
          this.global.getXmlBlasterAccess().connect(qos, updateInterceptor);
+         if (shutdownCb) {
+            try {
+               Thread.sleep(TestPtPDispatch.TIMEOUT);
+            }
+            catch (InterruptedException ex) {
+               ex.printStackTrace();
+               TestCase.assertTrue("An interrupted exception occured", false);
+            }
+            this.global.getXmlBlasterAccess().getCbServer().shutdown();
+         }
+         this.updateInterceptor.clear();
       }
 
       public void shutdown() {
@@ -76,7 +95,7 @@ public class TestPtPDispatch extends TestCase {
    private int numDestinations = 4;
    private int counter;
    private String subjectName;
-   private boolean persistentMsg = false; 
+   //private boolean persistentMsg = true; 
 
    public TestPtPDispatch(String testName) {
       this(null, testName);
@@ -109,9 +128,6 @@ public class TestPtPDispatch extends TestCase {
          if (this.log.TRACE) this.log.trace(ME, "setUp: connectQos '" + connectQos.toXml() + "'");
          con.connect(connectQos, null);  // Login to xmlBlaster, register for updates
 
-         this.destinations[0].init(true);
-         this.destinations[1].init(false);
-                  
       }
       catch (XmlBlasterException e) {
           log.warn(ME, "setUp() - login failed: " + e.getMessage());
@@ -124,6 +140,21 @@ public class TestPtPDispatch extends TestCase {
       }
    }
 
+   private void prepare(boolean shutdownCb) {
+      try {
+         this.destinations[0].init(true, shutdownCb);
+         this.destinations[1].init(false, shutdownCb);
+      }
+      catch (XmlBlasterException ex) {
+         ex.printStackTrace();
+         assertTrue(false);
+      }
+   }
+   
+   private void cleanup() {
+      for (int i=0; i < this.numDestinations-2; i++) this.destinations[i].shutdown();         
+   }
+
    /**
     * Tears down the fixture.
     * <p />
@@ -134,7 +165,6 @@ public class TestPtPDispatch extends TestCase {
       this.glob.getXmlBlasterAccess().disconnect(null);
       // Global.instance().shutdown();
       // the unknown destinations must be handled inside the specific tests
-      for (int i=0; i < this.numDestinations-2; i++) this.destinations[i].shutdown();         
       this.glob.shutdown();
       this.glob = null;
    }
@@ -149,7 +179,7 @@ public class TestPtPDispatch extends TestCase {
     * @param counts an int[] containing the expected amount of updates for each
     *        destination. NOTE this has to be filled out even if you expect an
     */
-   private void doPublish(int destNum, boolean forceQueuing, boolean expectEx, int[] counts, long timeout) {
+   private void doPublish(int destNum, boolean forceQueuing, boolean expectEx, int[] counts, long timeout, boolean persistent) {
 
       SessionName toSessionName = null;
       if (destNum < 0) toSessionName = new SessionName(this.glob, this.subjectName);
@@ -162,7 +192,7 @@ public class TestPtPDispatch extends TestCase {
       Destination destination = new Destination(this.glob, toSessionName);
       destination.forceQueuing(forceQueuing);
       PublishQos qos = new PublishQos(this.glob, destination);
-      qos.setPersistent(this.persistentMsg);
+      qos.setPersistent(persistent);
    
       String content = "" + this.counter;
       this.counter++;
@@ -193,7 +223,7 @@ public class TestPtPDispatch extends TestCase {
     */
    private void checkForUnknown(PtPDestination dest, boolean wantsPtP, int expected, long delay) {
       try {
-         dest.init(wantsPtP);
+         dest.init(wantsPtP, false);
          dest.check(delay, expected);
          dest.shutdown();
       }
@@ -203,36 +233,127 @@ public class TestPtPDispatch extends TestCase {
       }
    }
 
+   private void noQueuingNoOverflow(boolean isPersistent) {
+      boolean forceQueuing = false;
+      boolean shutdownCb = false;
+      prepare(shutdownCb);
+      doPublish(-1, forceQueuing, false, new int[] {1,0,0,0}, TIMEOUT, isPersistent);
+      doPublish(0 , forceQueuing, false, new int[] {1,0,0,0}, TIMEOUT, isPersistent);
+      doPublish(1 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent);
+      doPublish(2 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent);
+      doPublish(3 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent);
+      
+      checkForUnknown(this.destinations[2], true, 0, TIMEOUT);
+      checkForUnknown(this.destinations[3], false,0, TIMEOUT);
+      cleanup();
+   }
+
    /**
     * TEST: <br />
     */
    public void testNoQueuingNoOverflow() {
+      noQueuingNoOverflow(false);
+      noQueuingNoOverflow(true);
+   }
+
+   private void noQueuingOverflow(boolean isPersistent) {
       boolean forceQueuing = false;
-      doPublish(-1, forceQueuing, false, new int[] {1,0,0,0}, TIMEOUT);
-      doPublish(0 , forceQueuing, false, new int[] {1,0,0,0}, TIMEOUT);
-      doPublish(1 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT);
-      doPublish(2 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT);
-      doPublish(3 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT);
+      boolean shutdownCb = true;
+      prepare(shutdownCb);
       
-      checkForUnknown(this.destinations[2], true, 0, TIMEOUT);
+      doPublish(0 , forceQueuing, false, new int[] {0,0,0,0}, TIMEOUT, isPersistent);
+      doPublish(0 , forceQueuing, false, new int[] {0,0,0,0}, TIMEOUT, isPersistent);
+      // allow one overflow but now an exception should come ...
+      doPublish(0 , forceQueuing, true, new int[] {0,0,0,0}, TIMEOUT, isPersistent);
+      // ... and again just to make sure ...
+      doPublish(0 , forceQueuing, true, new int[] {0,0,0,0}, TIMEOUT, isPersistent);
+
+      doPublish(1 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent);
+      doPublish(1 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent);
+      doPublish(1 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent);
+      doPublish(1 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent);
+      
+      doPublish(2 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent);
+      doPublish(2 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent);
+      doPublish(2 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent);
+      doPublish(2 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent);
+
+      // TODO add the tests on subject queue overflow here (configure subject queue first)
+      //doPublish(-1, forceQueuing, false, new int[] {0,0,0,0}, TIMEOUT);
+      //doPublish(-1, forceQueuing, false, new int[] {0,0,0,0}, TIMEOUT);
+      //doPublish(-1, forceQueuing, false, new int[] {0,0,0,0}, TIMEOUT);
+      //doPublish(-1, forceQueuing, false, new int[] {0,0,0,0}, TIMEOUT);
+
+      cleanup();
+   }
+
+   /**
+    * TEST: <br />
+    */
+   public void testNoQueuingOverflow() {
+      noQueuingOverflow(false);
+      noQueuingOverflow(true);
+   }
+
+   private void queuingNoOverflow(boolean isPersistent) {
+      boolean forceQueuing = true;
+      boolean shutdownCb = false;
+      prepare(shutdownCb);
+      doPublish(-1, forceQueuing, false, new int[] {1,0,0,0}, TIMEOUT, isPersistent);
+      doPublish(0 , forceQueuing, false, new int[] {1,0,0,0}, TIMEOUT, isPersistent);
+      doPublish(1 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent);
+      doPublish(2 , forceQueuing, false, new int[] {0,0,0,0}, TIMEOUT, isPersistent);
+      doPublish(3 , forceQueuing, false, new int[] {0,0,0,0}, TIMEOUT, isPersistent);
+
+      checkForUnknown(this.destinations[2], true, 1, TIMEOUT);
       checkForUnknown(this.destinations[3], false,0, TIMEOUT);
+      // TODO check for dead letters. There should be one here  
+
+      cleanup();
    }
 
    /**
     * TEST: <br />
     */
    public void testQueuingNoOverflow() {
+      queuingNoOverflow(false);
+      queuingNoOverflow(true);
+   }
+   
+   public void testQueuingOverflow() {
+      queuingOverflow(false);
+      queuingOverflow(true);
+   }
+   
+   private void queuingOverflow(boolean isPersistent) {
       boolean forceQueuing = true;
-      doPublish(-1, forceQueuing, false, new int[] {1,0,0,0}, TIMEOUT);
-      doPublish(0 , forceQueuing, false, new int[] {1,0,0,0}, TIMEOUT);
-      doPublish(1 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT);
-      doPublish(2 , forceQueuing, false, new int[] {0,0,0,0}, TIMEOUT);
-      doPublish(3 , forceQueuing, false, new int[] {0,0,0,0}, TIMEOUT);
+      boolean shutdownCb = false;
+      prepare(shutdownCb);
+      doPublish(0 , forceQueuing, false, new int[] {0,0,0,0}, TIMEOUT, isPersistent);
+      doPublish(0 , forceQueuing, false, new int[] {0,0,0,0}, TIMEOUT, isPersistent);
+      doPublish(0 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent);
+      doPublish(0 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent);
 
-      checkForUnknown(this.destinations[2], true, 1, TIMEOUT);
-      checkForUnknown(this.destinations[3], false,0, TIMEOUT);
+      doPublish(1 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent);
+      doPublish(1 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent);
+      doPublish(1 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent);
+      doPublish(1 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent);
+   
+   
+      // this should not throw an exception since default queue configuration 
+      // which allows many entries
+      doPublish(2 , forceQueuing, false, new int[] {0,0,0,0}, TIMEOUT, isPersistent);
+      doPublish(2 , forceQueuing, false, new int[] {0,0,0,0}, TIMEOUT, isPersistent);
+      doPublish(2 , forceQueuing, false, new int[] {0,0,0,0}, TIMEOUT, isPersistent);
+      doPublish(2 , forceQueuing, false, new int[] {0,0,0,0}, TIMEOUT, isPersistent);
+
+      //doPublish(-1, forceQueuing, false, new int[] {1,0,0,0}, TIMEOUT);
+
+      //checkForUnknown(this.destinations[2], true, 1, TIMEOUT);
+      //checkForUnknown(this.destinations[3], false,0, TIMEOUT);
       // TODO check for dead letters. There should be one here  
 
+      cleanup();
    }
 
    /**
@@ -257,6 +378,15 @@ public class TestPtPDispatch extends TestCase {
       testSub.setUp();
       testSub.testQueuingNoOverflow();
       testSub.tearDown();
+      
+      testSub.setUp();
+      testSub.testNoQueuingOverflow();
+      testSub.tearDown();
+      
+      testSub.setUp();
+      testSub.testQueuingOverflow();
+      testSub.tearDown();
+      
    }
 }
 
