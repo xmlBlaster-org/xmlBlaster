@@ -128,6 +128,8 @@ public abstract class PropEntry implements java.io.Serializable, Cloneable
     * @param simpleLookup If false the given propName is not checked directly but
     *                     only in its context (e.g. to avoid naming conflicts for simple
     *                     properties like 'version'
+    * @return The found environment key which we used to set the property
+    *         or "" if property was set by a setter (which has precedence)
     */
    public final String setFromEnv(org.xmlBlaster.util.Global glob,
                              String nodeId, String context, String className,
@@ -137,6 +139,9 @@ public abstract class PropEntry implements java.io.Serializable, Cloneable
          if (propName == null)
             throw new IllegalArgumentException("setFromEnv(): Internal problem: Missing property name");
       }
+
+      if (creationOrigin == CREATED_BY_SETTER)
+         return "";
       
       org.jutils.init.Property props = glob.getProperty();
 

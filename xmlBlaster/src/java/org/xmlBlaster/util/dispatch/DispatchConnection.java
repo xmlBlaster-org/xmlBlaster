@@ -364,7 +364,8 @@ abstract public class DispatchConnection implements I_Timeout
                   resetConnection();
                   String str = (throwable != null) ? ": " + throwable.toString() : "";
                   //if (throwable != null) throwable.printStackTrace();
-                  log.warn(ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString() + ": " + this.address.toString() +
+                  log.warn(ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString() + ": " +
+                               this.address.getLogId() +
                                " is unaccessible, we poll for it every " + this.address.getDelay() + " msec" + str);
                   if (log.TRACE) log.trace(ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString() + " for " + myId +
                                ": retryCounter=" + retryCounter + ", delay=" + this.address.getDelay() + ", maxRetries=" + this.address.getRetries() + str);
