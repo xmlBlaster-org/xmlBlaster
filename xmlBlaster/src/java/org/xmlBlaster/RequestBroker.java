@@ -3,8 +3,8 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org (LGPL)
 Comment:   Handling the Client data
-           $Revision: 1.2 $
-           $Date: 1999/11/08 22:40:59 $
+           $Revision: 1.3 $
+           $Date: 1999/11/10 20:26:49 $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -75,24 +75,30 @@ public class RequestBroker
 
    /**
     */
-   public MessageContainer getMessageContainer(ClientInfo clientInfo, XmlKey xmlKey, XmlQoS subscribeQoS)
+   public MessageContainer getMessageContainer(ClientInfo clientInfo, XmlKey xmlKey, XmlQoS subscribeQoS) throws org.xmlBlaster.XmlBlasterException
    {
+      String uniqueKey = xmlKey.getUniqueKey();
+      SubscriptionInfo subs = new SubscriptionInfo(clientInfo, xmlKey, subscribeQoS);
+
       synchronized(messageContainerMap) {
-         Object obj = messageContainerMap.get(xmlKey.getUniqueKey());
+         Object obj = messageContainerMap.get(uniqueKey);
          if (obj == null) {
-            SubscriptionInfo subs = new SubscriptionInfo(clientInfo, xmlKey, subscribeQoS);
             MessageContainer msg = new MessageContainer(this, subs);
-            messageContainerMap.put(msg.getUniqueKey(), msg);
+            messageContainerMap.put(uniqueKey, msg);
             return msg;
          }
-         return (MessageContainer)obj;
+         else {
+            MessageContainer msg = (MessageContainer)obj;
+            msg.addSubscriber(subs);
+         }
       }
+      return (MessageContainer)null;
    }
 
 
    /**
     */
-   public void subscribe(XmlKey xmlKey, XmlQoS subscribeQoS)
+   public void subscribe(XmlKey xmlKey, XmlQoS subscribeQoS) throws org.xmlBlaster.XmlBlasterException
    {
       ClientInfo cl = getClientInfo(xmlKey, subscribeQoS);
       MessageContainer msg = getMessageContainer(cl, xmlKey, subscribeQoS);
@@ -101,7 +107,8 @@ public class RequestBroker
 
    /**
     */
-   public int set(XmlKey xmlKey, byte[] content) throws org.xmlBlaster.XmlBlasterException {
+   public int set(XmlKey xmlKey, byte[] content) throws org.xmlBlaster.XmlBlasterException
+   {
 
       MessageContainer msg;
 
@@ -117,10 +124,10 @@ public class RequestBroker
          }
       }
 
-      Map subscriberMap = msg.getSubscriberMap();
-      if (Log.DEBUG) Log.trace(ME, "subscriberMap.size() = " + subscriberMap.size());
-      synchronized(subscriberMap) {
-         Iterator iterator = subscriberMap.values().iterator();
+      Set subscriberSet = msg.getSubscriberSet();
+      if (Log.DEBUG) Log.trace(ME, "subscriberSet.size() = " + subscriberSet.size());
+      synchronized(subscriberSet) {
+         Iterator iterator = subscriberSet.iterator();
 
          while (iterator.hasNext())
          {

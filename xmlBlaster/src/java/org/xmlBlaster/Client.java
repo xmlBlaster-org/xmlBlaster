@@ -40,7 +40,11 @@ public class Client
          String xmlKey = "KEY_FOR_SMILEY";
          String qos = orb.object_to_string(o);
 
-         xmlServer.subscribe(xmlKey, qos);
+         try {
+            xmlServer.subscribe(xmlKey, qos);
+         } catch(XmlBlasterException e) {
+            Log.warning(ME, "XmlBlasterException: " + e.reason);
+         }
 
          // Wait some time ...
          double val=2;

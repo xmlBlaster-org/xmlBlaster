@@ -3,7 +3,7 @@ Name:      MessageContainer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org (LGPL)
 Comment:   Handling exactly one message content
-           $Revision: 1.1 $  $Date: 1999/11/08 22:40:59 $
+           $Revision: 1.2 $  $Date: 1999/11/10 20:26:49 $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -33,7 +33,7 @@ public class MessageContainer
     * It is a TreeMap, that means it keeps order information.
     * TODO: express order attribute so that the first client will be served first.
     */
-   final private Map subscriberMap = Collections.synchronizedMap(new TreeMap());
+   final private Set subscriberSet = Collections.synchronizedSet(new TreeSet(/*new Comparator()*/));
 
 
    /**
@@ -47,14 +47,15 @@ public class MessageContainer
    /**
     * Constructor if a subscription is made on a yet unknown object
     */
-   public MessageContainer(RequestBroker requestBroker, SubscriptionInfo sub)
+   public MessageContainer(RequestBroker requestBroker, SubscriptionInfo sub) throws XmlBlasterException
    {
       this.uniqueKey = sub.getUniqueKey();
       this.xmlKey = sub.getXmlKey();
+      this.content = new byte[0];
 
       if (Log.CALLS) Log.trace(ME, "Creating new MessageContainer because of subscription. Key=" + uniqueKey);
 
-      subscriberMap.put(uniqueKey, sub);
+      addSubscriber(sub);
    }
 
 
@@ -66,6 +67,9 @@ public class MessageContainer
       this.xmlKey = xmlKey;
       this.uniqueKey = xmlKey.getUniqueKey();
 
+      if (content == null)
+         content = new byte[0];
+
       if (Log.CALLS) Log.trace(ME, "Creating new MessageContainer setting new data. Key=" + uniqueKey);
 
       this.content = content;
@@ -74,13 +78,55 @@ public class MessageContainer
    }
 
 
-   public void setContent(byte[] content)
+   /**
+    * setting update of a changed content
+    * @return changed? true:  if content has changed
+    *                  false: if content didn't change
+    */
+   public boolean setContent(byte[] content)
    {
       if (Log.CALLS) Log.trace(ME, "Updating xmlKey " + xmlKey.toString());
-      this.content = content;
+
+      if (content == null)
+         content = new byte[0];
+
+      boolean changed = false;
+      if (this.content.length != content.length) {
+         changed = true;
+      }
+      else {
+         for (int ii=0; ii<content.length; ii++)
+            if (this.content[ii] != content[ii]) {
+               changed = true;
+               break;
+            }
+      }
+
+      if (changed) {  // new content is not the same as old one
+         this.content = content;
+         return true;
+      }
+      else {
+         return false;
+      }
    }
 
 
+   public void addSubscriber(SubscriptionInfo sub) throws XmlBlasterException
+   {
+      synchronized(subscriberSet) {
+         if (subscriberSet.contains(sub)) {
+            Log.warning(ME + ".DuplicateSubscription", "You have already subscribed to " + sub.getXmlKey().getUniqueKey());
+            throw new XmlBlasterException(ME + ".DuplicateSubscription", "You have already subscribed to " + sub.getXmlKey().getUniqueKey());
+         }
+         subscriberSet.add(sub);
+      }
+   }
+
+
+   /**
+    * This is the unique key of the messageUnit
+    */
    public String getUniqueKey()
    {
       return uniqueKey;
@@ -89,22 +135,39 @@ public class MessageContainer
 
    public String getMimeType() throws XmlBlasterException
    {
-      if (xmlKey == null)
-         throw new XmlBlasterException("MessageContainer.UnknownMime", "Sorry, mime type not yet known for " + getUniqueKey());
+      if (xmlKey == null) {
+         Log.error(ME + ".UnknownMime", "Sorry, mime type not yet known for " + getUniqueKey());
+         throw new XmlBlasterException(ME + ".UnknownMime", "Sorry, mime type not yet known for " + getUniqueKey());
+      }
       return xmlKey.getMimeType();
    }
 
-   public Map getSubscriberMap()
+   public Set getSubscriberSet()
    {
-      return subscriberMap;
+      return subscriberSet;
    }
+
+
+   /**
+    * This class determines the sorting order, by which the
+    * client receive their updates.
+    * For now, the client which subscribed first, is served first
+    */
    /*
-   public TreeSet getSubscriberEntrySet()
+   class subscriberSorter implements Comparator
    {
-      return subscriberMap.getEntrySet();
+      public int compare(Object o1, Object o2)
+      {
+         SubscriptionInfo s1 = (SubscriptionInfo)o1;
+         SubscriptionInfo s2 = (SubscriptionInfo)o2;
+         return o2.getCreationTime() - o1.getCreationTime;
+      }
+      public boolean equals(Object obj)
+      {
+         //SubscriptionInfo sub = (SubscriptionInfo)obj;
+         this.equals(obj);
+      }
    }
    */
-
-
 
 }

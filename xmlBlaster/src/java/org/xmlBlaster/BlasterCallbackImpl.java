@@ -59,6 +59,6 @@ public class BlasterCallbackImpl implements BlasterCallbackOperations { // tie a
     */
    public void update(String xmlKey_literal, byte[] content) {
       XmlKey xmlKey = new XmlKey(xmlKey_literal);
-      if (Log.CALLS) Log.trace(ME, "Callback invoked for " + xmlKey.getUniqueKey() + " content length = " + content.length);
+      Log.info(ME, "Callback invoked for " + xmlKey.getUniqueKey() + " content length = " + content.length);
    }
 }

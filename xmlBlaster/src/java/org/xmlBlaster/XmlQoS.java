@@ -3,7 +3,7 @@ Name:      XmlQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org (LGPL)
 Comment:   Handling one QoS (quality of service), knows how to parse it with SAX
-           $Revision: 1.1 $  $Date: 1999/11/08 22:39:13 $
+           $Revision: 1.2 $  $Date: 1999/11/10 20:26:49 $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -37,8 +37,11 @@ public class XmlQoS
 
    public String getCallbackIOR() throws XmlBlasterException
    {
-      if (!xmlQoS_literal.startsWith("IOR:"))
-         throw new XmlBlasterException("XmlQoS-MissingCallbackIOR", "Please specify the Callback String IOR as qos argument (its a hack in the moment :-)");
+      if (!xmlQoS_literal.startsWith("IOR:")) {
+         Log.error(ME + ".MissingCallbackIOR", "Please specify the Callback String IOR as qos argument (its a hack in the moment :-)");
+         throw new XmlBlasterException(ME + ".MissingCallbackIOR", "Please specify the Callback String IOR as qos argument (its a hack in the moment :-)");
+      }
+
       return xmlQoS_literal; // !!! hack: SAX parsing is missing !!! 
    }
 }
