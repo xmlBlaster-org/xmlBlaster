@@ -207,6 +207,8 @@ static void handleMessage(CallbackServerUnparsed *cb, SocketDataHolder* socketDa
       for (i=0; i<msgUnitArrP->len; i++) {
          msgUnitArrP->msgUnitArr[i].responseQos = strcpyAlloc("<qos/>");
       }
+      sendResponse(cb, socketDataHolder, msgUnitArrP);
+      freeMsgUnitArr(msgUnitArrP);
    }
    else if (strcmp(socketDataHolder->methodName, XMLBLASTER_UPDATE) == 0 ||
             strcmp(socketDataHolder->methodName, XMLBLASTER_UPDATE_ONEWAY) == 0) {
@@ -218,6 +220,16 @@ static void handleMessage(CallbackServerUnparsed *cb, SocketDataHolder* socketDa
          strcpy(msgUnitArrP->secretSessionId, socketDataHolder->secretSessionId);
          msgUnitArrP->isOneway = (strcmp(socketDataHolder->methodName, XMLBLASTER_UPDATE_ONEWAY) == 0);
          cb->updateCb(msgUnitArrP, cb, xmlBlasterException, socketDataHolder);
+      }
+      else { /* Unexpected update arrived, the client was not interested, see similar behavior in XmlBlasterAccess.java:update() */
+         size_t i;
+         for (i=0; i<msgUnitArrP->len; i++) {
+            msgUnitArrP->msgUnitArr[i].responseQos = strcpyAlloc("<qos><state id='OK'/></qos>");
+            cb->log(cb->logUserP, cb->logLevel, LOG_ERROR, __FILE__,
+               "Ignoring unexpected %s() message as client has not registered a callback, requestId is '%s' ...",
+               socketDataHolder->methodName, socketDataHolder->requestId);
+         }
+         sendResponseOrException(true, cb, socketDataHolder, msgUnitArrP, xmlBlasterException);
       }
    }
    else {
@@ -519,13 +531,19 @@ static void sendXmlBlasterException(CallbackServerUnparsed *cb, SocketDataHolder
    free(rawMsg);
 }
 
-/** A helper to cast to SocketDataHolder */
+/**
+ * A helper to cast to SocketDataHolder
+ * Frees msgUnitArrP
+ */
 static void voidSendResponseOrException(bool success, CallbackServerUnparsed *cb, void *socketDataHolder, MsgUnitArr *msgUnitArrP, XmlBlasterException *exception)
 {
    sendResponseOrException(success, cb, (SocketDataHolder *)socketDataHolder, msgUnitArrP, exception);
 }
 
-/** takes care of both successful responses as well as exceptions */
+/**
+ * Takes care of both successful responses as well as exceptions
+ * Frees msgUnitArrP
+ */
 static void sendResponseOrException(bool success, CallbackServerUnparsed *cb, SocketDataHolder *socketDataHolder, MsgUnitArr *msgUnitArrP, XmlBlasterException *exception)
 {
    if (! (strcmp(socketDataHolder->methodName, XMLBLASTER_UPDATE_ONEWAY) == 0)) {
