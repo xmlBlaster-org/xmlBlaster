@@ -356,7 +356,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
    public ArrayList prepareMsgsFromQueue(ArrayList entryList) {
 
       if (entryList == null || entryList.size() < 1) {
-         if (log.TRACE) log.trace(ME, "Got zero messages from queue, expected at least one, can happen if client disconnected in the mean time.");
+         if (log.TRACE) log.trace(ME, "Got zero messages from queue, expected at least one, can happen if client disconnected in the mean time: " + toXml(""));
          return null;
       }
 
