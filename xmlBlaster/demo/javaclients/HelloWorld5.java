@@ -35,7 +35,7 @@ public class HelloWorld5
             ConnectQos qos = new ConnectQos(glob, senderName, "secret");
             ConnectReturnQos conRetQos = sender.connect(qos, new I_Callback() {
                public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-                  log.info(senderName, "Reveiving asynchronous message '" + updateKey.getOid() + "' in default handler");
+                  log.info(senderName, "Receiving asynchronous message '" + updateKey.getOid() + "' in default handler");
                   return "";
                }
             });  // Login to xmlBlaster, default handler for updates
@@ -50,7 +50,7 @@ public class HelloWorld5
             ConnectQos qos = new ConnectQos(glob, receiverName, "secret");
             ConnectReturnQos conRetQos = receiver.connect(qos, new I_Callback() {
                public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-                  log.info(receiverName, "Reveiving asynchronous message '" + updateKey.getOid() + "' in default handler");
+                  log.info(receiverName, "Receiving asynchronous message '" + updateKey.getOid() + "' in default handler");
 
                   try {
                      // Send an ACK back ...
