@@ -147,21 +147,21 @@ public:
       DisconnectQos disconnectQos(global_);
       connection_->disconnect(disconnectQos);
       Thread::sleep(500);
-      string origSessionId = connRetQos_->getSessionQos().getSessionId();
+      string origSessionId = connRetQos_->getSessionQos().getSecretSessionId();
       log_.info(ME, string("original session Id: '") + origSessionId + "'");
       ConnectReturnQos tmp = connection_->connect(*connQos_, this);
       Thread::sleep(500);
-      string currentSessionId = tmp.getSessionQos().getSessionId();
+      string currentSessionId = tmp.getSessionQos().getSecretSessionId();
       log_.info(ME, string("session Id after reconnection: '") + currentSessionId + "'");
       connection_->disconnect(disconnectQos);
 
       Thread::sleep(500);
       SessionQos sessionQos = connQos_->getSessionQos();
-      sessionQos.setSessionId(connRetQos_->getSessionQos().getSessionId());
+      sessionQos.setSecretSessionId(connRetQos_->getSessionQos().getSecretSessionId());
       connQos_->setSessionQos(sessionQos);
       tmp = connection_->connect(*connQos_, this);
       log_.info(ME, string("connect qos for second reconnection: ") + connQos_->toXml());
-      currentSessionId = tmp.getSessionQos().getSessionId();
+      currentSessionId = tmp.getSessionQos().getSecretSessionId();
       log_.info(ME, string("session Id after second reconnection: '") + currentSessionId + "'");
    }
 

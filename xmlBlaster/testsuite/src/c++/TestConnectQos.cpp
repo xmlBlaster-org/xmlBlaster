@@ -72,13 +72,13 @@ public:
          assertEquals(log_, me, (long)86400000l, data.getTimeout(), "timeout check");
          assertEquals(log_, me, 10, data.getMaxSessions(), "maxSessions check");
          assertEquals(log_, me, false, data.getClearSessions(), "clearSessions check");
-         assertEquals(log_, me, string("IIOP:01110728321B0222011028"), data.getSessionId(), "sessionId check");
+         assertEquals(log_, me, string("IIOP:01110728321B0222011028"), data.getSecretSessionId(), "sessionId check");
          SessionQosData ref(global_);
          ref.setAbsoluteName("/node/http:/client/ticheta/-3");
          ref.setTimeout(86400000l);
          ref.setMaxSessions(10);
          ref.setClearSessions(false);
-         ref.setSessionId("IIOP:01110728321B0222011028");
+         ref.setSecretSessionId("IIOP:01110728321B0222011028");
          string lit1 = data.toXml();
          string lit2 = ref.toXml();
          if (log_.TRACE) {
