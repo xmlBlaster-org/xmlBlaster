@@ -62,8 +62,6 @@ import org.xmlBlaster.client.I_ConnectionStateListener;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.client.I_ConnectionHandler;
 
-import java.util.HashMap;
-
 /**
  * This is the default implementation of the java client side remote access to xmlBlaster. 
  * <p>
@@ -100,7 +98,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
    /** Is not null if the client wishes to be notified about connection state changes in fail safe operation */
    private I_ConnectionStateListener connectionListener;
    /** Allow to cache updated messages for simulated synchronous access with get(). 
-    * Do behind a get() a subscribe to allow cached synchronus get() access */
+    * Do behind a get() a subscribe to allow cached synchronous get() access */
    private SynchronousCache synchronousCache;
    private boolean disconnectInProgress;
    private boolean connectInProgress;
@@ -170,6 +168,10 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
       return this.synchronousCache;
    }
 
+   public void setClientErrorHandler(I_MsgErrorHandler msgErrorHandler) {
+      this.msgErrorHandler = msgErrorHandler;
+   }
+
    /**
     * @see org.xmlBlaster.client.I_XmlBlasterAccess#connect(ConnectQos, I_Callback)
     */
@@ -212,7 +214,9 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
                   throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME, text);
                }
 
-               this.msgErrorHandler = new ClientErrorHandler(glob, this);
+               if (this.msgErrorHandler == null) {
+                  this.msgErrorHandler = new ClientErrorHandler(glob, this);
+               }
 
                this.deliveryManager = new DeliveryManager(glob, this.msgErrorHandler,
                                        getSecurityPlugin(), this.clientQueue, this,
@@ -799,8 +803,29 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
          }
          return;
       }
+
+      if (!this.connectReturnQos.isReconnected()) {
+         cleanupForNewServer();
+      }
+
+
       if (this.connectionListener != null) {
          this.connectionListener.reachedAlive(oldState, this);
+      }
+   }
+
+   /**
+    * If we have reconnected to xmlBlaster and the xmlBlaster server instance
+    * is another one which does not know our session state and subscribes we need to clear all
+    * chached subscribes etc.
+    */
+   private void cleanupForNewServer() {
+      if (this.updateDispatcher.size() > 0) {
+         log.info(ME, "Removing " + this.updateDispatcher.size() + " subscribe specific callback registrations");
+         this.updateDispatcher.clear(); // to avoid memory leaks
+      }
+      if (this.synchronousCache != null) {
+         this.synchronousCache.clear(); // we need to re-subscribe
       }
    }
 
