@@ -1,0 +1,130 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='mime.plugin.access.regex' type='NEW' prio='MEDIUM' status='CLOSED'>
+   <topic>XmlBlaster allows to access messages filtered with regular expressions</topic>
+   <description>
+      <p>
+      XmlBlaster allows you to query messages based on their meta information with XPath.
+      Sometimes this is not enough and you want to do sort of a <i>full text search</i> over
+      the message content.
+      </p>
+      <p>
+      For this frequent use case we deliver a plugin using regular expressions to check the message content.
+      </p>
+      <p>
+      The plugin is registered for all message mime types, which allows you to do regular expression
+      filtering on any message content.
+      </p>
+      <p>This filter is available for synchronous access with get() and asynchronous access with subscribe()
+      and as a filter for xmlBlaster cluster support.<br />
+      You can specify the filter rules with two xmlBlaster methods:
+      <ol>
+         <li>Synchronous access with the get() invocation:<br />
+            Specify the filter rule in the QoS of the get() method to filter
+            the desired messages. The messages are returned as the get() return value.
+         </li>
+         <li>Asynchronous access with the subscribe() invocation<br />
+            Specify the filter rule in the QoS of the subscribe() method to filter
+            the desired messages. The messages are returned with the asynchronous
+            update() callback.
+         </li>
+      </ol>
+      </p>
+      <p>
+      Multiple filters can be specified in one subscribe/get invocation.
+      Each of them may address another plugin. They are sequentially executed and if
+      one filter denies access (the match() method returns 'false') the message
+      is not delivered. The filters are logically AND connected.
+      </p>
+      <p>
+      The cascading approach for XPath/exact query and filters:<br />
+      On subscribe first the usual XPATH or exact subscription is checked.
+      The client is added as subscriber to all matching message types.
+      If now real messages arrive, the filter plugin is additionally filtering
+      messages away. The same applies for get() invocations.
+      </p>
+      <p>
+      </p>
+   </description>
+   <example lang="Java" type="HTML">
+
+      <b>This is an example key and QoS of a get() invocation:</b>
+
+      <pre>
+      <![CDATA[
+      <key queryType='XPATH'>
+         //StockData
+      </key>
+
+      <qos>
+         <filter type='GnuRegexFilter'>
+            a*b
+         </filter>
+      </qos>
+      ]]>
+      </pre>
+
+      <p>
+      All messages containing the xml meta information element &lt;StockData/> are
+      selected.
+      Those message are further filtered to not contain any number of 'a' and ending with exatly
+      on 'b'.
+      </p>
+      <p>
+      This is a code snippet in Java with the get() method:
+      </p>
+      <pre>
+      <![CDATA[
+      GetQosWrapper qos = new GetQosWrapper();
+
+      qos.addAccessFilter(new AccessFilterQos(glob, "GnuRegexFilter", "1.0", "a*b"));
+
+      MessageUnit[] msgUnits = con.get("<key queryType='XPATH'>//StockData<key/>", qos.toXml());
+      ]]>
+      </pre>
+
+      <p>
+      The code snippet <code>new AccessFilterQos(...)</code> adds the above raw &lt;filter> xml ASCII string, so we don't need to
+      do it our self.
+      </p>
+   </example>
+
+   <configuration where="server">
+      <p>
+      These parameters allow to configure the regex plugin.
+      </p>
+      <table border="1">
+         <tr>
+            <td>Property</td>
+            <td>Default</td>
+            <td>Description</td>
+            <td>Implemented</td>
+         </tr>
+
+         <tr>
+            <td>MimeAccessPlugin[GnuRegexFilter][1.0]</td>
+            <td>org.xmlBlaster.engine.mime.regex.GnuRegexFilter</td>
+            <td>Loads the regex plugin on demand.</td>
+            <td>yes</td>
+         </tr>
+      </table>
+   </configuration>
+
+   <see type="OTHER">http://www.cacas.org/java/gnu/regexp/</see>
+   <see type="API">org.xmlBlaster.engine.mime.regex.GnuRegexFilter</see>
+   <see type="API">org.xmlBlaster.engine.mime.I_AccessFilter</see>
+   <see type="API">org.xmlBlaster.util.I_Plugin</see>
+   <see type="REQ">mime.plugin.accessfilter.howto</see>
+   <see type="REQ">mime.plugin.accessfilter</see>
+   <see type="REQ">cluster</see>
+   <author>ruff@swand.lake.de</author>
+   <date>2002 05 05</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="CLOSED">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">testsuite.org.xmlBlaster.TestGetRegexFilter</test>
+   </testcase>
+</requirement>
+
