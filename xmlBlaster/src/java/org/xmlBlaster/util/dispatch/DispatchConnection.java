@@ -370,7 +370,8 @@ abstract public class DispatchConnection implements I_Timeout
 
       synchronized (this) {
          if (isDead()) {   // ignore, not possible
-            if (log.TRACE) log.trace(ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString() + " for " + myId + ": We ignore it.");
+            if (log.TRACE) log.trace(ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString() +
+                      " for " + myId + ": We ignore it: " + ((throwable == null) ? "No throwable" : throwable.toString()));
             //Thread.currentThread().dumpStack();
             throw XmlBlasterException.convert(glob, ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString(), throwable);
          }
