@@ -1,0 +1,48 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='engine.qos.queryspec' type='NEW' prio='LOW' status='CLOSED'>
+   <topic>XmlBlaster has a plugin interface to generically specify a query</topic>
+   <description>
+      <p>
+      As a core feature xmlBlaster offers you the ability to query for messages. This is great but what 
+      if you want to query xmlBlaster about other things ? The admin interface allows you to query things like
+      sessionIds for a particular client, jvm used, uptime of the server and more. <br/>
+      To keep the querying capability open, a plugin approach for query specification has been designed. 
+      The interface to be implented by such plugins is <code>org.xmlBlaster.engine.query.I_Query</code>. The syntax
+      of the query and the content of the returned Message Units is defined by a contract between the designer of 
+      the specific plugin and the client using it. This is pretty much the same as happens in the 
+      <a href="./mime.plugin.accessfilter.html">mime accessfilter plugin</a>. As in the case of the later, the data
+      to be used by the plugin is passed in the GetQos or in the SubscribeQos as an extra field called 
+      <code>querySpec</code>.<br/>
+      </p>
+   </description>
+   <example lang="Java" type="HTML">
+      <p>
+      <b>These is an example key and QoS of a subscribe() invocation:</b>
+      </p>
+
+      <pre>
+   &lt;key oid='__cmd:client/fritzliHoseSchritzli/1/?cbQueueEntries' queryType='EXACT'>
+   &lt;/key>
+
+   &lt;qos>
+      &lt;querySpec type='QueueQuery' version='1.0'>
+        &lt;![CDATA[maxEntries=3;maxSize=-1;consumable=false;waitingDelay=0]]&gt;
+      &lt;/querySpec>
+   &lt;/qos>      
+   </pre>
+   </example>
+   <see type="API">org.xmlBlaster.engine.query.I_Query</see>
+   <see type="API">org.xmlBlaster.engine.query.plugins.QueueQueryPlugin</see>
+   <see type="API">org.xmlBlaster.util.plugin.I_Plugin</see>
+   <see type="REQ">mime.plugin.accessfilter</see>
+   <see type="REQ">admin</see>
+   <see type="REQ">admin.commands</see>
+   <see type="REQ">admin.messages</see>         
+   <see type="REQ">queryspec.plugin.queueQuery</see>            
+   <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
+   <date>2004 05 06</date>
+   <revision>$Revision: 1.1 $</revision>
+</requirement>
+

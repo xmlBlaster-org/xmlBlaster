@@ -1,0 +1,111 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='queryspec.plugin.queueQuery' type='NEW' prio='HIGH' status='CLOSED'>
+   <topic>XmlBlaster has a plugin which is used to query arbitrary queues</topic>
+   <description>
+      <p>
+      As an implementation of the I_Query interface the following plugin is invoked when doing a query to a queue.
+      The query can be done as a synchronous get or in future via a subscription. More specifically it is done with
+      an administrative GET so it can be invoked either via an administrative message or via telnet, snmp or jmx.<br/>
+      For administrative messages the command itself is put into the oid of the key of the message and the attributes
+      of the query are passed inside the query qos which in the case of a GET would be the GetQos.<br/>
+      Attributes can be:
+      <center>
+      <table width="80%" bgcolor="#ffffa0">
+        <tr>
+          <th>Attribute</th><th>default</th><th>Description</th><th>implemented</th>
+        </tr>
+        <tr>
+          <td><b>maxEntries</b></td><td>1</td>
+          <td>an integer. The maximum number of entries to retrieve</td>
+          <td><img src="ok.gif" border="0" alt="yes" /></td>
+        </tr>
+        <tr>
+          <td><b>maxBytes</b></td><td>-1</td>
+          <td>a long. The total size of all returned messages toghether must not exceed this value</td>
+          <td><img src="ok.gif" border="0" alt="yes" /></td>
+        </tr>
+        <tr>
+          <td><b>consumable</b></td><td>false</td>
+          <td>a boolean (expressed with the string 'true' or 'false'. If true the entries returned are 
+            deleted from the queue.
+          </td>
+          <td><img src="no.gif" border="0" alt="no" /></td>
+        </tr>
+        <tr>
+          <td><b>waitingDelay</b></td><td>0</td>
+          <td>a long. The time to wait until return. If you choose a negative value it will block 
+            until either the <code>maxEntries</code> <b>or</b> the <code>maxSize</code> has been reached. If the
+            value is '0' (i.e. zero) it will not wait and will correspond to a non-blocking get. If the value is
+            positive it will block until the specified amount in milliseconds has elapsed <b>or</b> when the 
+            <code>maxEntries</code> <b>or</b> the <code>maxSize</code> has been reached (whichever comes first).
+          </td>
+          <td><img src="no.gif" border="0" alt="no" /></td>
+        </tr>
+      </table>
+      </center>
+      </p>
+      <p>
+      When an invocation on this plugin is done, it will look for the <code>querySpec</code> tag containing the 
+      <code>type='QueueQuery'</code> in the qos. If none is found, default values are taken. If they are found, the
+      content of the <code>query</code> tag is parsed. The syntax on how to pass these attributes is the same as for
+      an http get method, i.e. a '&amp;' separated list of pairs of key/value. Each key is separated from its value by a
+      '=' token.
+      </p>
+      <p>
+      When used from such administrative gateways which don't have the possibility to specify a key and a qos, for
+      example via telnet, the qos is passed at the end of the command with a key <code>xmlBlaster.qos</code>.
+      </p>
+   </description>
+
+   <example lang="Java" type="HTML">
+      <p>
+      <b>These is an example key and QoS of a get() invoked from within the XmlScript demo:</b>
+      </p>
+
+      <pre>
+  &lt;xmlBlaster>
+    &lt;connect />
+    &lt;get>
+      &lt;key oid='__cmd:client/fritzliHoseSchritzli/1/?cbQueueEntries' queryType='EXACT'>
+      &lt;/key>
+      &lt;qos>
+        &lt;querySpec type='QueueQuery'>
+          &lt;![CDATA[maxEntries=3&amp;maxSize=-1&amp;consumable=false&amp;waitingDelay=0]]&gt;
+        &lt;/querySpec>
+      &lt;/qos>
+    &lt;/get>
+    &lt;disconnect />
+  &lt;/xmlBlaster>
+      </pre>
+
+      and invoked from a telnet:
+      <pre>
+GET client/fritzliHoseSchritzli/1/?cbQueueEntries&amp;\
+xmlBlaster.qos=&lt;qos>&lt;querySpec type='QueueQuery'>\
+&lt;![CDATA[maxEntries=3&amp;maxSize=-1&amp;consumable=false&amp;waitingDelay=0&lt;/querySpec>]]&gt;\
+&lt;/qos>
+      </pre>
+      Note that this last example is in one single line without the character '\'
+   </example>
+
+
+   <see type="API">org.xmlBlaster.engine.query.I_Query</see>
+   <see type="API">org.xmlBlaster.engine.query.plugins.QueueQueryPlugin</see>
+   <see type="API">org.xmlBlaster.util.plugin.I_Plugin</see>
+   <see type="REQ">mime.plugin.accessfilter</see>
+   <see type="REQ">admin</see>
+   <see type="REQ">admin.commands</see>
+   <see type="REQ">admin.messages</see>         
+   <see type="REQ">queryspec.plugin.queueQuery</see>            
+   <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
+   <date>2004 05 06</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="CLOSED">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">org.xmlBlaster.test.admin.TestAdminGet</test>
+   </testcase>
+</requirement>
+
