@@ -34,23 +34,34 @@
       </p>
 
       <pre>
-      1. Variant: Passing infos using the URL (index.html example see below):
-         document.location.href = "index.html?ActionType=login" +
-                                  "&amp;xmlBlaster.loginName=" + myLoginName +
-                                  "&amp;xmlBlaster.passwd=" + myPassword +
-                                  "&amp;xmlBlaster.invalidate=false");
-         // xmlBlaster will read these variables and use them to login to xmlBlaster.
+1. Variant: Passing infos using the URL (index.html example see below):
+   document.location.href = "index.html?ActionType=login" +
+                              "&amp;xmlBlaster.loginName=" + myLoginName +
+                              "&amp;xmlBlaster.passwd=" + myPassword +
+                              "&amp;xmlBlaster.invalidate=false");
+   // xmlBlaster will read these variables and use them to login to xmlBlaster.
 
-      2. Variant: Passing infos in a servlet with the session object:
-         // prevent BlasterHttpProxyServlet from creating a new session ID:
-         session.putValue("xmlBlaster.invalidate", "false");
-         session.putValue("xmlBlaster.loginName", myLoginName);
-         session.putValue("xmlBlaster.passwd", myPassword);
-         response.sendRedirect("/index.html");  // index.html example see below
-         // xmlBlaster will read these variables and use them to login to xmlBlaster.
+2. Variant: Passing infos in a servlet with the session object:
+   // prevent BlasterHttpProxyServlet from creating a new session ID:
+   session.putValue("xmlBlaster.invalidate", "false");
+   session.putValue("xmlBlaster.loginName", myLoginName);
+   session.putValue("xmlBlaster.passwd", myPassword);
+   response.sendRedirect("/index.html");  // index.html example see below
+   // xmlBlaster will read these variables and use them to login to xmlBlaster.
       </pre>
 
    </description>
+   <example type="HTML">
+   <p>You can try the persistent http online demo first:</p>
+   <p>
+   <a href="http://www.xmlblaster.org:8080/xmlBlaster/dhtml/systemInfo/systemInfo.html?ActionType=login&amp;xmlBlaster.loginName=jim&amp;xmlBlaster.passwd=secret">
+   Online persistent HTTP demo</a>
+   </p>
+   <p>
+   It will work with mozilla and netscape.
+   With Opera and IE i think there are problems which are not tracked down.
+   </p>
+   </example>
    <example lang="Java">
       <![CDATA[
 Include this code into the index.html of your application, it
@@ -58,61 +69,62 @@ does a login and implements applications specific actions on
 successful login:
 
 
-      <script language="Javascript1.2">
-         /**
-          * Opens a window which holds the persistent http connection.
-          * Cut and paste this function 'as is' into your html file.
-          */
-         function openCallBack()
-         {
-            winOptions = "height=100,width=350,screenX=0,screenY=0,status=no," +
-                         "scrollbars=no,toolbar=no," +
-                         "directories=no,menubar=no,location=no,resizable=no";
+   <script language="Javascript1.2">
+      /**
+         * Opens a window which holds the persistent http connection.
+         * Cut and paste this function 'as is' into your html file.
+         */
+      function openCallBack()
+      {
+         winOptions = "height=100,width=350,screenX=0,screenY=0,status=no," +
+                        "scrollbars=no,toolbar=no," +
+                        "directories=no,menubar=no,location=no,resizable=no";
 
-            // The location.search should contain the login URL varables, e.g.
-            // "?ActionType=login&loginName=karl&passwd=secret"
-            xmlBlasterWindow = window.open("/persistentWindow/index.html"+location.search,
-                                           "xmlBlasterFrame", winOptions);
-         }
-         openCallBack();
-
-
-         /**
-          * Callback from callbackFrame that the persistent http connection
-          * is established.
-          * Now we may load our application.
-          * Cut and paste this method into your html file and implement some
-          * actions ...
-          */
-         function loginSucceeded(persistentWindow)
-         {
-            alert("Login succeeded, loading application ...");
-
-            // Now you can initialize your own servlets or do other actions,
-            // like dynamic HTML coding ...
-
-            // e.g. this servlet subscribes to messages from xmlBlaster
-            // see xmlBlaster/demo/html/systemInfo/SystemInfo.java
-            cpuinfoFrame.location.href = "/servlet/SystemInfo?ActionType=cpuinfo";
-         }
+         // The location.search should contain the login URL varables, e.g.
+         // "?ActionType=login&loginName=karl&passwd=secret"
+         xmlBlasterWindow = window.open("/persistentWindow/index.html"+location.search,
+                                          "xmlBlasterFrame", winOptions);
+      }
+      openCallBack();
 
 
-         /**
-          * When leaving this frameset, logout from xmlBlaster and destroy the
-          * persistent window.
-          */
-         function cleanup()
-         {
-            if ((typeof top.xmlBlasterWindow) != "undefined" &&
-                (typeof top.xmlBlasterWindow.location) != "undefined")
-               top.xmlBlasterWindow.location.href = "/servlet/BlasterHttpProxyServlet?ActionType=logout";
-         }
-      </script>
+      /**
+         * Callback from callbackFrame that the persistent http connection
+         * is established.
+         * Now we may load our application.
+         * Cut and paste this method into your html file and implement some
+         * actions ...
+         */
+      function loginSucceeded(persistentWindow)
+      {
+         alert("Login succeeded, loading application ...");
 
+         // Now you can initialize your own servlets or do other actions,
+         // like dynamic HTML coding ...
+
+         // e.g. this servlet subscribes to messages from xmlBlaster
+         // see xmlBlaster/demo/html/systemInfo/SystemInfo.java
+         cpuinfoFrame.location.href = "/servlet/SystemInfo?ActionType=cpuinfo";
+      }
+
+
+      /**
+         * When leaving this frameset, logout from xmlBlaster and destroy the
+         * persistent window.
+         */
+      function cleanup()
+      {
+         if ((typeof top.xmlBlasterWindow) != "undefined" &&
+               (typeof top.xmlBlasterWindow.location) != "undefined")
+            top.xmlBlasterWindow.location.href =
+                              "/servlet/BlasterHttpProxyServlet?ActionType=logout";
+      }
+   </script>
+
+      ...
+
+      <frameset onUnload="cleanup()" ...>
          ...
-
-         <frameset onUnload="cleanup()" ...>
-            ...
 
 
 
@@ -121,51 +133,90 @@ successful login:
  can listen to them:
 
 
-      <script language="Javascript1.2">
-         /**
-          * Tell the callbackFrame that i am interested in message updates.
-          * Cut and paste this function 'as is' into your interested html frame
-          */
-         function initialize()
-         {
-            // alert("Registering '" + self.name + "' for updates in initialize()");
-            top.xmlBlasterWindow.addUpdateListener( self );
-            top.xmlBlasterWindow.setReady( self, true );
+   <script language="Javascript1.2">
+      /**
+         * Tell the callbackFrame that i am interested in message updates.
+         * Cut and paste this function 'as is' into your interested html frame
+         */
+      function initialize()
+      {
+         // alert("Registering '" + self.name + "' for updates in initialize()");
+         top.xmlBlasterWindow.addUpdateListener( self );
+         top.xmlBlasterWindow.setReady( self, true );
+      }
+
+      /**
+         * The callback from xmlBlaster messages arrives here.
+         * The Javascript objects are defined in callback.js
+         * Cut and paste this function 'as is' into your interested html frame
+         *
+         * @param messageQueue array with MessageWrapperDom objects (key, content, qos)
+         *        key     = UpdateKey object from callback.js
+         *        content = The content (a string with the message data)
+         *        qos     = UpdateQos object from callback.js
+         */
+      function update( messageQueue )
+      {
+         // alert(self.name + " is receiving " + messageQueue.length + " updates");
+         top.xmlBlasterWindow.setReady( self, false ); // Tell that i'm busy ...
+         for( var i = 0; i < messageQueue.length; i++ ) {
+            var msg =  messageQueue[i];
+
+            var keyOid = msg.key.oid;
+            var mimeType = msg.key.contentMime;
+            var content = msg.content;
+            var sender = msg.qos.sender;
+            // ...
+
+            // Do whatever you like with the new arrived message, eg. draw
+            // into another frame, or do some DHTML
+            // or call public methods of an embedded applet ...
+
          }
-
-         /**
-          * The callback from xmlBlaster messages arrives here.
-          * The Javascript objects are defined in callback.js
-          * Cut and paste this function 'as is' into your interested html frame
-          *
-          * @param messageQueue array with MessageWrapperDom objects (key, content, qos)
-          *        key     = UpdateKey object from callback.js
-          *        content = The content (a string with the message data)
-          *        qos     = UpdateQos object from callback.js
-          */
-         function update( messageQueue )
-         {
-            // alert(self.name + " is receiving " + messageQueue.length + " updates");
-            top.xmlBlasterWindow.setReady( self, false ); // Tell that i'm busy ...
-            for( var i = 0; i < messageQueue.length; i++ ) {
-               var msg =  messageQueue[i];
-
-               var keyOid = msg.key.oid;
-               var mimeType = msg.key.contentMime;
-               var content = msg.content;
-               var sender = msg.qos.sender;
-               // ...
-
-               // Do whatever you like with the new arrived message, eg. draw
-               // into another frame, or do some DHTML
-               // or call public methods of an embedded applet ...
-
-            }
-            top.xmlBlasterWindow.setReady( self, true ); // I'm ready for further updates
-         }
-      </script>
+         top.xmlBlasterWindow.setReady( self, true ); // I'm ready for further updates
+      }
+   </script>
 
       ]]>
+   </example>
+   <example type="HTML">
+   <h3>Quick start installation of the server</h3>
+<p>
+You can try it with tomcat locally (no apache is necessary,
+i had tomcat 3.2.4 to test it, others should work as well):
+</p>
+<h3>
+1. Create a war file:
+</h3>
+<pre>
+  cd xmlBlaster
+
+  build.sh all      (assure xmlBlaster is compiled)
+
+  build.sh  -DTOMCAT_HOME=/opt/jakarta_tomcat   deploy_war
+</pre>
+<p>
+Set TOMCAT_HOME to point to your installation and the xmlBlaster.war
+and xmlBlaster.jar will be automatically deployed.
+</p>
+<h3>
+2. Start it
+</h3>
+<pre>
+  java org.xmlBlaster.Main -admin.remoteconsole.port 0 -cluster false
+
+  java  http.dhtml.systemInfo.SystemInfoPublisher
+
+ cd /opt/jakarta-tomcat/bin
+ export TOMCAT_OPTS="-Xms18M -Xmx64M"
+ startup.sh
+</pre>
+
+<h3>3. Start your browser and use this URL:</h3>
+<p>
+http://YOURHOST:8080/xmlBlaster/dhtml/systemInfo/systemInfo.html?
+ActionType=login&amp;xmlBlaster.loginName=joe&amp;xmlBlaster.passwd=secret
+</p>
    </example>
    <configuration where="server">
       <p>
@@ -212,7 +263,7 @@ successful login:
    <hacker>xmlBlaster@marcelruff.info</hacker>
    <effort>12</effort>
    <date>2000 05 06</date>
-   <revision>$Revision: 1.11 $</revision>
+   <revision>$Revision: 1.12 $</revision>
    <testcase status="INWORK">
       <name>-</name>
       <comment>It is not simple to provide a fully automated testsuite for this case</comment>
