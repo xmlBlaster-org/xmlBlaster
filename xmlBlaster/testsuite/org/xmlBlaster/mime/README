@@ -1,0 +1,8 @@
+Test mime based plugin architecture of xmlBlaster:
+
+http://www.xmlblaster.org/xmlBlaster/doc/requirements/mime.plugin.publishfilter.html
+http://www.xmlblaster.org/xmlBlaster/doc/requirements/mime.plugin.accessfilter.html
+
+Invoke:
+
+    java -Djava.compiler= junit.ui.TestRunner -noloading testsuite.org.xmlBlaster.mime.AllTests
