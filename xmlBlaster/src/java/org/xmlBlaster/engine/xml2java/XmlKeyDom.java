@@ -2,22 +2,22 @@
 Name:      XmlKeyDom.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Building a huge DOM tree for all known MessageUnit xmlKey
-Version:   $Id: XmlKeyDom.java,v 1.18 2002/11/26 12:38:58 ruff Exp $
-Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
 
 import org.jutils.log.LogChannel;
 
+import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.RequestBroker;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.util.I_MergeDomNode;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.XmlNotPortable;
+import org.xmlBlaster.engine.helper.Constants;
 
-import java.util.Vector;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.StringTokenizer;
 
@@ -42,11 +42,13 @@ import org.w3c.dom.Element;
  *    </key>
  *  </xmlBlaster>
  * </pre>
+ * @author xmlBlaster@marcelruff.info
  */
 public class XmlKeyDom implements I_MergeDomNode
 {
    final private static String ME = "XmlKeyDom";
 
+   private final Global glob;
    private final LogChannel log;
 
    protected com.fujitsu.xml.omquery.DomQueryMgr queryMgr = null;
@@ -64,7 +66,8 @@ public class XmlKeyDom implements I_MergeDomNode
    protected XmlKeyDom(RequestBroker requestBroker) throws XmlBlasterException
    {
       this.requestBroker = requestBroker;
-      this.log = requestBroker.getGlobal().getLog("core");
+      this.glob = this.requestBroker.getGlobal();
+      this.log = this.glob.getLog("core");
 
       // Instantiate the xmlBlaster DOM tree with <xmlBlaster> root node (DOM portable)
       String xml = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
@@ -123,55 +126,46 @@ public class XmlKeyDom implements I_MergeDomNode
     * This method does the XPath query.
     *
     * @param clientName is only needed for nicer logging output
-    * @return Array of matching XmlKey objects (may contain null elements)
+    * @return Array of matching key oid objects
     *
     * TODO: a query Handler, allowing drivers for REGEX, XPath, SQL, etc. queries
     */
-   public final Vector parseKeyOid(SessionInfo sessionInfo, XmlKey xmlKey, QueryQosData qos)  throws XmlBlasterException
+   public final ArrayList parseKeyOid(SessionInfo sessionInfo, String xpathQuery, QueryQosData qos)  throws XmlBlasterException
    {
-      Vector xmlKeyVec = new Vector();
+      ArrayList list = new ArrayList();
       String clientName = sessionInfo.toString();
 
-      if (xmlKey.getQueryType() == XmlKey.XPATH_QUERY) { // query: subscription without a given oid
-
-         Enumeration nodeIter;
+      Enumeration nodeIter;
+      try {
+         if (log.TRACE) log.trace(ME, "Goin' to query DOM tree with XPATH = " + xpathQuery);
+         nodeIter = getQueryMgr().getNodesByXPath(xmlKeyDoc, xpathQuery);
+      } catch (Exception e) {
+         log.warn(ME + ".InvalidQuery", "Sorry, can't access, query snytax is wrong for '" + xpathQuery + "' : " + e.toString());
+         throw new XmlBlasterException(this.glob, ErrorCode.USER_QUERY_INVALID, ME, "Sorry, can't access, query syntax of '" + xpathQuery + "' is wrong", e);
+      }
+      int n = 0;
+      while (nodeIter.hasMoreElements()) {
+         n++;
+         Object obj = nodeIter.nextElement();
+         Element node = (Element)obj;
          try {
-            if (log.TRACE) log.trace(ME, "Goin' to query DOM tree with XPATH = " + xmlKey.getQueryString());
-            nodeIter = getQueryMgr().getNodesByXPath(xmlKeyDoc, xmlKey.getQueryString());
+            String uniqueKey = getKeyOid(node);
+            if (log.TRACE) log.info(ME, "Client " + clientName + " is accessing message oid='" + uniqueKey + "' after successful query");
+            list.add(uniqueKey);
          } catch (Exception e) {
-            log.warn(ME + ".InvalidQuery", "Sorry, can't access, query snytax is wrong for '" + xmlKey.getQueryString() + "' : " + e.toString());
             e.printStackTrace();
-            throw new XmlBlasterException(ME + ".InvalidQuery", "Sorry, can't access, query snytax is wrong");
+            log.error(ME, e.getMessage());
          }
-         int n = 0;
-         while (nodeIter.hasMoreElements()) {
-            n++;
-            Object obj = nodeIter.nextElement();
-            Element node = (Element)obj;
-            try {
-               String uniqueKey = getKeyOid(node);
-               if (log.TRACE) log.info(ME, "Client " + clientName + " is accessing message oid=\"" + uniqueKey + "\" after successful query");
-               xmlKeyVec.addElement(requestBroker.getXmlKeyFromOid(uniqueKey));
-            } catch (Exception e) {
-               e.printStackTrace();
-               log.error(ME, e.toString());
-            }
-         }
-         if (log.TRACE) log.info(ME, n + " MessageUnits matched to subscription \"" + xmlKey.getQueryString() + "\"");
       }
+      if (log.TRACE) log.info(ME, n + " MsgUnits matched to subscription \"" + xpathQuery + "\"");
 
-      else {
-         log.warn(ME + ".UnsupportedQueryType", "Sorry, can't access, query snytax is unknown: " + xmlKey.getQueryType());
-         throw new XmlBlasterException(ME + ".UnsupportedQueryType", "Sorry, can't access, query snytax is unknown: " + xmlKey.getQueryType());
-      }
-
-      return xmlKeyVec;
+      return list;
    }
 
 
    /**
     * Given a node <key>, extract its attribute oid='...'
-    * @return oid = unique object id of the MessageUnit
+    * @return oid = unique object id of the MsgUnit
     */
    protected final String getKeyOid(org.w3c.dom.Node node) throws XmlBlasterException
    {
@@ -239,19 +233,18 @@ public class XmlKeyDom implements I_MergeDomNode
     */
    public StringBuffer printOn(String extraOffset) throws XmlBlasterException
    {
-      StringBuffer sb = new StringBuffer();
-      String offset = "\n   ";
+      StringBuffer sb = new StringBuffer(2048);
       if (extraOffset == null) extraOffset = "";
-      offset += extraOffset;
+      String offset = Constants.OFFSET + extraOffset;
 
-      sb.append(offset + "<XmlKeyDom>");
+      sb.append(offset).append("<XmlKeyDom>");
       try {
          StringTokenizer st = new StringTokenizer(XmlNotPortable.write(xmlKeyDoc).toString(), "\n");
          while (st.hasMoreTokens()) {
-            sb.append(offset + "   " + st.nextToken());
+            sb.append(offset).append(Constants.INDENT).append(st.nextToken());
          }
       } catch (Exception e) { }
-      sb.append(offset + "</XmlKeyDom>\n");
+      sb.append(offset).append("</XmlKeyDom>\n");
 
       return sb;
    }
