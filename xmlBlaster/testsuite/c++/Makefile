@@ -6,7 +6,8 @@ EVERYTHING= $(BIN_DIR)/TestGet \
 	 $(BIN_DIR)/TestSub \
 	 $(BIN_DIR)/RamTest \
 	 $(BIN_DIR)/TestLogin \
-	$(BIN_DIR)/clientPOA 
+	 $(BIN_DIR)/clientPOA \
+    $(BIN_DIR)/clientBOA 
 
 ifeq ($(CORBA_CPP),mico)
 ALL=$(EVERYTHING) $(BIN_DIR)/clientPOA	
