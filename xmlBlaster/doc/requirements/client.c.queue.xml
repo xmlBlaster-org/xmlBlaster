@@ -31,6 +31,17 @@
      <p>
      </p>
 
+     <h2>Setup</h2>
+     <p>
+     Two use the persistent queue you need to download SQLite and compile it for
+     your platform, our C++ compilation needs <code>sqlite.h</code> for compilation
+     and <code>libsqlite.so</code> for linking (on Windows it is a dll).
+     SQLite version 2.8.13 which must be newer to March 2004 is needed to have
+     the blob encoding feature. It's best to use the newest from cvs:
+     <code>cvs -d :pserver:anonymous@www.sqlite.org:/sqlite checkout -r version_2 sqlite</code>.
+     The cvs access is described at the <a href="http://www.sqlite.org" target="OTHERS">SQLite homepage</a>.
+     </p>
+
      <h2>Compilation with ant</h2>
      <pre>
 build -DXMLBLASTER_PERSISTENT_QUEUE=1 c-delete c
@@ -115,7 +126,7 @@ Solaris:
          </tr>
 
          <tr>
-            <td>-queue/connection/dbName</td>
+            <td>-queue/connection/url</td>
             <td>/var/xmlBlasterClient.db</td>
             <td>The location and file name of the database (for SQLite)</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
@@ -167,7 +178,6 @@ TestQueue
       <p>
       <ul>
       <li> Embed the queue into C client library (see first try in <code>XmlBlasterConnectionUnparsed.c</code>)</li>
-      <li> Embed the queue into C++ client library as a persistent queue plugin.</li>
       <li> Deliver sqlite library (.dll,.so,.sl) in directory
            xmlBlaster/lib at least for Linux/Win for ease of use?</li>
       <li> Adding mutex to every function call?<br />
@@ -188,22 +198,21 @@ TestQueue
       </li>
       </ul>
       </p>
-
-      <h2>C++ remark</h2>
    </todo>
 
-   <see type="CODE" lang="C">util/queue/I_Queue.h</see>
-   <!-- see type="INTERNET" label="TestQueue.c">http://www.xmlBlaster.org/xmlBlaster/testsuite/src/c/TestQueue.c.html</see -->
+   <see type="CODE" lang="C">util/queue/QueueInterface.h</see>
+   <see type="INTERNET" label="TestQueue.c">http://www.xmlBlaster.org/xmlBlaster/testsuite/src/c/TestQueue.c.html</see>
    <see type="INTERNET">http://www.sqlite.org/</see>
    <see type="INTERNET" label="SQLite performance">http://web.utk.edu/~jplyon/sqlite/SQLite_optimization_FAQ.html</see>
    <see type="INTERNET" label="SQLite compile">http://www.sqlite.org/cvstrac/wiki?p=HowToCompile</see>
-   <see type="REQ">client.c.socket</see>
+   <see type="REQ" label="Queue dump formating identical to SOCKET serialization">protocol.socket</see>
    <see type="REQ">client.cpp</see>
+   <see type="REQ">client.cpp.queue</see>
 
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2004 04 09</date>
-   <revision>$Revision: 1.5 $</revision>
+   <revision>$Revision: 1.6 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>

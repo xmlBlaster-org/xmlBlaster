@@ -1,0 +1,271 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+
+<requirement id='client.cpp.queue' type='NEW' prio='MEDIUM' status='CLOSED'>
+   <topic>
+      XmlBlaster provides a persistent queue implementation for C++ clients
+   </topic>
+   <description>
+     <p>
+     In C++ we have three plugins implementing the I_Queue interface. One
+     is called "RAM" and is an in memory implementation, one is called "SQLite"
+     and reuses the xmlBlaster C implementation of a peristent queue using the
+     relational database <a href="http://www.sqlite.org" target="OTHERS">SQLite</a>.
+     Finally you can use the "CACHE" queue implementation which implements
+     a simple combination of the former two.
+     </p>
+     <p>
+     This queue resides on the C++ client side and stores messages which can't be delivered
+     to the xmlBlaster server during connection problems. The "RAM" queue is
+     always available in the xmlBlaster client library, the "SQLite" persistence queue
+     needs some setup which is described below.
+     </p>
+
+     <h2>CACHE limitation</h2>
+     <p>
+     The CACHE class <code>CacheQueuePlugin</code> implements a very simple cache around the RAM and SQLite queue. 
+     Note that there is no swapping support for transient or persistent messages
+     all transient messages are hold in RAM, and all persistent messages are
+     duplicated to harddisk.
+     When time permits we will add swapping support similar to the Java CACHE
+     implementation. 
+     </p>
+     <p>
+      If you have mainly persistent messages and need to take care on
+      your RAM consumption with many messages in queue consider to use
+      the "SQLite" persistent queue directly (without any RAM or CACHE)
+      with the option <code>-connection/queue/type SQLite</code> instead of the default
+      <code>-connection/queue/type CACHE</code>.
+      <br />
+      On the other hand if you use only transient message consider using the RAM queue directly
+      with the option <code>-connection/queue/type RAM</code> instead of the default
+      <code>-connection/queue/type CACHE</code>. In this case if your C++ client crashes
+      the messages in your client queue are lost.
+     </p>
+
+     <h2>Setup</h2>
+     <p>
+     To use the persistent queue you need to download SQLite and compile it for
+     your platform, our C/C++ compilation needs <code>sqlite.h</code> for compilation
+     and <code>libsqlite.so</code> for linking (on Windows its a dll).
+     Choose a version newer SQLite 2.8.13 / March 2004 to have
+     the blob encoding feature.
+     For more details please read the <a href="client.c.queue.html">client.c.queue</a> requirement.
+     </p>
+
+     <h2>Compilation with ant</h2>
+     <p>
+     First add those lines to your <code>HOME/build.properties</code> (or add it
+     on command line with a leading -D option)
+     </p>
+     <pre>
+XMLBLASTER_PERSISTENT_QUEUE=1
+sqlite.include.dir=/opt/sqlite-bin/include
+sqlite.lib.dir=/opt/sqlite-bin/lib
+     </pre>
+     <p>
+     and compile it:
+     </p>
+     <pre>
+build cpp-delete cpp
+     </pre>
+     or similiar (with verbose switched on):
+     <pre>
+build -verbose -DXMLBLASTER_PERSISTENT_QUEUE=1 -Dsqlite.include.dir= ... cpp
+     </pre>
+     <p>
+     This expects <code>/opt/sqlite-bin/include/sqlite.h</code> and <code>/opt/sqlite-bin/lib/libsqlite.so*</code>
+     (on Windows it is a dll).
+     </p>
+
+   </description>
+   <example lang="CPP" type="HTML">
+      <p><a NAME="example"></a></p>
+      <p>
+      Here is an example how to play on command line with the client side queue
+      and test the behaviour:
+      </p>
+      <pre>
+java org.xmlBlaster.Main -call[core] true
+
+cd xmlBlaster/demo/c++/bin
+
+PublishDemo -persistent true -numPublish 100
+            -session.name publisher/1 -dispatch/connection/delay 5000
+            -dispatch/connection/pingInterval 1000
+
+SubscribeDemo -persistentSubscribe true -dispatch/callback/retries -1
+              -dispatch/connection/delay 5000
+      </pre>
+      <p>
+      You can kill the above process, restart them and check that nothing
+      is lost.
+      </p>
+      <p>
+      The SQLite database files resides as a default setting in your home directory,
+      here is an example for UNIX how to look into the database with the <code>sqlite</code>
+      executable delivered with the SQLite distribution:
+      </p>
+      <pre>
+sqlite /home/joe/xmlBlasterClientCpp.db
+
+sqlite> .mode line
+
+sqlite> select * from xb_entries;
+   dataId = 1083681933046933000
+   nodeId = /node/xmlBlaster_192_168_1_4_3412/client/publisher/1
+queueName = connection_nodexmlBlaster_192_168_1_4_3412clientpublisher1
+     prio = 5
+     flag = MSG_RAW|publish
+  durable = T
+ byteSize = 257
+     blob = ...
+
+sqlite> .exit
+      </pre>
+   </example>
+
+   <configuration where="client">
+      <p><a NAME="config"></a>
+      These configurations are tested:
+      </p>
+      <table border="1">
+       <tr>
+       <th>No</th>
+       <th>OS</th>
+       <th>Compiler</th>
+       <th>xml Blaster Vers.</th>
+       <th>Thread library</th>
+       <th>Date</th>
+       <th>Author</th>
+       <th>Comment</th>
+       </tr>
+
+       <tr>
+       <td>1</td>
+       <td>Linux 2.6.4</td>
+       <td><a href="http://www.gnu.org/software/gcc/gcc.html" target="others">g++ and gcc 3.3.3</a></td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.901+</a></td>
+       <td><a href="http://www.gnu.org/software/libc/" target="others">pthread</a></td>
+       <td>2004-05-04</td>
+       <td><a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
+       <td><font size="-2">build cpp</font></td>
+       </tr>
+
+       <tr>
+       <td>2</td>
+       <td>Linux 2.6.4</td>
+       <td><a href="http://www.intel.com/software/products/compilers/clin/" target="others">Intel(R) C++ Compiler for 32-bit, Version 8.0 (icc)</a></td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.901+</a></td>
+       <td><a href="http://www.gnu.org/software/libc/" target="others">pthread</a></td>
+       <td>2004-05-04</td>
+       <td><a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
+       <td><font size="-2">build -Duse-icc=true cpp</font></td>
+       </tr>
+
+      </table>
+
+      <p>
+      These parameters allow to configure the C++-client on command line,
+      over xmlBlaster.properties or over the environment (with lower priority):
+      </p>
+      <table border="1">
+         <tr>
+            <th>Property</th>
+            <th>Default / Example</th>
+            <th>Description</th>
+            <th>Impl</th>
+         </tr>
+
+         <tr>
+            <td>-queue/connection/type</td>
+            <td>CACHE</td>
+            <td>Choose one of "RAM", "CACHE" or "SQLite"</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>-queue/connection/url</td>
+            <td>${user.home}/ xmlBlasterClientCpp.db</td>
+            <td>The location and file name of the database (for SQLite).
+               ${user.home} is preset in the C++ client library and resolves to your home directory.
+               Other preset variables are described in <code>xmlBlaster/src/c++/ util/Property.h</code>.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>-queue/connection/tablePrefix</td>
+            <td>XB_</td>
+            <td>The prefix used for database table names, usually you don't change this.</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>-queue/connection/maxEntries</td>
+            <td>2147483647</td>
+            <td>The maximum allowed number of messages</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>-queue/connection/maxBytes</td>
+            <td>2147483647</td>
+            <td>The maximum allowed bytes of all messages in the queue</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+      </table>
+
+         <h3>Testing</h3>
+         <p>
+         The testsuite resides in <i>xmlBlaster/testsuite/src/c++</i> to compile it
+         use ant (with the above build.properties settings):
+         </p>
+         <pre>
+cd xmlBlaster
+build cpp-test
+         </pre>
+        <p>
+        To run the tests invoke in directory <code>xmlBlaster/testsuite/src/c++/bin</code>
+        </p>
+        <pre>
+TestQueue
+        </pre>
+
+   </configuration>
+
+   <todo type='HTML'>
+      <h2>The persistent queue implementation is finished and tested, but we need to:</h2>
+      <p>
+      <ul>
+      <li> Extend the CACHE implementation to support swapping.
+      </li>
+      <li> Deliver sqlite library (.dll,.so,.sl) in directory
+           xmlBlaster/lib at least for Linux/Win for ease of use?
+      </li>
+      </ul>
+      </p>
+   </todo>
+
+   <see type="CODE" lang="CPP">util/queue/I_Queue.h</see>
+   <see type="INTERNET" label="TestQueue.c">http://www.xmlBlaster.org/xmlBlaster/testsuite/src/c++/TestQueue.cpp.html</see>
+   <see type="INTERNET">http://www.sqlite.org/</see>
+   <see type="INTERNET" label="SQLite compile">http://www.sqlite.org/cvstrac/wiki?p=HowToCompile</see>
+   <see type="REQ">client.c.queue</see>
+   <see type="REQ">client.cpp</see>
+   <see type="REQ" label="Queue dump formating identical to SOCKET serialization">protocol.socket</see>
+
+<!--   <see type="REQ">cluster</see> -->
+   <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
+   <date>2004 04 09</date>
+   <revision>$Revision: 1.1 $</revision>
+
+   <testcase status="CLOSED">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE" lang="CPP">TestQueue</test> <!-- TestQueue.cpp -->
+   </testcase>
+</requirement>
+

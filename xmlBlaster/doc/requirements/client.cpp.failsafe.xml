@@ -13,7 +13,7 @@
      to check if the communication is ok. When the ping fails, or when a request to xmlBlaster fails due
      to communication problems, the client library tries to reestablish the connection. This is done
      in an asynchronous way (an own thread in ConnectionHandler). While the library tries to
-     reconnect all publish requests are queued on ram.<br/>
+     reconnect all publish requests are queued on ram or persistently depending on the <code>queue/connection/type</code> configuration.<br/>
      Connect requests are queued too, provided you
      explicitly specify a public session id. When a connection request is queued, a faked
      ConnectReturnQos is returned to the client. Note that the private session id is missing but this does not
@@ -112,11 +112,12 @@ class HelloWorld2 : public I_Callback,
 
 
    <see type="REQ">client.cpp</see>
+   <see type="REQ">client.cpp.queue</see>
    <see type="REQ">client.failsafe</see>
 
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
    <date>2003 01 20</date>
-   <revision>$Revision: 1.3 $</revision>
+   <revision>$Revision: 1.4 $</revision>
 </requirement>
 
