@@ -450,6 +450,8 @@ function update( updateKey, content, updateQoS)
       fireMessageUpdateEvent(message);
    }
 
+   if(ping != null) ping();
+
 }
 
 

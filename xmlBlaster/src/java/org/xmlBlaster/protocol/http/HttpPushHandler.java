@@ -3,7 +3,7 @@ Name:      HttpPushHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: HttpPushHandler.java,v 1.14 2000/04/14 07:07:58 kkrafft2 Exp $
+Version:   $Id: HttpPushHandler.java,v 1.15 2000/04/14 12:38:09 kkrafft2 Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -33,7 +33,7 @@ public class HttpPushHandler
 {
 
    private final String ME                      = "HttpPushHandler";
-   private final long PING_INTERVAL             = 40000L;
+   private final long PING_INTERVAL             = 10000L;
    private final HttpServletRequest req;
    private final HttpServletResponse res;
    private boolean closed                                                               = false;
