@@ -30,7 +30,7 @@ public:
 
   serverIdl::StringArr* update(const char* sessionId, const serverIdl::MessageUnitArr& messageUnitArr) {
     int nmax = messageUnitArr.length();
-    serverIdl::StringArr_var res = new serverIdl::StringArr;
+    serverIdl::StringArr *res = new serverIdl::StringArr(nmax);
     res->length(nmax);
     cout << endl;
     cout << "Callback invoked: there are " << nmax << " messages" << endl;
@@ -38,8 +38,26 @@ public:
     for (int i=0; i < nmax; i++) {
       print_msg(cout,messageUnitArr[i]);
       cout << endl;
+
+      CORBA::String_var str = CORBA::string_dup("<qos><state>OK</state></qos>");
+      (*res)[i] = str;
     }
     return res;
+  };
+
+  void updateOneway(const char* sessionId, const serverIdl::MessageUnitArr& messageUnitArr) {
+    int nmax = messageUnitArr.length();
+    cout << endl;
+    cout << "Oneway callback invoked: there are " << nmax << " messages" << endl;
+    cout << "messages: " << endl;
+    for (int i=0; i < nmax; i++) {
+      print_msg(cout,messageUnitArr[i]);
+      cout << endl;
+    }
+  };
+
+  char *ping(const char *qos) {
+   return "";
   };
 };
 
