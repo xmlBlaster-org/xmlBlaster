@@ -35,29 +35,29 @@ public class MessageContent implements Storable {
    }
 
    public MessageContent() {
-		this(null, null, null);
-		this.log = Global.instance().getLog("graphical");
+      this(null, null, null);
+      this.log = Global.instance().getLog("graphical");
    }
 
    public void write(StorableOutput out) {
       if (this.log.CALL) this.log.call(ME, "write");
-		out.writeString(this.figId);
-		out.writeStorable(this.fig);
+      out.writeString(this.figId);
+      out.writeStorable(this.fig);
    }
 
    public void read(StorableInput in) throws IOException {
       if (this.log.CALL) this.log.call(ME, "read");
-		this.figId = in.readString();
-		this.fig = (Figure)in.readStorable();
+      this.figId = in.readString();
+      this.fig = (Figure)in.readStorable();
    }
 
-	public String getFigureId() {
-		return this.figId;
-	}
+   public String getFigureId() {
+      return this.figId;
+   }
 
-	public Figure getFigure() {
-		return this.fig;
-	}
+   public Figure getFigure() {
+      return this.fig;
+   }
 
    public byte[] toBytes() throws IOException {
       if (this.log.CALL) this.log.call(ME, "toBytes");
@@ -78,7 +78,3 @@ public class MessageContent implements Storable {
    }
 
 }
-
-
-
-
