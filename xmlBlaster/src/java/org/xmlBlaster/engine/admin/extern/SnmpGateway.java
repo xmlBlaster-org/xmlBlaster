@@ -14,15 +14,7 @@ import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.admin.CommandManager;
 import org.xmlBlaster.engine.admin.I_ExternGateway;
 
-import XmlBlasterTest;
-
-import NodeScalarImpl;
-import NodeEntryImpl;
-import NodeTable;
-import NodeTableSubject;
-import NodeTableObserver;
-import ConnectionTableSubject;
-import ConnectionTableObserver;
+import org.xmlBlaster.engine.admin.extern.snmp.*;
 
 import java.io.*;
 import java.util.Vector;
@@ -47,7 +39,6 @@ public final class SnmpGateway implements I_ExternGateway // , SnmpInterface ?
    private LogChannel log;
    private CommandManager manager;
    private String sessionId = null;
-   private XmlBlasterTest proxy = null;
 
    /** port for agentX connection, where SNMP-agent listens for our sub agent */
    private int port = 705;
