@@ -23,15 +23,18 @@
         </tr>
         <tr>
           <td><b>maxBytes</b></td><td>-1</td>
-          <td>a long. The total size of all returned messages toghether must not exceed this value</td>
-          <td><img src="ok.gif" border="0" alt="yes" /></td>
+          <td>a long. The total size of all returned messages together must not exceed this value. This
+              is not implemented yet since the size of the entries in the queue is not guaranteed to be 
+              related to the size of the MsgUnits
+          </td>
+          <td><img src="no.gif" border="0" alt="no" /></td>
         </tr>
         <tr>
           <td><b>consumable</b></td><td>false</td>
           <td>a boolean (expressed with the string 'true' or 'false'. If true the entries returned are 
             deleted from the queue.
           </td>
-          <td><img src="no.gif" border="0" alt="no" /></td>
+          <td><img src="ok.gif" border="0" alt="yes" /></td>
         </tr>
         <tr>
           <td><b>waitingDelay</b></td><td>0</td>
@@ -41,7 +44,7 @@
             positive it will block until the specified amount in milliseconds has elapsed <b>or</b> when the 
             <code>maxEntries</code> <b>or</b> the <code>maxSize</code> has been reached (whichever comes first).
           </td>
-          <td><img src="no.gif" border="0" alt="no" /></td>
+          <td><img src="ok.gif" border="0" alt="yes" /></td>
         </tr>
       </table>
       </center>
@@ -101,7 +104,7 @@ xmlBlaster.qos=&lt;qos>&lt;querySpec type='QueueQuery'>\
    <see type="REQ">queryspec.plugin.queueQuery</see>            
    <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
    <date>2004 05 06</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
