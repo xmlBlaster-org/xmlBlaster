@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.57 2000/02/24 22:19:52 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.58 2000/02/28 18:39:50 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -22,14 +22,14 @@ import java.util.*;
 import java.io.*;
 
 /**
- * This is the central message broker, all requests are routed through this singleton.
+ * This is the central message broker, all requests are routed through this singleton. 
  * <p>
  * The interface ClientListener informs about Client login/logout<br />
  * The interface MessageEraseListener informs when a MessageUnit is erased<br />
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.57 $
+ * @version $Revision: 1.58 $
  * @author ruff@swand.lake.de
  */
 public class RequestBroker implements ClientListener, MessageEraseListener
@@ -40,9 +40,6 @@ public class RequestBroker implements ClientListener, MessageEraseListener
    public static long getMessages = 0L;
 
    private static final String ME = "RequestBroker";
-
-   /** myself, singleton pattern */
-   private static RequestBroker requestBroker = null;
 
    /** the authentication service */
    private Authenticate authenticate = null;          // The authentication service
@@ -93,48 +90,21 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
-    * Access to RequestBroker singleton
+    * One instance of this represent one xmlBlaster server. 
+    * @param authenticate The authentication service
     */
-   public static RequestBroker getInstance(Authenticate authenticate) throws XmlBlasterException
+   public RequestBroker(Authenticate authenticate) throws XmlBlasterException
    {
-      synchronized (RequestBroker.class) {
-         if (requestBroker == null) {
-            requestBroker = new RequestBroker(authenticate);
-            requestBroker.loadPersistentMessages();
-         }
-      }
-      return requestBroker;
-   }
+      this.clientSubscriptions = new ClientSubscriptions(this, authenticate);
 
-
-   /**
-    * Access to RequestBroker singleton
-    */
-    /*
-   public static RequestBroker getInstance()
-   {
-      synchronized (RequestBroker.class) {
-         if (requestBroker == null) {
-            Log.panic(ME, "Use other getInstance first");
-         }
-      }
-      return requestBroker;
-   }
-      */
-
-   /**
-    * private Constructor for Singleton Pattern
-    */
-   private RequestBroker(Authenticate authenticate) throws XmlBlasterException
-   {
-      this.clientSubscriptions = ClientSubscriptions.getInstance(this, authenticate);
-
-      this.bigXmlKeyDOM = BigXmlKeyDOM.getInstance(this, authenticate);
+      this.bigXmlKeyDOM = new BigXmlKeyDOM(this, authenticate);
 
       this.authenticate = authenticate;
 
       authenticate.addClientListener(this);
       addMessageEraseListener(this);
+ 
+      loadPersistentMessages();
    }
 
 
@@ -663,7 +633,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
             synchronized(messageContainerMap) {
                Object obj = messageContainerMap.get(xmlKey.getUniqueKey());
                if (obj == null) {
-                  msgUnitHandler = new MessageUnitHandler(requestBroker, new MessageUnitWrapper(this, xmlKey, msgUnit, publishQoS, publisherName));
+                  msgUnitHandler = new MessageUnitHandler(this, new MessageUnitWrapper(this, xmlKey, msgUnit, publishQoS, publisherName));
                   messageContainerMap.put(xmlKey.getUniqueKey(), msgUnitHandler);
                }
                else {

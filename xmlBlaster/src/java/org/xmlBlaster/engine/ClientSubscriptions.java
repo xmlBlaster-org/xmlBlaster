@@ -3,7 +3,7 @@ Name:      ClientSubscriptions.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling subscriptions, collected for each Client
-Version:   $Id: ClientSubscriptions.java,v 1.14 2000/02/24 22:19:52 ruff Exp $
+Version:   $Id: ClientSubscriptions.java,v 1.15 2000/02/28 18:39:50 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -24,14 +24,12 @@ import java.io.*;
  * Handling subscriptions, collected for each Client.
  * <p />
  * The interface SubscriptionListener informs about subscribe/unsubscribe events
- * @version: $Id: ClientSubscriptions.java,v 1.14 2000/02/24 22:19:52 ruff Exp $
+ * @version: $Id: ClientSubscriptions.java,v 1.15 2000/02/28 18:39:50 ruff Exp $
  * @author Marcel Ruff
  */
 public class ClientSubscriptions implements ClientListener, SubscriptionListener, MessageEraseListener
 {
    final private static String ME = "ClientSubscriptions";
-
-   private static ClientSubscriptions clientSubscriptions = null; // Singleton pattern
 
    private final RequestBroker requestBroker;
 
@@ -68,38 +66,13 @@ public class ClientSubscriptions implements ClientListener, SubscriptionListener
 
 
    /**
-    * Access to ClientSubscriptions singleton
+    * Exactly one instance for each xmlBlaster server. 
+    * <p />
+    * (no singleton pattern to allow multiple servers)
+    * @param requestBroker my master (singleton)
+    * @param authenticate another master
     */
-   public static ClientSubscriptions getInstance(RequestBroker requestBroker, Authenticate authenticate) throws XmlBlasterException
-   {
-      synchronized (ClientSubscriptions.class)
-      {
-         if (clientSubscriptions == null)
-            clientSubscriptions = new ClientSubscriptions(requestBroker, authenticate);
-      }
-      return clientSubscriptions;
-   }
-
-
-   /**
-    * Access to ClientSubscriptions singleton
-    */
-   public static ClientSubscriptions getInstance()
-   {
-      synchronized (ClientSubscriptions.class)
-      {
-         if (clientSubscriptions == null) {
-            Log.panic(ME, "Use other getInstance first");
-         }
-      }
-      return clientSubscriptions;
-   }
-
-
-   /**
-    * private Constructor for Singleton Pattern
-    */
-   private ClientSubscriptions(RequestBroker requestBroker, Authenticate authenticate) throws XmlBlasterException
+   ClientSubscriptions(RequestBroker requestBroker, Authenticate authenticate) throws XmlBlasterException
    {
       this.requestBroker = requestBroker;
       requestBroker.addSubscriptionListener(this);

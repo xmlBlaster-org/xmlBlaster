@@ -3,7 +3,7 @@ Name:      MainGUI.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: MainGUI.java,v 1.24 2000/02/25 13:51:01 ruff Exp $
+Version:   $Id: MainGUI.java,v 1.25 2000/02/28 18:39:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -39,6 +39,9 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
 {
    private Toolkit toolkit = Toolkit.getDefaultToolkit();
    private final String ME = "MainGUI";
+   /** The xmlBlaster server, is set from Main() constructor */
+   org.xmlBlaster.Main xmlBlasterMain = null;
+   private String[] args = null;
 
    private Button exitButton;
    private Button hideButton;
@@ -93,10 +96,10 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
    /**
     * Construct the xmlBlaster GUI.
     */
-   public MainGUI()
+   public MainGUI(String[] args)
    {
       setTitle("XmlBlaster Control Panel");
-
+      this.args = args;
       init();
 
       // Poll xmlBlaster internal states
@@ -111,6 +114,7 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
    public void run()
    {
       show();
+      this.xmlBlasterMain = new org.xmlBlaster.Main(args, this);
    }
 
 
@@ -307,9 +311,9 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
             // logOutput.setText("");  // clear log window
             try {
                Log.info(ME, "Dump start");
-               Authenticate auth = Authenticate.getInstance();
+               Authenticate auth = xmlBlasterMain.getAuthenticate();
                StringBuffer buf = auth.printOn();
-               buf.append(RequestBroker.getInstance(auth).printOn().toString());
+               buf.append(auth.getRequestBroker().printOn().toString());
                log(buf.toString());
                Log.info(ME, "Dump end");
             }
@@ -526,10 +530,8 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
     */
    static public void main(String[] args)
    {
-      Main.controlPanel = new MainGUI();
+      Main.controlPanel = new MainGUI(args);
       Main.controlPanel.run();
-
-      new org.xmlBlaster.Main(args);
    }
 
 

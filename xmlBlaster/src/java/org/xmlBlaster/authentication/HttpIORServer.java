@@ -3,7 +3,7 @@ Name:      HttpIORServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Delivering the Authentication Service IOR over HTTP
-Version:   $Id: HttpIORServer.java,v 1.4 2000/02/20 17:38:50 ruff Exp $
+Version:   $Id: HttpIORServer.java,v 1.5 2000/02/28 18:39:50 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -22,7 +22,7 @@ import java.io.*;
  * Clients may access through this port the AuthServer IOR if they
  * don't want to use a naming service
  *
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  * @author $Author: ruff $
  */
 public class HttpIORServer extends Thread
@@ -30,6 +30,8 @@ public class HttpIORServer extends Thread
    private String ME = "HttpIORServer";
    private final int HTTP_PORT;
    private String ior = null;
+   private ServerSocket listen = null;
+   private boolean running = true;
 
 
    /**
@@ -51,17 +53,36 @@ public class HttpIORServer extends Thread
    public void run()
    {
       try {
-         ServerSocket listen = new ServerSocket(HTTP_PORT);
-         while (true) {
-            HandleRequest hh = new HandleRequest(listen.accept(), ior);
+         listen = new ServerSocket(HTTP_PORT);
+         while (running) {
+            Socket accept = listen.accept();
+            if (!running) {
+               Log.info(ME, "Closing http server port");
+               return;
+            }
+            HandleRequest hh = new HandleRequest(accept, ior);
          }
       }
+      catch (java.net.BindException e) {
+         Log.error(ME, "HTTP server problem: " + e.toString());
+      }
+      catch (java.net.SocketException e) {
+         Log.info(ME, "Socket closed successfully: " + e.toString());
+      }
       catch (IOException e) {
-         Log.error(ME, e.toString());
+         Log.error(ME, "HTTP server problem: " + e.toString());
       }
    }
 
 
+   /**
+    * Close the listener port
+    */
+   public void shutdown() throws IOException
+   {
+      running = false;
+      listen.close();
+   }
 }
 
 

@@ -3,7 +3,7 @@ Name:      ServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: ServerImpl.java,v 1.3 2000/02/24 22:19:53 ruff Exp $
+Version:   $Id: ServerImpl.java,v 1.4 2000/02/28 18:39:50 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -42,12 +42,12 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
    /**
     * Construct a persistently named object.
     */
-   public ServerImpl(org.omg.CORBA.ORB orb, Authenticate authenticate) throws XmlBlasterException
+   public ServerImpl(org.omg.CORBA.ORB orb, Authenticate authenticate, RequestBroker requestBroker) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "Entering constructor with ORB argument");
       this.authenticate = authenticate;
       this.orb = orb;
-      this.requestBroker = RequestBroker.getInstance(authenticate);
+      this.requestBroker = requestBroker;
    }
 
 
@@ -57,6 +57,16 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
    public Authenticate getAuthenticate()
    {
       return authenticate;
+   }
+
+
+   /**
+    * Get a handle on the request broker singleton (the engine of xmlBlaster). 
+    * @return RequestBroker
+    */
+   public RequestBroker getRequestBroker()
+   {
+      return requestBroker;
    }
 
 

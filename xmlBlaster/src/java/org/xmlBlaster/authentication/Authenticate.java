@@ -3,7 +3,7 @@ Name:      Authenticate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login for clients
-Version:   $Id: Authenticate.java,v 1.25 2000/02/25 13:51:01 ruff Exp $
+Version:   $Id: Authenticate.java,v 1.26 2000/02/28 18:39:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -15,6 +15,7 @@ import org.xmlBlaster.protocol.corba.ServerImpl;
 import org.xmlBlaster.protocol.corba.serverIdl.ServerPOATie;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
 import org.xmlBlaster.protocol.corba.AuthServerImpl;
+import org.xmlBlaster.engine.RequestBroker;
 import org.xmlBlaster.engine.ClientInfo;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
 import java.util.*;
@@ -31,8 +32,6 @@ import jacorb.poa.util.POAUtil;
 public class Authenticate
 {
    final private static String ME = "Authenticate";
-
-   private static Authenticate authenticate = null; // Singleton pattern
 
    private AuthServerImpl authServerImpl;
 
@@ -71,36 +70,7 @@ public class Authenticate
 
 
    /**
-    * Singleton access method
-    */
-   public static Authenticate getInstance(AuthServerImpl authServerImpl)
-   {
-      synchronized (Authenticate.class)
-      {
-         if (authenticate == null) {
-            authenticate = new Authenticate(authServerImpl);
-         }
-      }
-      return authenticate;
-   }
-
-
-   /**
-    * Access to Authenticate singleton
-    */
-   public static Authenticate getInstance()
-   {
-      synchronized (Authenticate.class) {
-         if (authenticate == null) {
-            Log.panic(ME, "Use other getInstance first");
-         }
-      }
-      return authenticate;
-   }
-
-
-   /**
-    * private Constructor for Singleton Pattern
+    * One instance implements a server. 
     *
     * Authenticate creates a single instance of the xmlBlaster.Server.
     * Clients need first to do a login, from where they get
@@ -114,7 +84,7 @@ public class Authenticate
     *
     * @param The CORBA interface implementing object
     */
-   private Authenticate(AuthServerImpl authServerImpl)
+   public Authenticate(AuthServerImpl authServerImpl)
    {
       this.authServerImpl = authServerImpl;
 
@@ -146,7 +116,7 @@ public class Authenticate
          // USING TIE:
          // xmlBlasterServant = new ServerPOATie(new ServerImpl(orb, this));
          // NOT TIE:
-         xmlBlasterServant = new ServerImpl(orb, this);
+         xmlBlasterServant = new ServerImpl(orb, this, new RequestBroker(this));
 
          xmlBlasterPOA.set_servant(xmlBlasterServant); // set as default servant
          poaMgr.activate();
@@ -161,6 +131,16 @@ public class Authenticate
       }
 
       if (Log.CALLS) Log.trace(ME, "Leaving constructor");
+   }
+
+
+   /**
+    * Get a handle on the request broker singleton (the engine of xmlBlaster). 
+    * @return RequestBroker
+    */
+   public RequestBroker getRequestBroker()
+   {
+      return xmlBlasterServant.getRequestBroker();
    }
 
 

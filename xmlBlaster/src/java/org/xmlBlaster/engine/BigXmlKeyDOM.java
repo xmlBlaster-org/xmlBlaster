@@ -3,7 +3,7 @@ Name:      BigXmlKeyDOM.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Building a huge DOM tree for all known MessageUnit xmlKey
-Version:   $Id: BigXmlKeyDOM.java,v 1.11 2000/02/24 22:19:52 ruff Exp $
+Version:   $Id: BigXmlKeyDOM.java,v 1.12 2000/02/28 18:39:50 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -36,29 +36,13 @@ public class BigXmlKeyDOM extends XmlKeyDom implements ClientListener, MessageEr
 {
    final private static String ME = "BigXmlKeyDOM";
 
-   private static BigXmlKeyDOM bigXmlKeyDOM = null;        // Singleton pattern
-
    private Authenticate authenticate = null;
 
 
    /**
-    * Access to BigXmlKeyDOM singleton
+    * A singleton for each xmlBlaster server. 
     */
-   public static BigXmlKeyDOM getInstance(RequestBroker requestBroker, Authenticate authenticate) throws XmlBlasterException
-   {
-      synchronized (BigXmlKeyDOM.class) {
-         if (bigXmlKeyDOM == null) {
-            bigXmlKeyDOM = new BigXmlKeyDOM(requestBroker, authenticate);
-         }
-      }
-      return bigXmlKeyDOM;
-   }
-
-
-   /**
-    * private Constructor for Singleton Pattern
-    */
-   private BigXmlKeyDOM(RequestBroker requestBroker, Authenticate authenticate) throws XmlBlasterException
+   BigXmlKeyDOM(RequestBroker requestBroker, Authenticate authenticate) throws XmlBlasterException
    {
       super(requestBroker);
 

@@ -3,7 +3,7 @@ Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: AuthServerImpl.java,v 1.2 2000/02/20 17:38:53 ruff Exp $
+Version:   $Id: AuthServerImpl.java,v 1.3 2000/02/28 18:39:50 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -35,7 +35,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
    {
       if (Log.CALLS) Log.calls(ME, "Entering constructor with ORB argument");
       this.orb = orb;
-      this.authenticate = Authenticate.getInstance(this);
+      this.authenticate = new Authenticate(this);
    }
 
 
@@ -44,14 +44,10 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
       return orb;
    }
 
-   /**
-    * Construct a transient object.
-    */
-   public AuthServerImpl()
+
+   public Authenticate getAuthenticationService()
    {
-      super();
-      if (Log.CALLS) Log.calls(ME, "Entering constructor without ORB argument");
-      this.authenticate = Authenticate.getInstance(this);
+      return authenticate;
    }
 
 

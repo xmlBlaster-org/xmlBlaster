@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.25 2000/02/25 17:00:33 ruff Exp $
+Version:   $Id: Main.java,v 1.26 2000/02/28 18:39:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -46,6 +46,11 @@ public class Main
    final private String ME = "Main";
    private org.omg.CORBA.ORB orb;
    private HttpIORServer httpIORServer = null;  // xmlBlaster publishes his AuthServer IOR
+   private NamingContext nc = null;
+   private NameComponent [] name = null;
+   private String iorFile = null;
+   /** The singleton handle for this xmlBlaster server */
+   private AuthServerImpl authServer = null;
 
    /**
     * true: If instance created by control panel<br />
@@ -54,11 +59,24 @@ public class Main
    static MainGUI controlPanel = null;
 
 
+   public Main(String[] args, MainGUI controlPanel)
+   {
+      this.controlPanel = controlPanel;
+      controlPanel.xmlBlasterMain = this;
+      init(args);
+   }
+
+
    /**
     * Start xmlBlaster.
     * @param args The command line parameters
     */
    public Main(String[] args)
+   {
+      init(args);
+   }
+
+   private void init(String args[])
    {
       if (Args.getArg(args, "-?") == true || Args.getArg(args, "-h") == true) {
          usage();
@@ -72,11 +90,11 @@ public class Main
              org.omg.PortableServer.POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
          rootPOA.the_POAManager().activate();
 
-         AuthServerImpl authServer = new AuthServerImpl(orb);
+         authServer = new AuthServerImpl(orb);
 
          // USING TIE:
          org.omg.PortableServer.Servant authServant = new AuthServerPOATie(authServer);
-         org.omg.CORBA.Object authRef = new AuthServerPOATie(new AuthServerImpl(orb))._this(orb);
+         org.omg.CORBA.Object authRef = ((AuthServerPOATie)(authServant))._this(orb);
          // NOT TIE:
          // org.omg.PortableServer.Servant authServant = new AuthServerImpl(orb);
          // org.omg.CORBA.Object authRef = rootPOA.servant_to_reference(authServant);
@@ -96,7 +114,7 @@ public class Main
          // 2) Publish IOR on given port (switch off this feature with '-iorPort -1'
          int iorPort = Args.getArg(args, "-iorPort", 7609); // default xmlBlaster IOR publishing port is 7609 (HTTP_PORT)
          if (iorPort > 0) {
-            HttpIORServer httpIORServer = new HttpIORServer(iorPort, orb.object_to_string(authRef));
+            httpIORServer = new HttpIORServer(iorPort, orb.object_to_string(authRef));
             Log.info(ME, "Published AuthServer IOR on port " + iorPort);
          }
 
@@ -104,8 +122,8 @@ public class Main
          boolean useNameService = Args.getArg(args, "-ns", true);  // default is to publish myself to the naming service
          if (useNameService) {
             try {
-               NamingContext nc = getNamingService();
-               NameComponent [] name = new NameComponent[1];
+               nc = getNamingService();
+               name = new NameComponent[1];
                name[0] = new NameComponent(); // name[0] = new NameComponent("AuthenticationService", "service");
                name[0].id = "xmlBlaster-Authenticate";
                name[0].kind = "MOM";
@@ -115,7 +133,9 @@ public class Main
             }
             catch (XmlBlasterException e) {
                Log.info(ME, "AuthServer IOR is not published to naming service");
+               nc = null;
             } catch (org.omg.CORBA.COMM_FAILURE e) {
+               nc = null;
                if (iorPort > 0) {
                   Log.info(ME, "Can't publish AuthServer to naming service, is your naming service really running?\n" +
                                e.toString() +
@@ -161,6 +181,34 @@ public class Main
 
 
    /**
+    *  Instructs the ORB to shut down, which causes all object adapters to shut down. 
+    */
+   public void shutdown(boolean wait_for_completion)
+   {
+      try {
+         if (httpIORServer != null) httpIORServer.shutdown();
+         if (nc != null) nc.unbind(name);
+         if (iorFile != null) FileUtil.deleteFile(null, iorFile);
+      }
+      catch (Exception e) {
+         Log.warning(ME, "Problems during ORB cleanup: " + e.toString());
+         e.printStackTrace();
+      }
+      orb.shutdown(wait_for_completion);
+   }
+
+
+   /**
+    * Access the authentication singleton. 
+    */
+   public Authenticate getAuthenticate()
+   {
+      return authServer.getAuthenticationService();
+   }
+
+
+
+   /**
     * Check for keyboard entries from console.
     * <p />
     * Supported input is:
@@ -181,7 +229,7 @@ public class Main
             if (line.toLowerCase().equals("g")) {
                if (controlPanel == null) {
                   Log.info(ME, "Invoking control panel GUI ...");
-                  controlPanel = new MainGUI(); // the constructor sets the variable controlPanel
+                  controlPanel = new MainGUI(new String[0]); // the constructor sets the variable controlPanel
                   controlPanel.run();
                }
                else
@@ -192,16 +240,16 @@ public class Main
                   String fileName = null;
                   if (line.length() > 1) fileName = line.substring(1).trim();
 
-                  Authenticate auth = Authenticate.getInstance();
+                  Authenticate auth = authServer.getAuthenticationService();
 
                   if (fileName == null) {
                      Log.plain(ME, auth.printOn().toString());
-                     Log.plain(ME, RequestBroker.getInstance(auth).printOn().toString());
+                     Log.plain(ME, auth.getRequestBroker().printOn().toString());
                      Log.info(ME, "Dump done");
                   }
                   else {
                      FileUtil.writeFile(fileName, auth.printOn().toString());
-                     FileUtil.appendToFile(fileName, RequestBroker.getInstance(auth).printOn().toString());
+                     FileUtil.appendToFile(fileName, auth.getRequestBroker().printOn().toString());
                      Log.info(ME, "Dumped internal state to '" + fileName + "'");
                   }
                }
@@ -210,6 +258,7 @@ public class Main
                }
             }
             else if (line.toLowerCase().equals("q")) {
+               shutdown(true);
                Log.exit(ME, "Good bye");
             }
             else // if (keyChar == '?' || Character.isLetter(keyChar) || Character.isDigit(keyChar))
