@@ -3,10 +3,11 @@ Name:      XmlToDom.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper which parses a XML ASCII string into a DOM tree
-Version:   $Id: XmlToDom.java,v 1.17 2002/09/13 23:18:18 ruff Exp $
+Version:   $Id: XmlToDom.java,v 1.18 2002/09/19 09:14:55 antman Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
+//import org.xmlBlaster.engine.Global;
 import org.jutils.log.LogChannel;
 
 import org.xml.sax.InputSource;
@@ -29,15 +30,16 @@ public class XmlToDom
    protected org.w3c.dom.Document xmlDoc = null;  // the parsed xmlKey_literal DOM
    protected org.w3c.dom.Node rootNode = null;    // this is always the <key ...>
 
-
+   protected Global glob;
    /**
     * Parses given xml string
     *
     * @param The original key in XML syntax, for example:<br>
     *        <pre><key oid="This is the unique attribute"></key></pre>
     */
-   public XmlToDom(String xmlKey_literal) throws XmlBlasterException
+   public XmlToDom(Global glob,String xmlKey_literal) throws XmlBlasterException
    {
+      this.glob = glob;
       log = org.xmlBlaster.util.Global.instance().getLog("core");
       create(xmlKey_literal);
    }
@@ -132,7 +134,7 @@ public class XmlToDom
       //input.setEncoding("ISO-8859-2");
       //input.setSystemId("9999999999");
 
-      com.jclark.xsl.dom.XMLProcessorImpl xmlProc = XmlProcessor.getInstance().getXmlProcessorImpl();
+      com.jclark.xsl.dom.XMLProcessorImpl xmlProc = XmlProcessor.getInstance(glob).getXmlProcessorImpl();
 
       try {
          xmlDoc = xmlProc.load(input);

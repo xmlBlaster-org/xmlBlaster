@@ -35,7 +35,12 @@ import java.util.Enumeration;
 
 import java.net.Socket;
 
-
+import org.xmlBlaster.util.JAXPFactory;
+import javax.xml.parsers.SAXParserFactory;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.FactoryConfigurationError;
+import javax.xml.transform.TransformerFactory;
+import javax.xml.transform.TransformerFactoryConfigurationError;
 /**
  * Global variables to avoid singleton.
  *
@@ -86,6 +91,10 @@ public class Global implements Cloneable
 
    protected Hashtable logChannels = new Hashtable();
    protected LogChannel logDefault = null;
+
+   protected SAXParserFactory saxFactory = null;
+   protected DocumentBuilderFactory docBuilderFactory = null;
+   protected TransformerFactory transformerFactory = null;
 
    protected int counter = 0;
 
@@ -947,6 +956,67 @@ public class Global implements Cloneable
          log.warn(ME, "Problems during ORB cleanup: " + e.toString());
          e.printStackTrace();
       }
+   }
+
+   /**
+    * Get the configured SAXParserFactory.
+    *
+    * <p>The implementation of the SAXParser factory is decided by the property <code>javax.xml.parsers.SAXParserFactory</code> if available in Global, othervise the default <code>org.apache.crimson.jaxp.SAXParserFactoryImpl</code>is returned</p>
+    */
+    public SAXParserFactory getSAXParserFactory() throws XmlBlasterException{
+      if ( saxFactory == null) {
+         try {
+            log.info(ME, getProperty().toXml());
+            saxFactory = JAXPFactory.newSAXParserFactory(
+               getProperty().get(
+                  "javax.xml.parsers.SAXParserFactory", 
+                  "org.apache.crimson.jaxp.SAXParserFactoryImpl")
+               );
+         } catch (FactoryConfigurationError e) {
+            throw new XmlBlasterException(ME+"SAXParserFactoryError",e.getMessage());
+         } // end of try-catch
+         
+      } // end of if ()
+      return saxFactory;
+   }
+   /**
+    * Get the configured  DocumentBuilderFactoryFactory.
+    *
+    * <p>The implementation of the  DocumentBuilderFactory is decided by the property <code>javax.xml.parsers.DocumentBuilderFactory</code> if available in Global, othervise the default <code>org.apache.crimson.jaxp.DocumentBuilderFactoryImpl</code>is returned</p>
+    */
+   public DocumentBuilderFactory getDocumentBuilderFactory()throws XmlBlasterException {
+      if ( docBuilderFactory == null) {
+         try {
+            log.info(ME, getProperty().toXml());
+            docBuilderFactory =JAXPFactory.newDocumentBuilderFactory(
+               getProperty().get(
+                  "javax.xml.parsers.DocumentBuilderFactory", 
+                  "org.apache.crimson.jaxp.DocumentBuilderFactoryImpl")
+               );
+         } catch (FactoryConfigurationError e) {
+            throw new XmlBlasterException(ME+"DocumentBuilderFactoryError",e.getMessage());
+         } // end of try-catch
+      } // end of if ()
+      return docBuilderFactory;
+   }
+   /**
+    * Get the configured  TransformerFactory.
+    *
+    * <p>The implementation of the   TransformerFactory is decided by the property <code>javax.xml.transform.TransformerFactory</code> if available in Global, othervise the default <code>org.apache.xalan.processor.TransformerFactoryImpl</code>is returned</p>
+    */
+   public TransformerFactory getTransformerFactory()throws XmlBlasterException {
+      if ( transformerFactory == null) {
+         try {
+            transformerFactory =JAXPFactory.newTransformerFactory(
+               getProperty().get(
+                  "javax.xml.transform.TransformerFactory", 
+                  "org.apache.xalan.processor.TransformerFactoryImpl")
+               );
+         } catch (TransformerFactoryConfigurationError e) {
+            throw new XmlBlasterException(ME+"TransformerFactoryError",e.getMessage());
+         } // end of try-catch
+      } // end of if ()
+      return transformerFactory;
    }
 
    /**

@@ -3,7 +3,7 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   The thread that does the actual connection and interaction
- * Version:   $Id: XmlDBAdapter.java,v 1.23 2002/09/04 21:36:06 kkrafft2 Exp $
+ * Version:   $Id: XmlDBAdapter.java,v 1.24 2002/09/19 09:15:32 antman Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
@@ -160,15 +160,7 @@ public class XmlDBAdapter
     */
    private Document createDocument() throws Exception
    {
-      //kkrafft2 (09/04/2002): the DocumentBuilderFactory should be switched by xmlBlaster.properties
-      String factoryBackup = System.getProperty("javax.xml.parsers.DocumentBuilderFactory");
-      String newFactory = glob.getProperty().get("javax.xml.parsers.DocumentBuilderFactory", "org.apache.crimson.jaxp.DocumentBuilderFactoryImpl");
-      System.setProperty("javax.xml.parsers.DocumentBuilderFactory",newFactory);
-      DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();
-      //restore old factory
-      if( factoryBackup != null )
-         System.setProperty("javax.xml.parsers.DocumentBuilderFactory",factoryBackup);
-
+      DocumentBuilderFactory dbf = glob.getDocumentBuilderFactory();
       dbf.setNamespaceAware(true);
       //dbf.setCoalescing(true);
       //dbf.setValidating(false);
