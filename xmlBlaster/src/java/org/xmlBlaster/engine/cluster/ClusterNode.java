@@ -369,12 +369,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
 
       // Publish messages to our RequestBroker WITHOUT ANY FURTHER SECURITY CHECKS:
 
-      //Transform an update to a publish: PublishKeyWrapper/PublishQosWrapper ?
-      XmlKey key = new XmlKey(glob, updateKey.toXml(), true);
-      PublishQos qos = new PublishQos(glob, updateQos);
-      MessageUnit msgUnit = new MessageUnit(key.literal(), content, qos.toXml());
-
-      String ret = glob.getRequestBroker().publish(sessionInfo, key, msgUnit, qos);
+      String ret = glob.getRequestBroker().update(sessionInfo, updateKey, content, updateQos);
       if (ret == null || ret.length() < 1)
          return Constants.RET_FORWARD_ERROR;
       return Constants.RET_OK;
