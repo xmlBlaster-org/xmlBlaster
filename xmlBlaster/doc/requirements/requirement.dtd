@@ -5,12 +5,13 @@ Name:      requirement.dtd
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Validates xml requirements
-Version:   $Id: requirement.dtd,v 1.21 2002/08/10 18:56:04 ruff Exp $
+Version:   $Id: requirement.dtd,v 1.22 2002/11/17 19:59:37 laghi Exp $
 -->
 
 <!ELEMENT requirement (
    topic,
    description,
+   serverDeveloperDescription,
    example*,
    configuration*,
    todo*,
@@ -30,6 +31,7 @@ Version:   $Id: requirement.dtd,v 1.21 2002/08/10 18:56:04 ruff Exp $
 
 <!ELEMENT topic  (%text;)>
 <!ELEMENT description  (%text;)>
+<!ELEMENT serverDeveloperDescription (%text;)> <!-- some description for the server programmer -->
 <!ELEMENT example  (%text;)> <!-- a nice example for the users -->
 <!ELEMENT configuration (%text;)> <!-- which parameters are how configurable -->
 <!ELEMENT todo  (%text;)>    <!-- even in CLOSED mode, is there something left to do? -->

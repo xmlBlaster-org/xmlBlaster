@@ -9,6 +9,7 @@
          <xsd:sequence>
             <xsd:element ref="topic"/>
             <xsd:element ref="description"/>
+            <xsd:element ref="serverDeveloperDescription "/>
             <xsd:element ref="example" minOccurs="0" maxOccurs="unbounded"/>
             <xsd:element ref="configuration" minOccurs="0" maxOccurs="unbounded"/>
             <xsd:element ref="todo" minOccurs="0" maxOccurs="unbounded"/>

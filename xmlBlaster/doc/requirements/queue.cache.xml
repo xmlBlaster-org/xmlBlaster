@@ -1,7 +1,6 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-
 <requirement id='queue.cache' type='NEW' prio='HIGH' status='CLOSED'>
    <topic>
         XmlBlaster provides a generic cache plugin for storing queue entries on a database and at the same offer
@@ -12,11 +11,21 @@
        a crash occurs, data will be recovered. Since it embeds a jdbc queue and a ram queue, it has the
        ability to cache entries on ram, improving this way the performance. On demand it is possible to inhibit 
        swapping.</p>
-       
-       
-       
-       
+       <p>Here follows a graphical explanation about the caching mechanism.
+      <img src="queueCache01.gif" border="0" alt="cacheQueue" />
+        </p>
     </description>
+
+    <serverDeveloperDescription>
+       <p>
+       The cache queue offers a mechanism for swapping. There are basically three different kind of threads which are
+       playing a role in the queue: the put threads, the take/remove/peek threads and a third kind of thread which only
+       acts in case the connection to the DB has been lost: the reconnection timeout thread. 
+       </p>
+       <p>The synchronization principles and the status diagram of the cache queue is described in the following
+       picture. <img src='queueCacheSynch.gif' border='0' alt='queueCacheSynch.gif' />
+       </p>
+    </serverDeveloperDescription>
 
     <example lang="Java" type="HTML">
        These are example QoS of subscribe() invocations:
@@ -133,7 +142,7 @@
 <!--   <see type="REQ">cluster</see> -->
    <author>laghi@swissinfo.org</author>
    <date>2002 11 17</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
