@@ -66,7 +66,7 @@ All packages allow free use for both commercial and non-commercial applications.
 
 6) jacorb.jar and idl.jar
 =========================
-   This is the JacORB CORBA library, on which xmlBlaster is based.
+   This is the JacORB 1.2.1 CORBA library, on which xmlBlaster is based.
    It us under LGPL.
 
    Download http://www.inf.fu-berlin.de/~brose/jacorb
