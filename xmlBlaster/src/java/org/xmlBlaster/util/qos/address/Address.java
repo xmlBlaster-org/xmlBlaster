@@ -41,7 +41,9 @@ public class Address extends AddressBase
    public Address(Global glob, String type) {
       super(glob, "address");
       this.instanceName = Constants.RELATING_CLIENT;
-      setType(type);
+      if (type != null) {
+         setType(type);
+      }
       initialize();
    }
 
@@ -59,7 +61,9 @@ public class Address extends AddressBase
       super(glob, "address");
       this.nodeId = nodeId;
       this.instanceName = Constants.RELATING_CLIENT;
-      setType(type);
+      if (type != null) {
+         setType(type);
+      }
       initialize();
    }
 

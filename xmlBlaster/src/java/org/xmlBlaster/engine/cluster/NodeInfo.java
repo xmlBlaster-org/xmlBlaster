@@ -195,7 +195,7 @@ public final class NodeInfo
       }
       if (name.equalsIgnoreCase("address")) {
          inAddress = true;
-         tmpAddress = new Address(glob, "", getId());
+         tmpAddress = new Address(glob, null, getId());
          tmpAddress.startElement(uri, localName, name, character, attrs);
          return true;
       }
