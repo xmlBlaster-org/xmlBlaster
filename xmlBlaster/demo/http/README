@@ -38,7 +38,7 @@ See: http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.browser.html
    Before you need to edit tomcat.sh and add out jar file in front of
    the tomcat CLASSPATH:
 
-   export CLASSPATH=${XMLBLASTER_HOME}/lib/jacorb.jar:${XMLBLASTER_HOME}/lib/parser.jar:${XMLBLASTER_HOME}/lib/xmlBlaster.jar:$CLASSPATH
+   export CLASSPATH=${XMLBLASTER_HOME}/lib/jacorb/jacorb.jar:${XMLBLASTER_HOME}/lib/parser.jar:${XMLBLASTER_HOME}/lib/xmlBlaster.jar:$CLASSPATH
 
 
 5a. Start you browser and the DHTML demo:
@@ -108,7 +108,7 @@ These are optional tasks:
 
 
 Add xmlBlaster CLASSPATH:
-    export CLASSPATH=${XMLBLASTER_HOME}/lib/jacorb.jar:${XMLBLASTER_HOME}/lib/parser.jar:${XMLBLASTER_HOME}/lib/xmlBlaster.jar:$CLASSPATH
+    export CLASSPATH=${XMLBLASTER_HOME}/lib/jacorb/jacorb.jar:${XMLBLASTER_HOME}/lib/parser.jar:${XMLBLASTER_HOME}/lib/xmlBlaster.jar:$CLASSPATH
 
 For deployment see WEB-INF/web.xml
 

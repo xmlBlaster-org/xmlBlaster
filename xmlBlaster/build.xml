@@ -140,7 +140,7 @@ TODO
 
    <property name="cp.j2ee" value="lib/connector.jar:lib/jaas.jar:lib/jta-spec1_0_1.jar:lib/javax.jms.jar:lib/ejb2.0.jar:lib/jndi-jdk1_3_1.jar"/>
    <property name="cp.xml" value="lib/parser.jar:lib/jaxp.jar:lib/omquery.jar:lib/xtdash.jar"/>
-   <property name="cp.orb" value="lib/miniJacorb.jar:lib/idl.jar:lib/jacorb.jar:lib/logkit.jar"/>
+   <property name="cp.orb" value="lib/miniJacorb.jar:lib/jacorb/idl.jar:lib/jacorb/jacorb.jar:lib/jacorb/logkit-1.2.jar:lib/jacorb/avalon-framework-4.1.5.jar"/>
    <property name="cp.core" value="lib/concurrent.jar:lib/remotecons.jar:lib/servlet.jar:lib/junit.jar:lib/xmlunit.jar:${JAVA_HOME}/lib/tools.jar:lib/xmlrpc.jar:lib/jutils.jar:lib/gnu-regexp.jar:lib/commons-codec.jar:lib/commons-lang-2.0.jar"/>
    <property name="cp.other" value="lib/mail.jar:lib/activation.jar:lib/batik/batik.jar:lib/batik/js.jar:lib/jax.jar:lib/jhotdraw.jar:lib/naming-common.jar:lib/naming-java.jar:lib/commons-logging.jar"/>
    <property name="cp.db" value="lib/jdbc7.2dev-1.2.jar:lib/hsqldb.jar:lib/mysql-connector-java-3.0.8-stable-bin.jar/"/>
@@ -659,8 +659,8 @@ TODO
         includes="jboss-service.xml"
         prefix="META-INF"/>
       <fileset dir="${lib.dir}"
-        includes="activation.jar,idl.jar,jacorb.jar,omquery.jar,xtdash.jar,remotecons.jar,jax.jar,concurrent.jar,jaxp.jar,parser.jar, xmlrpc.jar,gnu-regexp.jar,tinySQL.jar"
-        />
+        includes="activation.jar,jacorb/idl.jar,jacorb/avalon-framework-4.1.5.jar,jacrob/logkit-1.2.jar,jacorb/jacorb.jar,omquery.jar,xtdash.jar,remotecons.jar,jax.jar,concurrent.jar,jaxp.jar,parser.jar, xmlrpc.jar,gnu-regexp.jar,tinySQL.jar"
+        />					       
       <fileset dir="${build.dir}/sar"
         includes="xmlBlaster.properties,xmlBlasterPlugins.xml,xmlBlaster.jar"
         />
@@ -678,7 +678,9 @@ TODO
       <mkdir dir="${build.dir}/ra"/>
       <mkdir dir="${build.dir}/ra/META-INF"/>
 
-      <copy file="${lib.dir}/jacorb.jar"  toFile="${build.dir}/ra/jacorb.jar"/>
+      <copy file="${lib.dir}/jacorb/jacorb.jar"  toFile="${build.dir}/ra/jacorb.jar"/>
+      <copy file="${lib.dir}/jacorb/avalon-framework-4.1.5.jar"  toFile="${build.dir}/ra/avalon-framework-4.1.5.jar"/>
+      <copy file="${lib.dir}/jacorb/logkit-1.2.jar"  toFile="${build.dir}/ra/logkit-1.2.jar"/>
       <copy file="${src.java.dir}/org/xmlBlaster/j2ee/k2/ra.xml" toFile="${build.dir}/ra/META-INF/ra.xml"/>
     <!-- Remove propertyfile from build by commenting this  out   -->
     <copy file="${src.java.dir}/org/xmlBlaster/j2ee/k2/blasterk2.properties" toFile="${build.dir}/ra/blasterk2.properties"/>
@@ -766,14 +768,16 @@ TODO
       <copy todir="${build.war}/WEB-INF/classes/http">
          <fileset dir="${build.dest}/http"/>
       </copy>
-      <copy file="${lib.dir}/jacorb.jar" tofile="${build.war}/WEB-INF/lib/jacorb.jar"/>
+      <copy file="${lib.dir}/jacorb/jacorb.jar" tofile="${build.war}/WEB-INF/lib/jacorb.jar"/>
+      <copy file="${lib.dir}/jacorb/avalon-framework-4.1.5.jar" tofile="${build.war}/WEB-INF/lib/avalon-framework-4.1.5.jar"/>
+      <copy file="${lib.dir}/jacorb/logkit-1.2.jar" tofile="${build.war}/WEB-INF/lib/logkit-1.2.jar"/>
       <copy file="${config.dir}/jacorb.properties.template" tofile="${build.war}/WEB-INF/classes/jacorb.properties" filtering="false"/>
-      <jar destfile="${build.war}/WEB-INF/lib/jacorb.jar" update="yes" file="${build.war}/WEB-INF/classes/jacorb.properties"/>
+      <jar destfile="${build.war}/WEB-INF/lib/jacorb/jacorb.jar" update="yes" file="${build.war}/WEB-INF/classes/jacorb.properties"/>
       <copy file="${lib.dir}/xmlBlaster.jar" tofile="${build.war}/WEB-INF/lib/xmlBlaster.jar"/>
       <copy file="${lib.dir}/parser.jar" tofile="${build.war}/WEB-INF/lib/parser.jar"/>
       <copy file="${lib.dir}/commons-codec.jar" tofile="${build.war}/WEB-INF/lib/commons-codec.jar"/> <!-- Base64 for applet -->
 
-      <!-- unjar src="${lib.dir}/jacorb.jar" dest="${build.war}/WEB-INF/classes" />
+      <!-- unjar src="${lib.dir}/jacorb/jacorb.jar" dest="${build.war}/WEB-INF/classes" />
       <unjar src="${lib.dir}/xmlBlaster.jar" dest="${build.war}/WEB-INF/classes" />
       <unjar src="${lib.dir}/parser.jar" dest="${build.war}/WEB-INF/classes" / -->
 
@@ -1320,8 +1324,8 @@ TODO
       </switch>
       <switch value="${ADD_CORBA}">
          <case value="true">
-            <echo message="Adding ${lib.dir}/jacorb.jar for CORBA support" />
-            <unjar src="${lib.dir}/jacorb.jar" dest="${dist-classes.dir}" />
+            <echo message="Adding ${lib.dir}/jacorb/jacorb.jar for CORBA support" />
+            <unjar src="${lib.dir}/jacorb/jacorb.jar" dest="${dist-classes.dir}" />
             <unjar src="${lib.dir}/miniJacorb.jar" dest="${dist-classes.dir}" />
          </case>
          <default>
@@ -1505,8 +1509,8 @@ TODO
       </switch>
       <switch value="${ADD_CORBA}">
          <case value="true">
-            <echo message="Adding ${lib.dir}/jacorb.jar for CORBA support" />
-            <unjar src="${lib.dir}/jacorb.jar" dest="${dist-client.dir}/classes" />
+            <echo message="Adding ${lib.dir}/jacorb/jacorb.jar for CORBA support" />
+            <unjar src="${lib.dir}/jacorb/jacorb.jar" dest="${dist-client.dir}/classes" />
             <unjar src="${lib.dir}/miniJacorb.jar" dest="${dist-client.dir}/classes" />
          </case>
          <default>

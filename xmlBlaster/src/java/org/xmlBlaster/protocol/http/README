@@ -160,7 +160,7 @@ Config files setup:
       wrapper.bin.parameters=-Dorg.omg.CORBA.ORBSingletonClass=org.jacorb.orb.ORBSingleton
       wrapper.bin.parameters=-Dorg.xml.sax.parser=com.sun.xml.parser.Parser
 
-      wrapper.classpath=/home/ruff/xmlBlaster/lib/jacorb.jar
+      wrapper.classpath=/home/ruff/xmlBlaster/lib/jacorb/jacorb.jar
       wrapper.classpath=/home/ruff/xmlBlaster/lib/idl.jar
       wrapper.classpath=/home/ruff/xmlBlaster/classes
       #wrapper.classpath=/home/ruff/xmlBlaster/lib/xmlBlaster.jar

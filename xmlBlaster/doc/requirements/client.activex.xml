@@ -662,7 +662,7 @@ Catch e As SystemException
 
         <li>Fix CORBA driver loading problem.
           There seems to be a CLASSLOADER problem which we need to solve.<br/>
-          Copying <code>xmlBlaster\lib\jacorb.jar</code> to <code>%JRE_HOME%\lib\ext</code>
+          Copying <code>xmlBlaster\lib\jacorb\jacorb.jar</code> to <code>%JRE_HOME%\lib\ext</code>
           doe not seem to solve the problem entirely, so please stick to the SOCKET
           protocol until this issue is resolved.</li>
 
@@ -690,6 +690,6 @@ Catch e As SystemException
 
    <author><a href="mailto:xmlblaster@marcelruff.info">Marcel Ruff</a></author>
    <date>2004 03 12</date>
-   <revision>$Revision: 1.16 $</revision>
+   <revision>$Revision: 1.17 $</revision>
 </requirement>
 

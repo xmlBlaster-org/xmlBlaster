@@ -88,7 +88,7 @@ NDOWS\SYSTEM;F:\MSSQL7\BINN;c:\ant\bin
 
 E:\>echo %CLASSPATH%
 c:\JacORB1_1\classes;c:\ant\lib\ant.jar;c:\JacORB1_1\lib\idl.jar;c:\JacORB1_
-1\lib\jacorb.jar;c:\jdk1.2.2\lib\tools.jar;.
+1\lib\jacorb\jacorb.jar;c:\jdk1.2.2\lib\tools.jar;.
 
 
 E:\>appletviewer -J-Dorg.omg.CORBA.ORBClass=org.jacorb.orb.ORB -J-Dorg.omg.CORBA
@@ -102,7 +102,7 @@ java.lang.NoClassDefFoundError: org/omg/CosNaming/NamingContextOperations
         at java.lang.Thread.run(Thread.java:479)
 
 
-E:\>appletviewer -J-cp -Jc:\JacORB1_1\lib\jacorb.jar -J-Dorg.omg.CORBA.ORBCl
+E:\>appletviewer -J-cp -Jc:\JacORB1_1\lib\jacorb\jacorb.jar -J-Dorg.omg.CORBA.ORBCl
 ass=org.jacorb.orb.ORB -J-Dorg.omg.CORBA.ORBSingletonClass=org.jacorb.orb.ORBSinglet
 on http://localhost/Jacorb/test.html
 Initializing the ORB
@@ -116,7 +116,7 @@ java.lang.RuntimeException: Appligator not reachable! Check configuration
 
 
 
-E:\>appletviewer -J-Xbootclasspath:c:\JacORB1_1\lib\jacorb.jar;c:\jdk1.2.2\j
+E:\>appletviewer -J-Xbootclasspath:c:\JacORB1_1\lib\jacorb\jacorb.jar;c:\jdk1.2.2\j
 re\lib\rt.jar -J-Dorg.omg.CORBA.ORBClass=org.jacorb.orb.ORB -J-Dorg.omg.CORBA.OR
 BSingletonClass=org.jacorb.orb.ORBSingleton http://localhost/Jacorb/test.html
 Initializing the ORB
@@ -156,7 +156,7 @@ though I would post what I've found in hopes that it would be of value.
 
 Add:
 
-        "-Xbootclasspath/p:c:\jacorb\lib\jacorb.jar" to the plug-in parameters
+        "-Xbootclasspath/p:c:\jacorb\lib\jacorb\jacorb.jar" to the plug-in parameters
 (change path to match yours)
 
 This prepends the JacORB classes to the vm.  Even though the 1.1 works
