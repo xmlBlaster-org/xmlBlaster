@@ -59,7 +59,11 @@ PACKGS = org.xmlBlaster \
 			org.xmlBlaster.protocol.xmlrpc \
 			org.xmlBlaster.protocol.socket \
 			org.xmlBlaster.protocol.nativ \
-			org.xmlBlaster.util
+			org.xmlBlaster.util \
+			org.xmlBlaster.util.protocol \
+			org.xmlBlaster.util.recorder \
+			org.xmlBlaster.util.recorder.file \
+			org.xmlBlaster.util.recorder.ram
 
 JUTILS_PACKGS = 
 
@@ -75,7 +79,7 @@ JUTILS_PACKGS =
 
 
 
-TEST_PACKGS = testsuite.org.xmlBlaster classtest clustertest
+TEST_PACKGS = testsuite.org.xmlBlaster classtest clustertest authentication testsuite.org.xmlBlaster.mime
 
 # We use special notation demo/javaclients/*.java because of HelloWorld.java is without package name
 DEMO_PACKGS = demo/javaclients/*.java javaclients.corba javaclients.rmi javaclients.jdbc javaclients.chat javaclients.svg.rhino javaclients.HelloWorldApplet http.dhtml.systemInfo
