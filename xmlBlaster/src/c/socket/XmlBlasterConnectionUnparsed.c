@@ -521,6 +521,7 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
    }
    
    /* send the header ... */
+   if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__, "Lowlevel writing data to socket ...");
    numSent = writen(udp ? xb->socketToXmlBlasterUdp : xb->socketToXmlBlaster, rawMsg, (int)rawMsgLen);
    if (numSent == -1) {
       if (xb->logLevel>=LOG_WARN) xb->log(xb->logUserP, xb->logLevel, LOG_WARN, __FILE__,
@@ -548,6 +549,7 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
       }
       return false;
    }
+   if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__, "Lowlevel writing data to socket done.");
 
    free(rawMsg);
    rawMsg = 0;
