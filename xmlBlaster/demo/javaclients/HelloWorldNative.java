@@ -12,13 +12,12 @@ import org.xmlBlaster.util.plugin.PluginInfo;
 
 /**
  * This native client plugin is loaded by xmlBlaster on startup, 
- * it then connects to xmlBlaster and gets synchronous a message and disconnects. 
+ * it then connects to xmlBlaster. 
  * <p />
  * You need to add this plugin to xmlBlasterPlugins.xml, for example:
  * <pre>
  *  &lt;plugin id='HelloWorldNative' className='javaclients.HelloWorldNative'>
- *     &lt;action do='LOAD' onStartupRunlevel='9' sequence='5'
- *                          onFail='resource.configuration.pluginFailed'/>
+ *     &lt;action do='LOAD' onStartupRunlevel='3' sequence='0' onFail='resource.configuration.pluginFailed'/>
  *     &lt;action do='STOP' onShutdownRunlevel='6' sequence='4'/>
  *  &lt;/plugin>
  * </pre>
@@ -26,9 +25,8 @@ import org.xmlBlaster.util.plugin.PluginInfo;
  * plugin works only if client and server is in the same virtual machine (JVM).
  * Other protocols like CORBA or SOCKET would work as well but carry the overhead
  * of sending the message over TCP/IP.
- * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.runlevel.html"
- *       target="others">run level requirement</a>
- * @see javaclients.HelloWorldNative2
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.local.html" target="others">native protocol requirement</a>
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.runlevel.html" target="others">run level requirement</a>
  */
 public class HelloWorldNative implements I_Plugin
 {
@@ -37,38 +35,35 @@ public class HelloWorldNative implements I_Plugin
           "-protocol", "LOCAL",
           "-dispatch/connection/pingInterval", "0",
           "-dispatch/connection/burstMode/collectTime", "0",
+          //"-queue/callback/defaultPlugin", "RAM,1.0",
+          //"-queue/connection/defaultPlugin", "RAM,1.0",
+          //"-queue/subject/defaultPlugin", "RAM,1.0",
           "-queue/defaultPlugin", "RAM,1.0"
           };
 
-   private final void queryServerMemory() {
+   private final void doLogin() {
       try {
-         System.err.println("HelloWorldNative: Connecting with protocol 'LOCAL'\n");
+         System.err.println("HelloWorldNative: Connecting with protocol 'LOCAL' to xmlBlaster\n");
          I_XmlBlasterAccess con = new XmlBlasterAccess(glob);
 
          ConnectQos qos = new ConnectQos(this.glob); /* Client side object */
+         qos.setPtpAllowed(false);
          qos.setUserId("A-NATIVE-CLIENT-PLUGIN");
          qos.getSessionQos().setSessionTimeout(0L);
-         con.connect(qos, null);  // Login as "A-NATIVE-CLIENT-PLUGIN"
-
-         MsgUnit[] msgs = con.get("<key oid='__cmd:?freeMem'/>", null);
-
-         System.out.println("\nHelloWorldNative: xmlBlaster has currently " +
-                new String(msgs[0].getContent()) + " bytes of free memory\n");
-
-         con.disconnect(null);
+         con.connect(qos, null);    // Login to xmlBlaster as "A-NATIVE-CLIENT-PLUGIN"
+         //Here we could publish or subscribe etc., see HelloWorld3.java how to do it
+         //con.disconnect(null);
       }
       catch (Exception e) {
-         System.err.println("HelloWorldNative: Exception: "+e.toString());
+         System.err.println("HelloWorldNative: We have a problem: " + e.toString());
       }
    }
 
-   public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo)
-                                                    throws XmlBlasterException {
+   public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo) throws XmlBlasterException {
       this.glob = glob.getClone(nativeConnectArgs);
-      this.glob.addObjectEntry("ServerNodeScope", 
-                               glob.getObjectEntry("ServerNodeScope"));
+      this.glob.addObjectEntry("ServerNodeScope", glob.getObjectEntry("ServerNodeScope"));
       System.out.println("\nHelloWorldNative: init(): The plugin is loaded");
-      queryServerMemory();
+      doLogin();
    }
 
    public String getType() {
@@ -86,10 +81,10 @@ public class HelloWorldNative implements I_Plugin
    /** To start as a plugin */
    public HelloWorldNative() {}
 
-   /** To start as a standalone client: java javaclients.HelloWorldNative */
+   /** To start as a separate client: java javaclients.HelloWorldNative */
    public HelloWorldNative(String args[]) {
       this.glob = new Global(args);
-      queryServerMemory();
+      doLogin();
    }
 
    public static void main(String args[]) {
