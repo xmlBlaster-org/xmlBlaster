@@ -3,7 +3,7 @@ Name:      SubscriptionInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles exactly one subscritpion (client reference and QoS of this subscrition
-Version:   $Id: SubscriptionInfo.java,v 1.17 2000/02/24 22:19:52 ruff Exp $
+Version:   $Id: SubscriptionInfo.java,v 1.18 2000/03/03 15:52:29 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -28,24 +28,54 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
 {
    private String ME = "SubscriptionInfo";
 
-   private ClientInfo clientInfo;            // reference on ClientInfo
-   private XmlKey xmlKey;                    // reference to xmlKey
-   private XmlQoSBase xmlQoSBase = null;     // reference to 'Quality of Service' base class
-   private SubscribeQoS subscribeQoS = null; // reference to 'Quality of Service' of subscription
-   private UnSubscribeQoS unSubscribeQoS = null; // reference to 'Quality of Service' of unsubscription
+   /** reference on ClientInfo */
+   private ClientInfo clientInfo;
+   /** reference to xmlKey */
+   private XmlKey xmlKey;
+   /** reference to 'Quality of Service' base class */
+   private XmlQoSBase xmlQoSBase = null;
+   /** reference to 'Quality of Service' of subscription */
+   private SubscribeQoS subscribeQoS = null;
+   /** reference to 'Quality of Service' of unsubscription */
+   private UnSubscribeQoS unSubscribeQoS = null;
+   /** The unique key of a subscription, which is a function of f(clientInfo,xmlKey,xmlQoS). <br />
+       This is the returned id of a subscribe() invocation */
    private String uniqueKey=null;
-
-   private MessageUnitHandler myHandler;     // reference to my managing container
+   /** reference to my managing container */
+   private MessageUnitHandler myHandler;
+   /** A reference to the query subscription (XPATH), which created this subscription
+       If the subscription was EXACT, querySub is null */
+   private SubscriptionInfo querySub = null;
 
    private long creationTime = System.currentTimeMillis();
 
 
    /**
+    * Use this constructor for an exact subscription. 
     * @param clientInfo The client we deal with
     * @param xmlKey     The message meta info
     * @param qos        This may be a SubscribeQoS or a UnSubscribeQoS instance (very bad hack!)
     */
    public SubscriptionInfo(ClientInfo clientInfo, XmlKey xmlKey, XmlQoSBase qos) throws XmlBlasterException
+   {
+      init(clientInfo, xmlKey, qos);
+   }
+
+
+   /**
+    * Use this constructor it the subscription is a result of a XPath subscription
+    * @param clientInfo The client we deal with
+    * @param xmlKey     The message meta info
+    * @param qos        This may be a SubscribeQoS or a UnSubscribeQoS instance (very bad hack!)
+    */
+   public SubscriptionInfo(SubscriptionInfo querySub, XmlKey xmlKey) throws XmlBlasterException
+   {
+      this.querySub = querySub;
+      init(querySub.getClientInfo(), xmlKey, querySub.getSubscribeQoS());
+   }
+
+
+   private void init(ClientInfo clientInfo, XmlKey xmlKey, XmlQoSBase qos) throws XmlBlasterException
    {
       this.clientInfo = clientInfo;
       this.xmlKey = xmlKey;
@@ -113,6 +143,20 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
 
 
    /**
+    * @return The message wrapper object
+    * @exception If no MessageUnitWrapper available
+    */
+   final MessageUnitWrapper getMessageUnitWrapper() throws XmlBlasterException
+   {
+      if (myHandler == null) {
+         Log.warning(ME, "Key oid=" + uniqueKey + " has no MessageUnitHandler which takes care of it");
+         throw new XmlBlasterException(ME + ".NoMessageUnitWrapper", "Key oid=" + uniqueKey + " has no MessageUnitHandler which takes care of it");
+      }
+      return myHandler.getMessageUnitWrapper();
+   }
+
+
+   /**
     * Compare method needed for Interface Comparable.
     *
     * This determines the sorting order, by which the
@@ -162,6 +206,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
       return subscribeQoS;
    }
 
+
    /**
     * Accessing a unique id generated for this SubscriptionInfo.
     * @return A unique key for this particular subscription
@@ -172,6 +217,19 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
          uniqueKey = SubscriptionInfo.generateUniqueKey(clientInfo, xmlKey, xmlQoSBase).toString();
       }
       return uniqueKey;
+   }
+
+
+   /**
+    * Accessing the unique subscription id from method subscribe(), which was the reason for this SubscriptionInfo
+    * @return The subscription id which is used in updateQoS - $lt;subscritpionId>
+    */
+   public String getSubSourceUniqueKey() throws XmlBlasterException
+   {
+      if (querySub != null) {
+         return querySub.getUniqueKey();
+      }
+      return getUniqueKey();
    }
 
 

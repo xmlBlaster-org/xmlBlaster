@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.58 2000/02/28 18:39:50 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.59 2000/03/03 15:52:29 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -22,14 +22,14 @@ import java.util.*;
 import java.io.*;
 
 /**
- * This is the central message broker, all requests are routed through this singleton. 
+ * This is the central message broker, all requests are routed through this singleton.
  * <p>
  * The interface ClientListener informs about Client login/logout<br />
  * The interface MessageEraseListener informs when a MessageUnit is erased<br />
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.58 $
+ * @version $Revision: 1.59 $
  * @author ruff@swand.lake.de
  */
 public class RequestBroker implements ClientListener, MessageEraseListener
@@ -90,7 +90,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
-    * One instance of this represent one xmlBlaster server. 
+    * One instance of this represent one xmlBlaster server.
     * @param authenticate The authentication service
     */
    public RequestBroker(Authenticate authenticate) throws XmlBlasterException
@@ -103,7 +103,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
       authenticate.addClientListener(this);
       addMessageEraseListener(this);
- 
+
       loadPersistentMessages();
    }
 
@@ -728,9 +728,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
                   if (matchVec != null && matchVec.size() >= 1 && matchVec.elementAt(0) != null) {
                      if (Log.TRACE) Log.trace(ME, "The new xmlKey=" + xmlKey.getUniqueKey() + " is matching the existing query subscription " + queryXmlKey.getUniqueKey());
-                     SubscriptionInfo subs = new SubscriptionInfo(existingQuerySubscription.getClientInfo(),
-                                                                  xmlKey,
-                                                                  existingQuerySubscription.getSubscribeQoS());
+                     SubscriptionInfo subs = new SubscriptionInfo(existingQuerySubscription, xmlKey);
                      matchingSubsVec.addElement(subs);
                   }
                   else {

@@ -3,7 +3,7 @@ Name:      ClientInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: ClientInfo.java,v 1.25 2000/02/24 22:19:52 ruff Exp $
+Version:   $Id: ClientInfo.java,v 1.26 2000/03/03 15:52:29 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -31,7 +31,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
  * It also contains a message queue, where messages are stored
  * until they are delivered at the next login of this client.
  *
- * @version $Revision: 1.25 $
+ * @version $Revision: 1.26 $
  * @author $Author: ruff $
  */
 public class ClientInfo
@@ -94,21 +94,21 @@ public class ClientInfo
 
 
    /**
-    * This sends the update to the client, or stores it in the client queue or throws an exception.
+    * PtP mode: This sends the update to the client, or stores it in the client queue or throws an exception.
     * @param msgUnitWrapper Wraps the msgUnit with some more infos
-    * @param destination The Destination object of the receiver (is null in Pub/Sub mode!)
+    * @param destination The Destination object of the receiver
     */
-   public final void sendUpdate(MessageUnitWrapper msgUnitWrapper, Destination destination) throws XmlBlasterException
+   final void sendUpdate(MessageUnitWrapper msgUnitWrapper, Destination destination) throws XmlBlasterException
    {
       if (isLoggedIn()) {
          if (Log.TRACE) Log.trace(ME, "Client [" + loginName + "] is logged in, sending message");
-         getCallbackDriver().sendUpdate(this, msgUnitWrapper, getUpdateQoS(msgUnitWrapper));
+         getCallbackDriver().sendUpdate(this, msgUnitWrapper, getUpdateQoS((String)null, msgUnitWrapper));
          sentMessages++;
       }
       else {
          if (destination == null) {
-            Log.error(ME+".Internal", "Client '" + getLoginName() + "' is not logged in, can't deliver message: In Pub/Sub mode this should not happen!");
-            throw new XmlBlasterException(ME+".Internal", "Client '" + getLoginName() + "' is not logged in, can't deliver message '" + msgUnitWrapper.getUniqueKey() + "': In Pub/Sub mode this should not happen!");
+            Log.error(ME+".Internal", "Client '" + getLoginName() + "' is not logged in, can't deliver message");
+            throw new XmlBlasterException(ME+".Internal", "Client '" + getLoginName() + "' is not logged in, can't deliver message '" + msgUnitWrapper.getUniqueKey() + "'");
          }
 
          if (!destination.forceQueuing()) {
@@ -121,6 +121,25 @@ public class ClientInfo
          }
          if (Log.TRACE) Log.trace(ME, "Client [" + loginName + "] is not logged in, queing message");
          messageQueue.push(msgUnitWrapper);
+      }
+   }
+
+
+   /**
+    * Pub/Sub mode: This sends the update to the client, or stores it in the client queue or throws an exception.
+    * @param subInfo Container for all infos about this subscription
+    */
+   final void sendUpdate(SubscriptionInfo subInfo) throws XmlBlasterException
+   {
+      MessageUnitWrapper msgUnitWrapper = subInfo.getMessageUnitWrapper();
+      if (isLoggedIn()) {
+         if (Log.TRACE) Log.trace(ME, "Client [" + loginName + "] is logged in, sending message");
+         getCallbackDriver().sendUpdate(this, msgUnitWrapper, getUpdateQoS(subInfo.getSubSourceUniqueKey(), subInfo.getMessageUnitWrapper()));
+         sentMessages++;
+      }
+      else {
+         Log.error(ME+".Internal", "Client '" + getLoginName() + "' is not logged in, can't deliver message: In Pub/Sub mode this should not happen!");
+         throw new XmlBlasterException(ME+".Internal", "Client '" + getLoginName() + "' is not logged in, can't deliver message '" + msgUnitWrapper.getUniqueKey() + "': In Pub/Sub mode this should not happen!");
       }
    }
 
@@ -174,7 +193,7 @@ public class ClientInfo
             if (msgUnitWrapper == null)
                break;
 
-            getCallbackDriver().sendUpdate(this, msgUnitWrapper, getUpdateQoS(msgUnitWrapper));
+            getCallbackDriver().sendUpdate(this, msgUnitWrapper, getUpdateQoS((String)null, msgUnitWrapper));
             sentMessages++;
          }
       }
@@ -183,7 +202,9 @@ public class ClientInfo
 
    /**
     * The QoS for the update callback, containing the <sender> name.
-    * @param msgUnitWrapper The wrapper containing all message infos
+    * @param subscritpionId The subscription id which triggered this update
+    *        May be of interest for the client getting the update
+    * @param msgUnitWrapper
     * @return the QoS (quality of service) for the update callback<br />
     *   Example:<br />
     *   <pre>
@@ -194,9 +215,27 @@ public class ClientInfo
     *      &lt;/qos>
     *   </pre>
     */
-   private String getUpdateQoS(MessageUnitWrapper msgUnitWrapper)
+   private String getUpdateQoS(String subscriptionId, MessageUnitWrapper msgUnitWrapper) throws XmlBlasterException
    {
-      return "\n<qos>\n   <sender>\n      " + msgUnitWrapper.getPublisherName() + "\n   </sender>\n</qos>";
+      StringBuffer buf = new StringBuffer();
+      buf.append("\n<qos>\n");
+
+      buf.append("   <state>");  // !!! not yet supported
+      buf.append("      OK");    // OK | EXPIRED | ERASED
+      buf.append("   </state>");
+
+      if (msgUnitWrapper != null) {
+         buf.append("   <sender>\n");
+         buf.append("      ").append(msgUnitWrapper.getPublisherName());
+         buf.append("\n   </sender>\n");
+      }
+      if (subscriptionId != null) {
+         buf.append("   <subscriptionId>\n");
+         buf.append("      ").append(subscriptionId);
+         buf.append("\n   </subscriptionId>\n");
+      }
+      buf.append("</qos>");
+      return buf.toString();
    }
 
 

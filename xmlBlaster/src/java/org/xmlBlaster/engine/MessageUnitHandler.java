@@ -3,7 +3,7 @@ Name:      MessageUnitHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling exactly one message content
-Version:   $Id: MessageUnitHandler.java,v 1.27 2000/02/24 22:19:52 ruff Exp $
+Version:   $Id: MessageUnitHandler.java,v 1.28 2000/03/03 15:52:29 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -349,6 +349,8 @@ public class MessageUnitHandler
 
 
    /**
+    * Send update to subscribed client (Pub/Sub mode only).
+    * @param sub The subscription handle of the client
     */
    public final void invokeCallback(SubscriptionInfo sub) throws XmlBlasterException
    {
@@ -357,7 +359,7 @@ public class MessageUnitHandler
          return;
       }
       ClientInfo clientInfo = sub.getClientInfo();
-      clientInfo.sendUpdate(getMessageUnitWrapper(), (Destination)null);
+      clientInfo.sendUpdate(sub);
    }
 
 

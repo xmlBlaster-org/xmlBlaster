@@ -3,7 +3,7 @@ Name:      MessageUnitWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping the CORBA MessageUnit to allow some nicer usage
-Version:   $Id: MessageUnitWrapper.java,v 1.14 2000/02/24 22:19:52 ruff Exp $
+Version:   $Id: MessageUnitWrapper.java,v 1.15 2000/03/03 15:52:29 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -22,7 +22,7 @@ import java.util.*;
  * Wrapping the CORBA MessageUnit to allow some nicer usage.
  * <p />
  * If you look at the CORBA generated MessageUnit, its very raw and
- * dos not allow any modifications.<br />
+ * does not allow any modifications.<br />
  * So this Wrapper encapsulates the CORBA generated MessageUnit and adds
  * some value to it.
  */
@@ -33,11 +33,22 @@ public class MessageUnitWrapper
    /** The broker which manages me */
    private RequestBroker requestBroker;
 
-   private MessageUnit msgUnit;  // The CORBA MessageUnit (raw struct)
-   private XmlKey xmlKey;            // the meta data describing this message
-   private PublishQoS publishQoS;    // the flags from the publisher
-   private String publisherName;     // the unique loginName of the publisher
-   private String uniqueKey;         // Attribute oid of key tag: <key oid="..."> </key>
+   /** The CORBA MessageUnit (raw struct) */
+   private MessageUnit msgUnit;
+
+   /** the meta data describing this message */
+   private XmlKey xmlKey;
+
+   /** the flags from the publisher */
+   private PublishQoS publishQoS;
+
+   /** the unique loginName of the publisher */
+   private String publisherName;
+
+   /** Attribute oid of key tag: <key oid="..."> </key> */
+   private String uniqueKey;
+
+   /** Handle on the persistence driver */
    private I_PersistenceDriver persistenceDriver;
 
 

@@ -118,6 +118,9 @@
          <sender>         <!-- The publisher login name of this message -->
             Phillipe
          </sender>
+         <subscriptionId> <!-- The same id which you got returned from your previous subscribe() call -->
+            Subscription-00 0F 42 37 1A 20 1B 47 28 49 -192.168.10.212-null-952096108799-1
+         </subscriptionId>
       </qos>
    </update>
 
