@@ -5,42 +5,28 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.topic;
 
-import org.jutils.init.Property;
-
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.key.PublishKey;
-import org.xmlBlaster.client.key.GetKey;
 import org.xmlBlaster.client.key.SubscribeKey;
-import org.xmlBlaster.client.key.UnSubscribeKey;
 import org.xmlBlaster.client.key.EraseKey;
 import org.xmlBlaster.client.qos.ConnectQos;
-import org.xmlBlaster.client.qos.GetQos;
-import org.xmlBlaster.client.qos.GetReturnQos;
 import org.xmlBlaster.client.qos.PublishQos;
-import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.client.qos.UpdateReturnQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
-import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
-import org.xmlBlaster.client.qos.UnSubscribeQos;
-import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 import org.xmlBlaster.client.I_ConnectionStateListener;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
-import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.MsgUnit;
 
 import org.xmlBlaster.test.Util;
-import org.xmlBlaster.test.Msg;
 import org.xmlBlaster.test.MsgInterceptor;
 import junit.framework.*;
 
@@ -225,7 +211,7 @@ public class TestReferenceCount extends TestCase implements I_ConnectionStateLis
                            " priority=" + updateQos.getPriority() +
                            " state=" + updateQos.getState() +
                            " we going to sleep and don't return control to server");
-            try { Thread.currentThread().sleep(1000000L); } catch( InterruptedException i) {}
+            try { Thread.sleep(1000000L); } catch( InterruptedException i) {}
             log.error(ME, "Waiking up from sleep");
             fail("Waiking up from sleep");
             return "";
@@ -239,7 +225,7 @@ public class TestReferenceCount extends TestCase implements I_ConnectionStateLis
       EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
       this.serverThread = null;
       pub.con.disconnect(null);
-      sub1.con.disconnect(null);
+      sub1.con.leaveServer(null);
 
       log.info(ME, "STEP5: Start server and recover message from persistence store");
       this.serverThread = EmbeddedXmlBlaster.startXmlBlaster(serverPort);
