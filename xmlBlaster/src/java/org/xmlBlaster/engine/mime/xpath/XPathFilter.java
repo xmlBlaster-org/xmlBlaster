@@ -17,6 +17,7 @@ import org.xmlBlaster.engine.mime.I_AccessFilter;
 import org.xmlBlaster.engine.mime.Query;
 import org.xmlBlaster.engine.Global;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -34,7 +35,12 @@ import org.jaxen.dom.DOMXPath;
 /**
  * Filter content on an XPath expression.
  *
- *<p>Filter on the content of a text/xml mime message.
+ *<p>Filter on the content of an xml mime message.
+ * <br />
+ * The applicable mime types for this filter can be specified using the 
+ * <code>engine.mime.xpath.types</code> parameter with semi-colon seperated mime types
+ * e.g. engine.mime.xpath.types=text/xml;image/svg+xml;application/xml
+ * <br />
  * The filter will cache the message dom tree it produces,
  * keyd on message oid and message timestamp, and reuse it.
  * For example if there is 1000 subscribers with an XPathFilter,
@@ -56,20 +62,23 @@ import org.jaxen.dom.DOMXPath;
  *
  * @author Peter Antman
  * @author Jens Askengren
+ * @author Robert Leftwich <robert@leftwich.info>
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/mime.plugin.access.xpath.html">The mime.plugin.access.xpath requirement</a>
- * @version $Id: XPathFilter.java,v 1.10 2004/02/22 17:28:21 ruff Exp $
+ * @version $Id: XPathFilter.java,v 1.11 2004/07/12 08:24:16 ruff Exp $
  */
 
 public class XPathFilter implements I_Plugin, I_AccessFilter {
    public static final String MAX_DOM_CACHE_SIZE = "engine.mime.xpath.maxcachesize";
    public static final String DEFAULT_MAX_CACHE_SIZE = "10";
    public static final String XPATH_EXTENSTION_FUNCTIONS = "engine.mime.xpath.extension_functions";
+   public static final String XPATH_MIME_TYPES = "engine.mime.xpath.types";
 
    private final String ME = "XPathFilter";
    private Global glob;
    private LogChannel log;
    private int maxCacheSize = 10;
    private LinkedList domCache;
+   private String [] mimeTypes;
 
    /**
     * This is called after instantiation of the plugin 
@@ -81,8 +90,6 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
       log.info(ME, "Filter is initialized, we check xml mime types");
 
    }
-
-
    
    /**
     * This method is called by the PluginManager (enforced by I_Plugin). 
@@ -96,9 +103,16 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
       loadXPathExtensionFunctions(prop.getProperty(XPATH_EXTENSTION_FUNCTIONS));
 
       domCache = new LinkedList();
+
+      // attempt to get the mime types from the init properties
+      String someMimeTypes = prop.getProperty(XPATH_MIME_TYPES, "text/xml;image/svg+xml");
+      StringTokenizer st = new StringTokenizer(someMimeTypes, ";");
+      ArrayList list = new ArrayList(st.countTokens() + 1);
+      while (st.hasMoreTokens()) {
+          list.add(st.nextToken());
+      }
+      mimeTypes = (String[])list.toArray(new String[list.size()]);
    }
-
-
 
    /**
     * Return plugin type for Plugin loader
@@ -126,11 +140,13 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
 
    /**
     * Get the content MIME type for which this plugin applies,
-    * currently "text/xml" and "image/svg+xml"
+    * currently "text/xml" and "image/svg+xml".
+    * Is configurable with
+    * <tt>engine.mime.xpath.types=text/xml;image/svg+xml;application/xml</tt>
     * @return "*" This plugin handles all mime types
     */
    public String[] getMimeTypes() {
-      String[] mimeTypes = { "text/xml", "image/svg+xml" };
+      //String[] mimeTypes = { "text/xml", "image/svg+xml" };
       return mimeTypes;
    }
 
