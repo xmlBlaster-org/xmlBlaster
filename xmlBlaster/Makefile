@@ -72,3 +72,8 @@ test: all
 test-console: all
 	( cd ${XMLBLASTER_HOME}/testsuite/org/xmlBlaster; make test-console )
 
+
+
+
+
+

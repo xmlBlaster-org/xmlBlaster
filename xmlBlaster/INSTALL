@@ -281,7 +281,7 @@ Usage :
 C++ clients with MICO 2.3.0 (http://www.mico.org)
 
 1) Install MICO
-   ./configure --disable-mini-stl
+   ./configure --disable-mini-stl --prefix=/usr/local/mico
     make
     make install
 
@@ -393,4 +393,22 @@ Python clients with Fnorb-1.01 http://www.dstc.edu.au/Products/Fnorb/
    export PYTHONPATH=$PYTHONPATH:$FNORB_HOME 
 
 -------------------------------------------------------------------------
+
+
+			orbacus for java and c++
+-------------------------------------------------------------------------
+xmlBlaster comes with jacorb. If you want to use another corba, some setting 
+changes are necessary. XmlBlaser works also with orbacus for java
+(JOB-4.0b3 or higher) and orbacus for c++ (OB-4.0b2 or higher). For more
+information about orbacus see http://www.ooc.com.
+to compile and run xmlBlaster with orbacus do the following:
+   
+   download orbacus for java and/or orbacus for c++ from http://www.ooc.com.
+   compile & install it according to the packages instructions.
+   cd ${XMLBLASTER_HOME}
+   source ./.bashrc orbacus (this prepares all configuration to handle orbacus specific stuff
+   make all
+
+-------------------------------------------------------------------------
+
 Marcel - ruff@swand.lake.de
