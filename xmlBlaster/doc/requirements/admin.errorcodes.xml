@@ -197,16 +197,43 @@ try {
 }
 catch (XmlBlasterException ex) {
 
-   if (ex.isInternal()) {
-      // Displaying all information available:
-      log4j.error(ex.toString());
-   }
-   else {
-      // Displaying errorCode, message and embedded exception message if available:
-      log4j.error(ex.getMessage());
-   }
+   // Display full stack trace for internal exceptions
+   // and moderate information for user exceptions with getMessage():
 
+   log4j.error(ex.getMessage());
 }
+
+
+// For user exceptions the output could look like this:
+errorCode=[user.configuration]
+node=[xmlBlaster]
+location=[ConnectionsHandler-client:client/joe]
+message=[Please provide a public session ID]
+
+
+// For internal exceptions the output could look like this:
+node=[xmlBlaster]
+location=[XmlBlasterAccess-client/joe]
+java.lang.NullPointerException: 
+
+stackTrace=java.lang.NullPointerException: 
+        at org.xmlBlaster.client.XmlBlasterAccess.connect(XmlBlasterAccess.java:181)
+        at HelloWorld2(HelloWorld2.java:28)
+        at HelloWorld2.main(HelloWorld2.java:76)
+errorCode=internal.nullpointer message=Connection failed
+        at org.xmlBlaster.util.XmlBlasterException.convert(XmlBlasterException.java:551)
+        at org.xmlBlaster.util.XmlBlasterException.convert(XmlBlasterException.java:540)
+        at org.xmlBlaster.client.XmlBlasterAccess.connect(XmlBlasterAccess.java:211)
+        at HelloWorld2(HelloWorld2.java:28)
+        at HelloWorld2.main(HelloWorld2.java:76)
+
+versionInfo=version=0.844,os.name=Linux,os.version=2.4.19-4GB,
+java.vm.vendor=IBM Corporation,java.vm.version=1.4.0,os.arch=x86,
+build.timestamp=03/24/2003 11:46 PM,
+build.java.vendor=IBM Corporation,build.java.version=1.4.0
+
+errorCode description=A null pointer is an xmlBlaster internal programming error,
+                      please post it to the mailing list.
    </example>
 
    <configuration where="server">
@@ -306,7 +333,7 @@ catch (XmlBlasterException ex) {
    
    <date>2002 09 24</date>
    
-   <revision>$Revision: 1.19 $</revision>
+   <revision>$Revision: 1.20 $</revision>
 
    <testcase status="OPEN">
       <name>-</name>
