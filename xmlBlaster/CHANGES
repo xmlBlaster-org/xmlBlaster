@@ -4,6 +4,8 @@ The "#99999" numbers are Subversion revision numbers.
 Changes in current subversion repository (svn)
 ==============================================
 
+ o #12949 it is now possible to send CDATA in content when using xmlBlaster script
+
  o #12948 BUGFIX: The combination of subscribe() and get() on the same topic with cluster=true failed
    Thanks to Michal Masa xmasam@sgi.felk.cvut.cz
 
