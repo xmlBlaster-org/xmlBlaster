@@ -296,7 +296,7 @@ bool myUpdate(::MsgUnitArr *msgUnitArr, void *userData,
       for (size_t i=0; i<msgUnitArr->len; i++) {
          //char *xml = messageUnitToXml(&msgUnitArr->msgUnitArr[i]);
          //printf("[client] CALLBACK update(): Asynchronous message update arrived:%s\n",xml);
-         //free(xml);
+			//xmlBlasterFree(xml);
          if (log.trace()) log.trace(ME, "Received callback message");
          ::MsgUnit& msgUnit = msgUnitArr->msgUnitArr[i];
          I_Callback* cb = socketDriver->getCallbackClient();
@@ -316,18 +316,28 @@ bool myUpdate(::MsgUnitArr *msgUnitArr, void *userData,
       //throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, "TEST THROWING EXCEPTION");
    } 
    catch (XmlBlasterException &e) {
-      string tmp = "Exception caught in update(), " +
+      string tmp = "Exception caught in C++ update(), " +
                    lexical_cast<std::string>(msgUnitArr->len) +
                    " messages are handled as not delivered: " +
                    e.getMessage();
       log.error(ME, tmp);
+      for (size_t i=0; i<msgUnitArr->len; i++) {
+			char* xml = messageUnitToXmlLimited(&msgUnitArr->msgUnitArr[i], 100);
+	      log.error(ME, xml);
+			xmlBlasterFree(xml);
+		}
       strncpy0(exception->errorCode, e.getErrorCodeStr().c_str(), XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       strncpy0(exception->message, tmp.c_str(), XMLBLASTEREXCEPTION_MESSAGE_LEN);
       return false;
    }
    catch(...) {
-      string tmp = "Unidentified exception caught in update(), " + lexical_cast<std::string>(msgUnitArr->len) + " messages are handled as not delivered";
+      string tmp = "Unidentified exception caught in C++ update(), " + lexical_cast<std::string>(msgUnitArr->len) + " messages are handled as not delivered";
       log.error(ME, tmp);
+      for (size_t i=0; i<msgUnitArr->len; i++) {
+			char* xml = messageUnitToXmlLimited(&msgUnitArr->msgUnitArr[i], 100);
+	      log.error(ME, xml);
+			xmlBlasterFree(xml);
+		}
       strncpy0(exception->errorCode, "user.update.error", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       strncpy0(exception->message, tmp.c_str(), XMLBLASTEREXCEPTION_MESSAGE_LEN);
       return false;
