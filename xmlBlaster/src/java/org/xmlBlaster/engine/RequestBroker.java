@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.10 1999/11/17 13:51:25 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.11 1999/11/17 16:00:53 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -13,7 +13,7 @@ import org.xmlBlaster.serverIdl.ServerImpl;
 import org.xmlBlaster.serverIdl.MessageUnit;
 import org.xmlBlaster.clientIdl.BlasterCallback;
 import java.util.*;
-
+import java.io.*;
 
 /**
  * RequestBroker
@@ -30,11 +30,14 @@ public class RequestBroker
 
    private com.jclark.xsl.dom.XMLProcessorImpl xmlProc;  // One global instance to save instantiation time
 
+   private com.sun.xml.tree.XmlDocument xmlKeyDoc = null;// Sun's DOM extensions, no portable
+   //private org.w3c.dom.Document xmlKeyDoc = null;     // Document with the root node
+   private org.w3c.dom.Node xmlKeyRootNode = null;    // Root node <xmlBlaster></xmlBlaster>
 
    /**
     * Access to RequestBroker singleton
     */
-   public static RequestBroker getInstance(ServerImpl serverImpl)
+   public static RequestBroker getInstance(ServerImpl serverImpl) throws XmlBlasterException
    {
       synchronized (RequestBroker.class)
       {
@@ -52,8 +55,9 @@ public class RequestBroker
    {
       synchronized (RequestBroker.class)
       {
-         if (requestBroker == null)
+         if (requestBroker == null) {
             Log.panic(ME, "Use other getInstance first");
+         }
       }
       return requestBroker;
    }
@@ -62,10 +66,34 @@ public class RequestBroker
    /**
     * private Constructor for Singleton Pattern
     */
-   private RequestBroker(ServerImpl serverImpl)
+   private RequestBroker(ServerImpl serverImpl) throws XmlBlasterException
    {
       this.serverImpl = serverImpl;
       this.xmlProc = new com.jclark.xsl.dom.SunXMLProcessorImpl();    // [ 75 millis ]
+
+      /*
+      // Instantiate the xmlBlaster DOM tree with <xmlBlaster> root node (DOM portable)
+      String xml = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
+                   "<xmlBlaster></xmlBlaster>";
+      java.io.StringReader reader = new java.io.StringReader(xml);
+      org.xml.sax.InputSource input = new org.xml.sax.InputSource(reader);
+
+      try {
+         xmlKeyDoc = xmlProc.load(input);
+      } catch (java.io.IOException e) {
+         Log.error(ME+".IO", "Problems when building DOM tree from your XmlKey: " + e.toString());
+         throw new XmlBlasterException(ME+".IO", "Problems when building DOM tree from your XmlKey: " + e.toString());
+      } catch (org.xml.sax.SAXException e) {
+         Log.error(ME+".SAX", "Problems when building DOM tree from your XmlKey: " + e.toString());
+         throw new XmlBlasterException(ME+".SAX", "Problems when building DOM tree from your XmlKey: " + e.toString());
+      }
+      */
+      
+      // Using Sun's approach to be able to use  com.sun.xml.tree.XmlDocument::changeNodeOwner(node) later
+      xmlKeyDoc = new com.sun.xml.tree.XmlDocument ();
+      com.sun.xml.tree.ElementNode root = (com.sun.xml.tree.ElementNode) xmlKeyDoc.createElement ("xmlBlaster");
+      xmlKeyDoc.appendChild(root);
+      xmlKeyRootNode = xmlKeyDoc.getDocumentElement(); 
    }
 
 
@@ -79,6 +107,38 @@ public class RequestBroker
 
 
    /**
+    * Adding a new node to the xmlBlaster xmlKey tree
+    * @return the node added
+    */
+   public org.w3c.dom.Node addKeyNode(org.w3c.dom.Node node) throws XmlBlasterException
+   {
+      try {
+         Log.info(ME, "addKeyNode=" + node.toString());
+         xmlKeyDoc.changeNodeOwner(node);  // com.sun.xml.tree.XmlDocument::changeNodeOwner(node) // not DOM portable
+         // !!!!!!! xmlKeyDoc.appendChild(node);
+         Log.info(ME, "New tree=" + xmlKeyRootNode.toString());
+         Writer          out = new OutputStreamWriter (System.out);
+         xmlKeyDoc.write(out);
+         return node;
+      } catch (Exception e) {
+         Log.error(ME+".addKeyNode", "Problems adding new key tree: " + e.toString());
+         e.printStackTrace();
+         throw new XmlBlasterException(ME+".addKeyNode", "Problems adding new key tree: " + e.toString());
+      }
+   }
+
+
+   /**
+    * Removing a node from the xmlBlaster xmlKey tree
+    * @param The node removed
+    */
+   public org.w3c.dom.Node removeKeyNode(org.w3c.dom.Node node)
+   {
+      return xmlKeyRootNode.removeChild(node); 
+   }
+
+
+   /**
     */
    public void subscribe(ClientInfo clientInfo, XmlKey xmlKey, XmlQoS subscribeQoS) throws XmlBlasterException
    {
@@ -86,14 +146,15 @@ public class RequestBroker
       SubscriptionInfo subs = new SubscriptionInfo(clientInfo, xmlKey, subscribeQoS);
       synchronized(messageContainerMap) {
          Object obj = messageContainerMap.get(uniqueKey);
+         MessageUnitHandler msg;
          if (obj == null) {
-            MessageUnitHandler msg = new MessageUnitHandler(this, subs);
+            msg = new MessageUnitHandler(this, subs);
             messageContainerMap.put(uniqueKey, msg);
          }
          else {
-            MessageUnitHandler msg = (MessageUnitHandler)obj;
-            msg.addSubscriber(subs);
+            msg = (MessageUnitHandler)obj;
          }
+         msg.addSubscriber(subs);
       }
    }
 

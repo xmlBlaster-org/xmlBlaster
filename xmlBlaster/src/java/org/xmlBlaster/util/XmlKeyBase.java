@@ -3,7 +3,7 @@ Name:      XmlKeyBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKeyBase.java,v 1.3 1999/11/17 13:51:25 ruff Exp $
+Version:   $Id: XmlKeyBase.java,v 1.4 1999/11/17 16:00:59 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -63,14 +63,23 @@ public class XmlKeyBase
       if (!this.xmlKey_literal.startsWith("<")) {
          keyType = ASCII_TYPE;  // eg "Airport/Runway1/WindVeloc3"
          keyOid = xmlKey_literal;
-         
+
          // Works well with ASCII, but is switched of for the moment
          // perhaps we should make it configureable thru a porperty file !!!
 
          Log.error(ME+".XML", "Invalid XmlKey syntax, only XML syntax beginning with \"<\" is supported");
          throw new XmlBlasterException(ME+".XML", "Invalid XmlKey syntax, only XML syntax beginning with \"<\" is supported");
-         
+
       }
+   }
+
+
+   /**
+    *
+    */
+   protected void finalize()
+   {
+      org.w3c.dom.Node node = RequestBroker.getInstance().removeKeyNode(rootNode);
    }
 
 
@@ -150,6 +159,8 @@ public class XmlKeyBase
       org.w3c.dom.Node tmpRootNode = doc.getDocumentElement(); 
 
       keyOid = getOrAddKeyOid(tmpRootNode);
+
+      org.w3c.dom.Node node = RequestBroker.getInstance().addKeyNode(tmpRootNode);
 
       rootNode = tmpRootNode;  // everything successfull, assign the rootNode
    }

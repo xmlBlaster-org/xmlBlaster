@@ -3,7 +3,7 @@ Name:      ServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: ServerImpl.java,v 1.11 1999/11/16 18:44:49 ruff Exp $
+Version:   $Id: ServerImpl.java,v 1.12 1999/11/17 16:00:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.serverIdl;
 
@@ -33,7 +33,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
    /**
     * Construct a persistently named object.
     */
-   public ServerImpl(org.omg.CORBA.ORB orb, Authenticate authenticate)
+   public ServerImpl(org.omg.CORBA.ORB orb, Authenticate authenticate) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "Entering constructor with ORB argument");
       this.orb = orb;
@@ -47,7 +47,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
     */
    public void subscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "Entering subscribe(xmlKey=" + xmlKey_literal/* + ", qos=" + qos_literal + ")"*/);
+      if (Log.CALLS) Log.calls(ME, "Entering subscribe()");
       StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
 
       authenticate.check();
