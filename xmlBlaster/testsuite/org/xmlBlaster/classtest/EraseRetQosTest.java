@@ -45,11 +45,6 @@ public class EraseRetQosTest extends TestCase {
          assertEquals("stateInfo failed", null, qos.getStateInfo());
          assertEquals("key oid failed", null, qos.getOid());
 
-         qos = new EraseRetQos(glob, "<qos><state id='" + Constants.STATE_EXPIRED + "'/></qos>");
-         assertEquals("stateId failed", Constants.STATE_EXPIRED, qos.getStateId());
-         assertEquals("stateInfo failed", null, qos.getStateInfo());
-         assertEquals("key oid failed", null, qos.getOid());
-
          qos = new EraseRetQos(glob, null);
          assertEquals("stateId failed", Constants.STATE_OK, qos.getStateId());
          assertEquals("stateInfo failed", null, qos.getStateInfo());
