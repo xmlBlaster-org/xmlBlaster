@@ -3,7 +3,7 @@ Name:      FileDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a very simple, file based, persistence manager
-Version:   $Id: FileDriver.java,v 1.6 2000/12/26 14:56:40 ruff Exp $
+Version:   $Id: FileDriver.java,v 1.7 2001/01/30 14:24:16 freidlin Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence.filestore;
@@ -160,6 +160,7 @@ public class FileDriver implements I_PersistenceDriver
          msgUnit = new MessageUnit(xmlKey_literal, content, xmlQos_literal);
 
          if (Log.TRACE) Log.trace(ME, "Successfully fetched message " + oid);
+         if (Log.DUMP) Log.dump(ME, "Successfully fetched message\n" + msgUnit.toXml());
       } catch (JUtilsException e) {
          throw new XmlBlasterException(e);
       }
@@ -186,7 +187,7 @@ public class FileDriver implements I_PersistenceDriver
           // and load the messages in a vector ...
           oidContainer.addElement(oid);
        }
-       Log.info(ME, "Successfully got all stored message-oids from " + path);
+       Log.info(ME, "Successfully got " + oidContainer.size() + " stored message-oids from " + path);
 
        return oidContainer.elements();
     }

@@ -3,7 +3,7 @@ Name:      MessageUnitWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping the CORBA MessageUnit to allow some nicer usage
-Version:   $Id: MessageUnitWrapper.java,v 1.25 2001/01/30 14:08:20 ruff Exp $
+Version:   $Id: MessageUnitWrapper.java,v 1.26 2001/01/30 14:25:02 freidlin Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -130,6 +130,7 @@ public class MessageUnitWrapper
             }
       }
 
+      if (Log.TRACE) Log.trace(ME+".setContent()", "changed=" + changed + " , persistenceDriver=" + persistenceDriver + " , isDurable=" + publishQoS.isDurable());
       if (changed) {  // new content is not the same as old one
          this.msgUnit.content = newContent;
          if (persistenceDriver != null && publishQoS.isDurable()) //&& !publishQoS.isFromPersistenceStore())
@@ -334,18 +335,18 @@ public class MessageUnitWrapper
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
 
-      sb.append(offset + "<MessageUnitWrapper>");
-      sb.append(offset + "   <uniqueKey>" + getUniqueKey() + "</uniqueKey>");
+      sb.append(offset).append("<MessageUnitWrapper>");
+      sb.append(offset).append("   <uniqueKey>").append(getUniqueKey()).append("</uniqueKey>");
       if (xmlKey==null)
-         sb.append(offset + "   <XmlKey>null</XmlKey>");
+         sb.append(offset).append("   <XmlKey>null</XmlKey>");
       else
-         sb.append(xmlKey.printOn(extraOffset + "   ").toString());
+         sb.append(xmlKey.printOn(extraOffset).append("   ").toString());
       if (publishQoS==null)
-         sb.append(offset + "   <PublishQoS>null</PublishQoS>");
+         sb.append(offset).append("   <PublishQoS>null</PublishQoS>");
       else
-         sb.append(publishQoS.toXml(extraOffset + "   "));
-      sb.append(offset + "   <content>" + (msgUnit.content==null ? "null" : msgUnit.content.toString()) + "</content>");
-      sb.append(offset + "</MessageUnitWrapper>\n");
+         sb.append(publishQoS.toXml(extraOffset).append("   "));
+      sb.append(offset).append("   <content>").append((msgUnit.content==null ? "null" : msgUnit.content.toString())).append("</content>");
+      sb.append(offset).append("</MessageUnitWrapper>\n");
       return sb.toString();
    }
 }
