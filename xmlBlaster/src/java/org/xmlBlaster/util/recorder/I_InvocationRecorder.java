@@ -3,7 +3,7 @@ Name:      I_InvocationRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface for storing tail back messages
-Version:   $Id: I_InvocationRecorder.java,v 1.1 2002/05/27 20:52:24 ruff Exp $
+Version:   $Id: I_InvocationRecorder.java,v 1.2 2002/05/28 10:16:59 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.recorder;
@@ -30,7 +30,7 @@ public interface I_InvocationRecorder extends I_XmlBlaster, I_CallbackRaw
     * @param clientCallback You need to implement I_CallbackRaw to receive the invocations on playback
     *                       null if you are not interested in those
     */
-   public void initialize(Global glob, int maxEntries, I_XmlBlaster serverCallback,
+   public void initialize(Global glob, long maxEntries, I_XmlBlaster serverCallback,
                              I_CallbackRaw clientCallback) throws XmlBlasterException;
 
    /**
