@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.40 1999/12/12 13:29:08 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.41 1999/12/14 23:20:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -28,7 +28,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.40 $
+ * @version $Revision: 1.41 $
  * @author $Author: ruff $
  */
 public class RequestBroker implements ClientListener, MessageEraseListener
@@ -492,6 +492,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
       }
       else if (publishQoS.isPTP_Style()) {
          if (Log.TRACE) Log.trace(ME, "Doing publish() in PtP or broadcast style");
+         if (Log.DUMP) Log.dump(ME, publishQoS.printOn().toString());
 
          MessageUnitWrapper messageUnitWrapper = new MessageUnitWrapper(xmlKey, messageUnit, publishQoS, clientInfo.getLoginName());
          Vector destinations = publishQoS.getDestinations(); // !!! add XPath client query here !!!
@@ -499,6 +500,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
          //-----    Send message to every destination client
          for (int ii = 0; ii<destinations.size(); ii++) {
             String loginName = (String)destinations.elementAt(ii);
+            if (Log.TRACE) Log.trace(ME, "Delivering message to destination [" + loginName + "]");
             ClientInfo destinationClient = authenticate.getOrCreateClientInfoByName(loginName);
             destinationClient.sendUpdate(messageUnitWrapper);
          }
@@ -649,7 +651,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
-    * Client wants to erase a message. 
+    * Client wants to erase a message.
     * <p />
     * @param clientInfo  The ClientInfo object, describing the invoking client
     * @param xmlKey      Key allowing XPath or exact selection<br>
