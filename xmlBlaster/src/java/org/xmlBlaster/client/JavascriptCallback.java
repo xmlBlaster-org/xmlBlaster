@@ -31,7 +31,7 @@ import org.apache.batik.util.RunnableQueue;
  * You may use this, if you don't want to program with the rawer CORBA BlasterCallback.update()
  * or RMI or XMLRPC.
  *
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>.
  */
 public class JavascriptCallback implements I_Callback
@@ -126,7 +126,7 @@ public class JavascriptCallback implements I_Callback
    public String update(final String cbSessionId, final UpdateKey updateKey,
                         final byte[] content, final UpdateQos updateQos) throws XmlBlasterException
    {
-      System.out.println("*****RECEIVING updateKey=" + updateKey.toXml());
+      //System.out.println("*****RECEIVING updateKey=" + updateKey.toXml());
       String key = org.jutils.text.StringHelper.replaceAll(updateKey.toXml(), "\n", " ");
       String con = org.jutils.text.StringHelper.replaceAll(new String(content), "\n", " ");
       String qos = org.jutils.text.StringHelper.replaceAll(updateQos.toXml(), "\n", " ");
@@ -137,7 +137,7 @@ public class JavascriptCallback implements I_Callback
       updateQueue.invokeLater(new Runnable() {
          public void run() {
             try {
-               System.out.println("Calling interpreter content=" + new String(content));
+               //System.out.println("Calling interpreter content=" + new String(content));
                /* This code is much cleaner but it fails with
                   org.mozilla.javascript.JavaScriptException: java.lang.ClassCastException
                   The reason is that all global window methods don't work (like alert() or setTimout())
