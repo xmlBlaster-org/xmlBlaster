@@ -205,13 +205,13 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
       }
       catch (XmlBlasterException e) {
          // If access is denied: cleanup resources
-         if (log.TRACE) log.trace(ME, "Access is denied: " + e.toString());
+         if (log.TRACE) log.trace(ME, "Access is denied: " + e.getMessage());
          securityMgr.releaseSession(secretSessionId, null);  // allways creates a new I_Session instance
          throw e;
       }
       catch (Throwable e) {
          e.printStackTrace();
-         if (log.TRACE) log.trace(ME, "PANIC: Access is denied: " + e.toString());
+         if (log.TRACE) log.trace(ME, "PANIC: Access is denied: " + e.getMessage());
          // On error: cleanup resources
          securityMgr.releaseSession(secretSessionId, null);  // allways creates a new I_Session instance
          throw XmlBlasterException.convert(glob, ME, ErrorCode.INTERNAL_CONNECTIONFAILURE.toString(), e);
@@ -287,14 +287,14 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
       }
       catch (XmlBlasterException e) {
          String id = (sessionInfo != null) ? sessionInfo.getId() : ((subjectInfo != null) ? subjectInfo.getId() : "");
-         log.warn(ME, "Connection for " + id + " failed: " + e.toString());
+         log.warn(ME, "Connection for " + id + " failed: " + e.getMessage());
          //e.printStackTrace(); Sometimes nice, often not - what to do?
          disconnect(secretSessionId, (String)null); // cleanup
          throw e;
       }
       catch (Throwable e) {
          e.printStackTrace();
-         log.error(ME, "Internal error: Connect failed: " + e.toString());
+         log.error(ME, "Internal error: Connect failed: " + e.getMessage());
          disconnect(secretSessionId, (String)null); // cleanup
          throw XmlBlasterException.convert(glob, ME, ErrorCode.INTERNAL_CONNECTIONFAILURE.toString(), e);
       }
@@ -320,7 +320,7 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
             securityMgr.releaseSession(secretSessionId, sessionSecCtx.importMessage(qos_literal));
          }
          catch(Throwable e) {
-            log.warn(ME, "Ignoring importMessage() problems, we continue to cleanup resources: " + e.toString());
+            log.warn(ME, "Ignoring importMessage() problems, we continue to cleanup resources: " + e.getMessage());
          }
 
          SessionInfo sessionInfo = getSessionInfo(secretSessionId);
@@ -349,12 +349,12 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
          if (log.CALL) log.call(ME, "Leaving disconnect()");
       }
       catch (XmlBlasterException e) {
-         if (log.TRACE) log.trace(ME, "disconnect failed: " + e.toString());
+         if (log.TRACE) log.trace(ME, "disconnect failed: " + e.getMessage());
          throw e;
       }
       catch (Throwable e) {
          e.printStackTrace();
-         log.error(ME, "Internal error: Disconnect failed: " + e.toString());
+         log.error(ME, "Internal error: Disconnect failed: " + e.getMessage());
          throw XmlBlasterException.convert(glob, ME, ErrorCode.INTERNAL_DISCONNECT.toString(), e);
       }
    }
@@ -507,7 +507,7 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
          return secretSessionId;
       }
       catch (Exception e) {
-         String text = "Can't generate a unique secretSessionId: " + e.toString();
+         String text = "Can't generate a unique secretSessionId: " + e.getMessage();
          log.error(ME, text);
          throw new XmlBlasterException("NoSessionId", text);
       }
@@ -663,7 +663,7 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
                   objs[ii] = null;
                }
                catch (Throwable e) {
-                  log.error(ME, "Problem on session shutdown, we ignore it: " + e.toString());
+                  log.error(ME, "Problem on session shutdown, we ignore it: " + e.getMessage());
                   if (!(e instanceof XmlBlasterException)) e.printStackTrace();
                }
             }
@@ -676,11 +676,9 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
     * <br>
     * @return internal state of Authenticate as a XML ASCII string
     */
-   public final String toXml() throws XmlBlasterException
-   {
+   public final String toXml() throws XmlBlasterException {
       return toXml((String)null);
    }
-
 
    /**
     * Dump state of this object into a XML ASCII string.
@@ -688,12 +686,10 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
     * @param extraOffset indenting of tags for nice output
     * @return internal state of Authenticate as a XML ASCII string
     */
-   public final String toXml(String extraOffset) throws XmlBlasterException
-   {
+   public final String toXml(String extraOffset) throws XmlBlasterException {
       StringBuffer sb = new StringBuffer(1000);
-      String offset = "\n";
       if (extraOffset == null) extraOffset = "";
-      offset += extraOffset;
+      String offset = Constants.OFFSET + extraOffset;
 
       log.info(ME, "Client maps, sessionInfoMap.size()=" + sessionInfoMap.size() + " and loginNameSubjectInfoMap.size()=" + loginNameSubjectInfoMap.size());
       Iterator iterator = loginNameSubjectInfoMap.values().iterator();
@@ -701,7 +697,7 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
       sb.append(offset).append("<Authenticate>");
       while (iterator.hasNext()) {
          SubjectInfo subjectInfo = (SubjectInfo)iterator.next();
-         sb.append(subjectInfo.toXml(extraOffset));
+         sb.append(subjectInfo.toXml(extraOffset+Constants.INDENT));
       }
       sb.append(offset).append("</Authenticate>\n");
 
