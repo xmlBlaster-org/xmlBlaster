@@ -20,11 +20,12 @@
 
 #ORBInitRef.NameService=corbaloc::160.45.110.41:38693/StandardNS/NameServer%2DPOA/_root
 #ORBInitRef.NameService=file:/c:/NS_Ref
-ORBInitRef.NameService=http://www.x.y.z/~user/NS_Ref
+# xmlBlaster default:
+ORBInitRef.NameService=http://localhost/~user/NS_Ref
 #ORBInitRef.TradingService=http://www.x.y.z/~user/TraderRef
 
 # JacORB-specific URLs
-jacorb.ProxyServerURL=http://www.x.y.z/~user/Appligator_Ref
+jacorb.ProxyServerURL=http://localhost/~user/Appligator_Ref
 
 
 ##################################
@@ -73,7 +74,9 @@ jacorb.verbosity=1
 ################################
 
 # number of retries if connection cannot directly be established
-jacorb.retries=5
+#jacorb.retries=5
+# xmlBlaster default:
+jacorb.retries=1
 
 # how many msecs. do we wait between retries
 jacorb.retry_interval=500
@@ -278,17 +281,23 @@ jacorb.security.change_ssl_roles=off
 jacorb.poa.monitoring=off
 
 # thread pool configuration for request processing
-jacorb.poa.thread_pool_max=20
+#jacorb.poa.thread_pool_max=20
+# xmlBlaster default:
+jacorb.poa.thread_pool_max=50
 jacorb.poa.thread_pool_min=5
 
 # if set, request processing threads in thePOA
 # will run at this priority. If not set or invalid,
 # MAX_PRIORITY will be used.
 #jacorb.poa.thread_priority=
+# xmlBlaster default:
+jacorb.poa.thread_priority=8
 
 # size of the request queue, clients will receive Corba.TRANSIENT
 # exceptions if load exceeds this limit
-jacorb.poa.queue_max=100
+#jacorb.poa.queue_max=100
+# xmlBlaster default:
+jacorb.poa.queue_max=5000
 
 
 
