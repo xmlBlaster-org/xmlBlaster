@@ -1,5 +1,11 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
+Changes for 0.842 [xx]
+================================
+
+ o Bugfix: Connect/Disconnect/Connect synchronize bug fixed
+   (Reported by Dimitri)
+
 Changes for 0.841 [Jan, 23 2003]
 ================================
 
