@@ -5,6 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Include this header in your client code
            The returned strings are not parsed, we need another layer
            doing XML parsing with expat.
+           This library is thread safe, multiple client connections may
+           be established in parallel.
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 Date:      05/2003
 See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.html
