@@ -53,7 +53,7 @@ msgLen[10] flag[6] requestId methodName secretSessionId lenUnzipped userData che
          <td>The flag defaults to zero (all bits are '\0', only version is set to one '1'=49 and 'I'=73 for invoke), possible settings of each byte are:
             <ol>
                <li>65 (typically 'A') Adler32 checksum is appended (see java.util.zip) [Currently not supported]</li>
-               <li>90 (typically 'Z') The userData is compressed with gzip (see java.uti.zip) [Currently not supported]</li>
+               <li>90 (typically 'Z') The userData is compressed with gzip (see jzlib and zlib). Currently there is support to compress the whole socket stream - in such case this flag makes no sense and is not set</li>
                <li>Type of message<ul><li>73 (typically 'I') for invoke request</li><li>82 (typically 'R') for return value</li><li>69 (typically 'E') for exception</li></ul></li>
                <li>null ('\0'), Reserved</li>
                <li>null ('\0'), Reserved</li>
@@ -503,6 +503,8 @@ java HelloWorld3 -protocol socket_ssl -plugin/socket_ssl/port 7609 -plugin/socke
       </h2>
       <p>
       The xmlBlaster SOCKET protocol supports compression with zlib and jzlib.
+      Compression support is available for C, C++ and Java clients directly and for
+      ActiveX (C#, VisualBasic .net) and Javascript clients via the Java bridge.
       You can switch on two compression modes with the property <i>plugin/socket/compress/type</i>.
       If the server side socket plugin has the option <i>zlib:stream</i> enabled (see <tt>xmlBlasterPlugins.xml</tt>)
       it won't accept uncompressed clients. If you have both types of clients you need
@@ -517,10 +519,10 @@ protocol=SOCKET
 # No compression
 #plugin/socket/compress/type=
 
-# Compress each message separately
+# Compress each message separately (available only for Java clients)
 #plugin/socket/compress/type=zlib
 
-# Compress in streaming mode
+# Compress in streaming mode (the preferred way, C, C++, Java ... clients)
 plugin/socket/compress/type=zlib:stream
       </pre>
       <p>
@@ -907,7 +909,7 @@ java javaclients.HelloWorldPublish -numPublish 10 -contentSize 1000
    <see type="INTERNET" label="xmlBlaster.properties">http://www.xmlBlaster.org/xmlBlaster/config/xmlBlaster.properties.template</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 02 12</date>
-   <revision>$Revision: 1.53 $</revision>
+   <revision>$Revision: 1.54 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
