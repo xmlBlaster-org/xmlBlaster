@@ -14,6 +14,7 @@ TODO:
 * Security demo with Bit Cypher: http://www.alphaworks.ibm.com/tech/abc?open
 * Change to Sun coding convention: http://checkstyle.sourceforge.net/
 * Handle QueueProperty.java similar to CbQueueProprty.java in ConnectQos.java
+* Implement cb.burstMode.collectTimeOneway
 
 BUGS:
 
