@@ -1,0 +1,10 @@
+please put the following lines in your zone.properteis(Apache) (servlet.properties):
+
+servlet.ReqListServlet.code=org.xmlBlaster.util.servlet.ReqListServlet
+servlet.ReqItemServlet.code=org.xmlBlaster.util.servlet.ReqItemServlet
+
+
+call this servlet as URL in your brwoser:
+
+http://localhost/servlet/ReqListServlet?dir=/home/kkrafft/xmlBlaster/doc/requirements&xsl=overview
+

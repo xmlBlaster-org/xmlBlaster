@@ -3,7 +3,7 @@ Name:      ReqBaseServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: ReqBaseServlet.java,v 1.1 2000/03/27 07:33:19 kkrafft2 Exp $
+Version:   $Id: ReqBaseServlet.java,v 1.2 2000/03/28 15:51:36 kkrafft2 Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.servlet;
 
@@ -15,7 +15,9 @@ import javax.servlet.*;
 import javax.servlet.http.*;
 
 import org.xml.sax.*;
-import com.jclark.xsl.sax.*;
+import com.jclark.xsl.sax.ServletDestination;
+import com.jclark.xsl.sax.OutputMethodHandlerImpl;
+import com.jclark.xsl.sax.XSLProcessorImpl;
 
 
 import org.xmlBlaster.util.*;
@@ -79,6 +81,7 @@ abstract public class ReqBaseServlet extends HttpServlet
          outputMethodHandler.setDestination( new ServletDestination(response) );
 
          xsl.parse( new InputSource( new StringReader( xmlData ) ) );
+
       }
       catch(Exception e) {
          Log.warning(ME, "servlet output broken:"+e.toString());
@@ -86,6 +89,32 @@ abstract public class ReqBaseServlet extends HttpServlet
       }
 
    }
+
+   /*
+   */
+   public void fileXmlOutput( String fileName, String dir, String template, HttpServletResponse response ) throws ServletException
+   {
+      try {
+         response.setContentType("text/html");
+
+         XSLProcessorImpl xsl = getStylesheet( dir, template );
+         OutputMethodHandlerImpl outputMethodHandler =
+                                      new OutputMethodHandlerImpl(xsl);
+
+         xsl.setOutputMethodHandler(outputMethodHandler);
+
+         outputMethodHandler.setDestination( new ServletDestination(response) );
+
+         xsl.parse( new InputSource( (new URL( "file:"+fileName )).toString() ) );
+
+      }
+      catch(Exception e) {
+         Log.warning(ME, "servlet output broken:"+e.toString());
+         throw new ServletException(e.toString());
+      }
+
+   }
+
 
    /*
     * returns a stylsheet object by a given name.

@@ -3,7 +3,7 @@ Name:      ReqItemServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Collects all xml requirement files into the all.xml master file
-Version:   $Id: ReqItemServlet.java,v 1.1 2000/03/27 07:33:19 kkrafft2 Exp $
+Version:   $Id: ReqItemServlet.java,v 1.2 2000/03/28 15:51:36 kkrafft2 Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.servlet;
 
@@ -35,11 +35,7 @@ public class ReqItemServlet extends ReqBaseServlet
          String dir     = Util.getParameter(request, "dir", null);
          String xsl     = Util.getParameter(request, "xsl", null);
 
-         File file = new File(dir+"/"+reqName+".xml");
-         StringBuffer xmlData = new StringBuffer();
-
-
-         xmlOutput( xmlData.toString(), dir, xsl, response );
+         fileXmlOutput( dir+"/"+reqName+".xml", dir, xsl, response );
       }
       catch (Exception e) {
          Log.error(ME, "Can't create requirement item: " + e.toString());
