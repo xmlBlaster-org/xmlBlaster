@@ -242,7 +242,7 @@ SocketDriver::SocketDriver(Global& global, Mutex& mutex, const string instanceNa
  */
 void SocketDriver::reconnectOnIpLevel(void)
 {
-   log_.info(ME, "Trying to reconnectOnIpLevel to server");
+   log_.trace(ME, "Trying to reconnect to server");
 
    freeResources(true); // Cleanup if old connection exists
 
@@ -392,11 +392,8 @@ ConnectReturnQos SocketDriver::connect(const ConnectQos& qos) //throw (XmlBlaste
    try {
       loginName_ = qos.getUserId();
       if (connection_ == 0) {
-         if (secretSessionId_ == "") {
-            throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, "Please check your configuration to find the server");
-         }
-         else {
-            reconnectOnIpLevel(); // Connects on IP level only, throws an exception on failure
+         reconnectOnIpLevel(); // Connects on IP level only, throws an exception on failure
+         if (secretSessionId_ != "") {
             qos.getSessionQos().setSecretSessionId(secretSessionId_);
          }
       }
