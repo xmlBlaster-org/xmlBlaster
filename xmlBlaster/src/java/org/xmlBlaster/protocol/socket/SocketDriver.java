@@ -3,7 +3,7 @@ Name:      SocketDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   SocketDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: SocketDriver.java,v 1.1 2002/02/13 22:10:40 ruff Exp $
+Version:   $Id: SocketDriver.java,v 1.2 2002/02/14 14:59:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -57,14 +57,17 @@ public class SocketDriver extends Thread implements I_Driver
    private I_Authenticate authenticate = null;
    /** The singleton handle for this xmlBlaster server */
    private I_XmlBlaster xmlBlasterImpl = null;
+   /** Default port of xmlBlaster socket server is 7607 */
+   public static final int DEFAULT_SERVER_PORT = 7607;
    /** The port for the socket server */
-   private int socketPort = 7607;
+   private int socketPort = DEFAULT_SERVER_PORT;
    /** The socket server */
    private ServerSocket listen = null;
    /** The URL which clients need to use to access this server */
    private String serverUrl = null;
    /** The string representation like "192.168.1.1", useful if multihomed computer */
    private String hostname = null;
+   /** xmlBlaster server host */
    private java.net.InetAddress inetAddr = null;
    /** State of server */
    private boolean running = true;
@@ -220,7 +223,7 @@ public class SocketDriver extends Thread implements I_Driver
 class HandleRequest extends Thread
 {
    private String ME = "SocketDriverRequest";
-   private final Socket sock;
+   private Socket sock;
    private final String CRLF = "\r\n";
 
 
@@ -257,9 +260,9 @@ class HandleRequest extends Thread
          // throw new XmlBlasterException(ME, "Problems with sending IOR to client: " + e.toString());
       }
       finally {
-         try { if (iStream != null) iStream.close(); } catch (IOException e) { }
-         try { if (oStream != null) oStream.close(); } catch (IOException e) { }
-         try { sock.close();  } catch (IOException e) { }
+         try { if (iStream != null) { iStream.close(); iStream=null; } } catch (IOException e) { Log.warn(ME+".shutdown", e.toString()); }
+         try { if (oStream != null) { oStream.close(); oStream=null; } } catch (IOException e) { Log.warn(ME+".shutdown", e.toString()); }
+         try { if (sock != null) { sock.close(); sock=null; } } catch (IOException e) { Log.warn(ME+".shutdown", e.toString()); }
       }
    }
 }
