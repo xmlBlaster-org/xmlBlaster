@@ -4,6 +4,12 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for xxx [2005-xx-xx] (current subversion)
 =================================================
 
+ o #13319 Changed SOCKET timeout behaviour (Java/C/C++ clients)
+   Changed to throw COMMUNICATION_TIMEOUT instead of RESOURCE_EXHAUST
+   when the method call with SOCKET blocks after the specified timeout.
+   Like that the not delivered message is queued by default,
+   before the exeception was thrown back to the client code.
+
  o #13316 Bugfix FilePoller
    Fixed session timeout after one day
    Fixed deadlock on xmlBlaster shutdown if FilePoller had problems

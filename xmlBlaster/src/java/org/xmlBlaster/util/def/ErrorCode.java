@@ -283,6 +283,18 @@ public final class ErrorCode implements java.io.Serializable
          }
       );
 
+   public static final ErrorCode COMMUNICATION_TIMEOUT = new ErrorCode("communication.timeout",
+         "The socket call blocked until a timeout occurred.",
+         new ResourceInfo[] {
+         }
+      );
+
+   public static final ErrorCode COMMUNICATION_RESPONSETIMEOUT = new ErrorCode("communication.responseTimeout",
+         "A method call blocked when waiting on the ACK/NAK return message.",
+         new ResourceInfo[] {
+         }
+      );
+
    public static final ErrorCode COMMUNICATION_NOCONNECTION_SERVERDENY = new ErrorCode("communication.noConnection.serverDeny",
          "Thrown by the server if no connection is accepted, usually on startup when the server is not ready for it (standby mode).",
          new ResourceInfo[] {

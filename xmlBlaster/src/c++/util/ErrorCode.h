@@ -157,6 +157,14 @@ namespace org { namespace xmlBlaster { namespace util {
          "A method invocation on a remote connection failed."
    );
 
+   const ErrorCode COMMUNICATION_TIMEOUT("communication.timeout",
+         "The socket call blocked until a timeout occurred."
+   );
+
+   const ErrorCode COMMUNICATION_RESPONSETIMEOUT("communication.responseTimeout",
+         "A method call blocked when waiting on the ACK/NAK return message."
+   );
+
    const ErrorCode COMMUNICATION_NOCONNECTION_POLLING("communication.noConnection.polling",
          "The remote connection is not established and we are currently polling for it."
    );

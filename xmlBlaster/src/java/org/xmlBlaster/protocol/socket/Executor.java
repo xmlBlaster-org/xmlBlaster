@@ -479,8 +479,8 @@ public abstract class Executor implements ExecutorBase
          if (startSignal != null) {
             synchronized (latchSet) { latchSet.remove(startSignal); }
          }
-         String str = "Socket blocked for " + sock.getSoTimeout() + " millis, giving up now waiting on " + parser.getMethodName() + "(" + requestId + ") response. You can change it with -plugin/socket/responseTimeout <millis>";
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_EXHAUST, ME, str);
+         String str = "Socket blocked for " + sock.getSoTimeout() + " millis, giving up now waiting on " + parser.getMethodName() + "(" + requestId + ") response. You can change it with -plugin/socket/SoTimeout <millis>";
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_TIMEOUT, ME, str);
       }
 
       if (log.DUMP) log.dump(ME, "Successful sent message: >" + Parser.toLiteral(rawMsg) + "<");
@@ -515,7 +515,7 @@ public abstract class Executor implements ExecutorBase
          else {
             String str = "Timeout of " + responseWaitTime + " milliseconds occured when waiting on " + parser.getMethodName() + "(" + requestId + ") response. You can change it with -plugin/socket/responseTimeout <millis>";
             removeResponseListener(requestId);
-            throw new XmlBlasterException(glob, ErrorCode.RESOURCE_EXHAUST, ME, str);
+            throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_RESPONSETIMEOUT, ME, str);
          }
       }
       finally {
