@@ -184,7 +184,7 @@ public final class MsgKeySaxFactory extends SaxHandlerBase implements I_MsgKeyFa
       String offset = Constants.OFFSET + extraOffset;
 
       sb.append(offset).append("<key oid='").append(msgKeyData.getOid()).append("'");
-      if (msgKeyData.getContentMime() != null)
+      if (msgKeyData.getContentMime() != null && !msgKeyData.getContentMime().equals(KeyData.CONTENTMIME_DEFAULT))
          sb.append(" contentMime='").append(msgKeyData.getContentMime()).append("'");
       if (msgKeyData.getContentMimeExtended() != null)
          sb.append(" contentMimeExtended='").append(msgKeyData.getContentMimeExtended()).append("'");
