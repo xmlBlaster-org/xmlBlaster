@@ -3,7 +3,7 @@ Name:      AbstractCallbackExtended.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Easly extended class for protocol-unaware xmlBlaster clients.
-Version:   $Id: AbstractCallbackExtended.java,v 1.5 2001/09/05 12:21:26 ruff Exp $
+Version:   $Id: AbstractCallbackExtended.java,v 1.6 2001/09/30 13:49:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol;
 import org.xmlBlaster.client.UpdateKey;
@@ -20,7 +20,7 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  * extend this class because one of the update methods is abstract.
  * <p>
  *
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  * @author "Michele Laghi" <michele.laghi@attglobal.net>
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
@@ -65,9 +65,9 @@ public abstract class AbstractCallbackExtended implements I_CallbackExtended
          UpdateQoS updateQoS = new UpdateQoS(updateQoSLiteral); // does the parsing
 
          // Now we know all about the received message, dump it or do some checks
-         if (Log.DUMP) Log.dump("UpdateKey", "\n" + updateKey.printOn().toString());
+         if (Log.DUMP) Log.dump("UpdateKey", "\n" + updateKey.toXml());
          if (Log.DUMP) Log.dump("content", "\n" + new String(content));
-         if (Log.DUMP) Log.dump("UpdateQoS", "\n" + updateQoS.printOn().toString());
+         if (Log.DUMP) Log.dump("UpdateQoS", "\n" + updateQoS.toXml());
          if (Log.TRACE) Log.trace(ME, "Received message [" + updateKey.getUniqueKey() + "] from publisher " + updateQoS.getSender());
 
          update(loginName, updateKey, content, updateQoS);

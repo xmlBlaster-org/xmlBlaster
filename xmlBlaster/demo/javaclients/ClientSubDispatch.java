@@ -3,7 +3,7 @@ Name:      ClientSubDispatch.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSubDispatch.java,v 1.3 2001/09/05 12:48:47 ruff Exp $
+Version:   $Id: ClientSubDispatch.java,v 1.4 2001/09/30 13:49:50 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -73,9 +73,9 @@ public class ClientSubDispatch implements I_Callback
                public void update(String name, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS) {
                   Log.info(ME, "Receiving message with specialized update() #1 ...");
                   numReceived1++;
-                  Log.plain("UpdateKey", updateKey.printOn().toString());
+                  Log.plain("UpdateKey", updateKey.toXml());
                   Log.plain("content", (new String(content)).toString());
-                  Log.plain("UpdateQoS", updateQoS.printOn().toString());
+                  Log.plain("UpdateQoS", updateQoS.toXml());
                }
             });
 
@@ -86,9 +86,9 @@ public class ClientSubDispatch implements I_Callback
                public void update(String name, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS) {
                   Log.info(ME, "Receiving message with specialized update() #2 ...");
                   numReceived2++;
-                  Log.plain("UpdateKey", updateKey.printOn().toString());
+                  Log.plain("UpdateKey", updateKey.toXml());
                   Log.plain("content", (new String(content)).toString());
-                  Log.plain("UpdateQoS", updateQoS.printOn().toString());
+                  Log.plain("UpdateQoS", updateQoS.toXml());
                }
             });
 

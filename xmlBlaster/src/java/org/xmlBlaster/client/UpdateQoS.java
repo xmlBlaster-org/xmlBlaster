@@ -3,7 +3,7 @@ Name:      UpdateQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: UpdateQoS.java,v 1.16 2001/09/24 10:27:29 ruff Exp $
+Version:   $Id: UpdateQoS.java,v 1.17 2001/09/30 13:49:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -242,9 +242,9 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
     * <br>
     * @return internal state of the RequestBroker as a XML ASCII string
     */
-   public final StringBuffer printOn()
+   public final String toXml()
    {
-      return printOn((String)null);
+      return toXml((String)null);
    }
 
 
@@ -254,7 +254,7 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
     * @param extraOffset indenting of tags for nice output
     * @return internal state of the RequestBroker as a XML ASCII string
     */
-   public final StringBuffer printOn(String extraOffset)
+   public final String toXml(String extraOffset)
    {
       StringBuffer sb = new StringBuffer();
       String offset = "\n   ";
@@ -277,15 +277,21 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
          sb.append(offset + "      " + subscriptionId);
          sb.append(offset + "   </subscriptionId>");
       }
+      if(getQueueSize() > 0) {
+         sb.append(offset + "   <queue index='"+getQueueIndex()+"' size='"+getQueueSize()+"'");
+         sb.append(offset + "   </queue>");
+      }
+
+
       sb.append(offset + "</qos>\n");
 
-      return sb;
+      return sb.toString();
    }
 
 
    public final String toString()
    {
-      return printOn(null).toString();
+      return toXml(null);
    }
 
 
@@ -309,9 +315,9 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
                    "</qos>";
 
       UpdateQoS up = new UpdateQoS(xml);
-      Log.info("Test", "\n" + up.toXml());
+      Log.info("Test", "#1\n" + up.toXml());
 
       up = new UpdateQoS(up.toXml());
-      Log.exit("Test", "\n" + up.toXml());
+      Log.exit("Test", "#2\n" + up.toXml());
    }
 }

@@ -3,7 +3,7 @@ Name:      ClientSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSub.java,v 1.23 2001/09/05 12:48:47 ruff Exp $
+Version:   $Id: ClientSub.java,v 1.24 2001/09/30 13:49:50 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -166,9 +166,9 @@ public class ClientSub implements I_Callback
    {
       numReceived++;
       Log.info(ME, "Received asynchronous callback-update " + numReceived + " from xmlBlaster from publisher " + updateQoS.getSender() + ":");
-      Log.plain("UpdateKey", updateKey.printOn().toString());
+      Log.plain("UpdateKey", updateKey.toXml());
       Log.plain("content", (new String(content)).toString());
-      Log.plain("UpdateQoS", updateQoS.printOn().toString());
+      Log.plain("UpdateQoS", updateQoS.toXml());
    }
 
 
