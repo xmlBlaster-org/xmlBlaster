@@ -20,6 +20,7 @@ import org.xmlBlaster.engine.cluster.ClusterManager;
 import org.xmlBlaster.engine.cluster.ClusterNode;
 import org.xmlBlaster.engine.cluster.NodeDomainInfo;
 import org.xmlBlaster.engine.cluster.I_MapMsgToMasterId;
+import org.xmlBlaster.authentication.SubjectInfo;
 
 import java.util.Iterator;
 
@@ -182,7 +183,7 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
       ClusterNode clusterNode = null;
       for (int ii=0; keyMappings!=null && ii<keyMappings.length; ii++) {
          if (xmlKey.match(keyMappings[ii])) {
-            log.info(ME, "Found master='" + nodeDomainInfo.getNodeId().getId() + "' for message oid='" + msgWrapper.getUniqueKey() + "' domain='" + xmlKey.getDomain() + "'.");
+            log.info(ME, "Found master='" + nodeDomainInfo.getNodeId().getId() + "' stratum=" + nodeDomainInfo.getStratum() + " for message oid='" + msgWrapper.getUniqueKey() + "' domain='" + xmlKey.getDomain() + "'.");
             clusterNode = nodeDomainInfo.getClusterNode(); // Found the master
             return clusterNode;
          }
@@ -198,17 +199,19 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
                                           filterQos[jj].getVersion(), 
                                           xmlKey.getContentMime(),
                                           xmlKey.getContentMimeExtended());
-            log.warn(ME, "get("+xmlKey.getUniqueKey()+") filter=" + filter + " qos=" + msgWrapper.getPublishQos().toXml());
-            /* TODO: pass sessionInfo to here
-            if (filter != null && filter.match(sessionInfo.getSubjectInfo(),
-                                          sessionInfo.getSubjectInfo(),
-                                          msgUnitWrapper, filterQos[jj].getQuery()) == false)
-               continue NEXT_MSG; // filtered message is not send to client
-            */
+            log.info(ME, "Checking filter='" + filterQos[jj].getQuery() + "' on message content='" + msgWrapper.getMessageUnit().getContentStr() + "'");
+            SubjectInfo subjectInfo = null; // TODO: Pass sessionInfo.getSubjectInfo() or subjectInfo here
+            if (filter != null && filter.match(subjectInfo, subjectInfo,
+                                          msgWrapper, filterQos[jj].getQuery())) {
+               log.info(ME, "Found master='" + nodeDomainInfo.getNodeId().getId() + "' stratum=" + nodeDomainInfo.getStratum() + " for message oid='" + msgWrapper.getUniqueKey() + "' with filter='" + filterQos[jj].getQuery() + "'.");
+               return nodeDomainInfo.getClusterNode(); // Found the master
+            }
          }
       }
 
-      log.info(ME, "Node '" + nodeDomainInfo.getId() + "' is not master for message oid='" + msgWrapper.getUniqueKey() + "' domain='" + xmlKey.getDomain() + "'");
+      if (log.TRACE) log.info(ME, "Node '" + nodeDomainInfo.getId() + "' is not master for message oid='" + msgWrapper.getUniqueKey() + "' with given rules=" + nodeDomainInfo.toXml());
+      // Another rule can still choose this node as a master
+
       return null; // This clusternode is not the master
    }
 }
