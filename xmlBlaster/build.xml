@@ -1540,6 +1540,10 @@ TODO
          </default>
       </switch>
 
+      <!-- Remove old stuff to simplify update, these two lines can be removed in May 2004 -->
+      <delete file="${src.cpp.dir}/util/Global_CopyByAnt.cpp" />
+      <delete file="${src.c.dir}/util/msgUtil_CopyByAnt.c" />
+
       <!--
          C++: Copy all .cpp and .h files to the build.tmp directory.
         "@version@" and "@build.timestamp@" is replaced to current values by ant (Global.cpp)
