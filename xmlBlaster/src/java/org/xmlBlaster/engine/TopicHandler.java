@@ -5,6 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
+import java.util.Map;
+import java.util.TreeMap;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
@@ -19,6 +21,8 @@ import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
 import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.engine.queuemsg.MsgQueueHistoryEntry;
 import org.xmlBlaster.engine.queuemsg.TopicEntry;
+//import org.xmlBlaster.engine.msgstore.I_ChangeCallback;
+import org.xmlBlaster.engine.msgstore.I_MapEntry;
 
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.Timeout;
@@ -61,7 +65,7 @@ import java.util.*;
  * @see org.xmlBlaster.test.topic.TestTopicLifeCycle
  * @author xmlBlaster@marcelruff.info
  */
-public final class TopicHandler implements I_Timeout
+public final class TopicHandler implements I_Timeout//, I_ChangeCallback
 {
    private String ME = "TopicHandler";
    private final Global glob;
@@ -140,6 +144,8 @@ public final class TopicHandler implements I_Timeout
    private final Object ADMIN_MONITOR = new Object();
 
    private I_SubscriptionListener subscriptionListener;
+
+   private Map msgUnitWrapperUnderConstruction = new HashMap();
 
    /**
     * Use this constructor if a subscription is made on a yet unknown topic.
@@ -321,7 +327,7 @@ public final class TopicHandler implements I_Timeout
                queue.setProperties(prop);
             }
             else {
-               log.warn(ME, "Destroying " + queueName + " queue with " + this.historyQueue.getNumOfEntries() +
+               log.warn(ME, "Destroying " + queueName + " queue with " + queue.getNumOfEntries() +
                             " entries because of new configuration with maxEntries=0");
                queue.clear();
                queue.shutdown();
@@ -509,7 +515,7 @@ public final class TopicHandler implements I_Timeout
          }
       }
 
-      int initialCounter = 0; // Force referenceCount until update queues are filled (volatile messages)
+      int initialCounter = 1; // Force referenceCount until update queues are filled (volatile messages)
       MsgUnitWrapper msgUnitWrapper = null;
       
       try { // finally
@@ -526,11 +532,20 @@ public final class TopicHandler implements I_Timeout
                }
             }
 
-            initialCounter = 1; // Force referenceCount until update queues are filled (volatile messages)
             msgUnitWrapper = new MsgUnitWrapper(glob, msgUnit, this.msgUnitCache, initialCounter, 0, -1);
+
+            // Forcing RAM entry temporary (reset in finally below) to avoid performance critical harddisk IO during initialization, every callback/subject/history queue put()/take() is changing the reference counter of MsgUnitWrapper. For persistent messages this needs to be written to harddisk
+            // If the server crashed during this RAM operation it is not critical as the publisher didn't get an ACK yet
+            //msgUnitWrapper.runningRamBased(true);
+            synchronized(this.msgUnitWrapperUnderConstruction) {
+               // A queue (e.g. callback queue) could swap its entry and reload it during this initialization phase,
+               // in this case we need to assure that it receives our RAM based MsgUnitWrapper (with all current settings)
+               // in case it changes the referenceCounter
+               this.msgUnitWrapperUnderConstruction.put(new Long(msgUnitWrapper.getUniqueId()), msgUnitWrapper);
+            }
        
-            if (log.TRACE) log.trace(ME, "msgUnitCache.put() storing message '" + msgUnit.getLogId() + "' into '" + msgUnitWrapper.getUniqueId() + "' ...");
-            this.msgUnitCache.put(msgUnitWrapper);
+            //if (log.TRACE) log.trace(ME, "msgUnitCache.put() storing message '" + msgUnit.getLogId() + "' into '" + msgUnitWrapper.getUniqueId() + "' ...");
+            //this.msgUnitCache.put(msgUnitWrapper);
 
             if (addToHistoryQueue && msgUnitWrapper.isAlive()) { // no volatile messages
                if (msgQosData.isForceUpdate() == false && hasHistoryEntries()) {
@@ -590,14 +605,45 @@ public final class TopicHandler implements I_Timeout
          }
       }
       finally {
-         // Event to check if counter == 0 to remove cache entry again (happens e.g. for volatile msg without a no subscription)
-         // MsgUnitWrapper calls topicEntry.destroyed(MsgUnitWrapper) if it is in destroyed state
-         if (initialCounter != 0) {
-            msgUnitWrapper.incrementReferenceCounter((-1)*initialCounter, null); // Reset referenceCount until update queues are filled
+         if (msgUnitWrapper != null) {
+            synchronized (msgUnitWrapper) {
+               try {
+               // Event to check if counter == 0 to remove cache entry again (happens e.g. for volatile msg without a no subscription)
+               // MsgUnitWrapper calls topicEntry.destroyed(MsgUnitWrapper) if it is in destroyed state
+                  if (initialCounter != 0) {
+                     //msgUnitWrapper.incrementReferenceCounter((-1)*initialCounter, null); // Reset referenceCount until update queues are filled
+                     msgUnitWrapper.setReferenceCounter((-1)*initialCounter);
+                  }
+                  if (!msgUnitWrapper.isDestroyed()) {
+                     this.msgUnitCache.put(msgUnitWrapper);
+                  }
+                  synchronized(this.msgUnitWrapperUnderConstruction) {
+                     this.msgUnitWrapperUnderConstruction.remove(new Long(msgUnitWrapper.getUniqueId()));
+                  }
+               //if (!msgUnitWrapper.isDestroyed() && msgUnitWrapper.getMsgQosData().isPersistent()) {
+               //   this.msgUnitCache.change(msgUnitWrapper, this); // calls changeEntry() below
+               //}
+               }
+               catch (XmlBlasterException e) {
+                  synchronized(this.msgUnitWrapperUnderConstruction) {
+                     this.msgUnitWrapperUnderConstruction.remove(new Long(msgUnitWrapper.getUniqueId()));
+                  }
+                  throw e;
+               }
+            }
          }
       }
       return publishReturnQos;
    }
+
+   /**
+    * Implements I_ChangeCallback, invoked by this.msgUnitCache.change() above
+   public I_MapEntry changeEntry(I_MapEntry entry) throws XmlBlasterException {
+      MsgUnitWrapper msgUnitWrapper = (MsgUnitWrapper)entry;
+      msgUnitWrapper.runningRamBased(false);
+      return msgUnitWrapper;
+   }
+   */
 
    /**
     * Forward PtP messages
@@ -739,9 +785,20 @@ public final class TopicHandler implements I_Timeout
    }
 
    public MsgUnitWrapper getMsgUnitWrapper(long uniqueId) throws XmlBlasterException {
+
+      synchronized(this.msgUnitWrapperUnderConstruction) {
+         if (this.msgUnitWrapperUnderConstruction.size() > 0) {
+            Object obj = this.msgUnitWrapperUnderConstruction.get(new Long(uniqueId));
+            if (obj != null) {
+               return (MsgUnitWrapper)obj;
+            }
+         }
+      }
+
       if (this.msgUnitCache == null) { // on startup
          return null;
       }
+
       return (MsgUnitWrapper)this.msgUnitCache.get(uniqueId);
    }
 
@@ -818,6 +875,17 @@ public final class TopicHandler implements I_Timeout
     */
    public void entryDestroyed(MsgUnitWrapper msgUnitWrapper) {
       if (log.CALL) log.call(ME, "Entering entryDestroyed(" + msgUnitWrapper.getLogId() + ")");
+
+      boolean underConstruction = false;
+      synchronized(this.msgUnitWrapperUnderConstruction) {
+         if (this.msgUnitWrapperUnderConstruction.size() > 0) {
+            Object obj = this.msgUnitWrapperUnderConstruction.get(new Long(msgUnitWrapper.getUniqueId()));
+            if (obj != null) {
+               underConstruction = true;
+            }
+         }
+      }
+
       /*
       if (this.historyQueue != null) {
          try {
@@ -831,12 +899,14 @@ public final class TopicHandler implements I_Timeout
       }
       */
 
-      try {
-         getMsgUnitCache().remove(msgUnitWrapper);
-      }
-      catch (XmlBlasterException e) {
-         log.error(ME, "Internal problem in entryDestroyed removeRandom of msg store (this can lead to a memory leak of '" + msgUnitWrapper.getLogId() + "'): " +
+      if (!underConstruction) {
+         try {
+            getMsgUnitCache().remove(msgUnitWrapper);
+         }
+         catch (XmlBlasterException e) {
+            log.error(ME, "Internal problem in entryDestroyed removeRandom of msg store (this can lead to a memory leak of '" + msgUnitWrapper.getLogId() + "'): " +
                        e.getMessage() + ": " + toXml());
+         }
       }
       
       // if it was a volatile message we need to check unreferenced state
