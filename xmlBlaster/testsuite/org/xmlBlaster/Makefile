@@ -17,6 +17,7 @@ SUB_DIRS = query
 LOCAL_FILES = \
 			$(CLASS_DIR)/Util.class \
 			$(CLASS_DIR)/BlasterCallbackImpl.class \
+			$(CLASS_DIR)/TestSub.class \
 			$(CLASS_DIR)/ClientOid.class \
 			$(CLASS_DIR)/ClientGet.class \
 			$(CLASS_DIR)/ClientXml.class \
