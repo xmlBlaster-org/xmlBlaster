@@ -3,7 +3,7 @@ Name:      ConnectionException.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Basic xmlBlaster exception.
-Version:   $Id: ConnectionException.java,v 1.1 2000/10/18 20:45:42 ruff Exp $
+Version:   $Id: ConnectionException.java,v 1.2 2002/02/15 12:54:24 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol;
 
@@ -15,7 +15,8 @@ import org.jutils.JUtilsException;
  * This exception will be thrown in remote RMI calls as well.
  * @author "Marcel Ruff" <ruff@swand.lake.de>
  */
-public class ConnectionException extends Exception implements java.io.Serializable
+ // We extend from error, so we can throw it without declaring the exception in Thread.run()
+public class ConnectionException extends Error implements java.io.Serializable
 {
    public String id;
    public String reason;
