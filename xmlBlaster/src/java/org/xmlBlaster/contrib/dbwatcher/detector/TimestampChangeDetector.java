@@ -178,6 +178,7 @@ public class TimestampChangeDetector implements I_ChangeDetector
       this.changeCommand = null;
       // We need the connection for detection and in the same transaction to the queryMeat
       Connection conn = null;
+      boolean reported = false;
 
       try {
          conn = this.dbPool.select(conn, this.changeDetectStatement, new I_ResultCb() {
@@ -226,7 +227,14 @@ public class TimestampChangeDetector implements I_ChangeDetector
             if (this.queryMeatStatement != null) { // delegate processing of message meat ...
                 ChangeEvent changeEvent = new ChangeEvent(groupColName, null, null, this.changeCommand);
                 String stmt = DbWatcher.replaceVariable(this.queryMeatStatement, oldTimestamp==null?MINSTR:oldTimestamp);
-                changeCount = changeListener.publishMessagesFromStmt(stmt, groupColName!=null, changeEvent, conn);
+                try {
+                   changeCount = changeListener.publishMessagesFromStmt(stmt, groupColName!=null, changeEvent, conn);
+                }
+                catch (Exception e) {
+                   log.severe("Panic: Query meat failed for '" + stmt + "': " + e.toString()); 
+                   reported = true;
+                   throw e;
+                }
             }
             else { // send message without meat ...
                String resultXml = "";
@@ -245,8 +253,10 @@ public class TimestampChangeDetector implements I_ChangeDetector
          }
       }
       catch (Exception e) {
-         log.severe("Panic: Change detection failed for '" +
-                    this.changeDetectStatement + "': " + e.toString()); 
+         if (!reported) {
+            log.severe("Panic: Change detection failed for '" +
+                       this.changeDetectStatement + "': " + e.toString()); 
+         }
       }
       finally {
          if (conn != null) {
