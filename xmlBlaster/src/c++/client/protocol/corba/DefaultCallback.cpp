@@ -66,9 +66,11 @@ DefaultCallback::update(const char* sessionId,
       UpdateKey *updateKey = 0;
       UpdateQos *updateQos = 0;
       try {
-//         updateKey = new UpdateKey(global_);
-//         updateKey->init(string(msgUnit.xmlKey));
-	 updateKey = new UpdateKey(global_, msgKeyFactory_.readObject(string(msgUnit.xmlKey)));
+         if (log_.DUMP) {
+            log_.dump(me(), string("update: the key: ") + string(msgUnit.xmlKey));
+            log_.dump(me(), string("update: the qos: ") + string(msgUnit.qos));
+         }
+         updateKey = new UpdateKey(global_, msgKeyFactory_.readObject(string(msgUnit.xmlKey)));
          updateQos = new UpdateQos(global_, msgQosFactory_.readObject(string(msgUnit.qos)));
          // Now we know all about the received msg, dump it or do 
          // some checks
@@ -111,10 +113,10 @@ DefaultCallback::update(const char* sessionId,
       catch(...) {
          string tmp = "Exception caught in update() " + lexical_cast<string>(msgUnitArr.length()) + " messages are handled as not delivered";
          log_.error(me(), tmp);
-	 throw serverIdl::XmlBlasterException("user.update.error", "client", 
-					      "client update failed", "en",
-					      tmp.c_str(), "", "", "", "", 
-					      "", "");
+         throw serverIdl::XmlBlasterException("user.update.error", "client", 
+                                              "client update failed", "en",
+                                              tmp.c_str(), "", "", "", "", 
+                                              "", "");
       }
 
       delete updateKey;

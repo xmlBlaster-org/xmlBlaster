@@ -3,7 +3,7 @@ Name:      Log.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.cpp,v 1.13 2003/01/08 16:03:38 laghi Exp $
+Version:   $Id: Log.cpp,v 1.14 2003/01/22 11:54:17 laghi Exp $
 ----------------------------------------------------------------------------*/
 
 #include <util/Log.h>
@@ -319,6 +319,7 @@ const char* const Log::BLACK_LTGREEN= "\033[40;46m";
 
 
    void Log::initialize() {
+      setPreLogLevelCheck();
       logFormatPropertyRead = true;
       // Given flag -info switches off Log.info messages:
       initSpecificTrace("info", "INFO");

@@ -27,7 +27,7 @@ UpdateQos::UpdateQos(const UpdateQos& data)
 
 UpdateQos& UpdateQos::operator=(const UpdateQos& data)
 {
-   *this = data;
+   GetReturnQos::operator=(static_cast<GetReturnQos>(data));
    ME = data.ME;
    return *this;
 }

@@ -88,7 +88,7 @@ void CbServerPluginManager::releasePlugin(const string& instanceName, const stri
    if (log_.TRACE)
       log_.trace(ME, string("releasePlugin: type: '") + type + string("', version: '") + version + "' for instance '" + instanceName + "'");
    if (type == "IOR") {
-      corba::CorbaDriver::getInstance(global_, instanceName);
+      corba::CorbaDriver::killInstance(instanceName);
       return;
    }
    string embeddedMsg = string("plugin: '") + type +

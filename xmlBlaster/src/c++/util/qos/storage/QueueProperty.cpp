@@ -21,6 +21,7 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos { namespac
    {
       ME = "QueueProperty";
       relating_ = Constants::RELATING_CLIENT;
+      QueuePropertyBase::initialize(Constants::RELATING_CLIENT);
    }
 
    QueueProperty::QueueProperty(const QueuePropertyBase& prop)

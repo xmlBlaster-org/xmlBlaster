@@ -46,6 +46,7 @@ ConnectionsHandler::~ConnectionsHandler()
    string version = "1.0"; // currently hardcoded
 
    global_.getDeliveryManager().releasePlugin(instanceName_, type, version);
+   connection_ = NULL;
 
    if (timestamp_ != 0) {
 //      Lock lock(connectionMutex_);
@@ -61,9 +62,6 @@ ConnectionsHandler::~ConnectionsHandler()
    adminQueue_ = NULL;
    delete connectQos_;
    delete connectReturnQos_;
-
-   delete connection_;
-   connection_ = NULL;
    status_ = END;
 } 
 
