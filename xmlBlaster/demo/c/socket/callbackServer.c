@@ -5,16 +5,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Establish a listen socket for xmlBlaster callbacks
 Author:    "Marcel Ruff" <ruff@swand.lake.de>
 Compile:   gcc -DUSE_MAIN -o callbackServer callbackServer.c
+           cl /MT -DUSE_MAIN -D_WINDOWS callbackServer.c ws2_32.lib
 -----------------------------------------------------------------------------*/
-#include <stdio.h>
-#include <stdlib.h>
 #include <string.h>      // strcat()
-#include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <arpa/inet.h>   // inet_addr()
-#include <unistd.h>      // gethostname()
 #include "callbackServer.h"
 
 #define NSTRS       3           /* no. of strings  */
@@ -193,13 +186,15 @@ void shutdownCallbackServer()
  */
 char *messageUnitToXml(MessageUnit *msg)
 {
-   char content[msg->contentLength+1];
+	//char content[msg->contentLength+1];
+   char *content = malloc(msg->contentLength+1);
    int len = 100 + strlen(msg->xmlKey) + msg->contentLength + strlen(msg->qos);
    char *xml = (char *)malloc(len*sizeof(char));
    sprintf(xml, "%s\n<content><![CDATA[%s]]></content>\n%s",
                       msg->xmlKey,
                       contentToString(content, msg), /* append \0 */
                       msg->qos);
+	free(content);
    return xml;
 }
 
@@ -216,7 +211,7 @@ int main(int argc, char** argv)
 {
    int iarg;
    callbackData data;
-   data.hostCB = NULL;
+   data.hostCB = "";
    data.portCB = 7610;
 
    for (iarg=0; iarg < argc-1; iarg++) {

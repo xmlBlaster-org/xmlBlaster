@@ -6,6 +6,18 @@ Comment:   Establish a listen socket for xmlBlaster callbacks
 Author:    "Marcel Ruff" <ruff@swand.lake.de>
 Compile:   gcc -DUSE_MAIN -o callbackServer callbackServer.c
 -----------------------------------------------------------------------------*/
+#include <stdio.h>
+#include <stdlib.h>
+#include <sys/types.h>
+#ifdef _WINDOWS
+#  include <winsock2.h>
+#else
+#  include <sys/socket.h>
+#  include <netinet/in.h>
+#  include <netdb.h>
+#  include <arpa/inet.h>   // inet_addr()
+#  include <unistd.h>      // gethostname(), sleep(seconds)
+#endif
 
 #define XMLBLASTER_DEBUG 1
 
@@ -18,7 +30,7 @@ typedef struct MessageUnitStruct {
 
 
 #define MSG_LEN_FIELD_LEN 10
-#define MSG_FLAG_FIELD_LEN 4
+#define MSG_FLAG_FIELD_LEN 6
 #define LenFormatStr "%10.10d"
 /* sprintf(LenFormatStr, "%%%d.%dd", MSG_LEN_FIELD_LEN, MSG_LEN_FIELD_LEN); */
 

@@ -5,17 +5,16 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   client connects with raw socket to xmlBlaster
 Author:    "Marcel Ruff" <ruff@swand.lake.de>
 Compile:   gcc -o client client.c callbackServer.c -lpthread
+Compile-Win: cl /MT -D_WINDOWS client.c callbackServer.c ws2_32.lib
 Invoke:    client -socket.hostCB develop -socket.portCB 7608
 -----------------------------------------------------------------------------*/
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/types.h>
-#include <sys/socket.h>
-#include <netinet/in.h>
-#include <netdb.h>
-#include <arpa/inet.h>   // inet_addr()
-#include <unistd.h>      // gethostname(), sleep(seconds)
-#include <pthread.h>
+#ifdef _WINDOWS
+#else
+#  include <pthread.h>
+#endif
 #include "callbackServer.h"
 
 int socketToXmlBlaster = -1;
@@ -59,7 +58,7 @@ int initConnection(int argc, char** argv)
             if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: Connected to xmlBlaster\n");
          }
          else {
-            if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: ERROR Connecting to xmlBlaster -socket.host=%s -socket.port=%s failed\n", serverHostName, servTcpPort); // errno
+            if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: ERROR Connecting to xmlBlaster -socket.host %s -socket.port %s failed\n", serverHostName, servTcpPort); // errno
          }
       }
    }
@@ -88,8 +87,8 @@ void shutdownConnection()
 int sendData(char *data, int len)
 {
    int numSent;
-   int headerLen = MSG_LEN_FIELD_LEN+MSG_FLAG_FIELD_LEN;
-   char msgHeaderP[headerLen+1];
+   const int headerLen = MSG_LEN_FIELD_LEN+MSG_FLAG_FIELD_LEN;
+   char msgHeaderP[MSG_LEN_FIELD_LEN+MSG_FLAG_FIELD_LEN+1]; //[headerLen+1];
    
    /* Send header which contains the length of the data (first 10 bytes) ... */
    sprintf(msgHeaderP, LenFormatStr, len);
@@ -166,7 +165,9 @@ void update(MessageUnit *msg)
 
 int main(int argc, char** argv)
 {
+#ifndef _WINDOWS
    pthread_t tid;
+#endif
    int ret, iarg;
    char *data = NULL;
    callbackData cbArgs;
@@ -182,7 +183,9 @@ int main(int argc, char** argv)
          cbArgs.portCB = atoi(argv[++iarg]);
    }
 
+#  ifndef _WINDOWS
    ret = pthread_create(&tid, NULL, (cbFp)initCallbackServer, &cbArgs);
+#  endif
 
    initConnection(argc, argv);
    
@@ -192,7 +195,9 @@ int main(int argc, char** argv)
    publish("<key oid='cpuinfo'/>", data, strlen(data), "<qos/>");
 
    if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: going to sleep 100 sec ...\n");
+#  ifndef _WINDOWS
    sleep(10000);
+#  endif
    exit(0);
 }
 
