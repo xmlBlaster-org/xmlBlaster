@@ -70,7 +70,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
    private static boolean firstConnectError = true;
    private Properties pluginProp = null;
    private boolean dbAdmin = true;
-
+   private int queryTimeout = 5;
 
    /**
     * returns the plugin properties, i.e. the specific properties passed to the jdbc queue plugin.
@@ -722,6 +722,11 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
 
    public boolean isDbAdmin() {
       return this.dbAdmin;
+   }
+
+
+   public int getQueryTimeout() {
+      return this.queryTimeout;
    }
 
 

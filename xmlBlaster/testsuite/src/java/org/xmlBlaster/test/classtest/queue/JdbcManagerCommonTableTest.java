@@ -233,6 +233,18 @@ public class JdbcManagerCommonTableTest extends TestCase {
          boolean pingOK = this.manager.ping();
          assertEquals(me + " check ping command", true, pingOK);
 
+         // can be run manually by adding -numOfPings 10 at the command line ...
+         int numOfPings = glob.getProperty().get("numOfPings", 0);
+         for (int i=0; i < numOfPings; i++) {
+            this.log.info(ME, "going to ping");
+            this.manager.ping();
+            try {
+   	       Thread.sleep(200L);
+            }
+            catch (Exception ex) {
+            }
+         }
+
          this.log.info(me, "successfully completed the tests");
       }
       catch (Exception ex) {

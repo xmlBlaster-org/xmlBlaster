@@ -242,6 +242,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       try {
          // conn.isClosed();
          st = conn.createStatement();
+         st.setQueryTimeout(this.pool.getQueryTimeout());
 //          st.execute(""); <-- this will not work on ORACLE (fails)
          st.execute("SELECT count(*) from " + this.tablesTxt);
          if (this.log.TRACE) this.log.trace(ME, "ping successful");
@@ -485,6 +486,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          else {
             req = "INSERT INTO " + this.nodesTableName + " VALUES (?)";
             preStatement = query.conn.prepareStatement(req);
+            preStatement.setQueryTimeout(this.pool.getQueryTimeout());
+
             preStatement.setString(1, nodeId);
             if (this.log.TRACE) this.log.trace(getLogId(null, nodeId, "addNode"), preStatement.toString());
             preStatement.executeUpdate();
@@ -524,7 +527,6 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          String req = "SELECT count(*) from " + postfix;
          if (this.log.TRACE) this.log.trace(getLogId(null, nodeId, "removeNode"), "Request: '" + req + "'");
          PreparedQuery query = null;
-         PreparedStatement preStatement = null;
          try {
             query = new PreparedQuery(pool, req, false, this.log, -1);
             query.rs.next();         
@@ -532,18 +534,16 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             if (size < 1) return false;
      
             // remove all queues associated with this node here ...
-     
             req = "DELETE FROM " + postfix;
             update(req, query.conn);
             return true;
          }
          catch (SQLException ex) {
             if (handleSQLException(query != null ? query.conn : null, getLogId(null, nodeId, "removeNode"), ex))
-     	       throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".removeNode", "", ex); 
+               throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".removeNode", "", ex); 
             else throw ex;
          }
          finally {
-            if (preStatement !=null) preStatement.close();
             if (query != null) query.close();
          }
       }
@@ -571,6 +571,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
          req = "INSERT INTO " + this.queuesTableName + " VALUES (?,?,?,?)";
          preStatement = query.conn.prepareStatement(req);
+         preStatement.setQueryTimeout(this.pool.getQueryTimeout());
          preStatement.setString(1, queueName);
          preStatement.setString(2, nodeId);
          preStatement.setLong(3, numOfBytes);
@@ -602,7 +603,6 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       String req = "SELECT count(*) from " + postfix;
       if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "removeQueue"), "Request: '" + req + "'");
       PreparedQuery query = null;
-      PreparedStatement preStatement = null;
       try {
          query = new PreparedQuery(pool, req, false, this.log, -1);
          query.rs.next();         
@@ -619,7 +619,6 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          else throw ex;
       }
       finally {
-         if (preStatement !=null) preStatement.close();
          if (query != null) query.close();
       }
    }
@@ -660,6 +659,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          this.log.dump(ME, "addition. dataId: " + dataId + ", prio: " + prio + ", typeName: " + typeName + ", byteSize in bytes: " + sizeInBytes);
 
       PreparedStatement preStatement = null;
+      PreparedStatement exStatement = null;
       boolean ret = false;
       Connection conn = null;
       try {
@@ -668,6 +668,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "addEntry"), req);
 
          preStatement = conn.prepareStatement(req);
+         preStatement.setQueryTimeout(this.pool.getQueryTimeout());
          preStatement.setLong(1, dataId);
          preStatement.setString(2, nodeId);
          preStatement.setString(3, queueName);
@@ -689,10 +690,12 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
                   entry.getClass().getName() + "'-'" +  entry.getLogId() + "-" + entry.getUniqueId() + "': " + ex.toString());
          if (handleSQLException(conn, getLogId(queueName, nodeId, "addEntry"), ex)) 
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".addEntry", "", ex); 
-         // check if an entry with the same key already exists: if not, then an exception must be thrown
+         // check if the exception was due to an existing entry. If yes, no exception will be thrown
          try {
             String req = "SELECT count(*) from " + this.entriesTableName + " where (dataId='" + dataId + "' AND nodeId='" + nodeId + "')";
-            ResultSet rs = conn.prepareStatement(req).executeQuery(req);
+            exStatement = conn.prepareStatement(req);
+            exStatement.setQueryTimeout(this.pool.getQueryTimeout());
+            ResultSet rs = exStatement.executeQuery(req);
             rs.next();         
             int size = rs.getInt(1);
             if (size < 1) throw ex;
@@ -705,12 +708,18 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          ret = false;
       }
       finally {
-         if (preStatement != null) preStatement.close();
+         try {
+            if (exStatement != null) exStatement.close();
+            if (preStatement != null) preStatement.close();
+         }
+         catch (Throwable ex) {
+            this.log.warn(ME, "addEntry: throwable when closing the connection: " + ex.toString());
+         }
          if (conn != null) this.pool.releaseConnection(conn);
       }
-
       return ret;
    }
+
 
    /**
     * Cleans up the specified queue. It deletes the queue from the 'queues' table which implicitly deletes
@@ -738,7 +747,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          try {
             conn = this.pool.getConnection();
             if (handleSQLException(conn, getLogId(queueName, nodeId, "deleteEntries"), ex))
- 	       throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".deleteEntries", "", ex); 
+               throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".deleteEntries", "", ex); 
          }
          finally {
             if (conn != null) this.pool.releaseConnection(conn);
@@ -863,6 +872,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          String req = "SELECT sum(byteSize) from " + this.entriesTableName + " where queueName='" + queueName + "' AND nodeId='" + nodeId + "'";
          conn = this.pool.getConnection();
          st = conn.prepareStatement(req);
+         st.setQueryTimeout(this.pool.getQueryTimeout());
          ResultSet rs = st.executeQuery();
          rs.next();
          return rs.getLong(1);
@@ -873,7 +883,12 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          else throw ex;
       }
       finally {
-         if (st != null) st.close();
+         try {
+            if (st != null) st.close();
+         }
+         catch (Throwable ex) {
+            this.log.warn(ME, ".getNumOfBytes: exception when closing statement: " + ex.toString());
+         }
          if (conn != null) this.pool.releaseConnection(conn);
       }
    }
@@ -1031,12 +1046,18 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       try {
          conn = pool.getConnection();
          statement = conn.createStatement();
+         statement.setQueryTimeout(this.pool.getQueryTimeout());
          if (this.log.TRACE) this.log.trace(getLogId(null, null, "update"), "Executing statement: " + request);
          ret = statement.executeUpdate(request);
          if (this.log.TRACE) this.log.trace(getLogId(null, null, "update"), "Executed statement, number of changed entries=" + ret);
       }
       finally {
-         if (statement !=null) statement.close();
+         try {
+            if (statement !=null) statement.close();
+         }
+         catch (Throwable ex) {
+            this.log.warn(ME, "update: throwable when closing statement: " + ex.toString());
+         }
          if (conn != null) this.pool.releaseConnection(conn);
       }
 
@@ -1063,6 +1084,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
       try {
          statement = conn.createStatement();
+         statement.setQueryTimeout(this.pool.getQueryTimeout());
          ret = statement.executeUpdate(request);
          if (this.log.TRACE) this.log.trace(getLogId(null, null, "update"), "Executed statement, number of changed entries=" + ret);
       }
@@ -1096,7 +1118,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          try {
             conn = this.pool.getConnection();
             if (handleSQLException(conn, getLogId(queueName, nodeId, "deleteAllTransient"), ex))
-    	       throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".deleteAllTransient", "", ex); 
+               throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".deleteAllTransient", "", ex); 
          }
          finally {
             if (conn != null) this.pool.releaseConnection(conn);
@@ -1295,7 +1317,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          try {
             conn = this.pool.getConnection();
             if (handleSQLException(conn, getLogId(queueName, nodeId, "deleteEntries"), ex))
-   	       throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".deleteEntries", "", ex); 
+               throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".deleteEntries", "", ex); 
          }
          finally {
             if (conn != null) this.pool.releaseConnection(conn);

@@ -52,15 +52,22 @@ public class PreparedQuery {
          this.conn = this.pool.getConnection();
          this.conn.setAutoCommit(isAutoCommit);
          this.st = conn.prepareStatement(request);
+         this.st.setQueryTimeout(this.pool.getQueryTimeout());
+
 //         if (fetchSize > -1) this.st.setFetchSize(fetchSize);
          this.rs = this.st.executeQuery(request);
       }
       catch (XmlBlasterException ex) {
          this.log.trace(ME, "Constructor. Exception: " + ex.getMessage());
          if (this.conn != null) {
-            if (!this.conn.getAutoCommit()) this.conn.rollback();
-            this.conn.setAutoCommit(true);
-            if (this.st != null) st.close();
+            try {
+               if (!this.conn.getAutoCommit()) this.conn.rollback();
+               this.conn.setAutoCommit(true);
+               if (this.st != null) st.close();
+            }
+            catch (Throwable ex2) {
+               this.log.warn(ME, "constructor exception occured: " + ex2.toString());
+            }
             this.pool.releaseConnection(this.conn);
             this.conn = null;
          }
@@ -70,14 +77,36 @@ public class PreparedQuery {
       catch (SQLException ex) {
          this.log.trace(ME, "Constructor. SQLException: " + ex.getMessage());
          if (this.conn != null) {
-            if (!this.conn.getAutoCommit()) this.conn.rollback();
-            this.conn.setAutoCommit(true);
-            if (this.st != null) st.close();
+            try {
+       	       if (!this.conn.getAutoCommit()) this.conn.rollback();
+               this.conn.setAutoCommit(true);
+               if (this.st != null) st.close();
+            }
+            catch (Throwable ex2) {
+               this.log.warn(ME, "constructor: exception occured when handling SQL Exception: " + ex2.toString());
+            }
             this.pool.releaseConnection(this.conn);
             this.conn = null;
          }
          this.isClosed = true;
          throw ex;
+      }
+      catch (Throwable ex) {
+         this.log.warn(ME, "Constructor. Throwable: " + ex.toString());
+         if (this.conn != null) {
+            try {
+       	       if (!this.conn.getAutoCommit()) this.conn.rollback();
+               this.conn.setAutoCommit(true);
+               if (this.st != null) st.close();
+            }
+            catch (Throwable ex2) {
+               this.log.warn(ME, "constructor: exception occured when handling SQL Exception: " + ex2.toString());
+            }
+            this.pool.releaseConnection(this.conn);
+            this.conn = null;
+         }
+         this.isClosed = true;
+         throw new XmlBlasterException(this.pool.getGlobal(), ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".constructor", "", ex);
       }
    }
 
@@ -93,6 +122,7 @@ public class PreparedQuery {
       try {
          if (this.st != null) this.st.close();  // close the previous statement
          this.st = conn.prepareStatement(request);
+    	 this.st.setQueryTimeout(this.pool.getQueryTimeout());
 //         if (fetchSize > -1) this.st.setFetchSize(fetchSize);
          this.rs = this.st.executeQuery(request);
       }
@@ -102,9 +132,12 @@ public class PreparedQuery {
          close();
          throw ex;
       }
-
+      catch (Throwable ex) {
+         this.log.warn(ME, "inTransactionRequest. Throwable: " + ex.toString());
+         close();
+         throw new XmlBlasterException(this.pool.getGlobal(), ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".inTransactionRequest", "", ex);
+      }
       return this.rs;
-
    }
 
 
@@ -124,17 +157,25 @@ public class PreparedQuery {
 
       if (this.isClosed) return;
 
-      if (!this.conn.getAutoCommit()) {
-         this.log.trace(ME, "close with autocommit 'false'");
-         if (this.isException) {
-            this.log.warn(ME, "close with autocommit 'false': rollback");
-            this.conn.rollback();
+      try {
+         if (!this.conn.getAutoCommit()) {
+            this.log.trace(ME, "close with autocommit 'false'");
+            if (this.isException) {
+               this.log.warn(ME, "close with autocommit 'false': rollback");
+               this.conn.rollback();
+            }
+            else this.conn.commit();
+            this.conn.setAutoCommit(true);
          }
-         else this.conn.commit();
-         this.conn.setAutoCommit(true);
-      }
-     if (this.st != null) st.close();
-     this.st = null;
+        if (this.st != null) {
+     	   st.close();
+           this.st = null;
+        }
+     }
+     catch (Throwable ex) {
+        this.log.warn(ME, "close: exception when closing statement: " + ex.toString());
+     }
+
      if (this.conn != null) this.pool.releaseConnection(this.conn);
      this.conn = null;
      this.isClosed = true;
