@@ -3,7 +3,7 @@ Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: AuthServerImpl.java,v 1.12 2001/09/01 09:09:05 ruff Exp $
+Version:   $Id: AuthServerImpl.java,v 1.13 2001/09/01 09:18:25 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -178,7 +178,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
     * we leave this untouched.
     * This CORBA sessionId (transported hidden in the IOR) is used as well
     */
-   public String init(String qos_literal) throws XmlBlasterException
+   public String connect(String qos_literal) throws XmlBlasterException
    {
       LoginReturnQoS returnQoS = null;
       String sessionId = null;
@@ -195,7 +195,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
       } catch (Exception e) {
          e.printStackTrace();
          Log.error(ME+".Corba", e.toString());
-         throw new XmlBlasterException(ME + ".Corba.initFailed", "init failed: " + e.toString());
+         throw new XmlBlasterException(ME + ".Corba.connectFailed", "connect failed: " + e.toString());
       }
 
       try {
@@ -209,7 +209,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
          throw new XmlBlasterException(e.id, e.reason); // transform native exception to Corba exception
       }
 
-      if (Log.TIME) Log.time(ME, "Elapsed time in login()" + stop.nice());
+      if (Log.TIME) Log.time(ME, "Elapsed time in connect()" + stop.nice());
       if (Log.DUMP) Log.dump(ME, "Returning from login-connect()" + returnQoS.toXml());
 
       return returnQoS.toXml();

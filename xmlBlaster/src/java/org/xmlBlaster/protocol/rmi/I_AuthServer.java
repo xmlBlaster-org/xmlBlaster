@@ -3,7 +3,7 @@ Name:      I_AuthServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Authentication access for RMI clients.
-Version:   $Id: I_AuthServer.java,v 1.2 2001/08/19 23:07:54 ruff Exp $
+Version:   $Id: I_AuthServer.java,v 1.3 2001/09/01 09:18:25 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
@@ -31,7 +31,7 @@ public interface I_AuthServer extends java.rmi.Remote
                         throws RemoteException, XmlBlasterException;
 
 
-   public String init(String qos_literal)
+   public String connect(String qos_literal)
                         throws RemoteException, XmlBlasterException;
 
 

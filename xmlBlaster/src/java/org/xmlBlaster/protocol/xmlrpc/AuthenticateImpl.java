@@ -79,17 +79,17 @@ public class AuthenticateImpl
     * @see org.xmlBlaster.client.LoginQosWrapper
     * @see org.xmlBlaster.engine.xml2java.LoginReturnQoS
     */
-   public String init(String qos_literal) throws XmlBlasterException
+   public String connect(String qos_literal) throws XmlBlasterException
    {
       String returnValue = null;
       String sessionId = null;
-      if (Log.CALL) Log.call(ME, "Entering init(qos=" + qos_literal + ")");
+      if (Log.CALL) Log.call(ME, "Entering connect(qos=" + qos_literal + ")");
 
       StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
       try {
          LoginReturnQoS qos = authenticateNative.connect(qos_literal, sessionId);
          returnValue = qos.toXml();
-         if (Log.TIME) Log.time(ME, "Elapsed time in login()" + stop.nice());
+         if (Log.TIME) Log.time(ME, "Elapsed time in connect()" + stop.nice());
       }
       catch (org.xmlBlaster.util.XmlBlasterException e) {
          throw new XmlBlasterException(e.id, e.reason); // transform native exception to Corba exception
