@@ -3,7 +3,7 @@ Name:      ClientQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling login QoS (quality of service), knows how to parse with SAX
-Version:   $Id: ClientQoS.java,v 1.8 2000/09/15 17:16:13 ruff Exp $
+Version:   $Id: ClientQoS.java,v 1.9 2000/10/22 19:35:52 ruff Exp $
 Author:    ruff@swand.lake.de
 -----------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
@@ -42,7 +42,7 @@ public class ClientQoS extends org.xmlBlaster.util.XmlQoSBase
     */
    public ClientQoS(String xmlQoS_literal) throws XmlBlasterException
    {
-      if (Log.TRACE) Log.trace(ME, "Creating ClientQoS(" + xmlQoS_literal + ")");
+      if (Log.DUMP) Log.dump(ME, "Creating ClientQoS(" + xmlQoS_literal + ")");
       addressArr = null;
       init(xmlQoS_literal);
    }
@@ -95,7 +95,7 @@ public class ClientQoS extends org.xmlBlaster.util.XmlQoSBase
       if (super.startElementBase(name, attrs) == true)
          return;
 
-      if (Log.TRACE) Log.trace(ME, "Entering startElement for " + name);
+      //if (Log.TRACE) Log.trace(ME, "Entering startElement for " + name);
 
       if (!inQos) return;
 
@@ -134,7 +134,7 @@ public class ClientQoS extends org.xmlBlaster.util.XmlQoSBase
    {
       super.endElement(name);
 
-      if (Log.TRACE) Log.trace(ME, "Entering endElement for " + name);
+      //if (Log.TRACE) Log.trace(ME, "Entering endElement for " + name);
 
       if(name.equalsIgnoreCase("callback")) {
          inCallback = false;
