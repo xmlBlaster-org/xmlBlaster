@@ -3,7 +3,7 @@ Name:      TestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.java,v 1.24 2000/10/18 20:45:45 ruff Exp $
+Version:   $Id: TestSub.java,v 1.25 2001/12/07 23:45:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -47,6 +47,7 @@ public class TestSub extends TestCase implements I_Callback
    private String senderName;
    private String senderContent;
    private String receiverName;         // sender/receiver is here the same client
+   private long sentTimestamp = 0L;
 
    private int numReceived = 0;         // error checking
    private final String contentMime = "text/xml";
@@ -155,6 +156,7 @@ public class TestSub extends TestCase implements I_Callback
       senderContent = "Yeahh, i'm the new content";
       MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
       try {
+         sentTimestamp = System.currentTimeMillis();
          String tmp = senderConnection.publish(msgUnit);
          assertEquals("Wrong publishOid", publishOid, tmp);
          Log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
@@ -206,6 +208,8 @@ public class TestSub extends TestCase implements I_Callback
       assertEquals("Message content is corrupted", new String(senderContent), new String(content));
       assertEquals("Message contentMime is corrupted", contentMime, updateKey.getContentMime());
       assertEquals("Message contentMimeExtended is corrupted", contentMimeExtended, updateKey.getContentMimeExtended());
+      assert("sentTimestamp="+sentTimestamp+" not in hamony with rcvTimestamp="+updateQoS.getRcvTimestamp(),
+             sentTimestamp<updateQoS.getRcvTimestamp() && (sentTimestamp+1000)>updateQoS.getRcvTimestamp());
 
       messageArrived = true;
    }
