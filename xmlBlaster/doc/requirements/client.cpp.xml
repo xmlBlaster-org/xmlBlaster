@@ -517,7 +517,7 @@ Global.cpp,v 1.29 2003/03/02 19:53:42 ruff Exp
 
 # You can now lookup Global.cpp 1.29 with
 cd xmlBlaster/src/c++/util
-cvs log Global.cpp
+svn log Global.cpp
 </pre>
 
         <h2>How to create the Doxygen documentation</h2>
