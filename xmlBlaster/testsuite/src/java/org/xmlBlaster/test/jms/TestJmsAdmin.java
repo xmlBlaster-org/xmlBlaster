@@ -45,7 +45,7 @@ public class TestJmsAdmin extends XMLTestCase {
    private ConnectQos qos;
    
    
-   public TestJmsAdmin(String name) {
+   public TestJmsAdmin(String name) throws Exception {
       super(name);
       XMLUnit.setIgnoreWhitespace(true);
       try {
@@ -146,12 +146,15 @@ public class TestJmsAdmin extends XMLTestCase {
     */
    public static void main(String args[])
    {
-      TestJmsAdmin test = new TestJmsAdmin("TestJmsAdmin");
-      test.prepare(args);
-      
-      test.setUp();
-      test.testConnectionFactory();
-      test.tearDown();
-      
+      try {
+         TestJmsAdmin test = new TestJmsAdmin("TestJmsAdmin");
+         test.prepare(args);
+         test.setUp();
+         test.testConnectionFactory();
+         test.tearDown();
+      }
+      catch (Exception e) {
+         System.out.println("TEST FAILED: " + e.toString());
+      }
    }
 }

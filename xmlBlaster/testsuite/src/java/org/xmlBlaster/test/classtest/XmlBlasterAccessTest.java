@@ -295,7 +295,7 @@ public class XmlBlasterAccessTest extends TestCase {
       System.out.println("***XmlBlasterAccessTest: testCreation [SUCCESS]");
    }
 
-   public void testDefaultConnectWithoutServer() {
+   public void testDefaultConnectWithoutServer() throws Exception {
       System.out.println("***XmlBlasterAccessTest: testDefaultConnectWithoutServer ...");
       Global nullGlobal = null;
       I_XmlBlasterAccess xmlBlasterAccess = new XmlBlasterAccess(nullGlobal);
@@ -332,9 +332,14 @@ public class XmlBlasterAccessTest extends TestCase {
     */
    public static void main(String args[]) {
       XmlBlasterAccessTest testSub = new XmlBlasterAccessTest(new Global(args, true, false), "XmlBlasterAccessTest");
-      testSub.setUp();
-      testSub.testCreation();
-      testSub.testDefaultConnectWithoutServer();
-      //testSub.tearDown();
+      try {
+         testSub.setUp();
+         testSub.testCreation();
+         testSub.testDefaultConnectWithoutServer();
+         //testSub.tearDown();
+      }
+      catch (Exception e) {
+         System.out.println("TEST FAILED: " + e.toString());
+      }
    }
 }

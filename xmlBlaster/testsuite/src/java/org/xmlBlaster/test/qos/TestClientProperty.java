@@ -3,7 +3,7 @@ Name:      TestClientProperty.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestClientProperty.java,v 1.4 2003/12/07 12:27:02 ruff Exp $
+Version:   $Id: TestClientProperty.java,v 1.5 2004/09/28 15:15:45 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -98,14 +98,14 @@ public class TestClientProperty extends TestCase implements I_Callback
    public void testConnectQos()
    {
       if (log.TRACE) log.trace(ME, "TestConnectQos");
-      ConnectQos qos = new ConnectQos(this.glob);
-      qos.addClientProperty("oneKey", "oneValue");
-      qos.addClientProperty("twoKey", "twoValue");
-      qos.addClientProperty("threeKey", new Integer(55));
-      String literal = qos.toXml();
-      
-      ConnectQosSaxFactory factory = new ConnectQosSaxFactory(this.glob);
       try {
+         ConnectQos qos = new ConnectQos(this.glob);
+         qos.addClientProperty("oneKey", "oneValue");
+         qos.addClientProperty("twoKey", "twoValue");
+         qos.addClientProperty("threeKey", new Integer(55));
+         String literal = qos.toXml();
+         
+         ConnectQosSaxFactory factory = new ConnectQosSaxFactory(this.glob);
          ConnectQosData data = factory.readObject(literal);
          checkValues(data.getClientProperties());
       }
@@ -197,14 +197,14 @@ public class TestClientProperty extends TestCase implements I_Callback
    public void testGetQos()
    {
       if (log.TRACE) log.trace(ME, "TestGetQos");
-      ConnectQos qos = new ConnectQos(this.glob);
-      qos.addClientProperty("oneKey", "oneValue");
-      qos.addClientProperty("twoKey", "twoValue");
-      qos.addClientProperty("threeKey", new Integer(55));
-      String literal = qos.toXml();
-      
-      QueryQosSaxFactory factory = new QueryQosSaxFactory(this.glob);
       try {
+         ConnectQos qos = new ConnectQos(this.glob);
+         qos.addClientProperty("oneKey", "oneValue");
+         qos.addClientProperty("twoKey", "twoValue");
+         qos.addClientProperty("threeKey", new Integer(55));
+         String literal = qos.toXml();
+         
+         QueryQosSaxFactory factory = new QueryQosSaxFactory(this.glob);
          QueryQosData data = factory.readObject(literal);
          checkValues(data.getClientProperties());
       }
