@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.46 2000/01/21 08:19:04 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.47 2000/01/21 09:13:30 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -31,7 +31,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.46 $
+ * @version $Revision: 1.47 $
  * @author $Author: ruff $
  */
 public class RequestBroker implements ClientListener, MessageEraseListener
@@ -60,9 +60,9 @@ public class RequestBroker implements ClientListener, MessageEraseListener
    /**
     * This client is only for internal use, it is un secure to pass it outside because
     * there is no authentication.<br />
-    * The login name "__RequestBroker_internal" is reserved!<br />
+    * The login name "__RequestBroker_internal__" is reserved!<br />
     * TODO: security discussion
-    */ 
+    */
    private final ClientInfo unsecureClientInfo = new ClientInfo("__RequestBroker_internal__");
 
    /**
@@ -141,7 +141,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
-    * Try to load all persistent stored messages. 
+    * Try to load all persistent stored messages.
     */
    private void loadPersistentMessages()
    {
@@ -158,10 +158,11 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
-    * This Interface allows to hook in you own persistence driver,<br />
-    * configure it through xmlBlaster.properties
+    * This Interface allows to hook in your own persistence driver.  
     * <p />
-    * Note that you can't change the driver during runtime (would need some code added).
+    * Configure the driver through xmlBlaster.properties
+    * <br />
+    * Note that you can't change the driver during runtime (this would need some code added).
     * @return interface to the configured persistence driver or null if no is available
     */
    public final I_PersistenceDriver getPersistenceDriver()

@@ -18,9 +18,11 @@ distclean: clean
 
 PACKGS = org.xmlBlaster \
 			org.xmlBlaster.engine \
+			org.xmlBlaster.engine.persistence \
 			org.xmlBlaster.authenticateIdl \
 			org.xmlBlaster.authentication \
 			org.xmlBlaster.client \
+			org.xmlBlaster.client.filestore \
 			org.xmlBlaster.clientIdl \
 			org.xmlBlaster.serverIdl \
 			org.xmlBlaster.util
