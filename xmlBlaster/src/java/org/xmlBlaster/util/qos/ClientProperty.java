@@ -56,4 +56,7 @@ public final class ClientProperty extends EncodableData
       ME = "ClientProperty";
    }
 
+   public String toString() {
+      return getStringValue();
+   }
 }
