@@ -1278,6 +1278,10 @@ TODO
       <property name="${thread.impl}" value="true" /> <!-- Setting e.g. "BOOST" or "OMNITHREAD" to be used in if="" clause below -->
       <echo message=" Setting ${thread.impl} = true" />
 
+      <!-- set the "@version@" and "@build.timestamp@" in Global.cpp -->
+      <copy file="${src.cpp.dir}/util/Global.cpp" tofile="${src.cpp.dir}/util/Global.cpp.BackupByAnt" filtering="false" overwrite="true" />
+      <copy file="${src.cpp.dir}/util/Global.cpp.BackupByAnt" tofile="${src.cpp.dir}/util/Global.cpp" filtering="true" overwrite="true" />
+
    </target>
 
    <!-- =================================================================== -->
@@ -1529,6 +1533,10 @@ TODO
            <linkerarg value="-lpthread"/>
          </linker>
       </cc>
+
+      <!-- Restore Global.cpp from set the "@version@" and "@build.timestamp@" -->
+      <copy file="${src.cpp.dir}/util/Global.cpp.BackupByAnt" tofile="${src.cpp.dir}/util/Global.cpp" filtering="false" overwrite="true" />
+      <delete file="${src.cpp.dir}/util/Global.cpp.BackupByAnt" />
    </target>
 
 
