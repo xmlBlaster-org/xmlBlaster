@@ -140,6 +140,7 @@ Else add it manually.
 
     <copydir src="${src.dir}" dest="${build.src}/xmlBlaster" excludes="README, Makefile **/ReqBaseServlet.java, **/ReqListServlet.java, **/ReqItemServlet.java, **/OracleSqlFactory.java"/>
     <copyfile src="${classes.dir}/manifest.xmlBlaster" dest="${build.dest}/manifest.xmlBlaster"/>
+    <copyfile src="./config/xmlBlaster.policy" dest="${build.dest}/xmlBlaster.policy"/>
 
     <javac
                 srcdir="${build.src}/xmlBlaster"
@@ -147,7 +148,7 @@ Else add it manually.
                 classpath="${classpath}"
                 debug="${debug}"/>
 
-    <jar jarfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}" includes="org/**"/>
+    <jar jarfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}" includes="org/**,xmlBlaster.policy"/>
 
     <copyfile src="${build.dir}/${name}.jar" dest="${lib.dir}/${name}.jar"/>
   </target>
@@ -237,6 +238,7 @@ Else add it manually.
     <copyfile src="LICENSE" dest="${dist.dir}/LICENSE"/>
     <copyfile src="config/xmlBlaster.properties.template" dest="${dist.dir}/config/xmlBlaster.properties.template"/>
     <copyfile src="config/jacorb.properties.template" dest="${dist.dir}/config/jacorb.properties.template"/>
+    <copyfile src="config/xmlBlaster.policy" dest="${dist.dir}/config/xmlBlaster.policy"/>
     <copyfile src=".bashrc" dest="${dist.dir}/.bashrc"/>
     <copyfile src="build.xml" dest="${dist.dir}/build.xml"/>
         <echo message="Creating jar file"/>
