@@ -3,13 +3,19 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes cvs
 ===========
 
+ o SOCKET UDP support:
+   Added paramter to switch on/off the server side UDP listener (defaults to true)
+   -plugin/socket/startUdpListener true/false
+
  o SOCKET compression for Java server and clients added
    The compression is based on jzlib and supports 2 ways of compression
    namely 'stream based' and 'message content' based.
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
+   Thanks to Bala'z Póka bpoka@axelero.hu
 
  o SOCKET SSL support for Java server and clients added, the usage is simple, see
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
+   Thanks to Bala'z Póka bpoka@axelero.hu
    
  o SOCKET incompatible change:
    The disconnect returns a server side ACK now (from SOCKET protocol layer).
