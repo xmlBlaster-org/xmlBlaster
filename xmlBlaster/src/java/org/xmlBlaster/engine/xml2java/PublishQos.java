@@ -3,7 +3,7 @@ Name:      PublishQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: PublishQos.java,v 1.11 2002/06/09 20:31:00 ruff Exp $
+Version:   $Id: PublishQos.java,v 1.12 2002/06/11 14:18:13 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -377,6 +377,24 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
             count++;
       }
       return count;
+   }
+
+   /**
+    * Check if the message has already been at the given node (circulating message). 
+    * @return How often the message has travelled the node already
+    */
+   public final boolean dirtyRead(NodeId nodeId)
+   {
+      int count = 0;
+      if (routeNodeVec == null || nodeId == null)
+         return false;
+      for (int ii=0; ii<routeNodeVec.size(); ii++) {
+         RouteInfo ri = (RouteInfo)routeNodeVec.elementAt(ii);
+         if (ri.getNodeId().equals(nodeId)) {
+            return ri.getDirtyRead();
+         }
+      }
+      return false;
    }
 
    /**
