@@ -13,6 +13,8 @@ import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.util.Execute;
 import org.xmlBlaster.test.Util;
 
+import java.io.*;
+
 import junit.framework.*;
 
 
@@ -37,6 +39,8 @@ public class TestC extends TestCase
 
    private EmbeddedXmlBlaster serverThread;
    private int serverPort = 7615;
+   private String pathToCBinary = null;
+   String sep = File.separator;
 
    /**
     * Constructs the TestC object. 
@@ -66,6 +70,23 @@ public class TestC extends TestCase
       serverThread = EmbeddedXmlBlaster.startXmlBlaster(glob);
       log.info(ME, "XmlBlaster is ready for testing C client library");
       */
+
+      /* Find the location of the C binaries */
+      String xmlBlasterHome = glob.getProperty().get("XMLBLASTER_HOME", "$HOME"+sep+"xmlBlaster");
+      String[] pathToCArr = { ".."+sep+".."+sep+".."+sep+".."+sep+"c"+sep+"bin",
+                              ".."+sep+".."+sep+".."+sep+".."+sep+".."+sep+"c"+sep+"bin",
+                             "testsuite"+sep+"src"+sep+"c"+sep+"bin",
+                             xmlBlasterHome+sep+"testsuite"+sep+"src"+sep+"c"+sep+"bin"};
+      for (int i=0; i<pathToCArr.length; i++) {
+         File f = new File(pathToCArr[i]);
+         log.trace(ME, "Looking under '" + f.toString() + "'");
+         if (f.exists()) {
+            this.pathToCBinary = pathToCArr[i];
+            log.info(ME, "Found C executables under '" + this.pathToCBinary + "'");
+            break;
+         }
+      }
+      assertTrue("Path to C binaries not found, no testing of C client library is not possible", this.pathToCBinary!=null);
    }
 
    /**
@@ -88,9 +109,7 @@ public class TestC extends TestCase
    public void test_C_MethodInvocations()
    {
       Runtime runtime = Runtime.getRuntime();
-      String[] commandArr = { "../../../../c/bin/TestMethods" };
-      //String[] commandArr = { "../../../../../c/bin/TestMethods" };
-      //String[] commandArr = { "testsuite/src/c/bin/TestMethods" };
+      String[] commandArr = { pathToCBinary+sep+"TestMethods" };
       String[] envArr = { "" };
 
       log.info(ME, "######## Start test_C_MethodInvocations('" + commandArr[0] + "')");
@@ -123,9 +142,7 @@ public class TestC extends TestCase
    public void test_C_IllegalArguments()
    {
       Runtime runtime = Runtime.getRuntime();
-      String[] commandArr = { "../../../../c/bin/TestError" };
-      //String[] commandArr = { "../../../../../c/bin/TestError" };
-      //String[] commandArr = { "testsuite/src/c/bin/TestError" };
+      String[] commandArr = { pathToCBinary+sep+"TestError" };
       String[] envArr = { "" };
 
       log.info(ME, "######## Start test_C_IllegalArguments('" + commandArr[0] + "')");
@@ -158,9 +175,7 @@ public class TestC extends TestCase
    public void test_C_Stress()
    {
       Runtime runtime = Runtime.getRuntime();
-      String[] commandArr = { "../../../../c/bin/TestStress" };
-      //String[] commandArr = { "../../../../../c/bin/TestStress" };
-      //String[] commandArr = { "testsuite/src/c/bin/TestStress" };
+      String[] commandArr = { pathToCBinary+sep+"TestStress" };
       String[] envArr = { "" };
 
       log.info(ME, "######## Start test_C_Stress('" + commandArr[0] + "')");
@@ -193,9 +208,7 @@ public class TestC extends TestCase
    public void test_C_Util()
    {
       Runtime runtime = Runtime.getRuntime();
-      String[] commandArr = { "../../../../c/bin/TestUtil" };
-      //String[] commandArr = { "../../../../../c/bin/TestUtil" };
-      //String[] commandArr = { "testsuite/src/c/bin/TestUtil" };
+      String[] commandArr = { pathToCBinary+sep+"TestUtil" };
       String[] envArr = { "" };
 
       log.info(ME, "######## Start test_C_Util('" + commandArr[0] + "')");
