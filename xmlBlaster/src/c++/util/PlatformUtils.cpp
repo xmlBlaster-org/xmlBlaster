@@ -8,7 +8,7 @@
 #pragma warning(disable:4251)
 #endif
 
-#include <xercesc/util/PlatformUtils.hpp>
+#include <util/PlatformUtils.hpp>  // without xercesc/ for 1.1.6 compatibility
 #include "PlatformUtils.h"
 
 using namespace org::xmlBlaster::util;
