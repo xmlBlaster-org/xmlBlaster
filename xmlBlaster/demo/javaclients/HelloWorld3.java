@@ -110,11 +110,10 @@ public class HelloWorld3 implements I_Callback
       }
       catch (XmlBlasterException e) {
          log.error("HelloWorld3", e.getMessage());
-         e.printStackTrace();
       }
       catch (Throwable e) {
-         e.printStackTrace();
          log.error("HelloWorld3", e.toString());
+         e.printStackTrace();
       }
    }
 
