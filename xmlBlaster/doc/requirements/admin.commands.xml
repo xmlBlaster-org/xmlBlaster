@@ -409,6 +409,11 @@
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
+            <td>set ?dump=ServerDump.xml</td>
+            <td>Create a server dump</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
             <td>/node/heron/client/joe/?sessionList</td>
             <td>Retrieve the public session IDs of joe (if joe is logged in three times, there will be three entries)</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
@@ -696,7 +701,7 @@ UserInfo: joe:mypasswd
    <author>Michele.Laghi@swisscom.com</author>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.50 $</revision>
+   <revision>$Revision: 1.51 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
