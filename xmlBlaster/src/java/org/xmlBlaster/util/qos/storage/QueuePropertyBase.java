@@ -175,19 +175,23 @@ public abstract class QueuePropertyBase implements Cloneable
    protected void initialize(String relating) {
       this.relating = (relating == null) ? "" : relating;
       String prefix = getPrefix();
+      String context = null; // something like "/topic/HelloWorld"
 
+      // extract the plugin type and version from 'defaultPlugin'
+      String propName = null;
       try {
-         String tv = glob.getProperty().get(getRootTagName()+".defaultPlugin", DEFAULT_type+","+DEFAULT_version);
-         PluginInfo pluginInfo = new PluginInfo(glob, null, tv);
+         PropString defaultPlugin = new PropString(this.type.getDefaultValue()+","+this.version.getDefaultValue());
+         // Port to linked ContextNode?
+         propName = defaultPlugin.setFromEnv(this.glob, nodeId, context, getRootTagName(), relating, "defaultPlugin");
+         PluginInfo pluginInfo = new PluginInfo(glob, null, defaultPlugin.getValue());
          this.type.setDefaultValue(pluginInfo.getType());
          this.version.setDefaultValue(pluginInfo.getVersion());
       }
       catch (XmlBlasterException ex) {
-         this.log.error(ME, "initialize: could not set the default plugin to what indicated by "+getRootTagName()+".defaultPlugin");
+         this.log.error(ME, "initialize: could not set the default plugin to what indicated by "+propName);
       }
                                 
       // The newer way:
-      String context = null; // something like "/topic/HelloWorld"
       this.maxMsg.setFromEnv(this.glob, nodeId, context, getRootTagName(), relating, "maxMsg");
       this.maxMsgCache.setFromEnv(this.glob, nodeId, context, getRootTagName(), relating, "maxMsgCache");
       this.maxBytes.setFromEnv(this.glob, nodeId, context, getRootTagName(), relating, "maxBytes");
