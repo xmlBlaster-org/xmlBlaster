@@ -29,7 +29,7 @@ extern "C" {
 #include <util/Properties.h>
 #include <XmlBlasterConnectionUnparsed.h>
 #include <CallbackServerUnparsed.h>
-#include <pthread.h> /* For Windows and WinCE (downloaded from http://sources.redhat.com/pthreads-win32) */
+#include <pthreads/pthread.h> /* For Windows and WinCE (downloaded from http://sources.redhat.com/pthreads-win32) */
 
 /*
  NOTE: The struct name and the later typedef name are identical, we need this
