@@ -75,7 +75,7 @@ public class SessionInfo implements I_Timeout
    /** Do error recovery if message can't be delivered and we give it up */
    private final MsgErrorHandler msgErrorHandler;
    /** manager for sending callback messages */
-   private final DispatchManager dispatchManager;
+   private DispatchManager dispatchManager;
    private boolean isShutdown = false;
    /** Protects timerKey refresh */
    private final Object EXPIRY_TIMER_MONITOR = new Object();
@@ -135,24 +135,23 @@ public class SessionInfo implements I_Timeout
       this.securityCtx = securityCtx;
       this.connectQos = connectQos;
 
-      if (this.connectQos.getSessionCbQueueProperty().getCallbackAddresses().length > 0) {
-         this.msgErrorHandler = new MsgErrorHandler(glob, this);
-         String type = connectQos.getSessionCbQueueProperty().getType();
-         String version = connectQos.getSessionCbQueueProperty().getVersion();
-         if (log.TRACE) log.trace(ME, "Creating callback queue type=" + type + " version=" + version);
-         this.sessionQueue = glob.getQueuePluginManager().getPlugin(type, version, new StorageId(Constants.RELATING_CALLBACK, this.sessionName.getAbsoluteName()), connectQos.getSessionCbQueueProperty());
-         this.sessionQueue.setNotifiedAboutAddOrRemove(true); // Entries are notified to support reference counting
+      this.msgErrorHandler = new MsgErrorHandler(glob, this);
+      String type = connectQos.getSessionCbQueueProperty().getType();
+      String version = connectQos.getSessionCbQueueProperty().getVersion();
+      if (log.TRACE) log.trace(ME, "Creating callback queue type=" + type + " version=" + version);
+      this.sessionQueue = glob.getQueuePluginManager().getPlugin(type, version, new StorageId(Constants.RELATING_CALLBACK, this.sessionName.getAbsoluteName()), connectQos.getSessionCbQueueProperty());
+      this.sessionQueue.setNotifiedAboutAddOrRemove(true); // Entries are notified to support reference counting
 
+      if (this.connectQos.getSessionCbQueueProperty().getCallbackAddresses().length > 0) {
+         if (log.TRACE) log.trace(ME, "Creating dispatch manager as ConnectQos contains callback addresses");
          this.dispatchManager = new DispatchManager(glob, this.msgErrorHandler,
                                 this.securityCtx, this.sessionQueue, (I_ConnectionStatusListener)null,
                                 this.connectQos.getSessionCbQueueProperty().getCallbackAddresses());
       }
       else { // No callback configured
-         this.msgErrorHandler = null;
-         this.sessionQueue = null;
+         if (log.TRACE) log.trace(ME, "Don't create dispatch manager as ConnectQos contains no callback addresses");
          this.dispatchManager = null;
       }
-
       this.expiryTimer = glob.getSessionTimer();
       if (connectQos.getSessionTimeout() > 0L) {
          if (log.TRACE) log.trace(ME, "Setting expiry timer for " + getLoginName() + " to " + connectQos.getSessionTimeout() + " msec");
@@ -325,6 +324,14 @@ public class SessionInfo implements I_Timeout
          log.info(ME, "Successfully reconfigured callback address with new settings, other reconfigurations are not yet implemented");
          this.dispatchManager.notifyAboutNewEntry();
       }
+      else {
+         if (newConnectQos.getSessionCbQueueProperty().getCallbackAddresses().length > 0) {
+            log.info(ME, "Successfully reconfigured and created dispatch manager with given callback address");
+            this.dispatchManager = new DispatchManager(glob, this.msgErrorHandler,
+                                this.securityCtx, this.sessionQueue, (I_ConnectionStatusListener)null,
+                                newConnectQos.getSessionCbQueueProperty().getCallbackAddresses());
+         }
+      }
    }
 
    /**
@@ -417,8 +424,12 @@ public class SessionInfo implements I_Timeout
       String offset = Constants.OFFSET + extraOffset;
 
       sb.append(offset).append("<SessionInfo id='").append(getId()).append("' timeout='").append("'>");
-      if (hasCallback())
+      if (hasCallback()) {
+         sb.append(this.dispatchManager.toXml(extraOffset+Constants.INDENT));
+      }
+      if (this.sessionQueue != null) {
          sb.append(this.sessionQueue.toXml(extraOffset+Constants.INDENT));
+      }
       sb.append(offset).append("</SessionInfo>");
 
       return sb.toString();
