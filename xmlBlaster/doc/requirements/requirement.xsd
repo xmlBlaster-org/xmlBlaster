@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<schema>
+
+ <element name='requirement'>
+  <complexType content='elementOnly'>
+   <element ref='topic'/>
+   <element ref='location' minOccurs='0' maxOccurs='1'/>
+   <element ref='description'/>
+   <element ref='example' minOccurs='0' maxOccurs='unbounded'/>
+   <element ref='todo' minOccurs='0' maxOccurs='unbounded'/>
+   <element ref='done' minOccurs='0' maxOccurs='unbounded'/>
+   <element ref='see' minOccurs='0' maxOccurs='unbounded'/>
+   <element ref='author'/>
+   <element ref='hacker' minOccurs='0' maxOccurs='unbounded'/>
+   <element ref='effort' minOccurs='0' maxOccurs='1'/>
+   <element ref='date'/>
+   <element ref='revision'/>
+   <element ref='log' minOccurs='0' maxOccurs='1'/>
+   <element ref='testcase' minOccurs='0' maxOccurs='unbounded'/>
+   <element ref='bug' minOccurs='0' maxOccurs='unbounded'/>
+   <attribute name='id' type='ID' use='required'/>
+   <attribute name='prio' use='default' value='LOW'>
+    <simpleType base='string'>
+     <enumeration value='LOW'/>
+     <enumeration value='MEDIUM'/>
+     <enumeration value='HIGH'/>
+    </simpleType>
+   </attribute>
+   <attribute name='type' use='default' value='NEW'>
+    <simpleType base='string'>
+     <enumeration value='NEW'/>
+     <enumeration value='CHANGE_REQUEST'/>
+    </simpleType>
+   </attribute>
+   <attribute name='status' use='default' value='OPEN'>
+    <simpleType base='string'>
+     <enumeration value='OPEN'/>
+     <enumeration value='INWORK'/>
+     <enumeration value='BUG'/>
+     <enumeration value='CLOSED'/>
+    </simpleType>
+   </attribute>
+   <attribute name='scope' use='default' value='INTERN'>
+    <simpleType base='string'>
+     <enumeration value='EXTERN'/>
+     <enumeration value='INTERN'/>
+    </simpleType>
+   </attribute>
+  </complexType>
+ </element>
+
+ <element name='topic' type='string'/>
+
+ <element name='location' type='string'/>
+
+ <element name='description' type='string'/>
+
+ <element name='example'>
+  <complexType content='mixed'>
+   <attribute name='lang' use='default' value='Java'>
+    <simpleType base='string'>
+     <enumeration value='Java'/>
+     <enumeration value='C'/>
+     <enumeration value='CPP'/>
+     <enumeration value='Perl'/>
+     <enumeration value='Python'/>
+     <enumeration value='TCL'/>
+     <enumeration value='Javascript'/>
+    </simpleType>
+   </attribute>
+  </complexType>
+ </element>
+
+ <element name='todo' type='string'/>
+
+ <element name='done' type='string'/>
+
+ <element name='see'>
+  <complexType content='mixed'>
+   <attribute name='type' use='default' value='API'>
+    <simpleType base='string'>
+     <enumeration value='API'/>
+     <enumeration value='REQ'/>
+     <enumeration value='OTHER'/>
+    </simpleType>
+   </attribute>
+  </complexType>
+ </element>
+
+ <element name='author' type='string'/>
+
+ <element name='hacker' type='string'/>
+
+ <element name='effort' type='string'/>
+
+ <element name='date' type='string'/>
+
+ <element name='revision' type='string'/>
+
+ <element name='log' type='string'/>
+
+ <element name='testcase'>
+  <complexType content='elementOnly'>
+   <element ref='name'/>
+   <element ref='comment'/>
+   <element ref='predecessor' minOccurs='0' maxOccurs='unbounded'/>
+   <element ref='precondition'/>
+   <element ref='test'/>
+   <element ref='postcondition'/>
+   <attribute name='status' use='default' value='OPEN'>
+    <simpleType base='string'>
+     <enumeration value='OPEN'/>
+     <enumeration value='INWORK'/>
+     <enumeration value='CLOSED'/>
+    </simpleType>
+   </attribute>
+  </complexType>
+ </element>
+
+ <element name='bug'>
+  <complexType content='elementOnly'>
+   <element ref='author'/>
+   <element ref='date'/>
+   <element ref='description'/>
+   <element ref='fixinfo' minOccurs='0' maxOccurs='1'/>
+   <attribute name='status' use='default' value='OPEN'>
+    <simpleType base='string'>
+     <enumeration value='OPEN'/>
+     <enumeration value='FIXED'/>
+    </simpleType>
+   </attribute>
+  </complexType>
+ </element>
+
+ <element name='fixinfo'>
+  <complexType content='elementOnly'>
+   <element ref='author'/>
+   <element ref='date'/>
+   <element ref='description'/>
+  </complexType>
+ </element>
+
+ <element name='name' type='string'/>
+
+ <element name='comment' type='string'/>
+
+ <element name='predecessor' type='string'/>
+
+ <element name='precondition' type='string'/>
+
+ <element name='test'>
+  <complexType>
+   <attribute name='tool' use='default' value='SUITE'>
+    <simpleType base='string'>
+     <enumeration value='SUITE'/>
+     <enumeration value='MANUAL'/>
+    </simpleType>
+   </attribute>
+  </complexType>
+ </element>
+
+ <element name='postcondition' type='string'/>
+</schema>
