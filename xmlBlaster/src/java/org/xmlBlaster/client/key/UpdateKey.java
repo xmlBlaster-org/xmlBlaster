@@ -122,6 +122,14 @@ public class UpdateKey
     * Converts the data in XML ASCII string.
     * @return An XML ASCII string
     */
+   public String toXml(String extraOffset) {
+      return this.msgKeyData.toXml(extraOffset);
+   }
+
+   /**
+    * Converts the data in XML ASCII string.
+    * @return An XML ASCII string
+    */
    public String toXml() {
       return this.msgKeyData.toXml();
    }
