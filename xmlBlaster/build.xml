@@ -163,9 +163,6 @@ TODO
    </condition>
 
 
-
-
-
    <!-- =================================================================== -->
    <!-- General C++ compiling setup for VisualC++, Borland and GCC          -->
    <!-- Force from outside compiler: build.bat -Duse-msvc=1 ...             -->
@@ -331,7 +328,8 @@ TODO
       <echo message="                   demonstrates persistent http callbacks"/>
       <echo message="   j2me        --> create and deploys a j2me application. For this you need to install Sun's"/>
       <echo message="                   WTK2.1 SDK for embedded java. Invoke it as follows:"/>
-      <echo message="                   build -DJ2ME_HOME='home of the WTK2.1' j2me"/>
+      <echo message="                     build -DJ2ME_HOME='home of the WTK2.1' j2me"/>
+      <echo message="                   Set  -DMIDlet-Jar-URL='http://yourHost/j2me/SystemInfo.jar' on demand"/>
       <echo message="   j2me-run    --> runs the deployed j2me application in the installed emulator. Invoke"/>
       <echo message="                   build -DJ2ME_HOME='home of the WTK2.1' j2me-run"/>
       <echo message="   jboss-sar   --> create embedded XmlBlaster for JBoss"/>
@@ -828,10 +826,10 @@ TODO
    <!--
    <filelist id="j2me.preverify.cp" 
              dir="${J2ME_HOME}/lib" 
-	     files="cldcapi11.jar,midpapi20.jar,${build.dir}/j2me/tmpclasses"/>
+             files="cldcapi11.jar,midpapi20.jar,${build.dir}/j2me/tmpclasses"/>
    <pathconvert targetos="${os.family}"
                 property="j2me.preverify.cp}"
-		refid="j2me.preverify.cp}" />
+                refid="j2me.preverify.cp}" />
     -->
 
    <condition property="J2ME_HOME" value="${env.J2ME_HOME}">
@@ -842,13 +840,16 @@ TODO
          <isset property="J2ME_HOME"/>
       </not>
    </condition>
+   <!-- property name="MIDlet-Jar-URL" value="http://www.xmlblaster.org/xmlBlaster/demo/j2me/SystemInfo.jar" / -->
+   <!-- Will replace the token in the SystemInfo.jad file: --> 
+   <property name="MIDlet-Jar-URL" value="SystemInfo.jar" />
 
    <target name="j2me" depends="prepare" description="Compile j2me demo and packages it">
       <switch value="${J2ME_HOME}" caseinsensitive="false">
          <case value="">
-	    <echo message="========================================================================"/>
-	    <echo message="!!!!!!!!!!!! YOU HAVE TO SET THE ENVIRONMENT VARIABLE J2ME_HOME !!!!!!!!"/>
-	    <echo message="========================================================================"/>
+            <echo message="========================================================================"/>
+            <echo message="!!!!!!!!!!!! YOU HAVE TO SET THE ENVIRONMENT VARIABLE J2ME_HOME !!!!!!!!"/>
+            <echo message="========================================================================"/>
          </case>
          <default>
          </default>
@@ -891,21 +892,22 @@ TODO
 
       <jar destfile="${build.dir}/j2me/lib/SystemInfo.jar" 
            basedir="${build.dir}/j2me/classes" 
-	   manifest="${demo.dir}/j2me/manifest.j2me"
-	   includes="**/*.class"/>
+           manifest="${demo.dir}/j2me/manifest.j2me"
+           includes="**/*.class"/>
       <copy file="${build.dir}/j2me/lib/SystemInfo.jar" tofile="${demo.dir}/j2me/SystemInfo.jar"/>
       <!-- update the jad file according to the new jar size -->
       <script language="javascript"> <![CDATA[
          importClass(java.io.File);
         // Access to Ant-Properties by their names
         dir = project.getProperty("demo.dir") + "/j2me";
-	var file = new File(dir, "SystemInfo.jar");
-	var size = file.length();
+        var file = new File(dir, "SystemInfo.jar");
+        var size = file.length();
         project.setProperty("jarFileSize", "" + size);
       ]]> </script>
       <delete file="${demo.dir}/j2me/SystemInfo.jad"/>
       <copy file="${demo.dir}/j2me/SystemInfo.jad.template" tofile="${demo.dir}/j2me/SystemInfo.jad"/>
       <replace file="${demo.dir}/j2me/SystemInfo.jad" token="@@jarFileSize@@" value="${jarFileSize}"/>
+      <replace file="${demo.dir}/j2me/SystemInfo.jad" token="@@SystemInfo.jar@@" value="${MIDlet-Jar-URL}"/>  <!-- SystemInfo.jar -->
       <echo message=""/>
       <echo message="==============================================================================================="/>
       <echo message="(the path used for the J2ME_HOME is ${J2ME_HOME})"/>
