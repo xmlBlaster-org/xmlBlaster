@@ -203,6 +203,10 @@
             <td>How long is session ID 17 logged in (in seconds)</td>
          </tr>
          <tr>
+            <td>client/*/?uptime</td>
+            <td>The uptime of all users (in seconds)</td>
+         </tr>
+         <tr>
             <td>client/joe/ses17/?cb.queue.maxMsg=30000</td>
             <td>Change to max. callback queue size of joe-session-ID 17 to 30 thousand messages</td>
          </tr>
@@ -253,8 +257,90 @@
       the current xmlBlaster node you are connected to.
       </p>
       <h3>
+      How does the return value look like?
+      </h3>
+      <p>
+         Responses of attributes have the key and the value, separated to lines.
+         Messages are returned XML encoded.<br />
+         The following tables shows the return values of get/subscribe/poll/schedule
+         invocations.
+      </p>
+      <table border="1">
+         <tr>
+            <td>Command</td>
+            <td>Return</td>
+            <td>Description</td>
+         </tr>
+         <tr>
+            <td>/node/?numNodes</td>
+            <td><pre>
+/node/?numNodes=5
+            </pre></td>
+            <td>The separator between the key and the value is '='
+            </td>
+         </tr>
+         <tr>
+            <td>/node/heron/client/*/?uptime</td>
+            <td><pre>
+/node/client/joe/?uptime=345600
+/node/client/jack/?uptime=19500
+/node/client/averell/?uptime=19500
+            </pre></td>
+            <td>The query matched three users, the lines are seperated by cr and lf
+            </td>
+         </tr>
+         <tr>
+            <td>/node/heron/?clientList</td>
+            <td><pre>
+/node/heron/?clientList=joe,jack,averell,william
+            </pre></td>
+            <td>The clientList is one attribute, containing the list of known clients
+            </td>
+         </tr>
+         <tr>
+            <td>/node/heron/msg/?Hello</td>
+            <td>
+               <pre><![CDATA[
+<xmlBlaster>
+   <key oid='Hello' contentMime='text/plain'/>
+   <content>How are you</content>
+   <qos><rcvTimestamp nanos='129595811'/></qos>
+</xmlBlaster>
+               ]]></pre>
+            </td>
+            <td>The query returns exactly one message
+            </td>
+         </tr>
+      </table>
+
+      <p>
+         The next table shows the return values of set or publish() invocations:
+      </p>
+      <table border="1">
+         <tr>
+            <td>Command</td>
+            <td>Return</td>
+            <td>Description</td>
+         </tr>
+         <tr>
+            <td>client/joe/ses17/?cb.queue.maxMsg=30000</td>
+            <td>
+               <pre><![CDATA[
+<qos><state id='OK' info='Blah'/></qos>
+               ]]></pre>
+            </td>
+            <td>The returned string is XML encoded
+            </td>
+         </tr>
+      </table>
+
+
+      <h3>
       How can we use these commands?
       </h3>
+      <p>
+         Here are example invocations from different clients:
+      </p>
       <table border="1">
          <tr>
             <td>Protocol</td>
@@ -265,7 +351,7 @@
 
          <tr>
             <td>MoM clients</td>
-            <td><pre>get("&lt;key oid='__cmd:/node/heron/?freeMem'/>","&lt;qos/>)</pre></td>
+            <td><pre>con.get("&lt;key oid='__cmd:/node/heron/?freeMem'/>","&lt;qos/>")</pre></td>
             <td>The token <code>__cmd:</code> marks the oid to be used as a command
             </td>
             <td>no</td>
@@ -273,7 +359,7 @@
       
          <tr>
             <td>telnet</td>
-            <td>get /node/heron/?freeMem</td>
+            <td><pre>get /node/heron/?freeMem</pre></td>
             <td>With telnet you give the command <code>get</code> followed by the query (separated with a white space)
             </td>
             <td>no</td>
@@ -281,14 +367,14 @@
 
          <tr>
             <td>SNMP</td>
-            <td>get /node/heron/?freeMem</td>
+            <td><pre>get /node/heron/?freeMem</pre></td>
             <td> </td>
             <td>no</td>
          </tr>
 
          <tr>
             <td>JMX</td>
-            <td>getAttribute("/node/heron/?freeMem")</td>
+            <td><pre>getAttribute("/node/heron/?freeMem")</pre></td>
             <td>This is a method of DynamicMBean</td>
             <td>no</td>
          </tr>
@@ -380,7 +466,7 @@ UserInfo: joe:mypassword
    <author>Michele.Laghi@swisscom.com</author>
    <author>ruff@swand.lake.de</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
