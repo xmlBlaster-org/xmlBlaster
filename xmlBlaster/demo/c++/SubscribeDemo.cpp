@@ -54,6 +54,7 @@ private:
    //string domain;
    string xpath;
    bool multiSubscribe;
+   bool notifyOnErase;
    bool local;
    bool initialUpdate;
    bool wantContent;
@@ -109,6 +110,7 @@ public:
       //domain = global_.getProperty().get("domain", "");
       xpath = global_.getProperty().get("xpath", "");
       multiSubscribe = global_.getProperty().get("multiSubscribe", true);
+      notifyOnErase = global_.getProperty().get("notifyOnErase", true);
       local = global_.getProperty().get("local", true);
       initialUpdate = global_.getProperty().get("initialUpdate", true);
       wantContent = global_.getProperty().get("wantContent", true);
@@ -146,6 +148,7 @@ public:
       //log_.info(ME, "   -domain            " + domain);
       log_.info(ME, "   -xpath             " + xpath);
       log_.info(ME, "   -multiSubscribe    " + lexical_cast<string>(multiSubscribe));
+      log_.info(ME, "   -notifyOnErase     " + lexical_cast<string>(notifyOnErase));
       log_.info(ME, "   -local             " + lexical_cast<string>(local));
       log_.info(ME, "   -initialUpdate     " + lexical_cast<string>(initialUpdate));
       log_.info(ME, "   -historyNumUpdates " + lexical_cast<string>(historyNumUpdates));
@@ -188,6 +191,7 @@ public:
          SubscribeQos sq(global_);
          sq.setWantInitialUpdate(initialUpdate);
          sq.setMultiSubscribe(multiSubscribe);
+         sq.setWantNotify(notifyOnErase);
          sq.setWantLocal(local);
          sq.setWantContent(wantContent);
          
