@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, using org.jutils
-Version:   $Id: Global.java,v 1.27 2002/06/10 13:21:51 ruff Exp $
+Version:   $Id: Global.java,v 1.28 2002/06/10 14:34:09 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -375,7 +375,8 @@ public class Global implements Cloneable
     */
    public final Global getClone(String[] args) {
       Global g = (Global)clone();
-      g.init(args);
+      if (args != null && args.length > 0)
+         g.init(args);
       return g;
    }
 
@@ -497,6 +498,13 @@ public class Global implements Cloneable
    public final void removeObjectEntry(String key)
    {
       objectMap.remove(key);
+   }
+
+   /**
+    * Force to use the given bootstrap address, used for cluster connections
+    */
+   public final void setBootstrapAddress(Address address) {
+      this.bootstrapAddress = address;
    }
 
    /**
