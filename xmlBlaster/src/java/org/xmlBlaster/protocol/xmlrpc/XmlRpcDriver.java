@@ -3,7 +3,7 @@ Name:      XmlRpcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   XmlRpcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: XmlRpcDriver.java,v 1.33 2002/06/15 16:01:59 ruff Exp $
+Version:   $Id: XmlRpcDriver.java,v 1.34 2002/06/19 12:36:12 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
@@ -47,7 +47,7 @@ import java.io.IOException;
  */
 public class XmlRpcDriver implements I_Driver
 {
-   private static final String ME = "XmlRpcDriver";
+   private String ME = "XmlRpcDriver";
    private Global glob;
    private LogChannel log;
    /** The singleton handle for this xmlBlaster server */
@@ -105,6 +105,7 @@ public class XmlRpcDriver implements I_Driver
       throws XmlBlasterException
    {
       this.glob = glob;
+      this.ME = "XmlRpcDriver" + this.glob.getLogPraefixDashed();
       this.log = glob.getLog("xmlrpc");
       if (log.CALL) log.call(ME, "Entering init()");
       this.authenticate = authenticate;

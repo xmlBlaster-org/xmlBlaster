@@ -3,7 +3,7 @@ Name:      JdbcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   JdbcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: JdbcDriver.java,v 1.28 2002/06/15 16:57:09 ruff Exp $
+Version:   $Id: JdbcDriver.java,v 1.29 2002/06/19 12:36:12 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
@@ -42,7 +42,7 @@ import java.util.StringTokenizer;
  */
 public class JdbcDriver implements I_Driver, I_Publish
 {
-   private static final String ME = "JdbcDriver";
+   private String ME = "JdbcDriver";
    private Global glob = null;
    private LogChannel log = null;
    /** The singleton handle for this xmlBlaster server */
@@ -94,6 +94,7 @@ public class JdbcDriver implements I_Driver, I_Publish
    public void init(Global glob, I_Authenticate authenticate, I_XmlBlaster xmlBlasterImpl) throws XmlBlasterException
    {
       this.glob = glob;
+      this.ME = "JdbcDriver" + this.glob.getLogPraefixDashed();
       this.log = glob.getLog("jdbc");
       this.glob.addObjectEntry("JdbcDriver-"+glob.getId(), this);
       this.authenticate = authenticate;

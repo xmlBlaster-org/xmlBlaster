@@ -291,7 +291,7 @@ public final class ClusterManager implements I_RunlevelListener
    public SubscribeRetQos forwardSubscribe(SessionInfo publisherSession, XmlKey xmlKey, SubscribeQoS subscribeQos) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering forwardSubscribe(" + xmlKey.getUniqueKey() + ")");
 
-      MessageUnitWrapper msgWrapper = new MessageUnitWrapper(glob.getRequestBroker(), xmlKey,
+      MessageUnitWrapper msgWrapper = new MessageUnitWrapper(glob, glob.getRequestBroker(), xmlKey,
                                       new MessageUnit(xmlKey.literal(), new byte[0], subscribeQos.toXml()),
                                       /*!!! subscribeQos.toXml()*/ new PublishQos(glob, ""));
       NodeDomainInfo nodeDomainInfo = getConnection(publisherSession, msgWrapper);
@@ -317,7 +317,7 @@ public final class ClusterManager implements I_RunlevelListener
    public MessageUnit[] forwardGet(SessionInfo publisherSession, XmlKey xmlKey, GetQoS getQos) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering forwardGet(" + xmlKey.getUniqueKey() + ")");
 
-      MessageUnitWrapper msgWrapper = new MessageUnitWrapper(glob.getRequestBroker(), xmlKey,
+      MessageUnitWrapper msgWrapper = new MessageUnitWrapper(glob, glob.getRequestBroker(), xmlKey,
                                       new MessageUnit(xmlKey.literal(), new byte[0], getQos.toXml()),
                                       /*!!! getQos.toXml()*/ new PublishQos(glob, ""));
       NodeDomainInfo nodeDomainInfo = getConnection(publisherSession, msgWrapper);
@@ -343,7 +343,7 @@ public final class ClusterManager implements I_RunlevelListener
    public EraseRetQos[] forwardErase(SessionInfo publisherSession, XmlKey xmlKey, EraseQoS eraseQos) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering forwardErase(" + xmlKey.getUniqueKey() + ")");
 
-      MessageUnitWrapper msgWrapper = new MessageUnitWrapper(glob.getRequestBroker(), xmlKey,
+      MessageUnitWrapper msgWrapper = new MessageUnitWrapper(glob, glob.getRequestBroker(), xmlKey,
                                       new MessageUnit(xmlKey.literal(), new byte[0], eraseQos.toXml()),
                                       /*!!! eraseQos.toXml()*/ new PublishQos(glob, ""));
       NodeDomainInfo nodeDomainInfo = getConnection(publisherSession, msgWrapper);

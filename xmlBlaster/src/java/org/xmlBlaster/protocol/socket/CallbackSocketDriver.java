@@ -3,7 +3,7 @@ Name:      CallbackSocketDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Sending messages to clients
-Version:   $Id: CallbackSocketDriver.java,v 1.8 2002/05/30 09:53:29 ruff Exp $
+Version:   $Id: CallbackSocketDriver.java,v 1.9 2002/06/19 12:36:12 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -26,7 +26,7 @@ import org.xmlBlaster.client.protocol.ConnectionException;
  */
 public class CallbackSocketDriver implements I_CallbackDriver
 {
-   private final String ME = "CallbackSocketDriver";
+   private String ME = "CallbackSocketDriver";
    private Global glob = null;
    private String loginName;
    private HandleClient handler;
@@ -67,6 +67,7 @@ public class CallbackSocketDriver implements I_CallbackDriver
 
    public void init(Global glob, CallbackAddress callbackAddress) {
       this.glob = glob;
+      this.ME = "CallbackSocketDriver" + this.glob.getLogPraefixDashed();
       this.callbackAddress = callbackAddress;
    }
 

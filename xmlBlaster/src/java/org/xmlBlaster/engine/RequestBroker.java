@@ -195,7 +195,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
          XmlKey key = new XmlKey(glob, xmlKeyLoginEvent, true);
          PublishQos qos = new PublishQos(glob, publishQosLoginEvent);
          qos.setRemainingLife(0L);
-         this.msgUnitLoginEvent = new MessageUnitWrapper(this, key, new MessageUnit(xmlKeyLoginEvent, new byte[0], publishQosLoginEvent), qos);
+         this.msgUnitLoginEvent = new MessageUnitWrapper(glob, this, key, new MessageUnit(xmlKeyLoginEvent, new byte[0], publishQosLoginEvent), qos);
       }
 
       {
@@ -206,7 +206,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
          XmlKey key = new XmlKey(glob, xmlKeyLogoutEvent, true);
          PublishQos qos = new PublishQos(glob, publishQosLogoutEvent);
          qos.setRemainingLife(0L);
-         this.msgUnitLogoutEvent = new MessageUnitWrapper(this, key, new MessageUnit(xmlKeyLogoutEvent, new byte[0], publishQosLogoutEvent), qos);
+         this.msgUnitLogoutEvent = new MessageUnitWrapper(glob, this, key, new MessageUnit(xmlKeyLogoutEvent, new byte[0], publishQosLogoutEvent), qos);
       }
 
       this.bigXmlKeyDOM = new BigXmlKeyDOM(this, authenticate);
@@ -1075,7 +1075,7 @@ synchronized (this) {
                   MessageUnitWrapper msgUnitWrapper = null;
                   if (obj == null) {
                      messageExisted = false;
-                     msgUnitWrapper = new MessageUnitWrapper(this, xmlKey, msgUnit, publishQos);
+                     msgUnitWrapper = new MessageUnitWrapper(glob, this, xmlKey, msgUnit, publishQos);
                   }
                   else {
                      msgUnitHandler = (MessageUnitHandler)obj;
@@ -1088,7 +1088,7 @@ synchronized (this) {
                      if (mimePlugins != null) {
                         Iterator iterator = mimePlugins.values().iterator();
                         if (msgUnitWrapper == null)
-                           msgUnitWrapper = new MessageUnitWrapper(this, xmlKey, msgUnit, publishQos);
+                           msgUnitWrapper = new MessageUnitWrapper(glob, this, xmlKey, msgUnit, publishQos);
                         // note that msgUnitWrapper.getMessageUnitHandler() is not allowed (is null)
                         while (iterator.hasNext()) {
                            I_PublishFilter plugin = (I_PublishFilter)iterator.next();
@@ -1108,7 +1108,7 @@ synchronized (this) {
                   if (useCluster) {
                      if (!isClusterUpdate) { // updates from other nodes are arriving here in publish as well
                         if (msgUnitWrapper == null)
-                           msgUnitWrapper = new MessageUnitWrapper(this, xmlKey, msgUnit, publishQos);
+                           msgUnitWrapper = new MessageUnitWrapper(glob, this, xmlKey, msgUnit, publishQos);
                         // note that msgUnitWrapper.getMessageUnitHandler() is not allowed (is null)
                         try {
                            PublishRetQosWrapper ret = glob.getClusterManager().forwardPublish(sessionInfo, msgUnitWrapper);
@@ -1176,7 +1176,7 @@ synchronized (this) {
             if (log.TRACE) log.trace(ME, "Doing publish() in PtP or broadcast style");
             if (log.DUMP) log.dump(ME, publishQos.toXml());
 
-            MessageUnitWrapper msgUnitWrapper = new MessageUnitWrapper(this, xmlKey, msgUnit, publishQos);
+            MessageUnitWrapper msgUnitWrapper = new MessageUnitWrapper(glob, this, xmlKey, msgUnit, publishQos);
 
             // Check if a publish filter is installed and if so invoke it ...
             if (getPublishPluginManager().hasPlugins() && !isClusterUpdate) {
@@ -1184,7 +1184,7 @@ synchronized (this) {
                if (mimePlugins != null) {
                   Iterator iterator = mimePlugins.values().iterator();
                   if (msgUnitWrapper == null)
-                     msgUnitWrapper = new MessageUnitWrapper(this, xmlKey, msgUnit, publishQos);
+                     msgUnitWrapper = new MessageUnitWrapper(glob, this, xmlKey, msgUnit, publishQos);
                   // note that msgUnitWrapper.getMessageUnitHandler() is not allowed (is null)
                   while (iterator.hasNext()) {
                      I_PublishFilter plugin = (I_PublishFilter)iterator.next();

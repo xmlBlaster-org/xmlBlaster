@@ -3,7 +3,7 @@ Name:      XmlBlasterImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native Interface to xmlBlaster
-Version:   $Id: XmlBlasterImpl.java,v 1.17 2002/05/26 20:03:06 ruff Exp $
+Version:   $Id: XmlBlasterImpl.java,v 1.18 2002/06/19 12:36:12 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -36,7 +36,7 @@ import org.xmlBlaster.authentication.plugins.I_Subject;
  */
 public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
 {
-   private final String ME = "XmlBlasterImpl";
+   private final String ME;
    private final RequestBroker requestBroker;
    private final Authenticate authenticate;
    private final Global glob;
@@ -52,6 +52,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
    {
       this.authenticate = authenticate;
       this.glob = authenticate.getGlobal();
+      this.ME = "XmlBlasterImpl" + this.glob.getLogPraefixDashed();
       this.log = this.glob.getLog("core");
       this.requestBroker = new RequestBroker(authenticate);
    }

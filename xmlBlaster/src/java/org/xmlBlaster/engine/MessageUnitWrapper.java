@@ -3,7 +3,7 @@ Name:      MessageUnitWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping the CORBA MessageUnit to allow some nicer usage
-Version:   $Id: MessageUnitWrapper.java,v 1.42 2002/06/17 05:40:41 ruff Exp $
+Version:   $Id: MessageUnitWrapper.java,v 1.43 2002/06/19 12:36:12 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -32,12 +32,13 @@ import java.util.*;
  * @see org.xmlBlaster.engine.helper.MessageUnit
  * @see org.xmlBlaster.protocol.corba.serverIdl.MessageUnit
  */
-public class MessageUnitWrapper implements I_Timeout
+public final class MessageUnitWrapper implements I_Timeout
 {
-   private final static String ME = "MessageUnitWrapper";
+   private String ME;
 
    /** The broker which manages me */
    private RequestBroker requestBroker;
+   private final Global glob;
    private final LogChannel log;
 
    /** The MessageUnitHandler which manages me */
@@ -80,14 +81,15 @@ public class MessageUnitWrapper implements I_Timeout
     * @param msgUnit the CORBA MessageUnit data container
     * @param publishQos the quality of service
     */
-   public MessageUnitWrapper(RequestBroker requestBroker, XmlKey xmlKey, MessageUnit msgUnit, PublishQos publishQos) throws XmlBlasterException
+   public MessageUnitWrapper(Global glob, RequestBroker requestBroker, XmlKey xmlKey, MessageUnit msgUnit, PublishQos publishQos) throws XmlBlasterException
    {
       if (xmlKey == null || msgUnit == null || publishQos == null) {
-         Global.instance().getLog("core").error(ME, "Invalid constructor parameter");
-         throw new XmlBlasterException(ME, "Invalid constructor parameter");
+         Global.instance().getLog("core").error(ME(), "Invalid constructor parameter");
+         throw new XmlBlasterException(ME(), "Invalid constructor parameter");
       }
       
       this.requestBroker = requestBroker;
+      this.glob = glob;
       this.log = requestBroker.getLog();
       this.msgUnit = msgUnit;
       this.xmlKey = xmlKey;
@@ -105,17 +107,24 @@ public class MessageUnitWrapper implements I_Timeout
       if (persistenceDriver != null && publishQos.isDurable() && !publishQos.isFromPersistenceStore())
       {
          persistenceDriver.store(this);
-         if(log.TRACE) log.trace(ME,"Storing MessageUnit with key oid="+xmlKey.getKeyOid());
+         if(log.TRACE) log.trace(ME(),"Storing MessageUnit with key oid="+xmlKey.getKeyOid());
       }
 
       publishQos.setFromPersistenceStore(false);
 
       if (publishQos.getRemainingLife() > 0L) {
-         log.info(ME, "Setting expiry timer for " + getUniqueKey() + " to " + publishQos.getRemainingLife() + " msec");
+         log.info(ME(), "Setting expiry timer for " + getUniqueKey() + " to " + publishQos.getRemainingLife() + " msec");
          timerKey = this.messageTimer.addTimeoutListener(this, publishQos.getRemainingLife(), null);
       }
 
-      if (log.TRACE) log.trace(ME, "Creating new MessageUnitWrapper for published message, key oid=" + uniqueKey);
+      if (log.TRACE) log.trace(ME(), "Creating new MessageUnitWrapper for published message, key oid=" + uniqueKey);
+   }
+
+   /** For performance reasons we create it only if logging is requested */
+   private final String ME() {
+      if (this.ME == null)
+         this.ME = "MessageUnitWrapper" + this.glob.getLogPraefixDashed() + "/msg/" + uniqueKey;
+      return this.ME;
    }
 
    public void finalize()
@@ -125,12 +134,12 @@ public class MessageUnitWrapper implements I_Timeout
          timerKey = null;
       }
 
-      if (log.TRACE) log.trace(ME, "finalize - garbage collected " + this.uniqueKey);
+      if (log.TRACE) log.trace(ME(), "finalize - garbage collected " + this.uniqueKey);
    }
 
    public void shutdown()
    {
-      if (log.CALL) log.call(ME, "shutdown() of message " + this.uniqueKey);
+      if (log.CALL) log.call(ME(), "shutdown() of message " + this.uniqueKey);
       isExpired = true;
       if (timerKey != null) {
          this.messageTimer.removeTimeoutListener(timerKey);
@@ -173,7 +182,7 @@ public class MessageUnitWrapper implements I_Timeout
       synchronized (this) {
          isExpired = true;
          timerKey = null;
-         log.warn(ME, "Message " + getUniqueKey() + " is expired, timeout event occurred - not implemented, tests are missing!");
+         log.warn(ME(), "Message " + getUniqueKey() + " is expired, timeout event occurred - not implemented, tests are missing!");
       }
    }
 
@@ -303,8 +312,8 @@ public class MessageUnitWrapper implements I_Timeout
    public final String getContentMime() throws XmlBlasterException
    {
       if (getMessageUnit().xmlKey == null) {
-         log.error(ME + ".UnknownMime", "Sorry, mime type not yet known for " + getUniqueKey());
-         throw new XmlBlasterException(ME + ".UnknownMime", "Sorry, mime type not yet known for " + getUniqueKey());
+         log.error(ME() + ".UnknownMime", "Sorry, mime type not yet known for " + getUniqueKey());
+         throw new XmlBlasterException(ME() + ".UnknownMime", "Sorry, mime type not yet known for " + getUniqueKey());
       }
       return xmlKey.getContentMime();
    }
@@ -314,8 +323,8 @@ public class MessageUnitWrapper implements I_Timeout
    public final String getContentMimeExtended() throws XmlBlasterException
    {
       if (getMessageUnit().xmlKey == null) {
-         log.error(ME + ".UnknownMime", "Sorry, extended mime type not yet known for " + getUniqueKey());
-         throw new XmlBlasterException(ME + ".UnknownMime", "Sorry, extended mime type not yet known for " + getUniqueKey());
+         log.error(ME() + ".UnknownMime", "Sorry, extended mime type not yet known for " + getUniqueKey());
+         throw new XmlBlasterException(ME() + ".UnknownMime", "Sorry, extended mime type not yet known for " + getUniqueKey());
       }
       return xmlKey.getContentMimeExtended();
    }
@@ -328,8 +337,8 @@ public class MessageUnitWrapper implements I_Timeout
    public final MessageUnit getMessageUnit() throws XmlBlasterException
    {
       if (msgUnit == null) {
-         log.error(ME + ".EmptyMessageUnit", "Internal problem, msgUnit = null");
-         throw new XmlBlasterException(ME + ".EmptyMessageUnit", "Internal problem, msgUnit = null");
+         log.error(ME() + ".EmptyMessageUnit", "Internal problem, msgUnit = null");
+         throw new XmlBlasterException(ME() + ".EmptyMessageUnit", "Internal problem, msgUnit = null");
       }
       return msgUnit;
    }
@@ -340,8 +349,8 @@ public class MessageUnitWrapper implements I_Timeout
    public final MessageUnit getMessageUnitClone() throws XmlBlasterException
    {
       if (msgUnit == null) {
-         log.error(ME + ".EmptyMessageUnit", "Internal problem, msgUnit = null");
-         throw new XmlBlasterException(ME + ".EmptyMessageUnit", "Internal problem, msgUnit = null");
+         log.error(ME() + ".EmptyMessageUnit", "Internal problem, msgUnit = null");
+         throw new XmlBlasterException(ME() + ".EmptyMessageUnit", "Internal problem, msgUnit = null");
       }
       return msgUnit.getClone();
    }
@@ -355,7 +364,7 @@ public class MessageUnitWrapper implements I_Timeout
     */
    MessageUnitWrapper cloneContent() throws XmlBlasterException
    {
-      MessageUnitWrapper newWrapper = new MessageUnitWrapper(requestBroker, xmlKey, msgUnit, publishQos);
+      MessageUnitWrapper newWrapper = new MessageUnitWrapper(glob, requestBroker, xmlKey, msgUnit, publishQos);
 
       byte[] oldContent = this.msgUnit.content;
       byte[] newContent = new byte[oldContent.length];

@@ -3,7 +3,7 @@ Name:      NativeDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   NativeDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: NativeDriver.java,v 1.16 2002/06/15 16:01:58 ruff Exp $
+Version:   $Id: NativeDriver.java,v 1.17 2002/06/19 12:36:12 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.nativ;
 
@@ -44,7 +44,7 @@ import org.xmlBlaster.util.DisconnectQos;
  */
 public class NativeDriver implements I_Driver
 {
-   private static final String ME = "NativeDriver";
+   private String ME = "NativeDriver";
    private Global glob = null;
    private LogChannel log = null;
    /** The singleton handle for this xmlBlaster server */
@@ -97,6 +97,7 @@ public class NativeDriver implements I_Driver
    public void init(final Global glob, I_Authenticate authenticate, I_XmlBlaster xmlBlasterImpl) throws XmlBlasterException
    {
       this.glob = glob;
+      this.ME = "NativeDriver" + this.glob.getLogPraefixDashed();
       this.log = glob.getLog("native");
       this.authenticate = authenticate;
       this.xmlBlasterImpl = xmlBlasterImpl;

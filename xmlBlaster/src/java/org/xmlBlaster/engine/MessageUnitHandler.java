@@ -27,7 +27,7 @@ import java.util.*;
  */
 public class MessageUnitHandler
 {
-   private final static String ME = "MessageUnitHandler";
+   private String ME = "MessageUnitHandler";
    private final Global glob;
    private final LogChannel log;
 
@@ -80,10 +80,11 @@ public class MessageUnitHandler
 
       this.glob = requestBroker.getGlobal();
       this.log = glob.getLog("core");
+      this.ME += this.glob.getLogPraefixDashed() + "/msg/" + uniqueKey;
       this.requestBroker = requestBroker;
       this.uniqueKey = uniqueKey;
 
-      if (log.CALL) log.trace(ME, "Creating new MessageUnitHandler because of subscription. Key=" + uniqueKey);
+      if (log.CALL) log.trace(ME, "Creating new MessageUnitHandler because of subscription.");
 
       // mimeType and content remains unknown until first data is fed
    }
@@ -105,11 +106,12 @@ public class MessageUnitHandler
       this.log = glob.getLog("core");
       this.requestBroker = requestBroker;
       this.xmlKey = xmlKey;
+      this.ME += this.glob.getLogPraefixDashed() + "/msg/" + xmlKey.getUniqueKey();
       this.msgUnitWrapper = msgUnitWrapper;
       this.msgUnitWrapper.setMessageUnitHandler(this);
       this.uniqueKey = this.xmlKey.getUniqueKey();
 
-      if (log.CALL) log.trace(ME, "Creating new MessageUnitHandler setting new data. Key=" + uniqueKey);
+      if (log.CALL) log.trace(ME, "Creating new MessageUnitHandler setting new data.");
    }
 
    public void finalize()
@@ -240,7 +242,7 @@ public class MessageUnitHandler
     */
    public boolean setContent(XmlKey unparsedXmlKey, MessageUnit msgUnit, PublishQos publishQos) throws XmlBlasterException
    {
-      if (log.TRACE) log.trace(ME, "Setting content of xmlKey " + uniqueKey);
+      if (log.TRACE) log.trace(ME, "Setting content");
       if (this.xmlKey == null) this.xmlKey = unparsedXmlKey; // If MessageUnitHandler existed because of a subscription: remember xmlKey on first publish
 
       if (publishQos.readonly() && isPublishedWithData()) {
@@ -250,7 +252,7 @@ public class MessageUnitHandler
 
       boolean changed = (msgUnitWrapper != null) ? !msgUnitWrapper.sameContent(msgUnit.getContent()) : true;
 
-      msgUnitWrapper = new MessageUnitWrapper(requestBroker, xmlKey, msgUnit, publishQos);
+      msgUnitWrapper = new MessageUnitWrapper(glob, requestBroker, xmlKey, msgUnit, publishQos);
       msgUnitWrapper.setMessageUnitHandler(this);
       
       return changed;

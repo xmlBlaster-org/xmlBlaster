@@ -3,7 +3,7 @@ Name:      RmiDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   RmiDriver class to invoke the xmlBlaster server using RMI.
-Version:   $Id: RmiDriver.java,v 1.25 2002/06/15 16:51:04 ruff Exp $
+Version:   $Id: RmiDriver.java,v 1.26 2002/06/19 12:36:12 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
@@ -83,7 +83,7 @@ import java.rmi.AlreadyBoundException;
  */
 public class RmiDriver implements I_Driver
 {
-   private static final String ME = "RmiDriver";
+   private String ME = "RmiDriver";
    private Global glob = null;
    private LogChannel log = null;
    /** XmlBlaster RMI registry listen port is 1099, to access for bootstrapping */
@@ -134,6 +134,7 @@ public class RmiDriver implements I_Driver
    public void init(Global glob, I_Authenticate authenticate, I_XmlBlaster xmlBlasterImpl) throws XmlBlasterException
    {
       this.glob = glob;
+      this.ME = "RmiDriver" + this.glob.getLogPraefixDashed();
       this.log = glob.getLog("rmi");
       this.authenticate = authenticate;
       this.xmlBlasterImpl = xmlBlasterImpl;
