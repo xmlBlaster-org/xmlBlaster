@@ -325,6 +325,13 @@ r 3
          </tr>
 
          <tr>
+            <td>-pluginsFile</td>
+            <td>/tmp/xmlBlasterPlugins.xml</td>
+            <td>Specify an other plugin configuration file</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
             <td>runlevel</td>
             <td>9</td>
             <td>Choose run level on xmlBlaster server startup, e.g. <pre>java org.xmlBlaster.Main -runlevel 6</pre></td>
@@ -340,7 +347,7 @@ r 3
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 14</date>
-   <revision>$Revision: 1.19 $</revision>
+   <revision>$Revision: 1.20 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
