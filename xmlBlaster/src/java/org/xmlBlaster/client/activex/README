@@ -36,7 +36,7 @@ INSTALL:
 
 DEMO:
 
-  A C# demo client is under xmlBlaster\demo\activex 
+  A functional C# demo client is under xmlBlaster\demo\activex 
 
   Visual Studio:
     -> References -> (right mouse): Add Reference -> XmlScriptAccess
@@ -49,8 +49,7 @@ TODO:
 
 - Finish the work
 
-- Change Class-Path in manifest.activex
-  and add the jar files
+- Fix HSQLDB driver loading problem
 
 - Implement callback events
 
