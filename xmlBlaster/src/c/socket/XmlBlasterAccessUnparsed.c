@@ -421,15 +421,23 @@ static MsgRequestInfo *postSendEvent(MsgRequestInfo *msgRequestInfoP, XmlBlaster
 
    msgRequestInfoP->blob.dataLen = msgRequestInfoP->responseBlob.dataLen;
    msgRequestInfoP->blob.data = msgRequestInfoP->responseBlob.data;
+   msgRequestInfoP->responseBlob.dataLen = 0;
+   msgRequestInfoP->responseBlob.data = 0; /* msgRequestInfoP->blob.data is now responsible to free() the data */
 
    if (xa->logLevel>=LOG_TRACE)
       xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__,
          "Thread #%ld woke up in postSendEvent() for msgType=%c and dataLen=%d",
          msgRequestInfoP->requestIdStr, msgRequestInfoP->responseType, msgRequestInfoP->blob.dataLen);
 
+
+   if (msgRequestInfoP->responseType == (char)MSG_TYPE_EXCEPTION) {
+      convertToXmlBlasterException(&msgRequestInfoP->blob, exception, false);
+      freeBlobHolderContent(&msgRequestInfoP->blob);
+      msgRequestInfoP->responseType = 0;
+      return (MsgRequestInfo *)0;
+   }
+
    msgRequestInfoP->responseType = 0;
-   msgRequestInfoP->responseBlob.dataLen = 0;
-   msgRequestInfoP->responseBlob.data = 0; /* msgRequestInfoP->blob.data is now responsible to free() the data */
    
    return msgRequestInfoP;
 }
