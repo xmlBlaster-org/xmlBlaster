@@ -111,6 +111,23 @@ public final class CommandManager implements I_RunlevelListener
          e.printStackTrace();
          log.error(ME, e.toString());
       }
+
+      // Initialize MomClient access ...
+      try {
+         org.xmlBlaster.engine.admin.extern.MomClientGateway momClientGateway = new org.xmlBlaster.engine.admin.extern.MomClientGateway();
+
+         if (momClientGateway.initialize(glob, this) == true) {
+            externMap.put(momClientGateway.getName(), momClientGateway);
+            glob.registerMomClientGateway(momClientGateway);
+         }
+      }
+      catch(XmlBlasterException e) {
+         log.error(ME, e.toString());
+      }
+      catch(Throwable e) {
+         e.printStackTrace();
+         log.error(ME, e.toString());
+      }
    }
 
    /**
