@@ -267,6 +267,19 @@ Else add it manually.
       <condition property="linux">
          <equals arg1="${os.name}" arg2="Linux"/>
       </condition>
+
+      <!--
+        These filters replace in your code @version@, @build.timestamp@ etc with
+        the current values if the copy task contains a filtering="true" attribute.
+      -->
+      <tstamp>
+         <format property="build.timestamp" pattern="MM/dd/yyyy hh:mm aa" unit="hour"/>
+      </tstamp>
+      <filter token="version" value="0.79f"/>
+      <filter token="build.timestamp" value="${build.timestamp}"/>
+      <filter token="build.java.version" value="${java.version}"/>
+      <filter token="build.java.vendor" value="${java.vendor}"/>
+      <echo message="Build timestamp = ${build.timestamp} version = ${version}"/>
    </target>
  
    <!-- =================================================================== -->
@@ -299,7 +312,7 @@ Else add it manually.
          </else>
       </if>
 
-      <copy todir="${build.src}/xmlBlaster">
+      <copy todir="${build.src}/xmlBlaster" filtering="true">
          <fileset dir="${src.dir}">
             <exclude name="org/jutils"/>
             <exclude name="README,Makefile,**/ReqBaseServlet.java,**/ReqListServlet.java,**/ReqItemServlet.java,**/OracleSqlFactory.java"/>
@@ -312,10 +325,10 @@ Else add it manually.
       </copy>
 
       <copy file="${classes.dir}/manifest.xmlBlaster" tofile="${build.dest}/manifest.xmlBlaster"/>
-      <copy file="./config/xmlBlaster.policy" tofile="${build.dest}/xmlBlaster.policy"/>
+      <copy file="./config/xmlBlaster.policy" tofile="${build.dest}/xmlBlaster.policy" filtering="true"/>
       <copy file="${src.dir}/org/xmlBlaster/AppIcon.gif" tofile="${build.dest}/org/xmlBlaster/AppIcon.gif"/>
-      <copy file="./config/jacorb.properties.template" tofile="${build.dest}/jacorb.properties"/>
-      <copy file="./config/xmlBlaster.properties.template" tofile="${build.dest}/xmlBlaster.properties"/>
+      <copy file="./config/jacorb.properties.template" tofile="${build.dest}/jacorb.properties" filtering="true"/>
+      <copy file="./config/xmlBlaster.properties.template" tofile="${build.dest}/xmlBlaster.properties" filtering="true"/>
 
       <javac srcdir="${build.src}/xmlBlaster"
             destdir="${build.dest}"
