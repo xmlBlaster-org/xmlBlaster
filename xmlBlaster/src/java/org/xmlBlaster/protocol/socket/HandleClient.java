@@ -3,7 +3,7 @@ Name:      HandleClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   HandleClient class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: HandleClient.java,v 1.3 2002/02/15 19:06:54 ruff Exp $
+Version:   $Id: HandleClient.java,v 1.4 2002/02/15 22:45:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -22,6 +22,7 @@ import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.MessageUnitWrapper;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.client.protocol.ConnectionException;
 
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -37,7 +38,7 @@ import java.util.Collections;
 /**
  * Handles a request from a client, delivering the AuthServer IOR
  */
-public class HandleClient extends Thread
+public class HandleClient extends Executor implements Runnable
 {
    private String ME = "HandleClientRequest";
    private SocketDriver driver;
@@ -45,25 +46,19 @@ public class HandleClient extends Thread
    private I_Authenticate authenticate;
    /** The singleton handle for this xmlBlaster server */
    private I_XmlBlaster xmlBlasterImpl;
-   private Socket sock;
    private CallbackSocketDriver callback;
    private boolean running = true;
-   private InputStream iStream;
-   private OutputStream oStream;
-   private String sessionId = null;
-   private String loginName = "";
 
 
    /**
     */
    public HandleClient(SocketDriver driver, Socket sock) throws IOException {
-      this.sock = sock;
+      super(sock);
       this.driver = driver;
       this.authenticate = driver.getAuthenticate();
       this.xmlBlasterImpl = driver.getXmlBlaster();
-      this.oStream = sock.getOutputStream();
-      this.iStream = sock.getInputStream();
-      start();
+      Thread t = new Thread(this);
+      t.start();
    }
 
    /**
@@ -84,29 +79,35 @@ public class HandleClient extends Thread
       running = false;
    }
 
-   public String sendUpdate(ClientInfo clientInfo, MessageUnitWrapper msgUnitWrapper, MessageUnit[] msgUnitArr) throws XmlBlasterException {
-      Log.error(ME, "sendUpdate() not implemented");
-      // Same code as publishArr()
-         /*
+   /**
+    * Updating multiple messages in one sweep.
+    * <p />
+    * @see org.xmlBlaster.engine.RequestBroker
+    */
+   public final String sendUpdate(ClientInfo clientInfo, MessageUnitWrapper msgUnitWrapper, MessageUnit[] msgUnitArr)
+      throws XmlBlasterException, ConnectionException
+   {
+      if (Log.CALL) Log.call(ME, "Entering update: id=" + sessionId);
+
+      if (msgUnitArr == null) {
+         Log.error(ME + ".InvalidArguments", "The argument of method update() are invalid");
+         throw new XmlBlasterException(ME + ".InvalidArguments",
+                                       "The argument of method update() are invalid");
+      }
       try {
-         Parser receiver = new Parser(Parser.INVOKE_TYPE, Constants.UPDATE, clientInfo.getSessionId());
-         receiver.addMessage(msgUnitArr);
-         Object response = execute(receiver, oStream, clientInfo.getLoginName(), true);
-         Log.info(ME, "Got publishArr response " + response.toString());
-         return (String[])response; // return the QoS
+         Parser parser = new Parser(Parser.INVOKE_TYPE, Constants.UPDATE, sessionId);
+         parser.addMessage(msgUnitArr);
+         Object response = execute(parser, loginName, true);
+         Log.info(ME, "Got update response " + response.toString());
+         String[] arr = (String[])response; // return the QoS
+         return arr[0]; // Hack until every update uses arrays (one qos for each message
       }
       catch (IOException e1) {
-         Log.error(ME+".publishArr", "IO exception: " + e1.toString());
-         throw new ConnectionException(ME+".publishArr", e1.toString());
+         Log.error(ME+".update", "IO exception: " + e1.toString());
+         throw new ConnectionException(ME+".update", e1.toString());
       }
-      Log.info(ME, "Successful sent response for " + receiver.getMethodName() + "()");
-         */
-      return "";
    }
 
-   public OutputStream getOutputStream() {
-      return this.oStream;
-   }
 
    /**
     * Serve a client
@@ -197,16 +198,11 @@ public class HandleClient extends Thread
             }
             catch (XmlBlasterException e) {
                Log.error(ME, "Server can't handle message: " + e.toString());
-               Parser returner = new Parser(Parser.EXCEPTION_TYPE, receiver.getRequestId(), receiver.getMethodName(), receiver.getSessionId());
-               returner.setChecksum(false);
-               returner.setCompressed(false);
-               returner.addException(e);
                try {
-                  oStream.write(returner.createRawMsg());
-                  oStream.flush();
+                  executeExecption(receiver, e);
                }
                catch (Throwable e2) {
-                  Log.error(ME, "Lost connection to client, can't deliver exception message: " + e2.toString());
+                  Log.error(ME, "Lost connection, can't deliver exception message: " + e.toString() + " Reason is: " + e2.toString());
                   shutdown();
                }
             }
@@ -227,29 +223,6 @@ public class HandleClient extends Thread
          try { if (oStream != null) { oStream.close(); oStream=null; } } catch (IOException e) { Log.warn(ME+".shutdown", e.toString()); }
          try { if (sock != null) { sock.close(); sock=null; } } catch (IOException e) { Log.warn(ME+".shutdown", e.toString()); }
       }
-   }
-
-
-   /**
-    * Send a message back to client
-    */
-   private void executeResponse(Parser receiver, Object response) throws XmlBlasterException, IOException {
-      Parser returner = new Parser(Parser.RESPONSE_TYPE, receiver.getRequestId(),
-                           receiver.getMethodName(), receiver.getSessionId());
-      if (response instanceof String)
-         returner.addMessage((String)response);
-      else if (response instanceof String[])
-         returner.addMessage((String[])response);
-      else if (response instanceof MessageUnit[])
-         returner.addMessage((MessageUnit[])response);
-      else if (response instanceof MessageUnit)
-         returner.addMessage((MessageUnit)response);
-      else
-         throw new XmlBlasterException(ME, "Invalid response data type " + response.toString());
-      if (Log.DUMP) Log.dump(ME, "Successful " + receiver.getMethodName() + "(), sending back to client '" + Parser.toLiteral(returner.createRawMsg()) + "'");
-      oStream.write(returner.createRawMsg());
-      oStream.flush();
-      Log.info(ME, "Successful sent response for " + receiver.getMethodName() + "()");
    }
 }
 

@@ -3,7 +3,7 @@ Name:      SocketCallbackImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: SocketCallbackImpl.java,v 1.3 2002/02/15 19:09:07 ruff Exp $
+Version:   $Id: SocketCallbackImpl.java,v 1.4 2002/02/15 22:44:49 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -16,6 +16,8 @@ import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.protocol.socket.Parser;
+import org.xmlBlaster.protocol.socket.Executor;
+import org.xmlBlaster.protocol.socket.I_ResponseListener;
 import org.xmlBlaster.client.protocol.ConnectionException;
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
 
@@ -34,7 +36,7 @@ import java.util.Collections;
  * remove itself after a response or on failure?
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
-public class SocketCallbackImpl extends Thread
+public class SocketCallbackImpl extends Executor implements Runnable
 {
    private final String ME;
    private final SocketConnection sockCon;
@@ -47,56 +49,20 @@ public class SocketCallbackImpl extends Thread
    private boolean running = true;
 
    /**
-    * For listeners who want to be informed about return messages or exceptions
-    * The key is the String requestId, the value the listener thread I_ResponseListener
-    */
-   private final Map responseListenerMap = Collections.synchronizedMap(new HashMap());
-
-
-   /**
     * A thread receiving all messages from xmlBlaster, and delivering them back to the client code.
     * @param sockCon    The socket driver main code
     * @param callback   Our implementation of I_CallbackExtended.
     */
-   SocketCallbackImpl(SocketConnection sockCon, InputStream inputStream, I_CallbackExtended callback) throws XmlBlasterException
+   SocketCallbackImpl(SocketConnection sockCon, InputStream inputStream, I_CallbackExtended callback) throws XmlBlasterException, IOException
    {
+      super(sockCon.getSocket());
       this.ME = "SocketCallbackImpl-" + sockCon.getLoginName();
       this.sockCon = sockCon;
       this.inputStream = inputStream;
       this.callback = callback;
       this.callbackAddressStr = sockCon.getLocalAddress();
-      start();
-   }
-
-   public void finalize() {
-      Log.info(ME, "Garbage Collected");
-   }
-
-
-   /**
-    * Adds the specified subscription listener to receive subscribe/unSubscribe events.
-    */
-   public void addResponseListener(String requestId, I_ResponseListener l) {
-      if (requestId == null || l == null) {
-         throw new IllegalArgumentException("addResponseListener() with requestId=null");
-      }
-      synchronized (responseListenerMap) {
-         responseListenerMap.put(requestId, l);
-      }
-   }
-
-
-   /**
-    * Removes the specified listener.
-    */
-   public void removeResponseListener(String requestId) {
-      if (requestId == null) {
-         throw new IllegalArgumentException("removeResponseListener() with requestId=null");
-      }
-      synchronized (responseListenerMap) {
-         Object o = responseListenerMap.remove(requestId);
-         if (o == null) Log.error(ME, "removeResponseListener(" + requestId + ") entry not found");
-      }
+      Thread t = new Thread(this);
+      t.start();
    }
 
    /**

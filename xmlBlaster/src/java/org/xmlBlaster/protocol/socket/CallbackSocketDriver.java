@@ -3,7 +3,7 @@ Name:      CallbackSocketDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Sending messages to clients
-Version:   $Id: CallbackSocketDriver.java,v 1.2 2002/02/15 19:05:57 ruff Exp $
+Version:   $Id: CallbackSocketDriver.java,v 1.3 2002/02/15 22:45:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -15,10 +15,14 @@ import org.xmlBlaster.engine.ClientInfo;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.MessageUnitWrapper;
 import org.xmlBlaster.engine.helper.CallbackAddress;
+import org.xmlBlaster.client.protocol.ConnectionException;
 
 
 /**
- * One instance of this for each client to him callback. 
+ * One instance of this for each client to send him callback. 
+ * <p />
+ * This is sort of a dummy needed by the plugin framework which
+ * assumed for CORBA/RMI/XML-RPC a separate callback connection
  */
 public class CallbackSocketDriver implements I_CallbackDriver
 {
@@ -47,7 +51,8 @@ public class CallbackSocketDriver implements I_CallbackDriver
       Log.warn(ME, "Implement init()");
    }
 
-   public String sendUpdate(ClientInfo clientInfo, MessageUnitWrapper msgUnitWrapper, MessageUnit[] messageUnitArr) throws XmlBlasterException {
+   public String sendUpdate(ClientInfo clientInfo, MessageUnitWrapper msgUnitWrapper, MessageUnit[] messageUnitArr)
+                              throws XmlBlasterException, ConnectionException {
       return handler.sendUpdate(clientInfo, msgUnitWrapper, messageUnitArr);
    }
 
