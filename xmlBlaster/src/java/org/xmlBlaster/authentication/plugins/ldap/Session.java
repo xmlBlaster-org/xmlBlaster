@@ -21,12 +21,12 @@ public class Session implements I_Session, I_Subject {
 
    protected final Manager secMgr;
    protected final LogChannel log;
-   protected String sessionId = null;
+   protected String sessionId;
    protected boolean authenticated = false;
 
    protected final LdapGateway ldap;
 
-   protected String loginName = null;
+   protected String loginName;
 
    public Session(Manager sm, String sessionId) throws XmlBlasterException {
       secMgr = sm;
@@ -66,12 +66,12 @@ public class Session implements I_Session, I_Subject {
    public String init(I_SecurityQos securityQos) throws XmlBlasterException {
       authenticated = false;
 
-      loginName = securityQos.getUserId();
+      this.loginName = securityQos.getUserId();
       String passwd = ((SecurityQos)securityQos).getCredential();
 
       if (log.TRACE) log.trace(ME, "Checking password ...");
-      authenticated = ldap.checkPassword(loginName, passwd);
-      if (log.TRACE) log.trace(ME, "The password" /*+ passwd */+ " for cn=" + loginName + " is " + ((authenticated)?"":" NOT ") + " valid.");
+      authenticated = ldap.checkPassword(this.loginName, passwd);
+      if (log.TRACE) log.trace(ME, "The password" /*+ passwd */+ " for cn=" + this.loginName + " is " + ((authenticated)?"":" NOT ") + " valid.");
 
       if (authenticated == false)
          throw new XmlBlasterException("AccessDenied", "Authentication of user " + getName() + " failed");
@@ -80,15 +80,28 @@ public class Session implements I_Session, I_Subject {
    }
 
    /**
+    * @see I_Session#verify(I_SecurityQos)
+    */
+   public boolean verify(I_SecurityQos securityQos) {
+      if (!this.authenticated)
+         return false;
+
+      try {
+         return ldap.checkPassword(securityQos.getUserId(), ((SecurityQos)securityQos).getCredential());
+      }
+      catch (XmlBlasterException e) {
+         return false;
+      }
+   }
+
+   /**
     * Get the subjects login-name.
     * <p/>
     * @return String name
     */
-   public String getName()
-   {
-      return loginName;
+   public String getName() {
+      return this.loginName;
    }
-
 
    /**
     * Check if this subject is permitted to do something
@@ -105,8 +118,7 @@ public class Session implements I_Session, I_Subject {
     * Known action keys:
     *    publish, subscribe, get, erase, ... see Constants.PUBLISH etc.
     */
-   public boolean isAuthorized(MethodName actionKey, String key)
-   {
+   public boolean isAuthorized(MethodName actionKey, String key) {
       if (authenticated == false) {
          log.warn(ME+".AccessDenied", "Authentication of user " + getName() + " failed");
          return false;
@@ -135,11 +147,9 @@ public class Session implements I_Session, I_Subject {
       return this;
    }
 
-
    public I_Manager getManager() {
       return secMgr;
    }
-
 
    /**
     * decrypt, check, unseal ... an incomming message

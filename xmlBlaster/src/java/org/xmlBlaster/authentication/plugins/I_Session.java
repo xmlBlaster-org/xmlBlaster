@@ -30,6 +30,20 @@ public interface I_Session extends I_MsgSecurityInterceptor {
     */
    public String init(I_SecurityQos securityQos) throws XmlBlasterException;
 
+   /**
+    * Allows to check the given securityQos again.
+    * <p>
+    * Note:
+    * </p>
+    * <ul>
+    *   <li>This call does not modify anything in the I_Session implementation.</li>
+    *   <li>The init() method must have been invoked before, otherwise we return false</li>
+    * </ul>
+    * @param String The already parsed QoS. The meaning will be defined by the real implementation.
+    * @return true If the credentials are OK<br />
+    *         false If access is denied
+    */
+   public boolean verify(I_SecurityQos securityQos);
 
    /**
     * Get the owner of this session.

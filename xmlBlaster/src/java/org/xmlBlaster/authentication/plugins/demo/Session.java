@@ -6,6 +6,7 @@ import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.xmlBlaster.authentication.plugins.simple.SecurityQos;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.MsgUnitRaw;
 //import org.xmlBlaster.authentication.plugins.ReversibleCrypt;
 
@@ -57,13 +58,29 @@ public class Session implements I_Session {
     *                                exist or the passwd is incorrect.
     */
    public String init(I_SecurityQos securityQos) throws XmlBlasterException {
-      authenticated = false;
-      subject = determineSubject(securityQos.getUserId(), ((org.xmlBlaster.authentication.plugins.demo.SecurityQos)securityQos).getCredential()); // throws XmlBlasterException if authentication fails
-      authenticated = true;
+      this.authenticated = false;
+      this.subject = determineSubject(securityQos.getUserId(), ((org.xmlBlaster.authentication.plugins.demo.SecurityQos)securityQos).getCredential()); // throws XmlBlasterException if authentication fails
+      this.authenticated = true;
 
       return null; // no extra information
    }
 
+   /**
+    * @see I_Session#verify(I_SecurityQos)
+    */
+   public boolean verify(I_SecurityQos securityQos) {
+      if (!this.authenticated)
+         return false;
+
+      try {
+         // throws XmlBlasterException if authentication fails
+         determineSubject(securityQos.getUserId(), ((org.xmlBlaster.authentication.plugins.demo.SecurityQos)securityQos).getCredential());
+         return true;
+      }
+      catch (XmlBlasterException e) {
+         return false;
+      }
+   }
 
    public void changeSessionId(String sessionId) throws XmlBlasterException {
       if(this.sessionId.equals(sessionId)) return;

@@ -2,6 +2,7 @@ package org.xmlBlaster.authentication.plugins.a2Blaster;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.enum.MethodName;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.authentication.plugins.I_Subject;
@@ -21,14 +22,14 @@ public class Session implements I_Session, I_Subject {
    private        final LogChannel               log;
    private              boolean        authenticated = false;
    private              String             sessionId = null;
-   private              String                  name = null;   // login name
+   private              String             loginName = null;   // login name
    private              String    a2BlasterSessionId = null;
    private              boolean  a2BlasterSessionCtl = false;  // who has initiated the a2Blaster login, we?
 
 
    public Session(Manager sm, String sessionId) {
       secMgr = sm;
-      log = secMgr.getGlobal().getLog("a2Blaster");
+      log = this.secMgr.getGlobal().getLog("a2Blaster");
       this.sessionId = sessionId;
       if (log.CALL) log.call(ME+"."+ME+"(...)=...", "-------END-------\n");
    }
@@ -105,14 +106,14 @@ public class Session implements I_Session, I_Subject {
    public String init(I_SecurityQos securityQos) throws XmlBlasterException {
       if (log.CALL) log.call(ME+".init(String qos=...)=...", "-------START-----\n");
       String result = null;
-      authenticated = false;
-      name = securityQos.getUserId();
+      this.authenticated = false;
+      this.loginName = securityQos.getUserId();
 
       // Ok, we have to decide, if we have to log on the a2Blaster, or if the
       // Client has done it, and we only use this session.
       a2BlasterSessionId = ((SecurityQos)securityQos).getA2BlasterSessionId();
       if (a2BlasterSessionId == null) { // we've to do the job
-         a2BlasterSessionId = authenticate(((SecurityQos)securityQos).getCredential()); // throws XmlBlasterException if authentication fails
+         a2BlasterSessionId = authenticate(this.loginName, ((SecurityQos)securityQos).getCredential()); // throws XmlBlasterException if authentication fails
       }
 
       result ="   <securityPlugin type=\""+Manager.TYPE+"\" version=\""+Manager.VERSION+"\">\n"+
@@ -122,6 +123,26 @@ public class Session implements I_Session, I_Subject {
       if (log.CALL) log.call(ME+".init(...)=...", "-------END-------\n");
 
       return result;
+   }
+
+   /**
+    * @see I_Session#verify(I_SecurityQos)
+    */
+   public boolean verify(I_SecurityQos securityQos) {
+      if (!this.authenticated)
+         return false;
+
+      try {
+         a2BlasterSessionId = ((SecurityQos)securityQos).getA2BlasterSessionId();
+         if (a2BlasterSessionId == null) { // we've to do the job
+            a2BlasterSessionId = authenticate(securityQos.getUserId(),
+                                  ((SecurityQos)securityQos).getCredential()); // throws XmlBlasterException if authentication fails
+         }
+         return true;
+      }
+      catch (XmlBlasterException e) {
+         return false;
+      }
    }
 
    /**
@@ -280,7 +301,7 @@ public class Session implements I_Session, I_Subject {
    public String getName() {
       if (log.CALL) log.call(ME+".getName()", "-------START-----\n");
 
-      if (name == null) {
+      if (this.loginName == null) {
          // ask the a2Blaster
          try {
             CorbaConnection con = null;
@@ -288,7 +309,7 @@ public class Session implements I_Session, I_Subject {
 
             con = secMgr.getA2Blaster();
             userInfo = new ClientInfo(con.getUserInfoAsXml(a2BlasterSessionId));
-            name = userInfo.getName();
+            this.loginName = userInfo.getName();
          }
          catch (XmlBlasterException xe) {
             log.error(ME + ".brokenConnection", "a2Blaster connection doesn't respond! Reason: "+xe);
@@ -300,9 +321,9 @@ public class Session implements I_Session, I_Subject {
          }
       }
 
-      if (log.CALL) log.call(ME+".getName()="+name, "-------END-------\n");
+      if (log.CALL) log.call(ME+".getName()="+this.loginName, "-------END-------\n");
 
-      return name;
+      return this.loginName;
    }
 
    /**
@@ -311,7 +332,7 @@ public class Session implements I_Session, I_Subject {
     * @param String The password.
     * @exception XmlBlasterException Thrown if the check fails. (internal a2Blaster exceptions, connection problems, wrong user/passwd)
     */
-   private String authenticate(String passwd) throws XmlBlasterException{
+   private String authenticate(String name, String passwd) throws XmlBlasterException{
       a2BlasterSessionCtl = true;
       CorbaConnection con = null;
       String    sessionId = null;
@@ -326,10 +347,10 @@ public class Session implements I_Session, I_Subject {
          throw xe;
       }
       catch (A2BlasterException ae) {
-         log.error(ME + ".accessDenied", "Login incorrect! Reason: "+ae);
-         throw new XmlBlasterException(ME + ".accessDenied", "Login incorrect! Reason: "+ae);
+         log.warn(ME + ".accessDenied", "Login incorrect! Reason: "+ae);
+         throw new XmlBlasterException(this.secMgr.getGlobal(), ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED, ME, "Authentication of user " + getName() + " failed", ae);
       }
-      authenticated = true;
+      this.authenticated = true;
 
       if (log.CALL) log.call(ME+".authenticate(...)=sessionId", "-------END-------\n");
 

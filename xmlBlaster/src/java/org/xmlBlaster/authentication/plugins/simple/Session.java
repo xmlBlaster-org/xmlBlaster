@@ -64,6 +64,23 @@ public class Session implements I_Session {
       return null; // no extra information
    }
 
+   /**
+    * @see I_Session#verify(I_SecurityQos)
+    */
+   public boolean verify(I_SecurityQos securityQos) {
+      if (!this.authenticated)
+         return false;
+
+      try {
+         // throws XmlBlasterException if authentication fails
+         determineSubject(securityQos.getUserId(), ((SecurityQos)securityQos).getCredential());
+         return true;
+      }
+      catch (XmlBlasterException e) {
+         return false;
+      }
+   }
+
    public void changeSessionId(String sessionId) throws XmlBlasterException {
       if(this.sessionId.endsWith(sessionId)) return;
       synchronized(sessionId) {
