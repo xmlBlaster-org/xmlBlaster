@@ -1,7 +1,7 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
-Current cvs
-===========
+Changes for 0.904 [2004-08-30]
+==============================
 
  o Perl client library:
    - Added a retries and delay option to the subscribe/callback tag
@@ -62,7 +62,10 @@ Current cvs
       do manually a "alter table XB_ENTRIES drop column 'nodeId'".
 
       Otherwise just drop all old database tables
-      (for HSQLDB remove its files in the tmp directory)
+      (for HSQLDB remove its files in the tmp directory, on Windows the
+       default %HOMEPATH%\tmp location for user 'joe' is
+       "C:\Documents and Settings\joe\tmp"
+       and on Linux "$HOME/tmp")
 
    Exception text is:
       [Aug 28, 2004 2:47:15 PM ERROR XmlBlaster.MainThread org.xmlBlaster.engine.msgstore.cache.PersistenceCachePlugin-topicStore:xmlBlaster_192_168_1_4_3412]
