@@ -3,7 +3,7 @@ Name:      SubscribeMessage.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code to subscribe from command line for a message
-Version:   $Id: SubscribeMessage.java,v 1.14 2002/05/01 21:40:03 ruff Exp $
+Version:   $Id: SubscribeMessage.java,v 1.15 2002/05/11 09:36:24 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.reader;
 
@@ -12,9 +12,14 @@ import org.jutils.init.Args;
 import org.jutils.JUtilsException;
 
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.client.*;
+import org.xmlBlaster.client.UpdateKey;
+import org.xmlBlaster.client.UpdateQos;
+import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.client.SubscribeKeyWrapper;
+import org.xmlBlaster.client.SubscribeQosWrapper;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.Constants;
 
@@ -26,7 +31,7 @@ import org.xmlBlaster.engine.helper.Constants;
  * for example for debugging reasons.
  * Invoke examples:<br />
  * <pre>
- *    jaco org.xmlBlaster.client.reader.SubscribeMessage  -name  Tim  -passwd  secret  -oid  __sys__TotalMem
+ *    java org.xmlBlaster.client.reader.SubscribeMessage  -loginName  Tim  -passwd  secret  -oid  __sys__TotalMem
  * </pre>
  * For other supported options type
  * <pre>
@@ -36,6 +41,7 @@ import org.xmlBlaster.engine.helper.Constants;
 public class SubscribeMessage implements I_Callback
 {
    private static final String ME = "SubscribeMessage";
+   private final Global glob;
    private XmlBlasterConnection xmlBlasterConnection;
    private String loginName;
    private String passwd;
@@ -48,23 +54,14 @@ public class SubscribeMessage implements I_Callback
     * These command line parameters are not merged with xmlBlaster.property properties.
     * @param args      Command line arguments
     */
-   public SubscribeMessage(String[] args) throws JUtilsException
+   public SubscribeMessage(Global glob) throws JUtilsException
    {
-      try {
-         XmlBlasterProperty.init(args);
-      } catch(org.jutils.JUtilsException e) {
-         Log.panic(ME, e.toString());
-      }
-      if (Args.getArg(args, "-?") == true || Args.getArg(args, "-h") == true) {
-         usage();
-         return;
-      }
+      this.glob = glob;
+      loginName = glob.getProperty().get("loginName", ME);
+      passwd = glob.getProperty().get("passwd", "secret");
 
-      loginName = Args.getArg(args, "-name", ME);
-      passwd = Args.getArg(args, "-passwd", "secret");
-
-      String oidString = Args.getArg(args, "-oid", (String)null);
-      String xpathString = Args.getArg(args, "-xpath", (String)null);
+      String oidString = glob.getProperty().get("oid", (String)null);
+      String xpathString = glob.getProperty().get("xpath", (String)null);
 
       if (oidString == null && xpathString == null) {
          usage();
@@ -93,8 +90,9 @@ public class SubscribeMessage implements I_Callback
    /**
     * Open the connection, and subscribe to the message
     */
-   public SubscribeMessage(String loginName, String passwd, String xmlKey, String queryType)
+   public SubscribeMessage(Global glob, String loginName, String passwd, String xmlKey, String queryType)
    {
+      this.glob = glob;
       this.loginName = loginName;
       this.passwd = passwd;
       setUp();  // login
@@ -110,8 +108,9 @@ public class SubscribeMessage implements I_Callback
    private void setUp()
    {
       try {
-         xmlBlasterConnection = new XmlBlasterConnection(); // Find orb
-         xmlBlasterConnection.login(loginName, passwd, null, this); // Login to xmlBlaster
+         xmlBlasterConnection = new XmlBlasterConnection(glob);
+         ConnectQos qos = new ConnectQos(glob, loginName, passwd);
+         xmlBlasterConnection.connect(qos, this); // Login to xmlBlaster
       }
       catch (Exception e) {
           Log.error(ME, e.toString());
@@ -185,16 +184,13 @@ public class SubscribeMessage implements I_Callback
    /**
     * Command line usage.
     */
-   private void usage()
+   private static void usage()
    {
       Log.plain(ME, "----------------------------------------------------------");
-      Log.plain(ME, "jaco org.xmlBlaster.client.reader.SubscribeMessage <options>");
+      Log.plain(ME, "java org.xmlBlaster.client.reader.SubscribeMessage <options>");
       Log.plain(ME, "----------------------------------------------------------");
       Log.plain(ME, "Options:");
       Log.plain(ME, "   -?                  Print this message.");
-      Log.plain(ME, "");
-      Log.plain(ME, "   -name <LoginName>   Your xmlBlaster login name.");
-      Log.plain(ME, "   -passwd <Password>  Your xmlBlaster password.");
       Log.plain(ME, "");
       Log.plain(ME, "   -oid <XmlKeyOid>    The unique oid of the message");
       Log.plain(ME, "   -xpath <XPATH>      The XPATH query");
@@ -202,21 +198,26 @@ public class SubscribeMessage implements I_Callback
       //Log.usage();
       Log.plain(ME, "----------------------------------------------------------");
       Log.plain(ME, "Example:");
-      Log.plain(ME, "jaco org.xmlBlaster.client.reader.SubscribeMessage -oid mySpecialMessage");
+      Log.plain(ME, "java org.xmlBlaster.client.reader.SubscribeMessage -oid mySpecialMessage");
       Log.plain(ME, "");
-      Log.plain(ME, "jaco org.xmlBlaster.client.reader.SubscribeMessage -xpath //key/CAR");
+      Log.plain(ME, "java org.xmlBlaster.client.reader.SubscribeMessage -xpath //key/CAR");
       Log.plain(ME, "----------------------------------------------------------");
       Log.plain(ME, "");
    }
 
 
    /**
-    * Invoke:  jaco org.xmlBlaster.client.reader.SubscribeMessage  -name Tim  -passwd secret  -oid __sys__TotalMem
+    * Invoke:  java org.xmlBlaster.client.reader.SubscribeMessage  -loginName Tim  -passwd secret  -oid __sys__TotalMem
     */
    public static void main(String args[])
    {
+      Global glob = new Global();
+      if (glob.init(args) != 0) {
+         usage();
+         Log.exit("","Bye");
+      }
       try {
-         SubscribeMessage publishFile = new SubscribeMessage(args);
+         SubscribeMessage publishFile = new SubscribeMessage(glob);
       } catch (Throwable e) {
          e.printStackTrace();
          Log.panic(SubscribeMessage.ME, e.toString());

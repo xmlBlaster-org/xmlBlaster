@@ -3,14 +3,13 @@ Name:      CbWorkerPool.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Pool of threads doing a callback.
-Version:   $Id: CbWorkerPool.java,v 1.4 2002/05/11 08:08:47 ruff Exp $
+Version:   $Id: CbWorkerPool.java,v 1.5 2002/05/11 09:36:24 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.callback;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.queue.MsgQueue;
 import org.jutils.runtime.Sleeper;

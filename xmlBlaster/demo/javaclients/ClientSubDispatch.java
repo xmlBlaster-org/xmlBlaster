@@ -3,22 +3,20 @@ Name:      ClientSubDispatch.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSubDispatch.java,v 1.7 2002/05/01 21:39:51 ruff Exp $
+Version:   $Id: ClientSubDispatch.java,v 1.8 2002/05/11 09:36:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
 import org.xmlBlaster.util.Log;
-import org.jutils.init.Args;
-
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.ConnectQos;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.client.SubscribeKeyWrapper;
 import org.xmlBlaster.client.SubscribeQosWrapper;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
 
@@ -37,7 +35,7 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  * <pre>
  *    java -cp ../../lib/xmlBlaster.jar javaclients.ClientSubDispatch
  *
- *    java javaclients.ClientSubDispatch -name Jeff -client.protocol RMI
+ *    java javaclients.ClientSubDispatch -loginName Jeff -client.protocol RMI
  *
  *    java javaclients.ClientSubDispatch -help
  * </pre>
@@ -45,25 +43,17 @@ import org.xmlBlaster.engine.helper.MessageUnit;
 public class ClientSubDispatch implements I_Callback
 {
    private static String ME = "ClientSubDispatch";
+   private final Global glob;
    private int numReceived1 = 0;         // error checking
    private int numReceived2 = 0;         // error checking
 
-
-   public ClientSubDispatch(String args[])
-   {
-      initArgs(args); // Initialize command line argument handling (this is optional)
+   public ClientSubDispatch(Global glob) {
+      this.glob = glob;
 
       try {
-         // check if parameter -name <userName> is given at startup of client
-         String loginName = Args.getArg(args, "-name", ME);
-         String passwd = Args.getArg(args, "-passwd", "secret");
          ConnectQos loginQos = new ConnectQos(null); // creates "<qos></qos>" string
-
-         XmlBlasterConnection blasterConnection = new XmlBlasterConnection(args);
-         blasterConnection.login(loginName, passwd, loginQos, this);
-         // Now we are connected to xmlBlaster MOM server.
-
-
+         XmlBlasterConnection blasterConnection = new XmlBlasterConnection(glob);
+         blasterConnection.connect(loginQos, this);  // Now we are connected to xmlBlaster MOM server.
 
          // Subscribe to messages with XPATH using some helper classes
          Log.info(ME, "Subscribing #1 for anonymous callback class using XPath syntax ...");
@@ -143,9 +133,7 @@ public class ClientSubDispatch implements I_Callback
          strArr = blasterConnection.erase(xmlKey, "<qos></qos>");
          if (strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " message.");
 
-
-         blasterConnection.logout();
-         // blasterConnection.getOrb().run(); // Usually your client won't exit after this, uncomment the run() method
+         blasterConnection.disconnect(null);
       }
       catch(XmlBlasterException e) {
          Log.error(ME, "XmlBlasterException: " + e.reason);
@@ -167,31 +155,8 @@ public class ClientSubDispatch implements I_Callback
       return "";
    }
 
-   /**
-    * Initialize command line argument handling (this is optional)
-    */
-   private void initArgs(String args[])
-   {
-      boolean showUsage = false;
-      try {
-         showUsage = XmlBlasterProperty.init(args);
-      } catch(org.jutils.JUtilsException e) {
-         showUsage = true;
-         Log.error(ME, e.toString());
-      }
-      if (showUsage) {
-         Log.plain("\nAvailable options:");
-         Log.plain("   -name               The login name [ClientSub].");
-         Log.plain("   -passwd             The Password [secret].");
-         XmlBlasterConnection.usage();
-         Log.usage();
-         Log.exit(ME, "Example: jaco javaclients.ClientSub -name Jeff\n");
-      }
-   }
-
-   public static void main(String args[])
-   {
-      new ClientSubDispatch(args);
+   public static void main(String args[]) {
+      new ClientSubDispatch(new Global(args));
       Log.exit(ClientSubDispatch.ME, "Good bye");
    }
 } // ClientSubDispatch

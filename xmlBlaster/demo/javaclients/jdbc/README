@@ -31,18 +31,16 @@ Add the following line to your xmlBlaster.properties file (if not there already)
 JdbcDriver.drivers is a comma delimited list of databse drivers.
 Use as many as you like.
 The appropriate driver class files(jar) must be in your classpath.
- (If you are using jdk 1.2, having the jar file in jre/lib/ext will not do you any good.
-  It must be in the CLASSPATH.  This is due to the bootstrapping of jaco)
 ================================================================
 
-Start up the server (jaco org.xmlBlaster.Main)
+Start up the server (java org.xmlBlaster.Main)
 
 -----TESTING-----
 You will need access to a database!
 You can use the XmlDBClient unchanged if you don't mind typing a lot.
 To invoke the client, try something similar to the following:
 
-jaco javaclients.jdbc.XmlDBClient
+java javaclients.jdbc.XmlDBClient
         -url "jdbc:postgresql://24.3.47.214/postgres"
         -user postgres
         -pass secret
@@ -52,7 +50,7 @@ jaco javaclients.jdbc.XmlDBClient
 
 or to invoke an update:
 
-   jaco javaclients.jdbc.XmlDBClient \
+   java javaclients.jdbc.XmlDBClient \
      -url "jdbc:oracle:thin:@localhost:1521:MARCEL" \
      -user marcel \
      -pass secret \

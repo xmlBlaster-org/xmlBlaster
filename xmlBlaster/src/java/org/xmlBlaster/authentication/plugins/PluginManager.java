@@ -3,7 +3,6 @@ package org.xmlBlaster.authentication.plugins;
 import org.xmlBlaster.util.PluginManagerBase;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.plugins.I_Manager;
 import org.xmlBlaster.authentication.plugins.I_Session;

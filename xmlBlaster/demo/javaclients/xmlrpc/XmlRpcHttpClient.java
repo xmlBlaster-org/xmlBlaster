@@ -3,7 +3,7 @@ Name:      XmlRpcHttpClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code to post a xml-rpc message thru the HTTP protocol
-Version:   $Id: XmlRpcHttpClient.java,v 1.10 2002/04/26 21:33:29 ruff Exp $
+Version:   $Id: XmlRpcHttpClient.java,v 1.11 2002/05/11 09:36:55 ruff Exp $
 Author:    "Michele Laghi" <michele.laghi@attglobal.net>
 ------------------------------------------------------------------------------*/
 
@@ -16,7 +16,6 @@ import java.net.MalformedURLException;
 import java.net.ProtocolException;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.xmlrpc.*;
 import org.xmlBlaster.util.ConnectQos;
@@ -72,7 +71,7 @@ public class XmlRpcHttpClient
    {
       try {
          // force XML-RPC protocol:
-         XmlBlasterProperty.set("client.protocol", "XML-RPC");
+         glob.getProperty().set("client.protocol", "XML-RPC");
          
          XmlBlasterConnection client = new XmlBlasterConnection(glob);
          

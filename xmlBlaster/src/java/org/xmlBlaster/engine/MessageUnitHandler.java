@@ -9,7 +9,6 @@ package org.xmlBlaster.engine;
 
 import org.xmlBlaster.util.Log;
 
-import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.SubjectInfo;
 import org.xmlBlaster.authentication.SessionInfo;

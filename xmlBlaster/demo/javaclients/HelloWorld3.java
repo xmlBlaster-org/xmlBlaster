@@ -28,7 +28,7 @@ public class HelloWorld3 implements I_Callback
          XmlBlasterConnection con = new XmlBlasterConnection(glob);
 
          // Check if other name or password was given on command line:
-         String name = glob.getProperty().get("name", "HelloWorld3");
+         String name = glob.getProperty().get("loginName", "HelloWorld3");
          String passwd = glob.getProperty().get("passwd", "secret");
 
          ConnectQos qos = new ConnectQos(glob, name, passwd);

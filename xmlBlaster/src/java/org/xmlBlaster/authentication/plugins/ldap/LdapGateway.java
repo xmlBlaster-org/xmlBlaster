@@ -6,7 +6,6 @@ import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.util.Log;
-import org.xmlBlaster.util.XmlBlasterProperty;
 
 import javax.naming.*;
 import javax.naming.directory.*;

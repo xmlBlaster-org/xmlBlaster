@@ -3,7 +3,7 @@ Name:      XmlBlasterSecurityManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   XmlBlasterSecurityManager class to invoke the xmlBlaster server using RMI.
-Version:   $Id: XmlBlasterSecurityManager.java,v 1.5 2002/05/11 08:09:02 ruff Exp $
+Version:   $Id: XmlBlasterSecurityManager.java,v 1.6 2002/05/11 09:36:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -12,7 +12,6 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.JdkCompatible;
 
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.XmlBlasterProperty;
 import org.jutils.io.FileUtil;
 
 import java.rmi.RemoteException;

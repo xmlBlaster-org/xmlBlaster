@@ -3,7 +3,7 @@ Name:      XindiceProxy.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a Xindice Proxy
-Version:   $Id: XindiceProxy.java,v 1.3 2002/05/11 08:08:52 ruff Exp $
+Version:   $Id: XindiceProxy.java,v 1.4 2002/05/11 09:36:29 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence.xmldb.xindice;
@@ -11,7 +11,6 @@ package org.xmlBlaster.engine.persistence.xmldb.xindice;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.XmlBlasterProperty;
 
 import org.xmldb.api.base.*;
 import org.xmldb.api.modules.*;

@@ -3,28 +3,27 @@ Name:      SimpleChat.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo of a simple chat client for xmlBlaster as java application
-Version:   $Id: SimpleChat.java,v 1.25 2002/05/01 21:39:52 ruff Exp $
+Version:   $Id: SimpleChat.java,v 1.26 2002/05/11 09:36:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.chat;
 
-import org.xmlBlaster.util.Log;
-import org.jutils.init.Args;
 import org.jutils.JUtilsException;
 import org.jutils.io.FileUtil;
 import org.jutils.time.TimeHelper;
 
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.XmlBlasterProperty;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
+import org.xmlBlaster.client.GetKeyWrapper;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_ConnectionProblems;
+import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
-import org.omg.CosNaming.*;
 import java.awt.event.*;
 import java.awt.*;
 import java.util.Enumeration;
@@ -35,20 +34,19 @@ import java.text.DateFormat;
 import java.util.Locale;
 import java.util.Date;
 
-import org.xmlBlaster.client.GetKeyWrapper;
 
 /**
  * This client is a simple chat application using xmlBlaster.
  * <p>
  * It demonstrates 'raw' Corba access.
  * Usage:
- *    ${JacORB_HOME}/bin/jaco javaclients.chat.SimpleChat -name "nickname"
+ *    java javaclients.chat.SimpleChat -loginName "nickname"
  * @author Mike Groezinger
  */
-
 public class SimpleChat extends Frame implements I_Callback, ActionListener, I_ConnectionProblems {
 
    // XmlBlaster attributes
+   private Global glob;
    private XmlBlasterConnection xmlBlasterConnection = null;
    private static String ME = "Mike's TestClient";
    private static String passwd ="some";
@@ -63,18 +61,10 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
    private TextArea output;
    private TextField input;
    private Label label;
-   private String args[];
 
-   public SimpleChat(String title, String args[]){
-      super(title);
-      try {
-         if (XmlBlasterProperty.init(args))
-            usage();
-
-      } catch(org.jutils.JUtilsException e) {
-         usage();
-         Log.panic(ME, e.toString());
-      }
+   public SimpleChat(Global glob){
+      super(glob.getProperty().get("loginName", "SimpleChat - <NoName>"));
+      this.glob = glob;
 
       this.addWindowListener(
          new WindowAdapter() {
@@ -86,16 +76,11 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
          }
       );
 
-      this.args = args;
       initUI();
       pack();
-      try {
-         logFileName = Args.getArg(args, "-logFile", System.getProperty("user.home") + System.getProperty("file.separator") + "xmlBlasterChat.log");
-         Log.info(ME, "Logging messages to " + logFileName);
-         label.setText(logFileName);
-      } catch (JUtilsException e) {
-         Log.error(ME, e.toString());
-      }
+      logFileName = glob.getProperty().get("logFile", System.getProperty("user.home") + System.getProperty("file.separator") + "xmlBlasterChat.log");
+      Log.info(ME, "Logging messages to " + logFileName);
+      label.setText(logFileName);
       readOldMessagesFromFile();
    }
 
@@ -243,14 +228,9 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
    /** find xmlBlaster server, login and subscribe  */
    public void initBlaster(){
       try {
-         try { // check if parameter -name <userName> is given at startup of client
-            ME = Args.getArg(args, "-name", ME);
-         } catch (JUtilsException e) {
-            throw new XmlBlasterException(e);
-         }
-
-         xmlBlasterConnection = new XmlBlasterConnection(args);
-         xmlBlasterConnection.login(ME, passwd, null, this);
+         xmlBlasterConnection = new XmlBlasterConnection(glob);
+         ConnectQos qos = new ConnectQos(glob);
+         xmlBlasterConnection.connect(qos, this);
          xmlBlasterConnection.initFailSave(this);  // configure settings on command line or in xmlBlaster.properties
       }
       catch (Exception e) {
@@ -305,16 +285,13 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
 
       //----------- Logout --------------------------------------
       Log.trace(ME, "Logout ...");
-      xmlBlasterConnection.logout();
+      xmlBlasterConnection.disconnect(null);
    }
 
-   private void usage() {
-      Log.plain("\nAvailable options:");
-      Log.plain("   -name               The login name");
-      Log.plain("   -logFile            A file (with path) to log messages");
+   private static void usage() {
       XmlBlasterConnection.usage();
       Log.usage();
-      Log.exit(ME, "Example: jaco javaclients.chat.SimpleChat -name Heidi");
+      Log.exit(ME, "Example: java javaclients.chat.SimpleChat -loginName Heidi");
    }
 
    /**
@@ -351,14 +328,13 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
    }
 
    public static void main(String args[]) {
-      String title = "SimpleChat";
-      String loginName = null;
-      try {
-         loginName = Args.getArg(args, "-name", "Otto");
-      } catch (JUtilsException e) {
-         Log.panic(title, e.toString());
+      Global glob = new Global();
+      if (glob.init(args) != 0) {
+         usage();
+         Log.panic("SimpleChat", "Bye");
       }
-      SimpleChat chat = new SimpleChat(loginName, args);
+
+      SimpleChat chat = new SimpleChat(glob);
       chat.setSize(460,350);
       chat.show();
    }

@@ -3,20 +3,20 @@ Name:      ClientXml.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientXml.java,v 1.18 2002/05/01 21:39:51 ruff Exp $
+Version:   $Id: ClientXml.java,v 1.19 2002/05/11 09:36:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
 import org.xmlBlaster.util.Log;
-import org.jutils.init.Args;
+import org.xmlBlaster.util.Global;
 import org.jutils.time.StopWatch;
 
+import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
 
@@ -31,42 +31,35 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    ${JacORB_HOME}/bin/jaco javaclients.ClientXml
+ *    java javaclients.ClientXml
  *
- *    ${JacORB_HOME}/bin/jaco javaclients.ClientXml -name "Jeff"
+ *    java javaclients.ClientXml -loginName "Jeff"
  * </pre>
  */
 public class ClientXml implements I_Callback
 {
-   private static String ME = "Tim";
+   private static String ME = "ClientXml";
 
    public ClientXml(String args[])
    {
       // Initialize command line argument handling (this is optional)
-      try {
-         XmlBlasterProperty.init(args);
-      } catch(org.jutils.JUtilsException e) {
+      Global glob = new Global();
+      if (glob.init(args) != 0) {
          Log.plain("\nAvailable options:");
          Log.plain("   -name               The login name [" + ME + "].");
          Log.plain("   -passwd             The password [secret].");
          XmlBlasterConnection.usage();
          Log.usage();
-         Log.plain("Example: jaco javaclients.ClientXml -name Jeff\n");
-         Log.panic(ME, e.toString());
+         Log.exit(ME,"Example: java javaclients.ClientXml -name Jeff\n");
       }
 
       StopWatch stop = new StopWatch();
       try {
-         // check if parameter -name <userName> is given at startup of client
-         ME = Args.getArg(args, "-name", ME);
-         String loginName = ME;
+         XmlBlasterConnection blasterConnection = new XmlBlasterConnection(glob);
 
-         //----------- Find orb ----------------------------------
-         XmlBlasterConnection blasterConnection = new XmlBlasterConnection(args);
-
-         //----------- Login to xmlBlaster -----------------------
-         String passwd = Args.getArg(args, "-passwd", "secret");
-         blasterConnection.login(loginName, passwd, null, this); // installs the Callback server as well!
+         // Login and install the Callback server
+         ConnectQos qos = new ConnectQos(glob);
+         blasterConnection.connect(qos, this);
 
 
          String publishOid = "";
@@ -156,7 +149,7 @@ public class ClientXml implements I_Callback
          }
 
          try { Thread.currentThread().sleep(2000); } catch( InterruptedException i) {} // Wait a second
-         blasterConnection.logout();
+         blasterConnection.disconnect(null);
       }
       catch (Exception e) {
           e.printStackTrace();

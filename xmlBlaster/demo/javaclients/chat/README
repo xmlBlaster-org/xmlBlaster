@@ -2,14 +2,14 @@ This is a pretty basic kind of CORBA based chat-application but worth a try.
 
 Compile it (make all) and start it like that:
 
-   jaco javaclients.chat.SimpleChat -name "Nickname"
+   java javaclients.chat.SimpleChat -loginName "Nickname"
 
 where "Nickname" should be different for each client you start.
-Don´t forget to start the server (jaco org.xmlBlaster.MainGUI) first.
+Don´t forget to start the server (java org.xmlBlaster.MainGUI) first.
 
 To chat from you multi homed host the another server running xmlBlaster (CORBA):
 
-   java javaclients.chat.SimpleChat -name Ben -hostname 62.132.140.7 -ior.hostname 198.197.24.129 
+   java javaclients.chat.SimpleChat -loginName Ben -hostname 62.132.140.7 -ior.hostname 198.197.24.129 
 
    -hostname is the xmlBlaster server,
    -ior.hostname is the IP address for our internal chat CORBA callback server.
@@ -17,12 +17,12 @@ To chat from you multi homed host the another server running xmlBlaster (CORBA):
 
 To chat from you multi homed host the another server running xmlBlaster (XML-RPC):
 
-   java javaclients.chat.SimpleChat -name Tim -client.protocol XML-RPC -xmlrpc.hostnameCB 198.197.24.129 -xmlrpc.hostname 62.132.140.7
+   java javaclients.chat.SimpleChat -loginName Tim -client.protocol XML-RPC -xmlrpc.hostnameCB 198.197.24.129 -xmlrpc.hostname 62.132.140.7
 
 
 To chat from you multi homed host the another server running xmlBlaster (RMI):
 
-   java javaclients.chat.SimpleChat -name RMI -client.protocol RMI -rmi.hostnameCB 198.197.24.129 -rmi.hostname 62.132.140.7
+   java javaclients.chat.SimpleChat -loginName RMI -client.protocol RMI -rmi.hostnameCB 198.197.24.129 -rmi.hostname 62.132.140.7
 
 
 Toget help:

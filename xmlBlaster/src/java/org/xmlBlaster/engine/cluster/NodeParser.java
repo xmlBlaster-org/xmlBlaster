@@ -12,7 +12,6 @@ import org.xmlBlaster.engine.helper.Destination;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.SaxHandlerBase;
 
 import java.util.Vector;
@@ -261,7 +260,6 @@ public class NodeParser extends SaxHandlerBase
       try {
          Global glob = new Global(args);
 
-         XmlBlasterProperty.init(args);
          String xml =
             "<clusternode id='heron.mycomp.com'> <!-- original xml markup -->\n" +
             "   <info>\n" +

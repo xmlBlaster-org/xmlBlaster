@@ -4,7 +4,6 @@ import org.xmlBlaster.util.Log;
 import java.io.*;
 import org.xml.sax.*;
 import org.xml.sax.helpers.*;
-import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SaxHandlerBase;
 
@@ -12,9 +11,12 @@ import org.xmlBlaster.util.SaxHandlerBase;
  *
  *
  * @author  $Author: ruff $ ($Name:  $)
- * @version $Revision: 1.2 $ (State: $State) (Date: $Date: 2001/08/30 17:14:49 $)
+ * @version $Revision: 1.3 $ (State: $State) (Date: $Date: 2002/05/11 09:36:19 $)
  * Last Changes:
  *    ($Log: ClientInfo.java,v $
+ *    (Revision 1.3  2002/05/11 09:36:19  ruff
+ *    (Removed import org.xmlBlaster.util.XmlBlasterProperty;
+ *    (
  *    (Revision 1.2  2001/08/30 17:14:49  ruff
  *    (Renamed security stuff
  *    (

@@ -1,10 +1,7 @@
 package javaclients.jdbc;
 
 import org.xmlBlaster.util.Log;
-import org.jutils.init.Args;
-import org.jutils.JUtilsException;
-
-import org.xmlBlaster.util.XmlBlasterProperty;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.GetKeyWrapper;
 import org.xmlBlaster.client.GetQosWrapper;
@@ -27,20 +24,16 @@ import org.xmlBlaster.engine.helper.MessageUnit;
 public class XmlDBClientSync
 {
    private static String   ME = "XmlDBClientSync";
+   private final Global glob;
    private XmlBlasterConnection corbaConnection = null;
 
    /**
     * Constructor declaration
     */
-   public XmlDBClientSync(String args[]) throws JUtilsException
-    {
-      try {
-         XmlBlasterProperty.init(args);
-      } catch(org.jutils.JUtilsException e) {
-         Log.panic(ME, e.toString());
-      }
-      initBlaster(args);
-      query(args);
+   public XmlDBClientSync(Global glob) {
+      this.glob = glob;
+      initBlaster();
+      query();
       logout();
    }
 
@@ -48,14 +41,11 @@ public class XmlDBClientSync
    /**
     * Find xmlBlaster server and login.
     */
-   public void initBlaster(String[] args)
-   {
+   public void initBlaster() {
       try {
-         corbaConnection = new XmlBlasterConnection(args); // find ORB
-         String loginName = Args.getArg(args, "-name", ME);
-         String passwd = Args.getArg(args, "-passwd", "secret");
-         corbaConnection.login(loginName, passwd, null);
-         Log.info(ME, "Connected to xmlBlaster as '" + loginName + "'");
+         corbaConnection = new XmlBlasterConnection(glob);
+         corbaConnection.connect(null, null);
+         Log.info(ME, "Connected to xmlBlaster");
       }
       catch (Exception e) {
          e.printStackTrace();
@@ -67,27 +57,25 @@ public class XmlDBClientSync
    /**
     * Logout from xmlBlaster.
     */
-   public void logout()
-   {
+   public void logout() {
       if (corbaConnection == null) return;
       Log.info(ME, "Logout ...");
-      corbaConnection.logout();
+      corbaConnection.disconnect(null);
    }
 
    /**
     * Send the SQL message.
     */
-   private void query(String[] args) throws JUtilsException
-   {
+   private void query() {
       XmlDbMessageWrapper wrap = new XmlDbMessageWrapper(
-         Args.getArg(args, "-user", "postgres"),
-         Args.getArg(args, "-pass", ""),
-         Args.getArg(args, "-url",  "jdbc:postgresql://24.3.47.214/postgres"));
+         glob.getProperty().get("user", "postgres"),
+         glob.getProperty().get("pass", ""),
+         glob.getProperty().get("url",  "jdbc:postgresql://24.3.47.214/postgres"));
 
-      boolean confirm = Args.getArg(args, "-confirm", true);
-      String type = Args.getArg(args, "-type", "query");
-      int limit = Args.getArg(args, "-limit", 50);
-      String queryStr = Args.getArg(args, "-query", "select * from intrauser");
+      boolean confirm = glob.getProperty().get("confirm", true);
+      String type = glob.getProperty().get("type", "query");
+      int limit = glob.getProperty().get("limit", 50);
+      String queryStr = glob.getProperty().get("query", "select * from intrauser");
 
       wrap.init(type, limit, confirm, queryStr);
 
@@ -114,12 +102,7 @@ public class XmlDBClientSync
     *    -limit 50
     * @param args Command line
     */
-   public static void main(String args[])
-   {
-      try {
-         XmlDBClientSync client = new XmlDBClientSync(args);
-      } catch (JUtilsException e) {
-         Log.panic("DBClient", e.toString());
-      }
+   public static void main(String args[]) {
+      new XmlDBClientSync(new Global(args));
    }
 }

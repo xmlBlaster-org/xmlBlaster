@@ -5,7 +5,6 @@ import org.xmlBlaster.util.Global;
 import org.jutils.io.FileUtil;
 import org.jutils.JUtilsException;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 import java.util.Vector;
 import java.util.StringTokenizer;

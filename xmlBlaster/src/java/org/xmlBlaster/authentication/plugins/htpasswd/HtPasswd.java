@@ -7,7 +7,6 @@
 package org.xmlBlaster.authentication.plugins.htpasswd;
 
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Log;
 

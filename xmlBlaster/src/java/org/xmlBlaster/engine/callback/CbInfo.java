@@ -3,7 +3,7 @@ Name:      CbInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: CbInfo.java,v 1.13 2002/05/11 08:08:47 ruff Exp $
+Version:   $Id: CbInfo.java,v 1.14 2002/05/11 09:36:24 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.callback;
@@ -17,7 +17,6 @@ import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.engine.MessageUnitWrapper;
 import org.xmlBlaster.authentication.plugins.I_Session;
-import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.engine.queue.MsgQueueEntry;
 import java.util.Hashtable;
 import java.util.StringTokenizer;

@@ -3,7 +3,7 @@ Name:      XMLDBPlugin.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a XMLDB Plugin
-Version:   $Id: XMLDBPlugin.java,v 1.6 2002/05/11 08:08:51 ruff Exp $
+Version:   $Id: XMLDBPlugin.java,v 1.7 2002/05/11 09:36:28 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence.xmldb;
@@ -11,7 +11,6 @@ package org.xmlBlaster.engine.persistence.xmldb;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.XmlBlasterProperty;
 
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.engine.helper.MessageUnit;

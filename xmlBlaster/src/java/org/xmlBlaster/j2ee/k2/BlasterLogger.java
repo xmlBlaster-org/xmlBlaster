@@ -26,7 +26,6 @@ import org.jutils.log.LogDeviceConsole;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.XmlBlasterProperty;
 
 /**
  * BlasterLogger.java

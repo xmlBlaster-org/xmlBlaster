@@ -9,7 +9,6 @@ package org.xmlBlaster.engine.xml2java;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.SaxHandlerBase;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.XmlBlasterProperty;
 
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.helper.Constants;

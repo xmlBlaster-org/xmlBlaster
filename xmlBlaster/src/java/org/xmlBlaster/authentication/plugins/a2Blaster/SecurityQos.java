@@ -4,7 +4,7 @@ import org.xmlBlaster.util.Log;
 import java.io.*;
 import org.xml.sax.*;
 import org.xml.sax.helpers.*;
-import org.xmlBlaster.util.XmlBlasterProperty;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SaxHandlerBase;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
@@ -12,7 +12,7 @@ import org.jutils.text.StringHelper;
 
 /**
  * @author  $Author: ruff $ ($Name:  $)
- * @version $Revision: 1.2 $ (State: $State) (Date: $Date: 2001/12/20 22:04:41 $)
+ * @version $Revision: 1.3 $ (State: $State) (Date: $Date: 2002/05/11 09:36:19 $)
  */
 public class SecurityQos extends SaxHandlerBase implements I_SecurityQos
 {
@@ -217,7 +217,7 @@ public class SecurityQos extends SaxHandlerBase implements I_SecurityQos
    public static void main(String[] args)
    {
       try {
-         XmlBlasterProperty.init(args);
+         Global glob = new Global(args);
          String xml =
             "<securityService type=\"a2Blaster\" version=\"1.0\">\n" +
             "   <![CDATA[\n" +

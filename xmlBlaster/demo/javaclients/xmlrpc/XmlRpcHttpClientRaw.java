@@ -3,7 +3,7 @@ Name:      XmlRpcHttpClientRaw.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code to post a xml-rpc message thru the HTTP protocol
-Version:   $Id: XmlRpcHttpClientRaw.java,v 1.1 2001/02/14 12:15:41 ruff Exp $
+Version:   $Id: XmlRpcHttpClientRaw.java,v 1.2 2002/05/11 09:36:55 ruff Exp $
 Author:    "Michele Laghi" <michele.laghi@attglobal.net>
 ------------------------------------------------------------------------------*/
 
@@ -14,8 +14,9 @@ import java.net.URL;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.ProtocolException;
+
 import org.xmlBlaster.util.Log;
-import org.xmlBlaster.util.XmlBlasterProperty;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.xmlrpc.*;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
@@ -45,13 +46,14 @@ import org.xmlBlaster.engine.helper.MessageUnit;
 public class XmlRpcHttpClientRaw
 {
    private static final String ME = "XmlRpcHttpClientRaw";
-
+   private final Global glob;
 
    /**
     * Constructor.
     */
-   public XmlRpcHttpClientRaw ()
+   public XmlRpcHttpClientRaw (Global glob)
    {
+      this.glob = glob;
    }
 
 
@@ -108,12 +110,12 @@ public class XmlRpcHttpClientRaw
    /**
     * Invokes the methods as described in demo.xml
     */
-   private void testRaw(String[] args)
+   private void testRaw()
    {
       try {
-         String host = XmlBlasterProperty.get("xmlrpc.host", "localhost");
-         int port = XmlBlasterProperty.get("xmlrpc.port", 8080);
-         int cb_port = XmlBlasterProperty.get("xmlrpc.cb_port", 8081);
+         String host = glob.getProperty().get("xmlrpc.host", "localhost");
+         int port = glob.getProperty().get("xmlrpc.port", 8080);
+         int cb_port = glob.getProperty().get("xmlrpc.cb_port", 8081);
          String urlStr = "http://" + host + ":" + port;
 
          Log.info(ME, "Connected to xmlBlaster using XML-RPC");
@@ -160,22 +162,13 @@ public class XmlRpcHttpClientRaw
     */
    public static void main (String args[])
    {
-      final String ME = "XmlRpcHttpClientRaw";
-      boolean showUsage = false;
-
-      try {
-         if (XmlBlasterProperty.init(args)) {
-            usage();
-            Log.exit(ME, "");
-         }
-      } catch(org.jutils.JUtilsException e) {
+      Global glob = new Global();
+      if (glob.init(args) != 0) {
          usage();
-         Log.panic(ME, e.toString());
+         Log.exit("", "Bye");
       }
-
-      XmlRpcHttpClientRaw client = new XmlRpcHttpClientRaw();
-
-      client.testRaw(args);
+      XmlRpcHttpClientRaw client = new XmlRpcHttpClientRaw(glob);
+      client.testRaw();
    }
 
 

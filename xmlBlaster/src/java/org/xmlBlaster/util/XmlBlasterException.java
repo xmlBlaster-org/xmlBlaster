@@ -3,14 +3,13 @@ Name:      XmlBlasterException.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Basic xmlBlaster exception.
-Version:   $Id: XmlBlasterException.java,v 1.6 2002/05/11 08:09:02 ruff Exp $
+Version:   $Id: XmlBlasterException.java,v 1.7 2002/05/11 09:36:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
 import java.io.*;
 import org.xmlBlaster.client.protocol.ConnectionException;
 import org.jutils.JUtilsException;
-import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.Log;
 
 

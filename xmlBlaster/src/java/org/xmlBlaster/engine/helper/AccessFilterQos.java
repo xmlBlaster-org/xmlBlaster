@@ -3,12 +3,11 @@ Name:      AccessFilterQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding filter address string and protocol string
-Version:   $Id: AccessFilterQos.java,v 1.6 2002/05/11 08:08:49 ruff Exp $
+Version:   $Id: AccessFilterQos.java,v 1.7 2002/05/11 09:36:25 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
 import org.xmlBlaster.util.Log;
-import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.engine.mime.Query;
 import org.xml.sax.Attributes;

@@ -1,10 +1,7 @@
 package javaclients.jdbc;
 
 import org.xmlBlaster.util.Log;
-import org.jutils.init.Args;
-import org.jutils.JUtilsException;
-
-import org.xmlBlaster.util.XmlBlasterProperty;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.XmlDbMessageWrapper;
@@ -27,36 +24,30 @@ import org.xmlBlaster.client.UpdateQos;
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.service.rdbms.jdbcpool.html">Requirement engine.service.rdbms.jdbcpool</a>
  */
 public class XmlDBClient implements I_Callback
- {
-
-   private static String   ME = "XmlDBClient";
-   private XmlBlasterConnection corbaConnection = null;
-   private String          results;
-   private boolean         done = false;
+{
+   private static String ME = "XmlDBClient";
+   private final Global glob;
+   private XmlBlasterConnection con = null;
+   private String results;
+   private boolean done = false;
 
    /**
     * Constructor declaration
     */
-   public XmlDBClient(String args[]) throws JUtilsException
-    {
-      try {
-         XmlBlasterProperty.init(args);
-      } catch(org.jutils.JUtilsException e) {
-         Log.panic(ME, e.toString());
-      }
-      initBlaster(args);
-      query(args);
+   public XmlDBClient(Global glob) {
+      this.glob = glob;
+      initBlaster();
+      query();
       waitOnResults();
    }
 
 
    /**
     */
-   private void waitOnResults()
-    {
-      while (!done)  {
+   private void waitOnResults() {
+      while (!done) {
          try {
-            Thread.sleep(500);
+            Thread.sleep(1000);
          }
          catch (InterruptedException e) {}
          Log.plain("Waiting...");
@@ -70,8 +61,7 @@ public class XmlDBClient implements I_Callback
     * delivering us a new asynchronous message. 
     * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
     */
-   public String update(String cbSessionId, UpdateKey key, byte[] content, UpdateQos updateQos)
-    {
+   public String update(String cbSessionId, UpdateKey key, byte[] content, UpdateQos updateQos) {
       results = new String(content);
       done = true;
       return "";
@@ -80,14 +70,11 @@ public class XmlDBClient implements I_Callback
    /**
     * Find xmlBlaster server and login.
     */
-   public void initBlaster(String[] args)
-   {
+   public void initBlaster() {
       try {
-         corbaConnection = new XmlBlasterConnection(args); // find ORB
-         String loginName = Args.getArg(args, "-name", ME);
-         String passwd = Args.getArg(args, "-passwd", "secret");
-         corbaConnection.login(loginName, passwd, null, this);
-         Log.info(ME, "Connected to xmlBlaster as '" + loginName + "'");
+         con = new XmlBlasterConnection(glob);
+         con.connect(null, this);
+         Log.info(ME, "Connected to xmlBlaster");
       }
       catch (Exception e) {
          e.printStackTrace();
@@ -95,36 +82,33 @@ public class XmlDBClient implements I_Callback
       }
    }
 
-
    /**
     * Logout from xmlBlaster
     */
-   public void logout()
-   {
-      if (corbaConnection == null) return;
+   public void logout() {
+      if (con == null) return;
       Log.info(ME, "Logout ...");
-      corbaConnection.logout();
+      con.disconnect(null);
    }
 
    /**
     * Send the SQL message.
     */
-   private void query(String[] args) throws JUtilsException
-   {
+   private void query() {
       XmlDbMessageWrapper wrap = new XmlDbMessageWrapper(
-         Args.getArg(args, "-user", "postgres"),
-         Args.getArg(args, "-pass", ""),
-         Args.getArg(args, "-url",  "jdbc:postgresql://24.3.47.214/postgres"));
+         glob.getProperty().get("user", "postgres"),
+         glob.getProperty().get("pass", ""),
+         glob.getProperty().get("url",  "jdbc:postgresql://24.3.47.214/postgres"));
 
-      boolean confirm = Args.getArg(args, "-confirm", true);
-      String type = Args.getArg(args, "-type", "query");
-      int limit = Args.getArg(args, "-limit", 50);
-      String queryStr = Args.getArg(args, "-query", "select * from intrauser");
+      boolean confirm = glob.getProperty().get("confirm", true);
+      String type = glob.getProperty().get("type", "query");
+      int limit = glob.getProperty().get("limit", 50);
+      String queryStr = glob.getProperty().get("query", "select * from intrauser");
 
       wrap.init(type, limit, confirm, queryStr);
 
       try {
-         String oid = corbaConnection.publish(wrap.toMessage());
+         String oid = con.publish(wrap.toMessage());
          Log.info(ME, "Published query ...");
          if (Log.DUMP) Log.dump(ME, wrap.toXml());
       }
@@ -139,12 +123,7 @@ public class XmlDBClient implements I_Callback
    /**
     * @param args Command line
     */
-   public static void main(String args[])
-   {
-      try {
-         XmlDBClient client = new XmlDBClient(args);
-      } catch (JUtilsException e) {
-         Log.panic("DBClient", e.toString());
-      }
+   public static void main(String args[]) {
+      XmlDBClient client = new XmlDBClient(new Global(args));
    }
 }

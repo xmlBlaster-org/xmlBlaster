@@ -3,7 +3,7 @@ Name:      HelloWorld.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Applet test for xmlBlaster
-Version:   $Id: HelloWorld.java,v 1.15 2002/05/01 21:39:51 ruff Exp $
+Version:   $Id: HelloWorld.java,v 1.16 2002/05/11 09:36:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.HelloWorldApplet;
 
@@ -15,9 +15,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
 import org.xmlBlaster.util.Log;
-import org.xmlBlaster.util.XmlBlasterProperty;
-import org.jutils.init.Args;
-import org.jutils.time.StopWatch;
+import org.xmlBlaster.util.Global;
 
 import java.applet.*;
 import java.awt.event.*;
@@ -73,11 +71,8 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
       }
       */
 
-      try {
-         XmlBlasterProperty.init(this);
-      } catch(org.jutils.JUtilsException e) {
-         Log.panic(ME, e.toString());
-      }
+      Global glob = new Global();
+      glob.init(this);
 
       initUI();
 

@@ -3,18 +3,15 @@ Name:      ClientGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster with RMI
-Version:   $Id: ClientGet.java,v 1.11 2000/10/22 17:48:35 ruff Exp $
+Version:   $Id: ClientGet.java,v 1.12 2002/05/11 09:36:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.rmi;
 
-import org.xmlBlaster.util.Log;
-import org.jutils.init.Args;
 import org.jutils.time.StopWatch;
-
+import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.engine.helper.MessageUnit;
-
 import org.xmlBlaster.protocol.rmi.I_XmlBlaster;
 import org.xmlBlaster.protocol.rmi.I_AuthServer;
 
@@ -34,9 +31,7 @@ import java.net.MalformedURLException;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *  ${JacORB_HOME}/bin/jaco javaclients.rmi.ClientGet
- *
- *  ${JacORB_HOME}/bin/jaco javaclients.rmi.ClientGet -name "Jeff"
+ *  java -Djava.security.policy=${XMLBLASTER_HOME}/config/xmlBlaster.policy  javaclients.rmi.ClientGet -loginName Jeff
  *
  *  Options:
  *     -rmi.hostname localhost       // Where the server rmi registry is
@@ -53,32 +48,18 @@ import java.net.MalformedURLException;
 public class ClientGet
 {
    private static String ME = "Heidi";
+   private final Global glob;
    private I_AuthServer authServer = null;
    private I_XmlBlaster blasterServer = null;
    private String sessionId = null;
 
-   public ClientGet(String args[])
-   {
-      // Initialize command line argument handling (this is optional)
+   public ClientGet(Global glob) {
+      this.glob = glob;
       try {
-         XmlBlasterProperty.init(args);
-      } catch(org.jutils.JUtilsException e) {
-         Log.plain("\nAvailable options:");
-         Log.plain("   -name               The login name [ClientGet].");
-         Log.plain("   -passwd             The password [secret].");
-         // !!! RmiConnection.usage();
-         Log.usage();
-         Log.plain("Example: jaco javaclients.rmi.ClientGet -name Jeff\n");
-         Log.panic(ME, e.toString());
-      }
+         initRmi();
 
-      try {
-         // check if parameter -name <userName> is given at startup of client
-         String loginName = Args.getArg(args, "-name", ME);
-         String passwd = Args.getArg(args, "-passwd", "secret");
-
-         initRmi(args);
-
+         String loginName = glob.getProperty().get("loginName", "RMIClient");
+         String passwd = glob.getProperty().get("passwd", "secret");
          Log.info(ME, "Trying login to '" + loginName + "'");
          sessionId = authServer.login(loginName, passwd, "<qos></qos>");
 
@@ -192,9 +173,6 @@ public class ClientGet
          Log.error(ME, "XmlBlaster error occurred: " + e.toString());
          e.printStackTrace();
       }
-      catch (org.jutils.JUtilsException e) {
-         Log.error(ME, e.toString());
-      }
    }
 
 
@@ -202,7 +180,7 @@ public class ClientGet
     * Connect to RMI server.
     * @param args
     */
-   private void initRmi(String[] args) throws XmlBlasterException
+   private void initRmi() throws XmlBlasterException
    {
       // Create and install a security manager
       if (System.getSecurityManager() == null) {
@@ -218,16 +196,16 @@ public class ClientGet
          Log.warn(ME, "Can't determin your hostname");
          hostname = "localhost";
       }
-      hostname = XmlBlasterProperty.get("rmi.hostname", hostname);
+      hostname = glob.getProperty().get("rmi.hostname", hostname);
 
       // default xmlBlaster RMI publishing port is 1099
-      int registryPort = XmlBlasterProperty.get("rmi.registryPort",
+      int registryPort = glob.getProperty().get("rmi.registryPort",
                          org.xmlBlaster.protocol.rmi.RmiDriver.DEFAULT_REGISTRY_PORT);
       String prefix = "rmi://" + hostname + ":" + registryPort + "/";
 
 
       String authServerUrl = prefix + "I_AuthServer";
-      String addr = XmlBlasterProperty.get("rmi.AuthServer.url", authServerUrl);
+      String addr = glob.getProperty().get("rmi.AuthServer.url", authServerUrl);
       Remote rem = lookup(addr);
       if (rem instanceof org.xmlBlaster.protocol.rmi.I_AuthServer) {
          authServer = (I_AuthServer)rem;
@@ -239,7 +217,7 @@ public class ClientGet
 
 
       String xmlBlasterUrl = prefix + "I_XmlBlaster";
-      addr = XmlBlasterProperty.get("rmi.XmlBlaster.url", xmlBlasterUrl);
+      addr = glob.getProperty().get("rmi.XmlBlaster.url", xmlBlasterUrl);
       rem = lookup(addr);
       if (rem instanceof org.xmlBlaster.protocol.rmi.I_XmlBlaster) {
          blasterServer = (I_XmlBlaster)rem;
@@ -283,7 +261,7 @@ public class ClientGet
     */
    public static void main(String args[])
    {
-      new ClientGet(args);
+      new ClientGet(new Global(args));
       Log.exit(ClientGet.ME, "Good bye");
    }
 }
