@@ -3,7 +3,7 @@ Name:      BlasterHttpProxyServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxyServlet.java,v 1.30 2000/05/30 14:44:46 ruff Exp $
+Version:   $Id: BlasterHttpProxyServlet.java,v 1.31 2000/06/05 08:43:23 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -33,7 +33,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
  * Invoke for testing:<br />
  *    http://localhost/servlet/BlasterHttpProxyServlet?ActionType=login&xmlBlaster.loginName=martin&xmlBlaster.passwd=secret
  * @author Marcel Ruff ruff@swand.lake.de
- * @version $Revision: 1.30 $
+ * @version $Revision: 1.31 $
  */
 public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlaster.util.LogListener
 {
@@ -125,7 +125,14 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
             proxyConnection.addHttpPushHandler( sessionId, pushHandler );
 
             // Don't fall out of doGet() to keep the HTTP connection open
-            Log.info(ME, "Waiting forever, permanent HTTP connection. loginName=" + loginName + " sessionId=" + sessionId);
+            Log.info(ME, "Waiting forever, permanent HTTP connection from " +
+                          req.getRemoteHost() + "/" + req.getRemoteAddr() +
+                          ", loginName=" + loginName + " sessionId=" + sessionId +
+                          ", user='" + req.getRemoteUser() +
+                          "', accept='" + req.getHeader("Accept") +
+                          "', agent='" + req.getHeader("User-Agent") +
+                          "', referer='" + req.getHeader("Referer") +
+                          "'.");
 
             pushHandler.ping("loginSucceeded");
 
