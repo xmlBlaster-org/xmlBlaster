@@ -80,7 +80,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
       throws XmlBlasterException {
       long spaceLeft = queue.getMaxNumOfBytes() - queue.getNumOfBytes() - valueToCheckAgainst;
       if (this.log.TRACE) this.log.trace(ME, "checkSpaceAvailable : maxNumOfBytes=" + queue.getMaxNumOfBytes() + "' numOfBytes='" + queue.getNumOfBytes() + "'. Occured at " + extraTxt);
-      if (spaceLeft < 0L) {
+      if (spaceLeft < 0L && (this.log.TRACE || ifFullThrowException)) {
          String maxBytes = "maxBytes";
          String queueName = "Cache";
          if (queue == this.transientQueue) {
@@ -103,7 +103,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
    private final long checkEntriesAvailable(I_Queue queue, long valueToCheckAgainst, boolean ifFullThrowException, String extraTxt) 
       throws XmlBlasterException {
       long entriesLeft = queue.getMaxNumOfEntries() - queue.getNumOfEntries() - valueToCheckAgainst;
-      if (entriesLeft < 0L) {
+      if (entriesLeft < 0L && (this.log.TRACE || ifFullThrowException)) {
          String maxEntries = "maxEntries";
          String queueName = "Cache";
          if (queue == this.transientQueue) {
@@ -116,7 +116,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
          String reason = queueName + " queue overflow, " + queue.getNumOfEntries() +
                          " entries are in queue, try increasing '" + 
                          this.property.getPropName(maxEntries) + "' on client login.";
-         this.log.trace(ME, reason + this.toXml(""));
+         if (this.log.TRACE) this.log.trace(ME, reason + this.toXml(""));
          if (ifFullThrowException)
             throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, reason);
       }
@@ -471,6 +471,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
             if (isPersistenceAvailable()) { // if no persistence available let RAM overflow one time
 
                // handle swapping (if any)
+               // TODO swap only if bigger than max entries (not same as max entries)
                long exceedingSize = -checkSpaceAvailable(this.transientQueue, 0L, false, "");
                long exceedingEntries = -checkEntriesAvailable(this.transientQueue, 0L, false, "");
                if ( (exceedingSize >= 0L && this.persistentQueue.getMaxNumOfBytes() > this.transientQueue.getMaxNumOfBytes()) || 
@@ -933,7 +934,8 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
          long freeBytes = this.transientQueue.getMaxNumOfBytes() - this.transientQueue.getNumOfBytes();
 
          if (freeEntries <= 0L || freeBytes <= 0L) {
-            this.log.warn(ME, "loadFromPersistence: the transient queue is already full." +
+            if (this.log.TRACE)
+               this.log.trace(ME, "loadFromPersistence: the transient queue is already full." +
                           " numOfBytes=" + this.transientQueue.getNumOfBytes() +
                           " maxNumOfBytes=" + this.transientQueue.getMaxNumOfBytes() +
                           " numOfEntries=" + this.transientQueue.getNumOfEntries() +
