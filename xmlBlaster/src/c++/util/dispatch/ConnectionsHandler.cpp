@@ -100,7 +100,10 @@ ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
    }
    connectQos_ = new ConnectQos(qos);
 
+   global_.setSessionName(connectQos_->getSessionQos().getSessionName());
+   global_.setImmutableId(connectQos_->getSessionQos().getRelativeName());
    global_.setId(connectQos_->getSessionQos().getAbsoluteName()); // temporary
+	//log_.info(ME, "BEFORE id=" + global_.getId() + " immutable=" + global_.getImmutableId() + " sessionName=" + global_.getSessionName()->getAbsoluteName());
 
    retries_ = connectQos_->getAddress().getRetries();
    long pingInterval = connectQos_->getAddress().getPingInterval();
@@ -121,7 +124,11 @@ ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
 
    try {
       connectReturnQos_ = new ConnectReturnQos(connection_->connect(*connectQos_));
+	   global_.setSessionName(connectReturnQos_->getSessionQos().getSessionName());
+		// For "joe/1" it remains immutable; For "joe" there is added the server side generated sessionId "joe/-33":
+	   global_.setImmutableId(connectReturnQos_->getSessionQos().getRelativeName());
       global_.setId(connectReturnQos_->getSessionQos().getAbsoluteName());
+		//log_.info(ME, "AFTER id=" + global_.getId() + " immutable=" + global_.getImmutableId() + " sessionName=" + global_.getSessionName()->getAbsoluteName());
    }
    catch (XmlBlasterException &ex) {
       if (log_.trace()) log_.trace(ME, "exception " + ex.getErrorCodeStr() + " occured when connecting, pingIsStarted=" + lexical_cast<std::string>(pingIsStarted_));
