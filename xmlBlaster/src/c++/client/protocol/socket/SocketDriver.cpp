@@ -257,7 +257,6 @@ void SocketDriver::reconnect(void)
 
 SocketDriver::~SocketDriver()
 {
-   log_.error(ME, "~SocketDriver() DEBUG only: entering destructor");
    if (log_.call()) log_.call(ME, "~SocketDriver()");
    try {
       freeResources(true);
