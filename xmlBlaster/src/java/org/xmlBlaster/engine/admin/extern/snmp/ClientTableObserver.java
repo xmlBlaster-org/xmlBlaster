@@ -1,12 +1,16 @@
-/**
-  ClientTableObserver adds itself to the integer bag as observer. 
-  When ClientTableObserver receives an update, it .... 
- */
 package org.xmlBlaster.engine.admin.extern.snmp;
 
 import java.util.*;
 import jax.*;
 
+/**
+ * ClientTableObserver represents the observer side of an observer pattern. 
+ * When ClientTableObserver receives an update notification from ClientTableSubject, 
+ * it adds or removes an entry to/from clientTable. 
+ *  
+ * @version @VERSION@
+ * @author Udo Thalmann
+ */
 public class ClientTableObserver implements Observer {
 
     private ClientTableSubject clientTableSubject;
@@ -18,6 +22,17 @@ public class ClientTableObserver implements Observer {
     private Hashtable refCounts;
     private final static int MAXINDX = 100;
 
+    /**
+     * Adds itself to the clientTableSubject as observer.
+     * Creates a new clientTable and adds it to the agentX session.
+     * Creates a Hashtable for (client, index) entries.
+     * Creates a BitSet for available indices.
+     * Creates a Hashtable for (client, reference) entries,
+     * where reference is a counter of referenced session entries.
+     *
+     * @param ClientTableSubject calls the update method.
+     * @param AgentXSession between master agent and subagent.
+     */
     public ClientTableObserver( ClientTableSubject clientTableSubject,
                                 AgentXSession session ) {
 	this.clientTableSubject = clientTableSubject;
@@ -33,6 +48,12 @@ public class ClientTableObserver implements Observer {
 	}
     }
 
+    /**
+     * Increments the referenced session entries of this client.
+     * @param ClientIndex identifies a client entry in the client table.
+     * @return ReferenceCounter number of referenced session entries.
+     * -1, if clientIndex identifies no client in the client table.
+     */
     public int increment(Integer clientIndex) {
 	// find clientName with clientIndex
 	Enumeration e = clientHashtable.keys();
@@ -59,6 +80,13 @@ public class ClientTableObserver implements Observer {
 	}
     }
 
+    /**
+     * Decrements the referenced session entries of this client.
+     * 
+     * @param Integer clientIndex: identifies a client entry in the client table.
+     * @return ReferenceCounter number of referenced session entries.
+     * -1, if clientIndex identifies no client in the client table.
+     */
     public int decrement(Integer clientIndex) {
 	// find clientName with clientIndex
 	Enumeration e = clientHashtable.keys();
@@ -86,6 +114,14 @@ public class ClientTableObserver implements Observer {
 	}
     }
 
+    /**
+     * For each client table entry sendTrap
+     * checks trap condition clientQueueMaxMsgs * clientQueueThreshold < clientQueueNumMsgs.
+     * Sends a ClientQueueThresholdOverflow trap if the condition is fulfilled.
+     * Checks trap condition maxSessions * sessionThreshold < numSessions.
+     * Sends a SessionTableThresholdOverflow trap if the condition is fulfilled.
+     * @param AgentXSession between master agent and subagent.
+     */
     public void sendTrap(AgentXSession session) {
 	ClientQueueThresholdOverflow clientQueueNotify;
 	SessionTableThresholdOverflow sessionTableNotify;
@@ -134,10 +170,22 @@ public class ClientTableObserver implements Observer {
          } // end for
     }
 
+    /**
+     * Returns an index to clientTable given a (nodeName + clientName)-key.
+     * @param Key nodeName/clientName-key to clientHashtable.
+     * @return Index to clientTable.
+     */
     public Integer getIndex(String key) {
 	return (Integer)clientHashtable.get(key);
     }
 
+    /**
+     * Adds or removes a client entry to/from the client table.
+     * Updates client indexSet.
+     * Updates clientHashtable.
+     * Updates reference counter in nodeTableObserver.
+     * @param ClientTableSubject which calls update.
+     */
     public void update( Subject o ) {
 	String clientName;
 	String nodeName;
@@ -224,6 +272,10 @@ public class ClientTableObserver implements Observer {
         } // end switch   
     }
 }
+
+
+
+
 
 
 

@@ -6,17 +6,6 @@
  */
 package org.xmlBlaster.engine.admin.extern.snmp;
 
-/**
- *  This class extends the Java AgentX (JAX) implementation of
- *  the scalar group nodeScalar defined in XMLBLASTER-MIB.
- *  NodeScalarImpl 
- *  - is the interface side of a bridge pattern.
- *  - contains a reference to the implementation side of the bridge pattern (= NodeScalarImplPeer).
- *  - implements its methods by forwarding its calls to NodeScalarImplPeer.
- *  
- *  @version @VERSION@
- *  @author Udo Thalmann
- */
 
 import java.util.Vector;
 import java.util.Enumeration;
@@ -24,14 +13,23 @@ import jax.AgentXOID;
 import jax.AgentXSetPhase;
 import jax.AgentXResponsePDU;
 
+/**
+ *  This class extends the Java AgentX (JAX) implementation of
+ *  the scalar group nodeScalar defined in XMLBLASTER-MIB.
+ *  NodeScalarImpl is the interface side of a bridge pattern.
+ *  Contains a reference to the implementation side of the bridge pattern (= NodeScalarImplPeer).
+ *  Implements its methods by forwarding its calls to NodeScalarImplPeer.
+ *  
+ *  @version @VERSION@
+ *  @author Udo Thalmann
+ */
 public class NodeScalarImpl extends NodeScalar
 {
 
     private NodeScalarImplPeer nodeScalarImplPeer;
  
     /**
-     * NodeScalarImpl
-     * - builds a reference to NodeScalarImplPeer, which implements NodeScalarImpl methods.
+     * Builds a reference to NodeScalarImplPeer, which implements NodeScalarImpl methods.
      */
     public NodeScalarImpl()
     {
@@ -40,10 +38,8 @@ public class NodeScalarImpl extends NodeScalar
     }
 
     /**
-     * get_numNodes
-     * - forwards the call to nodeScalarImplPeer.get_numNodes().
-     * 
-     * @return long numNodes: actual number of nodes in nodeTable.
+     * Forwards the call to nodeScalarImplPeer.get_numNodes().
+     * @return NumNodes actual number of nodes in nodeTable.
      */
     public long get_numNodes()
     {

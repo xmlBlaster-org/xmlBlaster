@@ -1,12 +1,23 @@
+
+package org.xmlBlaster.engine.admin.extern.snmp;
+
 /** 
  * The Observer interface lists the methods that an Observer must implement 
  * so that a Subject can send an update notification to the Observer.
- *  @version @VERSION@
- *  @author Udo Thalmann
+ * @version @VERSION@
+ * @author Udo Thalmann
  */
-package org.xmlBlaster.engine.admin.extern.snmp;
-
 public interface Observer {
+
+    /**
+     * update must be implemented by a concrete observer.
+     * @param Subject o: sends an update notification to the observer. 
+     */
     public void update( Subject o );
 }
+
+
+
+
+
 

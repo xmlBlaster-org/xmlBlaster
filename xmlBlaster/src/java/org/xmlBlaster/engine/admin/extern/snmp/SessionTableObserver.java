@@ -1,12 +1,16 @@
-/**
-  SessionTableObserver adds itself to the integer bag as observer. 
-  When SessionTableObserver receives an update, it .... 
- */
 package org.xmlBlaster.engine.admin.extern.snmp;
 
 import java.util.*;
 import jax.*;
 
+/**
+ * SessionTableObserver represents the observer side of an observer pattern. 
+ * When SessionTableObserver receives an update notification from SessionTableSubject, 
+ * it adds or removes an entry to/from clientTable. 
+ *  
+ * @version @VERSION@
+ * @author Udo Thalmann
+ */
 public class SessionTableObserver implements Observer {
 
     private SessionTableSubject sessionTableSubject;
@@ -17,6 +21,14 @@ public class SessionTableObserver implements Observer {
     private BitSet indexSet;
     private final static int MAXINDX = 100;
 
+    /**
+     * Adds itself to the sessionTableSubject as observer.
+     * Creates a new sessionTable and adds it to the agentX session.
+     * Creates a Hashtable for (session, index) entries.
+     * Creates a BitSet for available indices.
+     * @param ClientTableSubject the subject, which calls the update method.
+     * @param AgentXSession the actual agentX session between master agent and subagent.
+     */
     public SessionTableObserver( SessionTableSubject sessionTableSubject,
 				 AgentXSession session ) {
 	this.sessionTableSubject = sessionTableSubject;               
@@ -31,6 +43,13 @@ public class SessionTableObserver implements Observer {
 	}
     }
 
+    /**
+     * For each session table entry sendTrap checks trap condition 
+     * cbQueueMaxMsgs * cbQueueThreshold < cbQueueNumMsgs.
+     * Sends a CbQueueThresholdOverflow trap if the condition is fulfilled.
+     *
+     * @param AgentXSession the actual agentX session between master agent and subagent.
+     */
     public void sendTrap(AgentXSession session) {
 	CbQueueThresholdOverflow cbQueueNotify;
 	long cbQueueNumMsgs;
@@ -56,6 +75,13 @@ public class SessionTableObserver implements Observer {
 	} // end for
     }
 
+    /**
+     * Adds or removes a session entry to/from the session table.
+     * Updates session indexSet.
+     * Updates sessionHashtable.
+     * Updates reference counter in clientTableObserver.
+     * @param Subject sessionTableSubject which calls update.
+     */
     public void update( Subject o ) {
 	String clientName;
 	String nodeName;

@@ -1,5 +1,11 @@
 package org.xmlBlaster.engine.admin.extern.snmp;
 
+/** 
+ *  SessionEntryImplPeer is the implementation side of a bridge pattern.
+ *  Implements the methods, which are called by SessionEntryImpl.
+ *  @version @VERSION@
+ *  @author Udo Thalmann
+ */
 public class SessionEntryImplPeer
 {
 
@@ -10,6 +16,14 @@ public class SessionEntryImplPeer
     private int closeSession;
     private long cbQueueNumMsgs;
 
+    /**
+     * Initializes SessionEntry mib variables.
+     * @param SessionName name of a session.
+     * @param CbQueueMaxMsgs maximum number of messages in cbQueue.
+     * @param CbQueueThreshold threshold number of messages in callback queue.
+     * @param ClearCbQueue if > 0, the callback queue must be cleared.
+     * @param CloseSession if > 0, the session is closed.
+     */
     public SessionEntryImplPeer(String sessionName,
 				long cbQueueMaxMsgs,
 				long cbQueueThreshold,
@@ -24,10 +38,8 @@ public class SessionEntryImplPeer
     }
 
     /**
-     * get_sessionName
-     * - gets sessionName from xmlBlaster application.
-     * 
-     * @return String sessionName: name of a client session.
+     * Gets sessionName from xmlBlaster application.
+     * @return SessionName name of a client session.
      */
     public String get_sessionName()
     {
@@ -35,10 +47,8 @@ public class SessionEntryImplPeer
     }
 
     /**
-     * get_cbQueueNumMsgs
-     * - gets cbQueueNumMsgs from xmlBlaster application.
-     * 
-     * @return long cbQueueNumMsgs: actual number of messages in the callback queue.
+     * Gets cbQueueNumMsgs from xmlBlaster application.
+     * @return CbQueueNumMsgs actual number of messages in the callback queue.
      */
     public long get_cbQueueNumMsgs()
     {
@@ -46,10 +56,8 @@ public class SessionEntryImplPeer
     }
 
     /**
-     * get_cbQueueMaxMsgs
-     * - gets cbQueueMaxMsgs from xmlBlaster application.
-     * 
-     * @return long cbQueueMaxMsgs: maximum number of messages in the callback queue.
+     * Gets cbQueueMaxMsgs from xmlBlaster application.
+     * @return CbQueueMaxMsgs maximum number of messages in the callback queue.
      */
     public long get_cbQueueMaxMsgs()
     {
@@ -57,10 +65,8 @@ public class SessionEntryImplPeer
     }
 
     /**
-     * get_cbQueueThreshold
-     * - gets cbQueueThreshold from xmlBlaster application.
-     * 
-     * @return long cbQueueThreshold: threshold (%) number of messages in the callback queue.
+     * Gets cbQueueThreshold from xmlBlaster application.
+     * @return CbQueueThreshold threshold (%) number of messages in the callback queue.
      */
     public long get_cbQueueThreshold()
     {
@@ -68,21 +74,11 @@ public class SessionEntryImplPeer
     }
 
     /**
-     * get_clearCbQueue
-     * - gets clearCbQueue from xmlBlaster application.
-     * 
-     * @return int clearCbQueue: if set to true (= 1), the callback queue is emptied.
-     */
-    public int get_clearCbQueue()
-    {
-        return clearCbQueue;
-    }
-
-    /**
-     * get_closeSession
-     * - gets closeSession from xmlBlaster application.
-     * 
-     * @return int closeSession: if set to true (= 1), the session is closed.
+     * Gets closeSession from xmlBlaster application.
+     * Indicates the session status.
+     * = 0: the session is open.
+     * > 0: the session is closed.
+     * @return CloseSession indicates whether the session is open (= 0) or closed (> 1).
      */
     public int get_closeSession()
     {

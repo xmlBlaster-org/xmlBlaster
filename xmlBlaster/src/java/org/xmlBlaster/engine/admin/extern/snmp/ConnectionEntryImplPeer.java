@@ -1,5 +1,11 @@
 package org.xmlBlaster.engine.admin.extern.snmp;
 
+/** 
+ *  ConnectionEntryImplPeer is the implementation side of a bridge pattern.
+ *  Implements the methods, which are called by ConnectionEntryImpl.
+ *  @version @VERSION@
+ *  @author Udo Thalmann
+ */
 public class ConnectionEntryImplPeer
 {
 
@@ -8,6 +14,13 @@ public class ConnectionEntryImplPeer
     private String connectionAddress;
     private int connectionProtocol;
 
+    /**
+     * Initializes ConnectionEntry mib variables.
+     * @param ConnectionHost name of connected host.
+     * @param ConnectionPort number of connected port.
+     * @param ConnectionAddress connection protocol specific address, e.g. http:://www.netscape.de/.
+     * @param ConnectionProtocol e.g. bootstrap, ior, rmi, xmlrpc, socket, etc.
+     */
     public ConnectionEntryImplPeer(String connectionHost,
 				   long connectionPort,
 				   String connectionAddress,
@@ -20,10 +33,8 @@ public class ConnectionEntryImplPeer
     }
 
     /**
-     * get_connectionHost
-     * - gets connectionHost from xmlBlaster application.
-     * 
-     * @return String connectionHost: name of the connected host.
+     * Gets connectionHost from xmlBlaster application.
+     * @return ConnectionHost name of the connected host.
      */
     public String get_connectionHost()
     {
@@ -31,10 +42,8 @@ public class ConnectionEntryImplPeer
     }
 
     /**
-     * get_connectionPort
-     * - gets connectionPort from xmlBlaster application.
-     * 
-     * @return long connectionPort: port of the connected host.
+     * Gets connectionPort from xmlBlaster application.
+     * @return ConnectionPort port of the connected host.
      */
     public long get_connectionPort()
     {
@@ -42,10 +51,8 @@ public class ConnectionEntryImplPeer
     }
 
     /**
-     * get_connectionAddress
-     * - gets connectionAddress from xmlBlaster application.
-     * 
-     * @return String connectionAddress: address of the connected host.
+     * Gets connectionAddress from xmlBlaster application.
+     * @return ConnectionAddress address of the connected host.
      */
     public String get_connectionAddress()
     {
@@ -53,10 +60,8 @@ public class ConnectionEntryImplPeer
     }
 
     /**
-     * get_connectionProtocol
-     * - gets connectionProtocol from xmlBlaster application.
-     * 
-     * @return int connectionProtocol: protocol used for connection, 
+     * Gets connectionProtocol from xmlBlaster application.
+     * @return ConnectionProtocol protocol used for connection, 
      * i.e. bootstrap, ior, rmi, xmlrpc, socket, etc.
      */
     public int get_connectionProtocol()

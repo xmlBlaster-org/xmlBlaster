@@ -1,8 +1,13 @@
 package org.xmlBlaster.engine.admin.extern.snmp;
 
+/** 
+ *  ClientEntryImplPeer is the implementation side of a bridge pattern.
+ *  Implements the methods, which are called by ClientEntryImpl.
+ *  @version @VERSION@
+ *  @author Udo Thalmann
+ */
 public class ClientEntryImplPeer
 {
-
     private String clientName;
     private int peerType;
     private int connectionState;
@@ -16,6 +21,17 @@ public class ClientEntryImplPeer
     private long clientUptime;
     private long clientDowntime;
 
+    /**
+     * Initializes ClientEntry mib variables.
+     * @param ClientName name of client.
+     * @param PeerType client or mom.
+     * @param ConnectionState up or down. 
+     * @param ClientQueueMaxMsgs maximum number of messages in ptp client queue.
+     * @param ClientQueueThreshold threshold number of messages in ptp client queue.
+     * @param ClearClientQueue for values > 0, the client queue must be cleared.
+     * @param MaxSessions maximum number of client sessions.
+     * @param SessionThreshold threshold number of client sessions.
+     */
     public ClientEntryImplPeer(String clientName,
 			       int peerType,
 			       int connectionState,
@@ -36,10 +52,8 @@ public class ClientEntryImplPeer
     }
 
     /**
-     * get_clientName
-     * - gets clientName from xmxlBlaster application.
-     * 
-     * @return String clientName: name of an xmlBlaster client.
+     * Gets clientName from xmxlBlaster application.
+     * @return ClientName name of an xmlBlaster client.
      */
     public String get_clientName()
     {
@@ -47,12 +61,8 @@ public class ClientEntryImplPeer
     }
 
     /**
-     * get_peerType
-     * - gets peerType from xmlBlaster application.
-     * 
-     * @return int peerType: type of peer entity.
-     *             0 = client type
-     *             1 = mom type
+     * Gets peerType from xmlBlaster application.
+     * @return PeerType type of peer entity (0 = client, 1 = mom).
      */
     public int get_peerType()
     {
@@ -60,12 +70,8 @@ public class ClientEntryImplPeer
     }
 
     /**
-     * get_connectionState
-     * - gets connectionState from xmlBlaster application.
-     * 
-     * @return int connectionState: state of the client connection.
-     *             0 = down
-     *             1 = up
+     * Gets connectionState from xmlBlaster application.
+     * @return ConnectionState state of the client connection (0 = down, 1 = up).
      */
     public int get_connectionState()
     {
@@ -73,10 +79,8 @@ public class ClientEntryImplPeer
     }
 
     /**
-     * get_clientQueueNumMsgs
-     * - gets clientQueueNumMsgs from xmlBlaster application.
-     * 
-     * @return long clientQueueNumMsgs: actual number of messages in the
+     * Gets clientQueueNumMsgs from xmlBlaster application.
+     * @return ClientQueueNumMsgs actual number of messages in the
      * point to point client queue.
      */
     public long get_clientQueueNumMsgs()
@@ -85,10 +89,8 @@ public class ClientEntryImplPeer
     }
 
     /**
-     * get_clientQueueMaxMsgs
-     * - gets clientQueueMaxMsgs from xmlBlaster application.
-     * 
-     * @return long clientQueueMaxMsgs: maximum number of messages in the
+     * Gets clientQueueMaxMsgs from xmlBlaster application.
+     * @return ClientQueueMaxMsgs maximum number of messages in the
      * point to point client queue.
      */
     public long get_clientQueueMaxMsgs()
@@ -97,10 +99,8 @@ public class ClientEntryImplPeer
     }
 
     /**
-     * get_clientQueueThreshold
-     * - gets clientQueueThreshold from xmlBlaster application.
-     * 
-     * @return long clientQueueThreshold: threshold (%) number of messages in the
+     * Gets clientQueueThreshold from xmlBlaster application.
+     * @return ClientQueueThreshold threshold (%) number of messages in the
      * point to point client queue.
      */
     public long get_clientQueueThreshold()
@@ -109,11 +109,8 @@ public class ClientEntryImplPeer
     }
 
     /**
-     * get_clearClientQueue
-     * - gets clearClientQueue from xmlBlaster application.
-     * 
-     * @return int clearClientQueue: if set to true (= 1),
-     * the point to point client queue is emptied.
+     * Gets clearClientQueue from xmlBlaster application.
+     * @return ClearClientQueue for values > 0, the point to point client queue is emptied.
      */
     public int get_clearClientQueue()
     {
@@ -121,10 +118,8 @@ public class ClientEntryImplPeer
     }
 
     /**
-     * get_numSessions
-     * - gets numSessions from xmlBlaster application.
-     * 
-     * @return long numSessions: actual number of client sessions in the session table.
+     * Gets numSessions from xmlBlaster application.
+     * @return NumSessions actual number of client sessions in the session table.
      */
     public long get_numSessions()
     {
@@ -132,10 +127,8 @@ public class ClientEntryImplPeer
     }
 
     /**
-     * get_maxSessions
-     * - gets maxSessions from xmlBlaster application.
-     * 
-     * @return long maxSessions: maximum number of client sessions in the session table.
+     * Gets maxSessions from xmlBlaster application.
+     * @return MaxSessions maximum number of client sessions in the session table.
      */
     public long get_maxSessions()
     {
@@ -143,10 +136,8 @@ public class ClientEntryImplPeer
     }
 
     /**
-     * get_sessionThreshold
-     * - gets sessionThreshold from xmlBlaster application.
-     * 
-     * @return long sessionThreshold: threshold (%) number of client sessions in the session table.
+     * Gets sessionThreshold from xmlBlaster application.
+     * @return SessionThreshold threshold (%) number of client sessions in the session table.
      */
     public long get_sessionThreshold()
     {
@@ -154,10 +145,8 @@ public class ClientEntryImplPeer
     }
 
     /**
-     * get_clientUptime
-     * - gets clientUptime from xmlBlaster application.
-     * 
-     * @return long clientUptime: client connection uptime.
+     * Gets clientUptime from xmlBlaster application.
+     * @return ClientUptime client connection uptime.
      */
     public long get_clientUptime()
     {
@@ -165,10 +154,8 @@ public class ClientEntryImplPeer
     }
 
     /**
-     * get_clientDowntime
-     * - gets clientDowntime from xmlBlaster application.
-     * 
-     * @return long clientDowntime: client connection downtime.
+     * gets clientDowntime from xmlBlaster application.
+     * @return ClientDowntime client connection downtime.
      */
     public long get_clientDowntime()
     {

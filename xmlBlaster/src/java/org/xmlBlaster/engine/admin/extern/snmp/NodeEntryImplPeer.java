@@ -1,5 +1,11 @@
 package org.xmlBlaster.engine.admin.extern.snmp;
 
+/** 
+ *  NodeEntryImplPeer is the implementation side of a bridge pattern.
+ *  Implements the methods, which are called by NodeEntryImpl.
+ *  @version @VERSION@
+ *  @author Udo Thalmann
+ */
 public class NodeEntryImplPeer
 {
 
@@ -18,8 +24,14 @@ public class NodeEntryImplPeer
     private int runLevel;
 
     /**
-     * NodeEntryImplPeer
-     * - initializes mib variables.
+     * Initializes mib variables.
+     * @param NodeName name of mom instance.
+     * @param Hostname name of host.
+     * @param Port port number.
+     * @param MaxClients maximum number of mom clients.
+     * @param ClientThreshold threshold number of mom clients.
+     * @param ErrorLogfile name of error logfile.
+     * @param LogLevel degree of log level (errors, warnings, infos).
      */
     public NodeEntryImplPeer(String nodeName, 
 			     String hostname,
@@ -39,10 +51,8 @@ public class NodeEntryImplPeer
     }
 
     /**
-     * get_nodeName
-     * - gets nodeName from xmlBlaster application.
-     * 
-     * @return String nodeName: name of an xmlBlaster node.
+     * Gets nodeName from xmlBlaster application.
+     * @return NodeName name of an xmlBlaster node.
      */
     public String get_nodeName()
     {
@@ -50,10 +60,8 @@ public class NodeEntryImplPeer
     }
 
     /**
-     * get_nodeUptime
-     * - gets nodeUptime from xmlBlaster application.
-     * 
-     * @return long nodeUptime: uptime of an xmlBlaster node.
+     * Gets nodeUptime from xmlBlaster application.
+     * @return NodeUptime uptime of an xmlBlaster node.
      */
     public long get_nodeUptime()
     {
@@ -61,11 +69,8 @@ public class NodeEntryImplPeer
     }
 
     /**
-     * get_totalMem
-     * - gets totalMem from xmlBlaster application.
-     * 
-     * @return long totalMem: total memory of the java virtual machine,
-     *              where the xmlBlaster runs.
+     * Gets totalMem from xmlBlaster application.
+     * @return TotalMem total memory of the java virtual machine, where the xmlBlaster runs.
      */
     public long get_totalMem()
     {
@@ -73,11 +78,8 @@ public class NodeEntryImplPeer
     }
 
     /**
-     * get_usedMem
-     * - gets usedMem from xmlBlaster application.
-     * 
-     * @return long usedMem: used memory of the java virtual machine,
-     *              where the xmlBlaster runs.
+     * Gets usedMem from xmlBlaster application.
+     * @return UsedMem used memory of the java virtual machine, where the xmlBlaster runs.
      */
     public long get_usedMem()
     {
@@ -85,11 +87,8 @@ public class NodeEntryImplPeer
     }
 
     /**
-     * get_freeMem
-     * - gets freeMem from xmlBlaster application.
-     * 
-     * @return long freeMem: free memory of the java virtual machine,
-     *              where the xmlBlaster runs.
+     * Gets freeMem from xmlBlaster application.
+     * @return FreeMem: free memory of the java virtual machine, where the xmlBlaster runs.
      */
     public long get_freeMem()
     {
@@ -97,10 +96,8 @@ public class NodeEntryImplPeer
     }
 
     /**
-     * get_hostname
-     * - gets hostname from xmlBlaster application.
-     * 
-     * @return String hostname: name of the host, where the xmlBlaster runs.
+     * Gets hostname from xmlBlaster application.
+     * @return Hostname name of the host, where the xmlBlaster runs.
      */
     public String get_hostname()
     {
@@ -108,10 +105,8 @@ public class NodeEntryImplPeer
     }
 
     /**
-     * get_port
-     * - gets port from xmlblaster application.
-     * 
-     * @return long port: port, on which the xmlBlaster runs.
+     * Gets port from xmlblaster application.
+     * @return Port identifies the xmlBlaster port.
      */
     public long get_port()
     {
@@ -119,10 +114,8 @@ public class NodeEntryImplPeer
     }
 
     /**
-     * get_numClients
-     * - gets numClients from xmlBlaster application.
-     * 
-     * @return long numClients: actual number of clients in the clientTable.
+     * Gets numClients from xmlBlaster application.
+     * @return NumClients actual number of clients in the clientTable.
      */
     public long get_numClients()
     {
@@ -130,10 +123,8 @@ public class NodeEntryImplPeer
     }
 
     /**
-     * get_maxClients
-     * - gets maxClients from xmlBlaster application.
-     * 
-     * @return long maxClients: maximum number of clients in the clientTable.
+     * Gets maxClients from xmlBlaster application.
+     * @return MaxClients maximum number of clients in the clientTable.
      */
     public long get_maxClients()
     {
@@ -141,10 +132,8 @@ public class NodeEntryImplPeer
     }
 
     /**
-     * get_clientThreshold
-     * - gets clientThreshold from xmlBlaster application.
-     * 
-     * @return long clientThreshold: threshold (%) number of clients in the clientTable.
+     * Gets clientThreshold from xmlBlaster application.
+     * @return ClientThreshold threshold (%) number of clients in the clientTable.
      */
     public long get_clientThreshold()
     {
@@ -152,10 +141,8 @@ public class NodeEntryImplPeer
     }
 
     /**
-     * get_errorLogfile
-     * - gets errorLogfile from xmlBlaster application.
-     * 
-     * @return String errorLogfile: name of the error logfile.
+     * Gets errorLogfile from xmlBlaster application.
+     * @return ErrorLogfile name of the error logfile.
      */
     public String get_errorLogfile()
     {
@@ -163,13 +150,9 @@ public class NodeEntryImplPeer
     }
 
     /**
-     * get_logLevel
-     * - gets logLevel from xmlBlaster application.
-     * 
-     * @return int logLevel: various degrees of log levels.
-     *             0 = errors
-     *             1 = warnings
-     *             2 = infos
+     * Gets logLevel from xmlBlaster application.
+     * @return LogLevel various degrees of log levels.
+     * 0 = errors, 1 = warnings, 2 = infos.
      */
     public int get_logLevel()
     {
@@ -177,14 +160,9 @@ public class NodeEntryImplPeer
     }
 
     /**
-     * get_runLevel
-     * - gets runLevel from xmlBlaster application.
-     * 
-     * @return int runLevel: various degrees of log levels.
-     *             0 = halted
-     *             3 = standby
-     *             6 = cleanup
-     *            10 = running
+     * Gets runLevel from xmlBlaster application.
+     * @return RunLevel various degrees of log levels.
+     * 0 = halted, 3 = standby, 6 = cleanup, 10 = running
      */
     public int get_runLevel()
     {

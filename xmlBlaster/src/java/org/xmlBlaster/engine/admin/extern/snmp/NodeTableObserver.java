@@ -1,12 +1,16 @@
-/**
-  NodeTableObserver adds itself to the integer bag as observer. 
-  When NodeTableObserver receives an update, it .... 
- */
 package org.xmlBlaster.engine.admin.extern.snmp;
 
 import java.util.*;
 import jax.*;
 
+/**
+ * NodeTableObserver represents the observer side of an observer pattern. 
+ * When NodeTableObserver receives an update notification from NodeTableSubject, 
+ * it adds or removes an entry to/from nodeTable. 
+ *  
+ * @version @VERSION@
+ * @author Udo Thalmann
+ */
 public class NodeTableObserver implements Observer {
 
     private NodeTableSubject nodeTableSubject;
@@ -18,6 +22,16 @@ public class NodeTableObserver implements Observer {
     private Hashtable refCounts;
     private final static int MAXINDX = 100;
 
+    /**
+     * Adds itself to the nodeTableSubject as observer.
+     * Creates a new nodeTable and adds it to the agentX session.
+     * Creates a Hashtable for (node, index) entries.
+     * Creates a BitSet for available indices.
+     * Creates a Hashtable for (node, reference) entries,
+     *  where reference is a counter of referenced client entries.
+     * @param NodeTableSubject the subject, which calls the update method.
+     * @param AgentXSession the actual agentX session between master agent and subagent.
+     */
     public NodeTableObserver( NodeTableSubject nodeTableSubject,
 			      AgentXSession session ) {
 	this.nodeTableSubject = nodeTableSubject;             
@@ -33,6 +47,12 @@ public class NodeTableObserver implements Observer {
 	}
     }
 
+    /**
+     * Increments the referenced client entries of this node.
+     * @param NodeIndex identifies a node entry in the node table.
+     * @return int number of referenced client entries or -1,
+     * if nodeIndex identifies no node in the node table.
+     */
     public int increment(Integer nodeIndex) {
 	// find nodeName with nodeIndex
 	Enumeration e = nodeHashtable.keys();
@@ -59,6 +79,12 @@ public class NodeTableObserver implements Observer {
 	}
     } 
 
+    /**
+     * Decrements the referenced client entries of this node.
+     * @param NodeIndex identifies a node entry in the node table.
+     * @return int number of referenced client entries or -1,
+     * if nodeIndex identifies no node in the node table.
+     */
     public int decrement(Integer nodeIndex) {
 	// find nodeName with nodeIndex
 	Enumeration e = nodeHashtable.keys();
@@ -86,6 +112,11 @@ public class NodeTableObserver implements Observer {
 	}
     } 
 
+    /**
+     * For each node table entry sendTrap checks trap condition maxClients * clientThreshold < numClients.
+     * Sends a ClientTableThresholdOverflow trap if the condition is fulfilled.
+     * @param AgentXSession the actual agentX session between master agent and subagent.
+     */
     public void sendTrap(AgentXSession session) {
 	ClientTableThresholdOverflow clientTableNotify;
 	long numClients;
@@ -111,10 +142,21 @@ public class NodeTableObserver implements Observer {
 	} // end for
     }
 
+    /**
+     * Returns an index to nodeTable given a nodeName.
+     * @param Key nodeName-key to nodeHashtable.
+     * @return Integer index to nodeTable.
+     */
     public Integer getIndex(String key) {
 	return (Integer)nodeHashtable.get(key);
     }
 
+    /**
+     * Adds or removes a node entry to/from the node table.
+     * Updates node indexSet.
+     * Updates nodeHashtable.
+     * @param Subject clientTableSubject which calls update.
+     */
     public void update( Subject o ) {
 	String nodeName;
 	switch(nodeTableSubject.opCode) {
@@ -193,6 +235,11 @@ public class NodeTableObserver implements Observer {
           } // end switch   
     }
 }
+
+
+
+
+
 
 
 

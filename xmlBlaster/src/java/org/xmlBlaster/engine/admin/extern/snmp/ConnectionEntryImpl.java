@@ -3,39 +3,41 @@
  * is intended to be edited by the application programmer and
  * to be used within a Java AgentX sub-agent environment.
  *
- * $Id: ConnectionEntryImpl.java,v 1.2 2002/07/08 07:25:16 udo Exp $
+ * $Id: ConnectionEntryImpl.java,v 1.3 2002/07/19 11:08:57 udo Exp $
  */
 package org.xmlBlaster.engine.admin.extern.snmp;
 
-/**
- *  This class extends the Java AgentX (JAX) implementation of
- *  the table row connectionEntry defined in XMLBLASTER-MIB.
- *  ConnectionEntryImpl 
- *  - is the interface side of a bridge pattern.
- *  - contains a reference to the implementation side of the bridge pattern (= ConnectionEntryImplPeer).
- *  - implements its methods by forwarding its calls to ConnectionEntryImplPeer.
- *  
- *  @version @VERSION@
- *  @author Udo Thalmann
- */
 
 import jax.AgentXOID;
 import jax.AgentXSetPhase;
 import jax.AgentXResponsePDU;
 import jax.AgentXEntry;
 
+/**
+ *  This class extends the Java AgentX (JAX) implementation of
+ *  the table row connectionEntry defined in XMLBLASTER-MIB.
+ *  ConnectionEntryImpl is the interface side of a bridge pattern.
+ *  Ccontains a reference to the implementation side of the bridge pattern (= ConnectionEntryImplPeer).
+ *  Implements its methods by forwarding its calls to ConnectionEntryImplPeer.
+ *  
+ *  @version @VERSION@
+ *  @author Udo Thalmann
+ */
 public class ConnectionEntryImpl extends ConnectionEntry
 {
 
     public ConnectionEntryImplPeer connectionEntryImplPeer;
+
     /**
-     * ConnectionEntryImpl
-     * - initializes mib variables.
-     * - builds a reference to ConnectionEntryImplPeer, which implements ConnectionEntryImpl methods.
+     * Initializes mib variables.
+     * Builds a reference to ConnectionEntryImplPeer, which implements ConnectionEntryImpl methods.
+     * @param NodeIndex identifies a node in nodeTable.
+     * @param ConnectionIndex identifies a connection in connectionTable together with nodeIndex.
+     * @param ConnectionEntryImplPeer implements ConnectionEntryImpl methods.
      */
     public ConnectionEntryImpl(long nodeIndex,
-                           long connectionIndex,
-                           ConnectionEntryImplPeer connectionEntryImplPeer)
+			       long connectionIndex,
+			       ConnectionEntryImplPeer connectionEntryImplPeer)
     {
         super(nodeIndex, connectionIndex);
         connectionHost = connectionEntryImplPeer.get_connectionHost().getBytes();
@@ -46,10 +48,8 @@ public class ConnectionEntryImpl extends ConnectionEntry
     }
 
     /**
-     * get_connectionHost
-     * - forwards the call to connectionEntryImplPeer.get_connectionHost().
-     * 
-     * @return byte[] connectionHost: name of the connected host.
+     * Forwards the call to connectionEntryImplPeer.get_connectionHost().
+     * @return ConnectionHost name of the connected host.
      */
     public byte[] get_connectionHost()
     {
@@ -58,10 +58,8 @@ public class ConnectionEntryImpl extends ConnectionEntry
     }
 
     /**
-     * get_connectionPort
-     * - forwards the call to connectionEntryImplPeer.get_connectionHost().
-     * 
-     * @return long connectionPort: port of the connected host.
+     * Forwards the call to connectionEntryImplPeer.get_connectionHost().
+     * @return ConnectionPort port of the connected host.
      */
     public long get_connectionPort()
     {
@@ -70,10 +68,8 @@ public class ConnectionEntryImpl extends ConnectionEntry
     }
 
     /**
-     * get_connectionAddress
-     * - forwards the call to connectionEntryImplPeer.get_connectionAddress().
-     * 
-     * @return byte[] connectionAddress: address of the connected host.
+     * Forwards the call to connectionEntryImplPeer.get_connectionAddress().
+     * @return ConnectionAddress address of the connected host.
      */
     public byte[] get_connectionAddress()
     {
@@ -82,10 +78,8 @@ public class ConnectionEntryImpl extends ConnectionEntry
     }
 
     /**
-     * get_connectionProtocol
-     * - forwards the call to connectionEntryImplPeer.get_connectionProtocol().
-     * 
-     * @return int connectionProtocol: protocol used for connection, 
+     * Forwards the call to connectionEntryImplPeer.get_connectionProtocol().
+     * @return ConnectionProtocol protocol used for connection, 
      * i.e. bootstrap, ior, rmi, xmlrpc, socket, etc.
      */
     public int get_connectionProtocol()
@@ -95,6 +89,13 @@ public class ConnectionEntryImpl extends ConnectionEntry
     }
 
 }
+
+
+
+
+
+
+
 
 
 

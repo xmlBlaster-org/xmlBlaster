@@ -3,36 +3,38 @@
  * is intended to be edited by the application programmer and
  * to be used within a Java AgentX sub-agent environment.
  *
- * $Id: SessionEntryImpl.java,v 1.4 2002/07/17 07:43:14 udo Exp $
+ * $Id: SessionEntryImpl.java,v 1.5 2002/07/19 11:08:57 udo Exp $
  */
 package org.xmlBlaster.engine.admin.extern.snmp;
 
-/**
- *  This class extends the Java AgentX (JAX) implementation of
- *  the table row sessionEntry defined in XMLBLASTER-MIB.
- *  SessionEntryImpl 
- *  - is the interface side of a bridge pattern.
- *  - contains a reference to the implementation side of the bridge pattern (= SessionEntryImplPeer).
- *  - implements its methods by forwarding its calls to SessionEntryImplPeer.
- *  
- *  @version @VERSION@
- *  @author Udo Thalmann
- */
 
 import jax.AgentXOID;
 import jax.AgentXSetPhase;
 import jax.AgentXResponsePDU;
 import jax.AgentXEntry;
 
+/**
+ *  This class extends the Java AgentX (JAX) implementation of
+ *  the table row sessionEntry defined in XMLBLASTER-MIB.
+ *  SessionEntryImpl is the interface side of a bridge pattern.
+ *  Contains a reference to the implementation side of the bridge pattern (= SessionEntryImplPeer).
+ *  Implements its methods by forwarding its calls to SessionEntryImplPeer.
+ *  
+ *  @version @VERSION@
+ *  @author Udo Thalmann
+ */
 public class SessionEntryImpl extends SessionEntry
 {
 
     public SessionEntryImplPeer sessionEntryImplPeer;
 
     /**
-     * SessionEntryImpl
-     * - initializes mib variables.
-     * - builds a reference to SessionEntryImplPeer, which implements SessionEntryImpl methods.
+     * SessionEntryImpl initializes mib variables.
+     * Builds a reference to SessionEntryImplPeer, which implements SessionEntryImpl methods.
+     * @param NodeIndex identifies a node in node table.
+     * @param ClientIndex identifies a client in client table together with nodeIndex.
+     * @param SessionIndex identfies a session in session table together with nodeIndex and clientIndex.
+     * @param SessionEntryImplPeer implements SessionEntryImpl methods.
      */
     public SessionEntryImpl(long nodeIndex,
 			    long clientIndex,
@@ -44,16 +46,14 @@ public class SessionEntryImpl extends SessionEntry
         sessionName = sessionEntryImplPeer.get_sessionName().getBytes();
         cbQueueMaxMsgs = sessionEntryImplPeer.get_cbQueueMaxMsgs();
         cbQueueThreshold = sessionEntryImplPeer.get_cbQueueThreshold();
-	clearCbQueue = sessionEntryImplPeer.get_clearCbQueue();
+	clearCbQueue = get_clearCbQueue();
 	closeSession = sessionEntryImplPeer.get_closeSession();
         this.sessionEntryImplPeer = sessionEntryImplPeer;
     }
 
     /**
-     * get_sessionName
-     * - forwards the call to sessionEntryImplPeer.get_sessionName().
-     * 
-     * @return byte[] sessionName: name of a client session.
+     * Forwards the call to sessionEntryImplPeer.get_sessionName().
+     * @return SessionName name of a client session.
      */
     public byte[] get_sessionName()
     {
@@ -62,10 +62,8 @@ public class SessionEntryImpl extends SessionEntry
     }
 
     /**
-     * get_cbQueueNumMsgs
-     * - forwards the call to sessionEntryImplPeer.get_cbQueueNumMsgs().
-     * 
-     * @return long cbQueueNumMsgs: actual number of messages in the callback queue.
+     * Forwards the call to sessionEntryImplPeer.get_cbQueueNumMsgs().
+     * @return CbQueueNumMsgs actual number of messages in the callback queue.
      */
     public long get_cbQueueNumMsgs()
     {
@@ -74,10 +72,8 @@ public class SessionEntryImpl extends SessionEntry
     }
 
     /**
-     * get_cbQueueMaxMsgs
-     * - forwards the call to sessionEntryImplPeer.get_cbQueueMaxMsgs().
-     * 
-     * @return long cbQueueMaxMsgs: maximum number of messages in the callback queue.
+     * Forwards the call to sessionEntryImplPeer.get_cbQueueMaxMsgs().
+     * @return CbQueueMaxMsgs maximum number of messages in the callback queue.
      */
     public long get_cbQueueMaxMsgs()
     {
@@ -86,12 +82,10 @@ public class SessionEntryImpl extends SessionEntry
     }
 
     /**
-     * set_cbQueueMaxMsgs
-     * - implements the snmp set command for the mib object cbQueueMaxMsgs.
-     *
-     * @param AgentXSetPhase phase:
-     * @param long value:
-     * @return int AgentXResponsePDU.PROCESSING_ERROR:
+     * Implements the snmp set command for the mib object cbQueueMaxMsgs.
+     * @param AgentXSetPhase
+     * @param Value is the new value of cbQueueMaxMsgs.
+     * @return AgentXResponsePDU.PROCESSING_ERROR
      */
     public int set_cbQueueMaxMsgs(AgentXSetPhase phase, long value)
     {
@@ -114,10 +108,8 @@ public class SessionEntryImpl extends SessionEntry
     }
 
     /**
-     * get_cbQueueThreshold
-     * - forwards the call to sessionEntryImplPeer.get_cbQueueThreshold().
-     * 
-     * @return long cbQueueThreshold: threshold (%) number of messages in the callback queue.
+     * Forwards the call to sessionEntryImplPeer.get_cbQueueThreshold().
+     * @return CbQueueThreshold threshold (%) number of messages in the callback queue.
      */
     public long get_cbQueueThreshold()
     {
@@ -126,12 +118,10 @@ public class SessionEntryImpl extends SessionEntry
     }
 
     /**
-     * set_cbQueueThreshold
-     * - implements the snmp set command for the mib object cbQueueThreshold.
-     *
-     * @param AgentXSetPhase phase:
-     * @param long value:
-     * @return int AgentXResponsePDU.PROCESSING_ERROR:
+     * Implements the snmp set command for the mib object cbQueueThreshold.
+      * @param AgentXSetPhase phase:
+     * @param Value is the new value for cbQueueThreshold.
+     * @return AgentXResponsePDU.PROCESSING_ERROR
      */
     public int set_cbQueueThreshold(AgentXSetPhase phase, long value)
     {
@@ -154,24 +144,27 @@ public class SessionEntryImpl extends SessionEntry
     }
 
     /**
-     * get_clearCbQueue
-     * - forwards the call to sessionEntryImplPeer.get_clearCbQueue().
-     * 
-     * @return int clearCbQueue: if set to true (= 1), the callback queue is emptied.
+     * Indicates the callback queue status.
+     * = 0: the callback queue is not empty.
+     * > 0: the callback queue is empty.
+     * @return ClearCbQueue indicates whether the callback is empty (> 0) or not (= 0).
      */
     public int get_clearCbQueue()
     {
-        // clearCbQueue = sessionEntryImplPeer.get_clearCbQueue();
+        if (get_cbQueueNumMsgs() > 0) {
+	    clearCbQueue = 0;
+        }
+        else {
+	    clearCbQueue = 1;
+        }
         return clearCbQueue;
     }
 
     /**
-     * set_clearCbQueue
-     * - implements the snmp set command for the mib object clearCbQueue.
-     *
-     * @param AgentXSetPhase phase:
-     * @param long value:
-     * @return int AgentXResponsePDU.PROCESSING_ERROR:
+     * Implements the snmp set command for the mib object clearCbQueue.
+     * @param AgentXSetPhase
+     * @param Value indicates whether the callback queue has to emptied (> 0) or not (= 0).
+     * @return AgentXResponsePDU.PROCESSING_ERROR
      */
     public int set_clearCbQueue(AgentXSetPhase phase, int value)
     {
@@ -194,10 +187,11 @@ public class SessionEntryImpl extends SessionEntry
     }
 
     /**
-     * get_closeSession
-     * - forwards the call to sessionEntryImplPeer.get_closeSession().
-     * 
-     * @return int closeSession: if set to true (= 1), the session is closed.
+     * Forwards the call to sessionEntryImplPeer.get_closeSession().
+     * Indicates the session status.
+     * = 0: the session is open.
+     * > 0: the session is closed.
+     * @return CloseSession indicates whether the session is open (= 0) or closed (> 1).
      */
     public int get_closeSession()
     {
@@ -206,12 +200,10 @@ public class SessionEntryImpl extends SessionEntry
     }
 
     /**
-     * set_closeSession
-     * - implements the snmp set command for the mib object closeSession.
-     *
-     * @param AgentXSetPhase phase:
-     * @param long value:
-     * @return int AgentXResponsePDU.PROCESSING_ERROR:
+     * Implements the snmp set command for the mib object closeSession.
+     * @param AgentXSetPhase
+     * @param Value indicates whether the session is open (= 0) or closed (> 1).
+     * @return AgentXResponsePDU.PROCESSING_ERROR
      */
     public int set_closeSession(AgentXSetPhase phase, int value)
     {
@@ -233,5 +225,13 @@ public class SessionEntryImpl extends SessionEntry
         return AgentXResponsePDU.NO_ERROR;
     }
 }
+
+
+
+
+
+
+
+
 
 

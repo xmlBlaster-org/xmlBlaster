@@ -5,9 +5,8 @@ import java.io.*;
 import java.util.*;
 
 /** 
- *  NodeScalarImplPeer 
- *  - is the implementation side of a bridge pattern.
- *  - implements the methods, which are called by NodeScalarImpl.
+ *  NodeScalarImplPeer is the implementation side of a bridge pattern.
+ *  Implements the methods, which are called by NodeScalarImpl.
  *  @version @VERSION@
  *  @author Udo Thalmann
  */
@@ -17,10 +16,8 @@ public class NodeScalarImplPeer {
     }
 
     /**
-     * get_numNodes
-     * - provides the actual number of nodes in the nodeTable.
-     *
-     * @return long: number of nodes in the node Table.
+     * Provides the actual number of nodes in the nodeTable.
+     * @return long number of nodes in the node Table.
      */
     public long get_numNodes() {
         System.out.println("NodeScalarImplPeer: get_numNodes() HEEEELLLLLO");

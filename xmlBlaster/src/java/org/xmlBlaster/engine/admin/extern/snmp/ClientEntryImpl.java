@@ -3,9 +3,14 @@
  * is intended to be edited by the application programmer and
  * to be used within a Java AgentX sub-agent environment.
  *
- * $Id: ClientEntryImpl.java,v 1.3 2002/07/17 07:43:14 udo Exp $
+ * $Id: ClientEntryImpl.java,v 1.4 2002/07/19 11:08:57 udo Exp $
  */
 package org.xmlBlaster.engine.admin.extern.snmp;
+
+import jax.AgentXOID;
+import jax.AgentXSetPhase;
+import jax.AgentXResponsePDU;
+import jax.AgentXEntry;
 
 /**
  *  This class extends the Java AgentX (JAX) implementation of
@@ -18,21 +23,17 @@ package org.xmlBlaster.engine.admin.extern.snmp;
  *  @version @VERSION@
  *  @author Udo Thalmann
  */
-
-import jax.AgentXOID;
-import jax.AgentXSetPhase;
-import jax.AgentXResponsePDU;
-import jax.AgentXEntry;
-
 public class ClientEntryImpl extends ClientEntry
 {
 
     public ClientEntryImplPeer clientEntryImplPeer;
 
     /**
-     * ClientEntryImpl
-     * - initializes mib variables.
-     * - builds a reference to ClientEntryImplPeer, which implements ClientEntryImpl methods.
+     * Initializes ClientEntry mib variables.
+     * Builds a reference to ClientEntryImplPeer, which implements ClientEntryImpl methods.
+     * @param NodeIndex identifies a node in nodeTable.
+     * @param ClientIndex identifies a client in clientTable together with nodeIndex.
+     * @param ClientEntryImplPeer implements ClientEntryImpl methods.    
      */
     public ClientEntryImpl(long nodeIndex,
 			   long clientIndex,
@@ -51,10 +52,8 @@ public class ClientEntryImpl extends ClientEntry
     }
 
     /**
-     * get_clientName
-     * - forwards the call to clientEntryImplPeer.get_clientName().
-     * 
-     * @return byte[] clientName: name of an xmlBlaster client.
+     * Forwards the call to clientEntryImplPeer.get_clientName().
+     * @return ClientName name of an xmlBlaster client.
      */
     public byte[] get_clientName()
     {
@@ -63,12 +62,8 @@ public class ClientEntryImpl extends ClientEntry
     }
 
     /**
-     * get_peerType
-     * - forwards the call to clientEntryImplPeer.get_peerType().
-     * 
-     * @return int peerType: type of peer entity.
-     *             0 = client type
-     *             1 = mom type
+     * Forwards the call to clientEntryImplPeer.get_peerType().
+     * @return PeerType type of peer entity (0 = client, 1 = mom).
      */
     public int get_peerType()
     {
@@ -77,12 +72,8 @@ public class ClientEntryImpl extends ClientEntry
     }
 
     /**
-     * get_connectionState
-     * - forwards the call to clientEntryImplPeer.get_connectionState().
-     * 
-     * @return int connectionState: state of the client connection.
-     *             0 = down
-     *             1 = up
+     * Forwards the call to clientEntryImplPeer.get_connectionState().
+     * @return ConnectionState state of the client connection (0 = down, 1 = up).
      */
     public int get_connectionState()
     {
@@ -91,10 +82,8 @@ public class ClientEntryImpl extends ClientEntry
     }
 
     /**
-     * get_clientQueueNumMsgs
-     * - forwards the call to clientEntryImplPeer.get_clientQueueNumMsgs().
-     * 
-     * @return long clientQueueNumMsgs: actual number of messages in the
+     * Forwards the call to clientEntryImplPeer.get_clientQueueNumMsgs().
+     * @return ClientQueueNumMsgs actual number of messages in the
      * point to point client queue.
      */
     public long get_clientQueueNumMsgs()
@@ -104,10 +93,9 @@ public class ClientEntryImpl extends ClientEntry
     }
 
     /**
-     * get_clientQueueMaxMsgs
-     * - forwards the call to clientEntryImplPeer.get_clientQueueMaxMsgs().
+     * Forwards the call to clientEntryImplPeer.get_clientQueueMaxMsgs().
      * 
-     * @return long clientQueueMaxMsgs: maximum number of messages in the
+     * @return ClientQueueMaxMsgs maximum number of messages in the
      * point to point client queue.
      */
     public long get_clientQueueMaxMsgs()
@@ -117,12 +105,11 @@ public class ClientEntryImpl extends ClientEntry
     }
 
     /**
-     * set_clientQueueMaxMsgs
-     * - implements the snmp set command for the mib object clientQueueMaxMsgs.
+     * Implements the snmp set command for the mib object clientQueueMaxMsgs.
      *
-     * @param AgentXSetPhase phase:
-     * @param long value:
-     * @return int AgentXResponsePDU.PROCESSING_ERROR:
+     * @param AgentXSetPhase 
+     * @param Value to be set.
+     * @return AgentXResponsePDU.PROCESSING_ERROR
      */
     public int set_clientQueueMaxMsgs(AgentXSetPhase phase, long value)
     {
@@ -145,10 +132,9 @@ public class ClientEntryImpl extends ClientEntry
     }
 
     /**
-     * get_clientQueueThreshold
-     * - forwards the call to clientEntryImplPeer.get_clientQueueThreshold().
+     * Forwards the call to clientEntryImplPeer.get_clientQueueThreshold().
      * 
-     * @return long clientQueueThreshold: threshold (%) number of messages in the
+     * @return ClientQueueThreshold threshold (%) number of messages in the
      * point to point client queue.
      */
     public long get_clientQueueThreshold()
@@ -158,12 +144,11 @@ public class ClientEntryImpl extends ClientEntry
     }
 
     /**
-     * set_clientQueueThreshold
-     * - implements the snmp set command for the mib object clientQueueThreshold.
+     * Implements the snmp set command for the mib object clientQueueThreshold.
      *
-     * @param AgentXSetPhase phase:
-     * @param long value:
-     * @return int AgentXResponsePDU.PROCESSING_ERROR:
+     * @param AgentXSetPhase
+     * @param Value to be set
+     * @return AgentXResponsePDU.PROCESSING_ERROR
      */
     public int set_clientQueueThreshold(AgentXSetPhase phase, long value)
     {
@@ -186,11 +171,9 @@ public class ClientEntryImpl extends ClientEntry
     }
 
     /**
-     * get_clearClientQueue
-     * - forwards the call to clientEntryImplPeer.get_clearClientQueue().
+     * Forwards the call to clientEntryImplPeer.get_clearClientQueue().
      * 
-     * @return int clearClientQueue: if set to true (= 1),
-     * the point to point client queue is emptied.
+     * @return ClearClientQueue for values > 0, the point to point client queue is emptied.
      */
     public int get_clearClientQueue()
     {
@@ -199,12 +182,11 @@ public class ClientEntryImpl extends ClientEntry
     }
 
     /**
-     * set_clearClientQueue
-     * - implements the snmp set command for the mib object clearClientQueue.
+     * Implements the snmp set command for the mib object clearClientQueue.
      *
-     * @param AgentXSetPhase phase:
-     * @param long value:
-     * @return int AgentXResponsePDU.PROCESSING_ERROR:
+     * @param AgentXSetPhase
+     * @param Value to be set.
+     * @return AgentXResponsePDU.PROCESSING_ERROR
      */
     public int set_clearClientQueue(AgentXSetPhase phase, int value)
     {
@@ -227,10 +209,8 @@ public class ClientEntryImpl extends ClientEntry
     }
 
     /**
-     * get_numSessions
-     * - forwards the call to clientEntryImplPeer.get_numSessions().
-     * 
-     * @return long numSessions: actual number of client sessions in the session table.
+     * Forwards the call to clientEntryImplPeer.get_numSessions().
+     * @return NumSessions actual number of client sessions in the session table.
      */
     public long get_numSessions()
     {
@@ -239,10 +219,9 @@ public class ClientEntryImpl extends ClientEntry
     }
 
     /**
-     * get_maxSessions
-     * - forwards the call to clientEntryImplPeer.get_maxSessions().
+     * Forwards the call to clientEntryImplPeer.get_maxSessions().
      * 
-     * @return long maxSessions: maximum number of client sessions in the session table.
+     * @return MaxSessions maximum number of client sessions in the session table.
      */
     public long get_maxSessions()
     {
@@ -251,12 +230,11 @@ public class ClientEntryImpl extends ClientEntry
     }
 
     /**
-     * set_maxSessions
-     * - implements the snmp set command for the mib object maxSessions.
+     * Implements the snmp set command for the mib object maxSessions.
      *
-     * @param AgentXSetPhase phase:
-     * @param long value:
-     * @return int AgentXResponsePDU.PROCESSING_ERROR:
+     * @param AgentXSetPhase
+     * @param Value to be set
+     * @return AgentXResponsePDU.PROCESSING_ERROR
      */
     public int set_maxSessions(AgentXSetPhase phase, long value)
     {
@@ -279,10 +257,8 @@ public class ClientEntryImpl extends ClientEntry
     }
 
     /**
-     * get_sessionThreshold
-     * - forwards the call to clientEntryImplPeer.get_sessionThreshold().
-     * 
-     * @return long sessionThreshold: threshold (%) number of client sessions in the session table.
+     * Forwards the call to clientEntryImplPeer.get_sessionThreshold().
+     * @return SessionThreshold threshold (%) number of client sessions in the session table.
      */
     public long get_sessionThreshold()
     {
@@ -291,12 +267,11 @@ public class ClientEntryImpl extends ClientEntry
     }
 
     /**
-     * set_sessionThreshold
-     * - implements the snmp set command for the mib object sessionThreshold.
+     * Implements the snmp set command for the mib object sessionThreshold.
      *
-     * @param AgentXSetPhase phase:
-     * @param long value:
-     * @return int AgentXResponsePDU.PROCESSING_ERROR:
+     * @param AgentXSetPhase
+     * @param Value to be set.
+     * @return AgentXResponsePDU.PROCESSING_ERROR
      */
     public int set_sessionThreshold(AgentXSetPhase phase, long value)
     {
@@ -319,10 +294,8 @@ public class ClientEntryImpl extends ClientEntry
     }
 
     /**
-     * get_clientUptime
-     * - forwards the call to clientEntryImplPeer.get_clientUptime().
-     * 
-     * @return long clientUptime: client connection uptime.
+     * Forwards the call to clientEntryImplPeer.get_clientUptime().
+     * @return ClientUptime client connection uptime.
      */
     public long get_clientUptime()
     {
@@ -331,10 +304,8 @@ public class ClientEntryImpl extends ClientEntry
     }
 
     /**
-     * get_clientDowntime
-     * - forwards the call to clientEntryImplPeer.get_clientDowntime().
-     * 
-     * @return long clientDowntime: client connection downtime.
+     * Forwards the call to clientEntryImplPeer.get_clientDowntime().
+     * @return ClientDowntime client connection downtime.
      */
     public long get_clientDowntime()
     {

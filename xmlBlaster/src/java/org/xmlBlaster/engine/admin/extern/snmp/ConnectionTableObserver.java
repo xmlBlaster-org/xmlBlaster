@@ -1,12 +1,16 @@
-/**
-  ConnectionTableObserver adds itself to the integer bag as observer. 
-  When ConnectionTableObserver receives an update, it .... 
- */
 package org.xmlBlaster.engine.admin.extern.snmp;
 
 import java.util.*;
 import jax.*;
 
+/**
+ * ConnectionTableObserver represents the observer side of an observer pattern. 
+ * When ConnectionTableObserver receives an update notification from ConnectionTableSubject, 
+ * it adds or removes an entry to/from connectionTable. 
+ *  
+ * @version @VERSION@
+ * @author Udo Thalmann
+ */
 public class ConnectionTableObserver implements Observer {
 
     private ConnectionTableSubject connectionTableSubject;
@@ -17,6 +21,14 @@ public class ConnectionTableObserver implements Observer {
     private BitSet indexSet;
     private final static int MAXINDX = 100;
 
+    /**
+     * Adds itself to the connectionTableSubject as observer.
+     * Creates a new connectionTable and adds it to the agentX session.
+     * Creates a Hashtable for connection (host/port, index) entries.
+     * Creates a BitSet for available indices.
+     * @param ConnectionTableSubject the subject, which calls the uptdate method.
+     * @param AgentXSession the actual agentX session between master agent and subagent.
+     */
     public ConnectionTableObserver( ConnectionTableSubject connectionTableSubject,
 				    AgentXSession session ) {
 	this.connectionTableSubject = connectionTableSubject;
@@ -31,6 +43,12 @@ public class ConnectionTableObserver implements Observer {
 	}
     }
 
+    /**
+     * Adds or removes a connection entry to/from the connection table.
+     * Updates connection indexSet.
+     * Updates connectionHashtable.
+     * @param Subject connectionTableSubject which calls update.
+     */
     public void update( Subject o ) {
 	String connectionHost;
 	long connectionPort;

@@ -1,15 +1,16 @@
-/** 
- *  NodeTableSubject holds onto node entries. 
- *  The NodeTableSubject also allows Observers to add and remove themselves.
- *  @version @VERSION@
- *  @author Udo Thalmann
- */
 package org.xmlBlaster.engine.admin.extern.snmp;
 
 
 import java.util.*;
 import java.util.Iterator;
 
+/** 
+ * NodeTableSubject holds onto node entries. 
+ * The NodeTableSubject also allows Observers to add and remove themselves.
+ * In order to add or remove a node entry notifyObservers() is called.
+ * @version @VERSION@
+ * @author Udo Thalmann
+ */
 public class NodeTableSubject implements Subject {
 
     public NodeEntryImplPeer nodeEntryImplPeer;
@@ -19,11 +20,8 @@ public class NodeTableSubject implements Subject {
     public static final int REMOVE = 1;
 
     /**
-     * addEntry
-     * - initializes attributes of a new node table entry.
-     * - sets add-flag to true.
-     * - notifies a NodeTableObserver, in order to add the new node table entry.
-     * @param NodeEntryImplPeer nodeEntryImplPeer: 
+     * Calls notifyObservers() in order to add a new node entry to node table.
+     * @param NodeEntryImplPeer node entry to be added.
      */
     public void addEntry(NodeEntryImplPeer nodeEntryImplPeer) {
 
@@ -33,10 +31,8 @@ public class NodeTableSubject implements Subject {
     }
  
     /**
-     * removeEntry
-     * - sets add-flag to false.
-     * - notifies a NodeTableObserver, in order to remove the node table entry.
-     * @param String nodeNameVal:
+     * Calls notifyObservers() in order to remove a node entry from node table.
+     * @param NodeEntryImplPeer node entry to be removed.
      */ 
     public void removeEntry(NodeEntryImplPeer nodeEntryImplPeer) {
 
@@ -46,28 +42,23 @@ public class NodeTableSubject implements Subject {
     }
 
     /**
-     * addObserver
-     * - allows an observer to subscribe in order to be notified 
-     * in case of node table entry updates.
-     * @param Observer o:
+     * Adds an observer to observer list.
+     * @param Observer implements observer update method.
      */
     public void addObserver( Observer o ) {
 	observers.add( o );
     }
 
     /**
-     * removeObserver
-     * - allows an observer to unsubscribe in order not to be notified 
-     * in case of node table entry updates.
-     * @param Observer o:
+     * Removes an observer from observer list.
+     * @param Observer implements observer update method.
      */
     public void removeObserver( Observer o ) {
 	observers.remove( o );
     }
 
     /**
-     * notifyObservers
-     * - notifies each subscribed observer that node table has changed.
+     * Calls update method for all observers in observer list. 
      */
     private void notifyObservers() {
         // loop through and notify each observer

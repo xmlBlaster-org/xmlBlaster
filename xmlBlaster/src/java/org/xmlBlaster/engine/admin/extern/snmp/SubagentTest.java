@@ -15,9 +15,8 @@ import java.lang.Integer;
 import jax.*;
 
 /** 
- * SubagentTest
- * - contains a constructor and the main program.
- * - runs the xmlblaster subagent.
+ * SubagentTest contains a constructor and the main program.
+ * Runs the xmlblaster subagent.
  *
  * @version @VERSION@
  * @author Udo Thalmann
@@ -37,15 +36,12 @@ public class SubagentTest
     SessionTableObserver sessionTableObserver;
 
     /**
-     * SubagentTest 
-     * - opens an agentx connection to the master snmp agent.
-     * - initializes snmp mib objects.
-     * - sends traps, if trap conditions are true.
+     * Opens an agentx connection to the master snmp agent.
+     * Initializes snmp mib objects.
+     * executes a testcase according to testcase number.
      *
-     * @param String argv: contains optional host, port and testcase arguments.
-     *               argv[0] = testcase number.
-     *               argv[1] = host, 
-     *               argv[2] = port,
+     * @param argv contains optional testcase, host and port arguments.
+     * argv[0] = testcase number, argv[1] = host, argv[2] = port.
      */
     public SubagentTest(String argv[])
     {
@@ -353,11 +349,10 @@ public class SubagentTest
     }
 
     /**
-     * Main program 
-     * - calls SubagentTest subagent constructor.
+     * Calls SubagentTest subagent constructor.
      *
-     * @param String argv: contains optional host and port arguments.
-     *               argv[0] = host, argv[1] = port.
+     * @param argv contains optional testcase, host and port arguments.
+     * argv[0] = testcase, argv[1] = host, argv[1] = port.
      */
     public static void main(String argv[])
     {

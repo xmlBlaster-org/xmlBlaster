@@ -1,16 +1,16 @@
-/** 
-  SessionTableSubject holds onto connection entries. 
-  The SessionTableSubject also allows Observers to add and remove themselves.
-  In order to add a session entry a nodeName must be given.
-  Using the nodeName a nodeIndex is computed by getIndex.
-  Only if a nodeIndex exists, a session entry can be added using notifyObservers. 
- */
 package org.xmlBlaster.engine.admin.extern.snmp;
 
 
 import java.util.ArrayList;
 import java.util.Iterator;
 
+/** 
+ * SessionTableSubject holds onto session entries. 
+ * The SessionTableSubject also allows Observers to add and remove themselves.
+ * In order to add a session entry notifyObservers() is called. 
+ * @version @VERSION@
+ * @author Udo Thalmann
+ */
 public class SessionTableSubject implements Subject {
 
     public SessionEntryImplPeer sessionEntryImplPeer;
@@ -25,12 +25,23 @@ public class SessionTableSubject implements Subject {
     public static final int INSERT = 0;
     public static final int REMOVE = 1;
 
+    /**
+     * Holds a reference to nodeTableObserver and clientTableObserver.
+     * @param NodeTableObserver provides access to nodeIndex.
+     * @param ClientTableObserver provides access to clientIndex.
+     */
     public SessionTableSubject(NodeTableObserver nodeTableObserver,
 			       ClientTableObserver clientTableObserver) {
 	this.nodeTableObserver = nodeTableObserver;
 	this.clientTableObserver = clientTableObserver;
     }
 
+    /**
+     * Calls notifyObservers() in order to add a new session entry to session table.
+     * @param NodeName node to wich client entry belongs.
+     * @param ClientName client to wich session entry belongs.
+     * @param SessionEntryImplPeer session entry to be added.
+     */
     public void addEntry(String nodeName,
 			 String clientName,
 			 SessionEntryImplPeer sessionEntryImplPeer) {
@@ -50,6 +61,12 @@ public class SessionTableSubject implements Subject {
 	}
     }
  
+    /**
+     * Calls notifyObservers() in order to remove a session entry from session table.
+     * @param NodeName node to wich client entry belongs.
+     * @param ClientName client to wich session entry belongs.
+     * @param SessionEntryImplPeer session entry to be removed.
+     */
     public void removeEntry(String nodeName,
 			    String clientName,
 			    SessionEntryImplPeer sessionEntryImplPeer) {
@@ -68,14 +85,25 @@ public class SessionTableSubject implements Subject {
 	}
     }
 
+    /**
+     * Adds an observer to observer list.
+     * @param Observer implements observer update method.
+     */
     public void addObserver( Observer o ) {
 	observers.add( o );
     }
 
+    /**
+     * Removes an observer from observer list.
+     * @param Observer implements observer update method.
+     */
     public void removeObserver( Observer o ) {
 	observers.remove( o );
     }
 
+    /**
+     * Calls update method for all observers in observer list. 
+     */
     private void notifyObservers() {
         // loop through and notify each observer
 	Iterator i = observers.iterator();

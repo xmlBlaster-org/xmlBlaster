@@ -3,17 +3,16 @@
  * is intended to be edited by the application programmer and
  * to be used within a Java AgentX sub-agent environment.
  *
- * $Id: NodeEntryImpl.java,v 1.2 2002/07/05 14:21:10 udo Exp $
+ * $Id: NodeEntryImpl.java,v 1.3 2002/07/19 11:08:57 udo Exp $
  */
 package org.xmlBlaster.engine.admin.extern.snmp;
 
 /**
  *  This class extends the Java AgentX (JAX) implementation of
  *  the table row nodeEntry defined in XMLBLASTER-MIB.
- *  NodeEntryImpl 
- *  - is the interface side of a bridge pattern.
- *  - contains a reference to the implementation side of the bridge pattern (= NodeEntryImplPeer).
- *  - implements its methods by forwarding its calls to NodeEntryImplPeer.
+ *  NodeEntryImpl is the interface side of a bridge pattern.
+ *  Contains a reference to the implementation side of the bridge pattern (= NodeEntryImplPeer).
+ *  Implements its methods by forwarding its calls to NodeEntryImplPeer.
  *  
  *  @version @VERSION@
  *  @author Udo Thalmann
@@ -30,9 +29,10 @@ public class NodeEntryImpl extends NodeEntry
     public NodeEntryImplPeer nodeEntryImplPeer;
 
     /**
-     * NodeEntryImpl
-     * - initializes mib variables.
-     * - builds a reference to NodeEntryImplPeer, which implements NodeEntryImpl methods.
+     * NodeEntryImpl initializes mib variables.
+     * Builds a reference to NodeEntryImplPeer, which implements NodeEntryImpl methods.
+     * @param NodeIndex identifies a node in nodeTable.
+     * @param NodeEntryImplPeer implements NodeEntryImpl methods.
      */
     public NodeEntryImpl(long nodeIndex, 
                          NodeEntryImplPeer nodeEntryImplPeer)
@@ -49,10 +49,8 @@ public class NodeEntryImpl extends NodeEntry
     }
 
     /**
-     * get_nodeName
-     * - forwards the call to nodeEntryImplPeer.get_nodeName().
-     * 
-     * @return byte[] nodeName: name of an xmlBlaster node.
+     * Forwards the call to nodeEntryImplPeer.get_nodeName().
+     * @return NodeName name of an xmlBlaster node.
      */
     public byte[] get_nodeName()
     {
@@ -61,10 +59,8 @@ public class NodeEntryImpl extends NodeEntry
     }
 
     /**
-     * get_nodeUptime
-     * - forwards the call to nodeEntryImplPeer.get_nodeUptime().
-     * 
-     * @return long nodeUptime: uptime of an xmlBlaster node.
+     * Forwards the call to nodeEntryImplPeer.get_nodeUptime().
+     * @return NodeUptime uptime of an xmlBlaster node.
      */
     public long get_nodeUptime()
     {
@@ -73,11 +69,8 @@ public class NodeEntryImpl extends NodeEntry
     }
 
     /**
-     * get_totalMem
-     * - forwards the call to nodeEntryImplPeer.get_totalMem().
-     * 
-     * @return long totalMem: total memory of the java virtual machine,
-     *              where the xmlBlaster runs.
+     * Forwards the call to nodeEntryImplPeer.get_totalMem().
+     * @return TotalMem total memory of the java virtual machine, where the xmlBlaster runs.
      */
     public long get_totalMem()
     {
@@ -86,11 +79,8 @@ public class NodeEntryImpl extends NodeEntry
     }
 
     /**
-     * get_usedMem
-     * - forwards the call to nodeEntryImplPeer.get_usedMem().
-     * 
-     * @return long usedMem: used memory of the java virtual machine,
-     *              where the xmlBlaster runs.
+     * Forwards the call to nodeEntryImplPeer.get_usedMem().
+     * @return UsedMem used memory of the java virtual machine, where the xmlBlaster runs.
      */
     public long get_usedMem()
     {
@@ -99,11 +89,8 @@ public class NodeEntryImpl extends NodeEntry
     }
 
     /**
-     * get_freeMem
-     * - forwards the call to nodeEntryImplPeer.get_freeMem().
-     * 
-     * @return long freeMem: free memory of the java virtual machine,
-     *              where the xmlBlaster runs.
+     * Forwards the call to nodeEntryImplPeer.get_freeMem().
+     * @return FreeMem free memory of the java virtual machine, where the xmlBlaster runs.
      */
     public long get_freeMem()
     {
@@ -112,10 +99,8 @@ public class NodeEntryImpl extends NodeEntry
     }
 
     /**
-     * get_hostname
-     * - forwards the call to nodeEntryImplPeer.get_hostname().
-     * 
-     * @return byte[] hostname: name of the host, where the xmlBlaster runs.
+     * Forwards the call to nodeEntryImplPeer.get_hostname().
+     * @return Hostname name of the host, where the xmlBlaster runs.
      */
     public byte[] get_hostname()
     {
@@ -124,10 +109,8 @@ public class NodeEntryImpl extends NodeEntry
     }
 
     /**
-     * get_port
-     * - forwards the call to nodeEntryImplPeer.get_port().
-     * 
-     * @return long port: port, on which the xmlBlaster runs.
+     * Forwards the call to nodeEntryImplPeer.get_port().
+     * @return Port identifies the xmlBlaster port.
      */
     public long get_port()
     {
@@ -136,12 +119,10 @@ public class NodeEntryImpl extends NodeEntry
     }
 
     /**
-     * set_port
-     * - implements the snmp set command for the mib object port.
-     *
-     * @param AgentXSetPhase phase:
-     * @param long value:
-     * @return int AgentXResponsePDU.PROCESSING_ERROR:
+     * Implements the snmp set command for the mib object port.
+     * @param AgentXSetPhase 
+     * @param Value to be set
+     * @return AgentXResponsePDU.PROCESSING_ERROR
      */
     public int set_port(AgentXSetPhase phase, long value)
     {
@@ -164,10 +145,8 @@ public class NodeEntryImpl extends NodeEntry
     }
 
     /**
-     * get_numClients
-     * - forwards the call to nodeEntryImplPeer.get_numClients().
-     * 
-     * @return long numClients: actual number of clients in the clientTable.
+     * Forwards the call to nodeEntryImplPeer.get_numClients().
+     * @return NumClients actual number of clients in the clientTable.
      */
     public long get_numClients()
     {
@@ -176,10 +155,8 @@ public class NodeEntryImpl extends NodeEntry
     }
 
     /**
-     * get_maxClients
-     * - forwards the call to nodeEntryImplPeer.get_maxClients().
-     * 
-     * @return long maxClients: maximum number of clients in the clientTable.
+     * orwards the call to nodeEntryImplPeer.get_maxClients().
+     * @return MaxClients maximum number of clients in the clientTable.
      */
     public long get_maxClients()
     {
@@ -188,12 +165,10 @@ public class NodeEntryImpl extends NodeEntry
     }
 
     /**
-     * set_maxClients
-     * - implements the snmp set command for the mib object maxClients.
-     *
-     * @param AgentXSetPhase phase:
-     * @param long value:
-     * @return int AgentXResponsePDU.PROCESSING_ERROR:
+     * Implements the snmp set command for the mib object maxClients.
+     * @param AgentXSetPhase
+     * @param Value to be set.
+     * @return AgentXResponsePDU.PROCESSING_ERROR
      */
     public int set_maxClients(AgentXSetPhase phase, long value)
     {
@@ -216,10 +191,8 @@ public class NodeEntryImpl extends NodeEntry
     }
 
     /**
-     * get_clientThreshold
-     * - forwards the call to nodeEntryImplPeer.get_clientThreshold().
-     * 
-     * @return long clientThreshold: threshold (%) number of clients in the clientTable.
+     * Forwards the call to nodeEntryImplPeer.get_clientThreshold().
+     * @return ClientThreshold threshold (%) number of clients in the clientTable.
      */
     public long get_clientThreshold()
     {
@@ -228,12 +201,10 @@ public class NodeEntryImpl extends NodeEntry
     }
 
     /**
-     * set_clientThreshold
-     * - implements the snmp set command for the mib object clientThreshold.
-     *
-     * @param AgentXSetPhase phase:
-     * @param long value:
-     * @return int AgentXResponsePDU.PROCESSING_ERROR:
+     * Implements the snmp set command for the mib object clientThreshold.
+     * @param AgentXSetPhase
+     * @param Value to be set.
+     * @return AgentXResponsePDU.PROCESSING_ERROR
      */
     public int set_clientThreshold(AgentXSetPhase phase, long value)
     {
@@ -256,10 +227,8 @@ public class NodeEntryImpl extends NodeEntry
     }
 
     /**
-     * get_errorLogfile
-     * - forwards the call to nodeEntryImplPeer.get_errorLogfile().
-     * 
-     * @return byte[] errorLogfile: name of the error logfile.
+     * Forwards the call to nodeEntryImplPeer.get_errorLogfile().
+     * @return ErrorLogfile name of the error logfile.
      */
     public byte[] get_errorLogfile()
     {
@@ -268,12 +237,10 @@ public class NodeEntryImpl extends NodeEntry
     }
 
     /**
-     * set_errorLogfile
-     * - implements the snmp set command for the mib object errorLogfile.
-     *
-     * @param AgentXSetPhase phase:
-     * @param long value:
-     * @return int AgentXResponsePDU.PROCESSING_ERROR:
+     * Implements the snmp set command for the mib object errorLogfile.
+     * @param AgentXSetPhase
+     * @param Value to be set
+     * @return AgentXResponsePDU.PROCESSING_ERROR
      */
     public int set_errorLogfile(AgentXSetPhase phase, byte[] value)
     {
@@ -299,13 +266,8 @@ public class NodeEntryImpl extends NodeEntry
     }
 
     /**
-     * get_logLevel
-     * - forwards the call to nodeEntryImplPeer.get_logLevel().
-     * 
-     * @return int logLevel: various degrees of log levels.
-     *             0 = errors
-     *             1 = warnings
-     *             2 = infos
+     * Forwards the call to nodeEntryImplPeer.get_logLevel().
+     * @return LogLevel various degrees of log levels (0 = errors, 1 = warnings, 2 = infos).
      */
     public int get_logLevel()
     {
@@ -313,12 +275,10 @@ public class NodeEntryImpl extends NodeEntry
     }
 
     /**
-     * set_logLevel
-     * - implements the snmp set command for the mib object logLevel.
-     *
-     * @param AgentXSetPhase phase:
-     * @param long value:
-     * @return int AgentXResponsePDU.PROCESSING_ERROR:
+     * Implements the snmp set command for the mib object logLevel.
+     * @param AgentXSetPhase
+     * @param Value to be set.
+     * @return AgentXResponsePDU.PROCESSING_ERROR
      */
     public int set_logLevel(AgentXSetPhase phase, int value)
     {
@@ -341,14 +301,9 @@ public class NodeEntryImpl extends NodeEntry
     }
 
     /**
-     * get_runLevel
-     * - forwards the call to nodeEntryImplPeer.get_runLevel().
-     * 
-     * @return int runLevel: various degrees of log levels.
-     *             0 = halted
-     *             3 = standby
-     *             6 = cleanup
-     *            10 = running
+     * Forwards the call to nodeEntryImplPeer.get_runLevel().
+     * @return int runLevel various degrees of log levels.
+     * 0 = halted, 3 = standby, 6 = cleanup, 10 = running.
      */
     public int get_runLevel()
     {
@@ -356,12 +311,10 @@ public class NodeEntryImpl extends NodeEntry
     }
 
     /**
-     * set_runLevel
-     * - implements the snmp set command for the mib object runLevel.
-     *
-     * @param AgentXSetPhase phase:
-     * @param long value:
-     * @return int AgentXResponsePDU.PROCESSING_ERROR:
+     * Implements the snmp set command for the mib object runLevel.
+     * @param AgentXSetPhase
+     * @param Value to be set.
+     * @return AgentXResponsePDU.PROCESSING_ERROR
      */
     public int set_runLevel(AgentXSetPhase phase, int value)
     {
@@ -383,6 +336,12 @@ public class NodeEntryImpl extends NodeEntry
         return AgentXResponsePDU.NO_ERROR;
     }
 }
+
+
+
+
+
+
 
 
 
