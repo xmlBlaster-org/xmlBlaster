@@ -11,8 +11,11 @@ Comment:   Testing the Timeout Features
 #include <util/Global.h>
 #include <util/Log.h>
 #include <util/PlatformUtils.hpp>
+#include <util/thread/Thread.h>
 #include <util/Timestamp.h>
 #include <boost/lexical_cast.hpp>
+#include "testSuite.h"
+
 
 /**
  *
@@ -21,6 +24,7 @@ Comment:   Testing the Timeout Features
 using boost::lexical_cast;
 using namespace std;
 using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::thread;
 using namespace org::xmlBlaster::client;
 using namespace org::xmlBlaster::client::qos;
 using namespace org::xmlBlaster::client::key;
@@ -41,22 +45,25 @@ private:
    SubscribeKey       *subKey_;
    PublishQos         *pubQos_;
    PublishKey         *pubKey_;
-
+   Mutex              updateMutex_;
+   int                numOfUpdates_;
 
 public:
    TestFailsafe(Global& glob) 
       : ME("TestFailsafe"), 
         global_(glob), 
 	log_(glob.getLog()),
-	embeddedServer_(glob, "", "-info false -warn false -error false")
+	embeddedServer_(glob, "", "-info false -warn false -error false"),
+	updateMutex_()
    {
-      connection_ = NULL;
-      connQos_    = NULL;
-      connRetQos_ = NULL;
-      subQos_     = NULL;
-      subKey_     = NULL;
-      pubQos_     = NULL;
-      pubKey_     = NULL;
+      connection_   = NULL;
+      connQos_      = NULL;
+      connRetQos_   = NULL;
+      subQos_       = NULL;
+      subKey_       = NULL;
+      pubQos_       = NULL;
+      pubKey_       = NULL;
+      numOfUpdates_ = 0;
    }
 
    virtual ~TestFailsafe()
@@ -96,6 +103,7 @@ public:
 	 }
 	 embeddedServer_.start();
 	 Thread::sleepSecs(10);
+
 	 connection_ = new XmlBlasterAccess(global_);
 	 connection_->initFailsafe(this);
 
@@ -152,10 +160,12 @@ public:
 	 pubKey_->setOid("TestFailsafe");
 
 	 for (int i=0; i < 120; i++) {
-	    string msg = string("msg") + lexical_cast<string>(i);
+	    string msg = lexical_cast<string>(i);
 	    MessageUnit msgUnit(*pubKey_, msg, *pubQos_);
             log_.info(ME, string("publishing msg '") + msg + "'");
 	    PublishReturnQos pubRetQos = connection_->publish(msgUnit);
+  	    if (i == 12 || i == 32) embeddedServer_.stop();
+  	    if (i == 22 || i == 42) embeddedServer_.start();
 	    try {
 	       Thread::sleepSecs(1);
 	    }
@@ -198,8 +208,14 @@ public:
 
    string update(const string& sessionId, UpdateKey& updateKey, void *content, long contentSize, UpdateQos& updateQos)
    {
-      log_.info(ME, "update: key: " + updateKey.toXml());
-      log_.info(ME, "update: qos: " + updateQos.toXml());
+      Lock lock(updateMutex_);
+ //     log_.info(ME, "update: key    : " + updateKey.toXml());
+//      log_.info(ME, "update: qos    : " + updateQos.toXml());
+      string help((char*)content, (char*)(content)+contentSize);
+//      log_.info(ME, "update: content: " + help);
+      int count = atoi(help.c_str());
+      assertEquals(log_, ME, numOfUpdates_, count, string("update check ") + help);
+      numOfUpdates_++;
       return "";
    }
 

@@ -3,7 +3,7 @@ Name:      ReferenceHolder.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Entry Holder to use with stl containers as containers of references
-Version:   $Id: ReferenceHolder.h,v 1.3 2002/12/31 16:03:44 laghi Exp $
+Version:   $Id: ReferenceHolder.h,v 1.4 2003/01/05 15:33:20 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_REFERENCEHOLDER_H
@@ -19,7 +19,7 @@ namespace org { namespace xmlBlaster { namespace util {
  * want to allocate the objects outside the container and store the references of such objects in the 
  * container (i.e. the container is not the owner of the object), you could use pointers. The drawback of
  * using pointers however is that you loose the comparison operator. This class allows you to store the 
- * objects as references and at the same time mantains the correct comparison between entries in the
+ * objects as references and at the same time maintains the correct comparison between entries in the
  * container.
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  */
@@ -29,7 +29,7 @@ template <class T> class ReferenceHolder
 private: 
    T* element_;
 
-   void init()
+   void init() const
    {
       if (!element_) return;
       if (!element_->isShareable()) {
@@ -87,6 +87,11 @@ public:
    bool operator <(const ReferenceHolder<T> other) const
    {
       return *element_ < *other.element_;
+   }
+
+   bool operator >(const ReferenceHolder<T> other) const
+   {
+      return !(*element_ < *other.element_) && !(*element_ == *other.element_);
    }
 
 

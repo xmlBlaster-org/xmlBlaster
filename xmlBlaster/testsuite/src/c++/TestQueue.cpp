@@ -18,6 +18,8 @@ Comment:   Testing the Timeout Features
 #include <boost/lexical_cast.hpp>
 #include <vector>
 
+#include "testSuite.h"
+
 using boost::lexical_cast;
 
 using namespace std;
@@ -37,27 +39,6 @@ using namespace org::xmlBlaster::client::key;
  */
 
 namespace org { namespace xmlBlaster {
-
-template <class T> void assertEquals(Log& log, const T& should, const T& is, const string& txt)
-{
-   if (should != is) {
-      log.error(txt, string(" value is ") + lexical_cast<string>(is) + " but should be '" + lexical_cast<string>(should) + "'");
-      assert(0);
-   }
-}
-
-template <class T> void assertEquals(Log& log, const string& who, const T& should, const T& is, const string& txt)
-{
-   if (should != is) {
-      log.error(who, txt + " FAILED: value is " + lexical_cast<string>(is) + " but should be '" + lexical_cast<string>(should) + "'");
-      assert(0);
-   }
-   else {
-      log.info(who, txt + " OK");
-   }
-}
-
-
 
 
 class TestQueue

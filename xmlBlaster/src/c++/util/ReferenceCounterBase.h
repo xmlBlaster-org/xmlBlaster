@@ -3,7 +3,7 @@ Name:      ReferenceCounterBase.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper class to be used as a base for classes to be reference counted
-Version:   $Id: ReferenceCounterBase.h,v 1.1 2002/12/30 22:09:25 laghi Exp $
+Version:   $Id: ReferenceCounterBase.h,v 1.2 2003/01/05 15:33:20 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_REFERENCECOUNTERBASE_H
@@ -23,7 +23,7 @@ namespace org { namespace xmlBlaster { namespace util {
 class ReferenceCounterBase 
 {
 private:
-   int  refCount_;
+   mutable int  refCount_;
    bool shareable_;
 
 public:
@@ -31,7 +31,7 @@ public:
    ReferenceCounterBase(const ReferenceCounterBase& ref);
    ReferenceCounterBase& operator =(const ReferenceCounterBase& ref);
    virtual  ~ReferenceCounterBase();
-   void addReference();
+   void addReference() const;
    void removeReference();
    void markUnshareable();
    bool isShareable() const;

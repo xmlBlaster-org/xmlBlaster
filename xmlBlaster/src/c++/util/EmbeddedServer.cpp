@@ -69,7 +69,10 @@ bool EmbeddedServer::stop(bool shutdownExternal)
 
    XmlBlasterAccess conn(global_);
    try {
+      SessionQos sessionQos(global_);
+      sessionQos.setAbsoluteName("embeddedKiller");
       ConnectQos connQos(global_, "embeddedKiller", "secret");
+      connQos.setSessionQos(sessionQos);
       conn.connect(connQos, NULL);
    }
    catch (XmlBlasterException& ex) {
@@ -93,7 +96,10 @@ bool EmbeddedServer::isSomeServerResponding() const
 {
    try {
       XmlBlasterAccess conn(global_);
+      SessionQos sessionQos(global_);
+      sessionQos.setAbsoluteName("embeddedTester");
       ConnectQos connQos(global_, "embeddedTester", "secret");
+      connQos.setSessionQos(sessionQos);
       conn.connect(connQos, NULL);
       return true;
    }
@@ -111,21 +117,25 @@ bool EmbeddedServer::isSomeServerResponding() const
 
 #ifdef _XMLBLASTER_CLASSTEST
 
+#include <util/PlatformUtils.hpp>
+
 using namespace std;
 using namespace org::xmlBlaster::util;
 
+
 int main(int args, char* argv[])
 {
+   XMLPlatformUtils::Initialize();
    Global& glob = Global::getInstance();
    glob.initialize(args, argv);
   
-   EmbeddedServer server(glob, "", "-info false -error false -warn false");
+   EmbeddedServer server(glob, ""); // , "-info false -error false -warn false");
    server.start();
-   Thread::sleepSecs(30);
+   Thread::sleepSecs(10);
    server.stop();
-   Thread::sleepSecs(20);
+   Thread::sleepSecs(10);
    server.start();
-   Thread::sleepSecs(30);
+   Thread::sleepSecs(10);
 
    return 0;
 }

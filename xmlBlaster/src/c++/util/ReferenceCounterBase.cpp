@@ -3,7 +3,7 @@ Name:      ReferenceCounterBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper class to be used as a base for classes to be reference counted
-Version:   $Id: ReferenceCounterBase.cpp,v 1.1 2002/12/30 22:09:25 laghi Exp $
+Version:   $Id: ReferenceCounterBase.cpp,v 1.2 2003/01/05 15:33:20 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 #include <util/ReferenceCounterBase.h>
@@ -35,7 +35,7 @@ ReferenceCounterBase::~ReferenceCounterBase()
 }
 
 
-void ReferenceCounterBase::addReference()
+void ReferenceCounterBase::addReference() const
 {
    ++refCount_;
 }

@@ -63,7 +63,8 @@ void MsgQueue::put(MsgQueueEntry *entry)
       throw XmlBlasterException(RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME + "::put", "client queue");
    }
    try {
-      storage_.insert(EntryType(*entry));
+      EntryType help(*entry);
+      storage_.insert(help);
       numOfBytes_ += entry->getSizeInBytes();
       // add the sizeInBytes_ here ...
    }
