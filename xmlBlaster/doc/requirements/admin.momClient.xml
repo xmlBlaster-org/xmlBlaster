@@ -20,7 +20,8 @@
     </pre>
 
     <p>
-      Check who is logged in:
+      Check who is logged in, the returned content contains the
+      comma separated list of login names:
     </p>
     <pre><![CDATA[
   java org.xmlBlaster.client.reader.GetMessage -oid __cmd:?clientList
@@ -87,7 +88,7 @@
    
    <date>2002 05 18</date>
    
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
 
    <testcase status="OPEN">
       <name>-</name>
