@@ -3,7 +3,7 @@ Name:      PublishPluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for persistence
-Version:   $Id: PublishPluginManager.java,v 1.12 2002/06/19 10:27:40 ruff Exp $
+Version:   $Id: PublishPluginManager.java,v 1.13 2002/06/22 12:40:42 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime;
@@ -111,6 +111,7 @@ public class PublishPluginManager extends PluginManagerBase implements I_Runleve
          Thread.currentThread().dumpStack();
          throw new IllegalArgumentException("You must pass a valid contentMime and contentMimeExtended type");
       }
+      if (mimeExtended.length() < 1) mimeExtended = Constants.DEFAULT_CONTENT_MIME_EXTENDED;
       String key = mime + mimeExtended;
 
       // First we check the cache ...
@@ -141,7 +142,9 @@ public class PublishPluginManager extends PluginManagerBase implements I_Runleve
             throw new IllegalArgumentException(text);
          }
          for (int ii=0; ii<mimes.length; ii++) {
-            if (mimes[ii].equals("*") || mimes[ii].equals(mime) && (extended[ii].equals("*") || extended[ii].equals(mimeExtended))) {
+            if (mimes[ii].equals("*") ||
+                mimes[ii].equals(mime) && 
+                  (extended[ii].equals("*") || extended[ii].equals(mimeExtended))) {
                // Ok, found a plugin, add it to cache
                Map plugins = (Map)mimeCache.get(key);
                if (plugins == null) { // we need a multimap, sadly JDK does not offer it, so we use a map in the map.
