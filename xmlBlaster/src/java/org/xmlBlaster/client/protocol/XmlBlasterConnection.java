@@ -3,7 +3,7 @@ Name:      XmlBlasterConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP/RMI or XML-RPC
-Version:   $Id: XmlBlasterConnection.java,v 1.9 2001/08/16 08:10:48 ruff Exp $
+Version:   $Id: XmlBlasterConnection.java,v 1.10 2001/08/18 09:45:16 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol;
@@ -70,7 +70,7 @@ import java.applet.Applet;
  * The interface I_CallbackRaw/I_Callback/I_CallbackExtenden are enforced by AbstractCallbackExtended
  * is for the InvocationRecorder to playback locally queued messages and for the protocol drivers.
  *
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  * @author $Author: ruff $
  */
 public class XmlBlasterConnection extends AbstractCallbackExtended implements I_InvocationRecorder
@@ -255,9 +255,10 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * @param retryInterval How many milli seconds sleeping before we retry a connection
     * @param retries Number of retries if connection cannot directly be established
     *                passing -1 does polling forever
-    * @param maxInvocations How many messages shall we queue max
+    * @param maxInvocations How many messages shall we queue max (using the InvocationRecorder)
     * @param pingInterval How many milli seconds sleeping between the pings<br />
     *                     < 1 switches pinging off
+    * @see org.xmlBlaster.util.InvocationRecorder
     */
    public synchronized void initFailSave(I_ConnectionProblems connCallback, long retryInterval, int retries, int maxInvocations, long pingInterval)
    {
