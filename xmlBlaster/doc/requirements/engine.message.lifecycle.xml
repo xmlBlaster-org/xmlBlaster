@@ -12,7 +12,7 @@
       <h3>
       Message lifecycle overview
       </h3>
-      <br />
+      <br /><a NAME="lifecylceOverview"></a>
       <img src="engine.message.expiry.gif" border="0" title="Message lifecycle overview" alt="Message lifecycle overview" />
       <br />
       <p>
@@ -45,7 +45,7 @@
       <h3>
       The logical states of a topic (= messages with same key oid)
       </h3>
-      <br />
+      <br /><a NAME="topicLifecylce"></a>
       <img src="TopicLifecycle.gif" border="0" title="Lifecycle of an xmlBlaster topic" alt="Lifecycle of an xmlBlaster topic" />
       <br />
       <p>
@@ -187,7 +187,7 @@
       <br />
 
       <h3>
-      Possible states of a message instance:
+      Possible states of a message instance:<a NAME="messageLifecylce"></a>
       </h3>
       <br />
       <img src="MessageInstanceLifecycle.gif" border="0" title="Lifecycle of an xmlBlaster message instance" alt="Lifecycle of an xmlBlaster message instance" />
@@ -208,7 +208,7 @@
    <see type="REQ">engine.message</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 11 17</date>
-   <revision>$Revision: 1.9 $</revision>
+   <revision>$Revision: 1.10 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
