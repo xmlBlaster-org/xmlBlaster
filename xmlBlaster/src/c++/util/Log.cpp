@@ -3,7 +3,7 @@ Name:      Log.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.cpp,v 1.15 2003/02/07 11:41:41 laghi Exp $
+Version:   $Id: Log.cpp,v 1.16 2003/02/09 21:32:32 ruff Exp $
 ----------------------------------------------------------------------------*/
 
 #include <util/Log.h>
@@ -36,7 +36,7 @@ const char* const Log::BLACK_LTGREEN= "\033[40;46m";
    /**
     * Initializes logging and Properties
     */
-   Log::Log(Property& properties, int args, const char * const argc[], const string& name) 
+   Log::Log(Property& properties, int /*args*/, const char * const /*argc*/[], const string& name) 
       : properties_(properties), name_(name)
    {
       ME     = "Log";

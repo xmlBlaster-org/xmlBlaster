@@ -27,7 +27,7 @@ PublishReturnQos::PublishReturnQos(const PublishReturnQos& data)
 {
 }
 
-PublishReturnQos PublishReturnQos::operator =(const PublishReturnQos& data)
+PublishReturnQos PublishReturnQos::operator =(const PublishReturnQos& /*data*/)
 {
    return *this;
 }

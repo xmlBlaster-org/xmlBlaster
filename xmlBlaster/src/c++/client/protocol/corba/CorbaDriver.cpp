@@ -101,7 +101,7 @@ CorbaDriver::CorbaDriver(const CorbaDriver& corbaDriver)
    mutex_           = Mutex();
 }
 
-CorbaDriver& CorbaDriver::operator =(const CorbaDriver& corbaDriver)
+CorbaDriver& CorbaDriver::operator =(const CorbaDriver& /*corbaDriver*/)
 {
    return *this;
 }

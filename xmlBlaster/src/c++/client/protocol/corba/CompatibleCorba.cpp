@@ -3,10 +3,13 @@ Name:      CompatibleCorba.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   functions to encapsulate corba-implementor specific stuff
-Version:   $Id: CompatibleCorba.cpp,v 1.2 2003/01/24 01:29:05 johnson Exp $
+Version:   $Id: CompatibleCorba.cpp,v 1.3 2003/02/09 21:32:32 ruff Exp $
 Author:    <Michele Laghi> laghi@swissinfo.org
 ----------------------------------------------------------------------------*/
+#ifdef _WINDOWS
 #pragma warning(disable:4786)
+#pragma warning(disable:4251)
+#endif
 
 #include <client/protocol/corba/CompatibleCorba.h>
 

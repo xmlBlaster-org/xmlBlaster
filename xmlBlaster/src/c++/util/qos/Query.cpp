@@ -43,7 +43,7 @@ string Query::getQuery()
    return query_;
 }
 
-void Query::setPreparedQuery(void* preparedQuery, size_t size)
+void Query::setPreparedQuery(void* preparedQuery, size_t /*size*/)
 {
    // here a copy should be done ...
    preparedQuery_ = preparedQuery;
