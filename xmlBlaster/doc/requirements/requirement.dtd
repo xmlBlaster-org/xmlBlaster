@@ -5,7 +5,7 @@ Name:      requirement.dtd
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Validates xml requirements
-Version:   $Id: requirement.dtd,v 1.17 2002/04/10 13:56:33 ruff Exp $
+Version:   $Id: requirement.dtd,v 1.18 2002/05/06 06:06:52 ruff Exp $
 -->
 
 <!ELEMENT requirement (
@@ -80,10 +80,11 @@ Version:   $Id: requirement.dtd,v 1.17 2002/04/10 13:56:33 ruff Exp $
 <!--
    The type API allows the XSL to create a link into the xmlBlaster javadoc
    the type REQ creates a link to another requirement file
+   The INTERNET opens a link in a new window
    Example: (don't give any extensions)
    <see type="API">org.xmlBlaster.client.PublishQosWrapper</see>
  -->
-<!ATTLIST see type (API | REQ | OTHER) "API">
+<!ATTLIST see type (API | REQ | OTHER | INTERNET) "API">
 
 <!ATTLIST testcase status (OPEN | INWORK | CLOSED) "OPEN">
 
