@@ -3,7 +3,7 @@ Name:      CorbaCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaCallbackServer.java,v 1.4 2000/10/29 20:21:52 ruff Exp $
+Version:   $Id: CorbaCallbackServer.java,v 1.5 2000/11/14 07:04:45 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -72,6 +72,8 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
       // Getting the default POA implementation "RootPOA"
       try {
          rootPOA = org.omg.PortableServer.POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
+      } catch (org.omg.CORBA.COMM_FAILURE e) {
+         throw new XmlBlasterException("InitCorbaFailed", "Could not initialize CORBA, do you use the SUN-JDK delivered ORB instead of JacORB or ORBaccus? Try 'jaco' instead of 'java' and read instructions in xmlBlaster/bin/jaco or xmlBlaster/config/orb.properties: " + e.toString());
       } catch (Exception e) {
          Log.error(ME + ".CallbackCreationError", "Can't create a BlasterCallback server, RootPOA not found: " + e.toString());
          throw new XmlBlasterException("CallbackCreationError", e.toString());
