@@ -50,19 +50,19 @@
             24000         <!-- Default is no erasing (similar to pass 0 milliseconds) -->
          </erase>
 
-         <IsDurable />    <!-- The message shall be recoverable if xmlBlaster crashes -->
+         <isDurable />    <!-- The message shall be recoverable if xmlBlaster crashes -->
                           <!-- If you use this feature, you normally give the message a well known key oid -->
                           <!-- Default is transient -->
 
-         <ForceUpdate />  <!-- An update is forced even when the content and meta data didn't change -->
+         <forceUpdate />  <!-- An update is forced even when the content and meta data didn't change -->
                           <!-- Default is that identical published messages aren't sent to clients again -->
 
-         <Readonly />     <!-- A final/const message which may not be changed with further updates -->
+         <readonly />     <!-- A final/const message which may not be changed with further updates -->
                           <!-- Default is Read/Write -->
 
-         <DefaultContent> <!-- Used content if the content given is null -->
+         <defaultContent> <!-- Used content if the content given is null -->
             Empty
-         </DefaultContent>
+         </defaultContent>
 
          <check lang='TCL'> <!-- Allow content checking with a scripting language -->
             $content GE 100 <!-- Scripting inside xmlBlaster is not yet supported (JACL, Javascript) -->
@@ -78,8 +78,8 @@
    <!-- QoS when accessing messages -->
    <get>
       <qos>
-         <NoMeta />       <!-- Don't send me the key meta data on updates -->
-         <NoContent />    <!-- Don't send me the content data on updates (notify only) -->
+         <noMeta />       <!-- Don't send me the key meta data on updates -->
+         <noContent />    <!-- Don't send me the content data on updates (notify only) -->
       </qos>
    </get>
 
@@ -87,9 +87,9 @@
    <!-- QoS when subscribing to messages -->
    <subscribe>
       <qos>
-         <NoMeta />       <!-- Don't send me the xmlKey meta data on updates -->
-         <NoContent />    <!-- Don't send me the content data on updates (notify only) -->
-         <NoLocal />      <!-- Inhibit the delivery of messages to myself if i have published it -->
+         <noMeta />       <!-- Don't send me the xmlKey meta data on updates -->
+         <noContent />    <!-- Don't send me the content data on updates (notify only) -->
+         <noLocal />      <!-- Inhibit the delivery of messages to myself if i have published it -->
       </qos>
    </subscribe>
 
@@ -104,7 +104,7 @@
    <!-- QoS when deleting messages -->
    <erase>
       <qos>
-         <NoNotify />     <!-- The subscribers shall not be notified when this message is destroyed -->
+         <noNotify />     <!-- The subscribers shall not be notified when this message is destroyed -->
       </qos>
    </erase>
 
@@ -128,6 +128,15 @@
    <!-- QoS with login -->
    <client>
       <qos>
+         <callback type='IOR'> <!-- Use CORBA to callback messages -->
+            IOR:00011200070009990000....
+         </callback>
+         <callback type='EMAIL'>
+            et@mars.universe
+         </callback>
+         <callback type='XML-RPC'>
+            http:/www.mars.universe:8080/RPC2
+         </callback>
          <compress type='gzip' minSize='1000' />
                    <!-- compress messages bigger 1000 bytes before sending them to me -->
 
@@ -137,16 +146,16 @@
                     <!-- other attributes like numMsg or maxSize could allow other 'transaction' ranges -->
 
 
-         <NoPtP /> <!-- Set this flag if you don't want to receive any PtP messages -->
+         <noPtP /> <!-- Set this flag if you don't want to receive any PtP messages -->
                    <!-- prevents 'spamming' -->
 
-         <OfflineQueuing timeout='3600' /> <!-- Messages older than timeout seconds
+         <offlineQueuing timeout='3600' /> <!-- Messages older than timeout seconds
                             (the time the client is offline) are discarded -->
 
-         <OfflineQueuing maxMsg="36" /> <!-- Queue not more than 36 messages, older are discarded
+         <offlineQueuing maxMsg="36" /> <!-- Queue not more than 36 messages, older are discarded
                             off the end -->
 
-         <OfflineQueuing maxSize="2000" /> <!-- Max queue size in kByte, if exceeded, the
+         <offlineQueuing maxSize="2000" /> <!-- Max queue size in kByte, if exceeded, the
                              oldest are discarded -->
       </qos>
    </client>

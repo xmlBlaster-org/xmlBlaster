@@ -3,7 +3,7 @@ Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: AuthServerImpl.java,v 1.3 2000/02/28 18:39:50 ruff Exp $
+Version:   $Id: AuthServerImpl.java,v 1.4 2000/05/16 20:57:38 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -53,11 +53,9 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
 
    /**
     * Authentication of a client.
-    * @param cb The Callback interface of the client
     * @return The Server reference
     */
    public org.xmlBlaster.protocol.corba.serverIdl.Server login(String loginName, String passwd,
-                       BlasterCallback cb,
                        String qos_literal) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "Entering login(loginName=" + loginName/* + ", qos=" + qos_literal */ + ")");
@@ -69,13 +67,8 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
 
       StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
 
-
-      String cbIOR = null;
-      if (cb != null)
-         cbIOR = orb.object_to_string(cb);
-
       org.xmlBlaster.protocol.corba.serverIdl.Server server =
-            authenticate.login(loginName, passwd, cb, cbIOR, qos_literal);
+            authenticate.login(loginName, passwd, qos_literal);
 
       if (Log.TIME) Log.time(ME, "Elapsed time in login()" + stop.nice());
 

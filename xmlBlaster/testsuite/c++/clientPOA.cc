@@ -32,15 +32,15 @@ private:
     }
     return out;
   };
-  
+
 public:
   BlasterCallback_impl()  {}
   ~BlasterCallback_impl() {}
-  
-  void update(const serverIdl::MessageUnitArr& messageUnitArr, 
-	      const serverIdl::XmlTypeArr& qosArr) {
-    
-    int nmax = messageUnitArr.length(); 
+
+  void update(const serverIdl::MessageUnitArr& messageUnitArr,
+              const serverIdl::XmlTypeArr& qosArr) {
+
+    int nmax = messageUnitArr.length();
     cout << endl;
     cout << "Callback invoked: there are " << nmax << " messages" << endl;
     cout << "messages: " << endl;
@@ -54,11 +54,11 @@ public:
 
 
 int main(int argc, char* argv[]) {
-  
+
   AuthServer_var authServer_obj;
   CORBA::ORB_var orb;
   char           objref_str[1024];
-  
+
   try {
     // Create the ORB
     orb = CORBA::ORB_init(argc, argv);
@@ -71,16 +71,16 @@ int main(int argc, char* argv[]) {
       cerr << argv[0] << ": can't resolve `NameService'" << endl;
       return 1;
     }
-    
+
     if(CORBA::is_nil(obj0.in())) {
       cerr << argv[0] << ": `NameService' is a nil object reference"
-	   << endl;
+           << endl;
       return 1;
     }
-    
+
     CosNaming::NamingContext_var nc =
       CosNaming::NamingContext::_narrow(obj0.in());
-    
+
     if(CORBA::is_nil(nc.in())) {
       cerr << argv[0] << ": `NameService' is not a NamingContext";
       cerr << "object reference" << endl;
@@ -101,15 +101,15 @@ int main(int argc, char* argv[]) {
 
     } catch(const CosNaming::NamingContext::NotFound& ex) {
       cerr << argv[0] << ": Got a `NotFound' exception (";
-      switch(ex.why) 
-	{
-	case CosNaming::NamingContext::missing_node: cerr << "missing node"; 
-	  break;
-	case CosNaming::NamingContext::not_context: cerr << "not context";
-	  break;
-	case CosNaming::NamingContext::not_object: cerr << "not object";
-	  break;
-	}
+      switch(ex.why)
+        {
+        case CosNaming::NamingContext::missing_node: cerr << "missing node";
+          break;
+        case CosNaming::NamingContext::not_context: cerr << "not context";
+          break;
+        case CosNaming::NamingContext::not_object: cerr << "not object";
+          break;
+        }
       cerr << ")" << endl;
       return 1;
     } catch(const CosNaming::NamingContext::CannotProceed&) {
@@ -128,7 +128,7 @@ int main(int argc, char* argv[]) {
 
     // narrow IOR-String to object reference
     authServer_obj= AuthServer::_narrow(aObj);
-    
+
     // get the rootPOA
     CORBA::Object_var obj = orb->resolve_initial_references("RootPOA");
     PortableServer::POA_var poa = PortableServer::POA::_narrow(obj);
@@ -143,27 +143,32 @@ int main(int argc, char* argv[]) {
     // activate the poa
     poa_mgr->activate();
 
-    serverIdl::Server_ptr 
-      xmlBlaster = authServer_obj->login("Fritz", "simple", callback, "");
+    string xmlQos("<qos><callback type='IOR'>");
+    xmlQos += orb->object_to_string(callback);
+    xmlQos += "</callback></qos>";
+
+    serverIdl::Server_ptr
+      xmlBlaster = authServer_obj->login("Fritz", "simple", xmlQos.c_str());
+
     cout << "Successful login!" << endl;
-    
+
     //-------------- publish() a message -------------
     string xmlKey("<?xml version='1.0' encoding='ISO-8859-1' ?>\n"
-		  "<key oid='' contentMime='text/xml'>\n </key>");
-    
+                  "<key oid='' contentMime='text/xml'>\n </key>");
+
     MessageUnit message;
     message.xmlKey    = xmlKey.c_str();
-    
+
     // is there a better way to fill the message.content ??
     char content[100] = "ti che ta tacat i tac tacum i tac!";
     message.content   = ContentType(sizeof(content),sizeof(content),
-				    (CORBA::Octet*)content);
- 
+                                    (CORBA::Octet*)content);
+
     string publishOid = xmlBlaster->publish(message, "");
 
     cout << "Successfully published message with new oid=";
     cout << publishOid << endl;
-    
+
     //-------------- subscribe() to the previous message OID -------
     cout << "Subscribing using the exact oid ..." << endl;
     xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n"
@@ -177,8 +182,8 @@ int main(int argc, char* argv[]) {
     }
 
     cout << "Subscribed to '" << publishOid << "' ..." << endl;
-    
-    
+
+
     //-------------- wait for something to happen -------------------
     orb->run ();
 
@@ -189,7 +194,7 @@ int main(int argc, char* argv[]) {
   } catch (...) {
     cerr << "some other error" << endl;
   }
- 
+
   return 0;
 }
 

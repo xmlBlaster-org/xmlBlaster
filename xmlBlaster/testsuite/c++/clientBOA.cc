@@ -62,7 +62,11 @@ int main(int argc, char* argv[])
 
 
       //-------------- login() to AuthServer_obj ---------
-      serverIdl::Server_ptr xmlBlaster = authServer_obj->login("Ben", "secret", callback_impl, "");
+      string xmlQos("<qos><callback type='IOR'>");
+      xmlQos += orb->object_to_string(callback_impl);
+      xmlQos += "</callback></qos>";
+
+      serverIdl::Server_ptr xmlBlaster = authServer_obj->login("Ben", "secret", xmlQos.c_str());
       cout << "Successful login!" << endl;
 
 

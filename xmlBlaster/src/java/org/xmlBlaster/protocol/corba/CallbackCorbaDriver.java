@@ -3,44 +3,54 @@ Name:      CallbackCorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using CORBA
-Version:   $Id: CallbackCorbaDriver.java,v 1.5 2000/03/18 21:18:47 ruff Exp $
+Version:   $Id: CallbackCorbaDriver.java,v 1.6 2000/05/16 20:57:38 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
+import org.xmlBlaster.Main;
 import org.xmlBlaster.engine.ClientInfo;
 import org.xmlBlaster.engine.MessageUnitWrapper;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
 import org.xmlBlaster.protocol.I_CallbackDriver;
+import org.xmlBlaster.util.CallbackAddress;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
 import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
+import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackHelper;
 
 
 /**
- * This singleton sends a MessageUnit back to a client using Corba.
+ * This object sends a MessageUnit back to a client using Corba.
  * <p>
  * The BlasterCallback.update() method of the client will be invoked
  *
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  * @author $Author: ruff $
  */
 public class CallbackCorbaDriver implements I_CallbackDriver
 {
    private String ME = "CallbackCorbaDriver";
-   private static CallbackCorbaDriver callbackCorbaDriver = new CallbackCorbaDriver();
-
-   private CallbackCorbaDriver()
-   {
-   }
-
+   private BlasterCallback cb = null;
+   private CallbackAddress callbackAddress = null;
 
    /**
+    * Get callback reference here. 
+    * @param  callbackAddress Contains the stringified CORBA callback handle of the client
     */
-   public static final CallbackCorbaDriver getInstance()
+   public CallbackCorbaDriver(CallbackAddress callbackAddress) throws XmlBlasterException
    {
-      return callbackCorbaDriver;
+      this.callbackAddress = callbackAddress;
+      String callbackIOR = callbackAddress.getAddress(); 
+      try {
+         cb = BlasterCallbackHelper.narrow(Main.getOrb().string_to_object(callbackIOR));
+         Log.info(ME, "Accessing client callback reference using given IOR string");
+      }
+      catch (Exception e) {
+         Log.error(ME, "The given callback IOR ='" + callbackIOR + "' is invalid: " + e.toString());
+         throw new XmlBlasterException("CallbackHandleInvalid", "The given callback IOR is invalid: " + e.toString());
+      }
    }
 
 
@@ -50,8 +60,6 @@ public class CallbackCorbaDriver implements I_CallbackDriver
     */
    public final void sendUpdate(ClientInfo clientInfo, MessageUnitWrapper msgUnitWrapper, String updateQoS) throws XmlBlasterException
    {
-      BlasterCallback cb = clientInfo.getCB();
-
       MessageUnit[] updateMsgArr = new MessageUnit[1];
       updateMsgArr[0] = msgUnitWrapper.getMessageUnit();
 

@@ -3,7 +3,7 @@ Name:      HelloWorld.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Applet test for xmlBlaster
-Version:   $Id: HelloWorld.java,v 1.6 2000/02/25 13:51:00 ruff Exp $
+Version:   $Id: HelloWorld.java,v 1.7 2000/05/16 20:57:34 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.HelloWorldApplet;
 
@@ -31,7 +31,7 @@ import java.awt.*;
  * Invoke examples:<br />
  * <code>
  *    netscape:     file:/$XMLBLASTER_HOME/demo/javaclients/applet/HelloWorld.html
- *    application:  jaco javaclients.applet.HelloWorld
+ *    application:  jaco javaclients.HelloWorldApplet.HelloWorld
  * </code>
  */
 public class HelloWorld extends Applet implements I_Callback, ActionListener, org.xmlBlaster.util.LogListener, WindowListener
@@ -120,13 +120,12 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
    {
       try {
          String passwd = "secret";
-         String qos = "<qos></qos>";
 
          if (isApplet)
             senderConnection = new CorbaConnection(this); // Find orb
          else
             senderConnection = new CorbaConnection(); // Find orb
-         xmlBlaster = senderConnection.login(senderName, passwd, qos, this); // Login to xmlBlaster
+         xmlBlaster = senderConnection.login(senderName, passwd, null, this); // Login to xmlBlaster
 
          // a sample message unit
          String xmlKey = "<key oid='" + oid + "' contentMime='" + contentMime + "' contentMimeExtended='" + contentMimeExtended + "'>\n" +
@@ -188,7 +187,7 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
    {
       try {
          // With ForceUpdate, following messages with the same content will be updated
-         String qos = "<qos><ForceUpdate /></qos>";
+         String qos = "<qos><forceUpdate /></qos>";
          xmlBlaster.publish(msgUnit, qos);
       } catch(XmlBlasterException e) {
          Log.warning(ME+"-doPublish", "XmlBlasterException: " + e.reason);

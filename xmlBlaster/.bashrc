@@ -22,7 +22,7 @@
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash
 # Thanks to Heinrich Goetzger
-# $Revision: 1.49 $
+# $Revision: 1.50 $
 #-----------------------------------------------------------
 
 
@@ -155,17 +155,17 @@ if [ ${#1} == 0 ]; then
     ${ECHO} "$BLACK_LTGREEN   corba for c++ : mico      $ESC"
 else
 
-    if [ ${1} == "orbacus" ]; then
-	source ${XMLBLASTER_HOME}/config/orbacus.sh
-	${ECHO} "$BLACK_LTGREEN   corba for java: orbacus    $ESC"
-	${ECHO} "$BLACK_LTGREEN   corba for c++ : orbacus    $ESC"
-    else 
-        ${ECHO} "$BLACK_RED   The ${1} is an unknown corba   $ESC"
-	source ${XMLBLASTER_HOME}/config/jacorb.sh
-	source ${XMLBLASTER_HOME}/config/mico.sh
-	${ECHO} "$BLACK_LTGREEN   corba for java: jacorb    $ESC"
-	${ECHO} "$BLACK_LTGREEN   corba for c++ : mico      $ESC"
-    fi
+   if [ ${1} == "orbacus" ]; then
+		source ${XMLBLASTER_HOME}/config/orbacus.sh
+		${ECHO} "$BLACK_LTGREEN   corba for java: orbacus    $ESC"
+		${ECHO} "$BLACK_LTGREEN   corba for c++ : orbacus    $ESC"
+   else 
+      ${ECHO} "$BLACK_RED   The ${1} is an unknown corba   $ESC"
+		source ${XMLBLASTER_HOME}/config/jacorb.sh
+		source ${XMLBLASTER_HOME}/config/mico.sh
+		${ECHO} "$BLACK_LTGREEN   corba for java: jacorb    $ESC"
+		${ECHO} "$BLACK_LTGREEN   corba for c++ : mico      $ESC"
+   fi
 fi
 
 

@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.46 2000/05/09 02:42:49 laghi Exp $
+Version:   $Id: CorbaConnection.java,v 1.47 2000/05/16 20:57:36 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
@@ -54,8 +54,8 @@ import java.util.Properties;
  * If the ping fails, the login polling is automatically activated.
  * <p />
  * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http
- * @version $Revision: 1.46 $
- * @author $Author: laghi $
+ * @version $Revision: 1.47 $
+ * @author $Author: ruff $
  */
 public class CorbaConnection implements ServerOperations
 {
@@ -68,7 +68,7 @@ public class CorbaConnection implements ServerOperations
    protected BlasterCallback callback = null;
    protected String loginName = null;
    private String passwd = null;
-   protected String loginQos = null;
+   protected LoginQosWrapper loginQos = null;
 
    /** queue all the messages, and play them back through interface ServerOperations */
    private InvocationRecorder recorder = null;
@@ -180,7 +180,7 @@ public class CorbaConnection implements ServerOperations
    /**
     * Setup the fail save mode.
     *
-    * @param callback The interface to notify the client about problems
+    * @param connCallback The interface to notify the client about problems
     * @param retryInterval How many milli seconds sleeping before we retry a connection
     * @param retries Number of retries if connection cannot directly be established
     *                passing -1 does polling forever
@@ -188,10 +188,10 @@ public class CorbaConnection implements ServerOperations
     * @param pingInterval How many milli seconds sleeping between the pings<br />
     *                     < 1 switches pinging off
     */
-   public void initFailSave(I_ConnectionProblems callback, long retryInterval, int retries, int maxInvocations, long pingInterval)
+   public void initFailSave(I_ConnectionProblems connCallback, long retryInterval, int retries, int maxInvocations, long pingInterval)
    {
       if (Log.CALLS) Log.calls(ME, "Initializing fail save mode: retryInterval=" + retryInterval + ", retries=" + retries + ", maxInvocations=" + maxInvocations + ", pingInterval=" + pingInterval);
-      this.clientCallback = callback;
+      this.clientCallback = connCallback;
       this.retryInterval = retryInterval;
       this.pingInterval = pingInterval;
       this.retries = retries;
@@ -200,7 +200,7 @@ public class CorbaConnection implements ServerOperations
 
 
    /**
-    * Setup the cache mode. 
+    * Setup the cache mode.
     * <p />
     * Only the first call is used to setup the cache, following calls
     * are ignored silently
@@ -412,30 +412,32 @@ public class CorbaConnection implements ServerOperations
 
 
    /**
-    * Login to the server without any callback.
+    * Login to the server, specify your own callback in the qos if desired.
     * <p />
-    * Note that only the synchronous get() method is available in this case.
+    * Note that no asynchronous subscribe() method is available if you don't
+    * specify a callback in 'qos'.
     * @param loginName The login name for xmlBlaster
     * @param passwd    The login password for xmlBlaster
-    * @param qos       The Quality of Service for this client
+    * @param qos       The Quality of Service for this client, you may pass 'null' for default behavior
     * @exception       XmlBlasterException if login fails
     */
-   public Server login(String loginName, String passwd, String qos) throws XmlBlasterException
+   public Server login(String loginName, String passwd, LoginQosWrapper qos) throws XmlBlasterException
    {
-      return login(loginName, passwd, (BlasterCallback)null, qos);
+      return login(loginName, passwd, qos, null);
    }
 
 
    /**
-    * Login to the server, providing your own BlasterCallback implementation.
+    * Login to the server, providing your own BlasterCallback implementation
+    * with default Quality of Service for this client.
     * <p />
     * @param loginName The login name for xmlBlaster
     * @param passwd    The login password for xmlBlaster
     * @param callback  The Callback interface of this client or null if none is used
-    * @param qos       The Quality of Service for this client
     * @exception       XmlBlasterException if login fails
     */
-   public Server login(String loginName, String passwd, BlasterCallback callback, String qos) throws XmlBlasterException
+    /*  !!! old stuff
+   public Server login(String loginName, String passwd, BlasterCallback callback) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "login(" + loginName + ") ...");
       if (xmlBlaster != null) {
@@ -451,33 +453,7 @@ public class CorbaConnection implements ServerOperations
       loginRaw();
       return xmlBlaster;
    }
-
-
-   /**
-    * Login to the server, providing your own BlasterCallback implementation.
-    * <p />
-    * For internal use only.
-    * @exception       XmlBlasterException if login fails
-    */
-   private void loginRaw() throws XmlBlasterException
-   {
-      if (Log.CALLS) Log.calls(ME, "loginRaw(" + loginName + ") ...");
-      try {
-         AuthServer authServer = getAuthenticationService();
-         xmlBlaster = authServer.login(loginName, passwd, callback, loginQos);
-         numLogins++;
-         if (Log.TRACE) Log.trace(ME, "Success, login for " + loginName);
-      } catch(XmlBlasterException e) {
-         if (Log.TRACE) Log.trace(ME, "Login failed for " + loginName + ", numLogins=" + numLogins);
-         if (numLogins == 0)
-            startPinging();
-         throw e;
-      }
-      if (isReconnectPolling && numLogins > 0)
-         clientCallback.reConnected();
-
-      startPinging();
-   }
+      */
 
 
    /**
@@ -490,19 +466,71 @@ public class CorbaConnection implements ServerOperations
     * which is delivered with the update() method may be used to dispatch the message
     * to the correct client.
     * <p />
+    * WARNING: <strong>The qos gets added a <pre>&lt;callback type='IOR'></pre> tag,
+    *          so don't use it for a second login, otherwise a second callback is inserted !</strong>
+    *
     * @param loginName The login name for xmlBlaster
     * @param passwd    The login password for xmlBlaster
-    * @param qos       The Quality of Service for this client
-    * @param client    Your implementation of I_Callback
+    * @param qos       The Quality of Service for this client (the callback tag will be added automatically if client!=null)
+    * @param client    Your implementation of I_Callback, or null if you don't want any.
     * @exception       XmlBlasterException if login fails
     */
-   public Server login(String loginName, String passwd, String qos, I_Callback client) throws XmlBlasterException
+   public Server login(String loginName, String passwd, LoginQosWrapper qos, I_Callback client) throws XmlBlasterException
    {
-      BlasterCallback callback = createCallbackServer(new DefaultCallback(loginName, client, cache));
+      if (Log.CALLS) Log.calls(ME, "login(" + loginName + ") ...");
+      if (xmlBlaster != null) {
+         Log.warning(ME, "You are already logged in, returning cached handle on xmlBlaster");
+         return xmlBlaster;
+      }
 
-      if (Log.TRACE) Log.trace(ME, "Success, exported BlasterCallback Server interface for " + loginName);
+      this.loginName = loginName;
+      this.passwd = passwd;
+      if (qos == null)
+         this.loginQos = new LoginQosWrapper();
+      else
+         this.loginQos = qos;
 
-      return login(loginName, passwd, callback, qos);
+      if (client != null) {
+         this.callback = createCallbackServer(new DefaultCallback(loginName, client, cache));
+
+         // Add the stringified IOR to QoS ...
+         CallbackAddress addr = new CallbackAddress("IOR");
+         addr.setAddress(orb.object_to_string(this.callback));
+         loginQos.addCallbackAddress(addr);
+         if (Log.TRACE) Log.trace(ME, "Success, exported BlasterCallback Server interface for " + loginName);
+      }
+
+      loginRaw();
+      return xmlBlaster;
+   }
+
+
+   /**
+    * Login to the server.
+    * <p />
+    * For internal use only.
+    * The qos needs to be set up correctly if you wish a callback
+    * @exception       XmlBlasterException if login fails
+    */
+   private void loginRaw() throws XmlBlasterException
+   {
+      if (Log.CALLS) Log.calls(ME, "loginRaw(" + loginName + ") ...");
+      try {
+         AuthServer authServer = getAuthenticationService();
+         xmlBlaster = authServer.login(loginName, passwd, loginQos.toXml());
+         numLogins++;
+         if (Log.TRACE) Log.trace(ME, "Success, login for " + loginName);
+         if (Log.DUMP) Log.dump(ME, loginQos.toXml());
+      } catch(XmlBlasterException e) {
+         if (Log.TRACE) Log.trace(ME, "Login failed for " + loginName + ", numLogins=" + numLogins);
+         if (numLogins == 0)
+            startPinging();
+         throw e;
+      }
+      if (isReconnectPolling && numLogins > 0)
+         clientCallback.reConnected();
+
+      startPinging();
    }
 
 
@@ -618,6 +646,15 @@ public class CorbaConnection implements ServerOperations
 
 
    /**
+    * @return true if you are logged in
+    */
+   public boolean isLoggedIn()
+   {
+      return xmlBlaster != null;
+   }
+
+
+   /**
     * Building a Callback server, using the tie approach.
     *
     * @return the BlasterCallback server
@@ -639,8 +676,8 @@ public class CorbaConnection implements ServerOperations
       try {
          callback = BlasterCallbackHelper.narrow(rootPOA.servant_to_reference( callbackTie ));
          rootPOA.the_POAManager().activate();
-	 // necessary for orbacus
-	 if (orb.work_pending()) orb.perform_work();
+         // necessary for orbacus
+         if (orb.work_pending()) orb.perform_work();
          return callback;
       } catch (Exception e) {
          Log.error(ME + ".CallbackCreationError", "Can't create a BlasterCallback server, narrow failed: " + e.toString());
@@ -671,7 +708,7 @@ public class CorbaConnection implements ServerOperations
       String ior = bos.toString();
       if (!ior.startsWith("IOR:"))
          ior = "IOR:000" + ior; // hack for JDK 1.1.x, where the IOR: is cut away from ByteReader ??? !!!
-      Log.trace(ME, "Retrieved IOR='" + ior + "'");
+      if (Log.TRACE) Log.trace(ME, "Retrieved authentication service IOR='" + ior + "'");
       return ior;
    }
 

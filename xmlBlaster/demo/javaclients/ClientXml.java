@@ -3,7 +3,7 @@ Name:      ClientXml.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientXml.java,v 1.9 2000/02/25 13:51:00 ruff Exp $
+Version:   $Id: ClientXml.java,v 1.10 2000/05/16 20:57:33 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -47,9 +47,8 @@ public class ClientXml implements I_Callback
          CorbaConnection corbaConnection = new CorbaConnection(args);
 
          //----------- Login to xmlBlaster -----------------------
-         String qos = "<qos></qos>";
          String passwd = "some";
-         xmlBlaster = corbaConnection.login(loginName, passwd, qos, this); // installs the Callback server as well!
+         xmlBlaster = corbaConnection.login(loginName, passwd, null, this); // installs the Callback server as well!
 
 
          String publishOid = "";
@@ -85,7 +84,7 @@ public class ClientXml implements I_Callback
                   "</key>";
          stop.restart();
          try {
-            publishOid = xmlBlaster.subscribe(xmlKey, qos);
+            publishOid = xmlBlaster.subscribe(xmlKey, "<qos></qos>");
             Log.trace(ME, "Subscribed to '" + publishOid + "' ..." + stop.nice());
          } catch(XmlBlasterException e) {
             Log.error(ME, "Subscribe failed, XmlBlasterException: " + e.reason);
@@ -98,7 +97,7 @@ public class ClientXml implements I_Callback
          Log.trace(ME, "Unsubscribe ...");
          stop.restart();
          try {
-            xmlBlaster.unSubscribe(xmlKey, qos);
+            xmlBlaster.unSubscribe(xmlKey, "<qos></qos>");
             Log.info(ME, "Unsubscribe done" + stop.nice());
          } catch(XmlBlasterException e) {
             Log.error(ME, "Unsubscribe failed, XmlBlasterException: " + e.reason);
@@ -113,7 +112,7 @@ public class ClientXml implements I_Callback
                   "</key>";
          stop.restart();
          try {
-            xmlBlaster.subscribe(xmlKey, qos);
+            xmlBlaster.subscribe(xmlKey, "<qos></qos>");
             Log.trace(ME, "Subscribe done, there should be a Callback");
          } catch(XmlBlasterException e) {
             Log.error(ME, "subscribe failed, XmlBlasterException: " + e.reason);

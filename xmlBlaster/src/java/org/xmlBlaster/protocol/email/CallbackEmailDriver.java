@@ -3,7 +3,7 @@ Name:      CallbackEmailDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using email
-Version:   $Id: CallbackEmailDriver.java,v 1.3 2000/02/24 22:19:53 ruff Exp $
+Version:   $Id: CallbackEmailDriver.java,v 1.4 2000/05/16 20:57:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.email;
 
@@ -13,6 +13,7 @@ import org.xmlBlaster.engine.MessageUnitWrapper;
 import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.CallbackAddress;
 
 
 /**
@@ -20,24 +21,20 @@ import org.xmlBlaster.util.Log;
  * <p>
  * THIS DRIVER IS NOT YET IMPLEMENTED
  *
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  * @author $Author: ruff $
  */
 public class CallbackEmailDriver implements I_CallbackDriver
 {
    private String ME = "CallbackEmailDriver";
-   private static CallbackEmailDriver callbackEmailDriver = new CallbackEmailDriver();
-
-   private CallbackEmailDriver()
-   {
-   }
-
+   private CallbackAddress callbackAddress = null;
 
    /**
+    * @param  callbackAddress Contains the email TO: address
     */
-   public static final CallbackEmailDriver getInstance()
+   public CallbackEmailDriver(CallbackAddress callbackAddress)
    {
-      return callbackEmailDriver;
+      this.callbackAddress = callbackAddress;
    }
 
 
@@ -46,8 +43,7 @@ public class CallbackEmailDriver implements I_CallbackDriver
     */
    public final void sendUpdate(ClientInfo clientInfo, MessageUnitWrapper msgUnitWrapper, String updateQoS) throws XmlBlasterException
    {
-      Log.error(ME + ".NoEmailProtocol", "Sorry, email callbacks are not yet supported");
-      throw new XmlBlasterException(ME + ".NoEmailProtocol", "Sorry, email callbacks are not yet supported");
+      Log.error(ME + ".NoEmailProtocol", "Sorry, email callbacks are not yet supported, no mail sent to " + callbackAddress.getAddress());
+      throw new XmlBlasterException(ME + ".NoEmailProtocol", "Sorry, email callbacks are not yet supported, no mail sent to " + callbackAddress.getAddress());
    }
-
 }

@@ -3,7 +3,7 @@ Name:      MainGUI.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: MainGUI.java,v 1.26 2000/03/31 11:24:49 roth Exp $
+Version:   $Id: MainGUI.java,v 1.27 2000/05/16 20:57:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -100,7 +100,7 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
    public MainGUI(String[] args)
    {
       // set the application icon
-      java.net.URL 	oUrl;
+      java.net.URL      oUrl;
       oUrl = this.getClass().getResource("AppIcon.gif");
       Image img = java.awt.Toolkit.getDefaultToolkit().getImage(oUrl);
       if(img != null)
@@ -683,8 +683,7 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
       {
          try {
             corbaConnection = new CorbaConnection();
-            String qos = "<qos>\n</qos>";
-            xmlBlaster = corbaConnection.login(loginName, passwd, (BlasterCallback)null, qos);
+            xmlBlaster = corbaConnection.login(loginName, passwd, null);
          }
          catch (XmlBlasterException e) {
              Log.error(ME, "Error occurred: " + e.toString());

@@ -3,7 +3,7 @@ Name:      SystemInfoPublisher.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a client to publish system infos to xmlBlaster
-Version:   $Id: SystemInfoPublisher.java,v 1.3 2000/05/06 20:15:05 ruff Exp $
+Version:   $Id: SystemInfoPublisher.java,v 1.4 2000/05/16 20:57:33 ruff Exp $
 ------------------------------------------------------------------------------*/
 package html.systemInfo;
 
@@ -124,8 +124,7 @@ public class SystemInfoPublisher
    {
       try {
          senderConnection = new CorbaConnection(); // Find orb
-         String loginQos = "<qos></qos>";
-         xmlBlaster = senderConnection.login(loginName, passwd, loginQos); // Login to xmlBlaster
+         xmlBlaster = senderConnection.login(loginName, passwd, null); // Login to xmlBlaster
       }
       catch (Exception e) {
           Log.error(ME, e.toString());

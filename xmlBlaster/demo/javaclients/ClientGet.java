@@ -3,7 +3,7 @@ Name:      ClientGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientGet.java,v 1.8 2000/02/25 13:51:00 ruff Exp $
+Version:   $Id: ClientGet.java,v 1.9 2000/05/16 20:57:33 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -42,9 +42,8 @@ public class ClientGet
          CorbaConnection corbaConnection = new CorbaConnection(args);
 
          //----------- Login to xmlBlaster -----------------------
-         String qos = "";
          String passwd = "some";
-         xmlBlaster = corbaConnection.login(loginName, passwd, (BlasterCallback)null, qos);
+         xmlBlaster = corbaConnection.login(loginName, passwd, null);
 
          String publishOid = "";
          StopWatch stop = new StopWatch();
@@ -81,7 +80,7 @@ public class ClientGet
             stop.restart();
             MessageUnitContainer[] msgArr = null;
             try {
-               msgArr = xmlBlaster.get(xmlKey, qos);
+               msgArr = xmlBlaster.get(xmlKey, "<qos></qos>");
             } catch(XmlBlasterException e) {
                Log.error(ME, "XmlBlasterException: " + e.reason);
             }
@@ -130,7 +129,7 @@ public class ClientGet
          stop.restart();
          MessageUnitContainer[] msgArr = null;
          try {
-            msgArr = xmlBlaster.get(xmlKey, qos);
+            msgArr = xmlBlaster.get(xmlKey, "<qos></qos>");
          } catch(XmlBlasterException e) {
             Log.error(ME, "XmlBlasterException: " + e.reason);
          }

@@ -3,7 +3,7 @@ Name:      XmlKeyBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKeyBase.java,v 1.34 2000/04/14 13:16:03 ruff Exp $
+Version:   $Id: XmlKeyBase.java,v 1.35 2000/05/16 20:57:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -18,9 +18,6 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;
 import org.w3c.dom.Attr;
 
-// JacORB1_0-beta13:
-//import jacorb.orb.Environment;
-// JacORB1_0-beta14:
 import jacorb.util.Environment;
 
 

@@ -3,7 +3,7 @@ Name:      TestPub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestPub.java,v 1.5 2000/02/25 18:56:23 ruff Exp $
+Version:   $Id: TestPub.java,v 1.6 2000/05/16 20:57:39 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -68,7 +68,7 @@ public class TestPub extends TestCase implements I_Callback
       try {
          senderConnection = new CorbaConnection(); // Find orb
          String passwd = "secret";
-         String qos = "<qos></qos>";
+         LoginQosWrapper qos = new LoginQosWrapper(); // == "<qos></qos>";
          xmlBlaster = senderConnection.login(senderName, passwd, qos, this); // Login to xmlBlaster
       }
       catch (Exception e) {
@@ -141,7 +141,7 @@ public class TestPub extends TestCase implements I_Callback
       MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes());
       PublishQosWrapper qosWrapper = new PublishQosWrapper();
       qosWrapper.setReadonly();
-      String qos = qosWrapper.toXml(); // == "<qos><Readonly /></qos>"
+      String qos = qosWrapper.toXml(); // == "<qos><readonly /></qos>"
 
       if (first) {
          try {

@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.31 2000/05/09 02:42:48 laghi Exp $
+Version:   $Id: Main.java,v 1.32 2000/05/16 20:57:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -42,14 +42,14 @@ import org.omg.CosNaming.*;
  * <p />
  * <code>   ${JacORB_HOME}/bin/jaco org.xmlBlaster.Main -iorPort 8080</code>
  * <p />
- * <code>   ${JacORB_HOME}/bin/jaco org.xmlBlaster.Main -iorFile /tmp/NS_Ref</code>
+ * <code>   ${JacORB_HOME}/bin/jaco org.xmlBlaster.Main -iorFile /tmp/XmlBlaster_Ref</code>
  * <p />
  * <code>   jaco org.xmlBlaster.Main +trace +dump +calls +time</code>
  */
 public class Main
 {
    final private String ME = "Main";
-   private org.omg.CORBA.ORB orb;
+   private static org.omg.CORBA.ORB orb;
    private HttpIORServer httpIORServer = null;  // xmlBlaster publishes his AuthServer IOR
    private NamingContext nc = null;
    private NameComponent [] name = null;
@@ -228,6 +228,14 @@ public class Main
    }
 
 
+   /**
+    * @return Access to our orb handle
+    */
+   public static org.omg.CORBA.ORB getOrb()
+   {
+      return orb;
+   }
+
 
    /**
     * Check for keyboard entries from console.
@@ -245,8 +253,8 @@ public class Main
    {
       BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
       while (true) {
-	 // orbacus needs this 
-	 if (orb.work_pending()) orb.perform_work();
+         // orbacus needs this
+         if (orb.work_pending()) orb.perform_work();
          try {
             String line = in.readLine().trim();
             if (line.toLowerCase().equals("g")) {
@@ -373,7 +381,7 @@ public class Main
       Log.plain(ME, "----------------------------------------------------------");
       Log.plain(ME, "Example:");
       Log.plain(ME, "   jaco org.xmlBlaster.Main -iorPort 8080");
-      Log.plain(ME, "   jaco org.xmlBlaster.Main -iorFile /tmp/NS_Ref");
+      Log.plain(ME, "   jaco org.xmlBlaster.Main -iorFile /tmp/XmlBlaster_Ref");
       Log.plain(ME, "   jaco org.xmlBlaster.Main +trace +dump +calls +time");
       Log.plain(ME, "");
    }

@@ -3,7 +3,7 @@ Name:      PublishQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: PublishQoS.java,v 1.4 2000/03/02 12:36:36 ruff Exp $
+Version:   $Id: PublishQoS.java,v 1.5 2000/05/16 20:57:37 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -216,21 +216,21 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase
          return;
       }
 
-      if (name.equalsIgnoreCase("IsDurable")) {
+      if (name.equalsIgnoreCase("isDurable")) {
          if (!inQos)
             return;
          isDurable = true;
          return;
       }
 
-      if (name.equalsIgnoreCase("ForceUpdate")) {
+      if (name.equalsIgnoreCase("forceUpdate")) {
          if (!inQos)
             return;
          forceUpdate = true;
          return;
       }
 
-      if (name.equalsIgnoreCase("Readonly")) {
+      if (name.equalsIgnoreCase("readonly")) {
          if (!inQos)
             return;
          readonly = true;
@@ -289,11 +289,11 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase
       sb.append(offset + "<" + ME + ">");
 
       if (isDurable())
-         sb.append(offset + "   <IsDurable />");
+         sb.append(offset + "   <isDurable />");
       if (forceUpdate())
-         sb.append(offset + "   <ForceUpdate />");
+         sb.append(offset + "   <forceUpdate />");
       if (readonly())
-         sb.append(offset + "   <Readonly />");
+         sb.append(offset + "   <readonly />");
       if (destinationVec == null) {
          sb.append(offset + "   <Pub_Sub_style />");
       }

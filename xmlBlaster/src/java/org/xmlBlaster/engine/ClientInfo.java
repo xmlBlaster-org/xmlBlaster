@@ -3,7 +3,7 @@ Name:      ClientInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: ClientInfo.java,v 1.28 2000/03/18 21:18:47 ruff Exp $
+Version:   $Id: ClientInfo.java,v 1.29 2000/05/16 20:57:37 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -15,6 +15,7 @@ import org.xmlBlaster.protocol.email.CallbackEmailDriver;
 import org.xmlBlaster.authentication.AuthenticationInfo;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Destination;
+import org.xmlBlaster.util.CallbackAddress;
 import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
 
@@ -31,7 +32,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
  * It also contains a message queue, where messages are stored
  * until they are delivered at the next login of this client.
  *
- * @version $Revision: 1.28 $
+ * @version $Revision: 1.29 $
  * @author $Author: ruff $
  */
 public class ClientInfo
@@ -40,7 +41,7 @@ public class ClientInfo
    private String ME = "ClientInfo";
    private String loginName = null;            // the unique client identifier
    private AuthenticationInfo authInfo = null; // all client informations
-   private I_CallbackDriver myCallbackDriver = null;
+   private I_CallbackDriver[] callbackDrivers = new I_CallbackDriver[0];
    private static long instanceCounter = 0L;
    private long instanceId = 0L;
 
@@ -87,10 +88,6 @@ public class ClientInfo
     *
     * @return the CallbackDriver for this client
     */
-   public final I_CallbackDriver getCallbackDriver()
-   {
-      return myCallbackDriver;
-   }
 
 
    /**
@@ -101,9 +98,11 @@ public class ClientInfo
    final void sendUpdate(MessageUnitWrapper msgUnitWrapper, Destination destination) throws XmlBlasterException
    {
       if (isLoggedIn()) {
-         if (Log.TRACE) Log.trace(ME, "Client [" + loginName + "] is logged in, sending message");
+         if (Log.TRACE) Log.trace(ME, "Client [" + loginName + "] is logged in and has registered " + callbackDrivers.length + " callback drivers, sending message");
          try {
-            getCallbackDriver().sendUpdate(this, msgUnitWrapper, getUpdateQoS((String)null, msgUnitWrapper));
+            for (int ii=0; ii<callbackDrivers.length; ii++) {
+               callbackDrivers[ii].sendUpdate(this, msgUnitWrapper, getUpdateQoS((String)null, msgUnitWrapper));
+            }
             sentMessages++;
          } catch(XmlBlasterException e) {
             Log.error(ME, "Callback failed, " + e.reason + ". Trying to queue the message ...");
@@ -150,8 +149,10 @@ public class ClientInfo
    {
       MessageUnitWrapper msgUnitWrapper = subInfo.getMessageUnitWrapper();
       if (isLoggedIn()) {
-         if (Log.TRACE) Log.trace(ME, "Client [" + loginName + "] is logged in, sending message");
-         getCallbackDriver().sendUpdate(this, msgUnitWrapper, getUpdateQoS(subInfo.getSubSourceUniqueKey(), subInfo.getMessageUnitWrapper()));
+         if (Log.TRACE) Log.trace(ME, "Client [" + loginName + "] is logged in and has registered " + callbackDrivers.length + " callback drivers, sending message");
+         for (int ii=0; ii<callbackDrivers.length; ii++) {
+            callbackDrivers[ii].sendUpdate(this, msgUnitWrapper, getUpdateQoS(subInfo.getSubSourceUniqueKey(), subInfo.getMessageUnitWrapper()));
+         }
          sentMessages++;
       }
       else {
@@ -194,13 +195,30 @@ public class ClientInfo
       if (Log.TRACE) Log.trace(ME, "notifyAboutLogin()");
 
       // Get the appropriate callback protocol driver (Future: add driver by reflection with xmlBlaster.properties)
-      if (authInfo.useCorbaCB())
-         myCallbackDriver = CallbackCorbaDriver.getInstance();
-      else if (authInfo.useEmailCB())
-         myCallbackDriver = CallbackEmailDriver.getInstance();
+      // How to protect the misuse of other email addresses??
+      CallbackAddress[] cbArr = authInfo.getCallbackAddresses();
+      if (cbArr == null) {
+         callbackDrivers = new I_CallbackDriver[0];
+      }
       else {
-         Log.error(ME, "No callback protocol specified");
-         return;
+         callbackDrivers = new I_CallbackDriver[cbArr.length];
+         for (int ii=0; ii<cbArr.length; ii++) {
+            if (cbArr[ii].getType().equals("IOR")) {
+               callbackDrivers[ii] = new CallbackCorbaDriver(cbArr[ii]);
+            }
+            else if (cbArr[ii].getType().equals("EMAIL")) {
+               callbackDrivers[ii] = new CallbackEmailDriver(cbArr[ii]);
+            }
+            else if (cbArr[ii].getType().equals("XML-RPC")) {
+               Log.error(ME+".UnknownCallbackProtocol", "Sorry, callback type='" + cbArr[ii].getType() + "' is not supported");
+               throw new XmlBlasterException("UnknownCallbackProtocol", "Sorry, callback type='" + cbArr[ii].getType() + "' is not supported");
+               // callbackDrivers[ii] = new CallbackXmlRpcDriver(cbArr[ii]);
+            }
+            else {
+               Log.error(ME+".UnknownCallbackProtocol", "Sorry, callback type='" + cbArr[ii].getType() + "' is not supported");
+               throw new XmlBlasterException("UnknownCallbackProtocol", "Sorry, callback type='" + cbArr[ii].getType() + "' is not supported");
+            }
+         }
       }
 
       // send messages to client, if there are any in the queue
@@ -210,7 +228,10 @@ public class ClientInfo
             if (msgUnitWrapper == null)
                break;
 
-            getCallbackDriver().sendUpdate(this, msgUnitWrapper, getUpdateQoS((String)null, msgUnitWrapper));
+            for (int ii=0; ii<callbackDrivers.length; ii++) {
+               // TODO: emails can also be sent to the logged off client!
+               callbackDrivers[ii].sendUpdate(this, msgUnitWrapper, getUpdateQoS((String)null, msgUnitWrapper));
+            }
             sentMessages++;
          }
       }
@@ -276,19 +297,7 @@ public class ClientInfo
       }
 
       this.authInfo = null;
-      this.myCallbackDriver = null;
-   }
-
-
-   /**
-    * Accessing the CORBA Callback reference of the client.
-    * <p />
-    * @return BlasterCallback reference <br />
-    *         null if the client has no callback
-    */
-   public final BlasterCallback getCB() throws XmlBlasterException
-   {
-      return authInfo.getCB();
+      this.callbackDrivers = new I_CallbackDriver[0];
    }
 
 
@@ -348,17 +357,6 @@ public class ClientInfo
 
 
    /**
-    * Accessing the CORBA Callback reference of the client in string notation.
-    * <p />
-    * @return BlasterCallback-IOR The CORBA callback reference in string notation
-    */
-   public final String getCallbackIOR() throws XmlBlasterException
-   {
-      return authInfo.getCallbackIOR();
-   }
-
-
-   /**
     * Dump state of this object into a XML ASCII string.
     * <br>
     * @return internal state of ClientInfo as a XML ASCII string
@@ -388,12 +386,16 @@ public class ClientInfo
          sb.append(offset + "   <isLoggedIn />");
       else
          sb.append(offset + "   <isNotLoggedIn />");
-      if (myCallbackDriver == null)
+      if (callbackDrivers.length < 1)
          sb.append(offset + "   <noCallbackDriver />");
-      else if (myCallbackDriver instanceof CallbackCorbaDriver)
-         sb.append(offset + "   <CallbackCorbaDriver />");
-      else if (myCallbackDriver instanceof CallbackEmailDriver)
-         sb.append(offset + "   <CallbackEmailDriver />");
+      else {
+         for (int ii=0; ii<callbackDrivers.length; ii++) {
+            if (callbackDrivers[ii] instanceof CallbackCorbaDriver)
+               sb.append(offset + "   <CallbackCorbaDriver />");
+            else if (callbackDrivers[ii] instanceof CallbackEmailDriver)
+               sb.append(offset + "   <CallbackEmailDriver />");
+         }
+      }
       sb.append(offset + "</ClientInfo>\n");
 
       return sb;

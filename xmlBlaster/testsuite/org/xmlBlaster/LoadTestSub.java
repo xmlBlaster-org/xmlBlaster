@@ -3,14 +3,11 @@ Name:      LoadTestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: LoadTestSub.java,v 1.12 2000/04/20 13:19:17 freidlin Exp $
+Version:   $Id: LoadTestSub.java,v 1.13 2000/05/16 20:57:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
-import org.xmlBlaster.client.CorbaConnection;
-import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQoS;
+import org.xmlBlaster.client.*;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Args;
 import org.xmlBlaster.util.StopWatch;
@@ -75,8 +72,7 @@ public class LoadTestSub extends TestCase implements I_Callback
       try {
          senderConnection = new CorbaConnection(); // Find orb
          String passwd = "secret";
-         String qos = "<qos></qos>";
-         xmlBlaster = senderConnection.login(senderName, passwd, qos, this); // Login to xmlBlaster
+         xmlBlaster = senderConnection.login(senderName, passwd, null, this); // Login to xmlBlaster
       }
       catch (Exception e) {
           Log.error(ME, e.toString());

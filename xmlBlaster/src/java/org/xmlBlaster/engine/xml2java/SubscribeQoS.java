@@ -3,7 +3,7 @@ Name:      SubscribeQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: SubscribeQoS.java,v 1.2 2000/02/20 17:38:53 ruff Exp $
+Version:   $Id: SubscribeQoS.java,v 1.3 2000/05/16 20:57:38 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -27,9 +27,9 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
    // helper flags for SAX parsing
 
    // flags for QoS state
-   private boolean noMeta = false;     // <NoMeta />    <!-- Don't send me the xmlKey meta data on updates -->
-   private boolean noContent = false;  // <NoContent /> <!-- Don't send me the content data on updates (notify only) -->
-   private boolean noLocal = false;    // <NoLocal />   <!-- Inhibit the delivery of messages to myself if i have published it -->
+   private boolean noMeta = false;     // <noMeta />    <!-- Don't send me the xmlKey meta data on updates -->
+   private boolean noContent = false;  // <noContent /> <!-- Don't send me the content data on updates (notify only) -->
+   private boolean noLocal = false;    // <noLocal />   <!-- Inhibit the delivery of messages to myself if i have published it -->
 
 
    /**

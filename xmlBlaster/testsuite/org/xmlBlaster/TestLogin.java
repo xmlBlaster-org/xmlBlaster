@@ -3,7 +3,7 @@ Name:      TestLogin.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestLogin.java,v 1.9 2000/02/25 18:56:23 ruff Exp $
+Version:   $Id: TestLogin.java,v 1.10 2000/05/16 20:57:39 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -77,14 +77,13 @@ public class TestLogin extends TestCase implements I_Callback
    protected void setUp()
    {
       try {
-         String passwd = "secret";
-         String qos = "<qos></qos>";
-
          senderConnection = new CorbaConnection(); // Find orb
-         xmlBlaster = senderConnection.login(senderName, passwd, qos, this); // Login to xmlBlaster
+         String passwd = "secret";
+
+         xmlBlaster = senderConnection.login(senderName, passwd, null, this); // Login to xmlBlaster
 
          secondConnection = new CorbaConnection(); // Find orb
-         secondBlaster = secondConnection.login(secondName, passwd, qos, this); // Login to xmlBlaster
+         secondBlaster = secondConnection.login(secondName, passwd, null, this); // Login to xmlBlaster
 
          // a sample message unit
          String xmlKey = "<key oid='" + oid + "' contentMime='" + contentMime + "' contentMimeExtended='" + contentMimeExtended + "'>\n" +

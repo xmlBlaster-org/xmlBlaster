@@ -3,7 +3,7 @@ Name:      SimpleChat.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo of a simple chat client for xmlBlaster as java application
-Version:   $Id: SimpleChat.java,v 1.5 2000/02/25 13:51:00 ruff Exp $
+Version:   $Id: SimpleChat.java,v 1.6 2000/05/16 20:57:34 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 package javaclients.chat;
@@ -12,6 +12,7 @@ import org.xmlBlaster.util.*;
 import org.xmlBlaster.protocol.corba.serverIdl.*;
 import org.xmlBlaster.protocol.corba.clientIdl.*;
 import org.xmlBlaster.client.CorbaConnection;
+import org.xmlBlaster.client.LoginQosWrapper;
 import org.omg.CosNaming.*;
 import org.xmlBlaster.client.UpdateQoS;
 import java.awt.event.*;
@@ -45,6 +46,7 @@ public class SimpleChat extends Frame implements BlasterCallbackOperations, Acti
 
    public SimpleChat(String title, String args[]){
       super(title);
+      Log.setLogLevel(args); // initialize log level and xmlBlaster.property file
 
       this.addWindowListener(
          new WindowAdapter() {
@@ -114,6 +116,11 @@ public class SimpleChat extends Frame implements BlasterCallbackOperations, Acti
       // publish new message
       else if(command.equals("send") ||( (ev.getSource()) instanceof TextField )){
 
+         if (xmlBlaster == null) {
+            Log.error(ME, "Please log in first");
+            return;
+         }
+
          //----------- Construct a message and publish it ---------
          String content = input.getText();
          xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
@@ -179,15 +186,17 @@ public class SimpleChat extends Frame implements BlasterCallbackOperations, Acti
          BlasterCallback callback = BlasterCallbackHelper.narrow(rootPOA.servant_to_reference( callbackTie ));
 
          //----------- Login to xmlBlaster -----------------------
-         xmlBlaster = corbaConnection.login(ME, passwd, callback, qos);
+         CallbackAddress addr = new CallbackAddress("IOR", corbaConnection.getOrb().object_to_string(callback));
+         LoginQosWrapper qos = new LoginQosWrapper(addr); // == "<qos><callback type='IOR'>IOR:00113220001...</callback></qos>";
+
+         xmlBlaster = corbaConnection.login(ME, passwd, qos);
 
          //----------- Subscribe to OID -------
          Log.trace(ME, "Subscribing using the exact oid ...");
-         String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
-                  "<key oid='" + publishOid + "' queryType='EXACT'>\n" +
-                  "</key>";
+         String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'>\n" +
+                         "</key>";
          try {
-            xmlBlaster.subscribe(xmlKey, qos);
+            xmlBlaster.subscribe(xmlKey, "<qos></qos>");
          } catch(XmlBlasterException e) {
             Log.warning(ME, "XmlBlasterException: " + e.reason);
          }
@@ -217,9 +226,8 @@ public class SimpleChat extends Frame implements BlasterCallbackOperations, Acti
 
    public static void main(String args[]){
       String title = "SimpleChat";
-      if((args != null) && (args.length > 1))
-         title = args[1];
-      SimpleChat chat = new SimpleChat(title, args);
+      String loginName = Args.getArg(args, "-name", "Otto");
+      SimpleChat chat = new SimpleChat(loginName, args);
       chat.setSize(320,250);
       chat.show();
    }

@@ -3,7 +3,7 @@ Name:      XmlRpcProxy.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code to subscribe from command line for a message
-Version:   $Id: XmlRpcProxy.java,v 1.1 2000/05/15 16:35:47 ruff Exp $
+Version:   $Id: XmlRpcProxy.java,v 1.2 2000/05/16 20:57:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
@@ -18,7 +18,7 @@ import java.io.IOException;
 import helma.xmlrpc.*;
 
 /**
- * Routes XML-RPC through to xmlBlaster. 
+ * Routes XML-RPC through to xmlBlaster.
  * <br />
  * Invoke examples:<br />
  * <pre>
@@ -69,7 +69,7 @@ public class XmlRpcProxy implements I_Callback
    {
       try {
          corbaConnection = new CorbaConnection(); // Find orb
-         String loginQos = "<qos></qos>";
+         LoginQosWrapper loginQos = new LoginQosWrapper(); // "<qos></qos>";
          corbaConnection.login(loginName, passwd, loginQos, this); // Login to xmlBlaster
       }
       catch (Exception e) {

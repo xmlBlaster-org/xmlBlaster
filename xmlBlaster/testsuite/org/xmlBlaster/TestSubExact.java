@@ -3,11 +3,12 @@ Name:      TestSubExact.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubExact.java,v 1.1 2000/03/05 20:12:02 ruff Exp $
+Version:   $Id: TestSubExact.java,v 1.2 2000/05/16 20:57:40 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
 import org.xmlBlaster.client.CorbaConnection;
+import org.xmlBlaster.client.LoginQosWrapper;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
@@ -75,7 +76,7 @@ public class TestSubExact extends TestCase implements I_Callback
       try {
          senderConnection = new CorbaConnection(); // Find orb
          String passwd = "secret";
-         String qos = "<qos></qos>";
+         LoginQosWrapper qos = new LoginQosWrapper(); // == "<qos></qos>";
          xmlBlaster = senderConnection.login(senderName, passwd, qos, this); // Login to xmlBlaster
       }
       catch (Exception e) {

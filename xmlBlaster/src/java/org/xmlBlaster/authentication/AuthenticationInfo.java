@@ -3,11 +3,12 @@ Name:      AuthenticationInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the authentication data
-Version:   $Id: AuthenticationInfo.java,v 1.7 2000/02/20 17:38:50 ruff Exp $
+Version:   $Id: AuthenticationInfo.java,v 1.8 2000/05/16 20:57:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.CallbackAddress;
 import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
 
@@ -15,8 +16,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
 /**
  * AuthenticationInfo stores all known login data about a client
  *
- * @version$
- * @author$
+ * @author ruff@swand.lake.de
  */
 public class AuthenticationInfo
 {
@@ -26,8 +26,7 @@ public class AuthenticationInfo
    private String passwd;
    private org.xmlBlaster.protocol.corba.serverIdl.Server xmlBlaster;
    private ClientQoS clientQoS;
-   private BlasterCallback callback=null;
-   private String callbackIOR;
+   private String callbackAddr=null;
 
 
    /**
@@ -37,37 +36,31 @@ public class AuthenticationInfo
     * @param loginName   The unique login name of the client
     * @param passwd      Very secret
     * @param xmlBlaster  The server serving this client
-    * @param callback    The callback interface reference from the client
-    * @param callbackIOR The string form of the callback
     * @param clientQoS   The login quality of service
     */
    public AuthenticationInfo(String uniqueKey, String loginName, String passwd,
                        org.xmlBlaster.protocol.corba.serverIdl.Server xmlBlaster,
-                       BlasterCallback callback,
-                       String callbackIOR, ClientQoS clientQoS)
+                       ClientQoS clientQoS)
    {
       this.uniqueKey = uniqueKey;
       this.loginName = loginName;
       this.passwd = passwd;
       this.xmlBlaster = xmlBlaster;
-      this.callback = callback;
-      this.callbackIOR = callbackIOR;
       this.clientQoS = clientQoS;
       if (Log.CALLS) Log.trace(ME, "Creating new AuthenticationInfo " + loginName);
    }
 
 
    /**
-    * The CORBA callback reference of the client.
-    * @return BlasterCallback The client callback implementation
+    * Accessing the Callback addresses of the client
+    * this may be a CORBA-IOR or email or URL ... 
+    * <p />
+    * @return An array of CallbackAddress objects, containing the address and the protocol type
+    *         If no callback available, return an array of 0 length
     */
-   public final BlasterCallback getCB() throws XmlBlasterException
+   public final CallbackAddress[] getCallbackAddresses() throws XmlBlasterException
    {
-      if (this.callback == null) {
-         Log.error(ME+"NoCallback", "Sorry, no Callback for " + loginName);
-         throw new XmlBlasterException(ME+"NoCallback", "Sorry, no Callback for " + loginName);
-      }
-      return callback;
+      return clientQoS.getCallbackAddresses();
    }
 
 
@@ -108,39 +101,6 @@ public class AuthenticationInfo
 
 
    /**
-    * email callbacks are not yet supported.
-    * @return false
-    */
-   public final boolean useEmailCB()
-   {
-      // !!! TODO: inspect QoS which callback type is wanted from the client
-      return false;
-   }
-
-
-   /**
-    * Http callbacks are not yet supported.
-    * @return false
-    */
-   public final boolean useHttpCB()
-   {
-      // !!! TODO: inspect QoS which callback type is wanted from the client
-      return false;
-   }
-
-
-   /**
-    * Only CORBA callbacks are supported in this version.
-    * @return true/false
-    */
-   public final boolean useCorbaCB()
-   {
-      // !!! TODO: inspect QoS which callback type is wanted from the client
-      return true;
-   }
-
-
-   /**
     * Access the unique login name of a client.
     * @return loginName
     */
@@ -159,17 +119,5 @@ public class AuthenticationInfo
       return getLoginName();
    }
 
-
-   /**
-    * Access the client callback IOR (the CORBA string representation).
-    * @return IOR
-    */
-   public final String getCallbackIOR() throws XmlBlasterException
-   {
-      if (this.callbackIOR == null) {
-         Log.error(ME+"NoCallback", "Sorry, no CallbackIOR for " + loginName);
-         throw new XmlBlasterException(ME+"NoCallback", "Sorry, no CallbackIOR for " + loginName);
-      }
-      return callbackIOR;
-   }
 }
+

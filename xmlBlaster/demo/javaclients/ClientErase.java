@@ -3,7 +3,7 @@ Name:      ClientErase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientErase.java,v 1.8 2000/05/09 02:42:48 laghi Exp $
+Version:   $Id: ClientErase.java,v 1.9 2000/05/16 20:57:33 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -43,9 +43,8 @@ public class ClientErase
          CorbaConnection corbaConnection = new CorbaConnection(args);
 
          //----------- Login to xmlBlaster -----------------------
-         String qos = "";
          String passwd = "some";
-         xmlBlaster = corbaConnection.login(loginName, passwd, (BlasterCallback)null, qos);
+         xmlBlaster = corbaConnection.login(loginName, passwd, null);
 
          StopWatch stop = new StopWatch();
 
@@ -83,7 +82,7 @@ public class ClientErase
             stop.restart();
             String[] strArr = null;
             try {
-               strArr = xmlBlaster.erase(xmlKey, qos);
+               strArr = xmlBlaster.erase(xmlKey, "<qos></qos>");
             } catch(XmlBlasterException e) {
                Log.error(ME, "XmlBlasterException: " + e.reason);
             }
@@ -96,8 +95,6 @@ public class ClientErase
                Log.info(ME, "Erased message oid=" + strArr[ii]);
             }
          }
-
-         Log.warning(ME, "Testcase for XPath erase() is still missing");
 
 
          //----------- logout() -----------------------------

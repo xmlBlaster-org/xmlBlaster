@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.65 2000/04/29 23:19:41 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.66 2000/05/16 20:57:37 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -29,7 +29,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.65 $
+ * @version $Revision: 1.66 $
  * @author ruff@swand.lake.de
  */
 public class RequestBroker implements ClientListener, MessageEraseListener
@@ -114,11 +114,11 @@ public class RequestBroker implements ClientListener, MessageEraseListener
    public RequestBroker(Authenticate authenticate) throws XmlBlasterException
    {
       this.xmlKeyLoginEvent = "<key oid='__sys__Login' contentMime='text/plain'>\n</key>";
-      this.publishQosLoginEvent = new PublishQoS("<qos>\n   <ForceUpdate/>\n</qos>");
+      this.publishQosLoginEvent = new PublishQoS("<qos>\n   <forceUpdate/>\n</qos>");
       this.msgUnitLoginEvent = new MessageUnit(xmlKeyLoginEvent, new byte[0]);
 
       this.xmlKeyLogoutEvent = "<key oid='__sys__Logout' contentMime='text/plain'>\n</key>";
-      this.publishQosLogoutEvent = new PublishQoS("<qos>\n   <ForceUpdate/>\n</qos>");
+      this.publishQosLogoutEvent = new PublishQoS("<qos>\n   <forceUpdate/>\n</qos>");
       this.msgUnitLogoutEvent = new MessageUnit(xmlKeyLogoutEvent, new byte[0]);
 
       this.clientSubscriptions = new ClientSubscriptions(this, authenticate);
@@ -235,9 +235,9 @@ public class RequestBroker implements ClientListener, MessageEraseListener
     *         Example (note that the qos are not yet fully implemented):<p />
     * <pre>
     *    &lt;qos>
-    *       &lt;NoMeta />       &lt;!-- Don't send me the key meta data on updates -->
-    *       &lt;NoContent />    &lt;!-- Don't send me the content data on updates (notify only) -->
-    *       &lt;NoLocal />      &lt;!-- Inhibit the delivery of messages to myself if i have published it -->
+    *       &lt;noMeta />       &lt;!-- Don't send me the key meta data on updates -->
+    *       &lt;noContent />    &lt;!-- Don't send me the content data on updates (notify only) -->
+    *       &lt;noLocal />      &lt;!-- Inhibit the delivery of messages to myself if i have published it -->
     *    &lt;/qos>
     * </pre>
     * @return oid    The oid of your subscribed Message<br>
@@ -292,8 +292,8 @@ public class RequestBroker implements ClientListener, MessageEraseListener
     *         Example (note that the qos are not yet fully implemented):<p />
     * <pre>
     *    &lt;qos>
-    *       &lt;NoMeta />       &lt;!-- Don't send me the key meta data on updates -->
-    *       &lt;NoContent />    &lt;!-- Don't send me the content data on updates (notify only) -->
+    *       &lt;noMeta />       &lt;!-- Don't send me the key meta data on updates -->
+    *       &lt;noContent />    &lt;!-- Don't send me the content data on updates (notify only) -->
     *    &lt;/qos>
     * </pre>
     * @return A sequence of 0 - n MessageUnit structs
@@ -508,7 +508,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
     *         Example (note that the qos are not yet fully implemented):<p />
     * <pre>
     *    &lt;qos>
-    *       &lt;NoNotify />     &lt;!-- The subscribers shall not be notified when this message is destroyed -->
+    *       &lt;noNotify />     &lt;!-- The subscribers shall not be notified when this message is destroyed -->
     *    &lt;/qos>
     * </pre>
     */
@@ -582,13 +582,13 @@ public class RequestBroker implements ClientListener, MessageEraseListener
     *          24000         &lt;!-- Default is no erasing (similar to pass 0 milliseconds) -->
     *       &lt;/erase>
     *
-    *       &lt;IsDurable />    &lt;!-- The message shall be recoverable if xmlBlaster crashes -->
+    *       &lt;isDurable />    &lt;!-- The message shall be recoverable if xmlBlaster crashes -->
     *                        &lt;!-- Default is transient -->
     *
-    *       &lt;ForceUpdate />  &lt;!-- An update is forced even when the content and meta data didn't change -->
+    *       &lt;forceUpdate />  &lt;!-- An update is forced even when the content and meta data didn't change -->
     *                        &lt;!-- Default is that identical published messages aren't sent to clients again -->
     *
-    *       &lt;Readonly />     &lt;!-- A final/const message which may not be changed with further updates -->
+    *       &lt;readonly />     &lt;!-- A final/const message which may not be changed with further updates -->
     *                        &lt;!-- Default is Read/Write -->
     *
     *       &lt;check lang='TCL'> &lt;!-- Allow content checking with a scripting language -->

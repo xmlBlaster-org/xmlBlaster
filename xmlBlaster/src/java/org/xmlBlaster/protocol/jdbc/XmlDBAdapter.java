@@ -5,7 +5,7 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   Main class for xml database adapter
- * Version:   $Id: XmlDBAdapter.java,v 1.2 2000/02/25 13:51:01 ruff Exp $
+ * Version:   $Id: XmlDBAdapter.java,v 1.3 2000/05/16 20:57:38 ruff Exp $
  * ------------------------------------------------------------------------------
  */
 
@@ -33,7 +33,6 @@ public class XmlDBAdapter implements I_Callback {
    private Server          xmlBlaster = null;
    private static String   ME = "XmlDBAdapter";
    private static String   passwd = "some";
-   private static String   qos = "";
    private String          publishOid = "XmlDBAdapter";
    private String          xmlKey = "";
    private CorbaConnection corbaConnection = null;
@@ -88,7 +87,7 @@ public class XmlDBAdapter implements I_Callback {
             org.omg.PortableServer.POAHelper.narrow(corbaConnection.getOrb().resolve_initial_references("RootPOA"));
 
          // ----------- Login to xmlBlaster -----------------------
-         xmlBlaster = corbaConnection.login(ME, passwd, qos, this);
+         xmlBlaster = corbaConnection.login(ME, passwd, null, this);
 
       }
       catch (Exception e) {

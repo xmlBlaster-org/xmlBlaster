@@ -3,11 +3,12 @@ Name:      TestPtD.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtD.java,v 1.12 2000/02/25 18:56:23 ruff Exp $
+Version:   $Id: TestPtD.java,v 1.13 2000/05/16 20:57:39 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
 import org.xmlBlaster.client.CorbaConnection;
+import org.xmlBlaster.client.LoginQosWrapper;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
@@ -83,13 +84,13 @@ public class TestPtD extends TestCase implements I_Callback
          String passwd = "secret";
 
          receiverConnection = new CorbaConnection();
-         receiverXmlBlaster = receiverConnection.login(receiverName, passwd, "<qos></qos>", this);
+         receiverXmlBlaster = receiverConnection.login(receiverName, passwd, new LoginQosWrapper(), this);
 
          receiver2Connection = new CorbaConnection();
-         receiver2XmlBlaster = receiver2Connection.login(receiver2Name, passwd, "<qos></qos>", this);
+         receiver2XmlBlaster = receiver2Connection.login(receiver2Name, passwd, new LoginQosWrapper(), this);
 
          senderConnection = new CorbaConnection();
-         senderXmlBlaster = senderConnection.login(senderName, passwd, "<qos></qos>", this);
+         senderXmlBlaster = senderConnection.login(senderName, passwd, new LoginQosWrapper(), this);
       }
       catch (Exception e) {
           Log.error(ME, e.toString());

@@ -3,12 +3,13 @@ Name:      ClientPubDestination.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster and publishing to destinations
-Version:   $Id: ClientPubDestination.java,v 1.7 2000/02/25 13:51:00 ruff Exp $
+Version:   $Id: ClientPubDestination.java,v 1.8 2000/05/16 20:57:33 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
 import org.xmlBlaster.util.*;
 import org.xmlBlaster.client.CorbaConnection;
+import org.xmlBlaster.client.LoginQosWrapper;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
 import org.xmlBlaster.protocol.corba.serverIdl.*;
@@ -80,8 +81,11 @@ public class ClientPubDestination
          BlasterCallback callback = receiverConnection.createCallbackServer(new PubDestinationCallback(loginName, this));
          Log.trace(loginName, "Exported BlasterCallback Server interface");
 
+         //----------- Login to xmlBlaster -----------------------
+         CallbackAddress addr = new CallbackAddress("IOR", receiverConnection.getOrb().object_to_string(callback));
+         LoginQosWrapper qos = new LoginQosWrapper(addr); // == "<qos><callback type='IOR'>IOR:00113220001...</callback></qos>";
          String passwd = "some";
-         receiverXmlBlaster = receiverConnection.login(loginName, passwd, callback, "<qos></qos>");
+         receiverXmlBlaster = receiverConnection.login(loginName, passwd, qos);
       }
       catch (Exception e) {
           e.printStackTrace();
@@ -108,8 +112,12 @@ public class ClientPubDestination
          BlasterCallback callback = corbaConnection.createCallbackServer(new PubDestinationCallback(loginName, this));
          Log.trace(loginName, "Exported BlasterCallback Server interface");
 
+         //----------- Login to xmlBlaster -----------------------
+         CallbackAddress addr = new CallbackAddress("IOR", corbaConnection.getOrb().object_to_string(callback));
+         LoginQosWrapper loginQos = new LoginQosWrapper(addr); // == "<qos><callback type='IOR'>IOR:00113220001...</callback></qos>";
+
          String passwd = "some";
-         xmlBlaster = corbaConnection.login(loginName, passwd, callback, "<qos></qos>");
+         xmlBlaster = corbaConnection.login(loginName, passwd, loginQos);
 
 
          //----------- Construct a love message and send it to Ulrike ---------

@@ -3,7 +3,7 @@ Name:      TestUnSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestUnSub.java,v 1.6 2000/02/25 18:56:24 ruff Exp $
+Version:   $Id: TestUnSub.java,v 1.7 2000/05/16 20:57:40 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -75,8 +75,7 @@ public class TestUnSub extends TestCase implements I_Callback
       try {
          senderConnection = new CorbaConnection(); // Find orb
          String passwd = "secret";
-         String qos = "<qos></qos>";
-         xmlBlaster = senderConnection.login(senderName, passwd, qos, this); // Login to xmlBlaster
+         xmlBlaster = senderConnection.login(senderName, passwd, null, this); // Login to xmlBlaster
       }
       catch (Exception e) {
           Log.error(ME, e.toString());

@@ -3,7 +3,7 @@ Name:      SubscribeQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: SubscribeQosWrapper.java,v 1.2 2000/02/20 17:38:50 ruff Exp $
+Version:   $Id: SubscribeQosWrapper.java,v 1.3 2000/05/16 20:57:36 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -18,9 +18,9 @@ import java.util.Vector;
  * A full specified <b>subscribe</b> qos could look like this:<br />
  * <pre>
  *     &lt;qos>
- *        &lt;NoMeta />       &lt;!-- Don't send me the xmlKey meta data on updates -->
- *        &lt;NoContent />    &lt;!-- Don't send me the content data on updates (notify only) -->
- *        &lt;NoLocal />      &lt;!-- Inhibit the delivery of messages to myself if i have published it -->
+ *        &lt;noMeta />       &lt;!-- Don't send me the xmlKey meta data on updates -->
+ *        &lt;noContent />    &lt;!-- Don't send me the content data on updates (notify only) -->
+ *        &lt;noLocal />      &lt;!-- Inhibit the delivery of messages to myself if i have published it -->
  *     &lt;/qos>
  * </pre>
  * <p />
@@ -87,11 +87,11 @@ public class SubscribeQosWrapper extends QosWrapper
       StringBuffer sb = new StringBuffer();
       sb.append("<qos>\n");
       if (noMeta)
-         sb.append("   <NoMeta />\n");
+         sb.append("   <noMeta />\n");
       if (noContent)
-         sb.append("   <NoContent />\n");
+         sb.append("   <noContent />\n");
       if (noLocal)
-         sb.append("   <NoLocal />\n");
+         sb.append("   <noLocal />\n");
       sb.append("</qos>");
       return sb.toString();
    }

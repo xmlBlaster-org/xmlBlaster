@@ -24,12 +24,12 @@ Using BOA (clientBOA.cc):
 
 3) Start the xmlBlaster server
 
-	 jaco org.xmlBlaster.Main -iorFile /tmp/NS_Ref
+	 jaco org.xmlBlaster.Main -iorFile /tmp/ior.dat
 
 
 4) And connect with the C++ client
 
-	 ./clientBOA `cat /tmp/NS_Ref`
+	 ./clientBOA `cat /tmp/ior.dat`
 
 
 Using POA (clientPOA.cc):

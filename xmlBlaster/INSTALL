@@ -287,6 +287,7 @@ C++ clients with MICO 2.3.0 (http://www.mico.org)
 
 2) Set the environment variable to point to MICO (needed for the Makefile)
    export MICO_HOME=/usr/local/mico
+	export LD_LIBRARY_PATH=${MICO_HOME}/lib:$LD_LIBRARY_PATH
 
 3) cd ${XMLBLASTER_HOME}/testsuite/c++
    and follow the instructions in ${XMLBLASTER_HOME}/testsuite/c++/README

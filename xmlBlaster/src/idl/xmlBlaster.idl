@@ -13,7 +13,7 @@ Compile:   JacORB Java 1.2:
            COPE Perl:
               idl2perl -imp xmlBlaster.idl
 Author:    ruff@swand.lake.de
-Version:   $Id: xmlBlaster.idl,v 1.34 2000/03/15 22:50:55 ruff Exp $
+Version:   $Id: xmlBlaster.idl,v 1.35 2000/05/16 20:57:34 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _xmlBlaster_IDL_
@@ -338,17 +338,18 @@ module authenticateIdl
        *
        * @param loginName A unique name
        * @param passwd    Password - Not yet necessary
-       * @param cb        Reference to the BlasterCallback interface or null for synchronous access
        * @param qos       Quality of Service, flags for additional client informations
        *                  like client certificate (X.509), timeout etc.
-       *
+       *                  Typically it contains the IOR reference to the BlasterCallback
+       *                  interface or other protocol addresses like email or http URL
+       *                   
+       * @see             xmlBlaster/src/dtd/XmlQoS.xml and dtd for qos examples
        * @return if the login is successful, the xmlBlaster server interface is returned
        * @exception if the login fails
        */
       serverIdl::Server login(in string loginName, in string passwd,
-                   in clientIdl::BlasterCallback cb,
-                   in serverIdl::XmlType qosClient)
-                      raises (serverIdl::XmlBlasterException);
+                              in serverIdl::XmlType qosClient)
+                              raises (serverIdl::XmlBlasterException);
 
 
       /**

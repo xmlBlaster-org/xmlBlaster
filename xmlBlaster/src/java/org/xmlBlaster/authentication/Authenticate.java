@@ -3,7 +3,7 @@ Name:      Authenticate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login for clients
-Version:   $Id: Authenticate.java,v 1.26 2000/02/28 18:39:49 ruff Exp $
+Version:   $Id: Authenticate.java,v 1.27 2000/05/16 20:57:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -70,7 +70,7 @@ public class Authenticate
 
 
    /**
-    * One instance implements a server. 
+    * One instance implements a server.
     *
     * Authenticate creates a single instance of the xmlBlaster.Server.
     * Clients need first to do a login, from where they get
@@ -135,7 +135,7 @@ public class Authenticate
 
 
    /**
-    * Get a handle on the request broker singleton (the engine of xmlBlaster). 
+    * Get a handle on the request broker singleton (the engine of xmlBlaster).
     * @return RequestBroker
     */
    public RequestBroker getRequestBroker()
@@ -163,12 +163,10 @@ public class Authenticate
     *           &lt;/queue>
     *        &lt;/client>
     *     </pre>
-    * @param callback The Callback interface of the client
     * @return The xmlBlaster.Server interface
     * @exception XmlBlasterException Access denied
     */
    public org.xmlBlaster.protocol.corba.serverIdl.Server login(String loginName, String passwd,
-                       BlasterCallback callback, String callbackIOR,
                        String xmlQoS_literal) throws XmlBlasterException
    {
       if (Log.DUMP) Log.dump(ME, "-------START-login()---------\n" + printOn().toString());
@@ -202,7 +200,7 @@ public class Authenticate
 
       org.xmlBlaster.protocol.corba.serverIdl.Server xmlBlaster = org.xmlBlaster.protocol.corba.serverIdl.ServerHelper.narrow(certificatedServerRef);
       ClientQoS xmlQoS = new ClientQoS(xmlQoS_literal);
-      AuthenticationInfo authInfo = new AuthenticationInfo(uniqueClientKey, loginName, passwd, xmlBlaster, callback, callbackIOR, xmlQoS);
+      AuthenticationInfo authInfo = new AuthenticationInfo(uniqueClientKey, loginName, passwd, xmlBlaster, xmlQoS);
 
       if (clientInfo != null) {
          clientInfo.notifyAboutLogin(authInfo); // clientInfo object exists, maybe with a queue of messages

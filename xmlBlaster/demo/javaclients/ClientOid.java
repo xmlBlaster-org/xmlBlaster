@@ -3,12 +3,13 @@ Name:      ClientOid.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientOid.java,v 1.7 2000/02/25 13:51:00 ruff Exp $
+Version:   $Id: ClientOid.java,v 1.8 2000/05/16 20:57:33 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
 import org.xmlBlaster.util.*;
 import org.xmlBlaster.client.CorbaConnection;
+import org.xmlBlaster.client.LoginQosWrapper;
 import org.xmlBlaster.protocol.corba.serverIdl.*;
 import org.xmlBlaster.protocol.corba.clientIdl.*;
 
@@ -54,16 +55,17 @@ public class ClientOid
 
 
          //----------- Login to xmlBlaster -----------------------
-         String qos = "<qos></qos>";
+         CallbackAddress addr = new CallbackAddress("IOR", corbaConnection.getOrb().object_to_string(callback));
+         LoginQosWrapper qos = new LoginQosWrapper(addr); // == "<qos><callback type='IOR'>IOR:00113220001...</callback></qos>";
          String passwd = "some";
-         xmlBlaster = corbaConnection.login(loginName, passwd, callback, qos);
+         xmlBlaster = corbaConnection.login(loginName, passwd, qos);
 
 
          //----------- Subscribe to a message with known oid -------
          String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
                          "<key oid=\"KEY_FOR_SMILEY\" queryType='EXACT'></key>";
          try {
-            xmlBlaster.subscribe(xmlKey, qos);
+            xmlBlaster.subscribe(xmlKey, "<qos></qos>");
          } catch(XmlBlasterException e) {
             Log.error(ME, "XmlBlasterException: " + e.reason);
          }
@@ -73,7 +75,7 @@ public class ClientOid
          //----------- Subscribe to a message with known oid -------
          // subscribing twice: this second subscribe is ignored
          try {
-            xmlBlaster.subscribe(xmlKey, qos);
+            xmlBlaster.subscribe(xmlKey, "<qos></qos>");
          } catch(XmlBlasterException e) {
             Log.error(ME, "XmlBlasterException: " + e.reason);
          }
@@ -85,10 +87,9 @@ public class ClientOid
                   "<key oid=\"KEY_FOR_SMILEY\" contentMime='text/plain'></key>";
          String str = "Yeahh, i'm the new content - Smiley changed";
          MessageUnit msg = new MessageUnit(xmlKey, str.getBytes());
-         qos = ""; // quality of service
          Log.trace(ME, "Sending some new Smiley data ...");
          try {
-            xmlBlaster.publish(msg, qos);
+            xmlBlaster.publish(msg, "");
          } catch(XmlBlasterException e) {
             Log.error(ME, "XmlBlasterException: " + e.reason);
          }
@@ -103,7 +104,7 @@ public class ClientOid
                   "<key oid=\"KEY_FOR_SMILEY\" queryType='EXACT'></key>";
          stop.restart();
          try {
-            xmlBlaster.unSubscribe(xmlKey, qos);
+            xmlBlaster.unSubscribe(xmlKey, "<qos></qos>");
          } catch(XmlBlasterException e) {
             Log.error(ME, "XmlBlasterException: " + e.reason);
          }

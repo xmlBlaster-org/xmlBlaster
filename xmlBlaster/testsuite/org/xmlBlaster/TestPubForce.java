@@ -3,7 +3,7 @@ Name:      TestPubForce.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestPubForce.java,v 1.1 2000/03/25 00:11:24 ruff Exp $
+Version:   $Id: TestPubForce.java,v 1.2 2000/05/16 20:57:39 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -15,7 +15,7 @@ import test.framework.*;
 
 
 /**
- * This client tests the method publish() with the ForceUpdate QOS tag
+ * This client tests the method publish() with the forceUpdate QOS tag
  * <br />
  * <p>
  * This client may be invoked multiple time on the same xmlBlaster server,
@@ -68,7 +68,7 @@ public class TestPubForce extends TestCase implements I_Callback
       try {
          senderConnection = new CorbaConnection(); // Find orb
          String passwd = "secret";
-         String qos = "<qos></qos>";
+         LoginQosWrapper qos = new LoginQosWrapper(); // == "<qos></qos>";
          xmlBlaster = senderConnection.login(senderName, passwd, qos, this); // Login to xmlBlaster
       }
       catch (Exception e) {
@@ -142,7 +142,7 @@ public class TestPubForce extends TestCase implements I_Callback
       PublishQosWrapper qosWrapper = new PublishQosWrapper();
       if (forceUpdate)
          qosWrapper.setForceUpdate();
-      String qos = qosWrapper.toXml(); // == "<qos><ForceUpdate/></qos>"
+      String qos = qosWrapper.toXml(); // == "<qos><forceUpdate/></qos>"
 
       try {
          publishOid = xmlBlaster.publish(msgUnit, qos);

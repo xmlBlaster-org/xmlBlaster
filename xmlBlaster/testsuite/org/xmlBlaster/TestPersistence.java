@@ -3,11 +3,12 @@ Name:      TestPersistence.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing durable messages
-Version:   $Id: TestPersistence.java,v 1.5 2000/02/25 18:56:23 ruff Exp $
+Version:   $Id: TestPersistence.java,v 1.6 2000/05/16 20:57:39 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
 import org.xmlBlaster.client.CorbaConnection;
+import org.xmlBlaster.client.LoginQosWrapper;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
@@ -63,7 +64,8 @@ public class TestPersistence extends TestCase implements I_Callback
       try {
          String passwd = "secret";
          senderConnection = new CorbaConnection();
-         senderXmlBlaster = senderConnection.login(senderName, passwd, "<qos></qos>", this);
+         LoginQosWrapper qos = new LoginQosWrapper(); // == "<qos></qos>";
+         senderXmlBlaster = senderConnection.login(senderName, passwd, qos, this);
       }
       catch (Exception e) {
           Log.error(ME, e.toString());

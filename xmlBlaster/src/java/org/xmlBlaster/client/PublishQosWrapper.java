@@ -3,7 +3,7 @@ Name:      PublishQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: PublishQosWrapper.java,v 1.7 2000/03/27 22:02:06 ruff Exp $
+Version:   $Id: PublishQosWrapper.java,v 1.8 2000/05/16 20:57:36 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -25,7 +25,7 @@ import java.util.Vector;
  *        &lt;destination queryType='EXACT'>
  *           Tim
  *        &lt;/destination>
- *        &lt;IsDurable />    &lt;!-- The message shall be recoverable if xmlBlaster crashes -->
+ *        &lt;isDurable />    &lt;!-- The message shall be recoverable if xmlBlaster crashes -->
  *     &lt;/qos>
  * </pre>
  * <p />
@@ -153,11 +153,11 @@ public class PublishQosWrapper extends QosWrapper
          sb.append("   </erase>\n");
       }
       if (isDurable)
-         sb.append("   <IsDurable />\n");
+         sb.append("   <isDurable />\n");
       if (forceUpdate)
-         sb.append("   <ForceUpdate />\n");
+         sb.append("   <forceUpdate />\n");
       if (readonly)
-         sb.append("   <Readonly />\n");
+         sb.append("   <readonly />\n");
       sb.append("</qos>");
       return sb.toString();
    }

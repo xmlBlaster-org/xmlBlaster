@@ -3,7 +3,7 @@ Name:      PublishFile.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a client to publish files to xmlBlaster
-Version:   $Id: PublishFile.java,v 1.7 2000/03/14 10:50:09 ruff Exp $
+Version:   $Id: PublishFile.java,v 1.8 2000/05/16 20:57:36 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.feeder;
 
@@ -137,7 +137,7 @@ public class PublishFile
 
 
    /**
-    * Open the connection, publish the message, close the connection. 
+    * Open the connection, publish the message, close the connection.
     */
    public PublishFile(String loginName, String passwd, String xmlKey, byte[] content, String xmlQos)
    {
@@ -169,8 +169,7 @@ public class PublishFile
    {
       try {
          senderConnection = new CorbaConnection(); // Find orb
-         String loginQos = "<qos></qos>";
-         xmlBlaster = senderConnection.login(loginName, passwd, loginQos); // Login to xmlBlaster
+         xmlBlaster = senderConnection.login(loginName, passwd, null); // Login to xmlBlaster
       }
       catch (Exception e) {
           Log.error(ME, e.toString());

@@ -3,16 +3,18 @@ Name:      ClientSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSub.java,v 1.10 2000/02/25 13:51:00 ruff Exp $
+Version:   $Id: ClientSub.java,v 1.11 2000/05/16 20:57:33 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
 import org.xmlBlaster.client.CorbaConnection;
+import org.xmlBlaster.client.LoginQosWrapper;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Args;
 import org.xmlBlaster.util.StopWatch;
+import org.xmlBlaster.util.CallbackAddress;
 import org.xmlBlaster.protocol.corba.serverIdl.*;
 import org.xmlBlaster.protocol.corba.clientIdl.*;
 
@@ -60,9 +62,10 @@ public class ClientSub
          BlasterCallback callback = corbaConnection.createCallbackServer(new SubCallback(ME, this));
 
          //----------- Login to xmlBlaster -----------------------
-         String qos = "<qos></qos>";
+         CallbackAddress addr = new CallbackAddress("IOR", corbaConnection.getOrb().object_to_string(callback));
+         LoginQosWrapper qos = new LoginQosWrapper(addr); // == "<qos><callback type='IOR'>IOR:00113220001...</callback></qos>";
          String passwd = "some";
-         xmlBlaster = corbaConnection.login(loginName, passwd, callback, qos);
+         xmlBlaster = corbaConnection.login(loginName, passwd, qos);
 
 
          //----------- Subscribe to messages with XPATH -------
@@ -74,7 +77,7 @@ public class ClientSub
                            "</key>";
             stop.restart();
             try {
-               xmlBlaster.subscribe(xmlKey, qos);
+               xmlBlaster.subscribe(xmlKey, "<qos></qos>");
                Log.trace(ME, "Subscribe done, there should be no Callback" + stop.nice());
             } catch(XmlBlasterException e) {
                Log.warning(ME, "XmlBlasterException: " + e.reason);
@@ -126,7 +129,7 @@ public class ClientSub
                             "</key>";
             String[] strArr = null;
             try {
-               strArr = xmlBlaster.erase(xmlKey, qos);
+               strArr = xmlBlaster.erase(xmlKey, "<qos></qos>");
             } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
             if (strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " messages:");
          }

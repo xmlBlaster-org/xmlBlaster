@@ -3,11 +3,12 @@ Name:      TestPtDQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtDQueue.java,v 1.10 2000/03/19 00:31:23 ruff Exp $
+Version:   $Id: TestPtDQueue.java,v 1.11 2000/05/16 20:57:39 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
 import org.xmlBlaster.client.CorbaConnection;
+import org.xmlBlaster.client.LoginQosWrapper;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
@@ -78,7 +79,7 @@ public class TestPtDQueue extends TestCase implements I_Callback
    {
       try {
          senderConnection = new CorbaConnection();
-         senderXmlBlaster = senderConnection.login(senderName, passwd, "<qos></qos>", this);
+         senderXmlBlaster = senderConnection.login(senderName, passwd, new LoginQosWrapper(), this);
       }
       catch (XmlBlasterException e) {
           Log.error(ME, e.toString());
@@ -168,7 +169,7 @@ public class TestPtDQueue extends TestCase implements I_Callback
          // Now the receiver logs in, and should get the message from the xmlBlaster queue ...
          try {
             receiverConnection = new CorbaConnection();
-            receiverXmlBlaster = receiverConnection.login(receiverName, passwd, "<qos></qos>", this);
+            receiverXmlBlaster = receiverConnection.login(receiverName, passwd, new LoginQosWrapper(), this);
          } catch (XmlBlasterException e) {
              Log.error(ME, e.toString());
              e.printStackTrace();

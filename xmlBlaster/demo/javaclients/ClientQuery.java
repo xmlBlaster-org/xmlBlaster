@@ -3,7 +3,7 @@ Name:      ClientGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientQuery.java,v 1.8 2000/02/25 13:51:00 ruff Exp $
+Version:   $Id: ClientQuery.java,v 1.9 2000/05/16 20:57:33 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -43,12 +43,11 @@ public class ClientQuery
             queryType = "XPATH";
          else
             Log.panic(ME, "Please enter a query string, example:\n" +
-                          "   jaco javaclients.ClientQuery -queryXpath \"//DRIVER/AGENT\"");
+                          "   jaco javaclients.ClientQuery -queryXpath \"//key\"");
 
          CorbaConnection corbaConnection = new CorbaConnection(args);
-         String qos = "";
          String passwd = "some";
-         xmlBlaster = corbaConnection.login(loginName, passwd, (BlasterCallback)null, qos);
+         xmlBlaster = corbaConnection.login(loginName, passwd, null);
 
 
          String xmlKey = "<key oid='' queryType='" + queryType + "'>\n" +
@@ -56,7 +55,7 @@ public class ClientQuery
                          "</key>";
          MessageUnitContainer[] msgArr = null;
          try {
-            msgArr = xmlBlaster.get(xmlKey, qos);
+            msgArr = xmlBlaster.get(xmlKey, "<qos></qos>");
             Log.info(ME, "Got " + msgArr.length + " messages for query '" + queryString + "':");
             for (int ii=0; ii<msgArr.length; ii++) {
                UpdateKey updateKey = new UpdateKey();

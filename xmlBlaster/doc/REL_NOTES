@@ -3,6 +3,20 @@
 Changes for 0.77 [?, 2000]
 ===============================
 
+   - Changed xmlBlaster.idl
+	  from
+	     login(in string loginName, in string passwd,
+              in clientIdl::BlasterCallback cb,
+              in serverIdl::XmlType qos)
+	  to 
+	     login(in string loginName, in string passwd,
+              in serverIdl::XmlType qos)
+	  The callback protocol and address is now passed using
+	  the xml based qos.
+	  NOTE: You need to change your client code as well!
+	  See requirement engine.qos.login.callback
+	  
+
    - CORBA implementors other than JACORB and MICO can now be used. ORBACUS 
      can work for the xmlBlaster server, java clients and c++ clients. You 
      need OB-4.0b3 (for c++) and JOB-4.0b3 (for Java) or higher. You can 

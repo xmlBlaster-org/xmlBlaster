@@ -3,10 +3,11 @@ Name:      TestLoginLogoutEvent.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout event test for xmlBlaster
-Version:   $Id: TestLoginLogoutEvent.java,v 1.1 2000/03/25 23:51:31 ruff Exp $
+Version:   $Id: TestLoginLogoutEvent.java,v 1.2 2000/05/16 20:57:39 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
+import org.xmlBlaster.client.LoginQosWrapper;
 import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
@@ -20,9 +21,9 @@ import test.framework.*;
 
 
 /**
- * This client tests for login/logout events of other clients. 
+ * This client tests for login/logout events of other clients.
  * <p />
- * There are two internal messages which hold login and logout events. 
+ * There are two internal messages which hold login and logout events.
  * You can subscribe to "__sys__Login" to be notified when a new client logs in,
  * and to "__sys__Logout" to be notified when a client logs out.
  * The message content contains the unique login name of this client.
@@ -51,7 +52,6 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
    private String expectedName;
 
    private String passwd = "secret";
-   private String loginQos = "<qos></qos>";
 
    private int numReceived = 0;         // error checking
    private final String contentMime = "text/plain";
@@ -81,7 +81,8 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
    {
       try {
          firstConnection = new CorbaConnection(); // Find orb
-         xmlBlaster = firstConnection.login(firstName, passwd, loginQos, this); // Login to xmlBlaster
+         LoginQosWrapper qos = new LoginQosWrapper(); // == "<qos></qos>";
+         xmlBlaster = firstConnection.login(firstName, passwd, qos, this); // Login to xmlBlaster
       }
       catch (Exception e) {
           Log.error(ME, e.toString());
@@ -135,7 +136,7 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
 
 
    /**
-    * TEST: Test to receive a login and a logout event. 
+    * TEST: Test to receive a login and a logout event.
     */
    public void testLoginLogout()
    {
@@ -148,12 +149,13 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
       expectedName = null;        // no check (the logout event exists with TestAll but not when this test is run alone
       subscribe("__sys__Logout");
       Util.delay(1000L);          // no check
-      
+
       numReceived = 0;
       expectedName = secondName; // second name should be returned on this login
       try {
          secondConnection = new CorbaConnection(); // Find orb
-         secondBlaster = secondConnection.login(secondName, passwd, loginQos, this); // Login to xmlBlaster
+         LoginQosWrapper qos = new LoginQosWrapper(); // == "<qos></qos>";
+         secondBlaster = secondConnection.login(secondName, passwd, qos, this); // Login to xmlBlaster
          waitOnUpdate(1000L, 1);  // login event arrived?
       }
       catch (XmlBlasterException e) {
@@ -186,7 +188,7 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
       numReceived++;
       String name = new String(content);
       Log.info(ME, loginName + " - Receiving update of a message " + updateKey.getUniqueKey() + ", event for client " + name);
-   
+
       if (expectedName != null)
          assertEquals("Wrong login name returned", expectedName, name);
    }

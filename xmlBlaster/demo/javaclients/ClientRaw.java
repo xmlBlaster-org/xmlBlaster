@@ -3,7 +3,7 @@ Name:      ClientRaw.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code how to access xmlBlaster using CORBA
-Version:   $Id: ClientRaw.java,v 1.8 2000/05/09 02:42:48 laghi Exp $
+Version:   $Id: ClientRaw.java,v 1.9 2000/05/16 20:57:33 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -63,7 +63,11 @@ public class ClientRaw
             name[0] = new NameComponent();
             name[0].id = "xmlBlaster-Authenticate";
             name[0].kind = "MOM";
-
+            if (nc == null) {
+               Log.panic(ME, "Sorry this demo needs a running naming service, for example:\n"
+                           + "   ${JacORB_HOME}/bin/ns  /usr/local/httpd/htdocs/NS_Ref\n"
+                           + "Read xmlBlaster/INSTALL for help");
+            }
             authServer = AuthServerHelper.narrow(nc.resolve(name));
          }
 
@@ -81,10 +85,19 @@ public class ClientRaw
          rootPOA.the_POAManager().activate();
 
          //----------- Login to the server -----------------------
-         String qos = "";
          try {
             String passwd = "some";
-            xmlBlaster = authServer.login(loginName, passwd, callback, qos);
+
+            // Create a XML based qos (quality of service) which hold the IOR (the CORBA
+            // address of our callback server)
+            String qos = "<qos><callback type='IOR'>";
+            qos += orb.object_to_string(callback);
+            qos += "</callback></qos>";
+
+            // The xmlBlaster server takes this IOR string and uses it to connect
+            // to our client-side callback interface to deliver updates back
+
+            xmlBlaster = authServer.login(loginName, passwd, qos);
             Log.info(ME, "Login done");
          } catch(XmlBlasterException e) {
             Log.warning(ME, "XmlBlasterException: " + e.reason);
@@ -100,7 +113,7 @@ public class ClientRaw
                            "</key>";
             stop.restart();
             try {
-               xmlBlaster.subscribe(xmlKey, qos);
+               xmlBlaster.subscribe(xmlKey, "<qos></qos>");
             } catch(XmlBlasterException e) {
                Log.warning(ME, "XmlBlasterException: " + e.reason);
             }

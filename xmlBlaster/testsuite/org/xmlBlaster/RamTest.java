@@ -3,7 +3,7 @@ Name:      RamTest.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: RamTest.java,v 1.6 2000/02/25 18:58:10 ruff Exp $
+Version:   $Id: RamTest.java,v 1.7 2000/05/16 20:57:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -71,8 +71,7 @@ public class RamTest extends TestCase
       try {
          senderConnection = new CorbaConnection(); // Find orb
          String passwd = "secret";
-         String qos = "<qos></qos>";
-         xmlBlaster = senderConnection.login(senderName, passwd, qos); // Login to xmlBlaster without Callback
+         xmlBlaster = senderConnection.login(senderName, passwd, null); // Login to xmlBlaster without Callback
       }
       catch (Exception e) {
           Log.error(ME, e.toString());

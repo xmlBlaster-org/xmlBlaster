@@ -100,13 +100,8 @@ public class XmlDBClient implements I_Callback
          // ----------- Find orb ----------------------------------
          corbaConnection = new CorbaConnection(args);
 
-         // ---------- Building a Callback server ----------------------
-         // Getting the default POA implementation "RootPOA"
-         org.omg.PortableServer.POA poa =
-            org.omg.PortableServer.POAHelper.narrow(corbaConnection.getOrb().resolve_initial_references("RootPOA"));
-
          // ----------- Login to xmlBlaster -----------------------
-         xmlBlaster = corbaConnection.login(ME, passwd, qos, this);
+         xmlBlaster = corbaConnection.login(ME, passwd, null, this);
 
       }
       catch (Exception e)

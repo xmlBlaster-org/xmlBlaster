@@ -3,7 +3,7 @@ Name:      TestGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestGet.java,v 1.6 2000/03/09 18:36:37 ruff Exp $
+Version:   $Id: TestGet.java,v 1.7 2000/05/16 20:57:39 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -63,7 +63,7 @@ public class TestGet extends TestCase
       try {
          corbaConnection = new CorbaConnection(); // Find orb
          String passwd = "secret";
-         String qos = "<qos></qos>";
+         LoginQosWrapper qos = new LoginQosWrapper(); // == "<qos></qos>";
          xmlBlaster = corbaConnection.login(loginName, passwd, qos); // Login to xmlBlaster
       }
       catch (Exception e) {
