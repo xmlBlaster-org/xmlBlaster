@@ -47,6 +47,7 @@ namespace org { namespace xmlBlaster { namespace util {
 
         return result;
     }
+    Dll_Export extern std::string lexical_cast(bool arg); // See Global.cpp
 }}}
 
 

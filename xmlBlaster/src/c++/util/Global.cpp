@@ -3,7 +3,7 @@ Name:      Global.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Global.cpp,v 1.51 2004/01/14 17:47:42 ruff Exp $
+Version:   $Id: Global.cpp,v 1.52 2004/01/16 18:52:40 ruff Exp $
 ------------------------------------------------------------------------------*/
 #include <client/protocol/CbServerPluginManager.h>
 #include <util/dispatch/DispatchManager.h>
@@ -28,12 +28,17 @@ Version:   $Id: Global.cpp,v 1.51 2004/01/14 17:47:42 ruff Exp $
 #if defined(__GNUC__) || defined(__ICC)
    // To support query state with 'ident libxmlBlasterClient.so' or 'what libxmlBlasterClient.so'
    // or 'strings libxmlBlasterClient.so  | grep Global.cpp'
-   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.51 2004/01/14 17:47:42 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.52 2004/01/16 18:52:40 ruff Exp $ xmlBlaster @version@";
 #elif defined(__SUNPRO_CC)
-   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.51 2004/01/14 17:47:42 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.52 2004/01/16 18:52:40 ruff Exp $ xmlBlaster @version@";
 #endif
 
 namespace org { namespace xmlBlaster { namespace util {
+
+std::string lexical_cast(bool arg)
+{
+	return (arg) ? "true" : "false";
+}
 
 using namespace std;
 using namespace org::xmlBlaster::util::dispatch;
