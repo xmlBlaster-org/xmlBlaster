@@ -161,8 +161,6 @@ public final class DeliveryWorker implements Runnable
          entryList = null;
          shutdown();
       }
-
-      if (log.TRACE) log.trace(ME, "Finished callback job. " + this.msgQueue.getNumOfEntries() + " messages in the queue. " + deliveryManager.getDeliveryStatistic().toXml(""));
    }
 
    void shutdown() {
