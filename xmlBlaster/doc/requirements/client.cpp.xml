@@ -53,20 +53,20 @@ class HelloWorld2 : public I_Callback,          // for the asynchroneous updates
                     public I_ConnectionProblems // for notification of connection problems when failsafe
 {
 private:
-   string  ME;		                        // the string identifying this class when logging
+   string  ME;                                  // the string identifying this class when logging
    Global& global_;                            
-   Log&    log_;																// the reference to the log object for this instance
+   Log&    log_;                                // the reference to the log object for this instance
 
 public:
    HelloWorld2(Global& glob) 
-	 : ME("HelloWorld2"),
-	   global_(glob), 
-		 log_(glob.getLog("demo"))      // all logs written in this class are written to the
+         : ME("HelloWorld2"),
+           global_(glob), 
+                 log_(glob.getLog("demo"))      // all logs written in this class are written to the
    {                                            // log channel called 'demo'. To see the traces of this
    }                                            // channel invoke -trace[demo] true on the command line,
                                                 // then it will only switch on the traces for the demo channel
 
-   virtual ~HelloWorld2()												// the constructor does nothing for the moment
+   virtual ~HelloWorld2()                       // the constructor does nothing for the moment
    {
    }
 
@@ -97,13 +97,13 @@ public:
          ConnectQos qos(global_, "joe", "secret");
          log_.info(ME, string("connecting to xmlBlaster. Connect qos: ") + qos.toXml());
 
-				 // connects to xmlBlaster and gives a pointer to this class to tell which update method to invoke
-				 // when callbacks come from the server.
+                                 // connects to xmlBlaster and gives a pointer to this class to tell which update method to invoke
+                                 // when callbacks come from the server.
          ConnectReturnQos retQos = con.connect(qos, this);  // Login to xmlBlaster, register for updates
          log_.info(ME, "successfully connected to xmlBlaster. Return qos: " + retQos.toXml());
 
-				 // subscribe key. By invoking setOid you implicitly choose the 'EXACT' mode. If you want to 
-				 // subscribe with XPATH use setQueryString instead.
+                                 // subscribe key. By invoking setOid you implicitly choose the 'EXACT' mode. If you want to 
+                                 // subscribe with XPATH use setQueryString instead.
          SubscribeKey subKey(global_);
          subKey.setOid("HelloWorld2");
          SubscribeQos subQos(global_);
@@ -112,7 +112,7 @@ public:
          SubscribeReturnQos subRetQos = con.subscribe(subKey, subQos);
          log_.info(ME, string("successfully subscribed to xmlBlaster. Return qos: ") + subRetQos.toXml());
 
-				 // publish a message with the oid 'HelloWorld2'
+                                 // publish a message with the oid 'HelloWorld2'
          PublishQos publishQos(global_);
          PublishKey publishKey(global_);
          publishKey.setOid("HelloWorld2");
@@ -184,12 +184,106 @@ int main(int args, char ** argv)
    </pre>
    </example>
 
+   <configuration where="client">
+      <p>
+      These configurations are tested:
+      </p>
+      <table border="1">
+       <tr>
+       <th>No.</th>
+       <th>OS</th>
+       <th>Compiler</th>
+       <th>xmlBlaster</th>
+       <th>Protocol library</th>
+       <th>XML library</th>
+       <th>Date</th>
+       <th>Author</th>
+       <th>Comment</th>
+       </tr>
+
+       <tr>
+       <td>1</td>
+       <td>WindowsXP</td>
+       <td>VC++ 7</td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.842</a></td>
+       <td>CORBA: <a href="http://www.cs.wustl.edu/~schmidt/TAO.html">ACE/TAO 1.2.2 or ACE 5.3/TAO 1.3</a></td>
+       <td><a href="http://xml.apache.org">XERCES C++ 2.2</a></td>
+       <td>2003-02-14</td>
+       <td><a href="mailto:mjhn@bigpond.net.au">Martin</a>, <a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
+       <td>Edit <a href="http://www.xmlBlaster.org/xmlBlaster/build.properties">build.properties</a> and use <a href="http://www.xmlBlaster.org/xmlBlaster/build.xml">xmlBlaster/build.xml</a> to compile</td>
+       </tr>
+
+       <tr>
+       <td>2</td>
+       <td>WindowsXP</td>
+       <td>VC++ 7</td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.842</a></td>
+       <td>CORBA: <a href="http://www.mico.org">mico 2.3.8</a></td>
+       <td><a href="http://xml.apache.org">XERCES C++ 1.7</a></td>
+       <td>2003-02-14</td>
+       <td><a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
+       <td>Edit <a href="http://www.xmlBlaster.org/xmlBlaster/build.properties">build.properties</a> and use <a href="http://www.xmlBlaster.org/xmlBlaster/build.xml">xmlBlaster/build.xml</a> to compile</td>
+       </tr>
+
+       <tr>
+       <td>3</td>
+       <td>Linux 2.4.18</td>
+       <td><a href="http://www.gnu.org/software/gcc/gcc.html">g++</a> 3.2</td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.842</a></td>
+       <td>CORBA: <a href="http://www.cs.wustl.edu/~schmidt/TAO.html">ACE 5.3 and TAO 1.3</a></td>
+       <td><a href="http://xml.apache.org">XERCES C++ 2.2</a></td>
+       <td>2003-02-14</td>
+       <td><a href="mailto:laghi@swissinfo.org">Michele</a>, <a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
+       <td>Edit <a href="http://www.xmlBlaster.org/xmlBlaster/build.properties">build.properties</a> and use <a href="http://www.xmlBlaster.org/xmlBlaster/build.xml">xmlBlaster/build.xml</a> to compile</td>
+       </tr>
+
+       <tr>
+       <td>3</td>
+       <td>Linux 2.4.4 and 2.4.18</td>
+       <td><a href="http://www.gnu.org/software/gcc/gcc.html">g++</a> 2.95.2 and 3.2</td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.842</a></td>
+       <td>CORBA: <a href="http://www.mico.org/">mico 2.3.7</a></td>
+       <td><a href="http://xml.apache.org">XERCES C++ 2.2</a></td>
+       <td>2003-02-14</td>
+       <td><a href="mailto:laghi@swissinfo.org">Michele</a>, <a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
+       <td>Edit <a href="http://www.xmlBlaster.org/xmlBlaster/build.properties">build.properties</a> and use <a href="http://www.xmlBlaster.org/xmlBlaster/build.xml">xmlBlaster/build.xml</a> to compile</td>
+       </tr>
+      </table>
+      <p>
+       For compilation options please use
+      </p>
+<pre>
+   build.sh cpp     compiles client lib and testsuite on UNIX
+   build.bat cpp    compiles client lib and testsuite on Windows
+
+   build.sh usage   show other compile options
+</pre>
+<p>
+Compilation with VC 6 will fail.
+</p>
+<p>
+The source code is already prepared for other corba implementors such as
+</p>
+<ol>
+  <li>ORBACUS</li>
+  <li>ORBIX</li>
+  <li>OMNIORB</li>
+</ol>
+<p>
+but the current status of the library has not been tested against these orbs.
+See <a href="http://www.xmlBlaster.org/xmlBlaster/src/c++/client/protocol/corba/CompatibleCorba.h">CompatibleCorba.h</a> for a current list.
+</p>
+<p>
+Please <a href="mailto:xmlBlaster-devel@xmlBlaster.org">let us know</a> if you successfully compiled and ran the testsuite with other combinations.
+Particularly interesting it would be the INTEL compiler on Linux and Windows and Solaris with the GCC or the Workshop Compiler. 
+</p>
+   </configuration>
 
    <see type="REQ">client.cpp.precondition</see>
 
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
    <date>2003 01 15</date>
-   <revision>$Revision: 1.2 $</revision>
+   <revision>$Revision: 1.3 $</revision>
 </requirement>
 
