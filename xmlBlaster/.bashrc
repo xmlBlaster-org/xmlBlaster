@@ -22,7 +22,7 @@
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash
 # Thanks to Heinrich Goetzger
-# $Revision: 1.57 $
+# $Revision: 1.58 $
 #-----------------------------------------------------------
 
 
@@ -75,8 +75,8 @@ if [ -d ${XMLBLASTER_HOME} ]; then
 
    CLASSPATH=${XMLBLASTER_HOME}/lib/parser.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/jaxp.jar:${CLASSPATH}
-   CLASSPATH=${XMLBLASTER_HOME}/lib/TowerJ/xtdash.jar:${CLASSPATH}
-   CLASSPATH=${XMLBLASTER_HOME}/lib/TowerJ/omquery.jar:${CLASSPATH}
+   CLASSPATH=${XMLBLASTER_HOME}/lib/xtdash.jar:${CLASSPATH}
+   CLASSPATH=${XMLBLASTER_HOME}/lib/omquery.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/test.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/servlet-2.0.jar:${CLASSPATH}
    if [ ${USE_ANT:=""} = "true" ] ; then
