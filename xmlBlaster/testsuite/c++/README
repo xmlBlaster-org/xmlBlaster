@@ -1,6 +1,7 @@
-This is an example to access xmlBlaster from a C++ callback
+This is an example to access xmlBlaster from a C++ client
 
 - client.cc uses the MICO (C++) CORBA library
+
 - xmlBlaster runs with JacORB (Java)
 
 
