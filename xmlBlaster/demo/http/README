@@ -58,6 +58,12 @@ Using tomcat 3.2.4 serlvet enginge (http://jakarta.apache.org):
         <mime-type>
             image/svg+xml
         </mime-type>
+        <extension>
+            svg
+        </extension>
+        <mime-type>
+            image/xml+svg
+        </mime-type>
     </mime-mapping>
 
 
