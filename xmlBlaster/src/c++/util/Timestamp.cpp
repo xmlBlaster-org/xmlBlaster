@@ -3,7 +3,7 @@ Name:      Timestamp.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Timestamp.cpp,v 1.11 2003/01/14 13:33:23 johnson Exp $
+Version:   $Id: Timestamp.cpp,v 1.12 2003/01/14 13:36:07 johnson Exp $
 ------------------------------------------------------------------------------*/
 
 #include <util/Timestamp.h>
@@ -11,7 +11,7 @@ Version:   $Id: Timestamp.cpp,v 1.11 2003/01/14 13:33:23 johnson Exp $
 #include <boost/lexical_cast.hpp>
 #include <time.h>
 
-using boost::lexical_cast;
+using namespace boost;
 
 namespace org { namespace xmlBlaster { namespace util {
 
