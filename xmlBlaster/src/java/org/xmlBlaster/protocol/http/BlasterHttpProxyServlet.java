@@ -3,7 +3,7 @@ Name:      BlasterHttpProxyServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxyServlet.java,v 1.16 2000/05/06 20:33:44 ruff Exp $
+Version:   $Id: BlasterHttpProxyServlet.java,v 1.17 2000/05/09 16:42:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -21,7 +21,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
 
 /**
  * This servlet doesn't leave the doGet() method after an invocation
- * keeping a permanent http connection. 
+ * keeping a permanent http connection.
  * <p />
  * With the doGet() method you may login/logout to xmlBlaster, and
  * receive your instant callbacks.<br />
@@ -33,7 +33,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
  * Invoke for testing:<br />
  *    http://localhost/servlet/BlasterHttpProxyServlet?ActionType=login&loginName=martin&passwd=secret
  * @author Marcel Ruff ruff@swand.lake.de
- * @version $Revision: 1.16 $
+ * @version $Revision: 1.17 $
  */
 public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlaster.util.LogListener
 {
@@ -49,7 +49,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
       // Redirect xmlBlaster logs to servlet log file (see method log() below)
       Log.setDefaultLogLevel();
       // Log.addLogLevel("DUMP");  // Use this to see all messages!
-      // Log.addLogLevel("TRACE");
+      Log.addLogLevel("TRACE");
       // Log.addLogLevel("CALLS");
       Log.addLogLevel("TIME");
       // Log.addLogListener(this);
@@ -59,7 +59,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
 
 
    /**
-    * GET request from the browser, usually to do an initial login. 
+    * GET request from the browser, usually to do an initial login.
     * <p />
     * Used for login and for keeping a permanent http connection.
     * <br />
@@ -85,17 +85,11 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
       String sessionId = session.getId();
       if (Log.TRACE) Log.trace(ME, "Entering doGet() for sessionId=" + sessionId);
 
-/*
-      if(!req.isRequestedSessionIdFromCookie()) { // && isCookieEnabled() ?????
-         pushHandler.push("alert('Sorry, your browser does not support cookies, you will not get updates from xmlBlaster."+sessionId+"');\n",false);
-         pushHandler.cleanup();
-         Log.error(ME, "Cookies are not supported by the browser.");
+      if(sessionId == null) {
+         PrintWriter out = res.getWriter();
+         out.println(HttpPushHandler.alert("Sorry, your sessionId is invalid"));
          return;
       }
-      else{
-         Log.info(ME,"Cookies are supported.");
-      }
-*/
 
       try {
          String actionType = Util.getParameter(req, "ActionType", "");
@@ -173,6 +167,8 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
             HttpPushHandler pushHandler = BlasterHttpProxy.getHttpPushHandler(sessionId);
             pushHandler.push("if (parent.error != null) parent.error('"+codedText+"');\n",false);
          } catch (XmlBlasterException e2) {
+            PrintWriter out = res.getWriter();
+            out.println(HttpPushHandler.alert(e.reason));
          }
       } catch (Exception e) {
          Log.error(ME, "Caught Exception: " + e.toString());
@@ -180,6 +176,8 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
             HttpPushHandler pushHandler = BlasterHttpProxy.getHttpPushHandler(sessionId);
             pushHandler.push("if (parent.error != null) parent.error('"+e.toString()+"');\n",false);
          } catch (XmlBlasterException e2) {
+            PrintWriter out = res.getWriter();
+            out.println(HttpPushHandler.alert(e.toString()));
          }
          e.printStackTrace();
       }
@@ -313,20 +311,4 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
    {
       getServletContext().log(str);
    }
-
-
-   /**
-    * Display a popup alert message containing the error text
-    *
-    * @param text The error text
-    */
-   public final String alert(String text)
-   {
-      StringBuffer retStr = new StringBuffer();
-      retStr.append("alert(\"" + text.replace('\n', ' ') + "\");\n");
-      Log.warning(ME, "Sending alert to browser: " + text);
-      return retStr.toString();
-   }
-
-
 }
