@@ -255,7 +255,8 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
    }
 
    /**
-    * @param forceUpdate Mark a PtP message to be queued if receiver is not available. 
+    * Send message to subscriber even if the content is the same as the previous. 
+    * @param forceUpdate
     */
    public void setForceUpdate(boolean forceUpdate) {
       this.forceUpdate.setValue(forceUpdate);
