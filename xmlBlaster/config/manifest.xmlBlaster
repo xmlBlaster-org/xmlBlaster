@@ -18,6 +18,7 @@ Class-Path: xmlrpc.jar junit.jar omquery.jar
  postgresql.jar 
  jmxtools.jar jmxri.jar 
  hsqldb.jar 
+ java_cup.jar 
  commons-codec.jar commons-logging.jar 
  commons-lang-2.0.jar
 
