@@ -26,6 +26,7 @@ Author:    <Michele Laghi> michele.laghi@attglobal.net
 
 #include <util/XmlBlasterException.h>
 #include <util/Global.h>
+#include <client/protocol/corba/CorbaDriver.h>
 
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::qos;
@@ -48,7 +49,7 @@ CorbaConnection::CorbaConnection(Global& global, CORBA::ORB_ptr orb)
     msgQosFactory_(global)
 {
   log_.getProperties().loadPropertyFile();
-  log_.info(me(), "Trying to establish a CORBA connection to xmlBlaster");
+  log_.info(me(), "Initializing CORBA ORB");
   if (log_.call()) log_.call(me(), "CorbaConnection constructor ...");
 //  if (numOfSessions_ == 0) {
      if (orb) orb_ = orb;
@@ -57,14 +58,6 @@ CorbaConnection::CorbaConnection(Global& global, CORBA::ORB_ptr orb)
         const char * const* argc = global_.getArgc();
         orb_ = CORBA::ORB_init(args, const_cast<char **>(argc)); //, "XmlBlaster-C++-Client");
      }
-/*
-  }
-  else {
-     if (orb) {
-        throw XmlBlasterException(USER_CONFIGURATION, "c++-client", me() + " constructor: this constructor can only be called as the first instance of this class. Use the other constructor (please consult the API)");
-     }
-  }
-*/
 
 //  numOfSessions_++;
   nameServerControl_ = 0;
@@ -100,53 +93,30 @@ CorbaConnection::~CorbaConnection()
    poa_ = 0;
 }
 
-string
-CorbaConnection::getAddress() const
+string CorbaConnection::getAddress() const
 {
    return xmlBlasterIOR_;
 }
 
-string
-CorbaConnection::getCbAddress() const
+string CorbaConnection::getCbAddress() const
 {
    return callbackIOR_;
 }
 
-CORBA::ORB_ptr
-CorbaConnection::getOrb() 
+CORBA::ORB_ptr CorbaConnection::getOrb() 
 {
    if ( CORBA::is_nil(orb_)) {
       string msg = "Sorry, no ORB handle ";
       msg       += "available, please check CORBA plugin.";
       string txt = me();
       txt += ".NotLoggedIn";
-      throw serverIdl::XmlBlasterException("communication.noConnection", 
-                                          "client", me().c_str(), "en",
-                                          txt.c_str(), "", "", "", "", "", "");
+      throw XmlBlasterException("communication.noConnection", "client", me(), "en", txt);
    }
    return CORBA::ORB::_duplicate(orb_);
 }
 
 
-/*
-serverIdl::Server_ptr 
-CorbaConnection::getXmlBlaster() 
-{
-  if ( CORBA::is_nil(xmlBlaster_)) {
-     string msg = "Sorry, no xmlBlaster handle ";
-     msg       += "available, please login first.";
-     string txt = me();
-     txt += ".NotLoggedIn";
-     throw serverIdl::XmlBlasterException("communication.noConnection", 
-                                          "client", me().c_str(), "en",
-                                          txt.c_str(), "", "", "", "", "", "");
-  }
-  return serverIdl::Server::_duplicate(xmlBlaster_.in());
-}
-*/
-
-CosNaming::NamingContext_ptr 
-CorbaConnection::getNamingService() 
+CosNaming::NamingContext_ptr CorbaConnection::getNamingService() 
 {
   if (log_.call()) log_.call(me(), "getNamingService() ...");
   if (orb_ == 0) log_.panic(me(), "orb==null, internal problem");
@@ -156,8 +126,7 @@ CorbaConnection::getNamingService()
 }
 
    
-authenticateIdl::AuthServer_ptr 
-CorbaConnection::getAuthenticationService() 
+authenticateIdl::AuthServer_ptr CorbaConnection::getAuthenticationService() 
 {
   if (log_.call()) log_.call(me(), "getAuthenticationService() ...");
   if (!CORBA::is_nil(authServer_))
@@ -277,62 +246,129 @@ CorbaConnection::getAuthenticationService()
   if (useNameService) {
      try {
         if (!nameServerControl_) getNamingService();
-        CORBA::Object_var obj =
-           nameServerControl_->resolve("xmlBlaster-Authenticate.MOM");
-        authServer_ = authenticateIdl::AuthServer::_narrow(obj.in());
-        log_.info(me(),"Accessing xmlBlaster using a naming service.");
-        return authenticateIdl::AuthServer::_duplicate(authServer_);
-     }
-     catch(serverIdl::XmlBlasterException & /*e*/ ) {
-        log_.error(me() + ".NoAuthService", text);
-        throw serverIdl::XmlBlasterException("communication.noConnection", 
-                                             "client", me().c_str(), "en",
-                                             text.c_str(), "", "", "", "", 
-                                             "", "");
-     }
-  }
-  if (log_.trace()) log_.trace(me(), "No -ns ...");
-  throw serverIdl::XmlBlasterException("communication.noConnection", "client",
-                                       me().c_str(), "en", text.c_str(), "", 
-                                       "", "", "", "", "");
-}
 
-/*
-serverIdl::Server_ptr
-CorbaConnection::login(const string &loginName, const string &passwd,
-                       const LoginQosWrapper &qos, I_Callback *client) 
-{
+        string contextId = global_.getProperty().getStringProperty("NameService.context.id", "xmlBlaster");
+        string contextKind = global_.getProperty().getStringProperty("NameService.context.kind", "MOM");
+        string clusterId = global_.getProperty().getStringProperty("NameService.node.id", global_.getStrippedId());
+        string clusterKind = global_.getProperty().getStringProperty("NameService.node.kind", "MOM");
 
-  if (log_.call()) log_.call(me(), "login(" + loginName + ") ...");
-  if ( !CORBA::is_nil(xmlBlaster_)) {
-     string msg = "You are already logged in, returning cached handle";
-     msg += " on xmlBlaster";
-     log_.warn(me(), msg);
-     return serverIdl::Server::_duplicate(xmlBlaster_);
-  }
-  loginName_ = loginName;
-  passwd_    = passwd;
-  loginQos_  = qos;
+        CORBA::Object_var obj = nameServerControl_->resolve(contextId, contextKind);
+        CosNaming::NamingContext_var relativeContext_obj = CosNaming::NamingContext::_narrow(obj.in());
+        NameServerControl relativeContext(relativeContext_obj);
+        log_.info(me(), "Retrieved NameService context " + contextId + "." + contextKind);
 
-  if (client) {
-     if (defaultCallback_) delete defaultCallback_;
-     defaultCallback_ =  new DefaultCallback(global_, loginName_, client, 0);
-     callback_ = createCallbackServer(defaultCallback_);
-     callbackIOR_ = orb_->object_to_string(callback_);
-     util::qos::address::CallbackAddress addr(global_, "IOR");
-     addr.setAddress(callbackIOR_);
-     loginQos_.addCallbackAddress(addr);
-     if (log_.trace()) log_.trace(me(), string("Success, exported ") +
-                                "BlasterCallback Server interface for "+
-                                loginName);
-  }
-  loginRaw();
-  return serverIdl::Server::_duplicate(xmlBlaster_);
-}
-*/
+         authenticateIdl::AuthServer_var authServerFirst;
+         string tmpId = "";           // for logging only
+         string tmpServerName = "";   // for logging only
+         string firstServerName = ""; // for logging only
+         int countServerFound = 0;    // for logging only
+         string serverNameList = "";  // for logging only
+         try {
+            authServer_ = authenticateIdl::AuthServer::_narrow(relativeContext.resolve(clusterId, clusterKind));
+         }
+         catch (XmlBlasterException ex) {
+         }
 
-clientIdl::BlasterCallback_ptr
-CorbaConnection::createCallbackServer(POA_clientIdl::BlasterCallback *implObj) 
+         /*============================
+          TestGet -ORBInitRef NameService=`cat /tmp/ns.ior` -trace true -call true
+         =============================*/
+
+         if ( CORBA::is_nil(authServer_) ) {
+            if (log_.trace()) log_.trace(me(), "Query NameServer to find a suitable xmlBlaster server for '" +
+                     NameServerControl::getString(contextId, contextKind)+"/"+NameServerControl::getString(clusterId, clusterKind) +
+                     "' failed, is nil");
+            CosNaming::BindingList_var bl;
+            CosNaming::BindingIterator_var bi;
+            relativeContext.getNamingService()->list(0, bl, bi);
+
+            // process the remaining bindings if an iterator exists:
+            if (CORBA::is_nil(authServer_) && !CORBA::is_nil(bi)) {
+               int i = 0;
+               CORBA::Boolean more;
+               do {
+                  more = bi->next_n(1, bl);
+                  if (bl->length() != 1) {
+                     if (log_.trace()) log_.trace(me(), "NameService entry id is nil");
+                     break;
+                  }
+                  CORBA::ULong index = 0;
+                  string id = lexical_cast<string>(bl[index].binding_name[0].id);
+                  string kind = lexical_cast<string>(bl[index].binding_name[0].kind);
+                  if (log_.trace()) log_.trace(me(), "id=" + id + " kind=" + kind);
+
+                  tmpId = id;
+                  countServerFound++;
+                  tmpServerName = NameServerControl::getString(contextId, contextKind)+"/"+NameServerControl::getString(id, kind);
+                  if (i>0) serverNameList += ", ";
+                  i++;
+                  serverNameList += tmpServerName;
+
+                  if (clusterId == id && clusterKind == kind) {
+                     try {
+                        if (log_.trace()) log_.trace(me(), "Trying to resolve NameService entry '"+NameServerControl::getString(id, kind)+"'");
+                        authServer_ = authenticateIdl::AuthServer::_narrow(relativeContext.resolve(id, kind));
+                        if (! CORBA::is_nil(authServer_))
+                           break; // found a matching server
+                        else
+                           log_.warn(me(), "Connecting to NameService entry '"+tmpServerName+"' failed, is_nil");
+                     }
+                     catch (const CORBA::Exception &exc) {
+                        log_.warn(me(), "Connecting to NameService entry '"+tmpServerName+"' failed: " + lexical_cast<string>(exc));
+                     }
+                  }
+
+                  if (CORBA::is_nil(authServerFirst)) {
+                     if (log_.trace()) log_.trace(me(), "Remember the first server");
+                     try {
+                        firstServerName = tmpServerName;
+                        if (log_.trace()) log_.trace(me(), "Remember the first reachable xmlBlaster server from NameService entry '"+firstServerName+"'");
+                        authServerFirst = authenticateIdl::AuthServer::_narrow(relativeContext.resolve(id, kind));
+                     }
+                     catch (const CORBA::Exception &exc) {
+                        log_.warn(me(), "Connecting to NameService entry '"+tmpServerName+"' failed: " + lexical_cast<string>(exc));
+                     }
+                  }
+               } while ( more );
+            }
+            bi->destroy();  // Clean up server side iteration resources
+         }
+
+         if (CORBA::is_nil(authServer_)) {
+            if (! CORBA::is_nil(authServerFirst)) {
+               if (countServerFound > 1) {
+                  string str = string("Can't choose one of ") + lexical_cast<string>(countServerFound) +
+                                 " avalailable server in CORBA NameService: " + serverNameList +
+                                 ". Please choose one with e.g. -NameService.node.id " + tmpId;
+                  log_.warn(me(), str);
+                  throw XmlBlasterException("communication.noConnection", "client", me(), "en", str);
+               }
+               log_.info(me(), "Choosing only available server '" + firstServerName + "' in CORBA NameService");
+               this->authServer_ = authenticateIdl::AuthServer::_duplicate(authServerFirst);
+               return authenticateIdl::AuthServer::_duplicate(authServerFirst);
+            }
+            else {
+               log_.trace(me(), "No usable xmlBlaster server found in NameService: " + serverNameList);
+               throw XmlBlasterException("communication.noConnection", "client", me(), "en", text);
+            }
+         }
+
+         log_.info(me(), "Accessing xmlBlaster using CORBA naming service entry '" +
+                           NameServerControl::getString(contextId, contextKind) +
+                           "/" + NameServerControl::getString(clusterId, clusterKind));
+
+         return authenticateIdl::AuthServer::_duplicate(authServer_);
+      }
+      catch(serverIdl::XmlBlasterException &e ) {
+         log_.trace(me() + ".NoAuthService", text);
+         throw CorbaDriver::convertFromCorbaException(e);
+      }
+   } // if (useNameService)
+
+   if (log_.trace()) log_.trace(me(), "No -ns ...");
+   throw XmlBlasterException("communication.noConnection", "client", me(), "en", text);
+} // getAuthenticationService() 
+
+clientIdl::BlasterCallback_ptr CorbaConnection::createCallbackServer(POA_clientIdl::BlasterCallback *implObj) 
 {
   if (implObj) {
      if (log_.trace()) log_.trace(me(), "Trying resolve_initial_references ...");
@@ -349,29 +385,6 @@ CorbaConnection::createCallbackServer(POA_clientIdl::BlasterCallback *implObj)
   }
   return (clientIdl::BlasterCallback_ptr)0;
 }
-
-/*
-void 
-CorbaConnection::loginRaw() 
-{
-  if (log_.call()) log_.call(me(),"loginRaw(" + loginName_ + ") ...");
-  try {
-     if (CORBA::is_nil(authServer_)) getAuthenticationService();
-     xmlBlaster_ = authServer_->login(loginName_.c_str(),
-                                      passwd_.c_str(),
-                                      loginQos_.toXml().c_str());
-     numLogins_++;
-     if (log_.trace()) log_.trace(me(),"Success, login for "+loginName_);
-     if (log_.dump() ) log_.dump(me() ,loginQos_.toXml());
-  }
-  catch(serverIdl::XmlBlasterException &e) {
-     string msg = "Login failed for ";
-     msg +=  loginName_; //  + ", numLogins=" + numLogins_;
-     if (log_.trace()) log_.trace(me(), msg);
-     throw e;
-  }
-}
-*/
 
 ConnectReturnQos CorbaConnection::connect(const ConnectQos& connectQos)
 {
@@ -404,7 +417,7 @@ ConnectReturnQos CorbaConnection::connect(const ConnectQos& connectQos)
       if (log_.trace()) log_.trace(me(),"Success, connect for "+loginName_);
       return connectReturnQos_;
    }
-   catch(serverIdl::XmlBlasterException &e) {
+   catch(XmlBlasterException &e) {
       string msg = "Connect failed for ";
       msg +=  loginName_; //  + ", numLogins=" + numLogins_;
       if (log_.trace()) log_.trace(me(), msg);
@@ -412,35 +425,7 @@ ConnectReturnQos CorbaConnection::connect(const ConnectQos& connectQos)
    }
 }
 
-/*
-bool
-CorbaConnection::logout() 
-{
-  if (log_.call()) log_.call(me(), "logout() ...");
-
-  if ( CORBA::is_nil(xmlBlaster_)) {
-     log_.warn(me(), "No logout, you are not logged in");
-     return false;
-  }
-  else log_.info(me(), "Logout from xmlBlaster ...");
-
-  try {
-     if (!CORBA::is_nil(xmlBlaster_)) authServer_->logout(xmlBlaster_);
-     xmlBlaster_ = 0;
-     log_.info(me(), "Disconnected from xmlBlaster.");
-     return true;
-  }
-  catch(serverIdl::XmlBlasterException &e) {
-     string msg = "XmlBlasterException: ";
-     msg += e.message;
-     log_.warn(me(), msg);
-  }
-  xmlBlaster_ = 0;
-  return false;
-}
-*/
-bool
-CorbaConnection::shutdown()
+bool CorbaConnection::shutdown()
 {
    bool ret = false;
    if (!CORBA::is_nil(xmlBlaster_)) {
@@ -456,8 +441,7 @@ CorbaConnection::shutdown()
    return ret;
 }
 
-bool
-CorbaConnection::shutdownCb()
+bool CorbaConnection::shutdownCb()
 {
    if (!CORBA::is_nil(callback_)) {
       CORBA::release(callback_);
@@ -467,10 +451,7 @@ CorbaConnection::shutdownCb()
    return false;
 }
 
-
-
-bool
-CorbaConnection::disconnect(const string& qos)
+bool CorbaConnection::disconnect(const string& qos)
 {
    if (log_.call()) log_.call(me(), "disconnect() ...");
    if (log_.dump()) log_.dump(me(), string("disconnect: the qos: ") + qos);
@@ -488,8 +469,6 @@ CorbaConnection::disconnect(const string& qos)
    shutdown();
    return false;
 }
-
-
 
 /**
 * Subscribe a message. 
