@@ -22,26 +22,21 @@ import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.enum.MethodName;
-import org.xmlBlaster.util.qos.MsgQosData;
-import org.xmlBlaster.util.qos.TopicProperty;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.queuemsg.MsgQueuePublishEntry;
-import org.xmlBlaster.engine.xml2java.*;
-import org.xmlBlaster.engine.qos.PublishQosServer;
-import org.xmlBlaster.engine.qos.SubscribeQosServer;
-import org.xmlBlaster.engine.qos.UnSubscribeQosServer;
-import org.xmlBlaster.engine.qos.EraseQosServer;
-import org.xmlBlaster.engine.qos.GetQosServer;
-import org.xmlBlaster.engine.qos.GetReturnQosServer;
 import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.qos.MsgQosData;
+import org.xmlBlaster.util.qos.TopicProperty;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
-import org.xmlBlaster.util.qos.storage.TopicsStoreProperty;
+import org.xmlBlaster.util.qos.storage.TopicStoreProperty;
 import org.xmlBlaster.util.qos.AccessFilterQos;
+import org.xmlBlaster.util.dispatch.DeliveryWorkerPool;
+import org.xmlBlaster.util.cluster.RouteInfo;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
@@ -52,24 +47,31 @@ import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.engine.queuemsg.ReferenceEntry;
 import org.xmlBlaster.engine.queuemsg.MsgQueueHistoryEntry;
 import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
+import org.xmlBlaster.engine.queuemsg.TopicEntry;
 import org.xmlBlaster.engine.mime.I_AccessFilter;
 import org.xmlBlaster.engine.mime.AccessPluginManager;
 import org.xmlBlaster.engine.mime.I_PublishFilter;
 import org.xmlBlaster.engine.mime.PublishPluginManager;
-import org.xmlBlaster.util.cluster.RouteInfo;
+import org.xmlBlaster.engine.xml2java.XmlKey;
+import org.xmlBlaster.engine.qos.PublishQosServer;
+import org.xmlBlaster.engine.qos.SubscribeQosServer;
+import org.xmlBlaster.engine.qos.UnSubscribeQosServer;
+import org.xmlBlaster.engine.qos.EraseQosServer;
+import org.xmlBlaster.engine.qos.GetQosServer;
+import org.xmlBlaster.engine.qos.GetReturnQosServer;
 import org.xmlBlaster.engine.cluster.PublishRetQosWrapper;
+import org.xmlBlaster.engine.persistence.I_PersistenceDriver;
+import org.xmlBlaster.engine.persistence.PersistencePluginManager;
+import org.xmlBlaster.engine.admin.CommandManager;
+import org.xmlBlaster.engine.admin.I_AdminNode;
+import org.xmlBlaster.engine.persistence.MsgFileDumper;
+import org.xmlBlaster.engine.msgstore.I_Map;
+import org.xmlBlaster.engine.msgstore.I_MapEntry;
 import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.authentication.I_ClientListener;
 import org.xmlBlaster.authentication.ClientEvent;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.authentication.SubjectInfo;
-import org.xmlBlaster.engine.persistence.I_PersistenceDriver;
-import org.xmlBlaster.engine.persistence.PersistencePluginManager;
-import org.xmlBlaster.util.dispatch.DeliveryWorkerPool;
-import org.xmlBlaster.engine.admin.CommandManager;
-import org.xmlBlaster.engine.admin.I_AdminNode;
-import org.xmlBlaster.engine.persistence.MsgFileDumper;
-import org.xmlBlaster.engine.msgstore.I_Map;
 
 import java.util.*;
 import java.io.*;
@@ -113,7 +115,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
    /**
     * Store configuration of all topics in xmlBlaster for recovery
     */
-   private I_Map topicsStore;
+   private I_Map topicStore;
 
    /**
     * This client is only for internal use, it is un secure to pass it outside because
@@ -195,7 +197,10 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
       glob.setRequestBroker(this);
       this.uptime = System.currentTimeMillis();
 
-      this.useOldStylePersistence = glob.getProperty().get("useOldStylePersistence", true);
+      this.useOldStylePersistence = glob.getProperty().get("useOldStylePersistence", false);
+      if (this.useOldStylePersistence) {
+         log.warn(ME, "Old style fielstorage is switched on which is deprecated (-useOldStylePersistence true).");
+      }
 
       glob.getRunlevelManager().addRunlevelListener(this);
 
@@ -300,8 +305,12 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
          return;
 
       if (to > from) { // startup
-         if (to == RunlevelManager.RUNLEVEL_CLEANUP_PRE) {
-            loadPersistentMessages();
+         if (to == RunlevelManager.RUNLEVEL_STANDBY_PRE) {
+           startupTopicStore();
+         }
+         else if (to == RunlevelManager.RUNLEVEL_CLEANUP_PRE) {
+           // Load all persistent topics from persistent storage
+           loadPersistentMessages();
          }
       }
 
@@ -329,23 +338,70 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
    }
 
    /**
+    * @return The handle on the persistence storage for all topics
+    */
+   I_Map getTopicStore() {
+      return this.topicStore;
+   }
+
+
+   /**
     * This stores the topics configuration (the publish administrative message - the MsgUnit data struct)
     */
-   private void startupTopicsStore() throws XmlBlasterException   {
+   private void startupTopicStore() throws XmlBlasterException   {
+      if (log.CALL) log.call(ME, "Entering startupTopicStore(), looking for persisted topics");
+      
+      boolean wipeOutJdbcDB = glob.getProperty().get("wipeOutJdbcDB", false);
+      if (wipeOutJdbcDB) {
+         String tableNamePrefix = "XMLBLASTER";
+         tableNamePrefix = glob.getProperty().get("queue.persistent.tableNamePrefix", tableNamePrefix).toUpperCase();
+         log.warn(ME, "You have set '-wipeOutJdbcDB true', we will destroy now the complete JDBC persistence store entries of prefix="+tableNamePrefix);
+         try {
+            org.xmlBlaster.util.queue.jdbc.JdbcManager.wipeOutDB(glob, tableNamePrefix);
+         }
+         catch (XmlBlasterException e) {
+            log.error(ME, "Wipe out of JDBC database entries failed: " + e.getMessage());
+         }
+      }
+
+      boolean useTopicStore = glob.getProperty().get("useTopicStore", true);
+      if (!useTopicStore) {
+         log.warn(ME, "Persistent and recoverable topics are switched of with '-useTopicStore false', topics are handled RAM based only.");
+         return;
+      }
+
       synchronized (this) {
-         // TODO: get TopicsStoreProperty from administrator
-         //TopicsStoreProperty topicsStoreProperty = this.topicProperty.getTopicsStoreProperty();
-         TopicsStoreProperty topicsStoreProperty = new TopicsStoreProperty(glob, glob.getStrippedId());
-         if (this.topicsStore == null) {
-            String type = topicsStoreProperty.getType();
-            String version = topicsStoreProperty.getVersion();
-            // e.g. "topicsStore:/node/heron" is the unique name of the data store:
-            StorageId topicsStoreId = new StorageId("topicsStore", glob.getStrippedId());
-            this.topicsStore = glob.getTopicsStorePluginManager().getPlugin(type, version, topicsStoreId, topicsStoreProperty); //this.topicsStore = new org.xmlBlaster.engine.msgstore.ram.MapPlugin();
+         // TODO: get TopicStoreProperty from administrator
+         //TopicStoreProperty topicStoreProperty = this.topicProperty.getTopicStoreProperty();
+         TopicStoreProperty topicStoreProperty = new TopicStoreProperty(glob, glob.getStrippedId());
+         
+         if (this.topicStore == null) {
+            String type = topicStoreProperty.getType();
+            String version = topicStoreProperty.getVersion();
+            // e.g. "topicStore:/node/heron" is the unique name of the data store:
+            StorageId topicStoreId = new StorageId("topicStore", glob.getStrippedId());
+            this.topicStore = glob.getTopicStorePluginManager().getPlugin(type, version, topicStoreId, topicStoreProperty);
+            //this.topicStore = new org.xmlBlaster.engine.msgstore.ram.MapPlugin();
+            log.info(ME, "Activated storage '" + this.topicStore.getStorageId() + "' for persistent topics, found " + this.topicStore.getNumOfEntries() + " topics to recover.");
+
+            I_MapEntry[] mapEntryArr = this.topicStore.getAll();
+            boolean fromPersistenceStore = true;
+            for(int i=0; i<mapEntryArr.length; i++) {
+               TopicEntry topicEntry = (TopicEntry)mapEntryArr[i];
+               PublishQosServer publishQosServer = new PublishQosServer(glob,
+                       (MsgQosData)topicEntry.getMsgUnit().getQosData(), fromPersistenceStore);
+               publishQosServer.setTopicEntry(topicEntry); // Misuse PublishQosServer to transport the topicEntry
+               try {
+                  publish(unsecureSessionInfo, topicEntry.getMsgUnit(), publishQosServer);
+               }
+               catch (XmlBlasterException e) {
+                  log.error(ME, "Restoring topic '" + topicEntry.getMsgUnit().getKeyOid() + "' from persistency failed: " + e.getMessage());
+               }
+            }
          }
          else {
             log.info(ME, "Reconfiguring topics store.");
-            this.topicsStore.setProperties(topicsStoreProperty);
+            this.topicStore.setProperties(topicStoreProperty);
          }
       }
    }
@@ -1034,11 +1090,35 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
    }
 
    /**
+    * Make the topicHandler persistent for crash recovery and shutdown/startup cycle. 
+    * @return Number of new entries added: 0 if entry existed, 1 if new entry added
+    */
+   public final int addPersistentTopicHandler(TopicEntry topicEntry) throws XmlBlasterException {
+      if (this.topicStore != null) {
+         if (log.TRACE) log.trace(ME, "Persisting topicEntry");
+         return this.topicStore.put(topicEntry);
+      }
+      return 0;
+   }
+
+   /**
+    * Remove the persistent TopicHandler entry. 
+    * @return the number of elements erased.
+    */
+   public final int removePersistentTopicHandler(TopicEntry topicEntry) throws XmlBlasterException {
+      if (this.topicStore != null) {
+         if (log.TRACE) log.trace(ME, "Removing persisting topicEntry");
+         return this.topicStore.remove(topicEntry);
+      }
+      return 0;
+   }
+
+   /**
     * @return The previous topic handler (there should never be any in our context).
     */
    public final TopicHandler addTopicHandler(TopicHandler topicHandler) {
       synchronized(messageContainerMap) {
-         return (TopicHandler)messageContainerMap.put(topicHandler.getUniqueKey(), topicHandler);
+         return (TopicHandler)messageContainerMap.put(topicHandler.getUniqueKey(), topicHandler); // ram lookup
       }
    }
 
@@ -1068,7 +1148,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
     * @param subs
     */
    private void subscribeToOid(SubscriptionInfo subs) throws XmlBlasterException {
-      if (log.TRACE) log.trace(ME, "Entering subscribeToOid() ...");
+      if (log.CALL) log.call(ME, "Entering subscribeToOid(subId="+subs.getSubscriptionId()+", oid="+subs.getKeyData().getOid()+", queryType="+subs.getKeyData().getQueryType()+") ...");
       String uniqueKey = subs.getKeyData().getOid();
       TopicHandler topicHandler = null;
       synchronized(messageContainerMap) {
@@ -1243,6 +1323,12 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
       return publish(sessionInfo, msgUnit, false);
    }
 
+   private final String publish(SessionInfo sessionInfo, MsgUnit msgUnit, boolean isClusterUpdate) throws XmlBlasterException {
+      PublishQosServer publishQosServer = new PublishQosServer(glob, msgUnit.getQosData());
+      publishQosServer.setClusterUpdate(isClusterUpdate);
+      return publish(sessionInfo, msgUnit, publishQosServer);
+   }
+
    /**
     * Write-Access method to publish a new message from a data source.
     * <p />
@@ -1279,7 +1365,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
     *
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">The interface.publish requirement</a>
     */
-   private final String publish(SessionInfo sessionInfo, MsgUnit msgUnit, boolean isClusterUpdate) throws XmlBlasterException
+   private final String publish(SessionInfo sessionInfo, MsgUnit msgUnit, PublishQosServer publishQos) throws XmlBlasterException
    {
       try {
          if (msgUnit == null) {
@@ -1288,10 +1374,9 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
          }
 
          MsgKeyData msgKeyData = (MsgKeyData)msgUnit.getKeyData();
-         PublishQosServer publishQos = new PublishQosServer(glob, msgUnit.getQosData());
 
-         if (log.CALL) log.call(ME, "Entering " + (isClusterUpdate?"cluster update message ":"") + "publish(oid='" + msgKeyData.getOid() + "', contentMime='" + msgKeyData.getContentMime() + "', contentMimeExtended='" + msgKeyData.getContentMimeExtended() + "' domain='" + msgKeyData.getDomain() + "' from client '" + sessionInfo.getId() + "' ...");
-         if (log.DUMP) log.dump(ME, "Receiving " + (isClusterUpdate?"cluster update ":"") + " message in publish()\n" + msgKeyData.toXml() + "\n" + publishQos.toXml());
+         if (log.CALL) log.call(ME, "Entering " + (publishQos.isClusterUpdate()?"cluster update message ":"") + "publish(oid='" + msgKeyData.getOid() + "', contentMime='" + msgKeyData.getContentMime() + "', contentMimeExtended='" + msgKeyData.getContentMimeExtended() + "' domain='" + msgKeyData.getDomain() + "' from client '" + sessionInfo.getId() + "' ...");
+         if (log.DUMP) log.dump(ME, "Receiving " + (publishQos.isClusterUpdate()?"cluster update ":"") + " message in publish()\n" + msgKeyData.toXml() + "\n" + publishQos.toXml());
 
          PublishReturnQos publishReturnQos = null;
 
@@ -1321,11 +1406,11 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
          if (msgKeyData.isAdministrative()) {
             if (!glob.supportAdministrative())
                throw new XmlBlasterException(glob, ErrorCode.RESOURCE_ADMIN_UNAVAILABLE, ME, "Sorry administrative publish() is not available, try to configure xmlBlaster.");
-            return glob.getMomClientGateway().setCommand(sessionInfo, msgKeyData, msgUnit, publishQos, isClusterUpdate);
+            return glob.getMomClientGateway().setCommand(sessionInfo, msgKeyData, msgUnit, publishQos, publishQos.isClusterUpdate());
          }
 
          // Check if a publish filter is installed and if so invoke it ...
-         if (getPublishPluginManager().hasPlugins() && !isClusterUpdate) {
+         if (getPublishPluginManager().hasPlugins() && !publishQos.isClusterUpdate()) {
             Map mimePlugins = getPublishPluginManager().findMimePlugins(msgKeyData.getContentMime(),msgKeyData.getContentMimeExtended());
             if (mimePlugins != null) {
                Iterator iterator = mimePlugins.values().iterator();
@@ -1345,12 +1430,12 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
 
          // cluster support - forward pubSub message to master ...
          if (useCluster) {
-            if (!isClusterUpdate) { // updates from other nodes are arriving here in publish as well
+            if (!publishQos.isClusterUpdate()) { // updates from other nodes are arriving here in publish as well
                if (publishQos.isPtp()) {  // is PtP message
                   Destination[] destinationArr = publishQos.getDestinationArr(); // !!! add XPath client query here !!!
                   for (int ii = 0; ii<destinationArr.length; ii++) {
                      if (log.TRACE) log.trace(ME, "Working on PtP message for destination [" + destinationArr[ii].getDestination() + "]");
-                     publishReturnQos = forwardPtpPublish(sessionInfo, msgUnit, isClusterUpdate, destinationArr[ii]);
+                     publishReturnQos = forwardPtpPublish(sessionInfo, msgUnit, publishQos.isClusterUpdate(), destinationArr[ii]);
                      if (publishReturnQos != null) {
                         // Message was forwarded. TODO: How to return multiple publishReturnQos from multiple destinations? !!!
                         publishQos.removeDestination(destinationArr[ii]);
@@ -1393,7 +1478,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
          synchronized(messageContainerMap) {
             Object obj = messageContainerMap.get(msgKeyData.getOid());
             if (obj == null) {
-               topicHandler = new TopicHandler(this, sessionInfo, msgUnit); // adds itself to messageContainerMap
+               topicHandler = new TopicHandler(this, sessionInfo, msgUnit.getKeyOid()); // adds itself to messageContainerMap
             }
             else {
                topicHandler = (TopicHandler)obj;
@@ -1464,47 +1549,46 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
                                   TopicHandler topicHandler, PublishQosServer xmlQoS)
                                   throws XmlBlasterException
    {
-      if (topicHandler.isNewCreated()) {
-         topicHandler.setNewCreatedFalse();
-         if (topicHandler.hasDomTree()) {  // A topic may suppress XPATH visibility
-            XmlKey keyDom = topicHandler.getXmlKey();  // This is DOM parsed already
+      if (log.CALL) log.call(ME, "checkExistingSubscriptions(" + topicHandler.getUniqueKey() + "), should happen only once for each topic.");
 
-            if (log.TRACE) log.trace(ME, "Checking existing query subscriptions if they match with this new one");
+      if (topicHandler.hasDomTree()) {  // A topic may suppress XPATH visibility
+         XmlKey keyDom = topicHandler.getXmlKey();  // This is DOM parsed already
 
-            Set set = clientSubscriptions.getQuerySubscribeRequestsSet();
-            Vector matchingSubsVec = new Vector();
-            synchronized (set) {
-               Iterator iterator = set.iterator();
-               // for every XPath subscription ...
-               while (iterator.hasNext()) {
+         if (log.TRACE) log.trace(ME, "Checking existing query subscriptions if they match with this new one");
 
-                  SubscriptionInfo existingQuerySubscription = (SubscriptionInfo)iterator.next();
-                  KeyData queryXmlKey = existingQuerySubscription.getKeyData();
-                  if (!queryXmlKey.isXPath()) { // query: subscription without a given oid
-                     log.warn(ME,"Only XPath queries are supported, ignoring subscription.");
-                     continue;
-                  }
-                  String xpath = ((QueryKeyData)queryXmlKey).getQueryString();
+         Set set = clientSubscriptions.getQuerySubscribeRequestsSet();
+         Vector matchingSubsVec = new Vector();
+         synchronized (set) {
+            Iterator iterator = set.iterator();
+            // for every XPath subscription ...
+            while (iterator.hasNext()) {
 
-                  // ... check if the new message matches ...
-                  if (keyDom.match(xpath) == true) {
-                     SubscriptionInfo subs = new SubscriptionInfo(glob, existingQuerySubscription.getSessionInfo(),
-                                                 existingQuerySubscription, keyDom.getKeyData());
-                     existingQuerySubscription.addSubscription(subs);
-                     matchingSubsVec.addElement(subs);
-                  }
+               SubscriptionInfo existingQuerySubscription = (SubscriptionInfo)iterator.next();
+               KeyData queryXmlKey = existingQuerySubscription.getKeyData();
+               if (!queryXmlKey.isXPath()) { // query: subscription without a given oid
+                  log.warn(ME,"Only XPath queries are supported, ignoring subscription.");
+                  continue;
+               }
+               String xpath = ((QueryKeyData)queryXmlKey).getQueryString();
+
+               // ... check if the new message matches ...
+               if (keyDom.match(xpath) == true) {
+                  SubscriptionInfo subs = new SubscriptionInfo(glob, existingQuerySubscription.getSessionInfo(),
+                                                existingQuerySubscription, keyDom.getKeyData());
+                  existingQuerySubscription.addSubscription(subs);
+                  matchingSubsVec.addElement(subs);
                }
             }
-
-            // now after closing the synchronized block, me may fire the events
-            // doing it inside the synchronized could cause a deadlock
-            for (int ii=0; ii<matchingSubsVec.size(); ii++) {
-               subscribeToOid((SubscriptionInfo)matchingSubsVec.elementAt(ii));    // fires event for subscription
-            }
-
-            // we don't need this DOM tree anymore ...
-            keyDom.cleanupMatch();
          }
+
+         // now after closing the synchronized block, me may fire the events
+         // doing it inside the synchronized could cause a deadlock
+         for (int ii=0; ii<matchingSubsVec.size(); ii++) {
+            subscribeToOid((SubscriptionInfo)matchingSubsVec.elementAt(ii));    // fires event for subscription
+         }
+
+         // we don't need this DOM tree anymore ...
+         keyDom.cleanupMatch();
       }
    }
 
@@ -1761,6 +1845,9 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
       TopicHandler[] topicHandlerArr = getTopicHandlerArr();
 
       sb.append(offset).append("<RequestBroker>");
+      if (this.topicStore != null) {
+         sb.append(this.topicStore.toXml(extraOffset+Constants.INDENT));
+      }
       for (int ii=0; ii<topicHandlerArr.length; ii++) {
          sb.append(topicHandlerArr[ii].toXml(extraOffset+Constants.INDENT));
       }
