@@ -705,6 +705,7 @@ bool myUpdate(MsgUnitArr *msgUnitArr, void *userData, XmlBlasterException *xmlBl
 {
    size_t i;
    bool testException = false;
+   userData = 0; /* to avoid compiler warning (we don't need it here) */
    for (i=0; i<msgUnitArr->len; i++) {
       char *xml = messageUnitToXml(&msgUnitArr->msgUnitArr[i]);
       printf("[client] CALLBACK update(): Asynchronous message update arrived:%s\n", xml);
