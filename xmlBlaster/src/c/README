@@ -11,6 +11,8 @@ Please read
 
 for more details.
 
+(See xmlBlaster/demo/c/socket/README for demo clients)
+
 Features:
 
   o Support on many OS (Win, Win-CE, UNIX, Linux) and easy portable
@@ -153,13 +155,11 @@ o Invoking xmlBlaster from within the callback thread (in update() function)
   will deadlock (i believe so).
   Probably we need to add a thread pool
 
-o Add logging redirection (using a configurable function pointer)
-
 o Add extended property support (parsing command line and getenv())
 
 o XML parsing with expat
 
-o Add some demo in xmlBlaster/demo/c
+o Add some more demo in xmlBlaster/demo/c
 
 o Add testsuite (with ant)
 

@@ -633,8 +633,8 @@ void xmlBlasterDefaultLogging(XMLBLASTER_LOG_LEVEL currLevel,
                               XMLBLASTER_LOG_LEVEL level,
                               const char *location, const char *fmt, ...)
 {
-   /* Guess we need no more than 100 bytes. */
-   int n, size = 100;
+   /* Guess we need no more than 200 bytes. */
+   int n, size = 200;
    char *p = 0;
    va_list ap;
    char *stackTrace = 0;
