@@ -1,6 +1,6 @@
     Release notes for xmlBlaster    (http://www.xmlBlaster.org)
 
-Changes for 0.78 [???     2000]
+Changes for 0.78 [Jul, 14 2000]
 ==============================
   - Added generic database access from James to xmlBlaster core.
     The JDBC gateway uses now the native interface to xmlBlaster.
