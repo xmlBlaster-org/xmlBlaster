@@ -3,7 +3,7 @@ Name:      SystemInfoPublisher.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a client to publish system infos to xmlBlaster
-Version:   $Id: SystemInfoPublisher.java,v 1.4 2000/05/16 20:57:33 ruff Exp $
+Version:   $Id: SystemInfoPublisher.java,v 1.5 2000/06/14 19:26:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package html.systemInfo;
 
@@ -147,6 +147,9 @@ public class SystemInfoPublisher
     */
    private void publish(String oid, int value)
    {
+      if (xmlBlaster == null)
+         return;
+
       String content = "" + value;
       String xmlKey = "<key oid='" + oid + "' contentMime='text/plain' contentMimeExtended='systemInfo'>\n" +
                       "   <systemInfo />" +
