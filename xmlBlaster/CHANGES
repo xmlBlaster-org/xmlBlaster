@@ -5,10 +5,10 @@ Changes for 0.xxx [xxx, xx 2003]
 
  o Embedded queue framework into Java client library.
    Please port your code, typical changes you should make are:
-      XmlBlasterConnection         ->  org.xmlBlaster.client.I_XmlBlasterAccess
-      XmlBlasterConnection.usage() ->  System.out.println(glob.usage())
-      XmlBlasterConnection         ->  I_XmlBlasterAccess
-      new I_XmlBlasterAccess(glob) ->  glob.getXmlBlasterAccess()  
+      org.xmlBlaster.client.protocol.XmlBlasterConnection ->  org.xmlBlaster.client.I_XmlBlasterAccess
+      XmlBlasterConnection.usage()   ->  System.out.println(glob.usage())
+      new XmlBlasterConnection(glob) ->  glob.getXmlBlasterAccess()  
+      XmlBlasterConnection           ->  I_XmlBlasterAccess
    If you use fail safe clients:
       import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
       import org.xmlBlaster.client.I_ConnectionHandler;
