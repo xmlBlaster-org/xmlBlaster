@@ -3,7 +3,7 @@ Name:      ClientSubscriptions.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling subscriptions, collected for each Client
-Version:   $Id: ClientSubscriptions.java,v 1.20 2001/02/23 00:37:49 ruff Exp $
+Version:   $Id: ClientSubscriptions.java,v 1.21 2002/01/30 17:36:54 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -24,7 +24,7 @@ import java.io.*;
  * Handling subscriptions, collected for each Client.
  * <p />
  * The interface SubscriptionListener informs about subscribe/unsubscribe events
- * @version: $Id: ClientSubscriptions.java,v 1.20 2001/02/23 00:37:49 ruff Exp $
+ * @version: $Id: ClientSubscriptions.java,v 1.21 2002/01/30 17:36:54 ruff Exp $
  * @author Marcel Ruff
  */
 public class ClientSubscriptions implements I_ClientListener, SubscriptionListener, MessageEraseListener
@@ -150,7 +150,8 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
     */
    public void clientRemove(ClientEvent e) throws XmlBlasterException
    {
-      if (Log.DUMP) Log.dump(ME, "-------START-logout()---------\n" + requestBroker.toXml());
+      if (Log.CALL) Log.call(ME, "START-logout()");
+      if (Log.DUMP) Log.dump(ME, requestBroker.toXml());
 
       ClientInfo clientInfo = e.getClientInfo();
       if (Log.TRACE) Log.trace(ME, "Logout event for client " + clientInfo.toString() + ", removing entries");
@@ -164,7 +165,7 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
       } catch (XmlBlasterException e2) {
       }
 
-      if (Log.DUMP) Log.dump(ME, "-------END-logout()---------\n" + requestBroker.toXml());
+      if (Log.DUMP) Log.dump(ME, "END-logout()\n" + requestBroker.toXml());
    }
 
 
@@ -281,7 +282,7 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
          return;
       }
 
-      // Now we have a map of all subsriptions of this client
+      // Now we have a map of all subsrciptions of this client
 
       Map aboMap = (Map)obj;
       if (subscriptionInfoUniqueKey == null) {  // client does logout(), remove everything:
@@ -304,7 +305,7 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
             sub = (SubscriptionInfo)aboMap.remove(subscriptionInfoUniqueKey);
          }
          if (sub == null) {
-            Log.error(ME + ".Internal", "Sorry, can't remove client subscription for " + clientInfo.toString() + ", not found");
+            Log.error(ME + ".Internal", "Sorry, can't remove client subscription " + subscriptionInfoUniqueKey + " for " + clientInfo.toString() + ", not found");
             return;
          }
          sub.removeSubscribe(); // removes me from MessageUnitHandler::subscriberMap
