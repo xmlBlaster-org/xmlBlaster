@@ -3,7 +3,7 @@ Name:      DefaultCallback.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Default implementation of the POA_serverIdl::BlasterCallback.
-Version:   $Id: DefaultCallback.h,v 1.3 2000/09/15 17:16:11 ruff Exp $
+Version:   $Id: DefaultCallback.h,v 1.4 2001/03/27 20:22:24 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #ifndef _CLIENT_DEFAULTCALLBACK_H
@@ -106,7 +106,7 @@ namespace client {
 	    return;
 	 }
 	 for (int i=0; i < msgUnitArr.length(); i++) {
-	    serverIdl::MessageUnit msgUnit = msgUnitArr[i];
+	    const serverIdl::MessageUnit &msgUnit = msgUnitArr[i];
 	    UpdateKey *updateKey = 0;
 	    UpdateQoS *updateQoS = 0;
 	    try {
