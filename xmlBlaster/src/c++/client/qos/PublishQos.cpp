@@ -8,6 +8,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/Global.h>
 
 using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::qos;
 using namespace std;
 
 namespace org { namespace xmlBlaster { namespace client { namespace qos {
@@ -143,19 +144,17 @@ namespace org { namespace xmlBlaster { namespace client { namespace qos {
     * Access sender name.
     * @return loginName of sender or null if not known
     */
-   SessionQos PublishQos::getSender()
+   SessionNameRef PublishQos::getSender()
    {
       return msgQosData_.getSender();
    }
 
-   /**
-    * Access sender name.
-    * @param loginName of sender
-    */
-   void PublishQos::setSender(const SessionQos& sender)
+   /*
+   void PublishQos::setSender(const SessionName& sender)
    {
       msgQosData_.setSender(sender);
    }
+   */
 
    /**
     * @param state The state to return to the server.
@@ -221,33 +220,3 @@ namespace org { namespace xmlBlaster { namespace client { namespace qos {
    }
 
 }}}}
-
-#ifdef _XMLBLASTER_CLASSTEST
-
-using namespace std;
-using namespace org::xmlBlaster::client::qos;
-using namespace org::xmlBlaster::util;
-
-/** For testing: java org.xmlBlaster.authentication.plugins.simple.SecurityQos */
-int main(int args, char* argv[])
-{
-   Global& glob = Global::getInstance();
-   glob.initialize(args, argv);
-   {
-      PublishQos qos(glob, Destination(glob, SessionQos(glob, "joe")));
-      qos.addDestination(Destination(glob, SessionQos(glob, "Tim")));
-      qos.setPriority(HIGH_PRIORITY);
-      qos.setPersistent(true);
-      qos.setForceUpdate(true);
-      qos.setReadonly(true);
-      qos.setLifeTime(60000);
-      cout << qos.toXml() << endl;
-   }
-   {
-      PublishQos qos(glob);
-      cout << "Minimal publish qos:" << endl << qos.toXml() << endl;
-   }
-   return 0;
-}
-
-#endif

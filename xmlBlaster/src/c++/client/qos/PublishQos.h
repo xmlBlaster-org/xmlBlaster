@@ -167,13 +167,14 @@ public:
     * Access sender name.
     * @return loginName of sender or null if not known
     */
-   org::xmlBlaster::util::qos::SessionQos getSender();
+   org::xmlBlaster::util::SessionNameRef getSender();
 
-   /**
+   /*
     * Access sender name.
     * @param loginName of sender
+    * @deprecated The sender is forced to the correct client name automatically
     */
-   void setSender(const org::xmlBlaster::util::qos::SessionQos& sender);
+   //void setSender(const org::xmlBlaster::util::SessionName& sender);
 
    /**
     * @param state The state to return to the server.
