@@ -16,6 +16,12 @@ Howto start the Python/XmlRpc demo:
 
 Thats it!
 
+See
+   xmlBlaster/src/java/org/xmlBlaster/protocol/xmlrpc/XmlBlasterImpl.java
+with all allowed server-methods you can invoke.
+
+A callback Python demo (for asynchronous updates) is not yet available,
+donations from Python hackers are welcome!
 
 -------------------------------------------------------------------
 Fredrik Lundh has provided the excellent XML-RPC library for Python.
@@ -52,7 +58,3 @@ print "Result for a get():\n\n", message;
 server.authenticate.logout( sessionId );
 print "\nLogout done, bye.\n";
 -------------------------------------------------------------------
-
-See 
-   xmlBlaster/src/java/org/xmlBlaster/protocol/xmlrpc/XmlBlasterImpl.java
-with all allowed server-methods you can invoke.
