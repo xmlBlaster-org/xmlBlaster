@@ -231,7 +231,7 @@ void XmlBlasterAccess::publishOneway(const vector<MessageUnit>& msgUnitArr)
              log_.dump(ME, string("publishOneway. The msgUnit[") + lexical_cast<string>(i) + "]:\n" + msgUnitArr[i].toXml());
       }
    }
-   return connection_->publishOneway(msgUnitArr);
+   connection_->publishOneway(msgUnitArr);
 }
 
 vector<PublishReturnQos> XmlBlasterAccess::publishArr(vector<MessageUnit> msgUnitArr)
@@ -242,7 +242,7 @@ vector<PublishReturnQos> XmlBlasterAccess::publishArr(vector<MessageUnit> msgUni
              log_.dump(ME, string("publishArr. The msgUnit[") + lexical_cast<string>(i) + "]:\n" + msgUnitArr[i].toXml());
       }
    }
-   connection_->publishArr(msgUnitArr);
+   return connection_->publishArr(msgUnitArr);
 }
 
 vector<EraseReturnQos> XmlBlasterAccess::erase(const EraseKey& key, const EraseQos& qos)

@@ -52,7 +52,13 @@ QueryKeyData& QueryKeyData::operator =(const QueryKeyData& key)
 string QueryKeyData::checkQueryType(const string& queryType)
 {
    string tmp = queryType;
-   transform (tmp.begin(), tmp.end(), tmp.begin(), ::toupper);
+   // transform (tmp.begin(), tmp.end(), tmp.begin(), ::toupper);
+   string::iterator iter = tmp.begin();
+   while (iter != tmp.end()) {
+      *iter = ::toupper(*iter);
+      iter++;
+   }
+
    if (Constants::EXACT != tmp && Constants::XPATH !=tmp && Constants::D_O_M_A_I_N !=tmp)
       throw XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::setQueryType",
                                 "Your queryType=" + queryType + " is invalid, use one of '" + 
