@@ -47,6 +47,7 @@ public class BigMessage extends TestCase implements I_Callback
    private String name;
    private String passwd = "secret";
    private EmbeddedXmlBlaster serverThread;
+   private boolean startEmbedded = true;
    private int serverPort = 7615;
    private String oid = "BigMessage";
    private int contentSize = 3 * 1000 * 1000; // 3 MB
@@ -77,11 +78,16 @@ public class BigMessage extends TestCase implements I_Callback
     * Then we connect as a client
     */
    protected void setUp() {
-      contentSize = glob.getProperty().get("contentSize", contentSize);
+      this.contentSize = glob.getProperty().get("contentSize", contentSize);
+      this.startEmbedded = glob.getProperty().get("startEmbedded", this.startEmbedded);
 
-      glob.init(Util.getOtherServerPorts(serverPort));
-      serverThread = EmbeddedXmlBlaster.startXmlBlaster(glob);
-      log.info(ME, "XmlBlaster is ready for testing a big message");
+      if (this.startEmbedded) {
+         glob.init(Util.getOtherServerPorts(serverPort));
+         serverThread = EmbeddedXmlBlaster.startXmlBlaster(glob);
+         log.info(ME, "XmlBlaster is ready for testing a big message");
+      }
+      else
+         log.warn(ME, "You need to start an external xmlBlaster server for this test or use option -startEmbedded true");
 
       try {
          log.info(ME, "Connecting ...");
@@ -111,11 +117,11 @@ public class BigMessage extends TestCase implements I_Callback
 
       con.disconnect(null);
 
-      try { Thread.currentThread().sleep(100L); } catch( InterruptedException i) {}
-      EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
-
-      // reset to default server port (necessary if other tests follow in the same JVM).
-      Util.resetPorts();
+      if (this.startEmbedded) {
+         EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
+         // reset to default server port (necessary if other tests follow in the same JVM).
+         Util.resetPorts();
+      }
    }
 
    /**
@@ -232,6 +238,23 @@ public class BigMessage extends TestCase implements I_Callback
             fail("Timeout of " + timeout + " occurred");
          }
       }
+   }
+
+   /**
+    * Invoke: 
+    * <pre>
+    *  java org.xmlBlaster.test.stress.BigMessage -contentSize 2000000 -startEmbedded false
+    * <pre>
+    */
+   public static void main(String args[]) {
+      Global glob = new Global();
+      if (glob.init(args) != 0) {
+         System.exit(0);
+      }
+      BigMessage big = new BigMessage("BigMessage");
+      big.setUp();
+      big.testBigMessage();
+      big.tearDown();
    }
 }
 
