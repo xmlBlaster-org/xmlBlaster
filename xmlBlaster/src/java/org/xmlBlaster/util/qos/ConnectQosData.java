@@ -72,6 +72,8 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
    /** Session settings */
    private SessionQos sessionQos;
 
+   private String defaultType; // This address type is chosen from all available addresses (we need a loadbalancing algo!)
+
    protected transient PluginLoader pMgr;
    protected I_ClientPlugin clientPlugin;
    protected I_SecurityQos securityQos; // We need to cache ita as each call to clientPlugin.createSecurityQos() creates a new instance
@@ -443,6 +445,12 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
       return this.reconnected;
    }
 
+   public void addAddress(Address address) {
+      ClientQueueProperty prop = new ClientQueueProperty(glob, this.nodeId.toString()); // Use default queue properties for this xmlBlaster access address
+      prop.setAddress(address);
+      addClientQueueProperty(prop, true);
+   }
+
    /**
     * Add an address to which we want to connect, with all the configured parameters. 
     * <p />
@@ -452,21 +460,46 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
       ClientQueueProperty prop = new ClientQueueProperty(glob, this.nodeId.toString()); // Use default queue properties for this xmlBlaster access address
       prop.setAddress(address);
       addClientQueueProperty(prop);
-      //clientQueuePropertyArr = null; // reset to be recalculated on demand
    }
 
    /**
-    * The connection address and properties of the xmlBlaster server
+    * The current connection address and properties of the xmlBlaster server
     * we want connect to.
     * @return never null
     */
    public Address getAddress() {
-      Address address = getClientQueueProperty().getCurrentAddress();
-      if (address == null) {
+      ClientQueueProperty[] props = getClientQueuePropertyArr();
+      Address adr = null;
+      for (int i=0; i<props.length; i++) {
+         adr = props[i].getCurrentAddress();
+         if (getDefaultType().equals(adr.getType())) {
+            return adr;
+         }
+      }
+      if (adr == null) {
          log.error(ME, "Internal error, can't access address instance in queue");
          throw new IllegalArgumentException(ME + ": Internal error, can't access address instance in queue");
       }
-      return address;
+      return adr;
+   }
+
+   /**
+    * Try to find the default protocol address as configured for clients
+    * @return Never null
+    */
+   private String getDefaultType() {
+      if (this.defaultType == null) {
+         synchronized (this) {
+            if (this.defaultType == null) {
+               Address def = new Address(glob);
+               this.defaultType = def.getType();
+               if (this.defaultType == null) {
+                  this.defaultType = "SOCKET";
+               }
+            }
+         }
+      }
+      return this.defaultType;
    }
 
    /**
@@ -474,26 +507,64 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
     * we want connect to.
     * @return never null
     */
-   public AddressBase[] getAddresses() {
-      return getClientQueueProperty().getAddresses();
+   public Address[] getAddresses() {
+      ClientQueueProperty[] props = getClientQueuePropertyArr();
+      ArrayList list = new ArrayList();
+      for (int i=0; i<props.length; i++) {
+         AddressBase[] adrs = props[i].getAddresses();
+         for (int j=0; j<adrs.length; j++) {
+            list.add(adrs[j]);
+         }
+      }
+      return (Address[])list.toArray(new Address[list.size()]);
    }
 
    /**
     * Adds a queue description. 
     * This allows to set all supported attributes of a client side queue and an address to reach xmlBlaster
     * @param prop The property object of the client side queue which shall be established. 
+    * @return false if not accepted
     * @see org.xmlBlaster.util.qos.address.Address
     */
-   public void addClientQueueProperty(ClientQueueProperty prop) {
-      if (prop == null) return;
+   public boolean addClientQueueProperty(ClientQueueProperty prop) {
+      return addClientQueueProperty(prop, false);
+   }
+
+   private boolean addClientQueueProperty(ClientQueueProperty prop, boolean allowMultiAddress) {
+      if (prop == null) return false;
       // We use a list to allow in future mutliple addresses
+      if (!allowMultiAddress && this.clientQueuePropertyList.size() > 0) {
+         Address addr = prop.getCurrentAddress();
+         log.warn(ME, "Clients side load balancing is not implemented, we ignore the additional address" +
+                  ((addr==null) ? "" : " '"+addr.toString()+"'"));
+         //Thread.currentThread().dumpStack();
+         return false;
+      }
       this.clientQueuePropertyList.add(prop);
+      return true;
+   }
+
+   /**
+    * The current used (or the default) queue property
+    * @return Never null
+    */
+   public ClientQueueProperty getClientQueueProperty() {
+      ClientQueueProperty[] props = getClientQueuePropertyArr();
+      for (int i=0; i<props.length; i++) {
+         Address[] arr = (Address[])props[i].getAddresses();
+         for (int j=0; j<arr.length; j++) {
+            if (getDefaultType().equals(arr[j].getType())) {
+               return props[i];
+            }
+         }
+      }
+      return props[0];
    }
 
    /**
     * @return never null
     */
-   public ClientQueueProperty getClientQueueProperty() {
+   private ClientQueueProperty createClientQueueProperty() {
       if (this.clientQueuePropertyList.size() < 1) {
          if (log.TRACE) log.trace(ME, "Creating default server address instance");
          //setAddress(glob.getBootstrapAddress());
@@ -506,11 +577,33 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
       return (ClientQueueProperty)this.clientQueuePropertyList.get(0);
    }
 
+   public boolean hasAddress() {
+      if (this.clientQueuePropertyList.size() > 0) return true;
+      return false;
+   }
+
+   /**
+    * At least one entry is delivered
+    */
    public ClientQueueProperty[] getClientQueuePropertyArr() {
       if (this.clientQueuePropertyList.size() < 1) {
-         getClientQueueProperty(); // force creation
+         createClientQueueProperty(); // force creation
       }
       return (ClientQueueProperty[])this.clientQueuePropertyList.toArray(new ClientQueueProperty[this.clientQueuePropertyList.size()]);
+   }
+
+   /**
+    * Does the given address belong to this client connection setup?
+    */
+   public boolean contains(Address other) {
+      if (other == null) return false;
+      ClientQueueProperty[] props = getClientQueuePropertyArr();
+      for (int i=0; i<props.length; i++) {
+         if (props[i].contains(other)) {
+            return true;
+         }
+      }
+      return false;
    }
 
    /**
@@ -526,11 +619,19 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
     * Creates a default CbQueueProperty object to hold the callback address argument.<br />
     * @param callback  An object containing the protocol (e.g. EMAIL) and the address (e.g. hugo@welfare.org)
     */
-    //* Note you can invoke this multiple times to allow multiple callbacks.
    public void addCallbackAddress(CallbackAddress callback) {
       // Use default queue properties for this callback address
       CbQueueProperty prop = getSessionCbQueueProperty();
       prop.setCallbackAddress(callback);
+   }
+
+   /**
+    * Access the currently used callback address. 
+    * @return can be null
+    */
+   public CallbackAddress getCurrentCallbackAddress() {
+      CbQueueProperty prop = getSessionCbQueueProperty(); // never null
+      return prop.getCurrentCallbackAddress();
    }
 
    /**
