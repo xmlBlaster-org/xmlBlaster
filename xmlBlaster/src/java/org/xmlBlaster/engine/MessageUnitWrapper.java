@@ -3,7 +3,7 @@ Name:      MessageUnitWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping the CORBA MessageUnit to allow some nicer usage
-Version:   $Id: MessageUnitWrapper.java,v 1.1 1999/12/01 22:17:28 ruff Exp $
+Version:   $Id: MessageUnitWrapper.java,v 1.2 1999/12/02 13:59:44 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -15,7 +15,7 @@ import java.util.*;
 
 
 /**
- * Wrapping the CORBA MessageUnit to allow some nicer usage. 
+ * Wrapping the CORBA MessageUnit to allow some nicer usage.
  * <p />
  * If you look at the CORBA generated MessageUnit, its very raw and
  * dos not allow any modifications.<br />
@@ -33,30 +33,7 @@ public class MessageUnitWrapper
 
 
    /**
-    * Use this constructor if a subscription is made on a yet unknown object. 
-    * <p />
-    */
-   /*
-   public MessageUnitHandler(XmlKey xmlKey) throws XmlBlasterException
-   {
-      if (xmlKey == null) {
-         Log.error(ME, "Invalid constructor parameter xmlKey");
-         throw new XmlBlasterException(ME, "Invalid constructor parameter xmlKey");
-      }
-
-      this.uniqueKey = xmlKey.getUniqueKey();
-      // this.xmlKey = xmlKey; this is not the real xmlKey from a publish, its only the subscription syntax
-      this.messageUnit = new MessageUnit(xmlKey.literal(), new byte[0]);
-
-      if (Log.CALLS) Log.trace(ME, "Creating new MessageUnitHandler because of subscription. Key=" + uniqueKey);
-
-      // mimeType and content remains unknown until first data is fed
-   }
-   */
-
-
-   /**
-    * Use this constructor if a new message object is fed by method publish(). 
+    * Use this constructor if a new message object is fed by method publish().
     * <p />
     * @param xmlKey Since it is parsed in the calling method, we don't need to do it again from messageUnit.xmlKey_literal
     * @param messageUnit the CORBA MessageUnit data container
@@ -64,7 +41,7 @@ public class MessageUnitWrapper
     */
    public MessageUnitWrapper(XmlKey xmlKey, MessageUnit messageUnit, XmlQoS publishQoS) throws XmlBlasterException
    {
-      if (xmlKey == null || messageUnit == null) {
+      if (xmlKey == null || messageUnit == null || publishQoS == null) {
          Log.error(ME, "Invalid constructor parameter");
          throw new XmlBlasterException(ME, "Invalid constructor parameter");
       }
@@ -164,6 +141,74 @@ public class MessageUnitWrapper
          throw new XmlBlasterException(ME + ".EmptyMessageUnit", "Internal problem, messageUnit = null");
       }
       return messageUnit;
+   }
+
+
+   /**
+    * Clones this MessageUnitWrapper to a new one, the only attributes
+    * which is cloned is the MessageUnit.content. <p />
+    * All other attributes are references to the original ones
+    *
+    * @return a new MessageUnitWrapper with a cloned MessageUnit.content
+    */
+   public MessageUnitWrapper cloneContent() throws XmlBlasterException
+   {
+      MessageUnitWrapper newWrapper = new MessageUnitWrapper(xmlKey, messageUnit, publishQoS);
+      
+      byte[] oldContent = this.messageUnit.content;
+      byte[] newContent = new byte[oldContent.length];
+
+      for (int ii=0; ii<oldContent.length; ii++)
+         newContent[ii] = oldContent[ii];
+
+      newWrapper.setContentRaw(newContent);
+
+      return newWrapper;
+   }
+
+
+   /**
+    * Used by clone() to assign the message content. 
+    * @param the new MessageUnit.content
+    */
+   final void setContentRaw(byte[] content)
+   {
+      this.messageUnit.content = content;
+   }
+
+
+   /**
+    * Try to find out the approximate memory consumption of this message. 
+    * <p />
+    * It counts the message content bytes but NOT the xmlKey, xmlQoS etc. bytes<br />
+    * This is because its used for the MessageQueue to figure out
+    * how many bytes the client consumes in his queue.<p />
+    *
+    * As the key and qos will usually not change with follow up messages
+    * (with same oid), the message only need to clone the content, and
+    * that is quoted for the client.<p />
+    *
+    * Note that when the same message is queued for many clients, the
+    * server load is duplicated for each client (needs to be optimized).<p />
+    *
+    * @return the approximate size in bytes of this object which contributes to a ClientUpdateQueue memory consumption
+    */
+   public final long getSizeInBytes() throws XmlBlasterException
+   {
+      long size = 0L;
+      int objectHandlingBytes = 20; // a totally intuitive number
+
+      size += objectHandlingBytes;  // this MessageUnitWrapper instance
+      if (messageUnit != null) {
+         // size += xmlKey.size() + objectHandlingBytes;
+         size += this.messageUnit.content.length;
+      }
+
+      // These are references on the original MessageUnitWrapper and consume almost no memory:
+      // size += xmlKey;      
+      // size += publishQoS;
+      // size += uniqueKey.size() + objectHandlingBytes;
+      return size;
    }
 
 

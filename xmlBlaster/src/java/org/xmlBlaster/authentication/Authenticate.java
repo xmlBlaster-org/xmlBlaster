@@ -3,7 +3,7 @@ Name:      Authenticate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login for clients
-Version:   $Id: Authenticate.java,v 1.16 1999/12/01 16:49:01 ruff Exp $
+Version:   $Id: Authenticate.java,v 1.17 1999/12/02 13:59:43 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -36,7 +36,21 @@ public class Authenticate
 
    private AuthServerImpl authServerImpl;
 
-   final private Map clientInfoMap = Collections.synchronizedMap(new HashMap());
+   /**
+    * With this map you can find a client using a uniqueClientKey.
+    *
+    * key   = uniqueClientKey, the byte[] from the POA active object map (aom)
+    * value = ClientInfo object, containing all data about a client
+    */
+   final private Map aomClientInfoMap = Collections.synchronizedMap(new HashMap());
+
+   /**
+    * With this map you can find a client using his login name.
+    *
+    * key   = loginName, the unique login name of a client
+    * value = ClientInfo object, containing all data about a client
+    */
+   final private Map loginNameClientInfoMap = Collections.synchronizedMap(new HashMap());
 
    /**
     * For listeners who want to be informed about login/logout
@@ -180,6 +194,20 @@ public class Authenticate
       String uniqueClientKey;
       org.omg.CORBA.Object certificatedServerRef = null;
 
+      ClientInfo clientInfo = getClientInfoByName(loginName);
+
+      if (clientInfo != null && clientInfo.isLoggedIn()) {
+         Log.warning(ME+".AlreadyLoggedIn", "Client " + loginName + " is already logged in");
+         // throw new XmlBlasterException(ME+".AlreadyLoggedIn", "Sorry, you are already logged in");
+         // allowing re-login: if the client crashed without proper logout, he should
+         // be allowed to login again, so - first logout the last session:
+         try {
+            logout(clientInfo.getAuthenticationInfo().getXmlBlaster());
+         } catch (XmlBlasterException e) {
+            Log.warning(ME, "Exception during forced logout: " + e.toString());
+         }
+      }
+
       try {
          // set up a association between the new created object reference (oid is sufficient)
          // and the callback object reference
@@ -195,15 +223,40 @@ public class Authenticate
          throw new XmlBlasterException(ME+"Unknown", "login failed: " + e.toString());
       }
 
+      org.xmlBlaster.serverIdl.Server xmlBlaster = org.xmlBlaster.serverIdl.ServerHelper.narrow(certificatedServerRef);
       XmlQoSClient xmlQoS = new XmlQoSClient(xmlQoS_literal);
-      ClientInfo clientInfo = new ClientInfo(new AuthenticationInfo(uniqueClientKey, loginName, passwd, callback, callbackIOR, xmlQoS));
-      synchronized(clientInfoMap) {
-         clientInfoMap.put(uniqueClientKey, clientInfo);
+      AuthenticationInfo authInfo = new AuthenticationInfo(uniqueClientKey, loginName, passwd, xmlBlaster, callback, callbackIOR, xmlQoS);
+
+      if (clientInfo != null) {
+         clientInfo.notifyAboutLogin(authInfo); // clientInfo object exists, maybe with a queue of messages
+      }
+      else {                               // login of yet unknown client
+         clientInfo = new ClientInfo(authInfo);
+         synchronized(loginNameClientInfoMap) {
+            loginNameClientInfoMap.put(loginName, clientInfo);
+         }
+      }
+
+      synchronized(aomClientInfoMap) {
+         aomClientInfoMap.put(uniqueClientKey, clientInfo);
       }
 
       fireClientEvent(clientInfo, true);
 
-      return org.xmlBlaster.serverIdl.ServerHelper.narrow(certificatedServerRef);
+      return xmlBlaster;
+   }
+
+
+   /**
+    * Access a clientInfo with the unique login name
+    * @return the ClientInfo object<br />
+    *         null if not found
+    */
+   public ClientInfo getClientInfoByName(String loginName)
+   {
+      synchronized(loginNameClientInfoMap) {
+         return (ClientInfo)loginNameClientInfoMap.get(loginName);
+      }
    }
 
 
@@ -233,8 +286,8 @@ public class Authenticate
       }
 
       Object obj;
-      synchronized(clientInfoMap) {
-         obj = clientInfoMap.remove(uniqueClientKey);
+      synchronized(aomClientInfoMap) {
+         obj = aomClientInfoMap.remove(uniqueClientKey);
       }
 
       if (obj == null) {
@@ -244,10 +297,14 @@ public class Authenticate
 
       ClientInfo clientInfo = (ClientInfo)obj;
 
+      synchronized(loginNameClientInfoMap) {
+         loginNameClientInfoMap.remove(clientInfo.getLoginName());
+      }
+
       fireClientEvent(clientInfo, false); // informs all ClientListener
 
       Log.info(ME, "Successfull logout for client " + clientInfo.toString());
-
+      clientInfo.notifyAboutLogout();
       clientInfo = null;
    }
 
@@ -307,8 +364,8 @@ public class Authenticate
       }
 
       Object obj = null;
-      synchronized(clientInfoMap) {
-         obj = clientInfoMap.get(uniqueClientKey);
+      synchronized(aomClientInfoMap) {
+         obj = aomClientInfoMap.get(uniqueClientKey);
       }
 
       if (obj == null) {

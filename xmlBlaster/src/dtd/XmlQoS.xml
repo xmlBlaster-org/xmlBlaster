@@ -111,17 +111,19 @@
 
    <!-- QoS with login -->
    <client>
-      <compress type='gzip'>
-         1000
-      </compress>
-      <queue>
-         <size>
+      <qos>
+         <compress type='gzip'>
             1000
-         </size>
-         <timeout>
-            3600
-         </timeout>
-      </queue>
+         </compress>
+         <queue>
+            <size>
+               1000
+            </size>
+            <timeout>
+               3600
+            </timeout>
+         </queue>
+      </qos>
    </client>
 
 </demo>

@@ -3,7 +3,7 @@ Name:      AuthenticationInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the authentication data
-Version:   $Id: AuthenticationInfo.java,v 1.3 1999/12/01 22:17:28 ruff Exp $
+Version:   $Id: AuthenticationInfo.java,v 1.4 1999/12/02 13:59:43 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -24,6 +24,7 @@ public class AuthenticationInfo
    private String uniqueKey;
    private String loginName;
    private String passwd;
+   private org.xmlBlaster.serverIdl.Server xmlBlaster;
    private XmlQoSClient xmlQoS;
    private BlasterCallback callback=null;
    private String callbackIOR;
@@ -31,19 +32,30 @@ public class AuthenticationInfo
 
    /**
     * This Object is constructed by the client login call
+    *
+    * @param uniqueKey   The POA active object map id (AOM)
+    * @param loginName   The unique login name of the client
+    * @param passwd      Very secret
+    * @param xmlBlaster  The server serving this client
+    * @param callback    The callback interface reference from the client
+    * @param callbackIOR The string form of the callback
+    * @param xmlQoS      The login quality of service
     */
    public AuthenticationInfo(String uniqueKey, String loginName, String passwd,
+                       org.xmlBlaster.serverIdl.Server xmlBlaster,
                        BlasterCallback callback,
                        String callbackIOR, XmlQoSClient xmlQoS)
    {
       this.uniqueKey = uniqueKey;
       this.loginName = loginName;
       this.passwd = passwd;
+      this.xmlBlaster = xmlBlaster;
       this.callback = callback;
       this.callbackIOR = callbackIOR;
       this.xmlQoS = xmlQoS;
       if (Log.CALLS) Log.trace(ME, "Creating new AuthenticationInfo " + loginName);
    }
+
 
    /**
     * The CORBA callback reference of the client.
@@ -56,6 +68,20 @@ public class AuthenticationInfo
          throw new XmlBlasterException(ME+"NoCallback", "Sorry, no Callback for " + loginName);
       }
       return callback;
+   }
+
+
+   /**
+    * The CORBA xmlBlaster server reference serving this client. 
+    * @return Server reference
+    */
+   org.xmlBlaster.serverIdl.Server getXmlBlaster() throws XmlBlasterException
+   {
+      if (this.xmlBlaster == null) {
+         Log.error(ME+"NoCallback", "Sorry, no xmlBlaster Server for " + loginName);
+         throw new XmlBlasterException(ME+"NoCallback", "Sorry, no xmlBlaster Server for " + loginName);
+      }
+      return xmlBlaster;
    }
 
 
@@ -114,14 +140,29 @@ public class AuthenticationInfo
 
 
    /**
-    *
+    * Access the unique login name of a client.
+    * @return loginName
     */
-   public final String toString()
+   public final String getLoginName()
    {
       return loginName;
    }
 
 
+   /**
+    * Access the unique login name of a client.
+    * @return loginName
+    */
+   public final String toString()
+   {
+      return getLoginName();
+   }
+
+
+   /**
+    * Access the client callback IOR (the CORBA string representation).
+    * @return IOR
+    */
    public final String getCallbackIOR() throws XmlBlasterException
    {
       if (this.callbackIOR == null) {

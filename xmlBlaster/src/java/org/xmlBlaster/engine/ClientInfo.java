@@ -3,7 +3,7 @@ Name:      ClientInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: ClientInfo.java,v 1.13 1999/12/01 22:17:28 ruff Exp $
+Version:   $Id: ClientInfo.java,v 1.14 1999/12/02 13:59:43 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -25,13 +25,14 @@ import org.xmlBlaster.clientIdl.BlasterCallback;
  * It also contains a message queue, where messages are stored
  * until they are delivered at the next login of this client.
  *
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  * @author $Author: ruff $
  */
 public class ClientInfo
 {
    private String ME = "ClientInfo";
-   private AuthenticationInfo authInfo = null;
+   private String loginName = null;            // the unique client identifier
+   private AuthenticationInfo authInfo = null; // all client informations
    private I_CallbackDriver myCallbackDriver = null;
 
    /**
@@ -43,9 +44,65 @@ public class ClientInfo
    private ClientUpdateQueue messageQueue = null;   // list = Collections.synchronizedList(new LinkedList());
 
 
+   /**
+    * Create this instance when a client did a login.
+    * <p />
+    * @param authInfo the AuthenticationInfo with the login informations for this client
+    */
    public ClientInfo(AuthenticationInfo authInfo)
    {
+      if (Log.CALLS) Log.trace(ME, "Creating new ClientInfo " + authInfo.toString());
+      notifyAboutLogin(authInfo);
+   }
+
+
+   /**
+    * Create this instance when a message is sent to this client, but he is not logged in
+    * <p />
+    * @param loginName The unique login name
+    */
+   public ClientInfo(String loginName)
+   {
+      if (Log.CALLS) Log.trace(ME, "Creating new empty ClientInfo for " + loginName);
+   }
+
+
+   /**
+    * Accessing the CallbackDriver for this client, supporting the
+    * desired protocol (CORBA, EMAIL, HTTP).
+    *
+    * @return the CallbackDriver for this client
+    */
+   public final I_CallbackDriver getCallbackDriver()
+   {
+      return myCallbackDriver;
+   }
+
+
+   /**
+    * Is the client currently logged in? 
+    * @return true yes
+    *         false client is not on line
+    */
+   public boolean isLoggedIn()
+   {
+      return authInfo != null;
+   }
+
+
+   /**
+    * Get notification that the client did a login.
+    * <p />
+    * This instance may exist before a login was done, for example
+    * when some messages where directly addressed to this client.<br />
+    * This notifies about a client login.
+    *
+    * @param authInfo the AuthenticationInfo with the login informations for this client
+    */
+   public final void notifyAboutLogin(AuthenticationInfo authInfo)
+   {
       this.authInfo = authInfo;
+      this.loginName = authInfo.getLoginName();
 
       if (authInfo.useCorbaCB())
          myCallbackDriver = CallbackCorbaDriver.getInstance();
@@ -53,20 +110,22 @@ public class ClientInfo
          myCallbackDriver = CallbackEmailDriver.getInstance();
       else if (authInfo.useHttpCB())
          myCallbackDriver = CallbackHttpDriver.getInstance();
-
-      if (Log.CALLS) Log.trace(ME, "Creating new ClientInfo " + authInfo.toString());
    }
 
 
    /**
-    * Accessing the CallbackDriver for this client, supporting the
-    * desired protocol (CORBA, EMAIL, HTTP). 
+    * Get notification that the client did a login.
+    * <p />
+    * This instance may exist before a login was done, for example
+    * when some messages where directly addressed to this client.<br />
+    * This notifies about a client login.
     *
-    * @return the CallbackDriver for this client
+    * @param authInfo the AuthenticationInfo with the login informations for this client
     */
-   public final I_CallbackDriver getCallbackDriver()
+   public final void notifyAboutLogout()
    {
-      return myCallbackDriver;
+      this.authInfo = null;
+      this.myCallbackDriver = null;
    }
 
 
@@ -106,13 +165,34 @@ public class ClientInfo
 
 
    /**
+    * Access the unique login name of a client.
+    * @return loginName
+    */
+   public final String getLoginName()
+   {
+      return loginName;
+   }
+
+
+   /**
+    * Accessing the AuthenticationInfo object
+    * <p />
+    * @return AuthenticationInfo
+    */
+   public final AuthenticationInfo getAuthenticationInfo() throws XmlBlasterException
+   {
+      return authInfo;
+   }
+
+
+   /**
     * The unique login name.
     * <p />
     * @return the loginName
     */
    public final String toString()
    {
-      return authInfo.toString();
+      return loginName;
    }
 
 
