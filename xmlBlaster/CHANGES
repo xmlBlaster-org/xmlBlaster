@@ -1,4 +1,10 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
+
+ o Added support for a sync connected client to reconnect
+   in async mode (by providing a callback address).
+   Sync connected clients may receive PtP messages which are
+   stored in their session queue until the client reconnects
+   with a callback address and the queued messages are delivered.
  
  o XmlScriptInterpreter now uses a Reader (InputStream was starting
    processing AFTER reading whole stream).
