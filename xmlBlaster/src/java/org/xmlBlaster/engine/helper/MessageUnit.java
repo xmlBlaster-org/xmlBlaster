@@ -3,7 +3,7 @@ Name:      MessageUnit.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Container for a message.
-Version:   $Id: MessageUnit.java,v 1.3 2001/08/19 23:07:54 ruff Exp $
+Version:   $Id: MessageUnit.java,v 1.4 2001/12/23 19:51:44 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
@@ -22,35 +22,52 @@ public class MessageUnit implements java.io.Serializable
    public String xmlKey;
    public byte[] content;
    public String qos;
+
    public MessageUnit(String xmlKey, byte[] content, String qos)
    {
-      this.xmlKey = xmlKey;
-      this.content = content;
-      this.qos = qos;
+      setKey(xmlKey);
+      setContent(content);
+      setQos(qos);
    }
 
-   public void setKey(String xmlKey){
-      this.xmlKey = xmlKey;
+   public final void setKey(String xmlKey){
+      if (xmlKey == null)
+         this.xmlKey = "";
+      else
+         this.xmlKey = xmlKey;
    }
 
-   public String getXmlKey() {
-      return xmlKey;
+   public final void setQos(String qos){
+      if (qos == null)
+         this.qos = "";
+      else
+         this.qos = qos;
    }
-   public byte[] getContent() {
-      return content;
+
+   public final void setContent(byte[] content) {
+      if (content == null)
+         this.content = new byte[0];
+      else
+         this.content = content;
    }
-   public String getQos() {
-      return qos;
+
+   public final String getXmlKey() {
+      return this.xmlKey;
+   }
+   public final byte[] getContent() {
+      return this.content;
+   }
+   public final String getQos() {
+      return this.qos;
    }
    /**
     * Clone this message unit.
     * <p />
     * You can't manipulate the data in the original MessageUnit
     */
-   public MessageUnit getClone() {
+   public final MessageUnit getClone() {
       byte[] newContent = new byte[content.length];
-      for (int ii=0; ii<content.length; ii++)
-         newContent[ii] = content[ii];
+      System.arraycopy(content, 0,  newContent, 0, content.length);
       return new MessageUnit(xmlKey, content, qos);
    }
 
@@ -79,13 +96,13 @@ public class MessageUnit implements java.io.Serializable
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
 
-      sb.append(offset + "<MessageUnit>");
-      sb.append(offset + xmlKey);
-      sb.append(offset + "   <content>");
-      sb.append(offset + "   " + new String(content));
-      sb.append(offset + "   </content>\n");
-      sb.append(offset + qos);
-      sb.append(offset + "</MessageUnit>\n");
+      sb.append(offset).append("<MessageUnit>");
+      sb.append(offset).append(xmlKey);
+      sb.append(offset).append("   <content>");
+      sb.append(offset).append("   ").append(new String(content));
+      sb.append(offset).append("   </content>\n");
+      sb.append(offset).append(qos);
+      sb.append(offset).append("</MessageUnit>\n");
 
       return sb.toString();
    }
