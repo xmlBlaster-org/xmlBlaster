@@ -3,7 +3,7 @@ Name:      XmlScript.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: XmlScript.java,v 1.3 2004/04/26 10:23:15 ruff Exp $
+Version:   $Id$
 ------------------------------------------------------------------------------*/
 package javaclients.script;
 
@@ -16,6 +16,8 @@ import java.io.Reader;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.script.XmlScriptInterpreter;
+import org.xmlBlaster.client.script.I_MsgUnitCb;
+import org.xmlBlaster.util.MsgUnit;
 
 
 /**
@@ -29,6 +31,8 @@ import org.xmlBlaster.client.script.XmlScriptInterpreter;
  *    java javaclients.script.XmlScript -requestFile inFile.xml -responseFile outFile.xml -updateFile updFile.xml
  *
  *    java javaclients.script.XmlScript -help
+ *
+ *    java javaclients.script.XmlScript -prepareForPublish true -requestFile 2004-10-23_20_44_43_579.xml
  * </pre>
  */
 public class XmlScript {
@@ -39,10 +43,13 @@ public class XmlScript {
    private Reader reader;
    private OutputStream outStream;
    private OutputStream updStream;
+   private boolean prepareForPublish;
 
    public XmlScript(Global glob, String inFile, String outFile, String updFile) {
       this.glob = glob;
       this.log = glob.getLog("demo");
+      this.prepareForPublish = glob.getProperty().get("prepareForPublish", this.prepareForPublish);
+
       try {
          if (inFile == null) this.reader = new InputStreamReader(System.in);
          else {
@@ -57,6 +64,15 @@ public class XmlScript {
             this.updStream = new FileOutputStream(updFile);
          }
          this.interpreter = new XmlScriptInterpreter(this.glob, this.glob.getXmlBlasterAccess(), this.outStream, this.updStream, null);
+
+         if (this.prepareForPublish) {
+            this.interpreter.registerMsgUnitCb(new I_MsgUnitCb() {
+               public boolean intercept(MsgUnit msgUnit) {
+                  msgUnit.getQosData().clearRoutes();
+                  return true;
+               }
+            });
+         }
          this.interpreter.parse(this.reader);
       }
       catch (Exception e) {
@@ -74,6 +90,7 @@ public class XmlScript {
          System.out.println("  if you don't specify anything as '-requestFile', then the standard input stream is taken.\n");
          System.out.println("  if you don't specify anything as '-responseFile', then the standard output stream is taken.\n");
          System.out.println("  if you don't specify anything as '-updateFile', then the same stream as for the output stream is used.\n");
+         System.out.println("  -prepareForPublish true  If you want to publish a dumped dead message given by -requestFile.\n");
          System.exit(1);
       }
       
