@@ -297,6 +297,7 @@ JdbcDriver.drivers=org.hsqldb.jdbcDriver:\
                    sun.jdbc.odbc.JdbcOdbcDriver:\
                    ORG.as220.tinySQL.dbfFileDriver:\
                    oracle.jdbc.driver.OracleDriver:\
+                   com.microsoft.jdbc.sqlserver.SQLServerDriver:\
                    com.mysql.jdbc.Driver:\
                    org.postgresql.Driver:\
                    de.sag.jdbc.adabasd.ADriver:\
