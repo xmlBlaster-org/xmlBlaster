@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
       // initialize
       orb = CORBA::ORB_init(argc, argv, "mico-local-orb");
 
-      //--------------- find server object reference -------
+      //--------------- find server object reference IOR -------
       if (argc == 2) {
          strncpy(objref_str, argv[1], 1024);
       }
@@ -56,13 +56,7 @@ int main(int argc, char* argv[])
       clientIdl::BlasterCallback_impl *callback_impl;
       boa= orb->BOA_init(argc, argv, "mico-local-boa");
       callback_impl = new clientIdl::BlasterCallback_impl();
-
-      // dump object-reference IOR (as string) (for fun only)
-      cout << "Objekt-Referenz dieser xmlBlaster-Implementation:" << endl;
-      cout << "\t" << orb->object_to_string(callback_impl) << endl;
-      cout.flush();
- 
-      // 
+      // cout << "\t" << orb->object_to_string(callback_impl) << endl;
       boa->impl_is_ready (CORBA::ImplementationDef::_nil());
 
 
