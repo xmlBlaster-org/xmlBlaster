@@ -93,8 +93,20 @@
      </pre>
      <h3>Compilation</h3>
      <p>
-     A make file or ant based compilation is not yet available,
-     here is an example how to compile single threaded synchronous clients:
+     You can try the ant based compilation, our build.xml supports
+     Linux gcc, Solaris CC and Windows VC++:
+     </p>
+     <pre>
+cd xmlBlaster
+build.sh c-lib   (Use build.bat on Windows)
+     </pre>
+     <p>
+     This creates a shared C library <i>xmlBlaster/lib/libxmlBlasterClientC.sl</i> on
+     Linux or <i>xmlBlaster/lib/libxmlBlasterClientC.dll</i> on Windows.
+     You can link your C or C++ client code with this library.
+     </p>
+     <p>
+     Here are some complete examples how to compile a simple C client 'manually':
      </p>
      <pre>
 cd xmlBlaster/src/c
@@ -695,6 +707,6 @@ int main(int argc, char** argv)
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2003 05 29</date>
-   <revision>$Revision: 1.12 $</revision>
+   <revision>$Revision: 1.13 $</revision>
 </requirement>
 
