@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.38 2000/03/03 17:55:52 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.39 2000/03/08 17:27:13 kkrafft2 Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
@@ -54,8 +54,8 @@ import java.util.Properties;
  * If the ping fails, the login polling is automatically activated.
  * <p />
  * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http
- * @version $Revision: 1.38 $
- * @author $Author: ruff $
+ * @version $Revision: 1.39 $
+ * @author $Author: kkrafft2 $
  */
 public class CorbaConnection implements ServerOperations
 {
@@ -101,6 +101,9 @@ public class CorbaConnection implements ServerOperations
    private MessageUnitContainer[] dummyMArr = new MessageUnitContainer[0];
    private String[] dummySArr = new String[0];
    private String dummyS = "";
+
+   /** Cache **/
+   private BlasterCache cache           = null;
 
 
    /**
@@ -211,6 +214,20 @@ public class CorbaConnection implements ServerOperations
       this.pingInterval = pingInterval;
       this.retries = retries;
       this.recorder = new InvocationRecorder(maxInvocations, this, null);
+   }
+
+
+   /**
+    * Setup the cache mode.
+    *
+    * @param size Size of the cache. This number specifies the count of subscribtions the cache
+    *             can made. it specifies NOT the number of messages.
+    */
+   public void initCache(int size)
+   {
+      if (Log.CALLS) Log.calls(ME, "Initializing cache: size=" + size);
+      cache = new BlasterCache( this, size );
+      Log.info(ME,"BlasterCache has been initialized with size="+size);
    }
 
 
@@ -434,7 +451,6 @@ public class CorbaConnection implements ServerOperations
    public Server login(String loginName, String passwd, BlasterCallback callback, String qos) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "login(" + loginName + ") ...");
-
       if (xmlBlaster != null) {
          Log.warning(ME, "You are already logged in, returning cached handle on xmlBlaster");
          return xmlBlaster;
@@ -460,7 +476,8 @@ public class CorbaConnection implements ServerOperations
    {
       if (Log.CALLS) Log.calls(ME, "loginRaw(" + loginName + ") ...");
       try {
-         xmlBlaster = getAuthenticationService().login(loginName, passwd, callback, loginQos);
+         AuthServer authServer = getAuthenticationService();
+         xmlBlaster = authServer.login(loginName, passwd, callback, loginQos);
          numLogins++;
          if (Log.TRACE) Log.trace(ME, "Success, login for " + loginName);
       } catch(XmlBlasterException e) {
@@ -494,7 +511,7 @@ public class CorbaConnection implements ServerOperations
     */
    public Server login(String loginName, String passwd, String qos, I_Callback client) throws XmlBlasterException
    {
-      BlasterCallback callback = createCallbackServer(new DefaultCallback(loginName, client));
+      BlasterCallback callback = createCallbackServer(new DefaultCallback(loginName, client, cache));
 
       if (Log.TRACE) Log.trace(ME, "Success, exported BlasterCallback Server interface for " + loginName);
 
@@ -780,9 +797,25 @@ public class CorbaConnection implements ServerOperations
     */
    public final MessageUnitContainer[] get(String xmlKey, String qos) throws XmlBlasterException
    {
+      MessageUnitContainer[] units = null;
       if (Log.CALLS) Log.calls(ME, "get() ...");
       try {
-         return xmlBlaster.get(xmlKey, qos);
+         //Is cache installed?
+         if (cache != null) {
+            units = cache.get( xmlKey, qos );
+            //not found in cache
+            if( units == null ) {
+               units = xmlBlaster.get(xmlKey, qos);								//get messages from xmlBlaster
+               String subId = xmlBlaster.subscribe(xmlKey, qos);				//subscribe to this messages
+               cache.newEntry(subId, xmlKey, units);								//fill messages to cache
+               Log.info(ME,"New Entry in Cache created (subId="+subId+")");
+            }
+         }
+         else
+            units = xmlBlaster.get(xmlKey, qos);
+
+        	return units;
+
       } catch(XmlBlasterException e) {
          throw e;
       } catch(Exception e) {
@@ -959,15 +992,17 @@ class DefaultCallback implements BlasterCallbackOperations
    private final String ME;
    private final I_Callback boss;
    private final String loginName;
+   private final BlasterCache cache;
 
    /**
     * Construct a persistently named object.
     */
-   public DefaultCallback(String name, I_Callback boss)
+   public DefaultCallback(String name, I_Callback boss, BlasterCache cache)
    {
       this.ME = "DefaultCallback-" + name;
       this.boss = boss;
       this.loginName = name;
+      this.cache = cache;
       if (Log.CALLS) Log.trace(ME, "Entering constructor with argument");
    }
 
@@ -1016,7 +1051,14 @@ class DefaultCallback implements BlasterCallbackOperations
          if (Log.DUMP) Log.dump("UpdateQoS", "\n" + updateQoS.printOn().toString());
          if (Log.TRACE) Log.trace(ME, "Received message [" + updateKey.getUniqueKey() + "] from publisher " + updateQoS.getSender());
 
-         boss.update(loginName, updateKey, content, updateQoS); // Call my boss
+         //Checking whether the Update is for the Cache or for the boss
+         //The boos should not be interested in cache updates
+         boolean forCache = false;
+         if( cache != null ) {
+                forCache = cache.update(updateQoS.getSubscriptionId(), updateKey.toXml(), content);
+         }
+         if (!forCache)
+                boss.update(loginName, updateKey, content, updateQoS); // Call my boss
       }
    }
 } // class DefaultCallback
