@@ -3,7 +3,7 @@ Name:      Util.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: Util.java,v 1.2 2000/05/29 11:43:41 freidlin Exp $
+Version:   $Id: Util.java,v 1.3 2001/02/14 21:32:26 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -21,7 +21,11 @@ public class Util
 
 
    /**
-    * Get the request parameter
+    * Get the request parameter, if not found the session is checked, if
+    * not found again, the given default is returned. 
+    * <br />
+    * NOTE: The session check is commented out since not supported in Servlet API 2.0
+    *
     * @param req request from client
     * @param name parameter name
     * @param defaultVal default value if parameter not found
@@ -35,7 +39,7 @@ public class Util
          if (session == null) {
             return defaultVal;
          }
-         String val = (String)session.getValue(name);
+         String val = null; // (String)session.getAttribute(name);  !!!! only since Servlet API 2.1
          if (val == null) {
             return defaultVal;
          } else {
