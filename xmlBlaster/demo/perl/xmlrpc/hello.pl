@@ -1,8 +1,19 @@
+#!/usr/bin/perl
+# Invoke
+#   perl hello.pl http://myHost:8080/
+# if xmlBlaster runs on 'myHost'
+
 use Frontier::Client;
 use MIME::Base64;
+#use String::Trim;
     
 #$server_url = 'http://MyHost:8080/';
-$server_url =  @ARGV[0];
+$server_url = @ARGV[0];
+if ($#ARGV == -1) {
+   $host = `uname -n`;
+   $host =~ s/^\s*(.*?)\s*$/$1/; # trim whitespace
+   $server_url = "http://" . $host . ":8080/";  # guess where the xmlBlaster server is
+}
 print "\nTrying to connect to xmlBlaster server on $server_url ...\n";
 
 # Make an object to represent the XMLRPC server.
@@ -11,16 +22,18 @@ print "Connected to xmlBlaster server on $server_url \n";
 
 # Call the remote server and get our result.
 $sessionId = $server->call('authenticate.login', "ben", "secret", "<qos></qos>", "");
-print "\nLogin success with sessionId=$sessionId \n";
+print "Login success, got secret sessionId=$sessionId \n";
 
 # Call the server and get its current memory consumption.
-@msgUnits = $server->call('xmlBlaster.get', $sessionId, "<key oid='__cmd:?totalMem'/>", "<qos/>");
+$queryKey = "<key oid='__cmd:?totalMem'/>";
 # Call the server and query all messages with XPath:
-#@msgUnits = $server->call('xmlBlaster.get', $sessionId, "<key queryType='XPATH'>/xmlBlaster</key>", "<qos/>");
-print "\nResults for a get():\n--------------------------------";
+#$queryKey = "<key queryType='XPATH'>/xmlBlaster</key>";
+
+@msgUnits = $server->call('xmlBlaster.get', $sessionId, $queryKey, "<qos/>");
+print "\nResults for a get($queryKey):";
 for $i (0 .. $#msgUnits) {
    for $j (0 .. $#{$msgUnits[$i]}) {
-      print "\n\n-------------#$j-------------------";
+      print "\n-------------#$j-------------------";
       $key = $msgUnits[$i][j][0];
       $contentBase64AndEncoded = $msgUnits[$i][j][1];
       $content = decode_base64($contentBase64AndEncoded->value());
