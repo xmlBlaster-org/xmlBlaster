@@ -13,9 +13,6 @@
 #   export CVSROOT=:pserver:xmlblaster@193.197.24.129:/www/cvsroot
 #-----------------------------------------------------------
 
-export JacORB_HOME=
-export XMLBLASTER_HOME=
-export MICO_HOME=
 
 BLACK_LTGREEN="\033[40;46m"
 BLACK_RED="\033[30;41m"
@@ -77,11 +74,12 @@ if ! [ ${JacORB_HOME} ] ; then
       echo -e "$BLACK_RED   Please set environment variable JacORB_HOME                       $ESC"
       echo -e "$BLACK_RED      Example: 'export JacORB_HOME=/usr/local/JacORB'                $ESC"
       echo -e "$BLACK_RED      or set PATH to contain 'jaco' and we will do the rest for you  $ESC"
-	   echo -e ""
+      echo -e ""
+      return 1
    fi
    echo -e "$BLACK_LTGREEN      Using JacORB_HOME=${JacORB_HOME}  $ESC"
 else
-   echo -e "$BLACK_LTGREEN      Using your JacORB_HOME=${JacORB_HOME} setting   $ESC"
+   echo -e "$BLACK_LTGREEN      Using JacORB_HOME=${JacORB_HOME}  $ESC"
 fi
 
 if ! [ -d ${JacORB_HOME} ] ; then
@@ -93,6 +91,9 @@ fi
 #-------- Checking MICO --------
 if ! [ ${MICO_HOME} ] ; then
    echo -e "      If you want to use the C++ MICO client, set the MICO_HOME environment variable   "
+   echo -e "         Example: 'export MICO_HOME=/usr/local/mico'"
+else
+   echo -e "$BLACK_LTGREEN      Using MICO_HOME=${MICO_HOME}  $ESC"
 fi
 
 
