@@ -41,6 +41,7 @@ import java.util.ArrayList;
  * </p>
  * @see org.xmlBlaster.util.qos.MsgQosSaxFactory
  * @see org.xmlBlaster.test.classtest.qos.MsgQosFactoryTest
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">The interface.publish requirement</a>
  * @author xmlBlaster@marcelruff.info
  */
 public final class MsgQosData extends QosData implements java.io.Serializable, Cloneable
@@ -100,6 +101,9 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
 
    private long remainingLifeStatic = -1L;
 
+   public transient final static boolean DEFAULT_administrative = false;
+   private PropBoolean administrative = new PropBoolean(DEFAULT_administrative);
+
    public transient final static boolean DEFAULT_forceDestroy = false;
    private PropBoolean forceDestroy = new PropBoolean(DEFAULT_forceDestroy);
 
@@ -108,6 +112,7 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
 
    /** The priority of the message */
    private PriorityEnum priority = PriorityEnum.NORM_PRIORITY;
+   private boolean priorityIsModified = false;
 
    /**
     * ArrayList for loginQoS, holding all destination addresses (Destination objects)
@@ -385,6 +390,7 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
     */
    public void setPriority(PriorityEnum priority) {
       this.priority = priority;
+      this.priorityIsModified = true;
    }
 
    /**
@@ -535,6 +541,31 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
    }
 
    /**
+    * Marks a message to be administrative only, in this case the topic is configured only.
+    * Note the administrative messages have a default priority of MAX_PRIORITY
+    * @param administrative true The message is only used to configure the topic<br />
+    *        false The message contains useful content (and may as initial publish configure the topic as well)
+    * @see org.xmlBlaster.util.enum.PriorityEnum
+    */
+   public void setAdministrative(boolean administrative) {
+      this.administrative.setValue(administrative);
+      if (!this.priorityIsModified) {
+         this.priority = (administrative) ? PriorityEnum.MAX_PRIORITY : PriorityEnum.NORM_PRIORITY;
+      }
+   }
+
+   /**
+    * @return true/false, defaults to false
+    */
+   public boolean isAdministrative() {
+      return this.administrative.getValue();
+   }
+
+   public PropBoolean getAdministrativeProp() {
+      return this.administrative;
+   }
+
+   /**
     * Get all the destinations of this message.
     * This should only be used with PTP style messaging<br />
     * Check <code>if (isPtp()) ...</code> before calling this method
@@ -648,7 +679,22 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
     * Currently TopicProperty and RouteInfo is not cloned (so don't change it)
     */
    public Object clone() {
-      return super.clone();
+      MsgQosData newOne = null;
+      //try {
+         newOne = (MsgQosData)super.clone();
+         synchronized(this) {
+            newOne.isSubscribeable = (PropBoolean)this.isSubscribeable.clone();
+            newOne.durable = (PropBoolean)this.durable.clone();
+            newOne.forceUpdate = (PropBoolean)this.forceUpdate.clone();
+            newOne.lifeTime = (PropLong)this.lifeTime.clone();
+            newOne.administrative = (PropBoolean)this.administrative.clone();
+            newOne.forceDestroy = (PropBoolean)this.forceDestroy.clone();
+         }
+         return newOne;
+      //}
+      //catch (CloneNotSupportedException e) {
+      //   return null;
+      //}
    }
 
    /**
