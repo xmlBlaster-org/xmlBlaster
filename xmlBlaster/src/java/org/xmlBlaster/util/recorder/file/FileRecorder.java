@@ -30,6 +30,7 @@ import java.io.IOException;
  * <pre>
  * RecorderPlugin[FileRecorder][1.0]=org.xmlBlaster.util.recorder.file.FileRecorder
  * </pre>
+ * See the <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/util.recorder.html">util.recorder</a> requirement.
  * @author astelzl@avitech.de
  * @author pavol.hrnciarik@pixelpark.com
  * @author ruff@swand.lake.de
@@ -41,7 +42,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
    private final String ME = "FileRecorder";
    private LogChannel log;
 
-   private RecorderBuffer rb;
+   private FileIO rb;
 
    private String fileName;
 
@@ -53,6 +54,8 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
    private String dummyS = "";
 
    private long maxEntries;
+
+   private boolean autoCommit = true;
   
 
    /**
@@ -74,6 +77,36 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
       this.serverCallback = serverCallback;
       this.clientCallback = clientCallback;
       this.log = glob.getLog("recorder");
+
+      createPath();
+
+      boolean useSync = glob.getProperty().get("recorder.useSync", false);
+
+      try {
+         this.rb = new FileIO(fileName, new MsgDataHandler(glob), maxEntries, useSync);
+         if (rb.getNumUnread() > 0) {
+            boolean destroyOld = glob.getProperty().get("recorder.detroyOld", false);
+            if (destroyOld) {
+               log.warn(ME, "Destroyed " + rb.getNumUnread() + " unprocessed tail back messages in '" + fileName + "'.");
+               rb.destroy();
+               rb.initialize();
+            }
+            else {
+               log.warn(ME, "Recovering " + rb.getNumUnread() + " unprocessed tail back messages from '" + fileName + "'.");
+            }
+         }
+         else {
+            log.info(ME, "Using persistence file '" + fileName + "' for tail back messages.");
+         }
+      }
+      catch(IOException ex) {
+         log.error(ME,"Error at creation of RecordBuffer. It is not possible to buffer any messages: " + ex.toString());
+         throw new XmlBlasterException(ME, "Initializing FileRecorder failed: Error at creation of RecordBuffer. It is not possible to buffer any messages: " + ex.toString());
+      }
+      log.info(ME, "FileRecorder is ready, tail back messages are stored in '" + fileName + "'");
+   }
+
+   private String createPath() {
       fileName = glob.getProperty().get("recorder.path", (String)null);
       if (fileName == null) {
          fileName = glob.getProperty().get("recorder.path["+glob.getId()+"]", (String)null);
@@ -83,16 +116,8 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
          fileName += System.getProperty("file.separator") + "fileRecorder";
       }
       fileName += System.getProperty("file.separator") + "tailback-" + glob.getStrippedId() + ".frc";
-
-      log.info(ME, "FileRecorder will use '" + fileName + "' for tail back messages.");
-      try {
-         this.rb = new RecorderBuffer(fileName, maxEntries);
-      }
-      catch(IOException ex) {
-         log.error(ME,"Error at creation of RecordBuffer. It is not possible to buffer any messages: " + ex.toString());
-         throw new XmlBlasterException(ME, "Initializing FileRecorder failed: Error at creation of RecordBuffer. It is not possible to buffer any messages: " + ex.toString());
-      }
-      log.info(ME, "FileRecorder is ready, tail back messages are stored in '" + fileName + "'");
+      File f = new File(filename);
+      f.mkdirs();
    }
 
    /**
@@ -121,7 +146,8 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
    }
 
    /**
-    * @param ONOVERFLOW_BLOCK = "block", ONOVERFLOW_DEADLETTER = "deadLetter",
+    * @param mode
+    *        ONOVERFLOW_BLOCK = "block", ONOVERFLOW_DEADLETTER = "deadLetter",
     *        ONOVERFLOW_DISCARD = "discard", ONOVERFLOW_DISCARDOLDEST = "discardOldest",
     *        ONOVERFLOW_EXCEPTION = "exception"
     */
@@ -153,8 +179,8 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
   /**
    * Number of requests buffered
    */
-  public final int size()
-  { return rb.size();
+  public final long getNumUnread()
+  { return rb.getNumUnread();
   }
 
   /**
@@ -167,10 +193,10 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
     log.info(ME, "Invoking pullback(startDate=" + startDate + ", endDate=" + endDate + ", motionFactor=" + motionFactor + ")");
 
     RequestContainer cont = null;
-    while(rb.size() > 0) 
+    while(rb.getNumUnread() > 0) 
     { // find the start node ...
       try
-      { cont = rb.readRequest();
+      { cont = (RequestContainer)rb.readNext(autoCommit);
       }
       catch(IOException ex){}
       if (cont == null)
@@ -208,24 +234,11 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
         callback(cont);
       }
       try
-      { cont = rb.readRequest();
+      { cont = (RequestContainer)rb.readNext(autoCommit);
       }
       catch(IOException ex){}
     }
   }
-
-   /**
-   * deletes the file
-   */
-   public void reset()
-   { 
-      try {
-         rb.close();
-         rb.initialize();
-      }
-      catch(IOException ex)
-      { log.error(ME,"Error at buffer reset");}
-   }
 
    /**
     * How many messages are silently lost in 'discard' or 'discardOldest' mode?
@@ -307,7 +320,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
     cont.xmlKey = xmlKey;
     cont.xmlQos = qos;
     try
-    { rb.writeRequest(cont);
+    { rb.writeNext(cont);
     }
     catch(IOException ex)
     { throw new XmlBlasterException(ME,ex.toString());
@@ -325,7 +338,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
     cont.xmlKey = xmlKey;
     cont.xmlQos = qos;
     try
-    { rb.writeRequest(cont);
+    { rb.writeNext(cont);
     }
     catch(IOException ex)
     { throw new XmlBlasterException(ME,ex.toString());
@@ -341,7 +354,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
     cont.method = "publish";
     cont.msgUnit = msgUnit;
     try
-    { rb.writeRequest(cont);
+    { rb.writeNext(cont);
     }
     catch(IOException ex)
     { throw new XmlBlasterException(ME,ex.toString());
@@ -358,7 +371,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
     cont.method = "publishOneway";
     cont.msgUnitArr = msgUnitArr;
     try
-    { rb.writeRequest(cont);
+    { rb.writeNext(cont);
     }
     catch(IOException ex)
     { throw new XmlBlasterException(ME,ex.toString());
@@ -374,7 +387,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
     cont.method = "publishArr";
     cont.msgUnitArr = msgUnitArr;
     try
-    { rb.writeRequest(cont);
+    { rb.writeNext(cont);
     }
     catch(IOException ex)
     { throw new XmlBlasterException(ME,ex.toString());
@@ -392,7 +405,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
     cont.xmlKey = xmlKey;
     cont.xmlQos = qos;
     try
-    { rb.writeRequest(cont);
+    { rb.writeNext(cont);
     }
     catch(IOException ex)
     { throw new XmlBlasterException(ME,ex.toString());
@@ -410,7 +423,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
     cont.xmlKey = xmlKey;
     cont.xmlQos = qos;
     try
-    { rb.writeRequest(cont);
+    { rb.writeNext(cont);
     }
     catch(IOException ex)
     { throw new XmlBlasterException(ME,ex.toString());
@@ -432,7 +445,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
       cont.cbSessionId = cbSessionId;
       cont.msgUnitArr = msgUnitArr;
       try {
-         rb.writeRequest(cont);
+         rb.writeNext(cont);
       }
       catch(IOException ex) {
          throw new XmlBlasterException(ME,ex.toString());
@@ -452,10 +465,21 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
     cont.cbSessionId = cbSessionId;
     cont.msgUnitArr = msgUnitArr;
     try
-    { rb.writeRequest(cont);
+    { rb.writeNext(cont);
     }
     catch(Exception ex)
     { log.error(ME,"Can't push updateOneway(): "+ex.toString());
     }
   }
+
+   /**
+   * deletes the file
+   */
+   public void destroy() { 
+      rb.destroy();
+   }
+
+   public void shutdown() {
+      rb.shutdown();
+   }
 }

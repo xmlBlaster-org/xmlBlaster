@@ -38,7 +38,8 @@ import org.xmlBlaster.util.XmlBlasterException;
  * TODO: <br />
  *  - If the file is never read empty it grows and grows ...<br />
  *  - The mode DISCARD_OLDEST does not shrink the file size
- *
+ * <p />
+ * See the <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/util.recorder.html">util.recorder</a> requirement.
  * @see classtest.FileRecorderTest
  */
 public class FileIO
@@ -72,7 +73,11 @@ public class FileIO
    private int mode = modeException;
 
 
-   public FileIO(String fileName, I_UserDataHandler userDataHandler, long maxEntries, boolean useSync) {
+   /**
+    * @param filename An absolute or relative path including the fileName
+    * @param userDataHandler Your implementation of your data format marshalling
+    */
+   public FileIO(String fileName, I_UserDataHandler userDataHandler, long maxEntries, boolean useSync) throws IOException {
       this.fileName = fileName;
       if (maxEntries < 1)
          this.maxEntries = Long.MAX_VALUE;
@@ -81,25 +86,18 @@ public class FileIO
       this.useSync = useSync;
       this.userDataHandler = userDataHandler;
 
-      try {
-         initialize();
-      }
-      catch (Exception e) {
-         System.err.println("IO-ERROR: " + e.toString());
-         e.printStackTrace();
-      }
+      initialize();
    }
 
    /**
     * Initializes on first startup or reloads an existing file. 
     */
-   public void initialize() throws IOException, SyncFailedException {
+   public void initialize() throws IOException {
       currReadPos = -1L;
       numUnread = 0L;
       numLost = 0L;
 
-      f = new File(fileName);
-      boolean created = f.createNewFile();
+      f = mkfile(fileName);
       try {
          /*
            Implementation note:<br />
@@ -129,14 +127,28 @@ public class FileIO
    }
 
    /**
+    * Creates recursive all directories, assuming file name is the last part of the path
+    * @return The new file handle
+    */
+   public File mkfile(String fullName) throws IOException {
+      File f = new File(fullName);
+      File dir = f.getAbsoluteFile().getParentFile();
+      if (dir != null)
+         dir.mkdirs();
+      f.createNewFile();
+      return f;
+   }
+
+   /**
     * You can call readNext(false) and need to commit when you have processed
     * the retrieved data successully with saveCurrReadPos(). If your
     * processing fails without a saveCurrReadPos() call the subsequent readNext()
     * gets the same data again.
     * @exception XmlBlasterException<br />
-    * "FileRecorder.FileLost" If file disappeared, you can proceed
+    * "FileRecorder.FileLost" If file disappeared, you can proceed<br />
+    * Of an XmlBlasterExeption from the user data handler
     */
-   public synchronized String readNext(boolean autoCommit) throws IOException, XmlBlasterException {
+   public synchronized Object readNext(boolean autoCommit) throws IOException, XmlBlasterException {
       if (!f.exists()) {
          numFileDeleteLost = getNumUnread();
          initialize();
@@ -147,7 +159,7 @@ public class FileIO
       long pos = getCurrReadPos();
       if (pos > 0L) {
          ra.seek(currReadPos);
-         String data = (String)userDataHandler.readData(ra);
+         Object data = userDataHandler.readData(ra);
          currReadPos = ra.getFilePointer();
 
          if (autoCommit) saveCurrReadPos();
@@ -166,9 +178,10 @@ public class FileIO
     * Write more data. 
     * @exception XmlBlasterException<br />
     *  "FileRecorder.FileLost" If file disappeared, we create a new and store the message<br />
-    *  "FileRecorder.MaxEntries" Maximum size reached in Exception mode
+    *  "FileRecorder.MaxSize" Maximum size reached in Exception mode<br />
+    *  Of an XmlBlasterExeption from the user data handler
     */
-   public void writeNext(String data) throws IOException, XmlBlasterException {
+   public void writeNext(Object data) throws IOException, XmlBlasterException {
       String errorText = null;
       if (!f.exists()) {
          numFileDeleteLost = getNumUnread();
@@ -190,7 +203,7 @@ public class FileIO
             return;
          }
          else {
-            throw new XmlBlasterException("FileRecorder.MaxEntries", "Maximun size=" + maxEntries + " of '" + fileName + "' reached");
+            throw new XmlBlasterException("FileRecorder.MaxSize", "Maximun size=" + maxEntries + " of '" + fileName + "' reached");
          }
       }
 
@@ -290,6 +303,29 @@ public class FileIO
    /** Default you get an Exception if queue is full */
    public void setModeException() {
       this.mode = modeException;
+   }
+
+   /** Don't loose data */
+   public void shutdown() {
+      if (ra != null) {
+         try {
+            ra.close();
+         }
+         catch (IOException e) {}
+         ra = null;
+      }
+      currReadPos = -1L;
+      numUnread = 0L;
+      numLost = 0L;
+   }
+
+   /** Destroy data */
+   public void destroy() {
+      shutdown();
+      if (f != null) {
+         f.delete();
+         f = null;
+      }
    }
 }
 

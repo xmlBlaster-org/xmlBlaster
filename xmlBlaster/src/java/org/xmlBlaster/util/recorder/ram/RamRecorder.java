@@ -3,7 +3,7 @@ Name:      RamRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   RamRecorder for client messages
-Version:   $Id: RamRecorder.java,v 1.3 2002/05/30 09:54:29 ruff Exp $
+Version:   $Id: RamRecorder.java,v 1.4 2002/06/01 12:22:58 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.recorder.ram;
@@ -154,7 +154,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
     * <p />
     * @return number of objects
     */
-   public final int size()
+   public final long getNumUnread()
    {
       return queue.size();
    }
@@ -209,12 +209,14 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
    /**
     * Reset the queue, throw all entries to garbage
     */
-   public void reset()
+   public void destroy()
    {
       while(queue.size() > 0)
          queue.pull();
    }
 
+   public void shutdown() {
+   }
 
    /**
     * How many messages are silently lost in 'discard' or 'discardOldest' mode?

@@ -3,7 +3,7 @@ Name:      I_InvocationRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface for storing tail back messages
-Version:   $Id: I_InvocationRecorder.java,v 1.2 2002/05/28 10:16:59 ruff Exp $
+Version:   $Id: I_InvocationRecorder.java,v 1.3 2002/06/01 12:22:58 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.recorder;
@@ -49,7 +49,7 @@ public interface I_InvocationRecorder extends I_XmlBlaster, I_CallbackRaw
     * How many objects are in the queue. 
     * @return     The number of objects in this queue.
     */
-   public int size();
+   public long getNumUnread();
 
    /**
     * How many messages are silently lost in 'discard' or 'discardOldest' mode?
@@ -84,5 +84,10 @@ public interface I_InvocationRecorder extends I_XmlBlaster, I_CallbackRaw
    /**
     * Reset the queue, throw all entries to garbage. 
     */
-   public void reset();
+   public void destroy();
+
+   /**
+    * Close the queue, entries are still available (e.g. close the file handle).
+    */
+   public void shutdown();
 }
