@@ -104,8 +104,9 @@ int main(int argc, char** argv)
       char qos[4098];
       char topicQos[2048];
       char destinationQos[2048];
+      bool interactive = xa->props->getBool(xa->props, "interactive", true);
       bool oneway = xa->props->getBool(xa->props, "oneway", false);
-      /*long sleep = xa->props->getLong(xa->props, "sleep", 1000L);*/
+      long sleep = xa->props->getLong(xa->props, "sleep", 1000L);
       int numPublish = xa->props->getInt(xa->props, "numPublish", 1);
       const char *clientTags = xa->props->getString(xa->props, "clientTags", "<org.xmlBlaster><demo-%counter/></org.xmlBlaster>");
       const char *content = xa->props->getString(xa->props, "content", "Hi-%counter");
@@ -149,8 +150,21 @@ int main(int argc, char** argv)
       for (iPublish=0; iPublish<numPublish; iPublish++) {
          MsgUnit msgUnit;
          char msg[20];
-
          char *pp = strstr(key, "%counter");
+
+         if (interactive) {
+            printf("[client] Hit a key to publish '%s' #%d/%d ('b' to break) >> ", oid, iPublish, numPublish);
+            fgets(msg, 19, stdin);
+            if (*msg == 'b') 
+               break;
+         }
+         else {
+            if (sleep > 0) {
+               sleepMillis(sleep);
+            }
+            printf("[client] Publish '%s' #%d/%d", oid, iPublish, numPublish);
+         }
+
          if (pp) { /* Replace '%counter' token by current index */
             char *k = malloc(strlen(key)+10);
             strncpy(k, key, pp-key);
@@ -182,11 +196,6 @@ int main(int argc, char** argv)
                    "", "", /* ClientProperty */
                    topicQos
                    );
-
-         printf("[client] Hit a key to publish '%s' #%d/%d ('b' to break) >> ", oid, iPublish, numPublish);
-         fgets(msg, 19, stdin);
-         if (*msg == 'b') 
-            break;
 
          if (contentSize > 0) {
             int i;
