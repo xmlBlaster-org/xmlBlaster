@@ -27,7 +27,9 @@ PACKGS = org.xmlBlaster \
 
 TEST_PACKGS = testsuite.org.xmlBlaster
 
-javadoc:
+DEMO_PACKGS = javaclients
+
+javadoc_server:
 	${MKDIR_RECURSIVE} ${JAVADOC_DIR} 
 	${JAVADOC} -d ${JAVADOC_DIR} -sourcepath ./src/java $(PACKGS) 
  
@@ -35,6 +37,16 @@ javadoc:
 javadoc_testsuite:
 	${MKDIR_RECURSIVE} ${JAVADOC_DIR} 
 	${JAVADOC} -d ${JAVADOC_DIR} -sourcepath . $(TEST_PACKGS) 
+ 
+
+javadoc_demo:
+	${MKDIR_RECURSIVE} ${JAVADOC_DIR} 
+	${JAVADOC} -d ${JAVADOC_DIR} -sourcepath demo $(DEMO_PACKGS) 
+ 
+
+javadoc:
+	${MKDIR_RECURSIVE} ${JAVADOC_DIR} 
+	${JAVADOC} -d ${JAVADOC_DIR} -sourcepath ./src/java:./:./demo $(PACKGS) $(TEST_PACKGS) $(DEMO_PACKGS)
  
 
 jar: all
