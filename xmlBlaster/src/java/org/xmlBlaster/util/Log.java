@@ -3,7 +3,7 @@ Name:      Log.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Logging output to console/file, using org.jutils
-Version:   $Id: Log.java,v 1.65 2002/05/11 19:17:57 ruff Exp $
+Version:   $Id: Log.java,v 1.66 2002/05/17 13:34:11 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
@@ -110,7 +110,7 @@ public class Log
       init();
 
       Log.setLogChannel(lc);
-      Log.info(ME, "XmlBlaster logging configured");
+      Log.trace(ME, "XmlBlaster logging configured");
    }
 
    /**
