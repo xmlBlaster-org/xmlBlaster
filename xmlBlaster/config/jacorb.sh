@@ -1,16 +1,16 @@
-
+# $ Id: $
 #-------- Checking JacORB --------
 # Is JacORB home not set already? Try to find where JacORB is:
-if [ ${JacORB_HOME:=""} = "" ] ; then
-   JACO_EXE=`which jaco`
-   if [ ${JACO_EXE:=""} != "" ] ; then
+if [ "${JacORB_HOME}" = "" ] ; then
+   JACO_EXE=`${WHICH} jaco`
+   if [ "${JACO_EXE}" != "" ] ; then
       JACO_BIN=`dirname $JACO_EXE`
       JacORB_HOME=`dirname $JACO_BIN`
       export JacORB_HOME
    fi
 fi
 
-if [ ${JacORB_HOME:=""} = "" ] ; then
+if [ "${JacORB_HOME}" = "" ] ; then
    # No external JacORB found, use the with xmlBlaster delivered JacORB:
    JacORB_HOME=${XMLBLASTER_HOME}
    export JacORB_HOME
@@ -47,7 +47,7 @@ else
    ${ECHO} "$BLACK_RED   The directory JacORB_HOME=$JacORB_HOME doesn't exist   $ESC"
 fi
 
-JACO_EXE=`which jaco`
+JACO_EXE=`${WHICH} jaco`
 JACO_BIN=`dirname ${JACO_EXE}`
 export IDL_OUTDIR="-d"
 export IDL2JAVA="${JACO_BIN}/idl -p org.xmlBlaster.protocol.corba"
