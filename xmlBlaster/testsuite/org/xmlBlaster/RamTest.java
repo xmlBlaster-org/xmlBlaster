@@ -3,7 +3,7 @@ Name:      RamTest.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: RamTest.java,v 1.1 2000/01/07 20:33:50 ruff Exp $
+Version:   $Id: RamTest.java,v 1.2 2000/01/30 18:42:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -17,7 +17,7 @@ import test.framework.*;
 
 
 /**
- * This client publishes 1000 different messages to measure RAM consumption/message. 
+ * This client publishes 1000 different messages to measure RAM consumption/message.
  * <br />
  * The RAM consumption in kByte/Message is logged to the console.
  * <br />
@@ -159,7 +159,7 @@ public class RamTest extends TestCase
 
          long avg = NUM_PUBLISH / (stopWatch.elapsed()/1000L);
          Log.info(ME, "Success: Publishing done, " + NUM_PUBLISH + " messages sent, average messages/second = " + avg);
-         
+
          assertNotEquals("returned publishOidArr == null", null, publishOidArr);
          assertEquals("numPublished is wrong", NUM_PUBLISH, publishOidArr.length);
 
@@ -213,6 +213,7 @@ public class RamTest extends TestCase
     */
    public static void main(String args[])
    {
+      Log.setLogLevel(args);
       RamTest testSub = new RamTest("RamTest", "Tim");
       testSub.setUp();
       testSub.testManyPublish();

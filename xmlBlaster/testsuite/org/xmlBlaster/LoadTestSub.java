@@ -3,7 +3,7 @@ Name:      LoadTestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: LoadTestSub.java,v 1.4 2000/01/13 16:43:04 ruff Exp $
+Version:   $Id: LoadTestSub.java,v 1.5 2000/01/30 18:42:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -21,7 +21,7 @@ import test.framework.*;
 
 /**
  * This client does a subscribe() with many publish() calls.<br />
- * The same message is published 1000 times, to measure messages/second performance. 
+ * The same message is published 1000 times, to measure messages/second performance.
  * <p />
  * This client may be invoked multiple time on the same xmlBlaster server,
  * as it cleans up everything after his tests are done.
@@ -271,6 +271,7 @@ public class LoadTestSub extends TestCase implements I_Callback
     */
    public static void main(String args[])
    {
+      Log.setLogLevel(args);
       LoadTestSub testSub = new LoadTestSub("LoadTestSub", "Tim");
       testSub.setUp();
       testSub.testManyPublish();

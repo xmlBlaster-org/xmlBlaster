@@ -3,7 +3,7 @@ Name:      TestPtD.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtD.java,v 1.7 1999/12/16 11:49:41 ruff Exp $
+Version:   $Id: TestPtD.java,v 1.8 2000/01/30 18:42:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -260,6 +260,7 @@ public class TestPtD extends TestCase implements I_Callback
     */
    public static void main(String args[])
    {
+      Log.setLogLevel(args);
       TestPtD testSub = new TestPtD("TestPtD");
       testSub.setUp();
       testSub.testPtOneDestination();
