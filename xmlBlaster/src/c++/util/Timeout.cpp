@@ -21,7 +21,7 @@ namespace org { namespace xmlBlaster { namespace util {
 
    Timeout::Timeout(int args, const char * const argc[]) : ME("Timeout"), threadName_("Timeout-Thread"), 
       isRunning_(false), isReady_(false), isDebug_(false), timeoutMap_(),
-      timestampFactory_(TimestampFactory::getInstance()), log_(args, argc) {
+      timestampFactory_(TimestampFactory::getInstance()), log_(args, argc), isActive_(true) {
       // the thread will only be instantiated when starting 
       log_.initialize();
       log_.call(ME, " default constructor");
@@ -35,7 +35,7 @@ namespace org { namespace xmlBlaster { namespace util {
 
    Timeout::Timeout(const string &name, int args, const char * const argc[]) : ME("Timeout"), threadName_(name), 
         isRunning_(false), isReady_(false), isDebug_(false), timeoutMap_(),
-        timestampFactory_(TimestampFactory::getInstance()), log_(args, argc) {
+        timestampFactory_(TimestampFactory::getInstance()), log_(args, argc), isActive_(true) {
       // the thread remains uninitialized ...
       log_.initialize();
       log_.call(ME, " alternative constructor");
@@ -47,6 +47,8 @@ namespace org { namespace xmlBlaster { namespace util {
 
    Timeout::~Timeout() {
       log_.call(ME, " destructor");
+      shutdown();
+      while (isActive_) { } // wait for the thread to finish
       delete invocationMutex_;
       delete waitForTimeoutMutex_;
       delete waitForTimeoutCondition_;
@@ -173,13 +175,20 @@ namespace org { namespace xmlBlaster { namespace util {
    void TimeoutRunner::operator()() {
        
       reference_.log_.call(ME, " run: operator ()");
+      reference_.isActive_ = true;
 
       Container *container = NULL;
       Container tmpContainer;
       
       while (reference_.isRunning_) {
+         boost::mutex::scoped_lock waitForTimeoutLock(*reference_.waitForTimeoutMutex_);
+
          reference_.log_.trace(ME, " operator (): is running");
-         long delay = 100000; // sleep veeery long
+         double delay = 100000.0; // sleep veeery long
+
+         boost::xtime timeToWait;
+         boost::xtime_get(&timeToWait, boost::TIME_UTC);
+
          {
             boost::mutex::scoped_lock lock(*reference_.invocationMutex_);
             TimeoutMap::iterator iter = reference_.timeoutMap_.begin();
@@ -190,34 +199,32 @@ namespace org { namespace xmlBlaster { namespace util {
                reference_.log_.trace(ME, " The timeout is not empty");
                Timestamp nextWakeup = (*iter).first;
                reference_.log_.trace(ME, "run, next event (Timestamp): " + lexical_cast<string>(nextWakeup) + " ms");
-               Timestamp next = nextWakeup / reference_.timestampFactory_.MILLION;
-               Timestamp current = reference_.timestampFactory_.getTimestamp() / reference_.timestampFactory_.MILLION;
-               delay = (long)(next - current);
+               double next = nextWakeup / reference_.timestampFactory_.MILLION;
+               double current = reference_.timestampFactory_.getTimestamp() / reference_.timestampFactory_.MILLION;
+               delay = next - current;
 
                reference_.log_.trace(ME, "run, next event  : " + lexical_cast<string>(next) + " ms");
                reference_.log_.trace(ME, "run, current time: " + lexical_cast<string>(current) + " ms");
                reference_.log_.trace(ME, "run, delay       : " + lexical_cast<string>(delay) + " ms");
-               if (delay <= 0) {
+               if (delay <= 1.0e-9) {
                   tmpContainer = (*iter).second;
                   reference_.timeoutMap_.erase((*iter).first);
                   container = &tmpContainer;
                   if (reference_.isDebug_)
                      std::cout << reference_.ME << " Timeout occurred, calling listener with real time error of " << delay << " millis" << std::endl;
-                  if (container != NULL) {
-                     (container->first)->timeout(container->second);
-                     container = NULL;
-                  }
                }
             }
          }
+         // must be outside the sync
+         if (container != NULL) {
+             (container->first)->timeout(container->second);
+             container = NULL;
+         }
          {
-            boost::mutex::scoped_lock waitForTimeoutLock(*reference_.waitForTimeoutMutex_);
-            boost::xtime timeToWait;
-            boost::xtime_get(&timeToWait, boost::TIME_UTC);
-            long int sec = (delay / reference_.timestampFactory_.TOUSAND);
-            long int nano = (delay % reference_.timestampFactory_.TOUSAND)*reference_.timestampFactory_.TOUSAND;
-//            timeToWait.sec  +=  sec;
-            timeToWait.sec  +=  2;
+//            boost::mutex::scoped_lock waitForTimeoutLock(*reference_.waitForTimeoutMutex_);
+            long int sec = (long int)(delay / reference_.timestampFactory_.TOUSAND);
+            long int nano = (long int)((delay - sec*reference_.timestampFactory_.TOUSAND)*reference_.timestampFactory_.MILLION);
+            timeToWait.sec  +=  sec;
             timeToWait.nsec += nano;
             reference_.log_.trace(ME, "sleeping ... " + lexical_cast<string>(sec) + " seconds and " + lexical_cast<string>(nano));
             reference_.isReady_ = true;
@@ -225,6 +232,8 @@ namespace org { namespace xmlBlaster { namespace util {
             reference_.log_.trace(ME, "waking up .. ");
          }
       }
+      reference_.log_.trace(ME, "the running thread is exiting");
+      reference_.isActive_ = false;
    }
 
 

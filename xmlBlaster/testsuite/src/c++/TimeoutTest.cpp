@@ -37,17 +37,24 @@ public:
 
    void timeout(void *userData) {
       cout << "this is the timeout for the test" << endl;
+      if (userData == NULL) return;
+      Timeout *to = static_cast<Timeout*>(userData);
+      to->addTimeoutListener(this, 1000, to);
+      cout << "next timeout will occur in about 1 s" << endl;
    }
 
    void testTimeout() {
       cout << ME << " testTimeout(): the timeout will now be started" << endl;
       timeoutObject->start();
       cout << ME << " testTimeout(): the timeout will now be triggered" << endl;
-      timeoutObject->addTimeoutListener(this, 2000, NULL);
-      cout << ME << " testTimeout: timeout triggered. Waiting to be fired (sould happen in 1 second" << endl;
-//      timeoutObject->join();
+      timeoutObject->addTimeoutListener(this, 2000, timeoutObject);
+      cout << ME << " testTimeout: timeout triggered. Waiting to be fired (should happen in 2 seconds" << endl;
+
+      // waiting some time ... (you can't use join because the timeout thread
+      // never stops ...
       Timestamp delay = 10000;
       delay *= 1000000;
+      std::cout << ME << " main thread is sleeping now" << std::endl;
       TimestampFactory::getInstance().sleep(delay);
       std::cout << ME << " after waiting to complete" << std::endl;
    }

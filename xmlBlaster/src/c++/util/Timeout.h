@@ -92,6 +92,9 @@ class Timeout {
    bool isRunning_; //  = true;
    /** On creation wait until thread started */
    bool isReady_; //  = false;
+
+   /** is set to false once the thread is finished (for cleanup) */
+   bool isActive_;
    /** Switch on debugging output */
    const bool isDebug_; //  = false;
 
@@ -117,7 +120,7 @@ class Timeout {
    Timeout(const string &name, int args=0, const char * const argc[]=0);
 
     ~Timeout();
-   
+
    /**
     * Starts the thread
     */
@@ -245,7 +248,6 @@ class TimeoutRunner {
 private:
    Timeout& reference_;
    string ME;
-
 public:
    TimeoutRunner(Timeout &ref);
 
