@@ -19,4 +19,8 @@ public class AllTests {
       suite.addTest(new TestSuite(classtest.XmlKeySaxTest.class));
       return suite;
    }
+   // To force compilation:
+   public void dummy() {
+      new XmlKeySaxTest(null); 
+   }
 }
