@@ -1,5 +1,12 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
+Changes cvs
+===========
+
+ o Fixed Windows C++ compile
+   Thanks to Bjoern Ruff
+
+
 Changes for 0.91 [2004-08-30]
 =============================
 
