@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.42 2002/06/23 08:40:27 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.43 2002/06/25 17:42:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -323,18 +323,19 @@ public class CorbaDriver implements I_Driver
          
       String hostname = null;
 
+      // Set host/port for JacOrb
+
+      String postfix = "";
+      if (forCB) postfix = "CB";
+
+      // We use the IP of the xmlBlaster bootstrap HTTP server as a default ...
+      if (forCB)
+         hostname = glob.getCbHostname();
+      hostname = glob.getProperty().get("hostname"+postfix, hostname);
+      // ... and overwrite it with a IOR specific hostname if given:
+      hostname = glob.getProperty().get("ior.hostname"+postfix, hostname);
+
       if (System.getProperty("org.omg.CORBA.ORBClass").indexOf("jacorb") >= 0) {
-         // Set host/port for JacOrb
-
-         String postfix = "";
-         if (forCB) postfix = "CB";
-
-         // We use the IP of the xmlBlaster bootstrap HTTP server as a default ...
-         if (forCB)
-            hostname = glob.getCbHostname();
-         hostname = glob.getProperty().get("hostname"+postfix, hostname);
-         // ... and overwrite it with a IOR specific hostname if given:
-         hostname = glob.getProperty().get("ior.hostname"+postfix, hostname);
          if (hostname != null) {
             JdkCompatible.setSystemProperty("OAIAddr", hostname);
             if (log.TRACE) log.trace(ME, "Using ior.hostname"+postfix+"=" + System.getProperty("OAIAddr"));
@@ -533,7 +534,8 @@ public class CorbaDriver implements I_Driver
       String text = "\n";
       text += "CorbaDriver options:\n";
       text += "   -ior.file           Specify a file where to dump the IOR of the AuthServer (for client access).\n";
-      text += "   -hostname           IP address where the builtin http server publishes its AuthServer IOR (useful for multihomed hosts).\n";
+      text += "   -hostname           IP address where the builtin http server publishes its AuthServer IOR\n";
+      text += "                       This is useful for multihomed hosts or dynamic dial in IPs.\n";
       text += "   -port               Port number where the builtin http server publishes its AuthServer IOR.\n";
       text += "                       Default is port "+Constants.XMLBLASTER_PORT+", the port 0 switches this feature off.\n";
       text += "   -ns false           Don't publish the IOR to a naming service.\n";
