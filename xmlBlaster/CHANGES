@@ -59,6 +59,7 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
    - Fixed unSubscribe() and erase() to return now 'QosArr *' instead
      of 'char *'.
    - ping() now wants a third agrument 'xmlBlasterException*'
+   - Added user specific object to be returned to the logging callback (logUserP)
    See xmlBlaster/demo/c/socket/HelloWorld3.c for a usage example.
 
  o Renamed build.sh to build. Now on UNIX and Windows the build command is the same,
