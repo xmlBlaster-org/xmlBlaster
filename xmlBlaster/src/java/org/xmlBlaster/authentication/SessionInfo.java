@@ -124,7 +124,7 @@ public class SessionInfo implements I_Timeout
          this.sessionName = connectQos.getSessionName();
       }
       else {
-         this.sessionName = new SessionName(glob, subjectInfo.getSubjectName(), getPublicSessionId());
+         this.sessionName = new SessionName(glob, subjectInfo.getSubjectName(), getInstanceId());
       }
       this.ME = "SessionInfo-" + this.sessionName.getAbsoluteName();
 
@@ -169,10 +169,11 @@ public class SessionInfo implements I_Timeout
    }
 
    /**
-    * This is a unique instance id per JVM (it is the pubSessionId).
-    * <p />
+    * This is a unique instance id per JVM (it is the pubSessionId if the client hasn't specified its own). 
+    * <p>
     * It is NOT the secret sessionId and may be published with PtP messages
     * without security danger
+    * </p>
     */
    public final long getInstanceId() {
       return this.instanceId;
@@ -190,7 +191,7 @@ public class SessionInfo implements I_Timeout
    }
 
    /**
-    * This is a unique instance id per JVM.
+    * This is the publicSessionId which is unique in the subject scope. 
     * <p />
     * It is NOT the secret sessionId and may be published with PtP messages
     * without security danger
@@ -199,7 +200,7 @@ public class SessionInfo implements I_Timeout
     * @see #getInstanceId
     */
    public final long getPublicSessionId() {
-      return getInstanceId();
+      return this.sessionName.getPublicSessionId();
    }
 
    public void finalize() {
