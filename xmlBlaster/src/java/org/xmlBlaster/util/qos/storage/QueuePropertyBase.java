@@ -172,8 +172,14 @@ public abstract class QueuePropertyBase implements Cloneable
          if (log.TRACE) log.trace(ME, "Lookup of nodeId=" + nodeId + " context=" + context + " getRootTagName=" + getRootTagName() +
              " relating=" + relating + " propName=" + propName + " defaultValue=" + defaultPlugin.getValue());
          PluginInfo pluginInfo = new PluginInfo(glob, null, defaultPlugin.getValue());
-         this.type.setDefaultValue(pluginInfo.getType());
-         this.version.setDefaultValue(pluginInfo.getVersion());
+         if (defaultPlugin.isModified()) {
+            setType(pluginInfo.getType());
+            setVersion(pluginInfo.getVersion());
+         }
+         else {
+            this.type.setDefaultValue(pluginInfo.getType());
+            this.version.setDefaultValue(pluginInfo.getVersion());
+         }
       }
       catch (XmlBlasterException ex) {
          this.log.error(ME, "initialize: could not set the default plugin to what indicated by "+propName);
