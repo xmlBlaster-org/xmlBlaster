@@ -5,6 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   General xmlBlaster include file to handle OS specific behavior
 Author:    Martin Johnson
 ------------------------------------------------------------------------------*/
+
+// NOTE: deprecated -> use C-client library xmlBlaster/src/c/util/basicDefs.h instead, see xmlBlasterDef.h
 #if defined(_WINDOWS)
 # define Blaster_Export_Flag __declspec (dllexport)
 # define Blaster_Import_Flag __declspec (dllimport)
