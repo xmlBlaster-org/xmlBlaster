@@ -31,6 +31,10 @@ DONE:
     of length 0.
     In older releases there was thrown an XmlBlasterException.
 
+  - Changed behaviour for java client method disconnect()
+    disconnect now shutdown the protocol driver and callback server as well.
+    See javadoc API of XmlBlasterConnection.
+
 
 Changes for 0.79e [Mar, 27 2002]
 ================================
