@@ -16,7 +16,6 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket
 #include <socket/xmlBlasterSocket.h>
 #include <socket/xmlBlasterZlib.h>
 #include <XmlBlasterConnectionUnparsed.h>
-
 #define SOCKET_TCP false
 
 static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException *exception);
@@ -130,7 +129,7 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
 
    char serverHostName[256];
 
-#  ifdef _WINDOWS
+#if defined(_WINDOWS)
    WORD wVersionRequested;
    WSADATA wsaData;
    int err;
@@ -506,13 +505,18 @@ const char *xmlBlasterConnectionUnparsedUsage()
 static void xmlBlasterConnectionShutdown(XmlBlasterConnectionUnparsed *xb)
 {
    if (xb != 0 && xb->isConnected(xb)) {
+#     if defined(_WINDOWS)
+      int how = SD_BOTH;         /* SD_BOTH; */
+#     else
+      int how = SHUT_RDWR; /* enum SHUT_RDWR = 2 */
+#     endif
       if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__,
             "shutdown() socketToXmlBlaster=%d socketToXmlBlasterUdp=%d", xb->socketToXmlBlaster, xb->socketToXmlBlasterUdp);
-      shutdown(xb->socketToXmlBlaster, SHUT_RDWR); /* enum SHUT_RDWR = 2 */
+      shutdown(xb->socketToXmlBlaster, how); 
       closeSocket(xb->socketToXmlBlaster);
       xb->socketToXmlBlaster = -1;
       if (xb->socketToXmlBlasterUdp != -1) {
-         shutdown(xb->socketToXmlBlasterUdp, SHUT_RDWR);
+         shutdown(xb->socketToXmlBlasterUdp, how);
          closeSocket(xb->socketToXmlBlasterUdp);
          xb->socketToXmlBlasterUdp = -1;
       }
