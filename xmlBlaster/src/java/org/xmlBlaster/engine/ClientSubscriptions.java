@@ -244,7 +244,7 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
    public void sessionRemoved(ClientEvent e) throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "START-logout()");
-      if (log.DUMP) log.dump(ME, requestBroker.toXml());
+      //if (log.DUMP) log.dump(ME, requestBroker.toXml());
 
       SessionInfo sessionInfo = e.getSessionInfo();
       if (log.TRACE) log.trace(ME, "Logout event for client " + sessionInfo.toString() + ", removing entries");
@@ -258,7 +258,7 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
       } catch (XmlBlasterException e2) {
       }
 
-      if (log.DUMP) log.dump(ME, "END-logout()\n" + requestBroker.toXml());
+      //if (log.DUMP) log.dump(ME, "END-logout()\n" + requestBroker.toXml());
    }
 
 
