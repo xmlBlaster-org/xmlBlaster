@@ -293,9 +293,9 @@ Else add it manually.
      <copy todir="${build.war}/WEB-INF/classes/http">
        <fileset dir="${build.dest}/http"/>
      </copy>
-     <unjar src="${lib.dir}/jacorb.jar" dest="${build.war}/WEB-INF/classes" />
+     <!-- unjar src="${lib.dir}/jacorb.jar" dest="${build.war}/WEB-INF/classes" />
      <unjar src="${lib.dir}/xmlBlaster.jar" dest="${build.war}/WEB-INF/classes" />
-     <unjar src="${lib.dir}/parser.jar" dest="${build.war}/WEB-INF/classes" />
+     <unjar src="${lib.dir}/parser.jar" dest="${build.war}/WEB-INF/classes" / -->
 
      <copy todir="${build.war}/javascript">
        <fileset dir="${src.dir}/org/xmlBlaster/protocol/http/javascript"/>
