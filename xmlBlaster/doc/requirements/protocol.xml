@@ -10,7 +10,7 @@
       <![CDATA[
       <p>
       The protocol to access xmlBlaster and the protocol to callback a client
-      are totally decopled. You can for example access xmlBlaster using CORBA and callback
+      are totally decoupled. You can for example access xmlBlaster using CORBA and callback
       to clients using email and http.
       </p>
       <p>
@@ -55,7 +55,7 @@
       <p>
       The callback driver protocol type for email is called "EMAIL"
       and the Corba driver protocol is called "IOR".<br />
-      This string is used when you do your login in the qos to specify 
+      This string is used when you do your login in the qos to specify
       your callback wishes.<br />
       See requirement 'engine.qos.login.callback' for further directions.
       </p>
@@ -71,7 +71,7 @@
    <hacker>ruff@swand.lake.de</hacker>
    <effort>4</effort>
    <date>2000 06 06</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>This is tested implicit by all testsuite tests</comment>
