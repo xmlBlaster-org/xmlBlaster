@@ -20,6 +20,8 @@ import org.xmlBlaster.client.UpdateQoS;
  * with the callback update() method.
  * <p />
  * The publishing of the query is not blocking.
+ *
+ * @see README for usage
  */
 public class XmlDBClient implements I_Callback
  {

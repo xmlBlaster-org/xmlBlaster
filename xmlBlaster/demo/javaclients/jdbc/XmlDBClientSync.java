@@ -14,7 +14,9 @@ import org.xmlBlaster.engine.helper.MessageUnit;
 
 /**
  * Example code how to access the xmlBlaster JDBC service
- * synchronous with the get() method. 
+ * synchronous with the get() method.
+ *
+ * @see README for usage
  */
 public class XmlDBClientSync
 {
@@ -57,7 +59,7 @@ public class XmlDBClientSync
 
 
    /**
-    * Logout from xmlBlaster. 
+    * Logout from xmlBlaster.
     */
    public void logout()
    {
@@ -67,7 +69,7 @@ public class XmlDBClientSync
    }
 
    /**
-    * Send the SQL message. 
+    * Send the SQL message.
     */
    private void query(String[] args) throws JUtilsException
    {

@@ -1,5 +1,14 @@
 Ok, so this is a quick and dirty 'HOWTO' for the DB adapter.
 
+Note that you can query a database over xmlBlaster synchronously
+usig the get() method (see XmlDBClientSync) or asynchronously
+using the publish()/callback.update() methods (see XmlDBClient).
+
+In the synchronous way, the get() method is blocking until
+the database result is ready,
+whereas the asynchronous mode sends the query to the database (no blocking)
+and the result is returned later with the update() method.
+
 ================================================================
 Add the following line to your xmlBlaster.properties file (if not there already):
 
