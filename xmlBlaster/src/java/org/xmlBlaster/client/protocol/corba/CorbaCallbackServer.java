@@ -3,7 +3,7 @@ Name:      CorbaCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaCallbackServer.java,v 1.34 2003/03/27 20:59:02 ruff Exp $
+Version:   $Id: CorbaCallbackServer.java,v 1.35 2003/04/03 16:37:22 ruff Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -161,25 +161,7 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
          }
       }
 
-      // HACK May,24 2000 !!! (search 'Thread leak' in this file to remove the hack again and remove the two 'static' qualifiers below.)
-      // Thread leak from JacORB 1.2.2, the threads
-      //   - JacORB Listener Thread
-      //   - JacORB ReplyReceptor
-      //   - JacORB Request Receptor
-      // are never released on orb.shutdown() and rootPoa.deactivate()
-      //
-      // So we use a orb and poa singleton and recycle it.
-      // The drawback is that a running client can't change the
-      // orb behavior
-      // Thread leak !!!
-      /*
-      if (rootPOA != null) {
-         try {
-            rootPOA.the_POAManager().deactivate(true, true);
-         } catch(Exception e) { log.warn(ME, "POA deactivate failed"); }
-         rootPOA = null;
-      }
-      */
+      this.callback = null;
       log.info(ME, "The callback server is shutdown.");
    }
 
