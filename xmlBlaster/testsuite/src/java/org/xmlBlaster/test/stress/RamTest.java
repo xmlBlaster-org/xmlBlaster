@@ -3,7 +3,7 @@ Name:      RamTest.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: RamTest.java,v 1.3 2002/09/13 23:35:30 ruff Exp $
+Version:   $Id: RamTest.java,v 1.4 2002/09/14 23:06:05 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.stress;
 
@@ -36,8 +36,8 @@ import junit.framework.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    java junit.textui.TestRunner org.xmlBlaster.test.qos.RamTest
- *    java junit.swingui.TestRunner org.xmlBlaster.test.qos.RamTest
+ *    java junit.textui.TestRunner org.xmlBlaster.test.stress.RamTest
+ *    java junit.swingui.TestRunner org.xmlBlaster.test.stress.RamTest
  * </pre>
  */
 public class RamTest extends TestCase
@@ -55,6 +55,11 @@ public class RamTest extends TestCase
    private final int numPublish;        // 100;
    private final String contentMime = "text/plain";
    private final String contentMimeExtended = "1.0";
+
+   /** Constructor for Junit */
+   public RamTest() {
+      this(new Global(), "RamTest", "RamTest", 1000);
+   }
 
    /**
     * Constructs the RamTest object.
@@ -129,7 +134,7 @@ public class RamTest extends TestCase
     * <p />
     * The returned publishOid is checked
     */
-   public void testPublish()
+   public void doPublish()
    {
       log.info(ME, "Publishing " + numPublish + " messages ...");
 
@@ -200,7 +205,7 @@ public class RamTest extends TestCase
     */
    public void testManyPublish()
    {
-      testPublish();
+      doPublish();
    }
 
 
@@ -218,12 +223,12 @@ public class RamTest extends TestCase
 
 
    /**
-    * Invoke: java org.xmlBlaster.test.qos.RamTest
+    * Invoke: java org.xmlBlaster.test.stress.RamTest
     * <br />
     * You can use the command line option -numPublish 1000 to change the number of messages sent.
     * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <pre>   java -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.qos.RamTest</pre>
+    * <pre>   java -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.stress.RamTest</pre>
     */
    public static void main(String args[])
    {
