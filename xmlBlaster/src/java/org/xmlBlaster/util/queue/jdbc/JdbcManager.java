@@ -265,8 +265,7 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
          ret = (i < this.errCodes.length);
       }
 
-      this.log.dump(ME, location + ": error code     : " + ex.getErrorCode());
-      this.log.dump(ME, location + ": SQL state      : " + ex.getSQLState());
+      if (this.log.TRACE) this.log.trace(ME, location + ": error code=" + ex.getErrorCode() + " SQL state=" + ex.getSQLState());
       if (trace != null && trace.length() > 0) {
          if (this.log.TRACE) this.log.trace(ME, location + ": additional info: " + trace);
       }
@@ -582,7 +581,7 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
             if ("T".equalsIgnoreCase(persistentAsChar)) persistent = true;
 
             long sizeInBytes = rs.getLong(5);
-            byte[] blob = rs.getBytes(6); // preStatement.setObject(5, blob);
+            byte[] blob = readBlob(rs, 6, sizeInBytes);
 
             if ( (numOfBytes < 0) || (sizeInBytes+amount < numOfBytes) || (count == 0)) {
                if (this.log.DUMP)
@@ -609,7 +608,7 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
             if ("T".equalsIgnoreCase(persistentAsChar)) persistent = true;
 
             long sizeInBytes = rs.getLong(5);
-            byte[] blob = rs.getBytes(6); // preStatement.setObject(5, blob);
+            byte[] blob = readBlob(rs, 6, sizeInBytes);
 
             if (this.log.DUMP)
                this.log.dump(ME, "processResultSet: dataId: " + dataId + ", prio: " + prio + ", typeName: " + typeName + " persistent: " + persistent);
@@ -846,7 +845,10 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
          if (persistent == true) preStatement.setString(4, "T");
          else preStatement.setString(4, "F");
          preStatement.setLong(5, sizeInBytes);
-         preStatement.setBytes(6, blob);
+
+         // preStatement.setBytes(6, blob); // up to max 2000 bytes for Oracle
+         java.io.InputStream iStream = new java.io.ByteArrayInputStream(blob);
+         preStatement.setBinaryStream(6, iStream, blob.length); // over 2000 bytes for Oracle
 
          if (this.log.TRACE) this.log.trace(getLogId(tableName, null, "addEntry"), preStatement.toString());
 
@@ -856,7 +858,8 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
       }
       catch (SQLException ex) {
          this.log.warn(getLogId(tableName, null, "addEntry"), "Could not insert entry '" +
-                  entry.getClass().getName() + "'-'" +  entry.getLogId() + "-" + entry.getUniqueId() + "': " + ex.toString());
+                  entry.getClass().getName() + "'-'" +  entry.getLogId() + "-" + entry.getUniqueId() +
+                  "': " + ex.toString() + ", error code=" + ex.getErrorCode() + " SQL state=" + ex.getSQLState());
          if (handleSQLException(getLogId(tableName, null, "addEntry"), ex)) throw ex;
          //Thread.currentThread().dumpStack();
          ret = false;
@@ -916,7 +919,7 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
             if ("T".equalsIgnoreCase(persistentAsChar)) persistent = true;
 
             long sizeInBytes = rs.getLong(5);
-            byte[] blob = rs.getBytes(6); // preStatement.setObject(5, blob);
+            byte[] blob = readBlob(rs, 6, sizeInBytes);
 
             // check if allowed or already outside the range ...
             if (((numOfBytes<0)||(sizeInBytes+amount<numOfBytes)||(count==0)) &&
@@ -969,7 +972,57 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
       }
    }
 
+   /**
+    * byte[] blob = rs.getBytes(6); works fine in Oracle up to max 2000 bytes
+    * -> so we use getBinaryStream()
+    */
+   byte[] readBlob(ResultSet rs, int index, long sizeInBytes) throws XmlBlasterException, SQLException {
+      return rs.getBytes(6); // works fine even for Oracle LONG RAW bigger than 2000 bytes
+      /*
+      try {
+         java.io.InputStream iStream = rs.getBinaryStream(index);
 
+         byte[] blob = new byte[(int)sizeInBytes];
+         int numRead = 0;
+         while (true) { // iStream.available() > 0) {
+            int num = iStream.read(blob, numRead, blob.length-numRead);
+            if (num < 0) {
+               break;      // EOF
+            }
+            log.info(ME, "Read num=" + num  + " bytes, numRead=" + numRead + " length=" + blob.length);
+            numRead += num;
+         }
+         if (blob.length != numRead) {
+            log.error(ME, "Not read BLOB completely: numRead=" + numRead + " blob.length=" + blob.length);
+            byte[] bb = new byte[numRead];
+            System.arraycopy(blob, 0, bb, 0, numRead);
+            return bb;
+         }
+         return blob;
+
+         /*
+         //java.sql.Blob dbBlob = rs.getBlob(index);
+         //java.io.InputStream iStream = dbBlob.getBinaryStream();
+         //byte[] blob = new byte[(int)dbBlob.length()];
+         //int numRead = 0;
+         //while (true) {
+         //   int num = iStream.read(blob, numRead, blob.length-numRead);
+         //   if (num < 0) {
+         //      break;
+         //   }
+         //   numRead += num;
+         //}
+         //if (blob.length != numRead) {
+         //   log.error(ME, "Not read BLOB completely: numRead=" + numRead + " blob.length=" + blob.length);
+         //}
+         //return blob;
+      }
+      catch (java.io.IOException e) {
+         log.error(ME, "Unexpected exception when reading blob: " + e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_EXHAUST, ME+"-readBlob", "Unexpected exception when reading blob: " + e.toString());
+      }
+         */
+   }
 
    /**
     * Deletes the entries specified by the entries array. Since all entries
