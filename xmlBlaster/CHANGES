@@ -4,6 +4,8 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes for 0.x [200x-xx-xx]
 ============================
 
+ o Bugfix for JXPath generation of ClientProperty in QoS (impact on tiny applet example only)
+
  o Updated utils.jar to CVS version from  2004-03-19, contains Property bug fix for ArrayOutOfBoundsException
 
  o JDBC configuration: Added column name prefix, used for MS-SQLServer to
