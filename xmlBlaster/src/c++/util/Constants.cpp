@@ -44,11 +44,15 @@ Dll_Export const char * ONOVERFLOW_EXCEPTION = "exception";
 Dll_Export const char * ONOVERFLOW_DEADMESSAGE = "deadMessage";
 Dll_Export const char * ONEXHAUST_KILL_SESSION = "killSession";
 
-Dll_Export const char * SESSIONID_PREFIX = "sessionId:";
-Dll_Export const char * SUBSCRIPTIONID_PREFIX = "__subId:";
-
-Dll_Export const char * INTERNAL_OID_PREFIX = "__sys__";
-Dll_Export const char * INTERNAL_OID_CLUSTER_PREFIX = "__sys__cluster";
+/** If subscription ID is given by client, e.g. "__subId:/node/heron/client/joe/3/34"
+  * see Requirement engine.qos.subscribe.id
+  */
+Dll_Export const char* SUBSCRIPTIONID_CLIENT_PREFIX    = "__subId:/node/";
+Dll_Export const char* INTERNAL_OID_PREFIX_FOR_PLUGINS = "_";
+Dll_Export const char* INTERNAL_OID_ADMIN_CMD          = "__cmd:";
+Dll_Export const char* INTERNAL_OID_PREFIX_FOR_CORE    = "__";
+Dll_Export const char* INTERNAL_OID_PREFIX             = "__sys__";  // Should be replaced by INTERNAL_OID_PREFIX_FOR_CORE in future
+Dll_Export const char* INTERNAL_OID_CLUSTER_PREFIX     = "__sys__cluster";  // "__sys__cluster"
 
 Dll_Export const char * JDBC_OID = "__sys__jdbc";
 
@@ -57,7 +61,8 @@ Dll_Export const char * OID_DEAD_LETTER = "__sys__deadLetter";
 Dll_Export const char * XPATH = "XPATH";
 Dll_Export const char * EXACT = "EXACT";
 //const char * const Constants::DOMAIN = "DOMAIN"; // doesn't compile with g++ 3.1.1
-Dll_Export const char * REGEX = "REGEX";
+Dll_Export const char * D_O_M_A_I_N = "DOMAIN"; // doesn't compile with g++ 3.1.1
+Dll_Export const char * REGEX       = "REGEX";
 
 Dll_Export const char * IOR     = "IOR";
 Dll_Export const char * EMAIL   = "EMAIL";
@@ -70,6 +75,9 @@ Dll_Export const Timestamp THOUSAND = 1000;
 Dll_Export const Timestamp MILLION  = 1000 * THOUSAND;
 Dll_Export const Timestamp BILLION  = 1000 * MILLION;
 
+/** Prefix to create a sessionId */
+Dll_Export const char* SESSIONID_PREFIX = "sessionId:";
+Dll_Export const char* SUBSCRIPTIONID_PREFIX = "__subId:";
 
 /*
 const int getPriority(string prio, int defaultPriority)

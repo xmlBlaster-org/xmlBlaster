@@ -268,8 +268,6 @@ SaxHandlerBase::getStartElementAsString(const XMLCh* const name, AttributeList& 
 }
 
 
-
-
 /**
  * returns a value (usually from an attribute) as a string
  */
@@ -285,10 +283,92 @@ SaxHandlerBase::getStringValue(const XMLCh* const value)
       ret.assign(help2);
    }
    catch (...) {}
-      delete help1;
-      delete help2;
-      return ret;
+   delete help1;
+   delete help2;
+   return ret;
+}
+
+/**
+ * gets the attribute specified by 'name' in the attribute list specified by 'list'. The result is put in 
+ * the 'value' argument which is passed by reference. It returns 'true' if the attribute was found in the
+ * specified attribute list or 'false' if it was not. In the later case, the value is untouched by this 
+ * method.
+ */
+bool SaxHandlerBase::getStringAttr(const AttributeList& list, const XMLCh* const name, string& value, bool doTrim)
+{
+   const XMLCh* tmp = list.getValue(name);
+   if (!tmp) return false;
+
+   char* help1 = NULL;
+   char* help2 = NULL;
+   bool  ret = true;
+   try {
+      help1 = XMLString::transcode(tmp);
+      if (!help1) return false;
+      if (doTrim) {
+         help2 = charTrimmer_.trim(help1);
+	 if (!help2) ret = false;
+	 if (ret) value.assign(help2);
+      }
+      else value.assign(help1);
    }
+   catch (...) {}
+   delete help1;
+   delete help2;
+   return ret;
+}
+
+/**
+ * gets the attribute specified by 'name' in the attribute list specified by 'list'. The result is put in 
+ * the 'value' argument which is passed by reference. It returns 'true' if the attribute was found in the
+ * specified attribute list or 'false' if it was not. In the later case, the value is untouched by this 
+ * method.
+ */
+bool SaxHandlerBase::getIntAttr(const AttributeList& list, const XMLCh* const name, int& value)
+{
+   string buf;
+   bool ret = getStringAttr(list, name, buf);
+   if (ret) {
+      value = atoi(buf.c_str());
+      return true;
+   }
+   return false;
+}
+
+/**
+ * gets the attribute specified by 'name' in the attribute list specified by 'list'. The result is put in 
+ * the 'value' argument which is passed by reference. It returns 'true' if the attribute was found in the
+ * specified attribute list or 'false' if it was not. In the later case, the value is untouched by this 
+ * method.
+ */
+bool SaxHandlerBase::getLongAttr(const AttributeList& list, const XMLCh* const name, long& value)
+{
+   string buf;
+   bool ret = getStringAttr(list, name, buf);
+   if (ret) {
+      value = atol(buf.c_str());
+      return true;
+   }
+   return false;
+}
+
+/**
+ * gets the attribute specified by 'name' in the attribute list specified by 'list'. The result is put in 
+ * the 'value' argument which is passed by reference. It returns 'true' if the attribute was found in the
+ * specified attribute list or 'false' if it was not. In the later case, the value is untouched by this 
+ * method.
+ */
+bool SaxHandlerBase::getTimestampAttr(const AttributeList& list, const XMLCh* const name, Timestamp& value)
+{
+   string buf;
+   bool ret = getStringAttr(list, name, buf);
+   if (ret) {
+      value = STRING_TO_TIMESTAMP(buf.c_str());
+      return true;
+   }
+   return false;
+}
+
 
 /**
  * returns a value (usually from an attribute) as an integer

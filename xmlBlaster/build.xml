@@ -1210,6 +1210,7 @@ TODO
          <compiler refid="bcc"/>
          <fileset dir="${src.cpp.dir}/generated" includes="*.cpp"/>
          <fileset dir="${src.cpp.dir}/util" includes="*.cpp" />
+         <fileset dir="${src.cpp.dir}/util/key" includes="*.cpp" />
          <fileset dir="${src.cpp.dir}/util/qos" includes="*.cpp" />
          <fileset dir="${src.cpp.dir}/util/qos/storage" includes="*.cpp" />
          <fileset dir="${src.cpp.dir}/util/qos/address" includes="*.cpp" />

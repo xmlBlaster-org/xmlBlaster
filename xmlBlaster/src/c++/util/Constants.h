@@ -158,14 +158,6 @@ namespace org { namespace xmlBlaster {
    /** If callback fails more often than is configured the login session is destroyed */
    extern Dll_Export const char * ONEXHAUST_KILL_SESSION;
 
-
-   /** Praefix to create a sessionId */
-   extern Dll_Export const char * SESSIONID_PREFIX;
-   extern Dll_Export const char * SUBSCRIPTIONID_PREFIX;
-
-   extern Dll_Export const char * INTERNAL_OID_PREFIX;
-   extern Dll_Export const char * INTERNAL_OID_CLUSTER_PREFIX;
-
    /** JDBC access messages */
    extern Dll_Export const char * JDBC_OID;
 
@@ -176,7 +168,8 @@ namespace org { namespace xmlBlaster {
    extern Dll_Export const char * XPATH;
    extern Dll_Export const char * EXACT;
    // const char * const DOMAIN; // doesn't compile with g++ 3.1.1
-   extern Dll_Export  const char * REGEX;
+   extern Dll_Export const char * D_O_M_A_I_N;
+   extern Dll_Export const char * REGEX;
 
    extern Dll_Export const char * IOR;
    extern Dll_Export const char * EMAIL;
@@ -190,6 +183,20 @@ namespace org { namespace xmlBlaster {
    extern Dll_Export const Timestamp THOUSAND;
    extern Dll_Export const Timestamp MILLION;
    extern Dll_Export const Timestamp BILLION;
+
+   /** Prefix to create a sessionId */
+   extern Dll_Export const char* SESSIONID_PREFIX;
+   extern Dll_Export const char* SUBSCRIPTIONID_PREFIX;
+
+   /** If subscription ID is given by client, e.g. "__subId:/node/heron/client/joe/3/34"
+     * see Requirement engine.qos.subscribe.id
+     */
+   extern Dll_Export const char* SUBSCRIPTIONID_CLIENT_PREFIX;
+   extern Dll_Export const char* INTERNAL_OID_PREFIX_FOR_PLUGINS;
+   extern Dll_Export const char* INTERNAL_OID_ADMIN_CMD;
+   extern Dll_Export const char* INTERNAL_OID_PREFIX_FOR_CORE;
+   extern Dll_Export const char* INTERNAL_OID_PREFIX;
+   extern Dll_Export const char* INTERNAL_OID_CLUSTER_PREFIX;
 
 //};
 
