@@ -401,7 +401,7 @@ public class PersistenceCachePlugin implements I_Plugin, I_ConnectionListener, I
    }
 
    /**
-    * @see I_Map[]#getAll()
+    * @see I_Map#getAll()
     */
    public I_MapEntry[] getAll() throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering getAll()");
