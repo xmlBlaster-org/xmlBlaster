@@ -427,14 +427,18 @@ static bool mutexUnlock(XmlBlasterAccessUnparsed *xa, XmlBlasterException *excep
       return true;
    xa->responseMutexIsLocked = false;
    if ((retVal = pthread_mutex_unlock(&xa->responseMutex)) != 0) {
+      char embeddedText[XMLBLASTEREXCEPTION_MESSAGE_LEN];
       if (exception == 0) {
          return false;
       }
       if (*exception->errorCode != 0) {
-         xa->log(xa->logUserP, xa->logLevel, LOG_WARN, __FILE__, "Ignoring embedded exception %s: %s", exception->errorCode, exception->message);
+         SNPRINTF(embeddedText, XMLBLASTEREXCEPTION_MESSAGE_LEN, "{%s:%s}", exception->errorCode, exception->message);
+         if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, "Ignoring embedded exception %s: %s", exception->errorCode, exception->message);
       }
+      else
+         *embeddedText = 0;
       strncpy0(exception->errorCode, "user.internal", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%.100s:%d] ERROR trying to unlock responseMutex, return=%d", __FILE__, __LINE__, retVal);
+      SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%.100s:%d] ERROR trying to unlock responseMutex, return=%d. Embedded %s", __FILE__, __LINE__, retVal, embeddedText);
       if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, exception->message);
       return false;
    }
