@@ -88,10 +88,19 @@ public class Constants
 
    /** The returned message status if OK */
    public final static String STATE_OK = "OK";
+   public final static String RET_OK = "<qos><state>" + Constants.STATE_OK + "</state></qos>";
+   /** The returned message status if message is stale (that is old but not erased yet) */
+   public final static String STATE_STALE = "STALE"; // needs to be implemented as another message timer TODO!!!
+   public final static String RET_STALE = "<qos><state>" + Constants.STATE_STALE + "</state></qos>";
    /** The returned message status if message is expired (and therefor erased) */
    public final static String STATE_EXPIRED = "EXPIRED";
+   public final static String RET_EXPIRED = "<qos><state>" + Constants.STATE_EXPIRED + "</state></qos>";
    /** The returned message status if message is explicitly erased by a call to erase() */
    public final static String STATE_ERASED = "ERASED";
+   public final static String RET_ERASED = "<qos><state>" + Constants.STATE_ERASED + "</state></qos>";
+   /** The returned message status if message couldn't be forwarded to the master cluster node */
+   public final static String STATE_FORWARD_ERROR = "FORWARD_ERROR";
+   public final static String RET_FORWARD_ERROR = "<qos><state>" + Constants.STATE_FORWARD_ERROR + "</state></qos>";
 
    /** Type of a message queue */
    public final static String RELATING_SESSION = "session";
