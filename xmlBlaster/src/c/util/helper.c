@@ -23,6 +23,7 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #endif
 
 #ifdef _WINDOWS
+#  include <Winsock2.h>       /* Sleep() */
 #  if XB_USE_PTHREADS
 #    include <pthreads/pthread.h> /* Our pthreads.h: For logging output of thread ID, for Windows and WinCE downloaded from http://sources.redhat.com/pthreads-win32 */
 #  endif
