@@ -79,6 +79,70 @@ xmlBlaster to jutil). Some slight differences are:
      Then you define all the header filenames  (look at the MICO or TAO
      case).
 
+     To use this header do it in the following way:
+
+     For each idl-file (in our case we only have one: xmlBlaster.idl) you
+     have to assign to either CLIENT_HEADER or SERVER_HEADER the name of the
+     prefix of the idl file (This is used to build defines for the
+     idl-generated files).
+     This is done because some corba implementors have one header file for the
+     server and another for the client. Note that you have to include
+     util/CompatibleCorba.h after each definition.
+
+     So if you will use two different idl files in your source, lets say
+     module1.idl and module2.idl, then you will call the following at the start
+     of your implementation:
+
+        #define SERVER_HEADER module1
+        #include <util/CompatibleCorba.h>
+        #define SERVER_HEADER module2
+        #include <util/CompatibleCorba.h>
+
+     You need to do this because CompatibleCorba will define macros for the
+     implementor-names for the different headers (like nameservice, event
+     service and more).
+
+     You will call CLIENT_HEADER if the code you write will only be a pure
+     client. In case you write a server, or a mixed client/server, then you
+     will call SERVER_HEADER. Note that xmlBlaster is always a mixed
+     client/server even if you are only writing a client (because of the
+     callback).
+
+     After having defined and included what explained, if you want to use
+     a service (for example a naming service), you don't need to call
+     the implementor-specific name for it, just include a macro like this:
+
+     #include COSNAMING
+
+     And from now on you do not bother about implementor specific stuff.
+     The following names are defined for the different services:
+
+        CORBA_HEADER (the corba header: you don't need to include this
+                implicitly, because it is called already the first time you
+                include util/CompatibleCorba.h)
+        COSCONTAINEMENT
+        COSOBJECTIDENTITY
+        COSREFERENCE
+        COSEVENTCHANNELADMIN
+        COSEVENTCOMM
+        COSRELATIONSHIPS
+        COSGRAPHS
+        COSTIME
+        COSGRAPHEXTENTSION
+        COSTRADING
+        COSNAMING
+        COSPROPERTY
+        COSTRADINGREPOS
+        COSTYPEDEVENTCHANNELADMIN
+        COSTYPEDEVENT
+
+    Note that not all these are implemented by all vendors. If a particular
+    vendor does not implement a certain feature, then it links to a file called
+    not_implemented.h which does not exist. This will automatically result in
+    a compile error.
+
+    See this article on a STL based CORBA mapping approach:
+    http://www.cuj.com/experts/1901/vinoski.htm?topic=experts
 
 Cheers & good Luck
 
