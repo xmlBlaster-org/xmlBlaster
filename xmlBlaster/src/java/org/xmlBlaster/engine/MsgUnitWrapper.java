@@ -234,20 +234,6 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
    }
 
    public long getSizeInBytes() {
-      if (this.immutableSizeInBytes != this.msgUnit.size()) {
-         if (isDestroyed()) {
-            if (this.glob.getLog("core").TRACE)
-               this.glob.getLog("core").trace(ME, "The size of message '" + getUniqueId() +
-                "' changed from initial " + this.immutableSizeInBytes + " bytes to " + this.msgUnit.size() +
-                " please report this error with all details to the xmlBlaster.org mailing list: " + toXml());
-         }
-         else {
-            // assert: We assure that the size can't change (e.g. by a errorneous modified QoS) as it is used as a queue entry
-            this.glob.getLog("core").error(ME, "PANIC: The size of message '" + getUniqueId() +
-                "' changed from initial " + this.immutableSizeInBytes + " bytes to " + this.msgUnit.size() +
-                " please report this error with all details to the xmlBlaster.org mailing list: " + toXml());
-         }
-      }
       return this.immutableSizeInBytes;
    }
 
