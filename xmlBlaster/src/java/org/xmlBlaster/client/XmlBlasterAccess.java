@@ -305,7 +305,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          this.sessionRefreshTimeoutHandle = timeout.addTimeoutListener(new I_Timeout() {
                public void timeout(Object userData) {
                   if (isAlive()) {
-                     log.info(ME, "Refreshing session to not expire");
+                     if (log.TRACE) log.trace(ME, "Refreshing session to not expire");
                      try {
                         refreshSession();
                      }
@@ -314,7 +314,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
                      }
                   }
                   else {
-                     log.info(ME, "Can't refresh session as we have no connection");
+                     if (log.TRACE) log.trace(ME, "Can't refresh session as we have no connection");
                   }
                   try {
                      sessionRefreshTimeoutHandle = timeout.addOrRefreshTimeoutListener(this, refreshTimeout, null, sessionRefreshTimeoutHandle) ;
