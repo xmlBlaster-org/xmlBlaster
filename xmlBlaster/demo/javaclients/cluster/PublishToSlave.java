@@ -51,7 +51,7 @@ public class PublishToSlave implements I_Callback
          ConnectReturnQos conRetQos = con.connect(qos, this);  // Login to xmlBlaster, register for updates
          Log.info("PublishToSlave", "Connected to xmlBlaster.");
 
-         PublishKeyWrapper pk = new PublishKeyWrapper("PublishToSlave", "text/xml", "1.0", domain);
+         PublishKeyWrapper pk = new PublishKeyWrapper("PublishToSlave."+domain, "text/xml", "1.0", domain);
          PublishQosWrapper pq = new PublishQosWrapper();
          pq.setPriority(Constants.LOW_PRIORITY);
          for (int i=0; i<numPublish; i++) {
@@ -61,7 +61,7 @@ public class PublishToSlave implements I_Callback
             }
             MessageUnit msgUnit = new MessageUnit(pk.toXml(), content.getBytes(), pq.toXml());
             PublishRetQos retQos = con.publish(msgUnit);
-            Log.info("PublishToSlave", "Published #" + (i+1) + " message of domain='" + pk.getDomain() + "' and content='" + content +
+            Log.info("PublishToSlave", "Published #" + (i+1) + " message oid=" + pk.getOid() + " of domain='" + pk.getDomain() + "' and content='" + content +
                                     "' to xmlBlaster node with IP=" + glob.getProperty().get("port",0) +
                                     ", the returned QoS is: " + retQos.getOid());
          }

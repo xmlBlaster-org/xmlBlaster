@@ -45,7 +45,7 @@ public class Subscribe implements I_Callback
 
          String domain = glob.getProperty().get("domain", "RUGBY_NEWS");
 
-         SubscribeKeyWrapper sk = new SubscribeKeyWrapper("PublishToSlave", Constants.EXACT);
+         SubscribeKeyWrapper sk = new SubscribeKeyWrapper("PublishToSlave."+domain, Constants.EXACT);
          sk.setDomain(domain);
          SubscribeQosWrapper sq = new SubscribeQosWrapper();
          SubscribeRetQos subId = con.subscribe(sk.toXml(), sq.toXml());
@@ -75,7 +75,7 @@ public class Subscribe implements I_Callback
    {
       if (updateSleep > 0L) {
          Log.info(ME, "Received asynchronous message '" + updateKey.getOid() +
-                                 "' from xmlBlaster, sleeping for " + updateSleep + " millis ...");
+                                 "' '" + updateKey.getDomain() + " from xmlBlaster, sleeping for " + updateSleep + " millis ...");
          try { Thread.currentThread().sleep(updateSleep); } catch( InterruptedException i) {}
          Log.info(ME, "Waking up.");
       } else {
