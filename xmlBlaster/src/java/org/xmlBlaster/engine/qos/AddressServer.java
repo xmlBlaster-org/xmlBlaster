@@ -32,10 +32,11 @@ public class AddressServer extends AddressBase
       super(glob, "address");
       this.nodeId = nodeId;
       this.instanceName = null;
+      setType(type);
       if (pluginInfoParameters != null)
          setPluginInfoParameters(pluginInfoParameters);
-      setType(type);
-      initialize();
+      else
+         initialize();
    }
 
    /** DUMMY */
