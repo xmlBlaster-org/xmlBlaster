@@ -86,7 +86,9 @@ MessageUnit[] msgUnits = con.get("<key queryType='XPATH'> //StockData </key>", q
 
       <p>
       The code snippet <code>new AccessFilterQos(...)</code> adds the above raw &lt;filter> xml ASCII string, so we don't need to
-      do it our self.
+      do it our self. The second and third parameters "GnuRegexFilter", "1.0" choose the plugin
+      (in this case the regex plugin) and the fourth parameter add the query rule for
+      the plugin (in this case a regular expression).
       </p>
    </example>
 
@@ -113,6 +115,7 @@ MessageUnit[] msgUnits = con.get("<key queryType='XPATH'> //StockData </key>", q
 
    <see type="INTERNET">http://www.cacas.org/java/gnu/regexp/</see>
    <see type="API">org.xmlBlaster.engine.mime.regex.GnuRegexFilter</see>
+   <see type="API">org.xmlBlaster.engine.helper.AccessFilterQos</see>
    <see type="API">org.xmlBlaster.engine.mime.I_AccessFilter</see>
    <see type="API">org.xmlBlaster.util.I_Plugin</see>
    <see type="REQ">mime.plugin.accessfilter.howto</see>
@@ -120,7 +123,7 @@ MessageUnit[] msgUnits = con.get("<key queryType='XPATH'> //StockData </key>", q
    <see type="REQ">cluster</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 05 05</date>
-   <revision>$Revision: 1.4 $</revision>
+   <revision>$Revision: 1.5 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
