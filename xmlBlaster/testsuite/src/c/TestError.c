@@ -15,8 +15,6 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket
 #include <XmlBlasterAccessUnparsed.h>
 #include "test.h"
 
-int tests_run = 0;
-
 /**
  * Here we receive the callback messages from xmlBlaster
  * mu_assert() does not help here as it is another thread
@@ -168,7 +166,7 @@ static const char * test_illegalConnect()
    }
 
    if (xa->initialize(xa, 0, &xmlBlasterException) == false) {
-      mu_assert("[TEST FAIL] initialize false was not expected, we provided a NULL callback", false);
+      mu_assert(__FILE__, __LINE__, "initialize false was not expected, we provided a NULL callback", false);
    }
    else {
       printf("[client] Initialize with updateP is NULL is OK, the default handler is used.");

@@ -15,9 +15,6 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/c.client.socket
 #include <util/msgUtil.h>
 #include "test.h"
 
-char MU_ASSERT_TEXT[1024];
-int tests_run = 0;
-
 static const char * test_trim(const char *expected, const char *source)
 {
    char tr[256];
@@ -27,9 +24,9 @@ static const char * test_trim(const char *expected, const char *source)
    }
    strcpy(tr, source);
    trim(tr);
-   mu_assert2("trim()", expected, tr, strlen(tr) == strlen(expected));
-   mu_assert2("trim()", expected, tr, strlen(tr) == strlen(expected));
-   mu_assert2("trim()", expected, tr, strcmp(tr, expected)==0);
+   mu_assert2(__FILE__, __LINE__, "trim()", expected, tr, strlen(tr) == strlen(expected));
+   mu_assert2(__FILE__, __LINE__, "trim()", expected, tr, strlen(tr) == strlen(expected));
+   mu_assert2(__FILE__, __LINE__, "trim()", expected, tr, strcmp(tr, expected)==0);
    return 0;
 }
 
@@ -42,9 +39,9 @@ static const char * test_trimStart(const char *expected, const char *source)
    }
    strcpy(tr, source);
    trimStart(tr);
-   mu_assert2("trimStart()", expected, tr, strlen(tr) == strlen(expected));
-   mu_assert2("trimStart()", expected, tr, strlen(tr) == strlen(expected));
-   mu_assert2("trimStart()", expected, tr, strcmp(tr, expected)==0);
+   mu_assert2(__FILE__, __LINE__, "trimStart()", expected, tr, strlen(tr) == strlen(expected));
+   mu_assert2(__FILE__, __LINE__, "trimStart()", expected, tr, strlen(tr) == strlen(expected));
+   mu_assert2(__FILE__, __LINE__, "trimStart()", expected, tr, strcmp(tr, expected)==0);
    return 0;
 }
 
@@ -57,9 +54,9 @@ static const char * test_trimEnd(const char *expected, const char *source)
    }
    strcpy(tr, source);
    trimEnd(tr);
-   mu_assert2("trimEnd()", expected, tr, strlen(tr) == strlen(expected));
-   mu_assert2("trimEnd()", expected, tr, strlen(tr) == strlen(expected));
-   mu_assert2("trimEnd()", expected, tr, strcmp(tr, expected)==0);
+   mu_assert2(__FILE__, __LINE__, "trimEnd()", expected, tr, strlen(tr) == strlen(expected));
+   mu_assert2(__FILE__, __LINE__, "trimEnd()", expected, tr, strlen(tr) == strlen(expected));
+   mu_assert2(__FILE__, __LINE__, "trimEnd()", expected, tr, strcmp(tr, expected)==0);
    return 0;
 }
 
