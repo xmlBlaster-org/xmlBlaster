@@ -44,3 +44,9 @@ javac -g -sourcepath src -d classes src/examples/MathClient.java
 
 java examples.MathClient
 
+
+
+
+
+java  -Djafw.saw.server.config=/home/xmlblast/xmlBlaster/config/config.xml -Dsaw.home=/home/xmlblast/saw_0.995 org.xmlBlaster.Main -trace true
+
