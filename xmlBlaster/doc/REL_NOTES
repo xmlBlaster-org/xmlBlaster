@@ -3,6 +3,8 @@
 
 Changes for 0.79 [?, ? 2000]
 ==============================
+  - Migrated to JacORB 1.2.1
+
   - Changed package for FileDriver, modify xmlBlaster.properties to
       Persistence.Driver=org.xmlBlaster.engine.persistence.filestore.FileDriver
 
