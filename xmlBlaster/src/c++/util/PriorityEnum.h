@@ -8,6 +8,7 @@ Comment:   Allows you be called back after a given delay.
 #ifndef _UTIL_PRIORITYENUM_H
 #define _UTIL_PRIORITYENUM_H
 
+#include <string>
 #include <util/xmlBlasterDef.h>
 
 namespace org { namespace xmlBlaster { namespace util {
@@ -68,6 +69,8 @@ enum Priority {
 typedef enum Priority PriorityEnum;
 
 Dll_Export PriorityEnum int2Priority(int val);
+
+Dll_Export PriorityEnum str2Priority(const std::string& val);
 
 }}} // namespaces
 

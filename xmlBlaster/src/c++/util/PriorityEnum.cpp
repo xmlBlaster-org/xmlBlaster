@@ -6,6 +6,8 @@ Comment:   Allows you be called back after a given delay.
 -----------------------------------------------------------------------------*/
 
 #include <util/PriorityEnum.h>
+#include <util/lexical_cast.h>
+#include <iostream>
 
 namespace org { namespace xmlBlaster { namespace util {
 
@@ -23,6 +25,32 @@ PriorityEnum int2Priority(int val)
       case HIGH_PRIORITY  : return HIGH_PRIORITY;
    }
    return HIGH8_PRIORITY;
+}
+
+PriorityEnum str2Priority(const std::string& val)
+{
+   if (val == "MIN") return MIN_PRIORITY;
+   if (val == "LOW") return LOW_PRIORITY;
+   if (val == "NORM") return NORM_PRIORITY;
+   if (val == "HIGH") return HIGH_PRIORITY;
+   if (val == "MAX") return MAX_PRIORITY;
+   try {
+      int prio = lexical_cast<int>(val);
+      return int2Priority(prio);
+   }
+   catch (...) {   //bad_lexical_cast
+      std::cerr << "Don't know what to do with priority '" << val << "', returning NORM priority" << std::endl;
+      return NORM_PRIORITY;
+   }
+   /*
+   int prio;
+   int numConverted = sscanf(val.c_str(), "%d", &prio);
+   if (numConverted != 1) {
+      std::cerr << "Don't know what to to with priority '" << val << "', returning NORM priority" << std::endl;
+      return NORM_PRIORITY;
+   }
+   return int2Priority(prio);
+   */
 }
 
 
