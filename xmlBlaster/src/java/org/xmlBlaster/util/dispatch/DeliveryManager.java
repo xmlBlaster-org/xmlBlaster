@@ -66,12 +66,16 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
    private boolean isSyncMode = false;
    private boolean trySyncMode = false; // true: client side queue embedding, false: server side callback queue
 
+   private boolean inAliveTransition = false;
+   private final Object ALIVE_TRANSITION_MONITOR = new Object();
+
    /**
     * @param msgQueue The message queue witch i use (!!! TODO: this changes, we should pass it on every method where needed)
+    * @param connectionStatusListener The implementation which listens on connectionState events (e.g. XmlBlasterAccess.java), or null
     * @param addrArr The addresses i shall connect to
     */
    public DeliveryManager(Global glob, I_MsgErrorHandler failureListener, I_MsgSecurityInterceptor securityInterceptor,
-                          I_Queue msgQueue, AddressBase[] addrArr) throws XmlBlasterException {
+                          I_Queue msgQueue, I_ConnectionStatusListener connectionStatusListener, AddressBase[] addrArr) throws XmlBlasterException {
       if (failureListener == null || msgQueue == null)
          throw new IllegalArgumentException("DeliveryManager failureListener=" + failureListener + " msgQueue=" + msgQueue);
 
@@ -86,7 +90,8 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
       this.securityInterceptor = securityInterceptor;
       this.deliveryWorkerPool = glob.getDeliveryWorkerPool();
       this.burstModeTimer = glob.getBurstModeTimer();
-      this.deliveryConnectionsHandler = glob.createDeliveryConnectionsHandler(this, addrArr);
+      this.deliveryConnectionsHandler = this.glob.createDeliveryConnectionsHandler(this);
+      this.connectionStatusListener = connectionStatusListener;
 
       /*
        * Check i a plugin is configured ("DispatchPlugin/defaultPlugin")
@@ -106,6 +111,8 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
       }
 
       this.msgQueue.addPutListener(this); // to get putPre() and putPost() events
+
+      this.deliveryConnectionsHandler.initialize(addrArr);
    }
 
    /**
@@ -131,18 +138,18 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
       return this.msgQueue;
    }
 
-   /**
+   /*
     * Register yourself if you want to be informed about the remote connection status. 
     * NOTE: Currently max. one listener is implemented
     * @param connectionStatusListener The implementation which listens on connectionState events (e.g. XmlBlasterAccess.java)
     */
-   public void addConnectionStatusListener(I_ConnectionStatusListener connectionStatusListener) {
-      if (this.connectionStatusListener != null) {
-         log.error(ME, "addConnectionStatusListener() ignored, there is already a listener registered");
-         return;
-      }
-      this.connectionStatusListener = connectionStatusListener;
-   }
+   //public void addConnectionStatusListener(I_ConnectionStatusListener connectionStatusListener) {
+   //   if (this.connectionStatusListener != null) {
+   //      log.error(ME, "addConnectionStatusListener() ignored, there is already a listener registered");
+   //      return;
+   //   }
+   //   this.connectionStatusListener = connectionStatusListener;
+   //}
 
    public void removeConnectionStateListener(I_ConnectionStatusListener connectionStatusListener) {
       this.connectionStatusListener = null;
@@ -170,36 +177,49 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
       return this.deliveryConnectionsHandler;
    }
 
-   /** Call by DeliveryConnectionsHandler on state transition */
+   /**
+    * Call by DeliveryConnectionsHandler on state transition
+    * NOTE: toAlive is called initially when a protocol plugin is successfully loaded
+    * but we don't know yet if it ever is able to connect
+    */
    void toAlive(ConnectionStateEnum oldState) {
       
-      if (this.trySyncMode) {
-         switchToSyncMode();
-      }
+      if (log.CALL) log.call(ME, "Switch from " + oldState + " to ALIVE");
 
       // Remember the current collectTime
-      AddressBase addr = deliveryConnectionsHandler.getAliveAddress();
+      AddressBase addr = this.deliveryConnectionsHandler.getAliveAddress();
       if (addr == null) {
          log.error(ME, "toAlive action has no alive address");
          return;
       }
 
-      // 1. We allow a client to intercept and for example destroy all entries in the queue
-      if (this.connectionStatusListener != null)
-         this.connectionStatusListener.toAlive(this, oldState);
+      try {
+         this.inAliveTransition = true;
 
-      // 2. If a dispatch plugin is registered it may do its work
-      if (this.msgInterceptor != null)
-         this.msgInterceptor.toAlive(this, oldState);
+         synchronized (this.ALIVE_TRANSITION_MONITOR) {
+            // 1. We allow a client to intercept and for example destroy all entries in the queue
+            if (this.connectionStatusListener != null)
+               this.connectionStatusListener.toAlive(this, oldState);
+
+            // 2. If a dispatch plugin is registered it may do its work
+            if (this.msgInterceptor != null)
+               this.msgInterceptor.toAlive(this, oldState);
+         }
+      }
+      finally {
+         this.inAliveTransition = false;
+      }
 
       collectTime = addr.getCollectTime(); // burst mode if > 0L
 
-      activateDeliveryWorker(); // will be delayed if burst mode timer is activated
+      // 3. Deliver. Will be delayed if burst mode timer is activated, will switch to sync mode if necessary
+      activateDeliveryWorker();
    }
 
    /** Call by DeliveryConnectionsHandler on state transition */
    void toPolling(ConnectionStateEnum oldState) {
 
+      if (log.CALL) log.call(ME, "Switch from " + oldState + " to POLLING");
       switchToASyncMode();
 
       // 1. We allow a client to intercept and for example destroy all entries in the queue
@@ -212,7 +232,8 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
    }
 
    /** Call by DeliveryConnectionsHandler on state transition */
-   void toDead(ConnectionStateEnum oldState, AddressBase address, XmlBlasterException ex) {
+   void toDead(ConnectionStateEnum oldState, XmlBlasterException ex) {
+      if (log.CALL) log.call(ME, "Switch from " + oldState + " to DEAD");
       ex.changeErrorCode(ErrorCode.COMMUNICATION_NOCONNECTION_DEAD);
       
       // 1. We allow a client to intercept and for example destroy all entries in the queue
@@ -227,7 +248,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
    }
 
    private void givingUpDelivery(XmlBlasterException ex) {
-      if (log.TRACE) log.trace(ME, "Entering givingUpDelivery(), state is " + deliveryConnectionsHandler.getState());
+      if (log.TRACE) log.trace(ME, "Entering givingUpDelivery(), state is " + this.deliveryConnectionsHandler.getState());
       removeBurstModeTimer();
       // The error handler flushed the queue and does error handling with them
       this.failureListener.handleError(new MsgErrorInfo(glob, (MsgQueueEntry)null, ex));
@@ -239,7 +260,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
     */
    void handleSyncWorkerException(ArrayList entryList, Throwable throwable) throws XmlBlasterException {
 
-      if (log.CALL) log.call(ME, "Sync delivery failed connection state is " + deliveryConnectionsHandler.getState().toString() + ": " + throwable.toString());
+      if (log.CALL) log.call(ME, "Sync delivery failed connection state is " + this.deliveryConnectionsHandler.getState().toString() + ": " + throwable.toString());
       
       XmlBlasterException xmlBlasterException = XmlBlasterException.convert(glob,ME,null,throwable);
 
@@ -297,7 +318,8 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
    void handleWorkerException(ArrayList entryList, Throwable throwable) {
       // Note: The DeliveryManager is notified about connection problems directly by its DeliveryConnectionsHandler
       //       we don't need to take care of ErrorCode.COMMUNICATION*
-      if (log.CALL) log.call(ME, "Async delivery failed connection state is " + deliveryConnectionsHandler.getState().toString() + ": " + throwable.toString());
+      if (log.CALL) log.call(ME, "Async delivery failed connection state is " + this.deliveryConnectionsHandler.getState().toString() + ": " + throwable.toString());
+      //Thread.currentThread().dumpStack();
       if (entryList == null) {
          if (!this.isShutdown)
             log.warn(ME, "Didn't expect null entryList in handleWorkerException() for throwable " + throwable.getMessage());
@@ -396,11 +418,9 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
     * @see I_QueuePutListener#putPre(I_QueueEntry)
     */
    public boolean putPre(I_QueueEntry queueEntry) throws XmlBlasterException {
-      if (!this.isSyncMode) return true; // Add entry to queue
-
-      I_QueueEntry[] queueEntries = new I_QueueEntry[1];
-      queueEntries[0] = queueEntry;
-      return putPre(queueEntries);
+      //I_QueueEntry[] queueEntries = new I_QueueEntry[1];
+      //queueEntries[0] = queueEntry;
+      return putPre(new I_QueueEntry[] { queueEntry });
    }
 
    /**
@@ -408,7 +428,15 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
     * @see I_QueuePutListener#putPre(I_QueueEntry[])
     */
    public boolean putPre(I_QueueEntry[] queueEntries) throws XmlBlasterException {
-      if (!this.isSyncMode) return true; // Add entry to queue
+      if (!this.isSyncMode) {
+         if (this.inAliveTransition) {
+            // Do not allow other threads to put messages to queue during transition to alive
+            synchronized (ALIVE_TRANSITION_MONITOR) {
+               // don't allow 
+            }
+         }
+         return true; // Add entry to queue
+      }
       
       if (log.TRACE) log.trace(ME, "putPre() - Got " + queueEntries.length + " QueueEntries to deliver synchronously ...");
       ArrayList entryList = new ArrayList(queueEntries.length);
@@ -585,11 +613,11 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
    }
 
    public boolean isDead() {
-      return deliveryConnectionsHandler.isDead();
+      return this.deliveryConnectionsHandler.isDead();
    }
 
    public boolean isPolling() {
-      return deliveryConnectionsHandler.isPolling();
+      return this.deliveryConnectionsHandler.isPolling();
    }
 
    /**
@@ -609,7 +637,12 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
          return false;
       }
 
-      if (deliveryConnectionsHandler.isDead()) {
+      if (this.deliveryConnectionsHandler.isUndef()) {
+         if (log.TRACE) log.trace(ME, "Not connected yet, state is UNDEF");
+         return false;
+      }
+
+      if (this.deliveryConnectionsHandler.isDead()) {
          String text = "No recoverable remote connection available, giving up queue " + msgQueue.getStorageId() + ".";
          if (log.TRACE) log.trace(ME, text);
          givingUpDelivery(new XmlBlasterException(glob,ErrorCode.COMMUNICATION_NOCONNECTION_DEAD, ME, text)); 
@@ -629,7 +662,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
          return true;
       }
 
-      if (deliveryConnectionsHandler.isPolling()) {
+      if (this.deliveryConnectionsHandler.isPolling()) {
          if (log.TRACE) log.trace(ME, "Can't send message as connection is lost and we are polling");
          return false;
       }
@@ -682,6 +715,11 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
                log.error(ME, e.toString()); e.printStackTrace(); // Assure the queue is flushed with another worker
             }
          }
+         else {
+            if (this.trySyncMode && !this.isSyncMode) {
+               switchToSyncMode();
+            }
+         }
       }
    }
 
@@ -699,7 +737,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
     * @return A container holding some statistical delivery information
     */
    public DeliveryStatistic getDeliveryStatistic() {
-      return deliveryConnectionsHandler.getDeliveryStatistic();
+      return this.deliveryConnectionsHandler.getDeliveryStatistic();
    }
 
    /**
@@ -722,7 +760,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
             this.msgInterceptor.shutdown(this);
             //this.msgInterceptor = null;
          }
-         if (deliveryConnectionsHandler != null) {
+         if (this.deliveryConnectionsHandler != null) {
             this.deliveryConnectionsHandler.shutdown();
             //this.deliveryConnectionsHandler = null;
          }
@@ -761,7 +799,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
       String offset = Constants.OFFSET + extraOffset;
 
       sb.append(offset).append("<DeliveryManager id='").append(getId()).append("'>");
-      sb.append(deliveryConnectionsHandler.toXml(extraOffset+Constants.INDENT));
+      sb.append(this.deliveryConnectionsHandler.toXml(extraOffset+Constants.INDENT));
       sb.append(offset).append(" <deliveryWorkerIsActive>").append(deliveryWorkerIsActive).append("</deliveryWorkerIsActive>");
       sb.append(offset).append("</DeliveryManager>");
 
