@@ -41,7 +41,8 @@
       This happens before xmlBlaster checks if it needs to be sent to another cluster node
       and before xmlBlaster stores or processes it.<br />
       Publish/Subscribe and PtP messages are equally checked.<br />
-      Internal messages are send to the filter as well, usually you should just ignore
+      If the plugin is registered for all mime types with "*", internal messages are send
+      to the filter as well, usually you should just ignore
       them (see example in PublishLenFilter).
       </li>
 
@@ -62,7 +63,7 @@
       </ol>
       </li>
 
-      <li>Multiple filters per subscription<br />
+      <li>Multiple filters per mime type<br />
       Multiple filter plugins can be specified for each published message.
       They are sequentially executed and if
       one filter rejects (the intercept() method returns no "" or "OK") the message
@@ -154,7 +155,7 @@ content="veeerrrrrylongcooontenttttttt"
    <see type="REQ">mime.plugin.accessfilter</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 03 14</date>
-   <revision>$Revision: 1.8 $</revision>
+   <revision>$Revision: 1.9 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
