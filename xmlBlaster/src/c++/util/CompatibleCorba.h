@@ -3,7 +3,7 @@ Name:      CompatibleCorba.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper header to encapsulate all corba-implementor specific stuff
-Version:   $Id: CompatibleCorba.h,v 1.2 2000/07/06 23:42:27 laghi Exp $
+Version:   $Id: CompatibleCorba.h,v 1.3 2001/11/27 15:44:31 ruff Exp $
 Author:    <Michele Laghi> michele.laghi@attglobal.net
 ----------------------------------------------------------------------------*/
 
@@ -78,6 +78,7 @@ Author:    <Michele Laghi> michele.laghi@attglobal.net
 #undef   SERVER_HEADER
 #endif
 
+ // #include <generated/xmlBlaster.h>
 #ifdef   CLIENT_HEADER
 #define  CLIENT_INCLUDE2  <CLIENT_INCLUDE(CLIENT_HEADER)>
 #include CLIENT_INCLUDE2

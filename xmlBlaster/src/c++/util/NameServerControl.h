@@ -3,7 +3,7 @@ Name:      NameServerControl.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to handle the NameServer stuff (bind, unbind, resolve ...)
-Version:   $Id: NameServerControl.h,v 1.4 2001/11/26 09:20:59 ruff Exp $
+Version:   $Id: NameServerControl.h,v 1.5 2001/11/27 15:44:31 ruff Exp $
 Author:    <Michele Laghi> michele.laghi@attglobal.net
 -----------------------------------------------------------------------------*/
 
@@ -13,7 +13,7 @@ Author:    <Michele Laghi> michele.laghi@attglobal.net
 #include <vector>
 #include <algorithm>
 
-#define CLIENT_HEADER xmlBlaster
+#define CLIENT_HEADER generated/xmlBlaster
 #include <util/CompatibleCorba.h>
 #include COSNAMING
 

@@ -4,7 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster: for now a simplified version 
            without caching and without failsave mode.
-Version:   $Id: CorbaConnection.h,v 1.3 2001/11/26 09:20:59 ruff Exp $
+Version:   $Id: CorbaConnection.h,v 1.4 2001/11/27 15:44:31 ruff Exp $
 Author:    <Michele Laghi> michele.laghi@attglobal.net
 -----------------------------------------------------------------------------*/
 
@@ -19,7 +19,7 @@ Author:    <Michele Laghi> michele.laghi@attglobal.net
 #include <util/NameServerControl.h>
 #include <util/CallbackAddress.h>
 
-#define  SERVER_HEADER xmlBlaster
+#define  SERVER_HEADER generated/xmlBlaster
 #include <util/CompatibleCorba.h>
 #include COSNAMING
 
