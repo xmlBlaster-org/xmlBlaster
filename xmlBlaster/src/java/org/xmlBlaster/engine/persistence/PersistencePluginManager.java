@@ -3,7 +3,7 @@ Name:      PersistencePluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for persistence
-Version:   $Id: PersistencePluginManager.java,v 1.11 2002/09/13 23:18:03 ruff Exp $
+Version:   $Id: PersistencePluginManager.java,v 1.12 2002/09/29 23:55:41 goetzger Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence;
@@ -41,7 +41,8 @@ public class PersistencePluginManager extends PluginManagerBase
             glob.getProperty().get(pluginPropertyName + "[filestore][1.0]", "org.xmlBlaster.engine.persistence.filestore.FileDriver") );
 
          glob.getProperty().set(pluginPropertyName + "[xmldb][xindice]",
-            glob.getProperty().get(pluginPropertyName + "[xmldb][xindice]", "org.xmlBlaster.engine.persistence.xmldb.XMLDBPlugin, xindice") );
+            glob.getProperty().get(pluginPropertyName + "[xmldb][xindice]", "org.xmlBlaster.engine.persistence.xmldb.XMLDBPlugin") );
+            //glob.getProperty().get(pluginPropertyName + "[xmldb][xindice]", "org.xmlBlaster.engine.persistence.xmldb.XMLDBPlugin, xindice") );
       } catch (org.jutils.JUtilsException e) {
          throw new XmlBlasterException( e.id, e.reason );
       }
