@@ -25,6 +25,8 @@ Changes for 0.79e [Mar, 27 2002]
     in java client helper classes.
     See -client.publishOneway.collectTime 500
 
+  - Extended Perl support (from Cyrille)
+
   - RMI and XmlRpc interface changes.
     see CORBA changes in
     xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl
