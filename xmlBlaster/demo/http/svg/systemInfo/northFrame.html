@@ -47,24 +47,56 @@ COMMENT:
           */
          function updateFrame(frameName, contentStr)
          {
+            var Log = top.xmlBlasterWindow.Log;
             var value = parseInt(contentStr);
 
             if (value < 1) value = 1;
             if (value > 100) value = 100;
 
-            top.xmlBlasterWindow.Log.trace("Drawing to SVG in frame '" + frameName + "': '" + value + "'");
+            Log.trace("Drawing to SVG in frame '" + frameName + "': '" + value + "'");
 
-            var svgdoc = document.embeds["svgFrame"].getSVGDocument();
-            var objet=svgdoc.getElementById('rectangle');
-            objet.setAttribute('width', value);
+            var svgFrame = parent.svgFrame;
+            if ((typeof svgFrame) == "undefined" || svgFrame == null) {
+               Log.error("northFrame.html: ERROR: parent.svgFrame=undefined, your update of " + value + " is lost!");
+               return;
+            }
+            Log.trace("northFrame.html: OK svgFrame=" + svgFrame);
+            // northFrame.html: OK svgFrame=[xpconnect wrapped Window]   
+
+            if ((typeof svgFrame.document) == "undefined" || svgFrame.document == null ) {
+               Log.error("html: SVG PLUGIN ERROR: svgFrame.document=undefined, your update of " + value + " is lost!");
+               return;
+            }
+            Log.trace("northFrame.html: OK svgFrame.document=" + svgFrame.document);
+
+            var embedWindow = svgFrame.document.embeds["systemInfoSVGPlugin"];
+            if ((typeof embedWindow) == "undefined" || embedWindow == null) {
+               Log.error("northFrame.html: SVG PLUGIN ERROR: document.embeds['systemInfoSVGPlugin']=undefined, your update of " + value + " is lost!");
+               return;
+            }
+            Log.trace("northFrame.html: OK embedWindow=" + embedWindow);
+
+            if ((typeof embedWindow.getSVGDocument) == "undefined") {
+               Log.error("html: SVG PLUGIN ERROR: embedWindow.getSVGDocument()=undefined, your update of " + value + " is lost!");
+               return;
+            }
+
+            var svgdoc = embedWindow.getSVGDocument();
+            Log.trace("northFrame.html: svgdoc=" + svgdoc);
+            var myRectangle=svgdoc.getElementById('rectangle');
+            Log.trace("northFrame.html: rectangle object=" + myRectangle);
+            myRectangle.setAttribute('width', value);
             if (value > 80)
-               objet.getStyle().setProperty('fill','red')
+               myRectangle.getStyle().setProperty('fill','red')
             else if (value > 60)
-               objet.getStyle().setProperty('fill','yellow')
+               myRectangle.getStyle().setProperty('fill','yellow')
             else
-               objet.getStyle().setProperty('fill','green')
+               myRectangle.getStyle().setProperty('fill','pink')
 
+            Log.trace("SVG picture is successfully updated with new value");
+            
             top.xmlBlasterWindow.setReady( self, true );
+
          }
       </script>
    </head>

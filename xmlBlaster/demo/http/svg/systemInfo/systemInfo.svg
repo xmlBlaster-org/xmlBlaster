@@ -5,7 +5,7 @@
       Mozilla with Adobe SVG plugin does not support:
       ->  Exporting the svgdoc handle to the outer HTML
       ->  Accessing the embeded SVG from out HTML with
-          document.embeds["fritz"].getSVGDocument()
+          document.embeds["systemInfoSVGPlugin"].getSVGDocument()
       ->  So Michele and Marcel are fucking frustrated giving up
           for the moment!
           But we'll come back soon :-)
@@ -44,6 +44,6 @@
    <g id='affiche'>
       <text id='texte' x='100' y='140' style='text-anchor:middle;font-size:12;font-family:Arial;fill:red'>Click:  To play manually ...</text>
       <text id='texte' x='100' y='180' style='text-anchor:middle;font-size:12;font-family:Arial;fill:red'>Future: Receive xmlBlaster updates ...</text>
-      <rect id='rectangle' onclick='change_attribut(evt)' x='50' y='50' width='20' height='50' style='fill:blue'/>
+      <rect id='rectangle' onclick='change_attribut(evt)' x='50' y='50' width='2' height='50' style='fill:blue'/>
    </g>
 </svg>

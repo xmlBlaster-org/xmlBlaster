@@ -41,8 +41,7 @@ AUTHOR:
             xmlBlasterWindow = window.open("../../persistentWindow/index.html"+location.search, "xmlBlasterFrame", winOptions);
          }
          
-         openCallBack(); // Open the popup window now ...
-
+         openCallBack(); //!!! onLOad() Open the popup window now ...
 
          /**
           * Callback from xmlBlasterFrame/callbackFrame that the persistent
@@ -61,11 +60,11 @@ AUTHOR:
             if (isExplorer) { // With MSIE 5 the replace() seems to be more reliable!
                //alert("Explorer");
                northFrame.location.replace("/xmlBlaster/svg/systemInfo/northFrame.html");
-               svgFrame.location.replace("/xmlBlaster/svg/systemInfo/systemInfo.svg");
+               //svgFrame.location.replace("/xmlBlaster/svg/systemInfo/systemInfo.svg");
             }
             else {
                northFrame.location.href = "/xmlBlaster/svg/systemInfo/northFrame.html";
-               svgFrame.location.href = "/xmlBlaster/svg/systemInfo/systemInfo.svg";
+               //svgFrame.location.href = "/xmlBlaster/svg/systemInfo/systemInfo.svg";
             }
          }
 
@@ -84,9 +83,9 @@ AUTHOR:
       </script>
 
 
-      <frameset onUnload="cleanup()" rows="150,*" frameborder="0" border=0 framespacing="0" borderwidth="1">
+      <frameset onLoad="" onUnload="cleanup()" rows="150,*" frameborder="0" border=0 framespacing="0" borderwidth="1">
          <frame name="northFrame" src="empty.html" scrolling="auto" marginwidth="0" leftmargin="0" marginheight="0" topmargin="0" frameborder="0" framespacing="0">
-         <frame name="svgFrame" src="empty.html" scrolling="auto" marginwidth="0" leftmargin="0" marginheight="0" topmargin=0 frameborder="0" framespacing="0">
+         <frame name="svgFrame" src="embed.html" scrolling="auto" marginwidth="0" leftmargin="0" marginheight="0" topmargin=0 frameborder="0" framespacing="0">
       </frameset>
 
    </head>
