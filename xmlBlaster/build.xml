@@ -327,7 +327,7 @@ Else add it manually.
       <!-- include content of jutils.jar in xmlBlaster.jar -->
       <unjar src="${lib.dir}/jutils.jar" dest="${build.dest}"/>
 
-      <jar destfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}" includes="org/**,xmlBlaster.policy,*.gif,doc/requirements/*"/>
+      <jar destfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}" includes="org/**,xmlBlaster.policy,*.gif,doc/requirements/*,*.properties,manifest.xmlBlaster"/>
 
       <copy file="${build.dir}/${name}.jar" tofile="${lib.dir}/${name}.jar"/>
    </target>
