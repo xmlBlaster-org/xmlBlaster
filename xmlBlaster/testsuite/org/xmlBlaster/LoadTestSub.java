@@ -3,7 +3,7 @@ Name:      LoadTestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: LoadTestSub.java,v 1.3 2000/01/07 20:33:50 ruff Exp $
+Version:   $Id: LoadTestSub.java,v 1.4 2000/01/13 16:43:04 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -94,7 +94,7 @@ public class LoadTestSub extends TestCase implements I_Callback
    protected void tearDown()
    {
       long avg = NUM_PUBLISH / (stopWatch.elapsed()/1000L);
-      Log.info(ME, NUM_PUBLISH + " messages sent, average messages/second = " + avg + stopWatch.nice());
+      Log.info(ME, NUM_PUBLISH + " messages updated, average messages/second = " + avg + stopWatch.nice());
 
       String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
                       "<key oid='" + publishOid + "' queryType='EXACT'>\n" +
