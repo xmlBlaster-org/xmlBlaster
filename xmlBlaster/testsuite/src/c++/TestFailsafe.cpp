@@ -109,7 +109,7 @@ public:
          connection_ = new XmlBlasterAccess(global_);
          connection_->initFailsafe(this);
          if (useEmbeddedServer_) {
-            embeddedServer_ = new EmbeddedServer(global_, "", "-call true -trace true > failsafe.dump 2>&1", connection_);
+            embeddedServer_ = new EmbeddedServer(global_, "", "", connection_);
 /* currently commented out (problems with multithreading) 
          if (embeddedServer_->isSomeServerResponding()) {
             log_.error(ME, "this test uses an embedded Server. There is already an external xmlBlaster running on this system, please shut it down first");
