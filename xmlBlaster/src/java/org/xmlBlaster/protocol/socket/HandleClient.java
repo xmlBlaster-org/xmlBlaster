@@ -217,7 +217,7 @@ public class HandleClient extends Executor implements Runnable
                         SocketUrl cbUrl = new SocketUrl(glob, cbArr[ii].getRawAddress());
                         SocketUrl remoteUrl = new SocketUrl(glob, super.sock.getInetAddress().getHostName(), super.sock.getPort());
                         if (log.TRACE) log.trace(ME, "remoteUrl='" + remoteUrl.getUrl() + "' cbUrl='" + cbUrl.getUrl() + "'");
-                        if (remoteUrl.equals(cbUrl)) {
+                        if (true) { // !!!!! TODO remoteUrl.equals(cbUrl)) {
                            if (log.TRACE) log.trace(ME, "Tunneling callback messages through same SOCKET to '" + remoteUrl.getUrl() + "'");
                            this.callback = new CallbackSocketDriver(this.loginName, this);
                            org.xmlBlaster.protocol.I_CallbackDriver oldCallback = driver.getGlobal().getNativeCallbackDriver(cbKey);
