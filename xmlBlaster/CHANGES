@@ -7,6 +7,10 @@ Changes for 0.x []
  o C++ client library
    - Introduced abstract queue interface (I_Queue) and queue factory
      to be able to add arbitrary queue implementations as plugins.
+   - Bugfix for default logging: loglevel settings inherited from I_Log
+   - Bugfix reading of xmlBlaster.properties: Line extensions are now recognized
+   - Extended Property class to preset ${user.home}, ${user.name},
+     ${file.separator} and ${path.separator} to support replacement in xmlBlaster.properties
 
 Changes for 0.901 [2004-04-27]
 ==============================
