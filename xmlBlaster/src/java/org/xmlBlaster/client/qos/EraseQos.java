@@ -55,13 +55,10 @@ public final class EraseQos
    }
 
    /**
-    * NOT IMPLEMENTED
-    * @param notify true - notify subscribers that message is erased (default is true)
+    * Defaults to false: If a topic is still referenced by callback messages
+    * it will be not erased immediately but we wait until all pending messages are delivered. 
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.message.lifecycle.html">engine.message.lifecycle requirement</a>
     */
-   public void setWantNotify(boolean notify) {
-      this.queryQosData.setWantNotify(notify);
-   }
-
    public void setForceDestroy(boolean forceDestroy) {
       this.queryQosData.setForceDestroy(forceDestroy);
    }
