@@ -11,7 +11,7 @@
        and 7.2.3 on linux).</p>
        <p>To make xmlBlaster run with a persitent queue stored on postgres it is necessary to first install postgres.
        In some of the linux distributions postgres comes along. For others, you can download it from
-       <a href='http://www.postgres.org'>the postgres homepage</a>. Please follow the instructions given there on 
+       <a href='http://www.postgresql.org/'>the postgres homepage</a>. Please follow the instructions given there on 
        how to download, install and initially configure postgres.. Keep in mind that you also need to install on your
        machine the jdbc driver working with postgres. You can download it from <a href='http://jdbc.postgresql.org/download.html'>
        http://jdbc.postgresql.org/download.html</a> and put it somewhere in your classpath. To keep it simple you can 
@@ -121,7 +121,7 @@ createdb test
 <!--   <see type="REQ">cluster</see> -->
    <author>laghi@swissinfo.org</author>
    <date>2002 11 17</date>
-   <revision>$Revision: 1.5 $</revision>
+   <revision>$Revision: 1.6 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
