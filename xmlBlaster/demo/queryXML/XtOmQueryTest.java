@@ -10,10 +10,10 @@ Comment:   Syntax for Query:
 
            XPath interface (contains everything):
               http://www.246.ne.jp/~kamiya/pub/omquery.zip
-               
+
 Compile:   jikes *.java  (put local directory into CLASSPATH)
 Invoke:    java XtOmQueryTest Agent.xml xmlBlaster/key/AGENT[@id=\"192.168.124.10\"] xmlBlaster/key/AGENT/DRIVER[@id=\"FileProof\"] xmlBlaster/key[@oid=\"2\"]
-Version:   $Id: XtOmQueryTest.java,v 1.1 1999/11/16 22:05:11 ruff Exp $
+Version:   $Id: XtOmQueryTest.java,v 1.2 1999/11/16 22:13:29 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 import com.jclark.xsl.om.*;
@@ -41,6 +41,8 @@ class XtOmQueryTest
       if (argv.length < 2)
          Log.panic(ME, "Usage:\n\n   java XtOmQueryTest <XML-file> <Query-String>\n\nExample:\n   java XtOmQueryTest Agent.xml xmlBlaster/key/AGENT[@id=\\\"192.168.124.10\\\"]\n");
 
+      boolean dumpIt = false;
+      if (argv.length == 2) dumpIt = true;
 
       Enumeration iter;
       int num_nodes;
@@ -74,17 +76,20 @@ class XtOmQueryTest
                iter = query_mgr.getNodesByXPath(node, argv[1]); // [ 2 sec 422 millis ] [ 2 sec 577 millis ]
                Log.info(ME, "Query time" + queryTime.nice());
 
-               num_nodes = getNumNodes(iter);
-               System.out.println(num_nodes + " nodes matches for XPath " + "\"" + argv[1] + "\"");
+               num_nodes = getNumNodes(iter, dumpIt);
+               Log.info(ME, num_nodes + " nodes matches for XPath " + "\"" + argv[1] + "\"");
             }
+
+            if (dumpIt)
+               Log.exit(ME, "Good bye");
 
             if (argv.length > 2) {
                StopWatch queryTime2 = new StopWatch();
                iter = query_mgr.getNodesByXPath(node, argv[2]); // [ 3 millis ] [ 1 millis ]
                Log.info(ME, "Query time" + queryTime2.nice());
 
-               num_nodes = getNumNodes(iter);
-               System.out.println(num_nodes + " nodes matches for XPath " + "\"" + argv[2] + "\"");
+               num_nodes = getNumNodes(iter, dumpIt);
+               Log.info(ME, num_nodes + " nodes matches for XPath " + "\"" + argv[2] + "\"");
             }
 
             if (argv.length > 3) {
@@ -92,8 +97,8 @@ class XtOmQueryTest
                iter = query_mgr.getNodesByXPath(node, argv[3]); // [ 1 millis ] [ 0 millis ]
                Log.info(ME, "Query time" + queryTime2.nice());
 
-               num_nodes = getNumNodes(iter);
-               System.out.println(num_nodes + " nodes matches for XPath " + "\"" + argv[3] + "\"");
+               num_nodes = getNumNodes(iter, dumpIt);
+               Log.info(ME, num_nodes + " nodes matches for XPath " + "\"" + argv[3] + "\"");
             }
          }
 
@@ -106,8 +111,8 @@ class XtOmQueryTest
             iter = query_mgr.getNodesByXPath(node, argv[1]);    // [ 0 millis ] [ 1 millis ]
             Log.info(ME, "Query time" + queryTime.nice());
 
-            num_nodes = getNumNodes(iter);
-            System.out.println(num_nodes + " nodes matches for XPath " + "\"" + argv[1] + "\"");
+            num_nodes = getNumNodes(iter, dumpIt);
+            Log.info(ME, num_nodes + " nodes matches for XPath " + "\"" + argv[1] + "\"");
          }
       }
       catch (IOException e)
@@ -127,7 +132,7 @@ class XtOmQueryTest
       }
    }
 
-   static private int getNumNodes(Enumeration nodeIter) throws XSLException
+   static private int getNumNodes(Enumeration nodeIter, boolean dumpIt) throws XSLException
    {
       int n = 0;
 
@@ -136,7 +141,8 @@ class XtOmQueryTest
          n++;
          Object obj = nodeIter.nextElement();
          Node node = (Node)obj;
-         // System.out.println("Processing node " + node.getName() + ": " + node.getData());
+         if (dumpIt)
+            System.out.println("Processing node " + node.getName() + ": " + node.getData());
       }
 
       return n;

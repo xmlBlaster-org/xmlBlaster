@@ -10,10 +10,10 @@ Comment:   Syntax for Query:
 
            XPath interface (contains everything):
               http://www.246.ne.jp/~kamiya/pub/omquery.zip
-               
+
 Compile:   jikes *.java  (put local directory into CLASSPATH)
 Invoke:    java DomQueryTest AgentBig.xml xmlBlaster/key/AGENT[@id=\"192.168.124.10\"] xmlBlaster/key/AGENT/DRIVER[@id=\"FileProof\"] xmlBlaster/key[@oid=\"2\"]
-Version:   $Id: DomQueryTest.java,v 1.1 1999/11/16 22:05:11 ruff Exp $
+Version:   $Id: DomQueryTest.java,v 1.2 1999/11/16 22:13:29 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 import com.jclark.xsl.om.*;
@@ -41,10 +41,12 @@ class DomQueryTest
    public static void main(String argv[])
    {
       final String ME = "DomQueryTester";
-      boolean dumpIt = false; // Set to true if you want to see the query results
 
       if (argv.length < 2)
-      Log.panic(ME, "Usage:\n\n   java DomQueryTest <XML-file> <Query-String>\n\nExample:\n   java DomQueryTest Agent.xml xmlBlaster/key/AGENT[@id=\\\"192.168.124.10\\\"]\n");
+         Log.panic(ME, "Usage:\n\n   java DomQueryTest <XML-file> <Query-String>\n\nExample:\n   java DomQueryTest Agent.xml xmlBlaster/key/AGENT[@id=\\\"192.168.124.10\\\"]\n");
+
+      boolean dumpIt = false;
+      if (argv.length == 2) dumpIt = true;
 
       try
       {
@@ -80,8 +82,11 @@ class DomQueryTest
                Log.info(ME, "Query time" + queryTime.nice());
 
                num_nodes = getNumNodes(iter, dumpIt);
-               System.out.println(num_nodes + " nodes matches for XPath " + "\"" + argv[1] + "\"");
+               Log.info(ME, num_nodes + " nodes matches for XPath " + "\"" + argv[1] + "\"");
             }
+
+            if (dumpIt)
+               Log.exit(ME, "Good bye");
 
             if (argv.length > 2) {
                StopWatch queryTime2 = new StopWatch();
@@ -89,7 +94,7 @@ class DomQueryTest
                Log.info(ME, "Query time" + queryTime2.nice());
 
                num_nodes = getNumNodes(iter, dumpIt);
-               System.out.println(num_nodes + " nodes matches for XPath " + "\"" + argv[2] + "\"");
+               Log.info(ME, num_nodes + " nodes matches for XPath " + "\"" + argv[2] + "\"");
             }
 
             if (argv.length > 3) {
@@ -98,7 +103,7 @@ class DomQueryTest
                Log.info(ME, "Query time" + queryTime2.nice());
 
                num_nodes = getNumNodes(iter, dumpIt);
-               System.out.println(num_nodes + " nodes matches for XPath " + "\"" + argv[3] + "\"");
+               Log.info(ME, num_nodes + " nodes matches for XPath " + "\"" + argv[3] + "\"");
             }
          }
 
@@ -117,7 +122,7 @@ class DomQueryTest
                Log.info(ME, "Query time" + queryTime.nice());
 
                num_nodes = getNumNodes(iter, dumpIt);
-               System.out.println(num_nodes + " nodes matches for XPath " + "\"" + argv[1] + "\"");
+               Log.info(ME, num_nodes + " nodes matches for XPath " + "\"" + argv[1] + "\"");
             }
          }
       }
