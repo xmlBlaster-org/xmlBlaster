@@ -517,5 +517,31 @@ public final class ClusterManager
          return id1.compareTo(id2);
       }
    }  */
+
+   /**
+    * Command line usage.
+    * <p />
+    * These variables may be set in your property file as well.
+    * Don't use the "-" prefix there.
+    * <p />
+    * Set the verbosity when loading properties (outputs with System.out).
+    * <p />
+    * 0=nothing, 1=info, 2=trace, configure with
+    * <pre>
+    * java -Dproperty.verbose 2 ...
+    *
+    * java org.xmlBlaster.Main -property.verbose 2
+    * </pre>
+    */
+   public static String usage()
+   {
+      StringBuffer sb = new StringBuffer(512);
+      sb.append("Cluster support:\n");
+      sb.append("   -cluster            Switch cluster support to true or false [true].\n");
+      sb.append("   -cluster.node.id    A unique name for this xmlBlaster instance, e.g. 'com.myCompany.myHost'.\n");
+      sb.append("                       If not specified a unique name is choosen and displayed on command line.\n");
+      sb.append("   ...                 See http://www.xmlBlaster.org/xmlBlaster/doc/requirements/cluster.html\n");
+      return sb.toString();
+   }
 }
 
