@@ -216,7 +216,7 @@ public class QueueServerEntryTest extends TestCase {
          org.xmlBlaster.engine.Global global = new org.xmlBlaster.engine.Global();
          MsgUnitWrapper msgWrapper = new MsgUnitWrapper(glob, msgUnit, queue.getStorageId());
          MsgQueueUpdateEntry entry = new MsgQueueUpdateEntry(global, msgWrapper, queue.getStorageId(),
-                                         receiver, subscriptionId, state);
+                                         receiver, subscriptionId);
          entry.incrRedeliverCounter();
          entry.incrRedeliverCounter();
 
