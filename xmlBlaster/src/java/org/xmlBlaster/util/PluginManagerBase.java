@@ -3,7 +3,7 @@ Name:      PluginManagerBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Baseclass to load plugins.
-Version:   $Id: PluginManagerBase.java,v 1.14 2002/07/13 19:00:14 ruff Exp $
+Version:   $Id: PluginManagerBase.java,v 1.15 2002/07/21 13:39:50 ruff Exp $
 Author:    W. Kleinertz (wkl), Heinrich Goetzger goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
@@ -147,9 +147,9 @@ abstract public class PluginManagerBase {
             pluginData[i]=(String)tmp.elementAt(i);
          }
       }
-      //else
-      //   log.warn(ME, "Accessing " + getPluginPropertyName(type, version) + " failed, no such entry found in xmlBlaster.properties");
-      if (pluginData != null && pluginData[0].equalsIgnoreCase("")) pluginData = null;
+
+      if (pluginData == null || pluginData.length < 1 || pluginData[0].equalsIgnoreCase(""))
+         return null;
 
       return pluginData;
    }
