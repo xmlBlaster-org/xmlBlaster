@@ -68,6 +68,8 @@
          <xsd:attribute name="lang" use="default" value="Java">
             <xsd:simpleType>
                <xsd:restriction base="xsd:string">
+                  <xsd:enumeration value="any"/>
+                  <xsd:enumeration value="XML"/>
                   <xsd:enumeration value="Java"/>
                   <xsd:enumeration value="C"/>
                   <xsd:enumeration value="CPP"/>

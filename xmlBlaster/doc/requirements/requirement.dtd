@@ -5,7 +5,7 @@ Name:      requirement.dtd
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Validates xml requirements
-Version:   $Id: requirement.dtd,v 1.13 2001/01/07 15:02:48 ruff Exp $
+Version:   $Id: requirement.dtd,v 1.14 2001/12/08 23:02:25 ruff Exp $
 -->
 
 <!ELEMENT requirement (
@@ -67,7 +67,7 @@ Version:   $Id: requirement.dtd,v 1.13 2001/01/07 15:02:48 ruff Exp $
           type (NEW | BUG) "NEW"
           status (OPEN | INWORK | CLOSED) "OPEN">
 
-<!ATTLIST example lang (Java | C | CPP | Perl | Python | TCL | Javascript) "Java">
+<!ATTLIST example lang (any | XML | Java | C | CPP | Perl | Python | TCL | Javascript) "Java">
 
 <!--
    The type API allows the XSL to create a link into the xmlBlaster javadoc
