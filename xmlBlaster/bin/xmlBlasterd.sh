@@ -20,7 +20,7 @@ APP_NAME="xmlBlaster"
 APP_LONG_NAME="xmlBlaster"
 
 # Wrapper
-WRAPPER_CMD="$XMLBLASTER_HOME/rc/wrapper"
+WRAPPER_CMD="$XMLBLASTER_HOME/bin/wrapper"
 WRAPPER_CONF="$XMLBLASTER_HOME/config/wrapper.conf"
 
 # Priority (see the start() method if you want to use this) 
