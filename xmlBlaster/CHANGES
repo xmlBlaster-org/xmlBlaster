@@ -58,7 +58,12 @@ Changes for 0.79b [March, 11 2000]
  - Changed code to conform to SAX2
 
  - Login QoS has no <noPtP> element anymore, this is set
-   for each CallbackAddress from now on.
+   for each CallbackAddress from now on, e.g.:
+     <callback type='IOR'>
+        http:/www.mars.universe:8080/RPC2
+        <PtP>false</PtP> <!-- Set this flag if you don't want to receive any PtP messages -->
+                         <!-- prevents 'spamming' -->
+     </callback>
 
 
 Changes for 0.79a [Nov, 16 2000]
