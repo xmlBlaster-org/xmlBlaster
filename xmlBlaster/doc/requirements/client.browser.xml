@@ -7,13 +7,30 @@
       closing HTTP connection.
    </topic>
    <description>
+      <h2>What is this?</h2>
+      <p>
+      When distributing dynamic, event driven content over the internet, you usually choose an applet.
+      The applet connects to the server over CORBA (or any other protocol) and may receive
+      instant notification from the server.
+      But applets produce some well known problems like higher download time,
+      firewalls which won't allow TCP/IP connections, applet-javascript communication
+      problems with some Java-VM's etc.
+      Note however that our requirement <i>client.java.applet</i> solves most of those problems.
+      </p>
+      <p>
+      This framework addresses these issues.
+      It establishes a persistent http connection to allow instant callbacks of xmlBlaster messages to the browser.
+      </p>  
       The browser callback framework is based on Java Servlets and some Javascript code.<p />
       The Java Servlet <code>BlasterHttpProxyServlet.java</code> keeps
       a permanent HTTP connection to the browser and a CORBA connection to
       xmlBlaster.
       <p />
-      Features:
+      <center><img src="CallbackServletHttpDriver.gif" name="persistentHttp" align="center" border="1"/></center>
+
+      <h2>Features</h2>
       <ul>
+         <li>Complete object oriented xmlBlaster access in the browser with Javascript, see callback.js</li>
          <li>The Javascript files callback.js and util.js provide the functionality
          on the browser side, xparse.js allows to parse the xml messages in the browser.</li>
          <li>Very frequent message updates break the browsers, therefor the
@@ -50,6 +67,36 @@
    // xmlBlaster will read these variables and use them to login to xmlBlaster.
       </pre>
 
+      <h2>How does it work?</h2>
+
+   <p>A callback frame in the browser refers to the BlasterHttpProxyServlet. 
+   Using the ActionType parameter set to login, the BrowserHttpProxyServlet holds the HTTP connection
+   if login to the xmlBlaster succeeds.<br />
+   This permanent HTTP connection is held by the HttpPushHandler, which pings each
+   40 sec the browser. This functionality ensures that the browser won't close the connection.
+   </p>
+   <p>The ProxyConnection connects to xmlBlaster using CORBA or any other supported protocol.</p>
+   <p>The messages from the xmlBlaster are directly (ProxyConnection.update - HttpPushHandler.update) 
+   transferred to the browser, which has a Javascript
+   based XML parser and notifies the interested browser frames about the callback.
+   <br />
+   You can provide as many own frames as you wish. This is the work which
+   is left for you to design your web layout.
+   </p>
+   <p>If you have too many messages in a short time frame, your browser won't process all of this
+   message. For this you can use an additional ready frame. Connect this frame also with
+   the BlasterHttpProxyServlet using ActionType=browserReady. Each reload of this frame
+   indicates your permanent HTTP connection (HttpPushHandler) that your browser is ready to
+   process more messages. HttpPushHandler will send you the whole queue each update.
+   <br />The hidden callback frame is always necessary to handle the communication,
+   in your parent frame you have to include callback.js, util.js and xparse.js.
+   </p>
+   <p>For Servlet and Javascript examples have a look into the following directory
+   of the xmlBlaster distribution:
+   </p>
+   <pre>xmlBlaster/src/java/org/xmlBlaster/protocol/http</pre>
+
+
    </description>
    <example type="HTML">
    <p>You can try the persistent http online demo first:</p>
@@ -58,8 +105,8 @@
    Online persistent HTTP demo</a>
    </p>
    <p>
-   It will work with mozilla and netscape.
-   With Opera and IE i think there are problems which are not tracked down.
+   It will work with mozilla, netscape and a newer Opera.
+   With IE i think there are problems which are not tracked down.
    </p>
    </example>
    <example lang="Java">
@@ -258,12 +305,18 @@ ActionType=login&amp;xmlBlaster.loginName=joe&amp;xmlBlaster.passwd=secret
    <see>org.xmlBlaster.protocol.http.BlasterHttpProxyServlet</see>
    <see>org.xmlBlaster.protocol.http.HttpPushHandler</see>
    <see>html.systemInfo.SystemInfo</see>
+   <see type="REQ">client.java.applet</see>
+   <see type="INTERNET">http://jakarta.apache.org/tomcat/</see>
+   <see type="INTERNET">http://www.xmlblaster.org/xmlBlaster/demo/http/index.html</see>
+   <see type="INTERNET">http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/http/javascript/callback.js</see>
+   <see type="INTERNET">http://www.xmlBlaster.org:8080/xmlBlaster/index.html</see>
+
    <author>xmlBlaster@marcelruff.info</author>
    <hacker>Konrad.Krafft@ds.de</hacker>
    <hacker>xmlBlaster@marcelruff.info</hacker>
    <effort>12</effort>
    <date>2000 05 06</date>
-   <revision>$Revision: 1.15 $</revision>
+   <revision>$Revision: 1.16 $</revision>
    <testcase status="INWORK">
       <name>-</name>
       <comment>It is not simple to provide a fully automated testsuite for this case</comment>
