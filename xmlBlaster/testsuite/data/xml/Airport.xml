@@ -4,12 +4,14 @@
         java sax.SAXCount Airport.xml -->
 <!-- Sample query:
         java DomQueryTest Airport.xml \*/\*/Airport -->
+<!-- java DomQueryTest Airport.xml "/subscribe/key/Airport/Runway/WindVeloc/text()" -->
 
 <subscribe>
    <key oid="EDDI-A">
-      <Airport icao="EDDI">
+      <Airport icao="EDDI">AIR
          <Runway id="1">
            <WindVeloc w_id="1">
+             HELLO
            </WindVeloc>
          </Runway>
       </Airport>
