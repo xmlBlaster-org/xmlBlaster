@@ -1,4 +1,4 @@
-/*-----------------------------------------------------------------------------
+/*-----------------------------------------------------------------------------
 Name:      Sax2Parser.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
@@ -10,6 +10,7 @@ Comment:   Default handling of Sax callbacks
 
 #include <util/xmlBlasterDef.h>
 #include <util/parser/I_Parser.h>
+#include <util/plugin/I_Plugin.h>
 #include <string>
 #include <sax2/DefaultHandler.hpp>
 #include <util/XMLString.hpp>
@@ -26,7 +27,9 @@ namespace org { namespace xmlBlaster { namespace util { namespace parser {
  * Default xmlBlaster handling of Sax callbacks and errors.<p />
  * You may use this as a base class for your SAX handling.
  */
-class Dll_Export Sax2Parser : public I_Parser, public DefaultHandler {
+class Dll_Export Sax2Parser : public I_Parser, public DefaultHandler,
+                              public virtual org::xmlBlaster::util::plugin::I_Plugin
+{
    
 private:
    std::string ME;
@@ -198,6 +201,19 @@ protected:
    /** Receive notification of ignorable whitespace in element content. */
    // void ignorableWhitespace(const XMLCh *const chars, const unsigned int length);
 
+   /**
+    * Get the name of the plugin. 
+    * @return "XERCES"
+    * @enforcedBy I_Plugin
+    */
+   std::string getType() { static std::string type = "XERCES"; return type; }
+
+   /**
+    * Get the version of the plugin. 
+    * @return "1.0"
+    * @enforcedBy I_Plugin
+    */
+   std::string getVersion() { static std::string version = "1.0"; return version; }
 };
 }}}} // namespace
 
