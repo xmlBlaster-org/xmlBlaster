@@ -13,6 +13,7 @@ Comment:   The client driver for the socket protocol
 #include <util/qos/ConnectQosFactory.h>
 #include <string>
 #include <stdarg.h> // va_start
+#include <stdio.h> // vsnprintf for g++ 2.9x only
 
 static void myLogger(void *logUserP, 
                      XMLBLASTER_LOG_LEVEL currLevel,
