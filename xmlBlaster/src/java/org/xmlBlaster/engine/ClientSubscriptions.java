@@ -219,6 +219,7 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
     *         same message, or null if this session has not subscribed it
     */
    public Vector getSubscriptionByOid(SessionInfo sessionInfo, String keyOid, boolean exactOnly) throws XmlBlasterException {
+      if (keyOid == null || sessionInfo==null) return null;
       Object obj;
       Map subMap;
       synchronized(clientSubscriptionMap) {
