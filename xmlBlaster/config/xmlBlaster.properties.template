@@ -175,14 +175,16 @@ LogFormat.Time=MEDIUM
 # supported and implemented tpyes and versions of persistence plugins:
 #
 #         || Type                |
+#         |+===========+=========+
 #         || filestore | xmldb   |
-# ========++===========+=========+
+# ========++-----------+---------+
 # Version || 1.0       | xindice |
 #         ||           |         |
 #         ||           |         |
 #
 
 # Lazy recover (not at server startup but on demand) is not yet supported.
+Persistence.Driver[xmldb][xindice]=org.xmlBlaster.engine.persistence.xmldb.XMLDBPlugin
 Persistence.LazyRecovery=true
 
 Persistence.Driver.Type=filestore
