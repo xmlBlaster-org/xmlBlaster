@@ -1,4 +1,5 @@
 // xmlBlaster/demo/javaclients/HelloWorld3.java
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.*;
 import org.xmlBlaster.client.*;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
@@ -24,7 +25,10 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  */
 public class HelloWorld3 implements I_Callback
 {
+   private final LogChannel log;
+
    public HelloWorld3(Global glob) {
+      log = glob.getLog(null);
       try {
          XmlBlasterConnection con = new XmlBlasterConnection(glob);
 
@@ -46,7 +50,7 @@ public class HelloWorld3 implements I_Callback
          GetKeyWrapper gk = new GetKeyWrapper("HelloWorld3");
          MessageUnit[] msgs = con.get(gk.toXml(), null);
 
-         Log.info("", "Accessed xmlBlaster message with content '" + new String(msgs[0].getContent()) + "'");
+         log.info("", "Accessed xmlBlaster message with content '" + new String(msgs[0].getContent()) + "'");
 
 
          SubscribeKeyWrapper sk = new SubscribeKeyWrapper("HelloWorld3");
@@ -74,7 +78,7 @@ public class HelloWorld3 implements I_Callback
          con.disconnect(dq);
       }
       catch (Exception e) {
-         Log.panic("", e.toString());
+         log.error("", e.toString());
       }
    }
 
@@ -82,12 +86,12 @@ public class HelloWorld3 implements I_Callback
                         UpdateQos updateQos)
    {
       if (updateKey.isInternal()) {
-         Log.info("", "Received unexpected internal message '" +
+         log.info("", "Received unexpected internal message '" +
               updateKey.getOid() + " from xmlBlaster");
          return "";
       }
 
-      Log.info("", "Received asynchronous message '" + updateKey.getOid() +
+      log.info("", "Received asynchronous message '" + updateKey.getOid() +
                    "' state=" + updateQos.getState() +
                    " content=" + new String(content) + " from xmlBlaster");
       return "";
@@ -105,8 +109,8 @@ public class HelloWorld3 implements I_Callback
       
       if (glob.init(args) != 0) { // Get help with -help
          XmlBlasterConnection.usage();
-         Log.usage();
-         Log.exit("", "Example: java HelloWorld3 -loginName Jeff\n");
+         System.err.println("Example: java HelloWorld3 -loginName Jeff\n");
+         System.exit(1);
       }
 
       new HelloWorld3(glob);

@@ -1,6 +1,10 @@
 // xmlBlaster/demo/javaclients/HelloWorld4.java
 import org.jutils.log.LogChannel;
-import org.xmlBlaster.util.*;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.ConnectQos;
+import org.xmlBlaster.util.ConnectReturnQos;
+import org.xmlBlaster.util.DisconnectQos;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.*;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -165,7 +169,8 @@ public class HelloWorld4
       
       if (glob.init(args) != 0) { // Get help with -help
          XmlBlasterConnection.usage();
-         Log.exit("", "Example: java HelloWorld4 -loginName Jeff\n");
+         System.err.println("Example: java HelloWorld4 -loginName Jeff\n");
+         System.exit(1);
       }
 
       new HelloWorld4(glob);

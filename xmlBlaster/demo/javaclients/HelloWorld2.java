@@ -1,5 +1,5 @@
 // xmlBlaster/demo/javaclients/HelloWorld2.java
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.client.I_Callback;
@@ -33,7 +33,7 @@ public class HelloWorld2 implements I_Callback
 
          try {
             Thread.currentThread().sleep(1000); // wait a second
-            Log.info("", "Hit a key to logout and terminate ...");
+            System.out.println("\nHit a key to logout and terminate ...");
             System.in.read();
          } catch(Exception e) { }
 
@@ -41,14 +41,14 @@ public class HelloWorld2 implements I_Callback
          con.disconnect(null);
       }
       catch (Exception e) {
-         Log.panic("", e.toString());
+         System.err.println(e.toString());
       }
    }
 
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content,
                         UpdateQos updateQos)
    {
-      Log.info("HelloWorld2", "Received asynchronous message '" +
+      System.out.println("\nHelloWorld: Received asynchronous message '" +
          updateKey.getOid() + "' state=" + updateQos.getState() + " from xmlBlaster");
       return "";
    }
