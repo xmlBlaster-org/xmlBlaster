@@ -248,7 +248,17 @@ void PublishDemo::publish()
 
       log_.info(ME, "mapSize=" + lexical_cast<string>(clientPropertyMap.size()) + " PublishQos: " + pq.toXml());
 
-      MessageUnit msgUnit(key, contentStr, pq);
+      string contentTmp = contentStr;
+      if (contentSize >= 0) {
+         contentTmp = "";
+         for (int j=0; j<contentSize; j++)
+            contentTmp += "X";
+      }
+      else {
+         contentTmp = StringTrim::replaceAll(contentTmp, "%counter", lexical_cast<string>(i+1));
+      }
+
+      MessageUnit msgUnit(key, contentTmp, pq);
       log_.trace(ME, string("published message unit: ") + msgUnit.toXml());
       PublishReturnQos tmp = connection_.publish(msgUnit);
       log_.trace(ME, string("publish return qos: ") + tmp.toXml());
