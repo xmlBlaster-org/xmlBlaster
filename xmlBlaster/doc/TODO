@@ -1,5 +1,12 @@
 FEATURES
 --------
+o build deploy_war-only
+  fails for JDK 1.5
+
+o Add receiveTimestampHumanReadable to QueryQos (SubscribeQos and GetQos)
+
+o JDBC service fails with JDK 1.5
+
 o Subscribe can have a timeout
 
 o Erase variant which respects existing subscriptions
