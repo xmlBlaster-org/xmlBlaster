@@ -3,7 +3,7 @@ Name:      RmiDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   RmiDriver class to invoke the xmlBlaster server using RMI.
-Version:   $Id: RmiDriver.java,v 1.15 2000/10/27 12:28:35 ruff Exp $
+Version:   $Id: RmiDriver.java,v 1.16 2001/02/14 00:41:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
@@ -143,9 +143,18 @@ public class RmiDriver implements I_Driver
 
       try {
          if (authBindName != null) Naming.unbind(authBindName);
-         if (xmlBlasterBindName != null) Naming.unbind(xmlBlasterBindName);
+         // force shutdown, even if we still have calls in progress:
+         java.rmi.server.UnicastRemoteObject.unexportObject(authRmiServer, true);
       } catch (Exception e) {
-         ;
+         Log.warn(ME, "Can't shutdown authentication server: " + e.toString());
+      }
+
+      try {
+         if (xmlBlasterBindName != null) Naming.unbind(xmlBlasterBindName);
+         // force shutdown, even if we still have calls in progress:
+         java.rmi.server.UnicastRemoteObject.unexportObject(xmlBlasterRmiServer, true);
+      } catch (Exception e) {
+         Log.warn(ME, "Can't shutdown xmlBlaster server: " + e.toString());
       }
 
       Log.info(ME, "RMI driver stopped, naming entries released.");
