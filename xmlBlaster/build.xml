@@ -433,7 +433,15 @@ TODO
             <exclude name="**/*.pl"/>
             <exclude name="**/*.py"/>
             <exclude name="**/XmlRpcHttpClient.java"/>
-            <exclude name="javaclients/Hello*.java"/>
+            <exclude name="javaclients/HelloWorld.java"/>
+            <exclude name="javaclients/HelloWorld2.java"/>
+            <exclude name="javaclients/HelloWorld3.java"/>
+            <exclude name="javaclients/HelloWorld4.java"/>
+            <exclude name="javaclients/HelloWorld5.java"/>
+            <exclude name="javaclients/HelloWorld6.java"/>
+            <exclude name="javaclients/HelloWorldMime.java"/>
+            <exclude name="javaclients/HelloWorldVolatile.java"/>
+            <exclude name="javaclients/HelloWorldVolatile2.java"/>
             <exclude name="javaclients/Latency.java"/>
             <exclude name="javaclients/PtpReceive.java"/>
             <exclude name="javaclients/PtpSend.java"/>
@@ -447,7 +455,15 @@ TODO
       <!-- residing in the path where they belong to regarding to their packet instruction. -->
       <copy todir="${build.src}/demo">
          <fileset dir="${demo.java.dir}">
-            <include name="Hello*.java"/>
+            <include name="javaclients/HelloWorld.java"/>
+            <include name="javaclients/HelloWorld2.java"/>
+            <include name="javaclients/HelloWorld3.java"/>
+            <include name="javaclients/HelloWorld4.java"/>
+            <include name="javaclients/HelloWorld5.java"/>
+            <include name="javaclients/HelloWorld6.java"/>
+            <include name="javaclients/HelloWorldMime.java"/>
+            <include name="javaclients/HelloWorldVolatile.java"/>
+            <include name="javaclients/HelloWorldVolatile2.java"/>
             <include name="Latency.java"/>
             <include name="PtpReceive.java"/>
             <include name="PtpSend.java"/>
