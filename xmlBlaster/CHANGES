@@ -12,6 +12,11 @@ TODO:
 * Remove thread save gap in RequestBroker:publish()
 * Test: Perl client ...
 * Security demo with Bit Cypher: http://www.alphaworks.ibm.com/tech/abc?open
+* Change to Sun coding convention: http://checkstyle.sourceforge.net/
+
+BUGS:
+
+* In the XmlBlaster GUI the XPath query fails (login is not supported any more).
 
 DONE:
   - Renamed SubscribeFilter to AccessFilter
