@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, using org.jutils
-Version:   $Id: Global.java,v 1.13 2002/05/11 20:59:32 ruff Exp $
+Version:   $Id: Global.java,v 1.14 2002/05/11 21:15:46 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -172,13 +172,20 @@ public class Global implements Cloneable
    }
 
    /**
+    * If the log channel for the given key is not known, a new channel is created. 
     * @param if null, the default log channel is returned
     * @see #addLogChannel(String, LogChannel)
     */
    public LogChannel getLog(String key) {
       if (key == null)
          return logDefault;
-      return (LogChannel)logChannels.get(key);
+      Object obj = logChannels.get(key);
+      if (obj != null)
+         return (LogChannel)obj;
+
+      LogChannel lc = new LogChannel(key, getProperty());
+      addLogChannel(lc);
+      return lc;
    }
 
    /**
