@@ -2,7 +2,7 @@
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
 <requirement id='engine.persistence.FileDriver' type='NEW' prio='MEDIUM' status="CLOSED">
-   <topic>XmlBlaster provides a simple file based persistence layer to store messages marked wit &lt;isDurable/></topic>
+   <topic>XmlBlaster provides a simple file based persistence layer to store messages marked with &lt;isDurable/></topic>
    <description>
       To store messages and to restore them again after a new
       startup of the xmlBlaster server there is a lightweight interface,
@@ -25,7 +25,7 @@
    <see>org.xmlBlaster.engine.persistence.filestore.FileDriver</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 02 23</date>
-   <revision>$Revision: 1.6 $</revision>
+   <revision>$Revision: 1.7 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
