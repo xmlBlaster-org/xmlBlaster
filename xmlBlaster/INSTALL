@@ -126,3 +126,20 @@ AWARE: The current COPE Version 0.50_51 has problems with oneway methods
    c++  -I. -I$MICO_HOME/include -I$MICO_HOME/include/ministl  -O   -fno-exceptions -fexceptions -O0 -L$MICO_HOME/libs -L/usr/local/lib  -rdynamic irior.o -lmico2.3.0 -lreadline -lncurses -ldl -lm   -o irior
 
 4) idl2perl -imp xmlBlaster.idl
+
+
+
+-------------------------------------------------------------------------
+Tcl clients with TclMico http://www.mico.org/
+ tclmico-0.5c.tar.gz
+
+
+-------------------------------------------------------------------------
+Python clients with Fnorb-1.01 http://www.dstc.edu.au/Products/Fnorb/
+ fnorb-1.01.tar.gz
+ cd src
+ make -f Makefile.pre.in boot 
+ FNORB_HOME=/Where/You/Put/Fnorb 
+ export PATH=$PATH:$FNORB_HOME/Fnorb/script 
+ export PYTHONPATH=$PYTHONPATH:$FNORB_HOME 
+
