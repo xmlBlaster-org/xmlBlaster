@@ -3,7 +3,7 @@ Name:      XmlRpcConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native xmlBlaster Proxy. Can be called by the client in the same VM
-Version:   $Id: XmlRpcConnection.java,v 1.11 2001/08/23 11:33:45 ruff Exp $
+Version:   $Id: XmlRpcConnection.java,v 1.12 2001/09/01 09:27:07 ruff Exp $
 Author:    michele.laghi@attglobal.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.xmlrpc;
@@ -161,10 +161,10 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    }
 
 
-   public void init(LoginQosWrapper qos, I_CallbackExtended client) throws XmlBlasterException, ConnectionException
+   public void connect(LoginQosWrapper qos, I_CallbackExtended client) throws XmlBlasterException, ConnectionException
    {
       if (qos == null)
-         throw new XmlBlasterException(ME+".init()", "Please specify a valid QoS");
+         throw new XmlBlasterException(ME+".connect()", "Please specify a valid QoS");
 
       this.ME = "XmlRpcConnection-" + qos.getUserId();
       if (Log.CALL) Log.call(ME, "Entering login: name=" + qos.getUserId());

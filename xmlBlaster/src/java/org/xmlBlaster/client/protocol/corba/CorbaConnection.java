@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.22 2001/09/01 09:18:25 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.23 2001/09/01 09:27:07 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -66,7 +66,7 @@ import java.io.IOException;
  * first time the ORB is created.<br />
  * This will be fixed as soon as possible.
  *
- * @version $Revision: 1.22 $
+ * @version $Revision: 1.23 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class CorbaConnection implements I_XmlBlasterConnection
@@ -464,13 +464,13 @@ public class CorbaConnection implements I_XmlBlasterConnection
     * @param client    Your implementation of I_CallbackExtended, or null if you don't want any updates.
     * @exception       XmlBlasterException if login fails
     */
-   public void init(LoginQosWrapper qos, I_CallbackExtended client) throws XmlBlasterException, ConnectionException
+   public void connect(LoginQosWrapper qos, I_CallbackExtended client) throws XmlBlasterException, ConnectionException
    {
       if (qos == null)
-         throw new XmlBlasterException(ME+".init()", "Please specify a valid QoS");
+         throw new XmlBlasterException(ME+".connect()", "Please specify a valid QoS");
 
       this.ME = "CorbaConnection-" + qos.getUserId();
-      if (Log.CALL) Log.call(ME, "init() ...");
+      if (Log.CALL) Log.call(ME, "connect() ...");
       if (xmlBlaster != null) {
          Log.warn(ME, "You are already logged in.");
          return;

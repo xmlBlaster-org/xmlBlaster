@@ -228,6 +228,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       initArgs(args);
       initSecuritySettings();
       initDriver(driverType);
+      initFailSave(null);
    }
 
 
@@ -486,7 +487,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
             // We switch to init() variant ....
             qosWrapper.setUserId(loginName);
             qosWrapper.setCredential(passwd);
-            init(qos, client);
+            connect(qos, client);
             return;
          }
          else {
@@ -541,18 +542,18 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     *                  you have to pass at least the authentication tags
     * @exception       XmlBlasterException if login fails
     */
-   public void init(LoginQosWrapper qos, I_Callback client) throws XmlBlasterException
+   public void connect(LoginQosWrapper qos, I_Callback client) throws XmlBlasterException
    {
       if (qos.getSecurityPluginType() == null || qos.getSecurityPluginType().length() < 1)
          throw new XmlBlasterException(ME+".authentication", "Please add your authentication in your login QoS");
 
       this.ME = "XmlBlasterConnection-" + qos.getSecurityPluginType();
       this.updateClient = client;
-      if (Log.CALL) Log.call(ME, "init() ...");
-      if (Log.DUMP) Log.dump(ME, "init() " + (client==null?"with":"without") + " callback qos=\n" + qos.toXml());
+      if (Log.CALL) Log.call(ME, "connect() ...");
+      if (Log.DUMP) Log.dump(ME, "connect() " + (client==null?"with":"without") + " callback qos=\n" + qos.toXml());
        try {
          // 'this' forces to invoke our update() method which we then delegate to the updateClient
-         driver.init(qos, (client != null) ? this : null);
+         driver.connect(qos, (client != null) ? this : null);
          numLogins++;
       }
       catch(ConnectionException e) {
