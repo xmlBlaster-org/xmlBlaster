@@ -3,6 +3,10 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes for 0.xxx [xx, xxx 2003]
 ================================
 
+ o Removed deprecated property scanning precedence, see PropEnv.java
+
+ o BUGFIX to report nicer wrong configuration setting
+
  o BUGFIX  '-pluginsFile /yourdirectory/yourfile.xml' works now
    as expected
 
