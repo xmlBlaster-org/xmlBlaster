@@ -375,7 +375,7 @@ void SocketDriver::initialize(const string& name, I_Callback &client)
    try {
       if (log_.trace()) log_.trace(ME, "Before createCallbackServer");
       if (connection_->initialize(connection_, myUpdate, &socketException) == false) {
-         log_.error(ME, "Connection to xmlBlaster failed,"
+         log_.warn(ME, "Connection to xmlBlaster failed,"
                 " please start the server or check your configuration\n");
          freeResources(true);
       }
