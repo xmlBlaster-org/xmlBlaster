@@ -33,9 +33,7 @@ public class UnSubscribeKeyWrapper
     * @param queryType    The query syntax, only "XPATH" for the moment
     */
    public UnSubscribeKeyWrapper(String queryString, String queryType) throws XmlBlasterException {
-      this.queryKeyData = new QueryKeyData(Global.instance());
-      this.queryKeyData.setQueryString(queryString);
-      this.queryKeyData.setQueryType(queryType);
+      this.queryKeyData = new QueryKeyData(null, queryString, queryType);
    }
 
    public String getOid() {

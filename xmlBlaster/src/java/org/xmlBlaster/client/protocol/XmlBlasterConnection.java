@@ -1455,6 +1455,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    public final SubscribeReturnQos subscribe(String xmlKey, String qos) throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "subscribe() ...");
+      if (log.DUMP) log.dump(ME, "subscribe key=" + xmlKey + "\nsubscribe qos=" + qos);
       try {
          return subscribeRaw(xmlKey, qos);
       } catch(XmlBlasterException e) {
