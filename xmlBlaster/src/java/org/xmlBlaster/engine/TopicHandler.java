@@ -615,6 +615,9 @@ public final class TopicHandler implements I_Timeout
    }
 
    public MsgUnitWrapper getMsgUnitWrapper(long uniqueId) throws XmlBlasterException {
+      if (this.msgUnitCache == null) { // on startup
+         return null;
+      }
       return (MsgUnitWrapper)this.msgUnitCache.get(uniqueId);
    }
 
