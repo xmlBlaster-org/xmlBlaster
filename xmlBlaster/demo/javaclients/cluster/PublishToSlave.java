@@ -16,8 +16,9 @@ import org.xmlBlaster.engine.helper.MessageUnit;
 public class PublishToSlave implements I_Callback
 {
    public PublishToSlave(Global glob) {
+      XmlBlasterConnection con = null;
       try {
-         XmlBlasterConnection con = new XmlBlasterConnection(glob);
+         con = new XmlBlasterConnection(glob);
 
          // Check if other name or password was given on command line:
          String name = glob.getProperty().get("name", "PublishToSlave");
@@ -29,29 +30,26 @@ public class PublishToSlave implements I_Callback
          PublishKeyWrapper pk = new PublishKeyWrapper("PublishToSlave", "text/xml", "1.0", "RUGBY_NEWS");
          PublishQosWrapper pq = new PublishQosWrapper();
          MessageUnit msgUnit = new MessageUnit(pk.toXml(), "We won".getBytes(), pq.toXml());
-         con.publish(msgUnit);
-
-         Log.info("PublishToSlave", "Published message of domain='" + pk.getDomain() + "' to xmlBlaster node");
-
-         try { Thread.currentThread().sleep(1000); } 
-         catch( InterruptedException i) {} // wait a second to receive update()
-
+         String retQos = con.publish(msgUnit);
+         Log.info("PublishToSlave", "Published message of domain='" + pk.getDomain() + "' to xmlBlaster node, the returned QoS is: " + retQos);
+      }
+      catch (Exception e) {
+         Log.error("PublishToSlave-Exception", e.toString());
+      }
+      finally {
          System.out.println("Hit a key to quit ...");
-         System.in.read();
+         try { System.in.read(); } catch(Exception e2) { }
 
          /*
          EraseKeyWrapper ek = new EraseKeyWrapper("PublishToSlave");
          EraseQosWrapper eq = new EraseQosWrapper();
          con.erase(ek.toXml(), uq.toXml());
          */
-
-         DisconnectQos dq = new DisconnectQos();
-         con.disconnect(dq);
-      }
-      catch (Exception e) {
-         Log.error("PublishToSlave", e.toString());
-         System.out.println("Hit a key to quit ...");
-         try { System.in.read(); } catch(Exception e2) { }
+         
+         if (con != null) {
+            DisconnectQos dq = new DisconnectQos();
+            con.disconnect(dq);
+         }
       }
 
       Log.exit("PublishToSlave", "Bye");
