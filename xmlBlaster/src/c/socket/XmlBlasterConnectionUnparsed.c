@@ -31,7 +31,7 @@ static char *xmlBlasterSubscribe(XmlBlasterConnectionUnparsed *xb, const char * 
 static QosArr *xmlBlasterUnSubscribe(XmlBlasterConnectionUnparsed *xb, const char * const key, const char * qos, XmlBlasterException *exception);
 static QosArr *xmlBlasterErase(XmlBlasterConnectionUnparsed *xb, const char * const key, const char * qos, XmlBlasterException *exception);
 static MsgUnitArr *xmlBlasterGet(XmlBlasterConnectionUnparsed *xb, const char * const key, const char * qos, XmlBlasterException *exception);
-static char *xmlBlasterPing(XmlBlasterConnectionUnparsed *xb, const char * const qos);
+static char *xmlBlasterPing(XmlBlasterConnectionUnparsed *xb, const char * const qos, XmlBlasterException *exception);
 static bool isConnected(XmlBlasterConnectionUnparsed *xb);
 static void xmlBlasterConnectionShutdown(XmlBlasterConnectionUnparsed *xb);
 static bool checkArgs(XmlBlasterConnectionUnparsed *xb, const char *methodName, XmlBlasterException *exception);
@@ -836,20 +836,21 @@ static QosArr *xmlBlasterErase(XmlBlasterConnectionUnparsed *xb, const char * co
 /**
  * Ping the server. 
  * @param qos The QoS or 0
- * @return The ping return QoS raw xml string, you need to free() it or 0 on failure
+ * @param exception *errorCode!=0 on failure
+ * @return The ping return QoS raw xml string, you need to free() it
+ *         or 0 on failure (in which case *exception.errorCode!='\0')
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
  */
-static char *xmlBlasterPing(XmlBlasterConnectionUnparsed *xb, const char * const qos)
+static char *xmlBlasterPing(XmlBlasterConnectionUnparsed *xb, const char * const qos, XmlBlasterException *exception)
 {
    SocketDataHolder responseSocketDataHolder;
    char *response;
-   XmlBlasterException exception;
 
-   if (!xb->isInitialized || !xb->isConnected(xb)) return (char *)0;
+   if (checkArgs(xb, "ping", exception) == false ) return 0;
    
    if (sendData(xb, XMLBLASTER_PING, MSG_TYPE_INVOKE, (const char *)qos,
                 (qos == (const char *)0) ? 0 : strlen(qos),
-                &responseSocketDataHolder, &exception) == false) {
+                &responseSocketDataHolder, exception) == false) {
       return (char *)0;
    }
 

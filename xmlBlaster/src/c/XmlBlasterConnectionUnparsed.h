@@ -37,7 +37,7 @@ typedef char *( * XmlBlasterConnectionUnparsedSubscribe)(XmlBlasterConnectionUnp
 typedef QosArr *( * XmlBlasterConnectionUnparsedUnSubscribe)(XmlBlasterConnectionUnparsed *xb, const char * const key, const char * qos, XmlBlasterException *exception);
 typedef QosArr *( * XmlBlasterConnectionUnparsedErase)(XmlBlasterConnectionUnparsed *xb, const char * const key, const char * qos, XmlBlasterException *exception);
 typedef MsgUnitArr *( * XmlBlasterConnectionUnparsedGet)(XmlBlasterConnectionUnparsed *xb, const char * const key, const char * qos, XmlBlasterException *exception);
-typedef char *( * XmlBlasterConnectionUnparsedPing)(XmlBlasterConnectionUnparsed *xb, const char * const qos);
+typedef char *( * XmlBlasterConnectionUnparsedPing)(XmlBlasterConnectionUnparsed *xb, const char * const qos, XmlBlasterException *exception);
 typedef bool  ( * XmlBlasterConnectionUnparsedIsConnected)(XmlBlasterConnectionUnparsed *xb);
 typedef void  ( * XmlBlasterConnectionUnparsedShutdown)(XmlBlasterConnectionUnparsed *xb);
 typedef MsgRequestInfo *( * XmlBlasterConnectionUnparsedPreSendEvent)(void *userP, MsgRequestInfo *msgRequestInfo, XmlBlasterException *exception);

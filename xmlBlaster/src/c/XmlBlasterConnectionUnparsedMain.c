@@ -78,9 +78,10 @@ int main(int argc, char** argv)
    }
 
    {
-      response = xb->ping(xb, 0);
+      response = xb->ping(xb, 0, &xmlBlasterException);
       if (response == (char *)0) {
-         printf("[XmlBlasterConnectionUnparsedMain] ERROR: Pinging a connected server failed\n");
+         printf("[XmlBlasterConnectionUnparsedMain] ERROR: Pinging a connected server failed:  errorCode=%s, message=%s\n",
+                 xmlBlasterException.errorCode, xmlBlasterException.message);
       }
       else {
          printf("[XmlBlasterConnectionUnparsedMain] Pinging a connected server, response=%s\n", response);

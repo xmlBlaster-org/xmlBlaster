@@ -116,8 +116,9 @@ static const char * test_methods()
       printf("[client] Connected to xmlBlaster, do some tests ...\n");
    }
 
-   response = xa->ping(xa, 0);
+   response = xa->ping(xa, 0, &xmlBlasterException);
    mu_assert("[TEST FAIL] Pinging a connected server failed", response != (char *)0);
+   mu_assert("[TEST FAIL] Pinging a connected server failed", *xmlBlasterException.errorCode == 0);
    printf("[client] Pinging a connected server, response=%s\n", response);
    free(response);
 

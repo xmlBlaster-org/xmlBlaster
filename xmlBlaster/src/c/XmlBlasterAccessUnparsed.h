@@ -76,7 +76,7 @@ typedef char *( * XmlBlasterAccessUnparsedSubscribe)(struct XmlBlasterAccessUnpa
 typedef QosArr *( * XmlBlasterAccessUnparsedUnSubscribe)(struct XmlBlasterAccessUnparsed *xb, const char * const key, const char * qos, XmlBlasterException *exception);
 typedef QosArr *( * XmlBlasterAccessUnparsedErase)(struct XmlBlasterAccessUnparsed *xb, const char * const key, const char * qos, XmlBlasterException *exception);
 typedef MsgUnitArr *( * XmlBlasterAccessUnparsedGet)(struct XmlBlasterAccessUnparsed *xb, const char * const key, const char * qos, XmlBlasterException *exception);
-typedef char *( * XmlBlasterAccessUnparsedPing)(struct XmlBlasterAccessUnparsed *xb, const char * const qos);
+typedef char *( * XmlBlasterAccessUnparsedPing)(struct XmlBlasterAccessUnparsed *xb, const char * const qos, XmlBlasterException *exception);
 typedef bool  ( * XmlBlasterAccessUnparsedIsConnected)(struct XmlBlasterAccessUnparsed *xb);
 typedef void  ( * XmlBlasterLogging)(XMLBLASTER_LOG_LEVEL currLevel, XMLBLASTER_LOG_LEVEL level, const char *location, const char *fmt, ...);
 

@@ -54,7 +54,7 @@ static char *xmlBlasterSubscribe(XmlBlasterAccessUnparsed *xa, const char * cons
 static QosArr *xmlBlasterUnSubscribe(XmlBlasterAccessUnparsed *xa, const char * const key, const char * qos, XmlBlasterException *exception);
 static QosArr *xmlBlasterErase(XmlBlasterAccessUnparsed *xa, const char * const key, const char * qos, XmlBlasterException *exception);
 static MsgUnitArr *xmlBlasterGet(XmlBlasterAccessUnparsed *xa, const char * const key, const char * qos, XmlBlasterException *exception);
-static char *xmlBlasterPing(XmlBlasterAccessUnparsed *xa, const char * const qos);
+static char *xmlBlasterPing(XmlBlasterAccessUnparsed *xa, const char * const qos, XmlBlasterException *exception);
 static bool isConnected(XmlBlasterAccessUnparsed *xa);
 static void responseEvent(void /*XmlBlasterAccessUnparsed*/ *userP, void /*SocketDataHolder*/ *socketDataHolder);
 static MsgRequestInfo *preSendEvent(void /*XmlBlasterAccessUnparsed*/ *userP, MsgRequestInfo *msgRequestInfo, XmlBlasterException *exception);
@@ -658,16 +658,16 @@ static QosArr *xmlBlasterErase(XmlBlasterAccessUnparsed *xa, const char * const 
 /**
  * Ping the server. 
  * @param qos The QoS or 0
- * @return The ping return QoS raw xml string, you need to free() it or 0 on failure
+ * @param exception *errorCode!=0 on failure
+ * @return The ping return QoS raw xml string, you need to free() it
+ *         or 0 on failure (in which case *exception.errorCode!='\0')
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
  */
-static char *xmlBlasterPing(XmlBlasterAccessUnparsed *xa, const char * const qos)
+static char *xmlBlasterPing(XmlBlasterAccessUnparsed *xa, const char * const qos, XmlBlasterException *exception)
 {
    char *p;
-   if (xa == 0 || !xa->isConnected(xa)) {
-      return 0;
-   }
-   p = xa->connectionP->ping(xa->connectionP, qos);
+   if (checkArgs(xa, "ping", true, exception) == false ) return 0;
+   p = xa->connectionP->ping(xa->connectionP, qos, exception);
    mutexUnlock(xa, 0); /* to be on the safe side */
    return p;
 }
@@ -977,9 +977,10 @@ int main(int argc, char** argv)
          printf("[client] Connected to xmlBlaster, do some tests ...\n");
       }
 
-      response = xa->ping(xa, 0);
+      response = xa->ping(xa, 0, &xmlBlasterException);
       if (response == (char *)0) {
-         printf("[client] ERROR: Pinging a connected server failed\n");
+         printf("[client] ERROR: Pinging a connected server failed: errorCode=%s, message=%s\n",
+            xmlBlasterException.errorCode, xmlBlasterException.message);
       }
       else {
          printf("[client] Pinging a connected server, response=%s\n", response);
