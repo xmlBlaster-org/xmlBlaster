@@ -527,7 +527,7 @@ public final class TopicHandler implements I_Timeout
             }
 
             initialCounter = 1; // Force referenceCount until update queues are filled (volatile messages)
-            msgUnitWrapper = new MsgUnitWrapper(glob, msgUnit, this.msgUnitCache.getStorageId(), initialCounter, 0, -1);
+            msgUnitWrapper = new MsgUnitWrapper(glob, msgUnit, this.msgUnitCache, initialCounter, 0, -1);
        
             if (log.TRACE) log.trace(ME, "msgUnitCache.put() storing message '" + msgUnit.getLogId() + "' into '" + msgUnitWrapper.getUniqueId() + "' ...");
             this.msgUnitCache.put(msgUnitWrapper);
@@ -775,12 +775,14 @@ public final class TopicHandler implements I_Timeout
       if (this.historyQueue == null) {
          return;
       }
-      int numHistory = msgUnitWrapper.getHistoryReferenceCounter();
-      if (numHistory > 0) {
-         // We need to remove it from the history queue or at least decrement the referenceCounter
-         // in which case we have a stale reference in the history queue (which should be OK, it is
-         // removed as soon as it is taken out of it)
-         msgUnitWrapper.incrementReferenceCounter((-1)*numHistory, this.historyQueue.getStorageId());
+      synchronized (msgUnitWrapper) {
+         int numHistory = msgUnitWrapper.getHistoryReferenceCounter();
+         if (numHistory > 0) {
+            // We need to remove it from the history queue or at least decrement the referenceCounter
+            // in which case we have a stale reference in the history queue (which should be OK, it is
+            // removed as soon as it is taken out of it)
+            msgUnitWrapper.incrementReferenceCounter((-1)*numHistory, this.historyQueue.getStorageId());
+         }
       }
       /*
       // Task: We need to check if msgUnitWrapper is referenced from history queue
