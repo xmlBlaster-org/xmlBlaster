@@ -242,6 +242,7 @@ public class MsgStoreCachePlugin implements I_Plugin, I_ConnectionListener, I_Ma
       if (mapEntry == null)
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "put(I_MapEntry="+mapEntry+")");
 
+      if (log.CALL) this.log.call(ME, "put mapEntry " + mapEntry.getLogId());
       XmlBlasterException e = null;
 
       String errorText = spaceLeft(mapEntry, this);
@@ -364,6 +365,7 @@ public class MsgStoreCachePlugin implements I_Plugin, I_ConnectionListener, I_Ma
     * @see I_Map#remove(I_MapEntry)
     */
    public int remove(final I_MapEntry mapEntry) throws XmlBlasterException {
+      if (log.CALL) this.log.call(ME, "Removing mapEntry " + mapEntry.getLogId());
       synchronized (this) {
          // search in RAM storage
          int num = this.transientStore.remove(mapEntry);
