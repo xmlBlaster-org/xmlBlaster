@@ -1424,7 +1424,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
       if (msgQosData.isErased()) {
          QueryKeyData key = glob.getQueryKeyFactory().readObject(updateKey.toXml());
          EraseQosServer qos = new EraseQosServer(glob, "<qos/>");
-         String[] ret = glob.getRequestBroker().erase(sessionInfo, key, qos, true);
+         String[] ret = erase(sessionInfo, key, qos, true);
          if (ret != null && ret.length > 0)
             return ret[0];
          else
