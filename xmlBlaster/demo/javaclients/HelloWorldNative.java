@@ -81,6 +81,8 @@ public class HelloWorldNative implements I_Plugin
       System.err.println("\nHelloWorldNative: shutdown()\n");
    }
 
+   public HelloWorldNative() {}
+
    public HelloWorldNative(String args[]) {
       this.glob = new Global(args);
       queryServerMemory();
