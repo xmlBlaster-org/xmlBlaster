@@ -15,7 +15,8 @@ namespace org { namespace xmlBlaster { namespace client { namespace qos {
    PublishQos::PublishQos(Global& global)
       : ME("PublishQos"), global_(global), msgQosData_(global, "")
    {
-      setLifeTime(global_.getProperty().getLongProperty("message.lifeTime", -1));
+      // deprecated
+      //setLifeTime(global_.getProperty().getLongProperty("message.lifeTime", -1));
    }
 
    PublishQos::PublishQos(Global& global, const Destination& destination)
@@ -178,7 +179,7 @@ namespace org { namespace xmlBlaster { namespace client { namespace qos {
 
    /**
     * Sets a client property to the given value.
-    */	
+    */  
    void PublishQos::setClientProperty(const std::string& key, const std::string& value) {
       msgQosData_.setClientProperty(key, value);
    }
