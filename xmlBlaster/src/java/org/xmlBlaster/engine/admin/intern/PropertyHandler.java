@@ -126,5 +126,6 @@ final public class PropertyHandler implements I_CommandHandler, I_Plugin {
    }
 
    public void shutdown() {
+      if (log.TRACE) log.trace(ME, "Shutdown ignored, nothing to do");
    }
 }

@@ -166,6 +166,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway
       if (rs != null) {
          rs.disable();
          rs = null;
+         if (log.TRACE) log.trace(ME, "Shutdown done, telnet disabled.");
       }
    }
 

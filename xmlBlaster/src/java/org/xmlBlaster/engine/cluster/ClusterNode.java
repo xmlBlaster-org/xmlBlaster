@@ -192,9 +192,14 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    }
    */
 
-   public void resetXmlBlasterConnection() {
+   /**
+    * @param force shutdown if if messages are pending
+    */
+   public void resetXmlBlasterConnection(boolean force) {
       if (this.xmlBlasterConnection != null) {
-         this.xmlBlasterConnection.disconnect(null);
+         if (this.xmlBlasterConnection.isLoggedIn())
+            this.xmlBlasterConnection.disconnect(null);
+         this.xmlBlasterConnection.shutdown(force);
          this.xmlBlasterConnection = null;
       }
    }
@@ -405,6 +410,10 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
          log.error(ME, text);
          throw new XmlBlasterException("NoSessionId", text);
       }
+   }
+
+   public void shutdown(boolean force) {
+      resetXmlBlasterConnection(force);
    }
 
    /**

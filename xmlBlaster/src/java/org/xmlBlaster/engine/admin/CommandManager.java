@@ -10,6 +10,8 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.MessageUnitWrapper;
+import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.engine.I_RunlevelListener;
 import org.xmlBlaster.authentication.SessionInfo;
 
 import java.util.Map;
@@ -27,7 +29,7 @@ import java.util.Iterator;
  * @author ruff@swand.lake.de
  * @since 0.79f
  */
-public final class CommandManager
+public final class CommandManager implements I_RunlevelListener
 {
    private String ME;
 
@@ -54,6 +56,7 @@ public final class CommandManager
       this.log = this.glob.getLog("admin");
       this.ME = "CommandManager-" + this.glob.getId();
       this.sessionInfo = sessionInfo;
+      glob.addRunlevelListener(this);
 
       initializeInternal();
       initializeExternal();
@@ -164,7 +167,7 @@ public final class CommandManager
       return help();
    }
 
-   public void shutdown() {
+   public void shutdown(boolean force) {
       if (externMap != null && externMap.size() > 0) {
          Iterator it = externMap.values().iterator();
          while (it.hasNext()) {
@@ -186,6 +189,28 @@ public final class CommandManager
             // If a handler has registered multiple times, it should be able to handle multiple shutdowns
          }
          handlerMap.clear();
+      }
+   }
+
+   /**
+    * A human readable name of the listener for logging. 
+    * <p />
+    * Enforced by I_RunlevelListener
+    */
+   public String getName() {
+      return ME;
+   }
+
+   /**
+    * Invoked on run level change, see Constants.RUNLEVEL_HALTED and Constants.RUNLEVEL_RUNNING
+    * <p />
+    * Enforced by I_RunlevelListener
+    */
+   public void runlevelChange(int from, int to, boolean force) throws org.xmlBlaster.util.XmlBlasterException {
+      if (to < from) {
+         if (to == Constants.RUNLEVEL_HALTED) {
+            shutdown(force);
+         }
       }
    }
 

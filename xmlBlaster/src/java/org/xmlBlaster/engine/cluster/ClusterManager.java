@@ -9,6 +9,7 @@ package org.xmlBlaster.engine.cluster;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.I_RunlevelListener;
 import org.xmlBlaster.engine.MessageUnitWrapper;
 import org.xmlBlaster.engine.helper.Address;
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -48,7 +49,7 @@ import java.util.Comparator;
  * @author ruff@swand.lake.de
  * @since 0.79e
  */
-public final class ClusterManager
+public final class ClusterManager implements I_RunlevelListener
 {
    private String ME;
 
@@ -97,6 +98,7 @@ public final class ClusterManager
       this.sessionInfo = sessionInfo;
       this.log = this.glob.getLog("cluster");
       this.ME = "ClusterManager-" + this.glob.getId();
+      glob.addRunlevelListener(this);
    }
 
    public void postInit() throws XmlBlasterException {
@@ -543,6 +545,16 @@ public final class ClusterManager
       */
    }
 
+   public void shutdown(boolean force) {
+      if (clusterNodeMap != null && clusterNodeMap.size() > 0) {
+         Iterator it = clusterNodeMap.values().iterator();
+         while (it.hasNext()) {
+            ClusterNode info = (ClusterNode)it.next();
+            info.shutdown(force);
+         }
+      }
+   }
+
    /**
     * Dump state of this object into a XML ASCII string.
     */
@@ -626,6 +638,29 @@ public final class ClusterManager
    }  */
 
    /**
+    * A human readable name of the listener for logging. 
+    * <p />
+    * Enforced by I_RunlevelListener
+    */
+   public String getName() {
+      return ME;
+   }
+
+   /**
+    * Invoked on run level change, see Constants.RUNLEVEL_HALTED and Constants.RUNLEVEL_RUNNING
+    * <p />
+    * Enforced by I_RunlevelListener
+    */
+   public void runlevelChange(int from, int to, boolean force) throws org.xmlBlaster.util.XmlBlasterException {
+      if (to < from) {
+         if (to == Constants.RUNLEVEL_HALTED) {
+            shutdown(force);
+         }
+      }
+   }
+
+
+   /**
     * Command line usage.
     * <p />
     * These variables may be set in your property file as well.
@@ -650,5 +685,5 @@ public final class ClusterManager
       sb.append("   ...                 See http://www.xmlBlaster.org/xmlBlaster/doc/requirements/cluster.html\n");
       return sb.toString();
    }
-}
+} // class ClusterManager
 
