@@ -50,6 +50,7 @@ public class AllTests
       suite.addTest(TestSubLostClient.suite());
       suite.addTest(TestSubNoInitial.suite());
       suite.addTest(TestSubNoLocal.suite());
+      suite.addTest(TestSubMultiSubscribe.suite());
       suite.addTest(TestSubDispatch.suite());
       suite.addTest(TestSubXPath.suite());
       suite.addTest(TestSubManyClients.suite());
