@@ -4,7 +4,7 @@ Name:      html.xsl
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Generating a html table with all requirements, to be used as a 'reference handbook'
-Version:   $Id: html.xsl,v 1.11 2000/03/19 15:18:23 ruff Exp $
+Version:   $Id: html.xsl,v 1.12 2000/03/22 23:41:43 ruff Exp $
 Author:    ruff@swand.lake.de
 -->
 
@@ -28,7 +28,7 @@ Author:    ruff@swand.lake.de
    <body>
 
    <p class="sideend">
-       Last updated $Date: 2000/03/19 15:18:23 $ $Author: ruff $
+       Last updated $Date: 2000/03/22 23:41:43 $ $Author: ruff $
    </p>
    <p class="sitetitel">XmlBlaster Requirements Reference</p>
 
@@ -46,8 +46,8 @@ Author:    ruff@swand.lake.de
       </thead>
       <xsl:for-each select="/files/url">
          <xsl:apply-templates select="document(.)/requirement"/>
-      	<xsl:sort select="document(.)/requirement/@status" order="ascending"/>
-      	<xsl:sort select="document(.)/requirement/@id" order="ascending"/>
+        <xsl:sort select="document(.)/requirement/@status" order="ascending"/>
+        <xsl:sort select="document(.)/requirement/@id" order="ascending"/>
       </xsl:for-each>
    </table>
    <p class="sideend">
@@ -76,9 +76,20 @@ Author:    ruff@swand.lake.de
    <xsl:if test="example">
       <td></td>
       <td></td>
-      <td class="example" colspan="1"><xsl:value-of select="example" disable-output-escaping="yes"/></td>
+      <td class="example" colspan="1">
+         <pre><xsl:value-of select="example"/></pre>
+      </td>
    </xsl:if>
 </xsl:template>
+
+
+<xsl:template match="*">
+  <center><p class="xmlerror"><blink>XSL parsing error</blink><br />
+  Can't handle your supplied XML file</p>
+  <p><xsl:value-of select="name()" /></p></center>
+  <xsl:apply-templates />
+</xsl:template>
+
 
 </xsl:stylesheet>
 

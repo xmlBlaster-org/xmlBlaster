@@ -11,16 +11,15 @@
    </description>
    <example lang="Java">
       <![CDATA[
-      <pre>
-      &lt;qos>
-         &lt;Readonly /> &lt;!-- A final/const message which may not be changed with further updates -->
-                      &lt;!-- Default is Read/Write -->
-      &lt;/qos></pre>
+      <qos>
+         <Readonly /> <!-- A final/const message which may not be changed with further updates -->
+                      <!-- Default is Read/Write -->
+      </qos>
       ]]>
    </example>
    <author>ruff@swand.lake.de</author>
    <date>2000 02 25</date>
-   <revision>$Revision: 1.6 $</revision>
+   <revision>$Revision: 1.7 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

@@ -11,7 +11,7 @@
       for a code example how to use it.
    </description>
    <example lang="Java">
-      <![CDATA[<pre>
+      <![CDATA[
       public void login()
       {
          try {
@@ -54,11 +54,11 @@
       {
          System.out.println("Lost connection to xmlBlaster");
       }
-      </pre>]]>
+      ]]>
    </example>
    <author>ruff@swand.lake.de</author>
    <date>2000 02 23</date>
-   <revision>$Revision: 1.4 $</revision>
+   <revision>$Revision: 1.5 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

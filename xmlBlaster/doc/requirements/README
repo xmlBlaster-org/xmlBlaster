@@ -13,6 +13,9 @@ with one to many full automatic test cases.
 
 Every bug is noted here and checked with a testsuite case.
 
+The example tag allows to use the "<", all other tags need to write &lt; instead
+(example uses CDATA section and no 'disable-output-escaping' in XLS)
+
 You can query a closed requirement as follows:
    java DomQueryTest  engine.get.no.xml  "requirement/fix[@status='CLOSED']/.."
 
