@@ -114,6 +114,7 @@ int main(int argc, char** argv)
       int priority = xa->props->getInt(xa->props, "priority", 5);
       bool persistentPublish = xa->props->getBool(xa->props, "persistent", true);
       long lifeTime = xa->props->getLong(xa->props, "lifeTime", -1L);
+      bool verbose = xa->props->getBool(xa->props, "verbose", true);
       bool forceUpdate = xa->props->getBool(xa->props, "forceUpdate", true);
       bool forceDestroy = xa->props->getBool(xa->props, "forceDestroy", false);
       bool readonly = xa->props->getBool(xa->props, "readonly", false);
@@ -165,7 +166,9 @@ int main(int argc, char** argv)
             if (sleep > 0) {
                sleepMillis(sleep);
             }
-            printf("[client] Publish '%s' #%d/%d", oid, iPublish, numPublish);
+            if (verbose) {
+               printf("[client] Publish '%s' #%d/%d", oid, iPublish, numPublish);
+            }
          }
 
          if (pp) { /* Replace '%counter' token by current index */
@@ -244,7 +247,9 @@ int main(int argc, char** argv)
             freeXmlBlasterAccessUnparsed(xa);
             exit(EXIT_FAILURE);
          }
-         printf("[client] Publish success, returned status is '%s'\n", response);
+         if (verbose) {
+           printf("[client] Publish success, returned status is '%s'\n", response);
+         }
          xmlBlasterFree(response);
       }
    }
