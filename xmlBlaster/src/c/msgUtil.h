@@ -7,8 +7,6 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #ifndef XMLBLASTER_MSGUTIL_H
 #define XMLBLASTER_MSGUTIL_H
 
-#define XMLBLASTER_DEBUG true
-
 #define bool int
 #define true 1
 #define false 0

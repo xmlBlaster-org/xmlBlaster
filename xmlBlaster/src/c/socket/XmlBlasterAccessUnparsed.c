@@ -1,11 +1,11 @@
 /*----------------------------------------------------------------------------
-Name:      xmlBlasterAccessUnparsed.c
+Name:      XmlBlasterAccessUnparsed.c
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   wraps raw socket connection to xmlBlaster
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
-Compile:   gcc -Wall -g -c xmlBlasterAccessUnparsed.c callbackServer.c
-Compile-Win: cl /MT /W3 /Wp64 -D_WINDOWS -c xmlBlasterAccessUnparsed.c callbackServer.c
+Compile:   gcc -Wall -g -c XmlBlasterAccessUnparsed.c callbackServer.c
+Compile-Win: cl /MT /W3 /Wp64 -D_WINDOWS -c XmlBlasterAccessUnparsed.c callbackServer.c
 See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
 -----------------------------------------------------------------------------*/
 #include <stdio.h>
@@ -18,8 +18,8 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket
 #else
 #  include <pthread.h>
 #endif
-#include "xmlBlasterSocket.h"
-#include "xmlBlasterAccessUnparsed.h"
+#include <socket/xmlBlasterSocket.h>
+#include <XmlBlasterAccessUnparsed.h>
 
 
 static bool initConnection(XmlBlasterAccessUnparsed *xb, int argc, char** argv);
@@ -55,6 +55,7 @@ XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed(int argc, char** argv) {
    xmlBlasterAccess->get = xmlBlasterGet;
    xmlBlasterAccess->ping = xmlBlasterPing;
    xmlBlasterAccess->isConnected = isConnected;
+   xmlBlasterAccess->debug = false;
    if (initConnection(xmlBlasterAccess, argc, argv) == false)
       return (XmlBlasterAccessUnparsed *)0;
    return xmlBlasterAccess;
@@ -108,7 +109,7 @@ static bool initConnection(XmlBlasterAccessUnparsed *xb, int argc, char** argv)
          servTcpPort = argv[++iarg];
    }
 
-   if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: Lookup xmlBlaster on -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %s ...\n", serverHostName, servTcpPort);
+   if (xb->debug) printf("[XmlBlasterAccessUnparsed] Lookup xmlBlaster on -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %s ...\n", serverHostName, servTcpPort);
 
    memset(xb->secretSessionId, 0, sizeof(xb->secretSessionId));
    memset((char *)&xmlBlasterAddr, 0, sizeof(xmlBlasterAddr));
@@ -137,20 +138,20 @@ static bool initConnection(XmlBlasterAccessUnparsed *xb, int argc, char** argv)
       if (xb->socketToXmlBlaster != -1) {
          int ret=0;
          if ((ret=connect(xb->socketToXmlBlaster, (struct sockaddr *)&xmlBlasterAddr, sizeof(xmlBlasterAddr))) != -1) {
-            if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: Connected to xmlBlaster\n");
+            if (xb->debug) printf("[XmlBlasterAccessUnparsed] Connected to xmlBlaster\n");
          }
          else {
-            if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: ERROR Connecting to xmlBlaster (connect failed) -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %s failed errno=%d\n", serverHostName, servTcpPort, errno);
+            if (xb->debug) printf("[XmlBlasterAccessUnparsed] ERROR Connecting to xmlBlaster (connect failed) -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %s failed errno=%d\n", serverHostName, servTcpPort, errno);
             return false;
          }
       }
       else {
-         if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: ERROR Connecting to xmlBlaster (socket=-1) -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %s failed errno=%d\n", serverHostName, servTcpPort, errno);
+         if (xb->debug) printf("[XmlBlasterAccessUnparsed] ERROR Connecting to xmlBlaster (socket=-1) -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %s failed errno=%d\n", serverHostName, servTcpPort, errno);
          return false;
       }
    }
    else {
-      if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: ERROR Connecting to xmlBlaster (hostP=0) -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %s failed errno=%d\n", serverHostName, servTcpPort, errno);
+      if (xb->debug) printf("[XmlBlasterAccessUnparsed] ERROR Connecting to xmlBlaster (hostP=0) -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %s failed errno=%d\n", serverHostName, servTcpPort, errno);
       return false;
    }
    xb->isInitialized = true;
@@ -160,6 +161,15 @@ static bool initConnection(XmlBlasterAccessUnparsed *xb, int argc, char** argv)
 bool isConnected(XmlBlasterAccessUnparsed *xb)
 {
    return (xb->socketToXmlBlaster > -1) ? true : false;
+}
+
+const char *xmlBlasterAccessUnparsedUsage()
+{
+   return 
+      "\n  -dispatch/connection/plugin/socket/hostname [localhost]"
+      "\n                       Where to find xmlBlaster"
+      "\n  -dispatch/connection/plugin/socket/port [7607]"
+      "\n                       The port where xmlBlaster listens";
 }
 
 void shutdownConnection(XmlBlasterAccessUnparsed *xb)
@@ -206,16 +216,16 @@ bool sendData(XmlBlasterAccessUnparsed *xb,
 
    if (exception == 0) {
       strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      sprintf(exception->message, "xmlBlasterClient: Please provide valid exception to sendData()");
-      if (XMLBLASTER_DEBUG) { printf(exception->message); printf("\n"); }
+      sprintf(exception->message, "[XmlBlasterAccessUnparsed] Please provide valid exception to sendData()");
+      if (xb->debug) { printf(exception->message); printf("\n"); }
       return false;
    }
    *exception->errorCode = 0;
 
    if (strcmp(XMLBLASTER_CONNECT, methodName) && strlen(xb->secretSessionId) < 1) {
       strncpy0(exception->errorCode, "user.notConnected", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      sprintf(exception->message, "xmlBlasterClient: Please call connect() before invoking '%s'\n", methodName);
-      if (XMLBLASTER_DEBUG) { printf(exception->message); printf("\n"); }
+      sprintf(exception->message, "[XmlBlasterAccessUnparsed] Please call connect() before invoking '%s'\n", methodName);
+      if (xb->debug) { printf(exception->message); printf("\n"); }
       return false;
    }
 
@@ -249,18 +259,18 @@ bool sendData(XmlBlasterAccessUnparsed *xb,
    sprintf(lenStr, lenFormatStr, rawMsgLen);
    memcpy(rawMsg, lenStr, MSG_LEN_FIELD_LEN);
    
-   if (XMLBLASTER_DEBUG) {
+   if (xb->debug) {
       rawMsgStr = toReadableDump(rawMsg, rawMsgLen);
-      printf("xmlBlasterClient: Sending now %u bytes '%s' -> '%s'\n", rawMsgLen, lenStr, rawMsgStr);
+      printf("[XmlBlasterAccessUnparsed] Sending now %u bytes '%s' -> '%s'\n", rawMsgLen, lenStr, rawMsgStr);
       free(rawMsgStr);
    }
 
    // send the header ...
    numSent = send(xb->socketToXmlBlaster, rawMsg, (int)rawMsgLen, 0);
    if (numSent !=  rawMsgLen) {
-      if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: ERROR Sent only %d bytes from %u\n", numSent, rawMsgLen);
+      if (xb->debug) printf("[XmlBlasterAccessUnparsed] ERROR Sent only %d bytes from %u\n", numSent, rawMsgLen);
       strncpy0(exception->errorCode, "user.connect", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      sprintf(exception->message, "xmlBlasterClient: ERROR Sent only %d bytes from %u\n", numSent, rawMsgLen);
+      sprintf(exception->message, "[XmlBlasterAccessUnparsed] ERROR Sent only %d bytes from %u\n", numSent, rawMsgLen);
       free(rawMsg);
       return false;
    }
@@ -273,7 +283,7 @@ bool sendData(XmlBlasterAccessUnparsed *xb,
          return false;
       }
 
-      if (XMLBLASTER_DEBUG) {
+      if (xb->debug) {
          rawMsgStr = toReadableDump(responseHolder->data, responseHolder->dataLen);
          printf("Received response msgLen=%u type=%c version=%c requestId=%ld methodName=%s dateLen=%u data='%.100s ...'\n",
                   responseHolder->msgLen, responseHolder->type, responseHolder->version, responseHolder->requestId,
@@ -314,8 +324,8 @@ static bool getResponse(XmlBlasterAccessUnparsed *xb, ResponseHolder *responseHo
    numRead = readn(xb->socketToXmlBlaster, msgLenPtr, MSG_LEN_FIELD_LEN);
    if (numRead != MSG_LEN_FIELD_LEN) {
       strncpy0(exception->errorCode, "user.connect", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      sprintf(exception->message, "xmlBlasterClient: ERROR Received numRead=%d header bytes but expected %d", numRead, MSG_LEN_FIELD_LEN);
-      if (XMLBLASTER_DEBUG) { printf(exception->message); printf("\n"); }
+      sprintf(exception->message, "[XmlBlasterAccessUnparsed] ERROR Received numRead=%d header bytes but expected %d", numRead, MSG_LEN_FIELD_LEN);
+      if (xb->debug) { printf(exception->message); printf("\n"); }
       return false;
    }
    strcpy(ptr, msgLenPtr);
@@ -329,8 +339,8 @@ static bool getResponse(XmlBlasterAccessUnparsed *xb, ResponseHolder *responseHo
    numRead = readn(xb->socketToXmlBlaster, rawMsg+MSG_LEN_FIELD_LEN, (int)responseHolder->msgLen-MSG_LEN_FIELD_LEN);
    if (numRead != (responseHolder->msgLen-MSG_LEN_FIELD_LEN)) {
       strncpy0(exception->errorCode, "user.response", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      sprintf(exception->message, "xmlBlasterClient: ERROR Received numRead=%d message bytes but expected %u", numRead, (responseHolder->msgLen-MSG_LEN_FIELD_LEN));
-      if (XMLBLASTER_DEBUG) { printf(exception->message); printf("\n"); }
+      sprintf(exception->message, "[XmlBlasterAccessUnparsed] ERROR Received numRead=%d message bytes but expected %u", numRead, (responseHolder->msgLen-MSG_LEN_FIELD_LEN));
+      if (xb->debug) { printf(exception->message); printf("\n"); }
       free(rawMsg);
       return false;
    }
@@ -338,8 +348,8 @@ static bool getResponse(XmlBlasterAccessUnparsed *xb, ResponseHolder *responseHo
    responseHolder->type = *(rawMsg+MSG_FLAG_POS_TYPE);
    if (responseHolder->type != MSG_TYPE_RESPONSE && responseHolder->type != MSG_TYPE_EXCEPTION) {
       strncpy0(exception->errorCode, "user.response", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      sprintf(exception->message, "xmlBlasterClient: ERROR Received response message of type=%c", responseHolder->type);
-      if (XMLBLASTER_DEBUG) { printf(exception->message); printf("\n"); }
+      sprintf(exception->message, "[XmlBlasterAccessUnparsed] ERROR Received response message of type=%c", responseHolder->type);
+      if (xb->debug) { printf(exception->message); printf("\n"); }
       free(rawMsg);
       return false;
    }
@@ -347,8 +357,8 @@ static bool getResponse(XmlBlasterAccessUnparsed *xb, ResponseHolder *responseHo
    responseHolder->version = *(rawMsg+MSG_FLAG_POS_VERSION);
    if (responseHolder->version != XMLBLASTER_VERSION) {
       strncpy0(exception->errorCode, "user.response", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      sprintf(exception->message, "xmlBlasterClient: ERROR Received response message of unsupported version=%c", responseHolder->version);
-      if (XMLBLASTER_DEBUG) { printf(exception->message); printf("\n"); }
+      sprintf(exception->message, "[XmlBlasterAccessUnparsed] ERROR Received response message of unsupported version=%c", responseHolder->version);
+      if (xb->debug) { printf(exception->message); printf("\n"); }
       free(rawMsg);
       return false;
    }
@@ -410,8 +420,8 @@ static char *xmlBlasterConnect(XmlBlasterAccessUnparsed *xb, const char * const 
    
    if (qos == 0 || exception == 0) {
       strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      sprintf(exception->message, "xmlBlasterClient: Please provide valid arguments to xmlBlasterConnect()");
-      if (XMLBLASTER_DEBUG) { printf(exception->message); printf("\n"); }
+      sprintf(exception->message, "[XmlBlasterAccessUnparsed] Please provide valid arguments to xmlBlasterConnect()");
+      if (xb->debug) { printf(exception->message); printf("\n"); }
       return (char *)0;
    }
 
@@ -436,15 +446,15 @@ static char *xmlBlasterConnect(XmlBlasterAccessUnparsed *xb, const char * const 
             int len = (int)(pEnd - pStart + 1);
             if (len >= MAX_SECRETSESSIONID_LEN) {
                strncpy0(exception->errorCode, "user.response", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-               sprintf(exception->message, "xmlBlasterClient: ERROR Received too long secret sessionId with len=%d, please change setting MAX_SECRETSESSIONID_LEN", len);
-               if (XMLBLASTER_DEBUG) { printf(exception->message); printf("\n"); }
+               sprintf(exception->message, "[XmlBlasterAccessUnparsed] ERROR Received too long secret sessionId with len=%d, please change setting MAX_SECRETSESSIONID_LEN", len);
+               if (xb->debug) { printf(exception->message); printf("\n"); }
             }
             strncpy0(xb->secretSessionId, pStart, len);
          }
       }
    }
 
-   if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: Got response for connect(secretSessionId=%s)", xb->secretSessionId);
+   if (xb->debug) printf("[XmlBlasterAccessUnparsed] Got response for connect(secretSessionId=%s)", xb->secretSessionId);
 
    return response;
 }
@@ -461,8 +471,8 @@ static bool xmlBlasterDisconnect(XmlBlasterAccessUnparsed *xb, const char * cons
 {
    if (exception == 0) {
       strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      sprintf(exception->message, "xmlBlasterClient: Please provide valid arguments to xmlBlasterDisconnect()");
-      if (XMLBLASTER_DEBUG) { printf(exception->message); printf("\n"); }
+      sprintf(exception->message, "[XmlBlasterAccessUnparsed] Please provide valid arguments to xmlBlasterDisconnect()");
+      if (xb->debug) { printf(exception->message); printf("\n"); }
       return false;
    }
 
@@ -492,7 +502,7 @@ static char *xmlBlasterPublish(XmlBlasterAccessUnparsed *xb, MsgUnit *msgUnit, X
    char *response;
 
    if (msgUnit == 0 || msgUnit->key == 0 || msgUnit->content == 0) {
-      if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: ERROR Invalid argument=NULL in publish(), message not sent\n");
+      if (xb->debug) printf("[XmlBlasterAccessUnparsed] ERROR Invalid argument=NULL in publish(), message not sent\n");
       return (char *)0;
    }
    if (msgUnit->qos == 0) msgUnit->qos = "";
@@ -545,8 +555,8 @@ static char *xmlBlasterSubscribe(XmlBlasterAccessUnparsed *xb, const char * cons
 
    if (key == 0 || exception == 0) {
       strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      sprintf(exception->message, "xmlBlasterClient: Please provide valid arguments to xmlBlasterSubscribe()");
-      if (XMLBLASTER_DEBUG) { printf(exception->message); printf("\n"); }
+      sprintf(exception->message, "[XmlBlasterAccessUnparsed] Please provide valid arguments to xmlBlasterSubscribe()");
+      if (xb->debug) { printf(exception->message); printf("\n"); }
       return (char *)0;
    }
 
@@ -576,7 +586,7 @@ static char *xmlBlasterSubscribe(XmlBlasterAccessUnparsed *xb, const char * cons
    response = strFromBlobAlloc(responseHolder.data, responseHolder.dataLen);
    free(responseHolder.data);
 
-   if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: Got response for subscribe(): %s", response);
+   if (xb->debug) printf("[XmlBlasterAccessUnparsed] Got response for subscribe(): %s", response);
 
    return response;
 }
@@ -596,8 +606,8 @@ static char *xmlBlasterUnSubscribe(XmlBlasterAccessUnparsed *xb, const char * co
 
    if (key == 0 || exception == 0) {
       strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      sprintf(exception->message, "xmlBlasterClient: Please provide valid arguments to xmlBlasterUnSubscribe()");
-      if (XMLBLASTER_DEBUG) { printf(exception->message); printf("\n"); }
+      sprintf(exception->message, "[XmlBlasterAccessUnparsed] Please provide valid arguments to xmlBlasterUnSubscribe()");
+      if (xb->debug) { printf(exception->message); printf("\n"); }
       return (char *)0;
    }
 
@@ -627,7 +637,7 @@ static char *xmlBlasterUnSubscribe(XmlBlasterAccessUnparsed *xb, const char * co
    response = strFromBlobAlloc(responseHolder.data, responseHolder.dataLen);
    free(responseHolder.data);
 
-   if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: Got response for unSubscribe(): %s", response);
+   if (xb->debug) printf("[XmlBlasterAccessUnparsed] Got response for unSubscribe(): %s", response);
 
    return response;
 }
@@ -647,8 +657,8 @@ static char *xmlBlasterErase(XmlBlasterAccessUnparsed *xb, const char * const ke
 
    if (key == 0 || exception == 0) {
       strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      sprintf(exception->message, "xmlBlasterClient: Please provide valid arguments to xmlBlasterErase()");
-      if (XMLBLASTER_DEBUG) { printf(exception->message); printf("\n"); }
+      sprintf(exception->message, "[XmlBlasterAccessUnparsed] Please provide valid arguments to xmlBlasterErase()");
+      if (xb->debug) { printf(exception->message); printf("\n"); }
       return (char *)0;
    }
 
@@ -678,7 +688,7 @@ static char *xmlBlasterErase(XmlBlasterAccessUnparsed *xb, const char * const ke
    response = strFromBlobAlloc(responseHolder.data, responseHolder.dataLen);
    free(responseHolder.data);
 
-   if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: Got response for erase(): %s", response);
+   if (xb->debug) printf("[XmlBlasterAccessUnparsed] Got response for erase(): %s", response);
 
    return response;
 }
@@ -705,7 +715,7 @@ static char *xmlBlasterPing(XmlBlasterAccessUnparsed *xb, const char * const qos
 
    response = strFromBlobAlloc(responseHolder.data, responseHolder.dataLen);
    free(responseHolder.data);
-   if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: Got response for ping '%s'\n", response);
+   if (xb->debug) printf("[XmlBlasterAccessUnparsed] Got response for ping '%s'\n", response);
    return response;
 }
 
@@ -726,8 +736,8 @@ static MsgUnitArr *xmlBlasterGet(XmlBlasterAccessUnparsed *xb, const char * cons
 
    if (key == 0 || exception == 0) {
       strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      sprintf(exception->message, "xmlBlasterClient: Please provide valid arguments to xmlBlasterGet()");
-      if (XMLBLASTER_DEBUG) { printf(exception->message); printf("\n"); }
+      sprintf(exception->message, "[XmlBlasterAccessUnparsed] Please provide valid arguments to xmlBlasterGet()");
+      if (xb->debug) { printf(exception->message); printf("\n"); }
       return (MsgUnitArr *)0;
    }
 
@@ -802,7 +812,7 @@ static MsgUnitArr *xmlBlasterGet(XmlBlasterAccessUnparsed *xb, const char * cons
 
    free(responseHolder.data);
 
-   if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: Returned %u messages for get()\n", msgUnitArr->len);
+   if (xb->debug) printf("[XmlBlasterAccessUnparsed] Returned %u messages for get()\n", msgUnitArr->len);
 
    return msgUnitArr;
 }

@@ -1,5 +1,5 @@
 /*----------------------------------------------------------------------------
-Name:      xmlBlasterAccessUnparsed.h
+Name:      XmlBlasterAccessUnparsed.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Include this header in your client code
@@ -11,13 +11,7 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 Date:      05/2003
 See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.html
 -----------------------------------------------------------------------------*/
-#include "msgUtil.h"
-
-/*
-#define bool int
-#define true 1
-#define false 0
-*/
+#include <msgUtil.h>
 
 struct XmlBlasterAccessUnparsedStruct;
 typedef struct XmlBlasterAccessUnparsedStruct XmlBlasterAccessUnparsed;
@@ -32,6 +26,7 @@ typedef char *( * XmlBlasterErase)(XmlBlasterAccessUnparsed *xb, const char * co
 typedef MsgUnitArr *( * XmlBlasterGet)(XmlBlasterAccessUnparsed *xb, const char * const key, const char * qos, XmlBlasterException *exception);
 typedef char *( * XmlBlasterPing)(XmlBlasterAccessUnparsed *xb, const char * const qos);
 typedef bool  ( * IsConnected)(XmlBlasterAccessUnparsed *xb);
+typedef const char *( * Usage)(XmlBlasterAccessUnparsed *xb);
 
 #define MAX_SECRETSESSIONID_LEN 256
 
@@ -52,6 +47,7 @@ struct XmlBlasterAccessUnparsedStruct {
    XmlBlasterGet get;
    XmlBlasterPing ping;
    IsConnected isConnected;
+   bool debug;
 };
 
 
@@ -64,23 +60,10 @@ extern XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed(int argc, char** ar
 /**
  * Free your instance after accessing xmlBlaster. 
  */
-void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xmlBlasterAccess);
+extern void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xmlBlasterAccess);
 
-
-/* Callback from xmlBlaster */
-typedef void (*updateFp)(MsgUnit *msg);
-
-typedef struct callbackDataStruct {
-   char *hostCB;
-   int portCB;
-   /**
-    * void update(MsgUnit *msg)   //////(char *key, char *content, int contentLen, char *qos)
-    */
-   updateFp update;
-} callbackData;
-
-/* for pthread */
-typedef void * (*cbFp)(void *);
-
-void initCallbackServer(callbackData *cbArgs);
+/**
+ * Help usage
+ */
+extern const char *xmlBlasterAccessUnparsedUsage();
 

@@ -66,7 +66,5 @@ enum XMLBLASTER_MSG_TYPE_ENUM {
 
 extern size_t readn(int fd, char *ptr, size_t nbytes);
 extern int getLength(char *data);
-extern int isListening();
-extern void shutdownCallbackServer();
 extern char *contentToString(char *content, MsgUnit *msg);
 extern char *messageUnitToXml(MsgUnit *msg);
