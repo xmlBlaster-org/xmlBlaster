@@ -6,7 +6,7 @@ Comment:   Holding destination address attributes
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
-import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 
 
 /**
@@ -37,6 +37,21 @@ public class Constants
     */
    public static final int XMLBLASTER_PORT = 3412;
 
+   /**
+    * The xmlBlaster SNMP node 11662 registered at IANA. 
+    * <p />
+    * XmlBlaster has a registered SNMP number under iso.org.dod.internet.private.enterprise (1.3.6.1.4.1),
+    * our tree leaf is 1.3.6.1.4.1.11662
+    * @return 11662
+    * @see <a href="http://www.iana.org/assignments/enterprise-numbers" target="others">PRIVATE ENTERPRISE NUMBERS</a>
+    */
+   public static final int XMLBLASTER_SNMP = 11662;
+
+   /**
+    * The xmlBlaster SNMP node 1.3.6.1.4.1.11662 as registered at IANA. 
+    * @return a long array containing the SNMP hierarchy to xmlBlaster
+    */
+   public static final long[] XMLBLASTER_OID_ROOT = { 1, 3, 6, 1, 4, 1, Constants.XMLBLASTER_SNMP }; // 11662
 
    /**
     * The minimum priority of a message (0).
@@ -88,13 +103,13 @@ public class Constants
             else if (prio.startsWith("MAX"))
                return Constants.MAX_PRIORITY;
             else
-               Log.warn(ME, "Wrong format of <priority>" + prio +
+               Global.instance().getLog("core").warn(ME, "Wrong format of <priority>" + prio +
                     "</priority>, expected a number between (inclusiv) 0 - 9, setting to message priority to "
                     + defaultPriority);
          }
       }
       if (defaultPriority < Constants.MIN_PRIORITY || defaultPriority > Constants.MAX_PRIORITY) {
-          Log.warn(ME, "Wrong message defaultPriority=" + defaultPriority + " given, setting to NORM_PRIORITY");
+          Global.instance().getLog("core").warn(ME, "Wrong message defaultPriority=" + defaultPriority + " given, setting to NORM_PRIORITY");
           return Constants.NORM_PRIORITY;
       }
       return defaultPriority;
