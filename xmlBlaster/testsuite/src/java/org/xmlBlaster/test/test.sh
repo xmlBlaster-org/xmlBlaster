@@ -44,4 +44,5 @@ echo "STARTING classloader TESTS ..."
 java junit.swingui.TestRunner -noloading org.xmlBlaster.test.classloader.AllTests
 echo "STARTING snmp TESTS ..."
 java junit.swingui.TestRunner -noloading org.xmlBlaster.test.snmp.AllTests
-
+echo "STARTING C TESTS ..."
+java -Djava.compiler= junit.swingui.TestRunner -noloading org.xmlBlaster.test.C.AllTests
