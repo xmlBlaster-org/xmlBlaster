@@ -2,6 +2,12 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.xxx [xx, xxx 2003]
 ================================
+ o Added C wrapper to embedd C tests into JUnit testing, try
+     build.sh total
+     build.sh runTestsAndReport
+   which creates a report:
+     http://www.xmlblaster.org/xmlBlaster/doc/test/report/html/index.html
+
  o Removed a2Blaster (for authentication/authorization).
    The a2Blaster project is developed further commercially and like
    this of no use for us.
@@ -17,7 +23,7 @@ Changes for 0.xxx [xx, xxx 2003]
    NOTE: xmlBlaster/config/xmlBlaster-autoconf.tar.gz still exists
          but probably needs a face lift.
 
- o BUGIFX in cluster configuration, switch off naming service and
+ o BUGFIX in cluster configuration, switch off naming service and
    setting other address parameters is now possible from configuration file.
    Reported by Michael Atighetchi.
 
