@@ -60,6 +60,19 @@
          </td></tr>
       </table>
       <p>
+      and a example where the topic with its subscribers remain
+      and only all message instances inside the topic are destroyed:
+      </p>
+      <table border="1">
+         <tr><td>Key</td><td><code>&lt;key oid='MyTopic'/></code></td></tr>
+         <tr><td>QoS</td><td><code>&lt;qos>
+  &lt;erase forceDestroy='false'>
+     &lt;history numEntries='-1'/>
+  &lt;/erase>
+&lt;/qos></code>
+         </td></tr>
+      </table>
+      <p>
       And a return value:
     </p>
    <table border="1"><tr><td>
