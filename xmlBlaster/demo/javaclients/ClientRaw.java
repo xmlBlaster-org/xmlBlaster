@@ -3,7 +3,7 @@ Name:      ClientRaw.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code how to access xmlBlaster using CORBA
-Version:   $Id: ClientRaw.java,v 1.9 2000/05/16 20:57:33 ruff Exp $
+Version:   $Id: ClientRaw.java,v 1.10 2000/05/24 14:41:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -148,8 +148,9 @@ public class ClientRaw
 
          delay(1000); // Wait some time ...
 
-         ask("logout()");
+         // corbaConnection.getOrb().run(); // Usually your client won't exit after this, uncomment the run() method
 
+         ask("logout()");
 
          //----------- Logout --------------------------------------
          Log.info(ME, "Logout ...");
@@ -159,7 +160,19 @@ public class ClientRaw
             Log.warning(ME, "XmlBlasterException: " + e.reason);
          }
 
-         // corbaConnection.getOrb().run(); // Usually your client won't exit after this, uncomment the run() method
+         //----------- Shutdown my callback server -----------------
+         try {
+            rootPOA.deactivate_object(rootPOA.reference_to_id(callback));
+         } catch(Exception e) { Log.warning(ME, "POA deactivate callback failed"); }
+
+
+         //----------- Stop the POA --------------------------------
+         try {
+            rootPOA.the_POAManager().deactivate(false, true);
+         } catch(Exception e) { Log.warning(ME, "POA deactivate failed"); }
+
+         //----------- Shutdown the ORB ----------------------------
+         orb.shutdown(true);
       }
       catch (Exception e) {
           e.printStackTrace();
