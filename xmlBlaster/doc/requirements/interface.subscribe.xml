@@ -214,21 +214,22 @@
 
    <author>ruff@swand.lake.de</author>
    <date>2002 06 01</date>
-   <revision>$Revision: 1.6 $</revision>
+   <revision>$Revision: 1.7 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the subscribe method invocation</comment>
-      <test tool="SUITE">testsuite.org.xmlBlaster.TestSub</test>
-      <test tool="SUITE">testsuite.org.xmlBlaster.TestSubExact</test>
-      <test tool="SUITE">testsuite.org.xmlBlaster.TestSubXPath</test>
-      <test tool="SUITE">testsuite.org.xmlBlaster.TestSubManyClients</test>
-      <test tool="SUITE">testsuite.org.xmlBlaster.TestSubNoDup</test>
-      <test tool="SUITE">testsuite.org.xmlBlaster.TestSubXPathMany</test>
-      <test tool="SUITE">testsuite.org.xmlBlaster.TestSubDispatch</test>
-      <test tool="SUITE">testsuite.org.xmlBlaster.TestSubLostClient</test>
-      <test tool="SUITE">testsuite.org.xmlBlaster.TestSubMulti</test>
-      <test tool="SUITE">clustertest.SubscribeTest</test>
-      <test tool="SUITE">clustertest.SubscribeXPathTest</test>
+      <test tool="SUITE">org.xmlBlaster.test.qos.TestSub</test>
+      <test tool="SUITE">org.xmlBlaster.test.qos.TestSubExact</test>
+      <test tool="SUITE">org.xmlBlaster.test.qos.TestSubXPath</test>
+      <test tool="SUITE">org.xmlBlaster.test.qos.TestSubManyClients</test>
+      <test tool="SUITE">org.xmlBlaster.test.qos.TestSubNoDup</test>
+      <test tool="SUITE">org.xmlBlaster.test.qos.TestSubXPathMany</test>
+      <test tool="SUITE">org.xmlBlaster.test.qos.TestSubDispatch</test>
+      <test tool="SUITE">org.xmlBlaster.test.qos.TestSubLostClient</test>
+      <test tool="SUITE">org.xmlBlaster.test.qos.TestSubMulti</test>
+      <test tool="SUITE">org.xmlBlaster.test.classtest.SubscribeRetQosTest</test>
+      <test tool="SUITE">org.xmlBlaster.test.cluster.SubscribeTest</test>
+      <test tool="SUITE">org.xmlBlaster.test.cluster.SubscribeXPathTest</test>
    </testcase>
 </requirement>
 

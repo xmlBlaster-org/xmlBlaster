@@ -393,7 +393,7 @@ Changes for 0.79e [Mar, 27 2002]
 
   - Changes to Java client library. We now support separate
     instantiation of callback protocol drivers and client drivers.
-    See: xmlBlaster/testsuite/org/xmlBlaster/TestCorbaThreads.java
+    See: xmlBlaster/testsuite/src/java/org/xmlBlaster/qos/TestCorbaThreads.java
          for an example.
 
   - Added a framework to add your own MIME based plugins to filter subscriptions
@@ -626,7 +626,7 @@ Changes for 0.79c [Sep, 05 2001]
      </sender>
    </qos>
 
- - Fixed C++ testclients in xmlBlaster/testsuite/c++
+ - Fixed C++ testclients in xmlBlaster/testsuite/src/c++
 
  - It is now possible to query the current logged in users
    by "__sys__UserList"
@@ -1094,7 +1094,7 @@ Changes for 0.74 [Feb.29, 2000]
           See CorbaConnection.java
 
         - C++ POA demo client added [Michele]
-          See xmlBlaster/testsuite/c++
+          See xmlBlaster/testsuite/src/c++
 
         - Recorder to record/playback of messages in slow/fast motion added.
           See InvocationRecorder.java

@@ -93,13 +93,13 @@ HOW TO BUILD THE CLIENT CLASSES:
      build.sh cpp-lib
 
   which will compile the xmlBlasterClient shared library (dll).
-  Some demo C++ clients are in xmlBlaster/testsuite/c++
+  Some demo C++ clients are in xmlBlaster/testsuite/src/c++
 
 
 HOW TO RUN THE TESTSUITE:
 =========================
 
-Read ${XMLBLASTER_HOME}/testsuite/c++/README
+Read ${XMLBLASTER_HOME}/testsuite/src/c++/README
 
 To manually start a test look at the file test.sh in that directory.
 

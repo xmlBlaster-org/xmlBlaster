@@ -6,7 +6,7 @@
 
 include $(XMLBLASTER_HOME)/Makefile.Include
 
-SUB_DIRS = src demo testsuite
+SUB_DIRS = src demo
 
 all: all_SUB_DIRS jar
 
@@ -85,7 +85,16 @@ JUTILS_PACKGS =
 
 
 
-TEST_PACKGS = testsuite.org.xmlBlaster classtest clustertest authentication testsuite.org.xmlBlaster.mime
+TEST_PACKGS = org.xmlBlaster.test.qos \
+              org.xmlBlaster.test.classtest \
+				  org.xmlBlaster.test.qos \
+				  org.xmlBlaster.test.cluster \
+				  org.xmlBlaster.test.jdbc \
+				  org.xmlBlaster.test.snmp \
+				  org.xmlBlaster.test.authentication \
+				  org.xmlBlaster.test.mime \
+				  org.xmlBlaster.test.stress \
+				  org.xmlBlaster.test.persistence
 
 # We use special notation demo/javaclients/*.java because of HelloWorld.java is without package name
 DEMO_PACKGS = demo/javaclients/*.java javaclients.corba javaclients.rmi javaclients.jdbc javaclients.chat javaclients.svg.rhino javaclients.HelloWorldApplet http.dhtml.systemInfo
@@ -110,7 +119,7 @@ doc: javadoc
 
 javadoc:
 	${MKDIR_RECURSIVE} ${JAVADOC_DIR} 
-	${JAVADOC} -d ${JAVADOC_DIR} -sourcepath ./src/java:./:./demo:./testsuite/org/xmlBlaster $(PACKGS) $(JUTILS_PACKGS) $(TEST_PACKGS) $(DEMO_PACKGS) $(DOC_PACKGS)
+	${JAVADOC} -d ${JAVADOC_DIR} -sourcepath ./src/java:./:./demo:./testsuite/src/java $(PACKGS) $(JUTILS_PACKGS) $(TEST_PACKGS) $(DEMO_PACKGS) $(DOC_PACKGS)
 	# making requirements.html from xml requirements:
 	( cd ${SRC_DOCS_DIR}; make doc)
 	( cd ${SRC_TESTSUITE_TOP_DIR}/org/xmlBlaster; make html)
@@ -124,12 +133,6 @@ jar:
 		jar cmf manifest.xmlBlaster ${JAR_DIR}/xmlBlaster.jar ./org ./testsuite ./javaclients xmlBlaster.policy jacorb.properties xmlBlaster.properties HelloWorld*; \
 	)
 
-
-test: all
-	( cd ${XMLBLASTER_HOME}/testsuite/org/xmlBlaster; make test )
-
-test-console: all
-	( cd ${XMLBLASTER_HOME}/testsuite/org/xmlBlaster; make test-console )
 
 install: all
 	( tar cvzf xmlBlasterInstall.tar.gz bin config lib )

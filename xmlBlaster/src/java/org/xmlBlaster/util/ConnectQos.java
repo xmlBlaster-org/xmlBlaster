@@ -3,7 +3,7 @@ Name:      ConnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: ConnectQos.java,v 1.30 2002/08/12 13:34:25 ruff Exp $
+Version:   $Id: ConnectQos.java,v 1.31 2002/09/12 21:01:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -57,7 +57,7 @@ import java.io.Serializable;
  * the callback driver.
  * <p />
  * see xmlBlaster/src/dtd/XmlQoS.xml
- * @see classtest.ConnectQosTest
+ * @see org.xmlBlaster.test.classtest.ConnectQosTest
  */
 public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serializable
 {

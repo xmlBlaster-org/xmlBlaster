@@ -5,41 +5,41 @@
 <!-- This could be one way to store the available keys in the xmlBlaster: -->
 
 
-<!-- Exapmples how to subscribe to MessageUnits: -->
+<!-- Examples how to subscribe to MessageUnits (see xmlBlaster/demo/queryXML/DomQueryTest.java): -->
 
 <!-- Accessing key with oid=2
-        java testsuite.org.xmlBlaster.query.DomQueryTest Agent.xml xmlBlaster/key[@oid='2'] -->
+        java DomQueryTest Agent.xml xmlBlaster/key[@oid='2'] -->
 
 <!-- Accessing key with oid=2 or 3
-        java testsuite.org.xmlBlaster.query.DomQueryTest Agent.xml "xmlBlaster/key[@oid='2' or @oid='3']" -->
+        java DomQueryTest Agent.xml "xmlBlaster/key[@oid='2' or @oid='3']" -->
 
 <!-- Accessing all FileProof drivers
-        java testsuite.org.xmlBlaster.query.DomQueryTest Agent.xml xmlBlaster/key/AGENT/DRIVER[@id=\"FileProof\"] -->
+        java DomQueryTest Agent.xml xmlBlaster/key/AGENT/DRIVER[@id=\"FileProof\"] -->
 
 <!-- Accessing all drivers not named FileProff
-        java testsuite.org.xmlBlaster.query.DomQueryTest Agent.xml xmlBlaster/key/AGENT/DRIVER[@id!='FileProof'] -->
+        java DomQueryTest Agent.xml xmlBlaster/key/AGENT/DRIVER[@id!='FileProof'] -->
 
 <!-- Accessing everything from host 192.168.124.10
-        java testsuite.org.xmlBlaster.query.DomQueryTest Agent.xml xmlBlaster/key/AGENT[@id=\"192.168.124.10\"] -->
+        java DomQueryTest Agent.xml xmlBlaster/key/AGENT[@id=\"192.168.124.10\"] -->
 
 <!-- Accessing all attributes of AGENT: doesn't work properly (selects all)
-        java testsuite.org.xmlBlaster.query.DomQueryTest Agent.xml xmlBlaster/key/AGENT[attribute::type] -->
+        java DomQueryTest Agent.xml xmlBlaster/key/AGENT[attribute::type] -->
 
 <!-- Selecting the second last key
-        java testsuite.org.xmlBlaster.query.DomQueryTest Agent.xml "xmlBlaster/key[position()=last()-1]" -->
+        java DomQueryTest Agent.xml "xmlBlaster/key[position()=last()-1]" -->
 
 <!-- Selecting the 6. key
-        java testsuite.org.xmlBlaster.query.DomQueryTest Agent.xml xmlBlaster/key[6] -->
+        java DomQueryTest Agent.xml xmlBlaster/key[6] -->
 
 <!-- Selecting all FileProof Drivers (knowing that no DRIVER tag exists in other context)
-        java testsuite.org.xmlBlaster.query.DomQueryTest Agent.xml "//DRIVER[@id='FileProof']" -->
+        java DomQueryTest Agent.xml "//DRIVER[@id='FileProof']" -->
 
 
 <!-- Selecting all DRIVER which have an AGENT as parent (child:: is optional and default)
-        java testsuite.org.xmlBlaster.query.DomQueryTest Agent.xml "//descendant::AGENT/child::DRIVER" -->
+        java DomQueryTest Agent.xml "//descendant::AGENT/child::DRIVER" -->
 
 <!-- Selecting all import / export EXECUTABLE
-        java testsuite.org.xmlBlaster.query.DomQueryTest Agent.xml "//DRIVER[EXECUTABLE='import' or EXECUTABLE='export']" -->
+        java DomQueryTest Agent.xml "//DRIVER[EXECUTABLE='import' or EXECUTABLE='export']" -->
 
 <xmlBlaster>
 

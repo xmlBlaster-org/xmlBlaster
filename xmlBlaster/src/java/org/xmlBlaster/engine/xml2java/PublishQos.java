@@ -3,7 +3,7 @@ Name:      PublishQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: PublishQos.java,v 1.14 2002/08/30 07:51:12 ruff Exp $
+Version:   $Id: PublishQos.java,v 1.15 2002/09/12 21:01:27 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -70,7 +70,7 @@ import java.io.*;
  *  &lt;/qos>
  * </pre>
  * Note that receiveTimestamp is in nanoseconds, whereas all other time values are milliseconds
- * @see classtest.PublishQosTest
+ * @see org.xmlBlaster.test.classtest.PublishQosTest
  */
 public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serializable
 {

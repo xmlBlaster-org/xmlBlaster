@@ -37,8 +37,8 @@ import java.io.IOException;
  * @author astelzl@avitech.de
  * @author pavol.hrnciarik@pixelpark.com
  * @author ruff@swand.lake.de
- * @see testsuite.org.xmlBlaster.TestFailSave
- * @see classtest.InvocationRecorderTest
+ * @see org.xmlBlaster.test.qos.TestFailSave
+ * @see org.xmlBlaster.test.classtest.InvocationRecorderTest
  */
 public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRaw
 {

@@ -27,7 +27,7 @@ import org.xml.sax.Attributes;
  *     &lt;key oid='yourMessageOid'/>
  *  &lt;/qos>
  * </pre>
- * @see classtest.PublishRetQosTest
+ * @see org.xmlBlaster.test.classtest.PublishRetQosTest
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html" target="others">the interface.publish requirement</a>
  */
 public final class PublishRetQos /*extends org.xmlBlaster.util.XmlQoSBase*/ implements I_RetQos

@@ -27,7 +27,7 @@ import java.util.StringTokenizer;
  * See the <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.commands.html">command requirement</a>
  * for a detailed description.
  * @author ruff@swand.lake.de
- * @see classtest.CommandWrapperTest
+ * @see org.xmlBlaster.test.classtest.CommandWrapperTest
  * @since 0.79f
  */
 public final class CommandWrapper

@@ -88,7 +88,7 @@ import java.util.Collections;
  * One drawback is, that the return values of your requests are lost, since you were none blocking
  * continuing during the connection was lost.
  * <p />
- * You can have a look at xmlBlaster/testsuite/org/xmlBlaster/TestFailSave.java to find out how it works
+ * You can have a look at xmlBlaster/testsuite/src/java/org/xmlBlaster/qos/TestFailSave.java to find out how it works
  * <p />
  * If you specify the last argument in initFailSave() to bigger than 0 milliseconds,
  * a thread is installed which does a ping to xmlBlaster (tests the connection) with the given sleep interval.
@@ -107,7 +107,7 @@ import java.util.Collections;
  *
  * @see org.xmlBlaster.authentication.plugins.I_ClientPlugin
  * @see org.xmlBlaster.authentication.plugins.I_SecurityQos
- * @see testsuite.org.xmlBlaster.TestFailSave
+ * @see org.xmlBlaster.test.qos.TestFailSave
  *
  * @author $Author: ruff $
  */

@@ -2,8 +2,6 @@
 Name:      ClientPersistence.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   subscribes to durable messages
-Version:   $Id: ClientPersistence.java,v 1.9 2002/09/09 13:40:40 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -20,10 +18,6 @@ import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.engine.helper.MessageUnit;
-
-//import testsuite.org.xmlBlaster.Util;
-
-//import test.framework.*;
 
 
 /**
@@ -142,13 +136,8 @@ public class ClientPersistence implements I_Callback
 
 
    /**
-    * Invoke: jaco testsuite.org.xmlBlaster.ClientPersistence
+    * Invoke: java javaclients.ClientPersistence
     * <p />
-    * Note you need 'jaco' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
-    * instead of the JacORB ORB, which won't work.
-    * <br />
-    * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <pre>   java -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.ClientPersistence</pre>
     */
    public static void main(String args[])
    {

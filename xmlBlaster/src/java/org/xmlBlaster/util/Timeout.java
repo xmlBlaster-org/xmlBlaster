@@ -66,7 +66,7 @@ import java.util.*;
  * JDK 1.2 or higher only.
  *
  * @author ruff@swand.lake.de
- * @see classtest.TimeoutTest
+ * @see org.xmlBlaster.test.classtest.TimeoutTest
  */
 public class Timeout extends Thread
 {

@@ -3,7 +3,7 @@ Name:      RamRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   RamRecorder for client messages
-Version:   $Id: RamRecorder.java,v 1.9 2002/08/26 11:04:31 ruff Exp $
+Version:   $Id: RamRecorder.java,v 1.10 2002/09/12 21:01:32 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.recorder.ram;
@@ -39,8 +39,8 @@ import java.util.*;
  * RecorderPlugin[RamRecorder][1.0]=org.xmlBlaster.util.recorder.ram.RamRecorder
  * </pre>
  * @author ruff@swand.lake.de
- * @see testsuite.org.xmlBlaster.TestFailSave
- * @see classtest.InvocationRecorderTest
+ * @see org.xmlBlaster.test.qos.TestFailSave
+ * @see org.xmlBlaster.test.classtest.InvocationRecorderTest
  */
 public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRaw
 {

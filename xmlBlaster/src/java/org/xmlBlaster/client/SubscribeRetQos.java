@@ -25,7 +25,7 @@ import org.xmlBlaster.engine.helper.Constants;
  *     &lt;key oid='yourMessageOid'/>
  *  &lt;/qos>
  * </pre>
- * @see classtest.SubscribeRetQosTest
+ * @see org.xmlBlaster.test.classtest.SubscribeRetQosTest
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html" target="others">the interface.subscribe requirement</a>
  */
 public final class SubscribeRetQos implements I_RetQos

@@ -147,7 +147,7 @@ To see other compilation options (e.g. for C++) get the usage with:
 
    For C++ see
       ${XMLBLASTER_HOME}/src/c++/README
-      ${XMLBLASTER_HOME}/testsuite/c++/README
+      ${XMLBLASTER_HOME}/testsuite/src/c++/README
 
    For an overview of QoS see
       ${XMLBLASTER_HOME}/src/dtd/XmlQoS.xml
@@ -322,7 +322,7 @@ Don´t forget to start the server (java org.xmlBlaster.Main) first.
 | USING THE TESTSUITE|
 +--------------------+
 
-In the directory ${XMLBLASTER_HOME}/testsuite/org/xmlBlaster you will find
+In the directory ${XMLBLASTER_HOME}/testsuite/src/java/org/xmlBlaster you will find
 a number of Java based test clients to automatically test xmlBlaster.
    
 The xmlBlaster test suite is based on the JUNIT 1.0 testsuite
@@ -332,7 +332,7 @@ from Kent Beck and Erich Gamma, see
 There is a GUI based and a command line based variant of the testsuite available.
 
 Please read the
-   ${XMLBLASTER_HOME}/testsuite/org/xmlBlaster/README
+   ${XMLBLASTER_HOME}/testsuite/src/java/org/xmlBlaster/README
 file for more informations.
 
 You may also use the provided test clients to study the usage of xmlBlaster.
@@ -353,7 +353,7 @@ There are two ways for Tcl clients to access xmlBlaster:
 a) Using Tcl clients with TclMico http://www.mico.org/
    tclmico-0.5c.tar.gz
 
-    See directory ${XMLBLASTER_HOME}/testsuite/tcl
+    See directory ${XMLBLASTER_HOME}/testsuite/src/tcl
     for a demo client written in TCL and accessing the xmlBlaster server
 
 b) Using tcljava (TclBlend/JACL) with an ordinary Java client

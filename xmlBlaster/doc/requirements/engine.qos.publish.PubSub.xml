@@ -26,12 +26,12 @@
    <see type="API">org.xmlBlaster.client.PublishKeyWrapper</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 01 02</date>
-   <revision>$Revision: 1.6 $</revision>
+   <revision>$Revision: 1.7 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
-      <test tool="SUITE">testsuite.org.xmlBlaster.TestPub</test>
+      <test tool="SUITE">org.xmlBlaster.test.qos.TestPub</test>
    </testcase>
 </requirement>
 

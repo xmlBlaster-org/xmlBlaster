@@ -3,7 +3,7 @@ Name:      TestLogin.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestLogin.cpp,v 1.1 2002/09/12 17:31:15 ruff Exp $
+Version:   $Id: TestLogin.cpp,v 1.2 2002/09/12 21:01:33 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 /**
@@ -15,8 +15,9 @@ Version:   $Id: TestLogin.cpp,v 1.1 2002/09/12 17:31:15 ruff Exp $
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    jaco test.textui.TestRunner testsuite.org.xmlBlaster.TestLogin
- *    jaco test.ui.TestRunner testsuite.org.xmlBlaster.TestLogin
+ *    java -jar lib/xmlBlaster.jar    (Server)
+ *
+ *    TestLogin                       (Client)
  * </pre>
  */
 

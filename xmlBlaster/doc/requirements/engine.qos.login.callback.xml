@@ -66,7 +66,7 @@
 
       For examples using raw Corba, see
         demo/javaclients/corba/ClientRaw.java
-        testsuite/c++/clientPOA.cc
+        testsuite/src/c++/clientPOA.cc
       ]]>
    </example>
    <see type="REQ">protocol</see>
@@ -77,7 +77,7 @@
    <see type="API">org.xmlBlaster.util.ConnectQos</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 05 16</date>
-   <revision>$Revision: 1.23 $</revision>
+   <revision>$Revision: 1.24 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>

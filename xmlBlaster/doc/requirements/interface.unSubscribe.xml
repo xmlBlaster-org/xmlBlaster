@@ -108,12 +108,12 @@
 
    <author>ruff@swand.lake.de</author>
    <date>2002 06 28</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the unSubscribe method invocation</comment>
-      <test tool="SUITE">testsuite.org.xmlBlaster.TestUnSub</test>
-      <test tool="SUITE">testsuite.org.xmlBlaster.TestSubNoDup</test>
+      <test tool="SUITE">org.xmlBlaster.test.qos.TestUnSub</test>
+      <test tool="SUITE">org.xmlBlaster.test.qos.TestSubNoDup</test>
    </testcase>
 </requirement>
 

@@ -62,7 +62,7 @@ only the SNMP subagent module jax.jar is GPL only!
    http://www.junit.org/
 
    Please read the
-      ${XMLBLASTER_HOME}/testsuite/org/xmlBlaster/README
+      ${XMLBLASTER_HOME}/testsuite/src/java/org/xmlBlaster/test/README
    file for more informations.
    Version with modified
 	  junit/runner/excluded.properties

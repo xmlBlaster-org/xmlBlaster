@@ -162,7 +162,7 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    fi
    if [ -d ${XMLBLASTER_HOME}/testsuite ]; then
       CLASSPATH=${XMLBLASTER_HOME}:${CLASSPATH}
-      CLASSPATH=${XMLBLASTER_HOME}/testsuite/org/xmlBlaster:${CLASSPATH}
+      CLASSPATH=${XMLBLASTER_HOME}/testsuite/src/java/org/xmlBlaster:${CLASSPATH}
    fi
    export CLASSPATH
 
@@ -177,9 +177,9 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    alias cdxu='cd $XMLBLASTER_HOME/src/java/org/jutils'
    alias cdxd='cd $XMLBLASTER_HOME/demo'
    alias cdxdj='cd $XMLBLASTER_HOME/demo/javaclients'
-   alias cdxt='cd $XMLBLASTER_HOME/testsuite'
+   alias cdxt='cd $XMLBLASTER_HOME/testsuite/src'
    alias cdxr='cd $XMLBLASTER_HOME/doc/requirements'
-   alias cdxtj='cd $XMLBLASTER_HOME/testsuite/org/xmlBlaster'
+   alias cdxtj='cd $XMLBLASTER_HOME/testsuite/src/java/org/xmlBlaster/test'
 
    if [ ! -f ${HOME}/xmlBlaster.properties ]; then
       cp ${XMLBLASTER_HOME}/config/xmlBlaster.properties.template ${HOME}/xmlBlaster.properties
@@ -281,7 +281,7 @@ fi
 
 if [ "${USE_CPP}" = "true" ] ; then
   CPP_ERROR=false
-  export PATH=${PATH}:${XMLBLASTER_HOME}/testsuite/c++/bin
+  export PATH=${PATH}:${XMLBLASTER_HOME}/testsuite/src/c++/bin
   #check if xerces is installed and version of xerces is set
   if [ "${XMLCPP_VER}" = "" ] ; then
       ${ECHO} "$BLACK_YELLOW   XMLCPP_VER is not set. I will set it to 1_7_0 $ESC"

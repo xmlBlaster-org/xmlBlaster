@@ -25,7 +25,7 @@ import org.xmlBlaster.engine.helper.Constants;
  *     &lt;key oid='yourMessageOid'/>
  *  &lt;/qos>
  * </pre>
- * @see classtest.EraseRetQosTest
+ * @see org.xmlBlaster.test.classtest.EraseRetQosTest
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.erase.html" target="others">the interface.erase requirement</a>
  */
 public final class EraseRetQos implements I_RetQos

@@ -39,7 +39,7 @@ import java.net.Socket;
 /**
  * Global variables to avoid singleton.
  *
- * @see classtest.GlobalTest
+ * @see org.xmlBlaster.test.classtest.GlobalTest
  */
 public class Global implements Cloneable
 {

@@ -136,11 +136,11 @@
    <see type="REQ">cluster</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 05 05</date>
-   <revision>$Revision: 1.10 $</revision>
+   <revision>$Revision: 1.11 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
-      <test tool="SUITE">testsuite.org.xmlBlaster.mime.TestGetRegexFilter</test>
+      <test tool="SUITE">org.xmlBlaster.test.mime.TestGetRegexFilter</test>
    </testcase>
 </requirement>
 

@@ -100,11 +100,11 @@ For an example look at the code of PublishLenChecker.java (link below).
    <see type="REQ">util.property.env</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 03 14</date>
-   <revision>$Revision: 1.5 $</revision>
+   <revision>$Revision: 1.6 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
-      <test tool="SUITE">testsuite.org.xmlBlaster.mime.TestPublishFilter</test>
+      <test tool="SUITE">org.xmlBlaster.test.mime.TestPublishFilter</test>
    </testcase>
 </requirement>
 

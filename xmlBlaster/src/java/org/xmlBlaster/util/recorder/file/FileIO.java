@@ -42,7 +42,7 @@ import org.xmlBlaster.util.XmlBlasterException;
  *  - The mode DISCARD_OLDEST does not shrink the file size
  * <p />
  * See the <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/util.recorder.html">util.recorder</a> requirement.
- * @see classtest.FileIOTest
+ * @see org.xmlBlaster.test.classtest.FileIOTest
  */
 public class FileIO
 {

@@ -534,11 +534,11 @@ UserInfo: joe:mypasswd
    <author>Michele.Laghi@swisscom.com</author>
    <author>ruff@swand.lake.de</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.27 $</revision>
+   <revision>$Revision: 1.28 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
-      <test tool="SUITE">classtest.CommandWrapperTest</test>
+      <test tool="SUITE">org.xmlBlaster.test.classtest.CommandWrapperTest</test>
    </testcase>
 </requirement>
 

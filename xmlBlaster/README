@@ -43,7 +43,7 @@ Examples of Java-clients accessing xmlBlaster you find in directory:
 
   xmlBlaster/demo/javaclients
 and
-  xmlBlaster/testsuite/org/xmlBlaster
+  xmlBlaster/testsuite/src/java/org/xmlBlaster
 
 
 Examples of C++/Perl/Tcl/Python/Java clients accessing xmlBlaster
@@ -61,5 +61,3 @@ this guide:
 
 ---------------------------------
 ruff@swand.lake.de  (Marcel Ruff)
-manuel.kron@gmx.net (Manuel Kron)
-
