@@ -138,15 +138,15 @@ public class Global implements Cloneable
    protected ProtocolPluginManager protocolPluginManager;
    protected CbServerPluginManager cbServerPluginManager;
 
-   protected RecorderPluginManager recorderPluginManager = null;
-   private HttpIORServer httpServer = null;  // xmlBlaster publishes his AuthServer IOR
+   protected RecorderPluginManager recorderPluginManager;
+   private HttpIORServer httpServer;  // xmlBlaster publishes his AuthServer IOR
 
    protected Hashtable logChannels = new Hashtable();
-   protected LogChannel logDefault = null;
+   protected LogChannel logDefault;
 
-   protected SAXParserFactory saxFactory = null;
-   protected DocumentBuilderFactory docBuilderFactory = null;
-   protected TransformerFactory transformerFactory = null;
+   protected SAXParserFactory saxFactory;
+   protected DocumentBuilderFactory docBuilderFactory;
+   protected TransformerFactory transformerFactory;
 
    protected I_MsgKeyFactory msgKeyFactory;
    protected I_QueryKeyFactory queryKeyFactory;
@@ -1768,6 +1768,7 @@ public class Global implements Cloneable
 
    public void shutdown() {
       if (log.TRACE) log.trace(ME, "Destroying util.Global handle");
+      //Thread.currentThread().dumpStack();
       if (deliveryWorkerPool != null) {
          deliveryWorkerPool.shutdown();
          // registered itself to Runlevel changes deliveryWorkerPool.shutdown();?
@@ -1785,6 +1786,8 @@ public class Global implements Cloneable
          messageTimer.shutdown();
          messageTimer = null;
       }
+
+      shutdownHttpServer();
 
       if (this.jdbcQueueManagers != null) {
          java.util.Enumeration enum = this.jdbcQueueManagers.keys();
