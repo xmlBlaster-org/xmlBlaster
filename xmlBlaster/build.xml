@@ -261,7 +261,8 @@ TODO
       <echo message="   cpp-lib     --> generates C++ libxmlBlasterClient.sl (shared library .so .sl .dll)"/>
       <echo message="                   Check build.properties settings for C++ CORBA and C++ XML libraries"/>
       <echo message="   cpp-test    --> generates C++ test clients"/>
-      <echo message="   cpp         --> builds cpp-lib and cpp-test"/>
+      <echo message="   cpp-demo    --> generates C++ demo clients"/>
+      <echo message="   cpp         --> builds cpp-lib, cpp-test and cpp-demo"/>
       <echo message="   cpp-clean   --> cleans up C++ generated files (object files, corba files etc)"/>
       <echo message="   cpp-delete  --> like 'cpp-clean', but delete shared library and C++ test clients as well"/>
       <echo message=""/>
@@ -1189,10 +1190,10 @@ TODO
 
 
    <!-- =================================================================== -->
-   <!-- Corba/C++ integration - create libxmlBlasterClient.sl (dll)         -->
+   <!-- c++ client integration - create libxmlBlasterClient.sl (dll)         -->
    <!-- See http://sourceforge.net/projects/ant-contrib/                    -->
    <!-- =================================================================== -->
-   <target name="cpp-lib" depends="prepare" description="Corba/C++ integration - create libxmlBlasterClient.sl (dll)">
+   <target name="cpp-lib" depends="prepare" description="c++ client integration - create libxmlBlasterClient.sl (dll)">
 
       <echo message="Adjust following settings in build.properties if necessary:"/>
       <!-- echo message=" STL_HOME      = ${STL_HOME}"/ -->
@@ -1298,7 +1299,7 @@ TODO
 
 
    <!-- =================================================================== -->
-   <!-- Corba/C++ integration - create C++ test clients                     -->
+   <!-- c++ client integration - create C++ test clients                     -->
    <!-- See http://sourceforge.net/projects/ant-contrib/                    -->
    <!-- =================================================================== -->
    <!--
@@ -1324,7 +1325,7 @@ TODO
        cl.exe %CFLAGS% /FoE:\xmlBlaster\build\obj\CompatibleCorba.obj E:\xmlBlaster\src\c++\util\CompatibleCorba.cpp
        cl.exe %CFLAGS%  /IE:\xerces-c-src1_6_0\src /IE:\xerces-c-src1_6_0\include /FoE:\xmlBlaster\build\obj\CorbaConnection.obj E:\xmlBlaster\src\c++\client\CorbaConnection.cpp
    -->
-   <target name="cpp-test" depends="prepare" description="Corba/C++ integration - create C++ test clients"> <!-- depends="prepare,cpp-lib" -->
+   <target name="cpp-test" depends="prepare" description="c++ client integration - create C++ test clients"> <!-- depends="prepare,cpp-lib" -->
       <foreach list="TestConnectQos,TestCorbaDriver,TestEmbeddedServer,TestFailsafe,TestQueue,TestConnect,TestGet,TestSub,TestSubXPath,TestRam,TestTimeout,TestTimestamp" target="compileCppExe" param="exeName" delimiter="," />
    </target>
 
@@ -1366,7 +1367,49 @@ TODO
       </cc>
    </target>
 
-   <target name="cpp" depends="cpp-lib, cpp-test" description="Compile C++ client library and test/demo clients"/>
+   <target name="cpp-demo" depends="prepare" description="c++ client demo - create C++ demo clients"> <!-- depends="prepare,cpp-lib" -->
+      <foreach list="HelloWorld2,PublishDemo,SubscribeDemo" target="compileCppDemoExe" param="exeName" delimiter="," />
+   </target>
+
+   <target name="compileCppDemoExe" description="For internal use only (C++ demo build)">
+      <echo message="Compiling of C++ demo client '${demo.dir}/c++/bin/${exeName}' ..."/>
+      <mkdir dir="${build.dir}/obj"/>
+      <mkdir dir="${demo.dir}/c++/bin"/>
+      <cc debug="true" link="executable"
+          outfile="${demo.dir}/c++/bin/${exeName}"
+          objdir="${build.dir}/obj"
+          multithreaded="true" exceptions="true">
+         <compiler refid="gcc"/>
+         <compiler refid="msvc"/>
+         <compiler refid="bcc"/>
+         <fileset dir="${demo.dir}/c++" includes="${exeName}.cpp"/>
+         <includepath location="${src.cpp.dir}" />
+         <!-- sysincludepath location="${STL_HOME}/stlport" / -->
+         <sysincludepath location="${CORBACPP_HOME}/include" />
+         <sysincludepath location="${XMLCPP_HOME}/include" />           <!-- xerces 1.6.0 -->
+         <sysincludepath location="${XMLCPP_HOME}/include/xercesc" />   <!-- Since xerces 1.7.0 -->
+
+         <!-- libset dir="${STL_HOME}/lib" libs="stlport_gcc" /-->
+         <libset dir="${CORBACPP_HOME}/lib" libs="mico${CORBACPP_VER},micocoss${CORBACPP_VER}" />
+         <libset dir="${XMLCPP_HOME}/lib" libs="xerces-c${XMLCPP_VER}" />
+         <libset dir="${lib.dir}" libs="xmlBlasterClient" />
+
+         <syslibset dir="/lib" libs="dl" if="unix"/> <!-- if="Linux" -->
+         <syslibset dir="/usr/lib" libs="pthread" if="unix"/> <!-- if="Linux" -->
+
+         <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/lib" />
+         <linkerarg value="-Wl,-rpath=${XMLCPP_HOME}/lib" />
+         <linkerarg value="-Wl,-rpath=${lib.dir.absolute}" />
+
+         <defineset>
+            <define name="MICO" value="1" />
+            <define name="pedantic" />
+            <define name="Wall" />
+         </defineset>
+      </cc>
+   </target>
+
+   <target name="cpp" depends="cpp-lib, cpp-test, cpp-demo" description="Compile C++ client library and test/demo clients"/>
 
    <!-- =================================================================== -->
    <!-- Cleans everything                                                   -->
@@ -1384,6 +1427,7 @@ TODO
           <fileset dir="${src.cpp.dir}/generated" includes="*.o, *.cc, *.cpp, *.h"/>
           <fileset dir="${lib.dir}" includes="*xmlBlasterClient.so,*xmlBlasterClient.sl,*xmlBlasterClient.dll"/>
           <fileset dir="${testsuite.dir}/src/c++/bin" includes="*"/>
+          <fileset dir="${demo.dir}/c++/bin" includes="*"/>
           <fileset dir="${idl.dir}" includes="*Idl/*.java"/>
        </delete>
     </target>
