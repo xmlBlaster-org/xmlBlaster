@@ -65,6 +65,7 @@ public class XmlDBClient implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey key, byte[] content, UpdateQos updateQos) {
       results = new String(content);
+      log.info(ME, "Receiving message oid=" + key.getOid() + " state=" + updateQos.getState());
       done = true;
       return "";
    }
