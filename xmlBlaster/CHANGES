@@ -3,6 +3,8 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes for 1.x
 ===============
+ o #13247 Removed bug from Persistent Sessions. When a session was initially persistent
+   and reconnect was specified transient, a resource leak resulted.
 
  o #13237 C++ client library XmlBlasterAccess:
    Added getGlobal() and getCallback() accessors
