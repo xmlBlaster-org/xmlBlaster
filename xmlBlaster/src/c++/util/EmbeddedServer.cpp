@@ -91,7 +91,8 @@ bool EmbeddedServer::start(bool blockUntilUp)
 
    if (runner_) return false;
    runner_ = new EmbeddedServerRunner(*this);
-   bool ret  = runner_->start();
+	const bool detached = false;
+   bool ret  = runner_->start(detached);
    if (ret && blockUntilUp) {
       if (log_.trace()) log_.trace(ME, "start: setting up for a client connection");
       bool isConnected = false;
