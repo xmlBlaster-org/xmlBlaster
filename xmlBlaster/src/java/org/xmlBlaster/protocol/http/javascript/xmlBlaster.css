@@ -1,6 +1,10 @@
 /*----------------------------------------------------------------------------------------------
 Name:      xmlBlaster.css
 <body bgcolor="#FFFFFF" link="#901B1B" vlink="#4D0F0F" alink="#F1C101" background="xmlBlasterBanner.gif">
+Including ohter style sheets, (netscape doesn't support it very well)?
+   @import url(http://www.xmlBlaster.org/styles/style1);
+or
+   @import "http://www.xmlBlaster.org/styles/style1";
 ----------------------------------------------------------------------------------------------*/
 
 BODY {FONT-FAMILY: verdana,arial,helvetica,sans-serif; COLOR: black; BACKGROUND-COLOR: #FFFFFF; }
