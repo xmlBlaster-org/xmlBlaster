@@ -43,7 +43,7 @@ import org.jutils.log.LogChannel;
  * <p>You may use this MBean to start one or more XmlBlaster instances in a
  JMX container. It has, however, only been tested with the JBoss 3.0 server. To start it in JBoss copy the xmlBlaster.sar archive into deploy. If you need to change the settings either edit the enbedded xmlBlaster.properties file or change the name of the property file in META-INF/jboss-service.xml and make it availabl1e in the XmlBlaster search path or embed it in the sar.</p>
 <p>To get better control ower the XmlBlaster setup process, the xmlBlaster.jar
-that's embedded in the sar has had its xmlBlaster.properties and xmlBlasterPlugin.xml files removed. It's recomended to do this also in any xmlBlaster.jar that is placed in the global classpath of JBoss, otherwise it might screw up client.</p>
+that's embedded in the sar has had its xmlBlaster.properties and xmlBlasterPlugins.xml files removed. It's recomended to do this also in any xmlBlaster.jar that is placed in the global classpath of JBoss, otherwise it might screw up client.</p>
 
 <h3>Requirements</h3>
 <p>.You need to copy the file concurrent.jar from xmlBlaster/lib to the system lib directory of JBoss, overwriting the older version distributed with JBoss.</p><p>When using the RMIDriver JBoss must be run with a security policy file specified, eg, sh run.sh -Djava.security.policy=../server/default/conf/server.policy.</p>
@@ -55,7 +55,7 @@ where a @link { org.xmlBlaster.j2ee.util.GlobalLookup} will be bound. If a clien
  *
  *
  * @author Peter Antman
- * @version $Revision: 1.8 $ $Date: 2003/09/18 14:30:57 $
+ * @version $Revision: 1.9 $ $Date: 2004/05/11 15:37:00 $
  */
 
 public class XmlBlasterService implements XmlBlasterServiceMBean {
