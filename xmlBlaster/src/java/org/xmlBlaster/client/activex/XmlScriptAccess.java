@@ -23,6 +23,11 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.script.XmlScriptInterpreter;
 import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.client.SynchronousCache;
+import org.xmlBlaster.client.protocol.I_CallbackServer;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.ConnectReturnQos;
+import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.key.GetKey;
@@ -154,10 +159,78 @@ public class XmlScriptAccess extends SimpleBeanInfo implements I_Callback {
    }
 
    /**
+    * Setup the cache mode.
+    * @see org.xmlBlaster.client.I_XmlBlasterAccess#createSynchronousCache(int)
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.cache.html">client.cache requirement</a>
+    */
+   public SynchronousCache createSynchronousCache(int size) {
+      return this.glob.getXmlBlasterAccess().createSynchronousCache(size);
+   }
+
+   /**
+    * Login to xmlBlaster. 
+    * @see org.xmlBlaster.client.I_XmlBlasterAccess#connect(ConnectQos, org.xmlBlaster.client.I_Callback)
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.connect.html">interface.connect requirement</a>
+    */
+   public ConnectReturnQos connect(String xmlQos) throws XmlBlasterException {
+      ConnectQos qos = new ConnectQos(this.glob, this.glob.getConnectQosFactory().readObject(xmlQos));
+      return this.glob.getXmlBlasterAccess().connect(qos, this);
+   }
+
+   /**
+    * Leaves the connection to the server. 
+    * @see org.xmlBlaster.client.I_XmlBlasterAccess#leaveServer(java.util.Map)
+    */
+   public void leaveServer() {
+      this.glob.getXmlBlasterAccess().leaveServer(null);
+   }
+
+   /**
+    * Has the connect() method successfully passed? 
+    * @see org.xmlBlaster.client.I_XmlBlasterAccess#isConnected()
+    */
+   public boolean isConnected() {
+      return this.glob.getXmlBlasterAccess().isConnected();
+   }
+
+   /**
+    * @see org.xmlBlaster.client.I_XmlBlasterAccess#refreshSession()
+    */
+   public void refreshSession() throws XmlBlasterException {
+      this.glob.getXmlBlasterAccess().refreshSession();
+   }
+
+   /**
+    * Access the callback server which is currently used in I_XmlBlasterAccess. 
+    * @see org.xmlBlaster.client.I_XmlBlasterAccess#getCbServer()
+    */
+   public I_CallbackServer getCbServer() {
+      return this.glob.getXmlBlasterAccess().getCbServer();
+   }
+
+   /**
+   * @see org.xmlBlaster.client.I_XmlBlasterAccess#getId()
+    */
+   public String getId() {
+      return this.glob.getXmlBlasterAccess().getId();
+   }
+
+   /**
+    * Logout from the server, free all server and client side resources. 
+    * @return false if connect() wasn't called before or if you call disconnect() multiple times
+    * @see org.xmlBlaster.client.I_XmlBlasterAccess#disconnect(DisconnectQos)
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.disconnect.html">interface.disconnect requirement</a>
+    */
+   public boolean disconnect(String xmlQos) throws XmlBlasterException {
+      DisconnectQos disconnectQos = new DisconnectQos(this.glob, glob.getDisconnectQosFactory().readObject(xmlQos));
+      return this.glob.getXmlBlasterAccess().disconnect(disconnectQos);
+   }
+
+   /**
     * Subscribe to messages. 
     * @param xmlKey Which message topics to retrieve
     * @param xmlQos Control the behavior and further filter messages with mime based filter plugins
-    * @see I_XmlBlasterAccess#subscribe(SubscribeKey, SubscribeQos, I_Callback)
+    * @see org.xmlBlaster.client.I_XmlBlasterAccess#subscribe(SubscribeKey, SubscribeQos, I_Callback)
     * @exception XmlBlasterException like ErrorCode.USER_NOT_CONNECTED and others
     */
    public SubscribeReturnQos subscribe(String xmlKey, String xmlQos) throws XmlBlasterException {
@@ -165,15 +238,35 @@ public class XmlScriptAccess extends SimpleBeanInfo implements I_Callback {
    }
 
    /**
+    * Cancel subscription. 
+    * @see org.xmlBlaster.client.I_XmlBlasterAccess#unSubscribe(UnSubscribeKey, UnSubscribeQos)
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.unSubscribe.html">interface.unSubscribe requirement</a>
+    */
+   public UnSubscribeReturnQos[] unSubscribe(String xmlKey, String xmlQos) throws XmlBlasterException {
+      return this.glob.getXmlBlasterAccess().unSubscribe(
+                       new UnSubscribeKey(this.glob, this.glob.getQueryKeyFactory().readObject(xmlKey)), 
+                       new UnSubscribeQos(this.glob, this.glob.getQueryQosFactory().readObject(xmlQos)));
+   }
+
+   /**
     * Get synchronous messages. 
     * @param xmlKey Which message topics to retrieve
     * @param xmlQos Control the behavior and further filter messages with mime based filter plugins
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.get.html">interface.get requirement</a>
-    * @see I_XmlBlasterAccess#get(GetKey, GetQos)
+    * @see org.xmlBlaster.client.I_XmlBlasterAccess#get(GetKey, GetQos)
     * @exception XmlBlasterException like ErrorCode.USER_NOT_CONNECTED and others
     */
    public MsgUnit[] get(String xmlKey, String xmlQos) throws XmlBlasterException {
       return this.glob.getXmlBlasterAccess().get(
+                  new GetKey(this.glob, glob.getQueryKeyFactory().readObject(xmlKey)),
+                  new GetQos(this.glob, glob.getQueryQosFactory().readObject(xmlQos)));
+   }
+
+  /**
+   * @see org.xmlBlaster.client.I_XmlBlasterAccess#getCached(GetKey, GetQos)
+   */
+   public MsgUnit[] getCached(String xmlKey, String xmlQos) throws XmlBlasterException {
+      return this.glob.getXmlBlasterAccess().getCached(
                   new GetKey(this.glob, glob.getQueryKeyFactory().readObject(xmlKey)),
                   new GetQos(this.glob, glob.getQueryQosFactory().readObject(xmlQos)));
    }
@@ -184,12 +277,21 @@ public class XmlScriptAccess extends SimpleBeanInfo implements I_Callback {
     * @param content The payload
     * @param xmlQos Control the behavior
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">interface.publish requirement</a>
-    * @see I_XmlBlasterAccess#publish(MsgUnit)
+    * @see org.xmlBlaster.client.I_XmlBlasterAccess#publish(MsgUnit)
     * @exception XmlBlasterException like ErrorCode.USER_NOT_CONNECTED and others
     */
-   public PublishReturnQos publish(String xmlKey, String contentStr, String qos) throws XmlBlasterException {
-      MsgUnit msgUnit = new MsgUnit(this.glob, xmlKey, contentStr, qos);
+   public PublishReturnQos publish(String xmlKey, String contentStr, String xmlQos) throws XmlBlasterException {
+      MsgUnit msgUnit = new MsgUnit(this.glob, xmlKey, contentStr, xmlQos);
       return this.glob.getXmlBlasterAccess().publish(msgUnit);
+   }
+
+   /**
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.erase.html">interface.erase requirement</a>
+    */
+   public EraseReturnQos[] erase(String xmlKey, String xmlQos) throws XmlBlasterException {
+      return this.glob.getXmlBlasterAccess().erase(
+                  new EraseKey(this.glob, glob.getQueryKeyFactory().readObject(xmlKey)),
+                  new EraseQos(this.glob, glob.getQueryQosFactory().readObject(xmlQos)));
    }
 
    /**
@@ -201,6 +303,14 @@ public class XmlScriptAccess extends SimpleBeanInfo implements I_Callback {
       if (this.updateStack != null)
          this.updateStack.add(msgUnit);
       return notifyUpdateEvent(cbSessionId, updateKey.toXml(), content, updateQos.toXml());
+   }
+
+   /**
+    * Dump state of this client connection handler into an XML ASCII string.
+    * @return internal state
+    */
+   public String toXml() {
+      return this.glob.getXmlBlasterAccess().toXml();
    }
 
    /**
