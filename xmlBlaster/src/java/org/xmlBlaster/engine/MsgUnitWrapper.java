@@ -5,9 +5,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
-import java.io.ByteArrayOutputStream;
-import java.io.PrintStream;
-
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -194,14 +191,9 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
       // TODO: Remove the logging
       if (glob.getLog("core").TRACE && !isInternal()) {
          // this is just to send the stack trace to the log file (stderr does not go there)
-         ByteArrayOutputStream baos = new ByteArrayOutputStream();
-         PrintStream pstr = new PrintStream(baos);
-         new Exception().printStackTrace(pstr);
-         
          glob.getLog("core").trace(ME, "Reference count of '" + getLogId() + "' changed from " +
          (this.referenceCounter-((isHistoryReference)?2*count:count)) + " to " + this.referenceCounter + 
-         ", new historyEntries=" + this.historyReferenceCounter + " this='" + this + "' storageId='" + storageId + "' stack=" + new String(baos.toByteArray()));
-         
+         ", new historyEntries=" + this.historyReferenceCounter + " this='" + this + "' storageId='" + storageId + "' stack=" + Global.getStackTraceAsString());
       }
       if (this.referenceCounter <= 0L) {
          toDestroyed();

@@ -305,8 +305,8 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
       // TODO add a method I_Queue.removeRandom(long uniqueId)
       QueryQosData subscribeQosData = subscriptionInfo.getQueryQosData();
       if (this.log.DUMP) this.log.dump(ME, "subscriptionAdd: key='" + data.toXml() + "'");
-      if (this.log.DUMP) this.log.dump(ME, "subscriptionAdd: qos='" + subscribeQosData.toXml() + "'");
-      if (!subscribeQosData.getPersistentProp().getValue()) return;
+      if (subscribeQosData != null) if (this.log.DUMP) this.log.dump(ME, "subscriptionAdd: qos='" + subscribeQosData.toXml() + "'");
+      if (subscribeQosData == null || subscribeQosData.getPersistentProp() == null || !subscribeQosData.getPersistentProp().getValue()) return;
 
       SessionInfo sessionInfo = subscriptionInfo.getSessionInfo(); 
       if (!sessionInfo.getConnectQos().getData().getPersistentProp().getValue()) {
@@ -356,7 +356,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
       if (subscriptionInfo.getPersistenceId() < 1L) return;
       // TODO add a method I_Queue.removeRandom(long uniqueId)
       QueryQosData qosData = subscriptionInfo.getQueryQosData();
-      if (qosData.getPersistentProp() == null || !qosData.getPersistentProp().getValue()) return;
+      if (qosData == null || qosData.getPersistentProp() == null || !qosData.getPersistentProp().getValue()) return;
 
       SubscribeEntry entry = new SubscribeEntry(keyData.toXml(), qosData.toXml(), subscriptionInfo.getSessionInfo().getConnectQos().getSessionName().getAbsoluteName(), subscriptionInfo.getPersistenceId(), 0L);
       if (this.log.TRACE) this.log.trace(ME, "subscriptionRemove: removing from persistence entry '" + entry.getUniqueId() + "' secretSessionId='" + subscriptionInfo.getSessionInfo().getConnectQos().getSessionName().getAbsoluteName());
