@@ -161,34 +161,66 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
     */
    public final ConnectReturnQos connect(ConnectQos connectQos, String secretSessionId) throws XmlBlasterException
    {
+      // [1] Try reconnecting with secret sessionId
       try {
          if (log.CALL) log.call(ME, "Entering connect(secretSessionId=" + secretSessionId + ")");
          if (log.DUMP) log.dump(ME, "ConnectQos=" + connectQos.toXml());
 
          // Get or create the secretSessionId (we respect a user supplied secretSessionId) ...
-         if (secretSessionId == null) {
+         if (secretSessionId == null || secretSessionId.length() < 2) {
             secretSessionId = connectQos.getSessionId();
             if (secretSessionId != null && secretSessionId.length() >= 2)
                log.info(ME, "Using secretSessionId '" + secretSessionId + "' from ConnectQos");
          }
-         if (secretSessionId == null || secretSessionId.length() < 2) {
-            secretSessionId = createSessionId("null" /*subjectCtx.getName()*/);
-            connectQos.setSessionId(secretSessionId); // assure consistency
-            if (log.TRACE) log.trace(ME+".connect()", "Empty secretSessionId - generated secretSessionId=" + secretSessionId);
-         }
-         else {
+         if (secretSessionId != null && secretSessionId.length() >= 2) {
             SessionInfo info = getSessionInfo(secretSessionId);
             if (info != null) {
-               ConnectReturnQos returnQos = new ConnectReturnQos(glob, connectQos);
+               ConnectReturnQos returnQos = new ConnectReturnQos(glob, info.getConnectQos());
                returnQos.setSessionId(secretSessionId);
+               returnQos.setSessionName(info.getSessionName());
                log.info(ME, "Reconnecting with given secretSessionId, using QoS from first login");
                return returnQos;
             }
          }
       }
       catch (Throwable e) {
+         log.error(ME, "Internal error when trying to reconnect to session " + connectQos.getSessionName() + " with secret session ID: " + e.toString());
          e.printStackTrace();
          throw XmlBlasterException.convert(glob, ME, ErrorCode.INTERNAL_CONNECTIONFAILURE.toString(), e);
+      }
+
+      // [2] Try reconnecting with publicSessionId
+      if (connectQos.hasPublicSessionId()) {
+         SessionInfo info = getSessionInfo(connectQos.getSessionName());
+         if (info != null) {
+            try {
+               // Check password as we can't trust the public session ID
+               // throws XmlBlasterExceptions if authentication fails
+               info.getSecuritySession().verify(connectQos.getSecurityQos());
+               
+               ConnectReturnQos returnQos = new ConnectReturnQos(glob, info.getConnectQos());
+               returnQos.setSessionId(info.getSessionId());
+               returnQos.setSessionName(info.getSessionName());
+               log.info(ME, "Reconnecting with given publicSessionId to '" + info.getSessionName() + "', using QoS from first login");
+               return returnQos;
+            }
+            catch (XmlBlasterException e) {
+               if (log.TRACE) log.trace(ME, "Access is denied when trying to reconnect to session " + info.getSessionName() + ": " + e.getMessage());
+               throw e; // Thrown if authentication failed
+            }
+            catch (Throwable e) {
+               log.error(ME, "Internal error when trying to reconnect to session " + info.getSessionName() + " with public session ID: " + e.toString());
+               e.printStackTrace();
+               throw XmlBlasterException.convert(glob, ME, ErrorCode.INTERNAL_CONNECTIONFAILURE.toString(), e);
+            }
+         }
+      }
+
+      // [3] Generate a secret session ID
+      if (secretSessionId == null || secretSessionId.length() < 2) {
+         secretSessionId = createSessionId("null" /*subjectCtx.getName()*/);
+         connectQos.setSessionId(secretSessionId); // assure consistency
+         if (log.TRACE) log.trace(ME+".connect()", "Empty secretSessionId - generated secretSessionId=" + secretSessionId);
       }
 
       I_Session sessionCtx = null;
@@ -222,13 +254,15 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
       try {
          // Check if user is known, otherwise create an entry ...
          I_Subject subjectCtx = sessionCtx.getSubject();
-         SessionName subjectName = null;
+         SessionName subjectName = connectQos.getSessionName();
+         /*
          try {
             subjectName = new SessionName(glob, subjectCtx.getName());
          }
          catch (IllegalArgumentException e) {
             throw new XmlBlasterException(glob, ErrorCode.USER_SECURITY_AUTHENTICATION_ILLEGALARGUMENT, ME, "Please check your login name '" + subjectCtx.getName() + "': " + e.toString());
          }
+         */
          subjectInfo = getSubjectInfoByName(subjectName);
          if (subjectInfo == null) {
             subjectInfo = new SubjectInfo(getGlobal(), subjectCtx, connectQos.getSubjectCbQueueProperty());
@@ -237,19 +271,7 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
          else  // TODO: Reconfigure subject queue only when queue relating='subject' was used
             subjectInfo.setCbQueueProperty(connectQos.getSubjectCbQueueProperty()); // overwrites only if not null
 
-         /*
-         // Check if client does a relogin and may only login once ...
-         if (connectQos.getMaxSessions() == 1 && subjectInfo.isLoggedIn()) {
-            log.warn(ME+".AlreadyLoggedIn", "Client " + subjectCtx.getName() + " is already logged in. Your login session will be re-initialized.");
-            sessionInfo = subjectInfo.getFirstSession();
-            if (sessionInfo!=null) {
-               resetSessionInfo(sessionInfo.getSessionId(), false);
-            }
-            // allowing re-login: if the client crashed without proper logout, she should
-            // be allowed to login again, so - first logout the last session (but keep messages in client queue)
-            // We need to clean up sessionInfo, usually the callback reference is another one, etc.
-         }
-         */
+         // Check if client does a relogin and wants to destroy old sessions
          if (connectQos.clearSessions() == true && subjectInfo.getNumSessions() > 0) {
             SessionInfo[] sessions = subjectInfo.getSessions();
             for (int i=0; i<sessions.length; i++ ) {
@@ -262,6 +284,7 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
 
          if (log.TRACE) log.trace(ME, "Creating sessionInfo for " + subjectInfo.getId());
 
+         // Create the new sessionInfo instance
          sessionInfo = new SessionInfo(subjectInfo, sessionCtx, connectQos, getGlobal());
          synchronized(sessionInfoMap) {
             sessionInfoMap.put(secretSessionId, sessionInfo);
