@@ -33,7 +33,7 @@ AUTHOR:
           */
          function openCallBack() {
             winOptions = "height=100,width=350,screenX=0,screenY=0,status=no,scrollbars=no,toolbar=no,directories=no,menubar=no,location=no,resizable=no";
-            xmlBlasterWindow = window.open("/persistentWindow/index.html"+location.search, "xmlBlasterFrame", winOptions);
+            xmlBlasterWindow = window.open("../persistentWindow/index.html"+location.search, "xmlBlasterFrame", winOptions);
          }
          openCallBack();
 
@@ -51,7 +51,7 @@ AUTHOR:
             Log.TRACE = false;
             Log.trace("Login succeeded, loading application ...");
             // use absolute name, since this method is called from persistentWindow servlet
-            top.systemInfoWindow.northFrame.location.href = "/systemInfo/northFrame.html";
+            top.systemInfoWindow.northFrame.location.href = "../systemInfo/northFrame.html";
             cpuinfoFrame.location.href = "/servlet/SystemInfo?ActionType=cpuinfo";
             meminfoFrame.location.href = "/servlet/SystemInfo?ActionType=meminfo";
          }
@@ -68,7 +68,7 @@ AUTHOR:
          <!--
          <frame name="meminfoFrame" src="/servlet/SystemInfo?ActionType=meminfo" scrolling="auto" marginwidth="0" leftmargin="0" marginheight="0" topmargin=0 frameborder="0" framespacing="0">
          -->
-         <frame name="southFrame" src="/systemInfo/southFrame.html" scrolling="auto" marginwidth="0" leftmargin="0" marginheight="0" topmargin=0 frameborder="0" framespacing="0">
+         <frame name="southFrame" src="../systemInfo/southFrame.html" scrolling="auto" marginwidth="0" leftmargin="0" marginheight="0" topmargin=0 frameborder="0" framespacing="0">
       </frameset>
 
    </head>
