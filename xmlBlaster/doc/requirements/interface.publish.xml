@@ -63,32 +63,64 @@
 
    <example lang="XML" type="HTML">
       <p>
-      Here is a full QoS:
+      Here is a full QoS of a published message in <b>publish/subscribe</b> mode:
       </p>
 <pre>
-  &lt;qos> &lt;
-     &lt;state id='OK' info='Keep on running"/> <!-- Only for updates and PtP -->
-     &lt;sender>Tim&lt;/sender>
-     &lt;priority>5&lt;/priority>
-     &lt;subscriptionId>subId:1&lt;/subscriptionId> <!-- Only for updates -->
-     &lt;rcvTimestamp nanos='1007764305862000002'> &lt;!-- UTC time when message was created in xmlBlaster server with a publish() call, in nanoseconds since 1970 -->
-           2001-12-07 23:31:45.862000002   &lt;!-- The nanos from above but human readable -->
-     &lt;/rcvTimestamp>
-     &lt;topic>&lt;expiration lifeTime='129595811'/>&lt;/topic> <!-- MsgUnitHandler lifecycle -->
-     &lt;expiration lifeTime='129595811'/> <!-- Only for persistence layer -->
-     &lt;isVolatile>false&lt;/isVolatile>
-     &lt;queue index='0' of='1'/> &lt;!-- If queued messages are flushed on login -->
-     &lt;isDurable/>
-     &lt;readonly/>
-     &lt;redeliver>4&lt;/redeliver>             <!-- Only for updates -->
-     &lt;route>
-        &lt;node id='heron'/>
-     &lt;/route>
-     &lt;topic readonly='false' destroyDelay='60000'>
-        &lt;msgstore relating='topic' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='deadMessage'/>
-        &lt;queue relating='history' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='exception'/>
-     &lt;/topic>
-  &lt;/qos>
+&lt;qos>
+   &lt;!-- 5 is NORM priority, 0 is slowest, 9 is highest -->
+   &lt;priority>5&lt;/priority>
+   
+   &lt;!-- The message is automatically destroyed after 129595811 milliseconds -->
+   &lt;expiration lifeTime='129595811'/>
+   
+   &lt;!-- The message is saved to harddisk to be recoverable after a server crash -->
+   &lt;isDurable/>
+   
+   &lt;!-- Administration: configure the topic on first publish -->
+   &lt;topic readonly='false' destroyDelay='60000' createDomEntry='true'>
+      &lt;msgstore relating='topic' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='deadMessage'/>
+      &lt;queue relating='history' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='exception'/>
+   &lt;/topic>
+&lt;/qos>
+</pre>
+   </example>
+
+   <example lang="XML" type="HTML">
+      <p>
+      Here is a full QoS of a published message in <b>PtP</b> (point to point) mode:
+      </p>
+<pre>
+&lt;qos> &lt;
+   &lt;!-- 5 is NORM priority, 0 is slowest, 9 (or MAX) is highest -->
+   &lt;priority>MAX&lt;/priority>
+   
+   &lt;!-- false to make PtP message invisible for subscribes -->
+   &lt;subscribeable>false&lt;/subscribeable>
+   
+   &lt;expiration lifeTime='129595811'/>
+   
+   &lt;isDurable/>  &lt;!-- message is recovered on server crash -->
+
+   &lt;!-- Send to all login sessions of user 'Tim', if Tim is offline queue it -->
+   &lt;destination queryType='EXACT' forceQueuing='true'>
+      Tim
+   &lt;/destination>
+
+   &lt;!-- The login session '-2' of 'Ben' logged in at cluster node 'heron' --> 
+   &lt;destination>
+      /node/heron/client/Ben/-2
+   &lt;/destination>
+
+   &lt;destination queryType='XPATH'>   &lt;!-- Not supported yet -->
+      //[GROUP='Manager']
+   &lt;/destination>
+
+   &lt;!-- Administration: configure the topic on first publish -->
+   &lt;topic readonly='false' destroyDelay='60000' createDomEntry='false'>
+      &lt;msgstore relating='topic' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='deadMessage'/>
+      &lt;queue relating='history' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='exception'/>
+   &lt;/topic>
+&lt;/qos>
 </pre>
    </example>
 
@@ -103,7 +135,7 @@
 
    <example lang="Java" type="HTML">
       <p>
-      A typical Java client code in Publish/Subscribe mode:
+      A typical Java client code in <b>publish/subscribe</b> mode:
       </p>
       <pre>
    import org.xmlBlaster.client.key.PublishKey;
@@ -115,13 +147,13 @@
 
    PublishQos pq = new PublishQos(glob);
 
-   MsgUnit msgUnit = new MsgUnit(pk.toXml(), "Hi", pq.toXml());
+   MsgUnit msgUnit = new MsgUnit(pk, "Hi", pq);
 
    PublishReturnQos retQos = con.publish(msgUnit);
       </pre>
 
       <p>
-      A typical Java client code in PtP mode:
+      A typical Java client code in <b>PtP</b> mode:
       </p>
       <pre>
    import org.xmlBlaster.client.key.PublishKey;
@@ -136,7 +168,7 @@
    PublishQos pq = new PublishQos(glob);
    pq.addDestination(new Destination(new SessionName(glob, "Tim/-5")));
 
-   MsgUnit msgUnit = new MsgUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
+   MsgUnit msgUnit = new MsgUnit(pk, "Hi".getBytes(), pq);
 
    PublishReturnQos retQos = con.publish(msgUnit);
       </pre>
@@ -146,9 +178,68 @@
    </p>
    </example>
 
+   <example lang="Perl" type="HTML">
+      <p>
+      A typical <b>Perl client code</b> in <b>publish/subscribe</b> mode:
+      </p>
+      <pre>
+use Frontier::Client;
+    
+#$server_url = 'http://MyHost:8080/';
+$server_url =  @ARGV[0];
+print "\nTrying to connect to xmlBlaster server on $server_url ...\n";
+
+# Make an object to represent the XML-RPC server.
+$server = Frontier::Client->new(url => $server_url);
+
+$connectQos = "&lt;qos>".
+              "  &lt;securityService type='htpasswd' version='1.0'>".
+              "    &lt;user>testpubUser&lt;/user>".
+              "    &lt;passwd>secret&lt;/passwd>".
+              "  &lt;/securityService>".
+              "  &lt;ptp>true&lt;/ptp>".
+              "  &lt;session timeout='86400000' maxSessions='10'/>".
+              "&lt;/qos>";
+
+# Call the remote server and get our result (we need to port to connect(), see XmlBlaster.pm).
+$sessionId = $server->call('authenticate.login', "testpubUser", "secret", $connectQos, "");
+print "\nLogin success on $server_url, got secret sessionId=$sessionId \n";
+
+# Publish a volatile message
+my $publishKey="&lt;key oid='' contentMime='text/xml'>".
+               "  &lt;service>post&lt;/service>".
+               "  &lt;type>request&lt;/type>".
+               "  &lt;id>123&lt;/id>".
+               "&lt;/key>",
+my $cdata="&lt;event>testing&lt;/event>";
+my $publishQos="&lt;qos>".
+               "  &lt;expiration lifeTime='0'/>".
+               "  &lt;isDurable>false&lt;/isDurable>".
+               "  &lt;topic destroyDelay='0' createDomEntry='true'/>".
+               "&lt;/qos>";
+
+$message = $server->call('xmlBlaster.publish', $sessionId,
+        $publishKey,
+        $cdata,
+        $publishQos);
+
+print "publish return is : $message\n";
+
+# Logout from xmlBlaster
+$server->call('authenticate.disconnect', $sessionId, "&lt;qos/>");
+print "\nLogout done, bye.\n";
+      </pre>
+
+   <p>
+   See xmlBlaster/demo/perl/xmlrpc/*.pl for more examples.
+   </p>
+   </example>
+
+
    <configuration>
    </configuration>
 
+   <see type="API">org.xmlBlaster.util.enum.PriorityEnum</see>
    <see type="API">org.xmlBlaster.util.MsgUnit</see>
    <see type="API">org.xmlBlaster.client.qos.PublishQos</see>
    <see type="API">org.xmlBlaster.client.qos.PublishReturnQos</see>
@@ -172,7 +263,7 @@
  
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 01</date>
-   <revision>$Revision: 1.12 $</revision>
+   <revision>$Revision: 1.13 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the publish method invocation</comment>
