@@ -225,7 +225,7 @@ org.xmlBlaster.engine.admin.extern.TelnetGateway >>
 
          <tr>
             <td>admin.remoteconsole.port</td>
-            <td>0</td>
+            <td>2702</td>
             <td>Choose the port where xmlBlaster listens for telnet requests, 0 switches telnet access off.
                 Port 2702 is a good port to try.<br />Example:
 <pre>java org.xmlBlaster.Main
@@ -259,7 +259,7 @@ org.xmlBlaster.engine.admin.extern.TelnetGateway >>
    
    <date>2002 05 09</date>
    
-   <revision>$Revision: 1.14 $</revision>
+   <revision>$Revision: 1.15 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
