@@ -116,6 +116,7 @@ public:
          assertEquals(log_, ME, (size_t)1, arr.size(), "Erase");
       } 
       catch(XmlBlasterException& e) { 
+			log_.error(ME, "Erase problem: " + e.getMessage());
          assert(0);
       }
    }
