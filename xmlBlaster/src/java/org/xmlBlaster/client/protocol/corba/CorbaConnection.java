@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.7 2000/10/27 13:20:48 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.8 2000/10/29 20:21:52 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -62,7 +62,7 @@ import java.applet.Applet;
  * first time the ORB is created.<br />
  * This will be fixed as soon as possible.
  *
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class CorbaConnection implements I_XmlBlasterConnection
@@ -70,7 +70,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
    private String ME = "CorbaConnection";
 
    // HACK May,24 2000 !!! (search 'Thread leak' in this file to remove the hack again and remove the two 'static' qualifiers below.)
-   // Thread leak from JacORB 1.1, the threads
+   // Thread leak from JacORB 1.2.2, the threads
    //   - JacORB Listener Thread
    //   - JacORB ReplyReceptor
    //   - JacORB Request Receptor

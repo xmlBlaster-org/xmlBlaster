@@ -3,7 +3,7 @@ Name:      CorbaCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaCallbackServer.java,v 1.3 2000/10/22 13:50:02 ruff Exp $
+Version:   $Id: CorbaCallbackServer.java,v 1.4 2000/10/29 20:21:52 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -31,16 +31,6 @@ import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackHelper;
  */
 public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackOperations
 {
-   // HACK May,24 2000 !!! (search 'Thread leak' in this file to remove the hack again and remove the two 'static' qualifiers below.)
-   // Thread leak from JacORB 1.1, the threads
-   //   - JacORB Listener Thread
-   //   - JacORB ReplyReceptor
-   //   - JacORB Request Receptor
-   // are never released on orb.shutdown() and rootPoa.deactivate()
-   //
-   // So we use a static orb and poa and recycle it.
-   // The drawback is that a running client can't change the
-   // orb behavior
    private org.omg.CORBA.ORB orb = null;
    private org.omg.PortableServer.POA rootPOA = null;
    private BlasterCallback callback = null;
@@ -116,6 +106,16 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
          callback = null;
       }
 
+      // HACK May,24 2000 !!! (search 'Thread leak' in this file to remove the hack again and remove the two 'static' qualifiers below.)
+      // Thread leak from JacORB 1.2.2, the threads
+      //   - JacORB Listener Thread
+      //   - JacORB ReplyReceptor
+      //   - JacORB Request Receptor
+      // are never released on orb.shutdown() and rootPoa.deactivate()
+      //
+      // So we use a orb and poa singleton and recycle it.
+      // The drawback is that a running client can't change the
+      // orb behavior
       // Thread leak !!!
       /*
       if (rootPOA != null) {
