@@ -24,13 +24,18 @@ import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 
 
 /**
- * This client connects to xmlBlaster and publishes a configurable amount of messages. 
+ * This client connects to xmlBlaster and subscribes to messages. 
  * <p>
  * This is a nice client to experiment and play with xmlBlaster as there are many
  * command line options to specify the type and amount of messages published.
  * </p>
+ * <p>
+ * Try using 'java javaclients.HelloWorldPublish' in another window to publish some
+ * messages.
+ * Further you can type 'd' in the window running xmlBlaster to get a server dump.
+ * </p>
  *
- * Invoke:
+ * Invoke (after starting the xmlBlaster server):
  * <pre>
  * java javaclients.HelloWorldSubscribe -xpath //key -initialUpdate true -unSubscribe true
  *
@@ -41,6 +46,7 @@ import org.xmlBlaster.client.protocol.XmlBlasterConnection;
  * <p>
  * If unSubscribe=false the message is not unsubscribed at the end, if disconnect=false we don't logout at the end.
  * </p>
+ * @see java javaclients.HelloWorldPublish
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.html" target="others">xmlBlaster interface</a>
  */
 public class HelloWorldSubscribe implements I_Callback
@@ -48,6 +54,7 @@ public class HelloWorldSubscribe implements I_Callback
    private final String ME = "HelloWorldSubscribe";
    private final Global glob;
    private final LogChannel log;
+   private int updateCounter = 0;
 
    public HelloWorldSubscribe(Global glob) {
       this.glob = glob;
@@ -64,12 +71,16 @@ public class HelloWorldSubscribe implements I_Callback
          boolean disconnect = glob.getProperty().get("disconnect", true);
 
          if (oid.length() < 1 && xpath.length() < 1) {
+            log.warn(ME, "No -oid or -xpath given, we subscribe to oid='Hello'.");
+            oid = "Hello";
+            /*
             log.error(ME, "Please specify the message oid or an xpath query");
             log.info(ME, "Example:");
             log.info(ME, "  java javaclients.HelloWorldSubscribe -oid HelloMsg");
             log.info(ME, "  java javaclients.HelloWorldSubscribe -xpath //key");
             log.info(ME, "  java javaclients.HelloWorldSubscribe -help    (more help)");
             System.exit(1);
+            */
          }
 
          log.info(ME, "Used settings are:");
@@ -104,6 +115,11 @@ public class HelloWorldSubscribe implements I_Callback
          sq.setWantInitialUpdate(initialUpdate);
          sq.setWantLocal(local);
          sq.setWantContent(content);
+         
+         HistoryQos historyQos = new HistoryQos(glob);
+         historyQos.setNumEntries(historyNumUpdates);
+         sq.setHistoryQos(historyQos);
+
          SubscribeReturnQos srq = con.subscribe(sk.toXml(), sq.toXml());
 
          log.info(ME, "Subscribed on topic '" + ((oid.length() > 0) ? oid : xpath) +
@@ -142,7 +158,7 @@ public class HelloWorldSubscribe implements I_Callback
                         UpdateQos updateQos) {
       System.out.println("");
       System.out.println("============= START " + updateKey.getOid() + " =======================");
-      log.info(ME, "Receiving update of a message ...");
+      log.info(ME, "Receiving update #" + (++updateCounter) + " of a message ...");
       System.out.println("<xmlBlaster>");
       System.out.println(updateKey.toXml());
       System.out.println("");
