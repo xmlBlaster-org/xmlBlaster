@@ -178,7 +178,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
    }
 
    /** Same as shutdown() but does additionally an engine.global.shutdown() */
-   public void destroy() {
+   public synchronized void destroy() {
       shutdown();
       if (this.glob != null) {
          this.glob.shutdown();
@@ -191,7 +191,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
     * <p />
     * The drivers are removed.
     */
-   public void shutdown()
+   public synchronized void shutdown()
    {
       if (inShutdownProcess)
          return;
@@ -256,6 +256,10 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
                }
                else
                   controlPanel.showWindow();
+            }
+            else if (line.toLowerCase().equals("gc")) {
+               System.gc();
+               log.info(ME, "Garbage collector has run");
             }
             else if (line.toLowerCase().startsWith("r")) {
                if (line.length() > 1) {
@@ -387,9 +391,9 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
             if (controlPanel == null) {
                int width = 48;
                org.jutils.text.StringHelper sh = new org.jutils.text.StringHelper();
-               String line = sh.charChain('-', width);
-               String bound = "|";
-               log.info(ME, line);
+               String line = sh.charChain('o', width-2);
+               String bound = "o";
+               log.info(ME, " "+line+" ");
                String ver = bound + " xmlBlaster " + glob.getVersion() + " build " + glob.getBuildTimestamp();
                log.info(ME, ver + sh.charChain(' ', width-ver.length()-1) + bound);
                boolean useKeyboard = glob.getProperty().get("useKeyboard", true);
@@ -400,7 +404,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
                  String help = bound + " READY - no keyboard input available";
                  log.info(ME, help + sh.charChain(' ', width-help.length()-1) + bound);
                }
-               log.info(ME, line);
+               log.info(ME, " "+line+" ");
             }
             else
                log.info(ME, "xmlBlaster is ready for requests");
@@ -411,16 +415,20 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
             if (log.TRACE) log.trace(ME, "Shutting down xmlBlaster to runlevel " + RunlevelManager.toRunlevelStr(to) + " ...");
          }
          if (to == RunlevelManager.RUNLEVEL_HALTED_PRE) {
-            if (this.glob != null) {
-              this.glob.shutdown();
+            synchronized (this) {
+               if (this.glob != null) {
+                 this.glob.shutdown();
+               }
             }
             log.info(ME, "XmlBlaster halted.");
          }
 
          if (to == RunlevelManager.RUNLEVEL_HALTED) {
-            if (this.signalCatcher != null) {
-               this.signalCatcher.removeSignalCatcher();
-               this.signalCatcher = null;
+            synchronized (this) {
+               if (this.signalCatcher != null) {
+                  this.signalCatcher.removeSignalCatcher();
+                  this.signalCatcher = null;
+               }
             }
          }
       }
