@@ -5,28 +5,33 @@ Changes for x.xxx [xxx, xx xxxx]
 
 TODO:
 
-* Renew lease for msg queue automatically on usage
 * Test message lifecycle (some implementation is missing)
 * PtP with session destination
 * RequestBroker.get() the return QoS should be merged with UpdateQos
 * Test (implement?) forceUpdate=false with same content
 * Remove thread save gap in RequestBroker:publish()
-* Test: C++, Perl, HTTP, different protocol drivers ...
+* Test: Perl client ...
 * Security demo with Bit Cypher: http://www.alphaworks.ibm.com/tech/abc?open
 
-DONE:
+
+Changes for 0.79e [Mar, 27 2002]
+================================
+
   - SOCKET protocol driver performance tune:
     Using now read() and write() with large buffer
+    See xmlBlaster/src/java/org/xmlBlaster/protocol/socket/Parser.java
 
   - Added client side burst mode for publishOneway
     in java client helper classes.
-    see -client.publishOneway.collectTime 500
+    See -client.publishOneway.collectTime 500
 
-  - RMI and XmlRpc
-    see CORBA xmlBlaster.idl changes
+  - RMI and XmlRpc interface changes.
+    see CORBA changes in
+    xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl
 
   - CORBA changes in xmlBlaster.idl
-
+    (xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl)
+    
     The xmlBlaster server:
      Added:
        oneway void publishOneway(in MessageUnitArr msgUnitArr);
@@ -43,8 +48,8 @@ DONE:
        oneway void updateOneway(in string sessionId, in serverIdl::MessageUnitArr msgUnitArr);
        string ping(in string qos);
      Changed:
-       The update() is changed to return a String[].
-
+       The update() is changed to receive a cbSessionId and to return a String[]
+       It may throw an exception now, since it is not oneway anymore.
 
   - Java client helper classes:
     The update() method changed incompatible !!
@@ -56,6 +61,8 @@ DONE:
 
   - Changes to Java client library. We now support separate
     instantiation of callback protocol drivers and client drivers.
+    See: xmlBlaster/testsuite/org/xmlBlaster/TestCorbaThreads.java
+         for an example.
 
   - Added a framework to add your own MIME based plugins to filter subscriptions
     Please read
@@ -73,7 +80,9 @@ DONE:
   - Added support for dead letters on failure
     http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.login.session.html
 
-  - Added support for multiple sessions per client, see:
+  - Added support for multiple sessions per client.
+    A user may now login multiple times with the same login name.
+    The different login sessions are timeout controlled, see
     http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.login.session.html
 
   - Added support for sophisticated queueing, priority messages,
@@ -94,16 +103,8 @@ DONE:
     Constructor of SubscribeQosWrapper() is inverted!
     Constructor of GetQosWrapper() is inverted!
 
-  - xmlBlaster.idl changed incompatible
-    update() not oneway anymore, returns string and throws exception
-    update() now delivers a sessionId argument
-
-  - Changed to support session based client logins
-
   - New high performing Timestamp supporting unique message timestamps
     with simulated nanoseconds
-
-  - New QoS 'priority'
 
   - Behavior change [Ruff]:
     <forceUpdate> defaults now to true
@@ -124,14 +125,23 @@ DONE:
       FAX:   (310) 823-8649
       email: iana@iana.org
 
-  - Heinrich has made the plugin interface more generic and
-    has added the persistence drivers to this framework
+  - Heinrich has made the plugin interface more generic.
+    See xmlBlaster/src/java/org/xmlBlaster/util/I_Plugin.java
+
+  - Native XML persistence support added.
+    Heinrich has added Xindice (a native XML DB) support as persistence
+    layer of xmlBlaster.
+    See xmlBlaster/src/java/org/xmlBlaster/engine/persistence/xmldb/README
 
   - build.sh and build.bat have new targets:
        build.sh dist          (collect xmlblaster server files)
-       build.sh dist-client   (collects java client classes)
+       build.sh dist-client   (collects java client classes in xmlBlasterClient.jar,
+                               with many variants)
        build.sh cpp-lib       (builds a C++ client shared library or dll)
        build.sh cpp-test      (compiles/links C++ CORBA clients)
+    Try
+       build.sh usage
+    to see all possible options.
 
   - Behavior change [Juergen Freidling]:
     xmlBlaster now respects multiple subscriptions
@@ -142,21 +152,12 @@ DONE:
     * Removed JDBC pool code (does not compile with JDK 1.4)
     * Bugfix for xmlBlaster.properties file in CLASSPATH
 
-  - build.xml: Added target "dist-client" to build a xmlBlasterClient.jar
-    This contains all necessary class files for a typical xmlBlaster client 
-
   - Added complete demo code how to access xmlBlaster
     from C using XmlRpc
          Read xmlBlaster/demo/c/xmlrpc/README
 
-  - Added String return value for RMI and XmlRpc for
-    callback update() method, current return expected is
-      "<qos><state>OK</state></qos>"
-           "<qos><state>ERROR</state></qos>"
-         TODO: Add String update() to Java client helper classes
-         TODO: Change CORBA oneway update() to String update()
-
   - Added OS independend C++ compile support with ant
+    TODO: Adapt to run on Windows as well.
 
   - Reduced necessary environment settings to
       JAVA_HOME=<pathToJdk>
@@ -204,8 +205,9 @@ Changes for 0.79d [Dec, 30 2001]
     The new C++ namespace is
        org::xmlBlaster
 
-  - Added an email callback plugin.
+  - Added an email callback plugin (protocol="EMAIL").
     This allows callbacks to be send using email instead e.g. CORBA
+    See xmlBlaster/demo/javaclients/email/README
 
   - New 'passwd' style Security Plugin from Cyrille Giquello, see
 
