@@ -3,7 +3,7 @@ Name:      Parser.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Parser class for raw socket messages
-Version:   $Id: Parser.java,v 1.11 2002/02/15 14:56:06 ruff Exp $
+Version:   $Id: Parser.java,v 1.12 2002/02/15 19:06:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -330,6 +330,26 @@ public class Parser extends Converter
    }
 
    /**
+    * Add a QoS array value. 
+    * <br />
+    * Use for return value of methods publishArr and erase
+    * @exception IllegalArgumentException if invoked multiple times
+    */
+   public void addMessage(String[] qos) {
+      if (!msgVec.isEmpty())
+         throw new IllegalArgumentException(ME+".addQos() may only be invoked once");
+      for (int ii=0; ii<qos.length; ii++) {
+         MessageUnit msg = new MessageUnit(null, null, qos[ii]);
+         msgVec.add(msg);
+      }
+   }
+
+   /** @see #addMessage(String[] qos) */
+   public void addQos(String[] qos) {
+      addMessage(qos);
+   }
+
+   /**
     * Returns all messages in a Vector
     */
    public Vector getMessages() {
@@ -358,6 +378,24 @@ public class Parser extends Converter
       }
       MessageUnit msg = (MessageUnit)msgVec.elementAt(0);
       return msg.getQos();
+   }
+
+   /**
+    * Response is usually only a QoS
+    */
+   public String[] getQosArr() {
+      if (msgVec.isEmpty()) {
+         Log.warn(ME, "getQosArr() is called without having a response");
+         String[] arr = new String[1];
+         arr[0] = "<qos></qos>";
+         return arr;
+      }
+      Vector msgs = getMessages();
+      String[] strArr = new String[msgs.size()];
+      for (int ii=0; ii<strArr.length; ii++) {
+         strArr[ii] = ((MessageUnit)msgs.elementAt(ii)).getQos();
+      }
+      return strArr;
    }
 
    /**

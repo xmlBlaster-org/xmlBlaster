@@ -3,7 +3,7 @@ Name:      HandleClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   HandleClient class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: HandleClient.java,v 1.2 2002/02/15 14:56:06 ruff Exp $
+Version:   $Id: HandleClient.java,v 1.3 2002/02/15 19:06:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -84,8 +84,23 @@ public class HandleClient extends Thread
       running = false;
    }
 
-   public String sendUpdate(ClientInfo clientInfo, MessageUnitWrapper msgUnitWrapper, MessageUnit[] messageUnitArr) throws XmlBlasterException {
-      Log.info(ME, "sendUpdate ...");
+   public String sendUpdate(ClientInfo clientInfo, MessageUnitWrapper msgUnitWrapper, MessageUnit[] msgUnitArr) throws XmlBlasterException {
+      Log.error(ME, "sendUpdate() not implemented");
+      // Same code as publishArr()
+         /*
+      try {
+         Parser receiver = new Parser(Parser.INVOKE_TYPE, Constants.UPDATE, clientInfo.getSessionId());
+         receiver.addMessage(msgUnitArr);
+         Object response = execute(receiver, oStream, clientInfo.getLoginName(), true);
+         Log.info(ME, "Got publishArr response " + response.toString());
+         return (String[])response; // return the QoS
+      }
+      catch (IOException e1) {
+         Log.error(ME+".publishArr", "IO exception: " + e1.toString());
+         throw new ConnectionException(ME+".publishArr", e1.toString());
+      }
+      Log.info(ME, "Successful sent response for " + receiver.getMethodName() + "()");
+         */
       return "";
    }
 
@@ -156,10 +171,10 @@ public class HandleClient extends Thread
                else if (Constants.CONNECT.equals(receiver.getMethodName())) {
                   
                   ConnectQos conQos = new ConnectQos(receiver.getQos());
-                  conQos.setCallbackDriver(driver);  // tell that we are the callback driver as well (see hack in CbInfo.java)
                   this.loginName = conQos.getUserId();
                   this.ME += "-" + this.loginName;
                   callback = new CallbackSocketDriver(this.loginName, this);
+                  conQos.setCallbackDriver(callback);  // tell that we are the callback driver as well (see hack in CbInfo.java)
 
                   driver.getSocketMap().put(conQos.getUserId(), this);
 
@@ -172,9 +187,11 @@ public class HandleClient extends Thread
                   executeResponse(receiver, retQos.toXml());
                 }
                else if (Constants.DISCONNECT.equals(receiver.getMethodName())) {
-                  String qos = authenticate.disconnect(receiver.getSessionId(), receiver.getQos());
-                  executeResponse(receiver, qos);
                   this.sessionId = null;
+                  // Note: the diconnect will call over the CbInfo our shutdown as well
+                  // setting sessionId = null prevents that our shutdown calls disconnect() again.
+                  String qos = authenticate.disconnect(receiver.getSessionId(), receiver.getQos());
+                  //executeResponse(receiver, qos);   // The socket is closed already
                   shutdown();
                }
             }
@@ -221,6 +238,8 @@ public class HandleClient extends Thread
                            receiver.getMethodName(), receiver.getSessionId());
       if (response instanceof String)
          returner.addMessage((String)response);
+      else if (response instanceof String[])
+         returner.addMessage((String[])response);
       else if (response instanceof MessageUnit[])
          returner.addMessage((MessageUnit[])response);
       else if (response instanceof MessageUnit)

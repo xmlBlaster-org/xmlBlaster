@@ -3,7 +3,7 @@ Name:      SocketDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   SocketDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: SocketDriver.java,v 1.5 2002/02/15 14:56:06 ruff Exp $
+Version:   $Id: SocketDriver.java,v 1.6 2002/02/15 19:06:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -60,7 +60,7 @@ import java.util.Collections;
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>
  * @see org.xmlBlaster.protocol.socket.Parser
  */
-public class SocketDriver extends Thread implements I_Driver, I_CallbackDriver
+public class SocketDriver extends Thread implements I_Driver//, I_CallbackDriver
 {
    private static final String ME = "SocketDriver";
    /** The singleton handle for this authentication server */
@@ -205,10 +205,11 @@ public class SocketDriver extends Thread implements I_Driver, I_CallbackDriver
     * @param  callbackAddress Contains the callback address,
     *         e.g. the stringified CORBA callback handle of the client or his email address.
     */
+    /*
    public void init(CallbackAddress callbackAddress) throws XmlBlasterException {
-      Log.error(ME, "Implement init()");
+      Log.warn(ME, "Implement init()");
    }
-
+      */
 
    /**
     * Send the message update to the client.
@@ -266,7 +267,7 @@ public class SocketDriver extends Thread implements I_Driver, I_CallbackDriver
          if (listen != null) {
             listen.close();
             listen = null;
-            Log.info(ME, "Socket driver stopped, all resources released.");
+            //Log.info(ME, "Socket driver stopped, all resources released.");
          }
       } catch (java.io.IOException e) {
          Log.warn(ME, "shutdown problem: " + e.toString());
@@ -274,7 +275,7 @@ public class SocketDriver extends Thread implements I_Driver, I_CallbackDriver
 
       socketMap.clear();
 
-      Log.info(ME, "Socket driver stopped, all resources released bye.");
+      Log.info(ME, "Socket driver stopped, all resources released.");
    }
 
    /**
