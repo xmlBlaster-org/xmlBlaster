@@ -45,7 +45,7 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos {
 Dll_Export const bool DEFAULT_isVolatile  = false;
 Dll_Export const bool DEFAULT_isDurable   = false;
 Dll_Export const bool DEFAULT_forceUpdate = true;
-Dll_Export const bool DEFAULT_readonly    = false;
+// Dll_Export const bool DEFAULT_readonly    = false;
 
    void QosData::init()
    {
