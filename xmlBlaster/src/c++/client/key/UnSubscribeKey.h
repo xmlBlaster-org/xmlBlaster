@@ -17,6 +17,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #define _CLIENT_KEY_UNSUBSCRIBEKEY_H
 
 #include <util/key/QueryKeyData.h>
+#include <util/Constants.h>
 #include <util/Log.h>
 
 namespace org { namespace xmlBlaster { namespace client { namespace key {
@@ -40,7 +41,8 @@ public:
     */
    UnSubscribeKey(org::xmlBlaster::util::Global& global);
 
-   UnSubscribeKey(org::xmlBlaster::util::Global& global, const std::string& query, const std::string& queryType);
+   UnSubscribeKey(org::xmlBlaster::util::Global& global, const std::string& query,
+                  const std::string& queryType=org::xmlBlaster::util::Constants::EXACT);
    
    UnSubscribeKey(org::xmlBlaster::util::Global& global, const org::xmlBlaster::util::key::QueryKeyData& data);
 

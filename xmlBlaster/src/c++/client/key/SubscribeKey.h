@@ -14,6 +14,7 @@
 #define _CLIENT_KEY_SUBSCRIBEKEY_H
 
 #include <client/key/UnSubscribeKey.h>
+#include <util/Constants.h>
 
 namespace org { namespace xmlBlaster { namespace client { namespace key {
 
@@ -26,7 +27,8 @@ public:
     */
    SubscribeKey(org::xmlBlaster::util::Global& global);
 
-   SubscribeKey(org::xmlBlaster::util::Global& global, const std::string& query, const std::string& queryType);
+   SubscribeKey(org::xmlBlaster::util::Global& global, const std::string& query,
+                const std::string& queryType=org::xmlBlaster::util::Constants::EXACT);
    
    SubscribeKey(org::xmlBlaster::util::Global& global, const org::xmlBlaster::util::key::QueryKeyData& data);
 
