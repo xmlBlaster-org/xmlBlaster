@@ -3,7 +3,7 @@ Name:      ClientPersistence.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   subscribes to durable messages
-Version:   $Id: ClientPersistence.java,v 1.5 2002/05/01 21:39:51 ruff Exp $
+Version:   $Id: ClientPersistence.java,v 1.6 2002/05/03 10:37:25 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -65,7 +65,7 @@ public class ClientPersistence implements I_Callback
       try {
          String passwd = "secret";
          senderConnection = new XmlBlasterConnection();
-         ConnectQos qos = new ConnectQos(); // == "<qos></qos>";
+         ConnectQos qos = new ConnectQos(null); // == "<qos></qos>";
          senderConnection.login(ME, passwd, qos, this);
       }
       catch (Exception e) {

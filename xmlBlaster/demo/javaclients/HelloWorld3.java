@@ -31,7 +31,7 @@ public class HelloWorld3 implements I_Callback
          String name = glob.getProperty().get("name", "HelloWorld3");
          String passwd = glob.getProperty().get("passwd", "secret");
 
-         ConnectQos qos = new ConnectQos(glob, "simple", "1.0", name, passwd);
+         ConnectQos qos = new ConnectQos(glob, name, passwd);
          con.connect(qos, this);  // Login to xmlBlaster, register for updates
 
 

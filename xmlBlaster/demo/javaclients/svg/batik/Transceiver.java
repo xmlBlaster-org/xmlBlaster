@@ -3,7 +3,7 @@ Name:      Transceiver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a svg client using batik
-Version:   $Id: Transceiver.java,v 1.3 2002/05/01 21:39:54 ruff Exp $
+Version:   $Id: Transceiver.java,v 1.4 2002/05/03 10:37:25 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.svg.batik;
 
@@ -18,6 +18,7 @@ import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.NodeList;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
@@ -29,9 +30,6 @@ import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.util.XmlToDom;
 import org.xmlBlaster.util.XmlNotPortable;
-
-import org.jutils.init.Args;
-import org.jutils.JUtilsException;
 
 import java.io.IOException;
 import java.io.FileNotFoundException;
@@ -93,17 +91,17 @@ public class Transceiver implements I_Callback
     * -svgMaster filename
     * -svgSlave filename
     */
-   public Transceiver (JSVGCanvasExtended canvas, String[] args)
+   public Transceiver (Global glob, JSVGCanvasExtended canvas)
    {
-      Log.trace(ME, "constructor with args");
+      Log.trace(ME, "constructor with Global");
       this.canvas = canvas;
       try {
-         String svgMaster = Args.getArg(args, "-svgMaster", (String)null);
-         String svgSlave  = Args.getArg(args, "-svgSlave", (String)null);
-         String svgUser   = Args.getArg(args, "-svgUser", "dummyUser");
+         String svgMaster = glob.getProperty().get("svgMaster", (String)null);
+         String svgSlave  = glob.getProperty().get("svgSlave", (String)null);
+         String svgUser   = glob.getProperty().get("svgUser", "dummyUser");
 
-         this.xmlBlasterConnection = new XmlBlasterConnection(args);
-         ConnectQos connectQos = new ConnectQos(null, null, svgUser, "secret");
+         this.xmlBlasterConnection = new XmlBlasterConnection(glob);
+         ConnectQos connectQos = new ConnectQos(glob, svgUser, "secret");
          this.xmlBlasterConnection.connect(connectQos, this);
 
 
@@ -137,9 +135,6 @@ public class Transceiver implements I_Callback
       }
       // don't know if this is the correct place where to catch this exception
       catch (XmlBlasterException ex) {
-         Log.error(ME, "Transceiver Constructor: " + ex.toString());
-      }
-      catch (JUtilsException ex) {
          Log.error(ME, "Transceiver Constructor: " + ex.toString());
       }
       catch (FileNotFoundException ex) {

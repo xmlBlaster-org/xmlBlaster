@@ -3,7 +3,7 @@ Name:      XmlUtility.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a svg client using batik (the demo appl. itself)
-Version:   $Id: ExtendedApplication.java,v 1.1 2002/01/04 01:05:38 laghi Exp $
+Version:   $Id: ExtendedApplication.java,v 1.2 2002/05/03 10:37:25 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.svg.batik;
 
@@ -21,13 +21,14 @@ import org.apache.batik.swing.svg.GVTTreeBuilderAdapter;
 import org.apache.batik.swing.svg.GVTTreeBuilderEvent;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 
 import org.jutils.log.LogChannel;
 
 /**
  *
- * @author $Author: laghi $ (laghi@swissinfo.org)
+ * @author $Author: ruff $ (laghi@swissinfo.org)
  */
 public class ExtendedApplication
 {
@@ -97,11 +98,15 @@ public class ExtendedApplication
 
    public static void main (String[] args)
    {
+      Global glob = new Global();
+      if (glob.init(args) != 0) {
+         Log.panic(ME, "Init failed");
+      }
 
       Log.setLogLevel(LogChannel.LOG_ALL);
       Log.trace(ME, " this is a trace");
       JFrame f = new JFrame("Batik");
-      ExtendedApplication app = new ExtendedApplication(f, args);
+      ExtendedApplication app = new ExtendedApplication(glob, f);
       f.getContentPane().add(app.createComponents());
 
       f.addWindowListener(new WindowAdapter()
@@ -120,10 +125,10 @@ public class ExtendedApplication
    JLabel label = new JLabel();
    JSVGCanvasExtended svgCanvasExtended = null;
 
-   public ExtendedApplication (JFrame f, String[] args)
+   public ExtendedApplication (Global glob, JFrame f)
    {
       frame = f;
-      svgCanvasExtended = new JSVGCanvasExtended(args);
+      svgCanvasExtended = new JSVGCanvasExtended(glob);
    }
 
 

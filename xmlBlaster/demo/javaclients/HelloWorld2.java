@@ -20,7 +20,7 @@ public class HelloWorld2 implements I_Callback
       try {
          XmlBlasterConnection con = new XmlBlasterConnection(args);
 
-         ConnectQos qos = new ConnectQos("simple", "1.0", "joe", "secret");
+         ConnectQos qos = new ConnectQos(null, "joe", "secret");
          con.connect(qos, this);  // Login to xmlBlaster, register for updates
 
          con.subscribe("<key oid='HelloWorld2'/>", "<qos/>");

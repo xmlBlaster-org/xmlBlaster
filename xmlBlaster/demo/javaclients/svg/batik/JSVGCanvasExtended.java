@@ -3,7 +3,7 @@ Name:      JSVGCanvasExtended.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The JSVGCanvas extended to fit the application specific requirements
-Version:   $Id: JSVGCanvasExtended.java,v 1.1 2002/01/04 01:05:38 laghi Exp $
+Version:   $Id: JSVGCanvasExtended.java,v 1.2 2002/05/03 10:37:25 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.svg.batik;
 
@@ -11,6 +11,7 @@ import org.apache.batik.swing.JSVGCanvas;
 // import org.apache.batik.dom.svg.SAXSVGDocumentFactory;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 
 import java.io.IOException;
@@ -24,7 +25,7 @@ import org.w3c.dom.Element;
 
 
 /**
- * @author $Author: laghi $ (laghi@swissinfo.org)
+ * @author $Author: ruff $ (laghi@swissinfo.org)
  */
 
 public class JSVGCanvasExtended extends JSVGCanvas
@@ -40,7 +41,7 @@ public class JSVGCanvasExtended extends JSVGCanvas
    private Hashtable   idTable            = null;
 
 
-   public JSVGCanvasExtended(String[] args)
+   public JSVGCanvasExtended(Global glob)
    {
       super();
       this.specificInteractor = new Interactor();
@@ -50,7 +51,7 @@ public class JSVGCanvasExtended extends JSVGCanvas
        * canvas-inherited object. */
       this.specificInteractor.setBridgeContext(this.bridgeContext);
       this.specificInteractor.setCanvas(this);
-      this.transceiver = new Transceiver(this, args);
+      this.transceiver = new Transceiver(glob, this);
       this.specificInteractor.setTransceiver(this.transceiver);
    }
 
