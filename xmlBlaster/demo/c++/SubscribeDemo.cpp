@@ -320,6 +320,7 @@ public:
 
       if (updateQos.getState() == "ERASED" ) {
          doContinue_ = false;
+         log_.info(ME, "Received topic '" + updateKey.getOid() + "' ERASED message, stopping myself ...");
          return "";
       }
 
