@@ -4,32 +4,44 @@
 <requirement id='engine.persistence' type='NEW' prio='MEDIUM' status="CLOSED">
    <topic>XmlBlaster provides a plugin possibility for its persistence layer</topic>
    <description>
+      <![CDATA[
+      <p>
       To store messages from xmlBlaster and to restore them again after a new
       startup of the server there is a lightweight interface, called I_PersitenceDriver,
       available.
+      </p>
+      <p>
       You may supply your own persistence layer, which for example stores
       the messages in a database like Oracle, PostgreSQL or Ozone, or wherever
       you like.
+      </p>
 
+      <p>
       Currently we only provide a very simple file based store, called FileDriver,
       which may be used as a reference implementation to your own persistency.
+      </p>
 
+      <p>
       Writing an own persistence layer is very easy:
-
+      <br />
       1. Implement the I_PersitenceDriver interface (look into FileDriver
       how you could do it).
-
+      <br />
       2. Register the driver with xmlBlaster through the xmlBlaster.properties
       file with the Persistence.* variables.
+      </p>
 
+      <p>
       Note that this interface is very likely to change in one of the next
-      xmlBlaster releases, since it is to simple too support caching.
+      xmlBlaster releases, since it is too simple (no caching support).
+      </p>
+      ]]>
    </description>
    <see>engine.persistence.FileDriver</see>
    <see>engine.qos.publish.isDurable</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 02 23</date>
-   <revision>$Revision: 1.3 $</revision>
+   <revision>$Revision: 1.4 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
