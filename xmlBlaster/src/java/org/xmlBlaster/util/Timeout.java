@@ -3,7 +3,7 @@ Name:      Timeout.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Allows you be called back after a given delay.
-Version:   $Id: Timeout.java,v 1.5 2000/05/27 23:31:48 ruff Exp $
+Version:   $Id: Timeout.java,v 1.6 2000/05/31 19:47:29 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -67,6 +67,7 @@ public class Timeout extends Thread
          synchronized (SYNCHRONIZER) {
             if (theTimeout == null) {
                theTimeout = new Timeout();
+               theTimeout.setDaemon(true);
                theTimeout.start();
             }
          }
@@ -234,12 +235,12 @@ public class Timeout extends Thread
 
 
    /**
-    * How long to my death. 
+    * How long to my timeout. 
     *
     * @param key The timeout handle you received by a previous addTimeoutListener() call
     * @return Milliseconds to timeout, or -1 if not known
     */
-   public final long spanOfTimeToDeath(Long key)
+   public final long spanToTimeout(Long key)
    {
       synchronized(map) {
          Container container = (Container)map.get(key);
@@ -253,7 +254,25 @@ public class Timeout extends Thread
 
 
    /**
-    * Access the end of life span. 
+    * How long am i running. 
+    *
+    * @param key The timeout handle you received by a previous addTimeoutListener() call
+    * @return Milliseconds since creation, or -1 if not known
+    */
+   public final long elapsed(Long key)
+   {
+      synchronized(map) {
+         Container container = (Container)map.get(key);
+         if (container == null) {
+            return -1;
+         }
+         return System.currentTimeMillis() - container.creation;
+      }
+   }
+
+
+   /**
+    * Access the end of life span.
     * @param key The timeout handle you received by a previous addTimeoutListener() call
     * @return Time in milliseconds since midnight, January 1, 1970 UTC
     */
@@ -297,9 +316,11 @@ public class Timeout extends Thread
    {
       I_Timeout callback;
       Object userData;
+      long creation;
       Container(I_Timeout callback, Object userData) {
          this.callback = callback;
          this.userData = userData;
+         this.creation = System.currentTimeMillis();
       }
    }
 
@@ -350,7 +371,7 @@ public class Timeout extends Thread
       keyArr[1] = timeout.addTimeoutListener(dummy, 1000L, "timer-1000");
 
       long span = 0;
-      if ((span = timeout.spanOfTimeToDeath(keyArr[2])) < 3000L)
+      if ((span = timeout.spanToTimeout(keyArr[2])) < 3000L)
          Log.error(ME, "This short span to timeout = " + span + " is probably wrong, or you have a very slow computer.");
       else
          Log.info(ME, "Span to life of " + span + " is reasonable");
