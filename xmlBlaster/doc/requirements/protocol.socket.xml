@@ -244,9 +244,10 @@ Example of a QoS return value of erase()
 
    "        60**R**17711*erase***<qos><state id='OK'/></qos>**0*"
 
-Example of publish() with two qos/key/content
+Example of publish() with two qos/key/content (split to two lines)
 
-   "       100**I**17711*publish*oxf6hZs**<qos/>*<key oid='x1'/>*6*Hello1<qos/>*<key oid='x2'/>*6*Hello2"
+   "       100**I**17711*publish*oxf6hZs**<qos/>*<key oid='x1'/>*6*Hello1<qos/>
+    *<key oid='x2'/>*6*Hello2"
 
 
 The '*' is used as a symbol for a '\0' character (all zero bits) which terminates strings.
@@ -257,6 +258,74 @@ it is determined by len.
 The '"' is just to show the boundary, '"' is not part of the message.
       ]]>
    </example>
+   <configuration where="server">
+      <table border="1">
+         <tr>
+            <td>Property</td>
+            <td>Default / Example</td>
+            <td>Description</td>
+            <td>Implemented</td>
+         </tr>
+
+         <tr>
+            <td>socket.hostname</td>
+            <td>localhost</td>
+            <td>Specify a hostname where the SOCKET server runs
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>socket.port</td>
+            <td>7607</td>
+            <td>The SOCKET server port
+                </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>socket.responseTimeout</td>
+            <td>60000 (one minute)</td>
+            <td>When a method is invoked we wait the given time on a response.<br />
+            The response is the return value or an exception for method invocations which
+            are not marked oneway.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>socket.SoTimeout</td>
+            <td>60000 (one minute)</td>
+            <td>If a socket call is made, the socket invocation times out after the given exception
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>socket.backlog</td>
+            <td>50</td>
+            <td>Socket queue size for incoming connection request
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>socket.threadPrio</td>
+            <td>5</td>
+            <td>The priority 1=min - 10=max of the listener thread
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>socket.debug</td>
+            <td>0</td>
+            <td>1 or 2 switches on detailed SOCKET debugging
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+      </table>
+   </configuration>
    <todo>
    <ol>
       <li>
@@ -275,7 +344,7 @@ The '"' is just to show the boundary, '"' is not part of the message.
    <see type="API">org.xmlBlaster.protocol.socket.SocketDriver</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 02 12</date>
-   <revision>$Revision: 1.14 $</revision>
+   <revision>$Revision: 1.15 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
