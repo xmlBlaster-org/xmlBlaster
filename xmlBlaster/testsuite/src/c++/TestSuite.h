@@ -121,6 +121,13 @@ public:
          Thread::sleep(2000);
      }
      if (useEmbeddedServer_) {
+# ifdef XMLBLASTER_MICO
+        std::cout << " !!!!! THIS TEST CAN NOT BE RUN WITH MICO SINCE AN ORB WHICH IS SHUTDOWN CAN NOT BE REUSED !!!!" << std::endl;
+        std::cout << " !!!!! IT HAS BEEN TESTED AND IS PROVEN TO FAIL WITH MICO 2.3.7 AND 2.3.8                  !!!!" << std::endl;
+        std::cout << " !!!!! IT IS PROVEN TO FAIL WITH MICO 2.3.7 AND 2.3.8                                      !!!!" << std::endl;
+        std::cout << " !!!!! TRY IT WITH ANOTHER CORBA IMPLEMENTATION (for example TAO)                          !!!!" << std::endl;
+        exit(-1);
+# endif
         if ( log_.call() ) log_.call(ME, "Entering TestSuite base class, useEmbeddedServer_=true");
         string cmdLine = global_.getProperty().getStringProperty("embeddedServer.cmdLine", "> /dev/null");
         string jvmArgs = global_.getProperty().getStringProperty("embeddedServer.jvmArgs", "");

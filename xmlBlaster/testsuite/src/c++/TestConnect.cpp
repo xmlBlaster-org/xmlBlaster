@@ -3,7 +3,7 @@ Name:      TestConnect.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestConnect.cpp,v 1.15 2003/03/04 17:44:11 laghi Exp $
+Version:   $Id: TestConnect.cpp,v 1.16 2003/03/09 21:58:06 laghi Exp $
 -----------------------------------------------------------------------------*/
 
 /**
@@ -192,6 +192,14 @@ public:
 using namespace org::xmlBlaster::test;
 
 int main(int args, char *argc[]) {
+
+# ifdef XMLBLASTER_MICO
+        std::cout << " !!!!! THIS TEST CAN NOT BE RUN WITH MICO SINCE AN ORB WHICH IS SHUTDOWN CAN NOT BE REUSED !!!!" << std::endl;
+        std::cout << " !!!!! IT HAS BEEN TESTED AND IS PROVEN TO FAIL WITH MICO 2.3.7 AND 2.3.8                  !!!!" << std::endl;
+        std::cout << " !!!!! IT IS PROVEN TO FAIL WITH MICO 2.3.7 AND 2.3.8                                      !!!!" << std::endl;
+        std::cout << " !!!!! TRY IT WITH ANOTHER CORBA IMPLEMENTATION (for example TAO)                          !!!!" << std::endl;
+        exit(-1);
+# endif
 
    string qos1 =
       string("<qos>\n") +
