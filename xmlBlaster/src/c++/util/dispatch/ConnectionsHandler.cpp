@@ -162,6 +162,8 @@ bool ConnectionsHandler::disconnect(const DisconnectQos& qos)
       return false;
    }
 
+   if (qos.getClearClientQueue() && queue_ != 0) queue_->clear();
+
    bool ret = connection_->disconnect(qos);
    enum States oldState = status_;
    status_ = DEAD;
