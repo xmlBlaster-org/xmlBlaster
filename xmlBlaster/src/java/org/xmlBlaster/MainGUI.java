@@ -3,7 +3,7 @@ Name:      MainGUI.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: MainGUI.java,v 1.38 2001/08/31 15:30:48 ruff Exp $
+Version:   $Id: MainGUI.java,v 1.39 2001/09/01 08:53:41 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -15,6 +15,7 @@ import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.engine.ClientInfo;
 import org.xmlBlaster.engine.RequestBroker;
 import org.xmlBlaster.client.UpdateKey;
+import org.xmlBlaster.client.LoginQosWrapper;
 import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.protocol.I_XmlBlaster;
@@ -703,6 +704,10 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
          String loginName = XmlBlasterProperty.get("__sys__GuiQuery.loginName", "__sys__GuiQuery");
          String passwd = XmlBlasterProperty.get("__sys__GuiQuery.password", "secret");
          sessionId = authenticate.login(loginName, passwd, "<qos></qos>", null); // synchronous access only, no callback.
+         /*
+         LoginQosWrapper qos = new LoginQosWrapper("simple", "1.0");
+         sessionId = authenticate.init(qos.toXml(), null); // synchronous access only, no callback.
+         */
          Log.info(ME, "login for '" + loginName + "' successful.");
       }
 
