@@ -3,6 +3,8 @@
 # and a monitoring program
 # xmlBlaster/demo/javaclients/graphical/README
 #
+# Based on JHotdraw, see http://jhotdraw.sourceforge.net/
+#
 
 To start the graphical chat demo:
 =================================

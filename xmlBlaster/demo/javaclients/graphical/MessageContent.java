@@ -59,6 +59,10 @@ public class MessageContent implements Storable {
       for (int i=0; i < numOfEntries; i++) {
          String uniqueId = in.readString();
          Storable obj = in.readStorable();
+         if (obj instanceof XmlBlasterDrawing) {
+            log.warn(ME, "Storable is instance of Drawing, we ignore it: " + obj.getClass().getName());
+            continue;
+         }
          ret.put(uniqueId, obj);
       }
       return ret;
