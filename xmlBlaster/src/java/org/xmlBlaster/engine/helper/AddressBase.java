@@ -3,7 +3,7 @@ Name:      AddressBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address string including protocol
-Version:   $Id: AddressBase.java,v 1.11 2002/05/17 09:54:48 ruff Exp $
+Version:   $Id: AddressBase.java,v 1.12 2002/05/19 17:53:47 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -138,18 +138,40 @@ public abstract class AddressBase
    }
 
    /**
+    * Updates the internal address as well. 
     * @param host An IP or DNS
     */
    public final void setHostname(String host) {
-      this.hostname = host;
+      this.hostname = (host==null) ? "" : host;
+      if (this.hostname.length() < 1)
+         this.address = "";
+      else {
+         this.address = "http://" + this.hostname;
+         if (getPort() > 0)
+            this.address += ":" + getPort();
+      }
    }
 
+   /**
+    * @return The Hostname, IP or "" if not known
+    */
    public final String getHostname() {
       return this.hostname;
    }
 
+   /**
+    * Set the bootstrapping port. 
+    * Updates the internal address as well. 
+    */
    public final void setPort(int port) {
       this.port = port;
+      if (this.hostname.length() < 1)
+         this.address = "";
+      else {
+         this.address = "http://" + this.hostname;
+         if (getPort() > 0)
+            this.address += ":" + getPort();
+      }
    }
 
    public final int getPort() {
@@ -168,7 +190,7 @@ public abstract class AddressBase
 
    /**
     * Returns the address.
-    * @return e.g. "IOR:00001100022...." or "et@universe.com" or null
+    * @return e.g. "IOR:00001100022...." or "et@universe.com" or ""
     */
    public final String getAddress() {
       return address;
