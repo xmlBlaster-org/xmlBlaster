@@ -6,6 +6,7 @@ Comment:   Testing the Timeout Features
 -----------------------------------------------------------------------------*/
 
 #include <client/XmlBlasterAccess.h>
+#include <util/EmbeddedServer.h>
 #include <util/XmlBlasterException.h>
 #include <util/Global.h>
 #include <util/Log.h>
@@ -32,6 +33,7 @@ private:
    Global& global_;
    Log&    log_;
 
+   EmbeddedServer     embeddedServer_;
    XmlBlasterAccess   *connection_;
    ConnectQos         *connQos_;
    ConnectReturnQos   *connRetQos_;
@@ -42,7 +44,11 @@ private:
 
 
 public:
-   TestFailsafe(Global& glob) : ME("TestFailsafe"), global_(glob), log_(glob.getLog())
+   TestFailsafe(Global& glob) 
+      : ME("TestFailsafe"), 
+        global_(glob), 
+	log_(glob.getLog()),
+	embeddedServer_(glob, "", "-info false -warn false -error false")
    {
       connection_ = NULL;
       connQos_    = NULL;
@@ -84,6 +90,12 @@ public:
    void setUp()
    {
       try {   
+         if (embeddedServer_.isSomeServerResponding()) {
+	    log_.error(ME, "this test uses an embedded Server. There is already an external xmlBlaster running on this system, please shut it down first");
+	    assert(0);
+	 }
+	 embeddedServer_.start();
+	 Thread::sleepSecs(10);
 	 connection_ = new XmlBlasterAccess(global_);
 	 connection_->initFailsafe(this);
 
