@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.54 2000/02/21 10:15:56 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.55 2000/02/23 12:08:25 kkrafft2 Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -29,7 +29,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.54 $
+ * @version $Revision: 1.55 $
  * @author ruff@swand.lake.de
  */
 public class RequestBroker implements ClientListener, MessageEraseListener
@@ -304,7 +304,6 @@ public class RequestBroker implements ClientListener, MessageEraseListener
    public MessageUnitContainer[] get(ClientInfo clientInfo, XmlKey xmlKey, GetQoS subscribeQoS) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "Entering get(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "') ...");
-
       if (xmlKey.isInternalStateQuery())
          updateInternalStateInfo(clientInfo);
 
@@ -317,6 +316,11 @@ public class RequestBroker implements ClientListener, MessageEraseListener
             xmlKeyExact = xmlKey;
 
          MessageUnitHandler messageUnitHandler = getMessageHandlerFromOid(xmlKeyExact.getUniqueKey());
+         
+         if( messageUnitHandler == null ) {
+            Log.error(ME, "The key you used '"+xmlKeyExact.getUniqueKey()+"' is not availible.");
+            throw new  XmlBlasterException(ME+".UnavailibleKey", "The key you used '"+xmlKeyExact.getUniqueKey()+"' is not availible.");
+         }        
 
          // wrap messageUnit and qos into a MessageUnitContainer
          MessageUnitContainer messageUnitContainer = new MessageUnitContainer();
