@@ -121,7 +121,6 @@ public final class MapPlugin implements I_Map, I_Plugin
 
       String key = entry.getUniqueIdStr();
       synchronized (this.storage) {
-         //entry.incrementReferenceCounter(1);
          this.totalReferenceCount++;
          Object old = this.storage.put(key, entry);
          this.sizeInBytes += entry.getSizeInBytes();

@@ -578,18 +578,4 @@ public class MsgStoreCachePlugin implements I_Plugin, I_ConnectionListener, I_Ma
    public long getTotalReferenceCount() {
       return this.totalReferenceCount;
    }
-
-   public void incrementReferenceCounter(String key) throws XmlBlasterException {
-      log.error(ME, "incrementReferenceCounter " + key + " not IMPLEMENTED");
-      synchronized(this) {
-      /*
-         I_MapEntry entry = get(key);
-         if (entry == null) {
-            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "Incrementation of key=" + key + " failed, entry not found");
-         }
-         entry.incrementReferenceCounter(1);
-      */
-         this.totalReferenceCount++;
-      }
-   }
 }

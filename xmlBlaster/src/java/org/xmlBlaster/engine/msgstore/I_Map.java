@@ -46,9 +46,9 @@ public interface I_Map
    Object getProperties();
 
    /*
-    * @return The overall sum of reference counts
-    */
+    * @return The overall sum of reference counts (is currently not implemented or tested)
    long getTotalReferenceCount();
+    */
 
    /**
     * Lookup entry without removing. 

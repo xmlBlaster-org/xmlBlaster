@@ -78,7 +78,7 @@ public final class JdbcQueuePlugin implements I_Queue, I_Plugin, I_Map
             this.numOfBytes = this.manager.getNumOfBytes(this.associatedTable);
 
             this.isDown = false;
-            log.info(ME, "Successful initialized");
+            if (log.TRACE) log.trace(ME, "Successful initialized");
             this.numOfDurableBytes = 0L;
             this.numOfDurableEntries = 0L;
          }
@@ -945,20 +945,6 @@ public final class JdbcQueuePlugin implements I_Queue, I_Plugin, I_Map
 
    public long getTotalReferenceCount() {
       return this.totalReferenceCount;
-   }
-
-   public void incrementReferenceCounter(String key) throws XmlBlasterException {
-      log.error(ME, "incrementReferenceCounter " + key + " not IMPLEMENTED");
-      synchronized (this.modificationMonitor) {
-      /*
-         I_MapEntry entry = get(key);
-         if (entry == null) {
-            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "Incrementation of key=" + key + " failed, entry not found");
-         }
-         entry.incrementReferenceCounter(1);
-      */
-         this.totalReferenceCount++;
-      }
    }
 
    public I_MapEntry get(final long uniqueId) throws XmlBlasterException {
