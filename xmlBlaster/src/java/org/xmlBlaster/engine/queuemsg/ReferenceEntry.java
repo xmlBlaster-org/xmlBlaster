@@ -8,6 +8,7 @@ package org.xmlBlaster.engine.queuemsg;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.MsgUnitWrapper;
 import org.xmlBlaster.engine.TopicHandler;
+import org.xmlBlaster.engine.qos.PublishQosServer;
 import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.qos.MsgQosData;
@@ -71,7 +72,8 @@ public class ReferenceEntry extends MsgQueueEntry
     * @param msgUnitWrapperUniqueId The unique timestamp of the MsgUnitWrapper instance (need to lookup MsgUnitWrapper)
     */
    public ReferenceEntry(String ME, Global glob, String entryType, PriorityEnum priority, StorageId storageId, Timestamp entryTimestamp,
-                        String keyOid, long msgUnitWrapperUniqueId, boolean persistent, SessionName receiver) {
+                        String keyOid, long msgUnitWrapperUniqueId, boolean persistent, SessionName receiver,
+                        String qos, String key, byte[] content) throws XmlBlasterException {
       super(glob, entryType, priority, entryTimestamp, storageId, persistent);
       this.glob = glob;
       this.ME = ME;
@@ -79,6 +81,37 @@ public class ReferenceEntry extends MsgQueueEntry
       this.msgUnitWrapperUniqueId = msgUnitWrapperUniqueId;
       setReceiver(receiver);
       super.wantReturnObj = false;
+
+      // We need to check it the original msgUnitWrapper still
+      // exists, if not we create one (used by callback queue, not by history queue).
+      MsgUnitWrapper msgUnitWrapper = getMsgUnitWrapper();
+      if (msgUnitWrapper == null) {
+         if (qos != null || key != null) {
+            log.warn(ME, "Lookup of MsgUnitWrapper '" + msgUnitWrapperUniqueId + "' failed, we create a new instance");
+            if (this.glob.getRequestBroker() != null) {
+               TopicHandler topicHandler = this.glob.getRequestBroker().getMessageHandlerFromOid(this.keyOid);
+               if (topicHandler != null) {
+                  PublishQosServer publishQosServer = new PublishQosServer(glob, qos, true); // true marks from persistent store (prevents new timestamp)
+                  MsgKeyData msgKeyData = glob.getMsgKeyFactory().readObject(key);
+                  MsgUnit msgUnit = new MsgUnit(msgKeyData, content, publishQosServer.getData());
+                  msgUnitWrapper = new MsgUnitWrapper(glob, msgUnit,
+                                             topicHandler.getMsgUnitCache().getStorageId(),
+                                             1, 0, -1);
+                  msgUnitWrapper = topicHandler.addMsgUnitWrapper(msgUnitWrapper, storageId);
+                  // NOTE: The returned msgUnitWrapper is not always identical to the passed one
+                  // if two threads do this simultaneously, the topic handler sync this situation
+                  this.weakMsgUnitWrapper = new WeakReference(msgUnitWrapper);
+               }
+            }
+         }
+         else {
+            log.error(ME, "Can't recreate MsgUnitWrapper, got no information from persistency: " + toXml());
+         }
+      }
+      else {
+         // added() is not triggered when coming from persistency
+         msgUnitWrapper.incrementReferenceCounter(1, storageId);
+      }
    }
 
    /** @return the MsgUnitWrapper or null if not found */
@@ -92,11 +125,13 @@ public class ReferenceEntry extends MsgQueueEntry
             return null;
          this.weakMsgUnitWrapper = new WeakReference(referent);
       }
-      return (MsgUnitWrapper)referent;
+      MsgUnitWrapper msgUnitWrapper = (MsgUnitWrapper)referent;
+      return msgUnitWrapper;
    }
 
    /**
-    * Notification if this entry is added to queue
+    * Notification if this entry is added to queue. 
+    * It can be added to several queues simultaneously, the reference counter will be incremented each time
     * @see org.xmlBlaster.util.queue.I_Entry#added(StorageId)
     */
    public void added(StorageId storageId) {
@@ -123,19 +158,6 @@ public class ReferenceEntry extends MsgQueueEntry
       try {
          //if (!isInternal()) log.info(ME, getLogId() + " is removed from queue");
          MsgUnitWrapper msgUnitWrapper = getMsgUnitWrapper();
-         /* I couldn't force garbage collect of messageUnitWrapper here, why?
-         {  // TEST ONLY
-            if (msgUnitWrapper != null) {
-               msgUnitWrapper = null;
-               System.gc();
-               System.gc();
-               System.gc();
-               System.gc();
-            }
-            msgUnitWrapper = getMsgUnitWrapper();
-            log.error(ME, "REMOVE WEAK REF TEST AGAIN msgUnitWrapper=" + msgUnitWrapper);
-         }
-         */
          if (msgUnitWrapper != null) {
             msgUnitWrapper.incrementReferenceCounter(-1, storageId);
             msgUnitWrapper = null;
@@ -241,6 +263,9 @@ public class ReferenceEntry extends MsgQueueEntry
 
    /** @return the MsgUnitWrapper or null if not found */
    public MsgUnitWrapper lookup() {
+      if (this.glob.getRequestBroker() == null) {
+         return null;
+      }
       TopicHandler topicHandler = this.glob.getRequestBroker().getMessageHandlerFromOid(keyOid);
       if (topicHandler == null) {
          return null;
