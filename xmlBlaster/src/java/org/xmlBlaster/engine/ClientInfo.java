@@ -268,7 +268,12 @@ public class ClientInfo
          buf.append("      ").append(subscriptionId);
          buf.append("\n   </subscriptionId>\n");
       }
+      
       buf.append("   ").append(msgUnitWrapper.getXmlRcvTimestamp()).append("\n");
+
+      if (msgUnitWrapper.getPublishQoS().getTimeToLive() >= 0L) {
+         buf.append("   <expiration timeToLive='").append(msgUnitWrapper.getPublishQoS().getTimeToLive()).append("'/>\n");
+      }
       if (max > 0) {
          buf.append("   <queue index='").append(index).append("' size='").append(max).append("'>\n");
          buf.append("   </queue>\n");

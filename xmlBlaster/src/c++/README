@@ -18,7 +18,14 @@ HOW TO BUILD THE CLIENT CLASSES:
 - retrieve xerces from http://xml.apache.org
 - install xerces (lets say in /usr/local/xerces)
 - install one c++ implementation of corba (currently MICO or ORBACUS)
-- define the following environment variables:
+- define the following environment variables if different than the default
+  (the given value is the default setting):
+
+     MICO_HOME=/opt/local/mico
+     MICO_VER2.3.5
+     XMLCPP_HOME=/opt/local/xerces-c-src1_6_0
+     XMLCPP_VER=1_6_0
+    
     USE_CPP=true (which tells the compiler to build the c++-classes)
     XMLCPP_HOME=<directory-where-you-installed-xerces>
                 (for example XMLCPP_HOME=/usr/local/xerces)

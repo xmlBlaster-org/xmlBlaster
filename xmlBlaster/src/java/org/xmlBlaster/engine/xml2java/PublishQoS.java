@@ -3,7 +3,7 @@ Name:      PublishQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: PublishQoS.java,v 1.20 2001/12/07 23:44:33 ruff Exp $
+Version:   $Id: PublishQoS.java,v 1.21 2001/12/16 21:25:33 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -41,11 +41,18 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
 {
    private String ME = "PublishQoS";
 
+   /**
+    * A message lease lasts a maximum of one and a half day (36 hours). <p />
+    * This value can be modified in XmlBlaster.properties:<br />
+    * <code>Message.lease.maxTimeToLive=3600000 # One our lease</code><br />
+    * Every message can set the timeToLive value between 1 and maxTimeToLive
+    */
+   private static long maxTimeToLive = XmlBlasterProperty.get("Message.lease.maxTimeToLive", 36L*60*60*1000);
+
    // helper flags for SAX parsing
    private boolean inDestination = false; // parsing inside <destination> ?
    private boolean inSender = false; // parsing inside <sender> ?
-   private boolean inExpires = false; // parsing inside <expires> ?
-   private boolean inErase = false; // parsing inside <erase> ?
+   private boolean inExpiration = false; // parsing inside <expiration> ?
    private boolean inIsVolatile = false; // parsing inside <isVolatile> ?
 
    /** Internal use only, is this message sent from the persistence layer? */
@@ -59,10 +66,19 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
    private boolean readonly = false;
    private boolean forceQueuing = false;
 
-   /** Expires after given milliseconds, clients will get a notify about expiration. Default is no expiration (similar to pass 0 milliseconds) */
-   private long expires = 0L;
-   /** Message is erased after given milliseconds, clients will get a notify about expiration. Default is no erasing (similar to pass 0 milliseconds) */
-   private long erase = 0L;
+   /** 
+    * The receive timestamp (UTC time),
+    * when message arrived in requestBroker.publish() method.<br />
+    * In milliseconds elapsed since midnight, January 1, 1970 UTC
+    */
+   private long rcvTimestamp;
+
+   /** 
+    * A message expires after some time and will be discarded.
+    * Clients will get a notify about expiration.
+    * This value is the elapsed milliseconds since UTC 1970 ...
+    */
+   private long expirationTimestamp = Long.MAX_VALUE;
 
    /** the sender (publisher) of this message (unique loginName) */
    private String sender = null;
@@ -83,8 +99,10 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
    public PublishQoS(String xmlQoS_literal) throws XmlBlasterException
    {
       // if (Log.TRACE) Log.trace(ME, "\n"+xmlQoS_literal);
-         parseQos(xmlQoS_literal);
-         size = xmlQoS_literal.length();
+      touchRcvTimestamp();
+      setTimeToLive(getMaxTimeToLive());
+      parseQos(xmlQoS_literal);
+      size = xmlQoS_literal.length();
    }
 
 
@@ -96,6 +114,10 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
     */
    public PublishQoS(String xmlQoS_literal, boolean fromPersistenceStore) throws XmlBlasterException
    {
+      if (!fromPersistenceStore) {
+         touchRcvTimestamp();
+         setTimeToLive(getMaxTimeToLive());
+      }
       this.fromPersistenceStore = fromPersistenceStore;
       parseQos(xmlQoS_literal);
       size = xmlQoS_literal.length();
@@ -227,19 +249,50 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
    }
 
    /**
-    * @return Milliseconds until message will be automatically erased
+    * @return Milliseconds until message expiration (from now) or Long.MAX_VALUE if forever
     */
-   public long getEraseTimeout()
+   public long getTimeToLive()
    {
-      return erase;
+      if (expirationTimestamp < Long.MAX_VALUE)
+         return expirationTimestamp - System.currentTimeMillis();
+      else
+         return Long.MAX_VALUE;
    }
 
-   /**
-    * @return Milliseconds until message expires
-    */
-   public long getExpires()
+   public void setTimeToLive(long timeToLive)
    {
-      return expires;
+      if (timeToLive <= 0L) timeToLive = Long.MAX_VALUE; // Check parameter
+
+      if (timeToLive <= getMaxTimeToLive())
+         this.expirationTimestamp = rcvTimestamp + timeToLive;
+      else {
+         Log.warn(ME, "Ignoring timeToLive=" + timeToLive + ", setting maximum message lifespan to " + getMaxTimeToLive() + " millis");
+         if (getMaxTimeToLive() == Long.MAX_VALUE)
+            this.expirationTimestamp = Long.MAX_VALUE;
+         else
+            this.expirationTimestamp = rcvTimestamp + maxTimeToLive;
+      }
+   }
+
+   public static long getMaxTimeToLive()
+   {
+      if (maxTimeToLive <= 0L) maxTimeToLive=Long.MAX_VALUE; // Correct value if strange initialized
+      return maxTimeToLive;
+   }
+
+   /** 
+    * The approximate receive timestamp (UTC time),
+    * when message arrived in requestBroker.publish() method.<br />
+    * In milliseconds elapsed since midnight, January 1, 1970 UTC
+    */
+   public long getRcvTimestamp()
+   {
+      return rcvTimestamp;
+   }
+
+   public void touchRcvTimestamp()
+   {
+      rcvTimestamp = System.currentTimeMillis();
    }
 
    /**
@@ -311,30 +364,31 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
          return;
       }
 
-      if (name.equalsIgnoreCase("expires")) {
+      if (name.equalsIgnoreCase("expiration")) {
          if (!inQos)
             return;
-         inExpires = true;
+         inExpiration = true;
          if (attrs != null) {
             int len = attrs.getLength();
-            for (int i = 0; i < len; i++) {
-               Log.warn(ME, "Ignoring sent <expires> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
+            if (fromPersistenceStore) {  // First we need the rcvTimestamp:
+               String tmp = attrs.getValue("rcvTimestamp");
+               if (tmp != null) {
+                  try { rcvTimestamp = Long.parseLong(tmp.trim()); } catch(NumberFormatException e) { Log.error(ME, "Invalid rcvTimestamp - millis =" + tmp); };
+               }
+               else {
+                  Log.warn(ME, "QoS from persistent store misses rcvTimestamp attribute, setting current date");
+                  touchRcvTimestamp();
+               }
             }
-            // if (Log.TRACE) Log.trace(ME, "Found expires tag");
-         }
-         return;
-      }
-
-      if (name.equalsIgnoreCase("erase")) {
-         if (!inQos)
-            return;
-         inErase = true;
-         if (attrs != null) {
-            int len = attrs.getLength();
-            for (int i = 0; i < len; i++) {
-               Log.warn(ME, "Ignoring sent <erase> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
+            String tmp = attrs.getValue("timeToLive");
+            if (tmp != null) {
+               try { setTimeToLive(Long.parseLong(tmp.trim())); } catch(NumberFormatException e) { Log.error(ME, "Invalid timeToLive - millis =" + tmp); };
             }
-            // if (Log.TRACE) Log.trace(ME, "Found erase tag");
+            else {
+               Log.warn(ME, "QoS <expiration> misses timeToLive attribute, setting default of " + getMaxTimeToLive());
+               setTimeToLive(getMaxTimeToLive());
+            }
+            // if (Log.TRACE) Log.trace(ME, "Found expiration tag");
          }
          return;
       }
@@ -413,28 +467,8 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
          return;
       }
 
-      if(name.equalsIgnoreCase("expires")) {
-         inExpires = false;
-         String tmp = character.toString().trim();
-         try {
-            expires = new Long(tmp).longValue();
-         } catch (NumberFormatException e) {
-            Log.error(ME, "Wrong format of <expires>" + tmp + "</expires>, expected a long in milliseconds.");
-         }
-         // if (Log.TRACE) Log.trace(ME, "Found message expires login name = " + expires);
-         character.setLength(0);
-         return;
-      }
-
-      if(name.equalsIgnoreCase("erase")) {
-         inErase = false;
-         String tmp = character.toString().trim();
-         try {
-            erase = new Long(tmp).longValue();
-         } catch (NumberFormatException e) {
-            Log.error(ME, "Wrong format of <erase>" + tmp + "</erase>, expected a long in milliseconds.");
-         }
-         // if (Log.TRACE) Log.trace(ME, "Found message erase login name = " + erase);
+      if(name.equalsIgnoreCase("expiration")) {
+         inExpiration = false;
          character.setLength(0);
          return;
       }
@@ -497,8 +531,7 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
          sb.append(offset).append("      ").append(sender);
          sb.append(offset).append("   </sender>");
       }
-      sb.append(offset).append("   <expires>").append(getExpires()).append("</expires>");
-      sb.append(offset).append("   <erase>").append(getEraseTimeout()).append("</erase>");
+      sb.append(offset).append("   <expiration rcvTimestamp='").append(rcvTimestamp).append("' timeToLive='").append(getTimeToLive()).append("'/>");
 
       sb.append(offset).append("   <isVolatile>").append(isVolatile).append("</isVolatile>");
       if (isDurable())
@@ -538,12 +571,7 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
             "   <sender>\n" +
             "      Gesa\n" +
             "   </sender>\n" +
-            "   <expires>\n" +
-            "      12000\n" +
-            "   </expires>\n" +
-            "   <erase>\n" +
-            "      24000\n" +
-            "   </erase>\n" +
+            "   <expiration rcvTimestamp='1007771081626' timeToLive='12000'/>\n" +
             "   <isVolatile>false</isVolatile>\n" +
             "   <isDurable />\n" +
             "   <forceUpdate />\n" +

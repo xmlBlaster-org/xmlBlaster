@@ -1,7 +1,7 @@
 /*
-	Subject.java
+        Subject.java
 
-	16/11/01 16:15 cyrille@ktaland.com
+        16/11/01 16:15 cyrille@ktaland.com
 */
 package org.xmlBlaster.authentication.plugins.htpasswd;
 
@@ -11,7 +11,7 @@ import org.xmlBlaster.util.Log;
 
 /**
  * @author  $Author: ruff $ ($Name:  $)
- * @version $Revision: 1.1 $ (State: $State) (Date: $Date: 2001/11/19 15:16:22 $)
+ * @version $Revision: 1.2 $ (State: $State) (Date: $Date: 2001/12/16 21:25:33 $)
  */
 
 public class Subject implements I_Subject {
@@ -55,7 +55,9 @@ public class Subject implements I_Subject {
    void authenticate(String passwd) throws XmlBlasterException {
       // throw new XmlBlasterException(ME + ".authenticationFailed", "Wrong identity!");
       // dummy implementation
-      Log.info(ME, "Access for " + getName() + " granted, without further checks.");
+      //Log.info(ME, "Access for " + getName() + " granted, without further checks.");
+
+      // NOTE: In this plugin authentication is done in Session.java
    }
 
 }

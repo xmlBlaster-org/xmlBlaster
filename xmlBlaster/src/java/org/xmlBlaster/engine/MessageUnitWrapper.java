@@ -3,7 +3,7 @@ Name:      MessageUnitWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping the CORBA MessageUnit to allow some nicer usage
-Version:   $Id: MessageUnitWrapper.java,v 1.29 2001/12/07 23:44:26 ruff Exp $
+Version:   $Id: MessageUnitWrapper.java,v 1.30 2001/12/16 21:25:33 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -48,14 +48,6 @@ public class MessageUnitWrapper
    /** Handle on the persistence driver */
    private I_PersistenceDriver persistenceDriver;
 
-   /** 
-    * The receive timestamp (UTC time),
-    * when message arrived in requestBroker.publish() method.<br />
-    * In milliseconds elapsed since midnight, January 1, 1970 UTC
-    */
-   private long rcvTimestamp;
-
-
    /**
     * Use this constructor if a new message object is fed by method publish().
     * <p />
@@ -70,8 +62,6 @@ public class MessageUnitWrapper
          throw new XmlBlasterException(ME, "Invalid constructor parameter");
       }
       
-      touchRcvTimestamp();
-
       this.requestBroker = requestBroker;
       this.msgUnit = msgUnit;
       this.xmlKey = xmlKey;
@@ -105,11 +95,6 @@ public class MessageUnitWrapper
       return xmlKey;
    }
 
-   private final void touchRcvTimestamp()
-   {
-      rcvTimestamp = System.currentTimeMillis();
-   }
-
    /** 
     * The approximate receive timestamp (UTC time),
     * when message arrived in requestBroker.publish() method.<br />
@@ -117,7 +102,7 @@ public class MessageUnitWrapper
     */
    public final long getRcvTimestamp()
    {
-      return rcvTimestamp;
+      return publishQoS.getRcvTimestamp();
    }
 
    /**
@@ -126,9 +111,9 @@ public class MessageUnitWrapper
     */
    public final String getXmlRcvTimestamp()
    {
-      java.sql.Timestamp ts = new java.sql.Timestamp(rcvTimestamp);
+      java.sql.Timestamp ts = new java.sql.Timestamp(getRcvTimestamp());
       StringBuffer sb = new StringBuffer();
-      sb.append("<rcvTimestamp millis='").append(rcvTimestamp).append("'>").append(ts.toString()).append("</rcvTimestamp>");
+      sb.append("<rcvTimestamp millis='").append(publishQoS.getRcvTimestamp()).append("'>").append(ts.toString()).append("</rcvTimestamp>");
       return sb.toString();
    }
 
@@ -149,7 +134,7 @@ public class MessageUnitWrapper
          throw new XmlBlasterException(ME+".Readonly", "Sorry, new published message rejected, message is readonly.");
       }
 
-      touchRcvTimestamp();
+      publishQoS.touchRcvTimestamp();
 
       if (newContent == null)
          newContent = new byte[0];

@@ -3,7 +3,7 @@ Name:      UpdateQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: UpdateQoS.java,v 1.18 2001/12/07 23:53:19 ruff Exp $
+Version:   $Id: UpdateQoS.java,v 1.19 2001/12/16 21:25:33 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -33,6 +33,7 @@ import org.xml.sax.Attributes;
  *     &lt;rcvTimestamp millis='1007764305862'> &lt;!-- UTC time when message was created in xmlBlaster server with a publish() call -->
  *           2001-12-07 23:31:45.862   &lt;!-- The millis from above but human readable -->
  *     &lt;/rcvTimestamp>
+ *     &lt;expiration timeToLive='1200' /> &lt;!-- Calculated relative to when xmlBlaster has sent the message [milliseconds] -->
  *     &lt;queue index='0' of='1'> &lt;!-- If queued messages are flushed on login -->
  *     &lt;/queue>
  *  &lt;/qos>
@@ -50,7 +51,10 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
    private boolean inSender = false;
    /** the sender (publisher) of this message (unique loginName) */
    private String sender = null;
-   /** helper flag for SAX parsing: parsing inside <subscriptionId> ? */
+   private boolean inExpiration = false;
+   /** To calculate the timeToLive, -1 if not known */
+   private long expirationTimestamp = -1L;
+    /** helper flag for SAX parsing: parsing inside <subscriptionId> ? */
    private boolean inSubscriptionId = false;
    /** If Pub/Sub style update: contains the subscribe ID which caused this update */
    private String subscriptionId = null;
@@ -143,6 +147,19 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
       return rcvTime;
    }
 
+    /**
+     * Approxiamte millis counted from now when message will be discarded
+     * by xmlBlaster.
+     * Calculated by xmlBlaster just before sending the update, so there
+     * will be an offset (the time sending the message to us).
+     * @return The time to live for this message or -1 if not known
+     */
+   public final long getTimeToLive()
+   {
+      if (expirationTimestamp == -1L)  return -1L;
+      return expirationTimestamp - System.currentTimeMillis();
+   }
+
    /**
     * Start element, event from SAX parser.
     * <p />
@@ -218,6 +235,25 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
          return;
       }
 
+      if (name.equalsIgnoreCase("expiration")) {
+         if (!inQos)
+            return;
+         inExpiration = true;
+         if (attrs != null) {
+            int len = attrs.getLength();
+            for (int i = 0; i < len; i++) {
+               if( attrs.getQName(i).equalsIgnoreCase("timeToLive") ) {
+                 String tmp = attrs.getValue(i).trim();
+                 try {
+                    long timeToLive = Long.parseLong(tmp);
+                    this.expirationTimestamp = System.currentTimeMillis() + timeToLive;
+                 } catch(NumberFormatException e) { Log.error(ME, "Invalid timeToLive - millis =" + tmp); };
+               }
+            }
+         }
+         return;
+      }
+
       if (name.equalsIgnoreCase("queue")) {
          if (!inQos)
             return;
@@ -284,6 +320,12 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
          return;
       }
 
+      if(name.equalsIgnoreCase("expiration")) {
+         inExpiration = false;
+         character.setLength(0);
+         return;
+      }
+
       if(name.equalsIgnoreCase("queue")) {
          inQueue = false;
          character.setLength(0);
@@ -338,8 +380,10 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
       sb.append(offset).append("      ").append(getRcvTime());
       sb.append(offset).append("   </rcvTimestamp>");
 
+      sb.append(offset).append("   <expiration timeToLive='").append(getTimeToLive()).append("'/>");
+
       if(getQueueSize() > 0) {
-         sb.append(offset).append("   <queue index='"+getQueueIndex()+"' size='"+getQueueSize()+"'");
+         sb.append(offset).append("   <queue index='"+getQueueIndex()+"' size='"+getQueueSize()+"'>");
          sb.append(offset).append("   </queue>");
       }
 
@@ -357,7 +401,7 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
 
 
    /**
-    *  For testing invoke: jaco org.xmlBlaster.client.UpdateQoS
+    *  For testing invoke: java org.xmlBlaster.client.UpdateQoS
     */
    public static void main( String[] args ) throws XmlBlasterException
    {
@@ -371,9 +415,10 @@ public class UpdateQoS extends org.xmlBlaster.util.XmlQoSBase
                    "   <subscriptionId>\n" +
                    "      1234567890\n" +
                    "   </subscriptionId>\n" +
-                   "   <rcvTimestamp millis='1007764305862'>\n" +
+                   "   <rcvTimestamp millis='1007764305862'  nanos='012345'>\n" +
                    "      2001-12-07 23:31:45.862\n" +
                    "   </rcvTimestamp>\n" +
+                   "   <expiration timeToLive='12000'/>\n" + 
                    "   <queue index='0' size='1'>\n" +
                    "   </queue>\n" +
                    "</qos>";

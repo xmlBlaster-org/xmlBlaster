@@ -3,7 +3,7 @@ Name:      PublishQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: PublishQosWrapper.java,v 1.14 2001/02/23 01:42:02 ruff Exp $
+Version:   $Id: PublishQosWrapper.java,v 1.15 2001/12/16 21:25:33 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -19,14 +19,25 @@ import java.util.Vector;
  * So you don't need to type the 'ugly' XML ASCII string by yourself.
  * After construction access the ASCII-XML string with the toXml() method.
  * <br />
- * A typical <b>publish</b> qos could look like this:<br />
+ * A typical <b>publish</b> qos in Publish/Subcribe mode could look like this:<br />
  * <pre>
- *     &lt;qos>
- *        &lt;destination queryType='EXACT'>
- *           Tim
- *        &lt;/destination>
- *        &lt;isDurable />    &lt;!-- The message shall be recoverable if xmlBlaster crashes -->
- *     &lt;/qos>
+ *  &lt;qos>
+ *     &lt;expiration timeToLive='60000'/>
+ *     &lt;isDurable />  &lt;!-- The message shall be recoverable if xmlBlaster crashes -->
+ *     &lt;forceUpdate />
+ *     &lt;readonly />
+ *  &lt;/qos>
+ * </pre>
+ * A typical <b>publish</b> qos in PtP mode could look like this:<br />
+ * <pre>
+ *  &lt;qos>
+ *     &lt;destination queryType='EXACT'>
+ *        joe
+ *     &lt;/destination>
+ *     &lt;destination queryType='EXACT'>
+ *        Tim
+ *     &lt;/destination>
+ *  &lt;/qos>
  * </pre>
  * <p />
  * see xmlBlaster/src/dtd/XmlQoS.xml
@@ -39,8 +50,7 @@ public class PublishQosWrapper extends QosWrapper
    private boolean isDurable = false;
    private boolean forceUpdate = false;
    private boolean readonly = false;
-   private long expires = -99;
-   private long erase = -99;
+   private long timeToLive = 0;
 
 
 
@@ -125,6 +135,18 @@ public class PublishQosWrapper extends QosWrapper
       this.isDurable = true;
    }
 
+   /**
+    * The message expires after given milliseconds (message is erased).<p />
+    * Clients will get a notify about expiration.<br />
+    * This value is calculated relative to the rcvTimestamp in the xmlBlaster server.<br />
+    * Passing 0 milliseconds asks the server for unlimited livespan, which
+    * the server may or may not grant.
+    * @param timeToLive in milliseconds
+    */
+   public void setTimeToLive(long timeToLive)
+   {
+      this.timeToLive = timeToLive;
+   }
 
    /**
     * Add a destination where to send the message.
@@ -157,31 +179,38 @@ public class PublishQosWrapper extends QosWrapper
    public String toXml()
    {
       StringBuffer sb = new StringBuffer();
-      sb.append("<qos>\n");
+      sb.append("\n<qos>");
       if (destVec != null) {
          for (int ii=0; ii<destVec.size(); ii++) {
             Destination destination = (Destination)destVec.elementAt(ii);
-            sb.append(destination.toXml("   ")).append("\n");
+            sb.append(destination.toXml());
          }
       }
-      if (expires >= 0) {
-         sb.append("   <expires>\n");
-         sb.append("      " + expires + "\n");
-         sb.append("   </expires>\n");
+      if (timeToLive >= 0) {
+         sb.append("\n   <expiration timeToLive='").append(timeToLive).append("'/>");
       }
-      if (erase >= 0) {
-         sb.append("   <erase>\n");
-         sb.append("      " + erase + "\n");
-         sb.append("   </erase>\n");
-      }
-      sb.append("   <isVolatile>").append(isVolatile).append("</isVolatile>\n");
+      sb.append("\n   <isVolatile>").append(isVolatile).append("</isVolatile>");
       if (isDurable)
-         sb.append("   <isDurable />\n");
+         sb.append("\n   <isDurable/>");
       if (forceUpdate)
-         sb.append("   <forceUpdate />\n");
+         sb.append("\n   <forceUpdate/>");
       if (readonly)
-         sb.append("   <readonly />\n");
-      sb.append("</qos>");
+         sb.append("\n   <readonly/>");
+      sb.append("\n</qos>");
       return sb.toString();
+   }
+
+   /**
+    *  For testing invoke: java org.xmlBlaster.client.PublishQosWrapper
+    */
+   public static void main( String[] args ) throws XmlBlasterException
+   {
+      PublishQosWrapper qos =new PublishQosWrapper(new Destination("joe"));
+      qos.addDestination(new Destination("Tim"));
+      qos.setDurable();
+      qos.setForceUpdate();
+      qos.setReadonly();
+      qos.setTimeToLive(60000);
+      System.out.println(qos.toXml());
    }
 }
