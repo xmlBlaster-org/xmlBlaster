@@ -26,8 +26,8 @@ import EDU.oswego.cs.dl.util.concurrent.ThreadFactory;
 public class DeliveryWorkerPool //implements I_RunlevelListener
 {
    public final String ME = "DeliveryWorkerPool";
-   private final Global glob;
-   private final LogChannel log;
+   private Global glob;
+   private LogChannel log;
    private PooledExecutor pool;
    private PropInt maximumPoolSize = new PropInt(200);
    private PropInt minimumPoolSize = new PropInt(2);
@@ -35,12 +35,12 @@ public class DeliveryWorkerPool //implements I_RunlevelListener
    private boolean isShutdown = false;
 
    protected static class DeamonThreadFactory implements ThreadFactory {
-      private final Global glob;
-      DeamonThreadFactory(Global glob) {
-         this.glob = glob;
+      private final String id;
+      DeamonThreadFactory(String id) {
+         this.id = id;
       }
       public Thread newThread(Runnable command) {
-         Thread t = new Thread(command, "XmlBlaster.DeliveryWorkerPool."+glob.getId());
+         Thread t = new Thread(command, "XmlBlaster.DeliveryWorkerPool."+id);
          t.setDaemon(true);
          //System.out.println("Created new daemon thread instance for DeliveryWorkerPool");
          return t;
@@ -63,7 +63,7 @@ public class DeliveryWorkerPool //implements I_RunlevelListener
          return;
 
       this.pool = new PooledExecutor(new LinkedQueue());
-      this.pool.setThreadFactory(new DeamonThreadFactory(glob));
+      this.pool.setThreadFactory(new DeamonThreadFactory(glob.getId()));
       
       // Example server side:
       // -dispatch/callback/minimumPoolSize 34
@@ -117,6 +117,9 @@ public class DeliveryWorkerPool //implements I_RunlevelListener
          isShutdown = true;
          pool.shutdownNow();
       }
+      this.pool = null;
+      this.glob = null;
+      this.log = null;
    }
 
    /**
