@@ -3,7 +3,7 @@ Name:      ReqListServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Collects all xml requirement files into the all.xml master file
-Version:   $Id: ReqListServlet.java,v 1.1 2000/03/27 07:33:19 kkrafft2 Exp $
+Version:   $Id: ReqListServlet.java,v 1.2 2000/04/06 15:10:46 kkrafft2 Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.servlet;
 
@@ -44,6 +44,7 @@ public class ReqListServlet extends ReqBaseServlet
          File[] files = dir.listFiles(new MyFilenameFilter());
 
          xmlData.append("<files>\n");
+         xmlData.append("<dir>"+dir_s+"</dir>\n");
          for (int ii=0; ii<files.length; ii++) {
             xmlData.append("   <url>file:" + dir_s + "/" + files[ii].getName() + "</url>\n");
          }
