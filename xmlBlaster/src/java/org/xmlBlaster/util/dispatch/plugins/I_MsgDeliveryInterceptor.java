@@ -85,7 +85,7 @@ public interface I_MsgDeliveryInterceptor extends I_ConnectionStatusListener
    /**
     * Deregister the given deliveryManager
     */
-   public void shutdown(DeliveryManager deliveryManager);
+   public void shutdown(DeliveryManager deliveryManager) throws XmlBlasterException;
 
    /**
     * Shutdown the implementation, sync with data store
