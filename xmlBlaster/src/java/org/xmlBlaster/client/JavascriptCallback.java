@@ -103,6 +103,24 @@ public class JavascriptCallback implements I_Callback
       System.out.println("****JavascriptCallback: SUCCESS");
    }
 
+   /*
+    * changeElement changes Node Values
+    * JSVGCanvasExtended can = // See xmlBlaster/demo/javaclients/svg/batik
+    * Element ele = can.getElement(id);
+    * @param value contains new Value of element
+    */
+   public void setElementValue(final org.w3c.dom.Element ele, final String value)
+   {
+      if (ele == null || this.updateQueue == null)
+         throw new IllegalArgumentException("JavascriptCallback.setElementValue invalid args: element=" + ele + " updateQueue=" + this.updateQueue);
+
+      this.updateQueue.invokeLater(new Runnable() {
+         public void run() {
+            org.w3c.dom.Node node = ele.getFirstChild();
+            node.setNodeValue(value);
+         }});
+   }
+
    /**
     * This is the callback method invoked from xmlBlaster
     * delivering us a new asynchronous message. 
