@@ -49,7 +49,7 @@ CorbaConnection::CorbaConnection(Global& global, CORBA::ORB_ptr orb)
     msgKeyFactory_(global),
     msgQosFactory_(global)
 {
-  log_.getProperties().loadPropertyFile();
+  //global_.getProperty().loadPropertyFile();
   log_.info(me(), "Initializing CORBA ORB");
   if (log_.call()) log_.call(me(), "CorbaConnection constructor ...");
 //  if (numOfSessions_ == 0) {
@@ -121,7 +121,7 @@ void CorbaConnection::initAuthenticationService()
 
   // 1) check if argument -IOR at program startup is given
   string authServerIOR = /* -dispatch/connection/plugin/ior/iorString IOR string is directly given */
-     log_.getProperties().getStringProperty("dispatch/callback/plugin/ior/iorString","");
+     global_.getProperty().getStringProperty("dispatch/callback/plugin/ior/iorString","");
   if (authServerIOR != "") {
      CORBA::Object_var
         obj = orb_->string_to_object(authServerIOR.c_str());
@@ -132,7 +132,7 @@ void CorbaConnection::initAuthenticationService()
   if (log_.trace()) log_.trace(me(), "No -dispatch/connection/plugin/ior/iorString ...");
 
   string authServerIORFile =
-     log_.getProperties().getStringProperty("dispatch/connection/plugin/ior/iorFile","");
+     global_.getProperty().getStringProperty("dispatch/connection/plugin/ior/iorFile","");
   // -dispatch/connection/plugin/ior/iorFile IOR string is given through a file
   if (authServerIORFile != "") {
      ifstream in(authServerIORFile.c_str());
@@ -155,9 +155,9 @@ void CorbaConnection::initAuthenticationService()
      char myHostName[126];
      strcpy(myHostName, "localhost");
      gethostname(myHostName, 125);
-     string iorHost = log_.getProperties().getStringProperty("bootstrapHostname",myHostName);
+     string iorHost = global_.getProperty().getStringProperty("bootstrapHostname",myHostName);
      // Port may be a name from /etc/services: "xmlBlaster 3412/tcp"
-     string iorPortStr = log_.getProperties().getStringProperty("bootstrapPort","3412"); // default bootstrapPort=3412 (xmlblaster)
+     string iorPortStr = global_.getProperty().getStringProperty("bootstrapPort","3412"); // default bootstrapPort=3412 (xmlblaster)
      if (log_.trace()) log_.trace(me(), "Trying -bootstrapHostname=" + iorHost + " and -bootstrapPort=" + iorPortStr + " ...");
      struct sockaddr_in xmlBlasterAddr;
      memset((char *)&xmlBlasterAddr, 0, sizeof(xmlBlasterAddr));
@@ -171,7 +171,7 @@ void CorbaConnection::initAuthenticationService()
         if (portP != NULL)
            xmlBlasterAddr.sin_port = portP->s_port;
         else
-           xmlBlasterAddr.sin_port = htons(log_.getProperties().getIntProperty("bootstrapPort",3412));
+           xmlBlasterAddr.sin_port = htons(global_.getProperty().getIntProperty("bootstrapPort",3412));
         int s = socket(AF_INET, SOCK_STREAM, 0);
         if (s != -1) {
            if (::connect(s, (struct sockaddr *)&xmlBlasterAddr, sizeof(xmlBlasterAddr)) != -1) {
@@ -224,7 +224,7 @@ void CorbaConnection::initAuthenticationService()
 
 
   // 4) asking Name Service CORBA compliant
-  bool useNameService=log_.getProperties().getBoolProperty("dispatch/connection/plugin/ior/useNameService",true);
+  bool useNameService=global_.getProperty().getBoolProperty("dispatch/connection/plugin/ior/useNameService",true);
   // -dispatch/connection/plugin/ior/useNameService default is to ask the naming service
 
   string text = "Can't access xmlBlaster Authentication Service";
