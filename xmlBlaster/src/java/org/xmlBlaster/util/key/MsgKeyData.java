@@ -6,6 +6,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.util.key;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.Constants;
 
 /**
@@ -27,6 +28,9 @@ import org.xmlBlaster.engine.helper.Constants;
  * A well designed xml hierarchy of your problem domain is essential for a proper working xmlBlaster
  * <p />
  * <p>
+ * If you haven't specified a key oid, there will be generated one automatically.
+ * </p>
+ * <p>
  * NOTE: Message oid starting with "__" is reserved for internal usage.
  * </p>
  * <p>
@@ -34,31 +38,25 @@ import org.xmlBlaster.engine.helper.Constants;
  * </p>
  * @see org.xmlBlaster.util.key.MsgKeySaxFactory
  */
-public final class MsgKeyData
+public final class MsgKeyData extends KeyData implements java.io.Serializable, Cloneable
 {
    private final static String ME = "MsgKeyData";
-   private final Global glob;
-   private transient final I_MsgKeyFactory factory;
-   private final String serialData; // can be null - in this case use toXml()
-   /** value from attribute <key oid="..."> */
-   private String oid;
-   /** The default content MIME type is "text/plain" */
-   public static final String CONTENTMIME_DEFAULT = QueryKeyData.CONTENTMIME_DEFAULT;
-   /** value from attribute <key oid="" contentMime="..."> */
-   private String contentMime = "text/plain";
-   /** value from attribute <key oid="" contentMimeExtended="..."> */
-   private String contentMimeExtended;
-   /** value from attribute <key oid="" domain="..."> */
-   private String domain;
+   private transient I_MsgKeyFactory factory;
    private String clientTags;
 
    /**
     * Minimal constructor.
     */
    public MsgKeyData(Global glob) {
-      this.glob = (glob == null) ? Global.instance() : glob;
-      this.factory = glob.getMsgKeyFactory();
-      this.serialData = null; // toXml() ?
+      this(glob, null, null);
+   }
+
+   /**
+    * Constructor to parse a message. 
+    * @param factory If null, the default factory from Global is used.
+    */
+   public MsgKeyData(Global glob, String serialData) {
+      this(glob, null, serialData);
    }
 
    /**
@@ -66,72 +64,18 @@ public final class MsgKeyData
     * @param factory If null, the default factory from Global is used.
     */
    public MsgKeyData(Global glob, I_MsgKeyFactory factory, String serialData) {
-      this.glob = (glob == null) ? Global.instance() : glob;
+      super(glob, serialData);
       this.factory = (factory == null) ? this.glob.getMsgKeyFactory() : factory;
-      this.serialData = serialData;
    }
 
-   public void setOid(String oid) {
-      this.oid = oid;
-   }
-
+   /**
+    * @return never null, an oid is generated if it was null.
+    */
    public String getOid() {
-      return this.oid;
-   }
-
-   /**
-    * Test if oid is '__sys__deadMessage'. 
-    * <p />
-    * Dead letters are unrecoverable lost messages, usually an administrator
-    * should subscribe to those messages.
-    * <p>
-    * This is an internal message (isInternal() returns true)
-    * </p>
-    */
-   public final boolean isDeadMessage() {
-      return Constants.OID_DEAD_LETTER.equals(getOid());
-   }
-
-   /**
-    * Messages starting with "_" are reserved for usage in plugins
-    */
-   public final boolean isPluginInternal() {
-      return (this.oid == null) ? false : (getOid().startsWith(Constants.INTERNAL_OID_PREFIX_FOR_PLUGINS) && !getOid().startsWith(Constants.INTERNAL_OID_PREFIX_FOR_CORE));
-   }
-
-   /**
-    * Messages starting with "__" are reserved for internal usage
-    */
-   public final boolean isInternal() {
-      return (this.oid == null) ? false : getOid().startsWith(Constants.INTERNAL_OID_PREFIX_FOR_CORE);
-   }
-
-   public void setContentMime(String contentMime) {
-      this.contentMime = contentMime;
-   }
-
-   public String getContentMime() {
-      return this.contentMime;
-   }
-
-   public void setContentMimeExtended(String contentMimeExtended) {
-      this.contentMimeExtended = contentMimeExtended;
-   }
-
-   public String getContentMimeExtended() {
-      return this.contentMimeExtended;
-   }
-
-   public void setDomain(String domain) {
-      this.domain = domain;
-   }
-
-   /**
-    * Access the domain setting
-    * @return A domain string or null
-    */
-   public String getDomain() {
-      return this.domain;
+      if (super.getOid() == null) {
+         setOid(generateOid(glob.getStrippedId()));
+      }
+      return super.getOid();
    }
 
    /**
@@ -157,12 +101,11 @@ public final class MsgKeyData
       return this.clientTags;
    }
 
-   /**
-    * Converts the data in XML ASCII string.
-    * @return An XML ASCII string
-    */
-   public String toString() {
-      return toXml();
+   private I_MsgKeyFactory getFactory() {
+      if (this.factory == null) {
+         this.factory = this.glob.getMsgKeyFactory();
+      }
+      return this.factory;
    }
 
    /**
@@ -170,7 +113,7 @@ public final class MsgKeyData
     * @return An XML ASCII string
     */
    public String toXml() {
-      return this.factory.writeObject(this, null);
+      return getFactory().writeObject(this, null);
    }
 
    /**
@@ -180,6 +123,14 @@ public final class MsgKeyData
     * @return internal state of the query as a XML ASCII string
     */
    public String toXml(String extraOffset) {
-      return factory.writeObject(this, extraOffset);
+      return getFactory().writeObject(this, extraOffset);
+   }
+
+   /**
+    * Returns a shallow clone, you can change savely all basic or immutable types
+    * like boolean, String, int.
+    */
+   public Object clone() {
+      return super.clone();
    }
 }

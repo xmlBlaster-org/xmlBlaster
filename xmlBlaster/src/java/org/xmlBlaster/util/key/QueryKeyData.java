@@ -26,31 +26,13 @@ import java.util.ArrayList;
  * </p>
  * @see org.xmlBlaster.util.key.QueryKeySaxFactory
  */
-public final class QueryKeyData
+public final class QueryKeyData extends KeyData implements java.io.Serializable, Cloneable
 {
    // NOTE: We parse all key attributes, but only a few are used for queries
    // e.g. contentMime and contentMimeExtended are not useful (the decorater classes hide them)
 
    private final static String ME = "QueryKeyData";
-   private final Global glob;
-   private transient final I_QueryKeyFactory factory;
-   private final String serialData; // can be null - in this case use toXml()
-   /** value from attribute <key oid="..."> */
-   private String oid;
-   /** The default content MIME type is "text/plain" */
-   public static final String CONTENTMIME_DEFAULT = "text/plain";
-   /** value from attribute <key oid="" contentMime="..."> */
-   private String contentMime = CONTENTMIME_DEFAULT;
-   /** value from attribute <key oid="" contentMimeExtended="..."> */
-   private String contentMimeExtended;
-   /** value from attribute <key oid="" domain="..."> */
-   private String domain;
-   /** The default queryType is "EXACT" */
-   public static final String QUERYTYPE_DEFAULT = Constants.EXACT;
-   /** The query type */
-   private String queryType = QUERYTYPE_DEFAULT;
-   /** The query string */
-   private String queryString;
+   private transient I_QueryKeyFactory factory;
 
    /**
     * subscribe(), get() and cluster configuration keys may contain a filter rule
@@ -62,9 +44,7 @@ public final class QueryKeyData
     * Minimal constructor.
     */
    public QueryKeyData(Global glob) {
-      this.glob = (glob == null) ? Global.instance() : glob;
-      this.factory = glob.getQueryKeyFactory();
-      this.serialData = null; // toXml() ?
+      this(glob, null, null);
    }
 
    /**
@@ -72,64 +52,8 @@ public final class QueryKeyData
     * @param factory If null, the default factory from Global is used.
     */
    public QueryKeyData(Global glob, I_QueryKeyFactory factory, String serialData) {
-      this.glob = (glob == null) ? Global.instance() : glob;
+      super(glob, serialData);
       this.factory = (factory == null) ? this.glob.getQueryKeyFactory() : factory;
-      this.serialData = serialData;
-   }
-
-   public void setOid(String oid) {
-      this.oid = oid;
-   }
-
-   public String getOid() {
-      return this.oid;
-   }
-
-   public void setContentMime(String contentMime) {
-      this.contentMime = contentMime;
-   }
-
-   /**
-    * Find out which mime type (syntax) the content of the message has.
-    * @return e.g "text/xml" or "image/png"
-    *         defaults to "text/plain"
-    */
-   public String getContentMime() {
-      return this.contentMime;
-   }
-
-   /**
-    * Some further specifying information of the content.
-    * <p />
-    * For example the application version number the document in the content.<br />
-    * You may use this attribute for you own purposes.
-    * @return The MIME-extended info, for example<br />
-    *         "Version 1.1" in &lt;key oid='' contentMime='text/xml' contentMimeExtended='Version 1.1'><br />
-    *         or "" (empty string) if not known
-    */
-   public void setContentMimeExtended(String contentMimeExtended) {
-      this.contentMimeExtended = contentMimeExtended;
-   }
-
-   /**
-    * Some further specifying information of the content.
-    * <p />
-    * For example the application version number the document in the content.<br />
-    * You may use this attribute for you own purposes.
-    * @return The MIME-extended info, for example<br />
-    *         "Version 1.1" in &lt;key oid='' contentMime='text/xml' contentMimeExtended='Version 1.1'><br />
-    *         or "" (empty string) if not known
-    */
-   public String getContentMimeExtended() {
-      return this.contentMimeExtended;
-   }
-
-   public void setDomain(String domain) {
-      this.domain = domain;
-   }
-
-   public String getDomain() {
-      return this.domain;
    }
 
    public void setQueryType(String queryType) throws XmlBlasterException {
@@ -145,14 +69,6 @@ public final class QueryKeyData
       if (!Constants.EXACT.equalsIgnoreCase(queryType) && !Constants.XPATH.equalsIgnoreCase(queryType))
          throw new XmlBlasterException(ME, "Your queryType=" + queryType + " is invalid, use one of '" + Constants.EXACT + "' , '" + Constants.XPATH + "'");
       this.queryType = queryType.toUpperCase();
-   }
-
-   /**
-    * Access the query type "XPATH" or "EXACT"
-    * @return A queryType string or null
-    */
-   public String getQueryType() {
-      return this.queryType;
    }
 
    /**
@@ -191,12 +107,11 @@ public final class QueryKeyData
       filterArr = null;
    }
 
-   /**
-    * Converts the data in XML ASCII string.
-    * @return An XML ASCII string
-    */
-   public String toString() {
-      return toXml();
+   private I_QueryKeyFactory getFactory() {
+      if (this.factory == null) {
+         this.factory = this.glob.getQueryKeyFactory();
+      }
+      return this.factory;
    }
 
    /**
@@ -204,7 +119,7 @@ public final class QueryKeyData
     * @return An XML ASCII string
     */
    public String toXml() {
-      return this.factory.writeObject(this, null);
+      return getFactory().writeObject(this, null);
    }
 
    /**
@@ -214,6 +129,15 @@ public final class QueryKeyData
     * @return internal state of the query as a XML ASCII string
     */
    public String toXml(String extraOffset) {
-      return factory.writeObject(this, extraOffset);
+      return getFactory().writeObject(this, extraOffset);
+   }
+
+   /**
+    * Returns a shallow clone, you can change savely all basic or immutable types
+    * like boolean, String, int.
+    * Currently AccessFilterQos is not deep cloned (so don't change it)
+    */
+   public Object clone() {
+      return super.clone();
    }
 }
