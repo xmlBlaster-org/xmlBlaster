@@ -87,14 +87,14 @@ LogFormat.Time=MEDIUM
 #------------------------------------------------------------------------------
 # XMLDB (PDOM - Persistence Document Object Model)
 #
-#   Setup your Cachesize in kbyte
-PDOM.Cachesize=2000
+#   Setup your Cachesize in byte default is 2MB
+#PDOM.Cachesize=1000000
 #
 #   Configure you xmldb-path
-PDOM.Dbpath=$user.home/xmldb
+#PDOM.Dbpath=$user.home
 #
-#   Setup max size of a message in kbyte
-PDOM.Messagesize=100
+#   Setup max size of a message in byte default is 5kbyte
+#PDOM.Messagesize=100
 #
 #   Setup the Isolation Level. Overview on the possible lock modes:
 #   The IsolationLevel "uncommitted" corresponds to the weakest level (0),
