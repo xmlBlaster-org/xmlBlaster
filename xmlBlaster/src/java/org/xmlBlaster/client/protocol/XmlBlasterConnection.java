@@ -941,15 +941,19 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
             firstConnect = false;
             if (log.DUMP) log.dump(ME, "connectReturnQos=" + connectReturnQos.toXml());
             initFailSave();
-            log.info(ME, "Connected to " + getServerNodeId() + " as " + connectReturnQos.getSessionName());
+            if (this.connectReturnQos != null) {
+               log.info(ME, "Connected to " + getServerNodeId() + " as " + this.connectReturnQos.getSessionName());
+            }
          }
          else
             this.connectReturnQos = driver.loginRaw();
          numLogins++;
 
-         // Remember sessionId for reconnects ...
-         this.connectQos.setSessionId(this.connectReturnQos.getSessionId());
-         this.connectQos.setSessionName(this.connectReturnQos.getSessionName());
+         if (this.connectReturnQos != null) {
+            // Remember sessionId for reconnects ...
+            this.connectQos.setSessionId(this.connectReturnQos.getSessionId());
+            this.connectQos.setSessionName(this.connectReturnQos.getSessionName());
+         }
 
          if (log.TRACE) log.trace(ME, "Successful login to " + getServerNodeId());
 
@@ -1465,7 +1469,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
                subscribeUniqueCounter++;
                String absoluteName = (this.connectReturnQos!=null) ? this.connectReturnQos.getSessionName().getAbsoluteName() : (String)null;
                if (absoluteName == null) {
-                  absoluteName = (this.connectQos!=null) ? this.connectQos.getSessionName().getAbsoluteName() : (String)null;
+                  absoluteName = (this.connectQos!=null) ? ((this.connectQos.getSessionName() != null) ? this.connectQos.getSessionName().getAbsoluteName() : (String)null) : (String)null;
                }
                if (absoluteName == null) {
                   absoluteName = getServerNodeId() + "/client/" + getLoginName();
