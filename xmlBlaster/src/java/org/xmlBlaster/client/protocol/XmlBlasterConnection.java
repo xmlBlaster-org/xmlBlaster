@@ -600,15 +600,12 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       if (qos == null)
          qos = new ConnectQos(glob);
 
-      I_SecurityQos securityQos = qos.getSecurityQos();
-      if(securityQos == null) {
-         // Create default security tags (as specified in xmlBlaster.properties) ...
-         initSecuritySettings(null, null);
-         securityQos = secPlgn.getSecurityQos();
-         qos.setSecurityQos(securityQos);
-      }
+      // Create default security tags (as specified in xmlBlaster.properties) ...
+      initSecuritySettings(null, null);
+      I_SecurityQos securityQos = this.secPlgn.getSecurityQos();
       securityQos.setUserId(loginName);
       securityQos.setCredential(passwd);
+      qos.setSecurityQos(securityQos);
 
       connect(qos, client);
    }
