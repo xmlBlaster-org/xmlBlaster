@@ -74,16 +74,16 @@ abstract public class DeliveryConnectionsHandler
    private ConnectionStateEnum state = ConnectionStateEnum.UNDEF;
    
    /**
+    * You need to call initialize() after construction. 
     * @param deliveryManager The message queue witch i belong to
     * @param cbAddr The addresses i shall connect to
     */
-   public DeliveryConnectionsHandler(Global glob, DeliveryManager deliveryManager, AddressBase[] cbAddr) throws XmlBlasterException {
+   public DeliveryConnectionsHandler(Global glob, DeliveryManager deliveryManager) throws XmlBlasterException {
       this.ME = "DeliveryConnectionsHandler-" + deliveryManager.getQueue().getStorageId();
       this.glob = glob;
       this.log = glob.getLog("dispatch");
       this.deliveryManager = deliveryManager;
       this.statistic = new DeliveryStatistic();
-      initialize(cbAddr);
    }
 
    public final DeliveryManager getDeliveryManager() {
@@ -102,7 +102,7 @@ abstract public class DeliveryConnectionsHandler
             for (int ii=0; ii<conList.size(); ii++)
                ((DeliveryConnection)conList.get(ii)).shutdown();
             conList.clear();
-            updateState();
+            updateState(null);
             return;
          }
 
@@ -136,7 +136,30 @@ abstract public class DeliveryConnectionsHandler
                }
             }
             if (!found) {
-               conList.add(createDeliveryConnection(cbAddr[ii]));
+               try {  // This creates a client or cb instance with its plugin
+                  DeliveryConnection con = createDeliveryConnection(cbAddr[ii]);
+                  try {
+                     conList.add(con);
+                     con.initialize();
+                  }
+                  catch (XmlBlasterException e) {
+                     if (e.isCommunication()) { // Initial POLLING ?
+                        if (log.TRACE) log.trace(ME, "Load " + cbAddr[ii].toString() + ": " + e.getMessage());
+                     }
+                     else {
+                        log.error(ME, "Can't load " + cbAddr[ii].toString() + ": " + e.getMessage());
+                        con.shutdown();
+                        conList.remove(con);
+                     }
+                  }
+               }
+               catch (XmlBlasterException e) {
+                  log.error(ME, "Can't load " + cbAddr[ii].toString() + ": " + e.getMessage());
+               }
+               catch (Throwable e) {
+                  log.error(ME, "Can't load " + cbAddr[ii].toXml() + ": " + e.toString());
+                  e.printStackTrace();
+               }
                // TODO: cleanup if exception is thrown by createDeliveryConnection()
             }
          }
@@ -145,10 +168,14 @@ abstract public class DeliveryConnectionsHandler
 
       } // synchronized
 
-      updateState();
+      updateState(null);  // Redundant??
       if (log.TRACE) log.trace(ME, "Reached state = " + state.toString());
    }
 
+   /**
+    * Create a DeliveryConnection instance and load the protocol plugin. 
+    * You should call initialie() later.
+    */
    abstract public DeliveryConnection createDeliveryConnection(AddressBase address) throws XmlBlasterException;
 
 
@@ -197,34 +224,35 @@ abstract public class DeliveryConnectionsHandler
 
    /** Call by DeliveryConnection on state transition */
    final void toAlive(DeliveryConnection con) {
-      ConnectionStateEnum oldState = state;
-      state = ConnectionStateEnum.ALIVE;
-      if (oldState != state)
-         deliveryManager.toAlive(oldState);
+      updateState(null);
    }
 
    /** Call by DeliveryConnection on state transition */
    final void toPolling(DeliveryConnection con) {
-      ConnectionStateEnum oldState = state;
-      updateState();
-      if (oldState != state)
-         deliveryManager.toPolling(oldState);
+      updateState(null);
    }
 
    /** Call by DeliveryConnection on state transition */
    final void toDead(DeliveryConnection con, XmlBlasterException ex) {
-      ConnectionStateEnum oldState = state;
       removeDeliveryConnection(con); // does updateState()
-      if (oldState != state)
-         deliveryManager.toDead(oldState, con.getAddress(), ex);
+      updateState(ex);
    }
 
-   private final void updateState() {
+   /**
+    * Handles the state transition
+    * @param XmlBlasterException can be null
+    */
+   private final void updateState(XmlBlasterException ex) {
+      ConnectionStateEnum oldState = this.state;
       ConnectionStateEnum tmp = ConnectionStateEnum.DEAD;
+      if (log.TRACE) log.trace(ME, "updateState() oldState="+oldState+" conList.size="+conList.size());
+      //Thread.currentThread().dumpStack();
       synchronized (conList) {
          for (int ii=0; ii<conList.size(); ii++) {
             if (((DeliveryConnection)conList.get(ii)).isAlive()) {
-               state = ConnectionStateEnum.ALIVE;
+               this.state = ConnectionStateEnum.ALIVE;
+               if (oldState != this.state)
+                  deliveryManager.toAlive(oldState);
                return;
             }
             else if (((DeliveryConnection)conList.get(ii)).isPolling()) {
@@ -232,7 +260,21 @@ abstract public class DeliveryConnectionsHandler
             }
          }
       }
-      state = tmp;
+      if (tmp == ConnectionStateEnum.POLLING) {
+         this.state = ConnectionStateEnum.POLLING;
+         if (oldState != this.state)
+            deliveryManager.toPolling(oldState);
+      }
+      else if (tmp == ConnectionStateEnum.DEAD) {
+         this.state = ConnectionStateEnum.DEAD;
+         if (oldState != this.state)
+            deliveryManager.toDead(oldState, ex);
+      }
+      else {
+         this.state = tmp;
+         log.error(ME, "Internal error in updateState(oldState="+oldState+","+this.state+") " + toXml(""));
+         Thread.currentThread().dumpStack();
+      }
    }
 
    /**
@@ -278,7 +320,6 @@ abstract public class DeliveryConnectionsHandler
          }
          conList.remove(con);
       }
-      updateState();
       if (log.TRACE) log.trace(ME, "Destroyed one callback connection, " + conList.size() + " remain.");
    }
 
@@ -386,7 +427,7 @@ abstract public class DeliveryConnectionsHandler
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
-      sb.append(offset).append("<DeliveryConnectionsHandler>");
+      sb.append(offset).append("<DeliveryConnectionsHandler state='").append(this.state.toString()).append("'>");
       if (this.conList.size() < 1)
          sb.append(offset).append(" <noDeliveryConnection/>");
       else {
