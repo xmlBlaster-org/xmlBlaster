@@ -458,9 +458,9 @@ UserInfo: joe:mypasswd
    </configuration>
 
    <todo type="HTML">
-      Read access with telnet on system properties and internal states
-      is implemented.<br />
-      The rest is missing.
+      Read/Write access with telnet and MoM clients on system properties, internal states
+      and messages is implemented.<br />
+      SNMP and JMX support is missing.
    </todo>
 
    <see type="API">org.xmlBlaster.engine.admin.I_AdminNode</see>
@@ -476,7 +476,7 @@ UserInfo: joe:mypasswd
    <author>Michele.Laghi@swisscom.com</author>
    <author>ruff@swand.lake.de</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.19 $</revision>
+   <revision>$Revision: 1.20 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
