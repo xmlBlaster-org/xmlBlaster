@@ -1371,9 +1371,6 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
          // Process the message
          publishReturnQos = topicHandler.publish(sessionInfo, msgUnit, publishQos);
 
-         // Check all known query subscriptions if the new message fits as well (does it only if TopicHandler is new)
-         checkExistingSubscriptions(sessionInfo, topicHandler, publishQos);
-
 /*
          }
          else if (publishQos.isPtp()) {
@@ -1508,7 +1505,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
     * there are any XPath subscriptions pending which match.
     * <p />
     */
-   private final void checkExistingSubscriptions(SessionInfo sessionInfo,
+   final void checkExistingSubscriptions(SessionInfo sessionInfo,
                                   TopicHandler topicHandler, PublishQosServer xmlQoS)
                                   throws XmlBlasterException
    {
