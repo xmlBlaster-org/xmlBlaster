@@ -3,7 +3,7 @@ Name:      TestPersistenceXMLDB.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing durable messages using dbXMLDriver Persistence
-Version:   $Id: TestPersistenceXMLDB.java,v 1.10 2002/06/02 21:38:24 ruff Exp $
+Version:   $Id: TestPersistenceXMLDB.java,v 1.11 2002/06/27 12:56:46 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -34,7 +34,7 @@ import junit.framework.*;
  * <pre>
  *    java junit.textui.TestRunner testsuite.org.xmlBlaster.TestPersistenceXMLDB
  *
- *    java junit.ui.TestRunner testsuite.org.xmlBlaster.TestPersistenceXMLDB
+ *    java junit.swingui.TestRunner testsuite.org.xmlBlaster.TestPersistenceXMLDB
  * </pre>
  */
 public class TestPersistenceXMLDB extends TestCase implements I_Callback

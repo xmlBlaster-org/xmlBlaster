@@ -27,7 +27,7 @@ import junit.framework.*;
  * Invoke examples:<br />
  * <pre>
  *    java junit.textui.TestRunner -noloading testsuite.org.xmlBlaster.TestErase
- *    java junit.ui.TestRunner -noloading testsuite.org.xmlBlaster.TestErase
+ *    java junit.swingui.TestRunner -noloading testsuite.org.xmlBlaster.TestErase
  * </pre>
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.update.html" target="others">update requirement</a>
  */

@@ -3,7 +3,7 @@ Name:      TestVolatile.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing volatile messages
-Version:   $Id: TestVolatile.java,v 1.10 2002/06/03 09:40:35 ruff Exp $
+Version:   $Id: TestVolatile.java,v 1.11 2002/06/27 12:56:46 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -32,7 +32,7 @@ import junit.framework.*;
  * <pre>
  *    java junit.textui.TestRunner testsuite.org.xmlBlaster.TestVolatile
  *
- *    java junit.ui.TestRunner testsuite.org.xmlBlaster.TestVolatile
+ *    java junit.swingui.TestRunner testsuite.org.xmlBlaster.TestVolatile
  * </pre>
  */
 public class TestVolatile extends TestCase implements I_Callback

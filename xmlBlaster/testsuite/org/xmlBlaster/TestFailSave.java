@@ -3,7 +3,7 @@ Name:      TestFailSave.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSave.java,v 1.36 2002/06/25 18:03:32 ruff Exp $
+Version:   $Id: TestFailSave.java,v 1.37 2002/06/27 12:56:46 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -36,7 +36,7 @@ import junit.framework.*;
  * Invoke examples:<br />
  * <pre>
  *   java junit.textui.TestRunner testsuite.org.xmlBlaster.TestFailSave
- *   java junit.ui.TestRunner testsuite.org.xmlBlaster.TestFailSave
+ *   java junit.swingui.TestRunner testsuite.org.xmlBlaster.TestFailSave
  * </pre>
  * @see org.xmlBlaster.client.protocol.XmlBlasterConnection
  */

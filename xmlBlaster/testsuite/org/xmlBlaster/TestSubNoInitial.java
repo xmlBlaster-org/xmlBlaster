@@ -1,19 +1,23 @@
 /*------------------------------------------------------------------------------
-Name:      TestSubExact.java
+Name:      TestSubNoInitial.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
+Version:   $Id: TestSubNoInitial.java,v 1.1 2002/06/27 12:56:46 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.ConnectQos;
+import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
+import org.xmlBlaster.client.SubscribeQosWrapper;
+import org.xmlBlaster.client.PublishRetQos;
 import org.xmlBlaster.client.EraseRetQos;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
@@ -21,7 +25,7 @@ import junit.framework.*;
 
 
 /**
- * This client tests the method subscribe() with a later publish() with EXACT oid.
+ * This client tests the method subscribe() with a later publish() with XPath query.
  * <br />
  * The subscribe() should be recognized for this later arriving publish()
  * <p>
@@ -30,40 +34,45 @@ import junit.framework.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    java junit.textui.TestRunner testsuite.org.xmlBlaster.TestSubExact
- *    java junit.swingui.TestRunner testsuite.org.xmlBlaster.TestSubExact
+ *    java junit.textui.TestRunner -noloading testsuite.org.xmlBlaster.TestSubNoInitial
+ *    java junit.swingui.TestRunner -noloading testsuite.org.xmlBlaster.TestSubNoInitial
  * </pre>
  */
-public class TestSubExact extends TestCase implements I_Callback
+public class TestSubNoInitial extends TestCase implements I_Callback
 {
-   private static String ME = "TestSubExact";
+   private static String ME = "TestSubNoInitial";
    private final Global glob;
+   private final LogChannel log;
    private boolean messageArrived = false;
 
    private String subscribeOid;
-   private String oidExact = "HelloMessage";
-   private String publishOid = "";
+   private String publishOid = "dummyTestSubNoInitial";
    private XmlBlasterConnection senderConnection;
    private String senderName;
    private String senderContent;
    private String receiverName;         // sender/receiver is here the same client
+   private Timestamp sentTimestamp;
+   private String cbSessionId = "0fxrc83plP";
 
    private int numReceived = 0;         // error checking
    private final String contentMime = "text/xml";
    private final String contentMimeExtended = "1.0";
 
+   private String assertInUpdate = null;
+
    /**
-    * Constructs the TestSubExact object.
+    * Constructs the TestSubNoInitial object.
     * <p />
     * @param testName  The name used in the test suite
     * @param loginName The name to login to the xmlBlaster
     */
-   public TestSubExact(Global glob, String testName, String loginName)
+   public TestSubNoInitial(Global glob, String testName, String loginName)
    {
-       super(testName);
-       this.glob = glob;
-       this.senderName = loginName;
-       this.receiverName = loginName;
+      super(testName);
+      this.glob = glob;
+      this.log = glob.getLog("test");
+      this.senderName = loginName;
+      this.receiverName = loginName;
    }
 
 
@@ -76,12 +85,13 @@ public class TestSubExact extends TestCase implements I_Callback
    {
       try {
          senderConnection = new XmlBlasterConnection(glob); // Find orb
+
          String passwd = "secret";
-         ConnectQos qos = new ConnectQos(glob); // == "<qos></qos>";
-         senderConnection.login(senderName, passwd, qos, this); // Login to xmlBlaster
+         ConnectQos qos = new ConnectQos(glob, senderName, passwd);
+         senderConnection.connect(qos, this, cbSessionId); // Login to xmlBlaster
       }
       catch (Exception e) {
-          Log.error(ME, "Login failed: " + e.toString());
+          log.error(ME, "Login failed: " + e.toString());
           e.printStackTrace();
           assertTrue("Login failed: " + e.toString(), false);
       }
@@ -95,11 +105,15 @@ public class TestSubExact extends TestCase implements I_Callback
     */
    protected void tearDown()
    {
-      String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'>\n" +
+      String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
+                      "<key oid='" + publishOid + "' queryType='EXACT'>\n" +
                       "</key>";
+      String qos = "<qos></qos>";
       try {
-         EraseRetQos[] arr = senderConnection.erase(xmlKey, "<qos/>");
+         EraseRetQos[] arr = senderConnection.erase(xmlKey, qos);
          assertEquals("Erase", 1, arr.length);
+         waitOnUpdate(5000L);
+         assertTrue(assertInUpdate, assertInUpdate == null);
       } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.reason); }
 
       senderConnection.logout();
@@ -107,24 +121,26 @@ public class TestSubExact extends TestCase implements I_Callback
 
 
    /**
-    * Subscribe to message with EXACT oid
-    * <p />
-    * The returned subscribeOid is checked
+    * Subscribe to messages with XPATH.
     */
-   public void subscribeExact()
+   public void subscribeXPath()
    {
-      if (Log.TRACE) Log.trace(ME, "Subscribing using XPath syntax ...");
+      if (log.TRACE) log.trace(ME, "Subscribing using XPath syntax ...");
 
-      String xmlKey = "<key oid='" + oidExact + "' queryType='EXACT'>\n" +
+      String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
+                      "<key oid='' queryType='XPATH'>\n" +
+                      "   //TestSubNoInitial-AGENT" +
                       "</key>";
-      String qos = "<qos></qos>";
       numReceived = 0;
       subscribeOid = null;
+      SubscribeQosWrapper sk = new SubscribeQosWrapper();
+      sk.setInitialUpdate(false);
+      String qos = sk.toXml(); // "<qos><initialUpdate>false</initialUpdate></qos>";
       try {
          subscribeOid = senderConnection.subscribe(xmlKey, qos).getSubscriptionId();
-         Log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
+         log.info(ME, "Success: Subscribe subscription-id=" + subscribeOid + " done");
       } catch(XmlBlasterException e) {
-         Log.warn(ME, "XmlBlasterException: " + e.reason);
+         log.warn(ME, "XmlBlasterException: " + e.reason);
          assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
       }
       assertTrue("returned null subscribeOid", subscribeOid != null);
@@ -137,26 +153,29 @@ public class TestSubExact extends TestCase implements I_Callback
     * <p />
     * The returned publishOid is checked
     */
-   public void testPublish()
+   public void publish()
    {
-      if (Log.TRACE) Log.trace(ME, "Publishing a message ...");
+      if (log.TRACE) log.trace(ME, "Publishing a message ...");
 
       numReceived = 0;
-      String xmlKey = "<key oid='" + oidExact + "' contentMime='" + contentMime + "' contentMimeExtended='" + contentMimeExtended + "'>\n" +
+      String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
+                      "<key oid='" + publishOid + "' contentMime='" + contentMime + "' contentMimeExtended='" + contentMimeExtended + "'>\n" +
+                      "   <TestSubNoInitial-AGENT id='192.168.124.10' subId='1' type='generic'>" +
+                      "      <TestSubNoInitial-DRIVER id='FileProof' pollingFreq='10'>" +
+                      "      </TestSubNoInitial-DRIVER>"+
+                      "   </TestSubNoInitial-AGENT>" +
                       "</key>";
       senderContent = "Yeahh, i'm the new content";
       MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
       try {
-         publishOid = senderConnection.publish(msgUnit).getOid();
-         Log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
+         sentTimestamp = new Timestamp();
+         PublishRetQos tmp = senderConnection.publish(msgUnit);
+         assertEquals("Wrong publishOid", publishOid, tmp.getOid());
+         log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
-         Log.warn(ME, "XmlBlasterException: " + e.reason);
+         log.warn(ME, "XmlBlasterException: " + e.reason);
          assertTrue("publish - XmlBlasterException: " + e.reason, false);
       }
-
-      assertTrue("returned publishOid == null", publishOid != null);
-      assertTrue("returned publishOid", 0 != publishOid.length());
-      assertEquals("returned publishOid is wrong", oidExact, publishOid);
    }
 
 
@@ -164,38 +183,64 @@ public class TestSubExact extends TestCase implements I_Callback
     * TEST: Construct a message and publish it,<br />
     * the previous XPath subscription should match and send an update.
     */
-   public void testPublishAfterSubscribe()
+   public void testNoInitialUpdate()
    {
-      subscribeExact();
-      Util.delay(1000L);                                            // Wait some time for callback to arrive ...
+      publish();
+      Util.delay(1000L);
+      assertTrue(assertInUpdate, assertInUpdate == null);
+      assertEquals("numReceived after subscribe", 0, numReceived);
+
+      subscribeXPath();
+      Util.delay(1000L);
+      assertTrue(assertInUpdate, assertInUpdate == null);
       assertEquals("numReceived after subscribe", 0, numReceived);  // there should be no Callback
 
-      testPublish();
+      publish();
       waitOnUpdate(5000L);
+      assertTrue(assertInUpdate, assertInUpdate == null);
       assertEquals("numReceived after publishing", 1, numReceived); // message arrived?
    }
+
 
    /**
     * This is the callback method invoked from xmlBlaster
     * delivering us a new asynchronous message. 
     * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
     */
-   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
+   public String update(String cbSessionId_, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      if (Log.CALL) Log.call(ME, "Receiving update of a message ...");
+      log.info(ME, "Receiving update of message oid=" + updateKey.getUniqueKey() + " subId=" + updateQos.getSubscriptionId() + " ...");
 
       numReceived += 1;
 
-      // Wait that publish() returns and set 'publishOid' properly
-      try { Thread.currentThread().sleep(200); } catch( InterruptedException i) {}
+      assertInUpdate = "Wrong cbSessionId, expected:" + this.cbSessionId + " but was:" + cbSessionId_;
+      assertEquals("Wrong cbSessionId", this.cbSessionId, cbSessionId_);
 
+      assertInUpdate = "Wrong sender, expected:" + senderName + " but was:" + updateQos.getSender();
       assertEquals("Wrong sender", senderName, updateQos.getSender());
+
+      assertInUpdate = "Wrong subscriptionId, expected:" + subscribeOid + " but was:" + updateQos.getSubscriptionId();
       assertEquals("engine.qos.update.subscriptionId: Wrong subscriptionId", subscribeOid, updateQos.getSubscriptionId());
+
+      assertInUpdate = "Wrong oid of message returned expected:" + publishOid + " but was:" + updateKey.getUniqueKey();
       assertEquals("Wrong oid of message returned", publishOid, updateKey.getUniqueKey());
+
+      assertInUpdate = "Message content is corrupted expected:" + new String(senderContent) + " but was:" + new String(content);
       assertEquals("Message content is corrupted", new String(senderContent), new String(content));
+      
+      assertInUpdate = "Message contentMime is corrupted expected:" + contentMime + " but was:" + updateKey.getContentMime();
       assertEquals("Message contentMime is corrupted", contentMime, updateKey.getContentMime());
+      
+      assertInUpdate = "Message contentMimeExtended is corrupted expected:" + contentMimeExtended + " but was: " + updateKey.getContentMimeExtended();
       assertEquals("Message contentMimeExtended is corrupted", contentMimeExtended, updateKey.getContentMimeExtended());
 
+      // Test requirement "engine.qos.update.rcvTimestamp":
+      assertInUpdate = "sentTimestamp not in hamony with rcvTimestamp";
+      assertTrue("sentTimestamp="+sentTimestamp+" not in hamony with rcvTimestamp="+updateQos.getRcvTimestamp(),
+             sentTimestamp.getMillis() < updateQos.getRcvTimestamp().getMillis() &&
+             (sentTimestamp.getMillis()+1000) > updateQos.getRcvTimestamp().getMillis());
+
+      assertInUpdate = null;
       messageArrived = true;
       return "";
    }
@@ -219,7 +264,7 @@ public class TestSubExact extends TestCase implements I_Callback
          {}
          sum += pollingInterval;
          if (sum > timeout) {
-            Log.warn(ME, "Timeout of " + timeout + " occurred");
+            log.warn(ME, "Timeout of " + timeout + " occurred");
             break;
          }
       }
@@ -234,31 +279,31 @@ public class TestSubExact extends TestCase implements I_Callback
    {
        TestSuite suite= new TestSuite();
        String loginName = "Tim";
-       suite.addTest(new TestSubExact(new Global(), "testPublishAfterSubscribe", loginName));
+       suite.addTest(new TestSubNoInitial(new Global(), "testNoInitialUpdate", loginName));
        return suite;
    }
 
 
    /**
-    * Invoke: java testsuite.org.xmlBlaster.TestSubExact
+    * Invoke: java testsuite.org.xmlBlaster.TestSubNoInitial
     * <p />
     * Note you need 'java' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
     * instead of the JacORB ORB, which won't work.
     * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <pre>   java -Djava.compiler= junit.textui.TestRunner testsuite.org.xmlBlaster.TestSubExact</pre>
+    * <pre>   java -Djava.compiler= junit.textui.TestRunner testsuite.org.xmlBlaster.TestSubNoInitial</pre>
     */
    public static void main(String args[])
    {
       Global glob = new Global();
       if (glob.init(args) != 0) {
-         Log.panic(ME, "Init failed");
+         System.out.println("Init failed");
+         System.exit(1);
       }
-      TestSubExact testSub = new TestSubExact(glob, "TestSubExact", "Tim");
+      TestSubNoInitial testSub = new TestSubNoInitial(glob, "TestSubNoInitial", "Tim");
       testSub.setUp();
-      testSub.testPublishAfterSubscribe();
+      testSub.testNoInitialUpdate();
       testSub.tearDown();
-      Log.exit(TestSubExact.ME, "Good bye");
    }
 }
 

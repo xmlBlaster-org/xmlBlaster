@@ -3,7 +3,7 @@ Name:      TestSubMulti.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubMulti.java,v 1.13 2002/06/25 18:03:58 ruff Exp $
+Version:   $Id: TestSubMulti.java,v 1.14 2002/06/27 12:56:46 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -37,7 +37,7 @@ import junit.framework.*;
  * Invoke examples:<br />
  * <pre>
  *    java junit.textui.TestRunner testsuite.org.xmlBlaster.TestSubMulti
- *    java junit.ui.TestRunner testsuite.org.xmlBlaster.TestSubMulti
+ *    java junit.swingui.TestRunner testsuite.org.xmlBlaster.TestSubMulti
  * </pre>
  */
 public class TestSubMulti extends TestCase implements I_Callback

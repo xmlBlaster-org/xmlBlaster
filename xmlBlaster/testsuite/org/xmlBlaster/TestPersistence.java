@@ -3,7 +3,7 @@ Name:      TestPersistence.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing durable messages
-Version:   $Id: TestPersistence.java,v 1.25 2002/06/03 15:33:35 ruff Exp $
+Version:   $Id: TestPersistence.java,v 1.26 2002/06/27 12:56:46 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -32,7 +32,7 @@ import junit.framework.*;
  * <pre>
  *    java junit.textui.TestRunner testsuite.org.xmlBlaster.TestPersistence
  *
- *    java junit.ui.TestRunner testsuite.org.xmlBlaster.TestPersistence
+ *    java junit.swingui.TestRunner testsuite.org.xmlBlaster.TestPersistence
  * </pre>
  */
 public class TestPersistence extends TestCase implements I_Callback

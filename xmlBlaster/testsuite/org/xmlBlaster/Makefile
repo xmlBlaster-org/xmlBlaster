@@ -36,6 +36,7 @@ LOCAL_FILES = \
     $(CLASS_DIR)/TestFailSavePing.class \
     $(CLASS_DIR)/TestFailSaveAsync.class \
     $(CLASS_DIR)/TestSub.class \
+    $(CLASS_DIR)/TestSubNoInitial.class \
     $(CLASS_DIR)/TestSubDispatch.class \
     $(CLASS_DIR)/TestSubExact.class \
     $(CLASS_DIR)/TestSubNoDup.class \
@@ -85,7 +86,7 @@ xmlBlaster-console: all
 
 testsuite:
 	@echo -e "\nStarting xmlBlaster test suite (without jit) ...\n"
-	${JAVA_WRAP} -Djava.compiler= $(BlasterSystemProperties) junit.ui.TestRunner -noloading testsuite.org.xmlBlaster.TestAll
+	${JAVA_WRAP} -Djava.compiler= $(BlasterSystemProperties) junit.swingui.TestRunner -noloading testsuite.org.xmlBlaster.TestAll
 
 testsuite-console:
 	@echo -e "\nStarting xmlBlaster test suite (without jit) ...\n"

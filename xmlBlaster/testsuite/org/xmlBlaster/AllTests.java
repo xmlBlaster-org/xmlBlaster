@@ -9,7 +9,7 @@ Comment:   Start all tests
 import junit.framework.*;
 
 /**
- * java -Djava.compiler= junit.ui.TestRunner -noloading AllTests
+ * java -Djava.compiler= junit.swingui.TestRunner -noloading AllTests
  */
 public class AllTests extends TestCase
 {

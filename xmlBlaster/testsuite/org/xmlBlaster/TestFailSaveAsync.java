@@ -3,7 +3,7 @@ Name:      TestFailSaveAsync.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSaveAsync.java,v 1.2 2002/06/17 07:02:58 ruff Exp $
+Version:   $Id: TestFailSaveAsync.java,v 1.3 2002/06/27 12:56:46 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -43,8 +43,8 @@ import junit.framework.*;
  * <p />
  * Invoke examples:<br />
  * <pre>
- *   java junit.textui.TestRunner testsuite.org.xmlBlaster.TestFailSaveAsync
- *   java junit.ui.TestRunner testsuite.org.xmlBlaster.TestFailSaveAsync
+ *   java junit.textui.TestRunner -noloading testsuite.org.xmlBlaster.TestFailSaveAsync
+ *   java junit.swingui.TestRunner -noloading testsuite.org.xmlBlaster.TestFailSaveAsync
  * </pre>
  */
 public class TestFailSaveAsync extends TestCase implements I_Callback, I_ConnectionProblems

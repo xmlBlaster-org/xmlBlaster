@@ -3,7 +3,7 @@ Name:      TestPub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestPub.java,v 1.25 2002/06/25 18:02:57 ruff Exp $
+Version:   $Id: TestPub.java,v 1.26 2002/06/27 12:56:46 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -31,8 +31,8 @@ import junit.framework.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    java junit.textui.TestRunner testsuite.org.xmlBlaster.TestPub
- *    java junit.ui.TestRunner testsuite.org.xmlBlaster.TestPub
+ *    java junit.textui.TestRunner -noloading testsuite.org.xmlBlaster.TestPub
+ *    java junit.swingui.TestRunner -noloading testsuite.org.xmlBlaster.TestPub
  * </pre>
  */
 public class TestPub extends TestCase implements I_Callback

@@ -3,7 +3,7 @@ Name:      LoadTestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: LoadTestSub.java,v 1.36 2002/06/25 18:03:58 ruff Exp $
+Version:   $Id: LoadTestSub.java,v 1.37 2002/06/27 12:56:46 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -33,7 +33,7 @@ import junit.framework.*;
  * Invoke examples:<br />
  * <pre>
  *    java junit.textui.TestRunner testsuite.org.xmlBlaster.LoadTestSub
- *    java junit.ui.TestRunner testsuite.org.xmlBlaster.LoadTestSub
+ *    java junit.swingui.TestRunner testsuite.org.xmlBlaster.LoadTestSub
  * </pre>
  */
 public class LoadTestSub extends TestCase implements I_Callback

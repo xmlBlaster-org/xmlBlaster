@@ -3,7 +3,7 @@ Name:      TestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.java,v 1.38 2002/06/25 18:03:58 ruff Exp $
+Version:   $Id: TestSub.java,v 1.39 2002/06/27 12:56:46 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -34,7 +34,7 @@ import junit.framework.*;
  * Invoke examples:<br />
  * <pre>
  *    java junit.textui.TestRunner testsuite.org.xmlBlaster.TestSub
- *    java junit.ui.TestRunner testsuite.org.xmlBlaster.TestSub
+ *    java junit.swingui.TestRunner testsuite.org.xmlBlaster.TestSub
  * </pre>
  */
 public class TestSub extends TestCase implements I_Callback
@@ -44,7 +44,7 @@ public class TestSub extends TestCase implements I_Callback
    private boolean messageArrived = false;
 
    private String subscribeOid;
-   private String publishOid = "dummy";
+   private String publishOid = "dummyTestSub";
    private XmlBlasterConnection senderConnection;
    private String senderName;
    private String senderContent;

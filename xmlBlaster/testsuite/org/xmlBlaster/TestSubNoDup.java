@@ -34,7 +34,7 @@ import junit.framework.*;
  * Invoke examples:<br />
  * <pre>
  *    java junit.textui.TestRunner testsuite.org.xmlBlaster.TestSubNoDup
- *    java junit.ui.TestRunner testsuite.org.xmlBlaster.TestSubNoDup
+ *    java junit.swingui.TestRunner testsuite.org.xmlBlaster.TestSubNoDup
  * </pre>
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.subscribe.duplicate.html" target="others">duplicate subscribe requirement</a>
  */

@@ -3,7 +3,7 @@ Name:      RamTest.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: RamTest.java,v 1.21 2002/06/18 13:51:56 ruff Exp $
+Version:   $Id: RamTest.java,v 1.22 2002/06/27 12:56:46 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -37,7 +37,7 @@ import junit.framework.*;
  * Invoke examples:<br />
  * <pre>
  *    java junit.textui.TestRunner testsuite.org.xmlBlaster.RamTest
- *    java junit.ui.TestRunner testsuite.org.xmlBlaster.RamTest
+ *    java junit.swingui.TestRunner testsuite.org.xmlBlaster.RamTest
  * </pre>
  */
 public class RamTest extends TestCase

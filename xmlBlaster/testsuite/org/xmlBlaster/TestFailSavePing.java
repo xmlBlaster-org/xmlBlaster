@@ -3,7 +3,7 @@ Name:      TestFailSavePing.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSavePing.java,v 1.23 2002/06/25 18:03:58 ruff Exp $
+Version:   $Id: TestFailSavePing.java,v 1.24 2002/06/27 12:56:46 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -41,7 +41,7 @@ import junit.framework.*;
  * Invoke examples:<br />
  * <pre>
  *   java junit.textui.TestRunner testsuite.org.xmlBlaster.TestFailSavePing
- *   java junit.ui.TestRunner testsuite.org.xmlBlaster.TestFailSavePing
+ *   java junit.swingui.TestRunner testsuite.org.xmlBlaster.TestFailSavePing
  * </pre>
  */
 public class TestFailSavePing extends TestCase implements I_Callback, I_ConnectionProblems

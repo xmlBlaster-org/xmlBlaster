@@ -3,7 +3,7 @@ Name:      TestUnSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestUnSub.java,v 1.22 2002/06/25 18:03:58 ruff Exp $
+Version:   $Id: TestUnSub.java,v 1.23 2002/06/27 12:56:46 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -32,7 +32,7 @@ import junit.framework.*;
  * Invoke examples:<br />
  * <pre>
  *    java junit.textui.TestRunner testsuite.org.xmlBlaster.TestUnSub
- *    java junit.ui.TestRunner testsuite.org.xmlBlaster.TestUnSub
+ *    java junit.swingui.TestRunner testsuite.org.xmlBlaster.TestUnSub
  * </pre>
  */
 public class TestUnSub extends TestCase implements I_Callback

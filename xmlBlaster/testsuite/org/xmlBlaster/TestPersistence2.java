@@ -42,7 +42,7 @@ import junit.framework.*;
  * <pre>
  *    java junit.textui.TestRunner testsuite.org.xmlBlaster.TestPersistence2
  *
- *    java junit.ui.TestRunner testsuite.org.xmlBlaster.TestPersistence2
+ *    java junit.swingui.TestRunner testsuite.org.xmlBlaster.TestPersistence2
  * </pre>
  */
 public class TestPersistence2 extends TestCase implements I_Callback
