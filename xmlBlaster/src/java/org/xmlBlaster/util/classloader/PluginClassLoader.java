@@ -57,12 +57,15 @@ public class PluginClassLoader extends URLClassLoader {
 
       try {
          clazz = findClass(name);
+         resolveClass(clazz);
          if (log.TRACE) log.trace(ME, "Using specific class loader for " + name);
          return clazz;
       }
       catch (ClassNotFoundException e) {
           if (log.TRACE) log.trace(ME, "Using default JVM class loader for " + name + " as not found in specific class loader");
-          return parent.loadClass(name);
+          clazz = parent.loadClass(name);
+          resolveClass(clazz);
+          return clazz;
       }
 
    } // end of loadClass
