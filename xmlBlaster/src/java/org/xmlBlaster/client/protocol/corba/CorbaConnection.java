@@ -211,7 +211,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
     * @exception XmlBlasterException id="NoNameService"
     *                    CORBA error handling if no naming service is found
     */
-   NamingContextExt getNamingService() throws XmlBlasterException
+   NamingContextExt getNamingService(boolean verbose) throws XmlBlasterException
    {
       if (Log.CALL) Log.call(ME, "getNamingService() ...");
       if (nameService != null)
@@ -249,7 +249,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
                              // but it is not sure that the naming service is really running
       }
       catch (Exception e) {
-         Log.warn(ME + ".NoNameService", "Can't access naming service");
+         if (verbose || Log.TRACE) Log.warn(ME + ".NoNameService", "Can't access naming service");
          throw new XmlBlasterException("NoNameService", e.toString());
       }
    }
@@ -274,7 +274,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
     * @exception XmlBlasterException id="NoAuthService"
     *
     */
-   public AuthServer getAuthenticationService() throws XmlBlasterException, ConnectionException
+   public AuthServer getAuthenticationService(boolean verbose) throws XmlBlasterException, ConnectionException
    {
       if (Log.CALL) Log.call(ME, "getAuthenticationService() ...");
       if (authServer != null) {
@@ -286,7 +286,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
       String authServerIOR = XmlBlasterProperty.get("ior", (String)null);  // -ior IOR string is directly given
       if (authServerIOR != null) {
          authServer = AuthServerHelper.narrow(orb.string_to_object(authServerIOR));
-         Log.info(ME, "Accessing xmlBlaster using your given IOR string");
+         if (verbose) Log.info(ME, "Accessing xmlBlaster using your given IOR string");
          return authServer;
       }
       if (Log.TRACE) Log.trace(ME, "No -ior ...");
@@ -310,7 +310,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
       int iorPort = XmlBlasterProperty.get("iorPort", CorbaDriver.DEFAULT_HTTP_PORT); // 7609
       if (iorHost != null && iorPort > 0) {
          try {
-            authServerIOR = getAuthenticationServiceIOR(iorHost, iorPort);
+            authServerIOR = getAuthenticationServiceIOR(iorHost, iorPort, verbose);
             authServer = AuthServerHelper.narrow(orb.string_to_object(authServerIOR));
             Log.info(ME, "Accessing xmlBlaster AuthServer IOR using builtin http connection, host " + iorHost + " and port " + iorPort);
             return authServer;
@@ -319,8 +319,13 @@ public class CorbaConnection implements I_XmlBlasterConnection
             ;
          }
          catch(Exception e) {
-            Log.error(ME, "XmlBlaster not found on host " + iorHost + " and port " + iorPort + ": " + e.toString());
-            e.printStackTrace();
+            if (verbose)  {
+               Log.error(ME, "XmlBlaster not found on host " + iorHost + " and port " + iorPort + ": " + e.toString());
+               e.printStackTrace();
+            }
+            else {
+               if (Log.TRACE) Log.trace(ME, "XmlBlaster not found on host " + iorHost + " and port " + iorPort + ": " + e.toString());
+            }
          }
       }
       if (Log.TRACE) Log.trace(ME, "No -iorHost / iorPort ...");
@@ -334,9 +339,9 @@ public class CorbaConnection implements I_XmlBlasterConnection
       boolean useNameService = XmlBlasterProperty.get("ns", true);  // -ns default is to ask the naming service
       if (useNameService) {
 
-         Log.info(ME, "Trying to find a CORBA naming service ...");
+         if (verbose) Log.info(ME, "Trying to find a CORBA naming service ...");
          try {
-            NamingContextExt nc = getNamingService();
+            NamingContextExt nc = getNamingService(verbose);
             NameComponent [] name = new NameComponent[1];
             name[0] = new NameComponent();
             name[0].id = "xmlBlaster-Authenticate";
@@ -346,7 +351,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
             return authServer;
          }
          catch(Exception e) {
-            Log.warn(ME + ".NoAuthService", text);
+            //if (verbose || Log.TRACE) Log.trace(ME + ".NoAuthService", text);
             throw new ConnectionException("NoAuthService", text);
          }
       }
@@ -407,7 +412,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
       else
          this.loginQos = qos;
 
-      loginRaw();
+      doLogin(true);
    }
 
    /**
@@ -438,7 +443,17 @@ public class CorbaConnection implements I_XmlBlasterConnection
       this.loginName=qos.getUserId();
       this.passwd=null; // not necessary here
 
-      return loginRaw();
+      return doLogin(true);
+   }
+
+
+   /**
+    * Is invoked when we poll for the server, for example after we have lost the connection. 
+    * Enforced by interface I_XmlBlasterConnection
+    */
+   public ConnectReturnQos loginRaw() throws XmlBlasterException, ConnectionException
+   {
+      return doLogin(false);
    }
 
 
@@ -447,15 +462,16 @@ public class CorbaConnection implements I_XmlBlasterConnection
     * <p />
     * For internal use only.
     * The qos needs to be set up correctly if you wish a callback
+    * @param verbose false: suppress log output
     * @return The returned QoS or null
     * @exception       XmlBlasterException if login fails
     */
-   public ConnectReturnQos loginRaw() throws XmlBlasterException, ConnectionException
+   public ConnectReturnQos doLogin(boolean verbose) throws XmlBlasterException, ConnectionException
    {
       if (Log.CALL) Log.call(ME, "loginRaw(" + loginName + ") ...");
 
       try {
-         AuthServer authServer = getAuthenticationService();
+         AuthServer authServer = getAuthenticationService(verbose);
          if (passwd != null) {
             Log.warn(ME, "No security Plugin. Switched back to the old login scheme!");
             xmlBlaster = authServer.login(loginName, passwd, loginQos.toXml());
@@ -567,7 +583,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
     * @param host the host running xmlBlaster
     * @param iorPort the port on which the IOR is served (the xmlBlaster mini http server)
     */
-   private String getAuthenticationServiceIOR(String iorHost, int iorPort) throws XmlBlasterException
+   private String getAuthenticationServiceIOR(String iorHost, int iorPort, boolean verbose) throws XmlBlasterException
    {
       if (Log.CALL) Log.call(ME, "Trying authentication service on " + iorHost + ":" + iorPort);
       try {
@@ -598,9 +614,8 @@ public class CorbaConnection implements I_XmlBlasterConnection
          throw new XmlBlasterException(ME+"NoIORHttpServer", text);
       }
       catch(IOException e) {
-         String text = "XmlBlaster not found on host " + iorHost + " and port " + iorPort + ".";
-         Log.warn(ME, text + " " + e.toString());
-         throw new XmlBlasterException(ME+"NoIORHttpServer", text);
+         if (verbose) Log.warn(ME, "XmlBlaster not found on host " + iorHost + " and port " + iorPort + ": " + e.toString());
+         throw new XmlBlasterException(ME+"NoIORHttpServer", "XmlBlaster not found on host " + iorHost + " and port " + iorPort + ".");
       }
    }
 

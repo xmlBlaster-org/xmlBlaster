@@ -56,8 +56,14 @@ public interface I_XmlBlasterConnection
     */
    public String getProtocol();
 
+   /**
+    * Try to login to xmlBlaster. 
+    */
    public void login(String loginName, String passwd, ConnectQos qos) throws XmlBlasterException, ConnectionException;
 
+   /**
+    * Is invoked when we poll for the server, for example after we have lost the connection. 
+    */
    public ConnectReturnQos loginRaw() throws XmlBlasterException, ConnectionException;
 
    public boolean logout();

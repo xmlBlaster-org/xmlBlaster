@@ -3,7 +3,7 @@ Name:      SocketConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles connection to xmlBlaster with plain sockets
-Version:   $Id: SocketConnection.java,v 1.20 2002/04/26 21:31:47 ruff Exp $
+Version:   $Id: SocketConnection.java,v 1.21 2002/04/29 09:42:26 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -178,6 +178,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
             Log.info(ME, "Local parameters are " + localHostname + " on port " + localPort);
          }
          else {
+            if (SOCKET_DEBUG>0 || Log.TRACE) Log.info(ME, "Trying socket connection to " + hostname + " on port " + port + ", callback address is " + getLocalAddress() + " ...");
             this.sock = new Socket(inetAddr, port);
             this.localPort = sock.getLocalPort();
             this.localHostname = sock.getLocalAddress().getHostAddress();
@@ -192,10 +193,12 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       catch (java.net.UnknownHostException e) {
          String str = "XmlBlaster server is unknown, '-socket.hostname=<ip>': " + e.toString();
          Log.error(ME+".constructor", str);
+         e.printStackTrace(); 
          throw new ConnectionException(ME, str);
       }
       catch (Throwable e) {
          if (!(e instanceof IOException) && !(e instanceof java.net.ConnectException)) e.printStackTrace();
+         e.printStackTrace(); 
          String str = "Socket client connection to " + hostname + " on port " + port + " failed, try options '-socket.hostname=<ip> -socket.port=<port>' and check if the xmlBlaster server has loaded the socket driver in xmlBlaster.properties: " + e.toString();
          //Log.error(ME+".constructor", e.toString());
          throw new XmlBlasterException(ME, str);
