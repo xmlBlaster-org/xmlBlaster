@@ -1,0 +1,8 @@
+   Start xmlBlaster server:
+
+      jaco org.xmlBlaster.Main
+
+   Start one of the clients, for example:
+
+      jaco javaclients.ClientSub
+
