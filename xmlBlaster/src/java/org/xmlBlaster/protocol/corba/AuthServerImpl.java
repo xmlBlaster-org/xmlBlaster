@@ -3,7 +3,7 @@ Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: AuthServerImpl.java,v 1.26 2003/01/05 23:06:13 ruff Exp $
+Version:   $Id: AuthServerImpl.java,v 1.27 2003/01/18 17:07:10 ruff Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -212,6 +212,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
          certificatedServerRef = xmlBlasterPOA.create_reference(ServerHelper.id());
          sessionId = getSessionId(certificatedServerRef);
          // The bytes at IOR position 234 and 378 are increased (there must be the object_id)
+         if (log.TRACE) log.trace(ME, "Created sessionId="+sessionId);
       } catch (Exception e) {
          e.printStackTrace();
          log.error(ME+".Corba", e.toString());
@@ -221,6 +222,13 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
 
       try {
          returnQos = authenticate.connect(loginQos, sessionId);
+
+         if (returnQos.isReconnected()) {
+            // How to detect outdated server IORs??
+            // Here we assume max one connection of type=CORBA which is probably wrong?
+            if (log.TRACE) log.trace(ME, "Destroying old server addresses because of reconnect");
+            returnQos.removeServerRef("IOR");
+         }
 
          org.xmlBlaster.protocol.corba.serverIdl.Server xmlBlaster = org.xmlBlaster.protocol.corba.serverIdl.ServerHelper.narrow(certificatedServerRef);
          String serverIOR = orb.object_to_string(xmlBlaster);
