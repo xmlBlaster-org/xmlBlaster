@@ -6,16 +6,17 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 package javaclients.graphical;
 
-import java.io.File;
-
-import javax.swing.JFileChooser;
 import javax.swing.JToolBar;
-import CH.ifa.draw.framework.*;
-import CH.ifa.draw.standard.*;
+
 import CH.ifa.draw.figures.*;
-// import CH.ifa.draw.application.DrawApplication;
-import CH.ifa.draw.samples.net.*;
-import CH.ifa.draw.samples.javadraw.*;
+import CH.ifa.draw.contrib.*;
+
+import CH.ifa.draw.framework.Drawing;
+import CH.ifa.draw.framework.Tool;
+import CH.ifa.draw.util.UndoableTool;
+import CH.ifa.draw.standard.CreationTool;
+import CH.ifa.draw.contrib.html.HTMLTextAreaFigure;
+import CH.ifa.draw.contrib.html.HTMLTextAreaTool;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.client.I_Callback;
@@ -27,7 +28,7 @@ import org.xmlBlaster.util.Global;
 /**
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  */
-public class GraphicChat extends /*NetApp*/ JavaDrawApp implements I_Callback {
+public class GraphicChat extends MDI_DrawApplication implements I_Callback {
 
    private Global global;
    private LogChannel log;
@@ -58,15 +59,36 @@ public class GraphicChat extends /*NetApp*/ JavaDrawApp implements I_Callback {
 
    protected void createTools(JToolBar palette) {
       super.createTools(palette);
-
-      Tool tool = new TextTool(this, new NodeFigure());
+      Tool tool = new UndoableTool(new TextTool(this, new TextFigure()));
       palette.add(createToolButton(IMAGES + "TEXT", "Text Tool", tool));
 
-      tool = new CreationTool(this, new NodeFigure());
-      palette.add(createToolButton(IMAGES + "RECT", "Create Org Unit", tool));
+      tool = new UndoableTool(new CreationTool(this, new RectangleFigure()));
+      palette.add(createToolButton(IMAGES + "RECT", "Rectangle Tool", tool));
 
-      tool = new ConnectionTool(this, new LineConnection());
-      palette.add(createToolButton(IMAGES + "CONN", "Connection Tool", tool));
+      tool = new UndoableTool(new CreationTool(this, new RoundRectangleFigure()));
+      palette.add(createToolButton(IMAGES + "RRECT", "Round Rectangle Tool", tool));
+
+      tool = new UndoableTool(new CreationTool(this, new EllipseFigure()));
+      palette.add(createToolButton(IMAGES + "ELLIPSE", "Ellipse Tool", tool));
+
+      tool = new UndoableTool(new PolygonTool(this));
+      palette.add(createToolButton(IMAGES + "POLYGON", "Polygon Tool", tool));
+
+      tool = new UndoableTool(new CreationTool(this, new TriangleFigure()));
+      palette.add(createToolButton(IMAGES + "TRIANGLE", "Triangle Tool", tool));
+
+      tool = new UndoableTool(new CreationTool(this, new DiamondFigure()));
+      palette.add(createToolButton(IMAGES + "DIAMOND", "Diamond Tool", tool));
+
+      tool = new UndoableTool(new CreationTool(this, new LineFigure()));
+      palette.add(createToolButton(IMAGES + "LINE", "Line Tool", tool));
+
+      tool = new TextAreaTool(this, new TextAreaFigure());
+      palette.add(createToolButton(IMAGES + "TEXTAREA", "TextArea Tool", tool));
+
+      tool = new HTMLTextAreaTool(this, new HTMLTextAreaFigure());
+      palette.add(createToolButton(IMAGES + "TEXTAREA", "HTML TextArea Tool", tool));
+
    }
 
    /**
@@ -85,6 +107,7 @@ public class GraphicChat extends /*NetApp*/ JavaDrawApp implements I_Callback {
       return storageFormatManager;
    }
 */
+
    //-- main -----------------------------------------------------------
 
    public static void main(String[] args) {
