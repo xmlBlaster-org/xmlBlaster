@@ -3,7 +3,7 @@ Name:      I_Authenticate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native Interface to xmlBlaster
-Version:   $Id: I_Authenticate.java,v 1.12 2003/10/03 19:36:09 ruff Exp $
+Version:   $Id: I_Authenticate.java,v 1.13 2003/10/05 17:33:31 ruff Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol;
@@ -64,11 +64,6 @@ public interface I_Authenticate
     * For security reasons the I_AdminSubject implementation is SubjectInfoProtector
     */
    public I_AdminSubject getSubjectInfoByName(SessionName sessionName)  throws XmlBlasterException;
-
-   /**
-    * @deprecated Security hole, currently need by MainGUI.java
-    */
-   public SessionInfo unsecureCreateSession(SessionName loginName) throws XmlBlasterException;
 
    public String toXml() throws XmlBlasterException;
 }
