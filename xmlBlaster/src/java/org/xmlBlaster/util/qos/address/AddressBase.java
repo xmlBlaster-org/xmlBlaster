@@ -11,6 +11,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.enum.Constants;
 import org.xml.sax.Attributes;
 
+import org.xmlBlaster.util.plugin.PluginManagerBase;
 import org.xmlBlaster.util.property.PropEntry;
 import org.xmlBlaster.util.property.PropString;
 import org.xmlBlaster.util.property.PropInt;
@@ -114,7 +115,7 @@ public abstract class AddressBase
     * </p>
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/delivery.control.plugin.html">The delivery.control.plugin requirement</a>
     */
-   public String DEFAULT_dispatchPlugin = "undef";
+   public String DEFAULT_dispatchPlugin = PluginManagerBase.NO_PLUGIN_TYPE; // "undef";
    protected PropString dispatchPlugin = new PropString(DEFAULT_dispatchPlugin);
 
 
@@ -496,7 +497,7 @@ public abstract class AddressBase
     * <pre>
     * DispatchPlugin[Priority][1.0]=org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin
     * DispatchPlugin[SlowMotion][1.0]=org.xmlBlaster.util.dispatch.plugins.motion.SlowMotion
-    * DispatchPlugin.defaultPlugin=Priority,1.0
+    * DispatchPlugin/defaultPlugin=Priority,1.0
     * </pre>
     * </p>
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/delivery.control.plugin.html">The delivery.control.plugin requirement</a>
