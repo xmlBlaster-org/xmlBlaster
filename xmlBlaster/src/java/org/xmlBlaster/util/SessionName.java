@@ -90,8 +90,13 @@ public final class SessionName implements java.io.Serializable
          }
       }
 
-      if (this.nodeId == null && glob.isServer()) {
-         this.nodeId = glob.getNodeId();
+      if (this.nodeId == null) {
+         if (glob.isServer()) {
+            this.nodeId = glob.getNodeId();
+         }
+         else {
+            this.nodeId = nodeId;
+         }
       }
 
       // parse relative part
