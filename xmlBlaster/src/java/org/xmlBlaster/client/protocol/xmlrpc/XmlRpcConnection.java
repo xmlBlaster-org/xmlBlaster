@@ -3,7 +3,7 @@ Name:      XmlRpcConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native xmlBlaster Proxy. Can be called by the client in the same VM
-Version:   $Id: XmlRpcConnection.java,v 1.1 2000/10/22 16:39:19 ruff Exp $
+Version:   $Id: XmlRpcConnection.java,v 1.2 2000/10/22 20:17:29 ruff Exp $
 Author:    michele.laghi@attglobal.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.xmlrpc;
@@ -51,7 +51,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    protected LoginQosWrapper loginQos = null;
 
    /**
-    * Connect to xmlBlaster using XML-RPC. 
+    * Connect to xmlBlaster using XML-RPC.
     */
    public XmlRpcConnection () throws XmlBlasterException
    {
@@ -98,7 +98,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
 
 
    /**
-    * Does a login. 
+    * Does a login.
     * <p />
     * The callback is delivered like this in the qos argument:
     * <pre>
@@ -187,7 +187,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
 
 
    /**
-    * Does a logout and removes the callback server. 
+    * Does a logout and removes the callback server.
     * <p />
     * @param sessionId The client sessionId
     * @exception XmlBlasterException If sessionId is invalid
@@ -228,7 +228,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
 
 
    /**
-    * Enforced by I_XmlBlasterConnection interface (fail save mode). 
+    * Enforced by I_XmlBlasterConnection interface (fail save mode).
     * Subscribe to messages.
     * <p />
     */
@@ -549,7 +549,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    public static String usage()
    {
       String text = "\n";
-      text += "RmiConnection 'RMI' options:\n";
+      text += "XmlRpcConnection 'RMI' options:\n";
       text += "   -xmlrpc.port        Specify a port number where xmlBlaster XML-RPC web server listens.\n";
       text += "                       Default is port "+DEFAULT_SERVER_PORT+", the port 0 switches this feature off.\n";
       text += "   -xmlrpc.hostname    Specify a hostname where the xmlBlaster web server runs.\n";
