@@ -3,6 +3,12 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.x [200x-xx-xx]
 ============================
+
+ o Bugfix: C++ client library, SocketDriver plugin
+   Fixed that all properties are passed to the C SOCKET library instead
+   of only the command line arguments
+ 
+ o Bugfix: C SOCKET client library, fixed uninitialized memory read in memmove call
  
  o Added Thread Name to Logs 
 
