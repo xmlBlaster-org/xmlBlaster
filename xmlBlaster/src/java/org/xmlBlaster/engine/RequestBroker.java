@@ -20,6 +20,10 @@ import org.xmlBlaster.engine.helper.CbQueueProperty;
 import org.xmlBlaster.engine.helper.AccessFilterQos;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
+import org.xmlBlaster.client.SubscribeRetQos;
+import org.xmlBlaster.client.PublishRetQos;
+import org.xmlBlaster.client.EraseRetQos;
+import org.xmlBlaster.client.PublishQosWrapper;
 import org.xmlBlaster.engine.queue.MsgQueue;
 import org.xmlBlaster.engine.queue.MsgQueueEntry;
 import org.xmlBlaster.engine.mime.I_AccessFilter;
@@ -35,7 +39,6 @@ import org.xmlBlaster.authentication.SubjectInfo;
 import org.xmlBlaster.engine.persistence.I_PersistenceDriver;
 import org.xmlBlaster.engine.persistence.PersistencePluginManager;
 import org.xmlBlaster.engine.callback.CbWorkerPool;
-import org.xmlBlaster.client.PublishQosWrapper;
 
 import java.util.*;
 import java.io.*;
@@ -443,11 +446,12 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
     *       &lt;local>false&lt;/false>     &lt;!-- Inhibit the delivery of messages to myself if i have published it -->
     *    &lt;/qos>
     * </pre>
-    * @return oid    A unique subscription ID<br>
+    * @return oid    A unique subscription ID embeded on XML<br>
     *                If you subscribed using a query, the subscription ID of this<br>
     *                query handling object (SubscriptionInfo.getUniqueKey()) is returned.<br>
     *                You should use this ID if you wish to unSubscribe()<br>
     *                If no match is found, an empty string "" is returned.
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html">The interface.publish requirement</a>
     */
    String subscribe(SessionInfo sessionInfo, XmlKey xmlKey, SubscribeQoS subscribeQos) throws XmlBlasterException
    {
@@ -499,9 +503,9 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
 
          if (useCluster) { // cluster support - forward message to master
             try {
-               String ret = glob.getClusterManager().forwardSubscribe(sessionInfo, xmlKey, subscribeQos);
+               SubscribeRetQos ret = glob.getClusterManager().forwardSubscribe(sessionInfo, xmlKey, subscribeQos);
                //Thread.currentThread().dumpStack();
-               //if (ret != null) return ret;
+               //if (ret != null) return ret.toXml();
             }
             catch (XmlBlasterException e) {
                if (e.id.equals("ClusterManager.PluginFailed")) {
@@ -514,7 +518,9 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
             }
          }
 
-         return returnOid[0];  //!!! Only index 0 supported
+         StringBuffer sb = new StringBuffer(160);
+         sb.append("<qos><state id='").append(Constants.STATE_OK).append("'/><subscribe id='").append(returnOid[0]).append("'/></qos>");
+         return sb.toString();  //!!! Only index 0 supported
       }
       catch (XmlBlasterException e) {
          throw e;
@@ -970,12 +976,12 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
     * @param sessionInfo  The SessionInfo object, describing the publishing client
     * @param msgUnit The MessageUnit struct
     * @param publishQos  Quality of Service, flags to control the publishing<p />
-    * @return String with the key oid of the msgUnit<br />
+    * @return String with the XML encoded key oid of the msgUnit<br />
     *         If you let the oid be generated, you need this information
     *         for further publishing to the same MessageUnit<br />
-    *         Rejected Messages will contain an empty string ""
+    *         Rejected Messages will contain a string with state id!=OK
     *
-    * @see org.xmlBlaster.engine.xml2java.PublishQos
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">The interface.publish requirement</a>
     */
    public final String publish(SessionInfo sessionInfo, XmlKey xmlKey, MessageUnit msgUnit, PublishQos publishQos) throws XmlBlasterException
    {
@@ -1049,9 +1055,9 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
                      if (useCluster) { // cluster support - forward message to master
                         if (!isClusterUpdate) { // updates from other nodes are arriving here in publish as well
                            try {
-                              String ret = glob.getClusterManager().forwardPublish(sessionInfo, msgUnitWrapper);
+                              PublishRetQos ret = glob.getClusterManager().forwardPublish(sessionInfo, msgUnitWrapper);
                               //Thread.currentThread().dumpStack();
-                              if (ret != null) return ret;
+                              if (ret != null) return ret.toXml();
                            }
                            catch (XmlBlasterException e) {
                               if (e.id.equals("ClusterManager.PluginFailed")) {
@@ -1075,9 +1081,9 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
                         if (!isClusterUpdate) {
                            MessageUnitWrapper msgUnitWrapper = new MessageUnitWrapper(this, xmlKey, msgUnit, publishQos);
                            try {
-                              String ret = glob.getClusterManager().forwardPublish(sessionInfo, msgUnitWrapper);
+                              PublishRetQos ret = glob.getClusterManager().forwardPublish(sessionInfo, msgUnitWrapper);
                               //Thread.currentThread().dumpStack();
-                              if (ret != null) return ret;
+                              if (ret != null) return ret.toXml();
                            }
                            catch (XmlBlasterException e) {
                               if (e.id.equals("ClusterManager.PluginFailed")) {
@@ -1248,8 +1254,8 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
     *                    See XmlKey.dtd for a description
     * @param eraseQoS    Quality of Service, flags to control the erasing
     *
-    * @return String array with the key oid's which are deleted
-    *         "" strings mark query subscriptions
+    * @return String array with the xml encoded key oid's which are deleted
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">The interface.publish requirement</a>
     */
    String[] erase(SessionInfo sessionInfo, XmlKey xmlKey, EraseQoS eraseQos) throws XmlBlasterException
    {
@@ -1265,7 +1271,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
 
             if (useCluster) { // cluster support - forward erase to master
                try {
-                  String ret[] = glob.getClusterManager().forwardErase(sessionInfo, xmlKey, eraseQos);
+                  EraseRetQos ret[] = glob.getClusterManager().forwardErase(sessionInfo, xmlKey, eraseQos);
                   //Thread.currentThread().dumpStack();
                   //if (ret != null) return ret;
                }
@@ -1301,8 +1307,18 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
          }
          //log.info(ME, "AFTER ERASE: " + toXml());
 
+         // Build the return values ...
          String[] oidArr = new String[oidSet.size()];
-         oidSet.toArray(oidArr);
+         //oidSet.toArray(oidArr);
+         Iterator it = oidSet.iterator();
+         StringBuffer sb = new StringBuffer(160);
+         int ii = 0;
+         while (it.hasNext()) {
+            String oid = (String)it.next();
+            sb.append("<qos><state id='").append(Constants.STATE_OK).append("'/><key oid='").append(oid).append("'/></qos>");
+            oidArr[ii++] = sb.toString();
+            sb.setLength(0);
+         }
          return oidArr;
       }
       catch (XmlBlasterException e) {
