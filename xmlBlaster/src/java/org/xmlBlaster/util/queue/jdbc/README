@@ -7,6 +7,7 @@ postgres (see http://www.postgres.org)
 Once it is installed you can congfigure it by invoking the following:
 
 initdb /tmp/postgres/data
+(cp /var/lib/pgsql/data/pg_hba.conf /tmp/postgres    (edit host access))
 postmaster -i -N 256 -B 512 -D /tmp/postgres/data > logfile 2>&1 & 
 createdb test
 
@@ -19,6 +20,8 @@ for running the testsuite.
 On the third line a db with the name
 'test' is created. Note that the first and the third line need only to be 
 invoked the first time you start postgres. 
+
+(dropdb test     clears the db)
 
 Configure in xmlBlaster.properties:
 -----------------------------------------------------------------
