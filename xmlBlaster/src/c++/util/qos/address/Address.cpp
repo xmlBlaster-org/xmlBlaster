@@ -3,7 +3,7 @@ Name:      Address.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding address string and protocol string
-Version:   $Id: Address.cpp,v 1.16 2004/05/12 19:38:33 ruff Exp $
+Version:   $Id: Address.cpp,v 1.17 2004/08/26 15:04:36 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -77,9 +77,6 @@ inline void Address::initialize()
    // -dispatch/connection/plugin/socket/hostname
    // -dispatch/connection/plugin/socket/localPort
    // -dispatch/connection/plugin/socket/localHostname
-   // -dispatch/callback/plugin/socket/responseTimeout
-   // -dispatch/callback/plugin/socket/threadPrio
-   // -dispatch/callback/plugin/socket/multiThreaded
    hostname_ = global_.getProperty().getStringProperty("dispatch/connection/plugin/"+type+"/hostname", getHostname());
    setPort(global_.getProperty().getIntProperty("dispatch/connection/plugin/"+type+"/port", getPort()));
 }
