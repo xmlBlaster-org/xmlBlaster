@@ -2,7 +2,7 @@
 Name:      Executor.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Send/receive messages over outStream and inStream. 
+Comment:   Send/receive messages over outStream and inStream.
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -21,6 +21,8 @@ import org.xmlBlaster.client.protocol.I_CallbackExtended;
 import EDU.oswego.cs.dl.util.concurrent.Latch;
 
 import java.net.Socket;
+import java.net.DatagramSocket;
+import java.net.DatagramPacket;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -32,9 +34,8 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
 
-
 /**
- * Send/receive messages over outStream and inStream. 
+ * Send/receive messages over outStream and inStream.
  * <p />
  * A common base class for socket based messaging.
  * Allows to block during a request and deliver the return message
@@ -50,6 +51,8 @@ public abstract class Executor implements ExecutorBase
    private LogChannel log;
    /** The socket connection to/from one client */
    protected Socket sock;
+   /** The socket connection to/from one client */
+   protected DatagramSocket sockUDP;
    /** Reading from socket */
    protected InputStream iStream;
    /** Writing to socket */
@@ -89,7 +92,7 @@ public abstract class Executor implements ExecutorBase
    /**
     * Used by SocketCallbackImpl on client side, uses I_CallbackExtended to invoke client classes
     * <p />
-    * Used by HandleClient on server side, uses I_XmlBlaster to invoke xmlBlaster core 
+    * Used by HandleClient on server side, uses I_XmlBlaster to invoke xmlBlaster core
     * <p />
     * This executor has mixed client and server specific code for two reasons:<br />
     * - Possibly we can use the same socket between two xmlBlaster server (load balance)<br />
@@ -97,11 +100,12 @@ public abstract class Executor implements ExecutorBase
     * @param sock The open socket to/from a specific client
     * @param xmlBlasterImpl Handle for the server implementation, null on client side
     */
-   protected void initialize(Global glob, AddressBase addressConfig, Socket sock, I_XmlBlaster xmlBlasterImpl) throws IOException {
+   protected void initialize(Global glob, AddressBase addressConfig, Socket sock, I_XmlBlaster xmlBlasterImpl, DatagramSocket sockUDP) throws IOException {
       this.glob = (glob == null) ? Global.instance() : glob;
       this.log = this.glob.getLog("socket");
       this.addressConfig = addressConfig;
       this.sock = sock;
+      this.sockUDP = sockUDP;
       this.xmlBlasterImpl = xmlBlasterImpl;
       this.oStream = sock.getOutputStream();
       this.iStream = sock.getInputStream();
@@ -127,7 +131,7 @@ public abstract class Executor implements ExecutorBase
    }
 
    /**
-    * Set the given millis to protect against blocking client. 
+    * Set the given millis to protect against blocking client.
     * @param millis If <= 0 it is set to one minute
     */
    public final void setResponseWaitTime(long millis) {
@@ -253,7 +257,7 @@ public abstract class Executor implements ExecutorBase
     * Handle common messages
     * @return false: for connect() and disconnect() which must be handled by the base class
     */
-   public final boolean receive(Parser receiver) throws XmlBlasterException, IOException {
+   public final boolean receive(Parser receiver, boolean udp) throws XmlBlasterException, IOException {
       if (log.TRACE) log.trace(ME, "Receiving '" + receiver.getTypeStr() + "' message " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
 
       if (receiver.isInvoke()) {
@@ -272,7 +276,7 @@ public abstract class Executor implements ExecutorBase
             if (arr == null || arr.length < 1)
                throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invocation of " + receiver.getMethodName() + "() failed, missing arguments");
             String[] response = xmlBlasterImpl.publishArr(receiver.getSecretSessionId(), arr);
-            executeResponse(receiver, response);
+            executeResponse(receiver, response, udp);
          }
          else if (MethodName.UPDATE_ONEWAY == receiver.getMethodName()) {
             try {
@@ -288,12 +292,12 @@ public abstract class Executor implements ExecutorBase
                cbClientTmp.updateOneway(receiver.getSecretSessionId(), arr);
             }
             catch (XmlBlasterException e) {
-               executeException(receiver, e);
+               executeException(receiver, e, udp);
                return true;
             }
             catch (Throwable e) {
                XmlBlasterException xmlBlasterException = new XmlBlasterException(glob, ErrorCode.USER_UPDATE_INTERNALERROR, ME, "Invocation of " + receiver.getMethodName() + "() failed, missing arguments", e);
-               executeException(receiver, xmlBlasterException);
+               executeException(receiver, xmlBlasterException, udp);
                return true;
             }
          }
@@ -308,15 +312,15 @@ public abstract class Executor implements ExecutorBase
                   throw new XmlBlasterException(glob, ErrorCode.USER_UPDATE_INTERNALERROR, ME, "Invocation of " + receiver.getMethodName() + "() failed, missing arguments");
                }
                String[] response = cbClientTmp.update(receiver.getSecretSessionId(), arr);
-               executeResponse(receiver, response);
+               executeResponse(receiver, response, udp);
             }
             catch (XmlBlasterException e) {
-               executeException(receiver, e);
+               executeException(receiver, e, udp);
                return true;
             }
             catch (Throwable e) {
                XmlBlasterException xmlBlasterException = new XmlBlasterException(glob, ErrorCode.USER_UPDATE_INTERNALERROR, ME, "Invocation of " + receiver.getMethodName() + "() failed, missing arguments", e);
-               executeException(receiver, xmlBlasterException);
+               executeException(receiver, xmlBlasterException, udp);
                return true;
             }
          }
@@ -325,21 +329,18 @@ public abstract class Executor implements ExecutorBase
             if (arr == null || arr.length != 1)
                throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invocation of " + receiver.getMethodName() + "() failed, wrong arguments");
             MsgUnitRaw[] response = xmlBlasterImpl.get(receiver.getSecretSessionId(), arr[0].getKey(), arr[0].getQos());
-            executeResponse(receiver, response);
+            executeResponse(receiver, response, udp);
          }
          else if (MethodName.PING == receiver.getMethodName()) {
             MsgUnitRaw[] arr = receiver.getMessageArr();
             if (this.cbClient == null && !glob.isServerSide()) {
                XmlBlasterException xmlBlasterException = new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_CALLBACKSERVER_NOTAVAILABLE, ME, "No SOCKET callback driver is available, can't process the remote invocation.");
-               executeException(receiver, xmlBlasterException);
+               executeException(receiver, xmlBlasterException, udp);
                return true;
             }
             if (xmlBlasterImpl != null) {
                String response = xmlBlasterImpl.ping(/*receiver.getSecretSessionId(),*/ (arr.length>0) ? arr[0].getQos() : "<qos/>");
-               executeResponse(receiver, response); // Constants.RET_OK="<qos><state id='OK'/></qos>" or current run level
-            }
-            else {
-               executeResponse(receiver, Constants.RET_OK); // "<qos><state id='OK'/></qos>" or current run level
+               executeResponse(receiver, response, udp); // Constants.RET_OK="<qos><state id='OK'/></qos>" or current run level
             }
          }
          else if (MethodName.SUBSCRIBE == receiver.getMethodName()) {
@@ -347,21 +348,21 @@ public abstract class Executor implements ExecutorBase
             if (arr == null || arr.length != 1)
                throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invocation of " + receiver.getMethodName() + "() failed, wrong arguments");
             String response = xmlBlasterImpl.subscribe(receiver.getSecretSessionId(), arr[0].getKey(), arr[0].getQos());
-            executeResponse(receiver, response);
+            executeResponse(receiver, response, udp);
          }
          else if (MethodName.UNSUBSCRIBE == receiver.getMethodName()) {
             MsgUnitRaw[] arr = receiver.getMessageArr();
             if (arr == null || arr.length != 1)
                throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invocation of " + receiver.getMethodName() + "() failed, wrong arguments");
             String[] response = xmlBlasterImpl.unSubscribe(receiver.getSecretSessionId(), arr[0].getKey(), arr[0].getQos());
-            executeResponse(receiver, response);
+            executeResponse(receiver, response, udp);
          }
          else if (MethodName.ERASE == receiver.getMethodName()) {
             MsgUnitRaw[] arr = receiver.getMessageArr();
             if (arr == null || arr.length != 1)
                throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invocation of " + receiver.getMethodName() + "() failed, wrong arguments");
             String[] response = xmlBlasterImpl.erase(receiver.getSecretSessionId(), arr[0].getKey(), arr[0].getQos());
-            executeResponse(receiver, response);
+            executeResponse(receiver, response, udp);
          }
          else if (MethodName.CONNECT == receiver.getMethodName()) {
             return false;
@@ -373,7 +374,7 @@ public abstract class Executor implements ExecutorBase
             log.info(ME, "Ignoring received message '" + receiver.getMethodName() + "' with requestId=" + receiver.getRequestId() + ", nobody is interested in it");
             if (log.DUMP) log.dump(ME, "Ignoring received message, nobody is interested in it:\n>" + receiver.toLiteral() + "<");
          }
-         
+
          return true;
       }
 
@@ -413,7 +414,7 @@ public abstract class Executor implements ExecutorBase
 
 
    /**
-    * Send a message and block until the response arrives. 
+    * Send a message and block until the response arrives.
     * <p/>
     * We simulate RPC (remote procedure call) here.
     * This should be thread save and may be invoked by many
@@ -421,10 +422,10 @@ public abstract class Executor implements ExecutorBase
     * @param expectingResponse WAIT_ON_RESPONSE=true or ONEWAY=false
     * @return the response object of the request, of type String(QoS), MsgUnitRaw[] or XmlBlasterException
     */
-   public Object execute(Parser parser, boolean expectingResponse) throws XmlBlasterException, IOException {
+   public Object execute(Parser parser, boolean expectingResponse, boolean udp) throws XmlBlasterException, IOException {
 
       String requestId = parser.createRequestId(prefix);
-      if (log.TRACE) log.trace(ME, "Invoking  parser type='" + parser.getTypeStr() + "' message " + parser.getMethodName() + "(requestId=" + requestId + ") expectingResponse=" + expectingResponse);
+      if (log.TRACE) log.trace(ME, "Invoking  parser type='" + parser.getTypeStr() + "' message " + parser.getMethodName() + "(requestId=" + requestId + ") oneway=" + !expectingResponse + " udp=" + udp);
 
       final Object[] response = new Object[1];  // As only final variables are accessable from the inner class, we put the response in this array
       response[0] = null;
@@ -433,7 +434,7 @@ public abstract class Executor implements ExecutorBase
       // Register the return value / Exception listener ...
       if (expectingResponse) {
          startSignal = new Latch(); // defaults to false
-         synchronized (latchSet) { latchSet.add(startSignal); } // remember all blocking threads for release on shutdown 
+         synchronized (latchSet) { latchSet.add(startSignal); } // remember all blocking threads for release on shutdown
          if (sock == null) return null;
          addResponseListener(requestId, new I_ResponseListener() {
             public void responseEvent(String reqId, Object responseObj) {
@@ -450,10 +451,7 @@ public abstract class Executor implements ExecutorBase
       byte[] rawMsg = parser.createRawMsg();
       if (log.DUMP) log.dump(ME, "Sending now : >" + Parser.toLiteral(rawMsg) + "<");
       try {
-         synchronized (oStream) {
-            oStream.write(rawMsg);
-            oStream.flush();
-         }
+         sendMessage(rawMsg, udp);
          // if (log.TRACE) log.trace(ME, "Successfully sent " + parser.getNumMessages() + " messages");
       }
       catch (InterruptedIOException e) {
@@ -466,7 +464,7 @@ public abstract class Executor implements ExecutorBase
       if (!expectingResponse) {
          return null;
       }
-      
+
       // Waiting for the response to arrive ...
       try {
          boolean awakened = false;
@@ -484,7 +482,7 @@ public abstract class Executor implements ExecutorBase
             if (log.TRACE) log.trace(ME, "Waking up, got response for " + parser.getMethodName() + "(requestId=" + requestId + ")");
             if (response[0]==null) // Caused by freePendingThreads()
                throw new IOException(ME + ": Lost socket connection for " + parser.getMethodName() + "(requestId=" + requestId + ")");
-            
+
             if (log.DUMP) log.dump(ME, "Response for " + parser.getMethodName() + "(" + requestId + ") is: " + response[0].toString());
             if (response[0] instanceof XmlBlasterException)
                throw (XmlBlasterException)response[0];
@@ -532,7 +530,7 @@ public abstract class Executor implements ExecutorBase
    /**
     * Send a one way response message back to the other side
     */
-   protected final void executeResponse(Parser receiver, Object response) throws XmlBlasterException, IOException {
+   protected final void executeResponse(Parser receiver, Object response, boolean udp) throws XmlBlasterException, IOException {
       Parser returner = new Parser(glob, Parser.RESPONSE_BYTE, receiver.getRequestId(),
                            receiver.getMethodName(), receiver.getSecretSessionId());
       if (response instanceof String)
@@ -545,10 +543,7 @@ public abstract class Executor implements ExecutorBase
          returner.addMessage((MsgUnitRaw)response);
       else
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invalid response data type " + response.toString());
-      synchronized (oStream) {
-         oStream.write(returner.createRawMsg());
-         oStream.flush();
-      }
+      sendMessage(returner.createRawMsg(), udp);
       if (log.TRACE) log.trace(ME, "Successfully sent response for " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
       if (log.DUMP) log.dump(ME, "Successful sent response for " + receiver.getMethodName() + "() >" + Parser.toLiteral(returner.createRawMsg()) + "<");
    }
@@ -556,18 +551,33 @@ public abstract class Executor implements ExecutorBase
    /**
     * Send a one way exception back to the other side
     */
-   protected final void executeException(Parser receiver, XmlBlasterException e) throws XmlBlasterException, IOException {
+   protected final void executeException(Parser receiver, XmlBlasterException e, boolean udp) throws XmlBlasterException, IOException {
       e.isServerSide(glob.isServerSide());
       Parser returner = new Parser(glob, Parser.EXCEPTION_BYTE, receiver.getRequestId(), receiver.getMethodName(), receiver.getSecretSessionId());
       returner.setChecksum(false);
       returner.setCompressed(false);
       returner.addException(e);
-      synchronized (oStream) {
-         oStream.write(returner.createRawMsg());
-         oStream.flush();
-      }
+      sendMessage(returner.createRawMsg(), udp);
       if (log.TRACE) log.trace(ME, "Successfully sent exception for " + receiver.getMethodName() + "(" + receiver.getRequestId() + ")");
       if (log.DUMP) log.dump(ME, "Successful sent exception for " + receiver.getMethodName() + "() >" + Parser.toLiteral(returner.createRawMsg()) + "<");
+   }
+
+   void sendMessage(byte[] msg, boolean udp) throws IOException {
+      if (udp) {
+         java.net.InetAddress ia = sock.getInetAddress();
+         int port = sock.getPort();
+         DatagramPacket dp = new DatagramPacket(msg, msg.length, sock.getInetAddress(), sock.getPort());
+         //DatagramPacket dp = new DatagramPacket(msg, msg.length, sock.getInetAddress(), 32001);
+         sockUDP.send(dp);
+         if (log.TRACE) log.trace(ME, "UDP datagram is send");
+      }
+      else {
+         synchronized (oStream) {
+            oStream.write(msg);
+            oStream.flush();
+            if (log.TRACE) log.trace(ME, "TCP data is send");
+         }
+      }
    }
 
    //abstract boolean shutdown();

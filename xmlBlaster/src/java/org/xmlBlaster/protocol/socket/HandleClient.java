@@ -17,24 +17,25 @@ import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.MsgUnitRaw;
 
 import java.net.Socket;
+import java.net.DatagramSocket;
 import java.io.IOException;
 
 
 /**
  * Holds one socket connection to a client and handles
- * all requests from one client with plain socket messaging. 
+ * all requests from one client with plain socket messaging.
  * <p />
  * <ol>
  *   <li>We block on the socket input stream to read incoming messages
  *       in a separate thread (see run() method)</li>
  *   <li>We send update() and ping() back to the client</li>
  * </ol>
- * 
+ *
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  */
 public class HandleClient extends Executor implements Runnable
 {
-   private String ME = "SOCKET-HandleClientRequest";
+   private String ME = "HandleClient";
    private final LogChannel log;
    private SocketDriver driver;
    /** The singleton handle for this authentication server */
@@ -45,14 +46,16 @@ public class HandleClient extends Executor implements Runnable
 
 
    /**
-    * Creates an instance which serves exactly one client. 
+    * Creates an instance which serves exactly one client.
     */
-   public HandleClient(Global glob, SocketDriver driver, Socket sock) throws IOException {
-      super.initialize(glob, driver.getAddressServer(), sock, driver.getXmlBlaster());
+   public HandleClient(Global glob, SocketDriver driver, Socket sock, DatagramSocket sockUDP) throws IOException {
+      super.initialize(glob, driver.getAddressServer(), sock, driver.getXmlBlaster(), sockUDP);
       this.log = glob.getLog("socket");
       this.driver = driver;
       this.authenticate = driver.getAuthenticate();
-      Thread t = new Thread(this, "XmlBlaster.SOCKET");
+      this.ME = driver.getType()+"-HandleClient";
+
+      Thread t = new Thread(this, "XmlBlaster."+this.driver.getType());
       int threadPrio = driver.getAddressServer().getEnv("threadPrio", Thread.NORM_PRIORITY).getValue();
       try {
          t.setPriority(threadPrio);
@@ -67,7 +70,7 @@ public class HandleClient extends Executor implements Runnable
    /**
     * Close connection for one specific client
     */
-   public void shutdown() {
+   synchronized public void shutdown() {
       if (log.TRACE) log.trace(ME, "Schutdown cb connection to " + loginName + " ...");
       if (cbKey != null)
          driver.getGlobal().removeNativeCallbackDriver(cbKey);
@@ -75,9 +78,9 @@ public class HandleClient extends Executor implements Runnable
       running = false;
 
       driver.removeClient(this);
-      
+
       closeSocket();
-   
+
       if (sessionId != null) {
          String tmp = sessionId;
          sessionId = null;
@@ -113,7 +116,7 @@ public class HandleClient extends Executor implements Runnable
    }
 
    /**
-    * Updating multiple messages in one sweep, callback to client. 
+    * Updating multiple messages in one sweep, callback to client.
     * <p />
     * @param expectingResponse is WAIT_ON_RESPONSE or ONEWAY
     * @return null if oneway
@@ -121,7 +124,7 @@ public class HandleClient extends Executor implements Runnable
     */
    public final String[] sendUpdate(String cbSessionId, MsgUnitRaw[] msgArr, boolean expectingResponse) throws XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "Entering update: id=" + cbSessionId + " numSend=" + msgArr.length);
+      if (log.CALL) log.call(ME, "Entering update: id=" + cbSessionId + " numSend=" + msgArr.length + " oneway=" + !expectingResponse);
       if (!running)
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "update() invocation ignored, we are shutdown.");
 
@@ -130,15 +133,17 @@ public class HandleClient extends Executor implements Runnable
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal sendUpdate() argument");
       }
       try {
-         Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.UPDATE, cbSessionId);
-         parser.addMessage(msgArr);
          if (expectingResponse) {
-            Object response = execute(parser, WAIT_ON_RESPONSE);
+            Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.UPDATE, cbSessionId);
+            parser.addMessage(msgArr);
+            Object response = execute(parser, WAIT_ON_RESPONSE, false);
             if (log.TRACE) log.trace(ME, "Got update response " + response.toString());
             return (String[])response; // return the QoS
          }
          else {
-            execute(parser, ONEWAY);
+            Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.UPDATE_ONEWAY, cbSessionId);
+            parser.addMessage(msgArr);
+            execute(parser, ONEWAY, this.driver.useUdpForOneway());
             return null;
          }
       }
@@ -152,17 +157,17 @@ public class HandleClient extends Executor implements Runnable
             throw xmlBlasterException;
 
          throw new XmlBlasterException(glob, ErrorCode.USER_UPDATE_ERROR, ME,
-                   "SOCKET callback of " + msgArr.length + " messages failed", xmlBlasterException);
+                   "Callback of " + msgArr.length + " messages failed", xmlBlasterException);
       }
       catch (IOException e1) {
          if (log.TRACE) log.trace(ME+".update", "IO exception: " + e1.toString());
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
-               "SOCKET callback of " + msgArr.length + " messages failed", e1);
+               "Callback of " + msgArr.length + " messages failed", e1);
       }
    }
 
    /**
-    * Ping to check if callback server is alive. 
+    * Ping to check if callback server is alive.
     * This ping checks the availability on the application level.
     * @param qos Currently an empty string ""
     * @return    Currently an empty string ""
@@ -176,12 +181,12 @@ public class HandleClient extends Executor implements Runnable
          String cbSessionId = "";
          Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.PING, cbSessionId);
          parser.addMessage(qos);
-         Object response = execute(parser, WAIT_ON_RESPONSE);
+         Object response = execute(parser, WAIT_ON_RESPONSE, false);
          if (log.TRACE) log.trace(ME, "Got ping response " + response.toString());
          return (String)response; // return the QoS
       } catch (Throwable e) {
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
-                     "SOCKET callback ping failed", e);
+                     "Callback ping failed", e);
       }
    }
 
@@ -204,13 +209,13 @@ public class HandleClient extends Executor implements Runnable
                if (log.DUMP) log.dump(ME, "Receiving message >" + Parser.toLiteral(receiver.createRawMsg()) + "<");
 
                // receive() processes all invocations, only connect()/disconnect() we do locally ...
-               if (receive(receiver) == false) {
+               if (receive(receiver, false) == false) {
                   if (MethodName.CONNECT == receiver.getMethodName()) {
                      ConnectQosServer conQos = new ConnectQosServer(driver.getGlobal(), receiver.getQos());
                      setLoginName(conQos.getUserId());
-                     Thread.currentThread().setName("XmlBlaster.SOCKET.HandleClient-" + conQos.getUserId());
-                     this.ME = "SOCKET-HandleClientRequest-" + this.loginName;
-                     log.info(ME, "SOCKET client connected, coming from host=" + sock.getInetAddress().toString() + " port=" + sock.getPort());
+                     Thread.currentThread().setName("XmlBlaster." + this.driver.getType() + ".tcpListener-" + conQos.getUserId());
+                     this.ME = this.driver.getType() + "-HandleClient-" + this.loginName;
+                     log.info(ME, "Client connected, coming from host=" + sock.getInetAddress().toString() + " port=" + sock.getPort());
 
                      CallbackAddress[] cbArr = conQos.getSessionCbQueueProperty().getCallbackAddresses();
                      for (int ii=0; cbArr!=null && ii<cbArr.length; ii++) {
@@ -232,7 +237,7 @@ public class HandleClient extends Executor implements Runnable
                            driver.getGlobal().addNativeCallbackDriver(cbKey, this.callback); // tell that we are the callback driver as well
                         }
                         else {
-                           log.error(ME, "Creating SEPARATE callback SOCKET connection to '" + remoteUrl.getUrl() + "'");
+                           log.error(ME, "Creating SEPARATE callback " + this.driver.getType() + " connection to '" + remoteUrl.getUrl() + "'");
                            this.callback = new CallbackSocketDriver(this.loginName);
                            // DispatchConnection.initialize() -> CbDispatchConnection.connectLowlevel()
                            // will later call callback.initialize(loginName, callbackAddress)
@@ -242,8 +247,8 @@ public class HandleClient extends Executor implements Runnable
                      ConnectReturnQosServer retQos = authenticate.connect(conQos);
                      this.sessionId = retQos.getSecretSessionId();
                      receiver.setSecretSessionId(retQos.getSecretSessionId()); // executeResponse needs it
-
-                     executeResponse(receiver, retQos.toXml());
+                     executeResponse(receiver, retQos.toXml(), false);
+                     driver.addClient(sessionId, this);
                    }
                   else if (MethodName.DISCONNECT == receiver.getMethodName()) {
                      this.sessionId = null;
@@ -258,7 +263,7 @@ public class HandleClient extends Executor implements Runnable
             catch (XmlBlasterException e) {
                if (log.TRACE) log.trace(ME, "Can't handle message, throwing exception back to client: " + e.toString());
                try {
-                  executeException(receiver, e);
+                  executeException(receiver, e, false);
                }
                catch (Throwable e2) {
                   log.error(ME, "Lost connection, can't deliver exception message: " + e.toString() + " Reason is: " + e2.toString());
@@ -284,5 +289,10 @@ public class HandleClient extends Executor implements Runnable
          if (log.TRACE) log.trace(ME, "Deleted thread for '" + loginName + "'.");
       }
    }
+
+   protected void sendMessage(byte[] msg) throws IOException {
+      driver.sendMessage(msg);
+   }
+
 }
 
