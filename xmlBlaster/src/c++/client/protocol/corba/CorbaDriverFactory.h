@@ -8,23 +8,14 @@ Comment:   The Factory for the client driver for the corba protocol
 #ifndef _CLIENT_PROTOCOL_CORBA_CORBADRIVERFACTORY
 #define _CLIENT_PROTOCOL_CORBA_CORBADRIVERFACTORY
 
-
-
 #include <util/xmlBlasterDef.h>
-
 #include <client/protocol/corba/CorbaDriver.h>
-
-// for managed objects
-#include <util/objman.h>
+#include <util/objman.h> // for managed objects
 
 using namespace std;
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::qos;
 using namespace org::xmlBlaster::util::thread;
-
-//class org::xmlBlaster::util::Object_Lifetime_Manager;
-//template <class TYPE> class org::xmlBlaster::util::ManagedObject;
-
 
 namespace org {
  namespace xmlBlaster {
@@ -105,7 +96,7 @@ private:
    CorbaDriverFactory& operator =(const CorbaDriverFactory& factory);
 
 public:
-   ~CorbaDriverFactory();
+   ~CorbaDriverFactory(); // Should be private, VC7 is ok with private, g++ 3.3 does not like it
 
    /**
     * You can assign only one orb per CorbaDriverFactory object. Since this class is currently a singleton,
