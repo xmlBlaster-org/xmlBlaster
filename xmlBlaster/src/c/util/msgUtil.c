@@ -32,9 +32,9 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #if defined(__GNUC__) || defined(__ICC)
    /* To support query state with 'ident libxmlBlasterClientC.so' or 'what libxmlBlasterClientC.so'
       or 'strings libxmlBlasterClientC.so  | grep msgUtil.c' */
-   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: msgUtil.c,v 1.11 2003/07/17 17:50:59 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: msgUtil.c,v 1.12 2003/07/26 13:26:28 ruff Exp $ xmlBlaster @version@";
 #elif defined(__SUNPRO_CC)
-   static const char *rcsid_GlobalCpp  =  "@(#) $Id: msgUtil.c,v 1.11 2003/07/17 17:50:59 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  =  "@(#) $Id: msgUtil.c,v 1.12 2003/07/26 13:26:28 ruff Exp $ xmlBlaster @version@";
 #endif
 
 static const char *LOG_TEXT[] = { "NOLOG", "ERROR", "WARN", "INFO", "CALL", "TIME", "TRACE", "DUMP", "PLAIN" };
@@ -420,7 +420,7 @@ Dll_Export void trim(char *s)
 
    {  /* find beginning of text */
       while (first<len) {
-         if (!isspace(s[first]))
+         if (!isspace((unsigned char)s[first]))
             break;
          first++;
       }
@@ -434,7 +434,7 @@ Dll_Export void trim(char *s)
       strcpy((char *) s, (char *) s+first);
 
    for (i=(int)strlen((char *) s)-1; i >= 0; i--)
-      if (!isspace(s[i])) {
+      if (!isspace((unsigned char)s[i])) {
          s[i+1] = '\0';
          return;
       }

@@ -22,7 +22,6 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 #include <errno.h>
 #include <sys/types.h>
 #include <socket/xmlBlasterSocket.h>
