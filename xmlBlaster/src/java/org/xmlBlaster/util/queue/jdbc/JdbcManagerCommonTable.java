@@ -97,6 +97,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    private String blobVarName;
    private String keyAttr;
 
+   private final boolean AUTO_COMMIT = true;
+
    /**
     * Counts the queues using this manager.
     */
@@ -518,7 +520,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       PreparedStatement preStatement = null;
       boolean ret = false;
       try {
-         query = new PreparedQuery(pool, req, false, this.log, -1);
+         query = new PreparedQuery(pool, req, !AUTO_COMMIT, this.log, -1);
          query.rs.next();         
          int size = query.rs.getInt(1);
          if (size > 0) {
@@ -552,13 +554,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".addNode", "", ex); 
       }
       finally {
-         try {
-            if (preStatement !=null) preStatement.close();
-            if (query != null) query.close();
-         }
-         catch (Throwable ex1) {
-            this.log.error(ME, "addNode: exception occured when closing statement and query, reason: " + ex1.toString());
-         }
+         try { if (preStatement !=null) preStatement.close(); } catch (Throwable ex1) { this.log.error(ME, "addNode: exception occured when closing statement and query, reason: " + ex1.toString()); } 
+         try { if (query != null) query.close(); } catch (Throwable ex1) { this.log.error(ME, "addNode: exception occured when closing statement and query, reason: " + ex1.toString()); }
       }
    }
 
