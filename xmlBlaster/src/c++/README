@@ -129,6 +129,10 @@ xmlBlaster to jutil). Some slight differences are:
 
 - There is no caching in CorbaConnection (yet)
 
+- Many QoS features have no C++ client-class interface yet.
+  You need to stick to raw xml in those cases or extend
+  the C++ client classes and contribute them.
+
 
 -Some notes on XERCES
 
