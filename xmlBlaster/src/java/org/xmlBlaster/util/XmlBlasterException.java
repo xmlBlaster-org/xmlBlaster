@@ -39,15 +39,15 @@ import org.jutils.JUtilsException;
  *  {0} = errorCodeStr
  *  {1} = node
  *  {2} = location
- *  {3} = lang
+ *  {3} = isServerSide     // exception thrown from server or from client?
  *  {4} = message
  *  {5} = versionInfo
  *  {6} = timestamp
  *  {7} = stackTrace
  *  {8} = embeddedMessage
- *  {9} = transactionInfo
- *  {10} = errorCode.getDescription()
- *  {11} = isServerSide     // exception thrown from server or from client?
+ *  {9} = errorCode.getDescription()
+ *  // {10} = transactionInfo       IBM's JDK MakeFormat only supports 9 digits
+ *  // {11} = lang                  IBM's JDK MakeFormat only supports 9 digits
  * </pre>
  * @author "Marcel Ruff" <xmlBlaster@marcelruff.info>
  * @since 0.8+ with extended attributes
@@ -72,12 +72,12 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
    private String embeddedMessage;
    private final String transactionInfo;
 
-   private final static String DEFAULT_LOGFORMAT = "XmlBlasterException errorCode=[{0}] serverSideException={11} node=[{1}] location=[{2}] message=[{4} : {8}]";
-   private final static String DEFAULT_LOGFORMAT_INTERNAL = "XmlBlasterException serverSideException={11} node=[{1}] location=[{2}]\n" +
+   private final static String DEFAULT_LOGFORMAT = "XmlBlasterException errorCode=[{0}] serverSideException={3} node=[{1}] location=[{2}] message=[{4} : {8}]";
+   private final static String DEFAULT_LOGFORMAT_INTERNAL = "XmlBlasterException serverSideException={3} node=[{1}] location=[{2}]\n" +
                                                             "{8}\n" +
                                                             "stackTrace={7}\n" +
                                                             "versionInfo={5}\n" +
-                                                            "errorCode description={10}\n";
+                                                            "errorCode description={9}\n";
    private String logFormatInternal;
    private final String logFormatResource;
    private final String logFormatCommunication;
@@ -202,15 +202,16 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
       Object[] arguments = {  (errorCodeStr==null) ? "" : errorCodeStr,  // {0}
                               (node==null) ? "" : node,                  // {1}
                               (location==null) ? "" : location,          // {2}
-                              (lang==null) ? "" : lang,                  // {3}
+                              new Boolean(isServerSide()),               // {3}
                               getRawMessage(),                           // {4}
                               (versionInfo==null) ? "" : versionInfo,         // {5}
                               (timestamp==null) ? "" : timestamp.toString(),  // {6}
                               (stackTrace==null) ? "" : stackTrace,           // {7}
                               (embeddedMessage==null) ? "" : embeddedMessage, // {8}
-                              (transactionInfo==null) ? "" : transactionInfo, // {9}
-                              (errorCodeEnum==null) ? "" : errorCodeEnum.getDescription(), // {10}
-                              new Boolean(isServerSide()) }; // {11}
+                              (errorCodeEnum==null) ? "" : errorCodeEnum.getDescription() // {9}
+                              //(transactionInfo==null) ? "" : transactionInfo, // {10}
+                              //(lang==null) ? "" : lang,                  // {11}
+                              };
 
       boolean handleAsInternal = this.cause != null &&
               (

@@ -102,16 +102,14 @@
       <li><b>{0} errorCode</b>:  The hierarchical error code (e.g. <i>"security.notauthenticated"</i>)</li>
       <li><b>{1} node</b>:       Cluster node location (e.g. <i>/node/heron</i>)</li>
       <li><b>{2} location</b>:   Logical location in the code (e.g. <i>client/joe/3-SubscriptionInfo</i>)</li>
-      <li><b>{3} lang</b>:       Choose language - lowercase two-letter ISO-639 code, choose country - uppercase two-letter ISO-3166 code (e.g. <i>"fr"</i> <i>"FR"</i> or <i>"fr_FR"</i> or <i>"de_DE"</i>)</li>
+      <li><b>{3} isServerSide</b>: Marks the origin of the exception, if originally is thrown on server or client side</li>
       <li><b>{4} message</b>:     The human readable error text (e.g. <i>"Authorization denied for message oid 'accountRetrieval'"</i>)</li>
       <li><b>{5} versionInfo</b>:     Information like xmlBlaster version, OS name, Java version etc.<br />
                   (e.g. <i>"version=0.81,os.name=Linux,java.version=1.4.1-rc, build.java.vendor=IBM,build.java.version=1.3.1, build.timestamp=06/17/2002 01:59 PM"</i>)</li>
       <li><b>{6} timestamp</b>:       Timestamp when exception was thrown (e.g. <i>2002-02-10 11:57:51.804000001</i>)</li>
       <li><b>{7} stackTrace</b>:      The stack trace (optional, for debugging)</li>
       <li><b>{8} embeddedMessage</b>:    The original exception message (optional, if another exception is re-thrown)</li>
-      <li><b>{9} transactionInfo</b>: Transaction information</li>
-      <li><b>{10} errorCode.getDescription()</b>: The standard description of the errorCode</li>
-      <li><b>{11} isServerSide</b>: Marks the origin of the exception, if originally is thrown on server or client side</li>
+      <li><b>{9} errorCode.getDescription()</b>: The standard description of the errorCode</li>
     </ul>
     <br />
     <p>
@@ -258,7 +256,7 @@ errorCode description=A null pointer is an xmlBlaster internal programming error
 
          <tr>
             <td>XmlBlasterException.logFormat</td>
-            <td>errorCode=[{0}] serverSideException={11} node=[{1}] message=[{4} {8}]</td>
+            <td>errorCode=[{0}] serverSideException={3} node=[{1}] message=[{4} {8}]</td>
             <td>Allows to format the returned exception text when <i>exception.getMessage()</i> is invoked.
             See the meaning of the numbers in the above description, e.g. <i>{0}</i> is a place holder
             for the <i>errorCode</i> and <i>{5}</i> for <i>versionInfo</i>.
@@ -341,7 +339,7 @@ errorCode description=A null pointer is an xmlBlaster internal programming error
    
    <date>2002 09 24</date>
    
-   <revision>$Revision: 1.23 $</revision>
+   <revision>$Revision: 1.24 $</revision>
 
    <testcase status="OPEN">
       <name>-</name>
