@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, using org.jutils
-Version:   $Id: Global.java,v 1.15 2002/05/15 12:58:21 ruff Exp $
+Version:   $Id: Global.java,v 1.16 2002/05/15 16:52:33 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -82,6 +82,7 @@ public class Global implements Cloneable
       }
       this.args = new String[0];
       initProps(this.args);
+      initId();
       logDefault = new LogChannel(null, getProperty());
       log = new org.xmlBlaster.util.Log(); // old style
       initLog(logDefault);
@@ -102,6 +103,7 @@ public class Global implements Cloneable
             this.firstInstance = this;
       }
       initProps(args);
+      initId();
       logDefault = new LogChannel(null, getProperty());
       log = new org.xmlBlaster.util.Log(); // old style
       initLog(logDefault);
@@ -117,6 +119,18 @@ public class Global implements Cloneable
    public Global(org.xmlBlaster.util.Global utilGlob) {
       shallowCopy(utilGlob);
       //Thread.currentThread().dumpStack();
+   }
+
+   /**
+    * Our identifier, the cluster node we want connect to
+    */
+   private void initId() {
+      this.id = getProperty().get("server.node.id", (String)null);
+      if (this.id == null)
+         this.id = getProperty().get("cluster.node.id", "xmlBlaster");  // fallback
+      if (this.id == null && getBootstrapAddress().getPort() > 0) {
+         this.id = getBootstrapAddress().getAddress();
+      }
    }
 
    protected void shallowCopy(org.xmlBlaster.util.Global utilGlob)
@@ -260,6 +274,9 @@ public class Global implements Cloneable
 
       try {
          property.addArgs2Props(this.args);
+         
+         initId();
+
          logDefault.initialize(property);
          // TODO: loop through logChannels Hashtable!!!
 
@@ -369,6 +386,8 @@ public class Global implements Cloneable
          g.objectMap = Collections.synchronizedMap(new HashMap());
          g.bootstrapAddress = null;
          g.clientSecurityLoader = null;
+         if (g.id != id)
+            log.error(ME, "g.id=" + g.id + " and id=" + id);
          return g;
       }
       catch (CloneNotSupportedException e) {
