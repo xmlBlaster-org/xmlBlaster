@@ -1,0 +1,4 @@
+Thread abstraction from http://www.boost.org
+
+
+The omnithreads files are in xmlBlaster/src/c++/omnithread
