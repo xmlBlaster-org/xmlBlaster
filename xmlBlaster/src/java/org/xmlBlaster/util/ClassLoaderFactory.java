@@ -3,12 +3,12 @@ Name:      ClassLoaderFactory.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Creates a new class loader for the pluginmanager.
-Version:   $Id: ClassLoaderFactory.java,v 1.2 2002/07/13 12:03:18 goetzger Exp $
+Version:   $Id: ClassLoaderFactory.java,v 1.3 2002/07/13 18:59:22 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 
 import org.jutils.text.StringHelper;
@@ -19,34 +19,43 @@ import java.net.URLClassLoader;
 import java.net.MalformedURLException;
 
 public class ClassLoaderFactory {
-   public final static String ME = "ClassLoaderFactory";
-   static ArrayList classPath = null; // array containig all URL for the new classpath
-
+   public final String ME;
+   private final Global glob;
+   private final LogChannel log;
+   private ArrayList classPath = null; // array containig all URL for the new classpath
+   private int instanceCounter = 0;
 
    /**
-   This constructor is for testing only!
-   */
-   private ClassLoaderFactory () {
-      Log.call(ME, "Entering constructor");
+    * We are a singleton in respect to a Global instance. 
+    */
+   ClassLoaderFactory (Global glob) {
+     ++instanceCounter;
+     this.ME = "ClassLoaderFactory-" + instanceCounter;
+     this.glob = glob;
+     this.log = glob.getLog("classloader");
+     if (log.CALL) log.call(ME, "ClassLoaderFactory constructor #" + instanceCounter);
+   /*
+      log.call(ME, "Entering constructor");
       String basePath = null;
       XmlBlasterClassLoader cl = null;
 
-      if (Log.TRACE) {
+      if (log.TRACE) {
          try {
             cl = getXmlBlasterClassLoader((Object)this, "org.xmlBlaster.util.ClassLoaderFactory");
          } catch (Exception e) {
-            Log.error(ME, "Exception occured: " + e.toString() );
+            log.error(ME, "Exception occured: " + e.toString() );
          }
 
          if (cl != null) {
             URL mu[] = cl.getURLs();
             for (int ii = 0; ii < mu.length; ii++) {
-                 Log.trace(ME, ii +": " + mu[ii].toString() );
+                 log.trace(ME, ii +": " + mu[ii].toString() );
            }
          }
       } // end if TRACE
 
-      Log.call(ME, "Leaving constructor");
+      log.call(ME, "Leaving constructor");
+   */
    } // end of Constructor
 
    /**
@@ -81,17 +90,17 @@ public class ClassLoaderFactory {
     *           and the URL related to the callers class.
     * @exception XmlBlasterException if the array of URLs can not be formed.
     */
-   public static XmlBlasterClassLoader getXmlBlasterClassLoader(Object caller, String plugin) throws XmlBlasterException {
-      Log.call(ME, "Entering getXmlBlasterClassLoader");
+   public XmlBlasterClassLoader getXmlBlasterClassLoader(Object caller, String plugin) throws XmlBlasterException {
+      if (log.CALL) log.call(ME, "Entering getXmlBlasterClassLoader");
       //XmlBlasterClassLoader URLclassLoader = null;
       String basePath = null;
       classPath = new ArrayList(); // new array containing all URL for the new classpath
 
-      if (Log.TRACE) Log.trace(ME, "pluginName: '" + plugin + "'");
+      if (log.TRACE) log.trace(ME, "pluginName: '" + plugin + "'");
 
       // calling for object related base class path
       basePath = getBasePath(caller, plugin);
-      if (Log.TRACE) Log.trace(ME, "BasePath: '" + basePath + "'");
+      if (log.TRACE) log.trace(ME, "BasePath: '" + basePath + "'");
 
       // scanning the basePath (and no deeper dirs!) for jars:
       if (basePath != null) {
@@ -104,19 +113,19 @@ public class ClassLoaderFactory {
 
          for(int ii = 0; ii < list.length; ii++) {
             String filename = list[ii].toLowerCase();
-            if (Log.TRACE) Log.trace(ME, ii +": '" + filename + "'");
+            if (log.TRACE) log.trace(ME, ii +": '" + filename + "'");
             // add it if it's a jar
             if (!filename.endsWith(".jar"))
                continue; // if no jar
             File file = new File(basePath, list[ii]);
             if (!file.isDirectory()) {
                classPath.add(file.toString());
-               if (Log.TRACE) Log.trace(ME, "Adding: '" + file.getAbsolutePath() + "'");
+               if (log.TRACE) log.trace(ME, "Adding: '" + file.getAbsolutePath() + "'");
             } // not directory
          } // end of for
       } // end of if != null
 
-      Log.call(ME, "Leaving getClassLoader");
+      if (log.CALL) log.call(ME, "Leaving getClassLoader");
       // return ( new XmlBlasterClassLoader( null, plugin ) );
       return ( new XmlBlasterClassLoader( appendURLtoClassPath(classPath, caller), plugin ) );
    }
@@ -135,8 +144,8 @@ public class ClassLoaderFactory {
    @param caller Type of the calling class
    @return The base path for the caller specific additional classes.
    */
-   private static String getBasePath(Object caller, String plugin) {
-      Log.call(ME, "Entering getBasePath");
+   private String getBasePath(Object caller, String plugin) {
+      if (log.CALL) log.call(ME, "Entering getBasePath");
 
       URL callersURL[] = null; // all URLs of the callers classpath
       String basePath = ""; // i.e. '/home/goetzger/java/xmlBlaster/lib/'
@@ -155,8 +164,8 @@ public class ClassLoaderFactory {
       // check for null!?
 
       for (int ii=0; ii < callersURL.length; ii++) {
-           if (Log.TRACE)
-            Log.trace(ME, ii +": " + callersURL[ii].getFile() + "[" + callersURL[ii].toString() + "]");
+           if (log.TRACE)
+            log.trace(ME, ii +": " + callersURL[ii].getFile() + "[" + callersURL[ii].toString() + "]");
          // getting the path from CP where jarName is contained
          jarIndex = callersURL[ii].getFile().lastIndexOf(jarName);
          if (jarIndex != -1) {
@@ -164,27 +173,27 @@ public class ClassLoaderFactory {
             break; // no further search, taking the first hit
          } // end of if -1
       } // end of for
-      if (Log.TRACE) Log.trace(ME, "BasePath: '" + basePath + "'" );
+      if (log.TRACE) log.trace(ME, "BasePath: '" + basePath + "'" );
 
       if (plugin.equals("")) {
          callerClassName = caller.getClass().toString();
            callerClassName = callerClassName.substring(classType.length(), callerClassName.length());
       } else {
          callerClassName = plugin;
-         Log.trace(ME, "taking pluginName");
+         if (log.TRACE) log.trace(ME, "taking pluginName");
       }
 
-      if (Log.TRACE) Log.trace(ME, "className: '" + callerClassName + "'");
+      if (log.TRACE) log.trace(ME, "className: '" + callerClassName + "'");
 
       // Now we need to replace the '.' from the package name to the '/' for a path name.
       // vi compliant ;-) :s/\./\//cg
       // Or even better: replace it by the property file.delimiter of the desired OS.
       callerClassName = StringHelper.replaceAll(callerClassName, ".", fileSeparator); // replace . by fileSeperator
       // callerClassName = callerClassName.replaceAll("\\.", fileSeparator); // since JDK 1.4 :-(
-      if (Log.TRACE) Log.trace(ME, "className: '" + callerClassName + "'");
+      if (log.TRACE) log.trace(ME, "className: '" + callerClassName + "'");
 
       // Return the base path combined with the caller specific path.
-      if (Log.TRACE) Log.trace(ME, "baseLibPath: '" + basePath + callerClassName + "'");
+      if (log.TRACE) log.trace(ME, "baseLibPath: '" + basePath + callerClassName + "'");
 
       return (basePath + callerClassName);
    } // end of getBasePath
@@ -195,7 +204,7 @@ public class ClassLoaderFactory {
    @param caller The URLs for this objects class loader have to be retrieved.
    @return An Array which contains all URL of the callers class loader.
    */
-   private static URL[] getClassLoaderURLs(Object caller) {
+   private URL[] getClassLoaderURLs(Object caller) {
 
       URLClassLoader myCL = (URLClassLoader) caller.getClass().getClassLoader();
       return (myCL.getURLs());
@@ -211,15 +220,15 @@ public class ClassLoaderFactory {
            URLs second in the list.
    @exception XmlBlasterException if the array of URLs can not be formed.
    */
-   private static URL[] appendURLtoClassPath(ArrayList newURL, Object caller) throws XmlBlasterException {
+   private URL[] appendURLtoClassPath(ArrayList newURL, Object caller) throws XmlBlasterException {
 
       /*
       URL[] callerURL = getClassLoaderURLs( caller );
 
       // just to see the original classloader URLs
-      if (Log.TRACE) {
+      if (log.TRACE) {
          for (int ii = 0; ii < callerURL.length; ii++) {
-              Log.trace(ME, ii +": " + callerURL[ii].toString() );
+              log.trace(ME, ii +": " + callerURL[ii].toString() );
         }
       } // end if TRACE
       */
@@ -249,10 +258,10 @@ public class ClassLoaderFactory {
          throw new XmlBlasterException("Malformed Url Exception occured: ", e.toString());
       }
 
-      if (Log.TRACE) {
-         Log.trace(ME, "New Classpath as URL before creating classloader:");
+      if (log.TRACE) {
+         log.trace(ME, "New Classpath as URL before creating classloader:");
          for (int ii = 0; ii < url.length; ii++) {
-              Log.trace(ME, ">>" + ii +": " + url[ii].toString() + "<<");
+              log.trace(ME, ">>" + ii +": " + url[ii].toString() + "<<");
         }
       } // end if TRACE
 
@@ -260,14 +269,14 @@ public class ClassLoaderFactory {
 
    }// end of  addURLtoClassPath
 
-   public static void listClassPath(Object caller) {
-      if (Log.TRACE) {
+   public void listClassPath(Object caller) {
+      if (log.TRACE) {
          URLClassLoader myCL = (URLClassLoader) caller.getClass().getClassLoader();
 
          URL[] callerURL = myCL.getURLs();
 
          for (int ii = 0; ii < callerURL.length; ii++)
-            Log.trace(ME, ii +": " + callerURL[ii].toString() );
+            log.trace(ME, ii +": " + callerURL[ii].toString() );
       }
 
    } // end of listClassPath
@@ -304,7 +313,7 @@ public class ClassLoaderFactory {
    *
    * @param className Name of the class.
    */
-   public static String which(Object caller, String className) {
+   public String which(Object caller, String className) {
 
       if (!className.startsWith("/")) {
          className = "/" + className;
@@ -315,23 +324,19 @@ public class ClassLoaderFactory {
       java.net.URL classUrl = caller.getClass().getResource(className);
 
       if (classUrl != null) {
-         Log.info(ME, "Class '" + className + "' found in \n'" + classUrl.getFile() + "'");
+         if (log.TRACE) log.trace(ME, "Class '" + className + "' found in \n'" + classUrl.getFile() + "'");
       } else {
-         Log.info(ME, "\nClass '" + className + "' not found in \n'" + System.getProperty("java.class.path") + "'");
+         if (log.TRACE) log.trace(ME, "\nClass '" + className + "' not found in \n'" + System.getProperty("java.class.path") + "'");
       }
       return classUrl.toString();
    } // end of which
 
 
+   /*
    public static void main(String args[]) {
-      Log.setLogLevel(args); // initialize log level
-      Log.info(ME, "Hello, it's me :-)");
-
       ClassLoaderFactory clf = new ClassLoaderFactory();
-
-
-      Log.info(ME, "By by, have a good day.");
    } // end of main
+   */
 
 } // end of class
 
