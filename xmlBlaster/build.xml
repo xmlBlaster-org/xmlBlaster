@@ -156,6 +156,7 @@ TODO
    <!-- =================================================================== -->
    <!-- General C++ compiling setup for VisualC++, Borland and GCC          -->
    <!-- Force from outside compiler: build.bat -Duse-msvc=1 ...             -->
+   <!-- See  http://ant-contrib.sourceforge.net/cc.html                     -->
    <!-- =================================================================== -->
    <property name="compiler" value="msvc"/> <!-- "gcc" "icc" "VC6" "bcc" "msvc" -->
    <property name="cpp.debug" value="true" />
@@ -166,6 +167,7 @@ TODO
 
    <property name="CPP_LINK" value="shared"/>  <!-- link a shared (DLL) C++ client library xmlBlaster/lib/libxmlBlasterClient.so -->
    <property name="src.cpp.dir" value="./src/c++"/>
+   <property name="build.src.cpp.dir" value="${build.src}/c++"/>
    <property name="cpp.obj.dir" value="${build.dir}/objCPP" />
    <property name="CORBACPP_VER" value=""/> <!-- 2.3.7 -->
    <property name="CORBACPP_HOME" value="/opt/ACE_wrappers/TAO"/> <!-- /opt/local/mico -->
@@ -179,6 +181,7 @@ TODO
 
    <property name="C_LINK" value="shared"/>  <!-- link a shared/static (DLL) C client library xmlBlaster/lib/libxmlBlasterClientC.so -->
    <property name="src.c.dir" value="./src/c"/>
+   <property name="build.src.c.dir" value="${build.src}/c"/>
    <property name="c.debug" value="true" />
    <property name="c.obj.dir" value="${build.dir}/objC" />
    <property name="gcc.enableStackTrace" value="-D_ENABLE_STACK_TRACE_" /> <!-- Use -U... to undefine for OSF -->
@@ -407,6 +410,8 @@ TODO
       <filter token="build.timestamp" value="${build.timestamp}"/>
       <filter token="build.java.version" value="${java.version}"/>
       <filter token="build.java.vendor" value="${java.vendor}"/>
+      <!-- see more filters in prepare-cpp task -->
+
       <echo message="Build timestamp = ${build.timestamp} version = ${version}"/>
 
       <echo message="xmlBlaster.home=${xmlBlaster.home}"/>
@@ -1480,6 +1485,24 @@ TODO
       <echo message=" use-msvc      = ${use-msvc}"/> <!-- LittleWeak default -->
       <echo message=" use-bcc       = ${use-bcc}"/>
 
+      <condition property="cpp.compiler" value="GNU g++">
+         <isset property="use-gcc"/>
+      </condition>
+      <condition property="cpp.compiler" value="Intel icc">
+         <isset property="use-icc"/>
+      </condition>
+      <condition property="cpp.compiler" value="Sun CC">
+         <isset property="use-CC"/>
+      </condition>
+      <condition property="cpp.compiler" value="Borland bcc">
+         <isset property="use-bcc"/>
+      </condition>
+      <condition property="cpp.compiler" value="Microsoft msvc">
+         <isset property="use-msvc"/>
+      </condition>
+      <filter token="cpp.compiler" value="${cpp.compiler}"/>
+      <filter token="c.compiler" value="${cpp.compiler}"/>
+
       <property name="${corba.product}" value="true" /> <!-- Setting e.g. "MICO" or "TAO" to be used in if="" clause below -->
       <echo message=" Setting ${corba.product} = true" />
       <property name="${corba.product},${os.family}" value="true" /> <!-- Setting e.g. "MICO,windows" or "TAO,unix" to be used in if="" clause below -->
@@ -1516,6 +1539,26 @@ TODO
          </default>
       </switch>
 
+      <!--
+         C++: Copy all .cpp and .h files to the build.tmp directory.
+        "@version@" and "@build.timestamp@" is replaced to current values by ant (Global.cpp)
+      -->
+      <copy todir="${build.src.cpp.dir}" filtering="true">
+         <fileset dir="${src.cpp.dir}">
+            <exclude name="README"/>
+         </fileset>
+      </copy>
+
+      <!--
+         C: Copy all .c and .h files to the build.tmp directory.
+        "@version@" and "@build.timestamp@" is replaced to current values by ant (msgUtil.c)
+      -->
+      <copy todir="${build.src.c.dir}" filtering="true">
+         <fileset dir="${src.c.dir}">
+            <exclude name="README"/>
+         </fileset>
+      </copy>
+
    </target>
 
    <!-- =================================================================== -->
@@ -1535,7 +1578,7 @@ TODO
       </switch>
 
       <!-- Start IDL compiler to create CORBA stubs -->
-      <uptodate property="idlBuild.done" targetfile="${src.cpp.dir}/generated/xmlBlaster.cpp" value="true">
+      <uptodate property="idlBuild.done" targetfile="${build.src.cpp.dir}/generated/xmlBlaster.cpp" value="true">
          <srcfiles dir= "${idl.dir}" includes="xmlBlaster.idl"/>
       </uptodate>
 
@@ -1548,7 +1591,7 @@ TODO
             <!-- A typical MICO idl CORBA compile:
               /opt/mico/bin/idl - -poa - -c++-suffix cpp - -windows-dll /home/xmlblast/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl
             -->
-            <exec dir="${src.cpp.dir}/generated" executable="${idl.cmd}" failonerror="true" resultproperty="idl.returnvalue">
+            <exec dir="${build.src.cpp.dir}/generated" executable="${idl.cmd}" failonerror="true" resultproperty="idl.returnvalue">
                <env key="LD_LIBRARY_PATH" path="${CORBACPP_HOME}/lib" /> <!-- Linux -->
                <env key="SHLIB_PATH" path="${CORBACPP_HOME}/lib" />      <!-- HPUX,SOLARIS -->
                <env key="LIBPATH" path="${CORBACPP_HOME}/lib" />         <!-- AIX -->
@@ -1579,7 +1622,7 @@ TODO
       </switch>
 
       <!-- Start IDL compiler to create CORBA stubs -->
-      <uptodate property="idlBuild.done" targetfile="${src.cpp.dir}/generated/xmlBlasterC.cpp" value="true">
+      <uptodate property="idlBuild.done" targetfile="${build.src.cpp.dir}/generated/xmlBlasterC.cpp" value="true">
          <srcfiles dir= "${idl.dir}" includes="xmlBlaster.idl"/>
       </uptodate>
 
@@ -1589,8 +1632,8 @@ TODO
          </then>
          <else>
             <echo message="Generating ${idl.dir}/xmlBlaster.idl ${corba.product} stubs and skeletons for os=${os.family}" />
-            <exec dir="${src.cpp.dir}/generated" executable="${idl.cmd}" failonerror="true" resultproperty="idl.returnvalue">
-               <arg line="-Ge 0 -Wb,pre_include=${xmlBlaster.home}/${src.cpp.dir}/util/XmlBCfg.h -Wb,export_macro=Dll_Export"/>
+            <exec dir="${build.src.cpp.dir}/generated" executable="${idl.cmd}" failonerror="true" resultproperty="idl.returnvalue">
+               <arg line="-Ge 0 -Wb,pre_include=${xmlBlaster.home}/${build.src.cpp.dir}/util/XmlBCfg.h -Wb,export_macro=Dll_Export"/>
                <arg line="${xmlBlaster.home}/${idl.dir}/xmlBlaster.idl"/>
             </exec>
             <echo message="IDL compilation returned ${idl.returnvalue}"/>
@@ -1610,7 +1653,7 @@ TODO
             <property name="idl.cmd" value="${CORBACPP_HOME}/bin/x86_win32/omniidl.exe" />
          </default>
       </switch>
-      <uptodate property="idlBuild.done" targetfile="${src.cpp.dir}/generated/xmlBlaster.h" value="true">
+      <uptodate property="idlBuild.done" targetfile="${build.src.cpp.dir}/generated/xmlBlaster.h" value="true">
          <srcfiles dir= "${idl.dir}" includes="xmlBlaster.idl"/>
       </uptodate>
       <if><equals arg1="${idlBuild.done}" arg2="true" />
@@ -1619,7 +1662,7 @@ TODO
          </then>
          <else>
             <echo message="Generating ${idl.dir}/xmlBlaster.idl ${corba.product} stubs and skeletons for os=${os.family}" />
-            <exec dir="${src.cpp.dir}/generated" executable="${idl.cmd}" failonerror="true" resultproperty="idl.returnvalue">
+            <exec dir="${build.src.cpp.dir}/generated" executable="${idl.cmd}" failonerror="true" resultproperty="idl.returnvalue">
                <env key="LD_LIBRARY_PATH" path="${CORBACPP_HOME}/lib" /> <!-- Linux -->
                <env key="PYTHONPATH" path="${CORBACPP_HOME}/lib/python2.2/site-packages" /> <!-- Linux -->
                <env key="SHLIB_PATH" path="${CORBACPP_HOME}/lib" />      <!-- HPUX,SOLARIS -->
@@ -1648,7 +1691,7 @@ TODO
       </switch>
 
       <!-- Start IDL compiler to create CORBA stubs -->
-      <uptodate property="idlBuild.done" targetfile="${src.cpp.dir}/generated/xmlBlasterS.cpp" value="true">
+      <uptodate property="idlBuild.done" targetfile="${build.src.cpp.dir}/generated/xmlBlasterS.cpp" value="true">
          <srcfiles dir= "${idl.dir}" includes="xmlBlaster.idl"/>
       </uptodate>
 
@@ -1658,7 +1701,7 @@ TODO
          </then>
          <else>
             <echo message="Generating ${idl.dir}/xmlBlaster.idl ${corba.product} stubs and skeletons for os=${os.family}" />
-            <exec dir="${src.cpp.dir}/generated" executable="${idl.cmd}" failonerror="true" resultproperty="idl.returnvalue">
+            <exec dir="${build.src.cpp.dir}/generated" executable="${idl.cmd}" failonerror="true" resultproperty="idl.returnvalue">
                <arg line="-base:-cS.cpp:-hS.h"/>
                <arg line="-poa:-c.cpp:-h.h:-bS.h"/>
                <arg line="${xmlBlaster.home}/${idl.dir}/xmlBlaster.idl"/>
@@ -1683,7 +1726,7 @@ TODO
       </switch>
 
       <!-- Start IDL compiler to create CORBA stubs -->
-      <uptodate property="idlBuild.done" targetfile="${src.cpp.dir}/generated/xmlBlaster.cpp" value="true">
+      <uptodate property="idlBuild.done" targetfile="${build.src.cpp.dir}/generated/xmlBlaster.cpp" value="true">
          <srcfiles dir= "${idl.dir}" includes="xmlBlaster.idl"/>
       </uptodate>
 
@@ -1693,7 +1736,7 @@ TODO
          </then>
          <else>
             <echo message="Generating ${idl.dir}/xmlBlaster.idl ${corba.product} stubs and skeletons for os=${os.family}" />
-            <exec dir="${src.cpp.dir}/generated" executable="${idl.cmd}" failonerror="true" resultproperty="idl.returnvalue">
+            <exec dir="${build.src.cpp.dir}/generated" executable="${idl.cmd}" failonerror="true" resultproperty="idl.returnvalue">
                <arg line=""/>
                <arg line="${xmlBlaster.home}/${idl.dir}/xmlBlaster.idl"/>
             </exec>
@@ -1776,10 +1819,6 @@ TODO
 
       <echo message="Using ${XMLCPP_HOME}/lib and xerces-c${XMLCPP_VER}" />
 
-      <!-- Copy Global.cpp so that "@version@" and "@build.timestamp@" is replaced to current values by ant -->
-      <!-- Below we exclude Global.cpp from compilation and compile Global_CopyByAnt.cpp with the current version etc. instead -->
-      <copy file="${src.cpp.dir}/util/Global.cpp" tofile="${src.cpp.dir}/util/Global_CopyByAnt.cpp" filtering="true" overwrite="true" />
-
       <!-- CPP_LINK==shared links a shared library xmlBlaster/lib/libxmlBlaster.so -->
       <cc debug="${cpp.debug}" link="${CPP_LINK}"
           outfile="${lib.dir}/xmlBlasterClient" objdir="${cpp.obj.dir}"
@@ -1789,22 +1828,22 @@ TODO
          <compiler refid="msvc"/> <!-- MS VC++ 7 -->
          <compiler refid="bcc"/>  <!-- Borland -->
          <compiler refid="CC"/>   <!-- SunOS C++ 5.3 -->
-         <fileset dir="${src.cpp.dir}/generated" includes="**/*.cpp"/>
-         <fileset dir="${src.cpp.dir}/util" includes="**/*.cpp" excludes="Global.cpp"/>
-         <fileset dir="${src.cpp.dir}/client" includes="**/*.cpp"
+         <fileset dir="${build.src.cpp.dir}/generated" includes="**/*.cpp"/>
+         <fileset dir="${build.src.cpp.dir}/util" includes="**/*.cpp"/>
+         <fileset dir="${build.src.cpp.dir}/client" includes="**/*.cpp"
                   excludes="${COMPILE_SOCKET_EXCLUDES},${COMPILE_CORBA_EXCLUDES}" />
-         <fileset dir="${src.cpp.dir}/authentication" includes="**/*.cpp" />
-         <fileset dir="${src.cpp.dir}/libs/thread/src" includes="*.cpp" if="BOOST" />
-         <fileset dir="${src.cpp.dir}/omnithread" includes="*.cpp" if="OMNITHREAD" />
+         <fileset dir="${build.src.cpp.dir}/authentication" includes="**/*.cpp" />
+         <fileset dir="${build.src.cpp.dir}/libs/thread/src" includes="*.cpp" if="BOOST" />
+         <fileset dir="${build.src.cpp.dir}/omnithread" includes="*.cpp" if="OMNITHREAD" />
 
-         <includepath location="${src.cpp.dir}" />
+         <includepath location="${build.src.cpp.dir}" />
 
          <!-- sysincludepath location="${STL_HOME}/stlport" /-->
          <sysincludepath location="${CORBACPP_HOME}" if="TAO" /> <!-- TAO -->
          <sysincludepath location="${CORBACPP_HOME}/.." if="TAO" /> <!-- TAO -->
          <sysincludepath location="${CORBACPP_HOME}/orbsvcs" if="TAO" /> <!-- TAO -->
          <sysincludepath location="${CORBACPP_HOME}/include" /> <!-- MICO, OMNIORB -->
-         <sysincludepath location="${src.cpp.dir}/generated" /> <!-- ORBACUS -->
+         <sysincludepath location="${build.src.cpp.dir}/generated" /> <!-- ORBACUS -->
 
          <sysincludepath location="${CORBACPP_HOME}/include/windows" if="MICO,windows" /> <!-- MICO necessary for mico on win32 -->
          <sysincludepath location="${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/include" if="ORBIX,unix" />
@@ -1814,7 +1853,7 @@ TODO
          <sysincludepath location="${XMLCPP_HOME}/include" />           <!-- xerces 1.6.0 -->
          <sysincludepath location="${XMLCPP_HOME}/include/xercesc" />   <!-- Since xerces 1.7.0 (inclusiv xerces 2.2) -->
 
-         <includepath location="${src.c.dir}" />   <!-- Using the C SOCKET client library -->
+         <includepath location="${build.src.c.dir}" />   <!-- Using the C SOCKET client library -->
          
          <defineset> <!-- See compiler id="base-msvc" at top of file -->
            <define name="COMPILE_CORBA_PLUGIN" value="1" if="COMPILE_CORBA_DEFINE" />   <!-- Add the Corba protocol plugin? -->
@@ -1892,10 +1931,6 @@ TODO
            <linkerarg value="-lpthread"/>
          </linker>
       </cc>
-
-      <!-- Was only needed for "@version@" and "@build.timestamp@" replacement during compilation -->
-      <!-- delete file="${src.cpp.dir}/util/Global_CopyByAnt.cpp" / --> <!-- Leave it for lookup for debugger -->
-
    </target>  <!-- cpp-lib -->
 
 
@@ -1979,7 +2014,7 @@ TODO
          <compiler refid="bcc"/>
          <compiler refid="CC"/>
          <fileset dir="${compileCppSourcePath}" includes="${exeName}.cpp"/>
-         <includepath location="${src.cpp.dir}" />
+         <includepath location="${build.src.cpp.dir}" />
          <!-- sysincludepath location="${STL_HOME}/stlport" / -->
 
          <sysincludepath location="${CORBACPP_HOME}" if="TAO" />          <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
@@ -1988,7 +2023,7 @@ TODO
          <sysincludepath location="${CORBACPP_HOME}/include" if="MICO" /> <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
          <sysincludepath location="${CORBACPP_HOME}/include" if="OMNIORB" /> <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
          <sysincludepath location="${CORBACPP_HOME}/include" if="ORBACUS" /> <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
-         <sysincludepath location="${src.cpp.dir}/generated" if="ORBACUS" /> <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
+         <sysincludepath location="${build.src.cpp.dir}/generated" if="ORBACUS" /> <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
          <sysincludepath location="${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/include" if="ORBIX,unix" /> <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
          <sysincludepath location="${CORBACPP_HOME}/asp/${CORBACPP_VER}/include" if="ORBIX,windows" />
          <sysincludepath location="${CORBACPP_HOME}/shlib" if="ORBIX" />  <!-- TestCorbaDriver.cpp only which uses CORBA directly -->
@@ -2167,10 +2202,6 @@ TODO
    <target name="c-lib" depends="prepare-cpp" description="C client integration - create libxmlBlasterClientC.sl (dll)">
       <mkdir dir="${c.obj.dir}"/>
 
-      <!-- Copy msgUtil.c so that "@version@" is replaced to current values by ant -->
-      <!-- Below we exclude msgUtil.c from compilation and compile msgUtil_CopyByAnt.c with the current version etc. instead -->
-      <copy file="${src.c.dir}/util/msgUtil.c" tofile="${src.c.dir}/util/msgUtil_CopyByAnt.c" filtering="true" overwrite="true" />
-
       <!-- C_LINK==shared links a shared library xmlBlaster/lib/libxmlBlasterClientC.so -->
       <cc debug="${c.debug}"
           link="${C_LINK}"
@@ -2182,10 +2213,10 @@ TODO
          <compiler refid="msvc"/> <!-- MS VC++ 7 -->
          <compiler refid="bcc"/>  <!-- Borland -->
          <compiler refid="CC"/>   <!-- SunOS C++ 5.3 -->
-         <fileset dir="${src.c.dir}/socket" includes="*.c" excludes="hello.c"/>
-         <fileset dir="${src.c.dir}/util" includes="*.c" excludes="msgUtil.c"/>  <!-- uses msgUtil_CopyByAnt.c -->
+         <fileset dir="${build.src.c.dir}/socket" includes="*.c"/>
+         <fileset dir="${build.src.c.dir}/util" includes="*.c"/>
 
-         <includepath location="${src.c.dir}" />
+         <includepath location="${build.src.c.dir}" />
 
          <defineset> <!-- See compiler id="base-msvc" at top of file -->
            <!-- define name="TC" value="1" if="windows" /--> <!-- Force C compiling: TC, to force C++: TP -->
@@ -2206,7 +2237,7 @@ TODO
          <linker name="icc"  if="use-icc" />
 
          <linker name="msvc" if="use-msvc"> <!-- linker does not support nested switch -->
-           <libset dir="${src.c.dir}/socket" libs="pthreadVC" />
+           <libset dir="${build.src.c.dir}/socket" libs="pthreadVC" />
            <syslibset libs="ws2_32" />
          </linker>
 
@@ -2218,10 +2249,7 @@ TODO
          </linker>
       </cc>
 
-      <copy file="${src.c.dir}/socket/pthreadVC.dll" tofile="${lib.dir}/pthreadVC.dll"/>
-
-      <!-- Was only needed for "@version@" replacement during compilation -->
-      <!-- delete file="${src.c.dir}/util/msgUtil_CopyByAnt.c" / --> <!-- Leave it for lookup for debugger, the c-clean task does it. -->
+      <copy file="${build.src.c.dir}/socket/pthreadVC.dll" tofile="${lib.dir}/pthreadVC.dll"/>
 
       <switch value="${os.family}" caseinsensitive="false">
          <case value="windows">
@@ -2260,7 +2288,7 @@ TODO
          <compiler refid="bcc"/>
          <compiler refid="CC"/>
          <fileset dir="${compileCSourcePath}" includes="${exeName}.c"/>
-         <includepath location="${src.c.dir}" />
+         <includepath location="${build.src.c.dir}" />
 
          <!-- syslibset dir="/usr/lib" libs="stdc++" if="unix"/ -->
 
@@ -2296,7 +2324,7 @@ TODO
          <linker name="msvc" if="use-msvc">
             <libset casesensitive="false" dir="${lib.dir}" libs="xmlBlasterClientC" />  <!-- xmlBlasterClientC.dll -->
             <libset casesensitive="false" dir="${lib.dir}" libs="xmlBlasterClientC.dll" />  <!-- xmlBlasterClientC.dll -->
-            <libset dir="${src.c.dir}/socket" libs="pthreadVC" />
+            <libset dir="${build.src.c.dir}/socket" libs="pthreadVC" />
             <syslibset libs="ws2_32" />
             <libset casesensitive="false" dir="${lib.dir.absolute}" libs="xmlBlasterClientC" />  <!-- xmlBlasterClientC.dll -->
             <libset casesensitive="false" dir="${lib.dir.absolute}" libs="xmlBlasterClientC.dll" />  <!-- xmlBlasterClientC.dll -->
@@ -2327,8 +2355,9 @@ TODO
     <target name="c-clean" depends="prepare" description="Remove C object files">
        <delete dir="${c.obj.dir}"/>
        <delete includeEmptyDirs="true" failonerror="false">
+          <fileset dir="${build.src.c.dir}"/>
           <fileset dir="${src.c.dir}" includes="*.000,*.001,*.idb,*.pdb,*.obj,*.o"/>
-          <fileset dir="${src.c.dir}/util" includes="msgUtil_CopyByAnt.c,*.000,*.001,*.idb,*.pdb,*.obj,*.o"/>
+          <fileset dir="${src.c.dir}/util" includes="*.000,*.001,*.idb,*.pdb,*.obj,*.o"/>
           <fileset dir="${src.c.dir}/socket" includes="*.000,*.001,*.idb,*.pdb,*.obj,*.o"/>
           <fileset dir="${demo.dir}/c" includes="*.000,*.001,*.idb,*.pdb,*.obj,*.o"/>
           <fileset dir="${testsuite.dir}/src/c" includes="*.000,*.001,*.idb,*.pdb,*.obj,*.o"/>
@@ -2337,6 +2366,7 @@ TODO
 
     <target name="c-delete" depends="c-clean" description="Remove all generated C files/libs/executables">
        <delete includeEmptyDirs="true" failonerror="false">
+          <fileset dir="${build.src.c.dir}"/>
           <fileset dir="${src.c.dir}" includes="HelloWorld,XmlBlasterConnectionUnparsedMain,*.exe"/>
           <fileset dir="${src.c.dir}/util" includes="PropertiesMain,msgUtil,*.exe"/>
           <fileset dir="${src.c.dir}/socket" includes="CallbackServerUnparsed,XmlBlasterAccessUnparsedMain,*.exe"/>
@@ -2357,6 +2387,7 @@ TODO
 
     <target name="cpp-delete" depends="cpp-clean" description="Remove all generated C++ files/libs/executables">
        <delete includeEmptyDirs="true" failonerror="false">
+          <fileset dir="${build.src.cpp.dir}/generated"/>
           <fileset dir="${src.cpp.dir}/generated" includes="*.o, *.cc, *.cpp, *.h, *.hh, *.i"/>
           <fileset dir="${lib.dir}" includes="*xmlBlasterClient.*,history.xml"/>
           <fileset dir="${testsuite.dir}/src/c++/bin" includes="*"/>
