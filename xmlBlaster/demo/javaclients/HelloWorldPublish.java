@@ -97,9 +97,12 @@ public class HelloWorldPublish
          boolean disconnect = glob.getProperty().get("disconnect", true);
          int contentSize = glob.getProperty().get("contentSize", -1); // 2000000);
 
+         if (historyMaxMsg < 1 && !glob.getProperty().propertyExists("destroyDelay"))
+            destroyDelay = 24L*60L*60L*1000L; // Increase destroyDelay to one day if no history queue is used
+
          log.info(ME, "Used settings are:");
          log.info(ME, "   -interactive    " + interactive);
-         log.info(ME, "   -sleep          " + sleep);
+         log.info(ME, "   -sleep          " + org.jutils.time.TimeHelper.millisToNice(sleep));
          log.info(ME, "   -erase          " + erase);
          log.info(ME, "   -disconnect     " + disconnect);
          log.info(ME, " Pub/Sub settings");
@@ -110,15 +113,15 @@ public class HelloWorldPublish
             log.info(ME, "   -contentSize    " + contentSize);
          }
          else {
-            log.info(ME, "   -content        " + content);
+            log.info(ME, "   -content        " + new String(content));
             log.info(ME, "   -contentSize    " + content.length);
          }
          log.info(ME, "   -priority       " + priority.toString());
          log.info(ME, "   -persistent     " + persistent);
-         log.info(ME, "   -lifeTime       " + lifeTime);
+         log.info(ME, "   -lifeTime       " + org.jutils.time.TimeHelper.millisToNice(lifeTime));
          log.info(ME, " Topic settings");
          log.info(ME, "   -readonly       " + readonly);
-         log.info(ME, "   -destroyDelay   " + destroyDelay);
+         log.info(ME, "   -destroyDelay   " + org.jutils.time.TimeHelper.millisToNice(destroyDelay));
          log.info(ME, "   -createDomEntry " + createDomEntry);
          log.info(ME, "   -queue/history/maxMsg " + historyMaxMsg);
          log.info(ME, " PtP settings");
