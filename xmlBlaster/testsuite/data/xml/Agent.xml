@@ -4,7 +4,6 @@
 <!-- Example of distributed agents controlling a computer network -->
 <!-- This could be one way to store the available keys in the xmlBlaster: -->
 
-
 <!-- Examples how to subscribe to MsgUnits (see xmlBlaster/demo/queryXML/DomQueryTest.java): -->
 
 <!-- Accessing key with oid=2
