@@ -199,13 +199,6 @@ void PublishDemo::publish()
          std::cin.read(ptr,1);
       }
       else {
-         try {
-            org::xmlBlaster::util::thread::Thread::sleepSecs(1);
-         }
-         catch(XmlBlasterException e) {
-            log_.error(ME, e.toXml());
-         }
-
          if (sleep > 0) {
             try {
                org::xmlBlaster::util::thread::Thread::sleep(sleep);
