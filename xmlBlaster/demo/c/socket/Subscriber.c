@@ -60,7 +60,11 @@ static bool myUpdate(MsgUnitArr *msgUnitArr, void *userData,
 }
 
 /**
- * Invoke: Subscriber -logLevel TRACE
+ * Invoke examples:
+ *
+ * Subscriber -logLevel TRACE
+ *
+ * Subscriber -session.name Subscriber/1 -dispatch/callback/retries -1 -subscribe/qos/persistent true -interactiveSubscribe true 
  */
 int main(int argc, char** argv)
 {
@@ -150,7 +154,7 @@ int main(int argc, char** argv)
       char filterQos[2048];
       char qos[4098];
       bool multiSubscribe = xa->props->getBool(xa->props, "multiSubscribe", true);
-      bool persistentSubscribe = xa->props->getBool(xa->props, "persistentSubscribe", false);
+      bool persistent = xa->props->getBool(xa->props, "subscribe/qos/persistent", false);
       bool notifyOnErase = xa->props->getBool(xa->props, "notifyOnErase", true);
       bool local = xa->props->getBool(xa->props, "local", true);
       bool initialUpdate = xa->props->getBool(xa->props, "initialUpdate", true);
@@ -196,7 +200,7 @@ int main(int argc, char** argv)
                    "</qos>",
                    wantContent?"true":"false",
                    multiSubscribe?"true":"false",
-                   persistentSubscribe?"true":"false",
+                   persistent?"true":"false",
                    local?"true":"false",
                    initialUpdate?"true":"false",
                    updateOneway?"true":"false",
