@@ -1,6 +1,17 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
+Changes for 1.0x (patches for 1.0 stable)
+=====================================================
+
+ o #13088 Added XmlBlasterJdk14LoggingHandler.java which redirects JDK 1.4
+   logging to our framework.
+   This may be useful for native plugins which already use JDK 1.4 logging.
+   Switch redirection off with '-xmlBlaster/jdk14loggingCapture false'
+
+ o Now at least JDK 1.4 is needed
+
+
 Changes for 1.0 [2004-12-23] #13076 "Xmas release"
 ==================================================
 
