@@ -4,6 +4,8 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes for 0.x [200x-xx-xx]
 ============================
 
+ o modified http.applet protocol to allow invocations from standalone apps and from j2me
+
  o Renamed admin access to subjectInfo getCbQueueNumMsgs to getSubjectQueueNumMsgs
 
  o Added ActiveX (Windows) control to support access from C# and VisualBasic.net

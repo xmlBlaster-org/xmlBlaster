@@ -329,6 +329,8 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
          this.subscribeStore.put(entry);
       }
       else  {    // ... or from a recovery ?
+         // TODO handle by recoverSubscriptions(..)
+         subscribeQosData.getClientProperties().remove(PERSISTENCE_ID);
          long uniqueId = clientProperty.getLongValue();
          if (this.log.TRACE) this.log.trace(ME, "subscriptionAdd: filling OLD uniqueId into subscriptionInfo '" + uniqueId + "'");
          subscriptionInfo.setPersistenceId(uniqueId);
