@@ -14,6 +14,8 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.queue.
 #include <unistd.h>   /* unlink */
 #include "test.h"
 
+#ifdef XMLBLASTER_PERSISTENT_QUEUE
+
 static int argc = 0;
 static char** argv = 0;
 #define  ERRORSTR_LEN EXCEPTIONSTRUCT_ERRORCODE_LEN + EXCEPTIONSTRUCT_MESSAGE_LEN + 64
@@ -191,3 +193,16 @@ int main(int argc_, char **argv_)
 
    return result != 0;
 }
+
+
+#else /* XMLBLASTER_PERSISTENT_QUEUE */
+
+int main(int argc_, char **argv_)
+{
+   printf("C-client is compiled without -DXMLBLASTER_PERSISTENT_QUEUE=1, no persistent queue tested\n");
+   if (*MU_ASSERT_TEXT || tests_run) {} /* To suppress compiler warning */
+   return 0;
+}
+
+#endif /* XMLBLASTER_PERSISTENT_QUEUE */
+
