@@ -11,26 +11,18 @@
    - a 'make' utility recommended.
      For DOS/Windows, e.g. cygwin's make.
      Note that Windows nmake will not work properly with xmlBlaster Makefiles
-   - JacOrb (CORBA) http://www.inf.fu-berlin.de/~brose/jacorb/
 
 
                         Environment
 -----------------------------------------------------------------
 
-1. Install JacORB (http://www.inf.fu-berlin.de/~brose/jacorb)
-   The JacORB CORBA library needs to be downloaded and
-   installed first.
-
-	If you follow step 2 a), JacORB will be automatically set up
-	correctly from xmlBlaster.
-
-2. Extend your CLASSPATH environment variable. 
+1. Extend your CLASSPATH and PATH environment variable. 
 
    a) If you use sh, ksh or bash, you may chose to source the
       $XMLBLASTER_HOME/.bashrc into your environment.
 
       export JDK_HOME=/usr/local/jdk
-      export JacORB_HOME=/usr/local/JacORB
+		export PATH=${JDK_HOME}/bin:$PATH
       export XMLBLASTER_HOME=${HOME}/xmlBlaster 
 
       source  ${XMLBLASTER_HOME}/.bashrc
@@ -61,11 +53,20 @@
     After a new login you are ready to start the xmlBlaster (see below).
 
 
+2. Notes on adjusting your environment setup.
+   You may wish to change the default environment setup for example
+	if you have JacORB installed already, or to include your MICO C++ Corba library.
+	You may do this with setting following variables before you source
+	${XMLBLASTER_HOME}/.bashrc (Note this is optional):
+
+      export JacORB_HOME=/usr/local/JacORB       (to use your own JacORB installation)
+      export MICO_HOME=/usr/local/mico           (to use C++ demo clients with mico)
+      export JIKES_HOME=/usr/local/jikes         (to use your jikes instead of javac)
+
+
 related links:
 --------------
-JacORB1_0-beta13 : http://www.inf.fu-berlin.de/~brose/jacorb/
-xml-tr2.zip      : http://developer.java.sun.com/developer/products/xml/
-                   This zip file is included in the xmlBlaster distribution
+   See ${XMLBLASTER_HOME}/lib/README
 
 
 
