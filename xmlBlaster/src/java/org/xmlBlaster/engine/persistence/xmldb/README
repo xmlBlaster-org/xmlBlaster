@@ -1,10 +1,10 @@
-$Id: README,v 1.1 2002/01/14 00:18:56 goetzger Exp $
+$Id: README,v 1.2 2002/01/15 23:33:45 goetzger Exp $
 
-Integration of Xindice (former dbXML) into xmlBlaster
------------------------------------------------------
+Integration of Xindice (former dbXML) into xmlBlaster as PersistenceDriver
+--------------------------------------------------------------------------
 
 STATE:      alpha
-            runns stable, afaik
+            runs stable, afaik
 	    no experience at all, except in development environment
 	    
 
@@ -13,7 +13,7 @@ RESOURCES:  http://www.dbxml.org
             
 
 TRAPS/BUGS: What is with BLOBs?
-            How can we store best binarie data?
+            How can we store best binary data?
 
 
 TODO:       Need to finish Test-case!
@@ -25,25 +25,8 @@ XindiceDriver.java is an implementation of I_PersistenceDriver.java
 To use it, you need a dbXML installed and running (tested and developed
 with 1.0b4). Can be downloaded at http://www.dbxml.org
 
-Add according to your dbXML installation similar to your
-$HOME/.[bash|ksh|zsh]rc file:
-# dbXML
-export DBXML_HOME=/opt/dbXML-Core-1.0b4
-export PATH=${PATH}:$DBXML_HOME/bin
-export CLASSPATH=${DBXML_HOME}/java/lib/dbXML.jar
-export CLASSPATH=${CLASSPATH}:${DBXML_HOME}/java/lib/xmldb.jar
-export CLASSPATH=${CLASSPATH}:${DBXML_HOME}/java/lib/juggernaut-1.0.jar
-export CLASSPATH=${CLASSPATH}:${DBXML_HOME}/java/lib/openorb-1.2.0.jar
-export CLASSPATH=${CLASSPATH}:${DBXML_HOME}/java/lib/xerces-1.4.3.jar
-export CLASSPATH=${CLASSPATH}:${DBXML_HOME}/java/lib/xalan-2.0.1.jar
-
-Do a new login, update your checked-out release and rebuild all.
-
-In the meanwhile start a new xterm,
-do a
-$ cd $DBXML_HOME
-start the dbXML (if it's not running anyway)
-$ ./start
+Start dbXML:
+change to the directory, where dbXML is installed and start it as described in the docu.
 
 Copy the config/xmlblaster.properties.templates to $HOME or edit
 it manually. You need to activate:
@@ -56,7 +39,6 @@ Persistence.Collection=xmlBlaster
 $ dbxmladmin ac -c /db -n xmlBlaster
 check with:
 $ dbxmladmin lc -c /db
-Persistence.Driver=org.xmlBlaster.engine.persistence.xmldb.xindice.XindiceDriver
 
 Start the xmlBlaster.
 
@@ -69,7 +51,7 @@ if you can see something like:
 
 you're on the right way ;-)
 It says which driver the persistence layer is using and that it got 1
-message restored from it.
+message restored from it. This may differ on your system.
 
 Publish some messages which are tagged 'durable', you can do this by using
 the qos-tag:
@@ -80,7 +62,7 @@ the qos-tag:
 
 Check, if you want, by using for example
 $ dbxml ld -c /db/xmlBlaster
-
+																		
         amIdurable-XmlCon.xml
         amIdurable-XmlKey.xml
         amIdurable-XmlQos.xml
