@@ -3,7 +3,6 @@ Name:      UpdateKey.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with DOM
-Version:   $Id: UpdateKey.h,v 1.5 2001/11/26 09:20:59 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #ifndef _CLIENT_UPDATEKEY_H
@@ -47,7 +46,7 @@ namespace org { namespace xmlBlaster {
    private:
       
       string me() {
-	 return "UpdateKey";
+         return "UpdateKey";
       }
       
    protected:
@@ -69,12 +68,12 @@ namespace org { namespace xmlBlaster {
    public:
       
       UpdateKey(int args=0, char *argc[]=0) : 
-	 util::SaxHandlerBase(args, argc) {
-	 inKey_               = false;
-	 keyOid_              = "";
-	 contentMime_         = "text/plain";
-	 contentMimeExtended_ = "";
-	 if (log_.CALL) log_.trace(me(), "Creating new UpdateKey");
+         util::SaxHandlerBase(args, argc) {
+         inKey_               = false;
+         keyOid_              = "";
+         contentMime_         = "text/plain";
+         contentMimeExtended_ = "";
+         if (log_.CALL) log_.trace(me(), "Creating new UpdateKey");
       }
 
 
@@ -82,8 +81,8 @@ namespace org { namespace xmlBlaster {
        * Access the $lt;key oid="...">.
        * @return The unique key oid
        */
-      string getUniqueKey() {
-	 return keyOid_;
+      const string &getUniqueKey() const {
+         return keyOid_;
       }
 
 
@@ -92,8 +91,8 @@ namespace org { namespace xmlBlaster {
        * @return e.g "text/xml" or "image/png"
        *         defaults to "text/plain"
        */
-      string getContentMime() {
-	 return contentMime_;
+      const string &getContentMime() const {
+         return contentMime_;
       }
 
 
@@ -107,8 +106,8 @@ namespace org { namespace xmlBlaster {
        * contentMimeExtended='Version 1.1'><br />
        *         or "" (empty string) if not known
        */
-      string getContentMimeExtended() {
-	 return contentMimeExtended_;
+      const string &getContentMimeExtended() const {
+         return contentMimeExtended_;
       }
 
       
@@ -126,50 +125,50 @@ namespace org { namespace xmlBlaster {
        *         false this tag is not handled by this Base class
        */
       bool startElementBase(const XMLCh* name, AttributeList &attrs) {
-	 bool sameName = caseCompare(name,"key");
-	 if (sameName) {
-	    inKey_ = true;
-	    
-	    int len = attrs.getLength();
-	    for (int i = 0; i < len; i++) {
-	       XMLCh* attrName = XMLString::replicate(attrs.getName(i));
-	       if ( caseCompare(attrName, "oid") ) {
-		  XMLCh* oidHelper = xmlChTrimmer_.trim(attrs.getValue(i));
-		  char *buffer = XMLString::transcode(oidHelper);
-		  keyOid_      = buffer;
-		  delete buffer;
-		  delete oidHelper;
-	       }
-	       
-	       if( caseCompare(attrName, "contentMime") ) {
-		  XMLCh* contentMimeHelper = 
-		     xmlChTrimmer_.trim(attrs.getValue(i));
-		  char *buffer = XMLString::transcode(contentMimeHelper);
-		  contentMime_ = buffer;
-		  if (contentMime_ == "") contentMime_ = "text/plain";
-		  delete buffer;
-		  delete contentMimeHelper;
-	       }
-	       
-	       if( caseCompare(attrName, "contentMimeExtended") ) {
-		  XMLCh* contentMimeExtendedHelper = 
-		     xmlChTrimmer_.trim(attrs.getValue(i));
-		  char *buffer = 
-		     XMLString::transcode(contentMimeExtendedHelper);
-		  contentMimeExtended_ = buffer;
-		  delete buffer;
-		  delete contentMimeExtendedHelper;
-	       }
-	       delete attrName;
-	    }
-	    if (keyOid_ == "")
-	       log_.warn(me(), "The oid of the message is missing");
-	    if (contentMime_ == "")
-	       log_.warn(me(), 
-			    "The contentMime of the message is missing");
-	    return true;
-	 }
-	 return false;
+         bool sameName = caseCompare(name,"key");
+         if (sameName) {
+            inKey_ = true;
+            
+            int len = attrs.getLength();
+            for (int i = 0; i < len; i++) {
+               XMLCh* attrName = XMLString::replicate(attrs.getName(i));
+               if ( caseCompare(attrName, "oid") ) {
+                  XMLCh* oidHelper = xmlChTrimmer_.trim(attrs.getValue(i));
+                  char *buffer = XMLString::transcode(oidHelper);
+                  keyOid_      = buffer;
+                  delete buffer;
+                  delete oidHelper;
+               }
+               
+               if( caseCompare(attrName, "contentMime") ) {
+                  XMLCh* contentMimeHelper = 
+                     xmlChTrimmer_.trim(attrs.getValue(i));
+                  char *buffer = XMLString::transcode(contentMimeHelper);
+                  contentMime_ = buffer;
+                  if (contentMime_ == "") contentMime_ = "text/plain";
+                  delete buffer;
+                  delete contentMimeHelper;
+               }
+               
+               if( caseCompare(attrName, "contentMimeExtended") ) {
+                  XMLCh* contentMimeExtendedHelper = 
+                     xmlChTrimmer_.trim(attrs.getValue(i));
+                  char *buffer = 
+                     XMLString::transcode(contentMimeExtendedHelper);
+                  contentMimeExtended_ = buffer;
+                  delete buffer;
+                  delete contentMimeExtendedHelper;
+               }
+               delete attrName;
+            }
+            if (keyOid_ == "")
+               log_.warn(me(), "The oid of the message is missing");
+            if (contentMime_ == "")
+               log_.warn(me(), 
+                            "The contentMime of the message is missing");
+            return true;
+         }
+         return false;
       }
       
       
@@ -180,11 +179,11 @@ namespace org { namespace xmlBlaster {
        * about the tags inside of key
        */
       void startElement(const XMLCh* const name, AttributeList& attrs) {
-	 if (!startElementBase(name, attrs)) {
-	    // Now i know what i need to know, stop parsing here (i'm not 
-	    // interested in the tags inside)
-	    throw util::StopParseException();
-	 }
+         if (!startElementBase(name, attrs)) {
+            // Now i know what i need to know, stop parsing here (i'm not 
+            // interested in the tags inside)
+            throw util::StopParseException();
+         }
       }
 
       /**
@@ -206,12 +205,12 @@ namespace org { namespace xmlBlaster {
        */
    protected:
       bool endElementBase(const XMLCh* const name) {
-	 if( caseCompare(name, "key") ) {
-	    inKey_ = false;
-	    character_ = "";
-	    return true;
-	 }
-	 return false;
+         if( caseCompare(name, "key") ) {
+            inKey_ = false;
+            character_ = "";
+            return true;
+         }
+         return false;
       }
 
 
@@ -229,7 +228,7 @@ namespace org { namespace xmlBlaster {
        */
    public:
       void endElement(const XMLCh* const name) {
-	 endElementBase(name);
+         endElementBase(name);
       }
 
 
@@ -239,7 +238,7 @@ namespace org { namespace xmlBlaster {
        * @return XML state of MessageUnitHandler
        */
       string printOn() {
-	 return printOn("");
+         return printOn("");
       }
 
 
@@ -250,13 +249,13 @@ namespace org { namespace xmlBlaster {
        * @return XML state of UpdateKey
        */
       string printOn(const string &extraOffset) {
-	 string sb, offset = "\n   ";
-	 offset += extraOffset;
-	 sb  = offset + "<key oid='" + getUniqueKey() + "'";
-	 sb += " contentMime='" + getContentMime() + "'";
-	 sb += " contentMimeExtended='" + getContentMimeExtended() + "' >\n";
-	 sb += offset + "</key>\n";
-	 return sb;
+         string sb, offset = "\n   ";
+         offset += extraOffset;
+         sb  = offset + "<key oid='" + getUniqueKey() + "'";
+         sb += " contentMime='" + getContentMime() + "'";
+         sb += " contentMimeExtended='" + getContentMimeExtended() + "' >\n";
+         sb += offset + "</key>\n";
+         return sb;
       }
    };
 }} // namespace
