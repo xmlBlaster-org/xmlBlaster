@@ -16,6 +16,10 @@ See:    http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.ht
 
 /**
  * Here we receive the callback messages from xmlBlaster
+ * @param msgUnitArr The received messages
+ * @param userData Is the corresponding XmlBlasterAccessUnparsed * pointer
+ * @param exception An OUT parameter to transport back an exception
+ * @see UpdateFp in XmlBlasterAccessUnparsed.h
  * @see UpdateFp in CallbackServerUnparsed.h
  */
 static bool myUpdate(MsgUnitArr *msgUnitArr, void *userData,
@@ -110,7 +114,7 @@ int main(int argc, char** argv)
          sleepInterval = atoi(argv[++iarg]);
    }
 
-   xa = getXmlBlasterAccessUnparsed(argc, argv);
+   xa = getXmlBlasterAccessUnparsed(argc, (const char* const*)argv);
    if (xa->initialize(xa, myUpdate, &xmlBlasterException) == false) {
       printf("[client] Connection to xmlBlaster failed,"
              " please start the server or check your configuration\n");
@@ -161,6 +165,7 @@ int main(int argc, char** argv)
 
    { /* subscribe ... */
       const char *key = "<key oid='HelloWorld'/>";
+      /*const char *key = "<key queryType='XPATH'>//key</key>";*/
       const char *qos = "<qos/>";
       printf("[client] Subscribe message 'HelloWorld' ...\n");
       response = xa->subscribe(xa, key, qos, &xmlBlasterException);
@@ -200,14 +205,81 @@ int main(int argc, char** argv)
       xmlBlasterFree(response);
    }
  
+   if (false) {  /* publishArr ... IS NOT IMPLEMENTED */
+      QosArr* resp;
+      MsgUnitArr holder;
+      printf("[client] Publishing messages 'HelloWorld1' and 'HelloWorld1' ...\n");
+      holder.len = 2;
+      holder.msgUnitArr = (MsgUnit *)calloc(holder.len, sizeof(MsgUnit));
+      holder.msgUnitArr[0].key = strcpyAlloc("<key oid='HelloWorld0'/>");
+      holder.msgUnitArr[0].content = strcpyAlloc("Some message payload");
+      holder.msgUnitArr[0].contentLen = strlen(holder.msgUnitArr[0].content);
+      holder.msgUnitArr[0].qos =strcpyAlloc("<qos><persistent/></qos>");
+
+      holder.msgUnitArr[1].key = strcpyAlloc("<key oid='HelloWorld1'/>");
+      holder.msgUnitArr[1].content = strcpyAlloc("Some message payload");
+      holder.msgUnitArr[1].contentLen = strlen(holder.msgUnitArr[1].content);
+      holder.msgUnitArr[1].qos =strcpyAlloc("<qos><persistent/></qos>");
+
+      resp = xa->publishArr(xa, &holder, &xmlBlasterException);
+      
+      freeMsgUnitArrInternal(&holder);
+      if (*xmlBlasterException.errorCode != 0) {
+         printf("[client] Caught exception in publishArr errorCode=%s, message=%s\n",
+                  xmlBlasterException.errorCode, xmlBlasterException.message);
+         xa->disconnect(xa, 0, &xmlBlasterException);
+         freeXmlBlasterAccessUnparsed(xa);
+         exit(EXIT_FAILURE);
+      }
+      if (resp) {
+         size_t i;
+         for (i=0; i<resp->len; i++) {
+            printf("[client] PublishArr success, returned status is '%s'\n", resp->qosArr[i]);
+         }
+         freeQosArr(resp);
+      }
+   }
+ 
+   if (false) {  /* publishOneway ... IS NOT IMPLEMENTED */
+      MsgUnitArr holder;
+      printf("[client] Publishing oneway messages 'HelloWorld1' and 'HelloWorld1' ...\n");
+      holder.len = 2;
+      holder.msgUnitArr = (MsgUnit *)calloc(holder.len, sizeof(MsgUnit));
+      holder.msgUnitArr[0].key = strcpyAlloc("<key oid='HelloWorld0'/>");
+      holder.msgUnitArr[0].content = strcpyAlloc("Some message payload");
+      holder.msgUnitArr[0].contentLen = strlen(holder.msgUnitArr[0].content);
+      holder.msgUnitArr[0].qos =strcpyAlloc("<qos><persistent/></qos>");
+
+      holder.msgUnitArr[1].key = strcpyAlloc("<key oid='HelloWorld1'/>");
+      holder.msgUnitArr[1].content = strcpyAlloc("Some message payload");
+      holder.msgUnitArr[1].contentLen = strlen(holder.msgUnitArr[1].content);
+      holder.msgUnitArr[1].qos =strcpyAlloc("<qos><persistent/></qos>");
+
+      xa->publishOneway(xa, &holder, &xmlBlasterException);
+      
+      freeMsgUnitArrInternal(&holder);
+      if (*xmlBlasterException.errorCode != 0) {
+         printf("[client] Caught exception in publishOneway errorCode=%s, message=%s\n",
+                  xmlBlasterException.errorCode, xmlBlasterException.message);
+         xa->disconnect(xa, 0, &xmlBlasterException);
+         freeXmlBlasterAccessUnparsed(xa);
+         exit(EXIT_FAILURE);
+      }
+   }
+ 
    {  /* unSubscribe ... */
+      QosArr* resp;
       const char *key = "<key oid='HelloWorld'/>";
+      /*const char *key = "<key queryType='XPATH'>//key</key>";*/
       const char *qos = "<qos/>";
       printf("[client] UnSubscribe message 'HelloWorld' ...\n");
-      response = xa->unSubscribe(xa, key, qos, &xmlBlasterException);
-      if (response) {
-         printf("[client] Unsubscribe success, returned status is '%s'\n", response);
-         xmlBlasterFree(response);
+      resp = xa->unSubscribe(xa, key, qos, &xmlBlasterException);
+      if (resp) {
+         size_t i;
+         for (i=0; i<resp->len; i++) {
+            printf("[client] Unsubscribe success, returned status is '%s'\n", resp->qosArr[i]);
+         }
+         freeQosArr(resp);
       }
       else {
          printf("[client] Caught exception in unSubscribe errorCode=%s, message=%s\n",
@@ -218,8 +290,9 @@ int main(int argc, char** argv)
       }
    }
 
-   {  /* get synchnronous ... */
+   {  /* get synchronous ... */
       size_t i;
+      /*const char *key = "<key oid='HelloWorld'/>";*/
       const char *key = "<key queryType='XPATH'>//key</key>";
       const char *qos = "<qos/>";
       MsgUnitArr *msgUnitArr;
@@ -238,7 +311,7 @@ int main(int argc, char** argv)
                                              msgUnitArr->msgUnitArr[i].contentLen);
             const char *dots = (msgUnitArr->msgUnitArr[i].contentLen > 96) ?
                                  " ..." : "";
-            printf("\n[client] Received message#%lu/%lu:\n"
+            printf("\n[client] Get synchronous returned message#%lu/%lu:\n"
                      "-------------------------------------"
                      "%s\n <content>%.100s%s</content>%s\n"
                      "-------------------------------------\n",
@@ -261,10 +334,12 @@ int main(int argc, char** argv)
 
 
    {  /* erase ... */
+      QosArr* resp;
       const char *key = "<key oid='HelloWorld'/>";
+      /*const char *key = "<key oid='' queryType='XPATH'>//key</key>";*/
       const char *qos = "<qos/>";
       printf("[client] Erasing message 'HelloWorld' ...\n");
-      response = xa->erase(xa, key, qos, &xmlBlasterException);
+      resp = xa->erase(xa, key, qos, &xmlBlasterException);
       if (*xmlBlasterException.errorCode != 0) {
          printf("[client] Caught exception in erase errorCode=%s, message=%s\n",
                   xmlBlasterException.errorCode, xmlBlasterException.message);
@@ -272,8 +347,13 @@ int main(int argc, char** argv)
          freeXmlBlasterAccessUnparsed(xa);
          exit(EXIT_FAILURE);
       }
-      printf("[client] Erase success, returned status is '%s'\n", response);
-      xmlBlasterFree(response);
+      if (resp != 0) {
+         size_t i;
+         for (i=0; i<resp->len; i++) {
+            printf("[client] Erase success, returned status is '%s'\n", resp->qosArr[i]);
+         }
+         freeQosArr(resp);
+      }
    }
 
    if (xa->disconnect(xa, 0, &xmlBlasterException) == false) {
