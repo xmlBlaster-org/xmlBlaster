@@ -5,6 +5,7 @@ import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.ConnectReturnQos;
 import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.client.I_ConnectionProblems;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.SubscribeKey;
@@ -19,7 +20,6 @@ import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.Address;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 
@@ -141,7 +141,7 @@ public class HelloWorld6
 
          PublishKey pk = new PublishKey(glob, "HelloWorld6", "text/plain", "1.0");
          PublishQos pq = new PublishQos(glob);
-         MessageUnit msgUnit = new MessageUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
+         MsgUnit msgUnit = new MsgUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
          PublishReturnQos retQos = con.publish(msgUnit);
          log.info(ME, "Published message '" + pk.getOid() + "'");
 
@@ -149,7 +149,7 @@ public class HelloWorld6
          pk = new PublishKey(glob, "Banking", "text/plain", "1.0");
          pk.setClientTags("<Account><withdraw/></Account>"); // Add banking specific meta data
          pq = new PublishQos(glob);
-         msgUnit = new MessageUnit(pk.toXml(), "Ho".getBytes(), pq.toXml());
+         msgUnit = new MsgUnit(pk.toXml(), "Ho".getBytes(), pq.toXml());
          retQos = con.publish(msgUnit);
          log.info(ME, "Published message '" + pk.getOid() + "'");
       }
