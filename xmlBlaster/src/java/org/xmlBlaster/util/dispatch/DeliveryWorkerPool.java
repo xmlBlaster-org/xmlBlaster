@@ -33,8 +33,12 @@ public class DeliveryWorkerPool //implements I_RunlevelListener
    private boolean isShutdown = false;
 
    protected static class DeamonThreadFactory implements ThreadFactory {
+      private final Global glob;
+      DeamonThreadFactory(Global glob) {
+         this.glob = glob;
+      }
       public Thread newThread(Runnable command) {
-         Thread t = new Thread(command);
+         Thread t = new Thread(command, "XmlBlaster.DeliveryWorkerPool."+glob.getId());
          t.setDaemon(true);
          //System.out.println("Created new daemon thread instance for DeliveryWorkerPool");
          return t;
@@ -57,7 +61,7 @@ public class DeliveryWorkerPool //implements I_RunlevelListener
          return;
 
       this.pool = new PooledExecutor(new LinkedQueue());
-      this.pool.setThreadFactory(new DeamonThreadFactory());
+      this.pool.setThreadFactory(new DeamonThreadFactory(glob));
 
       maximumPoolSize = glob.getProperty().get("cb.maximumPoolSize", 200);
       minimumPoolSize = glob.getProperty().get("cb.minimumPoolSize", 10);
