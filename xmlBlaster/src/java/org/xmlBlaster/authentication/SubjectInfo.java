@@ -403,7 +403,8 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
    public final void setSubjectQueueProperty(CbQueueProperty prop) throws XmlBlasterException {
       CbQueueProperty origProp = (CbQueueProperty)this.subjectQueue.getProperties();
       if (origProp == null) {
-         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME+".setSubjectQueueProperty()", "Existing subject queue properties are null");
+         log.error(ME+".setSubjectQueueProperty()", "Existing subject queue properties are null");
+         return;
       }
 
       if (prop == null) prop = new CbQueueProperty(glob, Constants.RELATING_SUBJECT, glob.getId());
