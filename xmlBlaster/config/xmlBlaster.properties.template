@@ -3,7 +3,8 @@
 # Project:   xmlBlaster.org
 # Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 # Comment:   Properties for xmlBlaster MOM server, copy into your home directory
-#
+# See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/util.property.html
+# See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/util.property.env.html#
 #All JVM system variables are supported, e.g.
 #   ${user.dir}
 #   ${user.home}
