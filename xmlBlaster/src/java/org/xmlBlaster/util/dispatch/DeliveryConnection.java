@@ -365,6 +365,7 @@ abstract public class DeliveryConnection implements I_Timeout
                if (oldState == ConnectionStateEnum.ALIVE || oldState == ConnectionStateEnum.UNDEF) {
                   resetConnection();
                   String str = (throwable != null) ? ": " + throwable.toString() : "";
+                  //if (throwable != null) throwable.printStackTrace();
                   log.warn(ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString() + ": " + this.address.toString() +
                                " is unaccessible, we poll for it every " + this.address.getDelay() + " msec" + str);
                   if (log.TRACE) log.trace(ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString() + " for " + myId +
