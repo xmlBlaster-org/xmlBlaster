@@ -17,6 +17,15 @@ import org.xmlBlaster.util.XmlBlasterException;
  * @since 0.79f
  */
 public interface I_AdminNode {
+   public int getNumNodes();
+   public String getNodeList();
+
+   public String getNodeId();
+   public String getVersion();
+   public String getBuildTimestamp();
+   public String getBuildJavaVendor();
+   public String getBuildJavaVersion();
+
    public String getRunlevel();
    public void setRunlevel(String level) throws XmlBlasterException;
 

@@ -1679,7 +1679,37 @@ synchronized (this) {
    }
 
    //====== These methods satisfy the I_AdminNode administration interface =======
-
+   public int getNumNodes() {
+      if (glob.useCluster() == false) return 1;
+      try {
+         return glob.getClusterManager().getNumNodes();
+      } catch(XmlBlasterException e) {
+         return 1;
+      }
+   }
+   public String getNodeList() {
+      if (glob.useCluster() == false) return glob.getId();
+      try {
+         return glob.getClusterManager().getNodeList();
+      } catch(XmlBlasterException e) {
+         return glob.getId();
+      }
+   }
+   public String getNodeId() {
+      return glob.getId();
+   }
+   public String getVersion() {
+      return glob.getVersion();
+   }
+   public String getBuildTimestamp() {
+      return glob.getBuildTimestamp();
+   }
+   public String getBuildJavaVendor() {
+      return glob.getBuildJavaVendor();
+   }
+   public String getBuildJavaVersion() {
+      return glob.getBuildJavaVersion();
+   }
    public String getRunlevel() {
       return ""+glob.getRunlevelManager().getCurrentRunlevel();
    }

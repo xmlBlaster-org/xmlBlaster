@@ -380,6 +380,30 @@ public final class ClusterManager implements I_RunlevelListener
       return this.clusterNodeMap;
    }
 
+   public int getNumNodes() {
+      if (this.clusterNodeMap == null) return 1; // The caller is a single node
+      return this.clusterNodeMap.size();
+   }
+
+   /**
+    * Access a list of known cluster nodes e.g. "heron,avalon,bilbo,frodo"
+    * @return If cluster is switched off just our node
+    */
+   public final String getNodeList() {
+      int numNodes = getNumNodes();
+      if (numNodes <= 1)
+         return glob.getId();
+      StringBuffer sb = new StringBuffer(numNodes * 30);
+      Iterator iterator = clusterNodeMap.values().iterator();
+      while (iterator.hasNext()) {
+         if (sb.length() > 0)
+            sb.append(",");
+         ClusterNode node = (ClusterNode)iterator.next();
+         sb.append(node.getId());
+      }
+      return sb.toString();
+   }
+
    /**
     * Access the informations belonging to a node id
     * @return The ClusterNode instance or null if unknown
