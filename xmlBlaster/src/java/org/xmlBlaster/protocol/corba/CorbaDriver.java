@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.59 2003/03/27 17:10:58 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.60 2003/03/27 20:57:06 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -545,20 +545,33 @@ public class CorbaDriver implements I_Driver
       }
 
       if (rootPOA != null) {
+         /*
          try {
             log.trace(ME, "Deactivate POA Manager ...");
             rootPOA.the_POAManager().deactivate(false, true);
          } catch(Exception e) { log.warn(ME, "rootPOA deactivate failed: " + e.toString()); }
+         rootPOA deactivate failed: org.omg.PortableServer.POAManagerPackage.AdapterInactive: IDL:omg.org/PortableServer/POAManager/AdapterInactive:1.0
+         */
+         /*
          try {
             log.trace(ME, "_release POA Manager ...");
             rootPOA.the_POAManager()._release();
-         } catch(Exception e) { log.warn(ME, "tootPOA _release failed: " + e.toString()); }
+         } catch(Exception e) { log.warn(ME, "rootPOA _release failed: " + e.toString()); }
+         rootPOA _release failed: org.omg.CORBA.NO_IMPLEMENT: This is a locally constrained object.  vmcid: 0x0  minor code: 0  completed: No
+         */
+         try {
+            this.rootPOA.destroy(true, true);
+         }
+         catch (Exception ex) {
+            this.log.warn(ME, "shutdown:exception occured rootPOA.destroy(): " + ex.toString());
+         }
          rootPOA = null;
       }
 
       authRef = null;
 
-      //orb.shutdown(wait_for_completion);
+      boolean wait_for_completion = false;
+      orb.shutdown(wait_for_completion);
       if (log.TRACE) log.warn(ME, "Currently orb.shutown is commented out, as it destoyes all POAs in the virtual machine, the cluster testsuite doen' like it");
 
       log.info(ME, "POA and ORB are down, CORBA resources released.");
