@@ -9,6 +9,26 @@
     <description>
        <p>The JdbcQueuePlugin offers the ability to store messages persistently on databases. In case
        a crash occurs, data will be recovered.</p>
+       <p>
+       Every queue object has a corresponding table on the database. The naming convention of these
+       tables is $PREFIX}${TIMESTAMP} where ${PREFIX} is a configurable string (per default 'XMLBLASTER').
+       The timestamp is the creation timestamp of the table. 
+       </p>
+       <p>
+       These tables are not created on the fly when needed. There is always a pool of free tables. The
+       main reason for that is performance.
+       To find out which tables are free (available to be associated to a queue) there is a single table
+       holding the names for such tables called ${PREFIX}FREETABLES.
+       </p>
+       <p>
+       When a table is associated to a queue it is removed from the ${PREFIX}FREETABLES and together with
+       the queue name it is put as an entry in the ${PREFIX}USEDTABLES
+       </p>
+       <p>
+       When a queue is no longer needed and is deleted, the table associated to it is not removed, it is
+       cleaned up and put back into the ${PREFIX}FREETABLES table.<br/>
+       <img src="jdbcDesign.gif" border="0" alt="jdbcDesign" /> 
+       </p>
     </description>
 
     <example lang="Java" type="HTML">
@@ -122,7 +142,7 @@
 <!--   <see type="REQ">cluster</see> -->
    <author>laghi@swissinfo.org</author>
    <date>2002 11 16</date>
-   <revision>$Revision: 1.8 $</revision>
+   <revision>$Revision: 1.9 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
