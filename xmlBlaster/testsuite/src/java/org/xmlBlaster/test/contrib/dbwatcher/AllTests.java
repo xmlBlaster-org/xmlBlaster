@@ -15,6 +15,7 @@ public class AllTests {
    }
    public static Test suite ( ) {
       TestSuite suite= new TestSuite("All xmlBlaster contrib.dbwatcher plugin tests");
+      suite.addTest(new TestReplaceVariable());
       suite.addTest(new TestResultSetToXmlConverter());
       suite.addTest(new TestTimestamp());
       //suite.addTest(TestResultSetToXmlConverter.suite());

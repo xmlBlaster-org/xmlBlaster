@@ -160,8 +160,8 @@ public class TestTimestamp extends XMLTestCase {
       changeDetector.checkAgain(null);
       sleep(500);
       assertEquals("Number of message is wrong", 1, this.updateMap.size());
-      String xml = (String)this.updateMap.get("db.change.event.${ICAO_ID}");
-      assertNotNull("No db.change.event.${changeKey} message has arrived", xml);
+      String xml = (String)this.updateMap.get("db.change.event.${groupColValue}");
+      assertNotNull("No db.change.event.${groupColValue} message has arrived", xml);
       assertEquals("", xml);
       this.updateMap.clear();
 
@@ -201,6 +201,7 @@ public class TestTimestamp extends XMLTestCase {
          assertEquals("Number of message is wrong", 0, this.updateMap.size());
       }
 
+      // Is not detected by Timestamp poller!
       {
          log.info("Delete one row");
          this.dbPool.update("DELETE FROM TEST_TS WHERE ICAO_ID='EDDI'");
@@ -208,7 +209,7 @@ public class TestTimestamp extends XMLTestCase {
          sleep(500);
          assertEquals("Number of message is wrong", 1, this.updateMap.size());
          // TODO: We don't know that EDDI was deleted
-         String xml = (String)this.updateMap.get("db.change.event.${ICAO_ID}");
+         String xml = (String)this.updateMap.get("db.change.event.${groupColValue}");
          assertNotNull("xml returned is null", xml);
          assertEquals("", xml);
          this.updateMap.clear();
@@ -224,7 +225,7 @@ public class TestTimestamp extends XMLTestCase {
          changeDetector.checkAgain(null);
          sleep(500);
          assertEquals("Number of message is wrong", 1, this.updateMap.size());
-         String xml = (String)this.updateMap.get("db.change.event.${ICAO_ID}");
+         String xml = (String)this.updateMap.get("db.change.event.${groupColValue}");
          assertNotNull("xml returned is null", xml);
          assertEquals("", xml);
          this.updateMap.clear();
@@ -270,8 +271,8 @@ public class TestTimestamp extends XMLTestCase {
       changeDetector.checkAgain(null);
       sleep(500);
       assertEquals("Number of message is wrong", 1, this.updateMap.size());
-      String xml = (String)this.updateMap.get("db.change.event.${ICAO_ID}");
-      assertNotNull("No db.change.event.${changeKey} message has arrived", xml);
+      String xml = (String)this.updateMap.get("db.change.event.${groupColValue}");
+      assertNotNull("No db.change.event.${groupColValue} message has arrived", xml);
       assertXpathNotExists("/myRootTag/row[@num='0']", xml);
       assertXpathEvaluatesTo("CREATE", "/myRootTag/desc/command/text()", xml);
       this.updateMap.clear();
@@ -327,7 +328,7 @@ public class TestTimestamp extends XMLTestCase {
          sleep(500);
          assertEquals("Number of message is wrong", 1, this.updateMap.size());
          // TODO: We don't know that EDDI was deleted
-         String xml = (String)this.updateMap.get("db.change.event.${ICAO_ID}");
+         String xml = (String)this.updateMap.get("db.change.event.${groupColValue}");
          assertNotNull("xml returned is null", xml);
          assertXpathEvaluatesTo("UPDATE", "/myRootTag/desc/command/text()", xml);
          assertXpathNotExists("/myRootTag/row[@num='0']", xml);
@@ -346,7 +347,7 @@ public class TestTimestamp extends XMLTestCase {
          changeDetector.checkAgain(null);
          sleep(500);
          assertEquals("Number of message is wrong", 1, this.updateMap.size());
-         String xml = (String)this.updateMap.get("db.change.event.${ICAO_ID}");
+         String xml = (String)this.updateMap.get("db.change.event.${groupColValue}");
          assertNotNull("xml returned is null", xml);
          assertXpathEvaluatesTo("DROP", "/myRootTag/desc/command/text()", xml);
          assertXpathNotExists("/myRootTag/row[@num='0']", xml);

@@ -227,7 +227,7 @@ public class TestResultSetToXmlConverter extends XMLTestCase {
       sleep(500);
       assertEquals("Number of message is wrong", 1, this.updateMap.size());
       String xml = (String)this.updateMap.get("db.change.event.TEST_POLL");
-      assertNotNull("No db.change.event.${changeKey} message has arrived", xml);
+      assertNotNull("No db.change.event.${groupColValue} message has arrived", xml);
       assertXpathNotExists("/myRootTag/row[@num='0']", xml);
       assertXpathEvaluatesTo("CREATE", "/myRootTag/desc/command/text()", xml);
       this.updateMap.clear();
@@ -387,7 +387,7 @@ public class TestResultSetToXmlConverter extends XMLTestCase {
       sleep(500);
       assertEquals("Number of message is wrong", 1, this.updateMap.size());
       String xml = (String)this.updateMap.get("db.change.event.TEST_POLL");
-      assertNotNull("No db.change.event.${changeKey} message has arrived", xml);
+      assertNotNull("No db.change.event.${groupColValue} message has arrived", xml);
       assertXpathNotExists("/myRootTag/row[@num='0']", xml);
       assertXpathEvaluatesTo("CREATE", "/myRootTag/desc/command/text()", xml);
       this.updateMap.clear();
@@ -517,8 +517,8 @@ public class TestResultSetToXmlConverter extends XMLTestCase {
          changeDetector.checkAgain(null);
          sleep(500);
          assertEquals("Number of message is wrong", 1, this.updateMap.size());
-         String xml = (String)this.updateMap.get("db.change.event.${ICAO_ID}");
-         assertNotNull("No db.change.event.${ICAO_ID} message has arrived", xml);
+         String xml = (String)this.updateMap.get("db.change.event.${groupColValue}");
+         assertNotNull("No db.change.event.${groupColValue} message has arrived", xml);
          if (hasConverter) {
             assertXpathNotExists("/myRootTag/row[@num='0']", xml);
             assertXpathEvaluatesTo("CREATE", "/myRootTag/desc/command/text()", xml);
@@ -601,8 +601,8 @@ public class TestResultSetToXmlConverter extends XMLTestCase {
             changeDetector.checkAgain(null);
             sleep(500);
             assertEquals("Number of message is wrong", 1, this.updateMap.size());
-            String xml = (String)this.updateMap.get("db.change.event.${ICAO_ID}");
-            assertNotNull("No db.change.event.${ICAO_ID} message has arrived", xml);
+            String xml = (String)this.updateMap.get("db.change.event.${groupColValue}");
+            assertNotNull("No db.change.event.${groupColValue} message has arrived", xml);
             if (hasConverter) {
                assertXpathEvaluatesTo("DROP", "/myRootTag/desc/command/text()", xml);
                assertXpathNotExists("/myRootTag/row[@num='0']", xml);
@@ -635,7 +635,7 @@ public class TestResultSetToXmlConverter extends XMLTestCase {
       this.prefs.put("changeDetector.groupColName", "ICAO_ID");
       this.prefs.put("converter.addMeta", ""+true);
       this.prefs.put("changeDetector.detectStatement", "SELECT colKey, col1, col2, ICAO_ID FROM TEST_POLL ORDER BY ICAO_ID");
-      this.prefs.put("mom.topicName", "db.change.event.${changeKey}");
+      this.prefs.put("mom.topicName", "db.change.event.${groupColValue}");
       
       boolean hasConverter = false;
       for (int run=0; run<2; run++) {
@@ -663,8 +663,8 @@ public class TestResultSetToXmlConverter extends XMLTestCase {
          changeDetector.checkAgain(null);
          sleep(500);
          assertEquals("Number of message is wrong", 1, this.updateMap.size());
-         String xml = (String)this.updateMap.get("db.change.event.${ICAO_ID}");
-         assertNotNull("No db.change.event.${ICAO_ID} message has arrived", xml);
+         String xml = (String)this.updateMap.get("db.change.event.${groupColValue}");
+         assertNotNull("No db.change.event.${groupColValue} message has arrived", xml);
          if (hasConverter) {
             assertXpathNotExists("/myRootTag/row[@num='0']", xml);
             assertXpathEvaluatesTo("CREATE", "/myRootTag/desc/command/text()", xml);
@@ -747,8 +747,8 @@ public class TestResultSetToXmlConverter extends XMLTestCase {
             changeDetector.checkAgain(null);
             sleep(500);
             assertEquals("Number of message is wrong", 1, this.updateMap.size());
-            String xml = (String)this.updateMap.get("db.change.event.${ICAO_ID}");
-            assertNotNull("No db.change.event.${ICAO_ID} message has arrived", xml);
+            String xml = (String)this.updateMap.get("db.change.event.${groupColValue}");
+            assertNotNull("No db.change.event.${groupColValue} message has arrived", xml);
             if (hasConverter) {
                assertXpathEvaluatesTo("DROP", "/myRootTag/desc/command/text()", xml);
                assertXpathNotExists("/myRootTag/row[@num='0']", xml);
@@ -785,7 +785,7 @@ public class TestResultSetToXmlConverter extends XMLTestCase {
       this.prefs.put("alertScheduler.pollInterval", "500");
       this.prefs.put("changeDetector.groupColName", "ICAO_ID");
       this.prefs.put("changeDetector.detectStatement", "SELECT col1, col2, ICAO_ID FROM TEST_POLL ORDER BY ICAO_ID");
-      this.prefs.put("mom.topicName", "db.change.event.${changeKey}");
+      this.prefs.put("mom.topicName", "db.change.event.${groupColValue}");
       
       this.processor = createTest(new Info(prefs), this.updateMap);
 
@@ -828,7 +828,7 @@ public class TestResultSetToXmlConverter extends XMLTestCase {
          try { Thread.sleep(1500); } catch(Exception e) { /* Ignore */ }
          assertEquals("Number of message is wrong", 3, this.updateMap.size());
          /*
-         String xml = (String)this.updateMap.get("db.change.event.${changeKey}");
+         String xml = (String)this.updateMap.get("db.change.event.${groupColValue}");
          assertXpathEvaluatesTo("DROP", "/myRootTag/desc/command/text()", xml);
          assertXpathNotExists("/myRootTag/row[@num='0']", xml);
          */
@@ -860,7 +860,7 @@ public class TestResultSetToXmlConverter extends XMLTestCase {
       this.prefs.put("alertScheduler.pollInterval", "500");
       this.prefs.put("changeDetector.groupColName", "ICAO_ID");
       this.prefs.put("changeDetector.detectStatement", "SELECT col1, col2, ICAO_ID FROM TEST_POLL ORDER BY ICAO_ID");
-      this.prefs.put("mom.topicName", "db.change.event.${changeKey}");
+      this.prefs.put("mom.topicName", "db.change.event.${groupColValue}");
       this.prefs.put("converter.class", ""); // No change detector class !
       
       this.processor = createTest(new Info(prefs), this.updateMap);
