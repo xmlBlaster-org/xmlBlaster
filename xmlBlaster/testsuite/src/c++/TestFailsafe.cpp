@@ -252,7 +252,7 @@ public:
             string msg = lexical_cast<string>(i);
             MessageUnit msgUnit(*pubKey_, msg, *pubQos_);
             log_.info(ME, string("publishing msg '") + msg + "'");
-            PublishReturnQos pubRetQos = connection_.publish(msgUnit);
+            /*PublishReturnQos pubRetQos =*/ connection_.publish(msgUnit);
 
             if (i == 2) stopEmbeddedServer();
             if (i == 12) startEmbeddedServer();

@@ -29,6 +29,11 @@ using namespace org::xmlBlaster;
 
 namespace org { namespace xmlBlaster { namespace test {
 
+template <class T> extern void assertEquals(Log& log, const string& who, const T& should, const T& is, const string& txt);
+template <class T> extern void assertDifferes(Log& log, const string& who, const T& should, const T& is, const string& txt);
+extern void assertEquals(Log& log, const string& who, const string& should, const string& is, const string& txt);
+extern void assertDifferes(Log& log, const string& who, const string& should, const string& is, const string& txt);
+
 template <class T> 
 void assertEquals(Log& log, const string& who, const T& should, const T& is, const string& txt)
 {

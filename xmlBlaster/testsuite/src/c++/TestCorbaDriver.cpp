@@ -4,6 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing the Timeout Features
 -----------------------------------------------------------------------------*/
+#ifdef COMPILE_CORBA_PLUGIN
 
 #include <client/protocol/corba/CorbaDriverFactory.h>
 #include "TestSuite.h"
@@ -157,3 +158,12 @@ int main(int args, char ** argv)
    return 0;
 }
  
+#else // COMPILE_CORBA_PLUGIN
+#include <iostream>
+int main(int args, char ** argv)
+{
+   ::std::cout << "TestCorbaDriver: COMPILE_CORBA_PLUGIN is not defined, nothing to do" << ::std::endl;
+   return 0;
+}
+#endif // COMPILE_CORBA_PLUGIN
+
