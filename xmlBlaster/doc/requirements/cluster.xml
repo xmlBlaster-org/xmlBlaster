@@ -705,11 +705,16 @@
    <author>Heinrich.Goetzger@exploding-systems.de</author>
    <author>Michele.Laghi@swisscom.com</author>
    <date>2002 05 12</date>
-   <revision>$Revision: 1.30 $</revision>
+   <revision>$Revision: 1.31 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests a cluster setup as described in this requirement</comment>
       <test tool="SUITE">clustertest.PublishTest</test>
+      <test tool="SUITE">clustertest.SubscribeTest</test>
+      <test tool="SUITE">clustertest.SubscribeXPathTest</test>
+      <test tool="SUITE">clustertest.EraseTest</test>
+      <test tool="SUITE">clustertest.DirtyReadTest</test>
+      <test tool="SUITE">clustertest.DirtyReadTest</test>
    </testcase>
 </requirement>
 
