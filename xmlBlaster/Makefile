@@ -30,6 +30,7 @@ PACKGS = org.xmlBlaster \
 			org.xmlBlaster.authentication.plugins.a2Blaster \
 			org.xmlBlaster.authentication.plugins.demo \
 			org.xmlBlaster.authentication.plugins.ldap \
+			org.xmlBlaster.authentication.plugins.htpasswd \
 			org.xmlBlaster.client \
 			org.xmlBlaster.client.protocol \
 			org.xmlBlaster.client.protocol.corba \
