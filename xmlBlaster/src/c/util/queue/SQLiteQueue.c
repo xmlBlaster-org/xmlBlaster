@@ -117,19 +117,11 @@ static char * const int64Str = int64Str_;   /* to make the pointer address const
 /**
  * Create a new persistent queue instance. 
  * <br />
- * This is usually the first call of a client, thereafter you need to call queueP->initialize(). 
- * <br />
- * NOTE: Our properties point on the passed argv memory, so you should
- * not free the original argv memory before you free XmlBlasterAccessUnparsed.
- * @param logFp Your logging implementation or NULL if no logging callbacks are desired
- * @param logLevel Set to LOG_TRACE to receive any logging
  * @return NULL if bootstrapping failed. If not NULL you need to free() it when you are done
  *         usually by calling shutdown().
  * @throws exception
  */
-Dll_Export I_Queue *createQueue(const QueueProperties* queueProperties,
-                                XmlBlasterLogging logFp, XMLBLASTER_LOG_LEVEL logLevel,
-                                ExceptionStruct *exception)
+Dll_Export I_Queue *createQueue(const QueueProperties* queueProperties, ExceptionStruct *exception)
 {
    bool stateOk = true;
    I_Queue *queueP = (I_Queue *)calloc(1, sizeof(I_Queue));
@@ -148,8 +140,6 @@ Dll_Export I_Queue *createQueue(const QueueProperties* queueProperties,
    queueP->empty = persistentQueueEmpty;
    queueP->shutdown = persistentQueueShutdown;
    queueP->destroy = persistentQueueDestroy;
-   queueP->log = logFp;
-   queueP->logLevel = logLevel;
    queueP->privateObject = calloc(1, sizeof(DbInfo));
    {
       DbInfo *dbInfo = (DbInfo *)queueP->privateObject;
@@ -225,17 +215,32 @@ static bool persistentQueueInitialize(I_Queue *queueP, const QueueProperties *qu
       strncpy0(exception->errorCode, "user.illegalArgument", EXCEPTIONSTRUCT_ERRORCODE_LEN);
       SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN,
                "[%.100s:%d] Please provide a valid QueueProperties pointer to initialize()", __FILE__, __LINE__);
-      LOG __FILE__, "%s: %s", exception->errorCode, exception->message);
+      /* LOG __FILE__, "%s: %s", exception->errorCode, exception->message); */
+      fprintf(stderr, "[%s:%d] %s: %s", __FILE__, __LINE__, exception->errorCode, exception->message);
       return false;
    }
+
+   queueP->log = queueProperties->logFp;
+   queueP->logLevel = queueProperties->logLevel;
+   queueP->userObject = queueProperties->userObject;
+
    if (*queueProperties->dbName == 0 || *queueProperties->queueName == 0 ||
        queueProperties->maxNumOfEntries == 0 || queueProperties->maxNumOfBytes == 0) {
+      char dbName[QUEUE_DBNAME_MAX];
+      char queueName[QUEUE_ID_MAX];
       strncpy0(exception->errorCode, "user.illegalArgument", EXCEPTIONSTRUCT_ERRORCODE_LEN);
+      if (queueProperties->dbName == 0)
+         strncpy0(dbName, "NULL", QUEUE_DBNAME_MAX);
+      else
+         strncpy0(dbName, queueProperties->dbName, QUEUE_DBNAME_MAX);
+      if (queueProperties->queueName == 0)
+         strncpy0(queueName, "NULL", QUEUE_ID_MAX);
+      else
+         strncpy0(queueName, queueProperties->queueName, QUEUE_ID_MAX);
       SNPRINTF(exception->message, EXCEPTIONSTRUCT_MESSAGE_LEN,
                "[%.100s:%d] Please provide a proper initialized QueueProperties pointer to initialize(): dbName='%s', queueName='%s',"
                " maxNumOfEntries=%ld, maxNumOfBytes=%ld", __FILE__, __LINE__,
-               queueProperties->dbName, queueProperties->queueName,
-               (long)queueProperties->maxNumOfEntries, (long)queueProperties->maxNumOfBytes);
+               dbName, queueName, (long)queueProperties->maxNumOfEntries, (long)queueProperties->maxNumOfBytes);
       LOG __FILE__, "%s: %s", exception->errorCode, exception->message);
       return false;
    }
@@ -1247,14 +1252,18 @@ static void testRun(int argc, char **argv) {
    QueueProperties queueProperties;
    I_Queue *queueP = 0;
 
+   memset(&queueProperties, 0, sizeof(QueueProperties));
    strncpy0(queueProperties.dbName, "xmlBlasterClient.db", QUEUE_DBNAME_MAX);
    strncpy0(queueProperties.nodeId, "clientJoe1081594557415", QUEUE_ID_MAX);
    strncpy0(queueProperties.queueName, "connection_clientJoe", QUEUE_ID_MAX);
    strncpy0(queueProperties.tablePrefix, "XB_", QUEUE_PREFIX_MAX);
    queueProperties.maxNumOfEntries = 10000000L;
    queueProperties.maxNumOfBytes = 1000000000LL;
+   queueProperties.logFp = xmlBlasterDefaultLogging;
+   queueProperties.logLevel = LOG_TRACE;
+   queueProperties.userObject = 0;
 
-   queueP = createQueue(&queueProperties, xmlBlasterDefaultLogging, LOG_TRACE, &exception);
+   queueP = createQueue(&queueProperties, &exception);
    /* DbInfo *dbInfo = (DbInfo *)queueP->privateObject; */
    if (argc || argv) {} /* to avoid compiler warning */
 

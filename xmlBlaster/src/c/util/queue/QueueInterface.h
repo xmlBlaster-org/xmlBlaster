@@ -37,6 +37,9 @@ typedef struct {
    char tablePrefix[QUEUE_PREFIX_MAX]; /** The table prefix to use, "XB_" */
    int32_t maxNumOfEntries;            /** The max. accepted entries, 10000 */
    int64_t maxNumOfBytes;              /** The max. capacity of the queue in bytes, 10000000LL */
+   XmlBlasterLogging logFp;            /** Your logging implementation or NULL if no logging callbacks are desired */
+   XMLBLASTER_LOG_LEVEL logLevel;      /** Set to LOG_TRACE to receive any logging */
+   void *userObject;                   /** A pointer of your choice, is passed back when calling logFp in queueP->userObject */
 } QueueProperties;
 
 /**
@@ -227,18 +230,23 @@ struct I_QueueStruct {
  * NOTE: Every call creates a new and independent instance which shall
  * be destroyed by a call to freeQueue() when you are done
  * @param queueProperties
+ *        Configuration properties of the queue, always do a first
+ *        <code>memset(&queueProperties, 0, sizeof(QueueProperties));</code>
+ *        to initialize new, future members.<br />
+ * <pre>
  *        dbName The database name, for SQLite it is the file name on HD, "xmlBlasterClient.db"
  *        nodeId The name space of this queue, "clientJoe1081594557415"
  *        queueName The name of the queue, "connection_clientJoe"
  *        maxNumOfEntries The max. accepted entries, 10000000l
  *        maxNumOfBytes The max. accepted bytes, 1000000000ll
+ *        logFp Your logging implementation or NULL if no logging callbacks are desired
+ *        logLevel Set to LOG_TRACE to receive any logging
+ *        userObject A pointer of your choice, is passed back when calling logFp in queueP->userObject
+ * </pre>
  * @param exception
  * @return queueP The 'this' pointer
  */
-Dll_Export extern I_Queue *createQueue(const QueueProperties *queueProperties,
-                                      XmlBlasterLogging logFp,
-                                      XMLBLASTER_LOG_LEVEL logLevel,
-                                      ExceptionStruct *exception);
+Dll_Export extern I_Queue *createQueue(const QueueProperties *queueProperties, ExceptionStruct *exception);
 
 /**
  * Frees everything inside QueueEntryArr and the struct QueueEntryArr itself. 
