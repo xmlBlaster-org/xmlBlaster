@@ -13,11 +13,7 @@ SRC_JAVA_DIR = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster/authentication
 
 
 #------------------------------------------------------------------------------
-LOCAL_FILES = \
-			$(CLASS_DIR)/Authenticate.class \
-			$(CLASS_DIR)/AuthenticationInfo.class \
-			$(CLASS_DIR)/HttpIORServer.class \
-			$(CLASS_DIR)/ClientQoS.class
+LOCAL_FILES   := $(patsubst %.java,$(CLASS_DIR)/%.class,$(wildcard *.java))
 #------------------------------------------------------------------------------
 
 
