@@ -193,8 +193,254 @@
    On change send the complete data again.
    This is supported by our <tt>MD5ChangeDetector.java</tt> plugin.
 </li>
-</ol>       
+</ol>
+   <h2>Configuration hint</h2>
+   <p>To configure your own poller you can take the simple
+   standalone example client <tt>xmlBlaster/src/java/org/xmlBlaster/contrib/dbwatcher/Example.java</tt>
+   adjust your query configuration and start it interactively. The <tt>testlog.properties</tt>
+   in the same directory switches on fine logging and you can manually see what happens.
+   </p>
    </description>
+
+
+   <example lang="any" type="HTML">
+   <h2>Timestamp based polling example</h2>
+
+   <p>
+      Lets create a database table <tt>TEST_POLL</tt> which contains
+      a <tt>TIMESTAMP</tt> column <tt>TS</tt> (tested on Oracle):
+   </p>
+   <pre>
+set autocommit on;
+
+CREATE TABLE TEST_POLL (COLOR VARCHAR(10), TS TIMESTAMP, CAR VARCHAR(10));
+
+INSERT INTO TEST_POLL VALUES ('green', CURRENT_TIMESTAMP, 'Fiat');
+INSERT INTO TEST_POLL VALUES ('red', CURRENT_TIMESTAMP, 'Lada');
+INSERT INTO TEST_POLL VALUES ('blue', CURRENT_TIMESTAMP, 'BMW');
+INSERT INTO TEST_POLL VALUES ('pink', CURRENT_TIMESTAMP, 'Fiat');
+INSERT INTO TEST_POLL VALUES ('white', CURRENT_TIMESTAMP, 'Fiat');
+
+SELECT * FROM TEST_POLL ORDER BY CAR;
+   </pre>
+
+   <p>
+   Now we configure a xmlBlaster native DbWatcher plugin in <tt>xmlBlasterPlugins.xml</tt>
+   </p>
+
+  <pre>
+&lt;plugin id='DbWatcherPlugin.testPoll' className='org.xmlBlaster.contrib.dbwatcher.plugin.DbWatcherPlugin'>
+   &lt;attribute id='jdbc.drivers'>oracle.jdbc.driver.OracleDriver&lt;/attribute>
+   &lt;attribute id='db.url'>jdbc:oracle:thin:@localhost:1521:orcl&lt;/attribute>
+   &lt;attribute id='db.user'>system&lt;/attribute>
+   &lt;attribute id='db.password'>secret&lt;/attribute>
+   &lt;attribute id='db.queryMeatStatement'>SELECT * FROM TEST_POLL WHERE TO_CHAR(TS, 'YYYY-MM-DD HH24:MI:SSXFF') > '${oldTimestamp}' ORDER BY CAR&lt;/attribute>
+   &lt;attribute id='mom.loginName'>DbWatcherPlugin.testPoll/1&lt;/attribute>
+   &lt;attribute id='mom.topicName'>db.test_poll.event.${groupColValue}&lt;/attribute>
+   &lt;attribute id='alertScheduler.pollInterval'>10000&lt;/attribute>
+   &lt;attribute id='changeDetector.class'>org.xmlBlaster.contrib.dbwatcher.detector.TimestampChangeDetector&lt;/attribute>
+   &lt;attribute id='changeDetector.groupColName'>CAR&lt;/attribute>
+   &lt;attribute id='changeDetector.detectStatement'>SELECT MAX(TO_CHAR(TS, 'YYYY-MM-DD HH24:MI:SSXFF')) from TEST_POLL&lt;/attribute>
+   &lt;action do='LOAD' onStartupRunlevel='9' sequence='6' onFail='resource.configuration.pluginFailed'/>
+   &lt;action do='STOP' onShutdownRunlevel='6' sequence='5'/>
+&lt;/plugin>
+  </pre>
+  <p>
+  We need to setup the database access and the xmlBlaster access.
+  In this case we want a separate topic for each CAR entry (<tt>changeDetector.groupColName=CAR</tt>),
+  we detect a change on table <tt>TEST_POLL</tt> with the query
+  <tt>SELECT MAX(TO_CHAR(TS, 'YYYY-MM-DD HH24:MI:SSXFF')) from TEST_POLL</tt>
+  and all changed rows since the last query are processed with
+  <tt>SELECT * FROM TEST_POLL WHERE TO_CHAR(TS, 'YYYY-MM-DD HH24:MI:SSXFF') > '${oldTimestamp}' ORDER BY CAR</tt>
+  and published to topics depending on the current car, for example <tt>db.test_poll.event.Fiat</tt>.
+  The plugin is configured to poll every 10 seconds (<tt>alertScheduler.pollInterval=10000</tt>).
+  </p>
+
+  <p>To see what messages are published start a client<br />
+  <tt>java javaclients.HelloWorldSubscribe -xpath //key -maxContentLength 1000</tt>
+  and press one time enter to subscribe to all messages.</p>
+
+  <p>These are the three messages you receive on startup:</p>
+   <pre>
+---------------------------------------
+&lt;key oid='db.test_poll.event.BMW'/>
+
+&lt;?xml version='1.0' encoding='UTF-8' ?>
+&lt;sql>
+ &lt;desc>
+  &lt;command>UPDATE&lt;/command>
+  &lt;ident>BMW&lt;/ident>
+  &lt;colname type='VARCHAR2' precision='10'>COLOR&lt;/colname>
+  &lt;colname type='TIMESTAMP' scale='1'>TS&lt;/colname>
+  &lt;colname type='VARCHAR2' precision='10'>CAR&lt;/colname>
+ &lt;/desc>
+ &lt;row num='0'>
+  &lt;col name='COLOR'>blue&lt;/col>
+  &lt;col name='TS'>2005-1-11.15.15. 30. 566126000&lt;/col>
+  &lt;col name='CAR'>BMW&lt;/col>
+ &lt;/row>
+&lt;/sql>
+
+---------------------------------------
+&lt;key oid='db.test_poll.event.Fiat'/>
+
+&lt;?xml version='1.0' encoding='UTF-8' ?>
+&lt;sql>
+ &lt;desc>
+  &lt;command>UPDATE&lt;/command>
+  &lt;ident>Fiat&lt;/ident>
+  &lt;colname type='VARCHAR2' precision='10'>COLOR&lt;/colname>
+  &lt;colname type='TIMESTAMP' scale='1'>TS&lt;/colname>
+  &lt;colname type='VARCHAR2' precision='10'>CAR&lt;/colname>
+ &lt;/desc>
+ &lt;row num='0'>
+  &lt;col name='COLOR'>green&lt;/col>
+  &lt;col name='TS'>2005-1-11.11.53. 34. 263515000&lt;/col>
+  &lt;col name='CAR'>Fiat&lt;/col>
+ &lt;/row>
+ &lt;row num='1'>
+  &lt;col name='COLOR'>pink&lt;/col>
+  &lt;col name='TS'>2005-1-11.11.53. 34. 447328000&lt;/col>
+  &lt;col name='CAR'>Fiat&lt;/col>
+ &lt;/row>
+ &lt;row num='2'>
+  &lt;col name='COLOR'>white&lt;/col>
+  &lt;col name='TS'>2005-1-11.11.53. 34. 456153000&lt;/col>
+  &lt;col name='CAR'>Fiat&lt;/col>
+ &lt;/row>
+&lt;/sql>
+
+---------------------------------------
+&lt;key oid='db.test_poll.event.Lada'/>
+
+&lt;?xml version='1.0' encoding='UTF-8' ?>
+&lt;sql>
+ &lt;desc>
+  &lt;command>UPDATE&lt;/command>
+  &lt;ident>Lada&lt;/ident>
+  &lt;colname type='VARCHAR2' precision='10'>COLOR&lt;/colname>
+  &lt;colname type='TIMESTAMP' scale='1'>TS&lt;/colname>
+  &lt;colname type='VARCHAR2' precision='10'>CAR&lt;/colname>
+ &lt;/desc>
+ &lt;row num='0'>
+  &lt;col name='COLOR'>red&lt;/col>
+  &lt;col name='TS'>2005-1-11.11.53. 34. 425024000&lt;/col>
+  &lt;col name='CAR'>Lada&lt;/col>
+ &lt;/row>
+&lt;/sql>
+   </pre>
+
+   <p>Now to verify the detection, we update one table row</p>
+   <pre>
+set autocommit on;
+UPDATE TEST_POLL SET COLOR='yellow', TS=CURRENT_TIMESTAMP WHERE CAR='BMW';
+   </pre>
+
+   <p>and your subscriber should receive this message</p>
+   <pre>
+&lt;key oid='db.change.BMW'/>
+
+&lt;?xml version='1.0' encoding='UTF-8' ?>
+&lt;sql>
+ &lt;desc>
+  &lt;command>UPDATE&lt;/command>
+  &lt;ident>BMW&lt;/ident>
+  &lt;colname type='VARCHAR2' precision='10'>COLOR&lt;/colname>
+  &lt;colname type='TIMESTAMP' scale='1'>TS&lt;/colname>
+  &lt;colname type='VARCHAR2' precision='10'>CAR&lt;/colname>
+ &lt;/desc>
+ &lt;row num='0'>
+  &lt;col name='COLOR'>yellow&lt;/col>
+  &lt;col name='TS'>2005-1-11.15.52. 1. 204668000&lt;/col>
+  &lt;col name='CAR'>BMW&lt;/col>
+ &lt;/row>
+&lt;/sql>
+   </pre>
+
+   </example>
+
+   <example lang="any" type="HTML">
+
+   <h2>Example for table creation change event message</h2>
+<pre>
+&lt;?xml version='1.0' encoding='UTF-8' ?>
+&lt;sql>
+ &lt;desc>
+  &lt;command>CREATE&lt;/command>
+  &lt;colname type='NUMBER' precision='10' scale='3'>COLKEY&lt;/colname>
+  &lt;colname type='VARCHAR2' precision='20'>COL1&lt;/colname>
+  &lt;colname type='NUMBER' precision='12'>COL2&lt;/colname>
+  &lt;colname type='VARCHAR2' precision='10'>ICAO_ID&lt;/colname>
+ &lt;/desc>
+&lt;/sql>
+</pre>
+
+
+   <h2>Example for change event message</h2>
+<pre>
+&lt;?xml version='1.0' encoding='UTF-8' ?>
+&lt;sql>
+ &lt;desc>
+  &lt;command>INSERT&lt;/command>
+  &lt;ident>EDDI&lt;/ident>
+  &lt;colname type='DATE' isNullable='0'>DATUM&lt;/colname>
+  &lt;colname type='NUMBER' precision='11' scale='0' signed='false'>CPU&lt;/colname>
+  &lt;colname type='VARCHAR2' precision='20' isReadOnly='true'>COL1&lt;/colname>
+  &lt;colname table='OMZ' schema='AA' catalog='CAT' type='VARCHAR2' precision='10'>ICAO_ID&lt;/colname>
+ &lt;/desc>
+ &lt;row num='0'>
+  &lt;col name='DATUM'>2005-01-05 15:52:06.0&lt;/col>
+  &lt;col name='CPU'>238333&lt;/col>
+  &lt;col name='COL1'>&lt;![CDATA[&lt;Bla]]&gt;&lt;/col>
+  &lt;col name='ICAO_ID'>EDDI&lt;/col>
+  &lt;attr name='LR'>SRANIL&lt;/attr>
+  &lt;attr name='SUBNET_ID'>TCP&lt;/attr>
+ &lt;/row>
+ &lt;row num='1'>
+  &lt;col name='DATUM'>2005-01-05 15:52:07.0&lt;/col>
+  &lt;col name='CPU'>238340&lt;/col>
+  &lt;col name='COL1' encoding='base64'>QmxdXT5CbA==&lt;/col>
+  &lt;col name='ICAO_ID'>EDDI&lt;/col>
+ &lt;/row>
+ &lt;row num='2'>
+  &lt;col name='DATUM'>2005-01-05 15:52:08.0&lt;/col>
+  &lt;col name='CPU'>238343&lt;/col>
+  &lt;col name='COL1'>BOO&lt;/col>
+  &lt;col name='ICAO_ID'>EDDI&lt;/col>
+  &lt;attr name='SUBNET_ID'>X25&lt;/attr>
+ &lt;/row>
+&lt;/sql>
+</pre>
+  <p>Data which would break the xml of being well-formed are enclosed with a CDATA section,
+     data which contains a CDATA end-token is delivered base64 encoded.
+  </p>
+
+   <h2>Example for a deleted entry message</h2>
+   <p>The topic name specifies the entry, for example <tt>'db.change.event.EDDI'</tt>, the content
+   contains a <tt>DELETE</tt> command:
+   </p>
+<pre>
+&lt;?xml version='1.0' encoding='UTF-8' ?>
+&lt;sql>
+   &lt;desc>
+   &lt;command>DELETE&lt;/command>
+   &lt;ident>EDDI&lt;/ident>
+   &lt;/desc>
+&lt;/sql>
+</pre>
+
+   <h2>Example for a drop entry message</h2>
+<pre>
+&lt;?xml version='1.0' encoding='UTF-8' ?>
+&lt;sql>
+ &lt;desc>
+  &lt;command>DROP&lt;/command>
+  &lt;ident>EDDI&lt;/ident>
+ &lt;/desc>
+&lt;/sql>
+</pre>
+
+   </example>
 
    <configuration where="server">
       <p>
@@ -528,153 +774,6 @@
 
    </configuration>
 
-   <example lang="any" type="HTML">
-   <h2>Timestamp based polling example</h2>
-
-   <p>
-      Lets create a database table <tt>TEST_POLL</tt> which contains
-      a <tt>TIMESTAMP</tt> column <tt>TS</tt> (tested on Oracle):
-   </p>
-   <pre>
-set autocommit on;
-
-CREATE TABLE TEST_POLL (COLOR VARCHAR(10), TS TIMESTAMP, CAR VARCHAR(10));
-
-INSERT INTO TEST_POLL VALUES ('green', CURRENT_TIMESTAMP, 'Fiat');
-INSERT INTO TEST_POLL VALUES ('red', CURRENT_TIMESTAMP, 'Lada');
-INSERT INTO TEST_POLL VALUES ('blue', CURRENT_TIMESTAMP, 'BMW');
-INSERT INTO TEST_POLL VALUES ('pink', CURRENT_TIMESTAMP, 'Fiat');
-INSERT INTO TEST_POLL VALUES ('white', CURRENT_TIMESTAMP, 'Fiat');
-
-SELECT * FROM TEST_POLL ORDER BY CAR;
-
-UPDATE TEST_POLL SET COLOR='yellow', TS=CURRENT_TIMESTAMP WHERE CAR='BMW';
-   </pre>
-
-   <p>
-   Now we configure a xmlBlaster native DbWatcher plugin in <tt>xmlBlasterPlugins.xml</tt>
-   </p>
-
-  <pre>
-&lt;plugin id='DbWatcherPlugin.testPoll' className='org.xmlBlaster.contrib.dbwatcher.plugin.DbWatcherPlugin'>
-   &lt;attribute id='jdbc.drivers'>oracle.jdbc.driver.OracleDriver&lt;/attribute>
-   &lt;attribute id='db.url'>jdbc:oracle:thin:@localhost:1521:orcl&lt;/attribute>
-   &lt;attribute id='db.user'>system&lt;/attribute>
-   &lt;attribute id='db.password'>secret&lt;/attribute>
-   &lt;attribute id='db.queryMeatStatement'>SELECT * FROM TEST_POLL WHERE TO_CHAR(TS, 'YYYY-MM-DD HH24:MI:SSXFF') > '${oldTimestamp}' ORDER BY CAR&lt;/attribute>
-   &lt;attribute id='mom.topicName'>db.test_poll.event.${groupColValue}&lt;/attribute>
-   &lt;attribute id='alertScheduler.pollInterval'>10000&lt;/attribute>
-   &lt;attribute id='changeDetector.class'>org.xmlBlaster.contrib.dbwatcher.detector.TimestampChangeDetector&lt;/attribute>
-   &lt;attribute id='changeDetector.groupColName'>CAR&lt;/attribute>
-   &lt;attribute id='changeDetector.detectStatement'>SELECT MAX(TS) from TEST_POLL&lt;/attribute>
-   &lt;action do='LOAD' onStartupRunlevel='9' sequence='6' onFail='resource.configuration.pluginFailed'/>
-   &lt;action do='STOP' onShutdownRunlevel='6' sequence='5'/>
-&lt;/plugin>
-  </pre>
-
-  <p>These are the messages you receive:</p>
-   <pre>
-&lt;?xml version='1.0' encoding='UTF-8' ?>
-&lt;sql>
- &lt;desc>
-  &lt;command>UPDATE&lt;/command>
-  &lt;ident>BMW&lt;/ident>
-  &lt;colname type='VARCHAR2' precision='10'>COLOR&lt;/colname>
-  &lt;colname type='TIMESTAMP' scale='1'>TS&lt;/colname>
-  &lt;colname type='VARCHAR2' precision='10'>CAR&lt;/colname>
- &lt;/desc>
- &lt;row num='0'>
-  &lt;col name='COLOR'>orange&lt;/col>
-  &lt;col name='TS'>2005-1-11.11.42. 47. 250152000&lt;/col>
-  &lt;col name='CAR'>BMW&lt;/col>
- &lt;/row>
-&lt;/sql>
-   </pre>
-
-   </example>
-
-   <example lang="any" type="HTML">
-
-   <h2>Example for table creation change event message</h2>
-<pre>
-&lt;?xml version='1.0' encoding='UTF-8' ?>
-&lt;sql>
- &lt;desc>
-  &lt;command>CREATE&lt;/command>
-  &lt;colname type='NUMBER' precision='10' scale='3'>COLKEY&lt;/colname>
-  &lt;colname type='VARCHAR2' precision='20'>COL1&lt;/colname>
-  &lt;colname type='NUMBER' precision='12'>COL2&lt;/colname>
-  &lt;colname type='VARCHAR2' precision='10'>ICAO_ID&lt;/colname>
- &lt;/desc>
-&lt;/sql>
-</pre>
-
-
-   <h2>Example for change event message</h2>
-<pre>
-&lt;?xml version='1.0' encoding='UTF-8' ?>
-&lt;sql>
- &lt;desc>
-  &lt;command>INSERT&lt;/command>
-  &lt;ident>EDDI&lt;/ident>
-  &lt;colname type='DATE' isNullable='0'>DATUM&lt;/colname>
-  &lt;colname type='NUMBER' precision='11' scale='0' signed='false'>CPU&lt;/colname>
-  &lt;colname type='VARCHAR2' precision='20' isReadOnly='true'>COL1&lt;/colname>
-  &lt;colname table='OMZ' schema='AA' catalog='CAT' type='VARCHAR2' precision='10'>ICAO_ID&lt;/colname>
- &lt;/desc>
- &lt;row num='0'>
-  &lt;col name='DATUM'>2005-01-05 15:52:06.0&lt;/col>
-  &lt;col name='CPU'>238333&lt;/col>
-  &lt;col name='COL1'>&lt;![CDATA[&lt;Bla]]&gt;&lt;/col>
-  &lt;col name='ICAO_ID'>EDDI&lt;/col>
-  &lt;attr name='LR'>SRANIL&lt;/attr>
-  &lt;attr name='SUBNET_ID'>TCP&lt;/attr>
- &lt;/row>
- &lt;row num='1'>
-  &lt;col name='DATUM'>2005-01-05 15:52:07.0&lt;/col>
-  &lt;col name='CPU'>238340&lt;/col>
-  &lt;col name='COL1' encoding='base64'>QmxdXT5CbA==&lt;/col>
-  &lt;col name='ICAO_ID'>EDDI&lt;/col>
- &lt;/row>
- &lt;row num='2'>
-  &lt;col name='DATUM'>2005-01-05 15:52:08.0&lt;/col>
-  &lt;col name='CPU'>238343&lt;/col>
-  &lt;col name='COL1'>BOO&lt;/col>
-  &lt;col name='ICAO_ID'>EDDI&lt;/col>
-  &lt;attr name='SUBNET_ID'>X25&lt;/attr>
- &lt;/row>
-&lt;/sql>
-</pre>
-  <p>Data which would break the xml of being well-formed are enclosed with a CDATA section,
-     data which contains a CDATA end-token is delivered base64 encoded.
-  </p>
-
-   <h2>Example for a deleted entry message</h2>
-   <p>The topic name specifies the entry, for example <tt>'db.change.event.EDDI'</tt>, the content
-   contains a <tt>DELETE</tt> command:
-   </p>
-<pre>
-&lt;?xml version='1.0' encoding='UTF-8' ?>
-&lt;sql>
-   &lt;desc>
-   &lt;command>DELETE&lt;/command>
-   &lt;ident>EDDI&lt;/ident>
-   &lt;/desc>
-&lt;/sql>
-</pre>
-
-   <h2>Example for a drop entry message</h2>
-<pre>
-&lt;?xml version='1.0' encoding='UTF-8' ?>
-&lt;sql>
- &lt;desc>
-  &lt;command>DROP&lt;/command>
-  &lt;ident>EDDI&lt;/ident>
- &lt;/desc>
-&lt;/sql>
-</pre>
-
-   </example>
 
    <see type="API">org.xmlBlaster.contrib.dbwatcher.DbWatcher</see>
    <see type="REQ">engine.runlevel</see>
