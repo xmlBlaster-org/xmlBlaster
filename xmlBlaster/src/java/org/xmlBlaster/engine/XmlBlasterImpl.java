@@ -54,8 +54,10 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
 
    private static final byte[] EMPTY_BYTES = "".getBytes();
 
-   private final static int MAX_CACHE = 500; // 0: switched off, default is 500;
-   private final static int CHUNK_TO_REMOVE = 25;
+   private int MAX_CACHE_KEY = 500; // 0: switched off, default is 500;
+   private int MAX_CACHE_QOS = 500; // 0: switched off, default is 500;
+   private int CHUNK_TO_REMOVE_KEY = 25;
+   private int CHUNK_TO_REMOVE_QOS = 25;
    private HashMap qosCache = new HashMap(200);
    private HashMap keyCache = new HashMap(200);
 
@@ -71,6 +73,18 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
       this.ME = "XmlBlasterImpl" + this.glob.getLogPrefixDashed();
       this.log = this.glob.getLog("core");
       this.requestBroker = new RequestBroker(authenticate);
+
+      this.MAX_CACHE_KEY = this.glob.getProperty().get("xmlBlaster/MAX_CACHE_KEY", this.MAX_CACHE_KEY);
+      this.MAX_CACHE_KEY = this.glob.getProperty().get(this.glob.getLogPrefix()+"/MAX_CACHE_KEY", this.MAX_CACHE_KEY);
+      this.CHUNK_TO_REMOVE_KEY = this.glob.getProperty().get("xmlBlaster/CHUNK_TO_REMOVE_KEY", this.CHUNK_TO_REMOVE_KEY);
+      this.CHUNK_TO_REMOVE_KEY = this.glob.getProperty().get(this.glob.getLogPrefix()+"/CHUNK_TO_REMOVE_KEY", this.CHUNK_TO_REMOVE_KEY);
+      if (log.TRACE) log.trace(ME, "Setting " + this.glob.getLogPrefix()+"/MAX_CACHE_KEY=" + this.MAX_CACHE_KEY + " and " + this.glob.getLogPrefix() + "/CHUNK_TO_REMOVE_KEY=" + this.CHUNK_TO_REMOVE_KEY);
+      
+      this.MAX_CACHE_QOS = this.glob.getProperty().get("xmlBlaster/MAX_CACHE_QOS", this.MAX_CACHE_QOS);
+      this.MAX_CACHE_QOS = this.glob.getProperty().get(this.glob.getLogPrefix()+"/MAX_CACHE_QOS", this.MAX_CACHE_QOS);
+      this.CHUNK_TO_REMOVE_QOS = this.glob.getProperty().get("xmlBlaster/CHUNK_TO_REMOVE_QOS", this.CHUNK_TO_REMOVE_QOS);
+      this.CHUNK_TO_REMOVE_QOS = this.glob.getProperty().get(this.glob.getLogPrefix()+"/CHUNK_TO_REMOVE_QOS", this.CHUNK_TO_REMOVE_QOS);
+      if (log.TRACE) log.trace(ME, "Setting " + this.glob.getLogPrefix()+"/MAX_CACHE_QOS=" + this.MAX_CACHE_QOS + " and " + this.glob.getLogPrefix() + "/CHUNK_TO_REMOVE_QOS=" + this.CHUNK_TO_REMOVE_QOS);
    }
 
    /**
@@ -169,7 +183,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          SessionInfo sessionInfo = authenticate.check(sessionId);
          msgUnitRaw = importAndAuthorize(sessionInfo, msgUnitRaw, MethodName.PUBLISH);
 
-         String ret = requestBroker.publish(sessionInfo, toMsgUnit(msgUnitRaw));
+         String ret = requestBroker.publish(sessionInfo, toSecureMsgUnit(sessionInfo, msgUnitRaw));
 
          return sessionInfo.getSecuritySession().exportMessage(ret);
       }
@@ -202,27 +216,17 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
       }
    }
 
-   /**
-    * Parse the raw MsgUnitRaw
-    */
-/*
-   private MsgUnit toMsgUnit(MsgUnitRaw msgUnitRaw) throws XmlBlasterException {
-      MsgKeyData key = glob.getMsgKeyFactory().readObject(msgUnitRaw.getKey());
-      PublishQosServer qos = new PublishQosServer(glob, msgUnitRaw.getQos());
-      return new MsgUnit(key, msgUnitRaw.getContent(), qos.getData());
-   }
-*/
-   private MsgUnit toMsgUnit(MsgUnitRaw msgUnitRaw) throws XmlBlasterException {
+   private MsgUnit toSecureMsgUnit(SessionInfo sessionInfo, MsgUnitRaw msgUnitRaw) throws XmlBlasterException {
 
       String keyLiteral = msgUnitRaw.getKey();
       MsgKeyData key;
-      if (MAX_CACHE > 0) {
+      if (MAX_CACHE_KEY > 0) {
          synchronized (this.keyCache) {
             key = (MsgKeyData)this.keyCache.get(keyLiteral);
             if (key == null) {
                key = glob.getMsgKeyFactory().readObject(keyLiteral);
-               if (this.keyCache.size() >= MAX_CACHE)
-                  removeRandom(this.keyCache, CHUNK_TO_REMOVE);
+               if (this.keyCache.size() >= MAX_CACHE_KEY)
+                  removeRandom(this.keyCache, CHUNK_TO_REMOVE_KEY);
                this.keyCache.put(keyLiteral, key.clone());
             }
             else key = (MsgKeyData)key.clone();
@@ -234,14 +238,14 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
       
       String qosLiteral = msgUnitRaw.getQos();
       MsgQosData qosData;
-      if (MAX_CACHE > 0) {
+      if (MAX_CACHE_QOS > 0) {
          synchronized (this.qosCache) {
             qosData = (MsgQosData)this.qosCache.get(qosLiteral);
             if (qosData == null) {
                PublishQosServer qos = new PublishQosServer(glob, qosLiteral);
                qosData = qos.getData();
-               if (this.qosCache.size() >= MAX_CACHE)
-                  removeRandom(this.qosCache, CHUNK_TO_REMOVE);
+               if (this.qosCache.size() >= MAX_CACHE_QOS)
+                  removeRandom(this.qosCache, CHUNK_TO_REMOVE_QOS);
                this.qosCache.put(qosLiteral, qosData.clone());
             }
             else qosData = (MsgQosData)qosData.clone();
@@ -251,7 +255,27 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          PublishQosServer qos = new PublishQosServer(glob, qosLiteral);
          qosData = qos.getData();
       }
-      return new MsgUnit(key, msgUnitRaw.getContent(), qosData);
+
+      // Protect against faked sender name
+      if (sessionInfo.getConnectQos().isClusterNode()) {
+         if (qosData.getSender() == null) // In cluster routing don't overwrite the original sender
+            qosData.setSender(sessionInfo.getSessionName());
+      }
+      else {
+         if (qosData.getSender() == null) {
+            qosData.setSender(sessionInfo.getSessionName());
+         }
+         else if (!sessionInfo.getSessionName().equals(qosData.getSender())) {
+            //if (! publishQos.isFromPersistenceStore()) {
+            log.warn(ME, sessionInfo.getId() + " sends message '" + key.getOid() + "' with invalid sender name '" + qosData.getSender() + "', we fix this");
+            qosData.setSender(sessionInfo.getSessionName());
+         }
+      }
+
+      MsgUnit msgUnit = new MsgUnit(key, msgUnitRaw.getContent(), qosData);
+
+
+      return msgUnit;
    }
 
    /**
@@ -271,7 +295,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          String[] returnArr = new String[msgUnitArr.length];
          for (int ii=0; ii<msgUnitArr.length; ii++) {
             MsgUnitRaw msgUnitRaw = importAndAuthorize(sessionInfo, msgUnitArr[ii], MethodName.PUBLISH);
-            String ret = requestBroker.publish(sessionInfo, toMsgUnit(msgUnitRaw));
+            String ret = requestBroker.publish(sessionInfo, toSecureMsgUnit(sessionInfo, msgUnitRaw));
             returnArr[ii] = sec.exportMessage(ret);
          }
 
