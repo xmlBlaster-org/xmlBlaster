@@ -2,6 +2,11 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.842 [xx]
 ================================
+ o Finished C++ client library fow Windows/Unix with CORBA (TAO and MICO)
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.cpp.html
+
+ o Fixed bug for multiple PublishFilter plugins
+   (Reported by Michael Atighetchi)
 
  o Deadlock bugfix for PtP messages reported by Xavier Roques
 
