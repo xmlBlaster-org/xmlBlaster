@@ -15,12 +15,14 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket
 #include <sys/types.h>
 #include <socket/xmlBlasterSocket.h>
 #include <XmlBlasterConnectionUnparsed.h>
+#include <util/queue/I_Queue.h>
 
 #ifndef _WINDOWS
 #  include <unistd.h>
 #endif
 
 static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException *exception);
+static bool xmlBlasterInitQueue(XmlBlasterConnectionUnparsed *xb, QueueProperties *queueProperties, XmlBlasterException *exception);
 static bool getResponse(XmlBlasterConnectionUnparsed *xb, SocketDataHolder *responseSocketDataHolder, XmlBlasterException *exception);
 static char *xmlBlasterConnect(XmlBlasterConnectionUnparsed *xb, const char * const qos, XmlBlasterException *exception);
 static bool xmlBlasterDisconnect(XmlBlasterConnectionUnparsed *xb, const char * const qos, XmlBlasterException *exception);
@@ -34,7 +36,7 @@ static MsgUnitArr *xmlBlasterGet(XmlBlasterConnectionUnparsed *xb, const char * 
 static char *xmlBlasterPing(XmlBlasterConnectionUnparsed *xb, const char * const qos, XmlBlasterException *exception);
 static bool isConnected(XmlBlasterConnectionUnparsed *xb);
 static void xmlBlasterConnectionShutdown(XmlBlasterConnectionUnparsed *xb);
-static bool checkArgs(XmlBlasterConnectionUnparsed *xb, const char *methodName, XmlBlasterException *exception);
+static bool checkArgs(XmlBlasterConnectionUnparsed *xb, const char *methodName, bool checkIsConnected, XmlBlasterException *exception);
 
 /**
  * Create a new instance to handle a synchronous connection to the server. 
@@ -57,6 +59,7 @@ XmlBlasterConnectionUnparsed *getXmlBlasterConnectionUnparsed(int argc, const ch
    xb->requestId = 0;
    *xb->secretSessionId = 0;
    xb->initConnection = initConnection;
+   xb->initQueue = xmlBlasterInitQueue;
    xb->connect = xmlBlasterConnect;
    xb->disconnect = xmlBlasterDisconnect;
    xb->publish = xmlBlasterPublish;
@@ -72,6 +75,7 @@ XmlBlasterConnectionUnparsed *getXmlBlasterConnectionUnparsed(int argc, const ch
    xb->preSendEvent_userP = 0;
    xb->postSendEvent = 0;
    xb->postSendEvent_userP = 0;
+   xb->queueP = 0;
    xb->logLevel = parseLogLevel(xb->props->getString(xb->props, "logLevel", "WARN"));
    xb->log = xmlBlasterDefaultLogging;
    xb->logUserP = 0;
@@ -136,12 +140,12 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
 
    strcpy(serverHostName, "localhost");
    gethostname(serverHostName, 250);
-	{
-	   const char *hn = xb->props->getString(xb->props, "plugin/socket/hostname", serverHostName);
-	   memmove(serverHostName, hn, strlen(hn+1));  /* including '\0' */
-	   hn = xb->props->getString(xb->props, "dispatch/connection/plugin/socket/hostname", serverHostName);
-	   memmove(serverHostName, hn, strlen(hn+1));
-	}
+   {
+      const char *hn = xb->props->getString(xb->props, "plugin/socket/hostname", serverHostName);
+      memmove(serverHostName, hn, strlen(hn+1));  /* including '\0' */
+      hn = xb->props->getString(xb->props, "dispatch/connection/plugin/socket/hostname", serverHostName);
+      memmove(serverHostName, hn, strlen(hn+1));
+   }
 
    if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__,
       "Lookup xmlBlaster on -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %s ...",
@@ -246,6 +250,80 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
    }
    xb->isInitialized = true;
    return true;
+}
+
+/**
+ * Set the queue properties. 
+ * Example:
+ * <pre>
+   QueueProperties queueProperties;
+   strncpy0(queueProperties.dbName, "xmlBlasterClient.db", QUEUE_DBNAME_MAX);
+   strncpy0(queueProperties.nodeId, "clientJoe1081594557415", QUEUE_ID_MAX);
+   strncpy0(queueProperties.queueName, "connection_clientJoe", QUEUE_ID_MAX);
+   strncpy0(queueProperties.tablePrefix, "XB_", QUEUE_PREFIX_MAX);
+   queueProperties.maxNumOfEntries = 10000000L;
+   queueProperties.maxNumOfBytes = 1000000000LL;
+ * <pre>
+ * @param queueProperties The queue configuration,
+ *        if 0 or parts of it are empty it will be initialized by environment settings
+ * @return true on success
+ * @throws exception if already initialized or if initialization fails
+ */
+static bool xmlBlasterInitQueue(XmlBlasterConnectionUnparsed *xb, QueueProperties *queueProperties, XmlBlasterException *exception)
+{
+#ifdef XMLBLASTER_PERSISTENT_QUEUE
+   if (checkArgs(xb, "initQueue", false, exception) == false ) return false;
+   if (xb->queueP) {
+      char message[XMLBLASTEREXCEPTION_MESSAGE_LEN];
+      SNPRINTF(message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
+               "[%.100s:%d] The queue is initialized already, call to initQueue() is ignored", __FILE__, __LINE__);
+      embedException(exception, "user.illegalArgument", message, exception);
+      xb->log(xb->logUserP, xb->logLevel, LOG_WARN, __FILE__, exception->message);
+      return false;
+   }
+
+   {
+      QueueProperties tmp;
+      memset(&tmp, 0, sizeof(QueueProperties));
+
+      if (queueProperties == 0)
+         queueProperties = &tmp;
+
+      if (*queueProperties->dbName == 0) {
+         strncpy0(queueProperties->dbName, xb->props->getString(xb->props, "queue/connection/dbName", "xmlBlasterClient.db"), QUEUE_DBNAME_MAX);
+      }
+      if (*queueProperties->nodeId == 0) {
+         strncpy0(queueProperties->nodeId, xb->props->getString(xb->props, "queue/connection/nodeId", "client"), QUEUE_ID_MAX);
+      }
+      if (*queueProperties->queueName == 0) {
+         strncpy0(queueProperties->queueName, xb->props->getString(xb->props, "queue/connection/queueName", "connection_client"), QUEUE_ID_MAX);
+      }
+      if (*queueProperties->tablePrefix == 0) {
+         strncpy0(queueProperties->tablePrefix, xb->props->getString(xb->props, "queue/connection/tablePrefix", "XB_"), QUEUE_PREFIX_MAX);
+      }
+      if (queueProperties->maxNumOfEntries == 0) {
+         queueProperties->maxNumOfEntries = xb->props->getInt(xb->props, "queue/connection/maxEntries", 10000000);
+      }
+      if (queueProperties->maxNumOfBytes == 0) {
+         queueProperties->maxNumOfBytes = xb->props->getInt64(xb->props, "queue/connection/maxBytes", 10000000LL);
+      }
+
+      xb->queueP = createQueue(queueProperties, xb->log, xb->logLevel, exception);
+      if (*exception->errorCode != 0) {
+         xb->log(xb->logUserP, xb->logLevel, LOG_ERROR, __FILE__, "Queue initializeation failed: [%s] %s\n", exception->errorCode, exception->message);
+         return false;
+      }
+      xb->queueP->userObject = xb;
+   }
+   return true;
+#else
+   if (queueProperties) {} /* To suppress compiler warning that not used */
+   strncpy0(exception->errorCode, "user.illegalArgument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+   SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
+            "[%.100s:%d] Queue support is not compiled into the library, please recompile with '-DXMLBLASTER_PERSISTENT_QUEUE=1", __FILE__, __LINE__);
+   xb->log(xb->logUserP, xb->logLevel, LOG_WARN, __FILE__, exception->message);
+   return false;
+#endif /* XMLBLASTER_PERSISTENT_QUEUE */
 }
 
 static bool isConnected(XmlBlasterConnectionUnparsed *xb)
@@ -555,7 +633,7 @@ static char *xmlBlasterConnect(XmlBlasterConnectionUnparsed *xb, const char * co
  */
 static bool xmlBlasterDisconnect(XmlBlasterConnectionUnparsed *xb, const char * const qos, XmlBlasterException *exception)
 {
-   if (checkArgs(xb, "disconnect", exception) == false ) return 0;
+   if (checkArgs(xb, "disconnect", true, exception) == false ) return 0;
 
    if (sendData(xb, XMLBLASTER_DISCONNECT, MSG_TYPE_INVOKE, (const char *)qos, 
                 (qos == (const char *)0) ? 0 : strlen(qos),
@@ -568,6 +646,85 @@ static bool xmlBlasterDisconnect(XmlBlasterConnectionUnparsed *xb, const char * 
    return true;
 }
 
+
+#if XMLBLASTER_PERSISTENT_QUEUE==1
+/**
+ * Extracts the priority from the given QoS. 
+ * @return NORM=5 on error
+ */
+static int parsePriority(const char *qos) {
+   char *pPrio, *pPrioEnd;
+   /*const int PRIORITY_MAXLEN = 10;*/
+   #define PRIORITY_MAXLEN 10 /* To be backward compatible to C90 */
+   char prioStr[PRIORITY_MAXLEN];
+   int len = 1;
+   int prio = 5;
+   const int lenPrio=strlen("<priority>");
+
+   if (qos == 0) return prio;
+
+   pPrio = strstr(qos, "<priority>");
+   if (pPrio == 0) return prio;
+
+   pPrioEnd = strstr(qos, "</priority>");
+   if (pPrioEnd == 0) return prio;
+
+   len = pPrioEnd-pPrio-lenPrio;
+   if (len >= PRIORITY_MAXLEN) {
+      return prio;
+   }
+   strncpy(prioStr, pPrio+lenPrio, len);
+   *(prioStr+len) = 0;
+   sscanf(prioStr, "%d", &prio); /* on error prio remains 5, white spaces are stripped by sscanf */
+   return prio;
+}
+#endif /*XMLBLASTER_PERSISTENT_QUEUE==1*/
+
+/**
+ * Puts an entry into the client side queue.
+ * @param exception Can be prefilled with an original exception which will be embedded
+ * @return 0 on failure, else an allocated "<qos><state id='OK' info='QUEUED'/></qos>" which the caller needs to free()
+ */
+static char *xmlBlasterQueuePut(XmlBlasterConnectionUnparsed *xb, int priority, BlobHolder *blob, XmlBlasterException *exception)
+{
+   QueueEntry queueEntry;
+   XmlBlasterException queueException;
+
+   QueueProperties *queuePropertiesP = 0; /* 0: read configuration from environment */
+   /*
+   QueueProperties queueProperties;
+   queuePropertiesP = &queueProperties;
+   strncpy0(queueProperties.dbName, "xmlBlasterClient.db", QUEUE_DBNAME_MAX);
+   strncpy0(queueProperties.nodeId, "clientJoe1081594557415", QUEUE_ID_MAX);
+   strncpy0(queueProperties.queueName, "connection_clientJoe", QUEUE_ID_MAX);
+   strncpy0(queueProperties.tablePrefix, "XB_", QUEUE_PREFIX_MAX);
+   queueProperties.maxNumOfEntries = 10000000L;
+   queueProperties.maxNumOfBytes = 1000000000LL;
+   queueP = createQueue(&queueProperties, xb->log, xb->logLevel, &queueException);
+   */
+
+   if (xb->queueP == 0) {
+      if (xb->initQueue(xb, queuePropertiesP, exception) == false)
+         return 0;
+   }
+
+   queueEntry.priority = priority;
+   queueEntry.isPersistent = true;
+   queueEntry.uniqueId = getTimestamp();
+   strncpy0(queueEntry.embeddedType, "MSG_RAW|publish", QUEUE_ENTRY_EMBEDDEDTYPE_LEN);
+   queueEntry.embeddedBlob.data = blob->data;
+   queueEntry.embeddedBlob.dataLen = blob->dataLen;
+
+   xb->queueP->put(xb->queueP, &queueEntry, &queueException);
+   if (*queueException.errorCode != 0) {
+      embedException(exception, queueException.errorCode, queueException.message, exception);
+      xb->log(xb->logUserP, xb->logLevel, LOG_ERROR, __FILE__, "Put to queue failed: [%s] %s\n", exception->errorCode, exception->message);
+      return 0;
+   }
+   *exception->errorCode = 0; /* Successfully queued: no error */
+   return strcpyAlloc("<qos><state id='OK' info='QUEUED'/></qos>");
+}
+
 /**
  * Publish a message to the server. 
  * @return The raw XML string returned from xmlBlaster, only NULL if an exception is thrown
@@ -577,22 +734,30 @@ static bool xmlBlasterDisconnect(XmlBlasterConnectionUnparsed *xb, const char * 
  */
 static char *xmlBlasterPublish(XmlBlasterConnectionUnparsed *xb, MsgUnit *msgUnit, XmlBlasterException *exception)
 {
-   size_t totalLen;
    SocketDataHolder responseSocketDataHolder;
    char *response = 0;
 
-   char *data = encodeMsgUnit(msgUnit, &totalLen, xb->logLevel >= LOG_DUMP);
+   BlobHolder blob = encodeMsgUnit(msgUnit, xb->logLevel >= LOG_DUMP);
 
-   if (checkArgs(xb, "publish", exception) == false ) return 0;
+   if (checkArgs(xb, "publish", true, exception) == false ) return 0;
 
    msgUnit->responseQos = 0; /* Initialize properly */
 
-   if (sendData(xb, XMLBLASTER_PUBLISH, MSG_TYPE_INVOKE, data, totalLen,
+   if (sendData(xb, XMLBLASTER_PUBLISH, MSG_TYPE_INVOKE, blob.data, blob.dataLen,
                 &responseSocketDataHolder, exception) == false) {
-      free(data);
-      return 0;
+
+#     if XMLBLASTER_PERSISTENT_QUEUE==1 /* TEST CODE */
+         if (strstr(exception->errorCode, "user.notConnected") != 0) { /* On communication problem queue messages */
+            int priority = parsePriority(msgUnit->qos);
+            response = xmlBlasterQueuePut(xb, priority, &blob, exception);
+            /* NO: msgUnit->responseQos = response; otherwise a free(msgUnit) will free the response as well */
+         }
+#     endif
+
+      free(blob.data);
+      return response;
    }
-   free(data);
+   free(blob.data);
 
    response = strFromBlobAlloc(responseSocketDataHolder.blob.data, responseSocketDataHolder.blob.dataLen);
    freeXmlBlasterBlobContent(&responseSocketDataHolder.blob);
@@ -609,23 +774,23 @@ static char *xmlBlasterPublish(XmlBlasterConnectionUnparsed *xb, MsgUnit *msgUni
  */
 static QosArr *xmlBlasterPublishArr(XmlBlasterConnectionUnparsed *xb, MsgUnitArr *msgUnitArr, XmlBlasterException *exception)
 {
-   size_t i, totalLen;
+   size_t i;
    SocketDataHolder responseSocketDataHolder;
    QosArr *response = 0;
 
-   char *data = encodeMsgUnitArr(msgUnitArr, &totalLen, xb->logLevel >= LOG_DUMP);
+   BlobHolder blob = encodeMsgUnitArr(msgUnitArr, xb->logLevel >= LOG_DUMP);
 
-   if (checkArgs(xb, "publishArr", exception) == false ) return 0;
+   if (checkArgs(xb, "publishArr", true, exception) == false ) return 0;
 
    for (i=0; i<msgUnitArr->len; i++)
       msgUnitArr->msgUnitArr[i].responseQos = 0; /* Initialize properly */
 
-   if (sendData(xb, XMLBLASTER_PUBLISH, MSG_TYPE_INVOKE, data, totalLen,
+   if (sendData(xb, XMLBLASTER_PUBLISH, MSG_TYPE_INVOKE, blob.data, blob.dataLen,
                 &responseSocketDataHolder, exception) == false) {
-      free(data);
+      free(blob.data);
       return 0;
    }
-   free(data);
+   free(blob.data);
 
    response = parseQosArr(responseSocketDataHolder.blob.dataLen, responseSocketDataHolder.blob.data);
    freeXmlBlasterBlobContent(&responseSocketDataHolder.blob);
@@ -640,22 +805,22 @@ static QosArr *xmlBlasterPublishArr(XmlBlasterConnectionUnparsed *xb, MsgUnitArr
  */
 static void xmlBlasterPublishOneway(XmlBlasterConnectionUnparsed *xb, MsgUnitArr *msgUnitArr, XmlBlasterException *exception)
 {
-   size_t i, totalLen;
+   size_t i;
    SocketDataHolder responseSocketDataHolder;
 
-   char *data = encodeMsgUnitArr(msgUnitArr, &totalLen, xb->logLevel >= LOG_DUMP);
+   BlobHolder blob = encodeMsgUnitArr(msgUnitArr, xb->logLevel >= LOG_DUMP);
 
-   if (checkArgs(xb, "publishOneway", exception) == false ) return;
+   if (checkArgs(xb, "publishOneway", true, exception) == false ) return;
 
    for (i=0; i<msgUnitArr->len; i++)
       msgUnitArr->msgUnitArr[i].responseQos = 0; /* Initialize properly */
 
-   if (sendData(xb, XMLBLASTER_PUBLISH, MSG_TYPE_INVOKE, data, totalLen,
+   if (sendData(xb, XMLBLASTER_PUBLISH, MSG_TYPE_INVOKE, blob.data, blob.dataLen,
                 &responseSocketDataHolder, exception) == false) {
-      free(data);
+      free(blob.data);
       return;
    }
-   free(data);
+   free(blob.data);
    freeXmlBlasterBlobContent(&responseSocketDataHolder.blob);
 }
 
@@ -674,7 +839,7 @@ static char *xmlBlasterSubscribe(XmlBlasterConnectionUnparsed *xb, const char * 
    SocketDataHolder responseSocketDataHolder;
    char *response;
 
-   if (checkArgs(xb, "subscribe", exception) == false ) return 0;
+   if (checkArgs(xb, "subscribe", true, exception) == false ) return 0;
    
    if (key == 0) {
       strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
@@ -730,7 +895,7 @@ static QosArr *xmlBlasterUnSubscribe(XmlBlasterConnectionUnparsed *xb, const cha
    SocketDataHolder responseSocketDataHolder;
    QosArr *response;
 
-   if (checkArgs(xb, "unSubscribe", exception) == false ) return 0;
+   if (checkArgs(xb, "unSubscribe", true, exception) == false ) return 0;
 
    if (key == 0) {
       strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
@@ -792,7 +957,7 @@ static QosArr *xmlBlasterErase(XmlBlasterConnectionUnparsed *xb, const char * co
    SocketDataHolder responseSocketDataHolder;
    QosArr *response;
 
-   if (checkArgs(xb, "erase", exception) == false ) return 0;
+   if (checkArgs(xb, "erase", true, exception) == false ) return 0;
 
    if (key == 0) {
       strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
@@ -851,7 +1016,7 @@ static char *xmlBlasterPing(XmlBlasterConnectionUnparsed *xb, const char * const
    SocketDataHolder responseSocketDataHolder;
    char *response;
 
-   if (checkArgs(xb, "ping", exception) == false ) return 0;
+   if (checkArgs(xb, "ping", true, exception) == false ) return 0;
    
    if (sendData(xb, XMLBLASTER_PING, MSG_TYPE_INVOKE, (const char *)qos,
                 (qos == (const char *)0) ? 0 : strlen(qos),
@@ -920,7 +1085,14 @@ static MsgUnitArr *xmlBlasterGet(XmlBlasterConnectionUnparsed *xb, const char * 
    return msgUnitArr;
 }
 
-static bool checkArgs(XmlBlasterConnectionUnparsed *xb, const char *methodName, XmlBlasterException *exception)
+/**
+ * Checks the given arguments to be valid.
+ * @param methodName For logging
+ * @param checkIsConnected If true does check the connection state as well 
+ * @return false if the parameters are not usable,
+ *         in this case 'exception' is filled with detail informations
+ */
+static bool checkArgs(XmlBlasterConnectionUnparsed *xb, const char *methodName, bool checkIsConnected, XmlBlasterException *exception)
 {
    if (xb == 0) {
       char *stack = getStackTrace(10);
@@ -938,15 +1110,17 @@ static bool checkArgs(XmlBlasterConnectionUnparsed *xb, const char *methodName, 
       return false;
    }
 
-   if (!xb->isConnected(xb)) {
-      char *stack = getStackTrace(10);
-      strncpy0(exception->errorCode, "user.notConnected", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
-               "[%.100s:%d] Not connected to xmlBlaster, %s() failed %s",
-                __FILE__, __LINE__, methodName, stack);
-      free(stack);
-      xb->log(xb->logUserP, xb->logLevel, LOG_WARN, __FILE__, exception->message);
-      return false;
+   if (checkIsConnected) {
+      if (!xb->isConnected(xb)) {
+         char *stack = getStackTrace(10);
+         strncpy0(exception->errorCode, "user.notConnected", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+         SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
+                  "[%.100s:%d] Not connected to xmlBlaster, %s() failed %s",
+                   __FILE__, __LINE__, methodName, stack);
+         free(stack);
+         xb->log(xb->logUserP, xb->logLevel, LOG_WARN, __FILE__, exception->message);
+         return false;
+      }
    }
 
    return true;
