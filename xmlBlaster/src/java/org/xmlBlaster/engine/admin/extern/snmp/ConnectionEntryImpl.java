@@ -3,7 +3,7 @@
  * is intended to be edited by the application programmer and
  * to be used within a Java AgentX sub-agent environment.
  *
- * $Id: ConnectionEntryImpl.java,v 1.1 2002/07/05 06:56:00 ruff Exp $
+ * $Id: ConnectionEntryImpl.java,v 1.2 2002/07/08 07:25:16 udo Exp $
  */
 package org.xmlBlaster.engine.admin.extern.snmp;
 
@@ -27,6 +27,7 @@ import jax.AgentXEntry;
 public class ConnectionEntryImpl extends ConnectionEntry
 {
 
+    public ConnectionEntryImplPeer connectionEntryImplPeer;
     /**
      * ConnectionEntryImpl
      * - initializes mib variables.
@@ -34,17 +35,14 @@ public class ConnectionEntryImpl extends ConnectionEntry
      */
     public ConnectionEntryImpl(long nodeIndex,
                            long connectionIndex,
-                           String connectionHostVal,
-                           long connectionPortVal,
-                           String connectionAddressVal,
-                           int connectionProtocolVal)
+                           ConnectionEntryImplPeer connectionEntryImplPeer)
     {
         super(nodeIndex, connectionIndex);
-        connectionHost = connectionHostVal.getBytes();
-        connectionPort = connectionPortVal;
-        connectionAddress = connectionAddressVal.getBytes();
-        connectionProtocol = connectionProtocolVal;
-        // connectionEntryImplPeer = new ConnectionEntryImplPeer();
+        connectionHost = connectionEntryImplPeer.get_connectionHost().getBytes();
+        connectionPort = connectionEntryImplPeer.get_connectionPort();
+        connectionAddress = connectionEntryImplPeer.get_connectionAddress().getBytes();
+        connectionProtocol = connectionEntryImplPeer.get_connectionProtocol();
+        this.connectionEntryImplPeer = connectionEntryImplPeer;
     }
 
     /**
