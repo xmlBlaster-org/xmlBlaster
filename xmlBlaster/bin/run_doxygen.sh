@@ -11,7 +11,8 @@ echo "#######################"
 echo "begin of $0"
 echo "#######################"
 
-export DOXY=/usr/local/doxygen/bin/doxygen
+export DOXY=doxygen
+export TIDY=tidy
 
 cd ${XMLBLASTER_HOME}/config
 pwd
