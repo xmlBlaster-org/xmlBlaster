@@ -179,7 +179,19 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       }
       catch (InterruptedException ex) {
          this.log.warn(ME, "put: an interruption occured: " + ex.getMessage());
-         return false;
+         boolean ret = false;
+         // we do this loop since a CTRL-C could cause an interrupted exception 
+         // and thereby cause the loss of one entry in the connection pool.
+         for (int i=0; i < 3; i++) {
+            try {
+               ret = this.connections.offer(conn, 5L);
+               break;
+            }
+            catch (InterruptedException e) {
+               this.log.warn(ME, "put: an interruption occured #" + i + " : " + e.getMessage());
+            }
+         }
+         return ret;
       }
    }
 

@@ -186,36 +186,40 @@ class PreparedQuery {
 
       if (this.isClosed) return;
 
-      if (!this.conn.getAutoCommit()) {
-         if (this.log.TRACE) this.log.trace(ME, "close with autocommit 'false'");
-         try {
-            if (this.isException) {
-               this.log.warn(ME, "close with autocommit 'false': rollback");
-               this.conn.rollback();
+      try {
+         if (!this.conn.getAutoCommit()) {
+            if (this.log.TRACE) this.log.trace(ME, "close with autocommit 'false'");
+            try {
+               if (this.isException) {
+                  this.log.warn(ME, "close with autocommit 'false': rollback");
+                  this.conn.rollback();
+               }
+               else this.conn.commit();
             }
-            else this.conn.commit();
-         }
-         catch (Throwable ex) {
-            this.log.warn(ME, "close: exception when closing statement: " + ex.toString());
-         }
-
-         try {
-            this.conn.setAutoCommit(true);
-         }
-         catch (Throwable ex) {
-            this.log.warn(ME, "close: exception when setAutoCommit(true): " + ex.toString());
+            catch (Throwable ex) {
+               this.log.warn(ME, "close: exception when closing statement: " + ex.toString());
+            }
+            try {
+               this.conn.setAutoCommit(true);
+            }
+            catch (Throwable ex) {
+               this.log.warn(ME, "close: exception when setAutoCommit(true): " + ex.toString());
+            }
          }
       }
+      catch(Throwable e) {
+         this.log.warn(ME, "close: exception in first phase when setAutoCommit(true): " + e.toString());
+      }
 
-     try {
+      try {
          if (this.st != null) {
             this.st.close();
             this.st = null;
          }
-     }
-     catch (Throwable ex) {
-        this.log.warn(ME, "close: exception when closing statement: " + ex.toString());
-     }
+      }
+      catch (Throwable ex) {
+         this.log.warn(ME, "close: exception when closing statement: " + ex.toString());
+      }
 
      if (this.conn != null) this.pool.releaseConnection(this.conn);
      // TODO: if we had an exception: this.pool.destroyConnection(this.conn)
