@@ -37,27 +37,27 @@
       </li>
       <li>Register the plugin in xmlBlaster.properties (or on command line)<br />
       This entry registers the plugin ContentLenFilter.
-         <pre>
-         MimeAccessPlugin[ContentLenFilter][1.0]=org.xmlBlaster.engine.mime.demo.ContentLenFilter
-         </pre>
+  <pre>
+MimeAccessPlugin[ContentLenFilter][1.0]=org.xmlBlaster.engine.mime.demo.ContentLenFilter
+  </pre>
       Clients address the plugin when they subscribe with the filter type of the subscribe QoS:
-         <pre>
+  <pre>
 <![CDATA[
-         <filter type='ContentLenFilter' version='1.0'>
-            8000
-         </filter>
+   <filter type='ContentLenFilter' version='1.0'>
+      8000
+   </filter>
 ]]>
-         </pre>
+  </pre>
          The version='1.0' is default and may be omitted. 
          8000 is the query string, it is for this plugin the max message content size in bytes.
       </li>
       <li>You can pass optional parameters to your plugin<br />
       This entry registers the plugin ContentLenFilter in xmlBlaster.properties and
       adds some options (needs to be in one line).
-         <pre>
-         MimeAccessPlugin[ContentLenFilter][1.0]=
-                org.xmlBlaster.engine.mime.demo.ContentLenFilter,DEFAULT_MAX_LEN=10000,DEFAULT_MIN_LEN=10
-         </pre>
+  <pre>
+MimeAccessPlugin[ContentLenFilter][1.0]=
+ org.xmlBlaster.engine.mime.demo.ContentLenFilter,DEFAULT_MAX_LEN=10000,DEFAULT_MIN_LEN=10
+  </pre>
       The plugin can access these options in its init() call:
          <pre>
 <![CDATA[
@@ -66,7 +66,8 @@
          for (int ii=0; ii<options.length-1; ii++) {
             if (options[ii].equalsIgnoreCase("DEFAULT_MAX_LEN")) {
                DEFAULT_MAX_LEN = (new Long(options[++ii])).longValue();
-               Log.info(ME, "Setting DEFAULT_MAX_LEN=" + DEFAULT_MAX_LEN + " as configured in xmlBlaster.properties");
+               Log.info(ME, "Setting DEFAULT_MAX_LEN=" + DEFAULT_MAX_LEN +
+                        " as configured in xmlBlaster.properties");
             }
             ...
          }
@@ -90,7 +91,7 @@ For an example look at the code of ContentLenFilter.java (link below).
    <see type="REQ">util.property.env</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 03 14</date>
-   <revision>$Revision: 1.4 $</revision>
+   <revision>$Revision: 1.5 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
