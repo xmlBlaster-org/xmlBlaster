@@ -31,7 +31,7 @@ import java.util.ArrayList;
 public class ReferenceEntry extends MsgQueueEntry
 {
    private final String ME; // for logging
-   private transient Global glob; // engine.Global
+   protected transient Global glob; // engine.Global
 
    /** Weak reference on the MsgUnit with key/content/qos (raw struct) */
    private transient WeakReference weakMsgUnitWrapper;
