@@ -4,7 +4,7 @@ Name:      html.xsl
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Generating a html table with all requirements, to be used as a 'reference handbook'
-Version:   $Id: html.xsl,v 1.9 2000/03/19 12:48:13 ruff Exp $
+Version:   $Id: html.xsl,v 1.10 2000/03/19 14:04:41 ruff Exp $
 Author:    ruff@swand.lake.de
 -->
 
@@ -28,11 +28,11 @@ Author:    ruff@swand.lake.de
    <body>
 
    <p class="sideend">
-       Last updated $Date: 2000/03/19 12:48:13 $ $Author: ruff $
+       Last updated $Date: 2000/03/19 14:04:41 $ $Author: ruff $
    </p>
    <p class="sitetitel">XmlBlaster Requirements Reference</p>
 
-   IMPORTANT NOTE: Many features are not yet documented here!<br />
+   IMPORTANT NOTE: Many features are not yet documented here (work in progress)!<br />
    The examples are in Java, but similar coding is used for other languages like C++ and Perl
 
    <p /><br />
