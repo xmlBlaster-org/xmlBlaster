@@ -2,7 +2,8 @@
 Name:           Session.java
 Project:        xmlBlaster
 Comment:
-Author:
+Author:         @author <a href="mailto:cyrille@ktaland.com">Cyrille Giquello</a>
+changed:        gnovak@avitech.de 2002 06 14
 -----------------------------------------------------------------------------*/
 
 
@@ -38,7 +39,9 @@ public class Session implements I_Session, I_Subject {
    // like LdapGateway, etc.
    protected HtPasswd htpasswd;
 
+   // this is unique for the session
    protected String loginName = null;
+   protected String passwd = null;
 
    public Session( Manager sm, String sessionId )
         throws XmlBlasterException {
@@ -89,7 +92,7 @@ public class Session implements I_Session, I_Subject {
    public String init(I_SecurityQos securityQos) throws XmlBlasterException {
       authenticated = false;
       loginName = securityQos.getUserId();
-      String passwd = ((SecurityQos)securityQos).getCredential();
+      passwd = ((SecurityQos)securityQos).getCredential();
 
       if (Log.TRACE) Log.trace( ME, "Checking password ...");
       authenticated = htpasswd.checkPassword(loginName, passwd);
