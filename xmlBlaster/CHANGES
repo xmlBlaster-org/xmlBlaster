@@ -3,6 +3,9 @@ Release notes for xmlBlaster    (http://www.xmlBlaster.org)
 
 Changes for 0.79a [Nov, 16 2000]
 ================================
+
+ - xmlBlaster license change to 'pure' LGPL 
+
  - JacORB as CORBA default:
    Setting default System properties to
      org.omg.CORBA.ORBClass=jacorb.orb.ORB
@@ -11,7 +14,7 @@ Changes for 0.79a [Nov, 16 2000]
 
  - Severe bugfix with CORBA POA sessionId.
    This bug caused sometimes the POA sessionId to be not unique,
-   causing a subscequent login to auto logout another client.
+   causing a subsecquent login to auto logout another client.
 
  - FileDriver is switched on as default (persistent store).
    You need to replace your xmlBlaster.properties
