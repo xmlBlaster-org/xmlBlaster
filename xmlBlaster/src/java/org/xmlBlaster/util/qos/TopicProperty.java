@@ -138,7 +138,7 @@ public final class TopicProperty implements java.io.Serializable
     */
    public MsgUnitStoreProperty getMsgUnitStoreProperty() {
       if (this.msgUnitStoreProperty == null) {
-         this.msgUnitStoreProperty = new MsgUnitStoreProperty(glob, glob.getId());
+         this.msgUnitStoreProperty = new MsgUnitStoreProperty(glob, glob.getStrippedId());
       }
       return this.msgUnitStoreProperty;
    }
@@ -156,7 +156,7 @@ public final class TopicProperty implements java.io.Serializable
     */
    public HistoryQueueProperty getHistoryQueueProperty() {
       if (this.historyQueueProperty == null) {
-         this.historyQueueProperty = new HistoryQueueProperty(glob, glob.getId());
+         this.historyQueueProperty = new HistoryQueueProperty(glob, glob.getStrippedId());
       }
       return this.historyQueueProperty;
    }
