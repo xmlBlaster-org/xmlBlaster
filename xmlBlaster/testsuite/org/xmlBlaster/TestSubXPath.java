@@ -3,7 +3,7 @@ Name:      TestSubXPath.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubXPath.java,v 1.8 2000/10/18 20:45:45 ruff Exp $
+Version:   $Id: TestSubXPath.java,v 1.9 2002/02/26 09:20:07 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -49,6 +49,7 @@ public class TestSubXPath extends TestCase implements I_Callback
    private int numReceived = 0;         // error checking
    private int numPublish = 5;
    private final String contentMime = "text/xml";
+   private String subscribeOid = null;
 
    /**
     * Constructs the TestSubXPath object.
@@ -118,7 +119,6 @@ public class TestSubXPath extends TestCase implements I_Callback
                       "   /xmlBlaster/key/AGENT[@id='message_3']" +
                       "</key>";
       String qos = "<qos></qos>";
-      String subscribeOid = null;
       numReceived = 0;
       try {
          subscribeOid = senderConnection.subscribe(xmlKey, qos);
@@ -204,6 +204,7 @@ public class TestSubXPath extends TestCase implements I_Callback
       String contentStr = new String(content);
       assertEquals("Message content is corrupted", "Content: message_3", contentStr);
       assertEquals("Message contentMime is corrupted", contentMime, updateKey.getContentMime());
+      assertEquals("engine.qos.update.subscriptionId: Wrong subscriptionId", subscribeOid, updateQoS.getSubscriptionId());
 
       messageArrived = true;
    }
