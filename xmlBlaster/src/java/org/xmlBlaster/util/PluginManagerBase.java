@@ -1,3 +1,11 @@
+/*------------------------------------------------------------------------------
+Name:      PluginManagerBase.java
+Project:   xmlBlaster.org
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+Comment:   Baseclass to load plugins.
+Version:   $Id: PluginManagerBase.java,v 1.13 2002/07/13 12:04:41 goetzger Exp $
+Author:    W. Kleinertz (wkl), Heinrich Goetzger goetzger@gmx.net
+------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
 import org.xmlBlaster.authentication.plugins.I_Session;
@@ -6,9 +14,10 @@ import org.xmlBlaster.authentication.Authenticate;
 import java.util.Hashtable;
 import java.util.Vector;
 import java.util.StringTokenizer;
+import java.net.URL;
 
 /**
- * Baseclass to load plugins. 
+ * Baseclass to load plugins.
  * <p />
  * A typical syntax in the xmlBlaster.properties file is:
  * <pre>
@@ -143,7 +152,7 @@ abstract public class PluginManagerBase {
    }
 
    /**
-    * Loads a plugin. 
+    * Loads a plugin.
     * <p/>
     * @param String[] The first element of this array contains the class name
     *                 e.g. org.xmlBlaster.authentication.plugins.Manager<br />
@@ -161,9 +170,38 @@ abstract public class PluginManagerBase {
       I_Plugin manager = null;
       try {
          if (Log.TRACE) Log.trace(ME, "Trying Class.forName('" + pluginName + "') ...");
-         Class cl = java.lang.Class.forName(pluginName);
-         manager = (I_Plugin)cl.newInstance();
+         XmlBlasterClassLoader ucl = ClassLoaderFactory.getXmlBlasterClassLoader(this, pluginName);
+
+         // Class cl = java.lang.Class.forName(pluginName);
+         // manager = (I_Plugin)cl.newInstance();
+
+         manager = (I_Plugin)ucl.loadClass(pluginName).newInstance();
+
          if (Log.TRACE) Log.trace(ME, "Found I_Plugin '" + pluginName + "'");
+         if (Log.TRACE) {
+            URL[] callerURL = ucl.getURLs();
+            Log.trace(ME, "ClassLoaderClassPath: BEGIN");
+                   for (int ii = 0; ii < callerURL.length; ii++)
+                   Log.trace(ME, "from Loader " + ii +": " + callerURL[ii].toString() );
+            Log.trace(ME, "ClassLoaderClassPath: END");
+         }
+
+         // who loaded plugin?
+         if (Log.TRACE) Log.trace(ME, "pluginName '" + pluginName + "' loaded by " + ClassLoaderFactory.which(manager, pluginName) );
+         if (Log.TRACE) {
+            Log.trace(ME, "listClassPath: BEGIN after instanciation of manager");
+            ClassLoaderFactory.listClassPath(manager);
+            Log.trace(ME, "listClassPath: END");
+         }
+
+         if (Log.TRACE) {
+            URL[] callerURL = ucl.getURLs();
+            Log.trace(ME, "ClassLoaderClassPath: BEGIN after manager");
+                   for (int ii = 0; ii < callerURL.length; ii++)
+                   Log.trace(ME, "from Loader " + ii +": " + callerURL[ii].toString() );
+            Log.trace(ME, "ClassLoaderClassPath: END");
+         }
+
       }
       catch (IllegalAccessException e) {
          Log.error(ME, "The plugin class '" + pluginName + "' is not accessible\n -> check the plugin name and/or the CLASSPATH to the plugin");
@@ -174,7 +212,7 @@ abstract public class PluginManagerBase {
          throw new XmlBlasterException(ME+".NoAccess", "No right to access the plugin class or initializer '" + pluginName + "'");
       }
       catch (Throwable e) {
-         Log.error(ME, "The plugin class or initializer '" + pluginName + "' is invalid\n -> check the plugin name and/or the CLASSPATH to the driver file: " + e.toString());
+         Log.error(ME, "The plugin class or initializer '" + pluginName + "' is invalid\n -> check the plugin name and/or the CLASSPATH to the driver file: \n'" + e.toString() + "'");
          e.printStackTrace();
          throw new XmlBlasterException(ME+".Invalid", "The plugin class or initializer '" + pluginName + "' is invalid\n -> check the plugin name and/or the CLASSPATH to the driver file: " + e.toString());
       }
