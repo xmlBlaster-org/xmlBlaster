@@ -708,6 +708,18 @@ public class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
          this.xmlBlaster._release();
          this.xmlBlaster = null;
       }
+      // does this work ?
+/*
+      if (this.orb != null) {
+         try {
+            this.orb.shutdown(false);
+         }
+         catch (Exception ex) {
+            this.log.warn(ME, "shutdown:exception occured destroy(): " + ex.toString());
+         }
+      }
+*/
+
    }
 
    /**
