@@ -931,6 +931,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
          if (firstConnect) {
             this.connectReturnQos = driver.connect(connectQos);
             firstConnect = false;
+            if (log.DUMP) log.dump(ME, "connectReturnQos=" + connectReturnQos.toXml());
             initFailSave();
             log.info(ME, "Connected to " + getServerNodeId() + ", your public session ID is " + connectReturnQos.getPublicSessionId());
          }
@@ -947,7 +948,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
       } catch(ConnectionException e) {
          if (log.TRACE) log.trace(ME, "Login to " + getServerNodeId() + " failed, numLogins=" + numLogins + ".");
-         if (log.DUMP) log.dump(ME, "Authentication string is\n" + connectQos.toXml());
+         if (log.DUMP) log.dump(ME, "Login failed, authentication string is\n" + connectQos.toXml());
          if (firstConnect) {
             initFailSave();
          }
@@ -2112,7 +2113,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       log.plain("",CorbaConnection.usage());
       log.plain("",RmiConnection.usage());
       log.plain("",XmlRpcConnection.usage());
-      log.plain("",Global.usage()); // for LogChannel help
+      log.plain("",Global.instance().usage()); // for LogChannel help
    }
 
 } // class XmlBlasterConnection
