@@ -846,12 +846,13 @@ cluster.node[heron]=\
    <see type="API">org.xmlBlaster.engine.cluster.simpledomain.DomainToMaster</see>
    <see type="API">org.xmlBlaster.engine.cluster.simpledomain.RoundRobin</see>
    <see type="LOCAL">../../demo/javaclients/cluster/README</see>
+   <see type="LOCAL">../../demo/javaclients/cluster/firewall/README</see>
 
    <author>xmlBlaster@marcelruff.info</author>
    <author>Heinrich.Goetzger@exploding-systems.de</author>
    <author>Michele.Laghi@swisscom.com</author>
    <date>2002 05 12</date>
-   <revision>$Revision: 1.43 $</revision>
+   <revision>$Revision: 1.44 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests a cluster setup as described in this requirement</comment>
