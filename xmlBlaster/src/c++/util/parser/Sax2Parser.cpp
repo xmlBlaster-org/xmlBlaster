@@ -45,16 +45,15 @@ void Sax2Parser::init(const string &xmlLiteral)
  */
 void Sax2Parser::parse(const string &xmlData) 
 {
-   log_.call(ME, "parse");
+   if (log_.call()) log_.call(ME, "parse");
    if (log_.trace()) {
       log_.trace(ME, string("parse content:'") + xmlData + string("'"));
    }
  
    SAX2XMLReader *parser = NULL;
    try {
-      log_.trace(ME, "parse entrering try/catch block");
       parser = XMLReaderFactory::createXMLReader();
-      log_.trace(ME, "parser successfully created");
+      if (log_.trace()) log_.trace(ME, "parser successfully created");
       parser->setContentHandler(this);
       parser->setErrorHandler(this);
       parser->setLexicalHandler(this);
@@ -96,7 +95,7 @@ void Sax2Parser::endDocument()
 /** Receive notification of the end of an element. */
 void Sax2Parser::endElement(const XMLCh *const /*uri*/, const XMLCh *const /*localname*/, const XMLCh *const qname)
 {
-   if (log_.call()) log_.call(ME, string("endElement"));
+   //if (log_.call()) log_.call(ME, string("endElement"));
    handler_->endElement(getStringValue(qname));
 }
 
@@ -110,7 +109,7 @@ void Sax2Parser::startDocument()
 /** Receive notification of the start of an element. */
 void Sax2Parser::startElement(const XMLCh *const /*uri*/, const XMLCh *const /*localname*/, const XMLCh *const qname, const Attributes &attrs)
 {
-   if (log_.call()) log_.call(ME, string("startElement"));
+   //if (log_.call()) log_.call(ME, string("startElement"));
    AttributeMap tmpMap;
    handler_->startElement(getStringValue(qname), getAttributeMap(tmpMap, attrs));
 }
@@ -132,7 +131,7 @@ void Sax2Parser::startCDATA()
 /** Receive notification of character data inside an element. */
 void Sax2Parser::characters(const XMLCh *const chars, const unsigned int length)
 {
-   if (log_.call()) log_.call(ME, string("characters"));
+   //if (log_.call()) log_.call(ME, string("characters"));
    string tmp;
    bool doTrim = false;
    tmp.assign(getStringValue(chars, doTrim), 0, length);
