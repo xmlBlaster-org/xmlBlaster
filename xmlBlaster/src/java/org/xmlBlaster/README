@@ -1,0 +1,34 @@
+Overview of the xmlBlaster.org packages
+=======================================
+
+1. The xmlBlaster.idl generates to directories:
+
+   - serverIdl
+	   The CORBA interface of the xmlBlaster server.
+	   All files in this directory are automatically generated
+		 only ServerImpl.java is handcrafted
+
+	 - clientIdl
+	   The CORBA callback interface for the client (demo)
+	   All files in this directory are automatically generated
+		 only BlasterCallbackImpl.java is handcrafted
+
+2. The directory 'util' contains some helper classes
+   which are used by the server.
+	 They may also be used by clients, but you are free to use
+	 or not to use them.
+
+
+3. The directory 'engine' contains the xmlBlaster server code.
+
+
+4. Main.java is used to invoke the xmlBlaster server:
+
+      jaco org.xmlBlaster.Main
+
+	 Don't forget to start the JacORB Name Service 'ns' before.
+
+
+5. Client.java may be used as a first test client:
+
+			jaco org.xmlBlaster.Client
