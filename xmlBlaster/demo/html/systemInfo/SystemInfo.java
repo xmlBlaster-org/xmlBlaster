@@ -3,7 +3,7 @@ Name:      SystemInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Servlet to monitor system load on web server
-Version:   $Id: SystemInfo.java,v 1.6 2000/05/06 20:29:58 ruff Exp $
+Version:   $Id: SystemInfo.java,v 1.7 2000/05/07 09:49:53 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package html.systemInfo;
@@ -32,8 +32,9 @@ public class SystemInfo extends HttpServlet
 {
    private static final String ME          = "SystemInfo";
 
+
    /**
-    * This method is invoked only once when the servlet is startet.
+    * This method is invoked only once when the servlet is started.
     * @param conf init parameter of the servlet
     */
    public void init(ServletConfig conf) throws ServletException
@@ -41,6 +42,10 @@ public class SystemInfo extends HttpServlet
       super.init(conf);
    }
 
+
+   /**
+    * dummy
+    */
    public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException
    {
       doGet(request, response);
@@ -48,11 +53,15 @@ public class SystemInfo extends HttpServlet
 
 
    /**
-    * Subscribes to xmlBlaster messages 'cpuinfo' and 'meminfo'.
+    * Subscribes to xmlBlaster messages 'cpuinfo' and 'meminfo'. 
     * <p />
     * The message updates are received asynchronous over the callbackFrame.
     * <br />
     * The return from this doGet() may be ignored
+    * <p />
+    * Invoking example:
+    * <br />
+    * "/servlet/SystemInfo?ActionType=cpuinfo"
     * @param request
     * @param response
     */
@@ -82,6 +91,12 @@ public class SystemInfo extends HttpServlet
          SubscribeKeyWrapper xmlKey = new SubscribeKeyWrapper(actionType);
          SubscribeQosWrapper xmlQos = new SubscribeQosWrapper();
 
+         // This get() call does a subscribe() as well behind the scenes, since
+         // we invoked corbaConnection.initCache(10); above.
+         // Further incoming messages are directly transferred to the browser.
+         // We could as well have used corbaConnection.subscribe() here.
+         // Usually you would use this get() when you need the result here
+         // synchronously, for example to process it with a XSL style sheet ...
          MessageUnitContainer[] msgUnitArr = corbaConnection.get(xmlKey.toXml(), xmlQos.toXml());
          if (msgUnitArr.length == 1) {
             String ret = new String(msgUnitArr[0].msgUnit.content);
@@ -98,7 +113,6 @@ public class SystemInfo extends HttpServlet
          Log.error(ME, "Error: " + e.toString());
       }
 
-      // !!! htmlOutput(comp.toString(), "Message", response);
       htmlOutput(output, response);
       Log.trace(ME, "Leaving SystemInfo.doRequest() ..."+stop.nice());
    }
