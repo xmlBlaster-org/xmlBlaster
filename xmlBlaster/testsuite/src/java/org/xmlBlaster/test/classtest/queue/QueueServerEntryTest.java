@@ -189,7 +189,8 @@ public class QueueServerEntryTest extends TestCase {
          MsgQosData msgQosData = publishQosServer.getData();
          ((MsgQosSaxFactory)glob.getMsgQosFactory()).sendRemainingLife(false); // so we can compare the toXml() directly
          // populate it
-         msgQosData.setState("state");
+         String state = Constants.STATE_EXPIRED;
+         msgQosData.setState(state);
          msgQosData.setSubscriptionId("someId");
          msgQosData.setDurable(true);
          msgQosData.setForceUpdate(false);
@@ -211,7 +212,6 @@ public class QueueServerEntryTest extends TestCase {
 
          SessionName receiver = new SessionName(glob, "receiver1");
          String subscriptionId = "subid";
-         String state = Constants.STATE_EXPIRED;
          int redeliverCounter = 2;
          org.xmlBlaster.engine.Global global = new org.xmlBlaster.engine.Global();
          MsgUnitWrapper msgWrapper = new MsgUnitWrapper(glob, msgUnit, queue.getStorageId());
