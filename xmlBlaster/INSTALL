@@ -93,14 +93,14 @@ how to do it.
 There are two property files which you need to copy.
 
    a) %HOME%/xmlBlaster.properties
-	   There is a template %XMLBLASTER_HOME%/config/xmlBlaster.properties.template
-		to use as a base.
+      There is a template %XMLBLASTER_HOME%/config/xmlBlaster.properties.template
+      to use as a base.
 
-	b) %HOME%/jacorb.properties
-	   There is a template %XMLBLASTER_HOME%/config/jacorb.properties.template
-		to use as a base.
-		This file is needed only if you use the CORBA plugin.
-		A default setting is included in xmlBlaster.jar
+   b) %HOME%/jacorb.properties
+      There is a template %XMLBLASTER_HOME%/config/jacorb.properties.template
+      to use as a base.
+      This file is needed only if you use the CORBA plugin.
+      A default setting is included in xmlBlaster.jar
 
 
 +-----------------------------------------+
@@ -136,17 +136,17 @@ To see other compilation options (e.g. for C++) get the usage with:
    See ${XMLBLASTER_HOME}/src/java/org/xmlBlaster/README
    See ${XMLBLASTER_HOME}/demo/javaclients/README
 
-	For C++ see
+   For C++ see
       ${XMLBLASTER_HOME}/src/c++/README
       ${XMLBLASTER_HOME}/testsuite/c++/README
 
-	For an overview of QoS see
+   For an overview of QoS see
       ${XMLBLASTER_HOME}/src/dtd/XmlQoS.xml
 
-	To play Micheles SVG internet chess see
+   To play Micheles SVG internet chess see
       ${XMLBLASTER_HOME}/demo/javaclients/svg/batik/README
 
-	Explore the other READMEs flying around.
+   Explore the other READMEs flying around.
 
 
 
@@ -289,6 +289,7 @@ Note:
      http://archives.java.sun.com/archives/rmi-users.html
 
 
+
 +--------------------+
 | A DEMO CHAT CLIENT |
 +--------------------+
@@ -361,7 +362,7 @@ Python clients with Fnorb-1.01 http://www.dstc.edu.au/Products/Fnorb/
 -------------------------------------------------------------------------
 
 
-			orbacus for java and c++
+                   orbacus for java and c++
 -------------------------------------------------------------------------
 xmlBlaster comes with jacorb. If you want to use another corba, some setting 
 changes are necessary. XmlBlaster works also with orbacus for java
@@ -386,7 +387,7 @@ Increasing jacorb.poa.thread_pool_max=20 to 1000
 
 Increasing jacorb.poa.queue_max=100 to 1000 does help nothing, +-2%
         but increases stability on heavy load (even higher values
-		  decrease performance).
+        decrease performance).
 
 Changing jacorb.poa.thread_priority=MAX_PRIORITY (10) to 5 (NORM_PRIORITY)
         does help nothing, +-2%
