@@ -16,6 +16,9 @@ public class ConnectionTableSubject implements Subject {
       public ConnectionEntryImplPeer connectionEntryImplPeer;
       public ArrayList observers = new ArrayList();
       public Integer nodeIndex;
+      public int opCode;
+      public static final int INSERT = 0;
+      public static final int REMOVE = 1;
 
       public void addEntry(NodeTableObserver nodeTableObserver,
                          String nodeName,
@@ -24,6 +27,7 @@ public class ConnectionTableSubject implements Subject {
 	  this.connectionEntryImplPeer = connectionEntryImplPeer;
           nodeIndex = nodeTableObserver.getIndex(nodeName);
           if (nodeIndex != null) {
+              opCode = INSERT;
               notifyObservers();
 	  }
           else {
@@ -32,6 +36,7 @@ public class ConnectionTableSubject implements Subject {
       }
  
       public Integer removeEntry( int index ) {
+            opCode = REMOVE;
             return null;
       }
 

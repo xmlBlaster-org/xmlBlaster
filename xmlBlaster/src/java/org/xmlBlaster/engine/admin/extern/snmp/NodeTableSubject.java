@@ -13,8 +13,10 @@ import java.util.Iterator;
 public class NodeTableSubject implements Subject {
 
       public NodeEntryImplPeer nodeEntryImplPeer;
-      public boolean add;
       public ArrayList observers = new ArrayList();
+      public int opCode;
+      public static final int INSERT = 0;
+      public static final int REMOVE = 1;
 
       /**
        * addEntry
@@ -26,7 +28,7 @@ public class NodeTableSubject implements Subject {
       public void addEntry(NodeEntryImplPeer nodeEntryImplPeer) {
 
 	  this.nodeEntryImplPeer = nodeEntryImplPeer;
-          add = true;
+          opCode = INSERT;
           notifyObservers();
       }
  
@@ -39,7 +41,7 @@ public class NodeTableSubject implements Subject {
       public void removeEntry(NodeEntryImplPeer nodeEntryImplPeer) {
 
 	  this.nodeEntryImplPeer = nodeEntryImplPeer;
-          add = false;
+          opCode = REMOVE;
           notifyObservers();
       }
 

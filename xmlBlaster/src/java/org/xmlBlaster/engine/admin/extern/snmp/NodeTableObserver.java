@@ -63,8 +63,11 @@ public class NodeTableObserver implements Observer {
       }
 
       public void update( Subject o ) {
+	  switch(nodeTableSubject.opCode) {
+	  case NodeTableSubject.INSERT:   
             if( o == nodeTableSubject ) {
 		  String nodeName = nodeTableSubject.nodeEntryImplPeer.get_nodeName();
+                  System.out.println("Insert a node with nodename = " + nodeName);
                   if (nodeHashtable.containsKey(nodeName)) {
                      System.out.println("A node with nodename = " + nodeName + " already exists.");
                   }
@@ -92,6 +95,19 @@ public class NodeTableObserver implements Observer {
                       }
                   }
             }
+            break;
+         
+	  case NodeTableSubject.REMOVE:
+            if( o == nodeTableSubject ) {
+		  String nodeName = nodeTableSubject.nodeEntryImplPeer.get_nodeName();
+                  System.out.println("Remove a node with nodename = " + nodeName);
+            }
+	    break;
+
+	  default:
+            System.out.println("Unknown table operation code: " + nodeTableSubject.opCode);
+            break;
+          } // end switch   
       }
 }
 

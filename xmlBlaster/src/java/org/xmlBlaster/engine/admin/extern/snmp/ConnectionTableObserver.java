@@ -32,11 +32,11 @@ public class ConnectionTableObserver implements Observer {
       }
 
       public void update( Subject o ) {
+	  switch(connectionTableSubject.opCode) {
+	  case ConnectionTableSubject.INSERT:   
             if( o == connectionTableSubject ) {
 		String connectionHost = connectionTableSubject.connectionEntryImplPeer.get_connectionHost();
 		long connectionPort = connectionTableSubject.connectionEntryImplPeer.get_connectionPort();
-                // n.z.d. connectionHost ist nicht eindeutig
-                // concat mit connectionPort
                   if (connectionHashtable.containsKey(connectionHost + connectionPort)) {
                      System.out.println("A connection to " + connectionHost + connectionPort + " already exists.");
                   }
@@ -66,6 +66,18 @@ public class ConnectionTableObserver implements Observer {
                       }
                   }
             }
+            break;
+         
+	  case ConnectionTableSubject.REMOVE:
+            if( o == connectionTableSubject ) {
+                  System.out.println("Remove a connection table entry.");
+            }
+	    break;
+
+	  default:
+            System.out.println("Unknown table operation code: " + connectionTableSubject.opCode);
+            break;
+          } // end switch   
       }
 
 }
