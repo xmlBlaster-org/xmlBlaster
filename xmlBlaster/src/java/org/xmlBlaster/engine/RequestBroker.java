@@ -1820,11 +1820,23 @@ synchronized (this) { // Change to snychronized(messageUnitHandler) {
       int val = 0;
       try { val = Integer.parseInt(exitValue.trim()); } catch(NumberFormatException e) { log.error(ME, "Invalid exit value=" + exitValue + ", expected an integer"); };
       final int exitVal = val;
-      final long exitSleep = 2000L;
-      Timeout timeout = new Timeout("ExitTimer");
-      Timestamp timeoutHandle = timeout.addTimeoutListener(new I_Timeout() {
+
+      if (glob.isEmbedded()) {
+         log.warn(ME, "Ignoring exit(" + exitVal + ") request in embeded mode ('xmlBlaster.isEmbeded' is set true).");
+         return;
+      }
+
+      final long exitSleep = glob.getProperty().get("xmlBlaster.exit.delay", 2000L);
+      Timeout exitTimeout = new Timeout("XmlBlaster ExitTimer");
+      Timestamp timeoutHandle = exitTimeout.addTimeoutListener(new I_Timeout() {
             public void timeout(Object userData) {
                log.info(ME, "Administrative exit(" + exitVal + ") after exit-timeout of " + exitSleep + " millis.");
+               try {
+                  int errors = glob.getRunlevelManager().changeRunlevel(RunlevelManager.RUNLEVEL_HALTED, true);
+               }
+               catch(Throwable e) {
+                  log.warn(ME, "Administrative exit(" + exitVal + ") problems: " + e.toString());
+               }
                System.exit(exitVal);
             }
          },
