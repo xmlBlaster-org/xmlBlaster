@@ -27,7 +27,9 @@ import org.xmlBlaster.util.XmlBlasterException;
 public interface I_CallbackServer
 {
    /**
-    * Initialize and start the callback server
+    * Initialize and start the callback server. 
+    * <p />
+    * This is guaranteed to be invoked after the default constructor.
     * @param glob The global handle with your environment settings
     * @param name The login name of the client, for logging only
     * @param client Your implementation to receive the callback messages from xmlBlaster

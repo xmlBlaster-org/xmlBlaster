@@ -627,7 +627,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * The command line arguments.
+    * The command line arguments only. 
     * @return the arguments, is never null
     */
    public final String[] getArgs()
