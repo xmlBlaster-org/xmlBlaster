@@ -269,8 +269,9 @@ public final class ErrorCode implements java.io.Serializable
       );
 
    public static final ErrorCode COMMUNICATION_NOCONNECTION_SERVERDENY = new ErrorCode("communication.noConnection.serverDeny",
-         "Thrown by the server if no connection is accepted, usually on startup when the server is not ready for it.",
+         "Thrown by the server if no connection is accepted, usually on startup when the server is not ready for it (standby mode).",
          new ResourceInfo[] {
+            new ResourceInfo(ResourceInfo.REQ, "run level requirement", "engine.runlevel")
          }
       );
 
