@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.61 2000/11/01 19:11:23 ruff Exp $
+Version:   $Id: Main.java,v 1.62 2000/11/01 21:51:42 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -146,10 +146,11 @@ public class Main
       boolean useKeyboard = XmlBlasterProperty.get("useKeyboard", true);
       if (!useKeyboard) {
          while (true) {
-            try { Thread.currentThread().sleep(1000000000L);
+            try { Thread.currentThread().sleep(100000000L);
             } catch(InterruptedException e) { Log.warn(ME, "Caught exception: " + e.toString()); }
          }
-         /*  Exception in thread "main" java.lang.IllegalMonitorStateException:
+         /*
+         //  Exception in thread "main" java.lang.IllegalMonitorStateException:
          try { Thread.currentThread().wait();
          } catch(InterruptedException e) { Log.warn(ME, "Caught exception: " + e.toString()); }
          */
@@ -311,6 +312,8 @@ public class Main
          // if (orb.work_pending()) orb.perform_work();
          try {
             String line = in.readLine().trim(); // Blocking in I/O
+            if (line == null) continue;
+            line = line.trim();
             if (line.toLowerCase().equals("g")) {
                if (controlPanel == null) {
                   Log.info(ME, "Invoking control panel GUI ...");
@@ -358,12 +361,16 @@ public class Main
 
 
    /**
-    * Add shutdown hook.
+    * Add shutdown hook. 
     * <p />
     * Catch signals, e.g. Ctrl C to stop xmlBlaster.<br />
     * Uses reflection since only JDK 1.3 supports it.
+    * <p />
+    * NOTE: On Linux build 1.3.0, J2RE 1.3.0 IBM build cx130-20000815 (JIT enabled: jitc) fails with Ctrl-C
+    *
+    * @return true: Shutdown hook is established
     */
-   public void catchSignals()
+   public boolean catchSignals()
    {
       class Shutdown extends Thread {
          public void run() {
@@ -380,11 +387,11 @@ public class Main
          method = cls.getDeclaredMethod("addShutdownHook", paramCls);
       }
       catch (java.lang.ClassNotFoundException e) {
-         return;
+         return false;
       }
       catch (java.lang.NoSuchMethodException e) {
          Log.trace(ME, "No shutdown hook established");
-         return;
+         return false;
       }
 
       try {
@@ -395,9 +402,12 @@ public class Main
          }
       }
       catch (java.lang.reflect.InvocationTargetException e) {
+         return false;
       }
       catch (java.lang.IllegalAccessException e) {
+         return false;
       }
+      return true;
    }
 
 
