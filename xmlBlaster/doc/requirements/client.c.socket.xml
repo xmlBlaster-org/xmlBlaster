@@ -76,7 +76,7 @@
        <td>Linux 2.4.20</td>
        <td><a href="http://www.gnu.org/software/gcc/gcc.html">g++ and gcc</a> 3.3</td>
        <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.848</a></td>
-       <td><a href="http://omniorb.sourceforge.net" target="others">pthread</a></td>
+       <td><a href="http://www.gnu.org/software/libc/" target="others">pthread</a></td>
        <td>SOCKET <a href="xmlBlaster/xmlBlaster/doc/requirements/protocol.socket" target="others">protocol.socket requirement</a></td>
        <td>Unparsed access with raw XML strings</td>
        <td>2003-05-29</td>
@@ -89,7 +89,7 @@
        <td>Linux 2.4.9</td>
        <td><a href="http://www.gnu.org/software/gcc/gcc.html">g++ and gcc</a> 2.95.3</td>
        <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.848</a></td>
-       <td><a href="http://omniorb.sourceforge.net" target="others">pthread</a></td>
+       <td><a href="http://www.gnu.org/software/libc/" target="others">pthread</a></td>
        <td>SOCKET <a href="xmlBlaster/xmlBlaster/doc/requirements/protocol.socket" target="others">protocol.socket requirement</a></td>
        <td>Unparsed access with raw XML strings</td>
        <td>2003-05-29</td>
@@ -110,6 +110,6 @@
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2003 05 29</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
 </requirement>
 
