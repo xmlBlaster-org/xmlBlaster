@@ -67,7 +67,8 @@ public:
    void testThread()
    {
       log_.info(ME, "testThread() start");
-      start();
+      const bool detached = false;
+      start(detached);
       sleepSecs(2);
       log_.info(ME, "testThread() end");
    }
