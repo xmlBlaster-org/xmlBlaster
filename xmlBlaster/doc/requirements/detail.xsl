@@ -5,7 +5,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Generating a detailed html view for one requirement
 See:       xmlBlaster/doc/requirements/requirement.dtd
-Version:   $Id: detail.xsl,v 1.26 2003/02/04 15:22:40 laghi Exp $
+Version:   $Id: detail.xsl,v 1.27 2003/05/23 08:54:43 ruff Exp $
 Author:    xmlBlaster@marcelruff.info
 -->
 
@@ -50,7 +50,7 @@ Author:    xmlBlaster@marcelruff.info
               </xsl:attribute>
               <xsl:value-of select="$pat"/>
            </xsl:element>
-    	 </xsl:when>
+         </xsl:when>
          <xsl:otherwise>
            <xsl:element name="a">
               <xsl:attribute name="href"><xsl:value-of select="concat($prefix,$pat,$postfix)"/>
@@ -82,7 +82,7 @@ Author:    xmlBlaster@marcelruff.info
 
    <body>
 
-   <!-- p class="sideend"> Last updated $Date: 2003/02/04 15:22:40 $ $Author: laghi $ </p -->
+   <!-- p class="sideend"> Last updated $Date: 2003/05/23 08:54:43 $ $Author: ruff $ </p -->
    <table width="700" border="1">
    <tr>
       <td>
@@ -201,8 +201,8 @@ Author:    xmlBlaster@marcelruff.info
                       <xsl:with-param name="withNamespace" select="'true'"/>
                     </xsl:call-template>
                   </td>
-   	        </xsl:when>
-   	        <xsl:otherwise>
+                </xsl:when>
+                <xsl:otherwise>
                   <td class="reqId">See API</td>
                   <td>
                   <a>
@@ -266,6 +266,20 @@ Author:    xmlBlaster@marcelruff.info
                  <xsl:if test="@lang='Java'">
                   <a>
                      <xsl:attribute name="href">../../src/java/<xsl:value-of select="translate(.,'.','/')"/>.java.html</xsl:attribute>
+                     <xsl:value-of select="."/>
+                  </a>
+                 </xsl:if>
+
+                 <xsl:if test="@lang='C'">
+                  <a>
+                     <xsl:attribute name="href">../../src/c/<xsl:value-of select="."/>.html</xsl:attribute>
+                     <xsl:value-of select="."/>
+                  </a>
+                 </xsl:if>
+
+                 <xsl:if test="@lang='PYTHON'">
+                  <a>
+                     <xsl:attribute name="href">../../src/python/<xsl:value-of select="."/>.html</xsl:attribute>
                      <xsl:value-of select="."/>
                   </a>
                  </xsl:if>
