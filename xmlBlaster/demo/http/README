@@ -40,7 +40,7 @@ Start it in the background on Linux:
    java html.systemInfo.SystemInfoPublisher -info false > /tmp/SystemInfoPublisher.log 2>&1 &
 
 
-Using tomcat 3.2.3 serlvet enginge (http://jakarta.apache.org):
+Using tomcat 3.2.4 serlvet enginge (http://jakarta.apache.org):
 ===============================================================
 
 - tomcat/conf/server.xml:
@@ -61,7 +61,8 @@ Using tomcat 3.2.3 serlvet enginge (http://jakarta.apache.org):
     </mime-mapping>
 
 
-Add xmlBlaster CLASSPATH
+Add xmlBlaster CLASSPATH:
+    export CLASSPATH=${XMLBLASTER_HOME}/lib/jacorb.jar:${XMLBLASTER_HOME}/lib/parser.jar:${XMLBLASTER_HOME}/lib/xmlBlaster.jar:$CLASSPATH
 
 For deployment see WEB-INF/web.xml
 
