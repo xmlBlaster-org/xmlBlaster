@@ -3,7 +3,7 @@ Name:      TestPtDQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtDQueue.java,v 1.5 2003/01/05 23:08:22 ruff Exp $
+Version:   $Id: TestPtDQueue.java,v 1.6 2003/01/06 11:34:32 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -114,7 +114,7 @@ public class TestPtDQueue extends TestCase implements I_Callback
    public void testPtUnknownDestination()
    {
       {
-         log.info(ME, "Testing point to a unknown destination with NO forceQueuing set ...");
+         log.info(ME, "[1] Testing point to a unknown destination with NO forceQueuing set ...");
 
          // Construct a message and send it to "Averell"
          String xmlKey = "<key oid='' contentMime='text/plain'/>";
@@ -140,7 +140,7 @@ public class TestPtDQueue extends TestCase implements I_Callback
       }
 
       {
-         log.info(ME, "Testing point to a unknown destination with forceQueuing set ...");
+         log.info(ME, "[2] Testing point to a unknown destination with forceQueuing set ...");
 
          // Construct a message and send it to "Martin Unknown"
          String xmlKey = "<key oid='' contentMime='text/plain'>\n" +
@@ -166,9 +166,13 @@ public class TestPtDQueue extends TestCase implements I_Callback
          assertEquals("numReceived after sending to '" + receiverName + "'", 0, numReceived); // no message?
          numReceived = 0;
 
+         log.info(ME, "[3] Now the receiver '" + receiverName + "' logs in and should get the message '" + publishOid + "' from the xmlBlaster queue ...");
+
          // Now the receiver logs in and should get the message from the xmlBlaster queue ...
          try {
             receiverConnection = new XmlBlasterConnection(glob);
+            //ConnectQos connectQos = new ConnectQos(glob, receiverName, passwd);
+            //receiverConnection.connect(connectQos, this);
             receiverConnection.login(receiverName, passwd, new ConnectQos(glob), this);
          } catch (XmlBlasterException e) {
              log.error(ME, e.toString());
@@ -190,7 +194,7 @@ public class TestPtDQueue extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      if (log.CALL) log.call(ME, "Receiving update of a message ...");
+      log.info(ME, "Receiving update of a message '" + updateKey.getOid() + "' state=" + updateQos.getState() + " ...");
 
       numReceived += 1;
 
