@@ -73,6 +73,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
    private transient int state = UNDEF;
 
    private MsgUnit msgUnit;
+   private final long immutableSizeInBytes;
 
    /**
     * Use this constructor if a new message object is fed by method publish(). 
@@ -117,6 +118,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
       this.uniqueIdStr = ""+this.uniqueId;
       this.ME = "MsgUnitWrapper-" + getLogId();
       this.destroyTimer = this.glob.getMessageTimer();  // holds weak references only
+      this.immutableSizeInBytes = this.msgUnit.size();
       toAlive();
       //this.glob.getLog("core").info(ME, "Created message" + toXml());
       if (this.historyReferenceCounter > this.referenceCounter) { // assert
@@ -232,7 +234,13 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
    }
 
    public long getSizeInBytes() {
-      return this.msgUnit.size();
+      if (this.immutableSizeInBytes != this.msgUnit.size()) {
+         // assert: We assure that the size can't change (e.g. by a errorneous modified QoS) as it is used as a queue entry
+         this.glob.getLog("core").error(ME, "PANIC: The size of message '" + getUniqueId() +
+             "' changed from initial " + this.immutableSizeInBytes + " bytes to " + this.msgUnit.size() +
+             " please report this error with all details to the xmlBlaster.org mailing list: " + toXml());
+      }
+      return this.immutableSizeInBytes;
    }
 
    /**
