@@ -83,7 +83,7 @@ importPackage(Packages.org.xmlBlaster.util);
       var pos = buf.indexOf("translate(");
       var x   = dx;
       var y   = dy;
-	
+   
       if (pos > -1) {
          buf = buf.substring(pos+10, buf.length());
          var A = new Array();
@@ -115,10 +115,19 @@ importPackage(Packages.org.xmlBlaster.util);
       doc = evt.target.ownerDocument;
       var key = new String("<?xml version='1.0'?><key oid='' queryType='XPATH'>//chess</key>");
 
-      args = new Array(2);
       // you can set here the command line to pass to XmlBlasterConnection
+      /*
+      args = new Array(6);
+      args[0] = new String("-client.protocol");
+      args[1] = new String("SOCKET");
+      args[2] = new String("-socket.hostname");
+      args[3] = new String("217.83.166.225");
+      args[4] = new String("-socket.port");
+      args[5] = new String("2003");
+      */
+      args = new Array(2);
       args[0] = new String("-iorHost");
-      args[1] = new String("localhost");
+      args[1] = new String("localhost");    // try "server.xmlBlaster.org"
       xmlBlaster = new XmlBlasterConnection(args);
 
       xmlBlaster.login(getUser(), "secret", new ConnectQos(), new JavascriptCallback(this));
