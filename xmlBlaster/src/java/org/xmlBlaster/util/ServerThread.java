@@ -3,7 +3,7 @@ Name:      ServerThread.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to create/start/stop a xmlBlaster server in a thread
-Version:   $Id: ServerThread.java,v 1.13 2002/09/03 15:12:43 kkrafft2 Exp $
+Version:   $Id: ServerThread.java,v 1.14 2002/09/03 15:36:19 kkrafft2 Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -168,21 +168,30 @@ public class ServerThread extends Thread
    public void run() {
 
 
+      ClassLoaderFactory factory = glob.getClassLoaderFactory();
+      XmlBlasterClassLoader cl = null;
+
       try {
-         ClassLoaderFactory factory = glob.getClassLoaderFactory();
-         XmlBlasterClassLoader cl = factory.getXmlBlasterClassLoader();
+         cl = factory.getXmlBlasterClassLoader();
          if( log.TRACE ) log.trace(ME, "Get first instance of org.xmlBlaster.Main via own class loader.");
          Class mainClass = cl.loadClass("org.xmlBlaster.Main");
          if( log.TRACE ) log.trace(ME, "org.xmlBlaster.Main class created.");
-         xmlBlasterMain = (org.xmlBlaster.Main)mainClass.newInstance();
+         Class[] paramClasses = { glob.getClass() };
+         Object[] params = { glob };
+         java.lang.reflect.Constructor constructor = mainClass.getConstructor( paramClasses );
+         xmlBlasterMain = (org.xmlBlaster.Main) constructor.newInstance( params );
          log.info(ME, "Successfully loaded org.xmlBlaster.Main instance with specific classloader");
       } catch(Throwable e) {
-         log.error(ME, "Problems loading org.xmlBlaster.Main: " + e.toString());
+         if (cl != null)
+            log.error(ME, "Problems loading org.xmlBlaster.Main with ClassLoader "+cl.getClass().getName()+": " + e.toString());
+         else
+            log.error(ME, "Problems loading org.xmlBlaster.Main (classloader = 'null' ???): " + e.toString());
+         log.info(ME, "Load class 'org.xmlBlaster.Main' via default class loader.");
+         xmlBlasterMain = new org.xmlBlaster.Main(glob);
       }
 
 
       log.info(ME, "Starting a xmlBlaster server instance for testing ...");
-      xmlBlasterMain = new org.xmlBlaster.Main(glob);
       while(!stopServer) {
          try { Thread.currentThread().sleep(200L); }
          catch( InterruptedException i) {
