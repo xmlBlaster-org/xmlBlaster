@@ -41,7 +41,6 @@ import org.xml.sax.helpers.*;
  *           2001-12-07 23:31:45.862000002   &lt;!-- The nanos from above but human readable -->
  *     &lt;/rcvTimestamp>
  *     &lt;expiration lifeTime='129595811' forceDestroy='false'/> <!-- Only for persistence layer -->
- *     &lt;isVolatile>false&lt;/isVolatile> <!-- deprecated, use lifeTime==0&&forceDestroy==false instead-->
  *     &lt;queue index='0' of='1'/> &lt;!-- If queued messages are flushed on login -->
  *     &lt;isDurable/>
  *     &lt;redeliver>4&lt;/redeliver>             <!-- Only for updates -->
