@@ -3,7 +3,7 @@ Name:      TestInvocationRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing the InvocationRecorder
-Version:   $Id: TestInvocationRecorder.java,v 1.1 2000/02/24 13:04:28 ruff Exp $
+Version:   $Id: TestInvocationRecorder.java,v 1.2 2000/02/24 19:59:20 kkrafft2 Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -116,7 +116,7 @@ public class TestInvocationRecorder extends TestCase implements ServerOperations
       }
 
       try {
-         recorder.pullback(0L, 0L, 1.0);
+         recorder.pullback(0L, 0L, (float)1.0);
       }
       catch(XmlBlasterException e) {
          Log.error(ME, "problems with recorder.pullback: " + e.reason);
