@@ -32,7 +32,7 @@ Unpack the distribution to some location ($HOME/xmlBlaster is a good spot).
 | INSTALLATION IN 30 SECONDS |
 +----------------------------+
 
-This is for distributions only, if you have checked out by cvs
+This is for distributions only, if you have checked out with subversion
 please go to the next INSTALL section.
 We assume you have a proper JDK installation as described above.
 
