@@ -121,10 +121,10 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
             this.manager.setUp();
 
 //            this.associatedTable = this.manager.getTable(this.storageId.getStrippedId(), getMaxNumOfEntries());
-            this.numOfEntries = this.manager.getNumOfEntries(this.associatedTable);
+            this.numOfEntries = this.manager.getNumOfEntries(getStorageId().getStrippedId(), this.glob.getStrippedId());
             this.numOfBytes = this.manager.getNumOfBytes(this.storageId.getStrippedId(), this.glob.getStrippedId());
-            this.numOfPersistentEntries = this.manager.getNumOfPersistents(this.associatedTable);
-            this.numOfPersistentBytes = this.manager.getSizeOfPersistents(this.associatedTable);
+            this.numOfPersistentEntries = this.manager.getNumOfPersistents(getStorageId().getStrippedId(), this.glob.getStrippedId());
+            this.numOfPersistentBytes = this.manager.getSizeOfPersistents(getStorageId().getStrippedId(), this.glob.getStrippedId());
 
             this.isDown = false;
             if (log.TRACE) log.trace(ME, "Successful initialized");
@@ -210,7 +210,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     */
    public ArrayList getEntries() throws XmlBlasterException {
       try {
-         return this.manager.getEntries(-1, -1L, this.associatedTable, getStorageId());
+         return this.manager.getEntries(getStorageId(), this.glob.getStrippedId(), -1, -1L);
       }
       catch (SQLException ex) {
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME, "getEntries() caught sql exception, status is" + toXml(""), ex);
@@ -366,7 +366,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       if (numOfEntries == 0) return new ArrayList();
       try {
          synchronized(this.modificationMonitor) {
-            ArrayList ret = this.manager.getEntries(numOfEntries, numOfBytes, this.associatedTable, getStorageId());
+            ArrayList ret = this.manager.getEntries(getStorageId(), this.glob.getStrippedId(), numOfEntries, numOfBytes);
 
             long ids[] = new long[ret.size()];
             for (int i=0; i < ids.length; i++)
@@ -436,7 +436,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
    public I_QueueEntry peek() throws XmlBlasterException
    {
       try {
-         ArrayList ret = this.manager.getEntries(1, -1L, this.associatedTable, getStorageId());
+         ArrayList ret = this.manager.getEntries(getStorageId(), this.glob.getStrippedId(), 1, -1L);
          if (ret.size() < 1) return null;
          return (I_QueueEntry)ret.get(0);
       }
@@ -452,7 +452,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
    public ArrayList peek(int numOfEntries, long numOfBytes) throws XmlBlasterException {
       if (numOfEntries == 0) return new ArrayList();
       try {
-         return this.manager.getEntries(numOfEntries, numOfBytes, this.associatedTable, getStorageId());
+         return this.manager.getEntries(getStorageId(), this.glob.getStrippedId(), numOfEntries, numOfBytes);
       }
       catch (SQLException ex)  {
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME, "peek(int,long) caught sql exception, status is" + toXml(""), ex);
@@ -465,7 +465,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
    public ArrayList peekSamePriority(int numOfEntries, long numOfBytes) throws XmlBlasterException {
       if (numOfEntries == 0) return new ArrayList();
       try {
-         ArrayList ret = this.manager.getEntriesBySamePriority(numOfEntries, numOfBytes, this.associatedTable, getStorageId());
+         ArrayList ret = this.manager.getEntriesBySamePriority(getStorageId(), this.glob.getStrippedId(), numOfEntries, numOfBytes);
          return ret;
       }
       catch (SQLException ex) {
@@ -494,7 +494,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       if (this.log.CALL) this.log.call(ME, "peekWithLimitEntry called");
       if (limitEntry == null) return new ArrayList();
       try {
-         return this.manager.getEntriesWithLimit(this.associatedTable, getStorageId(), limitEntry);
+         return this.manager.getEntriesWithLimit(getStorageId(), this.glob.getStrippedId(), limitEntry);
       }
       catch (SQLException ex) {
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME, "peekWithLimitEntry() caught sql exception, status is" + toXml(""), ex);
@@ -580,7 +580,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     */
    public long removeRandom(long[] dataIdArray) throws XmlBlasterException {
       try {
-         ArrayList list = this.manager.getEntries(dataIdArray, this.associatedTable, this.getStorageId());
+         ArrayList list = this.manager.getEntries(getStorageId(), this.glob.getStrippedId(), dataIdArray);
          return removeRandom((I_Entry[])list.toArray(new I_Entry[list.size()]));
       }
       catch (SQLException ex) {
@@ -691,7 +691,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       if (this.numOfEntries > -1L) return this.numOfEntries;
       synchronized (this.modificationMonitor) {
          try {
-            this.numOfEntries = this.manager.getNumOfEntries(this.associatedTable);
+            this.numOfEntries = this.manager.getNumOfEntries(getStorageId().getStrippedId(), this.glob.getStrippedId());
             return this.numOfEntries;
          }
          catch (SQLException ex) {
@@ -734,7 +734,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       if (this.numOfPersistentEntries > -1L) return this.numOfPersistentEntries;
       synchronized (this.modificationMonitor) {
          try {
-            this.numOfPersistentEntries = this.manager.getNumOfPersistents(this.associatedTable);
+            this.numOfPersistentEntries = this.manager.getNumOfPersistents(getStorageId().getStrippedId(), this.glob.getStrippedId());
             return this.numOfPersistentEntries;
          }
          catch (SQLException ex) {
@@ -830,7 +830,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       if (this.numOfPersistentBytes > -1L) return this.numOfPersistentBytes;
       synchronized (this.modificationMonitor) {
          try {
-            this.numOfPersistentBytes = this.manager.getSizeOfPersistents(this.associatedTable);
+            this.numOfPersistentBytes = this.manager.getSizeOfPersistents(getStorageId().getStrippedId(), this.glob.getStrippedId());
             return this.numOfPersistentBytes;
          }
          catch (SQLException ex) {
@@ -1025,7 +1025,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
    public I_MapEntry get(final long uniqueId) throws XmlBlasterException {
       try {
          long[] idArr = new long[] { uniqueId };
-         ArrayList list = this.manager.getEntries(idArr, this.associatedTable, getStorageId());
+         ArrayList list = this.manager.getEntries(getStorageId(), this.glob.getStrippedId(), idArr);
          if (list.size() < 1) {
             return null;
          }

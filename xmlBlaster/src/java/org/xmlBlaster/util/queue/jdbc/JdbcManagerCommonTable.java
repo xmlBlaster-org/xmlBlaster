@@ -778,17 +778,19 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             entries.add(new Long(rs.getLong(1)));
          }
          else {
-            long dataId = rs.getLong(1); // preStatement.setLong(1, dataId);
-            int prio = rs.getInt(2); // preStatement.setInt(2, prio);
-            String typeName = rs.getString(3); // preStatement.setString(3, typeName);
+            long dataId = rs.getLong(1);            // preStatement.setLong(1, dataId);
+            /*String nodeId =*/ rs.getString(2);    // preStatement.setString(2, nodeId);
+            /*String queueName =*/ rs.getString(3); // preStatement.setString(3, queueName);
+            int prio = rs.getInt(4);                // preStatement.setInt(4, prio);
+            String typeName = rs.getString(5);      // preStatement.setString(5, typeName);
 //            boolean persistent = rs.getBoolean(4); // preStatement.setBoolean(4, persistent);
             //this only to make ORACLE happy since it does not support BOOLEAN
-            String persistentAsChar = rs.getString(4);
+            String persistentAsChar = rs.getString(6);
             boolean persistent = false;
             if ("T".equalsIgnoreCase(persistentAsChar)) persistent = true;
 
-            long sizeInBytes = rs.getLong(5);
-            byte[] blob = rs.getBytes(6); // preStatement.setObject(5, blob);
+            long sizeInBytes = rs.getLong(7);
+            byte[] blob = rs.getBytes(8); // preStatement.setObject(5, blob);
 
             if ( (numOfBytes < 0) || (sizeInBytes+amount < numOfBytes) || (count == 0)) {
                if (this.log.DUMP)
@@ -935,7 +937,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             return 0;
          }
 
-   //      String req = "delete from " + tableName + " where persistent='false'";
+   //      String req = "delete from " + tableName + " where durable='false'";
          String req = "delete from " + this.entriesTableName + " where durable='F'";
          return update(req);
       }
@@ -1213,7 +1215,12 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * If there are not so many entries in the queue, all elements in the queue
     * are returned.
     *
-    * @param numOfEntries the maximum number of elements to retrieve
+    * @param storageId the storageId of the queue/storage from which to retrieve the information.
+    * @param nodeId the nodeId of the actual cluster 
+    * @param numOfEntries the maximum number of elements to retrieve. If negative there is no constriction.
+    * @param numOfBytes the maximum number of bytes to retrieve. If negative, there is no constriction.
+    * @param minPrio the minimum priority to retreive (inclusive). 
+    * @param maxPrio the maximum priority to retrieve (inclusive).
     *
     */
    public ArrayList getEntriesByPriority(StorageId storageId, String nodeId, int numOfEntries, long numOfBytes, int minPrio, int maxPrio)
@@ -1228,9 +1235,9 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          return new ArrayList();
       }
 
-      String req = "SELECT * from " + this.entriesTableName + " where queueName='" + queueName + "' AND nodeId='" + "' AND prio >= " + minPrio + " and prio <= " + maxPrio +
+      String req = "SELECT * from " + this.entriesTableName + " where queueName='" + queueName + "' AND nodeId='" + nodeId + "' AND prio >= " + minPrio + " and prio <= " + maxPrio +
             " ORDER BY prio DESC, dataid ASC";
-
+                                                                 
       if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getEntriesByPriority"), "Request: '" + req + "'");
 
       PreparedQuery query =null;
@@ -1250,14 +1257,6 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    }
 
 
-
-
-
-
-
-
-
-
    /**
     * gets the first numOfEntries of the queue which have the same priority.
     * If there are not so many entries in the queue, all elements in the queue
@@ -1266,32 +1265,34 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * @param numOfEntries the maximum number of elements to retrieve
     *
     */
-   public ArrayList getEntriesBySamePriority(int numOfEntries, long numOfBytes, String tableName, StorageId storageId)
+   public ArrayList getEntriesBySamePriority( StorageId storageId, String nodeId, int numOfEntries, long numOfBytes)
       throws XmlBlasterException, SQLException {
+      String queueName = storageId.getStrippedId();
       // 65 ms (for 10000 msg)
-      if (this.log.CALL) this.log.call(getLogId(tableName, storageId.toString(), "getEntriesBySamePriority"), "Entering");
+      if (this.log.CALL) this.log.call(getLogId(queueName, nodeId, "getEntriesBySamePriority"), "Entering");
 
       if (!this.isConnected) {
          if (this.log.TRACE)
-            this.log.trace(getLogId(tableName, storageId.toString(), "getEntriesBySamePriority"), "Currently not possible. No connection to the DB");
+            this.log.trace(getLogId(queueName, nodeId, "getEntriesBySamePriority"), "Currently not possible. No connection to the DB");
          return new ArrayList();
       }
 
       String req = null;
-      req = "SELECT * from " + tableName + " where prio=(select max(prio) from " + tableName +
-         ")  ORDER BY dataid ASC";
+      req = "SELECT * from " + this.entriesTableName + " where queueName='" + queueName + "' and nodeId='" + nodeId + 
+            "' and prio=(select max(prio) from " + this.entriesTableName + " where queueName='" + queueName + 
+            "' AND nodeId='" + nodeId + "')  ORDER BY dataid ASC";
 
-      if (this.log.TRACE) this.log.trace(getLogId(tableName, storageId.toString(), "getEntriesBySamePriority"), "Request: '" + req + "'");
+      if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getEntriesBySamePriority"), "Request: '" + req + "'");
 
       PreparedQuery query = null;
       try {
          query = new PreparedQuery(pool, req, this.log, numOfEntries);
          ArrayList ret = processResultSet(query.rs, storageId, numOfEntries, numOfBytes, false);
-         if (this.log.TRACE) this.log.trace(getLogId(tableName, storageId.toString(), "getEntriesBySamePriority"), "Found " + ret.size() + " entries");
+         if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getEntriesBySamePriority"), "Found " + ret.size() + " entries");
          return ret;
       }
       catch (SQLException ex) {
-         handleSQLException(getLogId(tableName, storageId.toString(), "getEntriesBySamePriority"), ex);
+         handleSQLException(getLogId(queueName, nodeId, "getEntriesBySamePriority"), ex);
          throw ex;
       }
       finally {
@@ -1308,26 +1309,27 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * @param numOfEntries the maximum number of elements to retrieve
     *
     */
-   public ArrayList getEntries(int numOfEntries, long numOfBytes, String tableName, StorageId storageId)
+   public ArrayList getEntries(StorageId storageId, String nodeId, int numOfEntries, long numOfBytes)
       throws XmlBlasterException, SQLException {
-      if (this.log.CALL) this.log.call(getLogId(tableName, storageId.toString(), "getEntries"), "Entering");
+      String queueName = storageId.getStrippedId();
+      if (this.log.CALL) this.log.call(getLogId(queueName, nodeId, "getEntries"), "Entering");
 
       if (!this.isConnected) {
-         if (this.log.TRACE) this.log.trace(getLogId(tableName, storageId.toString(), "getEntries"), "Currently not possible. No connection to the DB");
+         if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getEntries"), "Currently not possible. No connection to the DB");
          return new ArrayList();
       }
 
-      String req = "SELECT * from " + tableName + " ORDER BY prio DESC, dataid ASC";
-      if (this.log.TRACE) this.log.trace(getLogId(tableName, storageId.toString(), "getEntries"), "Request: '" + req + "' wanted limits: numOfEntries="+numOfEntries+" numOfBytes="+numOfBytes);
+      String req = "SELECT * from " + this.entriesTableName + " where queueName='" + queueName + "' AND nodeId='" + nodeId + "' ORDER BY prio DESC, dataid ASC";
+      if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getEntries"), "Request: '" + req + "' wanted limits: numOfEntries="+numOfEntries+" numOfBytes="+numOfBytes);
       PreparedQuery query = null;
       try {
          query = new PreparedQuery(pool, req, this.log, numOfEntries);
          ArrayList ret = processResultSet(query.rs, storageId, numOfEntries, numOfBytes, false);
-         if (this.log.TRACE) this.log.trace(getLogId(tableName, storageId.toString(), "getEntries"), "Found " + ret.size() + " entries. Wanted limits: numOfEntries="+numOfEntries+" numOfBytes="+numOfBytes);
+         if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getEntries"), "Found " + ret.size() + " entries. Wanted limits: numOfEntries="+numOfEntries+" numOfBytes="+numOfBytes);
          return ret;
       }
       catch (SQLException ex) {
-         handleSQLException(getLogId(tableName, storageId.toString(), "getEntries"), ex);
+         handleSQLException(getLogId(queueName, nodeId, "getEntries"), ex);
          throw ex;
       }
       finally {
@@ -1342,28 +1344,29 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     *
     * @param numOfEntries the maximum number of elements to retrieve
     */
-   public ArrayList getEntriesWithLimit(String tableName, StorageId storageId, I_Entry limitEntry)
+   public ArrayList getEntriesWithLimit(StorageId storageId, String nodeId, I_Entry limitEntry)
       throws XmlBlasterException, SQLException {
-      if (this.log.CALL) this.log.call(getLogId(tableName, storageId.toString(), "getEntriesWithLimit"), "Entering");
+      String queueName = storageId.getStrippedId();
+      if (this.log.CALL) this.log.call(getLogId(queueName, nodeId, "getEntriesWithLimit"), "Entering");
 
       if (!this.isConnected) {
-         if (this.log.TRACE) this.log.trace(getLogId(tableName, storageId.toString(), "getEntriesWithLimit"), "Currently not possible. No connection to the DB");
+         if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getEntriesWithLimit"), "Currently not possible. No connection to the DB");
          return new ArrayList();
       }
 
       int limitPrio = limitEntry.getPriority();
       long limitId = limitEntry.getUniqueId();
-      String req = "SELECT * from " + tableName + " WHERE (prio > " + limitPrio + " OR (prio = " + limitPrio + " AND dataId < "  + limitId + ") ) ORDER BY prio DESC, dataid ASC";
-      if (this.log.TRACE) this.log.trace(getLogId(tableName, storageId.toString(), "getEntriesWithLimit"), "Request: '" + req + "'");
+      String req = "SELECT * from " + this.entriesTableName + " WHERE queueName='" + queueName + "' AND nodeId='" + nodeId + "' AND (prio > " + limitPrio + " OR (prio = " + limitPrio + " AND dataId < "  + limitId + ") ) ORDER BY prio DESC, dataid ASC";
+      if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getEntriesWithLimit"), "Request: '" + req + "'");
       PreparedQuery query = null;
       try {
          query = new PreparedQuery(pool, req, this.log, -1);
          ArrayList ret = processResultSet(query.rs, storageId, -1, -1L, false);
-         if (this.log.TRACE) this.log.trace(getLogId(tableName, storageId.toString(), "getEntriesWithLimit"), "Found " + ret.size() + " entries");
+         if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getEntriesWithLimit"), "Found " + ret.size() + " entries");
          return ret;
       }
       catch (SQLException ex) {
-         handleSQLException(getLogId(tableName, storageId.toString(), "getEntriesWithLimit"), ex);
+         handleSQLException(getLogId(queueName, nodeId, "getEntriesWithLimit"), ex);
          throw ex;
       }
       finally {
@@ -1371,45 +1374,47 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       }
    }
 
+
    /**
     * gets all the entries which have the dataid specified in the argument list.
     * If the list is empty or null, an empty ArrayList object is returned.
     */
-   public ArrayList getEntries(long[] dataids, String tableName, StorageId storageId)
+   public ArrayList getEntries(StorageId storageId, String nodeId, long[] dataids)
       throws XmlBlasterException, SQLException {
-      if (this.log.CALL) this.log.call(getLogId(tableName, storageId.toString(), "getEntries"), "Entering");
+      String queueName = storageId.getStrippedId();
+      if (this.log.CALL) this.log.call(getLogId(queueName, nodeId, "getEntries"), "Entering");
       if (!this.isConnected) {
-         if (this.log.TRACE) this.log.trace(getLogId(tableName, storageId.toString(), "getEntries"), "Currently not possible. No connection to the DB");
+         if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getEntries"), "Currently not possible. No connection to the DB");
          return new ArrayList();
       }
 
       String req = null;
       if ((dataids == null) || (dataids.length < 1)) return new ArrayList();
 
-      req = "SELECT * FROM " + tableName + " WHERE dataid in (";
+      req = "SELECT * FROM " + this.entriesTableName + " WHERE queueName='" + queueName + "' AND nodeId='" + nodeId + "' AND dataid in (";
 
       ArrayList requests = this.whereInStatement(req, dataids);
 
       PreparedQuery query = null;
       try {
          req = (String)requests.get(0);
-         if (this.log.TRACE) this.log.trace(getLogId(tableName, storageId.toString(), "getEntries"), "Request: '" + req + "'");
+         if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getEntries"), "Request: '" + req + "'");
          query = new PreparedQuery(pool, req, this.log, -1);
 
          ArrayList ret = processResultSet(query.rs, storageId, -1, -1L, false);
 
          for (int i=1; i < requests.size(); i++) {
             req = (String)requests.get(i);
-            if (this.log.TRACE) this.log.trace(getLogId(tableName, storageId.toString(), "getEntries"), "Request: '" + req + "'");
+            if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getEntries"), "Request: '" + req + "'");
             query.inTransactionRequest(req /*, -1 */);
             ret.addAll(processResultSet(query.rs, storageId, -1, -1L, false));
          }
-         if (this.log.TRACE) this.log.trace(getLogId(tableName, storageId.toString(), "getEntries"), "Found " + ret.size() + " entries");
+         if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getEntries"), "Found " + ret.size() + " entries");
          return ret;
 
       }
       catch (SQLException ex) {
-         handleSQLException(getLogId(tableName, storageId.toString(), "getEntries"), ex);
+         handleSQLException(getLogId(queueName, nodeId, "getEntries"), ex);
          throw ex;
       }
       finally {
@@ -1423,26 +1428,26 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * gets the real number of entries. that is it really makes a call to the DB to find out
     * how big the size is.
     */
-   public final long getNumOfEntries(String tableName)
+   public final long getNumOfEntries(String queueName, String nodeId)
       throws SQLException, XmlBlasterException {
       if (!this.isConnected) {
-         if (this.log.TRACE) this.log.trace(getLogId(tableName, null, "getNumOfEntries"), "Currently not possible. No connection to the DB");
+         if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getNumOfEntries"), "Currently not possible. No connection to the DB");
          return 0L;
       }
 
-      String req = "select count(*) from " + tableName;
-      if (this.log.TRACE) this.log.trace(getLogId(tableName, null, "getNumOfEntries"), "Request: '" + req + "'");
+      String req = "select count(*) from " + this.entriesTableName + " WHERE queueName='" + queueName + "' AND nodeId='" + nodeId + "'";
+      if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getNumOfEntries"), "Request: '" + req + "'");
       PreparedQuery query = null;
 
       try {
          query = new PreparedQuery(pool, req, this.log, -1);
          query.rs.next();
          long ret = query.rs.getLong(1);
-         if (this.log.TRACE) this.log.trace(getLogId(tableName, null, "getNumOfEntries"), "Num=" + ret);
+         if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getNumOfEntries"), "Num=" + ret);
          return ret;
       }
       catch (SQLException ex) {
-         handleSQLException(getLogId(tableName, null, "getNumOfEntries"), ex);
+         handleSQLException(getLogId(queueName, nodeId, "getNumOfEntries"), ex);
          throw ex;
       }
       finally {
@@ -1455,16 +1460,16 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * gets the real number of persistent entries, that is it really makes a call to the DB to find out
     * how big the size is.
     */
-   public final long getNumOfPersistents(String tableName)
+   public final long getNumOfPersistents(String queueName, String nodeId)
       throws SQLException, XmlBlasterException {
 
       if (!this.isConnected) {
-         if (this.log.TRACE) this.log.trace(getLogId(tableName, null, "getNumOfPersistents"), "Currently not possible. No connection to the DB");
+         if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getNumOfPersistents"), "Currently not possible. No connection to the DB");
          return 0L;
       }
 
-      String req = "select count(*) from " + tableName + " where persistent='T'";
-      if (this.log.TRACE) this.log.trace(getLogId(tableName, null, "getNumOfPersistent"), "Request: '" + req + "'");
+      String req = "select count(*) from " + this.entriesTableName + " where queueName='" + queueName + "' AND nodeId='" + nodeId + "' AND durable='T'";
+      if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getNumOfPersistent"), "Request: '" + req + "'");
       PreparedQuery query = null;
       try {
          query = new PreparedQuery(pool, req, this.log, -1);
@@ -1473,7 +1478,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          return ret;
       }
       catch (SQLException ex) {
-         handleSQLException(getLogId(tableName, null, "getNumOfPersistents"), ex);
+         handleSQLException(getLogId(queueName, nodeId, "getNumOfPersistents"), ex);
          throw ex;
       }
       finally {
@@ -1486,17 +1491,17 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * gets the real size of persistent entries, that is it really makes a call to the DB to find out
     * how big the size is.
     */
-   public final long getSizeOfPersistents(String tableName)
+   public final long getSizeOfPersistents(String queueName, String nodeId)
       throws SQLException, XmlBlasterException {
-      if (this.log.CALL) this.log.call(getLogId(tableName, null, "getSizeOfPersistent"), "Entering");
+      if (this.log.CALL) this.log.call(getLogId(queueName, nodeId, "getSizeOfPersistent"), "Entering");
 
       if (!this.isConnected) {
-         if (this.log.TRACE) this.log.trace(getLogId(tableName, null, "getSizeOfPersistent"), "Currently not possible. No connection to the DB");
+         if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getSizeOfPersistent"), "Currently not possible. No connection to the DB");
          return 0L;
       }
 
-      String req = "select sum(bytesize) from " + tableName + " where persistent='T'";
-      if (this.log.TRACE) this.log.trace(getLogId(tableName, null, "getNumOfPersistents"), "Request: '" + req + "'");
+      String req = "select sum(bytesize) from " + this.entriesTableName + " where queueName='" + queueName + "' AND nodeId='" + nodeId + "' AND durable='T'";
+      if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getNumOfPersistents"), "Request: '" + req + "'");
       PreparedQuery query = null;
       try {
          query = new PreparedQuery(pool, req, this.log, -1);
@@ -1505,7 +1510,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          return ret;
       }
       catch (SQLException ex) {
-         handleSQLException(getLogId(tableName, null, "getNumOfPersistents"), ex);
+         handleSQLException(getLogId(queueName, nodeId, "getNumOfPersistents"), ex);
          throw ex;
       }
       finally {
@@ -1513,149 +1518,6 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       }
    }
 
-
-   /**
-    * Creates a table with the given name. The table may later be used to
-    * store the entries of the queue.
-    * @tableName the name of the table
-    */
-   private boolean createQueueTable(String tableName, Connection conn)
-      throws SQLException, XmlBlasterException {
-
-      if (this.log.CALL) this.log.call(getLogId(tableName, null, "createQueueTable"), "Entering");
-      if (!this.isConnected) {
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, getLogId(tableName, null, "createQueueTable"),
-                   "No Connection to the DB. Could not create table '" + tableName + "'");
-      }
-
-      String req = "CREATE TABLE " + tableName + " (" + "dataId  " + longintTxt + " PRIMARY KEY, prio " + intTxt +
-          ", flag " + stringTxt + ", persistent " + booleanTxt + ", byteSize " + longintTxt + ", blob " + blobTxt + ")";
-
-      if (this.log.TRACE) this.log.trace(getLogId(tableName, null, "createQueueTable"), "Request: '" + req + "'");
-
-      try {
-         int ret = update(req, conn);
-         if (this.log.TRACE) this.log.trace(getLogId(tableName, null, "createQueueTable"), "Num=" + ret);
-         return (ret > 0);
-      }
-      catch (SQLException ex) {
-         handleSQLException(getLogId(tableName, null, "createQueueTable"), ex);
-         throw ex;
-      }
-
-   }
-
-
-   /**
-    * Cleans up the entire DB. It returns the number of tables deleted.
-    * Deleting the entire DB means delete the following tables:
-    *
-    * FREETABLES
-    * USEDTABLES
-    * XMLBLASTER*
-    *
-    * where 'XMLBLASTER*' means all tables starting with the substring XMLBLASTER.
-    * IMPORTANT: If you invoke this method you must be sure that there are no
-    * other users who have created tables with the name starting with the
-    * string XMLBLASTER.
-    *  @param queueName the name of the queue to clean up (the storageId with stripped special characters).
-    *  @param force the flag telling if removing everything anyway
-    * @return the number of queues still remaining to be cleaned up
-    */
-   public final int cleanUp(String queueName, boolean force)
-      throws XmlBlasterException {
-
-      if (this.log.CALL) this.log.call(getLogId(queueName, null, "cleanUp"), "Entering");
-
-      if (!this.isConnected) {
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, getLogId(queueName, null, "cleanUp"), "No Connection to the DB. Could not clean up queue '" + queueName + "'");
-      }
-
-      if (queueName != null) this.queues.remove(queueName);
-      if ((!force) && (this.queues.size()>0)) return this.queues.size();
-
-      if (!this.pool.isInitialized()) {
-         this.log.trace(getLogId(queueName, null, "cleanUp"), "Already cleaned up, not doing anything");
-         return 0;
-      }
-
-      int count = 0;
-      XmlBlasterException firstEx = null;
-
-      // retrieve all tables to delete
-      String req = "SELECT " + this.tableNameTxt + " FROM " + this.tablesTxt + "";
-      if (this.log.TRACE) this.log.trace(getLogId(queueName, null, "cleanUp"), "Request: '" + req + "'");
-      PreparedQuery query = null;
-
-      java.util.Vector vec = new java.util.Vector();
-      try {
-         query = new PreparedQuery(this.pool, req, this.log, -1);
-         while (query.rs.next()) {
-            String nameOfThisQueue = query.rs.getString(1).trim();
-            if (nameOfThisQueue.toUpperCase().startsWith(this.tableNamePrefix)) vec.add(nameOfThisQueue);
-         }
-      }
-      catch (SQLException ex) {
-         handleSQLException(getLogId(queueName, null, "cleanUp"), ex);
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, getLogId(queueName, null, "cleanUp"), "cleanUp: SQLException when retrieving the list of tables", ex);
-      }
-      finally {
-         try {
-            if (query != null) query.close();
-         }
-         catch (Exception ex) {
-            throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, getLogId(queueName, null, "cleanUp"), "cleanUp: exception when closing the query", ex);
-         }
-      }
-
-      // delete (drop) all tables found which match our conventions
-      for (int i=0; i < vec.size(); i++) {
-         String name = (String)vec.elementAt(i);
-         req = "DROP TABLE " + name + "";
-         if (this.log.TRACE) this.log.trace(getLogId(queueName, null, "cleanUp"), "Request: '" + req + "'");
-         try {
-            this.update(req);         
-            count++;
-         }
-         catch (Exception ex) {
-            if (ex instanceof SQLException)
-               handleSQLException(getLogId(queueName, null, "cleanUp"), (SQLException)ex);
-            this.log.error(getLogId(queueName, null, "cleanUp"), "Could not delete queue '" + name + "'");
-         }
-      }
-
-      // free DB resources
-      if (this.log.TRACE) this.log.trace(getLogId(queueName, null, "cleanUp"), "Disconnecting the pool");
-      this.pool.disconnect();
-      this.dbInitialized = false;
-      //this.listener.clear(); // ?
-      return 0;
-   }
-
-   /**
-    * @param tableName or null
-    * @param storageId or null
-    * @return A nice location string for logging (instead of plain ME)
-    */
-/*
-   private final String getLogId(String tableName, StorageId storageId, String methodName) {
-      StringBuffer sb = new StringBuffer(200);
-      sb.append(ME);
-      if (this.tableNamePrefix != null) {
-         sb.append("-").append(this.tableNamePrefix);
-      }
-      if (storageId != null) {
-         sb.append("-").append(storageId.toString());
-      }
-      if (tableName != null) {
-         sb.append("-").append(tableName);
-      }
-      if (methodName != null) {
-         sb.append("-").append(methodName).append("()");
-      }
-      return sb.toString();
-   }
-*/
 
    /**
     * @param queueName or null
