@@ -3,7 +3,7 @@ Name:      ClientGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster with RMI
-Version:   $Id: ClientGet.java,v 1.17 2003/01/05 23:06:57 ruff Exp $
+Version:   $Id: ClientGet.java,v 1.18 2003/03/10 13:37:43 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.rmi;
 
@@ -11,7 +11,10 @@ import org.jutils.time.StopWatch;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.ConnectReturnQos;
+import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.protocol.rmi.I_XmlBlaster;
 import org.xmlBlaster.protocol.rmi.I_AuthServer;
@@ -65,7 +68,11 @@ public class ClientGet
          String passwd = glob.getProperty().get("passwd", "secret");
          ConnectQos qos = new ConnectQos(glob, loginName, passwd);
          log.info(ME, "Trying login to '" + loginName + "'");
-         sessionId = authServer.connect(qos.toXml());
+         String retXml = authServer.connect(qos.toXml());
+
+         // Parse the returned XML string and retrieve the secret sessionId
+         ConnectReturnQos conRetQos = new ConnectReturnQos(glob, retXml);
+         sessionId = conRetQos.getSecretSessionId();
 
          String publishOid = "";
          StopWatch stop = new StopWatch();
@@ -84,7 +91,11 @@ public class ClientGet
             log.trace(ME, "Publishing ...");
             stop.restart();
             try {
-               publishOid = blasterServer.publish(sessionId, msgUnit);
+               String pubXml = blasterServer.publish(sessionId, msgUnit);
+
+               // Parse the returned XML string
+               PublishReturnQos q = new PublishReturnQos(glob, pubXml);
+               publishOid = q.getKeyOid();
                log.info(ME, "   Returned oid=" + publishOid);
             } catch(XmlBlasterException e) {
                log.warn(ME, "XmlBlasterException: " + e.getMessage());
@@ -96,23 +107,23 @@ public class ClientGet
          //----------- get() the previous message OID -------
          {
             log.trace(ME, "get() using the exact oid ...");
-            String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
-                            "<key oid='" + publishOid + "' queryType='EXACT'>\n" +
+            String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'>\n" +
                             "</key>";
             stop.restart();
             MsgUnitRaw[] msgArr = null;
             try {
                msgArr = blasterServer.get(sessionId, xmlKey, "<qos></qos>");
+
+               log.info(ME, "Got " + msgArr.length + " messages:");
+               for (int ii=0; ii<msgArr.length; ii++) {
+                  log.plain(ME, msgArr[ii].getKey() +
+                             "\n################### RETURN CONTENT: ##################\n\n" +
+                              new String(msgArr[ii].getContent()) +
+                             "\n\n#######################################");
+               }
             } catch(XmlBlasterException e) {
                log.error(ME, "XmlBlasterException: " + e.getMessage());
-            }
-
-            log.info(ME, "Got " + msgArr.length + " messages:");
-            for (int ii=0; ii<msgArr.length; ii++) {
-               log.plain(ME, msgArr[ii].getKey() +
-                          "\n################### RETURN CONTENT: ##################\n\n" +
-                           new String(msgArr[ii].getContent()) +
-                          "\n\n#######################################");
+               System.exit(1);
             }
          }
 
@@ -133,7 +144,11 @@ public class ClientGet
             log.trace(ME, "Publishing ...");
             stop.restart();
             try {
-               publishOid = blasterServer.publish(sessionId, msgUnit);
+               String pubXml = blasterServer.publish(sessionId, msgUnit);
+
+               // Parse the returned XML string
+               PublishReturnQos q = new PublishReturnQos(glob, pubXml);
+               publishOid = q.getKeyOid();
                log.info(ME, "   Returned oid=" + publishOid);
             } catch(XmlBlasterException e) {
                log.warn(ME, "XmlBlasterException: " + e.getMessage());
@@ -215,7 +230,7 @@ public class ClientGet
          log.info(ME, "Accessing reference using given '" + addr + "' string");
       }
       else {
-         throw new XmlBlasterException("InvalidRmiCallback", "No to '" + addr + "' possible, class needs to implement interface I_AuthServer.");
+         throw new XmlBlasterException(glob, ErrorCode.USER_CLIENTCODE, "InvalidRmiCallback", "No to '" + addr + "' possible, class needs to implement interface I_AuthServer.");
       }
 
 
@@ -227,7 +242,7 @@ public class ClientGet
          log.info(ME, "Accessing reference using given '" + addr + "' string");
       }
       else {
-         throw new XmlBlasterException("InvalidRmiCallback", "No to '" + addr + "' possible, class needs to implement interface I_XmlBlaster.");
+         throw new XmlBlasterException(glob, ErrorCode.USER_CLIENTCODE, "InvalidRmiCallback", "No to '" + addr + "' possible, class needs to implement interface I_XmlBlaster.");
       }
    }
 
@@ -242,19 +257,19 @@ public class ClientGet
       }
       catch (RemoteException e) {
          log.error(ME, "Can't access address ='" + addr + "', no rmi registry running");
-         throw new XmlBlasterException("CallbackHandleInvalid", "Can't access address ='" + addr + "', no rmi registry running");
+         throw new XmlBlasterException(glob, ErrorCode.USER_CLIENTCODE, "CallbackHandleInvalid", "Can't access address ='" + addr + "', no rmi registry running");
       }
       catch (NotBoundException e) {
          log.error(ME, "The given address ='" + addr + "' is not bound to rmi registry: " + e.toString());
-         throw new XmlBlasterException("CallbackHandleInvalid", "The given address '" + addr + "' is not bound to rmi registry: " + e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.USER_CLIENTCODE, "CallbackHandleInvalid", "The given address '" + addr + "' is not bound to rmi registry: " + e.toString());
       }
       catch (MalformedURLException e) {
          log.error(ME, "The given address ='" + addr + "' is invalid: " + e.toString());
-         throw new XmlBlasterException("CallbackHandleInvalid", "The given address '" + addr + "' is invalid: " + e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.USER_CLIENTCODE, "CallbackHandleInvalid", "The given address '" + addr + "' is invalid: " + e.toString());
       }
       catch (Throwable e) {
          log.error(ME, "The given address ='" + addr + "' is invalid : " + e.toString());
-         throw new XmlBlasterException("CallbackHandleInvalid", "The given address '" + addr + "' is invalid : " + e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.USER_CLIENTCODE, "CallbackHandleInvalid", "The given address '" + addr + "' is invalid : " + e.toString());
       }
    }
 
