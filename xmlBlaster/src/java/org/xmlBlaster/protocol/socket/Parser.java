@@ -3,7 +3,7 @@ Name:      Parser.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Parser class for raw socket messages
-Version:   $Id: Parser.java,v 1.27 2002/09/09 13:33:38 ruff Exp $
+Version:   $Id: Parser.java,v 1.28 2002/09/09 17:24:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -344,6 +344,10 @@ public class Parser
       msgVec.add(msg);
    }
 
+   public final void removeMessage(MessageUnit msg) {
+      msgVec.remove(msg);
+   }
+
    /**
     * Use for methods update, publish. 
     * <br />
@@ -418,8 +422,13 @@ public class Parser
     * @exception IllegalArgumentException if there is no QoS to get
     */
    public final String getQos() {
+      /* OK for empty get() return
       if (msgVec.isEmpty()) {
          throw new IllegalArgumentException(ME + ": getQos() is called without having a response");
+      }
+      */
+      if (msgVec.isEmpty()) {
+         return null;
       }
       MessageUnit msg = (MessageUnit)msgVec.elementAt(0);
       return msg.getQos();
@@ -430,9 +439,11 @@ public class Parser
     * @exception IllegalArgumentException if there is no QoS to get
     */
    public final String[] getQosArr() {
+      /* OK for empty get() return
       if (msgVec.isEmpty()) {
          throw new IllegalArgumentException(ME + ": getQosArr() is called without having a response");
       }
+      */
       Vector msgs = getMessages();
       String[] strArr = new String[msgs.size()];
       for (int ii=0; ii<strArr.length; ii++) {
@@ -576,6 +587,10 @@ public class Parser
 
          if (log.TRACE || SOCKET_DEBUG>0) log.info(ME, "Getting messageUnit content index=" + index);
          msgUnit.setContent(toByte(buf));
+
+         if (msgUnit.size() < 1) // e.g. empty MessageUnit[] array return from get()
+            removeMessage(msgUnit);
+
          if (buf.offset >= buf.buf.length) break;
       }
 
@@ -998,13 +1013,16 @@ public class Parser
             Parser receiver = new Parser();
             ByteArrayInputStream in = new ByteArrayInputStream(rawMsg);
             receiver.parse(in);
+            if (receiver.getMessageArr().length != 1) {
+               System.out.println(testName + ": FAILURE numMsg=" + receiver.getMessageArr().length);
+            }
             //System.out.println("\nReceived: \n" + receiver.dump());
             String receive = toLiteral(receiver.createRawMsg());
             System.out.println("Received: \n|" + receive + "|");
             if (toLiteral(rawMsg).equals(receive))
                System.out.println(testName + ": SUCCESS");
             else
-               System.out.println(testName + ": FAILURE");
+               System.out.println(testName + ": FAILURE rawMsg sent=" + toLiteral(rawMsg));
          }
 
          testName = "Testing nothing";
@@ -1026,13 +1044,18 @@ public class Parser
             Parser receiver = new Parser();
             ByteArrayInputStream in = new ByteArrayInputStream(rawMsg);
             receiver.parse(in);
-            //System.out.println("\nReceived: \n" + receiver.dump());
-            String receive = toLiteral(receiver.createRawMsg());
-            System.out.println("Received: \n|" + receive + "|");
-            if (toLiteral(rawMsg).equals(receive))
-               System.out.println(testName + ": SUCCESS");
-            else
-               System.out.println(testName + ": FAILURE");
+            if (receiver.getMessageArr().length > 0) {
+               System.out.println(testName + ": FAILURE msgLength=" + receiver.getMessageArr().length + " dump=" + receiver.getMessageArr()[0].toXml());
+            }
+            else {
+               //System.out.println("\nReceived: \n" + receiver.dump());
+               String receive = toLiteral(receiver.createRawMsg());
+               System.out.println("Received: \n|" + receive + "|");
+               if (toLiteral(rawMsg).equals(receive))
+                  System.out.println(testName + ": SUCCESS");
+               else
+                  System.out.println(testName + ": FAILURE");
+            }
          }
 
          testName = "Testing really nothing";
@@ -1047,13 +1070,18 @@ public class Parser
             receiver.setSessionId(null);
             ByteArrayInputStream in = new ByteArrayInputStream(rawMsg);
             receiver.parse(in);
-            //System.out.println("\nReceived: \n" + receiver.dump());
-            String receive = toLiteral(receiver.createRawMsg());
-            System.out.println("Received: \n|" + receive + "|");
-            if ("        29**I**11*ping*****0*".equals(receive))
-               System.out.println(testName + ": SUCCESS");
-            else
+            if (receiver.getMessageArr().length > 0) {
                System.out.println(testName + ": FAILURE");
+            }
+            else {
+               //System.out.println("\nReceived: \n" + receiver.dump());
+               String receive = toLiteral(receiver.createRawMsg());
+               System.out.println("Received: \n|" + receive + "|");
+               if ("        29**I**11*ping*****0*".equals(receive))
+                  System.out.println(testName + ": SUCCESS");
+               else
+                  System.out.println(testName + ": FAILURE");
+            }
          }
 
 
