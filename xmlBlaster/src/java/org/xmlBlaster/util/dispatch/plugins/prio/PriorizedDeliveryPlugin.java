@@ -353,8 +353,10 @@ public final class PriorizedDeliveryPlugin implements I_MsgDeliveryInterceptor, 
             catch (XmlBlasterException e) {
                deliveryManager.getMsgErrorHandler().handleError(new MsgErrorInfo(glob, entry, e));
             }
+            if (log.TRACE) log.trace(ME, "Removing holdback message " + entry.getLogId() + " from callback queue");
             try {
                deliveryManager.getQueue().removeRandom(entry);
+               if (log.TRACE) log.trace(ME, "Callback queue size is now " + deliveryManager.getQueue().getNumOfEntries());
             }
             catch (XmlBlasterException e) {
                log.error(ME, "PANIC: Can't remove " + entry.toXml("") + " from queue '" + deliveryManager.getQueue().getStorageId() + "': " + e.toString());
@@ -462,7 +464,7 @@ public final class PriorizedDeliveryPlugin implements I_MsgDeliveryInterceptor, 
             deliveryManager.notifyAboutNewEntry();
          }
          else {
-            log.info(ME, "No holdback queue for " + deliveryManager.getId() + ", nothing to flush");
+            if (log.TRACE) log.trace(ME, "No holdback queue for " + deliveryManager.getId() + ", nothing to flush");
          }
       }
    }
@@ -545,7 +547,6 @@ public final class PriorizedDeliveryPlugin implements I_MsgDeliveryInterceptor, 
 
          glob.getProperty().removePropertyChangeListener(configPropertyKey, this);
 
-         /*
          DeliveryManagerEntry[] arr = getDeliveryManagerEntryArr();
          for(int i=0; i<arr.length; i++) {
             shutdown(arr[i].getDeliveryManager());
@@ -553,7 +554,6 @@ public final class PriorizedDeliveryPlugin implements I_MsgDeliveryInterceptor, 
          if (this.deliveryManagerEntryMap.size() > 0) {
             log.error(ME, "Internal cleanup error in deliveryManagerEntryMap");
          }
-         */
          this.deliveryManagerEntryMap.clear();
          
          this.xmlBlasterClient.shutdown(this);
