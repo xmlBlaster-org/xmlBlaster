@@ -1,0 +1,139 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='mime.plugin.access.xpath' type='NEW' prio='MEDIUM' status='CLOSED'>
+   <topic>XmlBlaster allows to access messages filtered with XPath expressions</topic>
+   <description>
+      <p>
+      XmlBlaster allows you to query messages based on their meta information with XPath.
+      Sometimes this is not enough and you want to do sort of a <i>full text search</i> over
+      the message content, also with XPath, thereby supplying full XML/XPath content based routing of messages.
+      </p>
+      <p>
+      For this frequent use case we deliver a plugin using XPath expressions to check the message <i>content</i>.
+      </p>
+      <p>
+      The plugin is registered for the <code>text/xml</code> mime type.
+      </p>
+      <p>This filter is available for synchronous access with get() and asynchronous access with subscribe()
+      and as a filter for xmlBlaster cluster support.<br />
+      You can specify the filter rules with two xmlBlaster methods:
+      <ol>
+         <li>Synchronous access with the get() invocation:<br />
+            Specify the filter rule in the QoS of the get() method to filter
+            the desired messages. The messages are returned as the get() return value.
+         </li>
+         <li>Asynchronous access with the subscribe() invocation<br />
+            Specify the filter rule in the QoS of the subscribe() method to filter
+            the desired messages. The messages are returned with the asynchronous
+            update() callback.
+         </li>
+      </ol>
+      </p>
+      <p>
+      Multiple filters can be specified in one subscribe/get invocation.
+      Each of them may address another plugin. They are sequentially executed and if
+      one filter denies access (the match() method returns 'false') the message
+      is not delivered. The filters are logically AND connected.
+      </p>
+      <p>
+      The cascading approach for XPath/exact query and filters:<br />
+      On subscribe first the usual XPATH or exact subscription is checked.
+      The client is added as subscriber to all matching message types.
+      If now real messages arrive, the filter plugin is additionally filtering
+      messages away. The same applies for get() invocations. WIth the XPath filter is therefore possible to emulate a JMS like topic destination: send messages with the same OID. Subscribe with an exact query on the messages, and filter with the XPathFilter on the content.
+      </p>
+      <p>
+      </p>
+   </description>
+   <example lang="Java" type="HTML">
+
+      <b>This is an example key and QoS of a get() invocation:</b>
+
+      <pre>
+      <![CDATA[
+      <key oid="News/>
+
+      <qos>
+         <filter type='XPathFilter'>
+            /news[@type='sport']
+         </filter>
+      </qos>
+      ]]>
+      </pre>
+
+      <p>
+      All messages of type/key oid=News are first selected.
+      Those message are further filtered to contain the attribute type equals sport in the news element.
+      </p>
+      <p>
+      Don't forget to put your query in a   &lt;![CDATA[ ... ]]&gt;  section if you use "&lt;"
+      in your query string.
+      </p>
+      <p>
+      This is a code snippet in Java with the get() method:
+      </p>
+      <pre>
+      <![CDATA[
+   GetQosWrapper qos = new GetQosWrapper();
+
+   qos.addAccessFilter(new AccessFilterQos(glob, "XPathFilter", "1.0", "/news[@type='sport']"));
+
+   MessageUnit[] msgUnits = con.get(
+            "<key oid='News'/>",
+            qos.toXml());
+      ]]>
+      </pre>
+
+      <p>
+      The code snippet <code>new AccessFilterQos(...)</code> adds the above raw &lt;filter> xml ASCII string, so we don't need to
+      do it our self. The second and third parameters "XPathFilter", "1.0" choose the plugin
+      (in this case the XPath plugin) and the fourth parameter add the query rule for
+      the plugin (in this case an XPath expression).
+      </p>
+   </example>
+
+   <configuration where="server">
+      <p>
+      These parameters allow to configure the regex plugin.
+      </p>
+      <table border="1">
+         <tr>
+            <td>Property</td>
+            <td>Default</td>
+            <td>Description</td>
+            <td>Implemented</td>
+         </tr>
+
+         <tr>
+            <td>MimeAccessPlugin[XPathFilter][1.0]</td>
+            <td>org.xmlBlaster.engine.mime.xpath.XPathFilter</td>
+            <td>Loads the xpath plugin on demand.</td>
+            <td>yes</td>
+         </tr>
+         <tr>
+            <td>engine.mime.xpath.maxcachesize</td>
+            <td>10</td>
+            <td>Max cache of loaded DOM trees for messages.</td>
+            <td>yes</td>
+         </tr>
+      </table>
+   </configuration>
+
+   <see type="API">org.xmlBlaster.engine.mime.xpath.XPathFilter</see>
+   <see type="API">org.xmlBlaster.engine.helper.AccessFilterQos</see>
+   <see type="API">org.xmlBlaster.engine.mime.I_AccessFilter</see>
+   <see type="API">org.xmlBlaster.util.I_Plugin</see>
+   <see type="REQ">mime.plugin.accessfilter.howto</see>
+   <see type="REQ">mime.plugin.accessfilter</see>
+   <see type="REQ">cluster</see>
+   <author>pra@tim.se</author>
+   <date>2002 09 27</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="CLOSED">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">org.xmlBlaster.test.mime.TestXPathSubscribeFilter</test>
+   </testcase>
+</requirement>
+

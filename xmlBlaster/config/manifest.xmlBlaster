@@ -19,6 +19,9 @@ Class-Path: jacorb.jar idl.jar xmlrpc.jar junit.jar omquery.jar
  batik/batik-xml.jar 
  Xindice/xindice.jar Xindice/xalan-2.0.1.jar 
  Xindice/xmldb.jar 
+ xpath/jaxen-core.jar xpath/jaxen-dom.jar
+ xpath/saxpath.jar
+
 
 
 
