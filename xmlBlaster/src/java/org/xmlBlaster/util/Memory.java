@@ -3,7 +3,7 @@ Name:      Memory.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Memory.java,v 1.2 1999/12/21 12:09:10 ruff Exp $
+Version:   $Id: Memory.java,v 1.3 2000/03/02 13:51:35 kkrafft2 Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -29,14 +29,14 @@ public class Memory
    */
    public static final String byteString(long size)
    {
-      long tBytes = size / 1000000000L;
+      long gBytes = size / 1000000000L;
       long mBytes = size % 1000000000L / 1000000L;
       long kBytes = size % 1000000L / 1000L;
       long  bytes = size % 1000L;
 
       String str;
-      if (tBytes != 0)
-         str = "" + tBytes + "." + Math.abs(mBytes) + " TBytes";
+      if (gBytes != 0)
+         str = "" + gBytes + "." + Math.abs(mBytes) + " GBytes";
       else if (mBytes != 0)
          str = "" + mBytes + "." + Math.abs(kBytes) + " MBytes";
       else if (kBytes != 0)
