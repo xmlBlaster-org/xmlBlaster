@@ -20,7 +20,7 @@ public class XmlScriptAccessBeanInfo extends SimpleBeanInfo {
     * Create a new bean info. 
     */
    public XmlScriptAccessBeanInfo() {
-      System.out.println("Calling ctor of XmlScriptAccessBeanInfo");
+      //System.out.println(ME + "Calling ctor");
    }
 
    /**
@@ -38,7 +38,7 @@ public class XmlScriptAccessBeanInfo extends SimpleBeanInfo {
          return arr;
       }
       catch (IntrospectionException e) {
-         System.out.println("Problems creating EventSetDescriptor: " + e.toString());
+         System.out.println(ME + ": Problems creating EventSetDescriptor: " + e.toString());
          throw new RuntimeException(e.toString());
       }
    }
