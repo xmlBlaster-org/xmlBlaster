@@ -3,7 +3,6 @@ Name:      CompatibleCorba.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper header to encapsulate all corba-implementor specific stuff
-Version:   $Id: CompatibleCorba.h,v 1.3 2001/11/27 15:44:31 ruff Exp $
 Author:    <Michele Laghi> michele.laghi@attglobal.net
 ----------------------------------------------------------------------------*/
 

@@ -3,7 +3,6 @@ Name:      Log.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.h,v 1.5 2001/12/03 16:32:23 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #define _TERM_WITH_COLORS_
@@ -116,15 +115,15 @@ namespace util {
        * @return bit setting L_TRACE
        */
       int logLevelToBit(const string &logLevel) {
-	 if (logLevel == "PANIC")      return L_PANIC;
-	 else if (logLevel == "ERROR") return L_ERROR;
-	 else if (logLevel == "WARN" ) return L_WARN;
-	 else if (logLevel == "INFO" ) return L_INFO;
-	 else if (logLevel == "CALL") return L_CALL;
-	 else if (logLevel == "TIME" ) return L_TIME;
-	 else if (logLevel == "TRACE") return L_TRACE;
-	 else if (logLevel == "DUMP" ) return L_DUMP;
-	 return L_NOLOG;
+         if (logLevel == "PANIC")      return L_PANIC;
+         else if (logLevel == "ERROR") return L_ERROR;
+         else if (logLevel == "WARN" ) return L_WARN;
+         else if (logLevel == "INFO" ) return L_INFO;
+         else if (logLevel == "CALL") return L_CALL;
+         else if (logLevel == "TIME" ) return L_TIME;
+         else if (logLevel == "TRACE") return L_TRACE;
+         else if (logLevel == "DUMP" ) return L_DUMP;
+         return L_NOLOG;
       }
       
       
@@ -133,7 +132,7 @@ namespace util {
        * @param val exit code for operating system
        */
       void exitLow(int val) {
-	 std::exit(val);
+         std::exit(val);
       }
       
             
@@ -203,12 +202,12 @@ namespace util {
        * Gets the loglevel 0,10,20,30,40,50,60
        */
       int getLogLevel() {
-	 return logLevel_;
+         return logLevel_;
       }
       
 
       void setLogFormat(const string &format) {
-	 currentLogFormat = format;
+         currentLogFormat = format;
       }
 
 
@@ -319,28 +318,28 @@ namespace util {
        * @param text     e.g. "Login denied"
        */
       void log(const string &levelStr, int level, const string &instance, 
-	       const string &text) {
-	 if (logFormatPropertyRead == false) {
-	    initialize();
-	 }
+               const string &text) {
+         if (logFormatPropertyRead == false) {
+            initialize();
+         }
 
-	 string logFormat;
-	 if(level & L_DUMP)
-	    logFormat = "{3}";
-	 else
-	    logFormat = currentLogFormat;
-	 
-	 string logEntry = levelStr + " ";
-	 if (level & L_TIME) logEntry += getTime() + ": ";
-	 if ((level & L_ERROR) || (level & L_WARN) || (level & L_PANIC))
-	    cerr << logEntry << instance << " " << text << endl;
-	 else
-	    cout << logEntry << instance << " " << text << endl;
+         string logFormat;
+         if(level & L_DUMP)
+            logFormat = "{3}";
+         else
+            logFormat = currentLogFormat;
+         
+         string logEntry = levelStr + " ";
+         if (level & L_TIME) logEntry += getTime() + ": ";
+         if ((level & L_ERROR) || (level & L_WARN) || (level & L_PANIC))
+            cerr << logEntry << instance << " " << text << endl;
+         else
+            cout << logEntry << instance << " " << text << endl;
       }
 
 
       Property& getProperties() {
-	 return *properties_;
+         return *properties_;
       }
 
    }; // end of class Log

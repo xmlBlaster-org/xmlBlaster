@@ -3,7 +3,6 @@ Name:      Destination.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding destination address attributes
-Version:   $Id: Destination.h,v 1.3 2001/11/26 09:20:59 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #ifndef _UTIL_DESTINATION_H
@@ -30,7 +29,7 @@ namespace util {
 
    private:
       string me() {
-	 return "Destination";
+         return "Destination";
       }
 
       util::Log log_;
@@ -47,11 +46,11 @@ namespace util {
        * Constructs the specialized quality of service destination object.
        */
       Destination(const string &address="", 
-		  const string &queryType="EXACT") : log_() {
-	 destination_   = address;
-	 queryType_     = queryType;
-	 if (queryType_ == "") queryType_ = "EXACT";
-	 forceQueuing_  = false;
+                  const string &queryType="EXACT") : log_() {
+         destination_   = address;
+         queryType_     = queryType;
+         if (queryType_ == "") queryType_ = "EXACT";
+         forceQueuing_  = false;
       }
 
       
@@ -59,7 +58,7 @@ namespace util {
        * @return true/false
        */
       bool isXPathQuery() const {
-	 return queryType_ == "XPATH";
+         return queryType_ == "XPATH";
       }
       
 
@@ -67,7 +66,7 @@ namespace util {
        * @return true/false
        */
       bool isExactAddress() const {
-	 return queryType_ == "EXACT";
+         return queryType_ == "EXACT";
       }
 
 
@@ -75,7 +74,7 @@ namespace util {
        * @return true/false
        */
       bool forceQueuing() const {
-	 return forceQueuing_;
+         return forceQueuing_;
       }
 
 
@@ -88,7 +87,7 @@ namespace util {
        *        not online, an Exception is thrown
        */
       void forceQueuing(bool forceQueuing) {
-	 forceQueuing_ = forceQueuing;
+         forceQueuing_ = forceQueuing;
       }
 
 
@@ -97,7 +96,7 @@ namespace util {
        * @param destination The destination address or the query string
        */
       void setDestination(const string &destination) {
-	 destination_ = destination;
+         destination_ = destination;
       }
 
 
@@ -105,7 +104,7 @@ namespace util {
        * @param The destination address or XPath query string
        */
       string getDestination() const {
-	 return destination_;
+         return destination_;
       }
 
 
@@ -118,26 +117,26 @@ namespace util {
        * xerces.
        */
       bool caseCompare(const char *name1, const char *name2) {
-	 XMLCh* name1Helper = XMLString::transcode(name1);
-	 XMLString::upperCase(name1Helper);
-	 XMLCh* name2Helper = XMLString::transcode(name2);
-	 XMLString::upperCase(name2Helper);
-	 bool ret = (XMLString::compareIString(name1Helper, name2Helper) == 0);
-	 delete name1Helper;
-	 delete name2Helper;
-	 return ret;
+         XMLCh* name1Helper = XMLString::transcode(name1);
+         XMLString::upperCase(name1Helper);
+         XMLCh* name2Helper = XMLString::transcode(name2);
+         XMLString::upperCase(name2Helper);
+         bool ret = (XMLString::compareIString(name1Helper, name2Helper) == 0);
+         delete name1Helper;
+         delete name2Helper;
+         return ret;
       }
 
       /**
        * @param queryType The query type, one of "EXACT" | "XPATH"
        */
       void setQueryType(const string &queryType) {
-	 if (caseCompare(queryType.c_str(), "EXACT")) queryType_ = queryType;
-	 else 
-	    if (caseCompare(queryType_.c_str(), "XPATH")) {}
-	    else
-	       log_.error(me(), string("Sorry, destination queryType='")
-			  + queryType_ + "' is not supported");
+         if (caseCompare(queryType.c_str(), "EXACT")) queryType_ = queryType;
+         else 
+            if (caseCompare(queryType_.c_str(), "XPATH")) {}
+            else
+               log_.error(me(), string("Sorry, destination queryType='")
+                          + queryType_ + "' is not supported");
       }
 
       
@@ -148,15 +147,15 @@ namespace util {
        * @return The Destination as a XML ASCII string
        */
       string toXml(const string &extraOffset="") {
-	 string ret    = "\n   ";
-	 string offset = extraOffset;
+         string ret    = "\n   ";
+         string offset = extraOffset;
 
-	 ret += offset + "<destination queryType='" + queryType_ + "'" +
-	    ">" + offset + "   " + destination_;
-	 if (forceQueuing())
-	    ret +=  offset + "   <ForceQueuing />";
-	 ret += offset + "</destination>";
-	 return ret;
+         ret += offset + "<destination queryType='" + queryType_ + "'" +
+            ">" + offset + "   " + destination_;
+         if (forceQueuing())
+            ret +=  offset + "   <ForceQueuing />";
+         ret += offset + "</destination>";
+         return ret;
       }
    };
 }}} // namespace

@@ -4,7 +4,6 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to strip a string containing two kinds of separators into a 
            vector of pairs of strings.
-Version:   $Id: StringStripper2.h,v 1.4 2001/11/26 09:20:59 ruff Exp $
 Author:    <Michele Laghi> michele.laghi@attglobal.net
 -----------------------------------------------------------------------------*/
 
@@ -41,39 +40,39 @@ namespace util {
    public:
 
       StringStripper2(const string &mainSeparator="/", 
-		      const string &minorSeparator=".") 
-	 : mainStrip_(mainSeparator), minorStrip_(minorSeparator) {
+                      const string &minorSeparator=".") 
+         : mainStrip_(mainSeparator), minorStrip_(minorSeparator) {
       }
 
 
       vector<pair<string,string> > strip(const string &line) {
 
-	 vector<string>               mainVector = mainStrip_.strip(line);
-	 string::size_type            vectorSize;
-	 pair<string,string>          namePair;
-	 vector<pair<string,string> > ret;
-	 
-	 for (string::size_type i=0; i < mainVector.size(); i++) {
-	    vector<string> minorVector = minorStrip_.strip(mainVector[i]);
+         vector<string>               mainVector = mainStrip_.strip(line);
+         string::size_type            vectorSize;
+         pair<string,string>          namePair;
+         vector<pair<string,string> > ret;
+         
+         for (string::size_type i=0; i < mainVector.size(); i++) {
+            vector<string> minorVector = minorStrip_.strip(mainVector[i]);
 
-	    if ( (vectorSize = minorVector.size()) > 1) {
-	       string name = "";
-	       for (string::size_type j=0; j<(vectorSize-1); j++) name += minorVector[j];
-	       namePair = pair<string,string>(name,minorVector[vectorSize-1]);
-	    }
+            if ( (vectorSize = minorVector.size()) > 1) {
+               string name = "";
+               for (string::size_type j=0; j<(vectorSize-1); j++) name += minorVector[j];
+               namePair = pair<string,string>(name,minorVector[vectorSize-1]);
+            }
 
-	    else {
-	       if (vectorSize == 1) 
-		  namePair = pair<string,string>(minorVector[0],"");
-	       else 
-		  namePair = pair<string,string>("","");
-	    }
+            else {
+               if (vectorSize == 1) 
+                  namePair = pair<string,string>(minorVector[0],"");
+               else 
+                  namePair = pair<string,string>("","");
+            }
 
-	    ret.insert(ret.end(), namePair);
+            ret.insert(ret.end(), namePair);
 
-	 }
+         }
 
-	 return ret; 
+         return ret; 
 
       }
 

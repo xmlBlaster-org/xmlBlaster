@@ -3,7 +3,6 @@ Name:      StopWatch.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: StopWatch.h,v 1.3 2001/11/26 09:20:59 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #ifndef _UTIL_STOPWATCH_H
@@ -31,15 +30,15 @@ namespace util {
 
    public:
       StopWatch(long stopTime=-1) {
-	 startTime_   = new timeb();
-	 currentTime_ = new timeb();
-	 restart(stopTime);
+         startTime_   = new timeb();
+         currentTime_ = new timeb();
+         restart(stopTime);
       }
       
 
       ~StopWatch() {
-	 delete startTime_;
-	 delete currentTime_;
+         delete startTime_;
+         delete currentTime_;
       }
 
 
@@ -49,11 +48,11 @@ namespace util {
        * @return elapsed Milliseconds since creation or restart()
        */
       long elapsed() const {
-	 ftime(currentTime_);
-	 double seconds  = difftime(currentTime_->time, startTime_->time);
-	 double milliSec = 
-	    (double)currentTime_->millitm - (double)startTime_->millitm;
-	 return (long)(1000.0 * seconds + milliSec);
+         ftime(currentTime_);
+         double seconds  = difftime(currentTime_->time, startTime_->time);
+         double milliSec = 
+            (double)currentTime_->millitm - (double)startTime_->millitm;
+         return (long)(1000.0 * seconds + milliSec);
       }
 
       
@@ -64,9 +63,9 @@ namespace util {
        * @return The elapsed time in a nice formatted string
        */
       string nice() {
-	 string ret = toString();
-	 restart();
-	 return ret;
+         string ret = toString();
+         restart();
+         return ret;
       }
 
 
@@ -77,10 +76,10 @@ namespace util {
        * @return The elapsed time in a nice formatted string
        */
       string toString() const {
-	 char buffer[256];
-	 ostrstream out(buffer, 255);
-	 out << "elapsed time: " << elapsed() << " milliseconds" << (char)0;
-	 return string(buffer);
+         char buffer[256];
+         ostrstream out(buffer, 255);
+         out << "elapsed time: " << elapsed() << " milliseconds" << (char)0;
+         return string(buffer);
       }
 
 
@@ -89,8 +88,8 @@ namespace util {
        * <p />
        */
       void restart(long stopTime=-1) {
-	 stopTime_ = stopTime;
-	 ftime(startTime_);
+         stopTime_ = stopTime;
+         ftime(startTime_);
       }
 
       /**
@@ -100,8 +99,8 @@ namespace util {
        * passed to the constructor or restart), then it always returns true.
        */
       bool isRunning() const {
-	 if (stopTime_ < 0) return true; // always running
-	 return (stopTime_ > elapsed());
+         if (stopTime_ < 0) return true; // always running
+         return (stopTime_ > elapsed());
       }
 
 
@@ -110,9 +109,9 @@ namespace util {
        * returns.
        */
       void wait(long millisec) {
-	 restart(millisec);
-	 while (isRunning()) {
-	 }
+         restart(millisec);
+         while (isRunning()) {
+         }
       }
    };
 }}} // namespace

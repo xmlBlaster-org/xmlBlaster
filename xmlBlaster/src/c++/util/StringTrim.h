@@ -3,7 +3,6 @@ Name:      StringTrim.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to emulate the java String.trim() method
-Version:   $Id: StringTrim.h,v 1.3 2001/11/26 09:20:59 ruff Exp $
 Author:    <Michele Laghi> michele.laghi@attglobal.net
 -----------------------------------------------------------------------------*/
 
@@ -36,9 +35,9 @@ namespace util {
        * first occurence of zero.
        */
       int stringLength(const CharT *str) {
-	 int count = 0;
-	 while (str[count] != (CharT)0) count++;
-	 return count;
+         int count = 0;
+         while (str[count] != (CharT)0) count++;
+         return count;
       }
       
 
@@ -49,16 +48,16 @@ namespace util {
        * this method.
        */
       CharT* trimStart(const CharT *str) {
-	 int length = stringLength(str), start = 0;
-	 while ( (start      != length     ) && 
-		 ( (str[start] == (CharT)' ' ) ||
-		   (str[start] == (CharT)'\t') ||
-		   (str[start] == (CharT)'\n') ) ) start++;
-	 if (start == length) return 0;
-	 int sizeOfNewString = length - start + 1; // zero terminated string !!
-	 CharT *ret = new CharT[sizeOfNewString];
-	 for (int i=0; i < sizeOfNewString; i++) ret[i] = str[start+i];
-	 return ret;
+         int length = stringLength(str), start = 0;
+         while ( (start      != length     ) && 
+                 ( (str[start] == (CharT)' ' ) ||
+                   (str[start] == (CharT)'\t') ||
+                   (str[start] == (CharT)'\n') ) ) start++;
+         if (start == length) return 0;
+         int sizeOfNewString = length - start + 1; // zero terminated string !!
+         CharT *ret = new CharT[sizeOfNewString];
+         for (int i=0; i < sizeOfNewString; i++) ret[i] = str[start+i];
+         return ret;
       }
       
 
@@ -69,17 +68,17 @@ namespace util {
        * this method.
        */
       CharT* trimEnd(const CharT *str) {
-	 int length = stringLength(str), end = length-1;
-	 while ( (end        != -1     ) && 
-		 ( (str[end] == (CharT)' ' ) ||
-		   (str[end] == (CharT)'\t') ||
-		   (str[end] == (CharT)'\n') ) ) end--;
-	 if (end == -1) return 0;
-	 int sizeOfNewString = end + 2; // zero terminated string !!
-	 CharT *ret = new CharT[sizeOfNewString];
-	 for (int i=0; i < sizeOfNewString; i++) ret[i] = str[i];
-	 ret[sizeOfNewString-1] = (CharT)0;
-	 return ret;
+         int length = stringLength(str), end = length-1;
+         while ( (end        != -1     ) && 
+                 ( (str[end] == (CharT)' ' ) ||
+                   (str[end] == (CharT)'\t') ||
+                   (str[end] == (CharT)'\n') ) ) end--;
+         if (end == -1) return 0;
+         int sizeOfNewString = end + 2; // zero terminated string !!
+         CharT *ret = new CharT[sizeOfNewString];
+         for (int i=0; i < sizeOfNewString; i++) ret[i] = str[i];
+         ret[sizeOfNewString-1] = (CharT)0;
+         return ret;
       }      
       
 
@@ -90,11 +89,11 @@ namespace util {
        * allocated by this method.
        */
       CharT* trim(const CharT *str) {
-	 CharT* buffer = trimStart(str);
-	 if (buffer == 0) return 0;
-	 CharT* ret = trimEnd(buffer);
-	 if (buffer) delete buffer;
-	 return ret;
+         CharT* buffer = trimStart(str);
+         if (buffer == 0) return 0;
+         CharT* ret = trimEnd(buffer);
+         if (buffer) delete buffer;
+         return ret;
       }
       
    };

@@ -3,7 +3,6 @@ Name:      StringStripper.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to strip a string containing separators into a vector
-Version:   $Id: StringStripper.h,v 1.3 2001/11/26 09:20:59 ruff Exp $
 Author:    <Michele Laghi> michele.laghi@attglobal.net
 -----------------------------------------------------------------------------*/
 
@@ -35,8 +34,8 @@ namespace util {
    public:
       
       StringStripper(const string &separator) {
-	 separator_ = separator;
-	 sepSize_   = separator_.length();
+         separator_ = separator;
+         sepSize_   = separator_.length();
       }
       
       /** 
@@ -45,16 +44,16 @@ namespace util {
        * vector will be empty. No separator appears in the return strings.
        */
       vector<string> strip(string line) {
-	 vector<string> ret;
-	 string         sub;
-	 int            pos;
-  	 while ((pos=line.find(separator_)) >= 0) {
-	    sub.assign(line,0, pos);
-	    line.assign(line, pos+sepSize_);
-	    ret.insert(ret.end(), sub);
-  	 }
-	 ret.insert(ret.end(), line);
-	 return ret;
+         vector<string> ret;
+         string         sub;
+         int            pos;
+         while ((pos=line.find(separator_)) >= 0) {
+            sub.assign(line,0, pos);
+            line.assign(line, pos+sepSize_);
+            ret.insert(ret.end(), sub);
+         }
+         ret.insert(ret.end(), line);
+         return ret;
       }
       
    };

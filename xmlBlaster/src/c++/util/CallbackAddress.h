@@ -3,7 +3,6 @@ Name:      CallbackAddress.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback address string and protocol string
-Version:   $Id: CallbackAddress.h,v 1.3 2001/11/26 09:20:59 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #ifndef _UTIL_CALLBACKADDRESS_H
@@ -28,7 +27,7 @@ namespace util {
        * @param type    The protocol type, e.g. "IOR", "EMAIL", "XML-RPC"
        */
       CallbackAddress(const string &type) {
-	 type_ = type;
+         type_ = type;
       }
 
 
@@ -38,8 +37,8 @@ namespace util {
        * protocol
        */
       CallbackAddress(const string &type, const string &address) {
-	 type_ = type;
-	 setAddress(address);
+         type_ = type;
+         setAddress(address);
       }
 
 
@@ -48,7 +47,7 @@ namespace util {
        * @param address The callback address, e.g. "et@mars.univers"
        */
       void setAddress(const string &address) {
-	 address_ = address;
+         address_ = address;
       }
 
 
@@ -57,7 +56,7 @@ namespace util {
        * @return e.g. "IOR:00001100022...."
        */
       string getAddress() const {
-	 return address_;
+         return address_;
       }
 
 
@@ -66,7 +65,7 @@ namespace util {
        * @return e.g. "EMAIL" or "IOR"
        */
       string getType() const {
-	 return type_;
+         return type_;
       }
 
 
@@ -74,7 +73,7 @@ namespace util {
        * Dump state of this object into a XML ASCII string.
        */
       string toXml() const {
-	 return toXml("");
+         return toXml("");
       }
 
 
@@ -85,12 +84,12 @@ namespace util {
        * @return The xml representation
        */
       string toXml(const string &extraOffset) const {
-	 string sb, offset = "\n   ";
-	 offset += extraOffset;
-	 sb  = offset + "<callback type='" + getType() + "'>";
-	 sb += offset + "   " + getAddress();
-	 sb += offset + "</callback>";
-	 return sb;
+         string sb, offset = "\n   ";
+         offset += extraOffset;
+         sb  = offset + "<callback type='" + getType() + "'>";
+         sb += offset + "   " + getAddress();
+         sb += offset + "</callback>";
+         return sb;
       }
    };
 
