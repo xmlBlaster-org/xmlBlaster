@@ -258,9 +258,6 @@ public final class ClusterManager
          return null;
       }
 
-      log.error(ME, "subscribe forwarding is not implemented");
-      //subscribeQos.addNode();
-
       try {
          return con.subscribe(xmlKey.literal(), subscribeQos.toXml());
       }
