@@ -64,8 +64,8 @@ namespace org { namespace xmlBlaster { namespace util {
 
         return result;
     }
-    Dll_Export template<> std::string lexical_cast(bool arg); // See Global.cpp
-    Dll_Export template<> const char * lexical_cast(bool arg);
+    template<> Dll_Export std::string lexical_cast(bool arg); // See Global.cpp
+    template<> Dll_Export const char * lexical_cast(bool arg);
 }}}
 
 
