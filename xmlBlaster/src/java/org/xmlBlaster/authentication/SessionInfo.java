@@ -63,13 +63,13 @@ public class SessionInfo implements I_Timeout, I_AdminSession
    private String ME = "SessionInfo";
    /** The cluster wide unique identifier of the session e.g. "/node/heron/client/joe/2" */
    private final SessionName sessionName;
-   private SubjectInfo subjectInfo = null; // all client informations
-   private I_Session securityCtx = null;
+   private SubjectInfo subjectInfo; // all client informations
+   private I_Session securityCtx;
    private static long instanceCounter = 0L;
    private long instanceId = 0L;
    private ConnectQos connectQos;
    private Timeout expiryTimer;
-   private Timestamp timerKey = null;
+   private Timestamp timerKey;
    private final Global glob;
    private final LogChannel log;
    /** Do error recovery if message can't be delivered and we give it up */
@@ -112,7 +112,13 @@ public class SessionInfo implements I_Timeout, I_AdminSession
          instanceCounter--;
       }
       //this.id = ((prefix.length() < 1) ? "client/" : (prefix+"/client/")) + subjectInfo.getLoginName() + "/" + getPublicSessionId();
-      this.sessionName = new SessionName(glob, subjectInfo.getSubjectName(), getPublicSessionId());
+
+      if (connectQos.getSessionName().isPubSessionIdUser()) { // client has specified its own publicSessionId (> 0)
+         this.sessionName = connectQos.getSessionName();
+      }
+      else {
+         this.sessionName = new SessionName(glob, subjectInfo.getSubjectName(), getPublicSessionId());
+      }
       this.ME = "SessionInfo-" + this.sessionName.getAbsoluteName();
 
       if (log.CALL) log.call(ME, "Creating new SessionInfo " + instanceId + ": " + subjectInfo.toString());
@@ -178,11 +184,11 @@ public class SessionInfo implements I_Timeout, I_AdminSession
     * It is NOT the secret sessionId and may be published with PtP messages
     * without security danger
     * <p />
-    * @return The same as getInstanceId() but as string
+    * @return The same as getInstanceId()
     * @see #getInstanceId
     */
-   public final String getPublicSessionId() {
-      return ""+getInstanceId();
+   public final long getPublicSessionId() {
+      return getInstanceId();
    }
 
    public void finalize() {
@@ -318,12 +324,15 @@ public class SessionInfo implements I_Timeout, I_AdminSession
       return subjectInfo;
    }
 
+   /**
+    * @return The secret sessionId of this login session
+    */
    public String getSessionId() {
       return this.securityCtx.getSessionId();
    }
 
    public I_Session getSecuritySession() {
-      return securityCtx;
+      return this.securityCtx;
    }
 
    public void setSecuritySession(I_Session ctx) {
