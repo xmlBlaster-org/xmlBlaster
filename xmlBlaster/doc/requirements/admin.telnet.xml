@@ -1,0 +1,83 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='admin.telnet' type='NEW' prio='LOW' status="CLOSED">
+   <topic>You can administer XmlBlaster using a telnet client</topic>
+   <description>
+    There is support to access xmlBlaster with telnet.
+    You can for example query the free memory of the server JVM or shutdown xmlBlaster.
+    <p>
+    This is based on <a href="http://wttools.sourceforge.net/" target="others">Remote Console</a>
+    of the WTTools project. 
+    </p>
+    <p>
+    The default port to access xmlBlaster is 2702, configuring the port to 0 switches
+    the telnet access off.
+    </p>
+    The plugin architecture of <i>remotecons</i> allows us
+    to add more functionality like internal state queries or setting
+    of properties.
+   </description>
+
+   <example lang="Java" type="HTML">
+    Start xmlBlaster and try a
+
+    <pre>
+      telnet myHost 2702
+    </pre>
+
+    Replace myHost with the IP where xmlBlaster runs.
+    <p>
+    Type <code>help</code> for a usage list.
+    </p>
+   </example>
+
+   <configuration where="server">
+      <table border="1">
+         <tr>
+            <td>Property</td>
+            <td>Default / Example</td>
+            <td>Description</td>
+            <td>Implemented</td>
+         </tr>
+
+         <tr>
+            <td>-remoteconsole.port</td>
+            <td>2702</td>
+            <td>Choose the port where xmlBlaster listens for telnet requests, 0 switches telnet access off</td>
+            <td>yes</td>
+         </tr>
+      </table>
+   </configuration>
+
+   <todo type='HTML'>
+   <ol>
+      <li>
+      Add login/password, currently everybody can access xmlBlaster
+      and for example do a shutdown.
+      </li>
+      <li>
+      Add more xmlBlaster specific query possibilities
+      </li>
+      <li>
+      Support setting of properties
+      </li>
+   </ol>
+   </todo>
+   
+   <see type="INTERNET">http://wttools.sourceforge.net/remotecons/package.html</see>
+   <see type="API">org.xmlBlaster.Main</see>
+   
+   <author>ruff@swand.lake.de</author>
+   
+   <date>2002 05 09</date>
+   
+   <revision>$Revision: 1.1 $</revision>
+
+   <testcase status="CLOSED">
+      <name>-</name>
+      <comment>Currently not necessary</comment>
+      <test tool="SUITE"></test>
+   </testcase>
+</requirement>
+
