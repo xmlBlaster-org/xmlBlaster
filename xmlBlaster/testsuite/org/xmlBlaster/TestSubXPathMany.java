@@ -27,7 +27,7 @@ import junit.framework.*;
  * Invoke examples:<br />
  * <pre>
  *    java -Djava.compiler= junit.textui.TestRunner testsuite.org.xmlBlaster.TestSubXPathMany
- *    java -Djava.compiler= junit.ui.TestRunner -noloading testsuite.org.xmlBlaster.TestSubXPathMany
+ *    java -Djava.compiler= junit.swingui.TestRunner -noloading testsuite.org.xmlBlaster.TestSubXPathMany
  * </pre>
  * @author ruff@swand.lake.de
  */
@@ -128,6 +128,10 @@ public class TestSubXPathMany extends TestCase
             ek = new EraseKeyWrapper("command-radar-1");
             eq = new EraseQosWrapper();
             con1.erase(ek.toXml(), eq.toXml());
+
+            ek = new EraseKeyWrapper("dummyTestSubXPathMany");
+            eq = new EraseQosWrapper();
+            con1.erase(ek.toXml(), eq.toXml());
          }
          catch (XmlBlasterException e) {
             fail("doPublish failed: " + e.toString());
@@ -182,7 +186,7 @@ public class TestSubXPathMany extends TestCase
          retQos = con1.publish(msgUnit);
          log.info(ME, "Published message '" + pk.getOid() + "'");
 
-         pk = new PublishKeyWrapper("dummy", "text/plain", "1.0");
+         pk = new PublishKeyWrapper("dummyTestSubXPathMany", "text/plain", "1.0");
          pq = new PublishQosWrapper();
          msgUnit = new MessageUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
          retQos = con1.publish(msgUnit);
