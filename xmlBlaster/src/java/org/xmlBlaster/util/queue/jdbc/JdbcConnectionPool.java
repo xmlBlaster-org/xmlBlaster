@@ -72,7 +72,6 @@ public class JdbcConnectionPool implements I_Timeout {
    * @see I_Timeout#timeout(Object)
    */
    public void timeout(Object userData) {
-      this.log.call(ME, "timeout happened");
       this.log.warn(ME, "timeout, current index: " + this.currentIndex + ", waiting for reentrant connections: " + this.waitingForReentrantConnections);
 
       if (this.waitingForReentrantConnections) {
@@ -90,7 +89,7 @@ public class JdbcConnectionPool implements I_Timeout {
          // initializing and establishing of connections to DB ...
          this.connections = new Connection[this.capacity];
          for (int i = 0; i < this.capacity; i++) {
-            this.log.trace(ME, "initializing DB connection "+ i);
+            if (this.log.TRACE) this.log.trace(ME, "initializing DB connection "+ i);
             this.currentIndex = i;
             this.connections[i] = DriverManager.getConnection(url, user, password);
          }
@@ -120,8 +119,7 @@ public class JdbcConnectionPool implements I_Timeout {
     * returns null if no connection available
     */
    public Connection get() {
-      this.log.call(ME, "get invoked");
-
+      if (this.log.CALL) this.log.call(ME, "get invoked");
       if (this.log.DUMP) {
          String txt = "get: ";
          for (int i=0; i < this.connections.length; i++) {
@@ -138,7 +136,7 @@ public class JdbcConnectionPool implements I_Timeout {
             this.currentIndex--;
             return ret;
          }
-         log.trace(ME, "get: index out of range index is : " + this.currentIndex);
+         if (this.log.TRACE) log.trace(ME, "get: index out of range index is : " + this.currentIndex);
          this.threadToNotify = Thread.currentThread();
          return null;
       }
@@ -146,7 +144,7 @@ public class JdbcConnectionPool implements I_Timeout {
 
 
    public boolean put(Connection conn) {
-      this.log.call(ME, "put invoked");
+      if (this.log.CALL) this.log.call(ME, "put invoked");
       if (conn == null) return false;
       synchronized(this.connections) {
          if ((this.currentIndex >= -1) && (this.currentIndex < (this.capacity-1))) {
@@ -207,8 +205,7 @@ public class JdbcConnectionPool implements I_Timeout {
       throws ClassNotFoundException, SQLException, XmlBlasterException {
       this.glob = glob;
       this.log = this.glob.getLog("queue");
-      if (this.log.CALL)
-         this.log.call(ME, "initialize. Used Property Prefix: " + prefix);
+      if (this.log.CALL) this.log.call(ME, "initialize. Used Property Prefix: " + prefix);
 
       if (this.initialized) return;
 
@@ -264,7 +261,7 @@ public class JdbcConnectionPool implements I_Timeout {
          // initializing and establishing of connections to DB ...
          this.connections = new Connection[this.capacity];
          for (int i = 0; i < this.capacity; i++) {
-            this.log.trace(ME, "initializing DB connection "+ i);
+            if (this.log.TRACE) this.log.trace(ME, "initializing DB connection "+ i);
             this.currentIndex = i;
             this.connections[i] = DriverManager.getConnection(url, user, password);
          }
@@ -318,7 +315,7 @@ public class JdbcConnectionPool implements I_Timeout {
    /** This method is used in the init method */
    private Hashtable parseMapping(org.jutils.init.Property prop)
          throws XmlBlasterException, SQLException {
-      this.log.call(ME, "parseMapping");
+      if (this.log.CALL) this.log.call(ME, "parseMapping");
       Connection conn = null;
       String productName = null;
       try {
@@ -343,8 +340,7 @@ public class JdbcConnectionPool implements I_Timeout {
 //                " is wrong: no equality sign between key and value");
          String key = singleMapping.substring(0, pos);
          String value = singleMapping.substring(pos + 1, singleMapping.length());
-         if (this.log.TRACE)
-            this.log.trace(ME, "mapping " + key + " to " + value);
+         if (this.log.TRACE) this.log.trace(ME, "mapping " + key + " to " + value);
          this.mapping.put(key, value);
       }
       if (ex != null) throw ex;
@@ -391,7 +387,7 @@ public class JdbcConnectionPool implements I_Timeout {
     * layer are catched and logged. When this occurs, the affected connections are set to null.
     */
    public void disconnect() {
-      this.log.call(ME, "disconnect invoked");
+      if (this.log.CALL) this.log.call(ME, "disconnect invoked");
       for (int i = 0; i < this.capacity; i++) disconnect(i);
       this.initialized = false;
    }
@@ -439,8 +435,7 @@ public class JdbcConnectionPool implements I_Timeout {
          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_TOO_MANY_THREADS, ME, "Too many threads waiting for a connection to the DB. Increase the property 'queue.persistent.maxWaitingThreads'");
 
       this.waitingCalls++;
-      if (this.log.CALL)
-         this.log.call(ME, "getConnection " + this.currentIndex + " waiting calls: " + this.waitingCalls);
+      if (this.log.CALL) this.log.call(ME, "getConnection " + this.currentIndex + " waiting calls: " + this.waitingCalls);
 
       Connection conn = null;
 
@@ -448,12 +443,12 @@ public class JdbcConnectionPool implements I_Timeout {
 
          conn = this.get();
          if (conn != null) {
-            this.log.trace(ME, ".getConnection: returning a connection the normal way");
+            //if (this.log.TRACE) this.log.trace(ME, ".getConnection: returning a connection the normal way");
             this.waitingCalls--;
             return conn;
          }
 
-         this.log.trace(ME, ".getConnection: returned connection was null: waiting for a free connection");
+         if (this.log.TRACE) this.log.trace(ME, ".getConnection: returned connection was null: waiting for a free connection");
 
          synchronized (this.notifierSynch) {
             try {
@@ -462,7 +457,7 @@ public class JdbcConnectionPool implements I_Timeout {
                throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "no free DB connections available after timeout. This could be a temporary problem");
             }
             catch (InterruptedException ex) {
-               this.log.call(ME, "continuing after waiting for a free DB Connection");
+               if (this.log.TRACE) this.log.trace(ME, "continuing after waiting for a free DB Connection");
                conn = get();
                this.waitingCalls--;
                if (conn != null) return conn;
@@ -481,15 +476,12 @@ public class JdbcConnectionPool implements I_Timeout {
     */
    public void releaseConnection(Connection conn)
       throws XmlBlasterException {
-      this.log.trace(ME, "releaseConnection pos 1 index is: " + this.currentIndex);
-
+      if (this.log.CALL) this.log.call(ME, "releaseConnection " + this.currentIndex + " waiting calls: " + this.waitingCalls);
       boolean isOk = put(conn);
       if (!isOk) {
          this.log.error(ME, "the connection pool is already full");
       }
 
-      if (this.log.CALL)
-         this.log.call(ME, "releaseConnection " + this.currentIndex + " waiting calls: " + this.waitingCalls);
    }
 
 
