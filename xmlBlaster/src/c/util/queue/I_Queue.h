@@ -3,7 +3,7 @@ Name:      I_Queue.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
-Comment:   Implements a persistent queue with priorize and timestamp sorting
+Comment:   Implements a persistent queue with priority and time stamp sorting
 Note:      The gcc and icc (>=8) both define __GNUC__
 -----------------------------------------------------------------------------*/
 #ifndef I_QUEUE_I_Queue_h
@@ -75,14 +75,20 @@ struct I_QueueStruct;
 typedef struct I_QueueStruct I_Queue;
 
 /** Declare function pointers to use in struct to simulate object oriented access */
-typedef void  ( * I_QueueInitialize)(I_Queue *queueP, QueueException *exception);
+typedef void  ( * I_QueueInitialize)(I_Queue *queueP,
+                                      const char *dbname,
+                                      const char *nodeId,
+                                      const char *queueName,
+                                      int32_t maxNumOfEntries,
+                                      int64_t maxNumOfBytes,
+                                      QueueException *exception);
 typedef void  ( * I_QueueShutdown)(I_Queue *queueP, QueueException *exception);
 typedef void  ( * I_QueuePut)(I_Queue *queueP, QueueEntry *queueEntry, QueueException *exception);
 typedef QueueEntryArr *( * I_QueuePeekWithSamePriority)(I_Queue *queueP, int32_t maxNumOfEntries, int64_t maxNumOfBytes, QueueException *exception);
 typedef int32_t ( * I_QueueRandomRemove)(I_Queue *queueP, QueueEntryArr *queueEntryArr, QueueException *exception);
 typedef bool  ( * I_QueueClear)(I_Queue *queueP, QueueException *exception);
 typedef bool  ( * I_QueueEmpty)(I_Queue *queueP, QueueException *exception);
-typedef void  ( * I_QueueLogging)(const char *location, const char *fmt, ...);
+typedef void  ( * I_QueueLogging)(I_Queue *queueP, const char *location, const char *fmt, ...);
 
 /**
  * Interface for a queue implementation. 
@@ -91,14 +97,7 @@ typedef void  ( * I_QueueLogging)(const char *location, const char *fmt, ...);
  */
 struct I_QueueStruct {
   /* public: */
-   int argc;
-   const char * const *argv;
    void *userObject; /* A client can use this pointer to point to any client specific information */
-
-   /**
-    * Initialize the queue. 
-    */
-   I_QueueInitialize initialize;
 
    /**
     * Shutdown the queue, no entries are destroyed. 
@@ -148,16 +147,32 @@ struct I_QueueStruct {
    I_QueueLogging log;
 
   /* private: */
+   I_QueueInitialize initialize;
    bool isInitialized;
    void *privateObject; /* Usually holds a pointer on the internal data structure (like a DB handle or a hashtable) */
 };
 
 /**
- * Get an instance of a persistent queue. 
+ * Get an instance of a persistent queue and initialize it. 
  * NOTE: Every call creates a new and independent instance which shall
  * be destroyed by a call to freeQueue() when you are done
+ * @param dbname The database name, for SQLite it is the file name on HD, "xmlBlasterClient.db"
+ * @param nodeId The name space of this queue, "clientJoe1081594557415"
+ * @param queueName The name of the queue, "connection_clientJoe"
+ * @param maxNumOfEntries The max. accepted entries, 10000000l
+ * @param maxNumOfBytes The max. accepted bytes, 1000000000ll
+ * @param exception
+ * @return queueP The 'this' pointer
  */
-Dll_Export extern I_Queue *createQueue(int argc, const char* const* argv, I_QueueLogging logFp);
+Dll_Export extern I_Queue *createQueue(
+                                      const char *dbname,
+                                      const char *nodeId,
+                                      const char *queueName,
+                                      int32_t maxNumOfEntries,
+                                      int64_t maxNumOfBytes,
+                                      I_QueueLogging logFp,
+                                      QueueException *exception);
+/*Dll_Export extern I_Queue *createQueue(int argc, const char* const* argv, I_QueueLogging logFp);*/
 
 /**
  * Free your instance after using the persistent queue. 
@@ -170,5 +185,7 @@ extern Dll_Export void freeQueueEntryData(QueueEntry *queueEntry);
 extern Dll_Export void freeQueueEntry(QueueEntry *queueEntry);
 extern Dll_Export char *queueEntryToXmlLimited(QueueEntry *queueEntry, int maxContentDumpLen);
 extern Dll_Export char *queueEntryToXml(QueueEntry *queueEntry);
+
+extern Dll_Export int64_t getTimestamp(void);
 #endif /* I_QUEUE_I_Queue_h */
 
