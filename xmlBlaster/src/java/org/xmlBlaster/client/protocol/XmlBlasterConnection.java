@@ -21,6 +21,7 @@ import org.xmlBlaster.client.I_CallbackRaw;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.KeyWrapper;
 import org.xmlBlaster.client.LoginQosWrapper;
+import org.xmlBlaster.client.LogoutQosWrapper;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -667,6 +668,14 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       return driver.getLoginName();
    }
 
+   /**
+    * @see #disconnect()
+    */
+   public synchronized boolean logout()
+   {
+      return disconnect(new LogoutQosWrapper());
+   }
+
 
    /**
     * Logout from the server.
@@ -675,7 +684,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * @return true successfully logged out
     *         false failure on logout
     */
-   public synchronized boolean logout()
+   public synchronized boolean disconnect(LogoutQosWrapper qos)
    {
       if (Log.CALL) Log.call(ME, "logout() ...");
 
