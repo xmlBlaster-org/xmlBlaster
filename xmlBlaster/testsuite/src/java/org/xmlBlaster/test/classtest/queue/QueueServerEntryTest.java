@@ -210,9 +210,15 @@ public class QueueServerEntryTest extends TestCase {
          log.trace(ME, "Testing" + msgQosData.toXml());
 
          SessionName receiver = new SessionName(glob, "receiver1");
+         String subscriptionId = "subid";
+         String state = Constants.STATE_EXPIRED;
+         int redeliverCounter = 2;
          org.xmlBlaster.engine.Global global = new org.xmlBlaster.engine.Global();
          MsgUnitWrapper msgWrapper = new MsgUnitWrapper(glob, msgUnit, queue.getStorageId());
-         MsgQueueUpdateEntry entry = new MsgQueueUpdateEntry(global, msgWrapper, queue.getStorageId(), receiver);
+         MsgQueueUpdateEntry entry = new MsgQueueUpdateEntry(global, msgWrapper, queue.getStorageId(),
+                                         receiver, subscriptionId, state);
+         entry.incrRedeliverCounter();
+         entry.incrRedeliverCounter();
 
          queue.put(entry, false);
          I_QueueEntry returnEntry = queue.peek();
@@ -222,6 +228,9 @@ public class QueueServerEntryTest extends TestCase {
          
          MsgQueueUpdateEntry updateEntry = (MsgQueueUpdateEntry)returnEntry;
 
+         assertEquals("The subscriptionId of the entry is different ", subscriptionId, updateEntry.getSubscriptionId());
+         assertEquals("The state of the entry is different ", state, updateEntry.getState());
+         assertEquals("The redeliverCounter of the entry is different ", redeliverCounter, updateEntry.getRedeliverCounter());
          assertEquals("The priority of the entry is different ", entry.getPriority(), updateEntry.getPriority());
          assertEquals("The durable of the entry is different ", entry.isDurable(), updateEntry.isDurable());
          assertEquals("The receiver of the entry is different ", entry.getReceiver().toString(), updateEntry.getReceiver().toString());
@@ -229,7 +238,7 @@ public class QueueServerEntryTest extends TestCase {
          assertEquals("The msgUnitWrapperUniqueId of the entry is different ", entry.getMsgUnitWrapperUniqueId(), updateEntry.getMsgUnitWrapperUniqueId());
          assertEquals("The topic oid of the entry is different ", entry.getKeyOid(), updateEntry.getKeyOid());
          assertEquals("The topic oid of the entry is different ", entry.getStorageId().getId(), updateEntry.getStorageId().getId());
-         log.info(ME, "Persistent fields are read as expected");
+         log.info(ME, "SUCCESS: MsgQueueUpdateEntry: Persistent fields are read as expected");
 
          MsgUnit retMsgUnit = null;
          try {
