@@ -57,14 +57,15 @@ static bool destroy(const char *dbName)
    I_Queue *queueP;
    ExceptionStruct exception;
    QueueProperties queueProperties;
+   memset(&queueProperties, 0, sizeof(QueueProperties));
    strncpy0(queueProperties.dbName, dbName, QUEUE_DBNAME_MAX);
    strncpy0(queueProperties.nodeId, "a", QUEUE_ID_MAX);
    strncpy0(queueProperties.queueName, "b", QUEUE_ID_MAX);
    strncpy0(queueProperties.tablePrefix, "c", QUEUE_PREFIX_MAX);
    queueProperties.maxNumOfEntries = 10;
    queueProperties.maxNumOfBytes = 10;
-   
-   queueP = createQueue(&queueProperties, 0, (XMLBLASTER_LOG_LEVEL)0, &exception);
+
+   queueP = createQueue(&queueProperties, &exception);
    
    stateOk = queueP->destroy(&queueP, &exception);
 
@@ -92,10 +93,10 @@ static const char * test_illegal()
 
    memset(&queueProperties, 0, sizeof(QueueProperties));
 
-   queueP = createQueue(0, 0, (XMLBLASTER_LOG_LEVEL)0, 0);
+   queueP = createQueue(0, 0);
    mu_assert("create() Wrong properties", queueP == 0);
 
-   queueP = createQueue(&queueProperties, 0, (XMLBLASTER_LOG_LEVEL)0, &exception);
+   queueP = createQueue(&queueProperties, &exception);
    mu_assert("create()", queueP == 0);
    mu_assert_checkWantException("create()", exception);
 
@@ -105,13 +106,13 @@ static const char * test_illegal()
    strncpy0(queueProperties.tablePrefix, "XB_", QUEUE_PREFIX_MAX);
    queueProperties.maxNumOfEntries = 0;
    queueProperties.maxNumOfBytes = 0;
-   queueP = createQueue(&queueProperties, 0, (XMLBLASTER_LOG_LEVEL)0, &exception);
+   queueP = createQueue(&queueProperties, &exception);
    mu_assert("create()", queueP == 0);
    mu_assert_checkWantException("create()", exception);
 
    queueProperties.maxNumOfEntries = 10;
    queueProperties.maxNumOfBytes = 100;
-   queueP = createQueue(&queueProperties, 0, (XMLBLASTER_LOG_LEVEL)0, &exception);
+   queueP = createQueue(&queueProperties, &exception);
    mu_assert("create()", queueP != 0);
    mu_assert_checkException("create()", exception);
 
@@ -195,14 +196,18 @@ static const char * test_overflow()
    printf("\n---------test_overflow-------------------\n");
    destroy(dbName); /* Delete old db file */
 
+   memset(&queueProperties, 0, sizeof(QueueProperties));
    strncpy0(queueProperties.dbName, dbName, QUEUE_DBNAME_MAX);
    strncpy0(queueProperties.nodeId, "clientJoe1081594557415", QUEUE_ID_MAX);
    strncpy0(queueProperties.queueName, "connection_clientJoe", QUEUE_ID_MAX);
    strncpy0(queueProperties.tablePrefix, "XB_", QUEUE_PREFIX_MAX);
    queueProperties.maxNumOfEntries = 4L;
    queueProperties.maxNumOfBytes = 25LL;
+   queueProperties.logFp = loggingFp;
+   queueProperties.logLevel = LOG_TRACE;
+   queueProperties.userObject = 0;
 
-   queueP = createQueue(&queueProperties, loggingFp, LOG_TRACE, &exception);
+   queueP = createQueue(&queueProperties, &exception);
    mu_assertEqualsLong("create() maxNumOfEntries", 4L, (long)queueP->getMaxNumOfEntries(queueP));
    mu_assertEqualsString("create() maxNumOfBytes", int64ToStr(int64Str, 25LL), int64ToStr(int64StrX, queueP->getMaxNumOfBytes(queueP)));
    mu_assertEqualsBool("put() empty", true, queueP->empty(queueP));
@@ -281,6 +286,7 @@ static const char * test_queue()
    QueueProperties queueProperties;
    I_Queue *queueP = 0;
    const char *dbName = "xmlBlasterClient-C-Test.db";
+   const char *dummy = "bla";
 
    const int64_t idArr[] =   { 1081492136826000000ll, 1081492136856000000ll, 1081492136876000000ll, 1081492136911000000ll, 1081492136922000000ll };
    const int16_t prioArr[] = { 5                    , 1                    , 9                    , 9                    , 5 };
@@ -291,17 +297,21 @@ static const char * test_queue()
    printf("\n---------test_queue----------------------\n");
    destroy(dbName); /* Delete old db file */
 
+   memset(&queueProperties, 0, sizeof(QueueProperties));
    strncpy0(queueProperties.dbName, dbName, QUEUE_DBNAME_MAX);
    strncpy0(queueProperties.nodeId, "clientJoe1081594557415", QUEUE_ID_MAX);
    strncpy0(queueProperties.queueName, "connection_clientJoe", QUEUE_ID_MAX);
    strncpy0(queueProperties.tablePrefix, "XB_", QUEUE_PREFIX_MAX);
    queueProperties.maxNumOfEntries = 10000000L;
    queueProperties.maxNumOfBytes = 1000000000LL;
+   queueProperties.logFp = loggingFp;
+   queueProperties.logLevel = LOG_TRACE;
+   queueProperties.userObject = (void *)dummy;
 
-   queueP = createQueue(&queueProperties, loggingFp, LOG_TRACE, &exception);
+   queueP = createQueue(&queueProperties, &exception);
    mu_assert("create()", queueP != 0);
    mu_assert("create() QueueProperty", queueP->getProperties(queueP) != 0);
-   mu_assert("create() userObject", queueP->userObject == 0);
+   mu_assert("create() userObject", queueP->userObject == dummy);
    mu_assertEqualsBool("create() isInitialized", true, queueP->isInitialized);
    mu_assertEqualsString("create() dbName", queueProperties.dbName, queueP->getProperties(queueP)->dbName);
    mu_assertEqualsString("create() nodeId", queueProperties.nodeId, queueP->getProperties(queueP)->nodeId);
@@ -338,7 +348,7 @@ static const char * test_queue()
       queueP->shutdown(&queueP, &exception);
       mu_assert("shutdown()", queueP == 0);
 
-      queueP = createQueue(&queueProperties, loggingFp, LOG_TRACE, &exception);
+      queueP = createQueue(&queueProperties, &exception);
       mu_assertEqualsInt("put() numOfEntries", (int)numPut, queueP->getNumOfEntries(queueP));
       mu_assertEqualsInt("put() numOfBytes", lenPut, (int)queueP->getNumOfBytes(queueP));
       mu_assertEqualsBool("put() empty", false, queueP->empty(queueP));
