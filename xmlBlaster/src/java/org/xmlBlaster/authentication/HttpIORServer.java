@@ -3,7 +3,7 @@ Name:      HttpIORServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Delivering the Authentication Service IOR over HTTP
-Version:   $Id: HttpIORServer.java,v 1.18 2002/06/18 18:08:17 ruff Exp $
+Version:   $Id: HttpIORServer.java,v 1.19 2002/06/18 18:17:33 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -30,7 +30,7 @@ import java.io.*;
  * multi homed hosts.
  * <p />
  * Change code to be a generic HTTP server, not only for CORBA bootstrapping
- * @version $Revision: 1.18 $
+ * @version $Revision: 1.19 $
  * @author $Author: ruff $
  */
 public class HttpIORServer extends Thread
@@ -213,7 +213,7 @@ class HandleRequest extends Thread
          String resource = toks.nextToken(); // "/AuthenticationService.ior"
          String version = toks.nextToken();  // "HTTP/1.0"
 
-         { // TEST ONLY:
+         if (false) { // TEST ONLY:
             Uri uri = null;
             try {
                // TODO: use UriAuthority to parse the request and forward it to CommandManager
@@ -222,14 +222,25 @@ class HandleRequest extends Thread
                // To test a telnet with
                // GET http://joe:mypasswd@develop:3412/admin/?key=XX HTTP/1.0
 
-               // From browser we only get "/admin/?key=XX" -> 'joe:mypasswd' is not delivered!!
+               // !! From browser we only get "/admin/?key=XX" -> 'joe:mypasswd' is not delivered!!
+
                uri = new Uri(glob, resource);
                if (log.CALL) log.call(ME, "Request is" + uri.toXml());
             }
             catch (XmlBlasterException e) {
-               log.warn(ME, e.toString());
+               log.call(ME, e.toString());
                errorResponse(oStream, "HTTP/1.1 400 Bad Request", e.toString(), true);
                return;
+            }
+            finally {
+               if (log.CALL) {
+                  while (true) {
+                     String req = iStream.readLine();
+                     if (req == null)
+                        break;
+                     if (log.CALL) log.call(ME, req);
+                  }
+               }
             }
          }
 
