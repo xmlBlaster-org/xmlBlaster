@@ -256,13 +256,20 @@ string XmlBlasterException::getStackTrace(int maxNumOfLines)
 {
 #ifdef _ENABLE_STACK_TRACE_
    void** arr = new void*[maxNumOfLines];
+   /*
+   > +Currently, the function name and offset can only be obtained on systems
+   > +that use the ELF binary format for programs and libraries.
+   Perhaps a reference to the addr2line program can be added here.  It
+   can be used to retrieve symbols even if the -rdynamic flag wasn't
+   passed to the linker, and it should work on non-ELF targets as well.
+   */
    int bt = backtrace(arr, maxNumOfLines);
-   char** list = backtrace_symbols(arr, bt);
+   char** list = backtrace_symbols(arr, bt); // malloc the return pointer, the entries don't need to be freed
    string ret;
    for (int i=0; i<bt; i++) {
       if (list[i] != NULL) ret += list[i] + string("\n");
    }
-   delete list;
+   free(list);
    delete[] arr;
    return ret;
 #else
