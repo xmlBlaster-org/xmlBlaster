@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.29 2000/02/25 16:25:15 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.30 2000/02/25 18:45:59 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
@@ -45,13 +45,11 @@ import java.util.Properties;
  * continuing during the connection was lost.
  * <br />
  * You should set jacorb.retries=0  in $HOME/.jacorb_properties if you use the fail save mode
- *
- *
+ * <p />
  * Invoke: jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestSub
  * <p />
  * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http
- *
- * @version $Revision: 1.29 $
+ * @version $Revision: 1.30 $
  * @author $Author: ruff $
  */
 public class CorbaConnection implements ServerOperations
