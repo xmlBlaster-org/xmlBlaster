@@ -655,6 +655,14 @@ public class PersistenceCachePlugin implements I_Plugin, I_ConnectionListener, I
    public void destroy() throws XmlBlasterException {
       XmlBlasterException e = null;
       this.isDown = true;
+
+      try {
+         this.glob.getJdbcQueueManager(this.queueId).unregisterListener(this);
+      }
+      catch (Exception ex) {
+         this.log.error(ME, "could not unregister listener. Cause: " + ex.getMessage());
+      }
+
       try {
          if (this.persistentStore != null && this.isConnected)
             this.persistentStore.destroy();
@@ -662,6 +670,7 @@ public class PersistenceCachePlugin implements I_Plugin, I_ConnectionListener, I
       catch (XmlBlasterException ex) {
          e = ex;
       }
+
       this.transientStore.destroy();
       if (e != null) throw e;
    }
