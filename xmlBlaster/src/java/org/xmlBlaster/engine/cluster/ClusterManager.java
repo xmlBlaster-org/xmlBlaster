@@ -112,7 +112,7 @@ public final class ClusterManager implements I_RunlevelListener
       this.sessionInfo = sessionInfo;
       this.log = this.glob.getLog("cluster");
       this.ME = "ClusterManager" + this.glob.getLogPrefixDashed();
-      glob.getRunlevelManager().addRunlevelListener(this);
+      this.glob.getRunlevelManager().addRunlevelListener(this);
    }
 
    /**
@@ -121,19 +121,19 @@ public final class ClusterManager implements I_RunlevelListener
    public void postInit() throws XmlBlasterException {
       this.pluginLoadBalancerType = this.glob.getProperty().get("cluster.loadBalancer.type", "RoundRobin");
       this.pluginLoadBalancerVersion = this.glob.getProperty().get("cluster.loadBalancer.version", "1.0");
-      this.loadBalancerPluginManager = new LoadBalancerPluginManager(glob, this);
+      this.loadBalancerPluginManager = new LoadBalancerPluginManager(this.glob, this);
       loadBalancer = loadBalancerPluginManager.getPlugin(
                 this.pluginLoadBalancerType, this.pluginLoadBalancerVersion); // "RoundRobin", "1.0"
       if (loadBalancer == null) {
          String tmp = "No load balancer plugin type='" + this.pluginLoadBalancerType + "' version='" + this.pluginLoadBalancerVersion + "' found, clustering switched off";
          log.error(ME, tmp);
          //Thread.currentThread().dumpStack();
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED,
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED,
             ME, tmp); // is caught in RequestBroker.java
       }
 
       this.clusterNodeMap = new TreeMap(new NodeComparator());
-      this.mapMsgToMasterPluginManager = new MapMsgToMasterPluginManager(glob, this);
+      this.mapMsgToMasterPluginManager = new MapMsgToMasterPluginManager(this.glob, this);
 
       if (this.glob.getNodeId() == null)
          this.log.error(ME, "Node ID is still unknown, please set '-cluster.node.id' to a unique name.");
@@ -143,7 +143,7 @@ public final class ClusterManager implements I_RunlevelListener
       // Look for environment settings to configure startup clustering
       String[] env = { "cluster.node", "cluster.node.info", "cluster.node.master" };
       for (int ii=0; ii<env.length; ii++) {
-         Map nodeMap = glob.getProperty().get(env[ii], (Map)null);
+         Map nodeMap = this.glob.getProperty().get(env[ii], (Map)null);
          if (nodeMap != null) {
             Iterator iter = nodeMap.keySet().iterator();
             if (log.TRACE) log.trace(ME, "Found -" + env[ii] + " with " + nodeMap.size() + " array size, ii=" + ii);
@@ -155,7 +155,7 @@ public final class ClusterManager implements I_RunlevelListener
                   continue;
                }
                if (log.TRACE) log.trace(ME, "Parsing envrionment -" + env[ii] + " for node '" + nodeIdName + "' ...");
-               NodeParser nodeParser = new NodeParser(glob, this, xml, sessionInfo); // fills the info to ClusterManager
+               NodeParser nodeParser = new NodeParser(this.glob, this, xml, sessionInfo); // fills the info to ClusterManager
                log.info(ME, "Envrionment for node '" + nodeIdName + "' parsed.");
             }
          }
@@ -207,7 +207,7 @@ public final class ClusterManager implements I_RunlevelListener
       String qos = pubQos.toXml());
       XmlKey xmlKey = new XmlKey(msgUnit.getXmlKey(), true);
       clone msgUnit
-      retArr[ii] = publish(unsecureSessionInfo, xmlKey, msgUnit, new PublishQosServer(glob, msgUnit.getQos()));
+      retArr[ii] = publish(unsecureSessionInfo, xmlKey, msgUnit, new PublishQosServer(this.glob, msgUnit.getQos()));
    */
    }
 
@@ -239,12 +239,12 @@ public final class ClusterManager implements I_RunlevelListener
       }
 */
       //java.util.Vector drivers = glob.getPluginRegistry().getPluginsOfGroup("protocol");
-      java.util.Vector drivers = glob.getPluginRegistry().getPluginsOfInterfaceI_Driver();
+      java.util.Vector drivers = this.glob.getPluginRegistry().getPluginsOfInterfaceI_Driver();
       for (int i=0; i < drivers.size(); i++) {
          I_Driver driver = (I_Driver)drivers.get(i);
          String rawAddr = driver.getRawAddress();
          if (rawAddr != null) {
-            Address addr = new Address(glob, driver.getProtocolId(), glob.getId());
+            Address addr = new Address(this.glob, driver.getProtocolId(), this.glob.getId());
             addr.setRawAddress(rawAddr);
             this.myClusterNode.getNodeInfo().addAddress(addr);
          }
@@ -276,7 +276,7 @@ public final class ClusterManager implements I_RunlevelListener
     * Access the unique cluster node id (as NodeId object). 
     */
    public final NodeId getNodeId() {
-      return glob.getNodeId();
+      return this.glob.getNodeId();
    }
 
    /**
@@ -284,7 +284,7 @@ public final class ClusterManager implements I_RunlevelListener
     * @return The name of this xmlBlaster instance, e.g. "heron.mycompany.com"
     */
    public final String getId() {
-      return glob.getId();
+      return this.glob.getId();
    }
 
    /**
@@ -330,7 +330,7 @@ public final class ClusterManager implements I_RunlevelListener
          if (clusterNode == null) {
             String text = "Cluster node '" + destination.getDestination() + "' is not known, message '" + msgUnit.getLogId() + "' is lost";
             log.warn(ME, text);
-            throw new XmlBlasterException(glob, ErrorCode.USER_PTP_UNKNOWNDESTINATION, ME, text);
+            throw new XmlBlasterException(this.glob, ErrorCode.USER_PTP_UNKNOWNDESTINATION, ME, text);
          }
       }
 
@@ -344,7 +344,7 @@ public final class ClusterManager implements I_RunlevelListener
       if (con == null) {
          String text = "Cluster node '" + destination.getDestination() + "' is known but not reachable, message '" + msgUnit.getLogId() + "' is lost";
          log.warn(ME, text);
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CLUSTER_NOTAVAILABLE, ME, text);
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CLUSTER_NOTAVAILABLE, ME, text);
       }
 
       if (log.TRACE) log.trace(ME, "PtP message '" + msgUnit.getLogId() + "' destination " + destination.getDestination() +
@@ -411,7 +411,7 @@ public final class ClusterManager implements I_RunlevelListener
          return null;
       }
 
-      return con.subscribe(new SubscribeKey(glob, xmlKey), new SubscribeQos(glob, subscribeQos.getData()));
+      return con.subscribe(new SubscribeKey(this.glob, xmlKey), new SubscribeQos(this.glob, subscribeQos.getData()));
    }
 
    /**
