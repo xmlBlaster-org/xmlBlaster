@@ -3,7 +3,7 @@ Name:      XmlRpcConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native xmlBlaster Proxy. Can be called by the client in the same VM
-Version:   $Id: XmlRpcConnection.java,v 1.20 2002/03/18 00:29:29 ruff Exp $
+Version:   $Id: XmlRpcConnection.java,v 1.21 2002/04/15 13:10:32 ruff Exp $
 Author:    michele.laghi@attglobal.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.xmlrpc;
@@ -54,7 +54,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    protected String loginName = null;
    private String passwd = null;
    protected ConnectQos loginQos = null;
-   protected ConnectReturnQos returnQos = null;
+   protected ConnectReturnQos connectReturnQos = null;
 
    /**
     * Connect to xmlBlaster using XML-RPC.
@@ -163,7 +163,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    }
 
 
-   public void connect(ConnectQos qos) throws XmlBlasterException, ConnectionException
+   public ConnectReturnQos connect(ConnectQos qos) throws XmlBlasterException, ConnectionException
    {
       if (qos == null)
          throw new XmlBlasterException(ME+".connect()", "Please specify a valid QoS");
@@ -172,14 +172,14 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
       if (Log.CALL) Log.call(ME, "Entering login: name=" + qos.getUserId());
       if (isLoggedIn()) {
          Log.warn(ME, "You are already logged in, no relogin possible.");
-         return;
+         return this.connectReturnQos;
       }
 
       this.loginQos = qos;
       this.loginName = qos.getUserId();
       this.passwd = null;
 
-      loginRaw();
+      return loginRaw();
    }
 
 
@@ -189,7 +189,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
     * For internal use only.
     * @exception       XmlBlasterException if login fails
     */
-   public void loginRaw() throws XmlBlasterException, ConnectionException
+   public ConnectReturnQos loginRaw() throws XmlBlasterException, ConnectionException
    {
       try {
          initXmlRpcClient();
@@ -210,8 +210,8 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
             args.addElement(qosStripped);
             sessionId = null;
             String tmp = (String)getXmlRpcClient().execute("authenticate.connect", args);
-            this.returnQos = new ConnectReturnQos(tmp);
-            this.sessionId = returnQos.getSessionId();
+            this.connectReturnQos = new ConnectReturnQos(tmp);
+            this.sessionId = connectReturnQos.getSessionId();
          }
          else
          {
@@ -225,6 +225,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
             this.sessionId = (String)getXmlRpcClient().execute("authenticate.login", args);
          }
          if (Log.DUMP) Log.dump(ME, loginQos.toXml());
+         return this.connectReturnQos;
       }
       catch (ClassCastException e) {
          Log.error(ME+".login", "return value not a valid String: " + e.toString());

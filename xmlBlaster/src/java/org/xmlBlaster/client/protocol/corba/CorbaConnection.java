@@ -92,6 +92,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
    protected String loginName = ""; //null;
    private   String passwd = null; //null;
    protected ConnectQos loginQos = null;
+   protected ConnectReturnQos connectReturnQos = null;
 
    private   String               sessionId = null;
 
@@ -418,7 +419,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
     *                  The authentication tags should be set already if security manager is switched on
     * @exception       XmlBlasterException if login fails
     */
-   public void connect(ConnectQos qos) throws XmlBlasterException, ConnectionException
+   public ConnectReturnQos connect(ConnectQos qos) throws XmlBlasterException, ConnectionException
    {
       if (qos == null)
          throw new XmlBlasterException(ME+".connect()", "Please specify a valid QoS");
@@ -427,14 +428,14 @@ public class CorbaConnection implements I_XmlBlasterConnection
       if (Log.CALL) Log.call(ME, "connect() ...");
       if (xmlBlaster != null) {
          Log.warn(ME, "You are already logged in.");
-         return;
+         return this.connectReturnQos;
       }
 
       this.loginQos = qos;
       this.loginName=qos.getUserId();
       this.passwd=null; // not necessary here
 
-      loginRaw();
+      return loginRaw();
    }
 
 
@@ -443,9 +444,10 @@ public class CorbaConnection implements I_XmlBlasterConnection
     * <p />
     * For internal use only.
     * The qos needs to be set up correctly if you wish a callback
+    * @return The returned QoS or null
     * @exception       XmlBlasterException if login fails
     */
-   public void loginRaw() throws XmlBlasterException, ConnectionException
+   public ConnectReturnQos loginRaw() throws XmlBlasterException, ConnectionException
    {
       if (Log.CALL) Log.call(ME, "loginRaw(" + loginName + ") ...");
 
@@ -457,14 +459,15 @@ public class CorbaConnection implements I_XmlBlasterConnection
          }
          else {
             String tmp = authServer.connect(loginQos.toXml());
-            ConnectReturnQos returnQos = new ConnectReturnQos(tmp);
-            sessionId = returnQos.getSessionId();
-            String xmlBlasterIOR = returnQos.getServerRef().getAddress();
+            this.connectReturnQos = new ConnectReturnQos(tmp);
+            sessionId = this.connectReturnQos.getSessionId();
+            String xmlBlasterIOR = connectReturnQos.getServerRef().getAddress();
 
             xmlBlaster = ServerHelper.narrow(orb.string_to_object(xmlBlasterIOR));
          }
          if (Log.TRACE) Log.trace(ME, "Success, login for " + loginName);
          if (Log.DUMP) Log.dump(ME, loginQos.toXml());
+         return this.connectReturnQos;
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
          if (Log.TRACE) Log.trace(ME, "Login failed for " + loginName);
          throw new ConnectionException(e.id, e.reason);

@@ -3,7 +3,7 @@ Name:      SocketConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles connection to xmlBlaster with plain sockets
-Version:   $Id: SocketConnection.java,v 1.18 2002/03/18 00:29:29 ruff Exp $
+Version:   $Id: SocketConnection.java,v 1.19 2002/04/15 13:10:32 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -84,7 +84,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    protected SocketCallbackImpl cbReceiver = null;
    private String passwd = null;
    protected ConnectQos loginQos = null;
-   protected ConnectReturnQos returnQos = null;
+   protected ConnectReturnQos connectReturnQos = null;
    /** The unique client sessionId */
    protected String sessionId = null;
    /** The client login name */
@@ -259,7 +259,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    }
 
 
-   public void connect(ConnectQos qos) throws XmlBlasterException, ConnectionException
+   public ConnectReturnQos connect(ConnectQos qos) throws XmlBlasterException, ConnectionException
    {
       if (qos == null)
          throw new XmlBlasterException(ME+".connect()", "Please specify a valid QoS");
@@ -268,14 +268,14 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       if (Log.CALL) Log.call(ME, "Entering login: name=" + qos.getUserId());
       if (isLoggedIn()) {
          Log.warn(ME, "You are already logged in, no relogin possible.");
-         return;
+         return this.connectReturnQos;
       }
 
       this.loginQos = qos;
       this.loginName = qos.getUserId();
       this.passwd = null;
 
-      loginRaw();
+      return loginRaw();
    }
 
 
@@ -286,7 +286,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     * The qos needs to be set up correctly if you wish a callback
     * @exception       XmlBlasterException if login fails
     */
-   public void loginRaw() throws XmlBlasterException, ConnectionException
+   public ConnectReturnQos loginRaw() throws XmlBlasterException, ConnectionException
    {
       try {
          initSocketClient();
@@ -295,14 +295,15 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
             Parser parser = new Parser(Parser.INVOKE_BYTE, Constants.CONNECT, sessionId); // sessionId is usually null on login, on reconnect != null
             parser.addQos(loginQos.toXml());
             String resp = (String)getCbReceiver().execute(parser, WAIT_ON_RESPONSE);
-            ConnectReturnQos response = new ConnectReturnQos(resp);
-            this.sessionId = response.getSessionId();
-            // return (String)response; // in future change to return QoS
+            this.connectReturnQos = new ConnectReturnQos(resp);
+            this.sessionId = this.connectReturnQos.getSessionId();
          }
          else {
             throw new XmlBlasterException(ME, "login() is not supported, please use connect()");
          }
-         if (Log.DUMP) Log.dump(ME, loginQos.toXml());
+         if (Log.DUMP) Log.dump(ME+".ConnectQos", loginQos.toXml());
+         if (Log.DUMP && this.connectReturnQos!=null) Log.dump(ME+".ConnectReturnQos", connectReturnQos.toXml());
+         return this.connectReturnQos;
       }
       catch (XmlBlasterException e) {
          throw e;

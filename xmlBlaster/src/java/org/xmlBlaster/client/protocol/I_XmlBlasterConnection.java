@@ -10,6 +10,7 @@ package org.xmlBlaster.client.protocol;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.util.ConnectQos;
+import org.xmlBlaster.util.ConnectReturnQos;
 
 
 /**
@@ -42,8 +43,9 @@ public interface I_XmlBlasterConnection
     *
     * @param qos The authentication and other informations
     * @param client A handle to your callback if desired or null
+    * @return ConnectReturnQos
     */
-   public void connect(ConnectQos qos) throws XmlBlasterException, ConnectionException;
+   public ConnectReturnQos connect(ConnectQos qos) throws XmlBlasterException, ConnectionException;
    //public void disconnect(in string sessionId, in serverIdl::XmlType qos)
 
    // Could make sense to the SOCKET driver, returns new SocketCallbackImpl
@@ -56,7 +58,7 @@ public interface I_XmlBlasterConnection
 
    public void login(String loginName, String passwd, ConnectQos qos) throws XmlBlasterException, ConnectionException;
 
-   public void loginRaw() throws XmlBlasterException, ConnectionException;
+   public ConnectReturnQos loginRaw() throws XmlBlasterException, ConnectionException;
 
    public boolean logout();
 

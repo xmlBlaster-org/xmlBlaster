@@ -3,7 +3,7 @@ Name:      RmiConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: RmiConnection.java,v 1.18 2002/03/18 00:29:29 ruff Exp $
+Version:   $Id: RmiConnection.java,v 1.19 2002/04/15 13:10:32 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.rmi;
@@ -50,7 +50,7 @@ import java.applet.Applet;
  * <p />
  * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http
  *
- * @version $Revision: 1.18 $
+ * @version $Revision: 1.19 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class RmiConnection implements I_XmlBlasterConnection
@@ -64,7 +64,7 @@ public class RmiConnection implements I_XmlBlasterConnection
    protected String loginName = null;
    private String passwd = null;
    protected ConnectQos loginQos = null;
-   protected ConnectReturnQos returnQos = null;
+   protected ConnectReturnQos connectReturnQos = null;
 
    /** XmlBlaster RMI registry listen port is 1099, to access for bootstrapping */
    public static final int DEFAULT_REGISTRY_PORT = 1099; // org.xmlBlaster.protocol.rmi.RmiDriver.DEFAULT_REGISTRY_PORT;
@@ -198,7 +198,7 @@ public class RmiConnection implements I_XmlBlasterConnection
    /**
     * @param qos Has all credentials
     */
-   public void connect(ConnectQos qos) throws XmlBlasterException, ConnectionException
+   public ConnectReturnQos connect(ConnectQos qos) throws XmlBlasterException, ConnectionException
    {
       if (qos == null)
          throw new XmlBlasterException(ME+".connect()", "Please specify a valid QoS");
@@ -211,10 +211,10 @@ public class RmiConnection implements I_XmlBlasterConnection
       if (Log.CALL) Log.call(ME, "connect() ...");
       if (blasterServer != null) {
          Log.warn(ME, "You are already logged in.");
-         return;
+         return this.connectReturnQos;
       }
 
-      loginRaw();
+      return loginRaw();
    }
 
    /**
@@ -249,23 +249,25 @@ public class RmiConnection implements I_XmlBlasterConnection
     * <p />
     * For internal use only.
     * The qos needs to be set up correctly if you wish a callback
+    * @return The returned qos, containing the sessionId
     * @exception       XmlBlasterException if login fails
     */
-   public void loginRaw() throws XmlBlasterException, ConnectionException
+   public ConnectReturnQos loginRaw() throws XmlBlasterException, ConnectionException
    {
       if (Log.CALL) Log.call(ME, "loginRaw(" + loginName + ") ...");
       try {
          initRmiClient();
          if (passwd == null) {
             String tmp = authServer.connect(loginQos.toXml());
-            returnQos = new ConnectReturnQos(tmp);
-            sessionId = returnQos.getSessionId();
+            this.connectReturnQos = new ConnectReturnQos(tmp);
+            this.sessionId = this.connectReturnQos.getSessionId();
          }
          else {
-            sessionId = authServer.login(loginName, passwd, loginQos.toXml());
+            this.sessionId = authServer.login(loginName, passwd, loginQos.toXml());
          }
          if (Log.TRACE) Log.trace(ME, "Success, login for " + loginName);
          if (Log.DUMP) Log.dump(ME, loginQos.toXml());
+         return this.connectReturnQos;
       } catch(RemoteException e) {
          if (Log.TRACE) Log.trace(ME, "Login failed for " + loginName);
          throw new ConnectionException("LogingFailed", e.toString());
