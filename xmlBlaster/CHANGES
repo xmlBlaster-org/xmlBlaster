@@ -3,6 +3,9 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes svn
 ===========
+ o #12681 Checking subscription handle to be null to avoid IllegalArgumentException
+   Thanks to aaron@mindwidgets.com
+
  o #12665 Java client library: fail safe mode
    Remember public and secret sessionId on client side for reconnect attempts
    (For future enhancement of pubSessionId<0 and persistent sessions)
