@@ -9,9 +9,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/xmlBlasterDef.h>
 #include <util/ReferenceHolder.h>
 #include <util/queue/MsgQueueEntry.h>
-#include <util/thread/ThreadImpl.h>
-#include <util/I_Log.h>
-#include <set>
 
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 

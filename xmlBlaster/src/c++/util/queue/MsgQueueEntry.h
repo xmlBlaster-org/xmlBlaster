@@ -10,7 +10,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/xmlBlasterDef.h>
 #include <util/Timestamp.h>
 #include <util/MessageUnit.h>
-#include <util/MethodName.h>
 #include <util/qos/ConnectQos.h>
 #include <client/qos/PublishQos.h>
 #include <client/qos/PublishReturnQos.h>
@@ -79,7 +78,8 @@ public:
                   const org::xmlBlaster::util::MessageUnit& msgUnit,
                   const std::string& embeddedType,
                   int priority,
-                  bool persistent);
+                  bool persistent,
+                  org::xmlBlaster::util::Timestamp uniqueId = TimestampFactory::getInstance().getTimestamp());
 
     /**
      * Constructor suited for operations like connect

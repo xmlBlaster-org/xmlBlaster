@@ -3,17 +3,14 @@ Name:      UnSubscribeQueueEntry.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
-
 #ifndef _UTIL_QUEUE_UNSUBSCRIBEQUEUEENRY_H
 #define _UTIL_QUEUE_UNSUBSCRIBEQUEUEENRY_H
 
+#include <util/MethodName.h>
 #include <util/queue/MsgQueueEntry.h>
 #include <client/qos/UnSubscribeQos.h>
 #include <client/qos/UnSubscribeReturnQos.h>
 #include <client/key/UnSubscribeKey.h>
-
-
-
 
 /**
  * Class embedding messages or information to be stored on the client queues

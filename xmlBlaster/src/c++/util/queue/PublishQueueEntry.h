@@ -8,6 +8,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #define _UTIL_QUEUE_PUBLISHQUEUEENRY_H
 
 #include <util/queue/MsgQueueEntry.h>
+#include <util/MethodName.h>
 
 /**
  * Class embedding messages or information to be stored on the client queues
@@ -40,7 +41,8 @@ public:
                      const org::xmlBlaster::util::MessageUnit& msgUnit,
                      const std::string& type=org::xmlBlaster::util::Constants::ENTRY_TYPE_MSG_RAW + "|" + org::xmlBlaster::util::MethodName::PUBLISH,
                      int priority=NORM_PRIORITY,
-                     bool persistent=false);
+                     bool persistent=false,
+                     org::xmlBlaster::util::Timestamp uniqueId = TimestampFactory::getInstance().getTimestamp());
 
    ~PublishQueueEntry();
 

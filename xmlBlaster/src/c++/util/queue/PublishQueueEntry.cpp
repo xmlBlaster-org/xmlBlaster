@@ -16,8 +16,8 @@ using namespace org::xmlBlaster::util::dispatch;
 using namespace org::xmlBlaster::client::qos;
 using namespace org::xmlBlaster::client::key;
 
-PublishQueueEntry::PublishQueueEntry(Global& global, const MessageUnit& msgUnit, const string& type, int priority, bool persistent)
-   : MsgQueueEntry(global, msgUnit, type, priority, persistent)
+PublishQueueEntry::PublishQueueEntry(Global& global, const MessageUnit& msgUnit, const string& type, int priority, bool persistent, Timestamp uniqueId)
+   : MsgQueueEntry(global, msgUnit, type, priority, persistent, uniqueId)
 {
    ME = "PublishQueueEntry";
    if (log_.call()) log_.call(ME, "ctor ...");

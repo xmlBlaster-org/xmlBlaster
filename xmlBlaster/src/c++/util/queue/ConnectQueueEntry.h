@@ -7,6 +7,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #ifndef _UTIL_QUEUE_CONNECTQUEUEENRY_H
 #define _UTIL_QUEUE_CONNECTQUEUEENRY_H
 
+#include <util/MethodName.h>
 #include <util/queue/MsgQueueEntry.h>
 
 /**

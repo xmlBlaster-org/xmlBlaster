@@ -26,7 +26,7 @@ using namespace org::xmlBlaster::util::key;
 using namespace org::xmlBlaster::util::qos;
 using namespace org::xmlBlaster::util::dispatch;
 
-MsgQueueEntry::MsgQueueEntry(Global& global, const MessageUnit& msgUnit, const string& embeddedType, int priority, bool persistent)
+MsgQueueEntry::MsgQueueEntry(Global& global, const MessageUnit& msgUnit, const string& embeddedType, int priority, bool persistent, Timestamp uniqueId)
    : ReferenceCounterBase(), 
      ME("MsgQueueEntry"), 
      global_(global), 
@@ -39,7 +39,7 @@ MsgQueueEntry::MsgQueueEntry(Global& global, const MessageUnit& msgUnit, const s
    queryQosData_     = NULL;
    queryKeyData_     = NULL;
    statusQosData_    = NULL;
-   uniqueId_         = TimestampFactory::getInstance().getTimestamp();
+   uniqueId_         = uniqueId; //TimestampFactory::getInstance().getTimestamp();
    embeddedType_     = embeddedType;
    priority_         = priority; // should be normal priority
    persistent_       = persistent; // currently no persistents supported

@@ -7,6 +7,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #ifndef _UTIL_QUEUE_SUBSCRIBEQUEUEENRY_H
 #define _UTIL_QUEUE_SUBSCRIBEQUEUEENRY_H
 
+#include <util/MethodName.h>
 #include <util/queue/MsgQueueEntry.h>
 #include <client/qos/SubscribeQos.h>
 #include <client/qos/SubscribeReturnQos.h>
