@@ -246,7 +246,7 @@ if [ ${USE_CPP:=""} = "true" ] ; then
   export PATH=${PATH}:${XMLBLASTER_HOME}/testsuite/c++/bin
   #check if xerces is installed
   if [ ${XMLCPP_HOME:=""} = "" ] ; then
-    ${ECHO} "$BLACK_RED set XMLCPP_CPP to the directory where the c++ XML is installed $ESC"
+    ${ECHO} "$BLACK_RED set XMLCPP_HOME to the directory where the c++ XML is installed $ESC"
     CPP_ERROR=true
   else
     if [ ! -d ${XMLCPP_HOME} ] ; then 
@@ -257,11 +257,12 @@ if [ ${USE_CPP:=""} = "true" ] ; then
   fi  
   #check if the version of xerces is set
   if [ ${XMLCPP_VER:=""} = "" ] ; then
-      ${ECHO} "$BLACK_RED XMLCPP_VER is not set. I will set it to 1_1 $ESC"
-      export XMLCPP_VER="1_1"
+      ${ECHO} "$BLACK_RED XMLCPP_VER is not set. I will set it to 1_5_1 $ESC"
+      export XMLCPP_VER="1_5_1"
       CPP_ERROR=true
   else
       ${ECHO} "$BLACK_LTGREEN xerces version set to ${XMLCPP_VER} $ESC"
+      export LD_LIBRARY_PATH=$XMLCPP_HOME/lib:$LD_LIBRARY_PATH
   fi  
 
   #check if the correct corba is installed
