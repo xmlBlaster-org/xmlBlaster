@@ -137,6 +137,9 @@ public class HelloWorld4
                
                ek = new EraseKeyWrapper("SomeOtherMessage");
                er = con.erase(ek.toXml(), eq.toXml());
+
+               // Wait on message erase events
+               try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {}
             }
             catch (XmlBlasterException e) {
                log.error(ME, "Houston, we have a problem: " + e.toString());
