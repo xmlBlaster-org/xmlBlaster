@@ -2,6 +2,9 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes cvs
 ===========
+ o Plugin configuration of protocol plugins
+   Fixed to check properties from plugin configuration in xmlBlaster.properties
+
  o Added separate links for client side Java API and complete Java API on homepage.
 
  o Cluster configuration change
