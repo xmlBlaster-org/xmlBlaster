@@ -13,6 +13,8 @@ Changes for 0.80 [???, ? 2000]
    This bug caused sometimes the POA sessionId to be not unique,
    causing a subscequent login to auto logout another client.
 
+ - FileDriver is switched on as default (persistent store).
+
 Changes for 0.79 [Nov, 3 2000]
 ==============================
   - Bugfix for CORBA client/server running on multi homed hosts:
