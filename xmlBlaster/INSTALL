@@ -24,7 +24,7 @@ But, if you are lazy, just use and enjoy xmlBlaster as delivered!
 | REQUIRED           |
 +--------------------+
 
-   - JDK 1.2 or later
+   - JDK 1.2 or 1.3
    - A GNU 'make' utility recommended (if you want to rebuild xmlBlaster).
      For DOS/Windows, e.g. cygwin's make.
      Note that Windows nmake will not work properly with xmlBlaster Makefiles

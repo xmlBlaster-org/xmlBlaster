@@ -24,14 +24,32 @@ Howto start the xmlBlaster server:
 
       jaco org.xmlBlaster.Main -?
 
+   Note: If you have not compiled xmlBlaster yourself, try to use the jar file:
+
+      java -jar $XMLBLASTER_HOME/lib/xmlBlaster.jar
+
 
 2. xmlBlaster/demo/javaclients/ClientSub.java may be used as a first test client:
 
+  Using CORBA:
+
      jaco javaclients.ClientSub -trace true
 
+  Using RMI:
+
+     java javaclients.ClientSub -client.protocol RMI
+
+  Using XML-RPC:
+
+     java javaclients.ClientSub -client.protocol XML-RPC
+
+  Other options:
+
+     java javaclients.ClientSub -help
 
 
-Overview of some xmlBlaster.org packages
+
+3. Overview of some xmlBlaster.org packages
 
    - client
      Some helper for Java clients.
