@@ -22,7 +22,7 @@
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash
 # Thanks to Heinrich Goetzger
-# $Revision: 1.52 $
+# $Revision: 1.53 $
 #-----------------------------------------------------------
 
 
@@ -46,8 +46,8 @@ else
 fi
 
 if [ ${CLASSPATH:=""} = "" ] ; then
-	CLASSPATH=
-	export CLASSPATH
+   CLASSPATH=
+   export CLASSPATH
 fi
 
 #-------- Checking xmlBlaster --------
@@ -130,13 +130,17 @@ if [ ${JDK_HOME:=""} != "" ] ; then
          CLASSPATH=${XMLBLASTER_HOME}/lib/collections.jar:${CLASSPATH}
       else
          # JDK 1.2
-         CLASSPATH=${JDK_HOME}/jre/lib/rt.jar:${CLASSPATH}
-         export CLASSPATH
-			ORB_PROPS=${JDK_HOME}/jre/lib/orb.properties
-		   if [ ! -f ${ORB_PROPS} ]; then
-		      cp ${XMLBLASTER_HOME}/orb.properties ${ORB_PROPS}
-		      ${ECHO} "$BLACK_RED   Created ${ORB_PROPS} to switch off default JDK-ORB$ESC"
-		   fi
+         ORB_PROPS=${JDK_HOME}/jre/lib/orb.properties
+         if [ ! -f ${ORB_PROPS} ]; then
+            cp ${XMLBLASTER_HOME}/orb.properties ${ORB_PROPS}
+            ${ECHO} "$BLACK_RED   Created ${ORB_PROPS} to switch off default JDK-ORB$ESC"
+         fi
+         # If copy failed (missing permissions?)
+         # if [ $? -ne 0 ] ;  then
+         if [ ! -f ${ORB_PROPS} ]; then
+            CLASSPATH=${JDK_HOME}/jre/lib/rt.jar:${CLASSPATH}
+            export CLASSPATH
+         fi
       fi
       PATH=${JDK_HOME}/bin:${PATH}
       export PATH
@@ -162,15 +166,15 @@ if [ ${#1} == 0 ]; then
 else
 
    if [ ${1} == "orbacus" ]; then
-		source ${XMLBLASTER_HOME}/config/orbacus.sh
-		${ECHO} "$BLACK_LTGREEN   corba for java: orbacus    $ESC"
-		${ECHO} "$BLACK_LTGREEN   corba for c++ : orbacus    $ESC"
+      source ${XMLBLASTER_HOME}/config/orbacus.sh
+      ${ECHO} "$BLACK_LTGREEN   corba for java: orbacus    $ESC"
+      ${ECHO} "$BLACK_LTGREEN   corba for c++ : orbacus    $ESC"
    else 
       ${ECHO} "$BLACK_RED   The ${1} is an unknown corba   $ESC"
-		source ${XMLBLASTER_HOME}/config/jacorb.sh
-		source ${XMLBLASTER_HOME}/config/mico.sh
-		${ECHO} "$BLACK_LTGREEN   corba for java: jacorb    $ESC"
-		${ECHO} "$BLACK_LTGREEN   corba for c++ : mico      $ESC"
+      source ${XMLBLASTER_HOME}/config/jacorb.sh
+      source ${XMLBLASTER_HOME}/config/mico.sh
+      ${ECHO} "$BLACK_LTGREEN   corba for java: jacorb    $ESC"
+      ${ECHO} "$BLACK_LTGREEN   corba for c++ : mico      $ESC"
    fi
 fi
 
@@ -191,10 +195,25 @@ fi
 
 
 #-------- Running with TowerJ native compiler -
-TOWERJ_JAVA_HOME=${JDK_HOME}
-export TOWERJ_JAVA_HOME
-PATH=${PATH}:/opt/TowerJ/bin/x86-linux
-export PATH
+# See xmlBlaster/bin/Project.tj
+# Invoke:
+#   cd $XMLBLASTER_HOME/bin
+#   tj -b-jdk 2 -verbose  -project $XMLBLASTER_HOME/bin/Project.tj
+#   tj -b-jdk 2  -nofeedback
+#   tj -b-jdk 2  -O-closed
+TOWERJ=/opt/TowerJ
+export TOWERJ
+if [ ${TOWERJ:=""} != "" ] ; then
+   if [ -d ${TOWERJ} ] ; then
+      TOWERJ_JAVA_HOME=${JDK_HOME}
+      export TOWERJ_JAVA_HOME
+      PATH=${PATH}:${TOWERJ}/bin/x86-linux
+      export PATH
+      LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${TOWERJ}/lib/x86-linux
+      export LD_LIBRARY_PATH
+      ${ECHO} "$BLACK_LTGREEN      Using TOWERJ=${TOWERJ}  $ESC"
+   fi
+fi
 
 
 return 0
