@@ -6,6 +6,7 @@ Comment:   Helper to connect to xmlBlaster: for now a simplified version
            without caching and without failsave mode.
 Author:    <Michele Laghi> michele.laghi@attglobal.net
 -----------------------------------------------------------------------------*/
+#pragma warning(disable:4786)
 
 #include <client/CorbaConnection.h>
 #include <sys/types.h>
@@ -197,7 +198,7 @@ namespace org { namespace xmlBlaster {
             log_.info(me(),"Accessing xmlBlaster using a naming service.");
             return authenticateIdl::AuthServer::_duplicate(authServer_);
          }
-         catch(serverIdl::XmlBlasterException &e) {
+         catch(serverIdl::XmlBlasterException & /*e*/ ) {
             log_.error(me() + ".NoAuthService", text);
             throw serverIdl::XmlBlasterException(msg.c_str(),text.c_str());
          }
@@ -422,7 +423,7 @@ namespace org { namespace xmlBlaster {
          serverIdl::StringArr_var retArr = xmlBlaster_->publishArr(msgUnitArr);
          vector<string> vecArr;
          for (unsigned int ii=0; ii<retArr->length(); ii++) {
-            vecArr.push_back(static_cast<char *>(retArr[ii]));
+            vecArr.push_back(static_cast<char *>(retArr[ii].inout()));
          }
          return vecArr;
       }
@@ -522,10 +523,10 @@ namespace org { namespace xmlBlaster {
       }
 
       try {
-         serverIdl::StringArr_var retArr = xmlBlaster_->erase(xmlKey.c_str(), qos.c_str());
+         serverIdl::XmlTypeArr_var retArr = xmlBlaster_->erase(xmlKey.c_str(), qos.c_str());
          vector<string> vecArr;
          for (unsigned int ii=0; ii<retArr->length(); ii++) {
-            vecArr.push_back(static_cast<char *>(retArr[ii]));
+            vecArr.push_back(static_cast<const char *>(retArr[ii]));
          }
          return vecArr;
       }

@@ -10,6 +10,7 @@ Author:    <Michele Laghi> michele.laghi@attglobal.net
 #ifndef _CLIENT_CORBACONNECTION_H
 #define _CLIENT_CORBACONNECTION_H
 
+#include <util/xmlbcfg.h>
 #include <string>
 #include <vector>
 #include <fstream>
@@ -27,7 +28,7 @@ using namespace std;
 
 namespace org { namespace xmlBlaster {
 
-   class CorbaConnection {
+   class Dll_Export CorbaConnection {
       
    private:
       

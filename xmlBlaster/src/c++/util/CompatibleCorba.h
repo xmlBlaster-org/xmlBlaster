@@ -87,6 +87,30 @@ Author:    <Michele Laghi> michele.laghi@attglobal.net
 #define COSTYPEDEVENT             <not_implemented.h>
 #endif  // MICO
 
+/*****************************************************************
+ *                     TAO (ver. 2.3.1)
+ *****************************************************************/
+#ifdef  TAO
+#define CLIENT_INCLUDE(NAME)      <BUILD_INCLUDE(NAME, C.h)>
+#define SERVER_INCLUDE(NAME)      <BUILD_INCLUDE(NAME, S.h)>
+#define CORBA_HEADER              <tao/CORBA.h>
+#define COSCONTAINEMENT           <not_implemented.h> // what is this ??
+#define COSOBJECTIDENTITY         <not_implemented.h>
+#define COSREFERENCE              <not_implemented.h>
+#define COSEVENTCHANNELADMIN      <orbsvcs/CosEventChannelAdminC.h>
+#define COSEVENTCOMM              <not_implemented.h>
+#define COSRELATIONSHIPS          <not_implemented.h>
+#define COSGRAPHS                 <not_implemented.h>
+#define COSTIME                   <orbsvcs/CosTimeC.h>
+#define COSGRAPHSEXTENSION        <not_implemented>
+#define COSTRADING                <mico/CosTradingC.h>
+#define COSNAMING                 <orbsvcs/CosNamingC.h>
+#define COSPROPERTY               <orbsvcs/CosPropertyServiceC.h>
+#define COSTRADINGREPOS           <mico/CosTradingReposC.h>
+#define COSTYPEDEVENTCHANNELADMIN <not_implemented.h>
+#define COSTYPEDEVENT             <not_implemented.h>
+#endif  // TAO
+
 /**************************************************************
  *         GENERAL STUFF COMMON TO ALL IMPLEMENTORS 
  **************************************************************/

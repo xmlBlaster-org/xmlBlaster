@@ -13,6 +13,7 @@ Comment:   Handling the Client data
 #pragma warning(disable:4786)
 #endif
 
+#include <util/xmlbcfg.h>
 #include <iostream>
 #include <time.h>
 #include <stdlib.h>
@@ -33,7 +34,7 @@ namespace org { namespace xmlBlaster {
 namespace util {
    
    
-   class Log {
+   class Dll_Export Log {
       
    private:
       
@@ -150,7 +151,10 @@ namespace util {
       
             
      public:
-      static bool CALL, TIME, TRACE, DUMP;
+      static bool CALL;
+      static bool TIME;
+      static bool TRACE;
+      static bool DUMP;
       
       
       Log(int args=0, const char * const argc[]=0);

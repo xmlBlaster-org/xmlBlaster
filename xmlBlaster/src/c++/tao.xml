@@ -65,7 +65,7 @@
   <target name="prepare-idl" depends="prepare">      
       <echo message="Compiling idl..."/>
       <exec dir="${src.cpp.dir}/generated" executable="${idl.cmd}" failonerror="true">         
-         <arg line="-Ge 0 -Wb,pre_include=xmlbcfg.h -Wb,export_macro=Dll_Export"/>         
+         <arg line="-Ge 0 -Wb,pre_include=util/xmlbcfg.h -Wb,export_macro=Dll_Export"/>         
          <arg line="${xmlblaster.home}/${idl.dir}/xmlBlaster.idl"/>
       </exec>            
   </target>
@@ -156,6 +156,11 @@
    <target name="clean">
        <delete dir="${build.dir}/obj"/>
        <delete dir="${build.dir}"/>
+       <delete>
+         <fileset dir="${src.cpp.dir}/generated" includes="*.cpp"/>
+         <fileset dir="${src.cpp.dir}/generated" includes="*.i"/>
+         <fileset dir="${src.cpp.dir}/generated" includes="*.h"/>
+       </delete>
    </target>
  
 </project>

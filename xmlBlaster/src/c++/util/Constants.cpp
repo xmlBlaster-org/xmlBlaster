@@ -4,10 +4,10 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding some constants, see Constants.h for a description
 -----------------------------------------------------------------------------*/
+#pragma warning(disable:4786)
 
 #include <util/Constants.h>
 
-using namespace std;
 
 namespace org { namespace xmlBlaster {
 namespace util {

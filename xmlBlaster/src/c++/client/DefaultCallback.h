@@ -17,7 +17,13 @@ Comment:   Default implementation of the POA_serverIdl::BlasterCallback.
 #define  SERVER_HEADER generated/xmlBlaster
 #include <util/CompatibleCorba.h>
 #include COSNAMING
-#include <generated/xmlBlaster.h>
+#ifdef TAO
+  #include "generated/xmlBlasterC.h"
+  #include "generated/xmlBlasterS.h"
+#else
+  #include <generated/xmlBlaster.h>
+#endif
+
 
 using namespace std;
 using namespace boost;
@@ -94,13 +100,13 @@ namespace org { namespace xmlBlaster {
        * @param msgUnit      Contains a MessageUnit structs (your message)
        * @param qos              Quality of Service of the MessageUnit
        */
-      serverIdl::StringArr* update(const char* sessionId, const serverIdl::MessageUnitArr& msgUnitArr) {
+      serverIdl::XmlTypeArr* update(const char* sessionId, const serverIdl::MessageUnitArr& msgUnitArr) {
 
          // typedef StringSequenceTmpl<CORBA::String_var> StringArr;
          // typedef TSeqVar<StringSequenceTmpl<CORBA::String_var> > StringArr_var;
          // typedef TSeqOut<StringSequenceTmpl<CORBA::String_var> > StringArr_out;
          // IDL: typedef sequence<string> StringArr;
-         serverIdl::StringArr *res = new serverIdl::StringArr(msgUnitArr.length());
+         serverIdl::XmlTypeArr *res = new serverIdl::XmlTypeArr(msgUnitArr.length());
          res->length(msgUnitArr.length());
 
          if (log_.CALL) { log_.call(me(), "Receiving update of " + lexical_cast<string>(msgUnitArr.length()) + " message ..."); }

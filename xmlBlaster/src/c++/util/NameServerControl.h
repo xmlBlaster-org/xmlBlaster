@@ -155,7 +155,7 @@ namespace util {
             try {
                namingContext_ = CosNaming::NamingContext::_narrow(obj.in());
             }
-            catch (const CORBA::Exception &ex) {
+            catch (const CORBA::Exception & /*ex*/) {
                string msg="Corba Exception";
 #ifdef ORBACUS // FUTURE_CHECK
                msg = ex._name();
@@ -202,7 +202,7 @@ namespace util {
             catch(const CosNaming::NamingContext::AlreadyBound&) {
                // ignore this (this happens all the time !!!)
             }
-            catch(const CosNaming::NamingContext::InvalidName &ex ) {
+            catch(const CosNaming::NamingContext::InvalidName & /*ex*/ ) {
 //             throw NSControlException(4,"1. invalid name exception");
                string txt = me() + ".bindContext(...)";
                string msg = "invalid name exception";
@@ -327,7 +327,7 @@ namespace util {
             try {
                ret = namingContext_->resolve(objectName);
             }
-            catch(const CosNaming::NamingContext::NotFound& ex) {
+            catch(const CosNaming::NamingContext::NotFound& /*ex*/) {
 //             throw NSControlException(6,"resolve: name not found exception");
                string txt = me() + ".resolve()";
                string msg = "name not found exception";
@@ -339,7 +339,7 @@ namespace util {
                string msg = "can't proceed exception";
                throw serverIdl::XmlBlasterException(txt.c_str(), msg.c_str());
             }
-            catch(const CosNaming::NamingContext::InvalidName &ex ) {
+            catch(const CosNaming::NamingContext::InvalidName & /*ex*/ ) {
 //             throw NSControlException(4,"resolve: invalid name exception");
                string txt = me() + ".bind()";
                string msg = "invalid name exception";

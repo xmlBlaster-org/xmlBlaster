@@ -9,8 +9,6 @@ Comment:   Holding some constants
 #define _UTIL_CONSTANTS_H
 
 
-using namespace std;
-
 namespace org { namespace xmlBlaster {
 namespace util {
 

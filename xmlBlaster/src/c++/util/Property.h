@@ -4,6 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Class used to read, store & write (java) properties.
 -----------------------------------------------------------------------------*/
+#pragma warning(disable:4251)
 
 #ifndef _UTIL_PROPERTY_H
 #define _UTIL_PROPERTY_H
@@ -31,7 +32,7 @@ namespace util {
     * When writing, properties are written in alphabetical order (of the 
     * property name).
     */
-   class Property {
+   class Dll_Export Property {
       
       typedef map<string, string, less<string> > MapType;
   
