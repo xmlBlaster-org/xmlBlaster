@@ -36,6 +36,7 @@ LOCAL_FILES = \
     $(CLASS_DIR)/TestSubDispatch.class \
     $(CLASS_DIR)/TestSubExact.class \
     $(CLASS_DIR)/TestSubXPath.class \
+    $(CLASS_DIR)/TestSubMulti.class \
     $(CLASS_DIR)/TestGet.class \
     $(CLASS_DIR)/TestUnSub.class \
     $(CLASS_DIR)/TestInvocationRecorder.class \
