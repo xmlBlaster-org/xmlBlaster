@@ -3,7 +3,7 @@ Name:      MsgQueueEntry.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping the CORBA MessageUnit to allow some nicer usage
-Version:   $Id: MsgQueueEntry.java,v 1.10 2002/06/19 10:27:40 ruff Exp $
+Version:   $Id: MsgQueueEntry.java,v 1.11 2002/06/25 17:45:22 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queue;
@@ -57,6 +57,9 @@ public class MsgQueueEntry
    /** The temporary publish qos of the current message, may differ from the PublishQos of the first message with same oid */
    private PublishQos publishQosCurrent;
 
+   /** The state of the message which is sent in the UpdateQos */
+   private final String state;
+
    /**
     * Use this constructor if a new PtP message object is fed by method publish() and
     * the sessionInfo is not yet known (possibly user is not logged in).
@@ -78,6 +81,7 @@ public class MsgQueueEntry
       this.receiverSubjectInfo = receiverSubjectInfo;
       this.receiverSessionInfo = null;
       this.msgUnitWrapper = msgUnitWrapper;
+      this.state = Constants.STATE_OK;
       initialize();
 
       if (log.TRACE) log.trace(ME+"-/client/"+receiverSubjectInfo.getLoginName(), "Creating new MsgQueueEntry for published message, key oid=" + getUniqueKey());
@@ -102,6 +106,7 @@ public class MsgQueueEntry
       this.receiverSessionInfo = receiverSessionInfo;
       this.receiverSubjectInfo = receiverSessionInfo.getSubjectInfo();
       this.msgUnitWrapper = msgUnitWrapper;
+      this.state = Constants.STATE_OK;
       initialize();
 
       if (log.TRACE) log.trace(ME+"-/client/"+receiverSubjectInfo.getLoginName()+"/"+receiverSessionInfo.getPublicSessionId(),
@@ -113,8 +118,9 @@ public class MsgQueueEntry
     * <p />
     * @param subscriptionInfo Of the subscriber, to export the message
     * @param msgUnitWrapper contains the parsed message
+    * @param state The state of the message on update, e.g. Constants.STATE_OK
     */
-   public MsgQueueEntry(Global glob, SubscriptionInfo subscriptionInfo, MessageUnitWrapper msgUnitWrapper) throws XmlBlasterException {
+   public MsgQueueEntry(Global glob, SubscriptionInfo subscriptionInfo, MessageUnitWrapper msgUnitWrapper, String state) throws XmlBlasterException {
       if (subscriptionInfo == null || msgUnitWrapper == null) {
          Global.instance().getLog("cb").error(ME, "Invalid constructor parameter with subscriptionInfo");
          Thread.currentThread().dumpStack();
@@ -127,6 +133,7 @@ public class MsgQueueEntry
       this.receiverSessionInfo = subscriptionInfo.getSessionInfo();
       this.receiverSubjectInfo = this.receiverSessionInfo.getSubjectInfo();
       this.msgUnitWrapper = msgUnitWrapper;
+      this.state = state;
       initialize();
 
       if (log.TRACE) log.trace(ME+"-/client/"+receiverSubjectInfo.getLoginName()+"/"+receiverSessionInfo.getPublicSessionId(),
@@ -246,7 +253,7 @@ public class MsgQueueEntry
    {
       String subscriptionId = (subscriptionInfo == null) ? null : subscriptionInfo.getSubSourceUniqueKey();
       return UpdateQos.toXml(subscriptionId, msgUnitWrapper,
-                          index, getMsgQueue().size()+max, Constants.STATE_OK, redeliver, glob.getId());
+                          index, getMsgQueue().size()+max, state, redeliver, glob.getId());
    }
 
    /**
