@@ -84,6 +84,10 @@ public final class SubscribeQosServer
       return this.queryQosData.getWantInitialUpdate() && !this.doInhibitInitialUpdates;
    }
 
+   public boolean getWantUpdateOneway() {
+      return this.queryQosData.getWantUpdateOneway();
+   }
+
    public boolean getWantNotify() {
       return this.queryQosData.getWantNotify();
    }
