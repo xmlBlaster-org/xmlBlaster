@@ -96,7 +96,7 @@ XmlBlasterConnectionUnparsed *getXmlBlasterConnectionUnparsed(int argc, const ch
 void freeXmlBlasterConnectionUnparsed(XmlBlasterConnectionUnparsed *xb)
 {
    if (xb != 0) {
-      if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__, "freeXmlBlasterConnectionUnparsed 0X%x", xb);
+      if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__, "freeXmlBlasterConnectionUnparsed 0x%x", xb);
       freeProperties(xb->props);
       if (xb->zlibWriteBuf) {
          xmlBlaster_endZlibWriter(xb->zlibWriteBuf);
@@ -505,7 +505,9 @@ const char *xmlBlasterConnectionUnparsedUsage()
  */
 static void xmlBlasterConnectionShutdown(XmlBlasterConnectionUnparsed *xb)
 {
-   if (xb->isConnected(xb)) {
+   if (xb != 0 && xb->isConnected(xb)) {
+      if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__,
+            "shutdown() socketToXmlBlaster=%d socketToXmlBlasterUdp=%d", xb->socketToXmlBlaster, xb->socketToXmlBlasterUdp);
       shutdown(xb->socketToXmlBlaster, SHUT_RDWR); /* enum SHUT_RDWR = 2 */
       closeSocket(xb->socketToXmlBlaster);
       xb->socketToXmlBlaster = -1;
