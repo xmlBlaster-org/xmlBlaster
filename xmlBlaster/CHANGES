@@ -3,6 +3,12 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes for 0.xxx [xxxx-xx-xx] (cvs only)
 =========================================
 
+ o Protected core authentication against unwanted access by
+   plugin developers and native client developers
+
+ o Bugfix for queue plugin configuration transport in QoS, e.g.
+     -queue/connection/defaultPlugin RAM,1.0
+
  o Fixed client side thread demand by implementing
    lazy instantiation. This for example reduces the 
    number of xmlBlaster specific threads from 5 to 1 for
