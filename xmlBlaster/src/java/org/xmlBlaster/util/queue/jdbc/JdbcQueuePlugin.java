@@ -900,7 +900,13 @@ public final class JdbcQueuePlugin implements I_Queue, I_Plugin, I_Map
       sb.append("' numOfEntries='").append(this.numOfEntries);
       sb.append("' numOfBytes='").append(this.numOfBytes);
       sb.append("'>");
-      sb.append(property.toXml(extraOffset+Constants.INDENT));
+      if (this.property != null) {
+         sb.append(this.property.toXml(extraOffset+Constants.INDENT));
+      }
+      else {
+         sb.append(offset).append("<isDown>").append(this.isDown).append("</isDown>");
+      
+      }
       try {
          sb.append(offset).append(" <numOfPersistents>").append(getNumOfPersistentEntries_(false)).append("</numOfPersistents>");
          sb.append(offset).append(" <sizeOfPersistents>").append(getNumOfPersistentBytes_(false)).append("</sizeOfPersistents>");
