@@ -29,12 +29,13 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
  *
  *
  * @author Peter Antman
- * @version $Revision: 1.2 $ $Date: 2002/09/24 16:01:30 $
+ * @version $Revision: 1.3 $ $Date: 2002/11/25 23:01:29 $
  */
 
 public class JAXPFactory {
 
    private final static String ME = "JAXPFactory";
+   private final static JAXPFactory factory = new JAXPFactory();
 
    /**
     * Use the default SAXParserFactory.
@@ -50,9 +51,10 @@ public class JAXPFactory {
    public static SAXParserFactory newSAXParserFactory(String factoryName)
       throws FactoryConfigurationError {
       try {
-         return  (SAXParserFactory)newInstance(factoryName);
-      } catch (InstanceException e) {
-         throw new FactoryConfigurationError(e.getException(),e.getMessage());
+         SAXParserFactory spf = (SAXParserFactory) factory.getClass().getClassLoader().loadClass(factoryName).newInstance();
+         return  spf;
+      } catch (Exception e) {
+         throw new FactoryConfigurationError(e,e.getMessage());
       } // end of try-catch
    }
    /**
@@ -68,9 +70,10 @@ public class JAXPFactory {
    public static DocumentBuilderFactory newDocumentBuilderFactory(String factoryName)
       throws FactoryConfigurationError {
       try {
-         return (DocumentBuilderFactory)newInstance(factoryName);
-      } catch (InstanceException e) {
-         throw new FactoryConfigurationError(e.getException(),e.getMessage());
+         DocumentBuilderFactory dbf = (DocumentBuilderFactory) factory.getClass().getClassLoader().loadClass(factoryName).newInstance();
+         return dbf;
+      } catch (Exception e) {
+         throw new FactoryConfigurationError(e,e.getMessage());
       } // end of try-catch
    }
    /**
@@ -86,12 +89,11 @@ public class JAXPFactory {
    public static TransformerFactory newTransformerFactory(String factoryName)
       throws TransformerFactoryConfigurationError {
       try {
-         return (TransformerFactory)newInstance(factoryName);
-      } catch (InstanceException e) {
-         throw new TransformerFactoryConfigurationError(e.getException(),e.getMessage());
+         TransformerFactory tf = (TransformerFactory) factory.getClass().getClassLoader().loadClass(factoryName).newInstance();
+         return tf;
+      } catch (Exception e) {
+         throw new TransformerFactoryConfigurationError(e,e.getMessage());
       } // end of try-catch
-
-
    }
 
    /**
@@ -109,6 +111,7 @@ public class JAXPFactory {
          if (fac == null) {
             Log.warn(ME, "newInstance: 'classLoader.loadClass(" + className + ")' returns null!");
          }
+
          return fac.newInstance();
 
       } catch (ClassNotFoundException e) {
