@@ -32,16 +32,15 @@ using namespace org::xmlBlaster;
 
 class TestSubXPath : public I_Callback
 {
-private:
-   string  ME;
-   Global& global_;
-   Log&    log_;
-
-//   EmbeddedServer     embeddedServer_;
-   XmlBlasterAccess   *connection_;
-   Mutex              updateMutex_;
-   int                numOfUpdates_;
-
+private:					  
+   string            ME;
+   Global&           global_;
+   Log&              log_;
+   XmlBlasterAccess* connection_;
+   Mutex             updateMutex_;
+   int               numOfUpdates_;
+   EmbeddedServer*   embeddedServer_;
+   bool              useEmbeddedServer_;				  
    void subscribeXPath(const string& query) 
    {
       if (log_.TRACE) log_.trace(ME, "Subscribing using XPath syntax ...");
@@ -66,11 +65,14 @@ public:
       : ME("TestSubXPath"), 
         global_(glob), 
         log_(glob.getLog()),
-//        embeddedServer_(glob, "", "-info false -warn false -error false"),
         updateMutex_()
    {
-      connection_   = NULL;
-      numOfUpdates_ = 0;
+      embeddedServer_ = NULL; // (glob, "", "-info false -warn false -error false"),
+
+
+
+      connection_     = NULL;
+      numOfUpdates_   = 0;
    }
 
 

@@ -1,19 +1,46 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
 
+
+<requirement id='client.cpp' type='NEW' prio='HIGH' status='CLOSED'>
+   <topic>
+      XmlBlaster provides a complete client library written in c++.
+   </topic>
+   <description>
+     <p>
+     For c++ client applications you can use the class XmlBlasterAccess which provides access to
+     xmlBlaster in an easy way. All invocations to xmlBlaster are done by passing objects to the 
+     dispatcher.
+     </p>
+     <p>
+     <ul>
+     <li>for connecting read the <a href="interface.connect.html">connect interface</a></li>
+     <li>for disconnecting read the <a href="interface.disconnect.html">disconnect interface</a></li>
+     <li>for erasing read the  <a href="interface.erase.html">erase interface</a></li>
+     <li>for getting read the  <a href="interface.get.html">get interface</a></li>
+     <li>for publishing read the  <a href="interface.publish.html">publish interface</a></li>
+     <li>for subscribing read the  <a href="interface.subscribe.html">subscribe interface</a></li>
+     <li>for unsubscribing read the  <a href="interface.unSubscribe.html">unSubscribe interface</a></li>
+     <li>for callbacks read the  <a href="interface.update.html">update interface</a></li>
+     </ul>
+     For the invocation on the qos and key objects please refere to the APIs for 
+     <ul>
+     <li>org::xmlBlaster::util::qos (for ConnectQos)</li>
+     <li>org::xmlBlaster::client::qos</li>
+     <li>org::xmlBlaster::client::key</li>
+     </ul>
+     </p>
+   </description>
+   <example lang="CPP">
+   <pre>
+
+<![CDATA[
 #include <client/XmlBlasterAccess.h>
 #include <util/XmlBlasterException.h>
 #include <util/Global.h>
 #include <util/Log.h>
 #include <util/PlatformUtils.hpp>
 #include <util/Timestamp.h>
-
-/**
- * This client connects to xmlBlaster and subscribes to a message.
- * <p />
- * We then publish the message and receive it asynchronous in the update() method.
- * <p />
- * Invoke: HelloWorld2
- * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.html" target="others">xmlBlaster interface</a>
- */
 
 using namespace std;
 using namespace org::xmlBlaster::util;
@@ -26,15 +53,15 @@ class HelloWorld2 : public I_Callback,          // for the asynchroneous updates
                     public I_ConnectionProblems // for notification of connection problems when failsafe
 {
 private:
-   string  ME;		                              // the string identifying this class when logging
+   string  ME;		                        // the string identifying this class when logging
    Global& global_;                            
    Log&    log_;																// the reference to the log object for this instance
 
 public:
    HelloWorld2(Global& glob) 
-   : ME("HelloWorld2"),
-     global_(glob), 
-     log_(glob.getLog("demo"))                  // all logs written in this class are written to the
+	 : ME("HelloWorld2"),
+	   global_(glob), 
+		 log_(glob.getLog("demo"))      // all logs written in this class are written to the
    {                                            // log channel called 'demo'. To see the traces of this
    }                                            // channel invoke -trace[demo] true on the command line,
                                                 // then it will only switch on the traces for the demo channel
@@ -56,8 +83,8 @@ public:
 
    void toPolling()															// this is invoked when in failsafe mode. The connection to
    {																						// xmlBlaster is broken and the library is going into polling
-      log_.info(ME, "going to poll modus");			// i.e. a thread is checking if it is possible to reconnect.
-                                                // IMPORTANT: this method should not block for long times    
+      log_.info(ME, "going to poll modus");    // i.e. a thread is checking if it is possible to reconnect.
+			                       // IMPORTANT: this method should not block for long times    
    }																						// since it would block the reconnecting thread              
 
 
@@ -71,13 +98,13 @@ public:
          ConnectQos qos(global_, "joe", "secret");
          log_.info(ME, string("connecting to xmlBlaster. Connect qos: ") + qos.toXml());
 
-         // connects to xmlBlaster and gives a pointer to this class to tell which update method to invoke
-         // when callbacks come from the server.
+				 // connects to xmlBlaster and gives a pointer to this class to tell which update method to invoke
+				 // when callbacks come from the server.
          ConnectReturnQos retQos = con.connect(qos, this);  // Login to xmlBlaster, register for updates
          log_.info(ME, "successfully connected to xmlBlaster. Return qos: " + retQos.toXml());
 
-         // subscribe key. By invoking setOid you implicitly choose the 'EXACT' mode. If you want to 
-         // subscribe with XPATH use setQueryString instead.
+				 // subscribe key. By invoking setOid you implicitly choose the 'EXACT' mode. If you want to 
+				 // subscribe with XPATH use setQueryString instead.
          SubscribeKey subKey(global_);
          subKey.setOid("HelloWorld2");
          SubscribeQos subQos(global_);
@@ -86,7 +113,7 @@ public:
          SubscribeReturnQos subRetQos = con.subscribe(subKey, subQos);
          log_.info(ME, string("successfully subscribed to xmlBlaster. Return qos: ") + subRetQos.toXml());
 
-         // publish a message with the oid 'HelloWorld2'
+				 // publish a message with the oid 'HelloWorld2'
          PublishQos publishQos(global_);
          PublishKey publishKey(global_);
          publishKey.setOid("HelloWorld2");
@@ -152,3 +179,18 @@ int main(int args, char ** argv)
    hello.execute();
    return 0;
 }
+
+]]>
+
+   </pre>
+   </example>
+
+
+   <see type="REQ">client.cpp.precondition</see>
+
+<!--   <see type="REQ">cluster</see> -->
+   <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
+   <date>2003 01 15</date>
+   <revision>$Revision: 1.1 $</revision>
+</requirement>
+
