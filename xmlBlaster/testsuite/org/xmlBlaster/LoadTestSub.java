@@ -3,7 +3,7 @@ Name:      LoadTestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: LoadTestSub.java,v 1.10 2000/03/13 16:17:03 ruff Exp $
+Version:   $Id: LoadTestSub.java,v 1.11 2000/04/17 11:58:24 kkrafft2 Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -169,7 +169,9 @@ public class LoadTestSub extends TestCase implements I_Callback
                Log.info(ME, "Success: Publishing done: '" + senderContent + "'");
             */
          }
-         long avg = NUM_PUBLISH / (stopWatch.elapsed()/1000L);
+         double davg = (double)stopWatch.elapsed() / 1000.0;
+         davg = (double)NUM_PUBLISH / davg;
+         long avg = (long)davg;
          Log.info(ME, "Success: Publishing done, " + NUM_PUBLISH + " messages sent, average messages/second = " + avg);
          assertEquals("oid is different", oid, publishOid);
       } catch(XmlBlasterException e) {
