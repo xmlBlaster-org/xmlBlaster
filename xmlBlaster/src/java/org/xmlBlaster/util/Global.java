@@ -87,13 +87,16 @@ public class Global implements Cloneable
    protected Hashtable logChannels = new Hashtable();
    protected LogChannel logDefault = null;
 
+   protected int counter = 0;
+
    /**
     * Constructs an initial Global object.
     */
    public Global()
    {
+      counter++;
       if (this.firstInstance != null) {
-         System.out.println("######Global empty constructor invoked again, try Global.instance()");
+         System.out.println("######Global " + counter + " empty constructor invoked again, try Global.instance()");
          //Thread.currentThread().dumpStack();
       }
       synchronized (Global.class) {
@@ -115,7 +118,8 @@ public class Global implements Cloneable
     * by your properties array (usually the command line args).
     */
    public Global(Properties props) {
-     this(Property.propsToArgs(props));
+      this(Property.propsToArgs(props));
+      counter++;
    }
 
    /**
@@ -124,6 +128,7 @@ public class Global implements Cloneable
     */
    public Global(String[] args)
    {
+      counter++;
       if (this.firstInstance != null) {
          System.out.println("######Global args constructor invoked again, try Global.instance()");
          //Thread.currentThread().dumpStack();
@@ -146,6 +151,7 @@ public class Global implements Cloneable
     * If you have a util.Global and need a shallow copy.
     */
    public Global(org.xmlBlaster.util.Global utilGlob) {
+      counter++;
       shallowCopy(utilGlob);
       //Thread.currentThread().dumpStack();
    }
