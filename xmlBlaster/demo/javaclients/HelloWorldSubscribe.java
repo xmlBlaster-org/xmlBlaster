@@ -79,7 +79,7 @@ public class HelloWorldSubscribe implements I_Callback
       I_XmlBlasterAccess con = null;
       boolean disconnect = glob.getProperty().get("disconnect", true);
       try {
-         boolean persistentConnection = glob.getProperty().get("persistentConnection", false);
+         boolean connectPersistent = glob.getProperty().get("connect/qos/persistent", false);
          boolean interactive = glob.getProperty().get("interactive", true);
          this.interactiveUpdate = glob.getProperty().get("interactiveUpdate", false);
          this.updateSleep = glob.getProperty().get("updateSleep", 0L);
@@ -105,6 +105,7 @@ public class HelloWorldSubscribe implements I_Callback
          String filterQuery = glob.getProperty().get("filter.query", "");
          boolean unSubscribe = glob.getProperty().get("unSubscribe", true);
          maxContentLength = glob.getProperty().get("maxContentLength", 250);
+         boolean connectRefreshSession = glob.getProperty().get("connect/qos/sessionRefresh", false);
 
          if (oid.length() < 1 && xpath.length() < 1) {
             log.warn(ME, "No -oid or -xpath given, we subscribe to oid='Hello'.");
@@ -131,7 +132,8 @@ public class HelloWorldSubscribe implements I_Callback
          }
 
          log.info(ME, "Used settings are:");
-         log.info(ME, "   -persistentConnection " + persistentConnection);
+         log.info(ME, "   -connect/qos/persistent     " + connectPersistent);
+         log.info(ME, "   -connect/qos/sessionRefresh " + connectRefreshSession);
          log.info(ME, "   -interactive       " + interactive);
          log.info(ME, "   -interactiveUpdate " + this.interactiveUpdate);
          log.info(ME, "   -updateSleep       " + this.updateSleep);
@@ -165,7 +167,8 @@ public class HelloWorldSubscribe implements I_Callback
          // ConnectQos checks -session.name and -passwd from command line
          log.info(ME, "============= CreatingConnectQos");
          ConnectQos qos = new ConnectQos(glob);
-         qos.setPersistent(persistentConnection);
+         qos.setPersistent(connectPersistent);
+         qos.setRefreshSession(connectRefreshSession);
          log.info(ME, "ConnectQos is " + qos.toXml());
          ConnectReturnQos crq = con.connect(qos, this);  // Login to xmlBlaster, register for updates
          log.info(ME, "Connect success as " + crq.toXml());
