@@ -3,7 +3,6 @@ Name:      TestConnect.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestConnect.cpp,v 1.18 2003/07/07 12:09:27 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 /**
@@ -27,7 +26,10 @@ Version:   $Id: TestConnect.cpp,v 1.18 2003/07/07 12:09:27 ruff Exp $
 using namespace std;
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::qos;
+using namespace org::xmlBlaster::util::thread;
 using namespace org::xmlBlaster::client;
+using namespace org::xmlBlaster::client::key;
+using namespace org::xmlBlaster::client::qos;
 
 namespace org { namespace xmlBlaster { namespace test {
 

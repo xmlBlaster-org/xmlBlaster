@@ -12,6 +12,7 @@ Comment:   Testing the Timeout Features
 
 using namespace std;
 using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::thread;
 using namespace org::xmlBlaster::client::protocol::corba;
 
 

@@ -3,7 +3,7 @@ Name:      TestRam.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: TestRam.cpp,v 1.11 2003/07/07 12:09:27 ruff Exp $
+Version:   $Id: TestRam.cpp,v 1.12 2003/08/16 19:39:58 ruff Exp $
 ---------------------------------------------------------------------------*/
 #include <util/XmlBCfg.h>
 #include "TestSuite.h"
@@ -15,6 +15,8 @@ using namespace org::xmlBlaster::client;
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::qos;
 using namespace org::xmlBlaster::authentication;
+using namespace org::xmlBlaster::client::key;
+using namespace org::xmlBlaster::client::qos;
 
 
 /**

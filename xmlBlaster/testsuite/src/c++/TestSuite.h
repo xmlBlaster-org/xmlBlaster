@@ -2,13 +2,14 @@
 Name:      TestSuite.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Testing the Timeout Features
+Comment:   Testing helper
 -----------------------------------------------------------------------------*/
 
 #ifndef _TESTSUITE_H
 #define _TESTSUITE_H
 
 #include <assert.h> // windows
+#include <iostream>
 #include <client/XmlBlasterAccess.h>
 #include <util/EmbeddedServer.h>
 #include <util/XmlBlasterException.h>
@@ -19,26 +20,18 @@ Comment:   Testing the Timeout Features
 #include <util/Timestamp.h>
 #include <util/lexical_cast.h>
 
-using namespace std;
-using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::thread;
-using namespace org::xmlBlaster::client;
-using namespace org::xmlBlaster::client::qos;
-using namespace org::xmlBlaster::client::key;
-using namespace org::xmlBlaster;
-
 namespace org { namespace xmlBlaster { namespace test {
 
-template <class T> extern void assertEquals(Log& log, const string& who, const T& should, const T& is, const string& txt);
-template <class T> extern void assertDifferes(Log& log, const string& who, const T& should, const T& is, const string& txt);
-extern void assertEquals(Log& log, const string& who, const string& should, const string& is, const string& txt);
-extern void assertDifferes(Log& log, const string& who, const string& should, const string& is, const string& txt);
+template <class T> extern void assertEquals(org::xmlBlaster::util::Log& log, const std::string& who, const T& should, const T& is, const std::string& txt);
+template <class T> extern void assertDifferes(org::xmlBlaster::util::Log& log, const std::string& who, const T& should, const T& is, const std::string& txt);
+extern void assertEquals(org::xmlBlaster::util::Log& log, const std::string& who, const std::string& should, const std::string& is, const std::string& txt);
+extern void assertDifferes(org::xmlBlaster::util::Log& log, const std::string& who, const std::string& should, const std::string& is, const std::string& txt);
 
 template <class T> 
-void assertEquals(Log& log, const string& who, const T& should, const T& is, const string& txt)
+void assertEquals(org::xmlBlaster::util::Log& log, const std::string& who, const T& should, const T& is, const std::string& txt)
 {
    if (should != is) {
-      log.error(who, txt + " FAILED: value is " + lexical_cast<string>(is) + "' but should be '" + lexical_cast<string>(should) + "'");
+      log.error(who, txt + " FAILED: value is " + org::xmlBlaster::util::lexical_cast<std::string>(is) + "' but should be '" + org::xmlBlaster::util::lexical_cast<std::string>(should) + "'");
       assert(0);
    }
    else {
@@ -47,10 +40,10 @@ void assertEquals(Log& log, const string& who, const T& should, const T& is, con
 }
 
 template <class T> 
-void assertDifferes(Log& log, const string& who, const T& should, const T& is, const string& txt)
+void assertDifferes(org::xmlBlaster::util::Log& log, const std::string& who, const T& should, const T& is, const std::string& txt)
 {
    if (should == is) {
-      log.error(who, txt + " FAILED: value is " + lexical_cast<string>(is) + "' in both cases but they should be different");
+      log.error(who, txt + " FAILED: value is " + org::xmlBlaster::util::lexical_cast<std::string>(is) + "' in both cases but they should be different");
       assert(0);
    }
    else {
@@ -59,9 +52,9 @@ void assertDifferes(Log& log, const string& who, const T& should, const T& is, c
 }
 
 
-// specific implementation for the string since the lexical_cast from string to string causes problems.
+// specific implementation for the string since the org::xmlBlaster::util::lexical_cast from string to string causes problems.
 
-void assertEquals(Log& log, const string& who, const string& should, const string& is, const string& txt)
+void assertEquals(org::xmlBlaster::util::Log& log, const std::string& who, const std::string& should, const std::string& is, const std::string& txt)
 {
    if (should != is) {
       log.error(who, txt + " FAILED: value is " + is + "' but should be '" + should + "'");
@@ -72,7 +65,7 @@ void assertEquals(Log& log, const string& who, const string& should, const strin
    }
 }
 
-void assertDifferes(Log& log, const string& who, const string& should, const string& is, const string& txt)
+void assertDifferes(org::xmlBlaster::util::Log& log, const std::string& who, const std::string& should, const std::string& is, const std::string& txt)
 {
    if (should == is) {
       log.error(who, txt + " FAILED: value is " + is + "' for both cases but they should be different");
@@ -88,21 +81,21 @@ void assertDifferes(Log& log, const string& who, const string& should, const str
 class TestSuite
 {
 protected:
-   string           ME;
-   string           applName_;
-   Global&          global_;
-   Log&             log_;
+   std::string           ME;
+   std::string           applName_;
+   org::xmlBlaster::util::Global&          global_;
+   org::xmlBlaster::util::Log&             log_;
    bool             useEmbeddedServer_;
-   XmlBlasterAccess connection_;
-   EmbeddedServer*  embeddedServer_;
+   org::xmlBlaster::client::XmlBlasterAccess connection_;
+   org::xmlBlaster::util::EmbeddedServer*  embeddedServer_;
    bool             needsHelp_;
 
 public:
 
-   TestSuite(int args, char ** argv, const string& name) 
+   TestSuite(int args, char ** argv, const std::string& name) 
       : ME(name), 
         applName_(ME), 
-        global_(Global::getInstance().initialize(args, argv)), 
+        global_(org::xmlBlaster::util::Global::getInstance().initialize(args, argv)), 
         log_(global_.getLog("test")),
         connection_(global_)
    {
@@ -123,7 +116,7 @@ public:
       }
       else {
          log_.warn(ME, "the embedded server is switched OFF (you will need an external xmlBlaster running), sleeping for 2 sec now ...");
-         Thread::sleep(2000);
+         org::xmlBlaster::util::thread::Thread::sleep(2000);
      }
      if (useEmbeddedServer_) {
 # ifdef XMLBLASTER_MICO
@@ -134,11 +127,11 @@ public:
         exit(-1);
 # endif
         if ( log_.call() ) log_.call(ME, "Entering TestSuite base class, useEmbeddedServer_=true");
-        string cmdLine = global_.getProperty().getStringProperty("embeddedServer.cmdLine", "> /dev/null");
-        string jvmArgs = global_.getProperty().getStringProperty("embeddedServer.jvmArgs", "");
-        embeddedServer_ = new EmbeddedServer(global_, jvmArgs, cmdLine, &connection_);
+        std::string cmdLine = global_.getProperty().getStringProperty("embeddedServer.cmdLine", "> /dev/null");
+        std::string jvmArgs = global_.getProperty().getStringProperty("embeddedServer.jvmArgs", "");
+        embeddedServer_ = new org::xmlBlaster::util::EmbeddedServer(global_, jvmArgs, cmdLine, &connection_);
         embeddedServer_->start(true);
-//        Thread::sleepSecs(5); // let the xmlBlaster server start ...
+//        org::xmlBlaster::util::thread::Thread::sleepSecs(5); // let the xmlBlaster server start ...
         // don't need to wait anymore since 
      }
    }
@@ -186,13 +179,13 @@ public:
 
    virtual void usage() const
    {
-      log_.plain(applName_, string("usage: ") + applName_ + "\n with the following attributes:\n");
+      log_.plain(applName_, std::string("usage: ") + applName_ + "\n with the following attributes:\n");
       log_.plain(applName_, "-embeddedServer false: [default] an external xmlBlaster will be needed");
       log_.plain(applName_, "-embeddedServer true :           an internal xmlBlaster will be used, stop all external xmlBlaster");
       log_.plain(applName_, "-embeddedServer.cmdLine : defaults to \"/dev/null\"");
       log_.plain(applName_, "-embeddedServer.jvmArgs : defaults to \"\"");
       log_.plain(applName_, "");
-      log_.plain(applName_, string("for example: ") + applName_ + " -embeddedServer true -embeddedServer.cmdLine \"call -true\" -embbededServer.jvmArgs \"-Dwhatever \"");
+      log_.plain(applName_, std::string("for example: ") + applName_ + " -embeddedServer true -embeddedServer.cmdLine \"call -true\" -embbededServer.jvmArgs \"-Dwhatever \"");
    }
 
 };
