@@ -459,13 +459,13 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
             MsgUnit[] ret = this.access.get(this.key.toString(), this.qos.toString());
             this.response.append("\n<!-- __________________________________  get ____________________________________ -->");
             this.response.append("\n<get>");
-            this.response.append("\n  <message>");
             if (ret != null) {
                for (int i=0; i < ret.length; i++) {
+                  this.response.append("\n  <message>");
                   this.response.append(ret[i].toXml("    "));
+                  this.response.append("\n  </message>");
                }
             }
-            this.response.append("\n  </message>");
             this.response.append("\n</get>\n");
             flushResponse();
             return;
