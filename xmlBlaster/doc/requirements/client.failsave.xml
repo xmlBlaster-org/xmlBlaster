@@ -1,0 +1,22 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='client.failsave' type='NEW' prio='LOW' status="CLOSED">
+   <topic>
+      CorbaConnection is a java helper class for Java clients which supports
+      polling for xmlBlaster and record/playback of messages during lost connections.
+   </topic>
+   <description>
+      See CorbaConnection.java for a usage description and TestFailSave.java (testsuite)
+      for a code example how to use it.
+   </description>
+   <author>ruff@swand.lake.de</author>
+   <date>2000 02 23</date>
+   <revision>$Revision: 1.1 $</revision>
+   <fix status="CLOSED">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">testsuite.org.xmlBlaster.TestFailSave.testFailSave()</test>
+   </fix>
+</requirement>
+
