@@ -21,11 +21,13 @@ import java.util.StringTokenizer;
  * <pre>
  *   /node/heron/?freeMem
  *   /node/heron/sysprop/?java.vm.version
+ *   /node/heron/client/joe/ses17/?cb.queue.maxMsg
  * </pre>
  * <p />
  * See the <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.commands.html">command requirement</a>
  * for a detailed description.
  * @author ruff@swand.lake.de
+ * @see classtest.CommandWrapperTest
  * @since 0.79f
  */
 public final class CommandWrapper
@@ -42,8 +44,15 @@ public final class CommandWrapper
    String root = null;
    /** The second level -> "heron" */
    String clusterNodeId = null;
-   /** The first level -> "?freeMem" or "sysprop" */
+   /** The third level -> "?freeMem" or "sysprop" or "client" or "msg" */
    String third = null;
+   /** The fourth level -> "client/joe" */
+   String fourth = null;
+   /** The fifth level -> "client/joe/ses17" or "client/joe/?maxSessions" */
+   String fifth = null;
+   /** The sixth level -> "client/joe/ses17/?cb.queue.maxMsg" */
+   String sixth = null;
+
    /** The rest of the command -> "?java.vm.version"*/
    String tail = null;
 
@@ -64,16 +73,22 @@ public final class CommandWrapper
    private void parse() throws XmlBlasterException {
 
       StringTokenizer st = new StringTokenizer(cmd, "/");
-      int ii=0;
+      int ii=1;
       while (st.hasMoreTokens()) {
          String token = (String)st.nextToken();
-         System.out.println("Parsing '" + cmd + "' ii=" + ii + " token=" + token);
-         if (ii==0)
+         if (log.TRACE) log.trace(ME, "Parsing '" + cmd + "' ii=" + ii + " token=" + token);
+         if (ii==1)
             root = token;
-         else if (ii == 1)
-            clusterNodeId = token;
          else if (ii == 2)
+            clusterNodeId = token;
+         else if (ii == 3)
             third = token;
+         else if (ii == 4)
+            fourth = token;
+         else if (ii == 5)
+            fifth = token;
+         else if (ii == 6)
+            sixth = token;
          else {
             break;
          }
@@ -103,6 +118,7 @@ public final class CommandWrapper
    }
 
    /**
+    * /node/heron/client/joe/ses17/?cb.queue.maxMsg
     * @return "node"
     */
    public final String getRoot() {
@@ -110,6 +126,7 @@ public final class CommandWrapper
    }
 
    /**
+    * /node/heron/client/joe/ses17/?cb.queue.maxMsg
     * @return e.g. "heron"
     */
    public final String getClusterNodeId() {
@@ -117,10 +134,35 @@ public final class CommandWrapper
    }
 
    /**
+    * /node/heron/client/joe/ses17/?cb.queue.maxMsg
     * @return The third level of a command like "client", "sysprop", "msg", "?uptime"
     */
    public final String getThirdLevel() {
       return third;
+   }
+
+   /**
+    * /node/heron/client/joe/ses17/?cb.queue.maxMsg
+    * @return "joe" in the above example
+    */
+   public final String getUserNameLevel() {
+      return fourth;
+   }
+
+   /**
+    * /node/heron/client/joe/ses17/?cb.queue.maxMsg
+    * @return "ses17" in the above example
+    */
+   public final String getSessionIdLevel() {
+      return fifth;
+   }
+
+   /**
+    * /node/heron/client/joe/ses17/?cb.queue.maxMsg
+    * @return "?cb.queue.maxMsg" in the above example
+    */
+   public final String getSessionAttrLevel() {
+      return sixth;
    }
 
    /**
