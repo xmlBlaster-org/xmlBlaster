@@ -3,7 +3,7 @@ Name:      Log.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.java,v 1.44 2000/05/02 13:12:25 ruff Exp $
+Version:   $Id: Log.java,v 1.45 2000/05/22 15:12:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 import java.io.*;
@@ -440,7 +440,7 @@ public class Log
       }
 
       String logFormat;
-      if((level & L_DUMP) != 0)
+      if((level & L_DUMP) != 0 || (level & L_PLAIN) != 0)
          logFormat = "{3}";
       else
          logFormat = currentLogFormat;
