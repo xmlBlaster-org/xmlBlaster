@@ -129,9 +129,9 @@ public class SessionInfo implements I_Timeout, I_AdminSession
 
       if (this.connectQos.getSessionCbQueueProperty().getCallbackAddresses().length > 0) {
          this.msgErrorHandler = new MsgErrorHandler(glob, this);
-
          String type = connectQos.getSessionCbQueueProperty().getType();
          String version = connectQos.getSessionCbQueueProperty().getVersion();
+         if (log.TRACE) log.trace(ME, "Creating callback queue type=" + type + " version=" + version);
          this.sessionQueue = glob.getQueuePluginManager().getPlugin(type, version, new StorageId("cb", this.sessionName.getAbsoluteName()), connectQos.getSessionCbQueueProperty());
          this.sessionQueue.setNotifiedAboutAddOrRemove(true); // Entries are notified to support reference counting
 
