@@ -5,6 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
+import java.util.Map;
+
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
@@ -92,6 +94,8 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    private boolean disconnectInProgress;
    private boolean connectInProgress;
 
+   /** this I_XmlBlasterAccess is valid until a 'leaveServer' invocation is done.*/
+   private boolean isValid = true;
 
    /**
     * Create an xmlBlaster accessor. 
@@ -165,7 +169,9 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
     * @see org.xmlBlaster.client.I_XmlBlasterAccess#connect(ConnectQos, I_Callback)
     */
    public ConnectReturnQos connect(ConnectQos qos, I_Callback updateListener) throws XmlBlasterException {
-
+      if (!this.isValid)
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_UNAVAILABLE, ME, "connect");
+          
       synchronized (this) {
          
          if (isConnected() || this.connectInProgress) {
@@ -356,6 +362,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.disconnect.html">interface.disconnect requirement</a>
     */
    public synchronized boolean disconnect(DisconnectQos disconnectQos) {
+      if (!this.isValid) return false;
       // Relaxed check to allow shutdown of database without successful connection
       if (this.connectQos == null /*!isConnected()*/) {
          log.warn(ME, "You called disconnect() but you are are not logged in, we ignore it.");
@@ -579,6 +586,8 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
     * @see I_XmlBlasterAccess#subscribe(SubscribeKey, SubscribeQos)
     */
    public SubscribeReturnQos subscribe(SubscribeKey subscribeKey, SubscribeQos subscribeQos) throws XmlBlasterException {
+      if (!this.isValid)
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_UNAVAILABLE, ME, "subscribe");
       if (!isConnected()) throw new XmlBlasterException(glob, ErrorCode.USER_NOT_CONNECTED, ME);
       MsgQueueSubscribeEntry entry  = new MsgQueueSubscribeEntry(glob,
                                       this.clientQueue.getStorageId(), subscribeKey.getData(), subscribeQos.getData());
@@ -598,6 +607,8 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
     * @see I_XmlBlasterAccess#subscribe(SubscribeKey, SubscribeQos, I_Callback)
     */
    public SubscribeReturnQos subscribe(SubscribeKey subscribeKey, SubscribeQos subscribeQos, I_Callback cb) throws XmlBlasterException {
+      if (!this.isValid)
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_UNAVAILABLE, ME, "subscribe");
       if (!isConnected()) throw new XmlBlasterException(glob, ErrorCode.USER_NOT_CONNECTED, ME);
       if (this.updateListener == null) {
          String text = "No callback listener is registered. " +
@@ -629,6 +640,8 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
     * @see I_XmlBlasterAccess#getCached(GetKey, GetQos)
     */
    public MsgUnit[] getCached(GetKey getKey, GetQos getQos) throws XmlBlasterException {
+      if (!this.isValid)
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_UNAVAILABLE, ME, "getCached");
       if (!isConnected()) throw new XmlBlasterException(glob, ErrorCode.USER_NOT_CONNECTED, ME);
       if (this.synchronousCache == null) {  //Is synchronousCache installed?
          throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME,
@@ -657,6 +670,8 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
     * @see I_XmlBlasterAccess#get(GetKey, GetQos)
     */
    public MsgUnit[] get(GetKey getKey, GetQos getQos) throws XmlBlasterException {
+      if (!this.isValid)
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_UNAVAILABLE, ME, "get");
       if (!isConnected()) throw new XmlBlasterException(glob, ErrorCode.USER_NOT_CONNECTED, ME);
       MsgQueueGetEntry entry  = new MsgQueueGetEntry(glob,
                                       this.clientQueue.getStorageId(), getKey, getQos);
@@ -667,6 +682,8 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
     * @see I_XmlBlasterAccess#unSubscribe(UnSubscribeKey, UnSubscribeQos)
     */
    public UnSubscribeReturnQos[] unSubscribe(UnSubscribeKey unSubscribeKey, UnSubscribeQos unSubscribeQos) throws XmlBlasterException {
+      if (!this.isValid)
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_UNAVAILABLE, ME, "unSubscribe");
       if (!isConnected()) throw new XmlBlasterException(glob, ErrorCode.USER_NOT_CONNECTED, ME);
       MsgQueueUnSubscribeEntry entry  = new MsgQueueUnSubscribeEntry(glob,
                                       this.clientQueue.getStorageId(), unSubscribeKey, unSubscribeQos);
@@ -687,6 +704,8 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
     * @see I_XmlBlasterAccess#publish(MsgUnit)
     */
    public PublishReturnQos publish(MsgUnit msgUnit) throws XmlBlasterException {
+      if (!this.isValid)
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_UNAVAILABLE, ME, "publish");
       if (!isConnected()) throw new XmlBlasterException(glob, ErrorCode.USER_NOT_CONNECTED, ME);
       MsgQueuePublishEntry entry  = new MsgQueuePublishEntry(glob, msgUnit, this.clientQueue.getStorageId());
       return (PublishReturnQos)queueMessage(entry);
@@ -696,6 +715,8 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
     * @see I_XmlBlasterAccess#publishOneway(MsgUnit[])
     */
    public void publishOneway(org.xmlBlaster.util.MsgUnit [] msgUnitArr) throws XmlBlasterException {
+      if (!this.isValid)
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_UNAVAILABLE, ME, "publishOneway");
       if (!isConnected()) throw new XmlBlasterException(glob, ErrorCode.USER_NOT_CONNECTED, ME);
       final boolean ONEWAY = true;
       for (int ii=0; ii<msgUnitArr.length; ii++) {
@@ -707,6 +728,8 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
 
    // rename to publish()
    public PublishReturnQos[] publishArr(org.xmlBlaster.util.MsgUnit[] msgUnitArr) throws XmlBlasterException {
+      if (!this.isValid)
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_UNAVAILABLE, ME, "publishArr");
       if (!isConnected()) throw new XmlBlasterException(glob, ErrorCode.USER_NOT_CONNECTED, ME);
       log.warn(ME, "Publishing arrays is not atomic implemented - TODO");
       PublishReturnQos[] retQos = new PublishReturnQos[msgUnitArr.length];
@@ -722,6 +745,8 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
     * @see I_XmlBlasterAccess#erase(EraseKey, EraseQos)
     */
    public EraseReturnQos[] erase(EraseKey eraseKey, EraseQos eraseQos) throws XmlBlasterException {
+      if (!this.isValid)
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_UNAVAILABLE, ME, "erase");
       if (!isConnected()) throw new XmlBlasterException(glob, ErrorCode.USER_NOT_CONNECTED, ME);
       MsgQueueEraseEntry entry  = new MsgQueueEraseEntry(glob,
                                       this.clientQueue.getStorageId(), eraseKey, eraseQos);
@@ -931,6 +956,31 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
     */
    public ConnectQos getConnectQos() {
       return this.connectQos;
+   }
+
+   /**
+    * 
+    * @see I_XmlBlasterAccess#erase(EraseKey, EraseQos)
+    */
+   public void leaveServer(Map map) {
+      if (!this.isValid) return;
+      synchronized(this) {
+         this.isValid = false;
+         if (this.cbServer != null) {
+            try {
+               this.cbServer.shutdown();
+            }
+            catch (XmlBlasterException ex) {
+               ex.printStackTrace();
+               this.log.error(ME, "could not leave the server properly: " + ex.getMessage());
+            }
+            this.cbServer = null;
+         }
+         if (this.dispatchManager != null) {
+            //this.dispatchManager.shutdown();
+            //this.dispatchManager = null;
+         }   
+      }
    }
 
    /**

@@ -71,8 +71,10 @@ public class TestPtPDispatch extends TestCase {
          this.updateInterceptor.clear();
       }
 
-      public void shutdown() {
-         this.global.getXmlBlasterAccess().disconnect(new DisconnectQos(this.global));
+      public void shutdown(boolean doDisconnect) {
+         DisconnectQos qos = new DisconnectQos(this.global);
+         if (doDisconnect) 
+            this.global.getXmlBlasterAccess().disconnect(qos);
          this.global.shutdown();
          this.global = null;
       }
@@ -93,7 +95,7 @@ public class TestPtPDispatch extends TestCase {
    private LogChannel log;
    private PtPDestination[] destinations;
    private int numDestinations = 4;
-   private int counter;
+   private int counter = 0;
    private String subjectName;
    //private boolean persistentMsg = true; 
 
@@ -115,7 +117,7 @@ public class TestPtPDispatch extends TestCase {
    protected void setUp() {
       this.glob = (this.glob == null) ? Global.instance() : this.glob;
       this.log = this.glob.getLog("test");
-      this.counter = 0;
+      // this.counter = 0;
 
       this.destinations = new PtPDestination[this.numDestinations];
       for (int i=0; i < this.numDestinations; i++) 
@@ -152,7 +154,7 @@ public class TestPtPDispatch extends TestCase {
    }
    
    private void cleanup() {
-      for (int i=0; i < this.numDestinations-2; i++) this.destinations[i].shutdown();         
+      for (int i=0; i < this.numDestinations-2; i++) this.destinations[i].shutdown(true);         
    }
 
    /**
@@ -179,7 +181,7 @@ public class TestPtPDispatch extends TestCase {
     * @param counts an int[] containing the expected amount of updates for each
     *        destination. NOTE this has to be filled out even if you expect an
     */
-   private void doPublish(int destNum, boolean forceQueuing, boolean expectEx, int[] counts, long timeout, boolean persistent) {
+   private void doPublish(int destNum, boolean forceQueuing, boolean expectEx, int[] counts, long timeout, boolean persistent, String contentPrefix) {
 
       SessionName toSessionName = null;
       if (destNum < 0) toSessionName = new SessionName(this.glob, this.subjectName);
@@ -194,7 +196,7 @@ public class TestPtPDispatch extends TestCase {
       PublishQos qos = new PublishQos(this.glob, destination);
       qos.setPersistent(persistent);
    
-      String content = "" + this.counter;
+      String content = contentPrefix + "-" + this.counter;
       this.counter++;
       MsgUnit msgUnit = new MsgUnit(key, content.getBytes(), qos);
 
@@ -213,6 +215,20 @@ public class TestPtPDispatch extends TestCase {
    }
 
 
+   private void checkWithReconnect(int dest, boolean wantsPtP, int expected, long delay) {
+      try {
+         this.destinations[dest].shutdown(false);
+         String sessionName = this.destinations[dest].getSessionName().getRelativeName();
+         this.destinations[dest] = new PtPDestination(this.glob, sessionName);
+         this.destinations[dest] .init(wantsPtP, false);
+         this.destinations[dest] .check(delay, expected);
+      }
+      catch (XmlBlasterException ex) {
+         ex.printStackTrace();
+         assertTrue(false);
+      }
+   }
+
    /**
     * Does a connect, waits for updates, compares the number of updates
     * with the expected and makes a disconnect.
@@ -221,11 +237,11 @@ public class TestPtPDispatch extends TestCase {
     * @param expected the number of updates expected after a connect
     * @param delay the time in ms to wait between connect and check
     */
-   private void checkForUnknown(PtPDestination dest, boolean wantsPtP, int expected, long delay) {
+   private void checkWithoutPublish(PtPDestination dest, boolean wantsPtP, int expected, long delay) {
       try {
          dest.init(wantsPtP, false);
          dest.check(delay, expected);
-         dest.shutdown();
+         dest.shutdown(true);
       }
       catch (XmlBlasterException ex) {
          ex.printStackTrace();
@@ -233,50 +249,60 @@ public class TestPtPDispatch extends TestCase {
       }
    }
 
-   private void noQueuingNoOverflow(boolean isPersistent) {
+// -----------------------------------------------------------------------
+   /** 5 messages are sent */
+   private void noQueuingNoOverflow(boolean isPersistent, String msgPrefix) {
       boolean forceQueuing = false;
       boolean shutdownCb = false;
       prepare(shutdownCb);
-      doPublish(-1, forceQueuing, false, new int[] {1,0,0,0}, TIMEOUT, isPersistent);
-      doPublish(0 , forceQueuing, false, new int[] {1,0,0,0}, TIMEOUT, isPersistent);
-      doPublish(1 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent);
-      doPublish(2 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent);
-      doPublish(3 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent);
+      doPublish(-1, forceQueuing, false, new int[] {1,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
+      doPublish(0 , forceQueuing, false, new int[] {1,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
+      doPublish(1 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
+      doPublish(2 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
+      doPublish(3 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
       
-      checkForUnknown(this.destinations[2], true, 0, TIMEOUT);
-      checkForUnknown(this.destinations[3], false,0, TIMEOUT);
+      checkWithoutPublish(this.destinations[2], true, 0, TIMEOUT);
+      checkWithoutPublish(this.destinations[3], false,0, TIMEOUT);
       cleanup();
    }
 
    /**
     * TEST: <br />
     */
-   public void testNoQueuingNoOverflow() {
-      noQueuingNoOverflow(false);
-      noQueuingNoOverflow(true);
+   public void testNoQueuingNoOverflowTransient() {
+      noQueuingNoOverflow(false, "NoQueuingNoOverflowTransient");
    }
 
-   private void noQueuingOverflow(boolean isPersistent) {
+   /**
+    * TEST: <br />
+    */
+   public void testNoQueuingNoOverflowPersistent() {
+      noQueuingNoOverflow(true, "NoQueuingNoOverflowPersistent");
+   }
+
+// -----------------------------------------------------------------------
+   /** 12 messages are sent */
+   private void noQueuingOverflow(boolean isPersistent, String msgPrefix) {
       boolean forceQueuing = false;
       boolean shutdownCb = true;
       prepare(shutdownCb);
       
-      doPublish(0 , forceQueuing, false, new int[] {0,0,0,0}, TIMEOUT, isPersistent);
-      doPublish(0 , forceQueuing, false, new int[] {0,0,0,0}, TIMEOUT, isPersistent);
+      doPublish(0 , forceQueuing, false, new int[] {0,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
+      doPublish(0 , forceQueuing, false, new int[] {0,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
       // allow one overflow but now an exception should come ...
-      doPublish(0 , forceQueuing, true, new int[] {0,0,0,0}, TIMEOUT, isPersistent);
+      doPublish(0 , forceQueuing, true, new int[] {0,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
       // ... and again just to make sure ...
-      doPublish(0 , forceQueuing, true, new int[] {0,0,0,0}, TIMEOUT, isPersistent);
+      doPublish(0 , forceQueuing, true, new int[] {0,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
 
-      doPublish(1 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent);
-      doPublish(1 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent);
-      doPublish(1 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent);
-      doPublish(1 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent);
+      doPublish(1 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
+      doPublish(1 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
+      doPublish(1 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
+      doPublish(1 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
       
-      doPublish(2 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent);
-      doPublish(2 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent);
-      doPublish(2 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent);
-      doPublish(2 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent);
+      doPublish(2 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
+      doPublish(2 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
+      doPublish(2 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
+      doPublish(2 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
 
       // TODO add the tests on subject queue overflow here (configure subject queue first)
       //doPublish(-1, forceQueuing, false, new int[] {0,0,0,0}, TIMEOUT);
@@ -290,23 +316,31 @@ public class TestPtPDispatch extends TestCase {
    /**
     * TEST: <br />
     */
-   public void testNoQueuingOverflow() {
-      noQueuingOverflow(false);
-      noQueuingOverflow(true);
+   public void testNoQueuingOverflowTransient() {
+      noQueuingOverflow(false, "NoQueuingOverflowTransient");
    }
 
-   private void queuingNoOverflow(boolean isPersistent) {
+   /**
+    * TEST: <br />
+    */
+   public void testNoQueuingOverflowPersistent() {
+      noQueuingOverflow(true, "NoQueuingOverflowPersistent");
+   }
+
+// -----------------------------------------------------------------------
+   /** 5 messages are sent */
+   private void queuingNoOverflow(boolean isPersistent, String msgPrefix) {
       boolean forceQueuing = true;
       boolean shutdownCb = false;
       prepare(shutdownCb);
-      doPublish(-1, forceQueuing, false, new int[] {1,0,0,0}, TIMEOUT, isPersistent);
-      doPublish(0 , forceQueuing, false, new int[] {1,0,0,0}, TIMEOUT, isPersistent);
-      doPublish(1 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent);
-      doPublish(2 , forceQueuing, false, new int[] {0,0,0,0}, TIMEOUT, isPersistent);
-      doPublish(3 , forceQueuing, false, new int[] {0,0,0,0}, TIMEOUT, isPersistent);
+      doPublish(-1, forceQueuing, false, new int[] {1,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
+      doPublish(0 , forceQueuing, false, new int[] {1,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
+      doPublish(1 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
+      doPublish(2 , forceQueuing, false, new int[] {0,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
+      doPublish(3 , forceQueuing, false, new int[] {0,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
 
-      checkForUnknown(this.destinations[2], true, 1, TIMEOUT);
-      checkForUnknown(this.destinations[3], false,0, TIMEOUT);
+      checkWithoutPublish(this.destinations[2], true, 1, TIMEOUT);
+      checkWithoutPublish(this.destinations[3], false,0, TIMEOUT);
       // TODO check for dead letters. There should be one here  
 
       cleanup();
@@ -315,37 +349,41 @@ public class TestPtPDispatch extends TestCase {
    /**
     * TEST: <br />
     */
-   public void testQueuingNoOverflow() {
-      queuingNoOverflow(false);
-      queuingNoOverflow(true);
+   public void testQueuingNoOverflowTransient() {
+      queuingNoOverflow(false, "QueuingNoOverflowTransient");
    }
    
-   public void testQueuingOverflow() {
-      queuingOverflow(false);
-      queuingOverflow(true);
+   /**
+    * TEST: <br />
+    */
+   public void testQueuingNoOverflowPersistent() {
+      queuingNoOverflow(true, "QueuingNoOverflowPersistent");
    }
    
-   private void queuingOverflow(boolean isPersistent) {
+// -----------------------------------------------------------------------
+   /** 12 messages are sent */
+   private void queuingOverflow(boolean isPersistent, String msgPrefix) {
       boolean forceQueuing = true;
-      boolean shutdownCb = false;
+      boolean shutdownCb = true;
       prepare(shutdownCb);
-      doPublish(0 , forceQueuing, false, new int[] {0,0,0,0}, TIMEOUT, isPersistent);
-      doPublish(0 , forceQueuing, false, new int[] {0,0,0,0}, TIMEOUT, isPersistent);
-      doPublish(0 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent);
-      doPublish(0 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent);
+      doPublish(0 , forceQueuing, false, new int[] {0,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
+      doPublish(0 , forceQueuing, false, new int[] {0,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
+      doPublish(0 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
+      doPublish(0 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
 
-      doPublish(1 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent);
-      doPublish(1 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent);
-      doPublish(1 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent);
-      doPublish(1 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent);
+      doPublish(1 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
+      doPublish(1 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
+      doPublish(1 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
+      doPublish(1 , forceQueuing, true , new int[] {0,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
    
+      checkWithReconnect(0, true, 2, TIMEOUT);
    
       // this should not throw an exception since default queue configuration 
       // which allows many entries
-      doPublish(2 , forceQueuing, false, new int[] {0,0,0,0}, TIMEOUT, isPersistent);
-      doPublish(2 , forceQueuing, false, new int[] {0,0,0,0}, TIMEOUT, isPersistent);
-      doPublish(2 , forceQueuing, false, new int[] {0,0,0,0}, TIMEOUT, isPersistent);
-      doPublish(2 , forceQueuing, false, new int[] {0,0,0,0}, TIMEOUT, isPersistent);
+      //doPublish(2 , forceQueuing, false, new int[] {0,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
+      //doPublish(2 , forceQueuing, false, new int[] {0,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
+      //doPublish(2 , forceQueuing, false, new int[] {0,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
+      //doPublish(2 , forceQueuing, false, new int[] {0,0,0,0}, TIMEOUT, isPersistent, msgPrefix);
 
       //doPublish(-1, forceQueuing, false, new int[] {1,0,0,0}, TIMEOUT);
 
@@ -355,6 +393,16 @@ public class TestPtPDispatch extends TestCase {
 
       cleanup();
    }
+
+   public void testQueuingOverflowTransient() {
+      queuingOverflow(false, "QueuingOverflowTransient");
+   }
+   
+   public void testQueuingOverflowPersistent() {
+      queuingOverflow(true, "QueuingOverflowPersistent");
+   }
+   
+// -----------------------------------------------------------------------
 
    /**
     * Invoke: java org.xmlBlaster.test.client.TestPtPDispatch
@@ -372,19 +420,35 @@ public class TestPtPDispatch extends TestCase {
       TestPtPDispatch testSub = new TestPtPDispatch(glob, "TestPtPDispatch");
 
       testSub.setUp();
-      testSub.testNoQueuingNoOverflow();
+      testSub.testNoQueuingNoOverflowPersistent();
       testSub.tearDown();
 
       testSub.setUp();
-      testSub.testQueuingNoOverflow();
+      testSub.testQueuingNoOverflowPersistent();
       testSub.tearDown();
       
       testSub.setUp();
-      testSub.testNoQueuingOverflow();
+      testSub.testNoQueuingOverflowPersistent();
       testSub.tearDown();
       
       testSub.setUp();
-      testSub.testQueuingOverflow();
+      testSub.testQueuingOverflowPersistent();
+      testSub.tearDown();
+      
+      testSub.setUp();
+      testSub.testNoQueuingNoOverflowTransient();
+      testSub.tearDown();
+
+      testSub.setUp();
+      testSub.testQueuingNoOverflowTransient();
+      testSub.tearDown();
+      
+      testSub.setUp();
+      testSub.testNoQueuingOverflowTransient();
+      testSub.tearDown();
+      
+      testSub.setUp();
+      testSub.testQueuingOverflowTransient();
       testSub.tearDown();
       
    }

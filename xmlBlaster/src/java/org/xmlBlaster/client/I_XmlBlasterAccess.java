@@ -5,6 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
+import java.util.Map;
+
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -29,8 +31,6 @@ import org.xmlBlaster.client.qos.UnSubscribeQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.client.I_ConnectionHandler;
-import org.xmlBlaster.client.I_ConnectionStateListener;
 
 
 /**
@@ -167,7 +167,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     * <p />
 	 * NOTE: If you want to keep all resources on server side for this login session
 	 *       but want to halt your client,
-	 *       shutdown the callback server with <code>getCbServer().shutdown()</code>
+	 *       shutdown the callback server with <code>leaveServer(null)</code>
 	 *       and throw the xmlBlasterAccess instance away.
 	 *       This is often the case if the client disappears and at a later point wants
 	 *       to reconnect. On server side the queue for this session remains alive and
@@ -178,6 +178,23 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     */
    boolean disconnect(DisconnectQos disconnectQos);
 
+   /**
+    * Leaves the connection to the server and cleans up the 
+    * resources without making a disconnect. This way the
+    * Persistent client messages are kept in queue while 
+    * transient ones are lost. If you want to delete also the
+    * persistent messages you have to do it manually.
+    * 
+    * Once you have called this method the I_XmlBlasterAccess
+    * becomes invalid and any further invocation results in 
+    * an XmlBlasterException to be thrown.
+    *  
+    * @param map The properties to pass while leaving server.
+    *        Currently this argument has no effect. You can
+    *        pass null as a parameter.
+    */
+   void leaveServer(Map map);
+   
    /**
     * Has the connect() method successfully passed? 
     * <p>

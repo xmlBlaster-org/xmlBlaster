@@ -679,8 +679,11 @@ final public class Authenticate implements I_RunlevelListener
       //if (subjectInfo.isShutdown()) {
       //   subjectInfo = null; // Give GC a hint
       //}
-
+      
+      // in future we could for positive sessionId avoid to clear session queue
       sessionInfo.shutdown();
+      sessionInfo.getSessionQueue().clear();
+      
       sessionInfo = null;
       log.info(ME, "loginNameSubjectInfoMap has " + getNumSubjects() +
                    " entries and sessionInfoMap has " + this.sessionInfoMap.size() + " entries");
