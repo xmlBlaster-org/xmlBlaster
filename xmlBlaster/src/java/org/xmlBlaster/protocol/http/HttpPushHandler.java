@@ -37,7 +37,9 @@ import javax.servlet.http.*;
  */
 public class HttpPushHandler
 {
+   boolean isApplet = false;
    private String ME  = "HttpPushHandler";
+
    /**
     * Ping the browser every 10 seconds.
     * <br />
@@ -124,8 +126,9 @@ public class HttpPushHandler
       Log.trace(ME, "Initialize ...");
 
       if (this.head == null) {
-         // this.head = "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML//EN\">" +
-         this.head  = "<HTML>\n" +
+         if (!isApplet)
+            this.head = "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML//EN\">" +
+				 "<HTML>\n" +
           "<HEAD>\n" +
           "   <meta http-equiv='Content-Type' content='text/html; charset=iso-8859-1'>\n" +
           "   <meta http-equiv='Pragma' content='no-cache'>\n" +
@@ -140,11 +143,16 @@ public class HttpPushHandler
           "      <INPUT TYPE=\"HIDDEN\" NAME=\"NoName\" VALUE=\"NoValue\" />\n" +
           "   </form>\n" +
           "   <script language='JavaScript'>\n";
+         if(isApplet) this.head  = "";
       }
 
       if (handlesMultipart) {
-         if (this.tail == null)
-            this.tail  ="\n   </script>\n</BODY></HTML>";
+         if (this.tail == null) {
+            if(isApplet)
+               this.tail  = "\n";
+            else
+               this.tail  =   "</script>\n</BODY></HTML>";
+         }
          res.setContentType("multipart/x-mixed-replace;boundary=End");
 
          outMulti.println();
@@ -273,10 +281,13 @@ public class HttpPushHandler
       boolean doesMulti = false;
       if (browser == null)
          doesMulti = false;
+      else if (isApplet)
+         doesMulti = true;
       else if (browser.indexOf("Mozilla") != -1 &&
                browser.indexOf("MSIE") == -1  &&
                browser.indexOf("Opera") == -1)
-         doesMulti = true;
+         doesMulti = true;   // Only real mozillas support multipart request
+
 
       if (doesMulti)
          Log.info(ME, "Checking browser = " + browser + ". Assuming it supports 'multipart requests'");
@@ -422,7 +433,12 @@ public class HttpPushHandler
          Log.plain(ME,"\nContent:"+content);
          Log.trace(ME,"************* End of Update *************************");
          */
-         String pushStr = "if (parent.update != null) parent.update('"+codedKey+"','"+codedContent+"','"+codedQos+"');\n";
+         String pushStr="";
+         if (isApplet)
+            pushStr = "##content##"+codedKey+"##"+codedContent+"##\n";
+         else
+            pushStr = "if (parent.update != null) parent.update('"+codedKey+"','"+codedContent+"','"+codedQos+"');\n";
+
          push(new PushDataItem(PushDataItem.MESSAGE, pushStr));
       }
       catch(Exception e) {
@@ -463,7 +479,11 @@ public class HttpPushHandler
    {
       try {
          String codedText = URLEncoder.encode(text);
-         push(new PushDataItem(PushDataItem.LOGGING, "if (parent.message != null) parent.message('"+codedText+"');\n"));
+
+         if (isApplet)
+            push(new PushDataItem(PushDataItem.LOGGING, "##message##"+codedText+"##\n"));
+         else
+           push(new PushDataItem(PushDataItem.LOGGING, "if (parent.message != null) parent.message('"+codedText+"');\n"));
       }
       catch(Exception e) {
          Log.error(ME,e.toString());
@@ -481,7 +501,11 @@ public class HttpPushHandler
    {
       try {
          String codedText = URLEncoder.encode(text);
-         push(new PushDataItem(PushDataItem.LOGGING, "if (parent.error != null) parent.error('"+codedText+"');\n"));
+
+         if (isApplet)
+            push(new PushDataItem(PushDataItem.LOGGING, "##error##"+codedText+"##\n"));
+         else
+            push(new PushDataItem(PushDataItem.LOGGING, "if (parent.error != null) parent.error('"+codedText+"');\n"));
       }
       catch(Exception e) {
          Log.error(ME,e.toString());
@@ -502,7 +526,10 @@ public class HttpPushHandler
          Log.warn(ME, "Browser seems not to be ready, forcing a push nevertheless (checking browser with ping)");
          setBrowserIsReady(true);
       }
-      push(new PushDataItem(PushDataItem.PING, "if (parent.ping != null) parent.ping('" + state + "');\n"));
+      if (isApplet)
+         push(new PushDataItem(PushDataItem.PING, "##ping##" + state + "##\n"));
+      else
+         push(new PushDataItem(PushDataItem.PING, "if (parent.ping != null) parent.ping('" + state + "');\n"));
    }
 
 
@@ -604,3 +631,4 @@ public class HttpPushHandler
 
 
 }
+
