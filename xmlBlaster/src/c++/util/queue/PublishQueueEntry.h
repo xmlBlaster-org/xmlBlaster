@@ -21,6 +21,12 @@ namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
 class Dll_Export PublishQueueEntry : public org::xmlBlaster::util::queue::MsgQueueEntry
 {
+   /**
+    * Holds the serialized information which is returned by getEmbeddedObject(),
+    * encoded according to embeddedType
+    */
+   mutable BlobHolder blobHolder_;
+
 public:
 
    /**
@@ -29,7 +35,13 @@ public:
     * pass a non-negative priority, it will be taken as the priority of this entry, in other words, the
     * priority of the message unit will be ignored.
     */
-   PublishQueueEntry(org::xmlBlaster::util::Global& global, const org::xmlBlaster::util::MessageUnit& msgUnit, const std::string& type="publish", int priority=-1, bool persistent=false);
+   PublishQueueEntry(org::xmlBlaster::util::Global& global,
+                     const org::xmlBlaster::util::MessageUnit& msgUnit,
+                     const std::string& type=org::xmlBlaster::util::Constants::ENTRY_TYPE_MSG_RAW + "|" + org::xmlBlaster::util::MethodName::PUBLISH,
+                     int priority=NORM_PRIORITY,
+                     bool persistent=false);
+
+   ~PublishQueueEntry();
 
    MsgQueueEntry *getClone() const;
 
@@ -37,7 +49,12 @@ public:
     * gets the content of this queue entry (the embedded object). In
     * persistent queues this is the data which is stored as a blob.
     */
-   void* getEmbeddedObject();
+   const void* getEmbeddedObject() const;
+
+   /**
+    * @param type "MSG_RAW|publish"
+    std::string getEmbeddedType() const { return org::xmlBlaster::util::Constants::ENTRY_TYPE_MSG_RAW + "|" + org::xmlBlaster::util::MethodName::PUBLISH }
+    */
 
    // this should actually be in another interface but since it is an only method we put it here.
    const org::xmlBlaster::util::queue::MsgQueueEntry& send(org::xmlBlaster::util::dispatch::I_ConnectionsHandler& connectionsHandler) const;
