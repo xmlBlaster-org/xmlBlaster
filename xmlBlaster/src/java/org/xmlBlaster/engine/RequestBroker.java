@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.55 2000/02/23 12:08:25 kkrafft2 Exp $
+Version:   $Id: RequestBroker.java,v 1.56 2000/02/23 15:04:01 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -29,7 +29,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.55 $
+ * @version $Revision: 1.56 $
  * @author ruff@swand.lake.de
  */
 public class RequestBroker implements ClientListener, MessageEraseListener
@@ -316,11 +316,11 @@ public class RequestBroker implements ClientListener, MessageEraseListener
             xmlKeyExact = xmlKey;
 
          MessageUnitHandler messageUnitHandler = getMessageHandlerFromOid(xmlKeyExact.getUniqueKey());
-         
+
          if( messageUnitHandler == null ) {
-            Log.error(ME, "The key you used '"+xmlKeyExact.getUniqueKey()+"' is not availible.");
-            throw new  XmlBlasterException(ME+".UnavailibleKey", "The key you used '"+xmlKeyExact.getUniqueKey()+"' is not availible.");
-         }        
+            Log.warning(ME, "The key '"+xmlKeyExact.getUniqueKey()+"' is not available.");
+            throw new  XmlBlasterException(ME+".UnavailableKey", "The key '"+xmlKeyExact.getUniqueKey()+"' is not available.");
+         }
 
          // wrap messageUnit and qos into a MessageUnitContainer
          MessageUnitContainer messageUnitContainer = new MessageUnitContainer();
