@@ -1,0 +1,36 @@
+<!-- So liegen die keys im xmlBlaster DOM Baum -->
+
+<xmlBlaster>
+
+   <key oid="Number1">
+      <Airport icao="EDDI">
+        <Runway id="1">
+           <WindVeloc w_id="2">
+             12
+           </WindVeloc>
+        </Runway>
+      </Airport>
+   </key>
+
+   <key oid="Number2">
+      <Airport icao="EDDF">
+         <Runway id="1">
+           <WindVeloc w_id="1">
+             24
+           </WindVeloc>
+         </Runway>
+      </Airport>
+   </key>
+
+</xmlBlaster>
+
+
+
+<!-- Abfrage mit XSLT -->
+
+<xsl:for-each select="Airport/Runway">
+<TR>
+  <TD><xsl:value-of select="WindVeloc/@w_id"/></TD>
+</TR>
+</xsl:for-each>
+ 
