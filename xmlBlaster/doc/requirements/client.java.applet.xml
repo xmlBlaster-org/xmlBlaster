@@ -85,7 +85,7 @@
       <p>
       This example shows an applet which invokes the full set of supported methods.
       </p>
-      <pre bgcolor="#ffffff" text="#000000">
+      <pre bgcolor="#ffffff" text="#000000" class="embed" style="CODE.Java" title="http.applet.HelloWorld3">
 <a name="line1" href="#line1"> 1</a> <font color="0000ff"><strong>package http.applet;</strong></font>
 <a name="line2" href="#line2"> 2</a> 
 <a name="line3" href="#line3"> 3</a> <font color="0000ff"><strong>import org.xmlBlaster.client.protocol.http.applet.I_CallbackRaw;</strong></font>

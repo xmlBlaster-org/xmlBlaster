@@ -245,7 +245,7 @@ Solaris:
       This example shows a single threaded synchronous access:
       </p>
 
-<pre bgcolor="#ffffff" text="#000000">
+<pre bgcolor="#ffffff" text="#000000" class="embed" style="CODE.C" title="HelloWorld">
 <a name="line1" href="#line1"> 1</a> <font color="#444444">/*----------------------------------------------------------------------------
 <a name="line2" href="#line2"> 2</a> Name:      HelloWorld.c
 <a name="line3" href="#line3"> 3</a> Project:   xmlBlaster.org
@@ -353,7 +353,7 @@ Solaris:
       <p>
       Here is an example showing multi threaded access with asynchronous callbacks:
       </p>
-<pre bgcolor="#ffffff" text="#000000">
+<pre bgcolor="#ffffff" text="#000000" class="embed" style="CODE.C" title="HelloWorld3">
 <a name="line1" href="#line1">  1</a> <font color="#444444">/*----------------------------------------------------------------------------
 <a name="line2" href="#line2">  2</a> Name:      xmlBlaster/demo/c/socket/HelloWorld3.c
 <a name="line3" href="#line3">  3</a> Project:   xmlBlaster.org
@@ -664,7 +664,7 @@ Solaris:
       <p>
       This example shows how to redirect the logging output from the C lib:
       </p>
-<pre bgcolor="#ffffff" text="#000000">
+<pre bgcolor="#ffffff" text="#000000" class="embed" style="CODE.C" title="LogRedirect">
 <a name="line1" href="#line1">  1</a> <font color="#444444">/*----------------------------------------------------------------------------
 <a name="line2" href="#line2">  2</a> Name:      xmlBlaster/demo/c/socket/LogRedirect.c
 <a name="line3" href="#line3">  3</a> Project:   xmlBlaster.org

@@ -17,39 +17,48 @@
    <configuration where="server">
       <h3>Windows NT/2000 Setup</h3>
       <ol>
-         <li>Download the Java Service Wrapper library</li>
+         <li>Download the Java Service Wrapper library<br/>
          You can download the library from <a href="http://wrapper.sourceforge.net">http://wrapper.sourceforge.net</a>.
          Make sure you grap the Windows version of the library. It will contain the needed executables and Dlls
          needed to launch xmlBlaster as a service.
-         <li>Copy wrapper/lib to xmlBlaster/lib</li>
+         </li>
+         <li>Copy wrapper/lib to xmlBlaster/lib<br/>
          The contents of the lib directory from the wrapper distribution should be copied to the lib directory
          of the xmlBlaster distribution.
-         <li>Copy wrapper.exe from wrapper/bin to xmlBlaster/bin</li>
+	 </li>
+         <li>Copy wrapper.exe from wrapper/bin to xmlBlaster/bin<br/>
          This is the java service monitor program.
-         <li>Modify the wrapper.conf file</li>
+	</li>
+         <li>Modify the wrapper.conf file<br/>
          This file is in the config subdirectory. See the documentation in the file wrapper.conf.template
          for instructions on how
          to edit it.
-         <li>Install the Windows service</li>
+         </li>
+         <li>Install the Windows service<br/>
          This is done by executing the following command:<br></br><br></br>
          <![CDATA[wrapper -i xmlBlaster/config/wrapper.conf]]>
+         </li>
          <li>From the control panel, start the xmlBlaster service</li>
       </ol>
       <h3>Linux Setup</h3>
       <ol>
-         <li>Download the Java Service Wrapper library</li>
+         <li>Download the Java Service Wrapper library<br/>
          You can download the library from <a href="http://wrapper.sourceforge.net">http://wrapper.sourceforge.net</a>.
          Make sure you grap the Linux version of the library. It will contain the needed executables and shared
          libraries
          needed to launch xmlBlaster as a service.
-         <li>Copy wrapper/lib to xmlBlaster/lib</li>
+         </li>
+         <li>Copy wrapper/lib to xmlBlaster/lib<br/>
          The contents of the lib directory from the wrapper distribution should be copied to the lib directory
          of the xmlBlaster distribution.
-         <li>Copy wrapper from wrapper/bin to xmlBlaster/bin</li>
+         </li>
+         <li>Copy wrapper from wrapper/bin to xmlBlaster/bin<br/>
          This is the java service monitor program.
-         <li>Modify the wrapper.conf file</li>
+         </li>
+         <li>Modify the wrapper.conf file<br/>
          This file is in the config subdirectory. See the documentation in this file for instructions on how
          to edit it.
+         </li>
       </ol>
       <h3>NOTE</h3>
       <p>

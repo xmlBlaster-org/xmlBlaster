@@ -25,7 +25,7 @@
    <example lang="Java" type="HTML">
    <h3>Step 1: Write a client plugin</h3>
 
-   <pre bgcolor="#ffffff" text="#000000">
+<pre bgcolor="#ffffff" text="#000000" class="embed" style="CODE.Java" title="javaclients.ClientPlugin">
 <a name="line1" href="#line1"> 1</a> <font color="#444444">// xmlBlaster/demo/javaclients/ClientPlugin.java</font>
 <a name="line2" href="#line2"> 2</a> <font color="0000ff"><strong>package javaclients;</strong></font>
 <a name="line3" href="#line3"> 3</a> <font color="0000ff"><strong>import org.xmlBlaster.client.I_XmlBlasterAccess;</strong></font>
