@@ -49,8 +49,10 @@
               onFail='resource.configuration.pluginFailed'/>
       <action do='STOP' onShutdownRunlevel='2' sequence='5'/>   
       <attribute id='SSL'>true</attribute>
-      <attribute id='keystore'>testStore</attribute>
-      <attribute id='keystorepass'>testtest</attribute>
+      <attribute id='trustStore'>testStore</attribute>
+      <attribute id='trustStorePassword'>testtest</attribute>
+      <attribute id='keyStore'>testStore</attribute>
+      <attribute id='keyStorePassword'>testtest</attribute>
       <attribute id='port'>7609</attribute>
       <attribute id='startUdpListener'>false</attribute>
    </plugin>
