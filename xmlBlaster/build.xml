@@ -843,6 +843,7 @@ TODO
    <!-- property name="MIDlet-Jar-URL" value="http://www.xmlblaster.org/xmlBlaster/demo/j2me/SystemInfo.jar" / -->
    <!-- Will replace the token in the SystemInfo.jad file: --> 
    <property name="MIDlet-Jar-URL" value="SystemInfo.jar" />
+   <property name="MIDlet-servletUrl" value="http://server.xmlBlaster.org:8080/xmlBlaster/AppletServlet" />
 
    <target name="j2me" depends="prepare" description="Compile j2me demo and packages it">
       <switch value="${J2ME_HOME}" caseinsensitive="false">
@@ -908,6 +909,7 @@ TODO
       <copy file="${demo.dir}/j2me/SystemInfo.jad.template" tofile="${demo.dir}/j2me/SystemInfo.jad"/>
       <replace file="${demo.dir}/j2me/SystemInfo.jad" token="@@jarFileSize@@" value="${jarFileSize}"/>
       <replace file="${demo.dir}/j2me/SystemInfo.jad" token="@@SystemInfo.jar@@" value="${MIDlet-Jar-URL}"/>  <!-- SystemInfo.jar -->
+      <replace file="${demo.dir}/j2me/SystemInfo.jad" token="@@servletURL@@" value="${MIDlet-servletUrl}"/>  <!-- http://server.xmlBlaster.org:8080/xmlBlaster/AppletServlet -->
       <echo message=""/>
       <echo message="==============================================================================================="/>
       <echo message="(the path used for the J2ME_HOME is ${J2ME_HOME})"/>
