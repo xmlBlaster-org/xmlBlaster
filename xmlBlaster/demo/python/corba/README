@@ -1,0 +1,118 @@
+
+Howto start the Python/omniORBpy demo:
+--------------------------------------
+
+- install XMLBlaster >= 0.849
+- install python >= 2.3
+- logging package come with Python 2.3. For early versions of Python you can
+  download it from http://www.red-dove.com/python_logging.html
+- install omniORBpy >= 2.2
+- generate orb stubs and skeletons
+  omniidl.exe -b python %XMLBLASTER_HOME%\src\java\org\xmlBlaster\protocol\corba\xmlBlaster.idl
+- start XMLBlaster
+  java -jar lib/xmlBlaster.jar
+- start demo client, to read the files and send them to FileSender
+  filereceiver.py -f .\*.dat -s localhost -l FileReceiver -r FileSender
+
+Output (Windows):
+2003-10-01 20:33:18,861 INFO login as FileReceiver
+2003-10-01 20:33:19,273 INFO sessionId: IIOP:011125462038324D011020
+2003-10-01 20:33:19,273 INFO serverIOR: IOR:000000000000003749444C3A6F72672E786D6C426C61737465722E70726F746F636F6C2E636F7262612F73657276657249646C2F5365727665723A312E30000000000002000000000000007C000102000000000A3132372E302E302E3100040D0000002B5374616E64617264496D706C4E616D652F786D6C426C61737465722D504F412F011125462038324D01102000000000020000000000000008000000004A414300000000010000001C00000000000100010000000105010001000101090000000105010001000000010000002C0000000000000001000000010000001C00000000000100010000000105010001000101090000000105010001
+2003-10-01 20:33:19,292 INFO Downloading F:\xmlBlaster\demo\omniorbpy\test.dat
+2003-10-01 20:33:19,292 INFO removing F:\xmlBlaster\demo\omniorbpy\test.dat
+2003-10-01 20:33:19,322 INFO
+ <qos>
+  <key oid='test.dat'/>
+  <rcvTimestamp nanos='1065025999303000000'/>
+ <isPublish/>
+ </qos>
+2003-10-01 20:33:19,322 INFO logout
+  
+- start demo server, to receive files content from XMLBlaster and write them to the disk (Control-C to stop server under Windows)
+  filesender.py -s localhost -l FileSender
+  
+Output (Windows):  
+2003-10-01 20:41:25,712 INFO login as FileSender
+2003-10-01 20:41:26,093 INFO ping. qos=
+2003-10-01 20:41:26,162 INFO sessionId: IIOP:051125462038324D011020
+2003-10-01 20:41:26,162 INFO serverIOR: IOR:000000000000003749444C3A6F72672E786D6C426C61737465722E70726F746F636F6C2E636F7262612F73657276657249646C2F5365727665723A312E30000000000002000000000000007C000102000000000A3132372E302E302E3100040D0000002B5374616E64617264496D706C4E616D652F786D6C426C61737465722D504F412F051125462038324D01102000000000020000000000000008000000004A414300000000010000001C00000000000100010000000105010001000101090000000105010001000000010000002C0000000000000001000000010000001C00000000000100010000000105010001000101090000000105010001
+2003-10-01 20:41:26,162 INFO callbackIOR: IOR:010000004000000049444c3a6f72672e786d6c426c61737465722e70726f746f636f6c2e636f7262612f636c69656e7449646c2f426c617374657243616c6c6261636b3a312e3000010000000000000060000000010102000a0000003132372e302e302e310029040e000000feb5037b3f00000698000000000000000200000000000000080000000100000000545441010000001c00000001000000010001000100000001000105090101000100000009010100
+2003-10-01 20:41:26,162 INFO start uploading
+2003-10-01 20:41:26,162 INFO update. sessionId=unknown
+2003-10-01 20:41:26,172 INFO 
+ <key oid='test.dat'>
+  <address>F:\xmlBlaster\demo\omniorbpy</address>
+ </key>
+ <qos>
+  <destination forceQueuing='true'>/node/xmlBlaster_127_0_0_1_3412/client/FileSender</destination>
+  <sender>/node/xmlBlaster_127_0_0_1_3412/client/FileReceiver/-6</sender>
+  <subscribe id='__subId:PtP'/>
+  <rcvTimestamp nanos='1065026472934000000'/>
+  <queue index='0' size='1'/>
+  <persistent/>
+ </qos>
+2003-10-01 20:41:26,172 INFO save content to F:\xmlBlaster\demo\omniorbpy\test.dat
+2003-10-01 20:41:28,335 INFO logout
+2003-10-01 20:41:28,376 INFO stop uploading
+2003-10-01 20:41:28,376 INFO done
+
+Windows service: 
+----------------
+
+- install win32all >= 159
+- install service
+  filesvcsender.py install
+- edit svcargv.py and set service parameters  
+  svcargv.py
+- start service 
+  filesvcsender.py start
+- start client 
+  filereceiver.py -f .\*.dat -s localhost -l FileReceiver -r FileSender
+- stop service and view service log file filesvcsender.log
+  filesvcsender.py stop
+
+Service log content:
+
+2003-10-01 21:16:33,343 INFO argv=['-s', 'localhost', '-l', 'FileSender', '-f', 'F:\\xmlBlaster\\demo\\omniorbpy\\filesvcsender.log']
+2003-10-01 21:16:33,353 INFO login as FileSender
+2003-10-01 21:16:33,782 INFO ping. qos=
+2003-10-01 21:16:33,843 INFO sessionId: IIOP:0F1125462038324D011020
+2003-10-01 21:16:33,843 INFO serverIOR: IOR:000000000000003749444C3A6F72672E786D6C426C61737465722E70726F746F636F6C2E636F7262612F73657276657249646C2F5365727665723A312E30000000000002000000000000007C000102000000000A3132372E302E302E3100040D0000002B5374616E64617264496D706C4E616D652F786D6C426C61737465722D504F412F0F1125462038324D01102000000000020000000000000008000000004A414300000000010000001C00000000000100010000000105010001000101090000000105010001000000010000002C0000000000000001000000010000001C00000000000100010000000105010001000101090000000105010001
+2003-10-01 21:16:33,843 INFO callbackIOR: IOR:010000004000000049444c3a6f72672e786d6c426c61737465722e70726f746f636f6c2e636f7262612f636c69656e7449646c2f426c617374657243616c6c6261636b3a312e3000010000000000000060000000010102000a0000003132372e302e302e310046040e000000fef10b7b3f00000508000000000000000200000000000000080000000100000000545441010000001c00000001000000010001000100000001000105090101000100000009010100
+2003-10-01 21:16:33,843 INFO start uploading
+2003-10-01 21:17:33,830 INFO ping. qos=
+2003-10-01 21:17:34,240 INFO update. sessionId=unknown
+2003-10-01 21:17:34,240 INFO 
+ <key oid='test.dat'>
+  <address>F:\xmlBlaster\demo\omniorbpy</address>
+ </key>
+ <qos>
+  <destination forceQueuing='true'>/node/xmlBlaster_127_0_0_1_3412/client/FileSender</destination>
+  <sender>/node/xmlBlaster_127_0_0_1_3412/client/FileReceiver/-16</sender>
+  <subscribe id='__subId:PtP'/>
+  <rcvTimestamp nanos='1065028654190000000'/>
+  <queue index='0' size='1'/>
+  <persistent/>
+ </qos>
+2003-10-01 21:17:34,240 INFO save content to F:\xmlBlaster\demo\omniorbpy\test.dat
+2003-10-01 21:17:56,542 INFO logout
+2003-10-01 21:17:56,572 INFO stop uploading
+2003-10-01 21:17:56,611 INFO done
+
+Simple Python client code:
+--------------------------
+
+import blaster
+server = blaster.Blaster('localhost', 3412, [])
+server.login('myname', '', None)
+for unit in server.get("<key oid='__cmd:?totalMem'/>", "<qos/>"):
+  print unit.xmlKey, unit.content, unit.qos
+server.logout()
+
+Output:
+ <key oid='/node/xmlBlaster_127_0_0_1_3412/?totalMem'/> 2772992 <qos/>
+
+  
+-----------------------------
+Oleg Orlov <orlov@diasoft.ru>
+ 
