@@ -36,6 +36,7 @@ PACKGS = org.xmlBlaster \
 			org.xmlBlaster.protocol.jdbc \
 			org.xmlBlaster.protocol.rmi \
 			org.xmlBlaster.protocol.xmlrpc \
+			org.xmlBlaster.protocol.nativ \
 			org.xmlBlaster.util \
 			org.xmlBlaster.util.pool.jdbc
 
