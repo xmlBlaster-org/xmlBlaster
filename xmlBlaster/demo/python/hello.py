@@ -18,12 +18,12 @@ print "Connected to xmlBlaster server on ", server_url;
 sessionId = server.authenticate.login( "ben", "secret", "<qos></qos>", "");
 print "\nLogin success with sessionId=", sessionId;
 
-# Call the server and get our result.
-message = server.xmlBlaster.get( sessionId, "<key oid=\"__sys__Login\"></key>", "<qos></qos>");
+# Call the server and get its current memory consumption.
+message = server.xmlBlaster.get( sessionId, "<key oid=\"__sys__TotalMem\"></key>", "<qos></qos>");
 print "\nResult for a get():\n\n", message;
 
 # Asynchronous access - not yet implemented
-#server.xmlBlaster.subscribe( sessionId, "<key oid=\"__sys__Login\"></key>", "<qos></qos>");
+#server.xmlBlaster.subscribe( sessionId, "<key oid=\"__sys__TotalMem\"></key>", "<qos></qos>");
 
 
 # Logout from xmlBlaster
