@@ -250,14 +250,14 @@ org.xmlBlaster.engine.admin.extern.TelnetGateway >>
          -cluster.node.id heron
          -admin.remoteconsole.port 2702</pre>
                 </td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
 
          <tr>
             <td>admin.remoteconsole.sessionTimeout</td>
             <td>3600000</td>
             <td>Auto logout after given milli seconds, defaults to one hour.</td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
       </table>
    </configuration>
@@ -277,7 +277,7 @@ org.xmlBlaster.engine.admin.extern.TelnetGateway >>
    
    <date>2002 05 09</date>
    
-   <revision>$Revision: 1.16 $</revision>
+   <revision>$Revision: 1.17 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
