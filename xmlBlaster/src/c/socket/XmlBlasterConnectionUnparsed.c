@@ -230,7 +230,7 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
    else {
       strncpy0(exception->errorCode, "user.configuration", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
-               "[%.100s:%d] Connecting to xmlBlaster (hostP=0) -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %.10s failed errno=%d",
+               "[%.100s:%d] Connecting to xmlBlaster failed, can't determine hostname (hostP=0), -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %.10s, errno=%d",
                __FILE__, __LINE__, serverHostName, servTcpPort, errno);
       return false;
    }
@@ -499,9 +499,6 @@ static char *xmlBlasterConnect(XmlBlasterConnectionUnparsed *xb, const char * co
    }
 
    if (initConnection(xb, exception) == false) {
-      strncpy0(exception->errorCode, "user.configuration", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] No connection to xmlBlaster, check your configuration", __FILE__, __LINE__);
-      if (xb->logLevel>=LOG_TRACE) xb->log(xb->logLevel, LOG_TRACE, __FILE__, exception->message);
       return (char *)0;
    }
 

@@ -179,6 +179,10 @@ static bool initialize(XmlBlasterAccessUnparsed *xa, UpdateFp updateFp, XmlBlast
 
    xa->connectionP = getXmlBlasterConnectionUnparsed(xa->argc, xa->argv);
    if (xa->connectionP == 0) {
+      strncpy0(exception->errorCode, "resource.outOfMemory", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+      SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
+               "[%.100s:%d] Creating XmlBlasterConnectionUnparsed failed", __FILE__, __LINE__);
+      if (xa->logLevel>=LOG_TRACE) xa->log(xa->logLevel, LOG_TRACE, __FILE__, exception->message);
       return false;
    }
    xa->connectionP->log = xa->log;
@@ -187,6 +191,10 @@ static bool initialize(XmlBlasterAccessUnparsed *xa, UpdateFp updateFp, XmlBlast
 
    xa->callbackP = getCallbackServerUnparsed(xa->argc, xa->argv, updateFp, xa);
    if (xa->callbackP == 0) {
+      strncpy0(exception->errorCode, "resource.outOfMemory", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+      SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
+               "[%.100s:%d] Creating CallbackServerUnparsed failed", __FILE__, __LINE__);
+      if (xa->logLevel>=LOG_TRACE) xa->log(xa->logLevel, LOG_TRACE, __FILE__, exception->message);
       freeXmlBlasterConnectionUnparsed(xa->connectionP);
       return false;
    }
@@ -209,7 +217,11 @@ static bool initialize(XmlBlasterAccessUnparsed *xa, UpdateFp updateFp, XmlBlast
    /* thread blocks on socket listener */
    threadRet = pthread_create(&xa->callbackThreadId, (const pthread_attr_t *)0, (void * (*)(void *))xa->callbackP->runCallbackServer, (void *)xa->callbackP);
    if (threadRet != 0) {
-      xa->log(xa->logLevel, LOG_ERROR, __FILE__, "Creating thread failed with error number %d", threadRet);
+      strncpy0(exception->errorCode, "resource.tooManyThreads", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+      SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
+               "[%.100s:%d] Creating thread failed with error number %d",
+               __FILE__, __LINE__, threadRet);
+      if (xa->logLevel>=LOG_TRACE) xa->log(xa->logLevel, LOG_TRACE, __FILE__, exception->message);
       freeCallbackServerUnparsed(xa->callbackP);
       freeXmlBlasterConnectionUnparsed(xa->connectionP);
       return false;
@@ -426,9 +438,6 @@ static char *xmlBlasterConnect(XmlBlasterAccessUnparsed *xa, const char * const 
    }
 
    if (initialize(xa, updateFp, exception) == false) {
-      strncpy0(exception->errorCode, "user.notConnected", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%.100s:%d] No connection to xmlBlaster", __FILE__, __LINE__);
-      if (xa->logLevel>=LOG_TRACE) xa->log(xa->logLevel, LOG_TRACE, __FILE__, exception->message);
       return false;
    }
    
