@@ -37,7 +37,8 @@
    are examples how to start the JacORB or the ORBIX NameService:
    </p>
 <pre>
-# Start the JacORB NameService:
+# Start the JacORB NameService
+# (the port 7608 is looked for automatically by xmlBlaster server):
 jaco -DOAPort=7608  org.jacorb.naming.NameServer /tmp/ns.ior
 </pre>
 
@@ -108,16 +109,19 @@ java -DORBInitRef.NameService=file:///tmp/ns.ior -cp lib/xmlBlaster.jar HelloWor
       These parameters allow to configure the NameService entries on server side
       and to specify the desired lookup on client side.
       </p>
-      <p>
-      They can be set on command line, in the xmlBlaster.properties file or
-      dynamically via messages.
-      </p>
       <table border="1">
          <tr>
             <th>Property</th>
             <th>Default / Example</th>
             <th>Description</th>
-            <th>Implemented</th>
+            <th>Impl</th>
+         </tr>
+
+         <tr>
+            <td>ns</td>
+            <td>true</td>
+            <td>If set to true, xmlBlaster tries to register itself in a NameService</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
 
          <tr>
@@ -148,6 +152,15 @@ java -DORBInitRef.NameService=file:///tmp/ns.ior -cp lib/xmlBlaster.jar HelloWor
             <td>The kind of service is set to <i>MOM</i></td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
+
+         <tr>
+            <td>java -DORBInitRef.NameService=</td>
+            <td>corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root</td>
+            <td>XmlBlaster is configured to automatically lookup a NameService on port 7608 on localhost
+                (see <i>xmlBlaster/config/jacorb.properties.template</i>), here it is set as JVM property.<br />
+                Note: You can set this property as command line argument as well like <i>-ORBInitRef.NameService file:///tmp/ns.ior</i></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
       </table>
    </configuration>
 
@@ -157,7 +170,7 @@ java -DORBInitRef.NameService=file:///tmp/ns.ior -cp lib/xmlBlaster.jar HelloWor
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2003 02 27</date>
-   <revision>$Revision: 1.2 $</revision>
+   <revision>$Revision: 1.3 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>Tests a setup as described in this requirement</comment>
