@@ -264,7 +264,7 @@ public abstract class QueuePropertyBase implements Cloneable
     */
    public final void setMaxEntries(long maxEntries) {
       setMaxEntriesUnchecked(maxEntries);
-      checkConsistency();
+      //checkConsistency();
    }
    private final void setMaxEntriesUnchecked(long maxEntries) {
       this.maxEntries.setValue(maxEntries);
@@ -331,7 +331,7 @@ public abstract class QueuePropertyBase implements Cloneable
     */
    public final void setMaxEntriesCache(long maxEntriesCache) {
       this.maxEntriesCache.setValue(maxEntriesCache);
-      checkConsistency();
+      //checkConsistency();
    }
    private final void setMaxEntriesCacheUnchecked(long maxEntriesCache) {
       this.maxEntriesCache.setValue(maxEntriesCache);
@@ -353,7 +353,7 @@ public abstract class QueuePropertyBase implements Cloneable
     */
    public final void setMaxBytes(long maxBytes) {
       this.maxBytes.setValue(maxBytes);
-      checkConsistency();
+      //checkConsistency();
    }
    private final void setMaxBytesUnchecked(long maxBytes) {
       this.maxBytes.setValue(maxBytes);
@@ -449,7 +449,7 @@ public abstract class QueuePropertyBase implements Cloneable
     */
    public final void setMaxBytesCache(long maxBytesCache) {
       this.maxBytesCache.setValue(maxBytesCache);
-      checkConsistency();
+      //checkConsistency();
    }
    private final void setMaxBytesCacheUnchecked(long maxBytesCache) {
       this.maxBytesCache.setValue(maxBytesCache);
@@ -689,11 +689,11 @@ public abstract class QueuePropertyBase implements Cloneable
     */
    public final void checkConsistency() { // throws XmlBlasterException {
       if (getMaxEntriesCache() > getMaxEntries()) {
-         log.warn(ME, "maxEntriesCache=" + getMaxEntriesCache() + " is bigger than maxEntries=" + getMaxEntries() + ", we reduce maxEntriesCache to maxEntries and continue.");
+         log.warn(ME, this.relating + " maxEntriesCache=" + getMaxEntriesCache() + " is bigger than maxEntries=" + getMaxEntries() + ", we reduce maxEntriesCache to maxEntries and continue.");
          this.maxEntriesCache.setValue(getMaxEntries());
       }
       if (getMaxBytesCache() > getMaxBytes()) {
-         log.warn(ME, "maxBytesCache=" + getMaxBytesCache() + " is bigger than maxBytes=" + getMaxBytes() + ", we reduce maxBytesCache to maxBytes and continue.");
+         log.warn(ME, this.relating + " maxBytesCache=" + getMaxBytesCache() + " is bigger than maxBytes=" + getMaxBytes() + ", we reduce maxBytesCache to maxBytes and continue.");
          this.maxBytesCache.setValue(getMaxBytes());
       }
    }
@@ -715,6 +715,8 @@ public abstract class QueuePropertyBase implements Cloneable
       StringBuffer sb = new StringBuffer(256);
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
+
+      checkConsistency();
 
       // open <queue ...
       sb.append(offset).append("<").append(getRootTagName());
