@@ -19,7 +19,7 @@ sessionId = server.authenticate.login( "ben", "secret", "<qos></qos>", "");
 print "\nLogin success with sessionId=", sessionId;
 
 # Call the server and get its current memory consumption.
-message = server.xmlBlaster.get( sessionId, "<key oid=\"__sys__TotalMem\"></key>", "<qos></qos>");
+message = server.xmlBlaster.get( sessionId, "<key oid='__sys__TotalMem'></key>", "<qos></qos>");
 print "\nResult for a get():\n\n", message;
 
 # Asynchronous access - not yet implemented
