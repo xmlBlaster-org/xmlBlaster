@@ -83,7 +83,7 @@ const char * OFFSET  = "\n ";
 const char * ENCODING_BASE64  = "base64";
 const char * ENCODING_NONE  = "";
 
-//const char * TYPE_STRING = "String"; // is default
+const char * TYPE_STRING = "String"; // is default
 const char * TYPE_BLOB = "byte[]";
 const char * TYPE_BOOLEAN = "boolean";
 const char * TYPE_BYTE = "byte";
