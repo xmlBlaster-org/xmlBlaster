@@ -74,6 +74,7 @@ public class TestPtSession extends TestCase
    private String passwd = "secret";
    private EmbeddedXmlBlaster serverThread;
    private int serverPort = 9560;
+   private boolean startEmbedded = true;
 
    private final String msgOid = "ptpTestMessage";
 
@@ -100,12 +101,18 @@ public class TestPtSession extends TestCase
     * Then we connect our 5 clients
     */
    protected void setUp() {  
-      glob.init(Util.getOtherServerPorts(serverPort));
-      String[] args = {};
-      glob.init(args);
+      this.startEmbedded = glob.getProperty().get("startEmbedded", this.startEmbedded);
 
-      serverThread = EmbeddedXmlBlaster.startXmlBlaster(glob);
-      log.info(ME, "XmlBlaster is ready for testing the session PtP messages");
+      if (this.startEmbedded) {
+         glob.init(Util.getOtherServerPorts(serverPort));
+         String[] args = {};
+         glob.init(args);
+
+         serverThread = EmbeddedXmlBlaster.startXmlBlaster(glob);
+         log.info(ME, "XmlBlaster is ready for testing the session PtP messages");
+      }
+      else
+         log.warn(ME, "You need to start an external xmlBlaster server for this test");
 
       this.conHolderArr = new ConHolder[numCons];
 
@@ -207,10 +214,12 @@ public class TestPtSession extends TestCase
          conHolderArr[ii].con.disconnect(null);
       }
 
-      EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
+      if (this.startEmbedded) {
+         EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
 
-      // reset to default server port (necessary if other tests follow in the same JVM).
-      Util.resetPorts();
+         // reset to default server port (necessary if other tests follow in the same JVM).
+         Util.resetPorts();
+      }
    }
 
    /**
@@ -226,7 +235,7 @@ public class TestPtSession extends TestCase
    /**
     * Invoke: 
     * <pre>
-    *  java org.xmlBlaster.test.qos.TestPtSession -trace[qos] true -call[core] true
+    *  java org.xmlBlaster.test.qos.TestPtSession -trace[qos] true -call[core] true -startEmbedded false
     *  java -Djava.compiler= junit.textui.TestRunner -noloading org.xmlBlaster.test.qos.TestPtSession
     * <pre>
     */
