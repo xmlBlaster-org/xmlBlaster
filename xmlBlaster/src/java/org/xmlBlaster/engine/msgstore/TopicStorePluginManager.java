@@ -14,6 +14,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
+import org.xmlBlaster.util.context.ContextNode;
 
 /**
  * TopicStorePluginManager loads the I_Map implementation plugins. 
@@ -46,6 +47,7 @@ public class TopicStorePluginManager extends PluginManagerBase
    private final String ME;
    private final Global glob;
    private final LogChannel log;
+   private final String pluginEnvClass = "persistence"; // Used for env lookup like "persistence/topicStore/TopicStorePlugin[JDBC][1.0]=..."
    private static final String[][] defaultPluginNames = { {"RAM", "org.xmlBlaster.engine.msgstore.ram.MapPlugin"},
                                                           {"JDBC", "org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin"},
                                                           {"CACHE", "org.xmlBlaster.engine.msgstore.cache.MsgUnitStoreCachePlugin"} };
@@ -62,8 +64,10 @@ public class TopicStorePluginManager extends PluginManagerBase
    /**
     * @see #getPlugin(String, String, StorageId, QueuePropertyBase)
     */
-   public I_Map getPlugin(String typeVersion, StorageId uniqueQueueId, QueuePropertyBase props) throws XmlBlasterException {
-      return getPlugin(new PluginInfo(glob, this, typeVersion), uniqueQueueId, props);
+   public I_Map getPlugin(String typeVersion, StorageId storageId, QueuePropertyBase props) throws XmlBlasterException {
+      return getPlugin(new PluginInfo(glob, this, typeVersion, 
+                                      new ContextNode(glob, this.pluginEnvClass, storageId.getPrefix(), glob.getContextNode())),
+                       storageId, props);
    }
 
    /**
@@ -74,16 +78,18 @@ public class TopicStorePluginManager extends PluginManagerBase
     * @param fn The file name for persistence or null (will be generated or ignored if RAM based)
     * @return The plugin for this type and version or null if none is specified or type=="undef"
     */
-   public I_Map getPlugin(String type, String version, StorageId uniqueQueueId, QueuePropertyBase props) throws XmlBlasterException {
-      return getPlugin(new PluginInfo(glob, this, type, version), uniqueQueueId, props);
+   public I_Map getPlugin(String type, String version, StorageId storageId, QueuePropertyBase props) throws XmlBlasterException {
+      return getPlugin(new PluginInfo(glob, this, type, version,
+                                      new ContextNode(glob, this.pluginEnvClass, storageId.getPrefix(), glob.getContextNode())),
+                       storageId, props);
    }
 
-   public I_Map getPlugin(PluginInfo pluginInfo, StorageId uniqueQueueId, QueuePropertyBase props) throws XmlBlasterException {
+   public I_Map getPlugin(PluginInfo pluginInfo, StorageId storageId, QueuePropertyBase props) throws XmlBlasterException {
       if (pluginInfo.ignorePlugin())
          return null;
 
       I_Map plugin = (I_Map)super.instantiatePlugin(pluginInfo, false);
-      plugin.initialize(uniqueQueueId, props);
+      plugin.initialize(storageId, props);
 
       return plugin;
    }
