@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.13 2000/11/06 21:22:32 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.14 2000/11/09 23:34:43 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -64,7 +64,7 @@ import java.io.IOException;
  * first time the ORB is created.<br />
  * This will be fixed as soon as possible.
  *
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class CorbaConnection implements I_XmlBlasterConnection
@@ -110,8 +110,8 @@ public class CorbaConnection implements I_XmlBlasterConnection
       if (orb == null) { // Thread leak !!!
          // If not set, force to use JacORB instead of JDK internal ORB (which is outdated)
          if (System.getProperty("org.omg.CORBA.ORBClass") == null) {
-            System.setProperty("org.omg.CORBA.ORBClass", "jacorb.orb.ORB");
-            System.setProperty("org.omg.CORBA.ORBSingletonClass", "jacorb.orb.ORBSingleton");
+            System.setProperty("org.omg.CORBA.ORBClass", XmlBlasterProperty.get("org.omg.CORBA.ORBClass", "jacorb.orb.ORB"));
+            System.setProperty("org.omg.CORBA.ORBSingletonClass", XmlBlasterProperty.get("org.omg.CORBA.ORBSingletonClass", "jacorb.orb.ORBSingleton"));
          }
          orb = org.omg.CORBA.ORB.init(args, null);
       }

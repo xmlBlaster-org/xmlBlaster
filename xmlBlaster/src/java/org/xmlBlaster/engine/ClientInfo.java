@@ -3,7 +3,7 @@ Name:      ClientInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: ClientInfo.java,v 1.43 2000/11/05 19:19:42 ruff Exp $
+Version:   $Id: ClientInfo.java,v 1.44 2000/11/09 23:34:43 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -35,7 +35,7 @@ import java.util.*;
  * It also contains a message queue, where messages are stored
  * until they are delivered at the next login of this client.
  *
- * @version $Revision: 1.43 $
+ * @version $Revision: 1.44 $
  * @author $Author: ruff $
  */
 public class ClientInfo
@@ -48,7 +48,7 @@ public class ClientInfo
    private static long instanceCounter = 0L;
    private long instanceId = 0L;
    /** Map holding the Class of all protocol I_CallbackDriver.java implementations, e.g. CallbackCorbaDriver */
-   private Hashtable protocols = null;
+   private static Hashtable protocols = null;
 
    /**
     * All MessageUnit which can't be delivered to the client (if he is not logged in)

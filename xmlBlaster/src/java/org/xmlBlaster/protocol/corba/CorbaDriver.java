@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.12 2000/11/04 22:37:23 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.13 2000/11/09 23:34:43 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -79,8 +79,8 @@ public class CorbaDriver implements I_Driver
       */
       // If not set, force to use JacORB instead of JDK internal ORB (which is outdated)
       if (System.getProperty("org.omg.CORBA.ORBClass") == null) {
-         System.setProperty("org.omg.CORBA.ORBClass", "jacorb.orb.ORB");
-         System.setProperty("org.omg.CORBA.ORBSingletonClass", "jacorb.orb.ORBSingleton");
+         System.setProperty("org.omg.CORBA.ORBClass", XmlBlasterProperty.get("org.omg.CORBA.ORBClass", "jacorb.orb.ORB"));
+         System.setProperty("org.omg.CORBA.ORBSingletonClass", XmlBlasterProperty.get("org.omg.CORBA.ORBSingletonClass", "jacorb.orb.ORBSingleton"));
       }
 
       orb = org.omg.CORBA.ORB.init(args, null);
@@ -147,7 +147,7 @@ public class CorbaDriver implements I_Driver
                }
             }
             */
-            
+
             // Register xmlBlaster with a name server:
             try {
                nc = getNamingService();
