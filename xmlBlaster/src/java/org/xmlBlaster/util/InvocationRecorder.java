@@ -3,17 +3,20 @@ Name:      InvocationRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   InvocationRecorder for client messages
-Version:   $Id: InvocationRecorder.java,v 1.13 2002/05/19 12:55:56 ruff Exp $
+Version:   $Id: InvocationRecorder.java,v 1.14 2002/05/27 16:25:16 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
 import org.jutils.collection.Queue;
 import org.jutils.JUtilsException;
+import org.jutils.log.LogChannel;
 
-import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.client.I_CallbackRaw;
+import org.xmlBlaster.client.protocol.I_XmlBlaster;
 
 import java.util.*;
 
@@ -25,12 +28,16 @@ import java.util.*;
  * Every method invocation is timestamped and wrapped into an InvocationContainer object,
  * and pushed into the queue.
  *
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  * @author $Author: ruff $
+ * @see testsuite.org.xmlBlaster.TestFailSave
+ * @see classtest.InvocationRecorderTest
  */
-public class InvocationRecorder implements I_InvocationRecorder
+public class InvocationRecorder implements I_InvocationRecorder, I_CallbackRaw
 {
    private String ME = "InvocationRecorder";
+
+   private final LogChannel log;
 
    /**
     * The queue to hold the method invocations
@@ -42,7 +49,7 @@ public class InvocationRecorder implements I_InvocationRecorder
     * Callback which the client must implement.
     * The recorder calls these methods when doing a playback
     */
-   private I_InvocationRecorder serverCallback = null;
+   private I_XmlBlaster serverCallback = null;
    private I_CallbackRaw clientCallback = null;
 
    private MessageUnit[] dummyMArr = new MessageUnit[0];
@@ -57,9 +64,10 @@ public class InvocationRecorder implements I_InvocationRecorder
     * @param clientCallback You need to implement I_CallbackRaw to receive the invocations on playback
     *                       null if you are not interested in those
     */
-   public InvocationRecorder(int maxEntries, I_InvocationRecorder serverCallback,
+   public InvocationRecorder(Global glob, int maxEntries, I_XmlBlaster serverCallback,
                              I_CallbackRaw clientCallback)
    {
+      this.log = glob.getLog(null);
       init(maxEntries, serverCallback, clientCallback);
    }
 
@@ -67,15 +75,33 @@ public class InvocationRecorder implements I_InvocationRecorder
    /**
     * @param maxEntries The maximum number of invocations to store
     */
-   private void init(int maxEntries, I_InvocationRecorder serverCallback,
+   private void init(int maxEntries, I_XmlBlaster serverCallback,
                               I_CallbackRaw clientCallback)
    {
-      if (Log.CALL) Log.call(ME, "Creating new InvocationRecorder(" + maxEntries + ") ...");
+      if (log.CALL) log.call(ME, "Creating new InvocationRecorder(" + maxEntries + ") ...");
       this.queue = new Queue(ME, maxEntries);
       this.serverCallback = serverCallback;
       this.clientCallback = clientCallback;
    }
 
+   /**
+    * @param ONOVERFLOW_BLOCK = "block", ONOVERFLOW_DEADLETTER = "deadLetter",
+    *        ONOVERFLOW_DISCARD = "discard", ONOVERFLOW_DISCARDOLDEST = "discardOldest",
+    *        ONOVERFLOW_EXCEPTION = "exception"
+    */
+   public void setMode(String mode)
+   {
+      if (mode == null) return;
+
+      if (mode.equals(Constants.ONOVERFLOW_DISCARDOLDEST))
+         this.queue.setModeToDiscardOldest();
+      else if (mode.equals(Constants.ONOVERFLOW_DISCARD))
+         this.queue.setModeToDiscard();
+      else if (mode.equals(Constants.ONOVERFLOW_EXCEPTION))
+         log.trace(ME, "Setting onOverflow mode to exception"); // default
+      else
+         log.warn(ME, "Ignoring unknown onOverflow mode '" + mode + "', using default mode 'exception'."); // default
+   }
 
    /**
     * Check if the recorder is filled up.
@@ -118,7 +144,7 @@ public class InvocationRecorder implements I_InvocationRecorder
     */
    public void pullback(long startDate, long endDate, double motionFactor) throws XmlBlasterException
    {
-      Log.info(ME, "Invoking pullback(startDate=" + startDate + ", endDate=" + endDate + ", motionFactor=" + motionFactor + ")");
+      log.info(ME, "Invoking pullback(startDate=" + startDate + ", endDate=" + endDate + ", motionFactor=" + motionFactor + ") queue.size=" + queue.size());
 
       InvocationContainer cont = null;
       while(queue.size() > 0) { // find the start node ...
@@ -127,7 +153,7 @@ public class InvocationRecorder implements I_InvocationRecorder
             break;
       }
       if (cont == null) {
-         Log.warn(ME + ".NoInvoc", "Sorry, no invocations found, queue is empty or your start date is to late");
+         log.warn(ME + ".NoInvoc", "Sorry, no invocations found, queue is empty or your start date is to late");
          throw new XmlBlasterException(ME + ".NoInvoc", "Sorry, no invocations found, queue is empty or your start date is to late");
       }
 
@@ -147,7 +173,7 @@ public class InvocationRecorder implements I_InvocationRecorder
                try {
                   Thread.currentThread().sleep(originalElapsed - actualElapsed);
                } catch(InterruptedException e) {
-                  Log.warn(ME, "Thread sleep got interrupted, this invocation is not in sync");
+                  log.warn(ME, "Thread sleep got interrupted, this invocation is not in sync");
                }
             }
             callback(cont);
@@ -169,6 +195,15 @@ public class InvocationRecorder implements I_InvocationRecorder
 
 
    /**
+    * How many messages are silently lost in 'discard' or 'discardOldest' mode?
+    */
+   public long getNumLost()
+   {
+      return queue.getNumLost();
+   }
+
+
+   /**
     * Playback the stored messages, without removing them form the recorder.
     * This you can use multiple times again.
     * <p />
@@ -182,7 +217,7 @@ public class InvocationRecorder implements I_InvocationRecorder
    public void playback(long startDate, long endDate, double motionFactor) throws XmlBlasterException
    {
       // !!! implement similar to pullback() but using the iterator to process the queue
-      Log.error(ME + ".NoImpl", "Sorry, only pullback is implemented");
+      log.error(ME + ".NoImpl", "Sorry, only pullback is implemented");
       throw new XmlBlasterException(ME + ".NoImpl", "Sorry, only pullback is implemented");
    }
 
@@ -214,6 +249,10 @@ public class InvocationRecorder implements I_InvocationRecorder
             serverCallback.publishArr(cont.msgUnitArr);
             return;
          }
+         else if (cont.method.equals("publishOneway")) {
+            serverCallback.publishOneway(cont.msgUnitArr);
+            return;
+         }
          else if (cont.method.equals("erase")) {
             serverCallback.erase(cont.xmlKey, cont.xmlQos);
             return;
@@ -226,9 +265,13 @@ public class InvocationRecorder implements I_InvocationRecorder
             clientCallback.update(cont.cbSessionId, cont.msgUnitArr);
             return;
          }
+         else if (cont.method.equals("updateOneway")) {
+            clientCallback.updateOneway(cont.cbSessionId, cont.msgUnitArr);
+            return;
+         }
       }
 
-      Log.error(ME, "Internal error: Method '" + cont.method + "' is unknown");
+      log.error(ME, "Internal error: Method '" + cont.method + "' is unknown");
       throw new XmlBlasterException(ME, "Internal error: Method '" + cont.method + "' is unknown");
    }
 
@@ -236,6 +279,7 @@ public class InvocationRecorder implements I_InvocationRecorder
    /**
     * @return dummy to match I_InvocationRecorder interface
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
+    * @exception XmlBlasterException if queue is full
     */
    public String subscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
@@ -256,6 +300,7 @@ public class InvocationRecorder implements I_InvocationRecorder
    /**
     * For I_InvocationRecorder interface
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
+    * @exception XmlBlasterException if queue is full
     */
    public void unSubscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
@@ -275,6 +320,7 @@ public class InvocationRecorder implements I_InvocationRecorder
    /**
     * @return dummy to match I_InvocationRecorder interface
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
+    * @exception XmlBlasterException if queue is full
     */
    public String publish(MessageUnit msgUnit) throws XmlBlasterException
    {
@@ -292,9 +338,23 @@ public class InvocationRecorder implements I_InvocationRecorder
    }
 
 
+   public void publishOneway(MessageUnit [] msgUnitArr) {
+      InvocationContainer cont = new InvocationContainer();
+      cont.method = "publishOneway";
+      cont.msgUnitArr = msgUnitArr;
+      try {
+         queue.push(cont);
+      }
+      catch (JUtilsException e) {
+         log.error(ME+".publishOneway", e.toString());
+      }
+   }
+
+
    /**
     * @return dummy to match I_InvocationRecorder interface
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
+    * @exception XmlBlasterException if queue is full
     */
    public String[] publishArr(MessageUnit [] msgUnitArr) throws XmlBlasterException
    {
@@ -314,6 +374,7 @@ public class InvocationRecorder implements I_InvocationRecorder
    /**
     * @return dummy to match I_InvocationRecorder interface
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
+    * @exception XmlBlasterException if queue is full
     */
    public String[] erase(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
@@ -334,6 +395,7 @@ public class InvocationRecorder implements I_InvocationRecorder
    /**
     * @return dummy to match I_InvocationRecorder interface
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
+    * @exception XmlBlasterException if queue is full
     */
    public MessageUnit[] get(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
@@ -366,7 +428,7 @@ public class InvocationRecorder implements I_InvocationRecorder
     * delivering us a new asynchronous message. 
     * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
     */
-   public String update(String cbSessionId, MessageUnit [] msgUnitArr)
+   public String[] update(String cbSessionId, MessageUnit [] msgUnitArr)
    {
       InvocationContainer cont = new InvocationContainer();
       cont.method = "update";
@@ -375,9 +437,29 @@ public class InvocationRecorder implements I_InvocationRecorder
       try {
          queue.push(cont);
       } catch (JUtilsException e) {
-         Log.error(ME, "Can't push update(): " + e.reason);
+         log.error(ME, "Can't push update(): " + e.reason);
       }
-      return "";
+      String[] ret=new String[msgUnitArr.length];
+      for (int i=0; i<ret.length; i++) ret[i] = "";
+      return ret;
+   }
+
+   /**
+    * This is the callback method invoked from xmlBlaster
+    * delivering us a new asynchronous message. 
+    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
+    */
+   public void updateOneway(String cbSessionId, MessageUnit [] msgUnitArr)
+   {
+      InvocationContainer cont = new InvocationContainer();
+      cont.method = "updateOneway";
+      cont.cbSessionId = cbSessionId;
+      cont.msgUnitArr = msgUnitArr;
+      try {
+         queue.push(cont);
+      } catch (JUtilsException e) {
+         log.error(ME, "Can't push updateOneway(): " + e.reason);
+      }
    }
 
    /**
@@ -399,17 +481,5 @@ public class InvocationRecorder implements I_InvocationRecorder
       InvocationContainer() {
          timestamp = System.currentTimeMillis();
       }
-   }
-
-
-   /**
-    * Only for testing
-    *    java org.xmlBlaster.util.InvocationRecorder
-    */
-   public static void main(String args[]) throws Exception
-   {
-      String me = "InvocationRecorder-Tester";
-      int size = 3;
-      // InvocationRecorder queue = new InvocationRecorder(size);
    }
 }
