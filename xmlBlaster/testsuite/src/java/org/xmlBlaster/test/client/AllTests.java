@@ -34,6 +34,7 @@ public class AllTests
       suite.addTest(new TestSuite(org.xmlBlaster.test.client.TestPersistentSession.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.client.TestPtPDispatch.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.client.TestPtPPersistent.class));
+      suite.addTest(new TestSuite(org.xmlBlaster.test.client.TestHistoryZero.class));
      return suite;
    }
 }
