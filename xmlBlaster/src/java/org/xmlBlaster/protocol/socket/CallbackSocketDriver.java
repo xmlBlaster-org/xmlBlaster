@@ -35,8 +35,8 @@ public class CallbackSocketDriver implements I_CallbackDriver
     * Should not be instantiated by plugin loader.
     */
    public CallbackSocketDriver() {
-      System.err.println(ME + ": Empty Constructor!");
-      (new Exception("")).printStackTrace();
+      // System.err.println(ME + ": Empty Constructor!");
+      // (new Exception("")).printStackTrace();
    }
 
    /**
