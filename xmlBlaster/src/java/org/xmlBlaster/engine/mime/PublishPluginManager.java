@@ -3,7 +3,7 @@ Name:      PublishPluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for persistence
-Version:   $Id: PublishPluginManager.java,v 1.16 2002/12/20 15:29:27 ruff Exp $
+Version:   $Id: PublishPluginManager.java,v 1.17 2003/01/03 17:11:28 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime;
@@ -112,11 +112,11 @@ public class PublishPluginManager extends PluginManagerBase implements I_Runleve
       if (pluginMap.size() == 0)
          return null;
 
-      if (mime == null || mimeExtended == null) {
+      if (mime == null) {
          Thread.currentThread().dumpStack();
-         throw new IllegalArgumentException("You must pass a valid contentMime and contentMimeExtended type");
+         throw new IllegalArgumentException("You must pass a valid contentMime type");
       }
-      if (mimeExtended.length() < 1) mimeExtended = Constants.DEFAULT_CONTENT_MIME_EXTENDED;
+      if (mimeExtended == null || mimeExtended.length() < 1) mimeExtended = Constants.DEFAULT_CONTENT_MIME_EXTENDED;
       String key = mime + mimeExtended;
 
       // First we check the cache ...
