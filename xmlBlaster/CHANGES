@@ -2,6 +2,11 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.8x [xxx, xx 200x]
 ===============================
+ o Package changes
+   org.xmlBlaster.util.ConnectQos -> org.xmlBlaster.client.qos.ConnectQos
+   org.xmlBlaster.util.ConnectReturnQos -> org.xmlBlaster.client.qos.ConnectReturnQos
+   org.xmlBlaster.util.DiconnectQos -> org.xmlBlaster.client.qos.DisconnectQos
+
  o ConnectQos changes
    Removed tag <sessionId>bla</sessionId>,
    introduced attribute <session sessionId='bla'/> instead
