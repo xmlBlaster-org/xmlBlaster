@@ -325,7 +325,7 @@ public class SubjectInfo
     * <p />
     * @return getLoginName()
     */
-   public final String getUniqueKey() throws XmlBlasterException
+   public final String getUniqueKey()
    {
       return loginName;
    }
