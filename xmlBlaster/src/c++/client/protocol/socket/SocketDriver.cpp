@@ -107,10 +107,11 @@ void SocketDriver::freeResources(bool deleteConnection)
    if (deleteConnection && connection_ != 0) {
       freeXmlBlasterAccessUnparsed(connection_);
       connection_ = 0;
-      if (argsStructP_ != 0) {
-         global_.freeArgs(*argsStructP_);
-         argsStructP_ = 0;
-      }
+   }
+   if (deleteConnection && argsStructP_ != 0) {
+      global_.freeArgs(*argsStructP_);
+      delete argsStructP_;
+      argsStructP_ = 0;
    }
 }
 
@@ -256,6 +257,7 @@ void SocketDriver::reconnect(void)
 
 SocketDriver::~SocketDriver()
 {
+   log_.error(ME, "~SocketDriver() DEBUG only: entering destructor");
    if (log_.call()) log_.call(ME, "~SocketDriver()");
    try {
       freeResources(true);
