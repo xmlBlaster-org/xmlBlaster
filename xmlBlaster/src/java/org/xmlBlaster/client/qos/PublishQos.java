@@ -124,10 +124,11 @@ public final class PublishQos
    /**
     * Mark a message to be volatile or not.
     * <br />
-    * A non-volatile messages stays in memory as long as the server runs<br />
+    * A non-volatile messages stays in memory as long as the server runs or the message expires.<br />
     * A volatile messages exists only during publish and processing it (doing the updates).<br />
     * Defaults to false.
-    * @deprecated Use setLifeTime(0L) and setForceDestroy(false) instead
+    * <br />
+    * NOTE: This is a convenience method for setLifeTime(0L) and setForceDestroy(false).
     */
    public void setVolatile(boolean volatileFlag) {
       msgQosData.setVolatile(volatileFlag);
@@ -171,6 +172,8 @@ public final class PublishQos
     * Add a destination where to send the message.
     * <p />
     * Note you can invoke this multiple times to send to multiple destinations.
+    * <p />
+    * Note that the default lifeTime is set to 0 (PtP are volatile messages as default)
     * @param destination  The loginName of a receiver or some destination XPath query
     */
    public void addDestination(Destination destination) {
