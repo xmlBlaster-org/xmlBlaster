@@ -96,7 +96,7 @@ PublishDemo -persistent true -numPublish 100
             -dispatch/connection/pingInterval 1000
 
 SubscribeDemo -persistentSubscribe true -dispatch/callback/retries -1
-              -dispatch/connection/delay 5000
+              -dispatch/connection/delay 5000 -session.name subscriber/1
       </pre>
       <p>
       You can kill the above process, restart them and check that nothing
@@ -260,7 +260,7 @@ TestQueue
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2004 04 09</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
