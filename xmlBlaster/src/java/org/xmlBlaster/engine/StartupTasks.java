@@ -6,16 +6,20 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.engine;
 
 import java.io.File;
+import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.FileReader;
+import java.io.InputStreamReader;
 import java.io.IOException;
 import java.io.FileOutputStream;
+import java.net.URL;
+import java.net.MalformedURLException;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.FileLocator;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.client.XmlBlasterAccess;
@@ -68,8 +72,9 @@ public class StartupTasks implements I_Plugin {
    private LogChannel log;
 
    private I_XmlBlasterAccess connection;
-   private String directoryName = (String)System.getProperty("user.home"); // + (String)System.getProperty("file.separator") + "tmp";
+   private String directoryName = null; // (String)System.getProperty("user.home"); // + (String)System.getProperty("file.separator") + "tmp";
    private String scriptFileName = "xmlBlasterStartup.xml";
+   private URL scriptFileUrl;
    private String outFileName = "";
 
    private String loginName = "_StartupTasks";
@@ -84,27 +89,49 @@ public class StartupTasks implements I_Plugin {
    public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo) throws XmlBlasterException {
       this.pluginInfo = pluginInfo;
       this.global = glob.getClone(glob.getNativeConnectArgs());
-      this.global.addObjectEntry("ServerNodeScope", glob.getObjectEntry("ServerNodeScope"));
-      this.log = this.global.getLog("core");
+      try {
+         this.global.addObjectEntry("ServerNodeScope", glob.getObjectEntry("ServerNodeScope"));
+         this.log = this.global.getLog("core");
 
-      if (this.log.CALL) this.log.call(ME, "init");
+         if (this.log.CALL) this.log.call(ME, "init");
 
-      this.directoryName = this.global.get("directoryName", this.directoryName, null, this.pluginInfo);
-      this.scriptFileName = this.global.get("scriptFileName", this.scriptFileName, null, this.pluginInfo);
-      this.outFileName = this.global.get("outFileName", this.outFileName, null, this.pluginInfo);
-      
-      File f = new File(this.directoryName, this.scriptFileName);
-      if (f.exists() && f.isFile() && f.canRead()) {
-         log.info(ME, "Using startup script file '" + f.toString() + "'");
+         this.directoryName = this.global.get("directoryName", this.directoryName, null, this.pluginInfo);
+         this.scriptFileName = this.global.get("scriptFileName", this.scriptFileName, null, this.pluginInfo);
+         this.outFileName = this.global.get("outFileName", this.outFileName, null, this.pluginInfo);
+
+         if (this.directoryName == null || this.directoryName.length() < 1) {
+            // Use xmlBlaster search path (including CLASSPATH)
+            FileLocator fileLocator = new FileLocator(this.global);
+            this.scriptFileUrl = fileLocator.findFileInXmlBlasterSearchPath((String)null, this.scriptFileName);
+         }
+         else {
+            // Use given path
+            File f = new File(this.directoryName, this.scriptFileName);
+            if (f.exists() && f.isFile() && f.canRead()) {
+               try {
+                  this.scriptFileUrl = f.toURL();
+               } catch (MalformedURLException e) {
+                  log.warn(ME, e.toString());
+               }
+            }
+         }
+         
+         if (this.scriptFileUrl != null) {
+            log.info(ME, "Using startup script file '" + this.scriptFileUrl.toString() + "'");
+         }
+         else {
+            log.warn(ME, "No startup script file '" + this.scriptFileName + "' found, we continue without.");
+            return;
+         }
+
+         this.loginName = this.global.get("loginName", this.loginName, null, this.pluginInfo);
+         this.password = this.global.get("password", this.password, null, this.pluginInfo);
+
+         excuteStartupTasks();
       }
-      else {
-         log.warn(ME, "No startup script file '" + f.toString() + "' found, we continue without.");
+      finally {
+         this.global = null;
       }
-
-      this.loginName = this.global.get("loginName", this.loginName, null, this.pluginInfo);
-      this.password = this.global.get("password", this.password, null, this.pluginInfo);
-
-      excuteStartupTasks();
    }
 
    /**
@@ -136,6 +163,9 @@ public class StartupTasks implements I_Plugin {
     * On startup execute given script. 
     */
    private void excuteStartupTasks() throws XmlBlasterException {
+      if (this.scriptFileUrl == null) {
+         return;
+      }
       try {
          this.connection = new XmlBlasterAccess(this.global);
 
@@ -147,8 +177,6 @@ public class StartupTasks implements I_Plugin {
             }
          });
 
-         File f = new File(this.directoryName, this.scriptFileName);
-         FileReader reader = new FileReader(f);
          OutputStream outStream = System.out;
          boolean needsClosing = false;
          if (this.outFileName != null && this.outFileName.length() > 0) {
@@ -159,31 +187,40 @@ public class StartupTasks implements I_Plugin {
          XmlScriptInterpreter interpreter = new XmlScriptInterpreter(this.global, this.connection,
                                                                      outStream, outStream, null);
 
+         InputStream in = this.scriptFileUrl.openStream();
          try {
-            interpreter.parse(reader);
+            interpreter.parse(new InputStreamReader(in));
          }
          finally {
-            try { reader.close(); } catch(IOException e) { log.warn(ME, "Ignoring problem: " + e.toString()); }
+            try { in.close(); } catch(IOException e) { log.warn(ME, "Ignoring problem: " + e.toString()); }
             if (needsClosing) {
                try { outStream.close(); } catch(IOException e) { log.warn(ME, "Ignoring problem: " + e.toString()); }
             }
          }
 
-         log.info(ME, "Successfully executed '" + this.scriptFileName + "' from directory '" + this.directoryName + "'.");
-
+         log.info(ME, "Successfully executed '" + this.scriptFileUrl.toString() + "'.");
+      }
+      catch (java.io.FileNotFoundException e) {
+         log.warn(ME, "Can't execute  '" + this.scriptFileUrl.toString() + "': " + e.toString());
+      }
+      catch (java.io.IOException e) {
+         log.warn(ME, "Can't open stream of '" + this.scriptFileUrl.toString() + "': " + e.toString());
+      }
+      catch (XmlBlasterException e) {
+         log.warn(ME, "Can't execute  '" + this.scriptFileUrl.toString() + "': " + e.getMessage());
+      }
+      finally {
          try {
-            this.connection.disconnect(null);
+            if (this.connection != null) {
+               if (this.connection.isConnected()) {
+                  this.connection.disconnect(null);
+               }
+               this.connection = null;
+            }
          }
          catch (Throwable e) {
             log.warn(ME, "Ignoring problem during disconnect: " + e.toString());
          }
-
-      }
-      catch (java.io.FileNotFoundException e) {
-         log.warn(ME, "Can't execute  '" + this.scriptFileName + "': " + e.toString());
-      }
-      catch (XmlBlasterException e) {
-         log.warn(ME, "Can't execute  '" + this.scriptFileName + "' from directory '" + this.directoryName + "': " + e.getMessage());
       }
    }
 }
