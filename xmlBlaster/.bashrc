@@ -94,6 +94,11 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    CLASSPATH=${XMLBLASTER_HOME}/lib/gnu-regexp-1.0.8.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/xmlrpc.jar:${CLASSPATH}
 
+   # Mail support
+   CLASSPATH=${XMLBLASTER_HOME}/lib/mail.jar:${CLASSPATH}
+   CLASSPATH=${XMLBLASTER_HOME}/lib/activation.jar:${CLASSPATH}
+
+
    # EJB connector (J2EE) support:
    CLASSPATH=${XMLBLASTER_HOME}/lib/connector.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/jaas.jar:${CLASSPATH}
