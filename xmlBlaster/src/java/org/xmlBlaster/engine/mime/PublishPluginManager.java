@@ -3,13 +3,13 @@ Name:      PublishPluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for persistence
-Version:   $Id: PublishPluginManager.java,v 1.7 2002/05/11 09:36:28 ruff Exp $
+Version:   $Id: PublishPluginManager.java,v 1.8 2002/05/16 18:34:42 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime;
 
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.PluginManagerBase;
-import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.helper.Constants;
@@ -32,13 +32,13 @@ public class PublishPluginManager extends PluginManagerBase {
    public static final String pluginPropertyName = "MimePublishPlugin";
 
    private final Global glob;
-   private final Log log;
+   private final LogChannel log;
 
    public PublishPluginManager(Global glob)
    {
       super(glob);
       this.glob = glob;
-      this.log = this.glob.getLog();
+      this.log = this.glob.getLog("mime");
    }
 
    /**
@@ -49,7 +49,7 @@ public class PublishPluginManager extends PluginManagerBase {
     * @return The PublishFilter for this type and version or null if none is specified
     */
    public I_PublishFilter getPlugin(String type, String version) throws XmlBlasterException {
-      if (Log.CALL) Log.call(ME+".getPlugin()", "Loading peristence plugin type[" + type + "] version[" + version +"]");
+      if (log.CALL) log.call(ME+".getPlugin()", "Loading peristence plugin type[" + type + "] version[" + version +"]");
       I_PublishFilter filterPlugin = null;
       String[] pluginNameAndParam = null;
 
@@ -142,7 +142,7 @@ public class PublishPluginManager extends PluginManagerBase {
          return addPublishFilterPlugin(type, version); // try to load it
 
       } catch (Exception e) {
-         Log.error(ME, "Problems accessing publish filter [" + type + "][" + version +"] mime=" + mime + " mimeExtended=" + mimeExtended + ": " + e.toString());
+         log.error(ME, "Problems accessing publish filter [" + type + "][" + version +"] mime=" + mime + " mimeExtended=" + mimeExtended + ": " + e.toString());
          e.printStackTrace();
          return (I_PublishFilter)null;
       }
@@ -158,14 +158,14 @@ public class PublishPluginManager extends PluginManagerBase {
       key.append(type).append(version);
       Object obj = publishFilterMap.get(key.toString());
       if (obj != null) {
-         Log.info(ME, "Publish filter '" + key.toString() + "' is loaded already");
+         log.info(ME, "Publish filter '" + key.toString() + "' is loaded already");
          return (I_PublishFilter)obj;
       }
 
       try {
          I_PublishFilter filter = getPlugin(type, version);
          if (filter == null) {
-            Log.error(ME, "Problems accessing plugin " + PublishPluginManager.pluginPropertyName + "[" + type + "][" + version +"] please check your configuration");
+            log.error(ME, "Problems accessing plugin " + PublishPluginManager.pluginPropertyName + "[" + type + "][" + version +"] please check your configuration");
             return null;
          }
 
@@ -177,7 +177,7 @@ public class PublishPluginManager extends PluginManagerBase {
          // check plugin code:
          if (mimeExtended == null || mimeExtended.length != mime.length) {
             if (mimeExtended.length != mime.length)
-               Log.error(ME, "Publish plugin manager [" + type + "][" + version +"]: Number of mimeExtended does not match mime, ignoring mimeExtended.");
+               log.error(ME, "Publish plugin manager [" + type + "][" + version +"]: Number of mimeExtended does not match mime, ignoring mimeExtended.");
             mimeExtended = new String[mime.length];
             for (int ii=0; ii < mime.length; ii++)
                mimeExtended[ii] = Constants.DEFAULT_CONTENT_MIME_EXTENDED;
@@ -186,13 +186,13 @@ public class PublishPluginManager extends PluginManagerBase {
          for (int ii = 0; ii < mime.length; ii++) {
             key.append(type).append(version).append(mime[ii]).append(mimeExtended[ii]);
             publishFilterMap.put(key.toString(), filter);
-            Log.info(ME, "Loaded publish filter '" + key.toString() + "'");
+            log.info(ME, "Loaded publish filter '" + key.toString() + "'");
             key.setLength(0);
          }
 
          return filter;
       } catch (Throwable e) {
-         Log.error(ME, "Problems accessing publish plugin manager, can't instantiate " + PublishPluginManager.pluginPropertyName + "[" + type + "][" + version +"]: " + e.toString());
+         log.error(ME, "Problems accessing publish plugin manager, can't instantiate " + PublishPluginManager.pluginPropertyName + "[" + type + "][" + version +"]: " + e.toString());
          e.printStackTrace();
       }
       return null;

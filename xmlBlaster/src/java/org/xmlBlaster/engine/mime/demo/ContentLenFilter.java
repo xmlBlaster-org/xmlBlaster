@@ -3,12 +3,12 @@ Name:      ContentLenFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface hiding the real callback protocol
-Version:   $Id: ContentLenFilter.java,v 1.11 2002/05/06 07:29:25 ruff Exp $
+Version:   $Id: ContentLenFilter.java,v 1.12 2002/05/16 18:34:42 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime.demo;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.SubjectInfo;
@@ -39,7 +39,7 @@ public class ContentLenFilter implements I_Plugin, I_AccessFilter
 {
    private final String ME = "ContentLenFilter";
    private Global glob;
-   private Log log;
+   private LogChannel log;
    /** Limits max message size to 1 MB as a default */
    private long DEFAULT_MAX_LEN = 1000000;
    /** For testsuite TestAccess.java only to force an XmlBlasterException */
@@ -51,7 +51,7 @@ public class ContentLenFilter implements I_Plugin, I_AccessFilter
     */
    public void initialize(Global glob) {
       this.glob = glob;
-      this.log = glob.getLog();
+      this.log = glob.getLog("mime");
       log.info(ME, "Filter is initialized, we check all mime types if content is not to long");
    }
 
@@ -72,17 +72,18 @@ public class ContentLenFilter implements I_Plugin, I_AccessFilter
     * @param String[] Some arguments from xmlBlaster.properties.
     */
    public void init(org.xmlBlaster.util.Global glob, String[] options) throws XmlBlasterException {
+      this.log = glob.getLog("mime");
       if (options != null) {
          for (int ii=0; ii<options.length-1; ii++) {
             if (options[ii].equalsIgnoreCase("DEFAULT_MAX_LEN")) {
                DEFAULT_MAX_LEN = (new Long(options[++ii])).longValue();
-               Log.info(ME, "Setting DEFAULT_MAX_LEN=" + DEFAULT_MAX_LEN + " as configured in xmlBlaster.properties");
+               log.info(ME, "Setting DEFAULT_MAX_LEN=" + DEFAULT_MAX_LEN + " as configured in xmlBlaster.properties");
             }
          }
          for (int ii=0; ii<options.length-1; ii++) { // This is for the testsuite only to test exception
             if (options[ii].equalsIgnoreCase("THROW_EXCEPTION_FOR_LEN")) {
                THROW_EXCEPTION_FOR_LEN = (new Integer(options[++ii])).intValue();
-               Log.info(ME, "Setting THROW_EXCEPTION_FOR_LEN=" + THROW_EXCEPTION_FOR_LEN + " as configured in xmlBlaster.properties");
+               log.info(ME, "Setting THROW_EXCEPTION_FOR_LEN=" + THROW_EXCEPTION_FOR_LEN + " as configured in xmlBlaster.properties");
             }
          }
       }
