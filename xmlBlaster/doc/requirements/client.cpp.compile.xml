@@ -18,7 +18,7 @@
      from <b>build.properties</b>. See the configuration example below how to set up build.properties.
      </p>
      <p>
-     The cpptasks support many compilers on many platforms (like OS 390/400, SUN, HP, IBM, g++, intel, borland, VC++),
+     The cpptasks support many compilers on many platforms (like OS 390/400, SUN, HP, IBM, g++, Intel icc, borland, VC++),
      our build.xml is tested currently on Linux and Windows.
      If you use an exotic platform please check cpptasks if this is supported
      and extend build.xml to your needs (feedback is welcome).
@@ -240,6 +240,6 @@ build -DCPP_LINK=static -DPURIFY=PURIFY -verbose cpp > build.log
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
    <date>2003 01 07</date>
-   <revision>$Revision: 1.16 $</revision>
+   <revision>$Revision: 1.17 $</revision>
 </requirement>
 
