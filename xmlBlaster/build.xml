@@ -773,7 +773,6 @@ TODO
          </classpath>
 
          <test name="org.xmlBlaster.test.C.AllTests" fork="yes" todir="${report.dir}"/>
-
          <test name="org.xmlBlaster.test.classtest.AllTests" fork="yes" todir="${report.dir}"/>
          <test name="org.xmlBlaster.test.qos.AllTests" fork="yes" todir="${report.dir}"/>
          <test name="org.xmlBlaster.test.client.AllTests" fork="yes" todir="${report.dir}"/>
@@ -787,7 +786,6 @@ TODO
          <test name="org.xmlBlaster.test.cluster.AllTests" fork="yes" todir="${report.dir}"/>
          <test name="org.xmlBlaster.test.stress.AllTests" fork="yes" todir="${report.dir}"/>
          <test name="org.xmlBlaster.test.jmx.AllTests" fork="yes" todir="${report.dir}"/>
-
          <!-- build.sh -Dtest.class="org.xmlBlaster.test.C.AllTests" runTests -->
          <!-- test name="${test.class}" fork="yes" todir="${report.dir}"/ -->
       </junit>
@@ -935,6 +933,7 @@ TODO
                <include name="**/*.cpp.html"/>
                <include name="**/*.c.html"/>
                <include name="**/*.hpp.html"/>
+               <include name="**/*.h.html"/>
                <include name="**/*.pl.html"/>
                <include name="**/*.pm.html"/>
                <include name="**/*.perl.html"/>
@@ -1981,7 +1980,7 @@ TODO
 
       <!-- Copy msgUtil.c so that "@version@" is replaced to current values by ant -->
       <!-- Below we exclude msgUtil.c from compilation and compile msgUtil_CopyByAnt.c with the current version etc. instead -->
-      <copy file="${src.c.dir}/msgUtil.c" tofile="${src.c.dir}/msgUtil_CopyByAnt.c" filtering="true" overwrite="true" />
+      <copy file="${src.c.dir}/util/msgUtil.c" tofile="${src.c.dir}/util/msgUtil_CopyByAnt.c" filtering="true" overwrite="true" />
 
       <!-- C_LINK==shared links a shared library xmlBlaster/lib/libxmlBlasterClientC.so -->
       <cc debug="${c.debug}" link="${C_LINK}"
@@ -1992,7 +1991,7 @@ TODO
          <compiler refid="bcc"/>  <!-- Borland -->
          <compiler refid="CC"/>   <!-- SunOS C++ 5.3 -->
          <fileset dir="${src.c.dir}/socket" includes="*.c" excludes="hello.c"/>
-         <fileset dir="${src.c.dir}" includes="msgUtil_CopyByAnt.c" excludes="msgUtil.c"/>
+         <fileset dir="${src.c.dir}/util" includes="*.c" excludes="msgUtil.c"/>  <!-- uses msgUtil_CopyByAnt.c -->
 
          <includepath location="${src.c.dir}" />
          <includepath location="${src.c.dir}/pthreads" if="windows" />
@@ -2024,12 +2023,12 @@ TODO
       </cc>
 
       <!-- Was only needed for "@version@" replacement during compilation -->
-      <!-- delete file="${src.c.dir}/msgUtil_CopyByAnt.c" / --> <!-- Leave it for lookup for debugger -->
+      <!-- delete file="${src.c.dir}/util/msgUtil_CopyByAnt.c" / --> <!-- Leave it for lookup for debugger -->
 
    </target>  <!-- C lib -->
 
    <target name="c-test" depends="prepare-cpp" description="Create C test clients">
-      <foreach list="TestMethods"
+      <foreach list="TestMethods,TestError,TestStress"
                target="compileCExe" param="exeName" delimiter="," inheritAll="true">
          <param name="compileCSourcePath" value="${testsuite.dir}/src/c" />
       </foreach>
@@ -2106,14 +2105,22 @@ TODO
     <target name="c-clean" depends="prepare" description="Remove C object files">
        <delete dir="${build.dir}/obj"/>
        <delete includeEmptyDirs="true" failonerror="false">
-          <fileset dir="${src.c.dir}" includes="*.000,*.001,*.idb,*.pdb,*.obj"/>
+          <fileset dir="${src.c.dir}" includes="*.000,*.001,*.idb,*.pdb,*.obj,*.o"/>
+          <fileset dir="${src.c.dir}/util" includes="msgUtil_CopyByAnt.c,*.000,*.001,*.idb,*.pdb,*.obj,*.o"/>
+          <fileset dir="${src.c.dir}/socket" includes="*.000,*.001,*.idb,*.pdb,*.obj,*.o"/>
+          <fileset dir="${demo.dir}/c" includes="*.000,*.001,*.idb,*.pdb,*.obj,*.o"/>
+          <fileset dir="${testsuite.dir}/src/c" includes="*.000,*.001,*.idb,*.pdb,*.obj,*.o"/>
        </delete>
     </target>
 
     <target name="c-delete" depends="c-clean" description="Remove all generated C files/libs/executables">
        <delete includeEmptyDirs="true" failonerror="false">
-          <fileset dir="${src.c.dir}" includes="client,*.exe"/>
+          <fileset dir="${src.c.dir}" includes="HelloWorld,XmlBlasterConnectionUnparsedMain,*.exe"/>
+          <fileset dir="${src.c.dir}/util" includes="PropertiesMain,msgUtil,*.exe"/>
+          <fileset dir="${src.c.dir}/socket" includes="CallbackServerUnparsed,XmlBlasterAccessUnparsedMain,*.exe"/>
           <fileset dir="${demo.dir}/c/socket/bin" includes="*"/>
+          <fileset dir="${demo.dir}/c/bin" includes="*"/>
+          <fileset dir="${testsuite.dir}/src/c/bin" includes="*"/>
        </delete>
     </target>
 
