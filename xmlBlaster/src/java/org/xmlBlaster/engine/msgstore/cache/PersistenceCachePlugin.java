@@ -307,29 +307,32 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
          if (spaceLeft(mapEntry, this.transientStore)) {
             numTransientPut = this.transientStore.put(mapEntry);
          }
-         else if (numPersistentPut == 0) {  // if entry is marked as persistent it is already in persistentStore (see code above)
-            // handle swapping (if any)
-            if (this.log.TRACE) this.log.trace(ME+"-put("+mapEntry.getLogId()+")", "Swapping. Exceeding size state: " + toXml(""));
-            if (this.persistentStore == null)
-               throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME,
-                     "put: no persistent queue configured, needed for swapping, entry " + mapEntry.getLogId() + " not handled");
-            if (!this.isConnected)
-               throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME,
-                     "put: The DB is currently disconnected, entry " + mapEntry.getLogId() + " not handled");
+         else {
+            mapEntry.isSwapped(true);
+            if (numPersistentPut == 0) {  // if entry is marked as persistent it is already in persistentStore (see code above)
+               // handle swapping (if any)
+               if (this.log.TRACE) this.log.trace(ME+"-put("+mapEntry.getLogId()+")", "Swapping. Exceeding size state: " + toXml(""));
+               if (this.persistentStore == null)
+                  throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME,
+                        "put: no persistent queue configured, needed for swapping, entry " + mapEntry.getLogId() + " not handled");
+               if (!this.isConnected)
+                  throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME,
+                        "put: The DB is currently disconnected, entry " + mapEntry.getLogId() + " not handled");
 
-            if (spaceLeft(mapEntry, this.persistentStore)) {
-               try {
-                  numPersistentPut = this.persistentStore.put(mapEntry);
+               if (spaceLeft(mapEntry, this.persistentStore)) {
+                  try {
+                     numPersistentPut = this.persistentStore.put(mapEntry);
+                  }
+                  catch (XmlBlasterException ex) {
+                     this.log.error(ME, "put: an error occured when writing to the persistent queue, transient entry " +  mapEntry.getLogId() + 
+                          " is not swapped and will be lost. Is the DB up and running ? " + ex.getMessage() + " state: " + toXml(""));
+                     e = ex; // should an exception be rethrown here ?
+                  }
                }
-               catch (XmlBlasterException ex) {
-                  this.log.error(ME, "put: an error occured when writing to the persistent queue, transient entry " +  mapEntry.getLogId() + 
-                       " is not swapped and will be lost. Is the DB up and running ? " + ex.getMessage() + " state: " + toXml(""));
-                  e = ex; // should an exception be rethrown here ?
-               }
+               else
+                  throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_BYTES, ME,
+                            "put: maximum size in bytes for the persistent queue exceeded when swapping, entry " + mapEntry.getLogId() + " not handled . State: " + toXml(""));
             }
-            else
-               throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_BYTES, ME,
-                         "put: maximum size in bytes for the persistent queue exceeded when swapping, entry " + mapEntry.getLogId() + " not handled . State: " + toXml(""));
          }
       } // sync(this)
 
@@ -632,10 +635,11 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
 
       try {
 //         this.glob.getJdbcQueueManager(this.queueId).unregisterListener(this);
-         this.persistentStore.unRegisterStorageProblemListener(this);
+         if (this.persistentStore != null)
+            this.persistentStore.unRegisterStorageProblemListener(this);
       }
       catch (Exception ex) {
-         this.log.error(ME, "could not unregister listener. Cause: " + ex.getMessage());
+         this.log.error(ME, "could not unregister listener. Cause: " + ex.toString());
       }
    }
 
@@ -710,10 +714,11 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
 
       try {
 //         this.glob.getJdbcQueueManager(this.queueId).unregisterListener(this);
-         this.persistentStore.unRegisterStorageProblemListener(this);
+         if (this.persistentStore != null)
+            this.persistentStore.unRegisterStorageProblemListener(this);
       }
       catch (Exception ex) {
-         this.log.error(ME, "could not unregister listener. Cause: " + ex.getMessage());
+         this.log.error(ME, "could not unregister listener. Cause: " + ex.toString());
       }
 
       try {
@@ -741,7 +746,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
     * @see org.xmlBlaster.util.queue.I_StorageProblemNotifier#unRegisterStorageProblemListener(I_StorageProblemListener)
     */
    public boolean unRegisterStorageProblemListener(I_StorageProblemListener listener) {
-      if (this.persistentStore == null) return false;
+      if (this.persistentStore == null || listener == null) return false;
       return this.persistentStore.unRegisterStorageProblemListener(listener);
    }
 
@@ -754,18 +759,20 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
       synchronized(this) { // is this the correct synchronization ??
          long oldSizeInBytes = entry.getSizeInBytes(); // must be here since newEntry could reference same obj.
          I_MapEntry newEntry = entry;
+         boolean oldIsPersistent = entry.isPersistent();
          if (callback != null) newEntry = callback.changeEntry(entry);
+         if (newEntry == null) {
+            return entry;
+         }
          if (oldSizeInBytes != newEntry.getSizeInBytes()) {
             throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".change", "the size of the entry '" + entry.getUniqueId() + "' has changed from '" + oldSizeInBytes + "' to '" + newEntry.getSizeInBytes() +"'. This is not allowed");
          } 
 
          I_MapEntry retEntry = this.transientStore.change(newEntry, null);
          
-         if (entry.isPersistent() != retEntry.isPersistent()) {
+         if (oldIsPersistent != retEntry.isPersistent()) {
             throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "Changing of persistence flag of '" + entry.getLogId() + "' to persistent=" + retEntry.isPersistent() + " is not implemented");
-            // TODO: In case we changed the entry flag from persistent to transient it should be removed from the 
-            // persistence. In case it changed from transient to persistent it should be stored on the
-            // persistence too.
+            // TODO: In case we changed the entry flag from persistent to transient it should be removed from the persistence.
          }
          
          if (newEntry.isPersistent()) {
