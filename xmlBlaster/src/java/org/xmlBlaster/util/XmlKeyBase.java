@@ -3,7 +3,7 @@ Name:      XmlKeyBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKeyBase.java,v 1.19 1999/12/09 17:15:48 ruff Exp $
+Version:   $Id: XmlKeyBase.java,v 1.20 1999/12/10 15:55:43 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -64,9 +64,9 @@ import org.w3c.dom.Attr;
  *    &lt;/key>
  * </pre>
  * <p />
- * see xmlBlaster/src/dtd/XmlKey.xml
+ * More examples you find in xmlBlaster/src/dtd/XmlKey.xml
  * <p />
- * see http://www.w3.org/TR/xpath
+ * @see <a href="http://www.w3.org/TR/xpath">The W3C XPath specification</a>
  */
 public class XmlKeyBase
 {
@@ -260,10 +260,10 @@ public class XmlKeyBase
 
 
    /**
-    * Fills the DOM tree, and assures that a valid <key oid="..."> is used.
+    * Fills the DOM tree, and assures that a valid <pre>&lt;key oid="..."></pre> is used. 
     * <p>
-    * The keyOid will be set properly if no error occures
-    * The xmlToDom will be set properly if no error occures
+    * keyOid will be set properly if no error occurs
+    * xmlToDom will be set properly if no error occurs
     */
    private void loadDomTree() throws XmlBlasterException
    {

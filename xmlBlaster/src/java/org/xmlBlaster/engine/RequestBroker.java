@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.38 1999/12/09 16:12:27 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.39 1999/12/10 15:55:43 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -28,15 +28,17 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.38 $
+ * @version $Revision: 1.39 $
  * @author $Author: ruff $
  */
 public class RequestBroker implements ClientListener, MessageEraseListener
 {
    final private static String ME = "RequestBroker";
 
-   private static RequestBroker requestBroker = null; // Singleton pattern
+   /** myself, singleton pattern */
+   private static RequestBroker requestBroker = null;
 
+   /** the authentication service */
    private Authenticate authenticate = null;          // The authentication service
 
    /**
@@ -47,6 +49,9 @@ public class RequestBroker implements ClientListener, MessageEraseListener
     */
    final private Map messageContainerMap = Collections.synchronizedMap(new HashMap());
 
+   /**
+    * Helper to handle the subscriptions
+    */
    final private ClientSubscriptions clientSubscriptions;
 
    /**
@@ -60,7 +65,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
    final private Set messageEraseListenerSet = Collections.synchronizedSet(new HashSet());
 
    /**
-    * This is a handle on the big DOM tree with all MessageUnit keys
+    * This is a handle on the big DOM tree with all XmlKey keys (all message meta data)
     */
    private BigXmlKeyDOM bigXmlKeyDOM = null;
 
@@ -117,16 +122,16 @@ public class RequestBroker implements ClientListener, MessageEraseListener
     * @param clientName  The client which shall be administered
     * @param xmlAttr     the attributes of the client in xml syntax like group/role infos<br>
     *                    They are later queryable with XPath syntax<p>
-    *    <pre>
-    *       &lt;client name='tim'>
-    *          &lt;group>
-    *             Marketing
-    *          &lt;/group>
-    *          &lt;role>
-    *             Managing director
-    *          &lt;/role>
-    *       &lt;/client>
-    *    </pre>
+    * <pre>
+    *    &lt;client name='tim'>
+    *       &lt;group>
+    *          Marketing
+    *       &lt;/group>
+    *       &lt;role>
+    *          Managing director
+    *       &lt;/role>
+    *    &lt;/client>
+    * </pre>
     * @param qos         Quality of Service, flags for additional informations to control administration
     */
    public void setClientAttributes(String clientName, String xmlAttr_literal,
@@ -155,13 +160,13 @@ public class RequestBroker implements ClientListener, MessageEraseListener
     * @param qos     Quality of Service, flags to control subscription<br>
     *                See XmlQoS.dtd for a description, XmlQoS.xml for examples<p />
     *         Example (note that the qos are not yet fully implemented):<p />
-    *    <pre>
-    *       &lt;qos>
-    *          &lt;NoMeta />       &lt;!-- Don't send me the key meta data on updates -->
-    *          &lt;NoContent />    &lt;!-- Don't send me the content data on updates (notify only) -->
-    *          &lt;NoLocal />      &lt;!-- Inhibit the delivery of messages to myself if i have published it -->
-    *       &lt;/qos>
-    *    </pre>
+    * <pre>
+    *    &lt;qos>
+    *       &lt;NoMeta />       &lt;!-- Don't send me the key meta data on updates -->
+    *       &lt;NoContent />    &lt;!-- Don't send me the content data on updates (notify only) -->
+    *       &lt;NoLocal />      &lt;!-- Inhibit the delivery of messages to myself if i have published it -->
+    *    &lt;/qos>
+    * </pre>
     * @return oid    The oid of your subscribed Message<br>
     *                If you subscribed using a query, the subscription ID of this<br>
     *                query handling object is returned.<br>
@@ -206,12 +211,12 @@ public class RequestBroker implements ClientListener, MessageEraseListener
     * @param qos     Quality of Service, flags to control subscription<br>
     *                See XmlQoS.dtd for a description, XmlQoS.xml for examples<p />
     *         Example (note that the qos are not yet fully implemented):<p />
-    *    <pre>
-    *       &lt;qos>
-    *          &lt;NoMeta />       &lt;!-- Don't send me the key meta data on updates -->
-    *          &lt;NoContent />    &lt;!-- Don't send me the content data on updates (notify only) -->
-    *       &lt;/qos>
-    *    </pre>
+    * <pre>
+    *    &lt;qos>
+    *       &lt;NoMeta />       &lt;!-- Don't send me the key meta data on updates -->
+    *       &lt;NoContent />    &lt;!-- Don't send me the content data on updates (notify only) -->
+    *    &lt;/qos>
+    * </pre>
     * @return A sequence of 0 - n MessageUnit structs
     */
    public MessageUnit[] get(ClientInfo clientInfo, XmlKey xmlKey, GetQoS subscribeQoS) throws XmlBlasterException
@@ -347,11 +352,11 @@ public class RequestBroker implements ClientListener, MessageEraseListener
     * @param qos       Quality of Service, flags to control unsubscription<br>
     *                  See XmlQoS.dtd for a description
     *         Example (note that the qos are not yet fully implemented):<p />
-    *    <pre>
-    *       &lt;qos>
-    *          &lt;NoNotify />     &lt;!-- The subscribers shall not be notified when this message is destroyed -->
-    *       &lt;/qos>
-    *    </pre>
+    * <pre>
+    *    &lt;qos>
+    *       &lt;NoNotify />     &lt;!-- The subscribers shall not be notified when this message is destroyed -->
+    *    &lt;/qos>
+    * </pre>
     */
    public void unSubscribe(ClientInfo clientInfo, XmlKey xmlKey, UnSubscribeQoS unSubscribeQoS) throws XmlBlasterException
    {
@@ -399,58 +404,58 @@ public class RequestBroker implements ClientListener, MessageEraseListener
     * @param messageUnit The CORBA MessageUnit struct
     * @param publishQoS  Quality of Service, flags to control the publishing<p />
     *         Example for Pub/Sub style (note that the qos are not yet fully implemented):<p />
-    *    <pre>
-    *       &lt;qos>
-    *          &lt;expires>        &lt;!-- Expires after given milliseconds, clients will get a notify about expiration -->
-    *             12000         &lt;!-- Default is no expiration (similar to pass 0 milliseconds) -->
-    *          &lt;/expires>
+    * <pre>
+    *    &lt;qos>
+    *       &lt;expires>        &lt;!-- Expires after given milliseconds, clients will get a notify about expiration -->
+    *          12000         &lt;!-- Default is no expiration (similar to pass 0 milliseconds) -->
+    *       &lt;/expires>
     *
-    *          &lt;erase>          &lt;!-- Message is erased after given milliseconds, clients will get a notify about expiration -->
-    *             24000         &lt;!-- Default is no erasing (similar to pass 0 milliseconds) -->
-    *          &lt;/erase>
+    *       &lt;erase>          &lt;!-- Message is erased after given milliseconds, clients will get a notify about expiration -->
+    *          24000         &lt;!-- Default is no erasing (similar to pass 0 milliseconds) -->
+    *       &lt;/erase>
     *
-    *          &lt;IsDurable />    &lt;!-- The message shall be recoverable if xmlBlaster crashes -->
-    *                           &lt;!-- Default is transient -->
+    *       &lt;IsDurable />    &lt;!-- The message shall be recoverable if xmlBlaster crashes -->
+    *                        &lt;!-- Default is transient -->
     *
-    *          &lt;ForceUpdate />  &lt;!-- An update is forced even when the content and meta data didn't change -->
-    *                           &lt;!-- Default is that identical published messages aren't sent to clients again -->
+    *       &lt;ForceUpdate />  &lt;!-- An update is forced even when the content and meta data didn't change -->
+    *                        &lt;!-- Default is that identical published messages aren't sent to clients again -->
     *
-    *          &lt;Readonly />     &lt;!-- A final/const message which may not be changed with further updates -->
-    *                           &lt;!-- Default is Read/Write -->
+    *       &lt;Readonly />     &lt;!-- A final/const message which may not be changed with further updates -->
+    *                        &lt;!-- Default is Read/Write -->
     *
-    *          &lt;DefaultContent> &lt;!-- Used content if the content given is null -->
-    *             Empty
-    *          &lt;/DefaultContent>
+    *       &lt;DefaultContent> &lt;!-- Used content if the content given is null -->
+    *          Empty
+    *       &lt;/DefaultContent>
     *
-    *          &lt;check lang='TCL'> &lt;!-- Allow content checking with a scripting language -->
-    *             $content GE 100 &lt;!-- Scripting inside xmlBlaster is not yet supported (JACL, Javascript) -->
-    *          &lt;/check>
+    *       &lt;check lang='TCL'> &lt;!-- Allow content checking with a scripting language -->
+    *          $content GE 100 &lt;!-- Scripting inside xmlBlaster is not yet supported (JACL, Javascript) -->
+    *       &lt;/check>
     *
-    *          &lt;alter lang='TCL'> &lt;!-- Allow content manipulation with a scripting language -->
-    *             set content [$key('4711') * 1.2 + $content] &lt;!-- Scripting inside xmlBlaster is not yet supported (JACL, Javascript) -->
-    *          &lt;/alter>
-    *       &lt;/qos>
-    *    </pre><p />
-    *    Example for PtP addressing style (note that the qos are not yet fully implemented):<p />
-    *    <pre>
-    *       &lt;qos>
-    *          &lt;destination queryType='EXACT'>
-    *             Tim
-    *          &lt;/destination>
+    *       &lt;alter lang='TCL'> &lt;!-- Allow content manipulation with a scripting language -->
+    *          set content [$key('4711') * 1.2 + $content] &lt;!-- Scripting inside xmlBlaster is not yet supported (JACL, Javascript) -->
+    *       &lt;/alter>
+    *    &lt;/qos>
+    * </pre><p />
+    * Example for PtP addressing style (note that the qos are not yet fully implemented):<p />
+    * <pre>
+    *    &lt;qos>
+    *       &lt;destination queryType='EXACT'>
+    *          Tim
+    *       &lt;/destination>
     *
-    *          &lt;destination queryType='EXACT'>
-    *             Ben
-    *          &lt;/destination>
+    *       &lt;destination queryType='EXACT'>
+    *          Ben
+    *       &lt;/destination>
     *
-    *          &lt;destination queryType='XPATH'>
-    *             //[GROUP='Manager']
-    *          &lt;/destination>
+    *       &lt;destination queryType='XPATH'>
+    *          //[GROUP='Manager']
+    *       &lt;/destination>
     *
-    *          &lt;destination queryType='XPATH'>
-    *             //ROLE/[@id='Developer']
-    *          &lt;/destination>
-    *       &lt;/qos>
-    *    </pre>
+    *       &lt;destination queryType='XPATH'>
+    *          //ROLE/[@id='Developer']
+    *       &lt;/destination>
+    *    &lt;/qos>
+    * </pre>
     * @return String with the key oid of the messageUnit<br />
     *         If you let the oid be generated, you need this information
     *         for further publishing to the same MessageUnit<br />
