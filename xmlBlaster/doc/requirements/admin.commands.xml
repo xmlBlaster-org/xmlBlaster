@@ -85,21 +85,21 @@
 
       <p>
          As you have probably noticed, the tree syntax is a mixture of class names
-         like <code>node</code> or <code>client</code> and instance names
-         like <code>heron</code> or <code>joe</code>. This is conceptually a bit strange
+         like <i>node</i> or <i>client</i> and instance names
+         like <i>heron</i> or <i>joe</i>. This is conceptually a bit strange
          but it resulted in a simple view of xmlBlaster so we have chosen it like this.
       </p>
       <p>
-         Lets have a look at the xmlBlaster cluster node <code>heron</code>. This is 
-         an xmlBlaster server running somewhere on the net (<code>server.mycomp.com:3412</code>).<br />
-         <code>heron</code> has its own attributes like <code>uptime</code> and <code>freemem</code>
-         which are leafs in the tree. In addition <code>heron</code> has tags which
+         Lets have a look at the xmlBlaster cluster node <i>heron</i>. This is 
+         an xmlBlaster server running somewhere on the net (<i>server.mycomp.com:3412</i>).<br />
+         <i>heron</i> has its own attributes like <i>uptime</i> and <i>freemem</i>
+         which are leafs in the tree. In addition <i>heron</i> has tags which
          have children themselves, more exact the tags:
       </p>
       <ol>
-        <li><code>client</code> Allows you to survey the logged in clients</li>
-        <li><code>sysprop</code> Inspect the system properties, xmlBlaster.properties and command line arguments</li>
-        <li><code>msg</code> Examine or manipulate the messages in xmlBlaster</li>
+        <li><i>client</i> Allows you to survey the logged in clients</li>
+        <li><i>sysprop</i> Inspect the system properties, xmlBlaster.properties and command line arguments</li>
+        <li><i>msg</i> Examine or manipulate the messages in xmlBlaster</li>
       </ol>
       <h3>
          What is allowed to do with these attributes?
@@ -252,8 +252,8 @@
          </tr>
       </table>
       <p>
-      You can address an attribute with global scope <code>/node/heron/client/joe/?uptime</code>
-      or with relative scope <code>client/joe/?uptime</code>. The relative query assumes
+      You can address an attribute with global scope <i>/node/heron/client/joe/?uptime</i>
+      or with relative scope <i>client/joe/?uptime</i>. The relative query assumes
       the current xmlBlaster node you are connected to.
       </p>
       <h3>
@@ -352,7 +352,7 @@
          <tr>
             <td>MoM clients</td>
             <td><pre>con.get("&lt;key oid='__cmd:/node/heron/?freeMem'/>","&lt;qos/>")</pre></td>
-            <td>The token <code>__cmd:</code> marks the oid to be used as a command
+            <td>The token <i>__cmd:</i> marks the oid to be used as a command
             </td>
             <td>no</td>
          </tr>
@@ -360,7 +360,7 @@
          <tr>
             <td>telnet</td>
             <td><pre>get /node/heron/?freeMem</pre></td>
-            <td>With telnet you give the command <code>get</code> followed by the query (separated with a white space)
+            <td>With telnet you give the command <i>get</i> followed by the query (separated with a white space)
             </td>
             <td>no</td>
          </tr>
@@ -425,8 +425,8 @@ UserInfo: joe:mypassword
       T=schedulable, P=pollable
       </p>
       <p>
-      If you want to change a value, you need to use a <code>publish()</code> message,
-      or with telnet you would use <code>set</code>, for SNMP you use a <code>set</code>
+      If you want to change a value, you need to use a <i>publish()</i> message,
+      or with telnet you would use <i>set</i>, for SNMP you use a <i>set</i>
       command as well.
       </p>
       <table border="1">
@@ -451,7 +451,7 @@ UserInfo: joe:mypassword
             <td>sysprop/?trace[auth]</td>
             <td>boolean</td>
             <td>R/W</td>
-            <td>Monitor or change the <code>trace</code> log level, but
+            <td>Monitor or change the <i>trace</i> log level, but
             only for authentication issues
             </td>
             <td>no</td>
@@ -474,7 +474,7 @@ UserInfo: joe:mypassword
    <author>Michele.Laghi@swisscom.com</author>
    <author>ruff@swand.lake.de</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.3 $</revision>
+   <revision>$Revision: 1.4 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
