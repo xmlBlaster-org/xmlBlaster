@@ -9,10 +9,13 @@ Comment:   The client driver for the corba protocol
 #include <util/ErrorCode.h>
 #include <util/XmlBlasterException.h>
 #include <util/Global.h>
+#include <boost/lexical_cast.hpp>
 
 using org::xmlBlaster::util::MessageUnit;
 using org::xmlBlaster::util::XmlBlasterException;
 using org::xmlBlaster::util::ErrorCode;
+using boost::lexical_cast;
+
 using namespace std;
 
 namespace org {
@@ -119,16 +122,20 @@ CorbaDriver& CorbaDriver::getInstance(Global& global, const string& instanceName
    static bool  isRunning = false;
    static bool  doRun     = false;
 //       Lock lock(mutex);
+   Log& log = global.getLog("corba");
+   if (log.CALL) log.call("CorbaDriver", string("getInstance for ") + instanceName);
    CorbaDriver*  driver = NULL;
    DriverMap& driverMap = CorbaDriver::getDrivers();
    DriverMap::iterator iter = driverMap.find(instanceName);
    if (iter == driverMap.end()) {
+      if (log.TRACE) log.trace("CorbaDriver", string("created a new instance for ") + instanceName);
       driver = new CorbaDriver(global, mutex, doRun, isRunning, instanceName, false);
       driverMap.insert(DriverMap::value_type(instanceName, driver));
       if (!isRunning) driver->start();
    }
    else driver = (*iter).second;
-   driver->count_++;
+   int count = driver->count_++;
+   if (log.TRACE) log.trace("CorbaDriver", string("number of instances for '") + instanceName + "' are " + lexical_cast<string>(count));
    return *driver;
 }
 
@@ -137,10 +144,15 @@ int CorbaDriver::killInstance(const string& instanceName)
    DriverMap& driverMap = CorbaDriver::getDrivers();
    DriverMap::iterator iter = driverMap.find(instanceName);
    if (iter == driverMap.end()) return -1;
-   if (--(*iter).second->count_ < 0) {
+   int help = --(*iter).second->count_;
+   (*iter).second->log_.trace("CorbaDriver", string("instances before deleting ") + lexical_cast<string>(help));
+   if (help <= 0) {
       bool doRestartThread = false;
+      (*iter).second->log_.trace("CorbaDriver", string("kill instance '") + instanceName + "' will be deleted now");
       if (iter == driverMap.begin()) { // then it is the one which has the running thread
+         (*iter).second->log_.trace("CorbaDriver", string("kill instance '") + instanceName + "' the running thread will be moved to another instance");
          doRestartThread = true;
+             (*iter).second->doRun_ = false; // stop the running thread.
              while ( (*iter).second->isRunning_) { // wait until it really has stopped
             Thread::sleep(10);
          }
@@ -153,7 +165,9 @@ int CorbaDriver::killInstance(const string& instanceName)
       if (driverMap.empty()) return 0;
       (*driverMap.begin()).second->start();
    }
-   return (*iter).second->count_;
+   int ret = (*iter).second->count_;
+         (*iter).second->log_.trace("CorbaDriver", string("kill instance '") + instanceName + "' the number of references is " + lexical_cast<string>(ret));
+   return ret;
 }
 
 
@@ -166,7 +180,7 @@ void CorbaDriver::run()
    while (doRun_) {
       {
          Lock lock(mutex_);
-         log_.trace(ME, "perform work");
+//         if (log_.TRACE) log_.trace(ME, "sweep in running thread");
          connection_->orbPerformWork();
       }
       sleep(20); // sleep 20 milliseconds
@@ -183,7 +197,7 @@ CorbaDriver::CorbaDriver(Global& global, Mutex& mutex, bool& doRun, bool& isRunn
      count_(0),
      ME(string("CorbaDriver-") + instanceName), 
      global_(global), 
-     log_(global.getLog("client")),
+     log_(global.getLog("corba")),
      statusQosFactory_(global), 
      msgQosFactory_(global)
 {

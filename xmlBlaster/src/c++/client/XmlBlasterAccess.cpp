@@ -40,8 +40,11 @@ XmlBlasterAccess::XmlBlasterAccess(Global& global, const string& instanceName)
 
 XmlBlasterAccess::~XmlBlasterAccess()
 {
-   connection_->shutdown();
-   // don't forget to implement ...
+   CbQueueProperty prop = connectQos_.getCbQueueProperty(); // Creates a default property for us if none is available
+   CallbackAddress addr = prop.getCurrentCallbackAddress(); // c++ may not return null
+   global_.getCbServerPluginManager().releasePlugin( instanceName_, addr.getType(), addr.getVersion() );
+   if (connection_) connection_->shutdown();
+   delete connection_;
 }
 
 ConnectReturnQos XmlBlasterAccess::connect(const ConnectQos& qos, I_Callback *clientAddr)
@@ -125,10 +128,10 @@ XmlBlasterAccess::disconnect(const DisconnectQos& qos, bool flush, bool shutdown
    if (log_.DUMP) log_.dump(ME, string("disconnect: the qos is:\n") + qos.toXml());
    if (connection_ != NULL) {
       ret1  = connection_->disconnect(qos);
- 	    if (shutdown) ret2 = connection_->shutdown();
+            if (shutdown) ret2 = connection_->shutdown();
    }
    else {
-   		ret1 = false;
+                ret1 = false;
       ret2 = false;
    }
    if (shutdownCb) {

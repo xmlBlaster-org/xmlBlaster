@@ -50,8 +50,8 @@ I_CallbackServer& CbServerPluginManager::getPlugin(const string& instanceName, c
 {
    if (log_.CALL) log_.call(ME, "::getPlugin");
    if (log_.TRACE)
-      log_.trace(ME, string("getPlugin: type: '") + type + string("', version: '") + version + string("'") /* + " for instance '" + instanceName + "'"*/);
-   string completeName = /*string(instanceName) + "/" + */ type + "/" + version;
+      log_.trace(ME, string("getPlugin: type: '") + type + string("', version: '") + version + "' for instance '" + instanceName + "'");
+//   string completeName = /*string(instanceName) + "/" + */ type + "/" + version;
    if (type == "IOR") {
 /*
       ServerMap::iterator iter = serverMap_.find(completeName);
@@ -79,6 +79,31 @@ I_CallbackServer& CbServerPluginManager::getPlugin(const string& instanceName, c
                     "",
                     embeddedMsg);
 }
+
+
+
+void CbServerPluginManager::releasePlugin(const string& instanceName, const string& type, const string& version)
+{
+   if (log_.CALL) log_.call(ME, "::releasePlugin");
+   if (log_.TRACE)
+      log_.trace(ME, string("releasePlugin: type: '") + type + string("', version: '") + version + "' for instance '" + instanceName + "'");
+   if (type == "IOR") {
+      corba::CorbaDriver::getInstance(global_, instanceName);
+      return;
+   }
+   string embeddedMsg = string("plugin: '") + type +
+                        string("' and version: '") + version +
+                        string("' not supported");
+   throw new XmlBlasterException(RESOURCE_CONFIGURATION_PLUGINFAILED,
+                    "client-c++",
+                    ME + string("::getPlugin"),
+                    "en",
+                    "client-c++",
+                    "",
+                    "",
+                    embeddedMsg);
+}
+
 
 }}}} // namespaces
 

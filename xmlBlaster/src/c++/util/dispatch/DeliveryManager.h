@@ -32,7 +32,7 @@ namespace org { namespace xmlBlaster { namespace util { namespace dispatch {
    class ConnectionsHandler;
 #endif
 
-typedef map<string, I_XmlBlasterConnection*> ServerMap;
+// typedef map<string, I_XmlBlasterConnection*> ServerMap;
 
 class Dll_Export DeliveryManager
 {
@@ -41,7 +41,7 @@ private:
    const string        ME;
    Global&             global_;
    Log&                log_;
-   ServerMap           serverMap_;
+//   ServerMap           serverMap_;
 //   ConnectionsHandler* connectionsHandler_;
 
 public:
@@ -52,6 +52,9 @@ public:
    I_XmlBlasterConnection& getPlugin(const string& instanceName, const string& type, const string& version);
 
    ConnectionsHandler* getConnectionsHandler(const string& instanceName);
+   
+   void releasePlugin(const string& instanceName, const string& type, const string& version);
+
 };
 
 #define _DELIVERYMANAGER_CLASS

@@ -17,6 +17,10 @@ Comment:   Default handling of Sax callbacks
 #include <util/XmlBlasterException.h>
 #include <util/Global.h>
 
+# include <boost/lexical_cast.hpp>
+
+using boost::lexical_cast;
+
 using namespace std;
 
 using namespace org::xmlBlaster::util;
@@ -361,7 +365,8 @@ bool SaxHandlerBase::getTimestampAttr(const AttributeList& list, const XMLCh* co
    string buf;
    bool ret = getStringAttr(list, name, buf);
    if (ret) {
-      value = STRING_TO_TIMESTAMP(buf.c_str());
+//      value = STRING_TO_TIMESTAMP(buf.c_str());
+      value = lexical_cast<Timestamp>(buf); 
       return true;
    }
    return false;

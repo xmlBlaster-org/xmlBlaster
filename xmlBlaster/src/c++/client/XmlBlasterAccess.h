@@ -82,7 +82,7 @@ public:
     * provided they all have the same name. This name is also used to identify instances on logging and when
     * throwing exceptions.
     */
-   XmlBlasterAccess(Global& global, const string& instanceName="");
+   XmlBlasterAccess(Global& global, const string& instanceName="default");
 
    virtual ~XmlBlasterAccess();
 

@@ -47,12 +47,13 @@ private:
    PublishKey         *pubKey_;
    Mutex              updateMutex_;
    int                numOfUpdates_;
+   bool               useEmbeddedServer_;
 
 public:
    TestFailsafe(Global& glob) 
       : ME("TestFailsafe"), 
         global_(glob), 
-        log_(glob.getLog()),
+        log_(glob.getLog("test")),
         updateMutex_()
    {
       embeddedServer_ = NULL;
@@ -64,6 +65,13 @@ public:
       pubQos_         = NULL;
       pubKey_         = NULL;
       numOfUpdates_   = 0;
+      useEmbeddedServer_ = global_.getProperty().getBoolProperty("embeddedServer", true);
+      if (useEmbeddedServer_) log_.info(ME, "the embedded server is switched ON (you could switch it off with '-embeddedServer false' on the command line)");
+      else {
+         log_.warn(ME, "the embedded server is switched OFF (you will need an external xmlBlaster running)");
+         Thread::sleep(2000);
+     }
+      
    }
 
    virtual ~TestFailsafe()
@@ -100,16 +108,17 @@ public:
       try {   
          connection_ = new XmlBlasterAccess(global_);
          connection_->initFailsafe(this);
-
-         embeddedServer_ = new EmbeddedServer(global_, "", "-call true -trace true > failsafe.dump 2>&1", connection_);
+         if (useEmbeddedServer_) {
+            embeddedServer_ = new EmbeddedServer(global_, "", "-call true -trace true > failsafe.dump 2>&1", connection_);
 /* currently commented out (problems with multithreading) 
          if (embeddedServer_->isSomeServerResponding()) {
             log_.error(ME, "this test uses an embedded Server. There is already an external xmlBlaster running on this system, please shut it down first");
             assert(0);
          }
 */
-         embeddedServer_->start();
-         Thread::sleepSecs(10);
+            embeddedServer_->start();
+            Thread::sleepSecs(10);
+         }
          Address address(global_);
          address.setDelay(10000);
          address.setPingInterval(10000);
@@ -160,20 +169,21 @@ public:
 
    void testFailsafe() 
    {
+   	  int imax = 30;
       try {
          pubQos_ = new PublishQos(global_);
          pubKey_ = new PublishKey(global_);
          pubKey_->setOid("TestFailsafe");
 
-         for (int i=0; i < 30; i++) {
+         for (int i=0; i < imax; i++) {
             string msg = lexical_cast<string>(i);
             MessageUnit msgUnit(*pubKey_, msg, *pubQos_);
             log_.info(ME, string("publishing msg '") + msg + "'");
             PublishReturnQos pubRetQos = connection_->publish(msgUnit);
-            if (i == 2) {
+            if (i == 2 && useEmbeddedServer_) {
                embeddedServer_->stop();
             }
-            if (i == 12) {
+            if (i == 12 && useEmbeddedServer_) {
                embeddedServer_->start();
             }
             try {
@@ -189,7 +199,14 @@ public:
          log_.error(ME, string("exception occurred in setFailSafe. ") + ex.toXml());
          assert(0);
       }
-      Thread::sleepSecs(20);
+
+      int i = 0;
+      while (numOfUpdates_ < (imax-1) && i < 100) {
+         i++;
+         Thread::sleep(100);
+      }
+
+
    }
 
 
@@ -220,10 +237,12 @@ public:
    string update(const string& sessionId, UpdateKey& updateKey, void *content, long contentSize, UpdateQos& updateQos)
    {
       Lock lock(updateMutex_);
- //     log_.info(ME, "update: key    : " + updateKey.toXml());
-//      log_.info(ME, "update: qos    : " + updateQos.toXml());
+      if (log_.TRACE) log_.trace(ME, "update: key    : " + updateKey.toXml());
+      if (log_.TRACE) log_.trace(ME, "update: qos    : " + updateQos.toXml());
       string help((char*)content, (char*)(content)+contentSize);
-//      log_.info(ME, "update: content: " + help);
+      if (log_.TRACE) log_.trace(ME, "update: content: " + help);
+      if (updateQos.getState() == "ERASED" ) return "";
+
       int count = atoi(help.c_str());
       assertEquals(log_, ME, numOfUpdates_, count, string("update check ") + help);
       numOfUpdates_++;
@@ -238,6 +257,8 @@ public:
  *   java TestFailsafe -help
  * </pre>
  * for usage help
+ *
+ * To disable the embedded server add -embeddedServer false
  */
 int main(int args, char ** argv)
 {

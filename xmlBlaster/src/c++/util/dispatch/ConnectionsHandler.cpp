@@ -24,8 +24,9 @@ ConnectionsHandler::ConnectionsHandler(Global& global, DeliveryManager& delivery
      deliveryManager_(deliveryManager), 
      status_(START), 
      global_(global), 
-     log_(global.getLog("dispatch"))
-//     connectionMutex_()
+     log_(global.getLog("dispatch")),
+     publishMutex_(),
+     instanceName_(instanceName)
 {
    QueueProperty prop(global_, "");
    adminQueue_ = new MsgQueue(global, prop);
@@ -43,6 +44,10 @@ ConnectionsHandler::ConnectionsHandler(Global& global, DeliveryManager& delivery
 
 ConnectionsHandler::~ConnectionsHandler()
 {
+   string type = connectQos_->getServerRef().getType();
+   string version = "1.0"; // currently hardcoded
+   deliveryManager_.releasePlugin(instanceName_, type, version);
+
    if (timestamp_ != 0) {
 //      Lock lock(connectionMutex_);
       global_.getPingTimer().removeTimeoutListener(timestamp_);
@@ -248,9 +253,7 @@ vector<UnSubscribeReturnQos>
 PublishReturnQos ConnectionsHandler::publish(const MessageUnit& msgUnit)
 {
    if (log_.CALL) log_.call(ME, "publish");
-
-//   Lock lock(connectionMutex_);
-
+   Lock lock(publishMutex_);
    if (status_ == START)   throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, "publish");
    if (status_ == POLLING) return queuePublish(msgUnit);
    if (status_ == DEAD)    throw XmlBlasterException(COMMUNICATION_NOCONNECTION_DEAD, ME, "publish");
@@ -271,8 +274,7 @@ PublishReturnQos ConnectionsHandler::publish(const MessageUnit& msgUnit)
 void ConnectionsHandler::publishOneway(const vector<MessageUnit> &msgUnitArr)
 {
    if (log_.CALL) log_.call(ME, "publishOneway");
-
-//   Lock lock(connectionMutex_);
+   Lock lock(publishMutex_);
 
    if (status_ == START)   throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, "publishOneway");
    if (status_ == POLLING) {
@@ -296,8 +298,7 @@ void ConnectionsHandler::publishOneway(const vector<MessageUnit> &msgUnitArr)
 vector<PublishReturnQos> ConnectionsHandler::publishArr(vector<MessageUnit> msgUnitArr)
 {
    if (log_.CALL) log_.call(ME, "publishArr");
-
-//   Lock lock(connectionMutex_);
+   Lock lock(publishMutex_);
 
    if (status_ == START)   throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, "publishArr");
    if (status_ == POLLING) {
@@ -372,7 +373,7 @@ void ConnectionsHandler::toPollingOrDead()
       log_.warn(ME, "exception when trying to disconnect");
    }
    */
-//   connection_->shutdown();
+   connection_->shutdown();
    if (connectionProblems_) connectionProblems_->toPolling();
    startPinger();
 }
@@ -380,7 +381,7 @@ void ConnectionsHandler::toPollingOrDead()
 
 void ConnectionsHandler::timeout(void *userData)
 {
-//  Lock lock(connectionMutex_);
+//  Lock lock(publishMutex_);
   pingIsStarted_ = false;
   timestamp_ = 0;
   if ( log_.CALL ) log_.call(ME, "ping timeout occured");
@@ -417,6 +418,8 @@ void ConnectionsHandler::timeout(void *userData)
 
            bool doFlush = true;
            if ( connectionProblems_ ) doFlush = connectionProblems_->reConnected();
+
+           Lock lock(publishMutex_); // lock here to avoid publishing while flushing queue (to ensure sequence)
            status_ = CONNECTED;
            if (sessionId != lastSessionId_) {
               log_.info(ME, string("when reconnecting the sessionId changed from '") + lastSessionId_ + "' to '" + sessionId + "'");

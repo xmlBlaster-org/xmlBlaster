@@ -3,13 +3,13 @@ Name:      ReferenceCounterBase.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper class to be used as a base for classes to be reference counted
-Version:   $Id: ReferenceCounterBase.h,v 1.3 2003/01/07 20:41:36 laghi Exp $
+Version:   $Id: ReferenceCounterBase.h,v 1.4 2003/01/14 21:17:50 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_REFERENCECOUNTERBASE_H
 #define _UTIL_REFERENCECOUNTERBASE_H
 
-using namespace std;
+// using namespace std;
 
 namespace org { namespace xmlBlaster { namespace util {
 
