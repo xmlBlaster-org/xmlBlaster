@@ -18,7 +18,16 @@ Comment:   Extended Interface to I_XmlBlasterConnections for ConnectionHandler
 
 #include <util/xmlBlasterDef.h>
 #include <client/protocol/I_XmlBlasterConnection.h>
-#include <util/queue/MsgQueue.h>
+// #include <util/queue/Queue.h>
+
+
+// circular dependency I_ConnectionsHandler -> Queue -> MsgQueueEntry
+#ifndef _UTIL_QUEUE_QUEUE_H
+namespace org { namespace xmlBlaster { namespace util { namespace queue {
+class Queue;
+}}}}
+#endif
+
 
 using namespace org::xmlBlaster::client;
 using namespace org::xmlBlaster::client::protocol;
@@ -42,11 +51,17 @@ public:
    /**
     * gets a pointer to the queue used.
     */
-   virtual MsgQueue* getQueue() = 0;
+   virtual Queue* getQueue() = 0;
 
    virtual bool isFailsafe() const = 0;
 
    virtual bool isConnected() const = 0;
+
+   virtual ConnectReturnQos connectRaw(const ConnectQos& connectQos) = 0;
+
+   virtual I_XmlBlasterConnection& getConnection() = 0;
+
+//   virtual void setConnectReturnQos(const ConnectReturnQos& retQos) = 0;
 
 };
 

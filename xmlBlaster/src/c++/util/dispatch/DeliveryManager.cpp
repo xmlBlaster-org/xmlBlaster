@@ -15,7 +15,7 @@ Comment:   Manager to retrieve the correct callback protocol implementation
  */
 
 #include <util/dispatch/DeliveryManager.h>
-#include <util/dispatch/ConnectionsHandler.h>
+//  #include <util/dispatch/ConnectionsHandler.h>
 #include <client/protocol/corba/CorbaDriver.h>
 #include <util/Global.h>
 

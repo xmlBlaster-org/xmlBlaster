@@ -35,14 +35,13 @@ public:
    void* getEmbeddedObject();
 
    // this should actually be in another interface but since it is an only method we put it here.
-   MsgQueueEntry& send(I_XmlBlasterConnection& connection);
+   MsgQueueEntry& send(I_ConnectionsHandler& connectionsHandler);
 
    ConnectQos getConnectQos() const;
 
    ConnectReturnQos getConnectReturnQos() const;
 
    string toXml(const string& indent="") const;
-
 
 };
 

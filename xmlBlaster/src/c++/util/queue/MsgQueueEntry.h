@@ -13,7 +13,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/qos/ConnectQos.h>
 #include <client/qos/PublishQos.h>
 #include <client/qos/PublishReturnQos.h>
-#include <client/protocol/I_XmlBlasterConnection.h>
 #include <util/ReferenceCounterBase.h>
 #include <util/qos/StatusQosData.h>
 #include <util/qos/QueryQosData.h>
@@ -21,11 +20,18 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/Log.h>
 #include <stddef.h>
 
+// circular dependency I_ConnectionsHandler -> Queue -> MsgQueueEntry
+#ifndef _UTIL_DISPATCH_ICONNECTIONSHANDLER_H
+namespace org { namespace xmlBlaster { namespace util { namespace dispatch {
+class I_ConnectionsHandler;
+}}}}
+#endif
+
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::qos;
 using namespace org::xmlBlaster::util::key;
+using namespace org::xmlBlaster::util::dispatch;
 using namespace org::xmlBlaster::client::qos;
-using namespace org::xmlBlaster::client::protocol;
 
 /**
  * Class embedding messages or information to be stored on the client queues
@@ -54,9 +60,9 @@ protected:
    QueryKeyData* queryKeyData_;
 
    // specific return values
-   ConnectReturnQos* connectReturnQos_;
-   PublishReturnQos* publishReturnQos_;
-   StatusQosData*    statusQosData_;
+   mutable ConnectReturnQos* connectReturnQos_;
+   mutable PublishReturnQos* publishReturnQos_;
+   StatusQosData* statusQosData_;
 
 public:
 
@@ -205,7 +211,7 @@ public:
 
 
    // this should actually be in another interface but since it is an only method we put it here.
-   virtual MsgQueueEntry& send(I_XmlBlasterConnection& connection); // = 0;
+   virtual MsgQueueEntry& send(I_ConnectionsHandler& connectionsHandler); // = 0;
 
    virtual string toXml(const string& indent=""); // const = 0;
 

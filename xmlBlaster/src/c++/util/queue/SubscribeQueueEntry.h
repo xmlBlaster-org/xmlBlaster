@@ -11,7 +11,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <client/qos/SubscribeQos.h>
 #include <client/qos/SubscribeReturnQos.h>
 #include <client/key/SubscribeKey.h>
-
 using namespace org::xmlBlaster::client::qos;
 using namespace org::xmlBlaster::client::key;
 
@@ -41,7 +40,7 @@ public:
    void* getEmbeddedObject();
 
    // this should actually be in another interface but since it is an only method we put it here.
-   MsgQueueEntry& send(I_XmlBlasterConnection& connection);
+   MsgQueueEntry& send(I_ConnectionsHandler& connectionsHandler);
 
    SubscribeQos getSubscribeQos() const;
 

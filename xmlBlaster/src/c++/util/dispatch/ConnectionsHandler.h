@@ -23,8 +23,8 @@ Comment:   Handles the I_XmlBlasterConnections
 #include <util/thread/ThreadImpl.h>
 #include <util/I_Timeout.h>
 #include <util/queue/MsgQueue.h>
-#include <util/queue/PublishQueueEntry.h>
-#include <util/queue/ConnectQueueEntry.h>
+// #include <util/queue/PublishQueueEntry.h>
+// #include <util/queue/ConnectQueueEntry.h>
 
 using namespace org::xmlBlaster::client;
 using namespace org::xmlBlaster::util::thread;
@@ -56,9 +56,10 @@ private:
     * unSubscriptions are stored. When reconnecting a check is made to see if we got the same sessionId. If
     * the id differe, then all subscribe and unSubscribe are repeated.
     */
-   MsgQueue*               adminQueue_;
+   MsgQueue*               adminQueue_; // used to temporarly store the subscriptions 
    string                  lastSessionId_;
    const string            instanceName_;
+   bool                    doStopPing_; // used to stop the pinger when destroying the object
 
 public:
    ConnectionsHandler(Global& global, const string& instanceName);
@@ -134,12 +135,17 @@ public:
     */
    long flushQueue();
 
-   MsgQueue* getQueue();
+   Queue* getQueue();
 
    bool isFailsafe() const;
 
-
    bool isConnected() const;
+
+   ConnectReturnQos connectRaw(const ConnectQos& connectQos);
+
+   virtual I_XmlBlasterConnection& getConnection();
+
+//   virtual void setConnectReturnQos(const connectReturnQos& retQos);
 
 protected:
    /** only used inside the class to avoid deadlock */

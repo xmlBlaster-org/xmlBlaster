@@ -5,6 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 
 #include <util/queue/MsgQueueEntry.h>
+#include <util/dispatch/I_ConnectionsHandler.h>
 #include <util/Global.h>
 #include <boost/lexical_cast.hpp>
 
@@ -150,13 +151,11 @@ string MsgQueueEntry::toXml(const string& indent)
    return "<notImplemented/>\n";
 }
 
-
-MsgQueueEntry& MsgQueueEntry::send(I_XmlBlasterConnection& connection)
+MsgQueueEntry& MsgQueueEntry::send(I_ConnectionsHandler& connectionsHandler)
 {
    log_.error(ME, "send not implemented");
    return *this;
 }
-
 
 
 }}}} // namespace

@@ -39,10 +39,15 @@ ConnectionsHandler::ConnectionsHandler(Global& global, const string& instanceNam
    timestamp_          = 0;
    pingIsStarted_      = false;
    lastSessionId_      = "";
+   doStopPing_         = false;
 }
 
 ConnectionsHandler::~ConnectionsHandler()
 {
+   doStopPing_ = true;
+   while (pingIsStarted_) {
+      Thread::sleep(200);
+   }
    Lock lock(connectMutex_);
    string type = connectQos_->getServerRef().getType();
    string version = "1.0"; // currently hardcoded
@@ -105,7 +110,7 @@ ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
    catch (XmlBlasterException &ex) {
       if (log_.TRACE) log_.trace(ME, "exception occured when connecting");
       if ( ex.isCommunication() ) return queueConnect();
-   }																																			
+   }                                                                                                                                                                                                                                                                                    
    
    lastSessionId_ = connectReturnQos_->getSessionQos().getSecretSessionId();
    log_.info(ME, string("successfully connected with sessionId = '") + lastSessionId_ + "'");
@@ -400,84 +405,86 @@ void ConnectionsHandler::toPollingOrDead()
 
 void ConnectionsHandler::timeout(void *userData)
 {
+
 //  Lock lock(publishMutex_);
-  pingIsStarted_ = false;
-  timestamp_ = 0;
-  if ( log_.CALL ) log_.call(ME, "ping timeout occured");
-  if (status_ == CONNECTED) { // then I am pinging
-     if ( log_.TRACE ) log_.trace(ME, "ping timeout: status is 'CONNECTED'");
-     try {
-        if (connection_) {
-           connection_->ping("<qos/>");
-           startPinger();
-        }
-     }
-     catch (XmlBlasterException& ex) {
-        toPollingOrDead();
-     }
-     return;
-  }
-
-  if (status_ == POLLING) {
-     if ( log_.TRACE ) log_.trace(ME, "ping timeout: status is 'POLLING'");
-     try {
-        if ((connection_) && (connectQos_)) {
-           if ( log_.TRACE ) log_.trace(ME, "ping timeout: going to retry a connection");
-
-           ConnectReturnQos retQos = connection_->connect(*connectQos_);
-           if (connectReturnQos_) delete connectReturnQos_;
-           connectReturnQos_ = new ConnectReturnQos(retQos);
-           string sessionId = connectReturnQos_->getSessionQos().getSecretSessionId();
-           log_.info(ME, string("successfully re-connected with sessionId = '") + sessionId + "', the connectQos was: " + connectQos_->toXml());
-
-           if ( log_.TRACE ) {
-              log_.trace(ME, "ping timeout: re-connection was successful");
-              log_.trace(ME, string("ping timeout: the new connect returnQos: ") + connectReturnQos_->toXml());
-           }
-
-           bool doFlush = true;
-           enum States oldState = status_;
-           status_ = CONNECTED;
-           if ( connectionProblems_ ) doFlush = connectionProblems_->reachedAlive(oldState, this);
-
-           Lock lock(publishMutex_); // lock here to avoid publishing while flushing queue (to ensure sequence)
-           if (sessionId != lastSessionId_) {
-              log_.info(ME, string("when reconnecting the sessionId changed from '") + lastSessionId_ + "' to '" + sessionId + "'");
-              lastSessionId_ = sessionId;
-              MsgQueue tmpQueue = *adminQueue_;
-              flushQueueUnlocked(&tmpQueue, true); // don't remove entries (in case of a future failure) 
-           }
-
-           if (doFlush) {
-              try {
-                 flushQueueUnlocked(queue_, true);
-              }
-              catch (...) {
-                 log_.warn(ME, "an exception occured when trying to asynchroneously flush the contents of the queue. Probably not all messages have been sent. These unsent messages are still in the queue");
-              }
-           }
-           startPinger();
-        }
-     }
-     catch (XmlBlasterException ex) {
-        currentRetry_++;
-        if ( currentRetry_ < retries_ || retries_ < 0) { // continue to poll
-           startPinger();
-        }
-        else {
-           enum States oldState = status_;
-           status_ = DEAD;
-           if ( connectionProblems_ ) {
-              connectionProblems_->reachedDead(oldState, this);
-              // stopping
-           }
-        }
-     }
-     return;
-  }
-
-  // if it comes here it will stop
-
+   pingIsStarted_ = false;
+   if (doStopPing_) return; // then it must stop
+   timestamp_ = 0;
+   if ( log_.CALL ) log_.call(ME, "ping timeout occured");
+   if (status_ == CONNECTED) { // then I am pinging
+      if ( log_.TRACE ) log_.trace(ME, "ping timeout: status is 'CONNECTED'");
+      try {
+         if (connection_) {
+            connection_->ping("<qos/>");
+            startPinger();
+         }
+      }
+      catch (XmlBlasterException& ex) {
+         toPollingOrDead();
+      }
+      return;
+   }
+ 
+   if (status_ == POLLING) {
+      if ( log_.TRACE ) log_.trace(ME, "ping timeout: status is 'POLLING'");
+      try {
+         if ((connection_) && (connectQos_)) {
+            if ( log_.TRACE ) log_.trace(ME, "ping timeout: going to retry a connection");
+ 
+            ConnectReturnQos retQos = connection_->connect(*connectQos_);
+            if (connectReturnQos_) delete connectReturnQos_;
+            connectReturnQos_ = new ConnectReturnQos(retQos);
+            string sessionId = connectReturnQos_->getSessionQos().getSecretSessionId();
+            log_.info(ME, string("successfully re-connected with sessionId = '") + sessionId + "', the connectQos was: " + connectQos_->toXml());
+ 
+            if ( log_.TRACE ) {
+               log_.trace(ME, "ping timeout: re-connection was successful");
+               log_.trace(ME, string("ping timeout: the new connect returnQos: ") + connectReturnQos_->toXml());
+            }
+ 
+            bool doFlush = true;
+            enum States oldState = status_;
+            status_ = CONNECTED;
+            if ( connectionProblems_ ) doFlush = connectionProblems_->reachedAlive(oldState, this);
+ 
+            Lock lock(publishMutex_); // lock here to avoid publishing while flushing queue (to ensure sequence)
+            if (sessionId != lastSessionId_) {
+               log_.info(ME, string("when reconnecting the sessionId changed from '") + lastSessionId_ + "' to '" + sessionId + "'");
+               lastSessionId_ = sessionId;
+               MsgQueue tmpQueue = *adminQueue_;
+               flushQueueUnlocked(&tmpQueue, true); // don't remove entries (in case of a future failure) 
+            }
+ 
+            if (doFlush) {
+               try {
+                  flushQueueUnlocked(queue_, true);
+               }
+               catch (...) {
+                  log_.warn(ME, "an exception occured when trying to asynchroneously flush the contents of the queue. Probably not all messages have been sent. These unsent messages are still in the queue");
+               }
+            }
+            startPinger();
+         }
+      }
+      catch (XmlBlasterException ex) {
+         currentRetry_++;
+         if ( currentRetry_ < retries_ || retries_ < 0) { // continue to poll
+            startPinger();
+         }
+         else {
+            enum States oldState = status_;
+            status_ = DEAD;
+            if ( connectionProblems_ ) {
+               connectionProblems_->reachedDead(oldState, this);
+               // stopping
+            }
+         }
+      }
+      return;
+   }
+ 
+   // if it comes here it will stop
+ 
 }
 
 
@@ -521,7 +528,12 @@ ConnectReturnQos& ConnectionsHandler::queueConnect()
 
    ConnectQueueEntry entry(global_, *connectQos_);
    queue_->put(entry);
+   enum States oldState = status_;
    status_ = POLLING;
+   if ( connectionProblems_ ) {
+      connectionProblems_->reachedPolling(oldState, this);
+      // stopping
+   }
    startPinger();
    return *connectReturnQos_;
 }
@@ -556,7 +568,7 @@ long ConnectionsHandler::flushQueueUnlocked(MsgQueue *queueToFlush, bool doRemov
       while (iter != entries.end()) {
          try {
             if (log_.TRACE) log_.trace(ME, "sending the content to xmlBlaster: " + (*iter)->toXml());
-            (*iter)->send(*connection_);
+            (*iter)->send(*this);
             if (log_.TRACE) log_.trace(ME, "content to xmlBlaster successfully sent");
          }
          catch (XmlBlasterException &ex) {
@@ -571,7 +583,7 @@ long ConnectionsHandler::flushQueueUnlocked(MsgQueue *queueToFlush, bool doRemov
    return ret;
 }
 
-MsgQueue* ConnectionsHandler::getQueue()
+Queue* ConnectionsHandler::getQueue()
 {
    return queue_;
 }
@@ -584,8 +596,13 @@ bool ConnectionsHandler::isFailsafe() const
 
 bool ConnectionsHandler::startPinger()
 {
+   if (doStopPing_) return false;
+
    log_.call(ME, "startPinger");
-   if (pingIsStarted_) return false;
+   if (pingIsStarted_) {
+      log_.warn(ME, "startPinger: the pinger is already running. I will return without starting a new thread");
+      return false;  
+   }
 
    long delay        = 10000;
    long pingInterval = 0;
@@ -597,6 +614,9 @@ bool ConnectionsHandler::startPinger()
       ConnectQos tmp(global_);
       delay        = tmp.getAddress().getDelay();
       pingInterval = tmp.getAddress().getPingInterval();
+   }
+   if (log_.TRACE) {
+      log_.trace(ME, string("startPinger: parameters are: delay '") + lexical_cast<string>(delay)  + "' and pingInterval '" + lexical_cast<string>(pingInterval));
    }
    if (delay > 0 && pingInterval > 0) {
       long delta = delay;
@@ -612,6 +632,41 @@ bool ConnectionsHandler::isConnected() const
 {
    return status_ == CONNECTED || status_ == POLLING;
 }
+
+ConnectReturnQos ConnectionsHandler::connectRaw(const ConnectQos& connectQos)
+{
+   ConnectReturnQos retQos = connection_->connect(connectQos);
+   if (connectQos_) {
+      delete connectQos_;
+      connectQos_ = NULL;
+   }
+   connectQos_ = new ConnectQos(connectQos);
+   if (connectReturnQos_) {
+      delete connectReturnQos_;
+      connectReturnQos_ = NULL;
+   }
+   connectReturnQos_ = new ConnectReturnQos(retQos);
+   return *connectReturnQos_;
+}
+
+
+I_XmlBlasterConnection& ConnectionsHandler::getConnection()
+{
+   if (!connection_) {
+      throw XmlBlasterException(INTERNAL_ILLEGALARGUMENT, ME + "::getConnection", "the connection is still NULL: it is not assigned yet. You probably called this method before a connection was made");
+   }
+   return *connection_;
+}
+/*
+void ConnectionsHandler::setConnectReturnQos(const connectReturnQos& retQos)
+{
+   if (connectReturnQos_)  {
+      delete connectReturnQos_;
+      connectReturnQos_ = NULL;
+   }
+   connectReturnQos_ = new ConnectReturnQos(retQos);
+}
+*/
 
 }}}} // namespaces
 

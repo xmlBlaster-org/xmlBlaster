@@ -29,7 +29,6 @@ private:
    PublishKey       *pubKey_;
    Mutex            updateMutex_;
    int              numOfUpdates_;
-   bool             useEmbeddedServer_;
 
 public:
    TestFailsafe(int args, char ** argv) 
@@ -108,9 +107,14 @@ public:
       // DisconnectQos disconnectQos(global_);
       // connection_.disconnect(disconnectQos);
       Thread::sleep(500);
-      stopEmbeddedServer();
-      Thread::sleepSecs(2);
-
+      if (useEmbeddedServer_) {
+         stopEmbeddedServer();
+         Thread::sleepSecs(2);
+      }
+      else {
+         log_.info(ME, "plase stop the server (I will wait 20 seconds)");
+         Thread::sleepSecs(20);
+      }
       log_.info(ME, "the communication is now down: ready to start the tests");
       ConnectQos connQos(global_);
       SessionQos sessionQos(global_,"client/Fritz/-2");
@@ -171,8 +175,17 @@ public:
       assertEquals(log_, ME, true, wentInException, "disconnecting when no communication should give an exception");
 
       // and now we are reconnecting ...
-      startEmbeddedServer();
-      Thread::sleepSecs(5);
+      if (useEmbeddedServer_) {
+         startEmbeddedServer();
+         Thread::sleepSecs(5);
+      }
+      else {
+         log_.info(ME, "please restart the server now (I will wait 20 seconds)");
+         Thread::sleepSecs(20);
+      }
+
+      log_.info(ME, "waiting 10 seconds to give it a chance to reconnect");
+      Thread::sleepSecs(10);
 
       // making  a subscription now should work ...
       SubscribeKey subKey(global_);

@@ -5,6 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 
 #include <util/queue/UnSubscribeQueueEntry.h>
+#include <util/dispatch/I_ConnectionsHandler.h>
 
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
@@ -20,7 +21,7 @@ void* UnSubscribeQueueEntry::getEmbeddedObject()
 }
 
 // this should actually be in another interface but since it is an only method we put it here.
-MsgQueueEntry& UnSubscribeQueueEntry::send(I_XmlBlasterConnection& connection)
+MsgQueueEntry& UnSubscribeQueueEntry::send(I_ConnectionsHandler& connectionsHandler)
 {
    if (log_.CALL) log_.call(ME, "send");
    if (statusQosData_) {
@@ -29,7 +30,7 @@ MsgQueueEntry& UnSubscribeQueueEntry::send(I_XmlBlasterConnection& connection)
    }
    if (log_.DUMP) log_.dump(ME, string("send: ") + toXml());
    // the return value is not stored ...
-   connection.unSubscribe(UnSubscribeKey(global_, *queryKeyData_), UnSubscribeQos(global_, *queryQosData_));
+   connectionsHandler.getConnection().unSubscribe(UnSubscribeKey(global_, *queryKeyData_), UnSubscribeQos(global_, *queryQosData_));
 
    return *this;
 }

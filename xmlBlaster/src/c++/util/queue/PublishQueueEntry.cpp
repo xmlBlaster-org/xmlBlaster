@@ -5,6 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 
 #include <util/queue/PublishQueueEntry.h>
+#include <util/dispatch/I_ConnectionsHandler.h>
+
 
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
@@ -20,8 +22,7 @@ void* PublishQueueEntry::getEmbeddedObject()
    return msgUnit_;
 }
 
-// this should actually be in another interface but since it is an only method we put it here.
-MsgQueueEntry& PublishQueueEntry::send(I_XmlBlasterConnection& connection)
+MsgQueueEntry& PublishQueueEntry::send(I_ConnectionsHandler& connectionsHandler)
 {
    if (log_.CALL) log_.call(ME, "send");
    if (publishReturnQos_) {
@@ -29,11 +30,11 @@ MsgQueueEntry& PublishQueueEntry::send(I_XmlBlasterConnection& connection)
       publishReturnQos_ = NULL;
    }
    if (log_.DUMP) log_.dump(ME, string("send: ") + PublishQueueEntry::toXml());
-   publishReturnQos_ = new PublishReturnQos(connection.publish(*msgUnit_));
+   publishReturnQos_ = new PublishReturnQos(connectionsHandler.getConnection().publish(*msgUnit_));
    return *this;
 }
 
-MessageUnit PublishQueueEntry::getMsgUnit() const 
+MessageUnit& PublishQueueEntry::getMsgUnit() const 
 {
    return *msgUnit_;
 }
@@ -51,7 +52,6 @@ string PublishQueueEntry::toXml(const string& indent) const
                 indent + "</publishQueueEntry>\n";
    return ret;
 }
-
 
 }}}} // namespace
 

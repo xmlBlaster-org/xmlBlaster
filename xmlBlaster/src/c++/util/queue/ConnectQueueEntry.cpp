@@ -5,6 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 
 #include <util/queue/ConnectQueueEntry.h>
+#include <util/dispatch/I_ConnectionsHandler.h>
 
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
@@ -19,8 +20,7 @@ void* ConnectQueueEntry::getEmbeddedObject()
    return msgUnit_;
 }
 
-// this should actually be in another interface but since it is an only method we put it here.
-MsgQueueEntry& ConnectQueueEntry::send(I_XmlBlasterConnection& connection)
+MsgQueueEntry& ConnectQueueEntry::send(I_ConnectionsHandler& connectionsHandler)
 {
    if (log_.CALL) log_.call(ME, "send");
    if (connectReturnQos_) {
@@ -28,7 +28,8 @@ MsgQueueEntry& ConnectQueueEntry::send(I_XmlBlasterConnection& connection)
       connectReturnQos_ = NULL;
    }
    if (log_.DUMP) log_.dump(ME, string("send: ") + toXml());
-   connectReturnQos_ = new ConnectReturnQos(connection.connect(*connectQos_));
+   connectReturnQos_ = new ConnectReturnQos(connectionsHandler.connectRaw(*connectQos_));
+//   connectionsHandler.setConnectReturnQos(*connectReturnQos_);
    return *this;
 }
 
@@ -51,7 +52,6 @@ string ConnectQueueEntry::toXml(const string& indent) const
           indent + "</connectQueueEntry>\n";
    return ret;
 }
-
 
 }}}} // namespace
 
