@@ -11,6 +11,9 @@
    <!-- QoS when publishing without addressing (clients need to subscribe) -->
    <publish>
       <qos>
+         <sender> <!-- Who published this message (the login name) -->
+            jack
+         </sender>
       </qos>
    </publish>
 
@@ -35,6 +38,10 @@
          <destination queryType='XPATH'>
             //ROLE/[@id='Developer']
          </destination>
+
+         <sender> <!-- Who published this message (the login name) -->
+            joe
+         </sender>
       </qos>
    </publish>
 
@@ -42,6 +49,10 @@
    <!-- QoS when publishing, supported flags (not yet :-) -->
    <publish>
       <qos>
+         <sender> <!-- Who published this message (the login name) -->
+            joe
+         </sender>
+
          <expires>        <!-- Expires after given milliseconds, clients will get a notify about expiration -->
             12000         <!-- Default is no expiration (similar to pass 0 milliseconds) -->
          </expires>
@@ -128,26 +139,26 @@
    <!-- QoS with login -->
    <client>
       <qos>
+         <!-- compress / burstMode / noPtP are allowed in all callback types -->
          <callback type='IOR'> <!-- Use CORBA to callback messages -->
             IOR:00011200070009990000....
+            <compress type='gzip' minSize='1000' />
+                      <!-- compress messages bigger 1000 bytes before sending them to me -->
+
+            <burstMode collectTime='400' /> <!-- Collect messages for 400 milliseconds and update
+                       them in one callback (burst mode)
+                       This update mode is a 'transaction' for all collected messages -->
+                       <!-- other attributes like numMsg or maxSize could allow other 'transaction' ranges -->
          </callback>
          <callback type='EMAIL'>
             et@mars.universe
+            <PtP>false</PtP> <!-- Set this flag if you don't want to receive any PtP messages -->
+                      <!-- prevents 'spamming' -->
          </callback>
          <callback type='XML-RPC'>
             http:/www.mars.universe:8080/RPC2
          </callback>
-         <compress type='gzip' minSize='1000' />
-                   <!-- compress messages bigger 1000 bytes before sending them to me -->
 
-         <burstMode collectTime='400' /> <!-- Collect messages for 400 milliseconds and update
-                    them in one callback (burst mode)
-                    This update mode is a 'transaction' for all collected messages -->
-                    <!-- other attributes like numMsg or maxSize could allow other 'transaction' ranges -->
-
-
-         <noPtP /> <!-- Set this flag if you don't want to receive any PtP messages -->
-                   <!-- prevents 'spamming' -->
 
          <offlineQueuing timeout='3600' /> <!-- Messages older than timeout seconds
                             (the time the client is offline) are discarded -->
