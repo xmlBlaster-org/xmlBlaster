@@ -52,13 +52,15 @@ javadoc_testsuite:
 javadoc_demo:
 	${MKDIR_RECURSIVE} ${JAVADOC_DIR} 
 	${JAVADOC} -d ${JAVADOC_DIR} -sourcepath demo $(DEMO_PACKGS) 
- 
+
+doc: javadoc 
 
 javadoc:
 	${MKDIR_RECURSIVE} ${JAVADOC_DIR} 
 	${JAVADOC} -d ${JAVADOC_DIR} -sourcepath ./src/java:./:./demo $(PACKGS) $(TEST_PACKGS) $(DEMO_PACKGS) $(DOC_PACKGS)
 	# making requirements.html from xml requirements:
-	( cd ${SRC_DOCS_DIR}; make all)
+	( cd ${SRC_DOCS_DIR}; make doc)
+	( cd ${SRC_TESTSUITE_TOP_DIR}/org/xmlBlaster; make html)
 
 jar: all
 	( cd ${CLASS_TOP_DIR}; jar cvf ${JAR_DIR}/xmlBlaster.jar ./org ./testsuite ./javaclients)
