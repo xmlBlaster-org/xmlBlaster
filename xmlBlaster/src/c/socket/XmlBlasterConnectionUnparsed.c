@@ -668,6 +668,7 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
          if (requestInfoP == 0) {
             printf("[XmlBlasterConnectionUnparsed] TODO: returning requestInfo 0 is not implemented");
          }
+         /* TODO: Possible race condition */
          responseSocketDataHolder->type = requestInfoP->responseType;
          responseSocketDataHolder->version = XMLBLASTER_SOCKET_VERSION;
          strncpy0(responseSocketDataHolder->requestId, requestInfo.requestIdStr, MAX_REQUESTID_LEN);
