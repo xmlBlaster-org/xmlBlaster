@@ -1953,6 +1953,8 @@ TODO
          <linker name="gcc"  if="use-gcc" />
 
          <linker name="msvc" if="use-msvc"> <!-- linker does not support nested switch -->
+           <libset dir="${src.c.dir}/socket" libs="pthreadVC" />
+           <syslibset libs="ws2_32" />
          </linker>
 
          <linker name="bcc"  if="use-bcc" />
