@@ -3,7 +3,7 @@ Name:      MessageUnitWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping the CORBA MessageUnit to allow some nicer usage
-Version:   $Id: MessageUnitWrapper.java,v 1.19 2000/06/25 18:32:41 ruff Exp $
+Version:   $Id: MessageUnitWrapper.java,v 1.20 2000/07/02 17:20:29 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -175,7 +175,9 @@ public class MessageUnitWrapper
 
 
    /**
-    * Access the unique login name of the (last) publisher
+    * Access the unique login name of the (last) publisher. 
+    * <p />
+    * The sender of this message.
     * @return loginName of the data source which last updated this message
     */
    public String getPublisherName()
