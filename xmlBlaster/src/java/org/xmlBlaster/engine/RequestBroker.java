@@ -781,7 +781,6 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
                   if (filterQos != null) {
                      if (log.TRACE) log.trace(ME, "Checking " + filterQos.length + " filters");
                      for (int jj=0; jj<filterQos.length; jj++) {
-                        XmlKey key = topicHandler.getXmlKey(); // This key is DOM parsed
                         I_AccessFilter filter = getAccessPluginManager().getAccessFilter(
                                                      filterQos[jj].getType(),
                                                      filterQos[jj].getVersion(),
@@ -849,50 +848,39 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
     * TODO: a query Handler, allowing drivers for REGEX, XPath, SQL, etc. queries
     * @return The array is never null, but it may contain a null element at index 0 if the oid is yet unknown
     */
-   private KeyData[] queryMatchingKeys(SessionInfo sessionInfo, QueryKeyData xmlKey, QueryQosData qos)  throws XmlBlasterException
+   private KeyData[] queryMatchingKeys(SessionInfo sessionInfo, QueryKeyData queryKeyData, QueryQosData qos)  throws XmlBlasterException
    {
       String clientName = sessionInfo.toString();
 
-      if (xmlKey.isQuery()) { // query: subscription without a given oid
-         ArrayList oidList = bigXmlKeyDOM.parseKeyOid(sessionInfo, xmlKey.getQueryString(), qos);
-         KeyData[] arr = new KeyData[oidList.size()];
-         for(int i=0; i<arr.length; i++) {
-            arr[i] = getXmlKeyFromOid((String)oidList.get(i)).getKeyData();
+      if (queryKeyData.isQuery()) { // query: subscription without a given oid
+         ArrayList oidList = bigXmlKeyDOM.parseKeyOid(sessionInfo, queryKeyData.getQueryString(), qos);
+         ArrayList strippedList = new ArrayList();
+         for(int i=0; i<oidList.size(); i++) {
+            TopicHandler topicHandler = getMessageHandlerFromOid((String)oidList.get(i));
+            if (topicHandler != null) {
+               KeyData keyData = topicHandler.getMsgKeyData();
+               if (keyData != null) {
+                  strippedList.add(keyData);
+               }
+            }
          }
-         return arr;
+         return new KeyData[strippedList.size()];
       }
 
-      else if (xmlKey.isExact()) { // subscription with a given oid
-         if (log.TRACE) log.trace(ME, "Access Client " + clientName + " with EXACT oid='" + xmlKey.getOid() + "'");
-         XmlKey xmlKeyExact = getXmlKeyFromOid(xmlKey.getOid());
-         if (xmlKeyExact == null) {
+      else if (queryKeyData.isExact()) { // subscription with a given oid
+         if (log.TRACE) log.trace(ME, "Access Client " + clientName + " with EXACT oid='" + queryKeyData.getOid() + "'");
+         TopicHandler topicHandler = getMessageHandlerFromOid(queryKeyData.getOid());
+         if (topicHandler == null || topicHandler.getMsgKeyData() == null) {
             return new KeyData[] { (KeyData)null }; // add arr[0]=null as a place holder
          }
-         return new KeyData[] { xmlKeyExact.getKeyData() };
+         return new KeyData[] { topicHandler.getMsgKeyData() };
       }
 
       else {
-         log.warn(ME + ".UnsupportedQueryType", "Sorry, can't access, query snytax is unknown: " + xmlKey.getQueryType());
-         throw new XmlBlasterException(glob, ErrorCode.USER_QUERY_TYPE_INVALID, ME, "Sorry, can't access, query snytax is unknown: " + xmlKey.getQueryType());
+         log.warn(ME + ".UnsupportedQueryType", "Sorry, can't access, query snytax is unknown: " + queryKeyData.getQueryType());
+         throw new XmlBlasterException(glob, ErrorCode.USER_QUERY_TYPE_INVALID, ME, "Sorry, can't access, query snytax is unknown: " + queryKeyData.getQueryType());
       }
    }
-
-
-   /**
-    * Try to access the XmlKey by its oid.
-    *
-    * @param oid  This is the XmlKey.uniqueKey
-    * @return the XmlKey object if found in the Map<br />
-    *         or null if not found
-    */
-   public final XmlKey getXmlKeyFromOid(String oid) {
-      TopicHandler topicHandler = getMessageHandlerFromOid(oid);
-      if (topicHandler == null) {
-         return null;
-      }
-      return topicHandler.getXmlKeyOrNull();
-   }
-
 
    /**
     * Find the TopicHandler, note that for subscriptions
@@ -1171,7 +1159,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
          MsgKeyData msgKeyData = (MsgKeyData)msgUnit.getKeyData();
          PublishQosServer publishQos = new PublishQosServer(glob, msgUnit.getQosData());
 
-         if (log.CALL) log.call(ME, "Entering " + (isClusterUpdate?"cluster update message ":"") + "publish(oid='" + msgKeyData.getOid() + "', contentMime='" + msgKeyData.getContentMime() + "', contentMimeExtended='" + msgKeyData.getContentMimeExtended() + "' domain='" + msgKeyData.getDomain() + "' from client '" + sessionInfo.getLoginName() + "' ...");
+         if (log.CALL) log.call(ME, "Entering " + (isClusterUpdate?"cluster update message ":"") + "publish(oid='" + msgKeyData.getOid() + "', contentMime='" + msgKeyData.getContentMime() + "', contentMimeExtended='" + msgKeyData.getContentMimeExtended() + "' domain='" + msgKeyData.getDomain() + "' from client '" + sessionInfo.getId() + "' ...");
          if (log.DUMP) log.dump(ME, "Receiving " + (isClusterUpdate?"cluster update ":"") + " message in publish()\n" + msgKeyData.toXml() + "\n" + publishQos.toXml());
 
          PublishReturnQos publishReturnQos = null;
@@ -1427,43 +1415,45 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
    {
       if (topicHandler.isNewCreated()) {
          topicHandler.setNewCreatedFalse();
-         XmlKey keyDom = topicHandler.getXmlKey();
+         if (topicHandler.hasDomTree()) {  // A topic may suppress XPATH visibility
+            XmlKey keyDom = topicHandler.getXmlKey();  // This is DOM parsed already
 
-         if (log.TRACE) log.trace(ME, "Checking existing query subscriptions if they match with this new one");
+            if (log.TRACE) log.trace(ME, "Checking existing query subscriptions if they match with this new one");
 
-         Set set = clientSubscriptions.getQuerySubscribeRequestsSet();
-         Vector matchingSubsVec = new Vector();
-         synchronized (set) {
-            Iterator iterator = set.iterator();
-            // for every XPath subscription ...
-            while (iterator.hasNext()) {
+            Set set = clientSubscriptions.getQuerySubscribeRequestsSet();
+            Vector matchingSubsVec = new Vector();
+            synchronized (set) {
+               Iterator iterator = set.iterator();
+               // for every XPath subscription ...
+               while (iterator.hasNext()) {
 
-               SubscriptionInfo existingQuerySubscription = (SubscriptionInfo)iterator.next();
-               KeyData queryXmlKey = existingQuerySubscription.getKeyData();
-               if (!queryXmlKey.isXPath()) { // query: subscription without a given oid
-                  log.warn(ME,"Only XPath queries are supported, ignoring subscription.");
-                  continue;
-               }
-               String xpath = ((QueryKeyData)queryXmlKey).getQueryString();
+                  SubscriptionInfo existingQuerySubscription = (SubscriptionInfo)iterator.next();
+                  KeyData queryXmlKey = existingQuerySubscription.getKeyData();
+                  if (!queryXmlKey.isXPath()) { // query: subscription without a given oid
+                     log.warn(ME,"Only XPath queries are supported, ignoring subscription.");
+                     continue;
+                  }
+                  String xpath = ((QueryKeyData)queryXmlKey).getQueryString();
 
-               // ... check if the new message matches ...
-               if (keyDom.match(xpath) == true) {
-                  SubscriptionInfo subs = new SubscriptionInfo(glob, existingQuerySubscription.getSessionInfo(),
-                                              existingQuerySubscription, keyDom.getKeyData());
-                  existingQuerySubscription.addSubscription(subs);
-                  matchingSubsVec.addElement(subs);
+                  // ... check if the new message matches ...
+                  if (keyDom.match(xpath) == true) {
+                     SubscriptionInfo subs = new SubscriptionInfo(glob, existingQuerySubscription.getSessionInfo(),
+                                                 existingQuerySubscription, keyDom.getKeyData());
+                     existingQuerySubscription.addSubscription(subs);
+                     matchingSubsVec.addElement(subs);
+                  }
                }
             }
-         }
 
-         // now after closing the synchronized block, me may fire the events
-         // doing it inside the synchronized could cause a deadlock
-         for (int ii=0; ii<matchingSubsVec.size(); ii++) {
-            subscribeToOid((SubscriptionInfo)matchingSubsVec.elementAt(ii));    // fires event for subscription
-         }
+            // now after closing the synchronized block, me may fire the events
+            // doing it inside the synchronized could cause a deadlock
+            for (int ii=0; ii<matchingSubsVec.size(); ii++) {
+               subscribeToOid((SubscriptionInfo)matchingSubsVec.elementAt(ii));    // fires event for subscription
+            }
 
-         // we don't need this DOM tree anymore ...
-         keyDom.cleanupMatch();
+            // we don't need this DOM tree anymore ...
+            keyDom.cleanupMatch();
+         }
       }
    }
 
