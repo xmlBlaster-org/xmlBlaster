@@ -503,7 +503,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
             log.info(ME, "Message " + entry.getLogId() + " is destroyed, ignoring it");
             if (log.TRACE) log.trace(ME, "Message " + entry.getLogId() + " is destroyed, ignoring it: " + entry.toXml());
             try {
-               msgQueue.removeRandom(entry);
+               msgQueue.removeRandom(entry); // Probably change to use [] for better performance
             }
             catch (Throwable e) {
                log.error(ME, "Internal error when removing expired message " + entry.getLogId() + " from queue, no recovery implemented, we continue: " + e.toString());
