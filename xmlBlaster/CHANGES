@@ -58,7 +58,7 @@ Changes cvs
  o SOCKET compression for Java server and clients added
    The compression is based on jzlib and supports 2 ways of compression
    namely 'stream based' and 'message content' based.
-   http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html#compress
    Thanks to Balázs Póka bpoka@axelero.hu
 
  o SOCKET SSL support for Java server and clients added, the usage is simple, see
