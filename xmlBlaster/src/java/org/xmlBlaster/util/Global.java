@@ -18,7 +18,7 @@ import org.xmlBlaster.engine.helper.Address;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.client.PluginLoader;
 import org.xmlBlaster.util.recorder.RecorderPluginManager;
-import org.xmlBlaster.util.classloader.ClassLoaderFactory;
+import org.xmlBlaster.util.classloader.PluginClassLoaderFactory;
 import org.xmlBlaster.authentication.HttpIORServer;
 
 import java.util.Properties;
@@ -73,7 +73,7 @@ public class Global implements Cloneable
    protected org.xmlBlaster.util.Log log;
 
    /** The xmlBlaster class loader factory */
-   private ClassLoaderFactory classLoaderFactory = null;
+   private PluginClassLoaderFactory classLoaderFactory = null;
 
    protected /*final*/ Map nativeCallbackDriverMap;
    /** Store objecte in the scope of one client connection or server instance */
@@ -908,13 +908,13 @@ public class Global implements Cloneable
     * Every Global instance may have an own factory instance. 
     * @return null if switched off with "useXmlBlasterClassloader=false"
     */
-   public ClassLoaderFactory getClassLoaderFactory() {
+   public PluginClassLoaderFactory getPluginClassLoaderFactory() {
       boolean useXmlBlasterClassloader = getProperty().get("useXmlBlasterClassloader", true);
       if (useXmlBlasterClassloader == false) return null;
 
-      synchronized (ClassLoaderFactory.class) {
+      synchronized (PluginClassLoaderFactory.class) {
          if (classLoaderFactory == null)
-            classLoaderFactory = new ClassLoaderFactory(this);
+            classLoaderFactory = new PluginClassLoaderFactory(this);
       }
       return classLoaderFactory;
    }
