@@ -1,0 +1,7 @@
+Setting up CVS server for xmlBlaster [11/1/1999]:
+=================================================
+     cvs -d /www/cvsroot init
+		 export CVSROOT=/www/cvsroot
+     cvs import -m "Startup of xmlBlaster.org 11/1/1999" xmlBlaster INITIAL_XMLBLASTER start
+     export CVSROOT=":pserver:USER@193.197.24.129:/www/cvsroot"
+
