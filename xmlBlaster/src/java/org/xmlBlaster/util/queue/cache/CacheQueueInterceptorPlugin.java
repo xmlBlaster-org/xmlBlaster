@@ -1179,6 +1179,11 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
    synchronized public void shutdown() {
       if (log.CALL) log.call(ME, "shutdown()");
       this.isDown = true;
+      long numTransients = getNumOfEntries() - getNumOfPersistentEntries();
+      if (numTransients > 0) {
+         log.warn(ME, "Shutting down cache queue which contains " + numTransients + " transient messages");
+      }
+
       try {
          this.transientQueue.shutdown();
       }

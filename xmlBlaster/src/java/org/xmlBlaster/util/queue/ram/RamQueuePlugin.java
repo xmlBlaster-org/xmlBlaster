@@ -179,7 +179,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
       synchronized (this) {
          if (this.storage.size() > 0) {
             String reason = "Shutting down RAM queue which contains " + this.storage.size() + " messages";
-            log.warn(ME, reason);
+            if (log.TRACE) log.trace(ME, reason);
             //throw new XmlBlasterException(ME, reason);
             //handleFailure !!!
          }
