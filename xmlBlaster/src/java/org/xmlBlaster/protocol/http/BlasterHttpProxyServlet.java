@@ -3,7 +3,7 @@ Name:      BlasterHttpProxyServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxyServlet.java,v 1.23 2000/05/14 11:13:09 ruff Exp $
+Version:   $Id: BlasterHttpProxyServlet.java,v 1.24 2000/05/14 14:51:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -33,7 +33,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
  * Invoke for testing:<br />
  *    http://localhost/servlet/BlasterHttpProxyServlet?ActionType=login&loginName=martin&passwd=secret
  * @author Marcel Ruff ruff@swand.lake.de
- * @version $Revision: 1.23 $
+ * @version $Revision: 1.24 $
  */
 public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlaster.util.LogListener
 {
@@ -150,7 +150,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
                HttpPushHandler pushHandler = BlasterHttpProxy.getHttpPushHandler(sessionId);
                pushHandler.setBrowserIsReady( true );
 
-               Log.warning(ME, "Received 'browserReady'");
+               if (Log.TRACE) Log.trace(ME, "Received 'browserReady'");
 
                // Otherwise the browser (controlFrame) complains 'document contained no data'
                PrintWriter out = res.getWriter();
@@ -177,9 +177,8 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
                HttpPushHandler pushHandler = BlasterHttpProxy.getHttpPushHandler(sessionId);
                pushHandler.pong();
 
-               // state is only for debugging
+               // state is only for debugging and to avoid internet proxies to discard this content (since it has not changed)
                if (Log.TRACE) Log.trace(ME, "Received pong '" + Util.getParameter(req, "state", "noState") + "'");
-               Log.warning(ME, "Received pong '" + Util.getParameter(req, "state", "noState") + "'");
 
                // Otherwise the browser (controlFrame) complains 'document contained no data'
                PrintWriter out = res.getWriter();
