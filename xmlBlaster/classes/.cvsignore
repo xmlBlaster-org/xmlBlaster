@@ -3,6 +3,6 @@ demo
 javaclients
 testsuite
 doc
-html
+http
 *.class
 xmlBlaster.policy
