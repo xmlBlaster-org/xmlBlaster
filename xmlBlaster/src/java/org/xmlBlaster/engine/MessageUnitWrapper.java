@@ -3,7 +3,7 @@ Name:      MessageUnitWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping the CORBA MessageUnit to allow some nicer usage
-Version:   $Id: MessageUnitWrapper.java,v 1.44 2002/07/07 19:23:50 ruff Exp $
+Version:   $Id: MessageUnitWrapper.java,v 1.45 2002/09/19 14:23:51 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -112,7 +112,7 @@ public final class MessageUnitWrapper implements I_Timeout
 
       publishQos.setFromPersistenceStore(false);
 
-      if (publishQos.getRemainingLife() > 0L) {
+      if (publishQos.getRemainingLife() > 0L) { // -1 is unlimited. 0 is volatile?
          log.info(ME(), "Setting expiry timer for " + getUniqueKey() + " to " + publishQos.getRemainingLife() + " msec");
          timerKey = this.messageTimer.addTimeoutListener(this, publishQos.getRemainingLife(), null);
       }
