@@ -102,6 +102,7 @@ Changes cvs
    - Fixed callback ping return for SOCKET protocol
 
  o C++ client library:
+   - Fixed setting of XmlBlasterAccess::getServerNodeId()
    - Modified Log4Cplus logging:
      1. We are now forwarding all xmlBlaster.properties and command line settings to log4cplus,
         so you could configure everything in xmlBlaster.properties instead of a separate log4cplus.properties
