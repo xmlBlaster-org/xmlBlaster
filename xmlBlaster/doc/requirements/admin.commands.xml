@@ -332,7 +332,7 @@
       Responses for telnet clients are described in the requirement <i>admin.telnet</i>.
       </p>
       <p>
-      Mom clients receive messages with the value in the message content, see requirement <i>admin.momClient</i>.
+      Mom clients receive messages with the value in the message content, see requirement <i>admin.messages</i>.
       </p>
 
       <h3>
@@ -519,14 +519,14 @@ UserInfo: joe:mypasswd
    <see type="API">org.xmlBlaster.engine.admin.extern.TelnetGateway</see>
    <see type="REQ">admin</see>
    <see type="REQ">admin.telnet</see>
-   <see type="REQ">admin.momClient</see>
+   <see type="REQ">admin.messages</see>
    <see type="REQ">engine.runlevel</see>
 
    <author>Heinrich.Goetzger@exploding-systems.de</author>
    <author>Michele.Laghi@swisscom.com</author>
    <author>ruff@swand.lake.de</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.22 $</revision>
+   <revision>$Revision: 1.23 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
