@@ -21,6 +21,12 @@ BUGS:
 
 
 DONE:
+  - Sepcific logging, examples:
+    -trace[cluster] true   Trace cluster
+    -trace[mime] true      Trace mime plugins
+    -call[core] true       Show function calls in core
+    -dump[corba] true      Dump message sent/received by corba plugin
+
   - XmlBlasterProperty is deprecated to use directly, use Global instead:
       glob.getProperty().get("myProp", "defaultVal");
     Added Global argument to many classes, but you can access
