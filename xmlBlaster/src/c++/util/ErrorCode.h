@@ -1,0 +1,236 @@
+/*------------------------------------------------------------------------------
+Name:      ErrorCode.h
+Project:   xmlBlaster.org
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+Comment:   Basic xmlBlaster exception ErrorCode definitions.
+------------------------------------------------------------------------------*/
+
+/**
+ * The basic exception handling class for xmlBlaster.
+ * <p>
+ * The getMessage() method returns a configurable formatted string
+ * (TODO)
+ * here is an example how to configure the format in your xmlBlaster.properties:
+ * <pre>
+ *  XmlBlasterException.logFormat=XmlBlasterException errorCode=[{0}] node=[{1}] location=[{2}] message=[{4} : {8}]
+ *  XmlBlasterException.logFormat.internal= XmlBlasterException errorCode=[{0}] node=[{1}] location=[{2}]\nmessage={4} : {8}\nversionInfo={5}\nstackTrace={7}
+ *  XmlBlasterException.logFormat.resource= defaults to XmlBlasterException.logFormat
+ *  XmlBlasterException.logFormat.communication= defaults to XmlBlasterException.logFormat
+ *  XmlBlasterException.logFormat.user= defaults to XmlBlasterException.logFormat
+ *  XmlBlasterException.logFormat.transaction= defaults to XmlBlasterException.logFormat
+ *  XmlBlasterException.logFormat.legacy= defaults to XmlBlasterException.logFormat
+ * </pre>
+ * where the replacements are:
+ * <pre>
+ *  {0} = errorCodeStr
+ *  {1} = node
+ *  {2} = location
+ *  {3} = lang
+ *  {4} = message
+ *  {5} = versionInfo
+ *  {6} = timestamp
+ *  {7} = stackTrace
+ *  {8} = embeddedMessage
+ *  {9} = transactionInfo
+ * </pre>
+ * @author "Marcel Ruff" <ruff@swand.lake.de>
+ * @author "Michele Laghi" <laghi@swissinfo.org>
+ * @since 0.8+ with extended attributes
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.errorcodes.html">The admin.errorcodes requirement</a>
+ */
+
+#ifndef _UTIL_ERRORCODE_H
+#define _UTIL_ERRORCODE_H
+
+#include <string>
+#include <util/Timestamp.h>
+
+namespace org { namespace xmlBlaster { namespace util {
+
+   struct ErrorCode {
+      string errorCode;
+      string description;
+      ErrorCode(const string &ec, const string &desc)
+        : errorCode(ec), description(desc)
+      {
+      }
+   };
+
+   const ErrorCode LEGACY("legacy",
+      string("This error code marks all old style XmlBlasterExceptions ") +
+      string("until they are ported to the new behaviour.")
+   );
+
+   const ErrorCode INTERNAL_UNKNOWN("internal.unknown",
+      string("This is an unknown and unexpected error, usually a runtime ") +
+      string("exception, please post it to the mailing list.")
+   );
+
+   const ErrorCode INTERNAL_NULLPOINTER("internal.nullpointer",
+      string("A null pointer is an xmlBlaster internal programming error, ") +
+      string("please post it to the mailing list.")
+   );
+
+   const ErrorCode INTERNAL_ILLEGALARGUMENT("internal.illegalArgument",
+      string("An illegal argument is an xmlBlaster internal programming ") +
+      string("error, please post it to the mailing list.")
+   );
+
+   const ErrorCode INTERNAL_NOTIMPLEMENTED("internal.notImplemented",
+      string("The feature is not implemented yet.")
+   );
+
+   const ErrorCode INTERNAL_CONNECTIONFAILURE("internal.connectionFailure",
+      string("An internal error occurred, we were not able to access the ") +
+      string("server handle.")
+   );
+
+   const ErrorCode INTERNAL_DISCONNECT("internal.disconnect",
+      string("An internal error occurred when processing a disconnect() request.")
+   );
+
+   const ErrorCode INTERNAL_SUBSCRIBE("internal.subscribe",
+         "An internal error occurred when processing a subscribe() request."
+   );
+
+   const ErrorCode INTERNAL_UNSUBSCRIBE("internal.unSubscribe",
+         "An internal error occurred when processing an unSubscribe() request."
+   );
+
+   const ErrorCode INTERNAL_PUBLISH("internal.publish",
+         "An internal error occurred when processing a publish() request."
+   );
+
+   const ErrorCode INTERNAL_ERASE("internal.erase",
+         "An internal error occurred when processing a erase() request."
+   );
+
+   const ErrorCode INTERNAL_GET("internal.get",
+         "An internal error occurred when processing a get() request."
+   );
+
+   const ErrorCode RESOURCE_OUTOFMEMORY("resource.outOfMemory",
+      string("The JVM has no more RAM memory, try increasing it like 'java ") +
+      string("-Xms18M -Xmx256M org.xmlBlaster.Main'")
+   );
+
+   const ErrorCode RESOURCE_TOO_MANY_THREADS("resource.tooManyThreads",
+      string("The number of threads used is exceeded, try increasing the ") +
+      string("number of threads in the properties")
+   );
+
+   const ErrorCode RESOURCE_CALLBACKSERVER_CREATION("resource.callbackServer.creation",
+            "The callback server can't be created"
+   );
+
+   const ErrorCode RESOURCE_OVERFLOW_QUEUE_BYTES("resource.overflow.queue.bytes",
+         "The maximum size in bytes of a queue is exhausted"
+   );
+
+   const ErrorCode RESOURCE_OVERFLOW_QUEUE_ENTRIES("resource.overflow.queue.entries",
+         "The maximum number of entries of a queue is exhausted"
+   );
+
+   const ErrorCode RESOURCE_DB_UNAVAILABLE("resource.db.unavailable",
+         "There is no connection to a backend database using JDBC"
+   );
+
+   const ErrorCode RESOURCE_CONFIGURATION_PLUGINFAILED("resource.configuration.pluginFailed",
+         "A plugin required couldn't be loaded, please check your configuration."
+   );
+
+   const ErrorCode RESOURCE_CONFIGURATION_ADDRESS("resource.configuration.address",
+         "A remote address you passed is invalid, please check your configuration."
+   );
+
+   const ErrorCode RESOURCE_FILEIO("resource.fileIO", "A file access failed.");
+
+   const ErrorCode RESOURCE_FILEIO_FILELOST("resource.fileIO.fileLost",
+         "A file disappeared, access failed."
+   );
+
+   const ErrorCode RESOURCE_CLUSTER_NOTAVAILABLE("resource.cluster.notAvailable",
+         "A remote cluster node is not reachable."
+   );
+
+
+
+
+   const ErrorCode COMMUNICATION_NOCONNECTION("communication.noConnection",
+         "A specific remote connection throws an exception on invocation."
+   );
+
+   const ErrorCode COMMUNICATION_NOCONNECTION_POLLING("communication.noConnection.polling",
+         "The remote connection is not established and we are currently polling for it."
+   );
+
+   const ErrorCode COMMUNICATION_NOCONNECTION_DEAD("communication.noConnection.dead",
+         "The remote connection is not established and we have given up to poll for it."
+   );
+
+   const ErrorCode USER_CONFIGURATION("user.configuration",
+         "Login to xmlBlaster failed due to configuration problems."
+   );
+
+   const ErrorCode USER_SECURITY_AUTHENTICATION_ACCESSDENIED("user.security.authentication.accessDenied",
+         "Login to xmlBlaster failed due to missing privileges."
+   );
+
+   const ErrorCode USER_SECURITY_AUTHENTICATION_ILLEGALARGUMENT("user.security.authentication.illegalArgument",
+         "Login to xmlBlaster failed due to illegal arguments."
+   );
+
+   const ErrorCode USER_SECURITY_AUTHORIZATION_NOTAUTHORIZED("user.security.authorization.notAuthorized",
+         "Login to xmlBlaster failed due to missing privileges."
+   );
+
+   const ErrorCode USER_UPDATE_ERROR("user.update.error",
+         "Exception thrown by client on callback update invocation."
+   );
+
+   const ErrorCode USER_UPDATE_INTERNALERROR("user.update.internalError",
+         "Unexpected exception thrown by client code on programming error."
+   );
+
+   const ErrorCode USER_UPDATE_ILLEGALARGUMENT("user.update.illegalArgument",
+         "The update method was invoked without useful data."
+   );
+
+   const ErrorCode USER_ILLEGALARGUMENT("user.illegalArgument",
+         "You have invoked a server method with illegal arguments."
+   );
+
+   const ErrorCode USER_UPDATE_SECURITY_AUTHENTICATION_ACCESSDENIED("user.update.security.authentication.accessDenied",
+         "The update method was invoked with an invalid callback session ID."
+   );
+
+   const ErrorCode USER_OID_UNKNOWN("user.oid.unknown",
+         "You passed a message oid which is not known."
+   );
+
+   const ErrorCode USER_JDBC_INVALID("user.jdbc.invalid",
+         "You have invoked get() with an illegal JDBC query."
+   );
+
+   const ErrorCode USER_PUBLISH("user.publish",
+         "Your published message could not be handled, check your QoS"
+   );
+
+   const ErrorCode USER_PTP_UNKNOWNSESSION("user.ptp.unknownSession",
+      string("You have send a point to point message to a specific user ") +
+      string("session but the receiver is not known.")
+   );
+
+   const ErrorCode USER_PTP_UNKNOWNDESTINATION("user.ptp.unknownDestination",
+      string("You have send a point to point message but the receiver is not ") +
+      string("known and <destination forceQueuing='true'> is not set.")
+   );
+
+   const ErrorCode USER_QUERY_TYPE_INVALID("user.query.type.invalid",
+      string("You have invoked get(), subscribe(), unSubscribe() or erase() ") +
+      string("with an illegal query type, try EXACT or XPATH.")
+   );
+
+}}}; // namespaces
+
+#endif
