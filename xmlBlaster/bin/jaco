@@ -1,0 +1,38 @@
+#!/bin/sh
+#
+# Starting the java interpreter, using JacORB omg libs instead of those from JDK 1.2
+#
+
+JACO_PRG=$0
+
+if ! [ ${JacORB_HOME} ] ; then
+   JacORB_BIN=`dirname "${JACO_PRG}"`
+   JacORB_HOME=`dirname "${JacORB_BIN}"`
+   #echo -e "\033[32;40m  Using JacORB_HOME=${JacORB_HOME}\033[0m"
+fi
+
+if ! [ ${JDK_HOME} ] ; then
+   JAVA_EXE=`which java`
+   if ! [ ${JAVA_EXE} ] ; then
+	   echo -e ""
+	   echo -e "\033[31;40m  Please set environment variable JDK_HOME \033[0m"
+	   echo -e "\033[31;40m    Example: 'export JDK_HOME=/usr/local/jdk1.2' \033[0m"
+	   echo -e "\033[31;40m  or set PATH to contain 'java' \033[0m"
+	   echo -e ""
+   else
+      JDK_BIN=`dirname $JAVA_EXE`
+      JDK_HOME=`dirname $JDK_BIN`
+   fi
+   #echo -e "\033[32;40m  Using JDK_HOME=${JDK_HOME}\033[0m"
+fi
+
+if [ -f ${JDK_HOME}/lib/classes.zip ]; then
+   echo -e "\033[32;40m  Running JacORB with JDK 1.1\033[0m"
+   java -native -Djava.compiler= -classpath "${JDK_HOME}/lib/classes.zip:${JacORB_HOME}/classes:${JacORB_HOME}/classes/jacorb.jar:${CLASSPATH}"  "$@"
+else
+   echo -e "\033[32;40m  Running JacORB with JDK 1.2\033[0m"
+   java -native -Djava.compiler= -Xbootclasspath:"${JacORB_HOME}/classes:${JacORB_HOME}/classes/jacorb.jar:${JDK_HOME}/jre/lib/rt.jar:${CLASSPATH}"  "$@"
+fi
+
+
+# java -native -Djava.compiler= -Xbootclasspath:"/home/bwana/brose/Work/jacorb/classes:/home/bwana/brose/Work/jacorb/classes/jacorb.jar:/import/java2/jre/lib/rt.jar:${CLASSPATH}"    "$@"
