@@ -116,11 +116,13 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
    }
 
    synchronized public void shutdown() {
+      if (this.log.CALL) this.log.call(ME, "shutdown");
       try {
          if (this.subscribeReturnQos != null) {
             this.access.unSubscribe(new UnSubscribeKey(this.global, this.subscribeReturnQos.getSubscriptionId()), new UnSubscribeQos(this.global));
          }
          this.access.disconnect(new DisconnectQos(this.global));
+         this.log.info(ME, "successfully shutdown drawing (unsubscribed and disconnected");
       }
       catch (XmlBlasterException ex) {
          this.log.error(ME, "shutdown. Exception : " + ex.getMessage());
@@ -407,6 +409,12 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
       return "OK";
    }
 
+   public void release() {
+      if (this.log.CALL) this.log.call(ME, "release");
+      shutdown();
+      super.release();
+   }
+
 
 
    /*
@@ -443,11 +451,6 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
       public void orphanAll(FigureEnumeration fe) {
          if (this.log.CALL) this.log.call(ME, "orphanAll");
          super.orphanAll(fe);
-      }
-
-      public void release() {
-         if (this.log.CALL) this.log.call(ME, "release");
-         super.release();
       }
 
       public Figure remove(Figure figure) {

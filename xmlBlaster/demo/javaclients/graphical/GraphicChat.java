@@ -12,6 +12,7 @@ import CH.ifa.draw.figures.*;
 import CH.ifa.draw.contrib.*;
 
 import CH.ifa.draw.framework.Drawing;
+import CH.ifa.draw.framework.DrawingView;
 import CH.ifa.draw.framework.Tool;
 import CH.ifa.draw.util.UndoableTool;
 import CH.ifa.draw.standard.CreationTool;
@@ -88,8 +89,27 @@ public class GraphicChat extends MDI_DrawApplication implements I_Callback {
 
       tool = new HTMLTextAreaTool(this, new HTMLTextAreaFigure());
       palette.add(createToolButton(IMAGES + "TEXTAREA", "HTML TextArea Tool", tool));
-
    }
+
+   /**
+    * invoked on exit
+    */
+   protected void destroy() {
+      this.log.info(ME, "destroy invoked");
+      DrawingView[] views = this.views();
+      for (int i=0; i < views.length; i++) {
+         views[i].drawing().release();
+      }
+      super.destroy();
+   }
+
+   protected void fireViewDestroyingEvent(DrawingView view) {
+      this.log.info(ME, "Destroying view '" + view.drawing().getTitle() + "'");
+      Drawing drawing = view.drawing();
+      super.fireViewDestroyingEvent(view);
+      drawing.release();
+   }
+
 
    /**
     * Factory method to create a StorageFormatManager for supported storage formats.
@@ -107,6 +127,9 @@ public class GraphicChat extends MDI_DrawApplication implements I_Callback {
       return storageFormatManager;
    }
 */
+
+   
+
 
    //-- main -----------------------------------------------------------
 
