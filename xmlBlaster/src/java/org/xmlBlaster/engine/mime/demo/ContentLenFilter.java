@@ -3,7 +3,7 @@ Name:      ContentLenFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface hiding the real callback protocol
-Version:   $Id: ContentLenFilter.java,v 1.15 2002/08/26 11:04:19 ruff Exp $
+Version:   $Id: ContentLenFilter.java,v 1.16 2002/08/26 14:13:50 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime.demo;
@@ -12,7 +12,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.authentication.SubjectInfo;
+import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.MessageUnitWrapper;
@@ -122,8 +122,8 @@ public class ContentLenFilter implements I_Plugin, I_AccessFilter
 
    /**
     * Check if the filter rule matches for this message. 
-    * @param publisher The subject object describing the publisher
-    * @param receiver The subject object describing the receiver
+    * @param publisher The session object describing the publisher
+    * @param receiver The session object describing the receiver
     * @param msgUnit The message to check
     * @param query   The max. message length as given by the subscriber/getter.<br />
     *                If null we use 1 MByte as max size
@@ -136,7 +136,7 @@ public class ContentLenFilter implements I_Plugin, I_AccessFilter
     *            For the publisher it looks as if the publish failed completely. Probably it is
     *            best to return 'false' instead and log the situation.
     */
-   public boolean match(SubjectInfo publisher, SubjectInfo receiver, MessageUnitWrapper msgUnitWrapper, Query query) throws XmlBlasterException {
+   public boolean match(SessionInfo publisher, SessionInfo receiver, MessageUnitWrapper msgUnitWrapper, Query query) throws XmlBlasterException {
       if (msgUnitWrapper == null) {
          Thread.currentThread().dumpStack();
          throw new XmlBlasterException(ME, "Illegal argument in match() call");

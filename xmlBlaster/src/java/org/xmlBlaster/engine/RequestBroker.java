@@ -711,8 +711,8 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
                                                   xmlKey.getContentMime(),
                                                   xmlKey.getContentMimeExtended());
                      if (log.TRACE) log.trace(ME, "get("+xmlKeyExact.getUniqueKey()+") filter=" + filter + " qos=" + qos.toXml());
-                     if (filter != null && filter.match(sessionInfo.getSubjectInfo(),
-                                                  sessionInfo.getSubjectInfo(),
+                     if (filter != null && filter.match(sessionInfo,
+                                                  sessionInfo,
                                                   msgUnitWrapper, filterQos[jj].getQuery()) == false)
                         continue NEXT_MSG; // filtered message is not send to client
                   }

@@ -20,7 +20,7 @@ import org.xmlBlaster.engine.cluster.ClusterManager;
 import org.xmlBlaster.engine.cluster.ClusterNode;
 import org.xmlBlaster.engine.cluster.NodeDomainInfo;
 import org.xmlBlaster.engine.cluster.I_MapMsgToMasterId;
-import org.xmlBlaster.authentication.SubjectInfo;
+import org.xmlBlaster.authentication.SessionInfo;
 
 import java.util.Iterator;
 
@@ -183,8 +183,8 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
                                                 xmlKey.getContentMime(),
                                                 xmlKey.getContentMimeExtended());
                   if (log.TRACE) log.trace(ME, "Checking filter='" + filterQos[jj].getQuery() + "' on message content='" + msgWrapper.getMessageUnit().getContentStr() + "'");
-                  SubjectInfo subjectInfo = null; // TODO: Pass sessionInfo.getSubjectInfo() or subjectInfo here
-                  if (filter != null && filter.match(subjectInfo, subjectInfo,
+                  SessionInfo sessionInfo = null; // TODO: Pass sessionInfo here
+                  if (filter != null && filter.match(sessionInfo, sessionInfo,
                                                 msgWrapper, filterQos[jj].getQuery())) {
                      if (log.TRACE) log.trace(ME, "Found master='" + nodeDomainInfo.getNodeId().getId() + "' stratum=" + nodeDomainInfo.getStratum() + " for message oid='" + msgWrapper.getUniqueKey() + "' with filter='" + filterQos[jj].getQuery() + "'.");
                      return nodeDomainInfo; // Found the master nodeDomainInfo.getClusterNode(); 
@@ -207,8 +207,8 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
                                           xmlKey.getContentMime(),
                                           xmlKey.getContentMimeExtended());
             if (log.TRACE) log.trace(ME, "Checking filter='" + filterQos[jj].getQuery() + "' on message content='" + msgWrapper.getMessageUnit().getContentStr() + "'");
-            SubjectInfo subjectInfo = null; // TODO: Pass sessionInfo.getSubjectInfo() or subjectInfo here
-            if (filter != null && filter.match(subjectInfo, subjectInfo,
+            SessionInfo sessionInfo = null; // TODO: Pass sessionInfo here
+            if (filter != null && filter.match(sessionInfo, sessionInfo,
                                           msgWrapper, filterQos[jj].getQuery())) {
                if (log.TRACE) log.trace(ME, "Found master='" + nodeDomainInfo.getNodeId().getId() + "' stratum=" + nodeDomainInfo.getStratum() + " for message oid='" + msgWrapper.getUniqueKey() + "' with filter='" + filterQos[jj].getQuery() + "'.");
                return nodeDomainInfo; // Found the master nodeDomainInfo.getClusterNode(); 
