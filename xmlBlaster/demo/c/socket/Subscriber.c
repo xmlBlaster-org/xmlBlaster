@@ -42,7 +42,7 @@ static bool myUpdate(MsgUnitArr *msgUnitArr, void *userData,
                   strcpyAlloc("<qos><state id='OK'/></qos>");
       /* Return QoS: Everything is OK */
 
-      if (updateSleep) {
+      if (updateSleep > 0) {
          printf("[client] CALLBACK update(): Sleeping for %ld millis ...\n", updateSleep);
          sleepMillis(updateSleep);
       }
