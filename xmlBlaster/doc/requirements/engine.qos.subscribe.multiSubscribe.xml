@@ -1,0 +1,88 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='engine.qos.subscribe.multiSubscribe' type='NEW' prio='LOW' status="CLOSED">
+   <topic>
+      On multiple subscription on the same topic a client can specify to receive this message only once.
+   </topic>
+   <description>
+     <p>
+     If you subscribe with the same client (the same login session) multiple 
+     times to the same message you will receive this message multiple times,
+     one update for each subscription.
+     </p>
+     <p>
+     Sometimes you may want to ignore multiple  subscriptions.
+     If you set on subscribe 
+     </p>
+     <pre>
+&lt;qos> <!-- Subscribe QoS -->
+   ...
+   &lt;multiSubscribe>false&lt;/multiSubscribe>  <!-- defaults to true -->
+&lt;/qos>
+     </pre>
+     <p>
+     <i>multiSubscribe</i> to false the subsequent subscribes are ignored.
+     In this case the same subscription ID which you got on initial
+     subscribe is returned.
+     </p>
+     <p>
+     If you subscribe with an XPath query, only the query string will be checked
+     to be identical.
+     In the case that an XPath subscription (with different query syntax)
+     hits an already subscribed topic you will receive the topic twice.
+     </p>
+     <p>
+      The returned subscription ID is identical for identical subscribes,
+      additionally the returned <i>status</i> is set to <i>"WARNING"</i>. 
+      Note that you have to call unSubscribe() only once if all subscribes
+      used <i>multiSubscribe=false</i>.
+     </p>
+   </description>
+   <example lang="Java">
+      <![CDATA[
+import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.SubscribeQos;
+import org.xmlBlaster.client.qos.SubscribeReturnQos;
+...
+
+try {
+   con = new XmlBlasterConnection(glob);
+   ConnectQos qos = new ConnectQos(glob);
+   con.connect(qos, this);
+
+   SubscribeQos subQos = new SubscribeQos(glob);
+
+   subQos.setMultiSubscribe(false);
+
+   SubscribeReturnQos subId1 = con.subscribe("<key oid='radar-track'/>", subQos.toXml());
+
+   SubscribeReturnQos subId2 = con.subscribe("<key oid='radar-track'/>", subQos.toXml());
+
+   System.out.println("Got subscribe receipt: state=" + subId1.getState() +
+                      " subscriptionId=" + subId1.getSubscriptionId());
+
+   // only one message is updated if the topic 'radar-track' is published
+   // subId1 and subId2 are identical, one unSubscribe is enough:
+
+   con.unSubscribe("<key oid='" + subId1 + "'/>", null);
+}
+catch (Exception e) {
+      log.error(ME, "Login failed: " + e.toString());
+}
+...
+      ]]>
+   </example>
+   <see>org.xmlBlaster.client.protocol.XmlBlasterConnection</see>
+   <author>xmlBlaster@marcelruff.info</author>
+   <hacker>xmlBlaster@marcelruff.info</hacker>
+   <date>2003 03 12</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="CLOSED">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">org.xmlBlaster.test.qos.TestSubMultiSubscribe</test>
+   </testcase>
+</requirement>
+
