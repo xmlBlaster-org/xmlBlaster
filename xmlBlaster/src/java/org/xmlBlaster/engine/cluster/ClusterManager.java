@@ -414,7 +414,21 @@ public final class ClusterManager implements I_RunlevelListener
          return null;
       }
 
-      return con.subscribe(new SubscribeKey(this.glob, xmlKey), new SubscribeQos(this.glob, subscribeQos.getData()));
+      SubscribeQos subscribeQos2 = new SubscribeQos(this.glob, subscribeQos.getData());
+      
+      // As we forward many subscribes probably accessing the
+      // same message but only want one update.
+      // We cache this update and distribute to all our clients
+      // TODO: As an unSubscribe() deletes all subscribes() at once
+      //       we have not yet activated the new desired use of multiSubscribe
+      //       We need to add some sort of subscribe reference counting
+      //       preferably in the server implementation (see RequestBroker.java)
+      // TODO: As soon we have implemented it here we need to remove 
+      //       data.setDuplicateUpdates(false); in NodeInfo.java
+
+      //subscribeQos2.setMultiSubscribe(false);
+
+      return con.subscribe(new SubscribeKey(this.glob, xmlKey), subscribeQos2);
    }
 
    /**

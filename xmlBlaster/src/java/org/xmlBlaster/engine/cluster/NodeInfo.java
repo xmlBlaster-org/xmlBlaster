@@ -208,6 +208,9 @@ public final class NodeInfo
       // As we forward many subscribes probably accessing the
       // same message but only want one update.
       // We cache this update and distribute to all our clients:
+      // TODO: Please change to use multiSubscribe=false from SubscribeQos
+      //              as an unSubscribe() deletes all subscribes() at once
+      //              we have not yet implemented the new desired use of multiSubscribe
       data.setDuplicateUpdates(false);
 
       data.getSessionQos().setSessionTimeout(0L); // session lasts forever
