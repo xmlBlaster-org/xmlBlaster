@@ -3,6 +3,9 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes for xxx [xxx, xx 2003]
 ================================
 
+ o Bugifx of deadlock in Timeout.java and Timeout.cpp
+   Reported by Guy Donadio
+
  o Removed unused field from history and update queue entries
    in JDBC database.
    This change is NOT backwards compatible:
