@@ -22,7 +22,7 @@ public interface I_ClientPlugin {
    //public void init(String[] param) throws XmlBlasterException;
 
    /**
-    * @return The plugin type, e.g. "simple"
+    * @return The plugin type, e.g. "htpasswd"
     */
    public String getType();
 

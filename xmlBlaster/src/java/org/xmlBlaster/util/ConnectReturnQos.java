@@ -16,7 +16,7 @@ import org.xmlBlaster.util.XmlBlasterException;
  * The only thing you may be interested in is the returned sessionId, example:
  * <pre>
  *   &lt;qos>
- *      &lt;securityService type="simple" version="1.0">
+ *      &lt;securityService type='htpasswd' version='1.0'>
  *         &lt;![CDATA[
  *         &lt;user>ClientSub&lt;/user>
  *         &lt;passwd>secret&lt;/passwd>

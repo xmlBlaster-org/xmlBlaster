@@ -6,6 +6,7 @@ import org.jutils.io.FileUtil;
 import org.jutils.JUtilsException;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
+import org.xmlBlaster.engine.helper.Constants;
 import java.util.Vector;
 import java.util.StringTokenizer;
 
@@ -170,8 +171,8 @@ public class PluginLoader {
       Vector v   = new Vector();
 
       if((mechanism==null) || (mechanism.equals(""))) { // if the client application doesn't select the mechanism and version, we must check the configuartion
-         tmp = glob.getProperty().get("Security.Client.DefaultPlugin", "simple,1.0");//(String)null);
-         Log.info(ME, "Got Security.Client.DefaultPlugin=" + tmp);
+         tmp = glob.getProperty().get("Security.Client.DefaultPlugin", Constants.DEFAULT_SECURITYPLUGIN_TYPE+","+Constants.DEFAULT_SECURITYPLUGIN_VERSION);
+         if (Log.TRACE) Log.trace(ME, "Got Security.Client.DefaultPlugin=" + tmp);
          if (tmp!=null) {
             int i = tmp.indexOf(',');
             if (i==-1) {  // version is optional
@@ -190,8 +191,12 @@ public class PluginLoader {
 
       String s = glob.getProperty().get("Security.Client.Plugin["+mechanism+"]["+version+"]", (String)null);
       if(s==null) {
-         if (mechanism.equals("simple")) // xmlBlaster should run without xmlBlaster.properties
+         if (mechanism.equals("htpasswd")) // xmlBlaster should run without xmlBlaster.properties
+            s = "org.xmlBlaster.authentication.plugins.htpasswd.ClientPlugin";
+         else if (mechanism.equals("simple")) // xmlBlaster should run without xmlBlaster.properties
             s = "org.xmlBlaster.authentication.plugins.simple.ClientPlugin";
+         else if (mechanism.equals("ldap")) // xmlBlaster should run without xmlBlaster.properties
+            s = "org.xmlBlaster.authentication.plugins.ldap.ClientPlugin";
          else
             throw new XmlBlasterException(ME+".Unknown Plugin", "Unknown Plugin '" + mechanism + "' with version '" + version + "'.");
       }
