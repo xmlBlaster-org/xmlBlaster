@@ -533,7 +533,12 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
                   Thread.dumpStack();
                   continue;
                }
-
+               if (origMsgUnit.getQosData().getClientProperties().get("__isErrorHandled") != null) {  // Check for recursion of dead letters
+                  log.warn(ME, "Recursive message '" + entry.getLogId() + "' is error handled already (sent as dead letter), we ignore it.");
+                  retArr[ii] = entry.getKeyOid();
+                  continue;
+               }
+               origMsgUnit.getQosData().setClientProperty("__isErrorHandled", true); // Mark the original to avoid looping if failed client is the dead message listener
                log.warn(ME, "Generating dead message '" + entry.getLogId() + "'" +
                             " from publisher=" + entry.getSender() +
                             " because delivery with queue '" +            // entry.getReceiver() is recognized in queueId
