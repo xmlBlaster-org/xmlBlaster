@@ -74,10 +74,10 @@ public abstract class QosData implements java.io.Serializable, Cloneable
 
    /**
     * Access state of message on update().
-    * @return OK (Other values are not yet supported)
+    * @return Usually Constants.OK
     */
    public String getState() {
-      return state;
+      return (this.state==null) ? Constants.STATE_OK : this.state;
    }
 
    /**
@@ -140,7 +140,21 @@ public abstract class QosData implements java.io.Serializable, Cloneable
    /** 
     * The approximate receive timestamp (UTC time),
     * when message arrived in requestBroker.publish() method.<br />
-    * In milliseconds elapsed since midnight, January 1, 1970 UTC
+    * In milliseconds elapsed since midnight, January 1, 1970 UTC<br />
+    * <p>
+    * This timestamp is unique for a message instance published and may be
+    * used to identify this message. For example a publisher and a receiver
+    * of a message can identify this message by its topic (key oid) and its
+    * receive timestamp.
+    * </p>
+    * <p>
+    * To get a human readable view on the timestamp try:
+    * </p>
+    * <pre>
+    * String time = qos.getRcvTimestamp().toString();
+    *
+    * -> "2002-02-10 10:52:40.879456789"
+    * </pre>
     */
    public Timestamp getRcvTimestamp() {
       return rcvTimestamp;
