@@ -51,8 +51,10 @@
          <th>Parameter</th><th>Type</th><th>Description</th>
          </tr>
          <tr>
-         <td>cbSessionId</td><td>string</td><td>A session ID provided by the client on connect().
-                   This allows the clients callback server to decide if it trusts the callback</td>
+         <td>cbSessionId</td><td>string</td><td>A session ID provided by the client on connect()
+             by setting the property <b>secretCbSessionId()</b> in the callback address. It is <b>
+             not</b> the normal sessionId used for the connection.
+             This allows the clients callback server to decide if it trusts the callback</td>
          </tr>
          <tr>
          <td>msgUnitArr</td><td>MessageUnit[]</td><td>An array of messages</td>
@@ -258,7 +260,7 @@ java javaclients.HelloWorldSubscribe -oid __sys__deadMessage
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 26</date>
-   <revision>$Revision: 1.17 $</revision>
+   <revision>$Revision: 1.18 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the update method invocation, this is done implicitly with subscribe tests and erase event tests</comment>
