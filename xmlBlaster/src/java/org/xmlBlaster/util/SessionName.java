@@ -30,6 +30,7 @@ public final class SessionName implements java.io.Serializable
    private String relativeName;
    private final String subjectId; // == loginName
    private long pubSessionId;
+   private boolean nodeIdExplicitlyGiven = false;
 
    /**
     * Create and parse a unified name. 
@@ -80,12 +81,14 @@ public final class SessionName implements java.io.Serializable
          if (arr.length > 1) {
             if (nodeId != null) {
                this.nodeId = nodeId; // given nodeId is strongest
+               this.nodeIdExplicitlyGiven = true;
             }
             //else if (glob.isServer()) {
             //   this.nodeId = glob.getNodeId(); // always respect the given name
             //}
             else {
                this.nodeId = new NodeId(arr[1]); // the parsed nodeId
+               this.nodeIdExplicitlyGiven = true;
                if ("unknown".equals(this.nodeId.getId())) this.nodeId = null;
             }
          }
@@ -105,9 +108,11 @@ public final class SessionName implements java.io.Serializable
       if (this.nodeId == null) {
          if (nodeId != null) {
             this.nodeId = nodeId; // given nodeId is strongest
+            this.nodeIdExplicitlyGiven = true;
          }
          else if (glob.isServer()) { // if nodeId still not known we set it to the servers nodeId
             this.nodeId = glob.getNodeId();
+            this.nodeIdExplicitlyGiven = false;
          }
          //else {
          //   this.nodeId = nodeId;
@@ -186,6 +191,13 @@ public final class SessionName implements java.io.Serializable
          this.relativeName = buf.toString();
       }
       return this.relativeName;
+   }
+
+   /**
+    * Check if the address string given to our constructor had an explicit specified nodeId
+    */
+   public boolean isNodeIdExplicitlyGiven() {
+      return this.nodeIdExplicitlyGiven;
    }
 
    /**
