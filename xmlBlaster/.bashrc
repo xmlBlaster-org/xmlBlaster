@@ -22,7 +22,7 @@
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash.
 # Thanks to Heinrich Goetzger
-# $Revision: 1.77 $
+# $Revision: 1.78 $
 #-----------------------------------------------------------
 
 
@@ -75,6 +75,7 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    ${ECHO} "$BLACK_LTGREEN   Welcome to xmlBlaster.org   $ESC"
    ${ECHO} "$BLACK_LTGREEN      Using XMLBLASTER_HOME=${XMLBLASTER_HOME}  $ESC"
 
+   #CLASSPATH=${XMLBLASTER_HOME}/lib/xerces.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/parser.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/jaxp.jar:${CLASSPATH}
 	# jutils.jar is now included in xmlBlaster.jar
@@ -84,7 +85,7 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    CLASSPATH=${XMLBLASTER_HOME}/lib/xtdash.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/omquery.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/test.jar:${CLASSPATH}
-   CLASSPATH=${XMLBLASTER_HOME}/lib/servlet-2.0.jar:${CLASSPATH}
+   CLASSPATH=${XMLBLASTER_HOME}/lib/servlet.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/gnu-regexp-1.0.8.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/xmlrpc.jar:${CLASSPATH}
    if [ ${USE_ANT:=""} = "true" ] ; then

@@ -90,7 +90,7 @@ Else add it manually.
 
 
   <property name="xmlblaster_home" value="."/>
-  <property name="classpath" value="./lib/jacorb.jar:./lib/omquery.jar:./lib/parser.jar:./lib/xmlrpc.jar:./lib/jaxp.jar:./lib/test.jar:./lib/xtdash.jar:./lib/servlet-2.0.jar:./lib/gnu-regexp-1.0.8.jar:"/>
+  <property name="classpath" value="./lib/jacorb.jar:./lib/omquery.jar:./lib/parser.jar:./lib/xmlrpc.jar:./lib/jaxp.jar:./lib/test.jar:./lib/xtdash.jar:./lib/servlet.jar:./lib/gnu-regexp-1.0.8.jar:"/>
 
   <!-- =================================================================== -->
   <!-- Help on usage                                                       -->
@@ -236,7 +236,7 @@ Else add it manually.
      <copy todir="${WEB-INF.classes}/org/xmlBlaster/protocol/http">
        <fileset dir="${build.dest}/org/xmlBlaster/protocol/http"/>
      </copy>
- 
+
      <delete>
        <fileset dir="${www.dir}/javascript"/>
      </delete>
@@ -297,7 +297,7 @@ Else add it manually.
     <copy todir="${dist.dir}/src/java">
       <fileset dir="${src.dir}"/>
     </copy>
-    <copy todir="${dist.dir}/src/dtd"> 
+    <copy todir="${dist.dir}/src/dtd">
       <fileset dir="${dtd.dir}"/>
     </copy>
     <copy todir="${dist.dir}/src/idl">

@@ -7,7 +7,7 @@ if [ ${JAVA_HOME:=""} = "" ] ; then
    exit
 fi
 
-CLASSPATH=lib/ant.jar:lib/parser.jar:lib/jaxp.jar:lib/idl.jar:lib/jacorb.jar:lib/omquery.jar:lib/xtdash.jar:lib/servlet-2.0.jar:lib/test.jar:$JAVA_HOME/lib/tools.jar:lib/xmlrpc.jar
+CLASSPATH=lib/ant.jar:lib/parser.jar:lib/jaxp.jar:lib/idl.jar:lib/jacorb.jar:lib/omquery.jar:lib/xtdash.jar:lib/servlet.jar:lib/test.jar:$JAVA_HOME/lib/tools.jar:lib/xmlrpc.jar
 
 ALL_ENV=`env`
 MY_DEF=""
