@@ -116,7 +116,7 @@ does a login and implements applications specific actions on
 successful login:
 
 
-   <script language="Javascript1.2">
+   <script language="JavaScript" type="text/javascript">
       /**
          * Opens a window which holds the persistent http connection.
          * Cut and paste this function 'as is' into your html file.
@@ -180,7 +180,7 @@ successful login:
  can listen to them:
 
 
-   <script language="Javascript1.2">
+   <script language="JavaScript" type="text/javascript">
       /**
          * Tell the callbackFrame that i am interested in message updates.
          * Cut and paste this function 'as is' into your interested html frame
@@ -316,7 +316,7 @@ ActionType=login&amp;xmlBlaster.loginName=joe&amp;xmlBlaster.passwd=secret
    <hacker>xmlBlaster@marcelruff.info</hacker>
    <effort>12</effort>
    <date>2000 05 06</date>
-   <revision>$Revision: 1.17 $</revision>
+   <revision>$Revision: 1.18 $</revision>
    <testcase status="INWORK">
       <name>-</name>
       <comment>It is not simple to provide a fully automated testsuite for this case</comment>

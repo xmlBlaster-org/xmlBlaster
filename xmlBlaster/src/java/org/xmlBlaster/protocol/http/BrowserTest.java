@@ -3,7 +3,7 @@ Name:      BrowserTest.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BrowserTest.java,v 1.11 2002/12/18 12:39:09 ruff Exp $
+Version:   $Id: BrowserTest.java,v 1.12 2004/03/23 10:21:15 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -143,7 +143,7 @@ public class BrowserTest extends HttpServlet
                out.println("<BIG>Hello World - GET - multipart No." + val++ + "</BIG>");
                out.println("<p /><A HREF='http://www.xmlBlaster.org'>XmlBlaster</A> <-- click to abort");
                /*
-               out.println("<script language='JavaScript'>");
+               out.println("<script language='JavaScript' type='text/javascript'>");
                out.println("alert('Konrad Konradowitsch');");
                out.println("</script>");
                */
@@ -219,7 +219,7 @@ public class BrowserTest extends HttpServlet
                out.println("<BIG>Hello World - GET - Simple server push No." + val++ + "</BIG>");
                out.println("<P>"); // This newline forces a refresh everytime!
                log.info(ME, "Flushing number " + (val-1) + " ...");
-               out.println("<script language='JavaScript1.2'>");
+               out.println("<script language='JavaScript' type='text/javascript'>");
                out.println("alert('Hoi Michele');");
                out.println("</script>");
 

@@ -160,7 +160,7 @@ public class HttpPushHandler implements I_Callback
           "   <form ACTION=\"\" METHOD=\"POST\" TARGET=\"callback\">\n" +
           "      <INPUT TYPE=\"HIDDEN\" NAME=\"NoName\" VALUE=\"NoValue\" />\n" +
           "   </form>\n" +
-          "   <script language='JavaScript'>\n";
+          "   <script language='JavaScript' type='text/javascript'>\n";
       }
 
       if (handlesMultipart) {
@@ -414,7 +414,7 @@ public class HttpPushHandler implements I_Callback
                   buf.append(head);
                }
                else
-                  buf.append("<script language='JavaScript'>\n");
+                  buf.append("<script language='JavaScript' type='text/javascript'>\n");
 
                boolean isMessage = false;
                // Collect all messages, pings etc from the queue ...
@@ -491,7 +491,7 @@ public class HttpPushHandler implements I_Callback
    {
       StringBuffer retStr = new StringBuffer();
       retStr.append("<html><body>\n");
-      retStr.append("<script language='JavaScript1.2'>\n");
+      retStr.append("<script language='JavaScript' type='text/javascript'>\n");
       String tmp = StringHelper.replaceAll(text, "'", "\\'");
       retStr.append("alert(\'" + StringHelper.replaceAll(tmp, "\n", "\\n'+\n'") + "');\n");
       retStr.append("</script>\n");

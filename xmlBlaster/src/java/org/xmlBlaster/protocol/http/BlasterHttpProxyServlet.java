@@ -334,7 +334,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
 
             // Otherwise the browser (controlFrame) complains 'document contained no data'
             PrintWriter out = res.getWriter();
-            out.println(header+" <body text='white' bgcolor='white'><script language='JavaScript1.2'>top.close()</script></body></html>");
+            out.println(header+" <body text='white' bgcolor='white'><script language='JavaScript' type='text/javascript'>top.close()</script></body></html>");
          }
 
          else {
