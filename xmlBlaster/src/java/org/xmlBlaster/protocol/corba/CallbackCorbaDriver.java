@@ -9,6 +9,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.protocol.I_CallbackDriver;
@@ -26,11 +27,12 @@ import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackHelper;
 public class CallbackCorbaDriver implements I_CallbackDriver
 {
    private String ME = "CallbackCorbaDriver";
-   private Global glob = null;
+   private Global glob;
    private LogChannel log;
-   private BlasterCallback cb = null;
-   private CallbackAddress callbackAddress = null;
-
+   private BlasterCallback cb;
+   private CallbackAddress callbackAddress;
+   private OrbInstanceWrapper orbInstanceWrapper;
+   private org.omg.CORBA.ORB orb;
 
    /** Get a human readable name of this driver */
    public final String getName() {
@@ -47,7 +49,9 @@ public class CallbackCorbaDriver implements I_CallbackDriver
       this.callbackAddress = callbackAddress;
       String callbackIOR = callbackAddress.getAddress();
       try {
-         this.cb = BlasterCallbackHelper.narrow(CorbaDriver.getOrb().string_to_object(callbackIOR));
+         this.orbInstanceWrapper = OrbInstanceFactory.getOrbInstanceWrapper(this.glob, Constants.RELATING_CALLBACK);
+         this.orb = this.orbInstanceWrapper.getOrb(this.glob.getArgs(), null, true);
+         this.cb = BlasterCallbackHelper.narrow(this.orb.string_to_object(callbackIOR));
          if (log.TRACE) log.trace(ME, "Accessing client callback reference using given IOR string");
       }
       catch (Throwable e) {
@@ -206,6 +210,11 @@ public class CallbackCorbaDriver implements I_CallbackDriver
          this.cb = null;
       }
       callbackAddress = null;
+
+      if (this.orbInstanceWrapper != null) {
+         this.orbInstanceWrapper.releaseOrb(false);
+      }
+
       // On disconnect: called once for sessionQueue and for last session for subjectQueue as well
       if (log != null && log.TRACE) log.trace(ME, "Shutdown of CORBA callback client done.");
    }

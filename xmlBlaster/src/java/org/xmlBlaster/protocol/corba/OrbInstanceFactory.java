@@ -183,4 +183,23 @@ public final class OrbInstanceFactory
       }
    }
 
+   /**
+    * Get (or create) an OrbInstanceWrapper object which is useful to handle one
+    * CORBA orb instance with reference counting
+    * @param glob
+    * @param prefix A unique identifier for the orb, using the same prefix will return
+    *   the same orb on second and further calls
+    */
+   public static OrbInstanceWrapper getOrbInstanceWrapper(Global glob, String prefix) {
+      if (glob == null) throw new IllegalArgumentException("You called OrbInstanceFactory.getOrbInstanceWrapper() with glob==null");
+      synchronized (glob) {
+         OrbInstanceWrapper orbInstanceWrapper =
+               (OrbInstanceWrapper)glob.getObjectEntry(prefix+":org.xmlBlaster.protocol.corba.OrbInstanceWrapper");
+         if (orbInstanceWrapper == null) {
+            orbInstanceWrapper = new OrbInstanceWrapper(glob);
+            glob.addObjectEntry(prefix+":org.xmlBlaster.protocol.corba.OrbInstanceWrapper", orbInstanceWrapper);
+         }
+         return orbInstanceWrapper;
+      }
+   }
 }

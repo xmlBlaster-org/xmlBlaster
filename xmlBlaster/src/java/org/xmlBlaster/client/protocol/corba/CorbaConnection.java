@@ -26,6 +26,7 @@ import org.jutils.JUtilsException;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.qos.address.ServerRef;
+import org.xmlBlaster.protocol.corba.OrbInstanceFactory;
 import org.xmlBlaster.protocol.corba.CorbaDriver;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.protocol.corba.serverIdl.ServerHelper;
@@ -76,28 +77,18 @@ import java.applet.Applet;
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  */
-public class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
+public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
 {
    private String ME = "CorbaConnection";
    private Global glob;
    private LogChannel log;
 
-   // HACK May,24 2000 !!! (search 'Thread leak' in this file to remove the hack again and remove the two 'static' qualifiers below.)
-   // Thread leak from JacORB 1.2.2, the threads
-   //   - JacORB Listener Thread
-   //   - JacORB ReplyReceptor
-   //   - JacORB Request Receptor
-   // are never released on orb.shutdown() and rootPoa.deactivate()
-   //
-   // So we use a static orb and poa and recycle it.
-   // The drawback is that a running client can't change the
-   // orb behavior
-   static protected org.omg.CORBA.ORB orb;
+   private org.omg.CORBA.ORB orb;
 
-   protected NamingContextExt nameService;
-   protected AuthServer authServer;
-   protected Server xmlBlaster;
-   protected Address clientAddress;
+   private NamingContextExt nameService;
+   private AuthServer authServer;
+   private Server xmlBlaster;
+   private Address clientAddress;
    private String sessionId;
    private boolean verbose = true;
 
@@ -156,7 +147,7 @@ public class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
       props.put("org.omg.CORBA.ORBClass", orbClassName);
       props.put("org.omg.CORBA.ORBSingletonClass", orbSingleton);
 
-      orb = org.omg.CORBA.ORB.init(ap, props);
+      orb = org.omg.CORBA.ORB.init(ap, props); // for applets only
 
       init(glob, null);
 
@@ -189,9 +180,8 @@ public class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
          Thread.currentThread().dumpStack();
       }
 
-      if (orb == null) { // Thread leak !!!
-         CorbaDriver.initializeOrbEnv(this.glob,true);
-         orb = org.omg.CORBA.ORB.init(this.glob.getArgs(), null);
+      if (this.orb == null) { // Thread leak !!!
+         this.orb = OrbInstanceFactory.createOrbInstance(this.glob,this.glob.getArgs(),null,false);
       }
       resetConnection();
       log.info(ME, "Created '" + getProtocol() + "' protocol plugin to connect to xmlBlaster server");
@@ -217,7 +207,7 @@ public class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
     * @return org.omg.CORBA.ORB
     */
    public org.omg.CORBA.ORB getOrb() {
-      return orb;
+      return this.orb;
    }
 
    /**
@@ -635,18 +625,16 @@ public class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
          this.xmlBlaster._release();
          this.xmlBlaster = null;
       }
-      // does this work ?
-/*
       if (this.orb != null) {
+         boolean wait_for_completion = false;
          try {
-            this.orb.shutdown(false);
+            this.orb.shutdown(wait_for_completion);
+            this.orb = null;
          }
-         catch (Exception ex) {
-            this.log.warn(ME, "shutdown:exception occured destroy(): " + ex.toString());
+         catch (Throwable ex) {
+            this.log.warn(ME, "shutdown: Exception occured during orb.shutdown("+wait_for_completion+"): " + ex.toString());
          }
       }
-*/
-
    }
 
    /**

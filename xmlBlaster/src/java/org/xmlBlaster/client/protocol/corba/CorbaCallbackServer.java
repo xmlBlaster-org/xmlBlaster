@@ -3,7 +3,7 @@ Name:      CorbaCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaCallbackServer.java,v 1.35 2003/04/03 16:37:22 ruff Exp $
+Version:   $Id: CorbaCallbackServer.java,v 1.36 2003/04/04 17:34:44 ruff Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -17,6 +17,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.protocol.corba.CorbaDriver;
+import org.xmlBlaster.protocol.corba.OrbInstanceFactory;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackPOATie;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackHelper;
@@ -34,7 +35,7 @@ import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
  * <p />
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
  */
-public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackOperations, I_CallbackServer
+public final class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackOperations, I_CallbackServer
 {
    private org.omg.CORBA.ORB orb;
    private org.omg.PortableServer.POA rootPOA;
@@ -78,8 +79,7 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
       this.log = this.glob.getLog("corba");
 
       String cbHostname = null;
-      cbHostname = CorbaDriver.initializeOrbEnv(this.glob, true);
-      this.orb = org.omg.CORBA.ORB.init(this.glob.getArgs(), null);
+      this.orb = OrbInstanceFactory.createOrbInstance(this.glob,this.glob.getArgs(),null,true);
 
       this.ME = "CorbaCallbackServer-" + name;
       this.boss = boss;

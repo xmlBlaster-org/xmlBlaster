@@ -3,7 +3,7 @@ Name:      OrbInstanceWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   OrbInstanceWrapper class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: OrbInstanceWrapper.java,v 1.1 2003/04/04 15:41:24 ruff Exp $
+Version:   $Id: OrbInstanceWrapper.java,v 1.2 2003/04/04 17:34:50 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -23,8 +23,13 @@ import java.util.Properties;
 public class OrbInstanceWrapper
 {
    private String ME = "OrbInstanceWrapper";
+   private Global glob;
    private org.omg.CORBA.ORB orb;
    private int referenceCounter;
+
+   public OrbInstanceWrapper(Global glob) {
+      this.glob = glob;
+   }
 
    /**
     * On first call an orb is created, further calls return the same orb instance. 
@@ -35,7 +40,7 @@ public class OrbInstanceWrapper
     * @return Access to a new created orb handle
     * @see org.omg.CORBA.ORB#init(String[], Properties)
     */
-   public synchronized org.omg.CORBA.ORB getOrb(Global glob, String[] args, Properties props, boolean forCB) {
+   public synchronized org.omg.CORBA.ORB getOrb(String[] args, Properties props, boolean forCB) {
       if (this.orb == null) {
          this.orb = OrbInstanceFactory.createOrbInstance(glob, args, (Properties)null, forCB);
       }
@@ -47,6 +52,7 @@ public class OrbInstanceWrapper
     * When the same amount releasOrb() is called as getOrb(), the internal orb is shutdown. 
     */
    public synchronized void releaseOrb(boolean wait_for_completion) {
+      //System.out.println("DEBUG ONLY: Current referenceCounter=" + this.referenceCounter);
       this.referenceCounter--;
       if (this.referenceCounter <= 0) {
          this.referenceCounter = 0;
@@ -54,6 +60,8 @@ public class OrbInstanceWrapper
             try {
                this.orb.shutdown(wait_for_completion);
                this.orb = null;
+               //System.out.println("DEBUG ONLY: Destroyed ORB");
+               return;
             }
             catch (Throwable ex) {
                System.err.println(ME+".releaseOrb: Exception occured during orb.shutdown("+wait_for_completion+"): " + ex.toString());

@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.61 2003/03/31 09:42:18 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.62 2003/04/04 17:34:50 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -25,6 +25,7 @@ import org.jutils.io.FileUtil;
 import java.io.PrintWriter;
 import java.io.FileOutputStream;
 import java.io.File;
+import java.util.Properties;
 import org.omg.CosNaming.NamingContext;
 import org.omg.CosNaming.NamingContextExt;
 import org.omg.CosNaming.NameComponent;
@@ -55,24 +56,27 @@ import org.xmlBlaster.authentication.Authenticate;
 public class CorbaDriver implements I_Driver
 {
    private String ME = "CorbaDriver";
-   private static org.omg.CORBA.ORB orb = null;
-   private Global glob = null;
+   private org.omg.CORBA.ORB orb;
+   private Global glob;
    private LogChannel log;
-   private NamingContextExt namingContextExt = null;
-   private NameComponent [] nameXmlBlaster = null;
-   private NameComponent [] nameNode = null;
-   private String iorFile = null;
+   private NamingContextExt namingContextExt;
+   private NameComponent [] nameXmlBlaster;
+   private NameComponent [] nameNode;
+   private String iorFile;
    /** The singleton handle for this xmlBlaster server */
-   private AuthServerImpl authServer = null;
+   private AuthServerImpl authServer;
    /** The singleton handle for this xmlBlaster server */
-   private I_Authenticate authenticate = null;
+   private I_Authenticate authenticate;
    /** The singleton handle for this xmlBlaster server */
-   private I_XmlBlaster xmlBlasterImpl = null;
-   private org.omg.PortableServer.POA rootPOA = null;
-   private org.omg.CORBA.Object authRef = null;
+   private I_XmlBlaster xmlBlasterImpl;
+   private org.omg.PortableServer.POA rootPOA;
+   private org.omg.CORBA.Object authRef;
    /** The URL path over which the IOR can be accessed (via our http bootstrap server) */
    private final String urlPath = "/AuthenticationService.ior";
 
+   private static boolean first=true;
+   private static String origORBClass;
+   private static String origORBSingletonClass;
 
    /** Get a human readable name of this driver */
    public String getName() {
@@ -133,9 +137,9 @@ public class CorbaDriver implements I_Driver
     */
    public String getRawAddress()
    {
-      if (orb == null || authRef == null)
+      if (this.orb == null || authRef == null)
          return null;
-      return orb.object_to_string(authRef);
+      return this.orb.object_to_string(authRef);
    }
 
    /**
@@ -151,10 +155,7 @@ public class CorbaDriver implements I_Driver
       this.authenticate = authenticate;
       this.xmlBlasterImpl = xmlBlasterImpl;
 
-      initializeOrbEnv(glob,false);
-
-      orb = org.omg.CORBA.ORB.init(glob.getArgs(), null);
-
+      this.orb = OrbInstanceFactory.createOrbInstance(this.glob, glob.getArgs(), (Properties)null, false);
 
       try {
          rootPOA = org.omg.PortableServer.POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
@@ -399,114 +400,6 @@ public class CorbaDriver implements I_Driver
    }
 
    /**
-    * Sets the environment for CORBA. 
-    * <p />
-    * Example for JacORB:
-    * <pre>
-    *  org.omg.CORBA.ORBClass=org.jacorb.orb.ORB
-    *  org.omg.CORBA.ORBSingletonClass=org.jacorb.orb.ORBSingleton
-    *  ORBInitRef.NameService=corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root
-    * </pre>
-    *
-    * Forces to use JacORB instead of JDK internal ORB (which is outdated)
-    * and looks for NamingService on port 7608
-    *
-    * @param glob Handle to access logging, properties etc.
-    * @param forCB true=Initialize for callback server, false=Initialize for xmlBlaster server
-    * @return The used hostname
-    */
-   public static String initializeOrbEnv(Global glob, boolean forCB)
-   {
-      LogChannel log = glob.getLog("corba");
-      final String ME = "CorbaDriver";
-
-      /*
-      # orb.properties file for JacORB, copy to JAVA_HOME/lib
-      #
-      # Switches off the default CORBA in JDK (which is outdated),
-      # and replaces it with JacORB implementation
-      #
-      # JDK 1.2 checks following places to replace the builtin Orb:
-      #  1. check in Applet parameter or application string array, if any
-      #  2. check in properties parameter, if any
-      #  3. check in the System properties
-      #  4. check in the orb.properties file located in the java.home/lib directory
-      #  5. fall back on a hardcoded default behavior (use the Java IDL implementation)
-      */
-
-      /* OpenOrb:
-         "org.omg.CORBA.ORBClass=org.openorb.CORBA.ORB"
-         "org.omg.CORBA.ORBSingletonClass=org.openorb.CORBA.ORBSingleton"
-         java -Dorg.omg.CORBA.ORBClass=org.openorb.CORBA.ORB -Dorg.omg.CORBA.ORBSingletonClass=org.openorb.CORBA.ORBSingleton org.xmlBlaster.Main
-      */
-
-      // If not set, force to use JacORB instead of JDK internal ORB (which is outdated)
-      if (System.getProperty("org.omg.CORBA.ORBClass") == null) {
-         JdkCompatible.setSystemProperty("org.omg.CORBA.ORBClass", glob.getProperty().get("org.omg.CORBA.ORBClass", "org.jacorb.orb.ORB"));
-
-         JdkCompatible.setSystemProperty("org.omg.CORBA.ORBSingletonClass", glob.getProperty().get("org.omg.CORBA.ORBSingletonClass", "org.jacorb.orb.ORBSingleton"));
-      }
-         
-      String hostname = null;
-
-      // Set host/port for JacOrb
-
-      String postfix = "";
-      if (forCB) postfix = "CB";
-
-      // We use the IP of the xmlBlaster bootstrap HTTP server as a default ...
-      if (forCB)
-         hostname = glob.getCbHostname();
-      hostname = glob.getProperty().get("hostname"+postfix, hostname);
-      // ... and overwrite it with a IOR specific hostname if given:
-      hostname = glob.getProperty().get("ior.hostname"+postfix, hostname);
-
-      if (System.getProperty("org.omg.CORBA.ORBClass").indexOf("jacorb") >= 0) {
-         if (hostname != null) {
-            JdkCompatible.setSystemProperty("OAIAddr", hostname);
-            if (log.TRACE) log.trace(ME, "Using ior.hostname"+postfix+"=" + System.getProperty("OAIAddr"));
-         }
-         
-         int port = glob.getProperty().get("ior.port"+postfix, 0);
-         if (port > 0) {
-            JdkCompatible.setSystemProperty("OAPort", ""+port);
-            if (log.TRACE) log.trace(ME, "Using ior.port"+postfix+"=" + System.getProperty("OAPort"));
-         }
-
-         int verbose = glob.getProperty().get("jacorb.verbosity", -1);
-         if (verbose >= 0) {
-            JdkCompatible.setSystemProperty("jacorb.verbosity", ""+verbose);
-            if (log.TRACE) log.trace(ME, "Using jacorb.verbosity=" + System.getProperty("jacorb.verbosity"));
-         }
-      }
-
-      if (log.TRACE) log.trace(ME, "Using org.omg.CORBA.ORBClass=" + System.getProperty("org.omg.CORBA.ORBClass"));
-      if (log.TRACE) log.trace(ME, "Using org.omg.CORBA.ORBSingletonClass=" + System.getProperty("org.omg.CORBA.ORBSingletonClass"));
-
-      /*
-      CHANGED 2003-02-27 Marcel:
-      The jacorb.properties file has no impact anymore if we set the System.properties
-      // We use default Port 7608 for naming service to listen ...
-      // Start Naming service
-      //    jaco -DOAPort=7608  org.jacorb.naming.NameServer /tmp/ns.ior
-      // and xmlBlaster will find it automatically if on same host
-      if (System.getProperty("ORBInitRef.NameService") == null) {
-         JdkCompatible.setSystemProperty("ORBInitRef.NameService", glob.getProperty().get("ORBInitRef.NameService", "corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root"));
-         if (log.TRACE) log.trace(ME, "Using corbaloc ORBInitRef.NameService=corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root to find a naming service");
-      }
-      else {
-         if (log.TRACE) log.trace(ME, "Using system ORBInitRef.NameService=" + System.getProperty("ORBInitRef.NameService"));
-      }
-      */
-      if (glob.getProperty().get("ORBInitRef.NameService", (String)null) != null) {
-         JdkCompatible.setSystemProperty("ORBInitRef.NameService", glob.getProperty().get("ORBInitRef.NameService", "corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root"));
-         if (log.TRACE) log.trace(ME, "Using corbaloc ORBInitRef.NameService="+glob.getProperty().get("ORBInitRef.NameService",(String)null)+" to find a naming service");
-         //log.error(ME, "DEBUG ONLY: Using corbaloc ORBInitRef.NameService="+glob.getProperty().get("ORBInitRef.NameService",(String)null)+" to find a naming service");
-      }
-      return hostname;
-   }
-
-   /**
     *  Instructs the ORB to shut down, which causes all object adapters to shut down. 
     * <p />
     * JacORB behavior:<br />
@@ -570,8 +463,16 @@ public class CorbaDriver implements I_Driver
 
       authRef = null;
 
-      boolean wait_for_completion = false;
-      orb.shutdown(wait_for_completion);
+      if (this.orb != null) {
+         boolean wait_for_completion = false;
+         try {
+            this.orb.shutdown(wait_for_completion);
+            this.orb = null;
+         }
+         catch (Throwable ex) {
+            this.log.warn(ME, "shutdown: Exception occured during orb.shutdown("+wait_for_completion+"): " + ex.toString());
+         }
+      }
 
       log.info(ME, "POA and ORB are down, CORBA resources released.");
    }
@@ -620,18 +521,6 @@ public class CorbaDriver implements I_Driver
          throw XmlBlasterException.convert(glob, ErrorCode.RESOURCE_CONFIGURATION, ME + ".NoNameService", "No CORBA naming service found - start <xmlBlaster/bin/ns ns.ior> and specify <ORBInitRef.NameService=...> if you want one.", e);
          //throw new XmlBlasterException(ME + ".NoNameService", "No CORBA naming service found - read docu at <http://www.jacorb.org> if you want one.");
       }
-   }
-
-
-   /**
-    * @return Access to our orb handle
-    */
-   public static org.omg.CORBA.ORB getOrb()
-   {
-      if (orb != null)
-         return orb;
-      Global.instance().getLog("corba").warn("CorbaDriver", "orb was not initialized");
-      return org.omg.CORBA.ORB.init(new String[0], null);
    }
 
    /**
