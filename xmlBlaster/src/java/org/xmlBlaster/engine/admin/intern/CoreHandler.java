@@ -132,7 +132,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
 
       if (sessionAttr.startsWith("?")) {
          // for example "client/joe/ses17/?cb.queue.maxMsg"
-         SessionInfo sessionInfo = subjectInfo.getSessionByPublicId(pubSessionId);
+         SessionInfo sessionInfo = subjectInfo.getSessionByPublicId(Long.parseLong(pubSessionId));
          if (sessionInfo == null)
             throw new XmlBlasterException(ME, "The public session ID '" + pubSessionId + "' in '" + cmd.getCommand() + "' is unknown.");
          String ret = ""+getInvoke(sessionAttr.substring(1), sessionInfo, I_AdminSession.class);
@@ -189,7 +189,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
 
       if (sessionAttr.startsWith("?")) {
          // for example "client/joe/ses17/?cb.queue.maxMsg"
-         SessionInfo sessionInfo = subjectInfo.getSessionByPublicId(pubSessionId);
+         SessionInfo sessionInfo = subjectInfo.getSessionByPublicId(Long.parseLong(pubSessionId));
          if (sessionInfo == null)
             throw new XmlBlasterException(ME, "The public session ID '" + pubSessionId + "' in '" + cmd.getCommand() + "' is unknown.");
          String ret = ""+setInvoke(cmd.getKey(), sessionInfo, I_AdminSession.class, cmd.getValue());
