@@ -593,6 +593,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          throw ex;
       }
       catch (Throwable ex) {
+         if (query != null) query.closeStatement();
          if (checkIfDBLoss(query != null ? query.conn : null, getLogId(null, nodeId, "addNode"), ex))
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".addNode", "", ex); 
          else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".addNode", "", ex); 
@@ -637,6 +638,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             throw ex;
          }
          catch (Throwable ex) {
+            if (query != null) query.closeStatement();
             if (checkIfDBLoss(query != null ? query.conn : null, getLogId(null, nodeId, "removeNode"), ex))
                throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".removeNode", "", ex); 
             else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".removeNode", "", ex);
@@ -689,6 +691,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          throw ex;
       }
       catch (Throwable ex) {
+         if (query != null) query.closeStatement();
          if (checkIfDBLoss(query != null ? query.conn : null, getLogId(queueName, nodeId, "addQueue"), ex))
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".addQueue", "", ex); 
          else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".addQueue", "", ex);
@@ -696,6 +699,12 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       finally {
          try {
             if (preStatement !=null) preStatement.close();
+         }
+         catch (Throwable ex1) {
+            this.log.error(ME, "exception when closing query: " + ex1.toString());
+            ex1.printStackTrace();
+         }
+         try {
             if (query != null) query.close();
          }
          catch (Throwable ex1) {
@@ -729,6 +738,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          throw ex;
       }
       catch (Throwable ex) {
+         if (query != null) query.closeStatement();
          if (checkIfDBLoss(query != null ? query.conn : null, getLogId(queueName, nodeId, "removeQueue"), ex))
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".removeQueue", "", ex); 
          else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".removeQueue", "", ex);
@@ -818,6 +828,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
          try {
             preStatement.close();
+            preStatement = null;
          }
          catch (Throwable ex1) {
             this.log.error(ME, "modifyEntry: Exception when closing the statement: " + ex1.toString());
@@ -835,6 +846,11 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       finally {
          try {
             if (exStatement != null) exStatement.close();
+         }
+         catch (Throwable ex) {
+            this.log.warn(ME, "modifyEntry: throwable when closing the connection: " + ex.toString());
+         }
+         try {
             if (preStatement != null) preStatement.close();
          }
          catch (Throwable ex) {
@@ -911,7 +927,10 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             }
          }
          try {
-            if (preStatement != null) preStatement.close();
+            if (preStatement != null) {
+               preStatement.close();
+               preStatement = null;
+            }
          }
          catch (Throwable ex1) {
             this.log.error(ME, "exception when closing statement: " + ex1.toString());
@@ -945,6 +964,11 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       finally {
          try {
             if (exStatement != null) exStatement.close();
+         }
+         catch (Throwable ex) {
+            this.log.warn(ME, "addEntry: throwable when closing the connection: " + ex.toString());
+         }
+         try {
             if (preStatement != null) preStatement.close();
          }
          catch (Throwable ex) {
@@ -1107,6 +1131,11 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       finally {
          try {
             if (preStatement != null) preStatement.close();
+         }
+         catch (Throwable ex) {
+            this.log.warn(ME, "addEntries: throwable when closing the statement: " + ex.toString());
+         }
+         try {
             if (conn != null) {
                if (!conn.getAutoCommit()) conn.setAutoCommit(true);
             }
@@ -1114,6 +1143,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          catch (Throwable ex) {
             this.log.warn(ME, "addEntries: throwable when closing the connection: " + ex.toString());
          }
+
          if (conn != null) this.pool.releaseConnection(conn);
       }
    }
@@ -1169,7 +1199,6 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       // reset the cached nodes 
       this.nodesCache = new java.util.HashSet();
 
-
       PreparedQuery query = null;
       int count = 0;
       Connection conn = null;
@@ -1197,6 +1226,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             count++;
          }
          catch (Throwable ex) {
+            if (query != null) query.closeStatement();
             if (checkIfDBLoss(conn, getLogId(null, null, "wipeOutDB"), (SQLException)ex))
                throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, getLogId(null, null, "wipeOutDB"), "SQLException when wiping out DB", ex);
             else {
@@ -1289,6 +1319,13 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          throw ex;
       }
       catch (Throwable ex) {
+         try {
+            if (st != null) st.close();
+            st = null;
+         }
+         catch (Throwable ex1) {
+            this.log.warn(ME, ".getNumOfBytes: exception when closing statement: " + ex1.toString());
+         }
          if (checkIfDBLoss(conn, getLogId(queueName, nodeId, "getNumOfBytes"), ex))
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getNumOfBytes", "", ex); 
          else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".getNumOfBytes", "", ex); 
@@ -1457,9 +1494,13 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       }
 
       finally {
-         if (statement != null) statement.close();
+         try {
+            if (statement !=null) statement.close();
+         }
+         catch (Throwable ex) {
+            this.log.warn(ME, "update: throwable when closing statement: " + ex.toString());
+         }
       }
-
       return ret;
    }
 
@@ -1667,6 +1708,15 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       }
       catch (Throwable ex) {
          try {
+            if (query != null && query.rs != null) {
+               query.rs.close();
+               query.rs = null;
+            }
+         }
+         catch (Throwable ex1) {
+            this.log.error(ME, "exception occured when closing query: " + ex1.toString());
+         }
+         try {
             if (query != null && query.conn != null) query.conn.rollback();
          }
          catch (Throwable ex1) {
@@ -1675,7 +1725,10 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          }
 
          Connection tmpConn = null;
-         if (query != null) tmpConn = query.conn;
+         if (query != null) {
+            tmpConn = query.conn;
+            query.closeStatement();
+         }
          if (checkIfDBLoss(tmpConn, getLogId(queueName, nodeId, "getAndDeleteLowest"), ex))
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getAndDeleteLowest", "", ex); 
          else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".getAndDeleteLowest", "", ex); 
@@ -1960,6 +2013,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          throw ex;
       }
       catch (Throwable ex) {
+         if (query != null) query.closeStatement();
          if (checkIfDBLoss(query != null ? query.conn : null, getLogId(queueName, nodeId, "deleteFirstEntries"), ex))
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".deleteFirstEntries", "", ex); 
          else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".deleteFirstEntries", "", ex); 
@@ -2018,6 +2072,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          throw ex;
       }
       catch (Throwable ex) {
+         if (query != null) query.closeStatement();
         if (checkIfDBLoss(query != null ? query.conn : null, getLogId(queueName, nodeId, "getEntriesByPriority"), ex))
            throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getEntriesByPriority", "", ex); 
         else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".getEntriesByPriority", "", ex); 
@@ -2086,6 +2141,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          throw ex;
       }
       catch (Throwable ex) {
+         if (query != null) query.closeStatement();
          if (checkIfDBLoss(query != null ? query.conn : null, getLogId(queueName, nodeId, "getEntriesBySamePriority"), ex))
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getEntriesBySamePriority", "", ex); 
          else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".getEntriesBySamePriority", "", ex); 
@@ -2130,6 +2186,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          return ret;
       }
       catch (SQLException ex) {
+         if (query != null) query.closeStatement();
          if (checkIfDBLoss(query != null ? query.conn : null, getLogId(queueName, nodeId, "getEntries"), ex))
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getEntries", "", ex); 
          else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".getEntries", "", ex); 
@@ -2177,6 +2234,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          throw ex;
       }
       catch (Throwable ex) {
+         if (query != null) query.closeStatement();
          if (checkIfDBLoss(query != null ? query.conn : null, getLogId(queueName, nodeId, "getEntriesWithLimit"), ex))
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getEntriesWithLimit", "", ex); 
          else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".getEntriesWithLimit", "", ex); 
@@ -2267,6 +2325,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          throw ex;
       }
       catch (Throwable ex) {
+         if (query != null) query.closeStatement();
          if (checkIfDBLoss(query != null ? query.conn : null, getLogId(queueName, nodeId, "getEntries"), ex))
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getEntries", "", ex); 
          else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".getEntries", "", ex); 
@@ -2311,6 +2370,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          throw ex;
       }
       catch (Throwable ex) {
+         if (query != null) query.closeStatement();
          if (checkIfDBLoss(query != null ? query.conn : null, getLogId(queueName, nodeId, "getNumOfEntries"), ex))
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getNumOfEntries", "", ex); 
          else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".getNumOfEntries", "", ex); 
@@ -2353,6 +2413,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          throw ex;
       }
       catch (Throwable ex) {
+         if (query != null) query.closeStatement();
          if (checkIfDBLoss(query != null ? query.conn : null, getLogId(queueName, nodeId, "getNumOfPersistents"), ex))
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getNumOfPersistents", "", ex); 
          else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".getNumOfPersistents", "", ex); 
@@ -2395,6 +2456,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          throw ex;
       }
       catch (Throwable ex) {
+         if (query != null) query.closeStatement();
          if (checkIfDBLoss(query != null ? query.conn : null, getLogId(queueName, nodeId, "getSizeOfPersistents"), ex))
             throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getSizeOfPersistents", "", ex); 
          else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".getSizeOfPersistents", "", ex); 

@@ -19,13 +19,13 @@ import org.jutils.log.LogChannel;
  * @author <a href='mailto:laghi@swissinfo.org'>Michele Laghi</a>
  */
 
-public class PreparedQuery {
+class PreparedQuery {
    public final static String ME = "PreparedQuery";
    private LogChannel log;
-   public Connection conn;
+   Connection conn;
    //private PreparedStatement st; Changed 2003-06-09 marcel for MS SQL server (thanks to zhang zhi wei)
    private Statement st;
-   public ResultSet rs;
+   ResultSet rs;
    private JdbcConnectionPool pool;
    private boolean isClosed = true;
    private boolean isException = false;
@@ -67,11 +67,18 @@ public class PreparedQuery {
                   this.conn.rollback();
                   this.conn.setAutoCommit(true);
                }
-               if (this.st != null) st.close();
             }
             catch (Throwable ex2) {
                this.log.warn(ME, "constructor exception occured when rolling back " + additionalInfo + ": " + ex2.toString());
             }
+            finally {
+               try {
+                  if (this.st != null) st.close();
+               }
+               catch (Throwable ex3) {
+                  this.log.warn(ME, "constructor exception occured when closing statement " + additionalInfo + ": " + ex3.toString());
+               }
+            }   
             if (this.conn != null) this.pool.releaseConnection(this.conn);
             this.conn = null;
          }
@@ -117,6 +124,18 @@ public class PreparedQuery {
          }
          this.isClosed = true;
          throw new XmlBlasterException(this.pool.getGlobal(), ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".constructor " + additionalInfo, "", ex);
+      }
+   }
+
+   public void closeStatement() {
+      try {
+         if (this.st != null) {
+            this.st.close();
+            this.st = null;
+         }
+      }
+      catch (Throwable ex) {
+         this.log.warn(ME, "closeStatement: exception when closing statement:" + ex.getMessage());
       }
    }
 
@@ -190,7 +209,7 @@ public class PreparedQuery {
 
      try {
          if (this.st != null) {
-            st.close();
+            this.st.close();
             this.st = null;
          }
      }
