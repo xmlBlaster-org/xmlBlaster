@@ -31,17 +31,17 @@ public final class CbDeliveryConnectionsHandler extends DeliveryConnectionsHandl
     * @param deliveryManager The message queue witch i belong to
     * @param cbAddr The addresses i shall connect to
     */
-   public CbDeliveryConnectionsHandler(Global glob, DeliveryManager deliveryManager, AddressBase[] addrArr) throws XmlBlasterException {
-      super(glob, deliveryManager, addrArr);
+   public CbDeliveryConnectionsHandler(Global glob, DeliveryManager deliveryManager) throws XmlBlasterException {
+      super(glob, deliveryManager);
       this.ME = "CbDeliveryConnectionsHandler-" + deliveryManager.getQueue().getStorageId();
    }
 
    /**
-    * @return an instance of CbDeliveryConnection
+    * @return a new CbDeliveryConnection instance which has its plugin loaded
     */
    public DeliveryConnection createDeliveryConnection(AddressBase address) throws XmlBlasterException {
       CbDeliveryConnection c = new CbDeliveryConnection(glob, this, address);
-      c.initialize();
+      c.loadPlugin();
       return c;
    }
 
