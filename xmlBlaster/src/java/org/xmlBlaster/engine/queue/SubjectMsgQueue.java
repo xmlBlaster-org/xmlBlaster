@@ -3,7 +3,7 @@ Name:      SubjectMsgQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: SubjectMsgQueue.java,v 1.6 2002/05/26 16:30:48 ruff Exp $
+Version:   $Id: SubjectMsgQueue.java,v 1.7 2002/05/30 16:31:30 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queue;
@@ -13,8 +13,8 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.helper.CbQueueProperty;
 import org.xmlBlaster.engine.helper.CallbackAddress;
-import org.xmlBlaster.engine.callback.CbInfo;
 import org.xmlBlaster.engine.callback.CbWorkerPool;
+import org.xmlBlaster.authentication.SubjectInfo;
 
 
 /**
@@ -23,13 +23,15 @@ import org.xmlBlaster.engine.callback.CbWorkerPool;
 public class SubjectMsgQueue extends MsgQueue
 {
    private String ME = "SubjectMsgQueue";
+   private final SubjectInfo subjectInfo;
 
    /**
     * @param queueName "subject:joe"
     * @param prop The behavior of the queue
     */
-   public SubjectMsgQueue(String queueName, CbQueueProperty prop, Global glob) throws XmlBlasterException {
+   public SubjectMsgQueue(SubjectInfo subjectInfo, String queueName, CbQueueProperty prop, Global glob) throws XmlBlasterException {
       super(queueName, prop, glob);
+      this.subjectInfo = subjectInfo;
    }
 
    /**
@@ -37,26 +39,16 @@ public class SubjectMsgQueue extends MsgQueue
     */
    public final void setProperty(CbQueueProperty  prop) throws XmlBlasterException
    {
+      super.setProperty(prop);
       if (prop != null) {
-         this.property = prop;
-         CallbackAddress[] addr = this.property.getCallbackAddresses();
-         if (addr.length > 0)
-            log.error(ME, "Using for subject " + addr.length + " callback addresses");
-         cbInfo = new CbInfo(glob, addr);
+         if (this.property.getCallbackAddresses().length > 0)
+            log.error(ME, "Using for subject " + this.property.getCallbackAddresses().length + " callback addresses is not tested");
       }
    }
 
-   /**
-    * Set new callback addresses, typically after a session login/logout
-    */
-   public final void setCallbackAddresses(CallbackAddress[] addr) throws XmlBlasterException
+   public final SubjectInfo getSubjectInfo()
    {
-      if (this.property == null) {
-         Thread.currentThread().dumpStack();
-         throw new XmlBlasterException(ME, "No CbQueueProperty - internal error");
-      }
-      this.property.setCallbackAddresses(addr);
-      cbInfo = new CbInfo(glob, addr);
+      return this.subjectInfo;
    }
 }
 
