@@ -32,8 +32,10 @@
    <ul>
       <li><a href="#need">Why should i need such a middleware?</a></li>
       <li><a href="#CORBA-XML">Why CORBA and XML, is it only a hype?</a></li>
-      <li><a href="#JMS">Why is it not 100% JMS (Java Message Service) based?</a></li>
+      <li><a href="#lang">Are there examples how to access xmlBlaster with Java, C/C++, Perl, TCL?</a></li>
+      <li><a href="#state">What is the current state of xmlBlaster, can i use it in my project?</a></li>
       <li><a href="#db">Is there any database used in xmlBlaster?</a></li>
+      <li><a href="#JMS">Why is it not 100% JMS (Java Message Service) based?</a></li>
       <li><a href="#contribute">How can i contribute?</a></li>
    </ul>
 
@@ -60,6 +62,36 @@
       type safety at compile time.<br />
       XML allows dynamic modeling of real day problem domains with type safety at runtime.<br />
       The query languages XPath and XQL allow to access XML in a powerful new way.
+      </font>
+   <p /><br /><br />
+
+   <a NAME="lang"></a><h3>Are there examples how to access xmlBlaster with Java, C/C++, Perl, TCL?</h3>
+      <font size=-1>
+      Yes, there are examples provided in the directory <code>xmlBlaster/testsuite</code><br />
+      You can try the examples with xmlBlaster and if you like it, use the examples as a base for your own applications.<br />
+      If you are using xmlBlaster with other languages, it would be nice if you could send
+      us a little note with some working code.<br />
+      </font>
+   <p /><br /><br />
+
+   <a NAME="state"></a><h3>What is the current state of xmlBlaster, can i use it in my project?</h3>
+      <font size=-1>
+      Yes, you can use it on your project.<br />
+      xmlBlaster is quite new, but the basic features are implemented and the development is very active and alive.<br />
+      We develop daily on xmlBlaster, since it is used in two commercial applications in the moment.<br />
+      So, xmlBlaster is even getting better with every day.<br />
+      </font>
+   <p /><br /><br />
+
+   <a NAME="db"></a><h3>Is there any database used in xmlBlaster?</h3>
+      <font size=-1>
+      In the current version of xmlBlaster there is no persistent store available.<br />
+      But we are working hard to find or develop some suitable open source XML database to integrate
+      as our internal persistence and caching engine.<br />
+      For the moment, if you need a persistence layer, you should write a little xmlBlaster
+      client in your favorite language, which subscribes to all messages which need persistence and
+      saves them on the file system or in your favorite database.<br />
+      Any ideas are welcome!
       </font>
    <p /><br /><br />
 
@@ -95,18 +127,6 @@
          </li>
       </ul>
       Inter operability between xmlBlaster and JMS will be evaluated in future xmlBlaster releases.
-      </font>
-   <p /><br /><br />
-
-   <a NAME="db"></a><h3>Is there any database used in xmlBlaster?</h3>
-      <font size=-1>
-      In the current version of xmlBlaster there is no persistent store available.<br />
-      But we are working hard to find or develop some suitable open source XML database to integrate
-      as our internal persistence and caching engine.<br />
-      For the moment, if you need a persistence layer, you should write a little xmlBlaster
-      client in your favorite language, which subscribes to all messages which need persistence and
-      saves them on the file system or in your favorite database.<br />
-      Any ideas are welcome!
       </font>
    <p /><br /><br />
 
