@@ -654,6 +654,29 @@ public final class TopicHandler implements I_Timeout
    }
 
    /**
+    * Add a msgUnitWrapper entry. 
+    * @param msgUnitWrapper The new entry to add
+    * @param storageId The referencing storage ("history" or "callback"), needed for reference counter
+    * @return If an entry existed, this is kept and returned after the reference counter
+    * is incremented, else the given entry is used and returned
+    */
+   public MsgUnitWrapper addMsgUnitWrapper(MsgUnitWrapper msgUnitWrapper,
+                            StorageId storageId) throws XmlBlasterException {
+      if (this.msgUnitCache == null || msgUnitWrapper == null) {
+         return null;
+      }
+      synchronized (this) {
+         MsgUnitWrapper oldOne = (MsgUnitWrapper)this.msgUnitCache.get(msgUnitWrapper.getUniqueId());
+         if (oldOne != null) {
+            oldOne.incrementReferenceCounter(1, storageId);
+            return oldOne;
+         }
+         this.msgUnitCache.put(msgUnitWrapper);
+         return msgUnitWrapper;
+      }
+   }
+
+   /**
     * Event triggered by MsgUnitWrapper itself when it expires
     */
    public void entryExpired(MsgUnitWrapper msgUnitWrapper) throws XmlBlasterException {
