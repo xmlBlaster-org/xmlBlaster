@@ -119,6 +119,10 @@ public:
             log_.error(ME, e.toXml());
          }
 
+         log_.info(ME, "Hit a key to finish ...");
+         char ptr[1];
+         std::cin.read(ptr,1);
+
          // now an update should have come. Its time to erase the message,
          // otherwise you would get directly an update the next time you connect
          // to the same xmlBlaster server.
@@ -180,8 +184,11 @@ int main(int args, char ** argv)
    glob.getLog().info("HelloWorld2", intro);
 
    if (glob.wantsHelp()) {
-      glob.getLog().info("HelloWorld2", Global::usage());
-      glob.getLog().info("HelloWorld2", "Example: HelloWorld2 -trace true\n");
+      glob.getLog().plain("", Global::usage());
+      glob.getLog().plain("", " -sleep              Sleep after publishing [1000 millisec]\n");
+      glob.getLog().plain("", "Example:\n");
+      glob.getLog().plain("", "HelloWorld2 -trace true -sleep 2000");
+      glob.getLog().plain("", "HelloWorld2 -dispatch/connection/delay 10000 -sleep 2000000");
       org::xmlBlaster::util::Object_Lifetime_Manager::fini();
       return 1;
    }
