@@ -102,7 +102,7 @@ public class HelloWorldPublish
          PriorityEnum priority = PriorityEnum.toPriorityEnum(glob.getProperty().get("priority", PriorityEnum.NORM_PRIORITY.getInt()));
          boolean persistent = glob.getProperty().get("persistent", true);
          long lifeTime = glob.getProperty().get("lifeTime", -1L);
-         boolean forceUpdate = glob.getProperty().get("forceUpdate", false);
+         boolean forceUpdate = glob.getProperty().get("forceUpdate", true);
          boolean forceDestroy = glob.getProperty().get("forceDestroy", false);
          boolean readonly = glob.getProperty().get("readonly", false);
          long destroyDelay = glob.getProperty().get("destroyDelay", 60000L);
@@ -263,7 +263,8 @@ public class HelloWorldPublish
             if (contentSize >= 0) {
                content = new byte[contentSize];
                for (int j=0; j<content.length; j++)
-                  content[j] = (byte)(j % 255);
+                  content[j] = (byte)('X');
+                  //content[j] = (byte)(j % 255);
             }
             else {
                content = org.jutils.text.StringHelper.replaceAll(contentStr, "%counter", ""+(i+1)).getBytes();
