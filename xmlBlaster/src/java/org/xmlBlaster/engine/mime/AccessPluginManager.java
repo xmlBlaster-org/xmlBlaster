@@ -59,6 +59,9 @@ public class AccessPluginManager extends PluginManagerBase implements I_Runlevel
       return (I_AccessFilter)getPluginObject(type, version);
    }
 
+   /**
+    * Called by PluginManagerBase.instantiatePluginSecondPhase()
+    */
    public void postInstantiate(I_Plugin plugin, PluginInfo pluginInfo) {
       ((I_AccessFilter)plugin).initialize(glob);
    }
@@ -181,7 +184,7 @@ public class AccessPluginManager extends PluginManagerBase implements I_Runlevel
             return false;
          }
 
-         filterPlugin.initialize(glob);
+         // filterPlugin.initialize(glob); is done via PluginManagerBase -> postInstantiate()
 
          accessFilterMap.put(key.toString(), filterPlugin); // Add a dummy instance without mime, so we can check above if loaded already
          key.setLength(0);
