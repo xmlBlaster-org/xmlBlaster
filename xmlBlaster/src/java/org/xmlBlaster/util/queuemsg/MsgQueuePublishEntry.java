@@ -176,10 +176,9 @@ public final class MsgQueuePublishEntry extends MsgQueueEntry
 
    /**
     * The embeddded object for this implementing class is an Object[3] where
-    * Object[2] = Boolean (embedds boolean pubSub)
     */
    public Object getEmbeddedObject() {
-//      Object[] obj = { new Boolean(pubSub) };
+//      Object[] obj = { new Boolean(subscribeable) };
 //      return obj;
       log.error(ME, "getEmbeddedObject() IMPLEMENT");
       throw new IllegalArgumentException("getEmbeddedObject() IMPLEMENT");
