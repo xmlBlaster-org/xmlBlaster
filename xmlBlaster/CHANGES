@@ -2,6 +2,10 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes cvs
 ===========
+ o SOCKET SSL
+   Renamed configuration 'keystore' to 'keyStore' to conform to javas system property
+   Renamed configuration 'keystorepassword' to 'keyStorePassword' to conform to javas system property
+   Added 'trustStore' lookup on client side
 
  o xmlBlaster.properties.template:
    Added CbProtocolPlugin[SOCKET][1.0] and CbProtocolPlugin[socket_ssl][1.0]
@@ -54,6 +58,7 @@ Changes cvs
       o updateQos.getSender()->getAbsoluteName() instead of '.' as SessionNameRef is reference counted
       o Removed namespace from header: Clients now may need to add
          using namespace org::xmlBlaster::util::qos;
+   - Fixed setting default SecurtiyQos userId from SessionName
    - BUGFIX: Corrected sender name in PublishQos after reconnect and flushing queue
    - Added a 'D' to .so/.sl/.dll shared library name for debugging version, for example "xmlBlasterClientD.dll"
      You can switch off debugging with "cpp.debug=false" in build.properties => "xmlBlasterClient.dll"
