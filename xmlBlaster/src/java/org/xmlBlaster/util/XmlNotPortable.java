@@ -3,7 +3,7 @@ Name:      XmlNotPortable.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   XmlNotPortable hold none portable xml code
-Version:   $Id: XmlNotPortable.java,v 1.6 2002/12/18 11:51:16 ruff Exp $
+Version:   $Id: XmlNotPortable.java,v 1.7 2004/08/12 18:18:28 ruff Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
@@ -15,7 +15,7 @@ import java.io.IOException;
 import org.w3c.dom.Document;
 
 /**
- * XmlNotPortable holds static methods for parser dependend code.
+ * XmlNotPortable holds static methods for parser dependent code.
  */
 public class XmlNotPortable
 {
@@ -84,7 +84,7 @@ public class XmlNotPortable
 
 
    /**
-    * Mergin a node into another document.
+    * Merging a node into another document.
     * <p />
     * The caller must synchronize if necessary
     * @param the destination document
