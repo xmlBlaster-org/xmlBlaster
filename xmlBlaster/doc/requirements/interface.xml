@@ -1,0 +1,108 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='interface.publish' type='NEW' prio='HIGH' status="CLOSED">
+   <topic>XmlBlaster supports a small number of generic methods for remote access</topic>
+   <description>
+      <p>
+      You can access XmlBlaster though its interfaces. There are only a small number
+      of methods to do all MoM activities. The methods have generic XML based arguments
+      to avoid client/server conflicts between different versions.
+      </p>
+      <p>
+      Following methods are supported (CORBA IDL notation),
+      at the bottom of this page you find links to requirements which
+      describe them in detail:
+      </p>
+      <pre class="border">
+
+   typedef string XmlType;
+   typedef sequence&lt;XmlType> XmlTypeArr;
+
+   typedef sequence&lt;octet> ContentType;
+   typedef sequence&lt;string> StringArr;
+   typedef string ExceptionIdType;
+
+   // This contains all informations about a Message and the Message itself.
+   struct MessageUnit {
+      XmlType xmlKey;
+      ContentType content;
+      XmlType qos;
+   };
+   typedef sequence&lt;MessageUnit> MessageUnitArr;
+
+
+   exception XmlBlasterException
+   {
+      ExceptionIdType id;  // unique error code: "Modulname.ReasonID"
+      string reason;
+   };
+
+
+   // Server side methods:
+
+   XmlType subscribe(in XmlType xmlKey, in XmlType qos)
+                                          raises(XmlBlasterException);
+
+   MessageUnitArr get(in XmlType xmlKey, in XmlType qos)
+                                          raises(XmlBlasterException);
+
+   void unSubscribe(in XmlType xmlKey, in XmlType qos)
+                                          raises(XmlBlasterException);
+
+   XmlType publish(in MessageUnit msgUnit)
+                                          raises(XmlBlasterException);
+
+   StringArr publishArr(in MessageUnitArr msgUnitArr)
+                                          raises(XmlBlasterException);
+
+   oneway void publishOneway(in MessageUnitArr msgUnitArr);
+
+   XmlTypeArr erase(in XmlType xmlKey, in XmlType qos)
+                                          raises(XmlBlasterException);
+
+
+   // Authentication:
+
+   XmlType connect(in serverIdl::XmlType qos)
+                                         raises (XmlBlasterException);
+
+   void disconnect(in string sessionId, in serverIdl::XmlType qos)
+                      raises (serverIdl::XmlBlasterException);
+
+
+   // Client side methods:
+
+   // Asynchronous callback to client
+   StringArr update(in string sessionId, in MessageUnitArr msgUnitArr)
+                                raises(XmlBlasterException);
+
+   // Asynchronous callback to client without ACK
+   oneway void updateOneway(in string sessionId, in MessageUnitArr msgUnitArr);
+     </pre>
+   </description>
+
+
+   <example lang="XML" type="HTML">
+   </example>
+
+   <configuration>
+   </configuration>
+
+   <see type="REQ">interface.publish</see>
+   <see type="REQ">interface.subscribe</see>
+   <see type="REQ">interface.erase</see>
+ 
+   <see type="INTERNET">http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl</see>
+   <see type="API">org.xmlBlaster.protocol.xmlrpc.XmlBlasterImpl</see>
+   <see type="API">org.xmlBlaster.protocol.rmi.I_XmlBlaster</see>
+
+   <author>ruff@swand.lake.de</author>
+   <date>2002 06 01</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="CLOSED">
+      <name>-</name>
+      <comment>See testsuite</comment>
+   </testcase>
+</requirement>
+
