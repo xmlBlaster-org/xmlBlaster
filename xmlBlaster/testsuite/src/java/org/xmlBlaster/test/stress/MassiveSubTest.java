@@ -3,7 +3,7 @@ Name:      MassiveSubTest.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: MassiveSubTest.java,v 1.2 2002/09/30 10:08:48 ruff Exp $
+Version:   $Id: MassiveSubTest.java,v 1.3 2002/10/24 22:49:31 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.stress;
 
@@ -41,7 +41,7 @@ import junit.framework.*;
  * <p>If withEmbedded is set to true will run without an embedded server.</p>
  *
  * @author Peter Antman
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  */
 
 public class MassiveSubTest extends TestCase implements I_Callback {
@@ -52,8 +52,8 @@ public class MassiveSubTest extends TestCase implements I_Callback {
    private int noToPub = 1;
    private int numToRec = numSubscribers * noToPub;
    private String ME = "MassiveSubTest";
-   private final Global glob;
-   private final LogChannel log;
+   private Global glob;
+   private LogChannel log;
    private int serverPort = 7615;
    private EmbeddedXmlBlaster serverThread;
    private boolean messageArrived = false;
@@ -77,10 +77,19 @@ public class MassiveSubTest extends TestCase implements I_Callback {
    private StopWatch stopWatch = new StopWatch();
 
 
-
+   public MassiveSubTest(String testName) {
+      super(testName);
+      Global glob_ = Global.instance();
+      setProtoMax(glob_, "IOR", "500");
+      init(glob_, testName, "testManyClients", true);
+   }
 
    public MassiveSubTest(Global glob, String testName, String loginName, boolean useOneConnection) {
       super(testName);
+      init(glob, testName, loginName, useOneConnection);
+   }
+
+   public void init(Global glob, String testName, String loginName, boolean useOneConnection) {
       this.glob = glob;
       this.log = this.glob.getLog("test");
       this.oneName = loginName;
