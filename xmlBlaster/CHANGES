@@ -1,5 +1,9 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
+ o manifest.xmlBlaster: Added missing jhotdraw.jar, demo.jar and testsuite.jar
+
+ o C-Client: changed include in pthread.h for simpler compilation
+
  o Fixed update problem when content is empty
 
  o Fixed dead letter handling on callback queue overflow
