@@ -1965,6 +1965,12 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
                }
             } catch(Exception e) {
                log.error(ME, "Unexpected exception while login polling: " + e.toString());
+               if ((counter % logInterval) == 0)
+                  log.warn(ME, "No connection established, " + getServerNodeId() + " still seems to be down after " + (counter+1) + " login retries.");
+               counter++;
+               try {
+                  Thread.currentThread().sleep(RETRY_INTERVAL);
+               } catch (InterruptedException i) { }
             }
          }
          con.isReconnectPolling = false;
