@@ -3,7 +3,7 @@ Name:      ClientSubscriptions.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling subscriptions, collected for each Client
-Version:   $Id: ClientSubscriptions.java,v 1.29 2002/06/27 11:13:12 ruff Exp $
+Version:   $Id: ClientSubscriptions.java,v 1.30 2002/07/07 19:21:23 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -29,10 +29,10 @@ import java.io.*;
  * the instance is handled by RequestBroker.
  * <p />
  * The interface SubscriptionListener informs about subscribe/unsubscribe events
- * @version: $Id: ClientSubscriptions.java,v 1.29 2002/06/27 11:13:12 ruff Exp $
+ * @version: $Id: ClientSubscriptions.java,v 1.30 2002/07/07 19:21:23 ruff Exp $
  * @author Marcel Ruff
  */
-public class ClientSubscriptions implements I_ClientListener, SubscriptionListener, MessageEraseListener
+public class ClientSubscriptions implements I_ClientListener, SubscriptionListener
 {
    private final String ME;
 
@@ -86,7 +86,6 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
       this.ME = "ClientSubscriptions" + this.glob.getLogPraefixDashed();
       this.log = requestBroker.getGlobal().getLog("core");
       requestBroker.addSubscriptionListener(this);
-      requestBroker.addMessageEraseListener(this);
       authenticate.addClientListener(this);
    }
 
@@ -128,27 +127,29 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
 
 
    /*
-    * If you have the key oid of a message, you may access the
+    * If you have the key oid of a message and a session it belongs to, you may access the
     * SubscriptionInfo object here.
-    * <p />
-    * You can access only EXACT subscription objects through this method.
     * <p />
     * Note that MessageUnitHandler.findSubscriber() will not return a SubscriptionInfo
     * if never a message arrived for such a subscription, so prefer this method.
     *
     * @param sessionInfo All infos about the client
     * @param keyOid The unique message oid
+    * @param exact true Access only EXACT subscription objects through this method.<br />
+    *              false All subscriptions
     * @return Vector containing corresponding subscriptionInfo objects<br />
     *         is > 1 if this session has subscribed multiple times on the
     *         same message, or null if this session has not subscribed it
     */
-   public Vector getSubscriptionByOid(SessionInfo sessionInfo, String keyOid) throws XmlBlasterException {
+   public Vector getSubscriptionByOid(SessionInfo sessionInfo, String keyOid, boolean exactOnly) throws XmlBlasterException {
       Object obj;
       Map subMap;
       synchronized(clientSubscriptionMap) {
          obj = clientSubscriptionMap.get(sessionInfo.getUniqueKey());
-         if (obj == null)
+         if (obj == null) {
+            if (log.TRACE) log.trace(ME, "Session '" + sessionInfo.getId() + "' is unknown! Message '" + keyOid + "' ignored");
             return null;
+         }
          subMap = (Map)obj;
       }
 
@@ -161,13 +162,57 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
          Iterator iterator = subMap.values().iterator();
          while (iterator.hasNext()) {
             SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
-            if (isAQuery(sub.getXmlKey()))
+            if (exactOnly && isAQuery(sub.getXmlKey())) {
+               if (log.TRACE) log.trace(ME, "Ignoring subscription " + sub.getUniqueKey() +
+                      " for session '" + sessionInfo.getId() + "' for message '" + keyOid + "'");
                continue;
-            if (sub.getXmlKey().getUniqueKey().equals(keyOid)) {
+            }
+            if (keyOid.equals(sub.getKeyOid())) {
                if (log.TRACE) log.trace(ME, "Found subscription " + sub.getUniqueKey() +
                       " for session '" + sessionInfo.getId() + "' for message '" + keyOid + "'");
                if (vec == null) vec = new Vector();
                vec.addElement(sub);
+            }
+         }
+      }
+      return vec;
+   }
+
+
+   /*
+    * If you have the key oid of a message, you can access all SubscriptionInfo objects
+    * of all sessions here.
+    * <p />
+    * Note that MessageUnitHandler.findSubscriber() will not return a SubscriptionInfo
+    * if never a message arrived for such a subscription, so prefer this method.
+    *
+    * @param keyOid The unique message oid
+    * @param exact true Access only EXACT subscription objects through this method.<br />
+    *              false All subscriptions
+    * @return Vector containing corresponding subscriptionInfo objects
+    */
+   public Vector getSubscriptionByOid(String keyOid, boolean exactOnly) throws XmlBlasterException {
+      Vector vec = null;
+      // Slow linear search of SubscriptionInfos
+      // Don't use for performance critical tasks
+      synchronized(clientSubscriptionMap) {
+         Iterator iterator = clientSubscriptionMap.values().iterator();
+         while (iterator.hasNext()) {
+            Map subMap = (Map)iterator.next();
+            synchronized(subMap) {
+               Iterator iterator2 = subMap.values().iterator();
+               while (iterator2.hasNext()) {
+                  SubscriptionInfo sub = (SubscriptionInfo)iterator2.next();
+                  if (exactOnly && isAQuery(sub.getXmlKey())) {
+                     if (log.TRACE) log.trace(ME, "Ignoring subscription " + sub.getUniqueKey() + " for message '" + keyOid + "'");
+                     continue;
+                  }
+                  if (keyOid.equals(sub.getKeyOid())) {
+                     if (log.TRACE) log.trace(ME, "Found subscription " + sub.getUniqueKey() + " for message '" + keyOid + "'");
+                     if (vec == null) vec = new Vector();
+                     vec.addElement(sub);
+                  }
+               }
             }
          }
       }
@@ -226,19 +271,28 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
 
 
    /**
-    * Event invoked on message erase() invocation (interface MessageEraseListener).
+    * Event invoked on message erase() invocation. 
     */
-   public void messageErase(MessageEraseEvent e) throws XmlBlasterException
+   public void messageErase(SessionInfo eraseSessionInfo, MessageUnitHandler msgUnitHandler) throws XmlBlasterException
    {
-      SessionInfo sessionInfo = e.getSessionInfo();
-      MessageUnitHandler msgUnitHandler = e.getMessageUnitHandler();
       String uniqueKey = msgUnitHandler.getUniqueKey();
 
-      //msgUnitHandler.setIsNotPublishedWithData(); happens in MessageUnitHandler.java
-      //Vector vec = getSubscriptionByOid(sessionInfo, uniqueKey);
-
-      if (log.TRACE) log.trace(ME, "Erase event for oid=" + uniqueKey + "', client=" + sessionInfo.toString() +
-        ", we do nothing here as subscription reservation remains even on deleted messages");
+      if (msgUnitHandler.hasExactSubscribers()) {
+         if (log.TRACE) log.trace(ME, "Erase event for oid=" + uniqueKey + "' from client=" + eraseSessionInfo.toString() +
+           ", we do nothing here as subscription reservation remains even on deleted messages");
+         return;
+      }
+      Vector vec = getSubscriptionByOid(uniqueKey, false);
+      if (vec == null) {
+         if (log.TRACE) log.trace(ME, "Erase event for oid=" + uniqueKey + "' from client=" + eraseSessionInfo.toString() +
+           ", we do nothing as no subscribes are found");
+         return;
+      }
+      for (int ii=0; ii<vec.size(); ii++) {
+         SubscriptionInfo sub = (SubscriptionInfo)vec.elementAt(ii);
+         if (log.TRACE) log.trace(ME, "Erase event for oid=" + uniqueKey + "', removing subId=" + sub.getUniqueKey() + " ...");
+         subscriptionRemove(new SubscriptionEvent(sub));
+      }
    }
 
 
@@ -327,6 +381,8 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
       } catch (XmlBlasterException e2) {
          log.error(ME+".subscriptionRemove", "removeFromQuerySubscribeRequestsSet: " + e2.toString());
       }
+
+      subscriptionInfo.shutdown();
    }
 
 
@@ -346,7 +402,7 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
          }
          else {
             obj = clientSubscriptionMap.get(uniqueKey);    // client unsubscribes
-            if (log.TRACE) log.trace(ME, "Removing subscription " + subscriptionInfoUniqueKey + " from client " + sessionInfo.toString() + " from clientSubscriptionMap ...");
+            if (log.TRACE) log.trace(ME, "Removing subscription " + subscriptionInfoUniqueKey + " from client " + sessionInfo.toString() + " from clientSubscriptionMap, subscriptionInfoUniqueKey=" + subscriptionInfoUniqueKey + " ...");
          }
       }
       if (obj == null) {
@@ -363,9 +419,11 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
             Iterator iterator = subMap.values().iterator();
             while (iterator.hasNext()) {
                SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
-               if (isAQuery(sub.getXmlKey()))
+               if (isAQuery(sub.getXmlKey())) {
+                  if (log.TRACE) log.trace(ME, "Ignoring subscription " + sub.getUniqueKey() + " from MessageUnitHandler '" + sub.getKeyOid() + "'");
                   continue;
-               if (log.TRACE) log.trace(ME, "Removing subscription " + sub.getUniqueKey() + " from MessageUnitHandler '" + sub.getMessageUnitHandler().getUniqueKey() + "'");
+               }
+               if (log.TRACE) log.trace(ME, "Removing subscription " + sub.getUniqueKey() + " from MessageUnitHandler '" + sub.getKeyOid() + "'");
                sub.removeSubscribe(); // removes me from MessageUnitHandler::subscriberMap
             }
          }
@@ -394,7 +452,7 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
     */
    private void removeFromQuerySubscribeRequestsSet(SessionInfo sessionInfo, String subscriptionInfoUniqueKey) throws XmlBlasterException
    {
-      if (log.TRACE) log.trace(ME, "removing client " + sessionInfo.toString() + " from querySubscribeRequestsSet with size=" + querySubscribeRequestsSet.size() + " ...");
+      if (log.TRACE) log.trace(ME, "removing client " + sessionInfo.toString() + " subscriptionInfoUniqueKey=" + subscriptionInfoUniqueKey + " from querySubscribeRequestsSet with size=" + querySubscribeRequestsSet.size() + " ...");
       String uniqueKey = sessionInfo.getUniqueKey();
 
       Vector vec = new Vector(querySubscribeRequestsSet.size());
