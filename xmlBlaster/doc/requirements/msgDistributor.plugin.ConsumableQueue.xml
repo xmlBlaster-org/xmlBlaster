@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='msgDistributor.plugin.consumableQueue' type='NEW' prio='LOW' status='CLOSE'>
+<requirement id='msgDistributor.plugin.consumableQueue' type='NEW' prio='LOW' status='CLOSED'>
    <topic>XmlBlaster has a plugin which tells a topic to behave like a queue, i.e. that every message
           update is delivered and consumed only once.
    </topic>
@@ -104,7 +104,7 @@
       demo/javaclients/script directory and invoke:
       <pre>
 java javaclients.script.XmlScript -requestFile consumableQueue.xml
-      </pre>	 
+      </pre>     
    </example>
 
 
@@ -115,7 +115,7 @@ java javaclients.script.XmlScript -requestFile consumableQueue.xml
    <see type="REQ">util.property.env</see>
    <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
    <date>2004 06 01</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="CLOSE">
       <name>-</name>
       <comment>-</comment>
