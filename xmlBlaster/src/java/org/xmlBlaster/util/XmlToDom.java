@@ -3,7 +3,7 @@ Name:      XmlToDom.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper which parses a XML ASCII string into a DOM tree
-Version:   $Id: XmlToDom.java,v 1.5 1999/12/09 13:28:37 ruff Exp $
+Version:   $Id: XmlToDom.java,v 1.6 1999/12/09 17:15:48 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -15,7 +15,7 @@ import java.util.StringTokenizer;
 
 
 /**
- * Helper which parses a XML ASCII string into a DOM tree. 
+ * Helper which parses a XML ASCII string into a DOM tree.
  * <p>
  */
 public class XmlToDom
@@ -41,7 +41,7 @@ public class XmlToDom
 
 
    /**
-    * Creates the DOM tree, this is done delayed when the first access is done. 
+    * Creates the DOM tree, this is done delayed when the first access is done.
     * <p />
     * @param xmlKey_literal The ASCII XML string
     */
@@ -65,7 +65,7 @@ public class XmlToDom
 
 
    /**
-    * Access the unparsed, literal ASCII xmlKey. 
+    * Access the unparsed, literal ASCII xmlKey.
     * @return the literal ASCII xmlKey
     */
    public final String toString()
@@ -75,7 +75,7 @@ public class XmlToDom
 
 
    /**
-    * Access the unparsed, literal ASCII xmlKey. 
+    * Access the unparsed, literal ASCII xmlKey.
     * @return the literal ASCII xmlKey
     */
    public final String literal()
@@ -85,7 +85,7 @@ public class XmlToDom
 
 
    /**
-    * The syntax of the XmlKey_literal String. 
+    * The syntax of the XmlKey_literal String.
     */
    public final NamedNodeMap getRootAttributes() throws XmlBlasterException
    {
@@ -129,8 +129,7 @@ public class XmlToDom
       //input.setEncoding("ISO-8859-2");
       //input.setSystemId("9999999999");
 
-      // !!! TODO: add a singleton for XMLProcessor
-      com.jclark.xsl.dom.XMLProcessorImpl xmlProc = org.xmlBlaster.engine.BigXmlKeyDOM.getInstance().getXMLProcessorImpl();
+      com.jclark.xsl.dom.XMLProcessorImpl xmlProc = XmlProcessor.getInstance().getXmlProcessorImpl();
 
       try {
          xmlDoc = xmlProc.load(input);

@@ -3,7 +3,7 @@ Name:      ClientSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSub.java,v 1.5 1999/12/09 16:12:28 ruff Exp $
+Version:   $Id: ClientSub.java,v 1.6 1999/12/09 17:15:48 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -20,6 +20,9 @@ import org.xmlBlaster.clientIdl.*;
 /**
  * This client tests the method subscribe() with a later publish() with XPath query
  * The subscribe() should be recognized for this later arriving publish()
+ * <p>
+ * This client may be invoked multiple time on the same xmlBlaster server,
+ * as it cleans up everything after his test are done.
  * <p>
  * Invoke examples:
  *    ${JacORB_HOME}/bin/jaco testsuite.org.xmlBlaster.ClientSub
@@ -80,8 +83,9 @@ public class ClientSub
             Log.error(ME, "Got Callback, but didn't expect one after a simple subscribe without a publish");
          numReceived = 0;
 
-         
+
          //----------- Construct a message and publish it ---------
+         String publishOid = "";
          {
             String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
                             "<key oid='' contentMime='text/xml'>\n" +
@@ -95,7 +99,7 @@ public class ClientSub
             Log.trace(ME, "Publishing ...");
             stop.restart();
             try {
-               String publishOid = xmlBlaster.publish(messageUnit, "<qos></qos>");
+               publishOid = xmlBlaster.publish(messageUnit, "<qos></qos>");
                Log.info(ME, "Publishing done, returned oid=" + publishOid + stop.nice());
             } catch(XmlBlasterException e) {
                Log.warning(ME, "XmlBlasterException: " + e.reason);
@@ -108,6 +112,19 @@ public class ClientSub
          else
             Log.error(ME, numReceived + " callbacks arrived, did expect one after a simple subscribe with a publish");
          numReceived = 0;
+
+
+         //----------- cleaning up .... erase() the previous message OID -------
+         {
+            String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
+                            "<key oid='" + publishOid + "' queryType='EXACT'>\n" +
+                            "</key>";
+            String[] strArr = null;
+            try {
+               strArr = xmlBlaster.erase(xmlKey, qos);
+            } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
+            if (strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " messages:");
+         }
 
          corbaConnection.logout(xmlBlaster);
       }

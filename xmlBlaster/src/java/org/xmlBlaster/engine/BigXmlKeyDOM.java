@@ -3,7 +3,7 @@ Name:      BigXmlKeyDOM.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Building a huge DOM tree for all known MessageUnit xmlKey
-Version:   $Id: BigXmlKeyDOM.java,v 1.5 1999/12/09 13:28:36 ruff Exp $
+Version:   $Id: BigXmlKeyDOM.java,v 1.6 1999/12/09 17:15:48 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -22,7 +22,7 @@ import java.util.*;
 import java.io.*;
 
 /**
- * Building a huge DOM tree for all known MessageUnit.xmlKeys. 
+ * Building a huge DOM tree for all known MessageUnit.xmlKeys.
  * <p />
  * This huge DOM tree contains all meta data about the known messages.<br />
  * Since the message content is a BLOB, messages may only be queried through<br />
@@ -39,7 +39,6 @@ public class BigXmlKeyDOM implements ClientListener, MessageEraseListener, I_Mer
    private RequestBroker requestBroker = null;
    private Authenticate authenticate = null;
 
-   private com.jclark.xsl.dom.XMLProcessorImpl xmlProc;  // One global instance to save instantiation time
    private com.fujitsu.xml.omquery.DomQueryMgr queryMgr = null;
 
    private com.sun.xml.tree.XmlDocument xmlKeyDoc = null;// Sun's DOM extensions, no portable
@@ -65,28 +64,12 @@ public class BigXmlKeyDOM implements ClientListener, MessageEraseListener, I_Mer
 
 
    /**
-    * Access to BigXmlKeyDOM singleton
-    */
-   public static BigXmlKeyDOM getInstance()
-   {
-      synchronized (BigXmlKeyDOM.class) {
-         if (bigXmlKeyDOM == null) {
-            Log.panic(ME, "Use other getInstance first");
-         }
-      }
-      return bigXmlKeyDOM;
-   }
-
-
-   /**
     * private Constructor for Singleton Pattern
     */
    private BigXmlKeyDOM(RequestBroker requestBroker, Authenticate authenticate) throws XmlBlasterException
    {
       this.requestBroker = requestBroker;
       this.authenticate = authenticate;
-
-      this.xmlProc = new com.jclark.xsl.dom.SunXMLProcessorImpl();    // [ 75 millis ]
 
       /*
       // Instantiate the xmlBlaster DOM tree with <xmlBlaster> root node (DOM portable)
@@ -96,7 +79,7 @@ public class BigXmlKeyDOM implements ClientListener, MessageEraseListener, I_Mer
       org.xml.sax.InputSource input = new org.xml.sax.InputSource(reader);
 
       try {
-         xmlKeyDoc = xmlProc.load(input);
+         xmlKeyDoc = XmlProcessor.getInstance().load(input);
       } catch (java.io.IOException e) {
          Log.error(ME+".IO", "Problems when building DOM tree from your XmlKey: " + e.toString());
          throw new XmlBlasterException(ME+".IO", "Problems when building DOM tree from your XmlKey: " + e.toString());
@@ -118,15 +101,6 @@ public class BigXmlKeyDOM implements ClientListener, MessageEraseListener, I_Mer
 
 
    /**
-    * Accessing the  XML to DOM parser
-    */
-   public com.jclark.xsl.dom.XMLProcessorImpl getXMLProcessorImpl()
-   {
-      return this.xmlProc;
-   }
-
-
-   /**
     * Accesing the query manager for XPath.
     * <p />
     * queryMgr is instantiated if null
@@ -141,7 +115,7 @@ public class BigXmlKeyDOM implements ClientListener, MessageEraseListener, I_Mer
 
 
    /**
-    * Adding a new node to the xmlBlaster xmlKey tree. 
+    * Adding a new node to the xmlBlaster xmlKey tree.
     * <p />
     * This method will be invoked when a new message is arriving to
     * make its describing meta data available for XPath queries.

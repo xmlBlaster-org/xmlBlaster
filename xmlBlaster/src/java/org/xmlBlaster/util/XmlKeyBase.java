@@ -3,7 +3,7 @@ Name:      XmlKeyBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKeyBase.java,v 1.18 1999/12/09 16:12:28 ruff Exp $
+Version:   $Id: XmlKeyBase.java,v 1.19 1999/12/09 17:15:48 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -63,9 +63,10 @@ import org.w3c.dom.Attr;
  *       //DRIVER[@id='FileProof']
  *    &lt;/key>
  * </pre>
- *
- * @see xmlBlaster/src/dtd/XmlKey.xml
- * @see http://www.w3.org/TR/xpath
+ * <p />
+ * see xmlBlaster/src/dtd/XmlKey.xml
+ * <p />
+ * see http://www.w3.org/TR/xpath
  */
 public class XmlKeyBase
 {
