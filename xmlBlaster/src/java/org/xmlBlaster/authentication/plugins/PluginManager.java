@@ -21,6 +21,8 @@ import java.util.StringTokenizer;
 public class PluginManager extends PluginManagerBase {
    private final String ME;
    private static final String defaultPluginName = "org.xmlBlaster.authentication.plugins.htpasswd.Manager"; //"org.xmlBlaster.authentication.plugins.simple.Manager";
+   private static final String defaultPluginType = "htpasswd";
+   private static final String defaultPluginVersion = "1.0";
    private              Authenticate        auth = null;
    private final Global glob;
    private final LogChannel log;
@@ -34,6 +36,11 @@ public class PluginManager extends PluginManagerBase {
          // Print a warning, because the old, unsecure xmlBlaster behavior is enabled!
          log.warn(ME, "* * * Security risk * * * : Security.Server.allowSimpleDriver=true");
          log.warn(ME, "The Simple security plugin is available, this is not save and can be misused by untrusted clients.");
+      }
+      
+      String key = getPluginPropertyName(defaultPluginType, defaultPluginVersion);
+      if (glob.getProperty().get(key, (String)null) == null) {
+         try { glob.getProperty().set(key, defaultPluginName); } catch(Exception e) { log.warn(ME, e.toString()); }
       }
    }
 
