@@ -3,6 +3,12 @@ Release notes for xmlBlaster    (http://www.xmlBlaster.org)
 Changes for x.xxx [xxx, xx xxxx]
 ================================
 
+  - Added OS independend C++ compile support with ant
+
+  - Reduced necessary environment settings to
+      JAVA_HOME=<pathToJdk>
+      CLASSPATH=<xmlBlaster>/lib/xmlBlaster.jar
+
 
 Changes for 0.79d [Dec, 30 2001]
 ================================
