@@ -3,14 +3,28 @@
 
 Changes for 0.76 [?, 2000]
 ===============================
+   - Logging output can now be customized.
+     You can choose the Date and Time formatting and the
+     language and country.
+     The amount of logging information is adjustable as well.
+     Example:
+        "Saturday, April 29, 2000 7:05:49 PM GMT+02:00 INFO Published AuthServer IOR on port 7609"
+     or in french:
+        "samedi 29 avril 2000 19 h 06 GMT+02:00 INFO Published AuthServer IOR on port 7609"
+     or in short form german:
+        "29.04.00 19:07 INFO Published AuthServer IOR on port 7609"
+     or minimal:
+        "Published AuthServer IOR on port 7609"
+     See xmlBlaster.properties.template how to use it.
+
    - Bugfix when logging to file with missing permissions in Util.java
-	  The bug resulted in a never ending loop.
+     The bug resulted in a never ending loop.
 
    - xmlBlaster.properties can now be placed in 'java.home' directory
      as well (this is for example /opt/jdk1.2.2/jre/lib).
      This feature may be helpful if you want to start a deamon
      or a servlet which has no home directory.
-     see org.xmlBlaster.util.Property for more informations
+     See org.xmlBlaster.util.Property for more informations
 
    - xmlBlaster now uses the new JacORB 1.1 with SSL support
 
