@@ -112,6 +112,20 @@ java org.xmlBlaster.Main  -propertyFile mySecond.properties
       command line property file entries have precedence over the property
       file in the distribution jar file.
       </p>
+
+      <p>
+      And now a typical UNIX shell script starting xmlBlaster (all in one line):
+      </p>
+      <pre class="BORDER" width="80"><![CDATA[
+java -Xms12M -Xmx128M -jar lib/xmlBlasterDist.jar
+      -admin.remoteconsole.port 0
+      -logFile /tmp/xmlBlaster.log
+      -xmlrpc.port 8081
+      -useKeyboard false  > /tmp/xmlBlaster.log 2>&1 &
+
+echo "xmlBlaster started, see tail -n 100 -f /tmp/xmlBlaster.log"
+sleep 5
+      ]]></pre>
    </example>
 
    <configuration where="server">
@@ -195,7 +209,7 @@ java org.xmlBlaster.Main  -propertyFile mySecond.properties
    
    <date>2002 06 04</date>
    
-   <revision>$Revision: 1.4 $</revision>
+   <revision>$Revision: 1.5 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
