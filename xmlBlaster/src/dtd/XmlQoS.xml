@@ -76,7 +76,7 @@ xml version='1.0' encoding='ISO-8859-1' ?>
          <forceUpdate />  <!-- An update is forced even when the content and meta data didn't change (default) -->
                           <!-- Setting this to false does not resend identical messages (performance gain) -->
 
-         <readonly />     <!-- A final/const message which may not be changed with further updates -->
+         <topic readonly='true' />  <!-- A final/const message which may not be changed with further updates -->
                           <!-- Default is Read/Write -->
 
          <route>          <!-- server internal added routing informations -->
