@@ -57,7 +57,6 @@ public class HelloWorld3 implements I_Callback
       I_XmlBlasterAccess con = this.glob.getXmlBlasterAccess();
       
       try {
-
          // Check if other login name or password was given on command line:
          // (This is redundant as it is done by ConnectQos already)
          String name = glob.getProperty().get("session.name", "HelloWorld3");
@@ -107,6 +106,7 @@ public class HelloWorld3 implements I_Callback
 
          DisconnectQos dq = new DisconnectQos(glob);
          con.disconnect(dq);
+         glob.shutdown(); // free resources
       }
       catch (XmlBlasterException e) {
          log.error("HelloWorld3", e.getMessage());
