@@ -3,7 +3,7 @@ Name:      FileUtil.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: FileUtil.java,v 1.5 2000/01/19 21:03:48 ruff Exp $
+Version:   $Id: FileUtil.java,v 1.6 2000/01/19 22:21:41 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -240,9 +240,11 @@ public class FileUtil
    /**
     * Rename a file.
     * <p />
+    * @param oldName
+    * @param newName
     * @return true if succeeded
     */
-   static boolean rename(String oldName, String newName)
+   public static boolean rename(String oldName, String newName)
    {
       File f_old = new File(oldName);
       File f_new = new File(newName);

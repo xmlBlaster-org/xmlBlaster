@@ -23,6 +23,7 @@ LOCAL_FILES = \
 			$(CLASS_DIR)/XmlProcessor.class \
 			$(CLASS_DIR)/XmlToDom.class \
 			$(CLASS_DIR)/Args.class \
+			$(CLASS_DIR)/Property.class \
 			$(CLASS_DIR)/TimeHelper.class
 #------------------------------------------------------------------------------
 
