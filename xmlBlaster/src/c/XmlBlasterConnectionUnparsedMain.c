@@ -8,7 +8,7 @@ Comment:   Demo client for synchronous access.
            multi threading in this case.
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 Compile:
-  LINUX:   gcc -ansi -Wall -g -I. -o XmlBlasterConnectionUnparsedMain XmlBlasterConnectionUnparsedMain.c msgUtil.c socket/XmlBlasterConnectionUnparsed.c socket/xmlBlasterSocket.c
+  LINUX:   gcc -Wall -g -I. -o XmlBlasterConnectionUnparsedMain XmlBlasterConnectionUnparsedMain.c msgUtil.c socket/XmlBlasterConnectionUnparsed.c socket/xmlBlasterSocket.c
   WIN:     cl /MT /W3 /Wp64 -D_WINDOWS -I. XmlBlasterConnectionUnparsedMain.c msgUtil.c socket\XmlBlasterConnectionUnparsed.c socket\xmlBlasterSocket.c ws2_32.lib
   Solaris: cc -Xc -g -I. -o XmlBlasterConnectionUnparsedMain XmlBlasterConnectionUnparsedMain.c msgUtil.c socket/XmlBlasterConnectionUnparsed.c socket/xmlBlasterSocket.c -lsocket -lnsl 
 Invoke:    XmlBlasterConnectionUnparsedMain -dispatch/callback/plugin/socket/hostname develop -dispatch/callback/plugin/socket/port 7607 -debug true
