@@ -19,28 +19,64 @@
             <th>Description</th>
          </tr>
          <tr>
-            <td>HALTED</td>
-            <td>0</td>
+            <td><b>HALTED</b></td>
+            <td><b>0</b></td>
             <td>-</td>
             <td>XmlBlaster is not existing</td>
          </tr>
          <tr>
-            <td>STANDBY</td>
-            <td>3</td>
-            <td>All configured plugins are alive
+            <td>HALTED_POST</td>
+            <td>1</td>
+            <td>-</td>
+            <td>The persistent topics are loaded</td>
+         </tr>
+         <tr>
+            <td>STANDBY_PRE</td>
+            <td>2</td>
+            <td>The persistence plugin is activated</td>
+            <td>All persistent sessions and subscriptions are loaded</td>
+         </tr>
+         <tr>
+            <td><b>STANDBY</b></td>
+            <td><b>3</b></td>
+            <td>All configured protocol plugins (for example IOR and SOCKET) are alive
                 but only administrative access from outside is possible</td>
             <td>XmlBlaster has sync'd all databases and just waits, it is ready to be killed or reactivated</td>
          </tr>
          <tr>
-            <td>CLEANUP</td>
-            <td>6</td>
+            <td>STANDBY_POST</td>
+            <td>4</td>
+            <td>The cluster manager is ready</td>
+            <td>The cluster manager needs the protocol plugins from run level 3 to configure itself</td>
+         </tr>
+         <tr>
+            <td>CLEANUP_PRE</td>
+            <td>5</td>
+            <td>Delivered services and your native service plugins are activated</td>
+            <td>If you register your own native plugins this runlevel is a good place to do</td>
+         </tr>
+         <tr>
+            <td><b>CLEANUP</b></td>
+            <td><b>6</b></td>
             <td>All configured plugins are alive and operational
                 but only administrative access from outside is possible</td>
             <td>XmlBlaster still flushes queues to other cluster nodes or to connected clients</td>
          </tr>
          <tr>
-            <td>RUNNING</td>
-            <td>9</td>
+            <td>CLEANUP_POST</td>
+            <td>7</td>
+            <td>The Availability checker allows ordinary access from outside</td>
+            <td>Normal clients may access XmlBlaster (connect, publish,etc.)</td>
+         </tr>
+         <tr>
+            <td>RUNNING_PRE</td>
+            <td>8</td>
+            <td>Your ordinary native client plugins are activated</td>
+            <td>If you register some ordinary native clients this runlevel is a good place to do</td>
+         </tr>
+         <tr>
+            <td><b>RUNNING</b></td>
+            <td><b>9</b></td>
             <td>All configured plugins are alive</td>
             <td>XmlBlaster is fully operational</td>
          </tr>
@@ -304,7 +340,7 @@ r 3
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 14</date>
-   <revision>$Revision: 1.18 $</revision>
+   <revision>$Revision: 1.19 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
