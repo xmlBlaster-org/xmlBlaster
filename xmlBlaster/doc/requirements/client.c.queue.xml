@@ -143,6 +143,17 @@ Solaris:
        <td><font size="-2">build -Duse-icc=true -DXMLBLASTER_PERSISTENT_QUEUE=1 c-delete c</font></td>
        </tr>
 
+       <tr>
+       <td>3</td>
+       <td>WindowsXP</td>
+       <td>VC++ 7 (Jan.2003)</td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.901+</a></td>
+       <td><a href="http://sources.redhat.com/pthreads-win32" target="others">pthreads-win32</a></td>
+       <td>2004-05-06</td>
+       <td><a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
+       <td><font size="-2">build -Duse-msvc=true -DXMLBLASTER_PERSISTENT_QUEUE=1 c-delete c</font></td>
+       </tr>
+
       </table>
 
       <p>
@@ -243,7 +254,7 @@ TestQueue
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2004 04 09</date>
-   <revision>$Revision: 1.9 $</revision>
+   <revision>$Revision: 1.10 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
