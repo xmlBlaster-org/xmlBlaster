@@ -62,7 +62,7 @@ public class QueryKeyFactoryTest extends TestCase {
 
          assertEquals("", "HELLO", key.getOid());
          assertEquals("", Constants.XPATH, key.getQueryType());
-         assertEquals("", "//key", key.getQueryString());
+         assertEquals("Got '" + key.getQueryString() + "'", "//key", key.getQueryString().trim());
          assertEquals("", "image/gif", key.getContentMime());
          assertEquals("", "1.0", key.getContentMimeExtended());
          assertEquals("", "RUGBY", key.getDomain());
@@ -80,6 +80,42 @@ public class QueryKeyFactoryTest extends TestCase {
       }
 
       System.out.println("***QueryKeyFactoryTest: testParse [SUCCESS]");
+   }
+
+   /**
+    * Tries with all known tags
+    */
+   public void testCdata() {
+      System.out.println("***QueryKeyFactoryTest: testCdata ...");
+      
+      try {
+         String queryData = "<database:adapter xmlns:database='http://www.xmlBlaster.org/jdbc'>"+
+                            "<database:url>jdbc:dbfFile:.</database:url>"+
+                            "<database:username>joe</database:username>"+
+                            "<database:password>secret</database:password>"+
+                            "<database:interaction type='update'></database:interaction>"+
+                            "<database:command><![CDATA[ DROP TABLE IF EXISTS cars < 100 ]]></database:command>"+
+                            "<database:connectionlifespan ttl='1'></database:connectionlifespan>"+
+                            "<database:rowlimit max='1'></database:rowlimit>"+
+                            "<database:confirmation confirm='true'></database:confirmation>"+
+                            "</database:adapter>";
+         String xml = 
+           "<key oid='__sys__jdbc'>\n" +
+           queryData +
+           "</key>\n";
+         QueryKeyData key = factory.readObject(xml);
+
+         assertEquals("", "__sys__jdbc", key.getOid());
+         assertEquals("queryData \n'"+queryData.trim()+"'\n is not \n'"+key.getQueryString().trim()+"'\n",
+                      queryData.trim(), key.getQueryString().trim());
+
+         log.info(ME, "Parsed and recreated successfully CDATA section:\n" + key.getQueryString().trim() + "");
+      }
+      catch (XmlBlasterException e) {
+         fail("testCdata failed: " + e.toString());
+      }
+
+      System.out.println("***QueryKeyFactoryTest: testCdata [SUCCESS]");
    }
 
    /**
@@ -183,6 +219,7 @@ public class QueryKeyFactoryTest extends TestCase {
       for (int i=0; i<IMPL.length; i++) {
          suite.addTest(new QueryKeyFactoryTest(glob, "testDefault", i));
          suite.addTest(new QueryKeyFactoryTest(glob, "testParse", i));
+         suite.addTest(new QueryKeyFactoryTest(glob, "testCdata", i));
          suite.addTest(new QueryKeyFactoryTest(glob, "testToXml", i));
          suite.addTest(new QueryKeyFactoryTest(glob, "testSubscribeKey", i));
          /*
@@ -205,6 +242,7 @@ public class QueryKeyFactoryTest extends TestCase {
          testSub.setUp();
          testSub.testDefault();
          testSub.testParse();
+         testSub.testCdata();
          testSub.testToXml();
          testSub.testSubscribeKey();
          /*
