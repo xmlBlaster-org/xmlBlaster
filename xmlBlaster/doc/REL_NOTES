@@ -3,6 +3,9 @@
 Changes for 0.77 [?, 2000]
 ===============================
 
+   - Changed XML parser to jaxp 1.0.1 and added servlet support
+	  to xtdash.jar (from original xt.jar).
+
    - Changed xmlBlaster.idl
 	  from
 	     login(in string loginName, in string passwd,
@@ -24,6 +27,8 @@ Changes for 0.77 [?, 2000]
 
 	- Persistent browser callback bugfixes
 	  * Added proper logout
+	  * Fixed security hole
+	  * Added support to set system properties through initArgs
      * Removed memory leak
      * Added ping/pong, to allow servlet to detect a lost browser
 
