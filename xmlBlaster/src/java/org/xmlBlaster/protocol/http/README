@@ -156,7 +156,10 @@ Config files setup:
 
    Invoke browser test servlet:
 
-      http://localhost/servlets/BrowserTest
+      http://localhost/servlets/BrowserTest?mode=push
+      http://localhost/servlets/BrowserTest?mode=multi
+      http://localhost/servlets/BrowserTest?mode=poll
+
 
    Watch log output (if there are problems):
  
