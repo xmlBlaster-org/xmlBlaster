@@ -3,7 +3,7 @@ Name:      SubscribeQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: SubscribeQosWrapper.java,v 1.9 2002/03/28 10:00:47 ruff Exp $
+Version:   $Id: SubscribeQosWrapper.java,v 1.10 2002/03/28 15:18:33 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -40,6 +40,7 @@ public class SubscribeQosWrapper extends QosWrapper
 
    private boolean local = true;
 
+   /** Mime based filter rules */
    private Vector filterVec = null;
 
 
