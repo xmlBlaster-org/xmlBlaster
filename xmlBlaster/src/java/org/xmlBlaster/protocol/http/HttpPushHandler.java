@@ -129,7 +129,7 @@ public class HttpPushHandler
           "<HEAD>\n" +
           "   <meta http-equiv='Content-Type' content='text/html; charset=iso-8859-1'>\n" +
           "   <meta http-equiv='Pragma' content='no-cache'>\n" +
-         "    <meta http-equiv='Cache-Control' content='no-cache'>\n" +
+          "   <meta http-equiv='Cache-Control' content='no-cache'>\n" +
           "   <meta http-equiv='Expires' content='Tue, 31 Dec 1997 23:59:59 GMT'>\n" +
           "   <TITLE>BlasterHttpProxy Connection</TITLE>\n" +
           "</HEAD>\n" +

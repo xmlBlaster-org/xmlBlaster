@@ -3,7 +3,7 @@ Name:      BlasterHttpProxyServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxyServlet.java,v 1.55 2001/12/23 13:10:14 ruff Exp $
+Version:   $Id: BlasterHttpProxyServlet.java,v 1.56 2001/12/23 18:39:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -21,6 +21,7 @@ import java.rmi.RemoteException;
 import java.io.*;
 import java.util.*;
 import java.net.URLEncoder;
+import java.net.URLDecoder;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
@@ -328,9 +329,20 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
     * </ul>
     * <p>
     * This method is called through a SUBMIT of a HTML FORM,<br>
-    * the TARGET should be set to "callbackFrame".
+    * the TARGET should be set to "requestFrame".
     * The parameter ActionType must be set to one of the above methods.<br />
     * For an explanation of these methods see the file xmlBlaster.idl
+    * <p />
+    * The asynchronous updates are pushed into the 'callbackFrame' of your browser
+    * <p />
+    * The key/qos values are expected to be URLEncoded
+    * <p />
+    * Allows simple subscribe/unSubscribe/erase of the form
+    *    <pre>?ActionType=subscribe&key.oid=cpuinfo</pre>
+    * and complete key XML strings like
+    *    <pre>?ActionType=subscribe&key=&lt;key oid='hello'>&lt;/key></pre>
+    * as well.<br />
+    * QoS is optional, the content only needed when publishing
     * @param req Data from browser
     * @param res Response of the servlet
     */
@@ -365,36 +377,71 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
       try {
          String actionType = Util.getParameter(req, "ActionType", "NONE");
 
+         // Extract the message data
+         String oid = Util.getParameter(req, "key.oid", null);
+         if (oid != null) oid = URLDecoder.decode(oid);
+
+         String key = Util.getParameter(req, "key", null);
+         if (key != null) {
+            key = URLDecoder.decode(key);
+            if (Log.DUMP) Log.dump(ME, "key=\n'" + key + "'");
+         }
+         
+         String content = Util.getParameter(req, "content", null);
+         if (content != null) {
+            content = URLDecoder.decode(content);
+         }
+         else
+            content = "";
+         if (Log.DUMP) Log.dump(ME, "content=\n'" + content + "'");
+
+         String qos = Util.getParameter(req, "qos", null);
+         if (qos != null) {
+            qos = URLDecoder.decode(qos);
+         }
+         else
+            qos = ""; 
+         if (Log.DUMP) Log.dump(ME, "qos=\n'" + qos + "'");
+
          if (actionType.equals("subscribe")) {
             Log.trace(ME, "subscribe arrived ...");
-            String oid = Util.getParameter(req, "key.oid", null);
-            if (oid == null) {
-               String str = "Please call servlet with some key.oid when subscribing";
+            
+            if (oid != null) {
+               SubscribeKeyWrapper xmlKey = new SubscribeKeyWrapper(oid);
+               //SubscribeQosWrapper xmlQos = new SubscribeQosWrapper();
+               String ret = xmlBlaster.subscribe(xmlKey.toXml(), qos);
+               Log.info(ME, "Subscribed to simple key.oid=" + oid + ": " + ret);
+            }
+            else if (key != null) {
+               String ret = xmlBlaster.subscribe(key, qos);
+               Log.info(ME, "Subscribed to " + key + ": SubscriptionId=" + ret + " qos=" + qos);
+            }
+            else {
+               String str = "Please call servlet with some 'key.oid=...' or 'key=<key ...' when subscribing";
                Log.error(ME, str);
                htmlOutput(str, res);
                return;
             }
-            SubscribeKeyWrapper xmlKey = new SubscribeKeyWrapper(oid);
-            SubscribeQosWrapper xmlQos = new SubscribeQosWrapper();
-
-            String ret = xmlBlaster.subscribe(xmlKey.toXml(), xmlQos.toXml());
-            Log.info(ME, "Subscribed to " + oid + ": " + ret);
          }
 
          else if (actionType.equals("unSubscribe")) {
             Log.trace(ME, "unSubscribe arrived ...");
-            String oid = Util.getParameter(req, "key.oid", null);
-            if (oid == null) {
-               String str = "Please call servlet with some key.oid when unSubscribing";
+
+            if (oid != null) {
+               UnSubscribeKeyWrapper xmlKey = new UnSubscribeKeyWrapper(oid);
+               xmlBlaster.unSubscribe(xmlKey.toXml(), qos);
+               Log.info(ME, "UnSubscribed to simple key.oid=" + oid);
+            }
+            else if (key != null) {
+               xmlBlaster.unSubscribe(key, qos);
+               Log.info(ME, "UnSubscribed from key=" + key + " qos=" + qos);
+            }
+            else {
+               String str = "Please call servlet with some 'key.oid=...' or 'key=<key ...' when unsubscribing";
                Log.error(ME, str);
                htmlOutput(str, res);
                return;
             }
-            UnSubscribeKeyWrapper xmlKey = new UnSubscribeKeyWrapper(oid);
-            UnSubscribeQosWrapper xmlQos = new UnSubscribeQosWrapper();
-
-            xmlBlaster.unSubscribe(xmlKey.toXml(), xmlQos.toXml());
-            Log.info(ME, "UnSubscribed from " + oid);
          }
 
          else if (actionType.equals("get")) {
@@ -403,11 +450,8 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
 
          else if (actionType.equals("publish")) {
             Log.trace(ME, "publish arrived ...");
-            String key_literal = Util.getParameter(req, "key", null);
-            String content = Util.getParameter(req, "content", null);
-            String qos_literal = Util.getParameter(req, "qos", null);
-            if (key_literal == null) {
-               String str = "Please call servlet with some key when subscribing";
+            if (key == null) {
+               String str = "Please call servlet with some key when publishing";
                Log.error(ME, str);
                htmlOutput(str, res);
                return;
@@ -415,8 +459,8 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
             if (content == null)
                content = "";
 
-            Log.info(ME, "Publishing '" + key_literal + "'");
-            MessageUnit msgUnit = new MessageUnit(key_literal, content.getBytes(), qos_literal);
+            Log.info(ME, "Publishing '" + key + "'");
+            MessageUnit msgUnit = new MessageUnit(key, content.getBytes(), qos);
             try {
                String publishOid = xmlBlaster.publish(msgUnit);
                Log.trace(ME, "Success: Publishing done, returned oid=" + publishOid);
@@ -427,23 +471,29 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
 
          else if (actionType.equals("erase")) {
             Log.trace(ME, "erase arrived ...");
-            String oid = Util.getParameter(req, "key.oid", null);
-            if (oid == null) {
-               String str = "Please call servlet with some key.oid when eraseing";
+
+            if (oid != null) {
+               EraseKeyWrapper xmlKey = new EraseKeyWrapper(oid);
+               //EraseQosWrapper xmlQos = new EraseQosWrapper();
+               String[] ret = xmlBlaster.erase(xmlKey.toXml(), qos);
+               for (int ii=0; ii<ret.length; ii++)
+                  Log.info(ME, "Erased " + ret[ii]);
+            }
+            else if (key != null) {
+               String ret[] = xmlBlaster.erase(key, qos);
+               for (int ii=0; ii<ret.length; ii++)
+                  Log.info(ME, "Erased " + ret[ii]);
+            }
+            else {
+               String str = "Please call servlet with some 'key.oid=...' or 'key=<key ...' when subscribing";
                Log.error(ME, str);
                htmlOutput(str, res);
                return;
             }
-            EraseKeyWrapper xmlKey = new EraseKeyWrapper(oid);
-            EraseQosWrapper xmlQos = new EraseQosWrapper();
-
-            String[] ret = xmlBlaster.erase(xmlKey.toXml(), xmlQos.toXml());
-            for (int ii=0; ii<ret.length; ii++)
-               Log.info(ME, "Erased " + ret[ii]);
          }
 
          else {
-            throw new Exception("Unknown or missing 'ActionType'");
+            throw new Exception("Unknown or missing 'ActionType=" + actionType + "' please choose 'subscribe' 'unSubscribe' 'erase' etc.");
          }
 
       } catch (XmlBlasterException e) {

@@ -19,7 +19,8 @@ function xmlBlasterLogout()
 }
 
 /**
- * @param message An instance of MessageWrapper
+ * A message contains key/content/qos
+ * See description of subscribe()
  */
 function publish(message)
 {
@@ -29,6 +30,10 @@ function publish(message)
    Log.trace("Get request for " + key.oid + " done");
 }
 
+/**
+ * See description of subscribe()
+ * Synchronous get() is currently not supported
+ */
 function get(key, qos)
 {
    Log.error("Synchronous GET implementation to xmlBlaster is not supported");
@@ -37,6 +42,10 @@ function get(key, qos)
    Log.trace("Get request for " + key.oid + " done");
 }
 
+/**
+ * @param key SubscribeKeyWrapper object or literal as xml ASCII string "<key oid='' ...</key>"
+ * @param qos QosWrapper object or a literal string like "<qos>...</qos>"
+ */
 function subscribe(key, qos)
 {
    Log.trace("Invoking subscribe request for " + key.oid + " ...");
@@ -44,6 +53,9 @@ function subscribe(key, qos)
    Log.trace("Subscribe request for " + key.oid + " done");
 }
 
+/**
+ * See description of subscribe()
+ */
 function unSubscribe(key, qos)
 {
    Log.error("UnSubscribe implementation to xmlBlaster is missing");
@@ -52,6 +64,9 @@ function unSubscribe(key, qos)
    Log.trace("UnSubscribe request for " + key.oid + " done");
 }
 
+/**
+ * See description of subscribe()
+ */
 function erase(key, qos)
 {
    Log.error("Erase implementation to xmlBlaster is missing");
@@ -65,6 +80,17 @@ function erase(key, qos)
  * This allows to send a request to the servlet.
  * We use a dedicated little frame 'requestFrame' for this,
  * the returned html from the servlet is ignored there.
+ *
+ * A request may look typically like this:
+ *    /xmlBlaster/BlasterHttpProxyServlet?ActionType=subscribe&key=<key oid='cpuinfo' contentMime='text/plain'></key>"&qos=<qos></qos>
+ * where the xml stuff is encoded.
+ *
+ * @param methodName "subscribe" etc.
+ * @param msgWrapper A MessageWrapperLiteral - Object containing the key and qos,
+ *        for publish() calls it contains a content as well.
+ *
+ * Note: The MessageWrapperLiteral may contain the key and qos as literal xml ASCII string
+ *              or as one of the wrapper objects, e.g. QosWrapper() or SubscribeKeyWrapper()
  */
 function request(methodName, msgWrapper)
 {
@@ -73,7 +99,34 @@ function request(methodName, msgWrapper)
       self.frames["requestFrame"].location.reload(true);
    }
    req = "/xmlBlaster/BlasterHttpProxyServlet?ActionType="+methodName+"&";
-   req += "key.oid=" + msgWrapper.key.oid;
+
+   //req += "key.oid=" + msgWrapper.key.oid;
+   if ((typeof msgWrapper.key) != "undefined" && msgWrapper.key!=null) {
+      if ((typeof msgWrapper.key) == "string") {
+         req += "key=" + escape(msgWrapper.key);
+      }
+      else if ((typeof msgWrapper.key) == "object") {
+         req += "key=" + escape(msgWrapper.key.toXml());
+      }
+      else {
+         Log.error("In request '" + methodName + "' the key is an unknown object, ignoring request!");
+         return;
+      }
+   }
+
+   if ((typeof msgWrapper.content) != "undefined" && msgWrapper.content!=null) {
+      req += "&content=" + escape(msgWrapper.content);
+   }
+
+   if ((typeof msgWrapper.qos) != "undefined" && msgWrapper.qos!=null) {
+      if ((typeof msgWrapper.qos) == "string") {
+         req += "&qos=" + escape(msgWrapper.qos);
+      }
+      else if ((typeof msgWrapper.qos) == "object") {
+         req += "&qos=" + escape(msgWrapper.qos.toXml());
+      }
+   }
+
    self.frames["requestFrame"].location.href=req; // Invoke servlet.
 }
 
@@ -171,18 +224,20 @@ function SubscribeKeyWrapperToXml()
    if (this.contentMimeExtended != null)
       str += " contentMimeExtended='" + this.contentMimeExtended + "'";
    str += ">\n";
-   str += this.clientTags;
+   if ((typeof this.clientTags) != "undefined" && this.clientTags!=null)
+      str += this.clientTags;
    str += "\n</key>";
    if (Log.INFO) Log.info(str);
    return str;
 }
 function SubscribeKeyWrapperWrap(tags)
 {
-   if (tags == null)
+   if ((typeof tags) == "undefined" || tags == null)
       this.tags = '';
    else
       this.tags = tags;
 }
+
 /**
  * Constructor for a XmlKey helper object.
  * If you have own meta data, add it with the method wrap:
@@ -217,15 +272,53 @@ function PublishKeyWrapperToXml()
    if (this.contentMimeExtended != null)
       str += " contentMimeExtended='" + this.contentMimeExtended + "'";
    str += ">\n";
-   str += this.clientTags;
+   if ((typeof this.clientTags) != "undefined" && this.clientTags!=null)
+      str += this.clientTags;
    str += "\n</key>";
    if (Log.INFO) Log.info(str);
    return str;
 }
 function PublishKeyWrapperWrap(tags)
 {
-   if (tags == null)
+   if ((typeof tags) == "undefined" || tags == null)
       this.tags = '';
+   else
+      this.tags = tags;
+}
+
+/**
+ * Constructor for a Qos helper object.
+ * If you have own meta data, add it with the method wrap:
+ *
+ * Example:
+ *  var key = new top.xmlBlasterWindow.QosWrapper("<isDurable />");
+ *
+ * @param wrap:String Tags to embed into the <qos>...</qos> tags
+ */
+function QosWrapper(wrapTags)
+{
+   if (wrapTags == null)
+      this.tags = null;
+   else
+      this.tags = wrapTags;
+   this.contentMimeExtended = contentMimeExtended;
+   this.wrap = QosWrapperWrap;
+   this.toXml = QosWrapperToXml;
+}
+function QosWrapperToXml()
+{
+   var str='';
+   str += "<qos>";
+   if ((typeof this.tags) != "undefined" && this.tags!=null)
+      str += this.tags;
+   str += "\n</qos>";
+   if (Log.INFO) Log.info("QosWrapperToXml(): " + str);
+   return str;
+}
+function QosWrapperWrap(tags)
+{
+   if ((typeof tags) == "undefined" || tags == null)
+      this.tags = null;
    else
       this.tags = tags;
 }
@@ -323,9 +416,9 @@ function MessageWrapperLiteral(key, content, qos)
 /**
  * Create a message object, which contains the xmlBlaster message as DOM
  *
- * @param key:Dom  The meta data
- * @param content:String The message itself (binary/octet????!!!)
- * @param qos:Dom     Some quality of service infos of this xmlBlaster update
+ * @param key:UpdateKey object  The meta data
+ * @param content:String        The message itself (binary/octet????!!!)
+ * @param qos:UpdateQos object  Some quality of service infos of this xmlBlaster update
 */
 function MessageWrapperDom(key, content, qos)
 {
