@@ -6,22 +6,33 @@
    <description>
     <p>
       XmlBlaster throws only one exception namely the XmlBlasterException.
-      To distinguish the errors, xmlBlaster supports a hierarchical error code.
+      To distinguish the errors, xmlBlaster supports an hierarchical error code schema.
     </p>
+
     <p>
-    An XmlBlasterException contains 4 attributes, all of type String:
+      The following drawing illustrates some exception situations:
+    </p>
+    <br />
+     <img src="ExceptionHandling.gif" border="0" title="XmlBlaster exception handling example" alt="Example for xmlBlaster exceptions" />
+    <br />
+
+    <p>
+    An XmlBlasterException contains a set of attributes describing an exception, all of type String:
     </p>
     <ol>
-      <li>id:       security.notauthenticated</li>
-      <li>location: /node/heron/client/joe/3</li>
-      <li>reason:   Authorization denied for message oid 'account retrieval'</li>
-      <li>detail:   Debug detail, e.g. stack trace (optional)</li>
+      <li><b>node</b>:       Cluster node location (e.g. /node/heron)</li>
+      <li><b>errorCode</b>:  The hierarchical error code (e.g. "security.notauthenticated")</li>
+      <li><b>location</b>:   Logical location in the code (e.g. client/joe/3-SubscriptionInfo)</li>
+      <li><b>reason</b>:     The human readable error text (e.g. "Authorization denied for message oid 'accountRetrieval'")</li>
+      <li><b>stackTrace</b>:      The stack trace (optional, for debugging)</li>
+      <li><b>embeddedText</b>:    The original exception message (optional, if another exception is rethrown)</li>
+      <li><b>transactionInfo</b>: Transaction information</li>
     </ol>
     <p>
-    Examples for the unique identifier <i>id</i>:
+    Examples for the error codes <i>errorCode</i>:
     </p>
     <table border="1">
-     <tr><th>id</th><th>Description</th></tr>
+     <tr><th>errorCode</th><th>Description</th></tr>
      <tr><td>internal</td><td>Server internal messages</td></tr>
      <tr><td>internal.nullpointer</td><td>Coding error (blame maintainers)</td></tr>
      <tr><td>internal.memoryexhaust</td><td>No more memory</td></tr>
@@ -59,7 +70,7 @@
     All ID's are available in a java.util.ResourceBundle
     the question is if the server already uses the localized
     text for the client language, or if the client uses the
-    id to find its localized error text. 
+    errorCode to find its localized error text. 
     </p>
 
    </description>
@@ -72,11 +83,11 @@ XmlBlasterException.toXml():
 
  &lt;exception id='invocation.publish'>
 
-    &lt;id>
+    &lt;errorCode>
        &lt;invocation>
           &lt;publish/>
        &lt;/invocation>
-    &lt;/id>
+    &lt;/errorCode>
 
     &lt;location>
        &lt;node>
@@ -90,9 +101,23 @@ XmlBlasterException.toXml():
 
     &lt;reason>&lt;![CDATA[Invalid publish]]&gt;&lt;/reason>
 
-    &lt;detail/>
+    &lt;stackTrace/>
 
  &lt;/exception>
+   </example>
+
+   <example lang="XML" type="RAW">
+// Example showing how to convert an Exception (as a server developer)
+try {
+   ... // Throws exceptions 
+}
+catch (CorbaException ex) {
+   throw new XmlBlasterException(glob,
+                                 XmlBlasterException.COMMUNICATION+".connectionLost",
+                                 this.getClass().getName(),
+                                 "No callback connection to client joe",
+                                 ex);
+}
    </example>
 
    <todo type='HTML'>
@@ -105,7 +130,7 @@ XmlBlasterException.toXml():
    
    <date>2002 09 24</date>
    
-   <revision>$Revision: 1.3 $</revision>
+   <revision>$Revision: 1.4 $</revision>
 
    <testcase status="OPEN">
       <name>-</name>
