@@ -3,11 +3,21 @@
 # Project:   xmlBlaster.org
 # Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 # Comment:   Properties for xmlBlaster MOM server, copy into you home directory
+#
+#            The variables 
+#               $user.dir
+#               $user.home
+#            may be used and will be replaced to the current directory and
+#            the users home directory respectively.
+#
+#            You may set $XMLBLASTER_HOME in your JVM environment or here, e.g.
+#               $XMLBLASTER_HOME=$user.home/xmlBlaster
+#            and use it as a variable in this file.
 #------------------------------------------------------------------------------
 
 
 #------------------------------------------------------------------------------
 # Persistent store
 Persistence.Driver=org.xmlBlaster.engine.persistence.FileDriver
-Persistence.Path=/tmp
+Persistence.Path=$user.home/tmp
 #------------------------------------------------------------------------------
