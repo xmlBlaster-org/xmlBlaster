@@ -129,7 +129,7 @@ public:
       try {
          connection_.connect(connQos, this);
       }
-      catch (XmlBlasterException &ex) {
+      catch (XmlBlasterException &/*ex*/) {
          wentInException = true;
       }   
       assertEquals(log_, ME, true, wentInException, "reconnecting when communication down and not giving positive publicSessionId: exception must be thrown");
@@ -140,7 +140,7 @@ public:
       try {
          connection_.connect(connQos, this);
       }
-      catch (XmlBlasterException &ex) {
+      catch (XmlBlasterException &/*ex*/) {
          wentInException = true;
       }   
       assertEquals(log_, ME, true, wentInException, "reconnecting for the second time when communication down and not giving positive publicSessionId: exception must be thrown (again)");
@@ -153,7 +153,7 @@ public:
          string name = retQos.getSessionQos().getRelativeName();
          assertEquals(log_, ME, "client/Fritz/7", name, "checking that return qos has the correct sessionId");
       }
-      catch (XmlBlasterException &ex) {
+      catch (XmlBlasterException &/*ex*/) {
          wentInException = true;
       }   
       assertEquals(log_, ME, false, wentInException, "reconnecting when communication down and giving positive publicSessionId: no exception expected");
@@ -164,7 +164,7 @@ public:
       try {
          connection_.connect(connQos, this);
       }
-      catch (XmlBlasterException &ex) {
+      catch (XmlBlasterException &/*ex*/) {
          wentInException = true;
       }   
       assertEquals(log_, ME, false, wentInException, "reconnecting second time when communication down and giving positive publicSessionId: no exception expected but a warning should have come");
@@ -175,7 +175,7 @@ public:
       try {
          connection_.disconnect(discQos);
       }
-      catch (XmlBlasterException &ex) {
+      catch (XmlBlasterException &/*ex*/) {
          wentInException = true;
       }   
       assertEquals(log_, ME, true, wentInException, "disconnecting when no communication should give an exception");

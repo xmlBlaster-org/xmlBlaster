@@ -212,7 +212,7 @@ public:
          }
          log_.info(me, "1. putting entries inside the queue: OK");      
       }
-      catch (XmlBlasterException &ex) {
+      catch (XmlBlasterException &/*ex*/) {
          log_.error(me, "1. putting entries inside the queue: FAILED could not put inside the queue the entry nr. " + lexical_cast<string>(i));      
          assert(0);
       }
@@ -248,7 +248,7 @@ public:
          }
          log_.info(me, "1. putting entries inside the queue: OK");      
       }
-      catch (XmlBlasterException &ex) {
+      catch (XmlBlasterException &/*ex*/) {
          log_.error(me, "1. putting entries inside the queue: FAILED could not put inside the queue the entry nr. " + lexical_cast<string>(i));      
          assert(0);
       }
