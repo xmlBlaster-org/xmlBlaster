@@ -3,7 +3,7 @@ Name:      RamTest.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: RamTest.cpp,v 1.7 2002/08/12 07:24:19 ruff Exp $
+Version:   $Id: RamTest.cpp,v 1.8 2002/08/15 11:08:32 ruff Exp $
 ---------------------------------------------------------------------------*/
 
 #include <string>
@@ -42,7 +42,7 @@ private:
       return "Tim";
    }
 
-   const static string::size_type NUM_PUBLISH = 1000;
+   static const string::size_type NUM_PUBLISH = 1000;
    util::StopWatch  stopWatch_;
    CorbaConnection* senderConnection_;
    string           publishOid_;
