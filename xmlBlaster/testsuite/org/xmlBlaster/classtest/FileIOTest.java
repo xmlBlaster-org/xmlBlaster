@@ -60,9 +60,10 @@ public class FileIOTest extends TestCase {
       I_UserDataHandler userDataHandler = new UserDataHandler();
       long num = 2000;
       if (sync) num = 100;
+      FileIO fileIO = null;
 
       try {
-         FileIO fileIO = new FileIO(glob, fileName, userDataHandler, num, sync);
+         fileIO = new FileIO(glob, fileName, userDataHandler, num, sync);
          File f = new File(fileName);
          long emptyLength = f.length();
 
@@ -108,6 +109,9 @@ public class FileIOTest extends TestCase {
       catch(XmlBlasterException e) {
          fail(testName + " failed: " + e.toString());
       }
+      finally {
+         if (fileIO != null) { fileIO.destroy(); fileIO = null; }
+      }
    }
 
    public void testOverflow() {
@@ -118,10 +122,11 @@ public class FileIOTest extends TestCase {
       I_UserDataHandler userDataHandler = new UserDataHandler();
       long num = 10;
       long numOverflow = 2;
+      FileIO fileIO = null;
 
       try {
          {
-            FileIO fileIO = new FileIO(glob, fileName, userDataHandler, num-numOverflow, false);
+            fileIO = new FileIO(glob, fileName, userDataHandler, num-numOverflow, false);
             fileIO.setModeDiscardOldest();
 
             System.out.println("Write " + num + " data objects (DISCARD_OLDEST) ...");
@@ -132,7 +137,7 @@ public class FileIOTest extends TestCase {
             assertEquals("NumLost", numOverflow, fileIO.getNumLost());
          }
          {
-            FileIO fileIO = new FileIO(glob, fileName, userDataHandler, num-numOverflow, false);
+            fileIO = new FileIO(glob, fileName, userDataHandler, num-numOverflow, false);
             fileIO.setModeDiscard();
 
             System.out.println("Write " + num + " data objects (DISCARD) ...");
@@ -143,7 +148,7 @@ public class FileIOTest extends TestCase {
             assertEquals("NumLost", numOverflow, fileIO.getNumLost());
          }
          {
-            FileIO fileIO = new FileIO(glob, fileName, userDataHandler, num-numOverflow, false);
+            fileIO = new FileIO(glob, fileName, userDataHandler, num-numOverflow, false);
             fileIO.setModeException();
 
             System.out.println("Write " + num + " data objects (EXCEPTION) ...");
@@ -168,6 +173,9 @@ public class FileIOTest extends TestCase {
       catch(XmlBlasterException e) {
          fail(testName + " failed: " + e.toString());
       }
+      finally {
+         if (fileIO != null) { fileIO.destroy(); fileIO = null; }
+      }
    }
 
    public void testDataCorruption() {
@@ -177,9 +185,10 @@ public class FileIOTest extends TestCase {
       fileName = testName + ".txt";
       I_UserDataHandler userDataHandler = new UserDataHandler();
       long num = 20;
+      FileIO fileIO = null;
 
       try {
-         FileIO fileIO = new FileIO(glob, fileName, userDataHandler, num, false);
+         fileIO = new FileIO(glob, fileName, userDataHandler, num, false);
          fileIO.writeNext("AFirstValue");
          fileIO.writeNext("ASecondValue");
          assertEquals("Data corrupted", "AFirstValue", (String)fileIO.readNext(true));
@@ -191,6 +200,9 @@ public class FileIOTest extends TestCase {
       catch(XmlBlasterException e) {
          fail(testName + " failed: " + e.toString());
       }
+      finally {
+         if (fileIO != null) { fileIO.destroy(); fileIO = null; }
+      }
    }
 
    public void testKilledFileOnWrite() {
@@ -201,9 +213,10 @@ public class FileIOTest extends TestCase {
       I_UserDataHandler userDataHandler = new UserDataHandler();
       long num = 20;
       long numKill = 5;
+      FileIO fileIO = null;
 
       try {
-         FileIO fileIO = new FileIO(glob, fileName, userDataHandler, num, false);
+         fileIO = new FileIO(glob, fileName, userDataHandler, num, false);
          for (int ii=0; ii<num; ii++) {
             if (ii == numKill) {
                File ff = new File(fileName);
@@ -242,6 +255,9 @@ public class FileIOTest extends TestCase {
       catch(XmlBlasterException e) {
          fail(testName + " failed: " + e.toString());
       }
+      finally {
+         if (fileIO != null) { fileIO.destroy(); fileIO = null; }
+      }
    }
 
    public void testKilledFileOnRead() {
@@ -252,9 +268,10 @@ public class FileIOTest extends TestCase {
       I_UserDataHandler userDataHandler = new UserDataHandler();
       long num = 20;
       long numKill = 5;
+      FileIO fileIO = null;
 
       try {
-         FileIO fileIO = new FileIO(glob, fileName, userDataHandler, num, false);
+         fileIO = new FileIO(glob, fileName, userDataHandler, num, false);
          for (int ii=0; ii<num; ii++) {
             fileIO.writeNext("World-" + ii);
          }
@@ -296,6 +313,9 @@ public class FileIOTest extends TestCase {
       catch(XmlBlasterException e) {
          fail(testName + " failed: " + e.toString());
       }
+      finally {
+         if (fileIO != null) { fileIO.destroy(); fileIO = null; }
+      }
    }
 
    public void testRestart() {
@@ -306,10 +326,12 @@ public class FileIOTest extends TestCase {
       I_UserDataHandler userDataHandler = new UserDataHandler();
       long num = 20;
       long numRead = 8;
+      FileIO fileIO = null;
 
       try {
+
          {
-            FileIO fileIO = new FileIO(glob, fileName, userDataHandler, num, false);
+            fileIO = new FileIO(glob, fileName, userDataHandler, num, false);
 
             for (int ii=0; ii<num; ii++)
                fileIO.writeNext("World-" + ii);
@@ -327,7 +349,7 @@ public class FileIOTest extends TestCase {
          // Simulates restart of software ...
 
          {
-            FileIO fileIO = new FileIO(glob, fileName, userDataHandler, num, false);
+            fileIO = new FileIO(glob, fileName, userDataHandler, num, false);
 
             int count = 0;
             while (true) {
@@ -347,6 +369,9 @@ public class FileIOTest extends TestCase {
       }
       catch(XmlBlasterException e) {
          fail(testName + " failed: " + e.toString());
+      }
+      finally {
+         if (fileIO != null) { fileIO.destroy(); fileIO = null; }
       }
    }
 
