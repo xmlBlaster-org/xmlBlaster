@@ -3,7 +3,7 @@ Name:      TestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.java,v 1.14 2000/02/25 13:51:02 ruff Exp $
+Version:   $Id: TestSub.java,v 1.15 2000/02/25 18:56:24 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -28,10 +28,10 @@ import test.framework.*;
  * as it cleans up everything after his tests are done.
  * <p>
  * Invoke examples:<br />
- * <code>
+ * <pre>
  *    jaco test.textui.TestRunner testsuite.org.xmlBlaster.TestSub
  *    jaco test.ui.TestRunner testsuite.org.xmlBlaster.TestSub
- * </code>
+ * </pre>
  */
 public class TestSub extends TestCase implements I_Callback
 {
@@ -256,7 +256,7 @@ public class TestSub extends TestCase implements I_Callback
     * instead of the JacORB ORB, which won't work.
     * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <code>   jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestSub</code>
+    * <pre>   jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestSub</pre>
     */
    public static void main(String args[])
    {

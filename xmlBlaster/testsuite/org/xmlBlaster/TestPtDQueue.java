@@ -3,7 +3,7 @@ Name:      TestPtDQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtDQueue.java,v 1.8 2000/02/25 13:51:02 ruff Exp $
+Version:   $Id: TestPtDQueue.java,v 1.9 2000/02/25 18:56:23 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -28,11 +28,11 @@ import test.framework.*;
  * from her queue in the xmlBlaster when she logs in.
  * <p>
  * Invoke examples:<br />
- * <code>
+ * <pre>
  *    jaco test.textui.TestRunner testsuite.org.xmlBlaster.TestPtDQueue
  *
  *    jaco test.ui.TestRunner testsuite.org.xmlBlaster.TestPtDQueue
- * </code>
+ * </pre>
  */
 public class TestPtDQueue extends TestCase implements I_Callback
 {
@@ -252,7 +252,7 @@ public class TestPtDQueue extends TestCase implements I_Callback
     * instead of the JacORB ORB, which won't work.
     * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <code>   jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestPtDQueue</code>
+    * <pre>   jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestPtDQueue</pre>
     */
    public static void main(String args[])
    {

@@ -3,7 +3,7 @@ Name:      TestFailSave.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSave.java,v 1.6 2000/02/25 16:58:30 ruff Exp $
+Version:   $Id: TestFailSave.java,v 1.7 2000/02/25 18:56:23 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -15,18 +15,18 @@ import test.framework.*;
 
 
 /**
- * Tests the fail save behavior of the CorbaConnect client helper class. 
+ * Tests the fail save behavior of the CorbaConnection client helper class.
  * <br />For a description of what this fail save mode can do for you, please
- * read the API documentation of ClientConnect.
+ * read the API documentation of CorbaConnection.
  * <p>
- * This is an interesting example, since it creates a XmlBlaster server instance 
- * in a separate thread, talking over CORBA with it.
+ * This is an interesting example, since it creates a XmlBlaster server instance
+ * in the same JVM , but in a separate thread, talking over CORBA with it.
  * <p>
  * Invoke examples:<br />
- * <code>
- *    jaco test.textui.TestRunner testsuite.org.xmlBlaster.TestFailSave
- *    jaco test.ui.TestRunner testsuite.org.xmlBlaster.TestFailSave
- * </code>
+ * <pre>
+ *   jaco test.textui.TestRunner testsuite.org.xmlBlaster.TestFailSave
+ *   jaco test.ui.TestRunner testsuite.org.xmlBlaster.TestFailSave
+ * </pre>
  */
 public class TestFailSave extends TestCase implements I_Callback, I_ConnectionProblems
 {
@@ -302,7 +302,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
 
 
    /**
-    * Start a xmlBlaster server instance. 
+    * Start a xmlBlaster server instance.
     * Invoke thread.stopServer=true; to stop it.
     */
    private class ServerThread extends Thread
@@ -337,7 +337,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
     * instead of the JacORB ORB, which won't work.
     * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <code>   jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestFailSave</code>
+    * <pre>   jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestFailSave</pre>
     */
    public static void main(String args[])
    {

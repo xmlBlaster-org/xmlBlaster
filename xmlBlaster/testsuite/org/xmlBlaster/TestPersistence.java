@@ -3,7 +3,7 @@ Name:      TestPersistence.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing durable messages
-Version:   $Id: TestPersistence.java,v 1.4 2000/02/25 13:51:02 ruff Exp $
+Version:   $Id: TestPersistence.java,v 1.5 2000/02/25 18:56:23 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -21,11 +21,11 @@ import test.framework.*;
  * This client tests the persistence driver, the $lt;isDurable> flag.
  * <p>
  * Invoke examples:<br />
- * <code>
+ * <pre>
  *    jaco test.textui.TestRunner testsuite.org.xmlBlaster.TestPersistence
  *
  *    jaco test.ui.TestRunner testsuite.org.xmlBlaster.TestPersistence
- * </code>
+ * </pre>
  */
 public class TestPersistence extends TestCase implements I_Callback
 {
@@ -242,7 +242,7 @@ public class TestPersistence extends TestCase implements I_Callback
     * instead of the JacORB ORB, which won't work.
     * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <code>   jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestPersistence</code>
+    * <pre>   jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestPersistence</pre>
     */
    public static void main(String args[])
    {

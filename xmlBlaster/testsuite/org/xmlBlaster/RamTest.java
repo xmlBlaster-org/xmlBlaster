@@ -3,7 +3,7 @@ Name:      RamTest.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: RamTest.java,v 1.5 2000/02/25 13:51:02 ruff Exp $
+Version:   $Id: RamTest.java,v 1.6 2000/02/25 18:58:10 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -28,10 +28,10 @@ import test.framework.*;
  * as it cleans up everything after his tests are done.
  * <p>
  * Invoke examples:<br />
- * <code>
+ * <pre>
  *    jaco test.textui.TestRunner testsuite.org.xmlBlaster.RamTest
  *    jaco test.ui.TestRunner testsuite.org.xmlBlaster.RamTest
- * </code>
+ * </pre>
  */
 public class RamTest extends TestCase
 {
@@ -209,7 +209,7 @@ public class RamTest extends TestCase
     * instead of the JacORB ORB, which won't work.
     * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <code>   jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.RamTest</code>
+    * <pre>   jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.RamTest</pre>
     */
    public static void main(String args[])
    {
