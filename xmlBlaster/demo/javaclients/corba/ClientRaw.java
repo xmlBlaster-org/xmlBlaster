@@ -3,7 +3,7 @@ Name:      ClientRaw.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code how to access xmlBlaster using CORBA
-Version:   $Id: ClientRaw.java,v 1.3 2000/10/22 17:26:09 ruff Exp $
+Version:   $Id: ClientRaw.java,v 1.4 2000/10/24 18:59:03 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.corba;
 
@@ -34,6 +34,8 @@ import org.omg.CosNaming.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
+ *    jaco org.xmlBlaster.Main -iorFile /tmp/NS_Ref
+ *
  *    ${JacORB_HOME}/bin/jaco javaclients.corba.ClientRaw -iorFile /tmp/NS_Ref
  *
  *    ${JacORB_HOME}/bin/jaco javaclients.corba.ClientRaw -ior `cat /tmp/NS_Ref`
@@ -72,8 +74,11 @@ public class ClientRaw
             name[0].kind = "MOM";
             if (nc == null) {
                Log.plain(ME, "\nSorry, please pass the server IOR string to the client, e.g.:\n"
+                           + "Start the server:\n"
                            + "   jaco org.xmlBlaster.Main -iorFile /tmp/NS_Ref\n"
+                           + "Start this client:\n"
                            + "   jaco javaclients.corba.ClientRaw -iorFile /tmp/NS_Ref\n");
+               usage();
                Log.panic(ME, "Read xmlBlaster/INSTALL for help");
             }
             authServer = AuthServerHelper.narrow(nc.resolve(name));
@@ -213,6 +218,7 @@ public class ClientRaw
       Log.plain("\nAvailable options:");
       Log.plain("   -name               The login name [ClientRaw].");
       Log.plain("   -iorFile            File with the IOR string from xmlBlaster.");
+      Log.plain("   -ior                The raw IOR string from xmlBlaster.");
       Log.usage();
       Log.exit(ME, "Example: jaco javaclients.corba.ClientRaw -iorFile /tmp/NS_Ref\n");
    }
