@@ -3,7 +3,7 @@ Name:      CbConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: CbConnection.java,v 1.3 2002/06/15 16:10:11 ruff Exp $
+Version:   $Id: CbConnection.java,v 1.4 2002/06/25 17:47:28 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.callback;
@@ -269,13 +269,13 @@ public class CbConnection implements I_Timeout
                log.info(ME, "Callback transition " + getStateStr(oldState) + " -> " + getStateStr() + ": Success, " + msgQueue.getLoginName() + " reconnected.");
             }
             else if (isDead()) {   // ignore, not possible
-               log.error(ME, "Callback transition " + getStateStr(oldState) + " -> " + getStateStr() + " for " + msgQueue.getLoginName() + ": We ignore it.");
+               log.warn(ME, "Callback transition " + getStateStr(oldState) + " -> " + getStateStr() + " for " + msgQueue.getLoginName() + ": We ignore it.");
             }
 
          }
          else { // error
             if (isDead()) {   // ignore, not possible
-               log.error(ME, "Callback transition " + getStateStr(oldState) + " -> " + getStateStr() + " for " + msgQueue.getLoginName() + ": We ignore it ...");
+               log.warn(ME, "Callback transition " + getStateStr(oldState) + " -> " + getStateStr() + " for " + msgQueue.getLoginName() + ": We ignore it ...");
             }
             else if (cbAddress.getRetries() != -1 && retryCounter >= cbAddress.getRetries()) {
                state = IS_DEAD;
@@ -304,7 +304,7 @@ public class CbConnection implements I_Timeout
    /**
     * Stop all callback drivers of this client.
     */
-   public final void shutdown() {
+   public final synchronized void shutdown() {
       if (log.CALL) log.call(ME, "Entering shutdown ...");
       if (timerKey != null) {
          this.cbPingTimer.removeTimeoutListener(timerKey);
