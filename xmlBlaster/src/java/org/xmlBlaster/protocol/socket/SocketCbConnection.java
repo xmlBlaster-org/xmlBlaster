@@ -179,7 +179,8 @@ public class SocketCbConnection extends Executor
    }
 
    /**
-    * Updating multiple messages in one sweep, callback to client. 
+    * Updating multiple messages in one sweep, callback to client. This method is 
+    * invoked when the callback socket is different from  
     * <p />
     * @param expectingResponse is WAIT_ON_RESPONSE or ONEWAY
     * @return null if oneway
