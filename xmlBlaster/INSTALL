@@ -10,7 +10,7 @@
    - JDK 1.2 or later
    - a 'make' utility recommended. For DOS/Windows, e.g. cygwin's make.
 	  Note that Windows nmake will not work properly with xmlBlaster Makefiles
-   - JacOrb (CORBA)
+   - JacOrb (CORBA) http://www.inf.fu-berlin.de/~brose/jacorb/
 
 
                         Environment
