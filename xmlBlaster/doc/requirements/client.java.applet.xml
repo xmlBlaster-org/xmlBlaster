@@ -32,7 +32,7 @@
      <h2>Overview</h2>
      <p>
      The following illustration shows a typical use case, an applet running behind
-     internat proxies (like <a href="http://www.squid-cache.org/" target="others">squid</a>) and
+     internet proxies (like <a href="http://www.squid-cache.org/" target="others">squid</a>) and
      firewalls. It contacts the Web Server, for example <a href="http://www.apache.org/" target="others">Apache</a>,
      which directs the call to a servlet engine with xmlBlasters communication servlet.
      The servlet looks at the applet request and opens a connection to xmlBlaster to
@@ -67,6 +67,9 @@
 
       <li><a href="http://www.xmlblaster.org:8080/xmlBlaster/SystemInfoApplet.html" target="others">
       The online persistent HTTP system info applet demo</a></li>
+
+      <li><a href="http://www.xmlblaster.org:8080/xmlBlaster/XmlScript.html" target="others">
+      The online persistent HTTP xmlBlaster script access applet demo</a></li>
 
       <li><a href="http://www.xmlblaster.org:8080/xmlBlaster/index.html" target="others">
       Overview of online persistent HTTP examples.</a></li>
@@ -299,7 +302,7 @@ http://localhost:8080/xmlBlaster/SystemInfoApplet.html
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2003 11 16</date>
-   <revision>$Revision: 1.4 $</revision>
+   <revision>$Revision: 1.5 $</revision>
 
    <testcase status="OPEN">
       <name>-</name>
