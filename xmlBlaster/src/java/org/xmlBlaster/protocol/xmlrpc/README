@@ -13,6 +13,18 @@ You need to download:
 and add xmlrpc.jar to your CLASSPATH.
 
 
+Test the driver:
+
+   jaco -Dsax.driver=com.sun.xml.parser.Parser org.xmlBlaster.Main
+
+   java -Dsax.driver=com.sun.xml.parser.Parser helma.xmlrpc.XmlRpcClient http://localhost:8080 authenticate.login "ben" "secret" "<qos></qos>" "mySessionId"
+
+   java -Dsax.driver=com.sun.xml.parser.Parser helma.xmlrpc.XmlRpcClient http://localhost:8080 xmlBlaster.subscribe "mySessionId" "<key oid='__sys__Login'></key>" "<qos></qos>"
+
+
+
+Using the proxy - Deprecated
+============================
 Start the server:
 
    java org.xmlBlaster.Main
@@ -40,3 +52,4 @@ TODO:
  - How to do asynchronous callbacks?
  - How to do authentication
  - Much more.
+
