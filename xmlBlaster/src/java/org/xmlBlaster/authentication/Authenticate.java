@@ -171,7 +171,7 @@ final public class Authenticate implements I_Authenticate
             if (log.TRACE) log.trace(ME+".connect()", "Empty sessionId - generated sessionId=" + sessionId);
          }
          else {
-            SessionInfo info = (SessionInfo)sessionInfoMap.get(sessionId);
+            SessionInfo info = getSessionInfo(sessionId);
             if (info != null) {
                ConnectReturnQos returnQos = new ConnectReturnQos(glob, connectQos);
                returnQos.setSessionId(sessionId);
@@ -226,7 +226,9 @@ final public class Authenticate implements I_Authenticate
          }
 
          sessionInfo = new SessionInfo(subjectInfo, sessionCtx, connectQos, getGlobal());
-         sessionInfoMap.put(sessionId, sessionInfo);
+         synchronized(sessionInfoMap) {
+            sessionInfoMap.put(sessionId, sessionInfo);
+         }
          subjectInfo.notifyAboutLogin(sessionInfo);
 
          fireClientEvent(sessionInfo, true);
@@ -275,9 +277,25 @@ final public class Authenticate implements I_Authenticate
          }
          securityMgr.releaseSession(sessionId, sessionSecCtx.importMessage(qos_literal));
 
+         SessionInfo sessionInfo = getSessionInfo(sessionId);
+         SubjectInfo subjectInfo = sessionInfo.getSubjectInfo();
+
          DisconnectQos disconnectQos = new DisconnectQos(qos_literal);
 
          resetSessionInfo(sessionId, disconnectQos.deleteSubjectQueue());
+
+         if (disconnectQos.clearSessions() == true && subjectInfo.getNumSessions() > 0) {
+            while (/*!subjectInfo.isShutdown()*/true) {
+               Iterator it = subjectInfo.getSessions().iterator();
+               if (it.hasNext()) {
+                  SessionInfo si = (SessionInfo)it.next();
+                  log.warn(ME, "Destroying session '" + si.getSessionId() + "' of user '" + subjectInfo.getLoginName() + "' as requested by client");
+                  disconnect(si.getSessionId(), null);
+               }
+               else
+                  break;
+            }
+         }
 
          if (log.DUMP) log.dump(ME, toXml().toString());
          if (log.CALL) log.call(ME, "Leaving disconnect()");
@@ -321,7 +339,9 @@ final public class Authenticate implements I_Authenticate
     */
    public final SessionInfo getSessionInfo(String sessionId) throws XmlBlasterException
    {
-      return (SessionInfo)sessionInfoMap.get(sessionId);
+      synchronized(sessionInfoMap) {
+         return (SessionInfo)sessionInfoMap.get(sessionId);
+      }
    }
 
 
