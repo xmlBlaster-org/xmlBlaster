@@ -29,7 +29,7 @@ DONE:
 
   - Incompatible change:
      Removed XmlKeyBase.java, use XmlKey.java instead
-     XmlKeyBase.DEFAULT_contentMimeExtended -> Constantes.DEFAULT_CONTENT_MIME_EXTENDED
+     XmlKeyBase.DEFAULT_contentMimeExtended -> Constants.DEFAULT_CONTENT_MIME_EXTENDED
 
   - Incompatible change of file name:
      UpdateQoS.java -> UpdateQos.java
