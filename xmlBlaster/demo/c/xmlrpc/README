@@ -1,0 +1,66 @@
+Simple example how to access xmlBlaster with C and XmlRpc
+=========================================================
+
+
+Installation
+============
+
+Download XmlRpc lib from:
+	http://xmlrpc-c.sourceforge.net/
+
+This XmlRpc implementation needs the W3C HTTP client library
+(download from http://www.w3.org/Library/)
+
+
+Compile (on UNIX):
+==================
+
+cd ~/w3c-libwww-pre-5.3.0
+-------------------------
+./configure --prefix=${HOME}/xmlrpc_libwww --without-expat --without-ssl
+make
+make install
+
+Libraries have been installed in:
+   ${HOME}/xmlrpc_libwww/lib
+
+export LD_LIBRARY_PATH=${HOME}/xmlrpc_libwww/lib
+export PATH=${HOME}/xmlrpc_libwww/bin:$PATH
+
+
+cd ~/xmlrpc-c-0.9.9    (http://xmlrpc-c.sourceforge.net/)
+-------------------
+
+./configure --prefix=${HOME}/xmlrpc_bin
+
+Libraries have been installed in:
+   ${HOME}/xmlrpc_bin/lib
+
+export LD_LIBRARY_PATH=${LD_LIBRARY_PATH}:${HOME}/xmlrpc_libwww/lib:${HOME}/xmlrpc_bin/lib
+export PATH=${HOME}/xmlrpc_libwww/bin:${HOME}/xmlrpc_bin/bin:$PATH
+
+
+cd <XMLBLASTER_HOME>/demo/c/xmlrpc
+----------------------------------
+
+   CLIENT_CFLAGS=`xmlrpc-c-config libwww-client --cflags`
+   CLIENT_LIBS=`xmlrpc-c-config libwww-client --libs`
+   gcc $CLIENT_CFLAGS -o testLogin testLogin.c $CLIENT_LIBS
+
+
+
+Run it:
+=======
+
+Start xmlBlaster server
+
+   export CLASSPATH=<XMLBLASTER_HOME>/lib/xmlBlaster.jar
+   java org.xmlBlaster.Main
+
+
+Start this client:
+
+   testLogin  http://myHost:8080
+
+
+01/2002 marcel
