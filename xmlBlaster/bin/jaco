@@ -39,7 +39,7 @@ if [ -f ${JDK_HOME}/lib/classes.zip ]; then
    java -classpath "${JDK_HOME}/lib/classes.zip:${JacORB_LIB}:${JacORB_LIB}/jacorb.jar:${CLASSPATH}"  "$@"
 else
    # To change memory consumption:
-   BlasterServerMemory=-Xms10m -Xmx80m
+   #BlasterServerMemory=-Xms10m -Xmx80m
    # Uncomment to switch off JIT:
    #JIT_COMPILER="-Djava.compiler="
    echo -e "\033[32;40m  Running JacORB with JDK 1.2 and JIT=$JIT_COMPILER\033[0m"
