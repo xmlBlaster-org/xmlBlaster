@@ -44,7 +44,7 @@ MsgQosFactory::MsgQosFactory(Global& global)
    inRedeliver_       = false;
    inTopic_           = false;
    inQueue_           = false;
-   inMsgstore_        = false;
+   inPersistence_        = false;
    inDestination_     = false;
    inSender_          = false;
    inPriority_        = false;
@@ -104,9 +104,9 @@ void MsgQosFactory::startElement(const XMLCh* const name, AttributeList& attrs)
       queuePropertyFactory_.startElement(name, attrs);
       return;
    }
-   if (SaxHandlerBase::caseCompare(name, "msgUnitStore") || inMsgstore_) {
+   if (SaxHandlerBase::caseCompare(name, "persistence") || inPersistence_) {
       if (!inQos_) return;
-      inMsgstore_ = true;
+      inPersistence_ = true;
       queuePropertyFactory_.startElement(name, attrs);
       return;
    }
@@ -172,7 +172,7 @@ void MsgQosFactory::startElement(const XMLCh* const name, AttributeList& attrs)
       if (getLongAttr(attrs, REMAINING_LIFE, tmpLong)) msgQosData_.setRemainingLifeStatic(tmpLong);
       return;
    }
-   if (SaxHandlerBase::caseCompare(name, "msgUnitStore")) {
+   if (SaxHandlerBase::caseCompare(name, "persistence")) {
       if (!inQos_) return;
       inTopic_ = true;
       TopicProperty tmpProp(global_);
@@ -267,7 +267,7 @@ void MsgQosFactory::startElement(const XMLCh* const name, AttributeList& attrs)
 void MsgQosFactory::characters(const XMLCh* const ch, const unsigned int length) 
 {
    SaxHandlerBase::characters(ch, length);
-   if (inQueue_ || inMsgstore_) queuePropertyFactory_.characters(ch, length);
+   if (inQueue_ || inPersistence_) queuePropertyFactory_.characters(ch, length);
 }
 
 
@@ -277,7 +277,7 @@ void MsgQosFactory::endElement(const XMLCh* const name)
       inQos_ = false;
       return;
    }
-   if (inQueue_ || inMsgstore_) {
+   if (inQueue_ || inPersistence_) {
       queuePropertyFactory_.endElement(name);
       if(SaxHandlerBase::caseCompare(name, "queue")) {
          inQueue_ = false;
@@ -289,15 +289,15 @@ void MsgQosFactory::endElement(const XMLCh* const name)
             tmpProp.setHistoryQueueProperty(tmp);
             msgQosData_.setTopicProperty(tmpProp);
          }
-         else if (relating == Constants::RELATING_TOPICCACHE) {
+         else if (relating == Constants::RELATING_TOPICSTORE) {
             tmpProp.setMsgUnitStoreProperty(tmp);
             msgQosData_.setTopicProperty(tmpProp);
          }
          return;
       }
 
-      if(SaxHandlerBase::caseCompare(name, "msgUnitStore")) {
-         inMsgstore_ = false;
+      if(SaxHandlerBase::caseCompare(name, "persistence")) {
+         inPersistence_ = false;
          character_.erase();
          QueuePropertyBase tmp = queuePropertyFactory_.getQueueProperty();
          TopicProperty tmpProp = msgQosData_.getTopicProperty();
@@ -345,7 +345,7 @@ void MsgQosFactory::endElement(const XMLCh* const name)
       character_.erase();
       return;
    }
-   if(SaxHandlerBase::caseCompare(name, "msgUnitStore")) {
+   if(SaxHandlerBase::caseCompare(name, "persistence")) {
       inTopic_ = false;
       character_.erase();
       return;

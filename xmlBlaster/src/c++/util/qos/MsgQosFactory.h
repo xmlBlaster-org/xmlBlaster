@@ -106,7 +106,7 @@ private:
    bool inRedeliver_; // = false;
    bool inTopic_; // false;
    bool inQueue_; // =  false;
-   bool inMsgstore_; // false;
+   bool inPersistence_; // false;
    bool inDestination_; // false;
    bool inSender_; // false;
    bool inPriority_; // false;
