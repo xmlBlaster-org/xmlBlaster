@@ -22,7 +22,7 @@
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash
 # Thanks to Heinrich Goetzger
-# $Revision: 1.36 $
+# $Revision: 1.37 $
 #-----------------------------------------------------------
 
 
@@ -33,16 +33,16 @@ ESC="\033[0m"
 OS="`uname -s`"
 
 if [ `basename ${SHELL}` = "bash" ]; then
-	ECHO="echo -e"
+   ECHO="echo -e"
 else
-	ECHO="echo"
+   ECHO="echo"
 fi
 
 
 #-------- Checking xmlBlaster --------
 if [ ${XMLBLASTER_HOME:=""} = "" ] ; then
    ${ECHO} "$BLACK_RED   Please set the environment variable XMLBLASTER_HOME          $ESC"
-	${ECHO} "$BLACK_RED      Example: 'export XMLBLASTER_HOME=`pwd`'   $ESC"
+   ${ECHO} "$BLACK_RED      Example: 'export XMLBLASTER_HOME=`pwd`'   $ESC"
    return
 fi
 
@@ -64,16 +64,16 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    CLASSPATH=${XMLBLASTER_HOME}/lib/omquery.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/test.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/servlet-2.0.jar:${CLASSPATH}
-	if [ ${USE_ANT:=""} = "true" ] ; then
-	   ${ECHO} "$BLACK_LTGREEN      Using Ant to build xmlBlaster  $ESC"
-	   CLASSPATH=${XMLBLASTER_HOME}/lib/xmlBlaster.jar:${CLASSPATH}
-   	CLASSPATH=${XMLBLASTER_HOME}/lib/demo.jar:${CLASSPATH}
-	   CLASSPATH=${XMLBLASTER_HOME}/lib/testsuite.jar:${CLASSPATH}
-	else
-	   if [ -f ${XMLBLASTER_HOME}/lib/xmlBlaster.jar ]; then
-	      CLASSPATH=${XMLBLASTER_HOME}/lib/xmlBlaster.jar:${CLASSPATH}
-	   fi
-	fi
+   if [ ${USE_ANT:=""} = "true" ] ; then
+      ${ECHO} "$BLACK_LTGREEN      Using Ant to build xmlBlaster  $ESC"
+      CLASSPATH=${XMLBLASTER_HOME}/lib/xmlBlaster.jar:${CLASSPATH}
+      CLASSPATH=${XMLBLASTER_HOME}/lib/demo.jar:${CLASSPATH}
+      CLASSPATH=${XMLBLASTER_HOME}/lib/testsuite.jar:${CLASSPATH}
+   else
+      if [ -f ${XMLBLASTER_HOME}/lib/xmlBlaster.jar ]; then
+         CLASSPATH=${XMLBLASTER_HOME}/lib/xmlBlaster.jar:${CLASSPATH}
+      fi
+   fi
    CLASSPATH=${XMLBLASTER_HOME}/src/java:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/classes:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/demo:${CLASSPATH}
@@ -123,6 +123,12 @@ if [ -d ${JacORB_HOME} ] ; then
    if [ -f ${JacORB_HOME}/classes/jacorb.jar ] ; then
       # The original JacORB distribution is used
       JacORB_LIB=${JacORB_HOME}/classes
+      # The following two entries are only useful if you have JacORB installed separately:
+      # To use JacORB demo:
+      CLASSPATH=${CLASSPATH}:${JacORB_HOME}
+      # To compile JacORB yourself:
+      CLASSPATH=${CLASSPATH}:${JacORB_HOME}/classes
+      export CLASSPATH
    else
       # The with xmlBlaster delivered JacORB distribution is used
       JacORB_LIB=${JacORB_HOME}/lib
@@ -130,12 +136,6 @@ if [ -d ${JacORB_HOME} ] ; then
    export JacORB_LIB
    CLASSPATH=${JacORB_LIB}/jacorb.jar:${JacORB_LIB}/idl.jar:${CLASSPATH}
    #CLASSPATH=${CLASSPATH}:${JacORB_LIB}
-   # The following two entries are only useful if you have JacORB installed separately:
-   # To use JacORB demo:
-   CLASSPATH=${CLASSPATH}:${JacORB_HOME}
-   # To compile JacORB yourself:
-   CLASSPATH=${CLASSPATH}:${JacORB_HOME}/classes
-   export CLASSPATH
    ${ECHO} "$BLACK_LTGREEN      Using JacORB_HOME=${JacORB_HOME}  $ESC"
 
    if [ ! -f ${HOME}/.jacorb_properties ]; then
@@ -173,9 +173,9 @@ if [ ${JDK_HOME:=""} != "" ] ; then
       fi
       PATH=${JDK_HOME}/bin:${PATH}
       export PATH
-		# set JAVA_HOME for ANT:
-		JAVA_HOME=$JDK_HOME
-		export JAVA_HOME
+      # set JAVA_HOME for ANT:
+      JAVA_HOME=$JDK_HOME
+      export JAVA_HOME
    else
       ${ECHO} "$BLACK_RED   The directory JDK_HOME=$JDK_HOME doesn't exist   $ESC"
    fi
