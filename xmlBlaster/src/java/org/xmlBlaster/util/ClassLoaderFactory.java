@@ -3,7 +3,7 @@ Name:      ClassLoaderFactory.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Creates a new class loader for the pluginmanager.
-Version:   $Id: ClassLoaderFactory.java,v 1.6 2002/08/23 21:34:45 ruff Exp $
+Version:   $Id: ClassLoaderFactory.java,v 1.7 2002/08/24 18:03:35 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
@@ -45,12 +45,8 @@ public class ClassLoaderFactory {
     * Assuming a classpath like:
     * <pre>
     *   /home/goetzger/java/xmlBlaster/lib/jacorb.jar
-    *   /home/goetzger/java/xmlBlaster/lib/idl.jar
     *   /home/goetzger/java/xmlBlaster/demo
     *   /home/goetzger/java/xmlBlaster/classes
-    *   /home/goetzger/java/xmlBlaster/src/java
-    *   /home/goetzger/java/xmlBlaster/lib/testsuite.jar
-    *   /home/goetzger/java/xmlBlaster/lib/demo.jar
     *   /home/goetzger/java/xmlBlaster/lib/xmlBlaster.jar
     *   /home/goetzger/java/xmlBlaster/lib/batik/js.jar
     * </pre>
@@ -76,7 +72,10 @@ public class ClassLoaderFactory {
       if (log.TRACE) log.trace(ME, "caller: '" + caller.getClass().getName() + "' pluginName: '" + plugin + "'");
 
       // calling for object related base class path
-      basePath = getBasePath(caller, plugin);
+      LoaderInfo loaderInfo = getLoaderInfo(caller, plugin);
+      if (log.TRACE) log.trace(ME, loaderInfo.toString());
+
+      basePath = loaderInfo.basePath;
       if (log.TRACE) log.trace(ME, "Using base path '" + basePath + "' to scan for specific jar files ...");
 
       // scanning the basePath (and no deeper dirs!) for jars:
@@ -101,7 +100,14 @@ public class ClassLoaderFactory {
          }
       }
 
-      if (log.TRACE) log.trace(ME, "Found " + classPath.size() + " jar files in '" + basePath + "'");
+      // The plugin itself needs to be loaded by our ClassLoader to inherit it
+      // to all children classes - add the classpath to the plugin class:
+      if (loaderInfo.jarPath != null)
+         classPath.add(loaderInfo.jarPath); // Attach to end e.g. xmlBlaster.jar
+      else
+         classPath.add(loaderInfo.rootPath); // Attach to end e.g. xmlBlaster/classes
+
+      if (log.TRACE) log.trace(ME, "Found " + (classPath.size()-1) + " jar files in '" + basePath + "'");
       return new XmlBlasterClassLoader( stringToUrl(classPath), plugin );
    }
 
@@ -113,52 +119,50 @@ public class ClassLoaderFactory {
     * Adding the name of the calling class as path to the basepath.
     *
     * @param caller Type of the calling class
+    * @param plugin The plugin name e.g. "org.xmlBlaster.protocol.corba.CorbaDriver"
+    *               or null
     * @return The base path for the caller specific additional classes.
     */
-   private String getBasePath(Object caller, String plugin) {
-      if (log.CALL) log.call(ME, "Entering getBasePath");
-
-      URL callersURL[] = null; // all URLs of the callers classpath
-      String basePath = ""; // i.e. '/home/developer/java/xmlBlaster/lib/'
-      String callerClassName = null; // i.e. 'org.xmlBlaster.util.ClassLoaderFactory'
-
-      String classResource = which(caller, plugin);
-      if (log.TRACE) log.trace(ME, "plugin '" + plugin + "' has resource path " + classResource );
-
-      // occures at the beginning of the return String of the getClass().toString() - call
-      // i.e. for this class: className: 'class org.xmlBlaster.util.ClassLoaderFactory'
-      String classType = "class ";
-
-      if (plugin.equals("")) {
-         callerClassName = caller.getClass().toString();
-         callerClassName = callerClassName.substring(classType.length(), callerClassName.length());
-      } else {
-         callerClassName = plugin;
+   public static LoaderInfo getLoaderInfo(Object caller, String plugin) throws XmlBlasterException {
+      //if (log.CALL) log.call(ME, "Entering getLoaderInfo");
+      if (plugin == null || plugin.length() < 1) {
+         Thread.currentThread().dumpStack();
+         throw new IllegalArgumentException("ClassLoaderFactory.getLoaderInfo() with plugin=null");
       }
 
-      callerClassName = StringHelper.replaceAll(callerClassName, ".", "/"); // replace '.' by fileSeperator (windows want "/" as well)
-      //callerClassName = callerClassName.replaceAll("\\.", fileSeparator); // since JDK 1.4 :-(
+      String classResource = which(caller, plugin); // e.g. "/home/xmlblast/xmlBlaster/classes/org/xmlBlaster/protocol/corba/CorbaDriver.class"
+      if (classResource == null) {
+         String text = "Can't find class " + plugin + ", please check your plugin name and your CLASSPATH";
+         //if (log.TRACE) log.trace(ME, text);
+         throw new XmlBlasterException("ClassLoaderFactory", text);
+      }
+      //if (log.TRACE) log.trace(ME, "plugin '" + plugin + "' has resource path " + classResource );
+
+      String pluginSlashed = StringHelper.replaceAll(plugin, ".", "/"); // replace '.' by fileSeperator (windows wants "/" as well)
+      // plugin.replaceAll("\\.", "/"); // since JDK 1.4 :-(
+
+      String jarPath = null;
+      String jarName = null;
+      String rootPath = ""; // i.e. '/home/developer/java/xmlBlaster/lib/'
 
       if(classResource.indexOf('!') == -1) {
          // Determine the BasePath from classes
-         // log.warn(ME, "Class not loaded from jar, don't know how to determine basePath");
-         basePath = classResource.substring(0, classResource.lastIndexOf(callerClassName));
+         // log.warn(ME, "Class not loaded from jar, don't know how to determine rootPath");
+         rootPath = classResource.substring(0, classResource.lastIndexOf(pluginSlashed));
       }
       else {
          // Determine the BasePath from jar
          // 'file:/home/xmlblaster/work/xmlBlaster/lib/xmlBlaster.jar!/org/xmlBlaster/engine/cluster/simpledomain/RoundRobin.class'
-         String jarFile = classResource.substring(classResource.indexOf("/"), classResource.indexOf("!"));
-         String jarName = jarFile.substring(jarFile.lastIndexOf("/") + 1, jarFile.length()      );
-         basePath = jarFile.substring(0, jarFile.lastIndexOf(jarName));
-         if (log.TRACE) log.trace(ME, "jarFile = '" + jarFile + "' jarName = '" + jarName + "'");
+         jarPath = classResource.substring(classResource.indexOf("/"), classResource.indexOf("!"));
+         jarName = jarPath.substring(jarPath.lastIndexOf("/") + 1, jarPath.length()      );
+         rootPath = jarPath.substring(0, jarPath.lastIndexOf(jarName));
+         // jarPath = '/home/xmlblast/xmlBlaster/lib/xmlBlaster.jar' jarName = 'xmlBlaster.jar'
       }
 
-      // Return the base path combined with the caller specific path.
-      if (log.TRACE) log.trace(ME, "basePath: '" + basePath + "' callerClassName: '" + callerClassName + "'");
-
-      return (basePath + callerClassName);
+      LoaderInfo loaderInfo = new LoaderInfo(plugin, rootPath, jarPath, jarName, pluginSlashed);
+      //if (log.TRACE) log.trace(ME, loaderInfo.toString());
+      return loaderInfo;
    }
-
 
    /**
     * Returns an Array which contains all URL of the callers class loader.
@@ -205,12 +209,13 @@ public class ClassLoaderFactory {
     * by the current classpath.
     *
     * @param caller
-    * @param className Name of the class.
+    * @param className Name of the class, e.g. "org.xmlBlaster.protocol.corba.CorbaDriver"
     * @return Url of resource of className.
+    *   e.g. "/home/xmlblast/xmlBlaster/classes/org/xmlBlaster/protocol/corba/CorbaDriver.class"
     * @author <a href="mailto:mike@clarkware.com">Mike Clark</a>
     * @author <a href="http://www.clarkware.com">Clarkware Consulting</a>
     */
-   public String which(Object caller, String className) {
+   public static String which(Object caller, String className) {
 
       if (!className.startsWith("/")) {
          className = "/" + className;
@@ -221,10 +226,69 @@ public class ClassLoaderFactory {
       java.net.URL classUrl = caller.getClass().getResource(className);
 
       if (classUrl != null) {
-         if (log.TRACE) log.trace(ME, "Class '" + className + "' found in '" + classUrl.getFile() + "'");
-      } else {
-         if (log.TRACE) log.trace(ME, "\nClass '" + className + "' not found in '" + System.getProperty("java.class.path") + "'");
+         //if (log.TRACE) log.trace(ME, "Class '" + className + "' found in '" + classUrl.getFile() + "'");
+         return classUrl.getFile().toString();
       }
-      return classUrl.getFile().toString();
-   } // end of which
-}
+      else {
+         //if (log.TRACE) log.trace(ME, "Class '" + className + "' not found in '" + System.getProperty("java.class.path") + "'");
+         return null;
+      }
+   }
+} // class ClassLoaderFactory
+
+/**
+ * Helper struct holding infos about a plugin classname
+ */
+class LoaderInfo {
+   /** "org.xmlBlaster.protocol.corba.CorbaDriver" */
+   String pluginName;
+
+   /**
+      * The path only:
+      * if from "/home/xmlblast/xmlBlaster/lib/xmlBlaster.jar" -> "/home/xmlblast/xmlBlaster/lib/"
+      * if from class file -> "/home/xmlblast/xmlBlaster/classes/"
+      */
+   String rootPath;
+
+   /** "/home/xmlblast/xmlBlaster/lib/xmlBlaster.jar" or null if not from jar file loaded */
+   String jarPath;
+
+   /** "xmlBlaster.jar" or null if not from jar file */
+   String jarName;
+
+   /** "org/xmlBlaster/protocol/corba/CorbaDriver" */
+   String pluginSlashed;
+
+   /** Path where we search for jar files for this plugin
+      *  "/home/xmlblast/xmlBlaster/lib/org/xmlBlaster/protocol/corba/CorbaDriver"
+      */
+   String basePath;
+
+   public LoaderInfo(String pluginName, String rootPath, String jarPath,
+                     String jarName, String pluginSlashed) {
+      this.pluginName = pluginName;
+      this.rootPath = rootPath;
+      this.jarPath = jarPath;
+      this.jarName = jarName;
+      this.pluginSlashed = pluginSlashed;
+      this.basePath = this.rootPath + this.pluginSlashed;
+      doHack();
+   }
+
+   private void doHack() {
+      // The Makefile puts the .class files into xmlBlaster/classes
+      // but the plugin jars are searched under xmlBlaster/lib
+      // Remove this hack when the Makefiles are replaced by ant
+      int cl = this.rootPath.indexOf("xmlBlaster/classes/");
+      if (cl >= 0) {
+         this.basePath = this.rootPath.substring(0, cl) + "xmlBlaster/lib/" + this.pluginSlashed;
+      }
+   }
+
+   public String toString() {
+      return "pluginName=" + pluginName + " rootPath=" + rootPath + 
+         " jarPath=" + jarPath + " jarName=" + jarName +
+         " pluginSlashed=" + pluginSlashed + 
+         " basePath=" + basePath;
+   }
+} // class LoaderInfo
