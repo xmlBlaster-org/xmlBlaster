@@ -3,7 +3,7 @@ Name:      PublishQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: PublishQosWrapper.java,v 1.22 2002/05/19 12:55:38 ruff Exp $
+Version:   $Id: PublishQosWrapper.java,v 1.23 2002/06/27 11:03:07 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -112,6 +112,7 @@ public class PublishQosWrapper extends QosWrapper
     * Set message priority value, Constants.NORM_PRIORITY (5) is default. 
     * Constants.MIN_PRIORITY (0) is slowest
     * whereas Constants.MAX_PRIORITY (9) is highest priority.
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.publish.priority.html">The engine.qos.publish.priority requirement</a>
     * @see org.xmlBlaster.engine.helper.Constants
     */
    public void setPriority(int priority)
