@@ -173,7 +173,8 @@ msgLen[10] flag[6] requestId methodName secretSessionId lenUnzipped userData che
          <td>-</td>
          <td><img src="no.gif" border="0" alt="no" /></td>
          <td>This is a callback message to the client, the message unit (QoS, key, content) may be specified multiple times. 
-             There is no return value and no exception which can be thrown for maximum performance.
+             There is no return value and no exception which can be thrown for maximum performance.<br />
+             This call can be configured to use UDP instead of TCP, note however that UDP has a limited datagram size.
          </td>
       </tr>
       <tr>
@@ -192,7 +193,8 @@ msgLen[10] flag[6] requestId methodName secretSessionId lenUnzipped userData che
          <td>-</td>
          <td><img src="no.gif" border="0" alt="no" /></td>
          <td>The message unit [QoS, key, content] may be specified multiple times.
-             There is no return value and no exception which can be thrown for maximum performance.
+             There is no return value and no exception which can be thrown for maximum performance.<br />
+             This call can be configured to use UDP instead of TCP, note however that UDP has a limited datagram size.
          </td>
       </tr>
       <tr>
@@ -378,6 +380,16 @@ ConnectQos qos = new ConnectQos(glob);
          </tr>
 
          <tr>
+            <td>plugin/socket/useUdpForOneway</td>
+            <td>false</td>
+            <td>When configured to true the updateOneway() callback will be send
+	        as UDP datagram. UDP does not guarantee delivery or correct sequence
+		but has a significant smaller latency.
+                </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
             <td>plugin/socket/responseTimeout</td>
             <td>60000 (one minute)</td>
             <td>When a method is invoked we wait the given time on a response.<br />
@@ -496,6 +508,13 @@ ConnectQos qos = new ConnectQos(glob);
       java -Dfile.encoding=ISO8859_1 ... or System.setProperty("file.encoding","Cp850");
       </li>
    </ol>
+   <h3>Note on UDP datagram usage</h3>
+   <p>Each network in the Internet is characterised by a Maximum Transmission Unit (MTU),
+      which defines the largest datagram which can be sent on that network.
+      Whilst the total length of a datagram can (in theory) be up to 64 KB,
+      "real world" MTU limits usually mean datagrams are smaller 1500 bytes in total length.
+   </p>
+   <p>Currently we have configured MAX_PACKET_SIZE = 10*1024</p>
    </todo>
    <see type="REQ">protocol</see>
    <see type="REQ">client.c.socket</see>
@@ -506,7 +525,7 @@ ConnectQos qos = new ConnectQos(glob);
    <see type="CODE" lang="C">socket/XmlBlasterAccessUnparsed.c</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 02 12</date>
-   <revision>$Revision: 1.40 $</revision>
+   <revision>$Revision: 1.41 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
