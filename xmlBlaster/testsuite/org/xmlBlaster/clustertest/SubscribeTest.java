@@ -264,6 +264,11 @@ public class SubscribeTest extends TestCase {
             EraseRetQos[] arr = avalonCon.erase(ek.toXml(), eq.toXml());
             assertEquals("Erase", 1, arr.length);
 
+            // Wait on erase events
+            try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {}
+            updateCounterBilbo = 0;
+            updateCounterBilbo2 = 0;
+
             // We stay logged in but kill over callback server ...
             bilboCons[ii].shutdownCb();
          }
