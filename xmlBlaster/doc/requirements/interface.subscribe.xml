@@ -264,7 +264,7 @@
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 01</date>
-   <revision>$Revision: 1.12 $</revision>
+   <revision>$Revision: 1.13 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the subscribe method invocation</comment>
@@ -273,6 +273,7 @@
       <test tool="SUITE">org.xmlBlaster.test.qos.TestSubXPath</test>
       <test tool="SUITE">org.xmlBlaster.test.qos.TestSubManyClients</test>
       <test tool="SUITE">org.xmlBlaster.test.qos.TestSubNoDup</test>
+      <test tool="SUITE">org.xmlBlaster.test.qos.TestSubNoLocal</test>
       <test tool="SUITE">org.xmlBlaster.test.qos.TestSubXPathMany</test>
       <test tool="SUITE">org.xmlBlaster.test.qos.TestSubDispatch</test>
       <test tool="SUITE">org.xmlBlaster.test.qos.TestSubLostClient</test>
