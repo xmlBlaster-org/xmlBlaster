@@ -427,6 +427,9 @@ public class MsgUnitStoreCachePlugin implements I_Plugin, I_ConnectionListener, 
    }
 
    private long numSwapped() {
+      if (this.persistentStore == null) {
+         return 0L;
+      }
       return this.persistentStore.getNumOfEntries() - this.persistentStore.getNumOfDurableEntries();
    }
 
