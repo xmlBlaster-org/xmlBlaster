@@ -5,7 +5,7 @@ Class-Path: xmlrpc.jar junit.jar omquery.jar
  jacorb/avalon-framework-4.1.5.jar 
  xtdash.jar jaxp.jar parser.jar servlet.jar connector.jar 
  concurrent.jar 
- gnu-regexp.jar 
+ gnu-regexp.jar jzlib.jar 
  remotecons.jar 
  demo.jar testsuite.jar xmlunit.jar 
  tinySQL.jar jhotdraw.jar 

@@ -116,6 +116,8 @@ if [ -d ${XMLBLASTER_HOME} ]; then
 
    CLASSPATH=${XMLBLASTER_HOME}/lib/concurrent.jar:${CLASSPATH}
 
+   CLASSPATH=${XMLBLASTER_HOME}/lib/jzlib.jar:${CLASSPATH}
+
    #CLASSPATH=${XMLBLASTER_HOME}/lib/cpptasks.jar:${CLASSPATH}
 
    # Mail support
