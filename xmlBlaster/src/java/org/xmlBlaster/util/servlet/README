@@ -5,6 +5,7 @@ To compile you need
    xmlBlaster/lib/xt.jar
    xmlBlaster/lib/xp.jar
 from James Clark as well. They a not in the standard xmlBlaster distribution!
+Add those to jar files *behind* xtdash.jar in your CLASSPATH.
 
 please put the following lines in your zone.properties(Apache) (servlet.properties):
 
