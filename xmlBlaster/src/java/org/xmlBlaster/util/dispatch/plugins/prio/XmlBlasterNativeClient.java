@@ -101,7 +101,7 @@ public final class XmlBlasterNativeClient implements I_Callback
       this.connectQos.setSessionTimeout(0L);
       this.connectQos.setMaxSessions(this.glob.getProperty().get("PriorizedDeliveryPlugin.session.maxSessions", 10));
 
-      Address address = new Address(this.glob /*, "IOR"*/); // Force Corba until we have native access implemented (as we know CORBA is loaded before e.g. JDBC)
+      Address address = new Address(this.glob);
       address.setDispatchPlugin("undef");  // To avoid recursive loading of this PRIO plugin
       address.setDelay(2000L);      // retry connecting every 2 sec
       address.setRetries(-1);       // -1 == forever
