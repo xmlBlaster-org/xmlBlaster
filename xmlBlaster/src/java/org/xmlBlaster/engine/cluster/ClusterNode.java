@@ -157,6 +157,8 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
 
          ConnectQos qos = new ConnectQos(glob.getId(), connectGlob);
 
+         qos.setIsClusterNode(true);
+
          qos.setUserId(connectGlob.getId()); // the login name
          // The password is from the environment -passwd or more specific -passwd[heron]
 
