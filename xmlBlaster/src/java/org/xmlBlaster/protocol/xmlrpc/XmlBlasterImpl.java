@@ -3,7 +3,7 @@ Name:      XmlBlasterImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the xmlBlaster interface for xml-rpc.
-Version:   $Id: XmlBlasterImpl.java,v 1.4 2000/09/15 17:16:20 ruff Exp $
+Version:   $Id: XmlBlasterImpl.java,v 1.5 2000/10/11 17:07:40 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
@@ -34,7 +34,7 @@ import org.xmlBlaster.util.protocol.ProtoConverter;
  */
 public class XmlBlasterImpl implements org.xmlBlaster.protocol.xmlrpc.I_XmlBlaster
 {
-   private final String ME = "XmlBlasterImpl";
+   private final String ME = "XML-RPC.XmlBlasterImpl";
    private org.xmlBlaster.protocol.I_XmlBlaster blasterNative;
 
 
@@ -55,22 +55,15 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.xmlrpc.I_XmlBlast
    public String subscribe(String sessionId, String xmlKey_literal, String qos_literal)
       throws XmlBlasterException
    {
+      if (Log.CALL) Log.call(ME, "Entering subscribe() xmlKey=\n"
+                                 + xmlKey_literal + ") ...");
+      StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
 
-      try {
-         if (Log.CALL) Log.call(ME, "Entering subscribe() xmlKey=\n"
-                                  + xmlKey_literal + ") ...");
-         StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
+      String oid = blasterNative.subscribe(sessionId, xmlKey_literal, qos_literal);
 
-         String oid = blasterNative.subscribe(sessionId, xmlKey_literal, qos_literal);
+      if (Log.TIME) Log.time(ME, "Elapsed time in subscribe()" + stop.nice());
 
-         if (Log.TIME) Log.time(ME, "Elapsed time in subscribe()" + stop.nice());
-
-         return oid;
-      }
-      catch (org.xmlBlaster.util.XmlBlasterException e) {
-         throw new XmlBlasterException(e.id, e.reason);
-         // transform native exception to Corba exception
-      }
+      return oid;
    }
 
 
@@ -80,18 +73,12 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.xmlrpc.I_XmlBlast
    public void unSubscribe(String sessionId, String xmlKey_literal, String qos_literal)
       throws XmlBlasterException
    {
-      try {
-         Log.call(ME, "Entering unSubscribe() xmlKey=\n" + xmlKey_literal + ") ...");
-         StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
+      Log.call(ME, "Entering unSubscribe() xmlKey=\n" + xmlKey_literal + ") ...");
+      StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
 
-         blasterNative.unSubscribe(sessionId, xmlKey_literal, qos_literal);
+      blasterNative.unSubscribe(sessionId, xmlKey_literal, qos_literal);
 
-         if (Log.TIME) Log.time(ME, "Elapsed time in unSubscribe()" + stop.nice());
-      }
-      catch (org.xmlBlaster.util.XmlBlasterException e) {
-         throw new XmlBlasterException(e.id, e.reason);
-         // transform native exception to Corba exception
-      }
+      if (Log.TIME) Log.time(ME, "Elapsed time in unSubscribe()" + stop.nice());
    }
 
 
@@ -102,26 +89,17 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.xmlrpc.I_XmlBlast
          String publishQoS_literal)
       throws XmlBlasterException
    {
-
       if (Log.CALL) Log.call(ME, "Entering publish() ...");
 
-      try {
+      MessageUnit msgUnit = ProtoConverter.vector2MessageUnit(msgUnitWrap);
 
-         MessageUnit msgUnit = ProtoConverter.vector2MessageUnit(msgUnitWrap);
+      // convert the xml literal strings
+      XmlKey xmlKey = new XmlKey(xmlKey_literal, true);
+      PublishQoS publishQoS = new PublishQoS(publishQoS_literal);
 
-         // convert the xml literal strings
-         XmlKey xmlKey = new XmlKey(xmlKey_literal, true);
-         PublishQoS publishQoS = new PublishQoS(publishQoS_literal);
-
-         String retVal = blasterNative.publish(sessionId, xmlKey, msgUnit, publishQoS);
-         // String retVal = blasterNative.publish(sessionId, msgUnit);
-         return retVal;
-      }
-
-      catch (org.xmlBlaster.util.XmlBlasterException e) {
-         throw new XmlBlasterException(e.id, e.reason);
-         // transform native exception to Corba exception
-      }
+      String retVal = blasterNative.publish(sessionId, xmlKey, msgUnit, publishQoS);
+      // String retVal = blasterNative.publish(sessionId, msgUnit);
+      return retVal;
    }
 
 
@@ -131,26 +109,17 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.xmlrpc.I_XmlBlast
    public String publish (String sessionId, Vector msgUnitWrap)
       throws XmlBlasterException
    {
-
       if (Log.CALL) Log.call(ME, "Entering publish() ...");
 
-      try {
+      MessageUnit msgUnit = ProtoConverter.vector2MessageUnit(msgUnitWrap);
 
-         MessageUnit msgUnit = ProtoConverter.vector2MessageUnit(msgUnitWrap);
+      // convert the xml literal strings
+      XmlKey xmlKey = new XmlKey(msgUnit.getXmlKey(), true);
+      PublishQoS publishQoS = new PublishQoS(msgUnit.getQos());
 
-         // convert the xml literal strings
-         XmlKey xmlKey = new XmlKey(msgUnit.getXmlKey(), true);
-         PublishQoS publishQoS = new PublishQoS(msgUnit.getQos());
-
-         String retVal = blasterNative.publish(sessionId, xmlKey, msgUnit, publishQoS);
-         // String retVal = blasterNative.publish(sessionId, msgUnit);
-         return retVal;
-      }
-
-      catch (org.xmlBlaster.util.XmlBlasterException e) {
-         throw new XmlBlasterException(e.id, e.reason);
-         // transform native exception to Corba exception
-      }
+      String retVal = blasterNative.publish(sessionId, xmlKey, msgUnit, publishQoS);
+      // String retVal = blasterNative.publish(sessionId, msgUnit);
+      return retVal;
    }
 
 
@@ -177,17 +146,10 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.xmlrpc.I_XmlBlast
          String[] strArr = blasterNative.publishArr(sessionId, msgUnitArr);
          return ProtoConverter.stringArray2Vector(strArr);
       }
-
       catch (ClassCastException e) {
          Log.error(ME+".publish", "not a valid MessageUnit: " + e.toString());
          throw new XmlBlasterException("Not a valid Message Unit", "Class Cast Exception");
       }
-
-      catch (org.xmlBlaster.util.XmlBlasterException e) {
-         throw new XmlBlasterException(e.id, e.reason);
-         // transform native exception to Corba exception
-      }
-
    }
 
 
@@ -198,17 +160,11 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.xmlrpc.I_XmlBlast
    public Vector erase(String sessionId, String xmlKey_literal, String qos_literal)
       throws XmlBlasterException
    {
-      try {
-         if (Log.CALL) Log.call(ME, "Entering erase() xmlKey=\n" + xmlKey_literal + ") ...");
+      if (Log.CALL) Log.call(ME, "Entering erase() xmlKey=\n" + xmlKey_literal + ") ...");
 
-         String[] retArr = blasterNative.erase(sessionId, xmlKey_literal, qos_literal);
+      String[] retArr = blasterNative.erase(sessionId, xmlKey_literal, qos_literal);
 
-         return ProtoConverter.stringArray2Vector(retArr);
-      }
-      catch (org.xmlBlaster.util.XmlBlasterException e) {
-         throw new XmlBlasterException(e.id, e.reason);
-         // transform native exception to Corba exception
-      }
+      return ProtoConverter.stringArray2Vector(retArr);
    }
 
 
@@ -221,25 +177,17 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.xmlrpc.I_XmlBlast
    public Vector get(String sessionId, String xmlKey_literal, String qos_literal)
       throws XmlBlasterException
    {
+      if (Log.CALL) Log.call(ME, "Entering get() xmlKey=\n" + xmlKey_literal + ") ...");
+      StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
 
-      try {
+      MessageUnit[] msgUnitArr = blasterNative.get(sessionId, xmlKey_literal, qos_literal);
 
-         if (Log.CALL) Log.call(ME, "Entering get() xmlKey=\n" + xmlKey_literal + ") ...");
-         StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
+      // convert the MessageUnit array to a Vector array
+      Vector msgUnitArrWrap = ProtoConverter.messageUnitArray2Vector(msgUnitArr);
 
-         MessageUnit[] msgUnitArr = blasterNative.get(sessionId, xmlKey_literal, qos_literal);
+      if (Log.TIME) Log.time(ME, "Elapsed time in get()" + stop.nice());
 
-         // convert the MessageUnit array to a Vector array
-         Vector msgUnitArrWrap = ProtoConverter.messageUnitArray2Vector(msgUnitArr);
-
-         if (Log.TIME) Log.time(ME, "Elapsed time in get()" + stop.nice());
-
-         return msgUnitArrWrap;
-      }
-      catch (org.xmlBlaster.util.XmlBlasterException e) {
-         throw new XmlBlasterException(e.id, e.reason);
-         // transform native exception to Corba exception
-      }
+      return msgUnitArrWrap;
    }
 
 
@@ -258,7 +206,5 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.xmlrpc.I_XmlBlast
    {
       return blasterNative.toXml(extraOffset);
    }
-
-
 }
 
