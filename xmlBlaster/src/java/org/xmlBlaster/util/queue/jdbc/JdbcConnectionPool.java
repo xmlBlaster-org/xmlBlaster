@@ -95,6 +95,7 @@ public class JdbcConnectionPool implements I_Timeout {
          this.connectionLost = false;
          I_ConnectionListener lst = this.connectionListener;
          lst.reconnected();
+         this.log.info(ME, "Successfully reconnected to database");
 
       }
       catch (SQLException ex) {
