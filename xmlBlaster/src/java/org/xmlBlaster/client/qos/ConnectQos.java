@@ -389,7 +389,7 @@ public final class ConnectQos
     * set, the subscription will persit a server crash.
     * @param persitent
     */
-   public void setPersitent(boolean persitent) {
+   public void setPersistent(boolean persitent) {
       this.connectQosData.setPersistent(persitent);
    }
    
@@ -398,7 +398,7 @@ public final class ConnectQos
     * set, the subscription will persit a server crash.
     * @return true if persitent false otherwise.
     */
-   public boolean getPersitent() {
+   public boolean getPersistent() {
       return this.connectQosData.getPersistentProp().getValue();
    }
    

@@ -147,17 +147,6 @@ public final class SubscribeQos
    }
 
    /**
-    * Mark the subscription request to be persistent. 
-    * <p>
-    * NOTE: The request is only persistent in the client side
-    * queue if we are polling for xmlBlaster.
-    * </p>
-    */
-   public void setPersistent(boolean persistent) {
-      this.queryQosData.setPersistent(persistent);
-   }
-
-   /**
     * Sets a client property (an application specific property) to the
     * given value
     * @param key
@@ -176,20 +165,23 @@ public final class SubscribeQos
    }
 
    /**
-    * sets the persitent flag for this subscription. If this flag is
-    * set, the subscription will persit a server crash.
-    * @param persitent
+    * Mark the subscription request to be persistent. 
+    * <p>
+    * Sets the persistent flag for this subscription. If this flag is
+    * set, the subscription will persist a server crash.
+    * </p>
+    * @param persistent
     */
-   public void setPersitent(boolean persitent) {
-      this.queryQosData.setPersistent(persitent);
+   public void setPersistent(boolean persistent) {
+      this.queryQosData.setPersistent(persistent);
    }
-   
+
    /**
-    * Gets the persitent flag for this subscription. If this flag is
-    * set, the subscription will persit a server crash.
-    * @return true if persitent false otherwise.
+    * Gets the persistent flag for this subscription. If this flag is
+    * set, the subscription will persist a server crash.
+    * @return true if persistent false otherwise.
     */
-   public boolean getPersitent() {
+   public boolean getPersistent() {
       return this.queryQosData.getPersistentProp().getValue();
    }
    
