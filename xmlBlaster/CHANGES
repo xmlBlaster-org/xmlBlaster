@@ -4,6 +4,16 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes for 0.x [200x-xx-xx]
 ============================
 
+ o Fixed release generation to remove build.tmp and
+   keep the 'build' script.
+
+ o Bugfix in PersistentCachePlugin (I_Map, msgUnitStore)
+   - swapping with ascending messages sizes could fail
+     (Thanks to Dimitri.Devriendt@ses-astra.com)
+   - synchronized setProperties()
+     (Thanks to Dimitri.Devriendt@ses-astra.com)
+   - numOfBytes calculation was buggy if swapping
+
  o Bugfix in JDBC service module to handle NULL db entries
    Thanks to zzwzyz@hotmail.com
 
