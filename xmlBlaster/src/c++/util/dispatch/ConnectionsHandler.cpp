@@ -56,7 +56,7 @@ ConnectionsHandler::~ConnectionsHandler()
       Thread::sleep(200);
    }
    Lock lock(connectMutex_);
-   string type = connectQos_->getServerRef().getType();
+   string type = connectQos_->getAddress().getType();
    string version = "1.0"; // currently hardcoded
    if (connection_) {
       global_.getDispatchManager().releasePlugin(instanceName_, type, version);
@@ -103,7 +103,7 @@ ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
       log_.trace(ME, string("connect: Ping Interval: ") + lexical_cast<std::string>(pingInterval));
    }
 
-   string type = connectQos_->getServerRef().getType();
+   string type = connectQos_->getAddress().getType();
    string version = "1.0"; // currently hardcoded
    if (!connection_) {
       connection_ = &(global_.getDispatchManager().getPlugin(instanceName_, type, version));
@@ -325,7 +325,7 @@ void ConnectionsHandler::publishOneway(const vector<MessageUnit> &msgUnitArr)
 }
 
 
-vector<PublishReturnQos> ConnectionsHandler::publishArr(vector<MessageUnit> msgUnitArr)
+vector<PublishReturnQos> ConnectionsHandler::publishArr(const vector<MessageUnit> &msgUnitArr)
 {
    if (log_.call()) log_.call(ME, "publishArr");
    Lock lock(publishMutex_);

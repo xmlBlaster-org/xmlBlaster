@@ -83,7 +83,7 @@ public:
    bool disconnect(const org::xmlBlaster::util::qos::DisconnectQos& qos);
 
    /**
-    * @return The connection protocol name "IOR" or "RMI" etc.
+    * @return The connection protocol name "IOR" or "SOCKET" etc.
     */
    std::string getProtocol();
 
@@ -114,7 +114,7 @@ public:
 
    void publishOneway(const std::vector<org::xmlBlaster::util::MessageUnit> &msgUnitArr);
 
-   std::vector<org::xmlBlaster::client::qos::PublishReturnQos> publishArr(std::vector<org::xmlBlaster::util::MessageUnit> msgUnitArr);
+   std::vector<org::xmlBlaster::client::qos::PublishReturnQos> publishArr(const std::vector<org::xmlBlaster::util::MessageUnit> &msgUnitArr);
 
    std::vector<org::xmlBlaster::client::qos::EraseReturnQos> erase(const org::xmlBlaster::client::key::EraseKey& key, const org::xmlBlaster::client::qos::EraseQos& qos);
 
