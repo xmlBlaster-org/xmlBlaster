@@ -1,0 +1,109 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='admin.errorcodes' type='NEW' prio='LOW' status="OPEN">
+   <topic>XmlBlaster supports well defined error codes</topic>
+   <description>
+    <p>
+      XmlBlaster throws only one exception namely the XmlBlasterException.
+      To distinguish the errors, xmlBlaster supports a hierarchical error code.
+    </p>
+    <p>
+    An XmlBlasterException contains 4 attributes, all of type String:
+    </p>
+    <ol>
+      <li>id:       security.notauthenticated</li>
+      <li>location: /node/heron/client/joe/3</li>
+      <li>reason:   Authorization denied for message oid 'account retrieval'</li>
+      <li>detail:   Debug detail, e.g. stack trace (optional)</li>
+    </ol>
+    <p>
+    Examples for the unique identifier <i>id</i>:
+    </p>
+    <table border="1">
+     <tr><th>id</th><th>Description</th></tr>
+     <tr><td>internal</td><td>Server internal messages</td></tr>
+     <tr><td>internal.nullpointer</td><td>Coding error (blame maintainers)</td></tr>
+     <tr><td>internal.memoryexhaust</td><td>No more memory</td></tr>
+     <tr><td>...</td><td>&nbsp;</td></tr>
+     <tr><td>invocation</td><td>The client method invocation is illegal or inappropriate</td></tr>
+     <tr><td>invocation.publish.qos</td><td>&nbsp;</td></tr>
+     <tr><td>invocation.publish.qos.destination</td><td>&nbsp;</td></tr>
+     <tr><td>invocation.publish.key</td><td>&nbsp;</td></tr>
+     <tr><td>invocation.publish.key.oid</td><td>&nbsp;</td></tr>
+     <tr><td>invocation.publish.resourceexhaust</td><td>The message sent is too big</td></tr>
+     <tr><td>...</td><td>&nbsp;</td></tr>
+     <tr><td>communication</td><td>Problems with client server communication</td></tr>
+     <tr><td>communication.connectionlost</td><td>&nbsp;</td></tr>
+     <tr><td>communication.noconnection</td><td>&nbsp;</td></tr>
+     <tr><td>communication.address</td><td>e.g. Invalid URL address</td></tr>
+     <tr><td>...</td><td>&nbsp;</td></tr>
+     <tr><td>security.notauthenticated</td><td>&nbsp;</td></tr>
+     <tr><td>security.notauthorized</td><td>Writing a readonly message, reading a message you are not allowed to</td></tr>
+     <tr><td>...</td><td>&nbsp;</td></tr>
+     <tr><td>transaction</td><td>&nbsp;</td></tr>
+     <tr><td>...</td><td>&nbsp;</td></tr>
+     <tr><td>What else?</td><td>&nbsp;</td></tr>
+    </table>
+    <p>
+    Examples for <i>location</i>:
+    </p>
+    <table border="1">
+     <tr><th>location</th><th>Description</th></tr>
+     <tr><td>/node/heron/client/joe/3</td><td>A specific user session</td></tr>
+     <tr><td>/node/heron/protocol/email</td><td>Email protocol problems</td></tr>
+     <tr><td>...</td><td>&nbsp;</td></tr>
+    </table>
+
+   </description>
+
+   <example lang="XML" type="RAW">
+An xml represantation is
+
+XmlBlasterException.toXml():
+============================
+
+ &lt;exception id='invocation.publish'>
+
+    &lt;id>
+       &lt;invocation>
+          &lt;publish/>
+       &lt;/invocation>
+    &lt;/id>
+
+    &lt;location>
+       &lt;node>
+           &lt;heron>
+             &lt;client>
+                &lt;joe/>
+             &lt;/client>
+           &lt;/heron>
+       &lt;/node>
+    &lt;/location>
+
+    &lt;reason>&lt;![CDATA[Invalid publish]]&gt;&lt;/reason>
+
+    &lt;detail/>
+
+ &lt;/exception>
+   </example>
+
+   <todo type='HTML'>
+   </todo>
+   
+   <see type="REQ">admin.commands</see>
+   
+   <author>ruff@swand.lake.de</author>
+   <author>laghi@swissinfo.org</author>
+   
+   <date>2002 09 24</date>
+   
+   <revision>$Revision: 1.1 $</revision>
+
+   <testcase status="OPEN">
+      <name>-</name>
+      <comment>Currently not available</comment>
+      <test tool="SUITE"></test>
+   </testcase>
+</requirement>
+
