@@ -1,0 +1,131 @@
+<!doctype html public "-//w3c//dtd html 4.0 transitional//en">
+<html>
+<head>
+   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+   <meta name="Description" content="xmlBlaster. The ultimate XML Messager (CORBA based). Free for commercial and non commercial use (LGPL). May not be used for military, racialist or nuclear projects">
+   <meta name="Abstract" content="xmlBlaster. The ultimate XML Messager (CORBA based). Free for commercial and non commercial use (LGPL). May not be used for military, racialist or nuclear projects">
+   <meta name="Keywords" content="xmlBlaster, XML, MOM, CORBA, Java, Client/Server, Messaging, Publish/Subscribe, free, GNU, LGPL, JMS">
+   <meta name="Classification" content="xmlBlaster FAQ">
+   <meta name="page-topic" content="XML Middleware">
+   <meta name="page-type" content="FAQ">
+   <meta name="Audience" content="Software">
+   <meta name="ROBOTS" content="INDEX, FOLLOW">
+   <meta name="Date" content="01.12.1999">
+   <meta name="revisit-after" content="14 days">
+   <meta name="Content-Language" content="en">
+   <meta name="Author" content="Marcel Ruff">
+   <meta name="GENERATOR" content="Marcel Ruff">
+   <title>xmlBlaster - The Revolution</title>
+<!--META NAME="distribution" content="global"-->
+<!--META http-equiv="Pragma" content="no-cache"-->
+<!--META http-equiv="Expires" content="now"-->
+</head>
+
+<body text="#330000" bgcolor="#FCFCFC" link="#CC0000" vlink="#333333" alink="#333333">
+
+   <center>
+      <h1>
+      FAQ xmlBlaster
+      </h1>
+   </center>
+
+   <ul>
+      <li><a href="#need">Why should i need such a middleware?</a></li>
+      <li><a href="#CORBA-XML">Why CORBA and XML, is it only a hype?</a></li>
+      <li><a href="#JMS">Why is it not 100% JMS (Java Message Service) based?</a></li>
+      <li><a href="#db">Is there any database used in xmlBlaster?</a></li>
+      <li><a href="#contribute">How can i contribute?</a></li>
+   </ul>
+
+   <p /><br />
+   
+   <a NAME="need"></a><h3>Why should i need such a middleware?</h3>
+      <font size=-1>
+      If you have a distributed client / server architecture
+      you will face the problem how all the processes communicate with each other.
+      xmlBlaster provides a professional way for sending instant messages between
+      C/C++, Perl, Tcl, Java and any other CORBA aware programming language based
+      process.<br />
+      Message routing may be based on the publish/subscribe paradigm where sender doesn't
+      know the receivers or on direct addressing allowing broadcasts to receivers which are
+      selected by there names or by XPath queries over receiver meta informations like
+      receiver roles or receiver groups or any other XML based meta information.
+      </font>
+   <p /><br /><br />
+
+   <a NAME="CORBA-XML"></a><h3>Why CORBA and XML, is it only a hype?</h3>
+      <font size=-1>
+      Yes, its a hype, but a nice one.<br />
+      CORBA allows inter operability between all major programming languages with
+      type safety at compile time.<br />
+      XML allows dynamic modeling of real day problem domains with type safety at runtime.<br />
+      The query languages XPath and XQL allow to access XML in a powerful new way.
+      </font>
+   <p /><br /><br />
+
+   <a NAME="JMS"></a><h3>Why is it not 100% JMS (Java Message Service) based?</h3>
+      <font size=-1>
+      JMS has several drawback, the main problems with JMS are:
+      <ul>
+         <li>
+         JMS is not CORBA based.<br />
+         Trying to access JMS from Perl, Tcl, C/C++ or any other CORBA aware language
+         will give you some major headache.<br />
+         But the world is and will ever be heterogeneous, so there is no place for narrow minded
+         Java centric approaches.
+         </li>
+         <li>
+         JMS is not XML based.<br />
+         XML allows professional modeling of every day problems with free modification at runtime.<br />
+         So basing a middleware on the XML descriptive possibilities and allowing the query
+         with a XML query language is a major advantage over key-value based approaches.
+         </li>
+         <li>
+         JMS API is split.<br />
+         xmlBlaster has only very few communication methods to allow the whole spectrum
+         of MOM (Message orientated middleware) communication paradigms.<br />
+         Extending the xmlBlaster CORBA API once it is published as release 1.0 is very
+         unlike.<br />
+         Adding new MOM features in future releases of xmlBlaster is mainly adding backward compatible
+         XML tags.<br />
+         </li>
+         <li>
+         JMS API is an API specification and no implementation.<br />
+         The reference implementation JMQ of JMS is no open source :-)
+         </li>
+      </ul>
+      Inter operability between xmlBlaster and JMS will be evaluated in future xmlBlaster releases.
+      </font>
+   <p /><br /><br />
+
+   <a NAME="db"></a><h3>Is there any database used in xmlBlaster?</h3>
+      <font size=-1>
+      In the current version of xmlBlaster there is no persistent store available.<br />
+      But we are working hard to find or develop some suitable open source XML database to integrate
+      as our internal persistence and caching engine.<br />
+      For the moment, if you need a persistence layer, you should write a little xmlBlaster
+      client in your favorite language, which subscribes to all messages which need persistence and
+      saves them on the file system or in your favorite database.<br />
+      Any ideas are welcome!
+      </font>
+   <p /><br /><br />
+
+   <a NAME="contribute"></a><h3>How can i contribute?</h3>
+      <font size=-1>
+      This is a great idea, fields of interest are distributed transactions, persistence, load balancing<br />
+      and anything else you can imagine.<br />
+      Fell free to contribute ideas, code, links or patches on our mailing list.<br />
+      If you want to contribute code contact us to get cvs write access.
+      </font>
+   <p /><br /><br />
+
+
+   <center>
+      <i><a href="mailto:ruff@swand.lake.de">ruff@swand.lake.de</a></i>
+      <br />
+      <i><a href="mailto:Manuel.Kron@gmx.net">manuel.kron@gmx.net</a></i>
+      <br />
+      Last updated December 1, 1999
+   </center>
+</body>
+</html>
