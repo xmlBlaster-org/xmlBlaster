@@ -6,6 +6,8 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.ConnectReturnQos;
 import org.xmlBlaster.util.DisconnectQos;
+import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.key.UpdateKey;
@@ -13,8 +15,6 @@ import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.util.qos.address.Destination;
 
 
 /**
