@@ -224,7 +224,8 @@ bool parseSocketData(int xmlBlasterSocket, SocketDataHolder *socketDataHolder, X
       if (debug) { printf(exception->message); printf("\n"); }
       return true;
    }
-   strcpy(ptr, msgLenPtr);
+   strncpy(ptr, msgLenPtr, MSG_LEN_FIELD_LEN);
+   *(ptr + MSG_LEN_FIELD_LEN) = 0; 
    trim(ptr);
    if (sscanf(ptr, "%u", &socketDataHolder->msgLen) != 1) {
       strncpy0(exception->errorCode, "user.connect", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
@@ -236,9 +237,19 @@ bool parseSocketData(int xmlBlasterSocket, SocketDataHolder *socketDataHolder, X
    }
    if (debug) printf("[xmlBlasterSocket] Receiving message of size %u ...\n", socketDataHolder->msgLen);
 
+   if (socketDataHolder->msgLen <= MSG_LEN_FIELD_LEN || socketDataHolder->msgLen > MAX_MSG_LEN) {
+      strncpy0(exception->errorCode, "user.connect", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+      sprintf(exception->message,
+              "[xmlBlasterSocket] ERROR Received numRead=%d header bytes with invalid message length='%s' parsed to '%ld'",
+              numRead, msgLenPtr, socketDataHolder->msgLen);
+      if (debug) { printf(exception->message); printf("\n"); }
+      return true;
+   }
+
    /* read the complete message */
    rawMsg = (char *)calloc(socketDataHolder->msgLen, sizeof(char));
    memcpy(rawMsg, msgLenPtr, MSG_LEN_FIELD_LEN);
+
    numRead = readn(xmlBlasterSocket, rawMsg+MSG_LEN_FIELD_LEN, (int)socketDataHolder->msgLen-MSG_LEN_FIELD_LEN);
    if (numRead <= 0) {
       return false; /* EOF on socket */
@@ -307,8 +318,19 @@ bool parseSocketData(int xmlBlasterSocket, SocketDataHolder *socketDataHolder, X
 
    /* Read the payload */
    socketDataHolder->blob.dataLen = socketDataHolder->msgLen - currPos;
-   socketDataHolder->blob.data = (char *)malloc(socketDataHolder->blob.dataLen * sizeof(char));
-   memcpy(socketDataHolder->blob.data, rawMsg+currPos, socketDataHolder->blob.dataLen);
+   if (socketDataHolder->blob.dataLen > 0) {
+      socketDataHolder->blob.data = (char *)malloc(socketDataHolder->blob.dataLen * sizeof(char));
+      memcpy(socketDataHolder->blob.data, rawMsg+currPos, socketDataHolder->blob.dataLen);
+   }
+   else {
+      /*
+      socketDataHolder->blob.dataLen = 6;
+      socketDataHolder->blob.data = strcpyAlloc("<qos/>");
+      */
+      socketDataHolder->blob.dataLen = 1;
+      socketDataHolder->blob.data = (char *)malloc(1);
+      *socketDataHolder->blob.data = 0;
+   }
 
    free(rawMsg);
    rawMsg = 0;
