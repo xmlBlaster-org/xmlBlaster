@@ -4,11 +4,7 @@
 #
 # USAGE:
 #   XMLBLASTER_HOME=/opt/xmlBlaster
-#   JAVA_HOME=/opt/jdk
 #   xmlBlaster.sh
-#
-# NOTE: JVM settings force using JacORB CORBA libs and naming service
-#       instead of those from JDK 1.2 or 1.3
 #
 # NOTE: If you use the RMI server, you should adjust the security policy
 #       file ${XMLBLASTER_HOME}/config/xmlBlaster.policy
@@ -39,11 +35,18 @@ if [ ! -d ${XMLBLASTER_HOME} ] ; then
    exit 1
 fi
 
-. ${XMLBLASTER_HOME}/.bashrc
+java -Xms18M -Xmx64M \
+     -Djava.security.policy=${XMLBLASTER_HOME}/config/xmlBlaster.policy \
+     -jar ${XMLBLASTER_HOME}/lib/xmlBlaster.jar "$@"
 
 
-${ECHO} "${BLACK_LTGREEN}Starting xmlBlaster server ...$ESC"
-java -Xbootclasspath:${JacORB_HOME}/lib/jacorb.jar:${JAVA_HOME}/jre/lib/rt.jar:$CLASSPATH -Dorg.omg.CORBA.ORBClass=org.jacorb.orb.ORB -Dorg.omg.CORBA.ORBSingletonClass=org.jacorb.orb.ORBSingleton -Djava.security.policy=${XMLBLASTER_HOME}/config/xmlBlaster.policy org.xmlBlaster.Main -ior.file /tmp/xmlBlaster.ior "$@"
+#. ${XMLBLASTER_HOME}/.bashrc
+
+# NOTE: JVM settings force using JacORB CORBA libs and naming service
+#       instead of those from JDK 1.2 or 1.3
+
+#${ECHO} "${BLACK_LTGREEN}Starting xmlBlaster server ...$ESC"
+#java -Xbootclasspath:${JacORB_HOME}/lib/jacorb.jar:${JAVA_HOME}/jre/lib/rt.jar:$CLASSPATH -Dorg.omg.CORBA.ORBClass=org.jacorb.orb.ORB -Dorg.omg.CORBA.ORBSingletonClass=org.jacorb.orb.ORBSingleton -Djava.security.policy=${XMLBLASTER_HOME}/config/xmlBlaster.policy org.xmlBlaster.Main -ior.file /tmp/xmlBlaster.ior "$@"
 
 # Debugging with www.karmira.com
 #java -Xdebug -Xnoagent -Djava.compiler=NONE -Xrunjdwp:transport=dt_socket,server=y,suspend=n,address=8000 org.xmlBlaster.Main -dump true
