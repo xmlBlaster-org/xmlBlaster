@@ -71,7 +71,7 @@ To simplify usage, set your CLASSAPTH:
 Please study the files
   HelloWorld.java, HelloWorld2.java, HelloWorld3.java ...
 in the directory
-  xmlBlaster/demo/javaclients
+  xmlBlaster/demo
 
 
 To have less overhelming logging output try
@@ -92,7 +92,17 @@ how to do it.
 | CONFIGURATION              |
 +----------------------------+
 
-There are three property files which you may want to copy.
+It is a good idea to set the environment property XMLBLASTER_HOME
+to point to the root directory of the xmlBlaster installation,
+for example:
+
+  export XMLBLASTER_HOME=/opt/xmlBlaster  [UNIX,sh,ksh,bash]
+
+  set XMLBLASTER_HOME=C:\xmlBlaster       [Windows]
+
+
+There are three property files which you may want to copy to
+your HOME directory:
 
    a) %HOME%/xmlBlaster.properties
       There is a template %XMLBLASTER_HOME%/config/xmlBlaster.properties.template
@@ -125,10 +135,11 @@ database HSQLDB.
 
 However you can choose to use an external database for persistency,
 as HSQLDB is not suitable for production use.
-Oracle, Postgres, MS-SQL-Server and others are supported.
+Oracle, Postgres, MS-SQLServer and others are supported.
 Expect some 20 minutes to setup Postgres to run
 with xmlBlaster and some more hours if you decide
 to use Oracle.
+All configuration is typically done in %HOME%/xmlBlaster.properties
 
 The details are described in
   http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.html
@@ -162,6 +173,10 @@ To see other compilation options (e.g. for C or C++) get the usage with:
 
    WINDOWS:    build.bat
 
+If you use C or C++ clients you can configure the compiler and support libraries in
+
+   xmlBlaster/build.properties
+
 
 
 +--------------------+
@@ -170,14 +185,16 @@ To see other compilation options (e.g. for C or C++) get the usage with:
 
 The most detailed documentation are the requirements:
 
- http://www.xmlBlaster.org/xmlBlaster/doc/requirements/
+  http://www.xmlblaster.org/xmlBlaster/doc/requirements/requirement.html
 
 You can build the requirement documentation locally with:
 
   cd ${XMLBLASTER_HOME}
   build.sh requirements  (UNIX)
   build.bat requirements (WINDOWS)
-  -> xmlBlaster/doc/requirements/index.html
+  -> xmlBlaster/doc/requirements/requirement.html
+
+Those requirements files are the primary documentation!
 
 Further description you find in the README files:
 
@@ -188,7 +205,6 @@ Further description you find in the README files:
 
    For C++ see
     ${XMLBLASTER_HOME}/src/c++/README
-    ${XMLBLASTER_HOME}/testsuite/src/c++/README
 
    To play Micheles SVG internet chess see
     ${XMLBLASTER_HOME}/demo/javaclients/svg/rhino/README
