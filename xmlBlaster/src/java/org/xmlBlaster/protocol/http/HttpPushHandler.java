@@ -3,7 +3,7 @@ Name:      HttpPushHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: HttpPushHandler.java,v 1.4 2000/03/15 17:55:25 kkrafft2 Exp $
+Version:   $Id: HttpPushHandler.java,v 1.5 2000/03/15 22:18:25 kkrafft2 Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -212,10 +212,12 @@ public class HttpPushHandler
    public void update( String updateKey, String content, String updateQos )
    {
       try {
-         String codedKey 		= URLEncoder.encode( updateKey );
-         String codedContent 	= URLEncoder.encode( content );
-         String codedQos 		= URLEncoder.encode( updateQos );
-         push("if (parent.update != null) parent.update('"+codedKey+"','"+codedContent+"','"+codedQos+"');\n");
+         String codedKey               = URLEncoder.encode( updateKey );
+         String codedContent    			= URLEncoder.encode( content );
+         String codedQos               = URLEncoder.encode( updateQos );
+
+         String pushStr = "if (parent.update != null) parent.update('"+codedKey+"','"+codedContent+"','"+codedQos+"');\n";
+         push(pushStr);
       }
       catch(Exception e) {
          Log.error(ME,e.toString());

@@ -3,7 +3,7 @@ Name:      BlasterHttpProxy.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxy.java,v 1.6 2000/03/15 17:55:25 kkrafft2 Exp $
+Version:   $Id: BlasterHttpProxy.java,v 1.7 2000/03/15 22:18:25 kkrafft2 Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -34,7 +34,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
  *   HTTP 1.1 specifies rfc2616 that the connection stays open as the
  *   default case. How must this code be changed?
  * @author Marcel Ruff ruff@swand.lake.de
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  */
 public class BlasterHttpProxy
 {
@@ -77,7 +77,6 @@ public class BlasterHttpProxy
     */
    public static ProxyConnection getNewProxyConnection( String loginName, String passwd ) throws XmlBlasterException
    {
-      Log.plain(ME,"proxyConnections="+proxyConnections);
       ProxyConnection pc = new ProxyConnection( loginName, passwd );
       proxyConnections.put( loginName, pc );
       return pc;
@@ -91,10 +90,27 @@ public class BlasterHttpProxy
     */
    public static ProxyConnection getProxyConnectionByLoginName( String loginName ) throws XmlBlasterException
    {
-      Log.plain(ME,"proxyConnections="+proxyConnections);
       //return a proxy connection by login name
       return (ProxyConnection)proxyConnections.get( loginName );
    }
+
+   /**
+    * combines getProxyConnectionByLoginName and getNewProxyConnection in a synchronized
+    * way
+    *
+    * @param loginName
+    * @return valid proxyConnection for valid HTTP sessionId.
+    */
+   public static ProxyConnection getProxyConnection( String loginName, String passwd ) throws XmlBlasterException
+   {
+      synchronized( proxyConnections ) {
+         ProxyConnection pc = getProxyConnectionByLoginName(loginName);
+         if(pc==null)
+            pc=getNewProxyConnection(loginName,passwd);
+         return pc;
+      }
+   }
+
 
    /**
     * gives a proxy connection by a given sessionId
@@ -108,7 +124,6 @@ public class BlasterHttpProxy
    public static ProxyConnection getProxyConnectionBySessionId( String sessionId ) throws XmlBlasterException
    {
       synchronized( proxyConnections ) {
-         Log.plain(ME,"proxyConnections="+proxyConnections);
          for( Enumeration e = proxyConnections.elements(); e.hasMoreElements() ; ) {
             ProxyConnection pc = (ProxyConnection) e.nextElement();
             HttpPushHandler hph = pc.getHttpPushHandler( sessionId );
