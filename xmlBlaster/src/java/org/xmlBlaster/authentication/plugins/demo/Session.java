@@ -22,7 +22,7 @@ public class Session implements I_Session {
    private              String          sessionId = null;
    private              boolean     authenticated = false;
 
-   private static       Subject      dummyUsr = null;
+   private              Subject      dummyUsr = null;
 
    private              byte       aDemoCryptoKey = 10;
    private ReversibleCrypt crypter = new ReversibleCrypt();
