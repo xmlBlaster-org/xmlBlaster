@@ -1,22 +1,30 @@
+Please read 
+
+ http://www.xmlblaster.org/xmlBlaster/doc/howto/developer-guidelines.html
+
+first.
+
+
 The xmlBlaster test suite
 =========================
 
 
    The xmlBlaster test suite is based on the
-   JUNIT 3.7 testsuite from Kent Beck and Erich Gamma.
+   JUNIT testsuite from Kent Beck and Erich Gamma.
 
    see http://www.junit.org
 
    junit.jar is distributed in $XMLBLASTER_HOME/lib/junit.jar
+   See $XMLBLASTER_HOME/lib/LICENSE for the current version.
 
 Note:
 -----
 
-   In the current directory there are tests with
-   a running xmlBlaster.
+   All sub directories contain a TestAll file to test all tests
+   of that subdirectory.
 
-   In directory classtest you should add tests
-   on class level.
+   YOU NEED TO START Postgres or Oracle for persistent storage
+   to run the tests, otherwise most tests will fail!
 
 
 Start the test suite:
@@ -24,7 +32,18 @@ Start the test suite:
 
    Simply type:
 
-      make test
+      cd xmlBlaster
+
+      Compile everything new:
+        build.sh delete
+        build.sh all
+
+      build.sh  runTests
+
+      (
+        build.sh report
+        will create a HTML report after testing
+      )
 
 
 Note for Linux:
@@ -39,7 +58,12 @@ Note for Linux:
     #max user processes (before 4095)
     ulimit  -u 8190
 
+   Or run the tests separately:
 
+    cd xmlBlaster/testsuite/src/java/org/xmlBlaster/test
+    export CLASSPATH=../../../../../../lib/xmlBlaster.jar:../../../../../../lib/junit.jar
+    test.sh
+      
 
 Start the test suite manually:
 ------------------------------
@@ -50,15 +74,15 @@ Start the test suite manually:
 
    Start the test suite with SWING GUI support:
 
-      java -Xms18M -Xmx156M -Djava.compiler= junit.swingui.TestRunner -noloading org.xmlBlaster.test.AllTests
+      java -Xms18M -Xmx156M -Djava.compiler= junit.swingui.TestRunner -noloading org.xmlBlaster.test.classtest.AllTests
 
    Start the test suite with AWT GUI support:
 
-      java -Xms18M -Xmx156M -Djava.compiler= junit.awtui.TestRunner -noloading org.xmlBlaster.test.AllTests
+      java -Xms18M -Xmx156M -Djava.compiler= junit.awtui.TestRunner -noloading org.xmlBlaster.test.classtest.AllTests
 
    For command line output invoke:
 
-      java  -Xms18M -Xmx156M -Djava.compiler= junit.textui.TestRunner -noloading org.xmlBlaster.test.AllTests
+      java  -Xms18M -Xmx156M -Djava.compiler= junit.textui.TestRunner -noloading org.xmlBlaster.test.classtest.AllTests
 
    Start one test without testsuite (and with debugging output on console):
 
@@ -67,18 +91,8 @@ Start the test suite manually:
 
    Test RMI:
 
-      java -Djava.compiler= -Dclient.protocol=RMI junit.swingui.TestRunner -noloading org.xmlBlaster.test.AllTests
+      java -Djava.compiler= -Dclient.protocol=RMI junit.swingui.TestRunner -noloading org.xmlBlaster.test.classtest.AllTests
 
-   Test XML-RPC:
+   Test XMLRPC:
 
-      java -Djava.compiler= -Dclient.protocol=XML-RPC junit.swingui.TestRunner -noloading org.xmlBlaster.test.AllTests
-
-
-Building html files with syntax highlighting from java source
-_____________________________________________________________
-
-   The xmlBlaster/doc/requirement html files have links
-   on the testsuite examples.
-   Type 'make html' to generate the html files.
-
-   Probably we should migrate to http://www.vaegar.f9.co.uk
+      java -Djava.compiler= -Dclient.protocol=XMLRPC junit.swingui.TestRunner -noloading org.xmlBlaster.test.classtest.AllTests
