@@ -59,7 +59,7 @@ Changes for 0.80 [Sep, xx 2002]
       MessageUnit
     * Bugfix: Distinguish between empty get() return and empty QoS as
       update return
-    * Bugfix: Fail save mode of SOCKET did not propert callback
+    * Bugfix: Fail save mode of SOCKET did not callback client
       Reported by Sebastian Sturm
     * Bugfix: Message where sometimes corrupted, during writing one message
       another mixed enbetween. Fixed with synchronize.
@@ -124,6 +124,10 @@ Changes for 0.80 [Sep, xx 2002]
   - Added administration support for killSession/killClient
 
   - C++ support for omniORB added (Nils Nilson)
+
+  - C++ support for TAO added (Martin Johnson)
+    Added an ant based build.xml file to compile with TAO
+    See xmlBlaster/src/c++/tao.xml
 
   - Bugfix in C++ publishOneway() (reported by Nils Nilson)
 
