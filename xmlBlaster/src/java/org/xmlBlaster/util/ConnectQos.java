@@ -3,7 +3,7 @@ Name:      ConnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: ConnectQos.java,v 1.7 2002/03/17 07:28:06 ruff Exp $
+Version:   $Id: ConnectQos.java,v 1.8 2002/03/17 13:31:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -41,10 +41,12 @@ import java.io.Serializable;
  *        &lt;session timeout='3600000' maxSessions='10' clearSessions='false' sessionId='4e56890ghdFzj0'>
  *        &lt;/session>
  *        &lt;ptp>true&lt;/ptp>
- *        &lt;callback type='IOR' sessionId='4e56890ghdFzj0'>
- *           IOR:10000010033200000099000010....
- *           &lt;burstMode collectTime='400' />
- *        &lt;/callback>
+ *        &lt;queue relating='session' maxMsg='1000' maxSize='4000' onOverflow='deadLetter'>
+ *           &lt;callback type='IOR' sessionId='4e56890ghdFzj0'>
+ *              IOR:10000010033200000099000010....
+ *              &lt;burstMode collectTime='400' />
+ *           &lt;/callback>
+ *        &lt;queue>
  *     &lt;/qos>
  * </pre>
  * NOTE: As a user of the Java client helper classes (client.protocol.XmlBlasterConnection)
@@ -85,10 +87,6 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    protected transient String tmpSecurityPluginType = null;
    protected transient String tmpSecurityPluginVersion = null;
 
-   /** Hack to transport callback driver for socket driver (as we have no seperate callback server) */
-   // DELETE protected I_CallbackDriver cbDriver = null;
-
-
    /**
     * The server reference, e.g. the CORBA IOR string or the XML-RPC url
     * This is returned from XmlBlaster connect() and not used for login
@@ -120,7 +118,6 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    {
       initialize();
    }
-
    
    /**
     * Parses the given ASCII login QoS. 
@@ -133,7 +130,6 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       if (Log.DUMP) Log.dump(ME, "Parsed ConnectQos to\n" + toXml());
       initialize();
    }
-
 
    /**
     * Constructor for simple access with login name and password. 
@@ -161,7 +157,6 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       getPlugin(mechanism, version);
       initialize();
    }
-
 
    /**
     * Allows to specify how you want to identify yourself. 
@@ -210,7 +205,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     * The subjectQueue has never callback addresses, the addresses of the sessions are used
     * if configured.
     */
-   public QueueProperty getSubjectQueueProperty() {
+   public final QueueProperty getSubjectQueueProperty() {
       if (this.subjectQueueProperty == null) {
          this.subjectQueueProperty = new QueueProperty(Constants.RELATING_SUBJECT);
       }
@@ -220,7 +215,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    /**
     * Returns never null
     */
-   public QueueProperty getSessionQueueProperty() {
+   public final QueueProperty getSessionQueueProperty() {
       if (this.sessionQueueProperty == null)
          this.sessionQueueProperty = new QueueProperty(Constants.RELATING_SESSION);
       return this.sessionQueueProperty;
@@ -231,7 +226,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     * <p />
     * &lt;securityService type='simple' version='1.0'>...&lt;/securityService>
     */
-   public void setSecurityPluginData(String mechanism, String version, String loginName, String password) throws XmlBlasterException
+   public final void setSecurityPluginData(String mechanism, String version, String loginName, String password) throws XmlBlasterException
    {
       org.xmlBlaster.client.PluginLoader loader = org.xmlBlaster.client.PluginLoader.getInstance();
       I_ClientPlugin plugin = loader.getClientPlugin(mechanism, version);
@@ -239,7 +234,6 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       securityQos.setUserId(loginName);
       securityQos.setCredential(password);
    }
-
 
    /**
     * @param mechanism If null, the current plugin is used
@@ -264,7 +258,6 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       return plugin;
    }
 
-
    /**
     * Return the SecurityPlugin specific information.
     * <p/>
@@ -284,7 +277,6 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       else
          return null;
    }
-
 
    /**
     * Default constructor for transient PtP messages.
@@ -311,33 +303,10 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     *    xmlBlasterConnection.connect(qos);
     * </pre>
     */
-   public void setSecurityQos(I_SecurityQos securityQos)
+   public final void setSecurityQos(I_SecurityQos securityQos)
    {
       this.securityQos = securityQos;
    }
-
-
-   /**
-    * Deliver the driver object to be reused on callback
-    * @param cbDriver    If protocolServer driver shall be reused for protocolCallback driver (native/SOCKET)
-    */
-    /* DELETE
-   public void setCallbackDriver(I_CallbackDriver cbDriver)
-   {
-      this.cbDriver = cbDriver;
-   }
-*/
-
-   /**
-    * Deliver the driver object to be reused on callback
-    * @param cbDriver    If protocolServer driver shall be reused for protocolCallback driver (native/SOCKET)
-    */
-    /* DELETE
-   public I_CallbackDriver getCallbackDriver()
-   {
-      return this.cbDriver;
-   }
-   */
 
    /**
     * Allows to set session specific informations. 
@@ -345,7 +314,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     * @param timeout The login session will be destroyed after given milliseconds
     * @param maxSessions The client wishes to establish this maximum of sessions in parallel
     */
-   public void setSessionData(long timeout, int maxSessions)
+   public final void setSessionData(long timeout, int maxSessions)
    {
       this.sessionTimeout = timeout;
       this.maxSessions = maxSessions;
@@ -354,7 +323,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    /**
     * Timeout until session expires if no communication happens
     */
-   public long getSessionTimeout()
+   public final long getSessionTimeout()
    {
       return this.sessionTimeout;
    }
@@ -362,7 +331,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    /**
     * Timeout until session expires if no communication happens
     */
-   public void setSessionTimeout(long timeout)
+   public final void setSessionTimeout(long timeout)
    {
       if (timeout < 0L)
          this.sessionTimeout = 0L;
@@ -373,7 +342,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    /**
     * If maxSession == 1, only a single login is possible
     */
-   public int getMaxSessions()
+   public final int getMaxSessions()
    {
       return this.maxSessions;
    }
@@ -382,7 +351,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     * If maxSession == 1, only a single login is possible
     * @param max How often the same client may login
     */
-   public void setMaxSessions(int max)
+   public final void setMaxSessions(int max)
    {
       if (max < 0)
          this.maxSessions = 0;
@@ -393,7 +362,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    /**
     * If clearSessions is true, all old sessions of this user are discarded. 
     */
-   public boolean clearSessions()
+   public final boolean clearSessions()
    {
       return this.clearSessions;
    }
@@ -407,13 +376,24 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       this.clearSessions = clear;
    }
 
+   /**
+    * Set our session identifier which authenticates us for xmlBlaster. 
+    * <p />
+    * This is used server side only.
+    * @param id The unique and secret sessionId
+    */
    public void setSessionId(String id)
    {
       if(id==null || id.equals("")) id = null;
       sessionId = id;
    }
 
-   public String getSessionId()
+   /**
+    * Get our session identifier which authenticates us for xmlBlaster. 
+    * <p />
+    * @return The unique, secret sessionId
+    */
+   public final String getSessionId()
    {
       return sessionId;
    }
@@ -426,7 +406,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     * @return An array of ServerRef objects, containing the address and the protocol type
     *         If no serverRef available, return an array of 0 length
     */
-   public ServerRef[] getServerRefs()
+   public final ServerRef[] getServerRefs()
    {
       if (serverRefArr == null) {
          serverRefArr = new ServerRef[serverRefVec.size()];
@@ -445,7 +425,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     * @return The first ServerRef object in the list, containing the address and the protocol type
     *         If no serverRef available we return null
     */
-   public ServerRef getServerRef()
+   public final ServerRef getServerRef()
    {
       if (serverRefArr == null) {
          serverRefArr = new ServerRef[serverRefVec.size()];
@@ -462,7 +442,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    /**
     * Adds a server reference
     */
-   public void setServerRef(ServerRef addr)
+   public final void setServerRef(ServerRef addr)
    {
       serverRefVec.addElement(addr);
       serverRefArr = null; // reset to be recalculated on demand
@@ -471,7 +451,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    /**
     * @param Set if we accept point to point messages
     */
-   public void setPtpAllowed(boolean ptpAllowed)
+   public final void setPtpAllowed(boolean ptpAllowed)
    {
       this.ptpAllowed = ptpAllowed;
    }
@@ -481,7 +461,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     * Allow to receive Point to Point messages (default). 
     * Every callback may suppress PtP as well.
     */
-   public void allowPtP()
+   public final void allowPtP()
    {
       setPtpAllowed(true);
    }
@@ -502,7 +482,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     * Note you can invoke this multiple times to allow multiple callbacks.
     * @param callback  An object containing the protocol (e.g. EMAIL) and the address (e.g. hugo@welfare.org)
     */
-   public void addCallbackAddress(CallbackAddress callback)
+   public final void addCallbackAddress(CallbackAddress callback)
    {
       QueueProperty prop = new QueueProperty(null); // Use default queue properties for this callback address
       prop.setCallbackAddress(callback);
@@ -511,9 +491,32 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    }
 
    /**
+    * Adds a queue description. 
+    * This allows to set all supported attributes of a callback queue and a callback address
+    * @param prop The property object of the callback queue which shall be established in the server for calling us back.
+    * @see org.xmlBlaster.engine.helper.CallbackAddress
+    */
+   public final void addQueueProperty(QueueProperty prop) {
+      if (prop == null) return;
+      if (prop.isSessionRelated()) {
+         if (this.sessionQueueProperty != null) Log.warn(ME, "addQueueProperty() overwrites previous session queue setting");
+         this.sessionQueueProperty = prop;
+         queuePropertyVec.addElement(prop);
+      }
+      else if (prop.isSubjectRelated()) {
+         if (this.subjectQueueProperty != null) Log.warn(ME, "addQueueProperty() overwrites previous subject queue setting");
+         this.subjectQueueProperty = prop;
+         queuePropertyVec.addElement(prop);
+      }
+      else if (prop.isUnrelated()) {
+         Log.error(ME, "You can't add a queue of type 'unrelated' to connect QoS, this is only supported with subscribe QoS");
+      }
+   }
+
+   /**
     * @return the login credentials or null if not set
     */
-   public I_SecurityQos getSecurityQos() throws XmlBlasterException
+   public final I_SecurityQos getSecurityQos() throws XmlBlasterException
    {
       return this.securityQos;
    }
@@ -523,7 +526,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     * <p/>
     * @return String
     */
-   public String getSecurityPluginType() throws XmlBlasterException
+   public final String getSecurityPluginType() throws XmlBlasterException
    {
       if (securityQos != null)
          return securityQos.getPluginType();
@@ -535,14 +538,14 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     * <p/>
     * @return String
     */
-   public String getSecurityPluginVersion() throws XmlBlasterException
+   public final String getSecurityPluginVersion() throws XmlBlasterException
    {
       if (securityQos != null)
          return securityQos.getPluginVersion();
       return null;
    }
 
-   public String getUserId() throws XmlBlasterException
+   public final String getUserId() throws XmlBlasterException
    {
       if (securityQos==null)
          return "NoLoginName";
