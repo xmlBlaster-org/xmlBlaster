@@ -3,15 +3,15 @@ Name:      HttpIORServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Delivering the Authentication Service IOR over HTTP
-Version:   $Id: HttpIORServer.java,v 1.24 2002/11/26 12:37:44 ruff Exp $
+Version:   $Id: HttpIORServer.java,v 1.25 2002/12/18 11:35:26 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.UriAuthority;
-import org.xmlBlaster.util.Uri;
+//import org.xmlBlaster.util.UriAuthority;
+//import org.xmlBlaster.util.Uri;
 import java.util.*;
 import java.net.*;
 import java.io.*;
@@ -30,7 +30,7 @@ import java.io.*;
  * multi homed hosts.
  * <p />
  * Change code to be a generic HTTP server, not only for CORBA bootstrapping
- * @version $Revision: 1.24 $
+ * @version $Revision: 1.25 $
  * @author $Author: ruff $
  */
 public class HttpIORServer extends Thread
@@ -226,6 +226,7 @@ class HandleRequest extends Thread
          String resource = toks.nextToken(); // "/AuthenticationService.ior"
          String version = toks.nextToken();  // "HTTP/1.0"
 
+/*
          if (false) { // TEST ONLY:
             Uri uri = null;
             try {
@@ -257,6 +258,7 @@ class HandleRequest extends Thread
                }
             }
          }
+*/
 
          // RFC 2068 enforces minimum implementation GET and HEAD
          if (!method.equalsIgnoreCase("GET") && !method.equalsIgnoreCase("HEAD")) {
