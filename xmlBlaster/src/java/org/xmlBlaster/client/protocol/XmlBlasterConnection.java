@@ -755,26 +755,6 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       } // Callback server configured and running
 
       this.connectReturnQos = loginRaw();
-      /*
-      //log.info(ME, "DUMP of ConnectQos\n"  + connectQos.toXml());
-      try {
-         // 'this' forces to invoke our update() method which we then delegate to the updateClient
-         this.connectReturnQos = driver.connect(connectQos);
-         numLogins++;
-         initFailSave();
-      }
-      catch(ConnectionException e) {
-         if (log.TRACE) log.trace(ME, "Login to " + getServerNodeId() + " failed, numLogins=" + numLogins + ".");
-         if (log.DUMP) log.dump(ME, "Authentication string is\n" + connectQos.toXml());
-         if (numLogins == 0)
-            doLoginPolling();//  startPinging();
-         throw new XmlBlasterException(e);
-      }
-      if (isReconnectPolling && numLogins > 0)
-         clientProblemCallback.reConnected();
-
-      startPinging();
-      */
       return connectReturnQos;
    }
 
@@ -939,6 +919,11 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
          else   
             this.connectReturnQos = driver.loginRaw();
          numLogins++;
+
+         // Remember sessionId for reconnects ...
+         this.connectQos.setSessionId(this.connectReturnQos.getSessionId());
+         this.connectQos.setPublicSessionId(this.connectReturnQos.getPublicSessionId());
+         
          if (log.TRACE) log.trace(ME, "Successful login to " + getServerNodeId());
 
          if (isReconnectPolling)
@@ -1943,6 +1928,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
        * @param retries Number of retries if connection cannot directly be established
        */
       LoginThread(XmlBlasterConnection con, long retryInterval, int retries) {
+         super("LoginThread-" + getMe());
          this.con = con;
          this.ME = "LoginThread-" + getMe();
          this.RETRY_INTERVAL = retryInterval;
@@ -2009,6 +1995,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
        * @param pingInterval How many milli seconds sleeping between the pings
        */
       PingThread(XmlBlasterConnection con, long pingInterval) {
+         super("LoginThread-" + getMe());
          this.con = con;
          this.ME = "PingThread-" + getMe();
          this.PING_INTERVAL = pingInterval;
