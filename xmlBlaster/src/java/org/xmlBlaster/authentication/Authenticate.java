@@ -3,7 +3,7 @@ Name:      Authenticate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login for clients
-Version:   $Id: Authenticate.java,v 1.45 2002/01/07 13:39:38 ruff Exp $
+Version:   $Id: Authenticate.java,v 1.46 2002/02/14 19:07:04 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -13,11 +13,11 @@ import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.ConnectQos;
+import org.xmlBlaster.util.ConnectReturnQos;
 import org.xmlBlaster.authentication.plugins.PluginManager;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.ClientInfo;
 import org.jutils.time.StopWatch;
-import org.xmlBlaster.util.ConnectReturnQos;
 import java.util.*;
 
 
@@ -197,6 +197,30 @@ final public class Authenticate implements I_Authenticate
     *
     * @param xmlQos The login/connect QoS, see ConnectQos.java
     */
+   public final String connect(String qos_literal) throws XmlBlasterException
+   {
+      return connect(new ConnectQos(qos_literal), null).toXml();
+   }
+
+   /**
+    * Login to xmlBlaster.
+    *
+    * If the sessionId from xmlQoS_literal is null, we generate one.
+    *
+    * @param xmlQos The login/connect QoS, see ConnectQos.java
+    */
+   public final String connect(String qos_literal, String sessionId) throws XmlBlasterException
+   {
+      return connect(new ConnectQos(qos_literal), sessionId).toXml();
+   }
+
+   /**
+    * Login to xmlBlaster.
+    *
+    * If the sessionId from xmlQoS_literal is null, we generate one.
+    *
+    * @param xmlQos The login/connect QoS, see ConnectQos.java
+    */
    public final ConnectReturnQos connect(ConnectQos xmlQos) throws XmlBlasterException
    {
       return connect(xmlQos, null);
@@ -319,7 +343,7 @@ final public class Authenticate implements I_Authenticate
    }
 
 
-   public final void disconnect(String sessionId, String qos_literal) throws XmlBlasterException
+   public final String disconnect(String sessionId, String qos_literal) throws XmlBlasterException
    {
       try {
          if (Log.CALL) Log.call(ME, "-------START-disconnect()---------" + toXml().toString());
@@ -348,6 +372,7 @@ final public class Authenticate implements I_Authenticate
          e.printStackTrace();
          throw new XmlBlasterException("Authenticate.disconnect.InternalError", e.toString());
       }
+      return "<qos/>";
    }
 
    /**
