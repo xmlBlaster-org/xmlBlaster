@@ -416,6 +416,22 @@ public final class ConnectQos
    }
 
    /**
+    * Sets the queue properties for the subject queue of this subject
+    * @param subjectQueueProperty
+    */
+   public void setSubjectQueueProperty(CbQueueProperty subjectQueueProperty) {
+      this.connectQosData.setSubjectQueueProperty(subjectQueueProperty);
+   }
+
+   /**
+    * Gets the subject queue properties as set on this connection.
+    * @return the properties
+    */
+   public CbQueueProperty getSubjectQueueProperty() {
+      return this.connectQosData.getSubjectQueueProperty();
+   }
+   
+   /**
     *  For testing invoke: java org.xmlBlaster.client.qos.ConnectQos
     */
    public static void main( String[] args ) throws XmlBlasterException {
