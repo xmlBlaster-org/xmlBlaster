@@ -12,6 +12,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
 import org.xmlBlaster.util.error.MsgErrorInfo;
+import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.qos.address.AddressBase;
@@ -123,8 +124,8 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
       switchToSyncMode();
    }
 
-   public final void updateProperty(CbQueueProperty cbQueueProperty) throws XmlBlasterException {
-      this.dispatchConnectionsHandler.initialize(cbQueueProperty.getCallbackAddresses());
+   public final void updateProperty(CallbackAddress[] addressArr) throws XmlBlasterException {
+      this.dispatchConnectionsHandler.initialize(addressArr);
    }
 
    public void finalize() {
