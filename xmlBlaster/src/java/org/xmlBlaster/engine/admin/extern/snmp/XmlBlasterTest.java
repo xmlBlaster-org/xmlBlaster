@@ -1,0 +1,165 @@
+/*------------------------------------------------------------------------------
+Name:      XmlBlasterTest.java
+Project:   xmlBlaster.org
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+Comment:   xmlBlaster to SNMP proxy class
+------------------------------------------------------------------------------*/
+package org.xmlBlaster.engine.admin.extern.snmp;
+
+import java.io.*;
+import java.util.Vector;
+import java.util.Enumeration;
+import java.net.*;
+import java.lang.Integer;
+
+import jax.*;
+
+/** 
+ * XmlBlasterTest
+ * - contains a constructor and the main program.
+ * - runs the xmlblaster subagent.
+ *
+ * @author Udo Thalmann
+ * @since 0.79g
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.snmp.html">admin.snmp requirement</a>
+ */
+public class XmlBlasterTest
+{
+    /**
+     * XmlBlasterTest 
+     * - opens an agentx connection to the master snmp agent.
+     * - initializes snmp mib objects.
+     * - sends traps, if trap conditions are true.
+     *
+     * @param String argv: contains optional host and port arguments.
+     *               argv[0] = host, argv[1] = port.
+     */
+    public XmlBlasterTest(String argv[])
+    {
+        AgentXConnection connection;
+        AgentXSession session;
+        AgentXRegistration registration;
+        ClientTableThresholdOverflow clientTableNotify;
+        String host;
+        int port;
+        long[] value = { 1, 3, 6, 1, 4, 1, 11662 };
+        NodeScalarImpl nodeScalarImpl;
+        NodeEntryImpl nodeEntryImpl;
+        NodeTable nodeTable;
+        NodeTableSubject nodeTableSubject;
+        NodeTableObserver nodeTableObserver;
+        ConnectionTableSubject connectionTableSubject;
+        ConnectionTableObserver connectionTableObserver;
+        boolean sleep = true;
+
+        System.setProperty("jax.debug", "true");
+
+        if (argv.length >= 1) {
+            host = argv[0];
+        } else {
+            host = "localhost";
+        }
+        if (argv.length >= 2) {
+            port = Integer.parseInt(argv[1]);
+        } else {
+            port = 0;
+        }
+        if (argv.length >= 3) {
+            sleep = false;
+        }
+
+        try {
+            System.out.print("connection to ");
+            if (port != 0) {
+                System.out.print(host + ", " + port);
+                connection = new AgentXConnection(host, port);
+            }
+            else
+                connection = new AgentXConnection(host);
+
+            System.out.println(" ... established");
+            session = new AgentXSession();
+            connection.openSession(session);
+
+            registration = new AgentXRegistration(new AgentXOID(value));
+            session.register(registration);
+
+        } catch (Exception e) {
+            System.out.println(" ... not established");
+            System.err.println(e);
+            return;
+        }
+
+        nodeScalarImpl = new NodeScalarImpl();
+        session.addGroup(nodeScalarImpl);
+
+        // create concrete subjects and observers (observer pattern)
+        nodeTableSubject = new NodeTableSubject();
+        nodeTableObserver = new NodeTableObserver(nodeTableSubject, session);
+        connectionTableSubject = new ConnectionTableSubject();
+        connectionTableObserver = new ConnectionTableObserver(connectionTableSubject, session);
+
+        nodeEntryImpl = new NodeEntryImpl(1, "node1", "host1", 111, 1161, 80, "err1.log", 1);
+
+        // add entries to concrete subjects using the observer pattern
+        nodeTableSubject.addEntry("node11", "host11", 111, 1161, 80, "err1.log", 1);
+        nodeTableSubject.addEntry("node22", "host22", 222, 1162, 20, "err2.log", 2);
+        connectionTableSubject.addEntry(nodeTableObserver, "node11", "hostAAA", 4711, "192.47.11", 5);
+        connectionTableSubject.addEntry(nodeTableObserver, "node22", "hostBBB", 3333, "192.3.3.3.3",675);
+
+
+        if (sleep) {
+           try {
+               Thread.sleep(2000);
+           } catch (InterruptedException e) {}
+        }
+        
+        try {
+            System.out.println("nodeTableNotify: numNodes = " + nodeScalarImpl.get_numNodes());
+            clientTableNotify = new ClientTableThresholdOverflow(nodeEntryImpl, nodeEntryImpl, 
+                                nodeEntryImpl, nodeEntryImpl);
+            session.notify(clientTableNotify); 
+        } catch (Exception e) {
+            System.err.println(e);
+        }
+
+        if (sleep) {
+           //while (true) {
+              try {
+                  Thread.sleep(90000);
+              } catch (InterruptedException e) {}
+           //}
+        }
+        else {
+           return;
+        }
+
+
+        try {
+            session.unregister(registration);
+            session.close(AgentXSession.REASON_SHUTDOWN);
+            connection.close();
+        } catch (Exception e) {
+            System.err.println(e);
+        }
+
+    }
+
+    /**
+     * Main program 
+     * - calls XmlBlasterTest subagent constructor.
+     *
+     * @param String argv: contains optional host and port arguments.
+     *               argv[0] = host, argv[1] = port.
+     */
+    public static void main(String argv[])
+    {
+        new XmlBlasterTest(argv);
+    }
+}
+
+
+
+
+
+

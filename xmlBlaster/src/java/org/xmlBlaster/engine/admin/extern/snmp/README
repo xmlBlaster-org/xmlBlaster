@@ -1,0 +1,60 @@
+Installation:
+-------------
+
+1. Install ucd-snmp 4.2.5, the SNMP agent
+=========================================
+
+Download:
+
+   http://www.net-snmp.org
+
+
+Add the xmlBlaster MIB:
+
+  mkdir -p $HOME/.snmp/mibs
+  cp XMLBLASTER-MIB  $HOME/.snmp/mibs		 // or to /usr/share/snmp/mibs/
+
+
+(
+Configure snmp deamon in /usr/share/snmp/snmpd.conf:
+
+  rocommunity public
+  rwcommunity private
+)
+
+
+Start the deamon (as root):
+
+  snmpd -D -x 705
+
+
+Watch the log file:
+
+ tail -n 1000 -f /var/log/snmpd.log 
+
+
+
+
+2. Start xmlBlaster with its SNMP sub agent
+===========================================
+
+The subagent is using jax.jar from jax-0.0.15
+
+  ftp://ftp.ibr.cs.tu-bs.de/pub/local/jasmin/
+  http://www.ibr.cs.tu-bs.de/projects/jasmin/jax.html
+
+you don't need to download it, it is supplied in xmlBlaster/lib/jax.jar
+
+
+  java XmlBlasterTest
+
+  java org.xmlBlaster.Main -admin.snmp.debug true -admin.snmp.port 705
+
+
+
+3. Try a command line query
+===========================
+
+snmpwalk -m ~/.snmp/mibs/XMLBLASTER-MIB  develop private .1.3.6.1.4.1.11662
+
+snmpget -m ~/.snmp/mibs/XMLBLASTER-MIB  develop private enterprises.xmlblaster.node.connectionTable.connectionEntry.connectionHost.1.1
