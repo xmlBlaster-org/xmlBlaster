@@ -53,7 +53,7 @@ public:
       log_.info(ME, "shut down. It then waits 10 seconds and starts again another server.");
       log_.info(ME, "it then will live for 15 seconds and die. The test ends there.");
       Thread::sleepSecs(3);
-      EmbeddedServer server(global_);
+      EmbeddedServer server(global_, "", "");
       log_.info(ME, "starting the embedded server now");
       server.start();
       Thread::sleepSecs(15);
@@ -65,7 +65,6 @@ public:
       Thread::sleepSecs(15);
       log_.info(ME, "stopping the embedded server now");
       server.stop();
-      server.join();
       log_.info(ME, "testEmbeddedServer ended successfully");
    }
 

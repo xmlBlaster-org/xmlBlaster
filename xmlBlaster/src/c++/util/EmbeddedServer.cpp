@@ -7,6 +7,7 @@ Comment:   Testing the Timeout Features
 
 #include <util/EmbeddedServer.h>
 #include <util/Global.h>
+#include <boost/lexical_cast.hpp>
 
 namespace org { namespace xmlBlaster { namespace util {
 
@@ -16,10 +17,10 @@ EmbeddedServer::EmbeddedServer(Global& glob, const string& jvmArguments, const s
      global_(glob), 
      log_(glob.getLog("core"))
 {
-   isRunning_      = false;
-   applArguments_  = applArguments;
-   jvmArguments_   = jvmArguments;
-   externalAccess_ = externalAccess; 
+   isRunning_         = false;
+   applArguments_     = applArguments;
+   jvmArguments_      = jvmArguments;
+   externalAccess_    = externalAccess; 
 }
 
 EmbeddedServer::~EmbeddedServer()
@@ -35,6 +36,7 @@ EmbeddedServer::~EmbeddedServer()
 void EmbeddedServer::run()
 {  
    if (log_.call()) log_.call(ME, "::run");
+
    if (isRunning_) {
       log_.warn(ME, "the current server is already running. ignoring the start command.");
       return;
@@ -47,30 +49,31 @@ void EmbeddedServer::run()
 */
    string cmdLine = string("java ") + jvmArguments_ + " org.xmlBlaster.Main " + applArguments_;
    log_.info(ME, "starting the embedded server with command line: '" + cmdLine + "'");
-   if ( system(NULL) ) {
+   if (system(NULL)) {
       try {
          isRunning_ = true;
-         system(cmdLine.c_str());
+         int ret = system(cmdLine.c_str());
+         log_.info(ME, "the embedded server with command line: '" + cmdLine + "' has been stopped, return code is: " + boost::lexical_cast<string>(ret));
          isRunning_ = false;
-         log_.info(ME, "the embedded server with command line: '" + cmdLine + "' has been stopped");
       }
       catch (exception& ex) {
-         isRunning_ = false;
          log_.error(ME,string("could not start the server: ") + ex.what());
+         isRunning_ = false;
       }
       catch (...) {
-         isRunning_ = false;
          log_.error(ME,"could not start the server: an unknown exception occured");
+         isRunning_ = false;
       }
    }
    else {
-      isRunning_ = false;
       log_.error(ME, "could not start the embedded server: your OS does not have a command processor, plase start your server manually");
+      isRunning_ = false;
    }
 }
 
 bool EmbeddedServer::stop(bool shutdownExternal, bool warnIfNotRunning)
 {
+   if (log_.call()) log_.call(ME, "stop");
    if (!isRunning_ && !shutdownExternal) {
       if (warnIfNotRunning)
          log_.warn(ME, "the current embedded server is not running. Ignoring this 'stop' command");
@@ -78,35 +81,32 @@ bool EmbeddedServer::stop(bool shutdownExternal, bool warnIfNotRunning)
    }
 
    PublishKey key(global_);
-   key.setOid("__cmd:?exit=-1");
+   key.setOid("__cmd:?exit=0");
    PublishQos qos(global_);
    MessageUnit msgUnit(key, "", qos);
 
-//   if (!externalAccess_ || !externalAccess_->isConnected()) {
-   if (true) {
-      XmlBlasterAccess conn(global_);
-      try {
-//         SessionQos sessionQos(global_);
-//         sessionQos.setAbsoluteName("embeddedKiller");
-         ConnectQos connQos(global_, "embeddedKiller", "secret");
-//         connQos.setSessionQos(sessionQos);
-         // to be sure not to store the kill msg in a client queue ...
-         Address address(global_);
-         address.setDelay(0);
-         connQos.setAddress(address);
-         conn.connect(connQos, NULL);
-      }
-      catch (XmlBlasterException& ex) {
-         if ( ex.isCommunication() ) {
-            log_.warn(ME, "there is no server responding, ignoring this 'stop' command");
-            return false;
-         }
-         throw ex;
-      }
-      conn.publish(msgUnit);
+   XmlBlasterAccess conn(global_);
+   try {
+      ConnectQos connQos(global_, "embeddedKiller", "secret");
+      // to be sure not to store the kill msg in a client queue ...
+      Address address(global_);
+      address.setDelay(0);
+      connQos.setAddress(address);
+      conn.connect(connQos, NULL);
    }
-   else externalAccess_->publish(msgUnit);
+   catch (XmlBlasterException& ex) {
+      if ( ex.isCommunication() ) {
+         log_.warn(ME, "there is no server responding, ignoring this 'stop' command");
+         return false;
+      }
+      throw ex;
+   }
+   conn.publish(msgUnit);
+
+   if (log_.trace()) log_.trace(ME, "stop: going to join the threads");
    this->join();
+   
+   if (log_.trace()) log_.trace(ME, "stop completed");
    return true;
 }
 

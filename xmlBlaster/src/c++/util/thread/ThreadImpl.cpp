@@ -53,7 +53,12 @@ ThreadRunner::ThreadRunner(Thread& owner) : owner_(owner)
 
 void ThreadRunner::operator()()
 {
-   owner_.run();
+   try {
+      owner_.run();
+   }
+   catch (...) {
+      std::cerr << "ThreadRunner: uncatched exception occurred in the run thread" << std::endl;
+   }
    delete owner_.thread_;
    owner_.thread_ = NULL;
 }
@@ -70,7 +75,9 @@ Thread::Thread()
 Thread::~Thread() 
 {
    delete thread_;
+   thread_ = NULL;
    delete runner_;
+   runner_ = NULL;
 }
 
 void Thread::start()
