@@ -526,7 +526,8 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     */
    public final boolean isInFailSaveMode()
    {
-      return recorder != null;
+      return this.clientProblemCallback != null;
+      //return recorder != null;
    }
 
 
@@ -777,12 +778,13 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    /**
     * Start the message recording framework. 
     * <p />
-    * Only if -queue.maxMsg > 0
+    * Only if -queue.maxMsg != 0     ( a value < 0 is unlimited)
+    * <p />
     */
    private void initFailSave() {
       try {
          if (this.clientProblemCallback != null && this.recorder==null &&
-             connectQos.getAddress().getMaxMsg() > 0) { // fail save mode (RamRecorder or FileRecorder):
+             connectQos.getAddress().getMaxMsg() != 0) { // fail save mode (RamRecorder or FileRecorder):
 
             String type = glob.getProperty().get("recorder.type", (String)null);
             type = glob.getProperty().get("recorder.type["+getServerNodeId()+"]", type);
@@ -1819,6 +1821,16 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       return (int)recorder.getNumUnread();
    }
 
+   /**
+    * You can access the internal invocation recorder handle and
+    * do all what the interface I_InvocationRecorder allows you to do. 
+    * You should know what you are doing.
+    * @return The invocation recorder if you have copnfigured to use one or null
+    */
+   public final I_InvocationRecorder getRecorder()
+   {
+      return this.recorder;
+   }
 
    public final void flushQueue() throws XmlBlasterException
    {
@@ -1826,8 +1838,12 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
          log.warn(ME, "Internal error: don't call flushQueue(), you are not in fail save mode");
          return;
       }
+      
+      float msgPerSec = glob.getProperty().get("recorder.rate", -1.0f);
+      msgPerSec = glob.getProperty().get("recorder.type["+getServerNodeId()+"]", msgPerSec);
 
-      recorder.pullback(0L, 0L, 0.);
+      //recorder.pullback(0L, 0L, 0.);
+      recorder.pullback(msgPerSec);
    }
 
 
@@ -2025,10 +2041,6 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       text += "   -Security.Client.DefaultPlugin \"gui,1.0\"\n";
       text += "                       Force the given authentication schema, here the GUI is enforced\n";
       text += "                       Clients can overwrite this with ConnectQos.java\n";
-      text += "\n";
-      text += "Invocation recorder:\n";
-      text += "   -recorder.type      The plugin type to use for tail back messages in fail save mode [FileRecorder]\n";
-      text += "   -recorder.version   The version of the plugin [1.0]\n";
 
       LogChannel log = glob.getLog(null);
       log.plain("",text);
