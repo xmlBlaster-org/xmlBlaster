@@ -3,7 +3,7 @@ Name:      CallbackAddress.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback address string and protocol string
-Version:   $Id: CallbackAddress.java,v 1.18 2002/06/23 10:45:05 ruff Exp $
+Version:   $Id: CallbackAddress.java,v 1.19 2002/06/25 17:46:11 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -137,7 +137,7 @@ public class CallbackAddress extends AddressBase
       text += "Control xmlBlaster server side callback (if we install a local callback server):\n";
       text += "   -cb.sessionId       The session ID which is passed to our callback server update() method.\n";
       text += "   -cb.burstMode.collectTime Number of milliseconds xmlBlaster shall collect callback messages [" + CallbackAddress.DEFAULT_collectTime + "].\n";
-      text += "                         This allows performance tuning, try set it to 200.\n";
+      text += "                         The burst mode allows performance tuning, try set it to 200.\n";
       text += "   -cb.oneway          Shall the update() messages be send oneway (no application level ACK) [" + CallbackAddress.DEFAULT_oneway + "]\n";
       text += "   -cb.pingInterval    Pinging every given milliseconds [" + getDefaultPingInterval() + "]\n";
       text += "   -cb.retries         How often to retry if callback fails [" + getDefaultRetries() + "]\n";
