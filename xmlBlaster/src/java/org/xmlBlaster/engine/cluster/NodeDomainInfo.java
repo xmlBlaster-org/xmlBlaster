@@ -402,7 +402,7 @@ public final class NodeDomainInfo implements Comparable
 
       QueryKeyData[] keyArr = getKeyMappings();
       for (int ii=0; keyArr != null && ii<keyArr.length; ii++)
-         sb.append(offset).append(keyArr[ii].toXml());
+         sb.append(keyArr[ii].toXml(extraOffset+Constants.INDENT));
 
       AccessFilterQos[] filterArr = getAccessFilterArr();
       for (int ii=0; filterArr != null && ii<filterArr.length; ii++)
