@@ -243,11 +243,10 @@ TODO
       <compilerarg value="-D_ENABLE_STACK_TRACE_" /> <!-- To show symbols of a backtrace (see XmlBlasterException.cpp, msgUtil.c) -->
    </compiler>
 
-  <compiler id="CC" name="CC" if="use-CC"> <!-- SunOS 5.8 C++ 5.3 -->
+  <compiler id="CC" name="CC" if="use-CC"> <!-- SunOS 5.8 C++ 5.3 and 5.5 -->
     <!-- compilerarg value="-Kpic"/ -->  <!-- defaults to -KPIC (-xcode=pic32) for CC -->
     <!-- compilerarg value="-Bdynamic"/ --> <!-- is default for CC -->
   </compiler>
-
 
    <!-- =================================================================== -->
    <!-- Help on usage                                                       -->
@@ -1423,7 +1422,7 @@ TODO
    <target name="cpp-corba-idl-OMNIORB" depends="prepare" description="Compiles xmlBlaster.idl for omniOrb CORBA C++ clients">
       <switch value="${os.family}" caseinsensitive="true">
          <case value="unix">
-            <property name="idl.cmd" value="${CORBACPP_HOME}/bin/omniidl" />
+            <property name="idl.cmd" value="${CORBACPP_HOME}/bin/${CORBACPP_VER}/omniidl" />
          </case>
          <default>
             <property name="idl.cmd" value="${CORBACPP_HOME}/bin/x86_win32/omniidl.exe" />
@@ -1673,7 +1672,7 @@ TODO
             <libset dir="${CORBACPP_HOME}/asp/${CORBACPP_VER}/lib" libs="${ORBIX_LIBS}" if="ORBIX" />
 
             <!-- OMNIORB -->
-            <libset dir="${CORBACPP_HOME}/asp/${CORBACPP_VER}/lib" libs="${OMNIORB_LIBS}" if="OMNIORB" />
+            <libset dir="${CORBACPP_HOME}/lib/${CORBACPP_VER}" libs="${OMNIORB_LIBS}" if="OMNIORB" />
 
             <!-- ORBACUS -->
             <libset dir="${CORBACPP_HOME}/lib" libs="${ORBACUS_LIBS}" if="ORBACUS" />
@@ -1827,7 +1826,7 @@ TODO
             <libset dir="${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/lib" libs="${ORBIX_LIBS}" if="ORBIX" />
 
             <!-- OMNIORB-->
-            <libset dir="${CORBACPP_HOME}/lib" libs="${OMNIORB_LIBS}" if="OMNIORB" />
+            <libset dir="${CORBACPP_HOME}/lib/${CORBACPP_VER}" libs="${OMNIORB_LIBS}" if="OMNIORB" />
 
             <!-- ORBACUS-->
             <libset dir="${CORBACPP_HOME}/lib" libs="${ORBACUS_LIBS}" if="ORBACUS" />
@@ -1860,7 +1859,7 @@ TODO
             <libset dir="${CORBACPP_HOME}/asp/${CORBACPP_VER}/lib" libs="${ORBIX_LIBS}" if="ORBIX" />
 
             <!-- OMNIORB -->
-            <libset dir="${CORBACPP_HOME}/asp/${CORBACPP_VER}/lib" libs="${OMNIORB_LIBS}" if="OMNIORB" />
+            <libset dir="${CORBACPP_HOME}/lib/${CORBACPP_VER}" libs="${OMNIORB_LIBS}" if="OMNIORB" />
 
             <!-- XERCES XML parser -->
             <libset dir="${XMLCPP_HOME}/lib" libs="xerces-c${XMLCPP_VER}" if="windows" />
