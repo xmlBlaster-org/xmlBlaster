@@ -691,7 +691,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       if (this.clientProblemCallback != null) { // fail save mode:
          //this.clientProblemCallback = new DummyConnectionProblemHandler(this);
          this.recorder = new InvocationRecorder(address.getMaxMsg(), this, null);
-         Log.info(ME, "Avtivated fail save mode: " + address.getSettings());
+         Log.info(ME, "Activated fail save mode: " + address.getSettings());
       }
 
       // Load the client helper to export/import messages:
