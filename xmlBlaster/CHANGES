@@ -1,5 +1,9 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
+ o C client library: Fixed bug in trim() which lead on stress tests
+   to corrupted messages.
+   Thanks to FdGiglio@naples.sema.slb.com
+
  o JDK 1.2 runtime support: The current jacorb.jar does NOT run with JDK 1.2
    To run xmlBlaster with JDK 1.2 you have these options:
    - Download an older jacorb.jar and throw it into xmlBlaster/lib
