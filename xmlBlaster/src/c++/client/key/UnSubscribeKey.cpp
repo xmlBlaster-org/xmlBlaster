@@ -1,0 +1,82 @@
+/*------------------------------------------------------------------------------
+Name:      UnSubscribeKey.cpp
+Project:   xmlBlaster.org
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+------------------------------------------------------------------------------*/
+
+#include <client/key/UnSubscribeKey.h>
+#include <util/Global.h>
+
+using namespace std;
+using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::key;
+
+namespace org { namespace xmlBlaster { namespace client { namespace key {
+
+UnSubscribeKey::UnSubscribeKey(Global& global) 
+   : ME("UnSubscribeKey"), global_(global), log_(global_.getLog("client")), queryKeyData_(global_)
+{
+}
+
+UnSubscribeKey::UnSubscribeKey(Global& global, const QueryKeyData& data) 
+   : ME("UnSubscribeKey"), global_(global), log_(global_.getLog("client")), queryKeyData_(data)
+{
+}
+
+UnSubscribeKey::UnSubscribeKey(const UnSubscribeKey& key)
+   : ME(key.ME), global_(key.global_), log_(key.log_), queryKeyData_(key.queryKeyData_)
+{
+}
+
+UnSubscribeKey& UnSubscribeKey::operator =(const UnSubscribeKey& key)
+{
+   queryKeyData_ = key.queryKeyData_;
+   return *this;
+}
+
+void UnSubscribeKey::setOid(const string& oid)
+{
+   queryKeyData_.setOid(oid);
+}
+
+string UnSubscribeKey::getOid() const
+{
+   return queryKeyData_.getOid();
+}
+
+string UnSubscribeKey::getQueryType() const
+{
+   return queryKeyData_.getQueryType();
+}
+
+void UnSubscribeKey::setQueryType(const string& queryType)
+{
+   queryKeyData_.setQueryType(queryType);
+}
+
+void UnSubscribeKey::setQueryString(const string& tags)
+{
+   queryKeyData_.setQueryString(tags);
+}
+
+string UnSubscribeKey::getQueryString() const
+{
+   return queryKeyData_.getQueryString();
+}
+
+string UnSubscribeKey::toXml(const string& extraOffset) const
+{
+   return queryKeyData_.toXml(extraOffset);
+}
+
+string UnSubscribeKey::wrap(const string& str)
+{
+   queryKeyData_.setQueryString(str);
+   return queryKeyData_.toXml();
+}
+
+}}}} // namespace
+
+
+
+
