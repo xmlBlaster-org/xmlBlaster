@@ -90,6 +90,7 @@ public class QueryKeyFactoryTest extends TestCase {
       System.out.println("***QueryKeyFactoryTest: testCdata ...");
       
       try {
+         //String queryData = "<adapter>\n\n<![CDATA[\nHi\n \nworld\n\n]]>\n\n</adapter>";
          String queryData = "<database:adapter xmlns:database='http://www.xmlBlaster.org/jdbc'>"+
                             "<database:url>jdbc:dbfFile:.</database:url>"+
                             "<database:username>joe</database:username>"+
@@ -100,6 +101,7 @@ public class QueryKeyFactoryTest extends TestCase {
                             "<database:rowlimit max='1'></database:rowlimit>"+
                             "<database:confirmation confirm='true'></database:confirmation>"+
                             "</database:adapter>";
+
          String xml = 
            "<key oid='__sys__jdbc'>\n" +
            queryData +
@@ -107,7 +109,7 @@ public class QueryKeyFactoryTest extends TestCase {
          QueryKeyData key = factory.readObject(xml);
 
          assertEquals("", "__sys__jdbc", key.getOid());
-         assertEquals("queryData \n'"+queryData.trim()+"'\n is not \n'"+key.getQueryString().trim()+"'\n",
+         assertEquals("queryData expected:\n'"+queryData.trim()+"'\n but is\n'"+key.getQueryString().trim()+"'\n",
                       queryData.trim(), key.getQueryString().trim());
 
          log.info(ME, "Parsed and recreated successfully CDATA section:\n" + key.getQueryString().trim() + "");
@@ -272,7 +274,7 @@ public class QueryKeyFactoryTest extends TestCase {
          suite.addTest(new QueryKeyFactoryTest(glob, "testToXml", i));
          suite.addTest(new QueryKeyFactoryTest(glob, "testSubscribeKey", i));
          suite.addTest(new QueryKeyFactoryTest(glob, "testExactSubscribeKey", i));
-         /*
+         /* TODO:
          suite.addTest(new QueryKeyFactoryTest(glob, "testEraseKey", i));
          suite.addTest(new QueryKeyFactoryTest(glob, "testGetKey", i));
          */
@@ -286,7 +288,8 @@ public class QueryKeyFactoryTest extends TestCase {
     * </pre>
     */
    public static void main(String args[]) {
-      Global glob = new Global(args);
+      Global glob = Global.instance();
+      glob.init(args);
       for (int i=0; i<IMPL.length; i++) {
          QueryKeyFactoryTest testSub = new QueryKeyFactoryTest(glob, "QueryKeyFactoryTest", i);
          testSub.setUp();
@@ -296,7 +299,7 @@ public class QueryKeyFactoryTest extends TestCase {
          testSub.testToXml();
          testSub.testSubscribeKey();
          testSub.testExactSubscribeKey();
-         /*
+         /* TODO:
          testSub.testEraseKey();
          testSub.testGetKey();
          */
