@@ -1,3 +1,20 @@
+- Xmldb Transaction support, based on
+  Java(tm) Transaction Service (JTS) 1.0 Specification.
+  The xmldb should have Isolation Level 0-3.
+
+  Overview on the possible lock modes:
+  The IsolationLevel "uncommitted" corresponds to the weakest level (0),
+  "serializable" to the strongest level (3).
+
+               ANSI    Dirty   Non Repreatable  Phantom Read
+  LOCK                 Read    Read
+  ----------------------------------------------------------
+  UNCOMMITED    0       X           X               X
+  COMMITED      1       -           X               X
+  REPEATABLE    2       -           -               X
+  SERIALIZABLE  3       -           -               -  
+   
+
 - Performance:
   * Normalizing the DOM tree
   * Profiling http://www.optimizeit.com/ or
