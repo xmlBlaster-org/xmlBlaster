@@ -193,11 +193,12 @@ public class TestPtDQueueRedeliver extends TestCase
          // A testsuite helper to collect update messages
          this.updateInterceptorRcv = new MsgInterceptor(glob, log, null);
 
-         conRcv = glob.getXmlBlasterAccess();
+         Global globRcv = glob.getClone(null);
+         conRcv = globRcv.getXmlBlasterAccess();
          
-         ConnectQos qosSub = new ConnectQos(glob, sessionNameRcv, passwd);
+         ConnectQos qosSub = new ConnectQos(globRcv, sessionNameRcv, passwd);
 
-         CallbackAddress addr = new CallbackAddress(glob);
+         CallbackAddress addr = new CallbackAddress(globRcv);
          addr.setRetries(-1);
          String secretCbSessionId = "TrustMeSub";
          addr.setSecretCbSessionId(secretCbSessionId);
@@ -206,13 +207,13 @@ public class TestPtDQueueRedeliver extends TestCase
          ConnectReturnQos crqSub = conRcv.connect(qosSub, this.updateInterceptorRcv); // Login to xmlBlaster
          log.info(ME, "Connect as subscriber '" + crqSub.getSessionName() + "' success");
 
-         SubscribeKey sk = new SubscribeKey(glob, oid);
-         SubscribeQos sq = new SubscribeQos(glob);
+         SubscribeKey sk = new SubscribeKey(globRcv, oid);
+         SubscribeQos sq = new SubscribeQos(globRcv);
          sq.setWantInitialUpdate(false);
          sq.setWantLocal(true);
          sq.setWantContent(true);
          
-         HistoryQos historyQos = new HistoryQos(glob);
+         HistoryQos historyQos = new HistoryQos(globRcv);
          historyQos.setNumEntries(1);
          sq.setHistoryQos(historyQos);
 
@@ -228,6 +229,7 @@ public class TestPtDQueueRedeliver extends TestCase
       }
       catch (XmlBlasterException e) {
          log.error(ME, e.toString());
+         e.printStackTrace();
          fail(e.toString());
       }
       finally { // clean up
