@@ -12,6 +12,7 @@ import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.engine.qos.UpdateReturnQosServer;
 import org.xmlBlaster.util.qos.MsgQosData;
@@ -134,6 +135,16 @@ public final class CbDispatchConnection extends DispatchConnection
                msgQosData.clearRoutes();
             }
             mu = new MsgUnit(mu, null, null, msgQosData);
+
+            // Convert oid to original again for erased events fired by TopicHandler.java notifySubscribersAboutErase()
+            if (mu.getKeyOid().equals(Constants.EVENT_OID_ERASEDTOPIC)) {
+               String oid = mu.getQosData().getClientProperty("__oid", (String)null);
+               if (oid != null) {
+                  mu.getKeyData().setOid(oid);
+                  mu.getQosData().getClientProperties().clear();
+               }
+            }
+            
             msgUnitRawArr[i] = new MsgUnitRaw(mu, mu.getKeyData().toXml(), mu.getContent(), mu.getQosData().toXml());
          }
 
