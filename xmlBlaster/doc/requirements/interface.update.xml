@@ -105,11 +105,12 @@
 
   &lt;state id='OK'/>  &lt;!-- OK,ERASED etc. see Constants.java -->
 
-  &lt;sender>Tim&lt;/sender>
+  &lt;sender>/node/heron/client/Tim/-2&lt;/sender>
 
   &lt;priority>5&lt;/priority>
 
-  &lt;subscriptionId>__subId:1&lt;/subscriptionId>
+  &lt;subscribe id='__subId:1'/> &lt;!-- Showing which subscription forced the update -->
+                                 &lt;!-- PtP messages are marked with '__subId:PtP' -->
 
   &lt;!-- UTC time when message was created in xmlBlaster server with a publish() call,
           in nanoseconds since 1970 -->
@@ -117,14 +118,14 @@
         2001-12-07 23:31:45.862000002 &lt;!-- The nanos from above but human readable -->
   &lt;/rcvTimestamp>
 
-  &lt;!-- Calculated relative to when xmlBlaster has sent the message [milliseconds] -->
-  &lt;expiration remainingLife='1200'/>
+  &lt;!-- remainingLife is calculated relative to when xmlBlaster has sent the message [millisec] -->
+  &lt;expiration lifeTime='129595811' remainingLife='1200'/>
   
   &lt;queue index='0' of='1'/> &lt;!-- If queued messages are flushed on login -->
   
-  &lt;redeliver>4&lt;/redeliver>
+  &lt;redeliver>4&lt;/redeliver> &lt;!-- Only sent if message sending had previous errors -->
   
-  &lt;route>
+  &lt;route> &lt;!-- Routing information in cluster environment -->
      &lt;node id='heron'/>
   &lt;/route>
 &lt;/qos>
@@ -154,7 +155,8 @@
                       " content=" + new String(content) + " from xmlBlaster");
       }
       else if (updateQos.isErased()) {   // &lt;qos>&lt;state id='ERASED' ...
-         System.out.println("Message '" + updateKey.getOid() + " is erased");
+         System.out.println("Topic '" + updateKey.getOid() + " is erased");
+         // Remove my subscriptionId if i have cached it ...
          return "&lt;qos/>";
       }
       else {
@@ -172,11 +174,7 @@
    <configuration>
    </configuration>
 
-   <see type="REQ">interface</see>
-   <see type="REQ">engine.qos.update.queue</see>
-   <see type="REQ">engine.qos.update.rcvTimestamp</see>
-   <see type="REQ">engine.qos.update.sender</see>
-   <see type="REQ">engine.qos.update.subscriptionId</see>
+   <see type="API">org.xmlBlaster.util.enum.PriorityEnum</see>
    <see type="API">org.xmlBlaster.client.key.UpdateKey</see>
    <see type="API">org.xmlBlaster.client.qos.UpdateQos</see>
    <see type="API">org.xmlBlaster.client.protocol.XmlBlasterConnection</see>
@@ -186,11 +184,17 @@
 
    <see type="API">org.xmlBlaster.util.enum.Constants</see>
 
+   <see type="REQ">interface</see>
+   <see type="REQ">engine.qos.update.queue</see>
+   <see type="REQ">engine.qos.update.rcvTimestamp</see>
+   <see type="REQ">engine.qos.update.sender</see>
+   <see type="REQ">engine.qos.update.subscriptionId</see>
+
    <see type="INTERNET">http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl</see>
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 26</date>
-   <revision>$Revision: 1.11 $</revision>
+   <revision>$Revision: 1.12 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the update method invocation, this is done implicitly with subscribe tests and erase event tests</comment>
