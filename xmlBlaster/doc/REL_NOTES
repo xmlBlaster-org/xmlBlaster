@@ -6,6 +6,7 @@ Changes for 0.77 [?, 2000]
      It is now possible to pass the loginname and the password 
      through the session object of the servlet (cookie).
      This allows you to use your own authentication.
+	  See client.browser.xml requirement how to do it.
 
    - Bugfix for XPath subscription match errors.
      Thanks to "Brett Palmer" <plum001@hotmail.com>
