@@ -3,7 +3,7 @@ Name:      QueuePropertyFactory.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Factory which creates objects holding queue properties
-Version:   $Id: QueuePropertyFactory.cpp,v 1.14 2004/04/27 08:27:27 ruff Exp $
+Version:   $Id: QueuePropertyFactory.cpp,v 1.15 2004/05/02 19:02:18 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #include <util/qos/storage/QueuePropertyFactory.h>
@@ -54,7 +54,7 @@ void QueuePropertyFactory::startElement(const string &name, const AttributeMap& 
 {
    if (log_.call()) log_.call(ME, "startElement: " + getStartElementAsString(name, attrs));
 
-   // in case it is inside or entrering an 'address' or 'callbackAddress'
+   // in case it is inside or entering an 'address' or 'callbackAddress'
    if (name.compare("address") == 0) {
       if (address_ != NULL) delete address_;
       address_ = NULL;
@@ -171,7 +171,7 @@ void QueuePropertyFactory::characters(const string &ch)
 /** End element. */
 void QueuePropertyFactory::endElement(const string &name)
 {
-   // in case it is inside or entrering an 'address' or 'callbackAddress'
+   // in case it is inside or entering an 'address' or 'callbackAddress'
    if (name.compare("address") == 0) {
       addressFactory_.endElement(name);
       prop_.addressArr_.insert((prop_.addressArr_).begin(), addressFactory_.getAddress());
