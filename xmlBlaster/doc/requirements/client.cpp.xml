@@ -353,6 +353,27 @@ See <a href="http://www.xmlBlaster.org/xmlBlaster/src/c++/client/protocol/corba/
 Please <a href="mailto:xmlBlaster-devel@xmlBlaster.org">let us know</a> if you successfully compiled and ran the testsuite with other combinations.
 Particularly interesting it would be the INTEL compiler on Linux and Windows and Solaris with the GCC Compiler.
 </p>
+<p>
+To check which version your shared library is (UNIX only) try one of the following:
+</p>
+<pre>
+cd xmlBlaster/lib
+
+# Searching manually the lib:
+strings libxmlBlasterClient.so  | grep Global.cpp
+
+# Or using the what command:
+what libxmlBlasterClient.so
+
+# Or (ident is part of the RCS package):
+ident libxmlBlasterClient.so
+
+# The result is something like:
+@(#) $Id: client.cpp.xml,v 1.12 2003/03/03 08:36:08 ruff Exp $
+
+# You can now lookup Global.cpp 1.29 with
+cvs log Global.cpp
+</pre>
    </configuration>
 
    <see type="API" lang="CPP">HelloWorld2</see>
@@ -366,6 +387,6 @@ Particularly interesting it would be the INTEL compiler on Linux and Windows and
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
    <date>2003 01 15</date>
-   <revision>$Revision: 1.11 $</revision>
+   <revision>$Revision: 1.12 $</revision>
 </requirement>
 
