@@ -17,7 +17,7 @@
       you want.
       </p>
       <p>
-      This are the steps to implement your plugin:
+      These are the steps to implement your plugin:
       </p>
       <ul>
       <li>Your plugin needs to implement the interface I_Plugin<br />
@@ -27,7 +27,8 @@
       The main things here are
       <ul>
          <li>Code your filter rules in the method match(), return true if you accept the message
-         or return false if you want to filter it away.
+         or return false if you want to filter it away. Please read the Javadoc of the match()
+         message about its behavior on exceptions.
          </li>
          <li>
          Return the MIME types and version number this plugin can handle.
@@ -39,7 +40,7 @@
          <pre>
          MimeSubscribePlugin[ContentLenFilter][1.0]=org.xmlBlaster.engine.mime.demo.ContentLenFilter
          </pre>
-      Clients address the plugin when the subscribe with the filter type of the subscribe QoS:
+      Clients address the plugin when they subscribe with the filter type of the subscribe QoS:
          <pre>
 <![CDATA[
          <filter type='ContentLenFilter' version='1.0'>
@@ -47,11 +48,12 @@
          </filter>
 ]]>
          </pre>
-         The version='1.0' is default and may be omitted.
+         The version='1.0' is default and may be omitted. 
+         8000 is the query string, it is for this plugin the max message content size in bytes.
       </li>
       <li>You can pass optional parameters to your plugin<br />
       This entry registers the plugin ContentLenFilter in xmlBlaster.properties and
-      adds some options (needs to be on one line).
+      adds some options (needs to be in one line).
          <pre>
          MimeSubscribePlugin[ContentLenFilter][1.0]=
                 org.xmlBlaster.engine.mime.demo.ContentLenFilter,DEFAULT_MAX_LEN=10000,DEFAULT_MIN_LEN=10
@@ -87,7 +89,7 @@ For an example look at the code of ContentLenFilter.java (link below).
    <see type="REQ">util.property.env</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 03 14</date>
-   <revision>$Revision: 1.2 $</revision>
+   <revision>$Revision: 1.3 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
