@@ -25,11 +25,17 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
    or remove the outdated msgUtil_CopyByAnt.c and Global_CopyByAnt.cpp files manually
 
  o C++ client library (Incompatible API change):
-   The update() method argument 'content' has changed from
-   'void *' to 'const unsigned char *'
+   - The update() method argument 'content' has changed from
+     'void *' to 'const unsigned char *'
+   - The global.getLog() method now returns the interface I_Log (an abstract class)
+     to the logging framework instead of the Log.cpp implementation itself.
+     This allows pluggin in your own logging framework
 
  o C++ client library:
    - Added native SOCKET protocol plugin based on the C-client library
+   - Added logging abstraction interface to support different logging implementations
+   - Added log4cplus 1.0.1 logging library to xmlBlaster distribution
+     see http://log4cplus.sourceforge.net
    - Fixed command line usage, try 'HelloWorld2 -help'
    - Fixed memory leak for some XmlBlasterExceptions thrown
    - Logging cleanup (switchable xterm colors)
