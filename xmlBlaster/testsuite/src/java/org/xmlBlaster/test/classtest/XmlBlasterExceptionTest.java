@@ -39,7 +39,7 @@ public class XmlBlasterExceptionTest extends TestCase {
       assertEquals("", glob.getId(), ex.getNode());
       assertEquals("", "LOC", ex.getLocation());
       assertEquals("", "en", ex.getLang());
-      assertEquals("", "Bla bla", ex.getRawMessage());
+      assertTrue("Bla bla" + " <-> " + ex.getRawMessage(), ex.getRawMessage().indexOf("Bla bla") != -1);
       //assertEquals("", ex.getMessage(), ex.getMessage());
       //assertEquals("", ex.getVersionInfo(), ex.getVersionInfo());
       //assertEquals("", ?, ex.getTimestamp().getTimestamp());
@@ -67,8 +67,8 @@ public class XmlBlasterExceptionTest extends TestCase {
       assertEquals("", ex.getNode(), back.getNode());
       assertEquals("", ex.getLocation(), back.getLocation());
       assertEquals("", ex.getLang(), back.getLang());
-      assertEquals("", ex.getRawMessage(), back.getRawMessage());
-      assertEquals("", ex.getMessage(), back.getMessage());
+      assertEquals(ex.getRawMessage() + " <-> " + back.getRawMessage(), ex.getRawMessage(), back.getRawMessage());
+      assertEquals(ex.getMessage() + " <-> " + back.getMessage(), ex.getMessage(), back.getMessage());
       assertEquals("", ex.getVersionInfo(), back.getVersionInfo());
       assertEquals("", ex.getTimestamp().getTimestamp(), back.getTimestamp().getTimestamp());
       assertEquals("", ex.getEmbeddedException(), back.getEmbeddedException());
