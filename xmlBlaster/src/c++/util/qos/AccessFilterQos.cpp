@@ -77,6 +77,18 @@ Dll_Export const char* DEFAULT_type    = "";
       setVersion(version);
    }
 
+   AccessFilterQos::AccessFilterQos(const AccessFilterQos& qos)
+      : ME(qos.ME), global_(qos.global_), log_(qos.log_), query_(qos.query_)
+   {
+      copy(qos);
+   }
+
+   AccessFilterQos& AccessFilterQos::operator =(const AccessFilterQos& qos)
+   {
+      copy(qos);
+      return *this;
+   }
+
    /**
     * @param type The plugin name, as used in xmlBlaster.properties e.g. "ContentLenFilter".
     */
@@ -89,7 +101,7 @@ Dll_Export const char* DEFAULT_type    = "";
     * Returns the plugins name. 
     * @return e.g. "ContentLenFilter"
     */
-   string AccessFilterQos::getType()
+   string AccessFilterQos::getType() const
    {
       return type_;
    }
@@ -106,7 +118,7 @@ Dll_Export const char* DEFAULT_type    = "";
     * Returns the plugins version. 
     * @return e.g. "1.0"
     */
-   string AccessFilterQos::getVersion()
+   string AccessFilterQos::getVersion() const
    {
       return version_;
    }
@@ -125,7 +137,7 @@ Dll_Export const char* DEFAULT_type    = "";
     * Returns the query, the syntax is depending on what your plugin supports.
     * @return e.g. "a>12 AND b<15"
     */
-   Query AccessFilterQos::getQuery()
+   Query AccessFilterQos::getQuery() const
    {
       return query_;
    }
@@ -138,7 +150,7 @@ Dll_Export const char* DEFAULT_type    = "";
     * @param extraOffset indenting of tags for nice output
     * @return The xml representation
     */
-   string AccessFilterQos::toXml(const string& extraOffset="")
+   string AccessFilterQos::toXml(const string& extraOffset) const
    {
       string ret;   
       string offset = "\n " + extraOffset;

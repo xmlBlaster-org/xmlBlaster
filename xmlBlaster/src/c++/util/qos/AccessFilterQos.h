@@ -80,6 +80,11 @@ public:
     */
    AccessFilterQos(Global& global, const string& type, const string& version, const Query& query);
 
+   AccessFilterQos(const AccessFilterQos& qos);
+
+   AccessFilterQos& operator =(const AccessFilterQos& qos);
+
+
    /**
     * @param type The plugin name, as used in xmlBlaster.properties e.g. "ContentLenFilter".
     */
@@ -89,7 +94,7 @@ public:
     * Returns the plugins name. 
     * @return e.g. "ContentLenFilter"
     */
-   string getType();
+   string getType() const;
 
    /**
     * @param version The version of the plugin, defaults to "1.0", but can anything you like. 
@@ -100,7 +105,7 @@ public:
     * Returns the plugins version. 
     * @return e.g. "1.0"
     */
-   string getVersion();
+   string getVersion() const;
 
    /**
     * Set the filter query, it should fit to the protocol-type.
@@ -113,7 +118,7 @@ public:
     * Returns the query, the syntax is depending on what your plugin supports.
     * @return e.g. "a>12 AND b<15"
     */
-   Query getQuery();
+   Query getQuery() const;
 
    /**
     * Dump state of this object into a XML ASCII string.
@@ -122,7 +127,7 @@ public:
     * @param extraOffset indenting of tags for nice output
     * @return The xml representation
     */
-   string toXml(const string& extraOffset="");
+   string toXml(const string& extraOffset="") const;
 };
 
 }}}}

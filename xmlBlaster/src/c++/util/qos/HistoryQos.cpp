@@ -47,6 +47,22 @@ Dll_Export const long DEFAULT_numEntries = 1;
    }
 
 
+   HistoryQos::HistoryQos(const HistoryQos& qos)
+      : ME(qos.ME), global_(qos.global_), log_(qos.log_)
+   {
+      numEntries_ = qos.numEntries_;
+   }
+
+   HistoryQos& HistoryQos::operator =(const HistoryQos& qos)
+   {
+      numEntries_ = qos.numEntries_;
+      return *this;
+   }
+
+
+
+
+
    /**
     * @param numEntries The number of history entries
     */
@@ -72,7 +88,7 @@ Dll_Export const long DEFAULT_numEntries = 1;
     * @param extraOffset indenting of tags for nice output
     * @return The xml representation or "" if all settings are default
     */
-   string HistoryQos::toXml(const string& extraOffset)
+   string HistoryQos::toXml(const string& extraOffset) const
    {
       if (getNumEntries() == DEFAULT_numEntries) {
          return "";

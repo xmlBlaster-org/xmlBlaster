@@ -49,6 +49,10 @@ public:
     */
    HistoryQos(Global& global, long numOfEntries=-1); 
 
+   HistoryQos(const HistoryQos& qos);
+
+   HistoryQos& operator =(const HistoryQos& qos);
+
    /**
     * @param numEntries The number of history entries
     */
@@ -67,7 +71,7 @@ public:
     * @param extraOffset indenting of tags for nice output
     * @return The xml representation or "" if all settings are default
     */
-   string toXml(const string& extraOffset="");
+   string toXml(const string& extraOffset="") const;
 };
 
 }}}} //namespace
