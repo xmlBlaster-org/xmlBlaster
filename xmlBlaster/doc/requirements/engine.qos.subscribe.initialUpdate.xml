@@ -1,0 +1,57 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='engine.qos.subscribe.initialUpdate' type='NEW' prio='LOW' status="CLOSED">
+   <topic>
+      On subscribe you can prevent the initial message update for existing messages.
+   </topic>
+   <description>
+     <p>
+     Imagine a message exists already in xmlBlaster. If you subscribe for this
+     message you will receive an initial update for this existing message (default behavior).
+     In some
+     cases you want to prevent this to only receive an update when a new message is
+     published after subscription.
+     </p>
+     <p>
+     If you set the subscribe QoS to
+     </p>
+     <pre>
+&lt;qos> <!-- subscribe QoS -->
+   ...
+   &lt;initialUpdate>false&lt;/initialUpdate>
+&lt;/qos>
+     </pre>
+     <p>
+      you won't receive the initial update triggered by the subscription.
+     </p>
+   </description>
+   <example lang="Java">
+      <![CDATA[
+...
+
+try {
+   SubscribeQosWrapper sq = new SubscribeQosWrapper();
+
+   sq.setInitialUpdate(false);
+
+   String subId = con.subscribe("<key oid='NOTAM'/>, sq.toXml());
+}
+catch (Exception e) {
+   ...
+}
+...
+      ]]>
+   </example>
+   <see>org.xmlBlaster.client.SubscribeQosWrapper</see>
+   <author>ruff@swand.lake.de</author>
+   <hacker>ruff@swand.lake.de</hacker>
+   <date>2002 06 26</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="CLOSED">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">testsuite.org.xmlBlaster.TestSubNoInitial</test>
+   </testcase>
+</requirement>
+
