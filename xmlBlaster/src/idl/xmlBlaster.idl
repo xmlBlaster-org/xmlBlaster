@@ -3,7 +3,7 @@ Name:      xmlBlaster.idl
 Project:   xmlBlaster.org
 Task:      Serverinterface
 Copyright: LGPL http://www.gnu.org
-           $Id: xmlBlaster.idl,v 1.4 1999/11/10 20:08:39 ruff Exp $
+           $Id: xmlBlaster.idl,v 1.5 1999/11/11 12:00:31 ruff Exp $
 Comment:   Not even alpha
 Compile:   idl2java -root_dir ../../classes xmlBlaster.idl
 ================================================================================
@@ -18,7 +18,7 @@ Compile:   idl2java -root_dir ../../classes xmlBlaster.idl
 //------------------------------------------------------------------------------
 
 
-module org { module xmlBlaster
+module org { module xmlBlaster { module serverIdl
 {
    typedef string XmlType;
    typedef sequence<octet> ContentType;
@@ -202,9 +202,13 @@ module org { module xmlBlaster
       long erase(in XmlType xmlKey, in XmlType qos)
                                           raises(XmlBlasterException);
    };
-   //--------------------------------------------------------------------------
+
+}; }; }; // org::xmlBlaster::serverIdl
 
 
+
+module org { module xmlBlaster { module clientIdl
+{
    /**
     * This interface needs to be implemented by the clients using
     * the AttributeServer
@@ -214,11 +218,9 @@ module org { module xmlBlaster
    interface BlasterCallback
    {
      //oneway
-     void update(in XmlType xmlKey, in ContentType content);
+     void update(in org::xmlBlaster::serverIdl::XmlType xmlKey, in org::xmlBlaster::serverIdl::ContentType content);
    };
-   //--------------------------------------------------------------------------
 
-}; }; // org::xmlBlaster
-
+}; }; }; // org::xmlBlaster::clientIdl
 
 #endif // _xmlBlaster_IDL_
