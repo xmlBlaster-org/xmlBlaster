@@ -20,6 +20,10 @@ Creating a branch to work on separate code (Example):
     cvs status -v <file>
     -> The Sticky Tag should show MyHackV08
 
+  How to create a branch from a branch:
+    cvs rtag -r MyHackV08 -b MyHackV08-SUBBRANCH xmlBlaster
+    -> This creates a new branch from the head of MyHackV08
+
 
 Merge the branch again with the main development:
 =================================================
