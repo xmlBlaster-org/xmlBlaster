@@ -1010,8 +1010,7 @@ build.sh runTests
 build.sh reportShow
         </pre>
         <p>
-        And go for a cup of coffee as the complete testsuite will run (a persistence database needs to be
-        started first).
+        And go for a cup of coffee as the complete testsuite will run.
         </p>
 
       </table>
@@ -1057,7 +1056,7 @@ build.sh reportShow
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2003 05 29</date>
-   <revision>$Revision: 1.32 $</revision>
+   <revision>$Revision: 1.33 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
