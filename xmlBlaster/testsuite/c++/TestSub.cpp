@@ -3,7 +3,7 @@ Name:      TestSub.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.cpp,v 1.5 2002/03/13 16:41:36 ruff Exp $
+Version:   $Id: TestSub.cpp,v 1.6 2002/04/01 11:50:42 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #include <boost/lexical_cast.hpp>
@@ -219,12 +219,11 @@ private:
     * @param sessionId The sessionId to authenticate the callback
     *                  This sessionId was passed on subscription
     *                  we can use it to decide if we trust this update()
-    * @param loginName The name to whom the callback belongs
     * @param updateKey The arrived key
     * @param content   The arrived message content
     * @param qos       Quality of Service of the MessageUnit
     */
-   string update(const string &sessionId, const string &loginName,
+   string update(const string &sessionId,
                UpdateKey &updateKey,
                void *content, long contentSize,
                UpdateQoS &updateQoS) {
@@ -232,10 +231,6 @@ private:
                 updateKey.getUniqueKey() + "...");
       numReceived_ ++;
 
-      if (receiverName_ != loginName) {
-         log_.error(me(), "Wrong receveiver");
-         assert(0);
-      }
       if (senderName_ != updateQoS.getSender()) {
          log_.error(me(), "Wrong Sender");
          assert(0);

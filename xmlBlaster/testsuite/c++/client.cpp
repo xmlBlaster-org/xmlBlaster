@@ -19,9 +19,17 @@ namespace clientIdl {
       /*
        * implement the update method, which was promised in "xmlBlaster.idl"
        */
-      void update(const serverIdl::MessageUnitArr& msgUnitArr, const serverIdl::XmlTypeArr& qosArr)
+      serverIdl::StringArr* update(const char* sessionId, const serverIdl::MessageUnitArr& msgUnitArr)
       {
          cout << "******* Callback invoked *******" << endl;
+      }
+      void updateOneway(const char* sessionId, const serverIdl::MessageUnitArr& msgUnitArr)
+      {
+         cout << "******* Oneway callback invoked *******" << endl;
+      }
+      char *ping(const char *qos)
+      {
+         cout << "******* ping callback invoked *******" << endl;
       }
    };
 }

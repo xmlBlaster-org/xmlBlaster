@@ -3,7 +3,7 @@ Name:      TestLogin.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestLogin.cpp,v 1.5 2002/03/13 16:41:36 ruff Exp $
+Version:   $Id: TestLogin.cpp,v 1.6 2002/04/01 11:50:42 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 /**
@@ -92,13 +92,12 @@ public:
     * @param sessionId The sessionId to authenticate the callback
     *                  This sessionId was passed on subscription
     *                  we can use it to decide if we trust this update()
-    * @param loginName The name to whom the callback belongs
     * @param updateKey The arrived key
     * @param content   The arrived message content
     * @param qos       Quality of Service of the MessageUnit
     * @return The status string
     */
-   string update(const string &sessionId, const string &loginName,
+   string update(const string &sessionId,
                UpdateKey &updateKey,
                void *content, long contentSize,
                UpdateQoS &updateQoS) {
