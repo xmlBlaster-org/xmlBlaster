@@ -232,6 +232,8 @@ TODO
 
    </compiler>
 
+   <versioninfo id="xmlBlaster-C-version" companyname="xmlBlaster.org" fileversion="${version} ${year}"/>
+
    <compiler id="msvc" name="msvc" extends="base-msvc">
       <!--  disable Microsoft Extensions   -->
       <compilerarg value="/GR"/> <!--enable C++ RTTI, used in TestQueue.cpp -->
@@ -2834,6 +2836,7 @@ TODO
          <compiler refid="msvc"/> <!-- MS VC++ 7 -->
          <compiler refid="bcc"/>  <!-- Borland -->
          <compiler refid="CC"/>   <!-- SunOS C++ 5.3 -->
+         <versioninfo extends="xmlBlaster-C-version" filedescription="xmlBlaster C client shared library"/>
          <fileset dir="${build.src.c.dir}/socket" includes="*.c"/>
          <fileset dir="${build.src.c.dir}/util" includes="*.c"/>
          <fileset dir="${build.src.c.dir}/util/queue" includes="*.c" if="XMLBLASTER_PERSISTENT_QUEUE"/>
