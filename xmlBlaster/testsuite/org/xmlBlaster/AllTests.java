@@ -11,15 +11,15 @@ import junit.framework.*;
 /**
  * java -Djava.compiler= junit.swingui.TestRunner -noloading AllTests
  */
-public class AllTests extends TestCase
+public class AllTests extends junit.framework.TestCase
 {
 
   public AllTests(String s) {
     super(s);
   }
 
-  public static Test suite() {
-    TestSuite suite = new TestSuite("All xmlBlaster core tests");
+  public static junit.framework.Test suite() {
+    junit.framework.TestSuite suite = new junit.framework.TestSuite("All xmlBlaster core tests");
     suite.addTest(classtest.AllTests.suite());
     suite.addTest(testsuite.org.xmlBlaster.TestAll.suite());
     suite.addTest(authentication.AllTests.suite());
