@@ -3,7 +3,7 @@ Name:      ConnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: ConnectQos.java,v 1.38 2003/01/04 22:43:30 ruff Exp $
+Version:   $Id: ConnectQos.java,v 1.39 2003/01/06 11:34:10 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -29,49 +29,7 @@ import java.io.Serializable;
 
 
 /**
- * This class encapsulates the qos of a login() or connect(). 
- * <p />
- * So you don't need to type the 'ugly' XML ASCII string by yourself.
- * After construction access the ASCII-XML string with the toXml() method.
- * <br />
- * A typical <b>login</b> qos could look like this:<br />
- * <pre>
- *&lt;qos>
- *   &lt;securityService type="htpasswd" version="1.0">
- *     &lt;![CDATA[
- *     &lt;user>joe&lt;/user>
- *     &lt;passwd>secret&lt;/passwd>
- *     ]]>
- *   &lt;/securityService>
- *
- *   &lt;session name='/node/heron/client/joe/-9' timeout='3600000' maxSessions='10' clearSessions='false'
- *               sessionId='4e56890ghdFzj0'/>
- *
- *   &lt;ptp>true&lt;/ptp>  <!-- Allow receiving PtP messages (no SPAM protection) -->
- *
- *   &lt;!-- The client side queue: -->
- *   &lt;queue relating='client' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='exception'>
- *      &lt;address type='IOR' sessionId='4e56890ghdFzj0'>
- *         IOR:10000010033200000099000010....
- *      &lt;/address>
- *   &lt;queue>
- *
- *   &lt;!-- The server side callback queue: -->
- *   &lt;queue relating='session' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='deadMessage'>
- *      &lt;callback type='IOR' sessionId='4e56890ghdFzj0'>
- *         IOR:10000010033200000099000010....
- *         &lt;burstMode collectTime='400' />
- *      &lt;/callback>
- *   &lt;queue>
- *&lt;/qos>
- * </pre>
- * NOTE: As a user of the Java client helper classes (client.protocol.XmlBlasterConnection)
- * you don't need to create the <pre>&lt;callback></pre> element.
- * This is generated automatically from the XmlBlasterConnection class when instantiating
- * the callback driver.
- * <p />
- * see xmlBlaster/src/dtd/XmlQoS.xml
- * @see org.xmlBlaster.test.classtest.ConnectQosTest
+ * @deprecated Use org.xmlBlaster.client.qos.ConnectQos instead
  */
 public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serializable
 {

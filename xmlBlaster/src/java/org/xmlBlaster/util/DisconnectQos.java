@@ -3,7 +3,7 @@ Name:      DisconnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: DisconnectQos.java,v 1.8 2002/12/20 16:32:46 ruff Exp $
+Version:   $Id: DisconnectQos.java,v 1.9 2003/01/06 11:34:10 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -16,22 +16,7 @@ import java.io.Serializable;
 
 
 /**
- * This class encapsulates the qos of a logout() or disconnect()
- * <p />
- * So you don't need to type the 'ugly' XML ASCII string by yourself.
- * After construction access the ASCII-XML string with the toXml() method.
- * <br />
- * A typical <b>logout</b> qos could look like this:<br />
- * <pre>
- *  &lt;qos>
- *    &lt;deleteSubjectQueue>true&lt;/deleteSubjectQueue>
- *    &lt;clearSessions>false&lt;/clearSessions>
- *  &lt;/qos>
- * </pre>
- * <p />
- * see xmlBlaster/src/dtd/XmlQoS.xml
- * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.disconnect.html">The interface.disconnect requirement</a>
- * @see org.xmlBlaster.test.classtest.DisconnectQosTest
+ * @deprecated Use org.xmlBlaster.client.qos.DisconnectQos instead
  */
 public class DisconnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serializable
 {
