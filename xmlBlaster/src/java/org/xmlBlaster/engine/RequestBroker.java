@@ -541,11 +541,12 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
                   continue;
                }
                origMsgUnit.getQosData().addClientProperty("__isErrorHandled", true); // Mark the original to avoid looping if failed client is the dead message listener
-               log.warn(ME, "Generating dead message '" + entry.getLogId() + "'" +
+               String text = "Generating dead message '" + entry.getLogId() + "'" +
                             " from publisher=" + entry.getSender() +
                             " because delivery with queue '" +            // entry.getReceiver() is recognized in queueId
                             ((queue == null) ? "null" : queue.getStorageId().toString()) + "' failed" +
-                            ((reason != null) ? (": " + reason) : "") );
+                            ((reason != null) ? (": " + reason) : "");
+               log.warn(ME, text);
                PublishKey publishKey = new PublishKey(glob, Constants.OID_DEAD_LETTER);
                publishKey.setClientTags("<oid>"+entry.getKeyOid()+"</oid>");
                // null: use the content from origMsgUnit:
@@ -553,6 +554,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
                pubQos.addClientProperty(Constants.CLIENTPROPERTY_DEADMSGQOS, origMsgUnit.getQos()); //"__qos"
                pubQos.addClientProperty(Constants.CLIENTPROPERTY_OID, origMsgUnit.getKeyOid()); //"__oid"
                pubQos.addClientProperty(Constants.CLIENTPROPERTY_RCVTIMESTAMP, origMsgUnit.getQosData().getRcvTimestamp()); //"__rcvTimestamp"
+               pubQos.addClientProperty(Constants.CLIENTPROPERTY_DEADMSGREASON, text); //"__deadMessageReason"
                MsgUnit msgUnit = new MsgUnit(origMsgUnit, publishKey.getData(), null, pubQos.getData());
                retArr[ii] = publish(unsecureSessionInfo, msgUnit);
             }

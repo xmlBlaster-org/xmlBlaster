@@ -204,6 +204,8 @@ public class Constants
    public final static String CLIENTPROPERTY_RCVTIMESTAMP = INTERNAL_OID_PREFIX_FOR_CORE + "rcvTimestamp";
    /** Dead messages transport in their QoS clientProperty the original message oid in '__oid' */
    public final static String CLIENTPROPERTY_OID = INTERNAL_OID_PREFIX_FOR_CORE + "oid";
+   /** Dead messages transport in their QoS clientProperty the error reason in '__deadMessageReason' */
+   public final static String CLIENTPROPERTY_DEAD_LETTER_REASON = INTERNAL_OID_PREFIX_FOR_CORE + "deadMessageReason";
 
    /** For xml key attribute, contentMimeExtended="1.0" */
    public static final String DEFAULT_CONTENT_MIME_EXTENDED = "1.0";
