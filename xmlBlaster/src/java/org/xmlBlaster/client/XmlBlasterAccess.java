@@ -805,9 +805,9 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
       StringBuffer sb = new StringBuffer(4096);
       sb.append("\n");
       sb.append("Choose a connection protocol:\n");
-      sb.append("   -client.protocol    Specify a protocol to talk with xmlBlaster, 'SOCKET' or 'IOR' or 'RMI' or 'SOAP' or 'XML-RPC'.\n");
+      sb.append("   -dispatch/clientSide/protocol    Specify a protocol to talk with xmlBlaster, 'SOCKET' or 'IOR' or 'RMI' or 'SOAP' or 'XML-RPC'.\n");
       sb.append("                       Current setting is '" + glob.getProperty().get("client.protocol", "IOR") + "'. See below for protocol settings.\n");
-      sb.append("                       Example: java MyApp -client.protocol RMI -rmi.hostname 192.168.10.34\n");
+      sb.append("                       Example: java MyApp -dispatch/clientSide/protocol RMI -rmi.hostname 192.168.10.34\n");
       sb.append("\n");
       sb.append("Security features:\n");
       sb.append("   -Security.Client.DefaultPlugin \"gui,1.0\"\n");

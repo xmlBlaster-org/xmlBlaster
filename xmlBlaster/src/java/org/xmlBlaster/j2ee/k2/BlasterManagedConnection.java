@@ -96,7 +96,7 @@ public class BlasterManagedConnection implements ManagedConnection {
         this.pwd = pwd;
             /*
               Some params:
-              -client.protocol RMI | IOR | XML-RPC
+              -dispatch/clientSide/protocol RMI | IOR | XML-RPC
               
 
               RMI:
@@ -124,8 +124,8 @@ public class BlasterManagedConnection implements ManagedConnection {
 
             // Test with env
             /*
-            String rmiEnv[] = new String[] {"-client.protocol","RMI"};
-            String orbEnv[] = new String[] {"-client.protocol","IOR","-org.omg.CORBA.ORBClass","org.jacorb.orb.ORB","-org.omg.CORBA.ORBSingletonClass","org.jacorb.orb.ORBSingleton","-hostname","151.177.109.74"};
+            String rmiEnv[] = new String[] {"-dispatch/clientSide/protocol","RMI"};
+            String orbEnv[] = new String[] {"-dispatch/clientSide/protocol","IOR","-org.omg.CORBA.ORBClass","org.jacorb.orb.ORB","-org.omg.CORBA.ORBSingletonClass","org.jacorb.orb.ORBSingleton","-hostname","151.177.109.74"};
             */
             
         // Set up physical pipe

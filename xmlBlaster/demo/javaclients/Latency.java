@@ -35,7 +35,7 @@ import org.xmlBlaster.util.MsgUnit;
  * <br />
  * Over the internet with XmlRpc:
  * <pre>
- *   java Latency -numSend 100 -client.protocol XML-RPC -xmlrpc.hostname server.xmlBlaster.org -xmlrpc.hostnameCB <myCurrentIP>
+ *   java Latency -numSend 100 -dispatch/clientSide/protocol XML-RPC -xmlrpc.hostname server.xmlBlaster.org -xmlrpc.hostnameCB <myCurrentIP>
  * </pre>
  * <p />
  * Results, for one round trip including publish -> processing in xmlBlaster -> update -> parsing in client (600 MHz AMD Linux):

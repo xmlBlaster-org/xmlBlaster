@@ -791,7 +791,7 @@ public abstract class AddressBase
       text += "   -dispatch/callback/compress/minSize Messages bigger this size in bytes are compressed [" + CallbackAddress.DEFAULT_minSize + "]\n";
       text += "   -dispatch/callback/ptpAllowed      PtP messages wanted? false prevents spamming [" + CallbackAddress.DEFAULT_ptpAllowed + "]\n";
       text += "   -dispatch/callback/protocol        You can choose another protocol for the callback server\n";
-      text += "                                      [defaults to -client.protocol]\n";
+      text += "                                      [defaults to -dispatch/clientSide/protocol]\n";
       //text += "   -cb.DispatchPlugin.defaultPlugin  Specify your specific dispatcher plugin [" + CallbackAddress.DEFAULT_dispatchPlugin + "]\n";
       return text;
    }

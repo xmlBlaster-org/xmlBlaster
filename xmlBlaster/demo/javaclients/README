@@ -39,19 +39,19 @@ publishing of messages.
 
 Running a client with CORBA protocol (default):
 
-      jaco javaclients.ClientSub -client.protocol IOR
+      jaco javaclients.ClientSub -dispatch/clientSide/protocol IOR
 
 Running a client with RMI protocol:
 
-      java javaclients.ClientSub -client.protocol RMI
+      java javaclients.ClientSub -dispatch/clientSide/protocol RMI
 
 Running a client with XML-RPC protocol:
 
-      java javaclients.ClientSub -client.protocol XML-RPC
+      java javaclients.ClientSub -dispatch/clientSide/protocol XML-RPC
 
 Running a client with SOCKET protocol:
 
-      java javaclients.ClientSub -client.protocol SOCKET
+      java javaclients.ClientSub -dispatch/clientSide/protocol SOCKET
 
 Running a client which forces the GUI based authentication/authorization plugin:
 

@@ -1087,11 +1087,11 @@ Changes for 0.79 [Nov, 3 2000]
     This allows to switch the used protocol (IOR,RMI,XML-RPC)
     on command line without recompilation.
     For coding example see demo/javaclients/ClientSub.java
-    To switch protocol use the -client.protocol command line option.
+    To switch protocol use the -dispatch/clientSide/protocol command line option.
     Example:
-      jaco javaclients.ClientSub -client.protocol IOR
-      jaco javaclients.ClientSub -client.protocol RMI
-      jaco javaclients.ClientSub -client.protocol XML-RPC
+      jaco javaclients.ClientSub -dispatch/clientSide/protocol IOR
+      jaco javaclients.ClientSub -dispatch/clientSide/protocol RMI
+      jaco javaclients.ClientSub -dispatch/clientSide/protocol XML-RPC
 
   - NOTE: You need to use the new xmlBlaster.properties file.
     Remove your old in your HOME directory and use the

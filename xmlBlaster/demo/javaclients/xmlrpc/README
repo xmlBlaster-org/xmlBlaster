@@ -38,7 +38,7 @@ NOTE: There is are helper class in src/java/org/xmlBlaster/client/protocol/xmlrp
       It wraps the 'low level' xml-rpc invocation.
       You can switch all our demos to run with XML-RPC instead of CORBA or RMI as follows:
 
-       java -cp lib/xmlBlaster.jar javaclients.ClientSub -client.protocol XML-RPC
+       java -cp lib/xmlBlaster.jar javaclients.ClientSub -dispatch/clientSide/protocol XML-RPC
 
 NOTE: https should work as well (see xmlrpc mailing list):
     You may install SUN JSSE (or used another product, because this one is only a proof of

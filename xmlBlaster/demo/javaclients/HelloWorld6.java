@@ -35,7 +35,7 @@ import org.xmlBlaster.client.I_ConnectionHandler;
  * <p />
  * Invoke: java HelloWorld6
  * <p />
- * Invoke: java HelloWorld6 -session.name joe -passwd secret -client.protocol XML-RPC
+ * Invoke: java HelloWorld6 -session.name joe -passwd secret -dispatch/clientSide/protocol XML-RPC
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.html" target="others">xmlBlaster interface</a>
  */
 public class HelloWorld6

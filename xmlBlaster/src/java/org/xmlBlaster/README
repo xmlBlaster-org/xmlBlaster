@@ -43,11 +43,11 @@ Howto start the xmlBlaster server:
 
   Using RMI:
 
-     java javaclients.ClientSub -client.protocol RMI
+     java javaclients.ClientSub -dispatch/clientSide/protocol RMI
 
   Using XML-RPC:
 
-     java javaclients.ClientSub -client.protocol XML-RPC
+     java javaclients.ClientSub -dispatch/clientSide/protocol XML-RPC
 
   Other options:
 

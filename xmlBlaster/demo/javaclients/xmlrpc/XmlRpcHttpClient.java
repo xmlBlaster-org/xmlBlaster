@@ -3,7 +3,7 @@ Name:      XmlRpcHttpClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code to post a xml-rpc message thru the HTTP protocol
-Version:   $Id: XmlRpcHttpClient.java,v 1.20 2003/03/24 16:12:55 ruff Exp $
+Version:   $Id: XmlRpcHttpClient.java,v 1.21 2003/03/26 12:00:59 laghi Exp $
 Author:    Michele Laghi (laghi@swissinfo.org)
 ------------------------------------------------------------------------------*/
 
@@ -43,7 +43,7 @@ import org.xmlBlaster.util.MsgUnit;
  *        to XML-RPC if the command line parameter -client.protocol is specified as follows:
  * <br />
  * <pre>
- *    java -cp lib/xmlBlaster.jar javaclients.ClientSub -client.protocol XML-RPC
+ *    java -cp lib/xmlBlaster.jar javaclients.ClientSub -dispatch/clientSide/protocol XML-RPC
  * </pre>
  *
  * @author "Michele Laghi" <laghi@swissinfo.org>

@@ -298,9 +298,9 @@ void XmlBlasterAccess::usage()
 {
    string text = string("\n");
    text += string("Choose a connection protocol:\n");
-   text += string("   -client.protocol    Specify a protocol to talk with xmlBlaster, 'SOCKET' or 'IOR' or 'RMI' or 'SOAP' or 'XML-RPC'.\n");
+   text += string("   -dispatch/clientSide/protocol    Specify a protocol to talk with xmlBlaster, 'SOCKET' or 'IOR' or 'RMI' or 'SOAP' or 'XML-RPC'.\n");
    text += string("                       Current setting is '") + Global::getInstance().getProperty().getStringProperty("client.protocol", "IOR") + string("'. See below for protocol settings.\n");
-   text += string("                       Example: java MyApp -client.protocol RMI -rmi.hostname 192.168.10.34\n");
+   text += string("                       Example: java MyApp -dispatch/clientSide/protocol RMI -rmi.hostname 192.168.10.34\n");
    text += string("\n");
    text += string("Security features:\n");
    text += string("   -Security.Client.DefaultPlugin \"gui,1.0\"\n");

@@ -23,12 +23,12 @@ To chat from you multi homed host the another server running xmlBlaster (CORBA):
 
 To chat from you multi homed host the another server running xmlBlaster (XML-RPC):
 
-   java javaclients.chat.SimpleChat -loginName Tim -client.protocol XML-RPC -xmlrpc.hostnameCB 198.197.24.129 -xmlrpc.hostname 62.132.140.7
+   java javaclients.chat.SimpleChat -loginName Tim -dispatch/clientSide/protocol XML-RPC -xmlrpc.hostnameCB 198.197.24.129 -xmlrpc.hostname 62.132.140.7
 
 
 To chat from you multi homed host the another server running xmlBlaster (RMI):
 
-   java javaclients.chat.SimpleChat -loginName RMI -client.protocol RMI -rmi.hostnameCB 198.197.24.129 -rmi.hostname 62.132.140.7
+   java javaclients.chat.SimpleChat -loginName RMI -dispatch/clientSide/protocol RMI -rmi.hostnameCB 198.197.24.129 -rmi.hostname 62.132.140.7
 
 
 Toget help:

@@ -37,7 +37,7 @@ Test the driver:
 
    java org.xmlBlaster.Main
 
-   java javaclients.ClientSub -client.protocol XML-RPC
+   java javaclients.ClientSub -dispatch/clientSide/protocol XML-RPC
 
    The $JAVA_WRAP is an environment variable which points to the correct java wrapper depending on
    which CORBA implementation you are using (it points to jaco for JacORB and to

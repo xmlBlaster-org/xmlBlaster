@@ -203,10 +203,10 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * <p />
     * You can choose the protocol with this command line option: <br />
     * <pre>
-    * java ... -client.protocol SOCKET
-    * java ... -client.protocol RMI
-    * java ... -client.protocol IOR
-    * java ... -client.protocol XML-RPC
+    * java ... -dispatch/clientSide/protocol SOCKET
+    * java ... -dispatch/clientSide/protocol RMI
+    * java ... -dispatch/clientSide/protocol IOR
+    * java ... -dispatch/clientSide/protocol XML-RPC
     * </pre>
     */
    public XmlBlasterConnection() throws XmlBlasterException {
@@ -221,10 +221,10 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * <p />
     * You can choose the protocol with this command line option: <br />
     * <pre>
-    * java ... -client.protocol RMI
-    * java ... -client.protocol IOR
-    * java ... -client.protocol XML-RPC
-    * java ... -client.protocol SOCKET
+    * java ... -dispatch/clientSide/protocol RMI
+    * java ... -dispatch/clientSide/protocol IOR
+    * java ... -dispatch/clientSide/protocol XML-RPC
+    * java ... -dispatch/clientSide/protocol SOCKET
     * </pre>
     * @param arg  parameters given on command line, or coded e.g.:
     * <pre>
@@ -2221,9 +2221,9 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       Global glob = Global.instance();
       String text = "\n";
       text += "Choose a connection protocol:\n";
-      text += "   -client.protocol    Specify a protocol to talk with xmlBlaster, 'SOCKET' or 'IOR' or 'RMI' or 'SOAP' or 'XML-RPC'.\n";
+      text += "   -dispatch/clientSide/protocol    Specify a protocol to talk with xmlBlaster, 'SOCKET' or 'IOR' or 'RMI' or 'SOAP' or 'XML-RPC'.\n";
       text += "                       Current setting is '" + glob.getProperty().get("client.protocol", "IOR") + "'. See below for protocol settings.\n";
-      text += "                       Example: java MyApp -client.protocol RMI -rmi.hostname 192.168.10.34\n";
+      text += "                       Example: java MyApp -dispatch/clientSide/protocol RMI -rmi.hostname 192.168.10.34\n";
       text += "\n";
       text += "Security features:\n";
       text += "   -Security.Client.DefaultPlugin \"gui,1.0\"\n";

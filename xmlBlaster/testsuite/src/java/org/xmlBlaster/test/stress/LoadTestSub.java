@@ -3,7 +3,7 @@ Name:      LoadTestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: LoadTestSub.java,v 1.9 2003/03/25 22:09:41 ruff Exp $
+Version:   $Id: LoadTestSub.java,v 1.10 2003/03/26 12:01:02 laghi Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.stress;
 
@@ -332,8 +332,8 @@ public class LoadTestSub extends TestCase implements I_Callback
       int ret = glob.init(args);
       if (ret != 0) {
          usage();
-         System.out.println("Oneway Example: java -Xms18M -Xmx32M org.xmlBlaster.test.qos.LoadTestSub -publish.oneway true -burstMode.collectTimeOneway 500 -cb.oneway true -cb.burstMode.collectTime 200 -numPublish 5000 -client.protocol IOR");
-         System.out.println("Syn    Example: java -Xms18M -Xmx32M org.xmlBlaster.test.qos.LoadTestSub -publish.oneway false -cb.oneway false -publish.burstMode 200 -cb.burstMode.collectTime 200 -numPublish 5000 -client.protocol IOR");
+         System.out.println("Oneway Example: java -Xms18M -Xmx32M org.xmlBlaster.test.qos.LoadTestSub -publish.oneway true -burstMode.collectTimeOneway 500 -cb.oneway true -cb.burstMode.collectTime 200 -numPublish 5000 -dispatch/clientSide/protocol IOR");
+         System.out.println("Syn    Example: java -Xms18M -Xmx32M org.xmlBlaster.test.qos.LoadTestSub -publish.oneway false -cb.oneway false -publish.burstMode 200 -cb.burstMode.collectTime 200 -numPublish 5000 -dispatch/clientSide/protocol IOR");
          System.exit(1);
       }
 
