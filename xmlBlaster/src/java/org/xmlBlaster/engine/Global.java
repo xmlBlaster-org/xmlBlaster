@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling global data
-Version:   $Id: Global.java,v 1.20 2002/06/25 07:40:12 ruff Exp $
+Version:   $Id: Global.java,v 1.21 2002/06/27 11:12:44 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -404,6 +404,11 @@ public final class Global extends org.xmlBlaster.util.Global
     */
    public final boolean isAdministrationCommand(XmlKey xmlKey) throws XmlBlasterException {
       if (this.momClientGateway == null) return false;
+      if (xmlKey == null) {
+         log.error(ME, "Illegal null argument in isAdministrationCommand()");
+         Thread.currentThread().dumpStack();
+         return false;
+      }
       return xmlKey.getUniqueKey().startsWith("__cmd:");
    }
 
