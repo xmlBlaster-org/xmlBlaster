@@ -89,7 +89,6 @@ public class QueueQueryPlugin implements I_Query, I_QueueSizeListener {
       boolean consumable = false;
       long waitingDelay = 0L; // no wait is default
       
-      // TODO this should go into a QueryPlugin called QueueQuery   
       QuerySpecQos[] querySpecs = qosData.getQuerySpecArr();
       QuerySpecQos querySpec = null;
       if (querySpecs != null) {
@@ -108,33 +107,43 @@ public class QueueQueryPlugin implements I_Query, I_QueueSizeListener {
          Map props = StringPairTokenizer.parseToStringClientPropertyPairs(this.global, query, "&", "=");
          ClientProperty prop = (ClientProperty)props.get("maxEntries");
          if (prop != null) this.maxEntries = prop.getIntValue();
-         prop = qosData.getClientProperty("maxSize");
+         prop = (ClientProperty)props.get("maxSize");
          if (prop != null) this.maxSize = prop.getLongValue();
-         prop = qosData.getClientProperty("consumable");
+         if (this.maxSize > -1L)
+            throw new XmlBlasterException(this.global, ErrorCode.USER_ILLEGALARGUMENT, ME + ".query: specification of maxSize is not implemented, please use the default value -1 or leave it untouched"); 
+         prop = (ClientProperty)props.get("consumable");
          if (prop != null) consumable = prop.getBooleanValue();
-         prop = qosData.getClientProperty("waitingDelay");
+         prop = (ClientProperty)props.get("waitingDelay");
          if (prop != null) waitingDelay = prop.getLongValue();
       }
+      if (this.log.TRACE) 
+         this.log.trace(ME, "query: waitingDelay='" + waitingDelay + "' consumable='" + consumable + "' maxEntries='" + this.maxEntries + "' maxSize='" + this.maxSize + "'");
       
       if (waitingDelay != 0L) {
-         if (maxEntries < 1 || maxSize < 1L && waitingDelay < 0L)
+         if (this.log.TRACE) this.log.trace(ME, "query: waiting delay is " + waitingDelay);
+         if (maxEntries < 1 && maxSize < 1L && waitingDelay < 0L)
             throw new XmlBlasterException(this.global, ErrorCode.USER_ILLEGALARGUMENT, ME + ".query: if you specify a blocking get you must also specify a maximum size or maximum number of entries to retreive, otherwise specify non-blocking by setting 'waitingDelay' to zero");
          if (checkIfNeedsWaiting((int)queue.getNumOfEntries(), queue.getNumOfBytes(), maxEntries, maxSize)) {
+            if (this.log.TRACE) this.log.trace(ME, "query: going to wait due to first check");
             synchronized(this) {
                try {
                   queue.addQueueSizeListener(this);
                   if (checkIfNeedsWaiting((int)queue.getNumOfEntries(), queue.getNumOfBytes(), maxEntries, maxSize)) {
+                     if (this.log.TRACE) this.log.trace(ME, "query: going to wait due to second check (inside sync now)");
                      try {
                         if (waitingDelay < 0L) this.wait();
                         else this.wait(waitingDelay);
+                        if (this.log.TRACE) this.log.trace(ME, "did not wake up after waiting");
                      }
                      catch (InterruptedException ex) {
+                        if (this.log.TRACE) this.log.trace(ME, "just waked up after waiting for incoming entries");
                      }
                   }
                }
                finally {
                   try {
                      queue.removeQueueSizeListener(this);
+                     if (this.log.TRACE) this.log.trace(ME, "query: removed myself as a QueueSizeListener");
                   }
                   catch (Throwable ex) {
                      if (this.log.TRACE) this.log.trace(ME, "query: exception occurred when removing the QueueSizeListener from the queue");
@@ -175,7 +184,9 @@ public class QueueQueryPlugin implements I_Query, I_QueueSizeListener {
    }
 
    public void changed(I_Queue queue, long numEntries, long numBytes) {
+      if (this.log.CALL) this.log.call(ME, "changed numEntries='" + numEntries + "' numBytes='" + numBytes + "'");
       if (!checkIfNeedsWaiting((int)numEntries, numBytes, this.maxEntries, this.maxSize)) {
+         if (this.log.TRACE) this.log.trace(ME, "changed going to notify");
          synchronized(this) {
             this.notify();
          }
