@@ -26,17 +26,21 @@ namespace util {
    /**
     * Enforced by I_LogFactory, initialize the logging environment
     */
-   void Log4cplusFactory::initialize(const PropMap& properties)
+   void Log4cplusFactory::initialize(const PropMap& propMap)
    {
-      PropMap propMap = properties;
-      if (propMap.count("xmlBlaster/logging/debug") > 0) {
-         if ("true" == propMap["xmlBlaster/logging/debug"])
-            log4cplus::helpers::LogLog::getLogLog()->setInternalDebugging(true);
+      {
+         PropMap::const_iterator pos = propMap.find("xmlBlaster/logging/debug");
+         if (pos != propMap.end()) {
+            string value = pos->second;
+            if ("true" == value)
+               log4cplus::helpers::LogLog::getLogLog()->setInternalDebugging(true);
+         }
       }
 
       string configFileName = "log4cplus.properties";
-      if (propMap.count("xmlBlaster/logging/configFileName") > 0) {
-         configFileName = propMap["xmlBlaster/logging/configFileName"];
+      PropMap::const_iterator pos = propMap.find("xmlBlaster/logging/configFileName");
+      if (pos != propMap.end()) {
+         configFileName = (*pos).second;
       }
       std::ifstream file;
       file.open(configFileName.c_str());
@@ -51,7 +55,7 @@ namespace util {
       }
 
       Logger logger = Logger::getInstance("client");
-      LOG4CPLUS_WARN(logger, "LOG4CPLUS: Hello, World!");
+      //LOG4CPLUS_WARN(logger, "LOG4CPLUS: Hello, World!");
    }
 
    /**
@@ -101,28 +105,63 @@ namespace util {
    }
 
    void Log4cplusLog::info(const std::string &instance, const std::string &text){
-      std::cout << "[INFO]  " << instance << ": " << text << std::endl;
-      LOG4CPLUS_INFO(logger_, text);
+      //std::cout << "[INFO]  " << instance << ": " << text << std::endl;
+      if(logger_.isEnabledFor(log4cplus::INFO_LOG_LEVEL)) {
+         log4cplus::tostringstream _log4cplus_buf;
+         _log4cplus_buf << text;
+         logger_.forcedLog(log4cplus::INFO_LOG_LEVEL, _log4cplus_buf.str(), instance.c_str(), -1);
+      }
+      //LOG4CPLUS_INFO(logger_, text);
    }
    
    void Log4cplusLog::warn(const std::string &instance, const std::string &text){
-      std::cout << "[WARN]  " << instance << ": " << text << std::endl;
-      LOG4CPLUS_WARN(logger_, text);
+      if(logger_.isEnabledFor(log4cplus::WARN_LOG_LEVEL)) {
+         log4cplus::tostringstream _log4cplus_buf;
+         _log4cplus_buf << text;
+         logger_.forcedLog(log4cplus::WARN_LOG_LEVEL, _log4cplus_buf.str(), instance.c_str(), -1);
+      }
    }
    
    void Log4cplusLog::error(const std::string &instance, const std::string &text){
-      std::cout << "[ERROR] " << instance << ": " << text << std::endl;
-      LOG4CPLUS_ERROR(logger_, text);
+      if(logger_.isEnabledFor(log4cplus::ERROR_LOG_LEVEL)) {
+         log4cplus::tostringstream _log4cplus_buf;
+         _log4cplus_buf << text;
+         logger_.forcedLog(log4cplus::ERROR_LOG_LEVEL, _log4cplus_buf.str(), instance.c_str(), -1);
+      }
+   }
+
+   void Log4cplusLog::panic(const std::string &instance, const std::string &text){
+      if(logger_.isEnabledFor(log4cplus::FATAL_LOG_LEVEL)) {
+         log4cplus::tostringstream _log4cplus_buf;
+         _log4cplus_buf << text;
+         logger_.forcedLog(log4cplus::FATAL_LOG_LEVEL, _log4cplus_buf.str(), instance.c_str(), -1);
+      }
+      ::exit(1);
    }
    
    void Log4cplusLog::trace(const std::string &instance, const std::string &text){
-      std::cout << "[TRACE] " << instance << ": " << text << std::endl;
-      LOG4CPLUS_TRACE(logger_, text);
+      if(logger_.isEnabledFor(log4cplus::TRACE_LOG_LEVEL)) {
+         log4cplus::tostringstream _log4cplus_buf;
+         _log4cplus_buf << text;
+         logger_.forcedLog(log4cplus::TRACE_LOG_LEVEL, _log4cplus_buf.str(), instance.c_str(), -1);
+      }
    }
    
    void Log4cplusLog::call(const std::string &instance, const std::string &text){
-      std::cout << "[CALL]  " << instance << ": " << text << std::endl;
-      LOG4CPLUS_DEBUG(logger_, text);
+      if(logger_.isEnabledFor(log4cplus::DEBUG_LOG_LEVEL)) {
+         log4cplus::tostringstream _log4cplus_buf;
+         _log4cplus_buf << text;
+         logger_.forcedLog(log4cplus::DEBUG_LOG_LEVEL, _log4cplus_buf.str(), instance.c_str(), -1);
+      }
+   }
+
+   std::string Log4cplusLog::usage() const {
+      std::string str;
+      str += "\nLOG4CPLUS logging configuration, see http://log4cplus.sourceforge.net";
+      str += "\n   -xmlBlaster/logging/configFileName [log4cplus.properties]";
+      str += "\n                       Path to the log4cplus configuration file, for";
+      str += "\n                       configuration see http://logging.apache.org/log4j/docs/manual.html";
+      return str;
    }
 }}} // end of namespace
 

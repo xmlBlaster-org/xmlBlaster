@@ -60,12 +60,12 @@ class Dll_Export Log4cplusFactory : public I_LogFactory
  * <p />
  * The following command line arguments allows to specify the logging configuration file:
  * <pre>
- * -xmlBlaster/logging/configFileName log4cplus.propMap
+ * -xmlBlaster/logging/configFileName log4cplus.properties
  *
  * -xmlBlaster/logging/debug true
  * </pre>
  * <p />
- * Here is an example for a <code>log4cplus.propMap</code> configuration:
+ * Here is an example for a <code>log4cplus.properties</code> configuration:
  * <pre>
 log4cplus.rootLogger=INFO, STDOUT, R
 log4cplus.logger.test.a.b.c=WARN
@@ -99,8 +99,10 @@ class Dll_Export Log4cplusLog : public I_Log
    void info(const std::string &instance, const std::string &text);
    void warn(const std::string &instance, const std::string &text);
    void error(const std::string &instance, const std::string &text);
+   void panic(const std::string &instance, const std::string &text);
    void trace(const std::string &instance, const std::string &text);
    void call(const std::string &instance, const std::string &text);
+   std::string usage() const;
 };
 
 
