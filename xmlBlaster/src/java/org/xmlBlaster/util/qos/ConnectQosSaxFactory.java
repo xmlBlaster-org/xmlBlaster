@@ -361,7 +361,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
     * <p />
     * @param name Tag name
     */
-   public void endElement(String uri, String localName, String name) {
+   public void endElement(String uri, String localName, String name) throws org.xml.sax.SAXException {
       if (super.endElementBase(uri, localName, name) == true) {
          if (name.equalsIgnoreCase("clientProperty")) {
             this.connectQosData.addClientProperty(this.clientProperty);
@@ -447,7 +447,8 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
          }
          catch(XmlBlasterException e) {
             log.warn(ME, "Can't parse security string - " + e.toString() + "\n Check:\n" + tmp);
-            throw new StopParseException(); // Enough error handling??
+            throw new org.xml.sax.SAXException("Can't parse security string - " + e.toString() + "\n Check:\n" + tmp, e);
+            //throw new StopParseException();
          }
       }
 
