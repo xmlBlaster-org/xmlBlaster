@@ -3,7 +3,7 @@ Name:      XmlRpcConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native xmlBlaster Proxy. Can be called by the client in the same VM
-Version:   $Id: XmlRpcConnection.java,v 1.4 2000/10/26 17:22:18 ruff Exp $
+Version:   $Id: XmlRpcConnection.java,v 1.5 2000/10/27 13:04:07 ruff Exp $
 Author:    michele.laghi@attglobal.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.xmlrpc;
@@ -93,7 +93,16 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
 
    public void init()
    {
+      Log.trace(ME, "XmlRpcCLient is initialized, no connection available");
       this.xmlRpcClient = null;
+   }
+
+   private XmlRpcClient getXmlRpcClient() throws XmlBlasterException
+   {
+      if (this.xmlRpcClient == null) {
+         throw new XmlBlasterException(ME+".init", "No XML-RPC connection available.");
+      }
+      return this.xmlRpcClient;
    }
 
 
@@ -118,8 +127,8 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    {
       this.ME = "XmlRpcConnection-" + loginName;
       if (Log.CALL) Log.call(ME, "Entering login: name=" + loginName);
-      if (this.xmlRpcClient != null) {
-         Log.warn(ME, "You are already logged in.");
+      if (isLoggedIn()) {
+         Log.warn(ME, "You are already logged in, no relogin possible.");
          return;
       }
 
@@ -158,7 +167,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
          args.addElement(loginQos.toXml());
          sessionId = ""; // Let xmlBlaster generate the sessionId
          args.addElement(sessionId);
-         this.sessionId = (String)xmlRpcClient.execute("authenticate.login", args);
+         this.sessionId = (String)getXmlRpcClient().execute("authenticate.login", args);
          if (Log.DUMP) Log.dump(ME, loginQos.toXml());
       }
       catch (ClassCastException e) {
@@ -195,14 +204,20 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    {
       if (Log.CALL) Log.call(ME, "Entering logout: id=" + sessionId);
 
+      if (!isLoggedIn()) {
+         Log.warn(ME, "You are not logged in, no logout possible.");
+      }
+
       try {
-         // prepare the argument vector for the xml-rpc method call
-         Vector args = new Vector();
-         args.addElement(sessionId);
-         xmlRpcClient.execute("authenticate.logout", args);
+         if (this.xmlRpcClient != null) {
+            // prepare the argument vector for the xml-rpc method call
+            Vector args = new Vector();
+            args.addElement(sessionId);
+            this.xmlRpcClient.execute("authenticate.logout", args);
+         }
          if (this.callback != null) this.callback.shutdown();
          init();
-         return false;
+         return true;
       }
       catch (IOException e1) {
          Log.warn(ME+".logout", "IO exception: " + e1.toString());
@@ -240,7 +255,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
          args.addElement(sessionId);
          args.addElement(xmlKey_literal);
          args.addElement(qos_literal);
-         return (String)xmlRpcClient.execute("xmlBlaster.subscribe", args);
+         return (String)getXmlRpcClient().execute("xmlBlaster.subscribe", args);
       }
       catch (ClassCastException e) {
          Log.error(ME+".subscribe", "return value not a valid String: " + e.toString());
@@ -273,7 +288,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
          args.addElement(xmlKey_literal);
          args.addElement(qos_literal);
 
-         xmlRpcClient.execute("xmlBlaster.unSubscribe", args);
+         getXmlRpcClient().execute("xmlBlaster.unSubscribe", args);
       }
       catch (IOException e1) {
          Log.error(ME+".unSubscribe", "IO exception: " + e1.toString());
@@ -307,7 +322,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
          args.addElement(msgUnitWrap);
          args.addElement(publishQoS_literal);
 
-         return (String)xmlRpcClient.execute("xmlBlaster.publish", args);
+         return (String)getXmlRpcClient().execute("xmlBlaster.publish", args);
       }
 
       catch (ClassCastException e) {
@@ -362,7 +377,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
          args.addElement(sessionId);
          args.addElement(msgUnitArrWrap);
 
-         Vector returnVectorWrap = (Vector)xmlRpcClient.execute("xmlBlaster.publishArr", args);
+         Vector returnVectorWrap = (Vector)getXmlRpcClient().execute("xmlBlaster.publishArr", args);
 
       // re-extractXmlBlasterException the resuts to String[]
          return ProtoConverter.vector2StringArray(returnVectorWrap);
@@ -416,7 +431,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
          args.addElement(xmlKey_literal);
          args.addElement(qos_literal);
 
-         Vector vec = (Vector)xmlRpcClient.execute("xmlBlaster.erase", args);
+         Vector vec = (Vector)getXmlRpcClient().execute("xmlBlaster.erase", args);
          return ProtoConverter.vector2StringArray(vec);
 
       }
@@ -467,7 +482,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
          args.addElement(xmlKey_literal);
          args.addElement(qos_literal);
 
-         Vector retVector = (Vector)xmlRpcClient.execute("xmlBlaster.get", args);
+         Vector retVector = (Vector)getXmlRpcClient().execute("xmlBlaster.get", args);
          // extractXmlBlasterException the vector of vectors to a MessageUnit[] type
          return ProtoConverter.vector2MessageUnitArray(retVector);
       }
@@ -517,7 +532,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    {
       try {
          Vector args = new Vector();
-         xmlRpcClient.execute("xmlBlaster.ping", args);
+         getXmlRpcClient().execute("xmlBlaster.ping", args);
       } catch(Exception e) {
          throw new ConnectionException(ME+".InvokeError", e.toString());
       }
@@ -535,7 +550,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
       try {
          Vector args = new Vector();
          args.addElement(extraOffset);
-         return (String)xmlRpcClient.execute("xmlBlaster.toXml", args);
+         return (String)getXmlRpcClient().execute("xmlBlaster.toXml", args);
       }
       catch (ClassCastException e) {
          Log.error(ME+".toXml", "not a valid Vector: " + e.toString());
