@@ -13,7 +13,7 @@ Comment:   Syntax for Query:
 
 Compile:   jikes *.java  (put local directory into CLASSPATH)
 Invoke:    java DomQueryTest AgentBig.xml xmlBlaster/key/AGENT[@id=\"192.168.124.10\"] xmlBlaster/key/AGENT/DRIVER[@id=\"FileProof\"] xmlBlaster/key[@oid=\"2\"]
-Version:   $Id: DomQueryTest.java,v 1.2 1999/11/16 22:13:29 ruff Exp $
+Version:   $Id: DomQueryTest.java,v 1.3 1999/11/17 10:16:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 import com.jclark.xsl.om.*;
@@ -32,16 +32,19 @@ import com.jclark.xsl.dom.XMLProcessorImpl;
 import com.jclark.xsl.dom.SunXMLProcessorImpl;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Attr;
 
 import com.fujitsu.xml.omquery.DomQueryMgr;
 import com.fujitsu.xml.omquery.FujitsuXMLProcessorImpl;
 
 class DomQueryTest
 {
-   public static void main(String argv[])
-   {
-      final String ME = "DomQueryTester";
+   final String ME = "DomQueryTester";
+   final boolean testAgentNavigation = true;  // only to be true with Agent.xml or AgentBig.xml
 
+   public DomQueryTest(String argv[])
+   {
       if (argv.length < 2)
          Log.panic(ME, "Usage:\n\n   java DomQueryTest <XML-file> <Query-String>\n\nExample:\n   java DomQueryTest Agent.xml xmlBlaster/key/AGENT[@id=\\\"192.168.124.10\\\"]\n");
 
@@ -85,8 +88,12 @@ class DomQueryTest
                Log.info(ME, num_nodes + " nodes matches for XPath " + "\"" + argv[1] + "\"");
             }
 
-            if (dumpIt)
+            if (dumpIt) {
+               StopWatch queryTime = new StopWatch();
+               iter = query_mgr.getNodesByXPath(doc, argv[1]);
+               Log.info(ME, "Query a second time encreases performance to" + queryTime.nice());
                Log.exit(ME, "Good bye");
+            }
 
             if (argv.length > 2) {
                StopWatch queryTime2 = new StopWatch();
@@ -143,7 +150,7 @@ class DomQueryTest
       }
    }
 
-   static private int getNumNodes(Enumeration nodeIter, boolean dumpIt) throws XSLException
+   private int getNumNodes(Enumeration nodeIter, boolean dumpIt) throws XSLException
    {
       int n = 0;
 
@@ -152,8 +159,18 @@ class DomQueryTest
          n++;
          Object obj = nodeIter.nextElement();
          com.sun.xml.tree.ElementNode node = (com.sun.xml.tree.ElementNode)obj;
-         if (dumpIt)
+         if (dumpIt) {
             System.out.println(node.toString());
+
+            if (testAgentNavigation) {
+               try {
+                  Log.info(ME, "Found key oid=\"" + getKeyOID(node) + "\"\n");
+               } catch (Exception e) {
+                  Log.error(ME, e.toString());
+               }
+            }
+         }
+
          /*
          System.out.println("Processing nodeName=" + node.getNodeName() + ", " +
                               "localName=" + node.getLocalName() + ", " +
@@ -166,7 +183,46 @@ class DomQueryTest
       return n;
    }
 
-   private static String createURL(String path)
+   private String getKeyOID(org.w3c.dom.Node/*com.sun.xml.tree.ElementNode*/ node) throws Exception
+   {
+      if (node == null)
+         throw new Exception("no parent node found");
+
+      String nodeName = node.getNodeName();    // com.sun.xml.tree.ElementNode: getLocalName();
+      // Log.trace(ME, "Anlyzing node = " + nodeName);
+
+      if (nodeName.equals("xmlBlaster"))       // ERROR: the root node, must be specialy handled
+         throw new Exception("xmlBlaster node not allowed");
+
+      if (!nodeName.equals("key")) {
+         // Log.trace(ME, "   Stepping upwards ...");
+         return getKeyOID(node.getParentNode());  // w3c: getParentNode() sun: getParentImpl()
+      }
+
+      /* com.sun.xml.tree.ElementNode:
+      org.w3c.dom.Attr keyOIDAttr = node.getAttributeNode("oid");
+      if (keyOIDAttr != null)
+         return keyOIDAttr.getValue();
+      */
+
+      // w3c conforming code:
+      NamedNodeMap attributes = node.getAttributes();
+      if (attributes != null && attributes.getLength() > 0) {
+         int attributeCount = attributes.getLength();
+         for (int i = 0; i < attributeCount; i++) {
+            Attr attribute = (Attr)attributes.item(i);
+            if (attribute.getNodeName().equals("oid")) {
+               String val = attribute.getNodeValue();
+               // Log.trace(ME, "Found key oid=\"" + val + "\"");
+               return val;
+            }
+         }
+      }
+
+      throw new Exception("Internal getKeyOID() error");
+   }
+
+   private String createURL(String path)
    {
       File f = new File(path);
       String uri = f.getAbsolutePath();
@@ -179,5 +235,10 @@ class DomQueryTest
       uri = "file://" + uri;
 
       return uri;
+   }
+
+   public static void main(String argv[])
+   {
+      new DomQueryTest(argv);
    }
 }
