@@ -3,7 +3,7 @@ Name:      TestFailSave.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSave.java,v 1.32 2002/05/17 06:52:19 ruff Exp $
+Version:   $Id: TestFailSave.java,v 1.33 2002/05/27 16:27:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -86,7 +86,8 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
 
          con = new XmlBlasterConnection(glob); // Find orb
 
-         ConnectQos connectQos = new ConnectQos(glob); // == "<qos></qos>";
+         String passwd = "secret";
+         ConnectQos connectQos = new ConnectQos(glob, senderName, passwd); // == "<qos>...</qos>";
 
          // Setup fail save handling ...
          Address addressProp = new Address(glob);
@@ -98,18 +99,8 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
 
          connectQos.setAddress(addressProp);
 
-         /* Old way:
-         // Setup fail save handling ...
-         long retryInterval = 4000L; // glob.getProperty().get("Failsave.retryInterval", 4000L);
-         int retries = -1;           // -1 == forever
-         long pingInterval = 0L;     // switched off
-         int maxMessages = 1000;
-         con.initFailSave(this, retryInterval, retries, maxMessages, pingInterval);
-         */
-
          // and do the login ...
-         String passwd = "secret";
-         con.login(senderName, passwd, connectQos, this); // Login to xmlBlaster
+         con.connect(connectQos, this);  // Login to xmlBlaster, register for updates
       }
       catch (XmlBlasterException e) {
           Log.warn(ME, "setUp() - login failed");
