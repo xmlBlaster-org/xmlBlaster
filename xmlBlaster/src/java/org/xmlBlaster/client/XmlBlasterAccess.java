@@ -877,7 +877,9 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
       String offset = Constants.OFFSET + extraOffset;
 
       sb.append(offset).append("<XmlBlasterAccess id='").append(this.getId());
-      sb.append("' state='").append(this.deliveryManager.getDeliveryConnectionsHandler().getState());
+      if (this.deliveryManager != null && this.deliveryManager.getDeliveryConnectionsHandler() != null) {
+         sb.append("' state='").append(this.deliveryManager.getDeliveryConnectionsHandler().getState());
+      }
       sb.append("'>");
       sb.append(offset).append(" <connected>").append(isConnected()).append("</connected>");
       sb.append(offset).append("</XmlBlasterAccess>");
