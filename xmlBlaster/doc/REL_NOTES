@@ -8,11 +8,11 @@ Changes for 0.77 [?, 2000]
      This allows you to use your own authentication.
 
    - Bugfix for XPath subscription match errors.
-	  Thanks to "Brett Palmer" <plum001@hotmail.com>
-	  for finding and describing this bug.
-	  
+     Thanks to "Brett Palmer" <plum001@hotmail.com>
+     for finding and describing this bug.
+     
    - Stripped from jacorb.jar unneeded classes.
-	  This reduces the size from 3.7 MB to 2.3 MB. 
+     This reduces the size from 3.7 MB to 2.3 MB. 
 
    - Bug work around for thread leak: The thread leak from
      JacORB 1.1 is for the bug being fixed in CorbaConnection.java
@@ -21,6 +21,8 @@ Changes for 0.77 [?, 2000]
 
    - Changed XML parser to jaxp 1.0.1 and added servlet support
      to xtdash.jar (from original xt.jar).
+     NOTE: You need to remove xml.jar from your CLASSPATH and
+     add jaxp.jar and parser.jar (see xmlBlaster/lib directory)
 
    - Changed xmlBlaster.idl
      from
