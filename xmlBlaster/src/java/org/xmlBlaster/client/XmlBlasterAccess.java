@@ -804,7 +804,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          return this.updateListener.update(cbSessionId, updateKey, content, updateQos); // deliver the update to our client
       }
       else {
-         log.error(ME, "Ignoring unexpected update message: " + updateKey.toXml() + "" + updateQos.toXml());
+         log.error(ME, "Ignoring unexpected update message as client has not registered a callback: " + updateKey.toXml() + "" + updateQos.toXml());
       }
 
       return Constants.RET_OK; // "<qos><state id='OK'/></qos>";
