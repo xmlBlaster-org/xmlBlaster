@@ -3,7 +3,7 @@ Name:      SaxHandlerBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Default handling of Sax callbacks
-Version:   $Id: SaxHandlerBase.java,v 1.15 2002/05/11 08:09:02 ruff Exp $
+Version:   $Id: SaxHandlerBase.java,v 1.16 2002/05/16 15:40:30 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -101,7 +101,7 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler
          if (e instanceof org.xml.sax.SAXParseException)
             location = getLocationString((SAXParseException)e);
 
-         if (e.getMessage().indexOf("org.xmlBlaster.util.StopParseException") > -1) { // org.xml.sax.SAXParseException
+         if (e.getMessage() != null && e.getMessage().indexOf("org.xmlBlaster.util.StopParseException") > -1) { // org.xml.sax.SAXParseException
             if (Log.TRACE) Log.trace(ME, location + ": Parsing execution stopped half the way");
             return;
          }
