@@ -3,7 +3,7 @@ Name:      XmlKey.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKey.java,v 1.20 2002/05/16 15:34:32 ruff Exp $
+Version:   $Id: XmlKey.java,v 1.21 2002/05/17 08:52:53 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -204,6 +204,7 @@ public final class XmlKey
          // Example: xmlKey_literal="Airport.*" as a regular expression
 
          Log.warn(ME+".XML", "Invalid XmlKey syntax, only XML syntax beginning with \"<\" is supported: '" + this.xmlKey_literal + "'");
+         Thread.currentThread().dumpStack();
          throw new XmlBlasterException(ME+".XML", "Invalid XmlKey syntax, only XML syntax beginning with \"<\" is supported");
 
       }
