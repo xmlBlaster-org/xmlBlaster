@@ -62,8 +62,8 @@
          </tr>
 
          <tr>
-            <td>QueuePlugin[CACHE][1.0]</td>
-            <td>org.xmlBlaster.util.queue.cache. CacheQueueInterceptorPlugin</td>
+            <td>QueuePlugin [CACHE][1.0]</td>
+            <td>org.xmlBlaster. util.queue.cache. CacheQueueInterceptorPlugin</td>
             <td>specifies the class to be used for this particular queue plugin (in this case the plugin offering caching facilities)</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
@@ -107,6 +107,8 @@
    <see type="REQ">queue.jdbc.oracle</see>
    <see type="REQ">queue.jdbc.postgres</see>
    <see type="REQ">queue.jdbc.sqlserver</see>
+   <see type="REQ">client.c.queue</see>
+   <see type="REQ">client.cpp.queue</see>
    <see type="API">org.xmlBlaster.util.queue.I_Queue</see>
    <see type="API">org.xmlBlaster.util.queue.QueuePluginManager</see>
    <see type="API">org.xmlBlaster.util.queue.I_QueueEntry</see>
@@ -117,7 +119,7 @@
 <!--   <see type="REQ">cluster</see> -->
    <author>laghi@swissinfo.org</author>
    <date>2002 11 15</date>
-   <revision>$Revision: 1.12 $</revision>
+   <revision>$Revision: 1.13 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

@@ -25,7 +25,8 @@
      <a href="./client.failsafe.html">failsafe reconnect</a>.
      </p>
      <p>
-     The following methods must be implemented by the object implementing the I_ConnectionProblems
+     You can register a listener to be instantly notified about the connection status changes.
+     To do so the following methods must be implemented by the object implementing the I_ConnectionProblems
      interface. It is the object passed in the initFailsafe(...) method in XmlBlasterAccess.
      <ul>
      <li>bool reachedAlive(StatesEnum oldState, I_ConnectionsHandler* connectionsHandler)</li>
@@ -41,10 +42,13 @@
      discarded.
      </p>
      If you don't invoke the method <b>initFailsafe</b> or if you pass to it a NULL pointer, then
-     the access is not in failsafe mode and the described failsafe behaviour is not activated.
+     the failsafe mode and the described failsafe behavior runs silently in the client library.
      Note also that you must invoke <b>initFailsafe</b> before you invoke <b>connect</b>.
-     <p>
-     </p>
+     <p><b>
+     NOTE: To activate the failsafe mode you need to pass the command line parameter
+     <code>-dispatch/connection/delay</code> with a value > 0. It is the sleeping
+     interval in milliseconds between each reconnect retry. 5000 is a good value to start with.
+     </b></p>
    </description>
    <example lang="CPP">
    <pre>
@@ -110,6 +114,46 @@ class HelloWorld2 : public I_Callback,
    </pre>
    </example>
 
+   <configuration where="client">
+      <p><a NAME="config"></a></p>
+      <p>
+      These parameters allow to configure the C++-client on command line,
+      over xmlBlaster.properties or over the environment (with lower priority):
+      </p>
+      <table border="1">
+         <tr>
+            <th>Property</th>
+            <th>Default / Example</th>
+            <th>Description</th>
+            <th>Impl</th>
+         </tr>
+
+         <tr>
+            <td>-dispatch/connection/pingInterval</td>
+            <td>10000</td>
+            <td>Ping the server every given milliseconds</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>-dispatch/connection/retries</td>
+            <td>-1</td>
+            <td>How often to retry if connection fails (-1 is forever)
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>-dispatch/connection/delay</td>
+            <td>5000</td>
+            <td>Delay between connection retries in milliseconds
+                A delay value > 0 switches fails save mode on, 0 switches it off
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+      </table>
+   </configuration>
 
    <see type="REQ">client.cpp</see>
    <see type="REQ">client.cpp.queue</see>
@@ -118,6 +162,6 @@ class HelloWorld2 : public I_Callback,
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
    <date>2003 01 20</date>
-   <revision>$Revision: 1.4 $</revision>
+   <revision>$Revision: 1.5 $</revision>
 </requirement>
 
