@@ -3,7 +3,7 @@ Name:      CbManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: CbManager.java,v 1.4 2002/05/30 16:26:59 ruff Exp $
+Version:   $Id: CbManager.java,v 1.5 2002/05/31 05:43:44 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.callback;
@@ -140,16 +140,8 @@ public final class CbManager
             if (log.TRACE) log.trace(ME, "Destroyed one callback connection, " + cbConnectionArr.length + " remain.");
          }
       }
-      boolean killSession = cbCon.getCbAddress().getOnExhaust().equals(Constants.ONEXHAUST_KILL_SESSION);
       cbCon.shutdown();
-      if (killSession) {
-         try {
-            msgQueue.disconnectSession(cbCon);
-         }
-         catch (XmlBlasterException e) {
-            log.error(ME, "Internal error - is not addressed: " + e.toString());
-         }
-      }
+      msgQueue.onExhaust(cbCon);
    }
 
    /**

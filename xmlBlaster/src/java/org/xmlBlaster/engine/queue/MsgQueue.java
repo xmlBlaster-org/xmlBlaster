@@ -3,7 +3,7 @@ Name:      MsgQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: MsgQueue.java,v 1.16 2002/05/30 16:34:07 ruff Exp $
+Version:   $Id: MsgQueue.java,v 1.17 2002/05/31 05:43:44 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queue;
@@ -429,9 +429,9 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
 
             handleFailure(null);
 
-            disconnectSession(cbConnection);
+            onExhaust(cbConnection);
 
-            shutdown();
+            shutdown(); // Possibly invoked twice (onExhaust may call it indirectly as well)
             return;
          }
          long delay = addr.getDelay();
@@ -445,13 +445,11 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
             return;
          }
       }
-      else if (this.errorCounter > 0) {
+      else if (this.errorCounter > 0) { // There is no cbConnection available any more
          burstModeTimer.removeTimeoutListener(timerKey);
          log.warn(ME, "Can't send message back to client " + getLoginName() + ", producing now dead letters.");
 
          handleFailure(null);
-
-         // disconnectSession(cbConnection);
 
          shutdown();
          return;
@@ -483,6 +481,20 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
       }
       else {
          if (log.TRACE) log.trace(ME, "No callback address available");
+      }
+   }
+
+   public void onExhaust(CbConnection deadCon) {
+      // TODO: Handling if we support fallback addresses for sessionQueues
+
+      // This is the subjectQueue handling:
+      if (deadCon.getCbAddress().getOnExhaustKillSession()) {
+         try {
+            disconnectSession(deadCon);
+         }
+         catch (XmlBlasterException e) {
+            log.error(ME, "Internal error - is not addressed: " + e.toString());
+         }
       }
    }
 
