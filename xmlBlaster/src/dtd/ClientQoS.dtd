@@ -3,7 +3,7 @@
 <!ELEMENT qos (callback*,
                compress?,
                burstMode?,
-               noPtP?,
+               PtP?,
                offlineQeuing?,
               )>
 
@@ -17,7 +17,7 @@
 <!ELEMENT burstMode EMPTY>
 <!ATTLIST burstMode collectTime NUMBER #REQUIRED>
 
-<!ELEMENT noPtP EMPTY>
+<!ELEMENT PtP EMPTY>
 
 <!ELEMENT offlineQeuing EMPTY>
 <!ATTLIST offlineQeuing timeout NUMBER #REQUIRED>
