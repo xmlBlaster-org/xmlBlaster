@@ -209,6 +209,7 @@ char *readFile(const char *const fileName)
       return NULL;
    }
    while((n=read(fd, buf, BUFFSIZE)) > 0) {
+      buf[n] = NULL;
       strcat(data, buf);
    }
    *(data + statbuf.st_size) = 0;
