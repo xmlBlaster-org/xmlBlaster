@@ -2,6 +2,9 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.xxx [xx, xxx 2003]
 ================================
+ o Implemented hsqldb as the embedded database. Persistence is now supported per
+   default
+ 
  o Added C wrapper to embedd C tests into JUnit testing, try
      build.sh total
      build.sh runTestsAndReport
