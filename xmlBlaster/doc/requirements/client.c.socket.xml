@@ -1,0 +1,115 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+
+<requirement id='client.c.socket' type='NEW' prio='HIGH' status='INWORK'>
+   <topic>
+      XmlBlaster provides a client library written in ANSI C
+   </topic>
+   <description>
+     <p>
+     For C client applications you can use the header XmlBlasterAccessUnparsed.h which provides access to
+     xmlBlaster in an easy way. All invocations to xmlBlaster are done by invoking function pointers
+     on struct XmlBlasterAccessUnparsed.
+     </p>
+     <p>
+     <ul>
+     <li>for connecting read the <a href="interface.connect.html">connect interface</a></li>
+     <li>for disconnecting read the <a href="interface.disconnect.html">disconnect interface</a></li>
+     <li>for erasing read the  <a href="interface.erase.html">erase interface</a></li>
+     <li>for getting read the  <a href="interface.get.html">get interface</a></li>
+     <li>for publishing read the  <a href="interface.publish.html">publish interface</a></li>
+     <li>for subscribing read the  <a href="interface.subscribe.html">subscribe interface</a></li>
+     <li>for unsubscribing read the  <a href="interface.unSubscribe.html">unSubscribe interface</a></li>
+     <li>for callbacks read the  <a href="interface.update.html">update interface</a></li>
+     </ul>
+     </p>
+     <p>
+     The communication protocol is based on the xmlBlaster internal SOCKET protocol.
+     A demo using XmlRpc is available as well (see xmlBlaster/demo/c/xmlrpc/README).
+     </p>
+     <p>
+     This documentation is under construction, see
+     <a href="http://www.xmlBlaster.org/xmlBlaster/src/c/README" target="others">/xmlBlaster/src/c/README</a> for the time being!
+     </p>
+   </description>
+   <example lang="C">
+      <p><a NAME="example"></a></p>
+   <pre><![CDATA[
+}]]>
+   </pre>
+   </example>
+
+   <configuration where="client">
+      <p><a NAME="config"></a>
+      These configurations are tested:
+      </p>
+      <table border="1">
+       <tr>
+       <th>No.</th>
+       <th>OS</th>
+       <th>Compiler</th>
+       <th>xmlBlaster</th>
+       <th>Thread library</th>
+       <th>Protocol library</th>
+       <th>XML library</th>
+       <th>Date</th>
+       <th>Author</th>
+       <th>Comment</th>
+       </tr>
+
+       <tr>
+       <td>1</td>
+       <td>WindowsXP</td>
+       <td>VC 7 (May 2003)</td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.848</a></td>
+       <td><a href="http://sources.redhat.com/pthreads-win32" target="others">pthreads-win32</a></td>
+       <td>SOCKET <a href="xmlBlaster/xmlBlaster/doc/requirements/protocol.socket" target="others">protocol.socket requirement</a></td>
+       <td><a href="http://expat.sourceforge.net/" target="others">Expat</a></td>
+       <td>TODO !</td>
+       <td><a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/src/c/README">README</a></td>
+       </tr>
+
+       <tr>
+       <td>2</td>
+       <td>Linux 2.4.20</td>
+       <td><a href="http://www.gnu.org/software/gcc/gcc.html">g++ and gcc</a> 3.3</td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.848</a></td>
+       <td><a href="http://omniorb.sourceforge.net" target="others">pthread</a></td>
+       <td>SOCKET <a href="xmlBlaster/xmlBlaster/doc/requirements/protocol.socket" target="others">protocol.socket requirement</a></td>
+       <td>Unparsed access with raw XML strings</td>
+       <td>2003-05-29</td>
+       <td><a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/src/c/README">README</a></td>
+       </tr>
+
+       <tr>
+       <td>2</td>
+       <td>Linux 2.4.9</td>
+       <td><a href="http://www.gnu.org/software/gcc/gcc.html">g++ and gcc</a> 2.95.3</td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.848</a></td>
+       <td><a href="http://omniorb.sourceforge.net" target="others">pthread</a></td>
+       <td>SOCKET <a href="xmlBlaster/xmlBlaster/doc/requirements/protocol.socket" target="others">protocol.socket requirement</a></td>
+       <td>Unparsed access with raw XML strings</td>
+       <td>2003-05-29</td>
+       <td><a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/src/c/README">README</a></td>
+       </tr>
+
+      </table>
+   </configuration>
+
+   <see type="CODE" lang="C">HelloWorld.c</see>
+   <see type="CODE" lang="C">XmlBlasterAccessUnparsed.h</see>
+   <see type="OTHER">http://www.xmlBlaster.org/src/c/README</see>
+   <see type="OTHER">http://xmlrpc-c.sourceforge.net/</see>
+   <see type="REQ">protocol.socket</see>
+   <see type="REQ">interface</see>
+
+<!--   <see type="REQ">cluster</see> -->
+   <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
+   <date>2003 05 29</date>
+   <revision>$Revision: 1.1 $</revision>
+</requirement>
+
