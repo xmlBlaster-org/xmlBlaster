@@ -3,7 +3,7 @@ Name:      BlasterHttpProxyServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxyServlet.java,v 1.24 2000/05/14 14:51:37 ruff Exp $
+Version:   $Id: BlasterHttpProxyServlet.java,v 1.25 2000/05/18 17:20:01 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -33,11 +33,11 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
  * Invoke for testing:<br />
  *    http://localhost/servlet/BlasterHttpProxyServlet?ActionType=login&loginName=martin&passwd=secret
  * @author Marcel Ruff ruff@swand.lake.de
- * @version $Revision: 1.24 $
+ * @version $Revision: 1.25 $
  */
 public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlaster.util.LogListener
 {
-   private final String ME = "BlasterHttpProxyServlet";
+   private static final String ME = "BlasterHttpProxyServlet";
 
    /**
     * This method is invoked only once when the servlet is startet.
@@ -48,8 +48,8 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
       super.init(conf);
       // Redirect xmlBlaster logs to servlet log file (see method log() below)
       Log.setDefaultLogLevel();
-      // Log.addLogLevel("DUMP");  // Use this to see all messages!
-      // Log.addLogLevel("TRACE"); // Use this to trace the code
+      Log.addLogLevel("DUMP");  // Use this to see all messages!
+      Log.addLogLevel("TRACE"); // Use this to trace the code
       // Log.addLogLevel("CALLS");
       // Log.addLogLevel("TIME");
 
@@ -58,6 +58,8 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
       //Log.addLogListener(this);
 
       Log.trace(ME, "Initialize ...");
+
+      initSystemProperties(conf); // Using JacORB and Suns XML parser as a default ...
    }
 
 
@@ -115,9 +117,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
 
             HttpPushHandler pushHandler = new HttpPushHandler(req, res, sessionId);
 
-            // Find proxyConnection !!Attention, other browser can use an existing
-            //                        xmlBlaster connection. This is a security problem.
-            ProxyConnection proxyConnection = BlasterHttpProxy.getProxyConnection( loginName, passwd );
+            ProxyConnection proxyConnection = BlasterHttpProxy.getNewProxyConnection(loginName, passwd);
             pushHandler.startPing();
 
             proxyConnection.addHttpPushHandler( sessionId, pushHandler );
@@ -336,6 +336,48 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
       } finally {
          out.println(retStr.toString());
       }
+   }
+
+
+   /**
+    * Setting the system properties.
+    * <p />
+    * These may be overwritten in zone.properties, e.g.
+    *    servlets.default.initArgs=servlets.default.initArgs=org.xml.sax.parser=com.sun.xml.parser.Parser
+    * <p />
+    * We set the properties to choose JacORB and Suns XML parser as a default.
+    */
+   static public final void initSystemProperties(ServletConfig conf)
+   {
+      Properties props = System.getProperties();
+
+      // XmlBlaster uses as a default JacORB
+      if (conf.getInitParameter("org.omg.CORBA.ORBClass") != null) {
+         props.put( "org.omg.CORBA.ORBClass", conf.getInitParameter("org.omg.CORBA.ORBClass"));
+         Log.trace(ME, "Found system parameter org.omg.CORBA.ORBClass=" + conf.getInitParameter("org.omg.CORBA.ORBClass"));
+      }
+      else
+         props.put("org.omg.CORBA.ORBClass", "jacorb.orb.ORB");
+      Log.info(ME, "Using system parameter org.omg.CORBA.ORBClass=" + props.get("org.omg.CORBA.ORBClass"));
+
+      if (conf.getInitParameter("org.omg.CORBA.ORBSingletonClass") != null) {
+         props.put( "org.omg.CORBA.ORBSingletonClass", conf.getInitParameter("org.omg.CORBA.ORBSingletonClass"));
+         Log.trace(ME, "Found system parameter org.omg.CORBA.ORBSingletonClass=" + conf.getInitParameter("org.omg.CORBA.ORBSingletonClass"));
+      }
+      else
+         props.put("org.omg.CORBA.ORBSingletonClass", "jacorb.orb.ORBSingleton");
+      Log.info(ME, "Using system parameter org.omg.CORBA.ORBSingletonClass=" + props.get("org.omg.CORBA.ORBSingletonClass"));
+
+      // xmlBlaster uses Suns XML parser as default
+      if (conf.getInitParameter("org.xml.sax.parser") != null) {
+         props.put( "org.xml.sax.parser", conf.getInitParameter("org.xml.sax.parser"));
+         Log.trace(ME, "Found system parameter org.xml.sax.parser=" + conf.getInitParameter("org.xml.sax.parser"));
+      }
+      else
+         props.put("org.xml.sax.parser", "com.sun.xml.parser.Parser"); // xmlBlaster uses Suns XML parser as default
+      Log.info(ME, "Using system parameter org.xml.sax.parser=" + props.get("org.xml.sax.parser"));
+
+      System.setProperties(props);
    }
 
 

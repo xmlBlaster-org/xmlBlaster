@@ -3,7 +3,7 @@ Name:      BlasterHttpProxy.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This class contains some useful, static helper methods.
-Version:   $Id: BlasterHttpProxy.java,v 1.14 2000/05/14 14:17:12 ruff Exp $
+Version:   $Id: BlasterHttpProxy.java,v 1.15 2000/05/18 17:20:01 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -25,7 +25,7 @@ import javax.servlet.http.HttpServletRequest;
  * <p />
  * You can also use this class to handle shared attributes for all servlets.
  * @author Konrad Krafft
- * @version $Revision: 1.14 $
+ * @version $Revision: 1.15 $
  */
 public class BlasterHttpProxy
 {
@@ -65,48 +65,29 @@ public class BlasterHttpProxy
    }
 
    /**
-    * gives a proxy connection by a given loginName and Password
-    *
+    * Gives a proxy connection by a given loginName and Password.
+    * <p />
+    * Multiple logins of the same user are possible.
     * @param loginName
-    * @return valid proxyConnection for valid HTTP sessionId.
+    * @return valid proxyConnection for valid HTTP sessionId (is never null).
+    * @exception XmlBlasterException if login fails
     */
-   public static ProxyConnection getNewProxyConnection( String loginName, String passwd ) throws XmlBlasterException
+   public static ProxyConnection getNewProxyConnection(String loginName, String passwd) throws XmlBlasterException
    {
       synchronized(proxyConnections) {
-         ProxyConnection pc = new ProxyConnection( loginName, passwd );
-         proxyConnections.put( loginName, pc );
-         return pc;
-      }
-   }
-
-   /**
-    * gives a proxy connection by a given loginName and Password
-    *
-    * @param loginName
-    * @return valid proxyConnection for valid HTTP sessionId.
-    */
-   public static ProxyConnection getProxyConnectionByLoginName( String loginName ) throws XmlBlasterException
-   {
-      synchronized(proxyConnections) {
-         //return a proxy connection by login name
-         return (ProxyConnection)proxyConnections.get( loginName );
-      }
-   }
-
-   /**
-    * combines getProxyConnectionByLoginName and getNewProxyConnection in a synchronized
-    * way
-    *
-    * @param loginName
-    * @return valid proxyConnection for valid HTTP sessionId.
-    */
-   synchronized public static ProxyConnection getProxyConnection( String loginName, String passwd ) throws XmlBlasterException
-   {
-      synchronized( proxyConnections ) {
-         ProxyConnection pc = getProxyConnectionByLoginName(loginName);
-         if(pc==null)
-            pc=getNewProxyConnection(loginName,passwd);
-         return pc;
+         ProxyConnection pc = (ProxyConnection)proxyConnections.get(loginName);
+         if(pc==null) {
+            pc = new ProxyConnection( loginName, passwd );
+            proxyConnections.put(loginName, pc);
+            return pc;
+         }
+         else {
+            // Allow re-login from another browser.
+            if (pc.checkPasswd(passwd) == false) {
+               throw new XmlBlasterException(ME+".AccessDenied", "Wong password for user " + loginName + ". You are logged in already.");
+            }
+            return pc;
+         }
       }
    }
 
@@ -167,9 +148,8 @@ public class BlasterHttpProxy
    {
       synchronized( proxyConnections ) {
          Log.plain(ME,"proxyConnections="+proxyConnections);
-         ProxyConnection pc =  getProxyConnectionByLoginName(loginName);
+         ProxyConnection pc = getNewProxyConnection(loginName, passwd);
          if( pc == null ) {
-            pc =  getNewProxyConnection(loginName, passwd);
          }
          return pc.getCorbaConnection();
       }

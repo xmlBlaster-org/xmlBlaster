@@ -3,7 +3,7 @@ Name:      ProxyConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: ProxyConnection.java,v 1.16 2000/05/16 20:57:38 ruff Exp $
+Version:   $Id: ProxyConnection.java,v 1.17 2000/05/18 17:20:01 ruff Exp $
 Author:    Marcel Ruff ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
@@ -36,13 +36,14 @@ import java.util.Properties;
  * you need to specify environment variables in the servlet configuration file,<br />
  * for JServ see /etc/httpd/conf/jserv/zone.properties,<br />
  * for jrun see jrun/jsm-default/services/jse/properties/servlets.properties.<br />
- * @version $Revision: 1.16 $
+ * @version $Revision: 1.17 $
  * @author ruff@swand.lake.de
  */
 public class ProxyConnection implements I_Callback
 {
    private final String ME                 = "ProxyConnection";
-   private String loginName                = null;
+   private final String loginName;
+   private final String passwd;
    private CorbaConnection corbaConnection = null;
    private Server       xmlBlaster         = null;
    private Hashtable httpConnections       = null;
@@ -54,11 +55,26 @@ public class ProxyConnection implements I_Callback
    public ProxyConnection(String loginName, String passwd) throws XmlBlasterException
    {
       this.loginName = loginName;
+      this.passwd = passwd; // remember it to allow multiple browser logins for the same user
       if (Log.TRACE) Log.trace(ME, "Creating ProxyConnection ...");
+
+      if (loginName == null || loginName.length() < 1 || passwd == null || passwd.length() < 1)
+         throw new XmlBlasterException(ME+".AccessDenied", "Please give proper login name and password");
+
       //establish connection to server
       corbaConnection = new CorbaConnection();
       xmlBlaster = corbaConnection.login( loginName, passwd, null, this);
       httpConnections = new Hashtable();
+   }
+
+   /**
+    * Check local if passwd is valid. 
+    */
+   boolean checkPasswd(String pw)
+   {
+      if (pw == null) return false;
+      if (passwd.equals(pw)) return true;
+      return false;
    }
 
 
