@@ -3,7 +3,7 @@ Name:      SocketConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles connection to xmlBlaster with plain sockets
-Version:   $Id: SocketConnection.java,v 1.31 2002/09/09 13:37:22 ruff Exp $
+Version:   $Id: SocketConnection.java,v 1.32 2002/09/10 18:57:59 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -244,24 +244,17 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     * @param passwd    The login password for xmlBlaster
     * @param qos       The Quality of Service for this client (the callback tag will be added automatically if client!=null)
     * @exception       XmlBlasterException if login fails
+    * @deprecated Use #connect(ConnectQos qos) instead
     */
    public void login(String loginName, String passwd, ConnectQos qos) throws XmlBlasterException, ConnectionException
    {
-      this.ME = "SocketConnection-" + loginName;
-      if (log.CALL) log.call(ME, "Entering login: name=" + loginName);
-      if (isLoggedIn()) {
-         log.warn(ME, "You are already logged in, no relogin possible.");
-         return;
-      }
-
-      this.loginName = loginName;
-      this.passwd = passwd;
       if (qos == null)
          this.loginQos = new ConnectQos(glob);
       else
          this.loginQos = qos;
-
-      loginRaw();
+      this.loginQos.setUserId(loginName);
+      //this.loginQos.setCredential(passwd);
+      connect(this.loginQos);
    }
 
 
