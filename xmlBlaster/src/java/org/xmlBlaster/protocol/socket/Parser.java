@@ -3,7 +3,7 @@ Name:      Parser.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Parser class for raw socket messages
-Version:   $Id: Parser.java,v 1.31 2002/09/11 16:26:32 ruff Exp $
+Version:   $Id: Parser.java,v 1.32 2002/09/12 11:57:32 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -582,18 +582,16 @@ public class Parser
       byte[] content = null;
       for (int ii=0; ii<Integer.MAX_VALUE; ii++) {
          qos = toString(buf);
+         if (buf.offset >= buf.buf.length) break;
+
          MessageUnit msgUnit = new MessageUnit(null, (byte[])null, qos);
          addMessage(msgUnit);
-         if (buf.offset >= buf.buf.length) break;
 
          msgUnit.setKey(toString(buf));
          if (buf.offset >= buf.buf.length) break;
 
          if (log.TRACE || SOCKET_DEBUG>0) log.info(ME, "Getting messageUnit content index=" + index);
          msgUnit.setContent(toByte(buf));
-
-         if (msgUnit.size() < 1) // e.g. empty MessageUnit[] array return from get()
-            removeMessage(msgUnit);
 
          if (buf.offset >= buf.buf.length) break;
       }
@@ -702,23 +700,15 @@ public class Parser
             out.write(new String(""+lenUnzipped).getBytes());
          out.write(NULL_BYTE);
 
-         if (msgVec.isEmpty()) {
+         for (int ii=0; ii<msgVec.size(); ii++) {
+            MessageUnit unit = (MessageUnit)msgVec.elementAt(ii);
+            out.write(unit.qos.getBytes());
             out.write(NULL_BYTE);
+            out.write(unit.xmlKey.getBytes());
             out.write(NULL_BYTE);
-            out.write("0".getBytes());
+            out.write((""+unit.content.length).getBytes());
             out.write(NULL_BYTE);
-         }
-         else {
-            for (int ii=0; ii<msgVec.size(); ii++) {
-               MessageUnit unit = (MessageUnit)msgVec.elementAt(ii);
-               out.write(unit.qos.getBytes());
-               out.write(NULL_BYTE);
-               out.write(unit.xmlKey.getBytes());
-               out.write(NULL_BYTE);
-               out.write((""+unit.content.length).getBytes());
-               out.write(NULL_BYTE);
-               out.write(unit.content);
-            }
+            out.write(unit.content);
          }
 
          if (checksum == true) {
@@ -1081,7 +1071,7 @@ public class Parser
                //System.out.println("\nReceived: \n" + receiver.dump());
                String receive = toLiteral(receiver.createRawMsg());
                System.out.println("Received: \n|" + receive + "|");
-               if ("        29**I**11*ping*****0*".equals(receive))
+               if ("        25**I**11*ping***".equals(receive))
                   System.out.println(testName + ": SUCCESS");
                else
                   System.out.println(testName + ": FAILURE");
