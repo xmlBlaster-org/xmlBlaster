@@ -80,6 +80,7 @@ related links:
                       Start xmlBlaster
 -------------------------------------------------------------------
 You have three options to start the xmlBlaster-Server.
+See the ${XMLBLASTER_HOME}/src/java/org/xmlBlaster/README file for more instructions.
 
 1. xmlBlaster with builtin HTTP-Server on localhost, port=7609 which to pass the server IOR
    (This is the Default-Startup)
