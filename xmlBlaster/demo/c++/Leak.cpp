@@ -78,6 +78,33 @@ public:
       }
    }
 
+   void checkGlobal2()
+   {
+      log_.info(ME, "checkGlobal2()");
+      vector<GlobalRef> globVec; // Holding all connections to xmlBlaster
+      try {
+         for (int i=0; i<count; i++) {
+            string instanceName = string("connection-") + lexical_cast<std::string>(i);
+            Property::MapType propMap;
+            GlobalRef globalRef = global_.createInstance(instanceName, &propMap, holdReferenceCount);
+            globVec.push_back(globalRef);
+            log_.info(ME, "Global created " + globalRef->getId());
+            if (holdReferenceCount)
+               global_.destroyInstance(instanceName);
+         }
+         for (int i=0; i<count; i++) {
+            GlobalRef globalRef = globVec[i];
+            log_.info(ME, "Global destroy " + globalRef->getId());
+            if (holdReferenceCount)
+               global_.destroyInstance(globalRef->getInstanceName());
+         }
+         globVec.clear();
+      }
+      catch (const XmlBlasterException &e) {
+         log_.error(ME, e.toXml());
+      }
+   }
+
    void checkConnection()
    {
       log_.info(ME, "checkConnection()");
@@ -198,10 +225,14 @@ int main(int args, char ** argv)
       Leak hello(glob);
       if (glob.getProperty().get("global", false))
          hello.checkGlobal();
+      if (glob.getProperty().get("global2", false))
+         hello.checkGlobal2();
       if (glob.getProperty().get("con", false))
          hello.checkConnection();
       if (glob.getProperty().get("con2", false))
          hello.checkConnection2();
+      if (glob.getProperty().get("con3", false))
+         hello.checkConnection3();
    }
    catch (XmlBlasterException &e) {
       std::cerr << "Caught exception: " << e.getMessage() << std::endl;
