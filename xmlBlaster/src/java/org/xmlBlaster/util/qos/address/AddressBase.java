@@ -629,6 +629,8 @@ public abstract class AddressBase
       }
 
       if (name.equalsIgnoreCase("ptp")) {
+         setPtpAllowed(true);
+         character.setLength(0);
          return;
       }
    }
@@ -649,7 +651,10 @@ public abstract class AddressBase
       else if (name.equalsIgnoreCase("compress")) {
       }
       else if (name.equalsIgnoreCase("ptp")) {
-         this.ptpAllowed = new Boolean(character.toString().trim()).booleanValue();
+         String tmp = character.toString().trim();
+         if (tmp.length() > 0)
+            setPtpAllowed(new Boolean(tmp).booleanValue());
+         return;
       }
 
       character.setLength(0);
@@ -670,10 +675,9 @@ public abstract class AddressBase
     * @return The xml representation
     */
    public final String toXml(String extraOffset) {
-      StringBuffer sb = new StringBuffer(300);
-      String offset = "\n   ";
+      StringBuffer sb = new StringBuffer(1200);
       if (extraOffset == null) extraOffset = "";
-      offset += extraOffset;
+      String offset = Constants.OFFSET + extraOffset;
 
       sb.append(offset).append("<").append(rootTag).append(" type='").append(getType()).append("'");
       if (getVersion() != null && !getVersion().equals(DEFAULT_version))
@@ -708,9 +712,15 @@ public abstract class AddressBase
          sb.append("/>");
       }
       if (!getCompressType().equals(DEFAULT_compressType))
-         sb.append(offset).append("   ").append("<compress type='").append(getCompressType()).append("' minSize='").append(getMinSize()).append("'/>");
-      if (ptpAllowed != DEFAULT_ptpAllowed)
-         sb.append(offset).append("   ").append("<ptp>").append(this.ptpAllowed).append("</ptp>");
+         sb.append(offset).append(" ").append("<compress type='").append(getCompressType()).append("' minSize='").append(getMinSize()).append("'/>");
+      if (this.ptpAllowed != DEFAULT_ptpAllowed) {
+         if (this.ptpAllowed) {
+            sb.append(offset).append(" ").append("<ptp/>");
+         }
+         else {
+            sb.append(offset).append(" ").append("<ptp>").append(this.ptpAllowed).append("</ptp>");
+         }
+      }
       sb.append(offset).append("</").append(rootTag).append(">");
 
       return sb.toString();
