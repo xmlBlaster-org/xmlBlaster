@@ -74,6 +74,8 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
    private boolean cascadeDeleteSupported;
    private boolean nestedBracketsSupported;
 
+   private final int MIN_POOL_SIZE = 1;
+
    /**
     * returns the plugin properties, i.e. the specific properties passed to the jdbc queue plugin.
     * These are commonly used by the jdbc manager.
@@ -267,7 +269,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
     * queue which stores the published messages) on a different database than
     * the callback queues, then you could define different databases.
     *
-    * <li>prefix.driverName DEFAULTS TO "org.postgresql.Driver"</li> <li>prefix.connectionPoolSize "DEFAULTS TO 5"</li>
+    * <li>prefix.driverName DEFAULTS TO "org.postgresql.Driver"</li> <li>prefix.connectionPoolSize "DEFAULTS TO 2"</li>
     * <li>prefix.url DEFAULTS TO "jdbc:postgresql://localhost/test"</li> <li>prefix.user DEFAULTS TO "postgres"</li>
     * <li>prefix.password  DEFAULTS TO ""</li> </ul>
     */
@@ -303,7 +305,11 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       this.url = prop.get("queue.persistent.url", "jdbc:postgresql://localhost/test");
       this.user = prop.get("queue.persistent.user", "postgres");
       this.password = prop.get("queue.persistent.password", "");
-      this.capacity = prop.get("queue.persistent.connectionPoolSize", 5);
+      this.capacity = prop.get("queue.persistent.connectionPoolSize", MIN_POOL_SIZE);
+      if (this.capacity < MIN_POOL_SIZE) {
+         log.warn(ME, "queue.persistent.connectionPoolSize=" + this.capacity + " is too small, setting it to " + MIN_POOL_SIZE);
+         this.capacity = MIN_POOL_SIZE;
+      }
       this.connectionBusyTimeout = prop.get("queue.persistent.connectionBusyTimeout", 60000L);
       this.maxWaitingThreads = prop.get("queue.persistent.maxWaitingThreads", 200);
       // these should be handled by the JdbcManager
@@ -324,6 +330,10 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       }
       catch (Exception ex) {
          this.log.warn(ME, "the 'connectionPoolSize' plugin-property is not parseable: '" + help + "' will be using the default '" + this.capacity + "'");
+      }
+      if (this.capacity < MIN_POOL_SIZE) {
+         log.warn(ME, "connectionPoolSize=" + this.capacity + " is too small, setting it to " + MIN_POOL_SIZE);
+         this.capacity = MIN_POOL_SIZE;
       }
 
       help = pluginProp.getProperty("connectionBusyTimeout", "" + this.connectionBusyTimeout);
