@@ -84,11 +84,18 @@
    <!-- QoS when subscribing to messages -->
    <subscribe>
       <qos>
-         <NoMeta />       <!-- Don't send me the key meta data on updates -->
+         <NoMeta />       <!-- Don't send me the xmlKey meta data on updates -->
          <NoContent />    <!-- Don't send me the content data on updates (notify only) -->
          <NoLocal />      <!-- Inhibit the delivery of messages to myself if i have published it -->
       </qos>
    </subscribe>
+
+
+   <!-- QoS when unsubscribing from a message -->
+   <unSubscribe>
+      <qos>
+      </qos>
+   </unSubscribe>
 
 
    <!-- QoS when deleting messages -->
