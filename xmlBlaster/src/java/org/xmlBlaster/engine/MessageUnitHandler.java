@@ -3,7 +3,7 @@ Name:      MessageUnitHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling exactly one message content
-Version:   $Id: MessageUnitHandler.java,v 1.11 1999/11/21 22:56:51 ruff Exp $
+Version:   $Id: MessageUnitHandler.java,v 1.12 1999/11/22 16:12:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -181,8 +181,11 @@ public class MessageUnitHandler
       }
 
       if (oldOne != null) {
-         Log.warning(ME + ".DuplicateSubscription", "You have already subscribed to " + uniqueKey);
-         throw new XmlBlasterException(ME + ".DuplicateSubscription", "You have already subscribed to " + uniqueKey);
+         subscriberMap.put(((SubscriptionInfo)oldOne).getUniqueKey(), oldOne);  // restore the original one ...
+         Log.warning(ME + ".DuplicateSubscription", "Client " + sub.getClientInfo().toString() + " has already subscribed to " + uniqueKey);
+         //No exception, since it would cancel other subscription requests as well
+         //-> the client is not informed about ignored duplicate subscriptions
+         //throw new XmlBlasterException(ME + ".DuplicateSubscription", "You have already subscribed to " + uniqueKey);
       }
 
       sub.addMessageUnitHandler(this);
@@ -194,21 +197,21 @@ public class MessageUnitHandler
 
 
    /**
-    * A client unsubscribed to this message
+    * A client wants to unsubscribe from this message
+    * @return the removed SubscriptionInfo object or null if not found
     */
-   public int removeSubscriber(SubscriptionInfo sub) throws XmlBlasterException
+   public SubscriptionInfo removeSubscriber(String subscriptionInfoUniqueKey) throws XmlBlasterException
    {
-      Object removedIt;
       if (Log.TRACE) Log.trace(ME, "Size of subscriberMap = " + subscriberMap.size());
+
+      SubscriptionInfo subs = null;
       synchronized(subscriberMap) {
-         removedIt = subscriberMap.remove(sub.getUniqueKey());
+         subs = (SubscriptionInfo)subscriberMap.remove(subscriptionInfoUniqueKey);
       }
-      if (removedIt == null) {
-         Log.warning(ME + ".DoesntExist", "Sorry, can't unsubscribe, you where not subscribed to " + uniqueKey);
-         return 0;
-         // throw new XmlBlasterException(ME + ".DoesntExist", "Sorry, can't unsubscribe, you where not subscribed to " + uniqueKey);
-      }
-      return 1;
+      if (subs == null)
+         Log.warning(ME + ".DoesntExist", "Sorry, can't unsubscribe, you where not subscribed to subscription ID=" + subscriptionInfoUniqueKey);
+
+      return subs;
    }
 
 
@@ -330,8 +333,8 @@ public class MessageUnitHandler
       Iterator iterator = subscriberMap.values().iterator();
 
       sb.append(offset + "<MessageUnitHandler>");
-      sb.append(offset + "   <uniqueKey>" + messageUnit.content + "</uniqueKey>");
-      sb.append(xmlKey.printOn(offset + "   ").toString());
+      sb.append(offset + "   <uniqueKey>" + getUniqueKey() + "</uniqueKey>");
+      sb.append(xmlKey.printOn(extraOffset + "   ").toString());
       sb.append(offset + "   <content>" + messageUnit.content + "</content>");
       while (iterator.hasNext()) {
          SubscriptionInfo subs = (SubscriptionInfo)iterator.next();

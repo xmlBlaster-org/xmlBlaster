@@ -16,7 +16,8 @@ LOCAL_FILES = \
 			$(CLASS_DIR)/Log.class \
 			$(CLASS_DIR)/XmlKeyBase.class \
 			$(CLASS_DIR)/XmlQoSBase.class \
-			$(CLASS_DIR)/StopWatch.class
+			$(CLASS_DIR)/StopWatch.class \
+			$(CLASS_DIR)/TimeHelper.class
 #------------------------------------------------------------------------------
 
 

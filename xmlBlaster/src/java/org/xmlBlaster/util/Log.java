@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.java,v 1.11 1999/11/21 22:56:51 ruff Exp $
+Version:   $Id: Log.java,v 1.12 1999/11/22 16:12:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -55,6 +55,7 @@ public class Log
 
    private final static String WHITE_RED    = "\033[37;41m";
    private final static String BLACK_RED    = "\033[30;41m";
+   private final static String BLACK_LTGREEN= "\033[40;46m";
 
 
    /**
@@ -78,7 +79,7 @@ public class Log
    private final static StringBuffer INSTANCE_SEPERATOR_E = new StringBuffer(BOLD + ":" + ESC + "  "); // bold
 
    private final static StringBuffer timeE  = new StringBuffer(LTGREEN_BLACK+ "TIME " + ESC + ": ");
-   private final static StringBuffer callsE = new StringBuffer(WHITE_BLACK  + "CALL " + ESC + ": ");
+   private final static StringBuffer callsE = new StringBuffer(BLACK_LTGREEN+ "CALL " + ESC + ": ");
    private final static StringBuffer traceE = new StringBuffer(WHITE_BLACK  + "TRACE" + ESC + ": ");
    private final static StringBuffer plainE = new StringBuffer(WHITE_BLACK  + "     " + ESC + ": ");
    private final static StringBuffer infoE  = new StringBuffer(GREEN_BLACK  + "INFO " + ESC + ": ");

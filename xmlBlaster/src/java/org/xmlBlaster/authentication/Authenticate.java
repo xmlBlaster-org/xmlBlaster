@@ -3,7 +3,7 @@ Name:      Authenticate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login for clients
-Version:   $Id: Authenticate.java,v 1.12 1999/11/21 22:56:51 ruff Exp $
+Version:   $Id: Authenticate.java,v 1.13 1999/11/22 16:12:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -207,8 +207,6 @@ public class Authenticate
 
       try {
          xmlServer._release();
-         //xmlBlasterPOA.deactivate_object(oid);
-         Log.warning(ME, "Logout and freeing resources is not yet tested!");
       } catch (Exception e) {
          e.printStackTrace();
          Log.error(ME, e.toString());

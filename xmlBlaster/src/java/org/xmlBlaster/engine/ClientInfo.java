@@ -3,7 +3,7 @@ Name:      ClientInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: ClientInfo.java,v 1.8 1999/11/20 22:42:04 ruff Exp $
+Version:   $Id: ClientInfo.java,v 1.9 1999/11/22 16:12:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -16,7 +16,7 @@ import org.xmlBlaster.clientIdl.BlasterCallback;
 /**
  * ClientInfo stores all known data about a client
  *
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  * @author $Name:  $
  */
 public class ClientInfo
@@ -52,10 +52,22 @@ public class ClientInfo
 
 
    /**
+    * This is the unique identifier of the client
+    * it is currently the byte[] oid from the POA active object map.
+    * @return oid
     */
    public String getUniqueKey() throws XmlBlasterException
    {
       return uniqueKey;
+   }
+
+
+   /**
+    * @return the uniqueKey in hex notation for dumping it (readable form)
+    */
+   public String getUniqueKeyHex() throws XmlBlasterException
+   {
+      return jacorb.poa.util.POAUtil.convert(getUniqueKey().getBytes(), true);
    }
 
 

@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.18 1999/11/21 22:56:51 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.19 1999/11/22 16:12:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -177,18 +177,43 @@ public class RequestBroker implements ClientListener
     */
    public void subscribe(ClientInfo clientInfo, XmlKey xmlKey, XmlQoS subscribeQoS) throws XmlBlasterException
    {
-      SubscriptionInfo subs = new SubscriptionInfo(clientInfo, xmlKey, subscribeQoS);
+      //if (Log.DUMP) Log.dump(ME, "-------subscribe()-XmlKey:---------\n" + xmlKey.printOn().toString());
+      Vector xmlKeyVec = parseKeyOid(clientInfo, xmlKey, subscribeQoS);
+      for (int ii=0; ii<xmlKeyVec.size(); ii++) {
+         XmlKey xmlKeyExact = (XmlKey)xmlKeyVec.elementAt(ii);
+         if (xmlKeyExact == null) {
+            Log.error(ME + ".OidUnknown", "Internal problem, can't access message, key oid is unknown: " + xmlKey.getUniqueKey());
+            throw new XmlBlasterException(ME + ".OidUnknown", "Internal problem, can't access message, key oid is unknown: " + xmlKey.getUniqueKey());
+            
+         }
+         SubscriptionInfo subs = new SubscriptionInfo(clientInfo, xmlKeyExact, subscribeQoS);
+         subscribeToOid(subs);                // fires event for subscription
+      }
+   }
 
-      if (xmlKey.getQueryType() == XmlKey.XPATH_QUERY) { // subscription without a given oid
 
-         fireSubscriptionEvent(subs, true);              // fires event for query subscription
+   /**
+    * @param clientName is only needed for nicer logging output
+    * @return Array of matching XmlKey objects
+    */
+   private Vector parseKeyOid(ClientInfo clientInfo, XmlKey xmlKey, XmlQoS qos)  throws XmlBlasterException
+   {
+      Vector xmlKeyVec = new Vector();
+      String clientName = clientInfo.toString();
+
+      if (xmlKey.getQueryType() == XmlKey.XPATH_QUERY) { // query: subscription without a given oid
+
+          // fires event for query subscription, this needs to be remembered
+          // for a match check of future published messages
+         fireSubscriptionEvent(new SubscriptionInfo(clientInfo, xmlKey, qos), true);
 
          Enumeration nodeIter;
          try {
+            if (Log.TRACE) Log.trace(ME, "Goin' to query DOM tree with XPATH = " + xmlKey.getQueryString());
             nodeIter = queryMgr.getNodesByXPath(xmlKeyDoc, xmlKey.getQueryString());
          } catch (Exception e) {
-            Log.warning(ME + ".InvalidQuery", "Sorry, can't subscribe, query snytax is wrong");
-            throw new XmlBlasterException(ME + ".InvalidQuery", "Sorry, can't subscribe, query snytax is wrong");
+            Log.warning(ME + ".InvalidQuery", "Sorry, can't access, query snytax is wrong");
+            throw new XmlBlasterException(ME + ".InvalidQuery", "Sorry, can't access, query snytax is wrong");
          }
          int n = 0;
          while (nodeIter.hasMoreElements()) {
@@ -197,9 +222,8 @@ public class RequestBroker implements ClientListener
             com.sun.xml.tree.ElementNode node = (com.sun.xml.tree.ElementNode)obj;
             try {
                String uniqueKey = getKeyOid(node);
-               Log.info(ME, "Client " + clientInfo.toString() + " is subscribing message oid=\"" + uniqueKey + "\" after successfull query");
-               SubscriptionInfo subsExact = new SubscriptionInfo(clientInfo, getXmlKeyFromOid(uniqueKey), subscribeQoS);
-               subscribeToOid(uniqueKey, subsExact); // fires event for unique oid subscription
+               Log.info(ME, "Client " + clientName + " is accessing message oid=\"" + uniqueKey + "\" after successfull query");
+               xmlKeyVec.addElement(getXmlKeyFromOid(uniqueKey));
             } catch (Exception e) {
                e.printStackTrace();
                Log.error(ME, e.toString());
@@ -209,16 +233,22 @@ public class RequestBroker implements ClientListener
       }
 
       else if (xmlKey.getQueryType() == XmlKey.EXACT_QUERY) { // subscription with a given oid
-         Log.info(ME, "Client " + clientInfo.toString() + " is subscribing message with EXACT oid=\"" + xmlKey.getUniqueKey() + "\"");
-         subscribeToOid(xmlKey.getUniqueKey(), subs); // fires event
+         Log.info(ME, "Access Client " + clientName + " with EXACT oid=\"" + xmlKey.getUniqueKey() + "\"");
+         XmlKey xmlKeyExact = getXmlKeyFromOid(xmlKey.getUniqueKey());
+         if (xmlKeyExact == null) {
+            Log.warning(ME + ".OidUnknown", "Sorry, can't access message, key oid is unknown: " + xmlKey.getUniqueKey());
+            throw new XmlBlasterException(ME + ".OidUnknown", "Sorry, can't access message, key oid is unknown: " + xmlKey.getUniqueKey());
+         }
+         xmlKeyVec.addElement(xmlKeyExact);
       }
 
       else {
-         Log.warning(ME + ".UnsupportedQueryType", "Sorry, can't subscribe, query snytax is unknown: " + xmlKey.getQueryType());
-         throw new XmlBlasterException(ME + ".UnsupportedQueryType", "Sorry, can't subscribe, query snytax is unknown: " + xmlKey.getQueryType());
+         Log.warning(ME + ".UnsupportedQueryType", "Sorry, can't access, query snytax is unknown: " + xmlKey.getQueryType());
+         throw new XmlBlasterException(ME + ".UnsupportedQueryType", "Sorry, can't access, query snytax is unknown: " + xmlKey.getQueryType());
       }
-   }
 
+      return xmlKeyVec;
+   }
 
    /**
     * @param oid == XmlKey:uniqueKey
@@ -241,7 +271,7 @@ public class RequestBroker implements ClientListener
       synchronized(messageContainerMap) {
          Object obj = messageContainerMap.get(oid);
          if (obj == null) {
-            Log.error(ME, "messageHandler == null");
+            Log.error(ME, "getMessageHandlerFromOid(): key oid " + oid + " is unknown, messageHandler == null");
             return null;
          }
          return (MessageUnitHandler)obj;
@@ -299,8 +329,9 @@ public class RequestBroker implements ClientListener
     * @param uniqueKey from XmlKey - oid
     * @param subs
     */
-   private void subscribeToOid(String uniqueKey, SubscriptionInfo subs) throws XmlBlasterException
+   private void subscribeToOid(SubscriptionInfo subs) throws XmlBlasterException
    {
+      String uniqueKey = subs.getXmlKey().getUniqueKey();
       MessageUnitHandler msgHandler;
       synchronized(messageContainerMap) {
          Object obj = messageContainerMap.get(uniqueKey);
@@ -327,26 +358,28 @@ public class RequestBroker implements ClientListener
     */
    public void unSubscribe(ClientInfo clientInfo, XmlKey xmlKey, XmlQoS unSubscribeQoS) throws XmlBlasterException
    {
-      String uniqueKey = xmlKey.getUniqueKey();
       /*
-      Object obj;
-      synchronized(messageContainerMap) {
-         obj = messageContainerMap.get(uniqueKey);
-      }
-      if (obj == null) {
+      String uniqueKey = xmlKey.getUniqueKey();
+      MessageUnitHandler msgHandler = getMessageHandlerFromOid(uniqueKey);
+      if (msgHandler == null) {
          Log.warning(ME + ".DoesntExist", "Sorry, can't unsubscribe, message unit doesn't exist: " + uniqueKey);
          throw new XmlBlasterException(ME + ".DoesntExist", "Sorry, can't unsubscribe, message unit doesn't exist: " + uniqueKey);
       }
-      MessageUnitHandler msgHandler = (MessageUnitHandler)obj;
-      */
-      SubscriptionInfo subs = new SubscriptionInfo(clientInfo, xmlKey, unSubscribeQoS); // to generate the subscription-uniqueKey
-      /*
-      int numRemoved = msgHandler.removeSubscriber(subs);
-      if (numRemoved < 1) {
-         Log.warning(ME + ".NotSubscribed", "Sorry, can't unsubscribe, you never subscribed to " + uniqueKey);
+
+      // For perfomance reasons, this removeSubscriber() is not triggered thru fireSubscriptionEvent()
+      String subscriptionInfoUniqueKey = SubscriptionInfo.generateUniqueKey(clientInfo, xmlKey, unSubscribeQoS).toString();
+      SubscriptionInfo subs = msgHandler.removeSubscriber(subscriptionInfoUniqueKey);
+      if (subs == null) {
+         Log.warning(ME + ".NotSubscribed", "Sorry, can't unsubscribe, you never subscribed to " + uniqueKey + " subcription-id=" + subs.getUniqueKey());
          throw new XmlBlasterException(ME + ".NotSubscribed", "Sorry, can't unsubscribe, you never subscribed to " + uniqueKey);
       }
       */
+
+      SubscriptionInfo subs = clientSubscriptions.getSubscription(clientInfo, xmlKey, unSubscribeQoS);
+      if (subs == null) {
+         Log.warning(ME + ".NotSubscribed", "Sorry, can't unsubscribe, you never subscribed to " + subs.getClientInfo().getUniqueKey() + " subcription-id=" + subs.getUniqueKey());
+         throw new XmlBlasterException(ME + ".NotSubscribed", "Sorry, can't unsubscribe, you never subscribed to " + subs.getClientInfo().getUniqueKey());
+      }
       fireSubscriptionEvent(subs, false);
    }
 
@@ -584,20 +617,21 @@ public class RequestBroker implements ClientListener
 
       Iterator iterator = messageContainerMap.values().iterator();
 
-      sb.append(
-         offset + "<RequestBroker>"); 
-         while (iterator.hasNext()) {
-            MessageUnitHandler msgHandler = (MessageUnitHandler)iterator.next();
-            sb.append(msgHandler.printOn(extraOffset + "   ").toString());
-         }
-      sb.append(
-         offset + "</RequestBroker>\n");
+      sb.append(offset + "<RequestBroker>"); 
+      while (iterator.hasNext()) {
+         MessageUnitHandler msgHandler = (MessageUnitHandler)iterator.next();
+         sb.append(msgHandler.printOn(extraOffset + "   ").toString());
+      }
 
-      // TODO: redirect into sb
       try {
-         Writer out = new OutputStreamWriter (System.out);
+         java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
          xmlKeyDoc.write(out);
+         StringTokenizer st = new StringTokenizer(out.toString(), "\n");
+         while (st.hasMoreTokens()) {
+            sb.append(offset + "   " + st.nextToken());
+         }
       } catch (Exception e) { }
+      sb.append(offset + "</RequestBroker>\n");
 
       return sb;
    }

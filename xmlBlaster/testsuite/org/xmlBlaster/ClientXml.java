@@ -3,7 +3,7 @@ Name:      ClientXml.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientXml.java,v 1.5 1999/11/20 22:42:04 ruff Exp $
+Version:   $Id: ClientXml.java,v 1.6 1999/11/22 16:12:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -176,7 +176,8 @@ public class ClientXml
             }
          }
 
-         delay(10000); // Wait some time ...
+         ask("logout()");
+         // delay(10000); // Wait some time ...
 
          Log.trace(ME, "Logout ...");
          try {
@@ -199,6 +200,16 @@ public class ClientXml
       }
       catch( InterruptedException i)
       {}
+   }
+
+
+   private void ask(String text)
+   {
+      Log.plain(ME, text);
+      Log.plain(ME, "################### Hit a key to continue ###################");
+      try {
+         System.in.read();
+      } catch (java.io.IOException e) {}
    }
 
 

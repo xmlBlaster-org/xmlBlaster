@@ -3,12 +3,13 @@ Name:      SubscriptionInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles exactly one subscritpion (client reference and QoS of this subscrition
-Version:   $Id: SubscriptionInfo.java,v 1.9 1999/11/21 22:56:51 ruff Exp $
+Version:   $Id: SubscriptionInfo.java,v 1.10 1999/11/22 16:12:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlKeyBase;
+import org.xmlBlaster.util.TimeHelper;
 import org.xmlBlaster.serverIdl.XmlBlasterException;
 import org.xmlBlaster.clientIdl.BlasterCallback;
 
@@ -46,6 +47,9 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
     */
    public void addMessageUnitHandler(MessageUnitHandler myHandler)
    {
+      if (myHandler == null)
+         Log.error(ME, "addMessageUnitHandler with myHandler==null seems to be strange");
+
       this.myHandler = myHandler;
    }
 
@@ -65,10 +69,10 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
    public void removeSubscribe() throws XmlBlasterException
    {
       if (myHandler == null) {
-         Log.warning(ME, "The oid=" + uniqueKey + " has no MessageUnitHandler which takes care of it");
+         Log.warning(ME, "The id=" + uniqueKey + " has no MessageUnitHandler which takes care of it");
          return;
       }
-      myHandler.removeSubscriber(this);
+      myHandler.removeSubscriber(uniqueKey);
    }
 
 
@@ -114,17 +118,30 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
    public String getUniqueKey() throws XmlBlasterException
    {
       if (uniqueKey == null) {
-         StringBuffer buf = new StringBuffer(80);
-
-         buf.append("Subscription-").append(clientInfo.getUniqueKey());
-
-         buf.append("-").append(xmlKey.getUniqueKey());
-
-         buf.append("-").append(xmlQoS.toString()); // !!!hack?
-
-         uniqueKey = buf.toString();
+         uniqueKey = SubscriptionInfo.generateUniqueKey(clientInfo, xmlKey, xmlQoS).toString();
       }
       return uniqueKey;
+   }
+
+
+   /**
+    * This static method may be used from external objects to get the unique key
+    * of a subscription, which is a function of f(clientInfo,xmlKey,xmlQoS)
+    *
+    * @return A unique key for this particular subscription, for example:<br>
+    *         <code>Subscription-00 11 4D 4D 4D 4D 4C 0B 33 04 03 3F -null-null-943279576139-2-</code>
+    */
+   public static String generateUniqueKey(ClientInfo clientInfo, XmlKey xmlKey, XmlQoS xmlQoS) throws XmlBlasterException
+   {
+      StringBuffer buf = new StringBuffer(80);
+
+      buf.append("Subscription-").append(clientInfo.getUniqueKeyHex());
+
+      buf.append("-").append(xmlKey.getUniqueKey());
+
+      buf.append("-").append(xmlQoS.toString()); // !!!hack?
+
+      return buf.toString();
    }
 
 
@@ -152,12 +169,12 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
 
-      sb.append(offset + "<SubscriptionInfo id='" + uniqueKey + "'>");
+      sb.append(offset + "<SubscriptionInfo id='" + getUniqueKey() + "'>");
       sb.append(offset + "   <clientInfo id='" + (clientInfo==null ? "null" : clientInfo.toString()) + "'/>");
       sb.append(offset + "   <xmlKey oid='" + (xmlKey==null ? "null" : xmlKey.getUniqueKey()) + "'/>");
       sb.append(offset + "   <xmlQoS id='" + (xmlQoS==null ? "null" : xmlQoS.toString()) + "'/>");
       sb.append(offset + "   <messageUnitHandler id='" + (myHandler==null ? "null" : myHandler.getUniqueKey()) + "'/>");
-      sb.append(offset + "   <creationTime>" + creationTime + "</creationTime>");
+      sb.append(offset + "   <creationTime>" + TimeHelper.getDateTimeDump(creationTime) + "</creationTime>");
       sb.append(offset + "</SubscriptionInfo>\n");
       return sb;
    }

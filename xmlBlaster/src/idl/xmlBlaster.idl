@@ -13,7 +13,7 @@ Compile:   JacORB Java 1.2:
               $MICO_HOME/bin/idl --poa --no-boa xmlBlaster.idl
            COPE Perl:
               idl2perl -imp xmlBlaster.idl
-Version:   $Id: xmlBlaster.idl,v 1.22 1999/11/21 22:56:46 ruff Exp $
+Version:   $Id: xmlBlaster.idl,v 1.23 1999/11/22 16:12:17 ruff Exp $
 ================================================================================
 */
 
@@ -179,11 +179,15 @@ module serverIdl
    interface Server
    {
       /**
-       * Asynchron read-access method
+       * Asynchron read-access method. 
+       * <p>
        * The result are returned to the
        * Client-Callback interface via the update() method.
        * You need to implement the method BlasterCallback.update(AttributeSeq)
        * This is the push modus.
+       * <p>
+       * Duplicate subscriptions are silently ignored (no Exception is thrown)
+       * <br>
        *
        * @param xmlKey  Key with attributes allowing Regex/XQL/SQL selection<br>
        *                See xmlKey.dtd for a description

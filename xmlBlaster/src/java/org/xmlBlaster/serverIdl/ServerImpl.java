@@ -3,7 +3,7 @@ Name:      ServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: ServerImpl.java,v 1.17 1999/11/21 22:56:51 ruff Exp $
+Version:   $Id: ServerImpl.java,v 1.18 1999/11/22 16:12:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.serverIdl;
 
@@ -58,6 +58,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
    public void subscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "Entering subscribe(xmlKey=" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
+      if (Log.DUMP) Log.dump(ME, "-------START-subscribe()---------\n" + requestBroker.printOn().toString());
       StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
 
       ClientInfo clientInfo = authenticate.check();
@@ -67,6 +68,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
       requestBroker.subscribe(clientInfo, xmlKey, xmlQoS);
 
       if (Log.TIME) Log.time(ME, "Elapsed time in subscribe()" + stop.nice());
+      if (Log.DUMP) Log.dump(ME, "-------END-subscribe()---------\n" + requestBroker.printOn().toString());
    }
 
 
@@ -76,6 +78,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
    public void unSubscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "Entering unSubscribe(xmlKey=" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
+      if (Log.DUMP) Log.dump(ME, "-------START-unSubscribe()---------\n" + requestBroker.printOn().toString());
       StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
 
       ClientInfo clientInfo = authenticate.check();
@@ -85,6 +88,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
       requestBroker.unSubscribe(clientInfo, xmlKey, xmlQoS);
 
       if (Log.TIME) Log.time(ME, "Elapsed time in unSubscribe()" + stop.nice());
+      if (Log.DUMP) Log.dump(ME, "-------END-unSubscribe()---------\n" + requestBroker.printOn().toString());
    }
 
 

@@ -3,7 +3,7 @@ Name:      XmlKeyBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKeyBase.java,v 1.9 1999/11/21 22:56:51 ruff Exp $
+Version:   $Id: XmlKeyBase.java,v 1.10 1999/11/22 16:12:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -148,6 +148,7 @@ public class XmlKeyBase
     */
    public boolean isGeneratedOid() throws XmlBlasterException
    {
+      loadDomTree();
       return isGeneratedOid;
    }
 
@@ -155,8 +156,9 @@ public class XmlKeyBase
    /**
     * The syntax of the XmlKey_literal String
     */
-   public String getMimeType()
+   public String getMimeType() throws XmlBlasterException
    {
+      loadDomTree();
       if (keyType == XML_TYPE)
          return "text/xml";
       else if (keyType == ASCII_TYPE) // not supported!
@@ -190,12 +192,14 @@ public class XmlKeyBase
 
    public final int getQueryType() throws XmlBlasterException
    {
+      loadDomTree();
       return queryType;
    }
 
 
-   public String getQueryString()
+   public String getQueryString() throws XmlBlasterException
    {
+      loadDomTree();
       return queryString;
    }
 
@@ -209,10 +213,10 @@ public class XmlKeyBase
    private void loadDomTree() throws XmlBlasterException
    {
       if (doc != null)
-         return;
+         return;       // DOM tree is already loaded
 
       if (keyType == ASCII_TYPE)
-         return;
+         return;       // no XML -> no DOM
 
       java.io.StringReader reader = new java.io.StringReader(xmlKey_literal);
       InputSource input = new InputSource(reader);
@@ -246,7 +250,7 @@ public class XmlKeyBase
    {
       org.w3c.dom.Node tmpRootNode = rootNode;
       if (isPublish) {
-         if (Log.TRACE) Log.trace(ME, "Created DOM tree for " + keyOid + ", adding it to <xmlBlaster> tree");
+         if (Log.TRACE) Log.trace(ME, "Created DOM tree for " + getUniqueKey() + ", adding it to <xmlBlaster> tree");
          org.w3c.dom.Node node = RequestBroker.getInstance().addKeyNode(tmpRootNode);
       }
       rootNode = tmpRootNode;  // everything successfull, assign the rootNode
@@ -394,7 +398,7 @@ public class XmlKeyBase
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
 
-      sb.append(offset + "<XmlKeyBase oid='" + keyOid + "'>");
+      sb.append(offset + "<XmlKeyBase oid='" + getUniqueKey() + "'>");
       sb.append(offset + "   <queryString>" + queryString + "</queryString>");
       sb.append(offset + "   <keyType>" + keyType + "</keyType>");
       sb.append(offset + "   <isGeneratedOid>" + isGeneratedOid + "</isGeneratedOid>");
