@@ -4,10 +4,13 @@
 Changes for 0.71 [Jan. 2000]
 ============================
 
+   - Added a xmlBlaster.properties file (should be placed into $HOME).
+
 	- Renamed file names from ...QoS... to ...Qos...
 
 	- Added a file feeder (publishes files as message to xmlBlaster)
 
 	- Added usage text, invoke at command line with -? option
 
-	- Smaller changes here and there
+	- Small changes here and there
+
