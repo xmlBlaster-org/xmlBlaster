@@ -101,13 +101,13 @@
    <example lang="Java">
 <![CDATA[
 
-These is an example QoS of a connect() invocation:
-==================================================
+These are example QoS of a connect() invocation:
+================================================
 
 <qos>
    ...
    <!-- SessionQueue callback: Use CORBA to send messages back -->
-   <queue relating='subject' maxMsg='1600' expires='360000000'
+   <queue relating='session' maxMsg='1600' expires='360000000'
             onOverflow='block' onFailure='deadLetter'>
       <callback type='IOR' sessionId='sd3lXjs9Fdlggh' pingInterval='60000' useForSubjectQueue='true'>
          IOR:00011200070009990000....
@@ -180,8 +180,8 @@ Any other queue overwrites session delivery:
 </qos>
 
 
-These is an example QoS of a disconnect() invocation:
-=====================================================
+This is an example QoS of a disconnect() invocation:
+====================================================
 
 <qos>
    <deleteSubjectQueue>false</deleteSubjectQueue>
@@ -257,7 +257,7 @@ These is an example QoS of a disconnect() invocation:
    <see type="REQ">util.property.env</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 02 04</date>
-   <revision>$Revision: 1.13 $</revision>
+   <revision>$Revision: 1.14 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
