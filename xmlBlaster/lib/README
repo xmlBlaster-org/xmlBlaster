@@ -91,7 +91,7 @@ All packages allow free use for both commercial and non-commercial applications.
 
 8) miniJacorb.jar
 =================
-   These is a mini jar file containing the 'fill level bean' for 
+   These is a mini jar file containing the 'fill level bean' for
    the xmlBlaster GUI. They are extracted from the Jacorb implementation.
    This jar file is necessary when running and compiling xmlBlaster
    with corba implementations other than jacorb.
@@ -121,3 +121,9 @@ All packages allow free use for both commercial and non-commercial applications.
    to modify this library for your own use and to redistribute it with your
    modifications, provided that the modifications are prominently documented.
 
+
+11) ant.jar
+===========
+  Ant is a Java based build tool. In theory it is kind of like make without makes wrinkles.
+  http://jakarta.apache.org/ant/index.html
+  http://jakarta.apache.org/builds/ant/release/
