@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, using org.jutils
-Version:   $Id: Global.java,v 1.30 2002/06/15 16:12:37 ruff Exp $
+Version:   $Id: Global.java,v 1.31 2002/06/16 13:50:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.net.MalformedURLException;
 import java.io.IOException;
 import java.util.Hashtable;
+import java.util.Enumeration;
 
 
 /**
@@ -227,6 +228,113 @@ public class Global implements Cloneable
       LogChannel lc = new LogChannel(key, getProperty());
       addLogChannel(lc);
       return lc;
+   }
+
+   /**
+   * Changes the given loglevel to given state. 
+   *
+   * @param logLevel e.g. "trace" or "trace[core]"
+   * @param bool A string like "true" or "false"
+   * @return true/false to witch bool was parsed
+   * @exception XmlBlasterException if your bool is strange
+   * @see org.jutils.init.Property#toBool(boolean)
+   */
+   public boolean changeLogLevel(String logLevel, String bool) throws XmlBlasterException {
+      try {
+         boolean b = org.jutils.init.Property.toBool(bool);
+         changeLogLevel(logLevel, b);
+         return b;
+      }
+      catch (JUtilsException e) {
+         throw new XmlBlasterException(e.id, e.reason);
+      }
+   }
+
+   /**
+   * Changes the given loglevel to given state. 
+   *
+   * @param logLevel e.g. "trace" or "trace[core]"
+   */
+   public void changeLogLevel(String logLevel, boolean value) throws XmlBlasterException {
+      if (logLevel == null || logLevel.length() < 1) return;
+
+      try {
+         int start = logLevel.indexOf("[");
+
+         if (start != -1) { // Syntax is for example "info[core]"
+            int end = logLevel.indexOf("]");
+            if (start < 1 || end == -1 || end <= (start+1)) {
+               throw new XmlBlasterException(ME, "Illegal loglevel syntax '" + logLevel + "'");
+            }
+            String key = logLevel.substring(start+1, end);
+            Object obj = logChannels.get(key);
+            if (obj == null)
+               throw new XmlBlasterException(ME, "LogChannel '" + key + "' is not known");
+            LogChannel log = (LogChannel)obj;
+            if (value == true)
+               log.addLogLevelChecked(logLevel.substring(0, start));
+            else
+               log.removeLogLevelChecked(logLevel.substring(0, start));
+            return;
+         }
+
+         if (value == true) {
+            logDefault.addLogLevelChecked(logLevel);
+            Log.addLogLevel(logLevel); // deprecated
+         }
+         else {
+            logDefault.removeLogLevelChecked(logLevel);
+            Log.removeLogLevel(logLevel); // deprecated
+         }
+
+         for (Enumeration e = logChannels.elements(); e.hasMoreElements();) {
+            LogChannel log = (LogChannel)e.nextElement();
+            if (value == true) {
+               log.info(ME, "Setting logLevel '" + logLevel + "' for '" + log.getChannelKey() + "' to true");
+               log.addLogLevelChecked(logLevel);
+            }
+            else {
+               log.info(ME, "Removing logLevel '" + logLevel + "' for '" + log.getChannelKey() + "'");
+               log.removeLogLevelChecked(logLevel);
+            }
+         }
+      }
+      catch (JUtilsException e) {
+         throw new XmlBlasterException(e.id, e.reason);
+      }
+   }
+
+   /**
+   * Get the current loglevel. 
+   *
+   * @param @param logLevel e.g. "trace" or "trace[core]"
+   * @return true is given log level is set, false otherwise.
+   */
+   public boolean getLogLevel(String logLevel) throws XmlBlasterException {
+      if (logLevel == null || logLevel.length() < 1)
+         throw new XmlBlasterException(ME, "Illegal loglevel syntax '" + logLevel + "'");
+
+      try {
+         int start = logLevel.indexOf("[");
+
+         if (start != -1) { // Syntax is for example "info[core]"
+            int end = logLevel.indexOf("]");
+            if (start < 1 || end == -1 || end <= (start+1)) {
+               throw new XmlBlasterException(ME, "Illegal loglevel syntax '" + logLevel + "'");
+            }
+            String key = logLevel.substring(start+1, end);
+            Object obj = logChannels.get(key);
+            if (obj == null)
+               throw new XmlBlasterException(ME, "LogChannel '" + key + "' is not known");
+            LogChannel log = (LogChannel)obj;
+            return log.isLoglevelEnabled(logLevel.substring(0, start));
+         }
+
+         return logDefault.isLoglevelEnabled(logLevel);
+      }
+      catch (JUtilsException e) {
+         throw new XmlBlasterException(e.id, e.reason);
+      }
    }
 
    /**
