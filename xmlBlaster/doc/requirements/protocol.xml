@@ -39,69 +39,58 @@
       </ul>
       <p>
       Once you have implemented a new protocol driver, you need to add it
-      to xmlBlaster.properties, it is then loaded automatically on the next
+      to xmlBlasterPlugins.xml, it is then automatically loaded on next
       xmlBlaster startup:
       </p>
       <p>
-      Example entry to xmlBlaster.properties for Corba, RMI and XML-RPC etc. drivers:
+      Example entry to xmlBlasterPlugins.xml for Corba, RMI and XML-RPC etc. drivers:
       </p>
      <table border="1"><tr><td><pre>
-ProtocolPlugin[IOR][1.0]=org.xmlBlaster.protocol.corba.CorbaDriver
-CbProtocolPlugin[IOR][1.0]=org.xmlBlaster.protocol.corba.CallbackCorbaDriver
+   &lt;plugin id='protocol:SOCKET' className='org.xmlBlaster.protocol.socket.SocketDriver'>
+      &lt;action do='LOAD' onStartupRunlevel='3' sequence='1' 
+              onFail='resource.configuration.pluginFailed'/>
+      &lt;action do='STOP' onShutdownRunlevel='2' sequence='5'/>   
+   &lt;/plugin>
 
-ProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.protocol.socket.SocketDriver
-CbProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.protocol.socket.CallbackSocketDriver
+   &lt;plugin id='protocol:IOR' className='org.xmlBlaster.protocol.corba.CorbaDriver'>
+      &lt;action do='LOAD' onStartupRunlevel='3' sequence='2'
+              onFail='resource.configuration.pluginFailed'/>
+      &lt;action do='STOP' onShutdownRunlevel='2' sequence='4'/>   
+   &lt;/plugin>
 
-ProtocolPlugin[RMI][1.0]=org.xmlBlaster.protocol.rmi.RmiDriver
-CbProtocolPlugin[RMI][1.0]=org.xmlBlaster.protocol.rmi.CallbackRmiDriver
+   &lt;plugin id='protocol:XML-RPC' className='org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver'>
+      &lt;action do='LOAD' onStartupRunlevel='3' sequence='3'/> 
+      &lt;action do='STOP' onShutdownRunlevel='2' sequence='3'/>   
+   &lt;/plugin>
 
-ProtocolPlugin[XML-RPC][1.0]=org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver
-CbProtocolPlugin[XML-RPC][1.0]=org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver
-
-ProtocolPlugin[JDBC][1.0]=org.xmlBlaster.protocol.jdbc.JdbcDriver
-CbProtocolPlugin[JDBC][1.0]=org.xmlBlaster.protocol.jdbc.CallbackJdbcDriver
-
-ProtocolPlugin[SOAP][1.0]=org.xmlBlaster.protocol.soap.SoapDriver
-CbProtocolPlugin[SOAP][1.0]=org.xmlBlaster.protocol.soap.CallbackSoapDriver
-
-CbProtocolPlugin[EMAIL][1.0]=org.xmlBlaster.protocol.email.CallbackEmailDriver
-
-ProtocolPlugin[NativeDemo][NATIVE]=org.xmlBlaster.protocol.nativ.NativeDriver
-CbProtocolPlugin[NativeDemo][NATIVE]=org.xmlBlaster.protocol.nativ.CallbackNativeDriver
+   &lt;plugin id='protocol:RMI' className='org.xmlBlaster.protocol.rmi.RmiDriver'>
+      &lt;action do='LOAD' onStartupRunlevel='3' sequence='4' />
+      &lt;action do='STOP' onShutdownRunlevel='2' sequence='2'/>   
+   &lt;/plugin>
      </pre></td></tr></table>
       <p>
       The callback driver protocol type for RMI is called "RMI"
       for XmlRpc "XML-RPC"
-      and the Corba driver protocol is called "IOR".<br />
+      the Corba driver protocol is called "IOR" and finally
+      "SOCKET" is our native socket based protocol.<br />
       This string is used when you do your login in the qos to specify
       your callback wishes.<br />
       See requirement 'engine.qos.login.callback' for further directions.
       </p>
    </description>
    <configuration where="server">
-      <table border="1">
+      <!--table border="1">
          <tr>
             <th>Property</th>
             <th>Default / Example</th>
             <th>Description</th>
             <th>Implemented</th>
          </tr>
-         <tr>
-            <td>ProtocolPlugin[type][version]</td>
-            <td>The class name</td>
-            <td>Allows to register a protocol driver</td>
-            <td><img src="ok.gif" border="0" alt="yes" /></td>
-         </tr>
-         <tr>
-            <td>CbProtocolPlugin[type][version]</td>
-            <td>The class name</td>
-            <td>Allows to register a protocol driver to callback the client</td>
-            <td><img src="ok.gif" border="0" alt="yes" /></td>
-         </tr>
-      </table>
+      </table-->
    </configuration>
    <todo>
    </todo>
+   <see type="REQ">engine.runlevel</see>
    <see type="REQ">protocol.socket</see>
    <see type="REQ">engine.qos.login.callback</see>
    <see type="API">org.xmlBlaster.protocol.I_XmlBlaster</see>
@@ -111,7 +100,7 @@ CbProtocolPlugin[NativeDemo][NATIVE]=org.xmlBlaster.protocol.nativ.CallbackNativ
    <hacker>xmlBlaster@marcelruff.info</hacker>
    <effort>4</effort>
    <date>2000 06 06</date>
-   <revision>$Revision: 1.10 $</revision>
+   <revision>$Revision: 1.11 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>This is tested implicit by all testsuite tests</comment>
