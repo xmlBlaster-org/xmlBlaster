@@ -11,8 +11,8 @@
 #   export JIKES_HOME=/usr/local/jikes         (optional)
 #   . ${XMLBLASTER_HOME}/.bashrc
 #
-# If you want to access xmlBlaster using cvs:
-#   export CVSROOT=:pserver:xmlblaster@193.197.24.129:/www/cvsroot
+# If you want to access xmlBlaster using cvs, un comment following line:
+#   export CVSROOT=:pserver:reader@server.xmlBlaster.org:/opt/cvsroot
 #-----------------------------------------------------------
 
 
@@ -23,9 +23,9 @@ ESC="\033[0m"
 OS="`uname -s`"
 
 if [ ${OS} = "Linux" ]; then
-	ECHO="echo -e"
+   ECHO="echo -e"
 else
-	ECHO="echo"
+   ECHO="echo"
 fi
 
 
