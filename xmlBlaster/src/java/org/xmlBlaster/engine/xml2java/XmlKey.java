@@ -3,7 +3,7 @@ Name:      XmlKey.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKey.java,v 1.16 2002/05/02 19:19:34 ruff Exp $
+Version:   $Id: XmlKey.java,v 1.17 2002/05/06 07:27:36 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -56,8 +56,7 @@ import java.util.Enumeration;
  * <p />
  * A typical <b>subscribe</b> key could look like this:<br />
  * <pre>
- *     &lt;key oid='4711' queryType='EXACT'>
- *     &lt;/key>
+ *     &lt;key oid='4711' queryType='EXACT'/>
  * </pre>
  * <br />
  * In this example you would subscribe on message 4711.
@@ -71,12 +70,21 @@ import java.util.Enumeration;
  * <br />
  * In this example you would subscribe on all DRIVERs which have the attribute 'FileProof'
  * <p />
+ * A cluster query checking the <b>domain</b> attribute could look like this:<br />
+ * <pre>
+ *     &lt;key oid='' queryType='DOMAIN' domain='RUGBY'/>
+ * </pre>
+ * <p />
+ * NOTE: The 'XPATH' query covers the 'DOMAIN' and 'EXACT' query, but is far slower.
+ * Therefore you should try to use EXACT or in a cluster environment DOMAIN queries
+ * first.
+ * <br />
  * More examples you find in xmlBlaster/src/dtd/XmlKey.xml
  * <p />
  *
- * @see <a href="http://www.w3.org/TR/xpath">The W3C XPath specification</a>
+ * @see <a href="http://www.w3.org/TR/xpath" target="others">The W3C XPath specification</a>
  */
-public class XmlKey
+public final class XmlKey
 {
    private String ME = "XmlKey";
    private Global glob;
@@ -85,10 +93,11 @@ public class XmlKey
 
    private static long uniqueCounter = 1L;
 
-   public final static int PUBLISH     = 0; // no query: <key oid='myWhitePaper'><book><paper></paper></book></key> + content
-   public final static int EXACT_QUERY = 1; // <key oid="myCarPrice" queryType="EXACT"></key>
-   public final static int XPATH_QUERY = 2; // <key oid=""           queryType="XPATH">xmlBlaster/key/AGENT/DRIVER[@id!='FileProof']</key>
-   public final static int REGEX_QUERY = 3; // <key oid="my.*"       queryType="REGEX"></key>
+   public final static int PUBLISH     = 0;  // no query: <key oid='myWhitePaper'><book><paper></paper></book></key> + content
+   public final static int EXACT_QUERY = 1;  // <key oid="myCarPrice" queryType="EXACT"></key>
+   public final static int XPATH_QUERY = 2;  // <key oid=""           queryType="XPATH">xmlBlaster/key/AGENT/DRIVER[@id!='FileProof']</key>
+   public final static int REGEX_QUERY = 3;  // <key oid="my.*"       queryType="REGEX"></key>
+   public final static int DOMAIN_QUERY = 4; // <key oid=""           queryType="DOMAIN" domain="RUBGY"/>
    private int queryType = -1;
    private String queryString = "";
 
@@ -211,7 +220,7 @@ public class XmlKey
     * Dead letters are unrecoverable lost messages, usually an administrator
     * should subscribe to those messages.
     */
-   public boolean isDeadLetter() throws XmlBlasterException {
+   public final boolean isDeadLetter() throws XmlBlasterException {
       return getUniqueKey().equals(Constants.OID_DEAD_LETTER);
    }
 
@@ -220,7 +229,7 @@ public class XmlKey
     * @return the literal ASCII xmlKey
     * @see #literal()
     */
-   public String toString() {
+   public final String toString() {
       return toXml();
    }
 
@@ -243,7 +252,7 @@ public class XmlKey
     * this new generated oid as well.
     * @return the literal ASCII xmlKey
     */
-   public String literal() {
+   public final String literal() {
       return xmlKey_literal;
    }
 
@@ -252,7 +261,7 @@ public class XmlKey
     *
     * @return oid
     */
-   public String getUniqueKey() throws XmlBlasterException {
+   public final String getUniqueKey() throws XmlBlasterException {
       return getKeyOid();
    }
 
@@ -261,7 +270,7 @@ public class XmlKey
     *
     * @return true generated oid by xmlBlaster
     */
-   public boolean isGeneratedOid() throws XmlBlasterException {
+   public final boolean isGeneratedOid() throws XmlBlasterException {
       if (isGeneratedOid == -1)
          loadDomTree();
       return (isGeneratedOid==1) ? true : false;
@@ -290,7 +299,7 @@ public class XmlKey
     *         default is "text/plain" if not set
     * @see <a href="ftp://ftp.std.com/customers3/src/mail/imap-3.3/RFC1521.TXT">RFC1521 - MIME (Multipurpose Internet Mail Extensions)</a>
     */
-   public String getContentMime() throws XmlBlasterException {
+   public final String getContentMime() throws XmlBlasterException {
       if (contentMime == null) {
          parseRaw();
       }
@@ -310,7 +319,7 @@ public class XmlKey
     *         "Version 1.1" in &lt;key oid='' contentMime='text/xml' contentMimeExtended='Version 1.1'><br />
     *         or "" (empty string) if not known
     */
-   public String getContentMimeExtended() throws XmlBlasterException {
+   public final String getContentMimeExtended() throws XmlBlasterException {
       if (contentMimeExtended == null) {
          parseRaw();
       }
@@ -328,7 +337,7 @@ public class XmlKey
     *         defaults to "" where the local xmlBlaster instance is the master of the message.
     * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/cluster.html">The cluster requirement</a>
     */
-   public String getDomain() throws XmlBlasterException {
+   public final String getDomain() throws XmlBlasterException {
       if (domain == null) {
          parseRaw();
       }
@@ -342,7 +351,7 @@ public class XmlKey
    /**
     * @return true if no domain is given (null or empty string). 
     */
-   public boolean isDefaultDomain() throws XmlBlasterException {
+   public final boolean isDefaultDomain() throws XmlBlasterException {
       String domain = getDomain();
       if (domain == null || domain.equals(DEFAULT_domain))
          return true;
@@ -354,7 +363,7 @@ public class XmlKey
     *
     * @return oid
     */
-   public String getKeyOid() throws XmlBlasterException {
+   public final String getKeyOid() throws XmlBlasterException {
       if (keyOid == null) {
          parseRaw();
       }
@@ -469,7 +478,7 @@ public class XmlKey
 
    /**
     * The mode how a subscribe() or get() is formulated.
-    * @return EXACT_QUERY or XPATH_QUERY
+    * @return EXACT_QUERY or XPATH_QUERY or for cluster setup DOMAIN_QUERY
     */
    public final int getQueryType() throws XmlBlasterException {
       if (queryType == -1) {
@@ -485,7 +494,7 @@ public class XmlKey
 
    /**
     * The mode how a subscribe() or get() is formulated.
-    * @return EXACT_QUERY or XPATH_QUERY
+    * @return "EXACT" or "XPATH" or for cluster setup "DOMAIN"
     */
    public final String getQueryTypeStr() throws XmlBlasterException {
       int type = getQueryType();
@@ -493,6 +502,8 @@ public class XmlKey
          return "XPATH";
       else if (type == EXACT_QUERY)
          return "EXACT";
+      else if (type == DOMAIN_QUERY)
+         return "DOMAIN";
       else if (type == REGEX_QUERY)
          return "REGEX";
       return "";
@@ -520,11 +531,33 @@ public class XmlKey
       return false;
    }
 
+   /**
+    * Was subscribe() or get() invoked to query the domain?
+    * @return true if DOMAIN_QUERY
+    */
+   public final boolean isDomain() throws XmlBlasterException {
+      if (getQueryType() == DOMAIN_QUERY)
+         return true;
+      return false;
+   }
+
+   /**
+    * Was subscribe() or get() invoked to query with XPath?
+    * @return true if XPATH_QUERY
+    */
+   public final boolean isXPath() throws XmlBlasterException {
+      if (getQueryType() == XPATH_QUERY)
+         return true;
+      return false;
+   }
+
    private final void setQueryType(String val) throws XmlBlasterException {
       if (val.equalsIgnoreCase("EXACT"))
          queryType = EXACT_QUERY;
       else if (val.equalsIgnoreCase("XPATH"))
          queryType = XPATH_QUERY;
+      else if (val.equalsIgnoreCase("DOMAIN"))
+         queryType = DOMAIN_QUERY;
       else if (val.equalsIgnoreCase("REGEX"))
          queryType = REGEX_QUERY;
       else {
@@ -533,7 +566,7 @@ public class XmlKey
       }
    }
 
-   public String getQueryString() throws XmlBlasterException {
+   public final String getQueryString() throws XmlBlasterException {
       loadDomTree();
       return queryString;
    }
@@ -636,7 +669,7 @@ public class XmlKey
       //xmlKey_nice = toNiceXml("");
 
       // extract the query string <key ...>'The query string'</key>
-      if (!isPublish && queryType != EXACT_QUERY) {
+      if (!isPublish && isQuery()) {
          NodeList children = node.getChildNodes();
          if (children != null) {
             int len = children.getLength();
@@ -663,7 +696,7 @@ public class XmlKey
    /**
     * Should be called by publish() to merge the local XmlKey DOM into the big xmlBlaster DOM tree
     */
-   public void mergeRootNode(I_MergeDomNode merger) throws XmlBlasterException {
+   public final void mergeRootNode(I_MergeDomNode merger) throws XmlBlasterException {
       if (isPublish) {
          if (Log.TRACE) Log.trace(ME, "Created DOM tree for " + getUniqueKey() + ", adding it to <xmlBlaster> tree");
          loadDomTree();
@@ -738,11 +771,44 @@ public class XmlKey
    }
 
    /**
+    * Allows to check if this xmlKey matches the given query. 
+    * @param queryKey An XmlKey object containing a query (XPATH, EXACT or DOMAIN)
+    * @return true if this message key matches the query
+    */
+   public final boolean match(XmlKey queryKey) throws XmlBlasterException {
+      if (queryKey.isDomain()) {
+         if (queryKey.getDomain().equals(getDomain())) {
+            if (Log.TRACE) Log.trace(ME, "Message oid='" + getUniqueKey() + "' matched for domain='" + getDomain() + "'.");
+            return true;
+         }
+      }
+      else if (queryKey.isExact()) {
+         if (queryKey.getUniqueKey().equals(getUniqueKey())) {
+            if (Log.TRACE) Log.trace(ME, "Message oid='" + getUniqueKey() + "' matched.");
+            return true;
+         }
+      }
+      else if (queryKey.isXPath()) {
+         if (match(queryKey.getQueryString())) {
+            if (Log.TRACE) Log.trace(ME, "Message oid='" + getUniqueKey() + "' matched with XPath query '" + queryKey.getQueryString() + "'");
+            return true;
+         }
+      }
+      else {
+         Log.error(ME, "Don't know queryType '" + queryKey.getQueryTypeStr() + "' for message oid='" + getUniqueKey() + "'. I'll return false for match.");
+         return false;
+      }
+      
+      if (Log.TRACE) Log.trace(ME, "Message oid='" + getUniqueKey() + "' does not match with query");
+      return false;
+   }
+
+   /**
     * We need this to allow checking if an existing XPath subscription matches this new message type.
     * @param xpath The XPath query, check if it matches to this xmlKey
     * @return true if this message meta data matches the XPath query
     */
-   public boolean match(String xpath) throws XmlBlasterException {
+   public final boolean match(String xpath) throws XmlBlasterException {
       if (xmlKeyDoc == null) {
          try {
             if (Log.TRACE) Log.trace(ME, "Creating tiny DOM tree and a query manager ...");
