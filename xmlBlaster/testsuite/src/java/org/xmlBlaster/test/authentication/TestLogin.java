@@ -7,6 +7,7 @@ package org.xmlBlaster.test.authentication;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
@@ -101,10 +102,14 @@ public class TestLogin extends TestCase implements I_Callback
          secondConnection.connect(qos, this);
 
       }
-      catch (Exception e) {
-          log.error(ME, e.toString());
-          e.printStackTrace();
-          fail(ME + ".setup failed: " + e.toString());
+      catch (XmlBlasterException e) {
+         if (e.getErrorCode() == ErrorCode.USER_CONNECT_MULTIPLE) {
+            // ignore
+         }
+         else {
+            log.error(ME, e.toString());
+            fail(ME + ".setup failed: " + e.toString());
+         }
       }
 
       // a sample message unit
@@ -169,7 +174,7 @@ public class TestLogin extends TestCase implements I_Callback
     * <p />
     * The returned subscribeOid is checked
     */
-   public void toSubscribeXPath()
+   public void doSubscribeXPath()
    {
       if (log.TRACE) log.trace(ME, "Subscribing using XPath syntax ...");
 
@@ -184,7 +189,7 @@ public class TestLogin extends TestCase implements I_Callback
          assertTrue("returned subscribeOid is empty", 0 != subscribeOid.length());
          log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
       } catch(XmlBlasterException e) {
-         log.warn(ME+"-toSubscribeXPath", "XmlBlasterException: " + e.getMessage());
+         log.warn(ME+"-doSubscribeXPath", "XmlBlasterException: " + e.getMessage());
          assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
       }
    }
@@ -232,14 +237,14 @@ public class TestLogin extends TestCase implements I_Callback
    {
       log.info(ME, "TEST 1: Subscribe and publish -> Expecting one update");
       numReceived = 0;
-      toSubscribeXPath();
+      doSubscribeXPath();
       doPublish(IS_PUBSUB);
       waitOnUpdate(2000L, 1);              // message arrived?
 
       log.info(ME, "TEST 2: Login again without logout and publish PtP -> Expecting one update");
       setUp();
       doPublish(IS_PTP);                 // sending directly PtP to 'receiver'
-      waitOnUpdate(2000L, 2);              // 2 times logged in, 2 messages arrived?
+      waitOnUpdate(2000L, 1);              // 2 times logged in, 2 messages arrived?
 
       log.info(ME, "TEST 3: Login again without logout and publish Pub/Sub -> Expecting no update");
       setUp();
@@ -249,7 +254,7 @@ public class TestLogin extends TestCase implements I_Callback
 
       log.info(ME, "TEST 4: Now subscribe -> Expecting one update");
       numReceived = 0;
-      toSubscribeXPath();
+      doSubscribeXPath();
       waitOnUpdate(2000L, 1);              // message arrived?
 
       log.info(ME, "TEST 5: Test publish from other user -> Expecting one update");
