@@ -170,7 +170,8 @@ public abstract class QueuePropertyBase implements Cloneable
          PropString defaultPlugin = new PropString(this.type.getDefaultValue()+","+this.version.getDefaultValue());
          // Port to linked ContextNode?
          propName = defaultPlugin.setFromEnv(this.glob, nodeId, context, getRootTagName(), relating, "defaultPlugin");
-         if (log.TRACE) log.trace(ME, "Lookup of propName=" + propName + " defaultValue=" + defaultPlugin.getValue());
+         if (log.TRACE) log.trace(ME, "Lookup of nodeId=" + nodeId + " context=" + context + " getRootTagName=" + getRootTagName() +
+             " relating=" + relating + " propName=" + propName + " defaultValue=" + defaultPlugin.getValue());
          PluginInfo pluginInfo = new PluginInfo(glob, null, defaultPlugin.getValue());
          this.type.setDefaultValue(pluginInfo.getType());
          this.version.setDefaultValue(pluginInfo.getVersion());
