@@ -144,6 +144,9 @@ Executable sizes on Linux gcc 3.3
 Open issues:
 ============
 
+o On windows a response waiting timeout is not implemented
+  see XmlBlasterAccessUnparsed.c:getAbsoluteTime()
+
 o Adding mutex to every function call
 
 o Invoking xmlBlaster from within the callback thread (in update() function)
