@@ -3,7 +3,7 @@ Name:      TestLogin.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestLogin.java,v 1.23 2002/05/11 10:07:54 ruff Exp $
+Version:   $Id: TestLogin.java,v 1.24 2002/05/17 06:52:19 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -30,8 +30,8 @@ import junit.framework.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    java test.textui.TestRunner testsuite.org.xmlBlaster.TestLogin
- *    java test.ui.TestRunner testsuite.org.xmlBlaster.TestLogin
+ *    java junit.textui.TestRunner testsuite.org.xmlBlaster.TestLogin
+ *    java junit.ui.TestRunner testsuite.org.xmlBlaster.TestLogin
  * </pre>
  */
 public class TestLogin extends TestCase implements I_Callback
@@ -319,7 +319,7 @@ public class TestLogin extends TestCase implements I_Callback
     * instead of the JacORB ORB, which won't work.
     * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <pre>   java -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestLogin</pre>
+    * <pre>   java -Djava.compiler= junit.textui.TestRunner testsuite.org.xmlBlaster.TestLogin</pre>
     */
    public static void main(String args[])
    {

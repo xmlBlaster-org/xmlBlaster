@@ -3,7 +3,7 @@ Name:      TestFailSavePing.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSavePing.java,v 1.20 2002/05/16 15:43:27 ruff Exp $
+Version:   $Id: TestFailSavePing.java,v 1.21 2002/05/17 06:52:19 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -39,8 +39,8 @@ import junit.framework.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *   java test.textui.TestRunner testsuite.org.xmlBlaster.TestFailSavePing
- *   java test.ui.TestRunner testsuite.org.xmlBlaster.TestFailSavePing
+ *   java junit.textui.TestRunner testsuite.org.xmlBlaster.TestFailSavePing
+ *   java junit.ui.TestRunner testsuite.org.xmlBlaster.TestFailSavePing
  * </pre>
  */
 public class TestFailSavePing extends TestCase implements I_Callback, I_ConnectionProblems
@@ -324,7 +324,7 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
     * instead of the JacORB ORB, which won't work.
     * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <pre>   java -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestFailSavePing</pre>
+    * <pre>   java -Djava.compiler= junit.textui.TestRunner testsuite.org.xmlBlaster.TestFailSavePing</pre>
     */
    public static void main(String args[])
    {

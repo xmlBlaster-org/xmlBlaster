@@ -3,7 +3,7 @@ Name:      TestPtDQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtDQueue.java,v 1.26 2002/05/11 10:07:54 ruff Exp $
+Version:   $Id: TestPtDQueue.java,v 1.27 2002/05/17 06:52:19 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -32,9 +32,9 @@ import junit.framework.*;
  * is not logged in and the <forceQueuing> is not set.
  * Invoke examples:<br />
  * <pre>
- *    java test.textui.TestRunner testsuite.org.xmlBlaster.TestPtDQueue
+ *    java junit.textui.TestRunner testsuite.org.xmlBlaster.TestPtDQueue
  *
- *    java test.ui.TestRunner testsuite.org.xmlBlaster.TestPtDQueue
+ *    java junit.ui.TestRunner testsuite.org.xmlBlaster.TestPtDQueue
  * </pre>
  */
 public class TestPtDQueue extends TestCase implements I_Callback
@@ -244,7 +244,7 @@ public class TestPtDQueue extends TestCase implements I_Callback
     * instead of the JacORB ORB, which won't work.
     * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <pre>   java -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestPtDQueue</pre>
+    * <pre>   java -Djava.compiler= junit.textui.TestRunner testsuite.org.xmlBlaster.TestPtDQueue</pre>
     */
    public static void main(String args[])
    {

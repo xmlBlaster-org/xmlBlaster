@@ -19,8 +19,8 @@ import junit.framework.*;
  * <p />
  * Invoke examples:<br />
  * <pre>
- *    java test.textui.TestRunner testsuite.org.xmlBlaster.TestAll
- *    java test.ui.TestRunner testsuite.org.xmlBlaster.TestAll
+ *    java junit.textui.TestRunner testsuite.org.xmlBlaster.TestAll
+ *    java junit.ui.TestRunner testsuite.org.xmlBlaster.TestAll
  * </pre>
  */
 public class TestAll

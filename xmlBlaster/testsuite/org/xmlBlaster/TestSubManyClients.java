@@ -3,7 +3,7 @@ Name:      TestSubManyClients.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubManyClients.java,v 1.11 2002/05/11 10:07:54 ruff Exp $
+Version:   $Id: TestSubManyClients.java,v 1.12 2002/05/17 06:52:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -40,8 +40,8 @@ import junit.framework.*;
  *
  *  java testsuite.org.xmlBlaster.TestSubManyClients -numClients 10000 -client.protocol RMI -warn false
  *
- *  java test.textui.TestRunner testsuite.org.xmlBlaster.TestSubManyClients
- *  java test.ui.TestRunner testsuite.org.xmlBlaster.TestSubManyClients
+ *  java junit.textui.TestRunner testsuite.org.xmlBlaster.TestSubManyClients
+ *  java junit.ui.TestRunner testsuite.org.xmlBlaster.TestSubManyClients
  * </pre>
  */
 public class TestSubManyClients extends TestCase implements I_Callback
@@ -400,7 +400,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
     * instead of the JacORB ORB, which won't work.
     * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <pre>   java -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestSubManyClients</pre>
+    * <pre>   java -Djava.compiler= junit.textui.TestRunner testsuite.org.xmlBlaster.TestSubManyClients</pre>
     */
    public static void main(String args[])
    {

@@ -3,7 +3,7 @@ Name:      TestSubDispatch.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubDispatch.java,v 1.8 2002/05/11 10:07:54 ruff Exp $
+Version:   $Id: TestSubDispatch.java,v 1.9 2002/05/17 06:52:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -30,8 +30,8 @@ import junit.framework.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    java test.textui.TestRunner testsuite.org.xmlBlaster.TestSubDispatch
- *    java test.ui.TestRunner testsuite.org.xmlBlaster.TestSubDispatch
+ *    java junit.textui.TestRunner testsuite.org.xmlBlaster.TestSubDispatch
+ *    java junit.ui.TestRunner testsuite.org.xmlBlaster.TestSubDispatch
  * </pre>
  */
 public class TestSubDispatch extends TestCase implements I_Callback
@@ -258,7 +258,7 @@ public class TestSubDispatch extends TestCase implements I_Callback
     * instead of the JacORB ORB, which won't work.
     * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <pre>   java -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestSubDispatch</pre>
+    * <pre>   java -Djava.compiler= junit.textui.TestRunner testsuite.org.xmlBlaster.TestSubDispatch</pre>
     */
    public static void main(String args[])
    {

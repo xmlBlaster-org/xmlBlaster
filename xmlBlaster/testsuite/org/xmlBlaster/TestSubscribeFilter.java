@@ -3,7 +3,7 @@ Name:      TestSubscribeFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestSubscribeFilter.java,v 1.11 2002/05/11 10:07:54 ruff Exp $
+Version:   $Id: TestSubscribeFilter.java,v 1.12 2002/05/17 06:52:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -34,8 +34,8 @@ import junit.framework.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    java test.textui.TestRunner testsuite.org.xmlBlaster.TestSubscribeFilter
- *    java test.ui.TestRunner testsuite.org.xmlBlaster.TestSubscribeFilter
+ *    java junit.textui.TestRunner testsuite.org.xmlBlaster.TestSubscribeFilter
+ *    java junit.ui.TestRunner testsuite.org.xmlBlaster.TestSubscribeFilter
  * </pre>
  */
 public class TestSubscribeFilter extends TestCase implements I_Callback
@@ -233,7 +233,7 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
     * Invoke: 
     * <pre>
     *   java testsuite.org.xmlBlaster.TestSubscribeFilter
-    *   java -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestSubscribeFilter
+    *   java -Djava.compiler= junit.textui.TestRunner testsuite.org.xmlBlaster.TestSubscribeFilter
     * <pre>
     */
    public static void main(String args[])

@@ -3,7 +3,7 @@ Name:      TestInvocationRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing the InvocationRecorder
-Version:   $Id: TestInvocationRecorder.java,v 1.17 2002/05/11 10:07:54 ruff Exp $
+Version:   $Id: TestInvocationRecorder.java,v 1.18 2002/05/17 06:52:19 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -33,8 +33,8 @@ import junit.framework.*;
  * <br />
  * Invoke examples:<br />
  * <pre>
- *    java test.textui.TestRunner testsuite.org.xmlBlaster.TestInvocationRecorder
- *    java test.ui.TestRunner testsuite.org.xmlBlaster.TestInvocationRecorder
+ *    java junit.textui.TestRunner testsuite.org.xmlBlaster.TestInvocationRecorder
+ *    java junit.ui.TestRunner testsuite.org.xmlBlaster.TestInvocationRecorder
  * </pre>
  */
 public class TestInvocationRecorder extends TestCase implements I_InvocationRecorder, I_CallbackRaw

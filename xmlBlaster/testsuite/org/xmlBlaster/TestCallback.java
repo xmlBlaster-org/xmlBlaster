@@ -3,7 +3,7 @@ Name:      TestCallback.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestCallback.java,v 1.8 2002/05/11 10:07:54 ruff Exp $
+Version:   $Id: TestCallback.java,v 1.9 2002/05/17 06:52:19 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -192,7 +192,7 @@ public class TestCallback extends TestCase implements I_Callback
    /**
     * Invoke:
     * <pre>
-    *  java -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestCallback
+    *  java -Djava.compiler= junit.textui.TestRunner testsuite.org.xmlBlaster.TestCallback
     *
     *  java testsuite.org.xmlBlaster.TestCallback -cb.retries 0 -cb.delay 3000
     * </pre>

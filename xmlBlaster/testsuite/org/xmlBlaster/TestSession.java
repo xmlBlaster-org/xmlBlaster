@@ -3,7 +3,7 @@ Name:      TestSession.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestSession.java,v 1.7 2002/05/11 10:07:54 ruff Exp $
+Version:   $Id: TestSession.java,v 1.8 2002/05/17 06:52:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -31,8 +31,8 @@ import junit.framework.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    java test.textui.TestRunner testsuite.org.xmlBlaster.TestSession
- *    java test.ui.TestRunner testsuite.org.xmlBlaster.TestSession
+ *    java junit.textui.TestRunner testsuite.org.xmlBlaster.TestSession
+ *    java junit.ui.TestRunner testsuite.org.xmlBlaster.TestSession
  * </pre>
  */
 public class TestSession extends TestCase implements I_Callback
@@ -341,7 +341,7 @@ public class TestSession extends TestCase implements I_Callback
     * Invoke: 
     * <pre>
     *   java testsuite.org.xmlBlaster.TestSession
-    *   java -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestSession
+    *   java -Djava.compiler= junit.textui.TestRunner testsuite.org.xmlBlaster.TestSession
     * <pre>
     */
    public static void main(String args[])

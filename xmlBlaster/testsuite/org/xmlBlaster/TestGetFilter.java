@@ -3,7 +3,7 @@ Name:      TestGetFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestGetFilter.java,v 1.8 2002/05/16 15:43:54 ruff Exp $
+Version:   $Id: TestGetFilter.java,v 1.9 2002/05/17 06:52:19 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -31,8 +31,8 @@ import junit.framework.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    java test.textui.TestRunner testsuite.org.xmlBlaster.TestGetFilter
- *    java test.ui.TestRunner testsuite.org.xmlBlaster.TestGetFilter
+ *    java junit.textui.TestRunner testsuite.org.xmlBlaster.TestGetFilter
+ *    java junit.ui.TestRunner testsuite.org.xmlBlaster.TestGetFilter
  * </pre>
  */
 public class TestGetFilter extends TestCase
@@ -215,7 +215,7 @@ public class TestGetFilter extends TestCase
     * Invoke: 
     * <pre>
     *   java testsuite.org.xmlBlaster.TestGetFilter
-    *   java -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestGetFilter
+    *   java -Djava.compiler= junit.textui.TestRunner testsuite.org.xmlBlaster.TestGetFilter
     * <pre>
     */
    public static void main(String args[])

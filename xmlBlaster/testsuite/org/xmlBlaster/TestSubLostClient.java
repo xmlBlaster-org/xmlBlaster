@@ -3,7 +3,7 @@ Name:      TestSubLostClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubLostClient.java,v 1.9 2002/05/11 10:07:54 ruff Exp $
+Version:   $Id: TestSubLostClient.java,v 1.10 2002/05/17 06:52:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -39,8 +39,8 @@ import junit.framework.*;
  *
  *  java testsuite.org.xmlBlaster.TestSubLostClient -client.protocol IIOP
  *
- *  java test.textui.TestRunner testsuite.org.xmlBlaster.TestSubLostClient
- *  java test.ui.TestRunner testsuite.org.xmlBlaster.TestSubLostClient
+ *  java junit.textui.TestRunner testsuite.org.xmlBlaster.TestSubLostClient
+ *  java junit.ui.TestRunner testsuite.org.xmlBlaster.TestSubLostClient
  * </pre>
  */
 public class TestSubLostClient extends TestCase implements I_Callback
@@ -273,7 +273,7 @@ public class TestSubLostClient extends TestCase implements I_Callback
     * Invoke: java testsuite.org.xmlBlaster.TestSubLostClient
     * <p />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <pre>   java -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestSubLostClient</pre>
+    * <pre>   java -Djava.compiler= junit.textui.TestRunner testsuite.org.xmlBlaster.TestSubLostClient</pre>
     */
    public static void main(String args[])
    {

@@ -29,8 +29,8 @@ import junit.framework.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    java test.textui.TestRunner testsuite.org.xmlBlaster.TestSubExact
- *    java test.ui.TestRunner testsuite.org.xmlBlaster.TestSubExact
+ *    java junit.textui.TestRunner testsuite.org.xmlBlaster.TestSubExact
+ *    java junit.ui.TestRunner testsuite.org.xmlBlaster.TestSubExact
  * </pre>
  */
 public class TestSubExact extends TestCase implements I_Callback
@@ -247,7 +247,7 @@ public class TestSubExact extends TestCase implements I_Callback
     * instead of the JacORB ORB, which won't work.
     * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <pre>   java -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestSubExact</pre>
+    * <pre>   java -Djava.compiler= junit.textui.TestRunner testsuite.org.xmlBlaster.TestSubExact</pre>
     */
    public static void main(String args[])
    {

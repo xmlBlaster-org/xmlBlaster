@@ -3,7 +3,7 @@ Name:      TestPubBurstMode.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestPubBurstMode.java,v 1.6 2002/05/11 10:07:54 ruff Exp $
+Version:   $Id: TestPubBurstMode.java,v 1.7 2002/05/17 06:52:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -33,8 +33,8 @@ import junit.framework.*;
  * Invoke examples:<br />
  * <pre>
  *  java testsuite.org.xmlBlaster.TestPubBurstMode -numPublish 10000 -client.protocol RMI -warn false
- *  java test.textui.TestRunner testsuite.org.xmlBlaster.TestPubBurstMode
- *  java test.ui.TestRunner testsuite.org.xmlBlaster.TestPubBurstMode
+ *  java junit.textui.TestRunner testsuite.org.xmlBlaster.TestPubBurstMode
+ *  java junit.ui.TestRunner testsuite.org.xmlBlaster.TestPubBurstMode
  * </pre>
  */
 public class TestPubBurstMode extends TestCase
@@ -181,7 +181,7 @@ public class TestPubBurstMode extends TestCase
     * instead of the JacORB ORB, which won't work.
     * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <pre>   java -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestPubBurstMode</pre>
+    * <pre>   java -Djava.compiler= junit.textui.TestRunner testsuite.org.xmlBlaster.TestPubBurstMode</pre>
     */
    public static void main(String args[])
    {

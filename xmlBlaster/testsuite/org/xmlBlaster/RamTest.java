@@ -3,7 +3,7 @@ Name:      RamTest.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: RamTest.java,v 1.17 2002/05/11 10:07:54 ruff Exp $
+Version:   $Id: RamTest.java,v 1.18 2002/05/17 06:52:19 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -34,8 +34,8 @@ import junit.framework.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    java test.textui.TestRunner testsuite.org.xmlBlaster.RamTest
- *    java test.ui.TestRunner testsuite.org.xmlBlaster.RamTest
+ *    java junit.textui.TestRunner testsuite.org.xmlBlaster.RamTest
+ *    java junit.ui.TestRunner testsuite.org.xmlBlaster.RamTest
  * </pre>
  */
 public class RamTest extends TestCase
@@ -223,7 +223,7 @@ public class RamTest extends TestCase
     * You can use the command line option -numPublish 1000 to change the number of messages sent.
     * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <pre>   java -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.RamTest</pre>
+    * <pre>   java -Djava.compiler= junit.textui.TestRunner testsuite.org.xmlBlaster.RamTest</pre>
     */
    public static void main(String args[])
    {

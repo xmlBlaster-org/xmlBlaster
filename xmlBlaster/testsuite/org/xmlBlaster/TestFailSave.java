@@ -3,7 +3,7 @@ Name:      TestFailSave.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSave.java,v 1.31 2002/05/11 10:07:54 ruff Exp $
+Version:   $Id: TestFailSave.java,v 1.32 2002/05/17 06:52:19 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -33,8 +33,8 @@ import junit.framework.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *   java test.textui.TestRunner testsuite.org.xmlBlaster.TestFailSave
- *   java test.ui.TestRunner testsuite.org.xmlBlaster.TestFailSave
+ *   java junit.textui.TestRunner testsuite.org.xmlBlaster.TestFailSave
+ *   java junit.ui.TestRunner testsuite.org.xmlBlaster.TestFailSave
  * </pre>
  * @see org.xmlBlaster.client.protocol.XmlBlasterConnection
  */
@@ -326,7 +326,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
     * Invoke: java testsuite.org.xmlBlaster.TestFailSave
     * <p />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <pre>   java -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestFailSave</pre>
+    * <pre>   java -Djava.compiler= junit.textui.TestRunner testsuite.org.xmlBlaster.TestFailSave</pre>
     */
    public static void main(String args[])
    {

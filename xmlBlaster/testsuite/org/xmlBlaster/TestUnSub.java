@@ -3,7 +3,7 @@ Name:      TestUnSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestUnSub.java,v 1.18 2002/05/11 10:07:54 ruff Exp $
+Version:   $Id: TestUnSub.java,v 1.19 2002/05/17 06:52:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -29,8 +29,8 @@ import junit.framework.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    java test.textui.TestRunner testsuite.org.xmlBlaster.TestUnSub
- *    java test.ui.TestRunner testsuite.org.xmlBlaster.TestUnSub
+ *    java junit.textui.TestRunner testsuite.org.xmlBlaster.TestUnSub
+ *    java junit.ui.TestRunner testsuite.org.xmlBlaster.TestUnSub
  * </pre>
  */
 public class TestUnSub extends TestCase implements I_Callback
@@ -312,7 +312,7 @@ public class TestUnSub extends TestCase implements I_Callback
     * instead of the JacORB ORB, which won't work.
     * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <pre>   java -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestUnSub</pre>
+    * <pre>   java -Djava.compiler= junit.textui.TestRunner testsuite.org.xmlBlaster.TestUnSub</pre>
     */
    public static void main(String args[])
    {

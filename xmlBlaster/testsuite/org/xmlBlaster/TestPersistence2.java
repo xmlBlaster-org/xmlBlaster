@@ -11,7 +11,7 @@ Version:   ? cvs will update it ?
 // to test this code Alown : 
 //  java \
 //      -cp lib/javarb.jar:lib/xmlBlaster.jar:lib/junit.jar:lib/testsuite.jar \
-//      test.textui.TestRunner \
+//      junit.textui.TestRunner \
 //      testsuite.org.xmlBlaster.TestPersistence2
 //
 
@@ -39,9 +39,9 @@ import junit.framework.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    java test.textui.TestRunner testsuite.org.xmlBlaster.TestPersistence2
+ *    java junit.textui.TestRunner testsuite.org.xmlBlaster.TestPersistence2
  *
- *    java test.ui.TestRunner testsuite.org.xmlBlaster.TestPersistence2
+ *    java junit.ui.TestRunner testsuite.org.xmlBlaster.TestPersistence2
  * </pre>
  */
 public class TestPersistence2 extends TestCase implements I_Callback
@@ -307,7 +307,7 @@ public class TestPersistence2 extends TestCase implements I_Callback
     * instead of the JacORB ORB, which won't work.
     * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <pre>   java -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestPersistence2</pre>
+    * <pre>   java -Djava.compiler= junit.textui.TestRunner testsuite.org.xmlBlaster.TestPersistence2</pre>
     */
    public static void main(String args[])
    {
