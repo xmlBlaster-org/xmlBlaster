@@ -13,6 +13,12 @@
 # subscribers can use XPath expressions to filter the messages  #
 # they wish to receive.                                         #
 #                                                               #
+# The xmlBlaster has two sub org's for                          #
+# (1) General used Java classes e.g. io/log...                  #
+#     see: http://www.jutils.org                                #
+#                                                               # 
+# (2) The ACL in the xmlBlaster                                 #
+#     see: http://www.a2Blaster.org                             #                            
 #################################################################
 
 XmlBlaster uses the Sun XML parser for XML parsing, and XT from
