@@ -66,8 +66,16 @@ public final class SessionName implements java.io.Serializable
                throw new IllegalArgumentException(ME+": '" + name + "': The root tag must be '/node'.");
          }
          if (arr.length > 1) {
-            this.nodeId = new NodeId(arr[1]);
-            if ("unknown".equals(this.nodeId.getId())) this.nodeId = null;
+            if (nodeId != null) {
+               this.nodeId = nodeId; // given nodeId is strongest
+            }
+            else if (glob.isServer()) {
+               this.nodeId = glob.getNodeId(); // on server side overwrite the nodeId
+            }
+            else {
+               this.nodeId = new NodeId(arr[1]); // the parsed nodeId
+               if ("unknown".equals(this.nodeId.getId())) this.nodeId = null;
+            }
          }
          if (arr.length > 2) {
             if (!"client".equals(arr[2]))
@@ -82,13 +90,9 @@ public final class SessionName implements java.io.Serializable
          }
       }
 
-      if (nodeId != null) {
-         this.nodeId = nodeId;
+      if (this.nodeId == null && glob.isServer()) {
+         this.nodeId = glob.getNodeId();
       }
-      //else {
-      //   if (glob.getNodeId() != null)
-      //      this.nodeId = glob.getStrippedId(); // getNodeId();
-      //}
 
       // parse relative part
       if (relative.length() < 1) {
@@ -128,12 +132,16 @@ public final class SessionName implements java.io.Serializable
    }
 
    /**
+    * If the nodeId is not known, the relative name is returned
     * @return e.g. "/node/heron/client/joe/2", never null
     */
    public String getAbsoluteName() {
       if (this.absoluteName == null) {
          StringBuffer buf = new StringBuffer(256);
-         buf.append("/node/").append((this.nodeId==null)?"unknown":this.nodeId.getId()).append("/");
+         //buf.append("/node/").append((this.nodeId==null)?"unknown":this.nodeId.getId()).append("/");
+         if (this.nodeId!=null) {
+            buf.append("/node/").append(this.nodeId.getId()).append("/");
+         }
          buf.append(getRelativeName());
          this.absoluteName = buf.toString();
       }
