@@ -197,7 +197,7 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
       // [2] Try reconnecting with publicSessionId
       if (connectQos.hasPublicSessionId()) {
          SessionInfo info = getSessionInfo(connectQos.getSessionName());
-         if (info != null) {
+         if (info != null && !info.isShutdown()) {
             try {
                // Check password as we can't trust the public session ID
                // throws XmlBlasterExceptions if authentication fails
@@ -279,7 +279,7 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
             subjectInfo = (SubjectInfo)this.loginNameSubjectInfoMap.get(subjectName.getLoginName());
             //log.error(ME, "DEBUG ONLY, subjectName=" + subjectName.toString() + " loginName=" + subjectName.getLoginName() + " state=" + toXml());
             if (subjectInfo == null) {
-               subjectInfo = new SubjectInfo(getGlobal(), subjectName);
+               subjectInfo = new SubjectInfo(getGlobal(), subjectName); // registers itself in loginNameSubjectInfoMap
             }
          } // synchronized(this.loginNameSubjectInfoMap)
 
@@ -578,7 +578,7 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
 
 
    /**
-    * @param xmlServer xmlBlaster CORBA handle
+    * @param sessionInfo 
     * @param clearQueue Shall the message queue of the client be destroyed as well on last session logout?
     * @param forceShutdownEvenIfEntriesExist on last session
     */
