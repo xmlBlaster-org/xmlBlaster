@@ -16,12 +16,12 @@ distclean: clean
 	$(RM_RECURSIVE) $(JAVADOC_DIR)
 	$(RM) $(JAR_DIR)/xmlBlaster.jar
 
+#			org.xmlBlaster.engine.xmldb \
+#			org.xmlBlaster.engine.xmldb.cache \
 PACKGS = org.xmlBlaster \
 			org.xmlBlaster.engine \
 			org.xmlBlaster.engine.xml2java \
-			org.xmlBlaster.engine.xmldb \
 			org.xmlBlaster.engine.xmldb.file \
-			org.xmlBlaster.engine.xmldb.cache \
 			org.xmlBlaster.engine.persistence \
 			org.xmlBlaster.authentication \
 			org.xmlBlaster.client \
@@ -36,6 +36,18 @@ PACKGS = org.xmlBlaster \
 			org.xmlBlaster.protocol.jdbc \
 			org.xmlBlaster.util \
 			org.xmlBlaster.util.pool.jdbc
+
+JUTILS_PACKGS = org.jutils \
+			org.jutils.collection \
+			org.jutils.init \
+			org.jutils.io \
+			org.jutils.log \
+			org.jutils.pool \
+			org.jutils.runtime \
+			org.jutils.text \
+			org.jutils.time
+
+
 
 TEST_PACKGS = testsuite.org.xmlBlaster
 
@@ -61,7 +73,7 @@ doc: javadoc
 
 javadoc:
 	${MKDIR_RECURSIVE} ${JAVADOC_DIR} 
-	${JAVADOC} -d ${JAVADOC_DIR} -sourcepath ./src/java:./:./demo $(PACKGS) $(TEST_PACKGS) $(DEMO_PACKGS) $(DOC_PACKGS)
+	${JAVADOC} -d ${JAVADOC_DIR} -sourcepath ./src/java:./:./demo $(PACKGS) $(JUTILS_PACKGS) $(TEST_PACKGS) $(DEMO_PACKGS) $(DOC_PACKGS)
 	# making requirements.html from xml requirements:
 	( cd ${SRC_DOCS_DIR}; make doc)
 	( cd ${SRC_TESTSUITE_TOP_DIR}/org/xmlBlaster; make html)
