@@ -1,0 +1,38 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='engine.LoginLogoutEvent' type='NEW' prio='LOW' status="CLOSED">
+   <topic>Clients can be notified about other clients login or logout events</topic>
+   <description>
+      There are two internal messages which hold login and logout events
+      You can subscribe to "__sys__Login" to be notified when a new client logs in,
+      and to "__sys__Logout" to be notified when a client logs out.
+      The message content contains the unique login name if this client.
+   </description>
+   <example lang="Java">
+      <![CDATA[
+      // subscribe on login events:
+      String xmlKey = "<key oid='__sys__Login' queryType='EXACT'></key>";
+      String qos = "<qos></qos>";
+      try {
+         xmlBlaster.subscribe(xmlKey, qos);
+      } catch(XmlBlasterException e) {
+      }
+
+      ...
+
+      // in the update() method you receive on client login:
+      String loginName = new String(content);
+      System.out.println("Client " + loginName + " logged in");
+      ]]>
+   </example>
+   <author>ruff@swand.lake.de</author>
+   <date>2000 03 25</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="CLOSED">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">testsuite.org.xmlBlaster.TestLoginLogoutEvent</test>
+   </testcase>
+</requirement>
+
