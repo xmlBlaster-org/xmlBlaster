@@ -40,6 +40,7 @@ ConnectionsHandler::ConnectionsHandler(Global& global, const string& instanceNam
    pingIsStarted_      = false;
    lastSessionId_      = "";
    doStopPing_         = false;
+   if (log_.call()) log_.call(ME, "constructor");
 }
 
 ConnectionsHandler::~ConnectionsHandler()
