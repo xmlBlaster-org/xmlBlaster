@@ -78,7 +78,7 @@ SQLiteQueuePlugin::SQLiteQueuePlugin(Global& global, const ClientQueueProperty& 
                     //global_.getProperty().get("file.separator", "");
 
    const std::string url = global_.getProperty().get("queue/"+instanceRelating+"/url", defaultPath+"xmlBlasterClientCpp.db");  // "queue/connection/url"
-   const std::string queueName = global_.getProperty().get("queue/"+instanceRelating+"/queueName", instanceRelating + "_" + global_.getStrippedId()); // "connection_clientJoe2"
+   const std::string queueName = global_.getProperty().get("queue/"+instanceRelating+"/queueName", instanceRelating + "_" + global_.getStrippedImmutableId()); // "connection_clientJoe2"
    const std::string tableNamePrefix = global_.getProperty().get("queue/"+instanceRelating+"/tableNamePrefix", "XB_");// "queue/connection/tableNamePrefix"
 
    ::ExceptionStruct exception;
