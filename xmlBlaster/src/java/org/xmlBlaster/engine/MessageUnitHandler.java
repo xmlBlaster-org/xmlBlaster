@@ -3,7 +3,7 @@ Name:      MessageUnitHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling exactly one message content
-Version:   $Id: MessageUnitHandler.java,v 1.33 2000/06/25 18:32:41 ruff Exp $
+Version:   $Id: MessageUnitHandler.java,v 1.34 2000/07/13 09:46:42 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -116,7 +116,7 @@ public class MessageUnitHandler
    final MessageUnitWrapper getMessageUnitWrapper() throws XmlBlasterException
    {
       if (msgUnitWrapper == null) {
-         Log.error(ME + ".EmptyMessageUnit", "Internal problem, msgUnit = null, there was not yet any message published, only subscription exists on this unpublished message");
+         Log.error(ME + ".EmptyMessageUnit", "Internal problem, msgUnit = null, there was not yet any message published, only subscription exists on this unpublished message:\n" + toXml() + "\n" + Log.getStackTrace());
          throw new XmlBlasterException(ME + ".EmptyMessageUnit", "Internal problem, msgUnitWrapper = null");
       }
       return msgUnitWrapper;
@@ -392,9 +392,9 @@ public class MessageUnitHandler
     * <br>
     * @return XML state of MessageUnitHandler
     */
-   public final StringBuffer printOn() throws XmlBlasterException
+   public final String toXml() throws XmlBlasterException
    {
-      return printOn((String)null);
+      return toXml((String)null);
    }
 
 
@@ -404,7 +404,7 @@ public class MessageUnitHandler
     * @param extraOffset indenting of tags
     * @return XML state of MessageUnitHandler
     */
-   public final StringBuffer printOn(String extraOffset) throws XmlBlasterException
+   public final String toXml(String extraOffset) throws XmlBlasterException
    {
       StringBuffer sb = new StringBuffer();
       String offset = "\n   ";
@@ -431,6 +431,6 @@ public class MessageUnitHandler
 
       sb.append(offset + "   <handlerIsNewCreated>" + handlerIsNewCreated + "</handlerIsNewCreated>");
       sb.append(offset + "</MessageUnitHandler>\n");
-      return sb;
+      return sb.toString();
    }
 }
