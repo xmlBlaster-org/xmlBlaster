@@ -3,7 +3,7 @@ Name:      MessageUnitWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping the CORBA MessageUnit to allow some nicer usage
-Version:   $Id: MessageUnitWrapper.java,v 1.22 2000/09/15 17:16:15 ruff Exp $
+Version:   $Id: MessageUnitWrapper.java,v 1.23 2000/12/12 08:52:31 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -41,9 +41,6 @@ public class MessageUnitWrapper
    /** the flags from the publisher */
    private PublishQoS publishQoS;
 
-   /** the unique loginName of the publisher */
-   private String publisherName;
-
    /** Attribute oid of key tag: <key oid="..."> </key> */
    private String uniqueKey;
 
@@ -57,9 +54,8 @@ public class MessageUnitWrapper
     * @param xmlKey Since it is parsed in the calling method, we don't need to do it again from msgUnit.xmlKey_literal
     * @param msgUnit the CORBA MessageUnit data container
     * @param publishQoS the quality of service
-    * @param publisherName the unique loginName of the publisher
     */
-   MessageUnitWrapper(RequestBroker requestBroker, XmlKey xmlKey, MessageUnit msgUnit, PublishQoS publishQoS, String publisherName) throws XmlBlasterException
+   MessageUnitWrapper(RequestBroker requestBroker, XmlKey xmlKey, MessageUnit msgUnit, PublishQoS publishQoS) throws XmlBlasterException
    {
       if (xmlKey == null || msgUnit == null || publishQoS == null) {
          Log.error(ME, "Invalid constructor parameter");
@@ -70,11 +66,7 @@ public class MessageUnitWrapper
       this.xmlKey = xmlKey;
       this.uniqueKey = this.xmlKey.getUniqueKey();
       this.publishQoS = publishQoS;
-      this.publisherName = publisherName;
       this.persistenceDriver = requestBroker.getPersistenceDriver();
-
-      if (publisherName == null)
-         publisherName = "";
 
       if (this.msgUnit.content == null)
          this.msgUnit.content = new byte[0];
@@ -82,7 +74,7 @@ public class MessageUnitWrapper
       if (this.xmlKey.isGeneratedOid())  // if the oid is generated, we need to update the msgUnit.xmlKey as well
          this.msgUnit.xmlKey = xmlKey.literal();
 
-      if (persistenceDriver != null && publishQoS.isDurable() && !publishQoS.fromPersistenceStore())
+      if (persistenceDriver != null && publishQoS.isDurable() && !publishQoS.isFromPersistenceStore())
       {
          persistenceDriver.store(this);
          if(Log.TRACE) Log.trace(ME,"Storing MessageUnit with key oid="+xmlKey.getKeyOid());
@@ -123,8 +115,7 @@ public class MessageUnitWrapper
       if (newContent == null)
          newContent = new byte[0];
 
-      if (publisherName != null)
-         this.publisherName = publisherName;
+      publishQoS.setSender(publisherName);
 
       boolean changed = false;
       if (this.msgUnit.content.length != newContent.length) {
@@ -140,8 +131,8 @@ public class MessageUnitWrapper
 
       if (changed) {  // new content is not the same as old one
          this.msgUnit.content = newContent;
-         if (persistenceDriver != null && publishQoS.isDurable()) //&& !publishQoS.fromPersistenceStore())
-            persistenceDriver.store(xmlKey, newContent);
+         if (persistenceDriver != null && publishQoS.isDurable()) //&& !publishQoS.isFromPersistenceStore())
+            persistenceDriver.store(xmlKey, newContent, publishQoS);
          return true;
       }
       else {
@@ -182,10 +173,13 @@ public class MessageUnitWrapper
     * <p />
     * The sender of this message.
     * @return loginName of the data source which last updated this message
+    *         If not known, en empty string "" is returned
     */
    public String getPublisherName()
    {
-      return publisherName;
+      if (publishQoS.getSender() == null)
+         return "";
+      return publishQoS.getSender();
    }
 
 
@@ -248,7 +242,7 @@ public class MessageUnitWrapper
     */
    MessageUnitWrapper cloneContent() throws XmlBlasterException
    {
-      MessageUnitWrapper newWrapper = new MessageUnitWrapper(requestBroker, xmlKey, msgUnit, publishQoS, publisherName);
+      MessageUnitWrapper newWrapper = new MessageUnitWrapper(requestBroker, xmlKey, msgUnit, publishQoS);
 
       byte[] oldContent = this.msgUnit.content;
       byte[] newContent = new byte[oldContent.length];
@@ -340,7 +334,7 @@ public class MessageUnitWrapper
       if (publishQoS==null)
          sb.append(offset + "   <PublishQoS>null</PublishQoS>");
       else
-         sb.append(publishQoS.printOn(extraOffset + "   ").toString());
+         sb.append(publishQoS.toXml(extraOffset + "   "));
       sb.append(offset + "   <content>" + (msgUnit.content==null ? "null" : msgUnit.content.toString()) + "</content>");
       sb.append(offset + "</MessageUnitWrapper>\n");
       return sb;

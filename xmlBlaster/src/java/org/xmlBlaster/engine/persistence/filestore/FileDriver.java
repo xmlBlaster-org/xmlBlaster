@@ -3,7 +3,7 @@ Name:      FileDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a very simple, file based, persistence manager
-Version:   $Id: FileDriver.java,v 1.4 2000/10/24 09:44:45 ruff Exp $
+Version:   $Id: FileDriver.java,v 1.5 2000/12/12 08:52:32 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence.filestore;
@@ -122,13 +122,15 @@ public class FileDriver implements I_PersistenceDriver
     * It only stores the content, so the other store() method needs to be called first if this message is new.
     * @param xmlKey  To identify the message
     * @param content The data to store
+    * @param qos The quality of service, may contain another publisher name
     */
-   public final void store(XmlKey xmlKey, byte[] content) throws XmlBlasterException
+   public final void store(XmlKey xmlKey, byte[] content, PublishQoS qos) throws XmlBlasterException
    {
       String oid = xmlKey.getKeyOid(); // The file name
 
       try {
          FileUtil.writeFile(path, oid, content);
+         FileUtil.writeFile(path, oid + XMLQOS_TOKEN, qos.toXml());
       } catch (JUtilsException e) {
          throw new XmlBlasterException(e);
       }

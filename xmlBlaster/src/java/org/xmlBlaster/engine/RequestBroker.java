@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.83 2000/11/14 17:38:14 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.84 2000/12/12 08:52:32 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -32,7 +32,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.83 $
+ * @version $Revision: 1.84 $
  * @author ruff@swand.lake.de
  */
 public class RequestBroker implements I_ClientListener, MessageEraseListener
@@ -666,8 +666,6 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     */
    String publish(ClientInfo clientInfo, XmlKey xmlKey, MessageUnit msgUnit, PublishQoS publishQoS) throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "Entering publish() ...");
-
       if (msgUnit == null || publishQoS==null || xmlKey==null) {
          Log.error(ME + ".InvalidArguments", "The arguments of method publish() are invalid (null)");
          throw new XmlBlasterException(ME + ".InvalidArguments", "The arguments of method publish() are invalid (null)");
@@ -677,12 +675,16 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
 
       String retVal = xmlKey.getUniqueKey(); // id <key oid=""> was empty, there was a new oid generated
 
+      if (! publishQoS.isFromPersistenceStore())
+         publishQoS.setSender(clientInfo.getLoginName());
+
+      Log.info(ME, publishQoS.toXml()); // !!!
+
       if (publishQoS.isPubSubStyle()) {
          if (Log.TRACE) Log.trace(ME, "Doing publish() in Pub/Sub style");
 
          //----- 1. set new value or create the new message:
          MessageUnitHandler msgUnitHandler = null;
-         String publisherName = clientInfo.getLoginName();
          boolean contentChanged = true;
          {
             if (Log.TRACE) Log.trace(ME, "Handle the new arrived Pub/Sub message ...");
@@ -691,7 +693,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
             synchronized(messageContainerMap) {
                Object obj = messageContainerMap.get(xmlKey.getUniqueKey());
                if (obj == null) {
-                  msgUnitHandler = new MessageUnitHandler(this, new MessageUnitWrapper(this, xmlKey, msgUnit, publishQoS, publisherName));
+                  msgUnitHandler = new MessageUnitHandler(this, new MessageUnitWrapper(this, xmlKey, msgUnit, publishQoS));
                   messageContainerMap.put(xmlKey.getUniqueKey(), msgUnitHandler);
                }
                else {
@@ -703,7 +705,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
             boolean isYetUnpublished = !msgUnitHandler.isPublishedWithData(); // remember here as it may be changed in setContent()
 
             if (messageExisted) {
-               contentChanged = msgUnitHandler.setContent(xmlKey, msgUnit, publishQoS, publisherName);
+               contentChanged = msgUnitHandler.setContent(xmlKey, msgUnit, publishQoS);
             }
 
             if (!messageExisted || isYetUnpublished) {
@@ -729,9 +731,9 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
       }
       else if (publishQoS.isPTP_Style()) {
          if (Log.TRACE) Log.trace(ME, "Doing publish() in PtP or broadcast style");
-         if (Log.DUMP) Log.dump(ME, publishQoS.printOn().toString());
+         if (Log.DUMP) Log.dump(ME, publishQoS.toXml());
 
-         MessageUnitWrapper msgUnitWrapper = new MessageUnitWrapper(this, xmlKey, msgUnit, publishQoS, clientInfo.getLoginName());
+         MessageUnitWrapper msgUnitWrapper = new MessageUnitWrapper(this, xmlKey, msgUnit, publishQoS);
          Vector destinationVec = publishQoS.getDestinations(); // !!! add XPath client query here !!!
 
          //-----    Send message to every destination client

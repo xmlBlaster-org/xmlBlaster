@@ -3,7 +3,7 @@ Name:      PublishQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: PublishQoS.java,v 1.14 2000/09/15 17:16:16 ruff Exp $
+Version:   $Id: PublishQoS.java,v 1.15 2000/12/12 08:52:33 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -25,6 +25,16 @@ import java.io.*;
  * <p />
  * QoS Informations sent from the client to the server via the publish() method<br />
  * They are needed to control the xmlBlaster
+ * <p />
+ * Example:
+ * <pre>
+ *   &lt;qos> &lt;!-- PublishQoS -->
+ *     &lt;isDurable />
+ *     &lt;sender>
+ *        Tim
+ *     &lt;/sender>
+ *  &lt;/qos>
+ * </pre>
  */
 public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serializable
 {
@@ -32,6 +42,7 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
 
    // helper flags for SAX parsing
    private boolean inDestination = false; // parsing inside <destination> ?
+   private boolean inSender = false; // parsing inside <sender> ?
 
    /** Internal use only, is this message sent from the persistence layer? */
    private boolean fromPersistenceStore = false;
@@ -43,6 +54,8 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
    private boolean readonly = false;
    private boolean forceQueuing = false;
 
+   /** the sender (publisher) of this message (unique loginName) */
+   private String sender = null;
 
    /**
     * Vector for loginQoS, holding all destination addresses (Destination objects)
@@ -151,10 +164,30 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
 
 
    /**
+    * Access sender name.
+    * @return loginName of sender
+    */
+   public String getSender()
+   {
+      return sender;
+   }
+
+
+   /**
+    * Access sender name.
+    * @return loginName of sender
+    */
+   public void setSender(String sender)
+   {
+      this.sender = sender;
+   }
+
+
+   /**
     * Internal use only, is this message sent from the persistence layer?
     * @return true/false
     */
-   public final boolean fromPersistenceStore()
+   public final boolean isFromPersistenceStore()
    {
       return fromPersistenceStore;
    }
@@ -225,6 +258,20 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
          return;
       }
 
+      if (name.equalsIgnoreCase("sender")) {
+         if (!inQos)
+            return;
+         inSender = true;
+         if (attrs != null) {
+            int len = attrs.getLength();
+            for (int i = 0; i < len; i++) {
+               Log.warn(ME, "Ignoring sent <sender> attribute " + attrs.getName(i) + "=" + attrs.getValue(i).trim());
+            }
+            // if (Log.TRACE) Log.trace(ME, "Found sender tag");
+         }
+         return;
+      }
+
       if (name.equalsIgnoreCase("ForceQueuing")) {
          if (!inDestination)
             return;
@@ -276,6 +323,14 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
          destinationVec.addElement(destination);
          return;
       }
+
+      if(name.equalsIgnoreCase("sender")) {
+         inSender = false;
+         sender = character.toString().trim();
+         // if (Log.TRACE) Log.trace(ME, "Found message sender login name = " + sender);
+         character.setLength(0);
+         return;
+      }
    }
 
 
@@ -284,9 +339,9 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
     * <br>
     * @return internal state of the RequestBroker as a XML ASCII string
     */
-   public final StringBuffer printOn() throws XmlBlasterException
+   public final String toXml()
    {
-      return printOn((String)null);
+      return toXml((String)null);
    }
 
 
@@ -296,7 +351,7 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
     * @param extraOffset indenting of tags for nice output
     * @return internal state of the RequestBroker as a XML ASCII string
     */
-   public final StringBuffer printOn(String extraOffset) throws XmlBlasterException
+   public final String toXml(String extraOffset)
    {
       StringBuffer sb = new StringBuffer();
       String offset = "\n   ";
@@ -320,9 +375,14 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
             sb.append(destination.toXml(extraOffset + "   "));
          }
       }
+      if (sender != null) {
+         sb.append(offset + "   <sender>");
+         sb.append(offset + "      " + sender);
+         sb.append(offset + "   </sender>");
+      }
 
       sb.append(offset + "</" + ME + ">\n");
 
-      return sb;
+      return sb.toString();
    }
 }

@@ -3,12 +3,13 @@ Name:      I_PersistenceDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface hiding the real callback protocol
-Version:   $Id: I_PersistenceDriver.java,v 1.7 2000/09/03 17:59:37 kron Exp $
+Version:   $Id: I_PersistenceDriver.java,v 1.8 2000/12/12 08:52:32 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.xml2java.XmlKey;
+import org.xmlBlaster.engine.xml2java.PublishQoS;
 import org.xmlBlaster.engine.MessageUnitWrapper;
 import org.xmlBlaster.engine.ClientInfo;
 import org.xmlBlaster.engine.RequestBroker;
@@ -29,8 +30,8 @@ import java.util.Enumeration;
  * <br />
  * TODO: Extend interface to support caching!<br />
  *
- * @version $Revision: 1.7 $
- * @author $Author: kron $
+ * @version $Revision: 1.8 $
+ * @author $Author: ruff $
  */
 public interface I_PersistenceDriver
 {
@@ -54,8 +55,9 @@ public interface I_PersistenceDriver
     * The protocol for storing is implemented in the derived class
     * @param xmlKey  To identify the message
     * @param content The data to store
+    * @param qos The quality of service, may contain another publisher name
     */
-   public void store(XmlKey xmlKey, byte[] content) throws XmlBlasterException;
+   public void store(XmlKey xmlKey, byte[] content, PublishQoS qos) throws XmlBlasterException;
 
 
    /**
@@ -67,7 +69,7 @@ public interface I_PersistenceDriver
     */
    public MessageUnit fetch(String oid) throws XmlBlasterException;
 
-   /** 
+   /**
     * Fetches all oid's of the messages from the persistence.
     * <p />
     * It is a helper method to invoke 'fetch(String oid)'.
