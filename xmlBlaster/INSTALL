@@ -9,37 +9,45 @@
 
    - JDK 1.2 or later
    - a 'make' utility recommended.
-	  For DOS/Windows, e.g. cygwin's make.
-	  Note that Windows nmake will not work properly with xmlBlaster Makefiles
+     For DOS/Windows, e.g. cygwin's make.
+     Note that Windows nmake will not work properly with xmlBlaster Makefiles
    - JacOrb (CORBA) http://www.inf.fu-berlin.de/~brose/jacorb/
 
 
                         Environment
 -----------------------------------------------------------------
 
-1. Extend your CLASSPATH environment variable. 
+1. Install JacORB (http://www.inf.fu-berlin.de/~brose/jacorb)
+   The JacORB CORBA library needs to be downloaded and
+   installed first.
 
-     export JDK_HOME=/usr/local/jdk
-     export JacORB_HOME=/usr/local/JacORB
-     export XMLBLASTER_HOME=${HOME}/xmlBlaster 
+	If you follow step 2 a), JacORB will be automatically set up
+	correctly from xmlBlaster.
 
-   or csh, tcsh :
+2. Extend your CLASSPATH environment variable. 
+
+   a) If you use sh, ksh or bash, you may chose to source the
+      $XMLBLASTER_HOME/.bashrc into your environment.
+
+      export JDK_HOME=/usr/local/jdk
+      export JacORB_HOME=/usr/local/JacORB
+      export XMLBLASTER_HOME=${HOME}/xmlBlaster 
+
+      source  ${XMLBLASTER_HOME}/.bashrc
+
+    This is the recommended way, since you will automatically
+    source all enhancements of new xmlBlaster releases.
+
+	 Now the installation is finished.
+    After a new login you are ready to start the xmlBlaster (see below).
+
+
+   b) If you didn't follow step a), here is how to setup
+      your environment manually (examples for csh or tcsh):
 
      setenv JDK_HOME /usr/local/jdk
      setenv JacORB_HOME /usr/local/JacORB
      setenv XMLBLASTER_HOME ${HOME}/xmlBlaster
-
-2. If you use sh, ksh or bash, you may chose to source the
-   $XMLBLASTER_HOME/.bashrc into your environment.
-
-      source  ${XMLBLASTER_HOME}/.bashrc
-
-	This is the recommended way, since you will automatically
-	source all enhancements of new xmlBlaster releases.
-
-   Otherwise you must set for csh/tcsh-shell (NOT recommended
-	because you have to check the INSTALL file for changes with each new
-	xmlBlaster release):
 
      setenv CLASSPATH ${CLASSPATH}:${XMLBLASTER_HOME}/classes
      setenv CLASSPATH ${CLASSPATH}:${XMLBLASTER_HOME}/src/java
@@ -49,8 +57,8 @@
      setenv CLASSPATH ${CLASSPATH}:${XMLBLASTER_HOME}/lib/xml.jar
      setenv CLASSPATH ${CLASSPATH}:${XMLBLASTER_HOME}/lib/test.jar
 
-   You can do this automatically from your startup shell script.
-   After a new login you are ready to start the xmlBlaster (see below).
+    You can do this automatically from your startup shell script.
+    After a new login you are ready to start the xmlBlaster (see below).
 
 
 related links:
@@ -112,7 +120,7 @@ You have three options to start the xmlBlaster-Server.
 In the directory ${XMLBLASTER_HOME}/testsuite/org/xmlBlaster you will find
 a number of Java based test clients to automatically test xmlBlaster.
    
-The xmlBlaster test suite is based on the	 JUNIT 1.0 testsuite
+The xmlBlaster test suite is based on the JUNIT 1.0 testsuite
 from Kent Beck and Erich Gamma, see
    http://members.pingnet.ch/gamma/junit.htm
 
