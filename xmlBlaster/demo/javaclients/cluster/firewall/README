@@ -91,3 +91,15 @@ and start the second subscriber with this address as well:
 
 Note that the only port which needs to be opened through the firewall
 is the outgoing port 8900 to the server myServer.myCompany.com
+
+
+Making it secure:
+=================
+
+If you want to secure the communication
+just make a ssh connection from the frodo host
+to the heron host and tunnel the SOCKET connection
+through it.
+In this case frodo connects to the local side of the
+ssh tunnel and the remote ssh deamon forwards everything
+to heron.
