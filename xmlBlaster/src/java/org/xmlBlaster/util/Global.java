@@ -47,8 +47,8 @@ import org.xmlBlaster.util.log.I_LogDeviceFactory;
 import org.jutils.log.LogableDevice;
 
 import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.util.queue.jdbc.JdbcManagerCommonTable;
 import org.xmlBlaster.util.queue.I_EntryFactory;
+import org.xmlBlaster.util.plugin.I_PluginConfig;
 import org.xmlBlaster.util.plugin.PluginManagerBase;
 import org.xmlBlaster.util.plugin.PluginRegistry;
 import org.xmlBlaster.client.queuemsg.ClientEntryFactory;
@@ -1823,4 +1823,30 @@ public class Global implements Cloneable
          System.out.println("Global.main: " + e.toString());
       }
    }
+   
+   /**
+    * It searches for the given property. 
+    * It first looks into the map (the hardcoded properties). If one is found it is returned.
+    * Then it looks into the global. If one is found it is returned. If none is found it is 
+    * searched in the plugin
+    * @param shortKey
+    * @param defaultValue
+    * @param map
+    * @param pluginConfig
+    * @return
+    */
+   public String get(String shortKey, String defaultValue, Properties map, I_PluginConfig pluginConfig) 
+      throws XmlBlasterException {
+      try {
+         String ret = getProperty().replaceVariableWithException(shortKey,
+               map.getProperty(shortKey, 
+                     getProperty().get(pluginConfig.getPrefix()+shortKey,
+                           pluginConfig.getParameters().getProperty(shortKey, defaultValue))));
+         return ret;
+      }
+      catch (JUtilsException ex) {
+         throw new XmlBlasterException(this, ErrorCode.USER_CONFIGURATION, ME + ".get", "exception when getting property '" + shortKey + "'", ex);
+      }
+   }
+   
 }
