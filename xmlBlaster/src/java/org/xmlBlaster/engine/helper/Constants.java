@@ -116,16 +116,15 @@ public class Constants
    public final static String STATE_ERASED = "ERASED";
    public final static String RET_ERASED = "<qos><state id='" + Constants.STATE_ERASED + "'/></qos>";
 
-   /** The returned message status if message couldn't be forwarded to the master cluster node but
-       is in the tail back queue to be delivered on reconnect */
-   public final static String STATE_FORWARD_WARNING = "FORWARD_WARNING";
-   public final static String RET_FORWARD_WARNING = "<qos><state id='" + Constants.STATE_FORWARD_WARNING + "'/></qos>";
-   
    /** The returned message status if message couldn't be forwarded to the master cluster node */
    public final static String STATE_FORWARD_ERROR = "FORWARD_ERROR";
    public final static String RET_FORWARD_ERROR = "<qos><state id='" + Constants.STATE_FORWARD_ERROR + "'/></qos>";
 
-   /** Additional info for state */
+   /** Additional info for state. 
+       The returned message status if message couldn't be forwarded to the master cluster node but
+       is in the tail back queue to be delivered on reconnect or on client side message
+       recording.
+   */
    public final static String INFO_QUEUED = "QUEUED";
 
    /** Type of a message queue */
