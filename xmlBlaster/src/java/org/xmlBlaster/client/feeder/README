@@ -4,7 +4,7 @@ PublishFile allows to send files from command line as messages to xmlBlaster
 Example feeding a gif image:
 ============================
 
-   jaco org.xmlBlaster.client.feeder.PublishFile \
+   java org.xmlBlaster.client.feeder.PublishFile \
        -c MyTest.gif \
        -xmlKey "<key oid=\"MyTest.gif\" contentMime=\"image/gif\" contentMimeExtended=\"Version1.0\"><TestTag></TestTag></key>" \
        -xmlQos "<qos><isDurable/><ForceUpdate/></qos>"
@@ -13,7 +13,7 @@ Example feeding a gif image:
 Example feeding a text file (key and qos are also specified in a text file):
 ============================================================================
 
-   jaco org.xmlBlaster.client.feeder.PublishFile \
+   java org.xmlBlaster.client.feeder.PublishFile \
        -c Hello.txt \
        -k Hello-Key.xml \
        -q Hello-Qos.xml
@@ -22,5 +22,5 @@ Example feeding a text file (key and qos are also specified in a text file):
 How to get help:
 ================
 
-   jaco org.xmlBlaster.client.feeder.PublishFile -?
+   java org.xmlBlaster.client.feeder.PublishFile -?
 
