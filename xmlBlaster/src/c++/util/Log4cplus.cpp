@@ -41,7 +41,7 @@ namespace util {
 
       // Find the configuration file name
       const char *envName = "xmlBlaster/logging/configFileName";
-      string configFileName = "log4cplus.properties";
+      string configFileName = "log4cplus.properties"; // local directory
       PropMap::const_iterator pos = propMap.find(envName);
       if (pos != propMap.end()) {
          configFileName = (*pos).second;
@@ -50,6 +50,23 @@ namespace util {
          const char* envValue = getenv(envName);
          if (envValue != 0) {
             configFileName = envValue;
+         }
+         else {
+            std::ifstream file;
+            file.open(configFileName.c_str());  // local directory?
+            if(!file) {
+               PropMap::const_iterator pos = propMap.find("user.home");
+               if (pos != propMap.end()) {
+                  string tmp = (*pos).second + FILE_SEP + configFileName;
+                  std::ifstream file2;
+                  file2.open(tmp.c_str());
+                  if(!file2) {
+                  }
+                  else {
+                     configFileName = tmp;
+                  }
+               }
+            }
          }
       }
 
