@@ -4,12 +4,15 @@ The "#99999" numbers are Subversion revision numbers.
 Changes in current subversion repository (svn)
 ==============================================
 
+ o #12948 BUGFIX: The combination of subscribe() and get() on the same topic with cluster=true failed
+   Thanks to Michal Masa xmasam@sgi.felk.cvut.cz
+
  o #12938 login- and logout events now return the public session id in the "__sessionId" client property as a long 
  
  o #12936 Added subversion property "svn:eol-style=native" to resolve CRLF (Win) and LF (UNIX) problems
    Thanks to David Viner dviner@yahoo-inc.com
 
- o #12932 hierarchical sync sequence: TopicHandler, MsgUnitWrapper, MsgUnitCache to avoid deadlock
+ o #12932 BUGFIX: hierarchical sync sequence: TopicHandler, MsgUnitWrapper, MsgUnitCache to avoid deadlock
 
  o #12930 util.Global now throws IllegalArgumentException if loading of Property instance fails
 

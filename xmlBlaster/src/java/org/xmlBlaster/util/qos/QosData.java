@@ -328,7 +328,7 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     * Check if this message is at its master cluster location
     */
    public final boolean isAtMaster() {
-      if (routeNodeList == null)
+      if (routeNodeList == null || routeNodeList.size() == 0)
          return true;
       for (int ii=routeNodeList.size()-1; ii>=0; ii--) {
          RouteInfo ri = (RouteInfo)routeNodeList.get(ii);
@@ -412,17 +412,37 @@ public abstract class QosData implements java.io.Serializable, Cloneable
    }
 
    /**
-    * Returns a shallow clone, you can change savely all basic or immutable types
-    * like boolean, String, int.
-    * Currently RouteInfo is not cloned (so don't change it)
+    * Returns a deep clone, you can change savely all mutable types. 
+    * Immutable types are not cloned as they can't be changed.
     */
    public Object clone() {
+      QosData newOne = null;
       try {
-         return super.clone();
+         newOne = (QosData)super.clone();
+         synchronized(this) {
+            //Timestamp is immutable, no clone necessary
+            //newOne.rcvTimestamp = (Timestamp)this.rcvTimestamp.clone();
+
+            newOne.persistent = (PropBoolean)this.persistent.clone();
+            
+            //SessionName is immutable, no clone necessary
+            //if (this.sender != null) {
+            //   newOne.sender = (SessionName)this.sender.clone();
+            //}
+            
+            if (this.routeNodeList != null/* && this.routeNodeList.size() > 0*/) {
+               newOne.routeNodeList = (ArrayList)this.routeNodeList.clone();
+            }
+            
+            if (this.clientProperties != null/* && this.clientProperties.size() > 0*/) {
+               newOne.clientProperties = (Map)this.clientProperties;
+            }
+         }
       }
       catch (CloneNotSupportedException e) {
-         return null;
+         e.printStackTrace();
       }
+      return newOne;
    }
 
    /**
