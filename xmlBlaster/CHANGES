@@ -3,6 +3,8 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes for 0.xxx [xxxxxxxxxx]
 ==============================
 
+ o Fixed build.xml 'dist' task to include HSQLDB
+
  o Bugfix in persistence layer for huge messages.
    Reported by pikaiyuan
 
