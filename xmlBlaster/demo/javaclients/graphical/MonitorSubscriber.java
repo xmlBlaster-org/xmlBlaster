@@ -31,7 +31,14 @@ public class MonitorSubscriber implements I_Callback {
    private Global  global;
    private LogChannel log;
    private boolean isRunning;
-   private HashMap cmdInstances, cmdTemplates;
+   
+   private HashMap cmdInstances;
+   private HashMap cmdTemplates;
+   /** 
+    * instances created from the templated. Needs to be different from cmdTemplates since 
+    * as they are created on the fly they also need to be removed once the topic dies.
+    */
+   private HashMap dynamicInstances;
    private DrawingView view;
    
    public MonitorSubscriber(Global glob, DrawingView view) {
@@ -39,7 +46,8 @@ public class MonitorSubscriber implements I_Callback {
       this.isRunning = false;
       this.log = this.global.getLog("monitor");
       this.cmdInstances = new HashMap();
-      this.cmdTemplates = new HashMap(); 
+      this.cmdTemplates = new HashMap();
+      this.dynamicInstances = new HashMap(); 
       this.view = view;
    }
    
@@ -130,6 +138,15 @@ public class MonitorSubscriber implements I_Callback {
       con.disconnect(null);
    }
 
+   private MonitorCommand searchInTemplates(String oid) {
+      String[] keys = (String[])this.cmdTemplates.keySet().toArray(new String[this.cmdTemplates.size()]);
+      for (int i=0; i < keys.length; i++) {
+         if (oid.startsWith(keys[i]))
+            return ((MonitorCommand)this.cmdTemplates.get(keys[i])).createInstance(oid);
+      }
+      return null;      
+   }
+
 
    synchronized public String update(String cbSessionId, UpdateKey updateKey, byte[] content,
                         UpdateQos updateQos) {
@@ -139,12 +156,25 @@ public class MonitorSubscriber implements I_Callback {
       String oid = updateKey.getOid();
       if (updateQos.isOk()) {
          MonitorCommand command = (MonitorCommand)this.cmdInstances.get(oid);
+         if (command == null) {
+            command = (MonitorCommand)this.dynamicInstances.get(oid);
+         }
+         if (command == null) {
+            command = searchInTemplates(oid);
+            if (command != null) {
+               this.dynamicInstances.put(oid, command);
+               this.view.drawing().add(command.getFigure());
+            }
+         }
          if (command != null) {
             command.doAction(content, this.view);
          }
       }
       else { // then it is erased ...
-         
+         MonitorCommand command = (MonitorCommand)this.dynamicInstances.remove(oid);
+         if (command != null) {
+            command.remove(this.view);
+         }
       }
       return "";
    }

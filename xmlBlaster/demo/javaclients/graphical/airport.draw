@@ -85,119 +85,122 @@
                             CH.ifa.draw.standard.RelativeLocator 0.5 0.5    4 4  
                 CH.ifa.draw.samples.javadraw.AnimationDecorator REF 81 4 4   4 4  
         CH.ifa.draw.samples.javadraw.AnimationDecorator 
-            CH.ifa.draw.figures.GroupFigure 2 
-                CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                    CH.ifa.draw.figures.TextFigure "attributes" "attributes" 1 "FillColor" "Color" 255 199 158 -124 526 "&template;plane;location" "Helvetica" 0 1 0 
-                        CH.ifa.draw.contrib.TriangleFigure "no_attributes" 170 480 44 37 0  
-                        CH.ifa.draw.standard.OffsetLocator -309 29 REF 83   4 4  
-                CH.ifa.draw.samples.javadraw.AnimationDecorator REF 89 4 4   4 4  
-        CH.ifa.draw.samples.javadraw.AnimationDecorator 
             CH.ifa.draw.figures.GroupFigure 8 
                 CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                    CH.ifa.draw.figures.TextFigure "attributes" "attributes" 2 "TextColor" "Color" 192 192 192 "FillColor" "Color" 192 192 192 135 30 "&instance;ambulance.1;location" "Helvetica" 0 -3 0 NULL NULL  4 4  
+                    CH.ifa.draw.figures.TextFigure "attributes" "attributes" 2 "TextColor" "Color" 192 192 192 "FillColor" "Color" 192 192 192 214 33 "&instance;ambulance.1;location" "Helvetica" 0 -3 0 NULL NULL  4 4  
                 CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 255 255 255 163 26 46 22  4 4  
+                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 255 255 255 242 29 46 22  4 4  
                 CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 0 0 0 192 48 10 5  4 4  
+                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 0 0 0 271 51 10 5  4 4  
                 CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 0 0 0 167 48 10 5  4 4  
+                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 0 0 0 246 51 10 5  4 4  
                 CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 0 0 0 193 22 10 5  4 4  
+                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 0 0 0 272 25 10 5  4 4  
                 CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 0 0 0 167 22 10 5  4 4  
+                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 0 0 0 246 25 10 5  4 4  
                 CH.ifa.draw.samples.javadraw.AnimationDecorator 
                     CH.ifa.draw.figures.GroupFigure 2 
                         CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                            CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 2 "FillColor" "Color" 255 0 0 "FrameColor" "Color" 255 0 0 197 30 5 14  4 4  
+                            CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 2 "FillColor" "Color" 255 0 0 "FrameColor" "Color" 255 0 0 276 33 5 14  4 4  
                         CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                            CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 2 "FillColor" "Color" 255 0 0 "FrameColor" "Color" 255 0 0 193 34 13 6  4 4   4 4  
+                            CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 2 "FillColor" "Color" 255 0 0 "FrameColor" "Color" 255 0 0 272 37 13 6  4 4   4 4  
                 CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                    CH.ifa.draw.figures.RoundRectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 255 0 0 168 30 22 14 0 0  4 4   4 4  
+                    CH.ifa.draw.figures.RoundRectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 255 0 0 247 33 22 14 0 0  4 4   4 4  
         CH.ifa.draw.samples.javadraw.AnimationDecorator 
             CH.ifa.draw.figures.GroupFigure 8 
                 CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                    CH.ifa.draw.figures.TextFigure "attributes" "attributes" 2 "TextColor" "Color" 192 192 192 "FillColor" "Color" 192 192 192 31 29 "&instance;ambulance.2;location" "Helvetica" 0 -3 0 NULL NULL  4 4  
+                    CH.ifa.draw.figures.TextFigure "attributes" "attributes" 2 "TextColor" "Color" 192 192 192 "FillColor" "Color" 192 192 192 27 34 "&template;car;location" "Helvetica" 0 -3 0 NULL NULL  4 4  
                 CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 255 255 255 59 25 46 22  4 4  
+                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 255 255 255 55 30 46 22  4 4  
                 CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 0 0 0 88 47 10 5  4 4  
+                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 0 0 0 84 52 10 5  4 4  
                 CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 0 0 0 63 47 10 5  4 4  
+                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 0 0 0 59 52 10 5  4 4  
                 CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 0 0 0 89 21 10 5  4 4  
+                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 0 0 0 85 26 10 5  4 4  
                 CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 0 0 0 63 21 10 5  4 4  
+                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 0 0 0 59 26 10 5  4 4  
                 CH.ifa.draw.samples.javadraw.AnimationDecorator 
                     CH.ifa.draw.figures.GroupFigure 2 
                         CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                            CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 2 "FillColor" "Color" 255 0 0 "FrameColor" "Color" 255 0 0 93 29 5 14  4 4  
+                            CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 2 "FillColor" "Color" 255 0 0 "FrameColor" "Color" 255 0 0 89 34 5 14  4 4  
                         CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                            CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 2 "FillColor" "Color" 255 0 0 "FrameColor" "Color" 255 0 0 89 33 13 6  4 4   4 4  
+                            CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 2 "FillColor" "Color" 255 0 0 "FrameColor" "Color" 255 0 0 85 38 13 6  4 4   4 4  
                 CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                    CH.ifa.draw.figures.RoundRectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 255 0 0 64 29 22 14 0 0  4 4   4 4  
+                    CH.ifa.draw.figures.RoundRectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 255 0 0 60 34 22 14 0 0  4 4   4 4  
         CH.ifa.draw.samples.javadraw.AnimationDecorator 
             CH.ifa.draw.figures.GroupFigure 8 
                 CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                    CH.ifa.draw.figures.TextFigure "attributes" "attributes" 2 "TextColor" "Color" 192 192 192 "FillColor" "Color" 192 192 192 227 30 "&instance;ambulance.3;location" "Helvetica" 0 -3 0 NULL NULL  4 4  
+                    CH.ifa.draw.figures.TextFigure "attributes" "attributes" 2 "TextColor" "Color" 192 192 192 "FillColor" "Color" 192 192 192 121 49 "&instance;ambulance.2;location" "Helvetica" 0 -3 0 NULL NULL  4 4  
                 CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 255 255 255 255 26 46 22  4 4  
+                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 255 255 255 149 45 46 22  4 4  
                 CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 0 0 0 284 48 10 5  4 4  
+                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 0 0 0 178 67 10 5  4 4  
                 CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 0 0 0 259 48 10 5  4 4  
+                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 0 0 0 153 67 10 5  4 4  
                 CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 0 0 0 285 22 10 5  4 4  
+                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 0 0 0 179 41 10 5  4 4  
                 CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 0 0 0 259 22 10 5  4 4  
+                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 0 0 0 153 41 10 5  4 4  
                 CH.ifa.draw.samples.javadraw.AnimationDecorator 
                     CH.ifa.draw.figures.GroupFigure 2 
                         CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                            CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 2 "FillColor" "Color" 255 0 0 "FrameColor" "Color" 255 0 0 289 30 5 14  4 4  
+                            CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 2 "FillColor" "Color" 255 0 0 "FrameColor" "Color" 255 0 0 183 49 5 14  4 4  
                         CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                            CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 2 "FillColor" "Color" 255 0 0 "FrameColor" "Color" 255 0 0 285 34 13 6  4 4   4 4  
+                            CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 2 "FillColor" "Color" 255 0 0 "FrameColor" "Color" 255 0 0 179 53 13 6  4 4   4 4  
                 CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                    CH.ifa.draw.figures.RoundRectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 255 0 0 260 30 22 14 0 0  4 4   4 4  
+                    CH.ifa.draw.figures.RoundRectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 255 0 0 154 49 22 14 0 0  4 4   4 4  
         CH.ifa.draw.samples.javadraw.AnimationDecorator 
             CH.ifa.draw.figures.GroupFigure 8 
                 CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                    CH.ifa.draw.figures.TextFigure "attributes" "attributes" 2 "TextColor" "Color" 192 192 192 "FillColor" "Color" 192 192 192 321 27 "&instance;ambulance.4;location" "Helvetica" 0 -3 0 NULL NULL  4 4  
+                    CH.ifa.draw.figures.TextFigure "attributes" "attributes" 2 "TextColor" "Color" 192 192 192 "FillColor" "Color" 192 192 192 315 36 "&instance;ambulance.3;location" "Helvetica" 0 -3 0 NULL NULL  4 4  
                 CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 255 255 255 349 23 46 22  4 4  
+                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 255 255 255 343 32 46 22  4 4  
                 CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 0 0 0 378 45 10 5  4 4  
+                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 0 0 0 372 54 10 5  4 4  
                 CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 0 0 0 353 45 10 5  4 4  
+                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 0 0 0 347 54 10 5  4 4  
                 CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 0 0 0 379 19 10 5  4 4  
+                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 0 0 0 373 28 10 5  4 4  
                 CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 0 0 0 353 19 10 5  4 4  
+                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 0 0 0 347 28 10 5  4 4  
                 CH.ifa.draw.samples.javadraw.AnimationDecorator 
                     CH.ifa.draw.figures.GroupFigure 2 
                         CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                            CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 2 "FillColor" "Color" 255 0 0 "FrameColor" "Color" 255 0 0 383 27 5 14  4 4  
+                            CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 2 "FillColor" "Color" 255 0 0 "FrameColor" "Color" 255 0 0 377 36 5 14  4 4  
                         CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                            CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 2 "FillColor" "Color" 255 0 0 "FrameColor" "Color" 255 0 0 379 31 13 6  4 4   4 4  
+                            CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 2 "FillColor" "Color" 255 0 0 "FrameColor" "Color" 255 0 0 373 40 13 6  4 4   4 4  
                 CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                    CH.ifa.draw.figures.RoundRectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 255 0 0 354 27 22 14 0 0  4 4   4 4  
+                    CH.ifa.draw.figures.RoundRectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 255 0 0 348 36 22 14 0 0  4 4   4 4  
         CH.ifa.draw.samples.javadraw.AnimationDecorator 
             CH.ifa.draw.figures.GroupFigure 8 
                 CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                    CH.ifa.draw.figures.TextFigure "attributes" "attributes" 2 "TextColor" "Color" 192 192 192 "FillColor" "Color" 192 192 192 416 28 "&instance;ambulance.5;location" "Helvetica" 0 -3 0 NULL NULL  4 4  
+                    CH.ifa.draw.figures.TextFigure "attributes" "attributes" 2 "TextColor" "Color" 192 192 192 "FillColor" "Color" 192 192 192 445 29 "&instance;ambulance.4;location" "Helvetica" 0 -3 0 NULL NULL  4 4  
                 CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 255 255 255 444 24 46 22  4 4  
+                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 255 255 255 473 25 46 22  4 4  
                 CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 0 0 0 473 46 10 5  4 4  
+                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 0 0 0 502 47 10 5  4 4  
                 CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 0 0 0 448 46 10 5  4 4  
+                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 0 0 0 477 47 10 5  4 4  
                 CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 0 0 0 474 20 10 5  4 4  
+                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 0 0 0 503 21 10 5  4 4  
                 CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 0 0 0 448 20 10 5  4 4  
+                    CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 0 0 0 477 21 10 5  4 4  
                 CH.ifa.draw.samples.javadraw.AnimationDecorator 
                     CH.ifa.draw.figures.GroupFigure 2 
                         CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                            CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 2 "FillColor" "Color" 255 0 0 "FrameColor" "Color" 255 0 0 478 28 5 14  4 4  
+                            CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 2 "FillColor" "Color" 255 0 0 "FrameColor" "Color" 255 0 0 507 29 5 14  4 4  
                         CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                            CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 2 "FillColor" "Color" 255 0 0 "FrameColor" "Color" 255 0 0 474 32 13 6  4 4   4 4  
+                            CH.ifa.draw.figures.RectangleFigure "attributes" "attributes" 2 "FillColor" "Color" 255 0 0 "FrameColor" "Color" 255 0 0 503 33 13 6  4 4   4 4  
                 CH.ifa.draw.samples.javadraw.AnimationDecorator 
-                    CH.ifa.draw.figures.RoundRectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 255 0 0 449 28 22 14 0 0  4 4   4 4   
+                    CH.ifa.draw.figures.RoundRectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 255 0 0 478 29 22 14 0 0  4 4   4 4  
+        CH.ifa.draw.samples.javadraw.AnimationDecorator 
+            CH.ifa.draw.figures.GroupFigure 4 
+                CH.ifa.draw.samples.javadraw.AnimationDecorator 
+                    CH.ifa.draw.figures.TextFigure "attributes" "attributes" 1 "FillColor" "Color" 255 199 158 167 503 "&template;plane;location" "Helvetica" 0 3 0 NULL NULL  4 4  
+                CH.ifa.draw.samples.javadraw.AnimationDecorator 
+                    CH.ifa.draw.figures.RoundRectangleFigure "attributes" "attributes" 2 "FillColor" "Color" 255 0 255 "FrameColor" "Color" 255 0 255 162 493 7 26 8 8  4 4  
+                CH.ifa.draw.samples.javadraw.AnimationDecorator 
+                    CH.ifa.draw.figures.RoundRectangleFigure "attributes" "attributes" 1 "FillColor" "Color" 255 0 255 198 477 16 57 8 8  4 4  
+                CH.ifa.draw.samples.javadraw.AnimationDecorator 
+                    CH.ifa.draw.figures.RoundRectangleFigure "attributes" "attributes" 2 "FillColor" "Color" 255 0 255 "FrameColor" "Color" 255 0 255 154 501 76 9 8 8  4 4   4 4   

@@ -1,8 +1,11 @@
 #
-# Demo for xmlBlaster with a graphical chat client
+# Demos for xmlBlaster with a graphical chat client 
+# and a monitoring program
 # xmlBlaster/demo/javaclients/graphical/README
 #
 
+To start the graphical chat demo:
+=================================
 
 1) start an xmlBlaster instance:
 java org.xmlBlaster.Main
@@ -24,7 +27,57 @@ the "publishDelay" flag on the command line.
 NOTE: It is a simple demo and as such it is quite limited and not for production
 level. Please feel free to improve it.
 
+
+
+To start the Monitoring program
+===============================
+
+- start the xmlBlaster
+ java org.xmlBlaster.Main
+
+- in another terminal start the monitoring program
+ java javaclients.graphical.MonitoringAppl
+  once the GUI has appeared open a file (for example airport.draw)
+
+- in another terminal start the simulator (this is the publisher of the messages)
+java javaclients.graphical.Simulator -nmax 3 -oidPrefix ambulance -sweeps 100
+
+Currently as oidPrefix you can either choose 'ambulance', 'plane' or 'car'.
+
+
+How can you create new drawings ?
+================================
+
+Choose "new" in the "file" menu. Then a new frame apperars. Draw the image of your
+choice by using the available tools.
+
+If you want an image to become sensitive, i.e. to react to xmlBlaster messages, you
+add to it a text (which you subsequently can hide by making it small) and then you group
+it together (with the "edit" -> "group" menu). The text is a special text. To become a
+command, a text must contain three semicolumn separated fields. The first field must
+be either "&instance" or "&template". An instance is an image which exists already and
+which will change appearance when receiving xmlBlaster updates. When specifying instances,
+the second field is the oid of the message affecting its appeareance.
+
+A template is an image which will be created everytime a new message (a new topic) arrives
+having an oid starting with the string specified in the second field of the command.
+Once such message is erased, such images will also disapear from the screen.
+
+The third field is the action to be taken when a message arrives (valid actions are "location",
+"size","text","color"). Currently only "location" is implemented.
+
+examples:
+
+1) &instance;ambulance.1;location
+This will subscribe to the oid='ambulance.1'. The publisher will then send a message with the content "x;y".
+for example 100;200 will move the ambulance image to the point 100;200 of the window.
+
+2) &template;plane;location
+This will subscribe with xpath to the messages with "//plane" and everytime a new message arrives which 
+has an oid='plane.1' or oid="planeBigJumbo" it will create an image and position it accoringly. Note that
+the publisher must then have a key like this: 
+"<key oid='plane.1"><flyingObjects><plane/></flyingObjects></key>" or
+"<key oid='plane.1"><plane/></key>"
+
 Michele
 laghi@swissinfo.org
-
-

@@ -43,6 +43,14 @@ public class MonitorCommand {
    private int    action = NONE;
    private Figure figure;
    
+   private MonitorCommand(Global global, String oid, int action, Figure figure) {
+      this.global = global;
+      this.log    = this.global.getLog("monitor");
+      this.oid    = oid;
+      this.action = action;
+      this.figure = figure;
+   }
+   
    public MonitorCommand(Global global, String txt, Figure figure) throws XmlBlasterException {
       this.global = global;
       this.log = this.global.getLog("monitor");
@@ -94,7 +102,7 @@ public class MonitorCommand {
 
    public void doAction(byte[] content, DrawingView view) {
       String data = new String(content);
-      this.figure.willChange();
+      // this.figure.willChange();
 
       Rectangle oldRect = this.figure.displayBox();
       try {
@@ -103,14 +111,15 @@ public class MonitorCommand {
             int x = Integer.parseInt(tokenizer.nextToken().trim());
             int y = Integer.parseInt(tokenizer.nextToken().trim());
             this.figure.moveBy(x-oldRect.x, y-oldRect.y);
-            this.log.error(ME, "new position: " + x  + " " + y);
+            
+            if (this.log.TRACE) this.log.trace(ME, "new position: " + x  + " " + y);
          }
       }  
       catch (Exception ex) {
          ex.printStackTrace();         
       }
 
-      this.figure.changed();
+      // this.figure.changed();
       Rectangle newRect = this.figure.displayBox();
       Drawing drawing = view.drawing();
       FigureChangeEvent ev0 = new FigureChangeEvent(this.figure);
@@ -119,9 +128,29 @@ public class MonitorCommand {
       DrawingChangeEvent ev = new DrawingChangeEvent(drawing, oldRect);
       view.drawingRequestUpdate(ev);
       ev = new DrawingChangeEvent(drawing, newRect);
-      view.drawingInvalidated(ev);
       view.drawingRequestUpdate(ev);
-      view.repairDamage();
+      // view.drawingInvalidated(ev);
+      // view.repairDamage();
+   }
+
+   /**
+    * Creates an instance from this template or returns null if this is
+    * not a template
+    * @param oid the oid to give to the new instance
+    * @return
+    */
+   public MonitorCommand createInstance(String oid) {
+      if (!this.isTemplate()) return null;
+      Figure fig = (Figure)this.figure.clone();
+      return new MonitorCommand(this.global, oid, this.action, fig);
+   }
+
+   public void remove(DrawingView view) {
+      Drawing drawing = view.drawing();
+      drawing.remove(this.figure);
+      drawing.orphan(this.figure);
+      FigureChangeEvent ev = new FigureChangeEvent(this.figure);
+      drawing.figureRequestUpdate(ev);
    }
 
 

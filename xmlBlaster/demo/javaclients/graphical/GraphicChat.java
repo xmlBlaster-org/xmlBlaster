@@ -5,7 +5,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 
 package javaclients.graphical;
-import CH.ifa.draw.contrib.SVGStorageFormat;
 
 import javax.swing.JToolBar;
 import CH.ifa.draw.framework.*;

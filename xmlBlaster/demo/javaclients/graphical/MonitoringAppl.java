@@ -6,7 +6,10 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 package javaclients.graphical;
 
+import java.io.File;
 import java.util.HashMap;
+
+import javax.swing.JFileChooser;
 
 import CH.ifa.draw.framework.DrawingView;
 import CH.ifa.draw.samples.javadraw.JavaDrawApp;
@@ -24,6 +27,8 @@ public class MonitoringAppl extends JavaDrawApp {
    private String ME = "MonitoringAppl";
    private HashMap subscribers;
    private int     count;
+   private JFileChooser chooser;
+
 
    public MonitoringAppl(Global global) {
       super("MonitoringAppl");
@@ -41,6 +46,14 @@ public class MonitoringAppl extends JavaDrawApp {
       super.fireViewDestroyingEvent(view);
    }
    
+   public JFileChooser createOpenFileChooser() {
+      if (this.log.CALL) this.log.call(ME, "createOpenFileChooser");
+      if (this.chooser == null) {
+         this.chooser = super.createOpenFileChooser();
+         this.chooser.setCurrentDirectory(new File("."));
+      }
+      return this.chooser;
+   }
 
    public void fireViewCreatedEvent(DrawingView view) {
       super.fireViewCreatedEvent(view);
