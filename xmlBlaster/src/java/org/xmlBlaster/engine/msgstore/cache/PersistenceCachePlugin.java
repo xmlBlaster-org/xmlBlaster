@@ -654,6 +654,10 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
    public void shutdown() {
       if (log.CALL) log.call(ME, "shutdown()");
       this.isDown = true;
+      long numTransients = getNumOfEntries() - getNumOfPersistentEntries();
+      if (numTransients > 0) {
+         log.warn(ME, "Shutting down persistence cache which contains " + numTransients + " transient messages");
+      }
       this.transientStore.shutdown();
       if (this.persistentStore != null && this.isConnected)
          this.persistentStore.shutdown();

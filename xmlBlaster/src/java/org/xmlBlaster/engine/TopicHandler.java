@@ -227,7 +227,8 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
 
       if (publishQosServer.getTopicEntry() != null) {
          this.topicEntry = publishQosServer.getTopicEntry(); // Call from persistent layer, reuse the TopicEntry
-         if (log.TRACE) log.trace(ME, "Reuse TopicEntry persistence handle: " + this.topicEntry.toXml());
+         if (log.TRACE) log.trace(ME, "Reuse TopicEntry persistence handle");
+         if (log.DUMP) log.dump(ME, "Reuse TopicEntry persistence handle: " + this.topicEntry.toXml());
       }
 
       if (this.msgKeyData == null) {

@@ -310,10 +310,7 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
       //Thread.currentThread().dumpStack();
       synchronized (this.storage) {
          if (this.storage.size() > 0) {
-            String reason = "Shutting down topic cache which contains " + this.storage.size() + " messages";
-            log.warn(ME, reason);
-            //throw new XmlBlasterException(ME, reason);
-            //handleFailure !!!
+            if (log.TRACE) log.trace(ME, "Shutting down topic cache which contains " + this.storage.size() + " messages");
          }
          this.lruSet.clear();
          isShutdown = true;
