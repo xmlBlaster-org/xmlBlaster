@@ -1467,18 +1467,8 @@ TODO
          <sysincludepath location="${XMLCPP_HOME}/include" />           <!-- xerces 1.6.0 -->
          <sysincludepath location="${XMLCPP_HOME}/include/xercesc" />   <!-- Since xerces 1.7.0 -->
 
-         <!-- libset dir="${STL_HOME}/lib" libs="stlport_gcc" /-->
-         <libset dir="${CORBACPP_HOME}/win32-bin" libs="mico${CORBACPP_VER},micocoss${CORBACPP_VER}" if="windows" />
-         <libset dir="${CORBACPP_HOME}/lib" libs="mico${CORBACPP_VER},micocoss${CORBACPP_VER}" if="unix" />
-         <libset dir="${XMLCPP_HOME}/lib" libs="xerces-c${XMLCPP_VER}" />
-         <libset dir="${lib.dir}" libs="xmlBlasterClient" />
-
          <syslibset dir="/lib" libs="dl" if="unix"/> <!-- if="Linux" -->
          <syslibset dir="/usr/lib" libs="pthread" if="unix"/> <!-- if="Linux" -->
-
-         <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/lib" />
-         <linkerarg value="-Wl,-rpath=${XMLCPP_HOME}/lib" />
-         <linkerarg value="-Wl,-rpath=${lib.dir.absolute}" />
 
          <defineset>
            <define name="${corba.product}" value="1" />   <!-- "TAO" or "MICO" etc., see client/protocol/corba/CompatibleCorba.h -->
@@ -1490,6 +1480,52 @@ TODO
            <define name="pedantic" if="unix" />
            <define name="Wall" if="unix" />
          </defineset>
+
+         <linker name="gcc"  if="use-gcc">
+            <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/lib" />
+            <linkerarg value="-Wl,-rpath=${XMLCPP_HOME}/lib" />
+            <linkerarg value="-Wl,-rpath=${lib.dir.absolute}" />
+
+            <!-- TAO -->
+            <fileset dir="${CORBACPP_HOME}/../ace" includes="ACEd.lib" if="TAO" />
+            <fileset dir="${CORBACPP_HOME}/tao" includes="TAOd.lib" if="TAO" />       
+            <fileset dir="${CORBACPP_HOME}/tao/PortableServer" includes="TAO_PortableServerd.lib" if="TAO" />
+            <fileset dir="${CORBACPP_HOME}/orbsvcs/orbsvcs" includes="TAO_CosNamingd.lib" if="TAO" />
+
+            <!-- libset dir="${STL_HOME}/lib" libs="stlport_gcc" /-->
+
+            <!-- MICO -->
+            <libset dir="${CORBACPP_HOME}/win32-bin" libs="mico${CORBACPP_VER},micocoss${CORBACPP_VER}" if="MICO" />
+            <libset dir="${CORBACPP_HOME}/lib" libs="mico${CORBACPP_VER},micocoss${CORBACPP_VER}" if="MICO" />
+
+            <!-- XERCES XML parser -->
+            <libset dir="${XMLCPP_HOME}/lib" libs="xerces-c${XMLCPP_VER}" />
+
+            <!-- xmlBlasterClient.dll -->
+            <libset dir="${lib.dir}" libs="xmlBlasterClient" />
+         </linker>
+
+         <linker name="msvc" if="use-msvc"> <!-- linker does not support nested switch -->
+            <!-- TAO -->
+            <fileset dir="${CORBACPP_HOME}/../ace" includes="ACEd.lib" if="TAO,windows" />
+            <fileset dir="${CORBACPP_HOME}/tao" includes="TAOd.lib" if="TAO,windows" />       
+            <fileset dir="${CORBACPP_HOME}/tao/PortableServer" includes="TAO_PortableServerd.lib" if="TAO,windows" />
+            <fileset dir="${CORBACPP_HOME}/orbsvcs/orbsvcs" includes="TAO_CosNamingd.lib" if="TAO,windows" />
+
+            <!-- libset dir="${STL_HOME}/lib" libs="stlport_gcc" /-->
+
+            <!-- MICO -->
+            <libset dir="${CORBACPP_HOME}/win32-bin" libs="mico${CORBACPP_VER},micocoss${CORBACPP_VER}" if="MICO,windows" />
+            <libset dir="${CORBACPP_HOME}/win32-bin/lib" libs="mico${CORBACPP_VER},micocoss${CORBACPP_VER}" if="MICO,windows" />
+
+            <!-- XERCES XML parser -->
+            <libset dir="${XMLCPP_HOME}/lib" libs="xerces-c${XMLCPP_VER}" if="windows" />
+
+            <!-- xmlBlasterClient.dll -->
+            <libset dir="${lib.dir}" libs="xmlBlasterClient" />
+         </linker>
+
+         <linker name="bcc"  if="use-bcc" />
       </cc>
    </target>
 
@@ -1523,14 +1559,38 @@ TODO
          <syslibset dir="/lib" libs="dl" if="unix"/> <!-- if="Linux" -->
          <syslibset dir="/usr/lib" libs="pthread" if="unix"/> <!-- if="Linux" -->
 
-         <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/lib" />
-         <linkerarg value="-Wl,-rpath=${XMLCPP_HOME}/lib" />
-         <linkerarg value="-Wl,-rpath=${lib.dir.absolute}" />
+         <!-- linker name="gcc"  if="use-gcc">
+            <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/lib" />
+            <linkerarg value="-Wl,-rpath=${XMLCPP_HOME}/lib" />
+            <linkerarg value="-Wl,-rpath=${lib.dir.absolute}" />
+         </linker -->
+         <linker name="msvc"> <!-- if="use-msvc" --> <!-- linker does not support nested switch -->
+            <!-- TAO -->
+            <fileset dir="${CORBACPP_HOME}/../ace" includes="ACEd.lib" if="TAO,windows" />
+            <fileset dir="${CORBACPP_HOME}/tao" includes="TAOd.lib" if="TAO,windows" />       
+            <fileset dir="${CORBACPP_HOME}/tao/PortableServer" includes="TAO_PortableServerd.lib" if="TAO,windows" />
+            <fileset dir="${CORBACPP_HOME}/orbsvcs/orbsvcs" includes="TAO_CosNamingd.lib" if="TAO,windows" />
+
+            <!-- libset dir="${STL_HOME}/lib" libs="stlport_gcc" /-->
+
+            <!-- MICO -->
+            <libset dir="${CORBACPP_HOME}/win32-bin" libs="mico${CORBACPP_VER},micocoss${CORBACPP_VER}" if="MICO,windows" />
+            <libset dir="${CORBACPP_HOME}/win32-bin/lib" libs="mico${CORBACPP_VER},micocoss${CORBACPP_VER}" if="MICO,windows" />
+
+            <!-- XERCES XML parser -->
+            <libset dir="${XMLCPP_HOME}/lib" libs="xerces-c${XMLCPP_VER}" if="windows" />
+         </linker>
+         <!-- linker name="bcc"  if="use-bcc" /-->
 
          <defineset>
-            <define name="MICO" value="1" />
-            <define name="pedantic" />
-            <define name="Wall" />
+           <define name="${corba.product}" value="1" />   <!-- "TAO" or "MICO" etc., see client/protocol/corba/CompatibleCorba.h -->
+           <define name="WIN32" value="1" if="windows" />        
+           <define name="_WINDOWS" value="1" if="windows" />
+           <define name="_MBCS" value="1" if="windows" />
+           <define name="_USRDLL" value="1" if="windows" />
+           <define name="DLL_BUILD" value="1" if="windows" />
+           <define name="pedantic" if="unix" />
+           <define name="Wall" if="unix" />
          </defineset>
       </cc>
    </target>
@@ -1550,8 +1610,8 @@ TODO
 
     <target name="cpp-delete" depends="cpp-clean" description="Remove all generated C++ files/libs/executables">
        <delete includeEmptyDirs="true" failonerror="false">
-          <fileset dir="${src.cpp.dir}/generated" includes="*.o, *.cc, *.cpp, *.h"/>
-          <fileset dir="${lib.dir}" includes="*xmlBlasterClient.so,*xmlBlasterClient.sl,*xmlBlasterClient.dll"/>
+          <fileset dir="${src.cpp.dir}/generated" includes="*.o, *.cc, *.cpp, *.h, *.i"/>
+          <fileset dir="${lib.dir}" includes="*xmlBlasterClient.so,*xmlBlasterClient.sl,*xmlBlasterClient.dll,xmlBlasterClient.rsp,xmlBlasterClient.exp,xmlBlasterClient.pdb,history.xml"/>
           <fileset dir="${testsuite.dir}/src/c++/bin" includes="*"/>
           <fileset dir="${demo.dir}/c++/bin" includes="*"/>
           <fileset dir="${idl.dir}" includes="*Idl/*.java"/>
