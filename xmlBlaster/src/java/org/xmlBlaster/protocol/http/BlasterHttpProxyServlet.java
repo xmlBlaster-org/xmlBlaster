@@ -3,7 +3,7 @@ Name:      BlasterHttpProxyServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxyServlet.java,v 1.56 2001/12/23 18:39:28 ruff Exp $
+Version:   $Id: BlasterHttpProxyServlet.java,v 1.57 2002/04/25 10:43:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -57,8 +57,31 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
 
       if (!propertyRead) {
          propertyRead = true;
-         try {
-            org.xmlBlaster.util.XmlBlasterProperty.init(new String[0]);
+         try { 
+            // Add the web.xml parameters to our environment settings:
+            Enumeration enum = conf.getInitParameterNames();
+            int count = 0;
+            while(enum.hasMoreElements()) {
+               if (enum.nextElement() == null)
+                  continue;
+               count++;
+            }
+            String[] args = new String[2*count];
+
+            count = 0;
+            enum = conf.getInitParameterNames();
+            while(enum.hasMoreElements()) {
+               String name = (String)enum.nextElement();
+               if (name == null)
+                  continue;
+               if (!name.startsWith("-"))
+                  args[count++] = "-" + name;
+               else
+                  args[count++] = name;
+               args[count++] = (String)conf.getInitParameter(name);
+               Log.info("", "Reading web.xml property " + args[count-2] + "=" + args[count-1]);
+            }
+            org.xmlBlaster.util.XmlBlasterProperty.init(args);
          } catch(org.jutils.JUtilsException e) {
             Log.error("BlasterHttpProxyServlet", e.toString());
          }
@@ -66,20 +89,6 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
 
       // Redirect xmlBlaster logs to servlet log file (see method log() below)
       // Use xmlBlaster/demo/http/WEB-INF/web.xml to configure logging.
-      Log.setDefaultLogLevel();
-      if (conf.getInitParameter("dump") != null && conf.getInitParameter("dump").equals("true"))
-         Log.addLogLevel("DUMP"); // Use this to dump messages
-      if (conf.getInitParameter("trace") != null && conf.getInitParameter("trace").equals("true"))
-         Log.addLogLevel("TRACE"); // Use this to trace the code
-      if (conf.getInitParameter("call") != null && conf.getInitParameter("call").equals("true"))
-         Log.addLogLevel("CALL"); // Use this to show method invocations
-      if (conf.getInitParameter("time") != null && conf.getInitParameter("time").equals("true"))
-         Log.addLogLevel("TIME"); // Use this to measure perfomance
-
-      // Log.addLogLevel("DUMP");  // Use this to see all messages!
-      // Log.addLogLevel("TRACE"); // Use this to trace the code
-      //Log.addLogLevel("CALL");
-      //Log.addLogLevel("TIME");
 
       // To redirect your Logging output into the servlet logfile (jserv.log),
       // outcomment this line:
