@@ -3,11 +3,11 @@ Name:      XmlRpcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   XmlRpcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: XmlRpcDriver.java,v 1.1 2000/06/26 17:17:19 ruff Exp $
+Version:   $Id: XmlRpcDriver.java,v 1.2 2000/08/30 00:21:58 laghi Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
-import org.jutils.log.Log;
+import org.jutils.log.LogManager;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
@@ -76,7 +76,7 @@ public class XmlRpcDriver implements I_Driver
    {
       this.authenticate = authenticate;
       this.xmlBlasterImpl = xmlBlasterImpl;
-      Log.info(ME, "Started successfully XML-RPC driver.");
+      LogManager.info("xmlBlaster", ME, "Started successfully XML-RPC driver.");
 
       // similar to -Dsax.driver=com.sun.xml.parser.Parser
       String dr = System.getProperty("sax.driver");
@@ -87,10 +87,10 @@ public class XmlRpcDriver implements I_Driver
       try {
          webserver = new WebServer(xmlPort);
          webserver.addHandler("authenticate", authenticate);
-         webserver.addHandler("xmlBlaster", xmlBlasterImpl);
+         webserver.addHandler("xmlBlaster", new XmlBlasterImpl(xmlBlasterImpl));
       } catch (IOException e) {
-          Log.error(ME, "Error creating webserver: " + e.toString());
-          e.printStackTrace();
+         LogManager.error("xmlBlaster", ME, "Error creating webserver: " + e.toString());
+         e.printStackTrace();
       }
    }
 
@@ -102,7 +102,7 @@ public class XmlRpcDriver implements I_Driver
     */
    public void shutdown()
    {
-      Log.info(ME, "Shutting down XML-RPC driver ...");
+      LogManager.info("xmlBlaster", ME, "Shutting down XML-RPC driver ...");
       try { authenticate.logout(sessionId); } catch(XmlBlasterException e) { }
    }
 

@@ -13,14 +13,14 @@ SRC_JAVA_DIR = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster/client
 
 
 #------------------------------------------------------------------------------
-SUB_DIRS = feeder reader
+SUB_DIRS = feeder reader protocol
 LOCAL_FILES := $(patsubst %.java,$(CLASS_DIR)/%.class,$(wildcard *.java))
 #------------------------------------------------------------------------------
 
 $(CLASS_DIR)/%.class: %.java
 	$(JAVAC) $<
 
-all: 	all_SUB_DIRS precond java
+all: 	all_SUB_DIRS precond java protocol
 
 precond:
 	$(MKDIR_RECURSIVE) $(CLASS_DIR)
