@@ -2,6 +2,9 @@ Release notes for xmlBlaster    (http://www.xmlBlaster.org)
 
 Changes for 0.xx [xx, xx 2001]
 ==============================
+ - Chnaged XML-RPC 'void' method return values to return
+   an 'empty string', since 'void' is not supported in the
+   XML-RPC spec.
 
  - Added qos support for get() responses, for example:
    <qos>
@@ -11,7 +14,7 @@ Changes for 0.xx [xx, xx 2001]
      <sender>
        Tim
      </sender>
-   </qos> 
+   </qos>
 
  - Fixed C++ testclients in xmlBlaster/testsuite/c++
 
