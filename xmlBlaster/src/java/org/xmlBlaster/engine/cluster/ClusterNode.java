@@ -325,11 +325,11 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
       available = true;
       try {
          if (xmlBlasterConnection.queueSize() > 0) {
-            log.info(ME, "Reconnected to xmlBlaster node '" + getId() + "', sending " + xmlBlasterConnection.queueSize() + " tailback messages ...");
+            log.info(ME, "Connected to xmlBlaster node '" + getId() + "', sending " + xmlBlasterConnection.queueSize() + " tailback messages ...");
             xmlBlasterConnection.flushQueue();
          }
          else
-            log.info(ME, "Reconnected to " + getId() + ", no backup messages to flush");
+            log.info(ME, "Connected to " + getId() + ", no backup messages to flush");
       }
       catch (XmlBlasterException e) {
          // !!!! TODO: producing dead letters
@@ -345,7 +345,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
     */
    public void lostConnection() {
       available = false;
-      log.warn(ME, "I_ConnectionProblems: Lost connection to xmlBlaster node '" + getId() + "'");
+      log.warn(ME, "I_ConnectionProblems: No connection to xmlBlaster node '" + getId() + "'");
    }
 
    /**
