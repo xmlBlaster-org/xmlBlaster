@@ -36,7 +36,7 @@ You need JDK 2 or better to run xmlBlaster.
 
 4) Compile xmlBlaster:
 
-   a) Edit $XMLBLASTER_HOME/make/make.h and customize it to your environment
+   a) Edit $XMLBLASTER_HOME/Makefile.Include and customize it to your environment
     
    b) Go to the home directory of xmlBlaster and type:
 
@@ -44,7 +44,7 @@ You need JDK 2 or better to run xmlBlaster.
 
 
 5) Try the xmlBlaster server
-   Examples in [] use a local running Webserver, customize .jacorb_properties before)
+   Examples in [] use a local running Webserver, customize .jacorb_properties before
 
    a) Start the JacORB Name Service:
 
