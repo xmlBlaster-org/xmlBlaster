@@ -3,7 +3,7 @@ Name:      ClientInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: ClientInfo.java,v 1.46 2001/02/14 00:41:45 ruff Exp $
+Version:   $Id: ClientInfo.java,v 1.47 2001/08/10 09:45:29 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -35,7 +35,7 @@ import java.util.*;
  * It also contains a message queue, where messages are stored
  * until they are delivered at the next login of this client.
  *
- * @version $Revision: 1.46 $
+ * @version $Revision: 1.47 $
  * @author $Author: ruff $
  */
 public class ClientInfo
@@ -169,9 +169,9 @@ public class ClientInfo
     * @return true yes
     *         false client is not on line
     */
-   public boolean isLoggedIn()
+   public final boolean isLoggedIn()
    {
-      return authInfo != null;
+      return (authInfo != null);
    }
 
 
@@ -294,6 +294,7 @@ public class ClientInfo
    public final String getUniqueKey() throws XmlBlasterException
    {
       //return loginName;
+      if (authInfo == null) return loginName;
       return authInfo.getUniqueKey();
    }
 
