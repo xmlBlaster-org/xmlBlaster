@@ -1472,9 +1472,11 @@ TODO
       <echo message=" COMPILE_CORBA_PLUGIN=${COMPILE_CORBA_PLUGIN}"/>
       <echo message=" CORBACPP_HOME = ${CORBACPP_HOME}"/>
       <echo message=" CORBACPP_VER  = ${CORBACPP_VER}"/>
+      <echo message=" XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN=${XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN}"/>
 
       <switch value="${os.name}" caseinsensitive="false">
          <case value="Linux">
+            <property name="LOG4CPLUS_OS_EXCLUDES" value="**/nteventlogappender.cxx,**/*win*,**/*mac*" />
             <switch value="${use-icc}" caseinsensitive="true">
                <case value="true">
                </case>
@@ -1494,6 +1496,8 @@ TODO
       <echo message=" use-CC        = ${use-CC}"/>   <!-- SunOS C++, set in your build.properties -->
       <echo message=" use-msvc      = ${use-msvc}"/> <!-- LittleWeak default -->
       <echo message=" use-bcc       = ${use-bcc}"/>
+
+      <echo message=" LOG4CPLUS_OS_EXCLUDES=${LOG4CPLUS_OS_EXCLUDES}"/>
 
       <condition property="cpp.compiler" value="GNU g++">
          <isset property="use-gcc"/>
@@ -1528,6 +1532,16 @@ TODO
       <condition property="tao.lib.type" value="">
          <equals arg1="${cpp.debug}" arg2="false" />
       </condition>
+
+      <switch value="${XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN}">
+         <case value="1">
+            <property name="COMPILE_LOG4CPLUS_EXCLUDES" value="" />
+            <property name="COMPILE_LOG4CPLUS_DEFINE" value="1" />
+         </case>
+         <default>
+            <property name="COMPILE_LOG4CPLUS_EXCLUDES" value="**/*.cxx" />
+         </default>
+      </switch>
 
       <switch value="${COMPILE_SOCKET_PLUGIN}">
          <case value="1">
@@ -1855,6 +1869,8 @@ TODO
          <fileset dir="${build.src.cpp.dir}/authentication" includes="**/*.cpp" />
          <fileset dir="${build.src.cpp.dir}/libs/thread/src" includes="*.cpp" if="BOOST" />
          <fileset dir="${build.src.cpp.dir}/omnithread" includes="*.cpp" if="OMNITHREAD" />
+         <fileset dir="${build.src.cpp.dir}/log4cplus" includes="**/*.cxx"
+                  excludes="${COMPILE_LOG4CPLUS_EXCLUDES},${LOG4CPLUS_OS_EXCLUDES}" />
 
          <includepath location="${build.src.cpp.dir}" />
 
@@ -1879,6 +1895,7 @@ TODO
            <define name="COMPILE_CORBA_PLUGIN" value="1" if="COMPILE_CORBA_DEFINE" />   <!-- Add the Corba protocol plugin? -->
            <define name="COMPILE_SOCKET_PLUGIN" value="1" if="COMPILE_SOCKET_DEFINE" />   <!-- Add the C socket library wrapper plugin? -->
            <define name="XMLBLASTER_${corba.product}" value="1" />   <!-- "XMLBLASTER_TAO" or "XMLBLASTER_MICO" or "XMLBLASTER_ORBIX" etc., see client/protocol/corba/CompatibleCorba.h -->
+           <define name="XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN" value="1" if="COMPILE_LOG4CPLUS_DEFINE" />   <!-- Add the log4cplus logging library -->
 
            <define name="__WIN32__" if="windows"/>                   <!-- omnithread, OMNIORB -->
            <define name="RTCs" value="1" if="windows" /> <!-- show stack problems -->
@@ -2063,6 +2080,7 @@ TODO
            <define name="_USRDLL" value="1" if="windows" />
            <define name="COMPILE_CORBA_PLUGIN" value="1" if="COMPILE_CORBA_DEFINE" />   <!-- Compile Corba tests? -->
            <define name="COMPILE_SOCKET_PLUGIN" value="1" if="COMPILE_SOCKET_DEFINE" />   <!-- Compile Socket tests? -->
+           <define name="XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN" value="1" if="COMPILE_LOG4CPLUS_DEFINE" />   <!-- Add the log4cplus logging library -->
          </defineset>
 
          <linker name="gcc"  if="use-gcc">
