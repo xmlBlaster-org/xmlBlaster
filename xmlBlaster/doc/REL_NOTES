@@ -3,6 +3,12 @@
 
 Changes for 0.75 [???, 2000]
 ==============================
+   - Bugfix if the Callback of a PtP receiver is disappeared,
+	  this usually happens when the receiver crashes without a logout.
+	  Now the XmlBlasterException with e.id="CallbackFailed" it thrown
+	  to the sender,  and the message is queued for the receiver
+	  if the qos flag <ForceQueuing> was set.
+
    - Allow clients to ping xmlBlaster, to test reliable the connection.
      The xmlBlaster.idl was extended with a ping() method.
      Java clients may use CorbaConnection.java to automatically test ping
