@@ -96,6 +96,8 @@ public class CorbaConnection implements I_XmlBlasterConnection
 
    private   String               sessionId = null;
 
+   private boolean firstAttempt = true;
+
    /**
     * CORBA client access to xmlBlaster for <strong>normal client applications</strong>.
     * <p />
@@ -421,7 +423,10 @@ public class CorbaConnection implements I_XmlBlasterConnection
       this.loginName=qos.getUserId();
       this.passwd=null; // not necessary here
 
-      return doLogin(true);
+      boolean verbose = (firstAttempt) ? true : false;
+      firstAttempt = false;
+
+      return doLogin(verbose);
    }
 
 
