@@ -45,6 +45,7 @@ public final class ClientDispatchConnection extends DispatchConnection
    private I_XmlBlasterConnection driver;
    private final I_MsgSecurityInterceptor securityInterceptor;
    private String encryptedConnectQos;
+   private ConnectReturnQos connectReturnQos;
 
    /**
     * @param connectionsHandler The DevliveryConnectionsHandler witch i belong to
@@ -390,19 +391,18 @@ public final class ClientDispatchConnection extends DispatchConnection
          rawReturnVal = securityInterceptor.importMessage(rawReturnVal);
       }
 
-      ConnectReturnQos connectReturnQos = null;
       try {
-         connectReturnQos = new ConnectReturnQos(glob, rawReturnVal);
+         this.connectReturnQos = new ConnectReturnQos(glob, rawReturnVal);
       }
-      catch (Throwable e) {
-         log.warn(ME, "Can't parse returned connect QoS value '" + rawReturnVal + "', setting to default: " + e.toString());
-         connectReturnQos = new ConnectReturnQos(glob, "<qos/>");
+      catch (XmlBlasterException e) {
+         log.error(ME, "Can't parse returned connect QoS value '" + rawReturnVal + "': " + e.getMessage());
+         throw e;
       }
 
       if (connectEntry.wantReturnObj()) {
-         connectEntry.setReturnObj(connectReturnQos);
+         connectEntry.setReturnObj(this.connectReturnQos);
       }
-      this.driver.setConnectReturnQos(connectReturnQos);
+      this.driver.setConnectReturnQos(this.connectReturnQos);
    }
 
    /**
@@ -436,6 +436,7 @@ public final class ClientDispatchConnection extends DispatchConnection
     */
    public final void resetConnection() {
       if (log.TRACE) log.trace(ME, "resetConnection(): Initializing driver for polling");
+      this.connectReturnQos = null;
       this.driver.resetConnection();
    }
 
@@ -445,6 +446,11 @@ public final class ClientDispatchConnection extends DispatchConnection
    protected final void reconnect() throws XmlBlasterException {
       if (this.driver == null) return;
       if (log.CALL) log.call(ME, "Entering reconnect(" + this.driver.getProtocol() + ")");
+
+      if (this.connectReturnQos != null) {
+         super.ping("", false);
+         return;
+      }
 
       if (this.encryptedConnectQos == null) {
          // We never had connected on application layer, so try low level layer only
@@ -461,15 +467,15 @@ public final class ClientDispatchConnection extends DispatchConnection
          rawReturnVal = securityInterceptor.importMessage(rawReturnVal);
       }
 
-      ConnectReturnQos connectReturnQos = null;
+      this.connectReturnQos = null;
       try {
-         connectReturnQos = new ConnectReturnQos(glob, rawReturnVal);
+         this.connectReturnQos = new ConnectReturnQos(glob, rawReturnVal);
       }
-      catch (Throwable e) {
-         log.warn(ME, "Can't parse returned connect QoS value '" + rawReturnVal + "', setting to default: " + e.toString());
-         connectReturnQos = new ConnectReturnQos(glob, "<qos/>");
+      catch (XmlBlasterException e) {
+         log.error(ME, "reconnect(): Can't parse returned connect QoS value '" + rawReturnVal + "': " + e.getMessage());
+         throw e;
       }
-      this.driver.setConnectReturnQos(connectReturnQos);
+      this.driver.setConnectReturnQos(this.connectReturnQos);
    }
 
    /**
