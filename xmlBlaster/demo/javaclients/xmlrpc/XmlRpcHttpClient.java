@@ -3,7 +3,7 @@ Name:      XmlRpcHttpClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code to post a xml-rpc message thru the HTTP protocol
-Version:   $Id: XmlRpcHttpClient.java,v 1.12 2002/05/11 10:38:45 ruff Exp $
+Version:   $Id: XmlRpcHttpClient.java,v 1.13 2002/05/11 19:39:14 ruff Exp $
 Author:    "Michele Laghi" <michele.laghi@attglobal.net>
 ------------------------------------------------------------------------------*/
 
@@ -111,7 +111,6 @@ public class XmlRpcHttpClient
    public static void main (String args[])
    {
       final String ME = "XmlRpcHttpClient";
-      boolean showUsage = false;
 
       Global glob = new Global();
       if (glob.init(args) != 0) {
