@@ -3,7 +3,7 @@ Name:      GetMessage.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code to get from command line a message
-Version:   $Id: GetMessage.java,v 1.8 2003/03/08 02:06:22 laghi Exp $
+Version:   $Id: GetMessage.java,v 1.9 2003/03/24 20:00:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.reader;
 
@@ -11,7 +11,7 @@ import org.jutils.log.LogChannel;
 import org.jutils.init.Args;
 import org.jutils.JUtilsException;
 
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.I_Callback;
@@ -42,7 +42,7 @@ public class GetMessage
    private static final String ME = "GetMessage";
    private final Global glob;
    private final LogChannel log;
-   private XmlBlasterConnection xmlBlasterConnection;
+   private I_XmlBlasterAccess xmlBlasterConnection;
 
    /**
     * Constructs the GetMessage object.
@@ -81,7 +81,7 @@ public class GetMessage
       }
 
       try {
-         xmlBlasterConnection = new XmlBlasterConnection(glob);
+         xmlBlasterConnection = glob.getXmlBlasterAccess();
          ConnectQos qos = new ConnectQos(glob);
          xmlBlasterConnection.connect(qos, null); // Login to xmlBlaster
       }
@@ -113,7 +113,7 @@ public class GetMessage
       log.plain(ME, "");
       log.plain(ME, "   -oid <XmlKeyOid>    The unique oid of the message");
       log.plain(ME, "   -xpath <XPATH>      The XPATH query");
-      //XmlBlasterConnection.usage();
+      //I_XmlBlasterAccess.usage();
       //log.usage();
       log.plain(ME, "----------------------------------------------------------");
       log.plain(ME, "Example:");

@@ -57,7 +57,7 @@ public interface I_MapMsgToMasterId
     * @return The nodeDomainInfo (same as you passed as parameter) it this is a possible master
     *         or null if not suitable.<br />
     * You can access the master ClusterNode with <code>nodeDomainInfo.getClusterNode()</code> and the xmlBlasterConnection
-    * to the master node with <code>nodeDomainInfo.getClusterNode().getXmlBlasterConnection()</code>
+    * to the master node with <code>nodeDomainInfo.getClusterNode().getXmlBlasterAccess()</code>
     */
    public NodeDomainInfo getMasterId(NodeDomainInfo nodeDomainInfo, MsgUnit msgUnit) throws XmlBlasterException;
 }

@@ -10,7 +10,6 @@ package org.xmlBlaster.engine.cluster;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.cluster.NodeId;
 

@@ -18,8 +18,8 @@ import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.I_ConnectionProblems;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_ConnectionStateListener;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.util.qos.address.AddressBase;
@@ -29,6 +29,8 @@ import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.cluster.NodeId;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.authentication.SessionInfo;
+import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
+import org.xmlBlaster.client.I_ConnectionHandler;
 
 import java.util.Map;
 import java.util.TreeMap;
@@ -40,19 +42,19 @@ import java.util.Vector;
  * <p />
  * It collects the node informations from NodeInfo.java, NodeDomainInfo.java and NodeStateInfo.java
  */
-public final class ClusterNode implements java.lang.Comparable, I_Callback, I_ConnectionProblems
+public final class ClusterNode implements java.lang.Comparable, I_Callback, I_ConnectionStateListener
 {
    private final String ME;
    private final Global fatherGlob;
    /** 
-    * This util global instance is used for XmlBlasterConnection, it
+    * This util global instance is used for I_XmlBlasterAccess, it
     * uses the specific settings from NodeInfo to connect to the remote node
     */
    private final org.xmlBlaster.util.Global remoteGlob;
    private final LogChannel log;
    private final SessionInfo sessionInfo;
    
-   private XmlBlasterConnection xmlBlasterConnection = null;
+   private I_XmlBlasterAccess xmlBlasterConnection = null;
    private boolean available;
 
    /** Holds address and backup informations */
@@ -128,10 +130,10 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
     *   <li>name[heron] the login name defaults to our local node id</li>
     *   <li>passwd[heron] defaults to secret</li>
     * </ul>
-    * @see org.xmlBlaster.client.protocol.XmlBlasterConnection
-    * @see org.xmlBlaster.client.protocol.XmlBlasterConnection#initFailSave
+    * @see org.xmlBlaster.client.I_XmlBlasterAccess
+    * @see org.xmlBlaster.client.I_XmlBlasterAccess#initFailSave
     */
-   public XmlBlasterConnection getXmlBlasterConnection() throws XmlBlasterException {
+   public I_XmlBlasterAccess getXmlBlasterAccess() throws XmlBlasterException {
       if (isLocalNode())
          return null;
 
@@ -149,9 +151,9 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
          }
          this.remoteGlob.setBootstrapAddress(addr);
 
-         this.xmlBlasterConnection = new XmlBlasterConnection(this.remoteGlob);
+         this.xmlBlasterConnection = this.remoteGlob.getXmlBlasterAccess();
          this.xmlBlasterConnection.setServerNodeId(getId());
-         this.xmlBlasterConnection.initFailSave(this);
+         this.xmlBlasterConnection.registerConnectionListener(this);
 
          CallbackAddress callback = nodeInfo.getCbAddress();
          if (callback.getSecretSessionId().equals(AddressBase.DEFAULT_sessionId))
@@ -195,7 +197,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    }
 
    /*
-   public void setXmlBlasterConnection(XmlBlasterConnection xmlBlasterConnection) {
+   public void setI_XmlBlasterAccess(I_XmlBlasterAccess xmlBlasterConnection) {
       this.xmlBlasterConnection = xmlBlasterConnection;
    }
    */
@@ -203,11 +205,10 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    /**
     * @param force shutdown if if messages are pending
     */
-   public void resetXmlBlasterConnection() {
+   public void resetXmlBlasterAccess() {
       if (this.xmlBlasterConnection != null) {
-         if (this.xmlBlasterConnection.isLoggedIn())
+         if (this.xmlBlasterConnection.isConnected())
             this.xmlBlasterConnection.disconnect(null);
-         this.xmlBlasterConnection.shutdown();
          this.xmlBlasterConnection = null;
       }
    }
@@ -264,12 +265,12 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
     *       On the other hand, without trying to login it is difficult to
     *       determine the connection state.
     */
-   public boolean isLoggedIn() throws XmlBlasterException {
+   public boolean isConnected() throws XmlBlasterException {
       if (isLocalNode())
          return true;
-      XmlBlasterConnection con = getXmlBlasterConnection();
+      I_XmlBlasterAccess con = getXmlBlasterAccess();
       if (con != null)
-         return con.isLoggedIn();
+         return con.isConnected();
       return false;
    }
 
@@ -284,7 +285,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    public boolean isPolling() throws XmlBlasterException {
       if (isLocalNode())
          return false;
-      XmlBlasterConnection con = getXmlBlasterConnection();
+      I_XmlBlasterAccess con = getXmlBlasterAccess();
       if (con != null)
          return con.isPolling();
       return false;
@@ -308,7 +309,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
     *         2 -> The node is not allowed to use<br />
     */
    public int getConnectionState() throws XmlBlasterException {
-      if (isLoggedIn())
+      if (isConnected())
          return 0;
       if (isPolling())
          return 1;
@@ -338,16 +339,16 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    }
 
    /**
-    * This is the callback method invoked from XmlBlasterConnection
+    * This is the callback method invoked from I_XmlBlasterAccess
     * informing the client in an asynchronous mode if the connection was established.
     * <p />
-    * This method is enforced through interface I_ConnectionProblems
+    * This method is enforced through interface I_ConnectionStateListener
     */
-   public void reConnected() {
+   public boolean reachedAlive(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
       available = true;
       try {
-         if (xmlBlasterConnection.queueSize() > 0) {
-            log.info(ME, "Connected to xmlBlaster node '" + getId() + "', sending " + xmlBlasterConnection.queueSize() + " tailback messages ...");
+         if (xmlBlasterConnection.getQueue().getNumOfEntries() > 0) {
+            log.info(ME, "Connected to xmlBlaster node '" + getId() + "', sending " + xmlBlasterConnection.getQueue().getNumOfEntries() + " tailback messages ...");
             xmlBlasterConnection.flushQueue();
          }
          else
@@ -357,17 +358,29 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
          // !!!! TODO: producing dead letters
          log.error(ME, "Sorry, flushing of tailback messages failed, they are lost: " + e.toString());
       }
+      return false;
    }
 
    /**
-    * This is the callback method invoked from XmlBlasterConnection
+    * This is the callback method invoked from I_XmlBlasterAccess
     * informing the client in an asynchronous mode if the connection was lost.
     * <p />
-    * This method is enforced through interface I_ConnectionProblems
+    * This method is enforced through interface I_ConnectionStateListener
     */
-   public void lostConnection() {
+   public void reachedPolling(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
       available = false;
-      log.warn(ME, "I_ConnectionProblems: No connection to xmlBlaster node '" + getId() + "'");
+      log.warn(ME, "I_ConnectionStateListener: No connection to xmlBlaster node '" + getId() + "', we are polling ...");
+   }
+
+   /**
+    * This is the callback method invoked from I_XmlBlasterAccess
+    * informing the client in an asynchronous mode if the connection was lost.
+    * <p />
+    * This method is enforced through interface I_ConnectionStateListener
+    */
+   public void reachedDead(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
+      available = false;
+      log.error(ME, "I_ConnectionStateListener: No connection to xmlBlaster node '" + getId() + "', state=DEAD, giving up.");
    }
 
    /**
@@ -422,7 +435,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    }
 
    public void shutdown() {
-      resetXmlBlasterConnection();
+      resetXmlBlasterAccess();
    }
 
    /**

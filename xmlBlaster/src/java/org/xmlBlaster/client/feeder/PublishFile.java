@@ -3,11 +3,12 @@ Name:      PublishFile.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a client to publish files to xmlBlaster
-Version:   $Id: PublishFile.java,v 1.28 2002/12/20 15:29:00 ruff Exp $
+Version:   $Id: PublishFile.java,v 1.29 2003/03/24 20:00:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.feeder;
 
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
@@ -40,7 +41,7 @@ import java.io.File;
 public class PublishFile
 {
    private static final String ME = "PublishFile";
-   private XmlBlasterConnection senderConnection;
+   private I_XmlBlasterAccess senderConnection;
    private Global glob;
    private LogChannel log;
    private String loginName;
@@ -185,8 +186,9 @@ public class PublishFile
    protected void setUp()
    {
       try {
-         senderConnection = new XmlBlasterConnection(glob); // Find orb
-         senderConnection.login(loginName, passwd, null); // Login to xmlBlaster
+         senderConnection = glob.getXmlBlasterAccess();   // Find orb
+         ConnectQos connectQos = new ConnectQos(glob, loginName, passwd);
+         senderConnection.connect(connectQos, null); // Login to xmlBlaster
       }
       catch (Exception e) {
           log.error(ME, e.toString());
@@ -249,7 +251,7 @@ public class PublishFile
       System.out.println("   These options only if you didn't specify -k or -xmlKey explicitly");
       System.out.println("   -m  <MIMEtype>      The MIME type of the message.");
       System.out.println("   -me <MIMEextendend> The extenden MIME type (for your own use).");
-      //XmlBlasterConnection.usage();
+      //I_XmlBlasterAccess.usage();
       //log.usage();
       System.out.println("----------------------------------------------------------");
       System.out.println("Example:");

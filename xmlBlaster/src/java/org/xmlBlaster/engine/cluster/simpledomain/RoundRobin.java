@@ -16,7 +16,6 @@ import org.xmlBlaster.engine.cluster.NodeInfo;
 import org.xmlBlaster.engine.cluster.NodeDomainInfo;
 import org.xmlBlaster.engine.cluster.ClusterNode;
 import org.xmlBlaster.engine.cluster.ClusterManager;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 
 import java.util.Set;
 import java.util.Iterator;

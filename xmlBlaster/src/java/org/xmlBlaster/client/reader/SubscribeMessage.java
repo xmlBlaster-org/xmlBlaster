@@ -3,7 +3,7 @@ Name:      SubscribeMessage.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code to subscribe from command line for a message
-Version:   $Id: SubscribeMessage.java,v 1.24 2003/01/17 12:54:06 ruff Exp $
+Version:   $Id: SubscribeMessage.java,v 1.25 2003/03/24 20:00:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.reader;
 
@@ -11,7 +11,7 @@ import org.jutils.log.LogChannel;
 import org.jutils.init.Args;
 import org.jutils.JUtilsException;
 
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.I_Callback;
@@ -44,7 +44,7 @@ public class SubscribeMessage implements I_Callback
    private static final String ME = "SubscribeMessage";
    private final Global glob;
    private final LogChannel log;
-   private XmlBlasterConnection xmlBlasterConnection;
+   private I_XmlBlasterAccess xmlBlasterConnection;
    private String subscriptionHandle;
 
    /**
@@ -107,7 +107,7 @@ public class SubscribeMessage implements I_Callback
    private void setUp()
    {
       try {
-         xmlBlasterConnection = new XmlBlasterConnection(glob);
+         xmlBlasterConnection = glob.getXmlBlasterAccess();
          ConnectQos qos = new ConnectQos(glob);
          xmlBlasterConnection.connect(qos, this); // Login to xmlBlaster
       }
@@ -187,7 +187,7 @@ public class SubscribeMessage implements I_Callback
     */
    private static void usage()
    {
-      XmlBlasterConnection.usage();
+      System.out.println(Global.instance().usage());
       System.out.println("----------------------------------------------------------");
       System.out.println("java org.xmlBlaster.client.reader.SubscribeMessage <options>");
       System.out.println("----------------------------------------------------------");
@@ -196,7 +196,7 @@ public class SubscribeMessage implements I_Callback
       System.out.println("");
       System.out.println("   -oid <XmlKeyOid>    The unique oid of the message");
       System.out.println("   -xpath <XPATH>      The XPATH query");
-      //XmlBlasterConnection.usage();
+      //I_XmlBlasterAccess.usage();
       //log.usage();
       System.out.println("----------------------------------------------------------");
       System.out.println("Example:");

@@ -7,7 +7,7 @@ Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.cluster;
 
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.cluster.ClusterManager;
@@ -66,7 +66,7 @@ public interface I_LoadBalancer {
     *  to or polling for), not available nodes are filtered away already.
     * @return The chosen nodeDomainInfo to handle the message or null to handle it locally
     * You can access the master ClusterNode with <code>nodeDomainInfo.getClusterNode()</code> and the xmlBlasterConnection
-    * to the master node with <code>nodeDomainInfo.getClusterNode().getXmlBlasterConnection()</code>
+    * to the master node with <code>nodeDomainInfo.getClusterNode().getXmlBlasterAccess()</code>
     */
    public NodeDomainInfo getClusterNode(Set nodeDomainInfoSet) throws XmlBlasterException;
 }

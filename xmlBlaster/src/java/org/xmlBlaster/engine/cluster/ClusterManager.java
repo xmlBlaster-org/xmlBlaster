@@ -31,7 +31,7 @@ import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.authentication.SessionInfo;
 
 import java.util.Set;
@@ -89,7 +89,7 @@ public final class ClusterManager implements I_RunlevelListener
     * <p />
     * If you want to immediately resend tail back messages on server startup we can
     * force to establish the connections to all nodes immediately.<br />
-    * The XmlBlasterConnection checks then for tailed back messages which where not yet delivered
+    * The I_XmlBlasterAccess checks then for tailed back messages which where not yet delivered
     * and sends them.
     */
    private boolean lazyConnect = false;
@@ -312,7 +312,7 @@ public final class ClusterManager implements I_RunlevelListener
          return null;
       }
 
-      XmlBlasterConnection con = clusterNode.getXmlBlasterConnection();
+      I_XmlBlasterAccess con = clusterNode.getXmlBlasterAccess();
       if (con == null) {
          String text = "Cluster node '" + destination.getDestination() + "' is known but not reachable, message '" + msgUnit.getLogId() + "' is lost";
          log.warn(ME, text);
@@ -340,7 +340,7 @@ public final class ClusterManager implements I_RunlevelListener
       NodeDomainInfo nodeDomainInfo = getConnection(publisherSession, msgUnit);
       if (nodeDomainInfo == null)
          return null;
-      XmlBlasterConnection con =  nodeDomainInfo.getClusterNode().getXmlBlasterConnection();
+      I_XmlBlasterAccess con =  nodeDomainInfo.getClusterNode().getXmlBlasterAccess();
       if (con == null)
          return null;
 
@@ -377,7 +377,7 @@ public final class ClusterManager implements I_RunlevelListener
       NodeDomainInfo nodeDomainInfo = getConnection(publisherSession, msgUnit);
       if (nodeDomainInfo == null)
          return null;
-      XmlBlasterConnection con =  nodeDomainInfo.getClusterNode().getXmlBlasterConnection();
+      I_XmlBlasterAccess con =  nodeDomainInfo.getClusterNode().getXmlBlasterAccess();
       if (con == null) {
          if (log.TRACE) log.trace(ME, "forwardSubscribe - Nothing to forward");
          return null;
@@ -401,7 +401,7 @@ public final class ClusterManager implements I_RunlevelListener
       NodeDomainInfo nodeDomainInfo = getConnection(publisherSession, msgUnit);
       if (nodeDomainInfo == null)
          return null;
-      XmlBlasterConnection con =  nodeDomainInfo.getClusterNode().getXmlBlasterConnection();
+      I_XmlBlasterAccess con =  nodeDomainInfo.getClusterNode().getXmlBlasterAccess();
       if (con == null) {
          if (log.TRACE) log.trace(ME, "forwardGet - Nothing to forward");
          return null;
@@ -425,7 +425,7 @@ public final class ClusterManager implements I_RunlevelListener
       NodeDomainInfo nodeDomainInfo = getConnection(publisherSession, msgUnit);
       if (nodeDomainInfo == null)
          return null;
-      XmlBlasterConnection con =  nodeDomainInfo.getClusterNode().getXmlBlasterConnection();
+      I_XmlBlasterAccess con =  nodeDomainInfo.getClusterNode().getXmlBlasterAccess();
       if (con == null) {
          if (log.TRACE) log.trace(ME, "forwardErase - Nothing to forward");
          return null;
@@ -513,11 +513,11 @@ public final class ClusterManager implements I_RunlevelListener
    }
 
    /*
-   public final void addConnection(NodeId nodeId, XmlBlasterConnection connection) throws XmlBlasterException {
+   public final void addConnection(NodeId nodeId, I_XmlBlasterAccess connection) throws XmlBlasterException {
       ClusterNode info = getClusterNode(nodeId);
       if (info == null)
          throw new XmlBlasterException(ME, "Unknown node id = " + nodeId.toString() + ", can't add xmlBlasterConnection");
-      info.setXmlBlasterConnection(connection);
+      info.setI_XmlBlasterAccess(connection);
    }
 
    public final void removeConnection(NodeId nodeId) {
@@ -526,7 +526,7 @@ public final class ClusterManager implements I_RunlevelListener
          log.error(ME, "Unknown node id = " + nodeId.toString() + ", can't remove xmlBlasterConnection");
          return;
       }
-      info.resetXmlBlasterConnection();
+      info.resetI_XmlBlasterAccess();
    }
    */
 
@@ -541,13 +541,13 @@ public final class ClusterManager implements I_RunlevelListener
       while (it.hasNext()) {
          ClusterNode clusterNode = (ClusterNode)it.next();
          // force a connect (not allowed and local node are checked to do nothing) ...
-         clusterNode.getXmlBlasterConnection();    // should we check for Exception and proceed with other nodes ?
+         clusterNode.getXmlBlasterAccess();    // should we check for Exception and proceed with other nodes ?
       }
    }
 
    /**
     * Get connection to the master node (or a node at a closer stratum to the master). 
-    * @return null if local node, otherwise access other node with <code>nodeDomainInfo.getClusterNode().getXmlBlasterConnection()</code>
+    * @return null if local node, otherwise access other node with <code>nodeDomainInfo.getClusterNode().getI_XmlBlasterAccess()</code>
     */
    public final NodeDomainInfo getConnection(SessionInfo publisherSession, MsgUnit msgUnit) throws XmlBlasterException {
       if (!postInitialized) {
@@ -662,12 +662,12 @@ public final class ClusterManager implements I_RunlevelListener
       return nodeDomainInfo;
    }
 
-   public final XmlBlasterConnection getConnection(NodeId nodeId) {
+   public final I_XmlBlasterAccess getConnection(NodeId nodeId) {
       log.error(ME, "getConnection() is not implemented");
       return null;
       /*
       ClusterNode clusterNode = getClusterNode(nodeId);
-      return (XmlBlasterConnection)connectionMap.get(nodeId.getId());
+      return (I_XmlBlasterAccess)connectionMap.get(nodeId.getId());
       */
    }
 
