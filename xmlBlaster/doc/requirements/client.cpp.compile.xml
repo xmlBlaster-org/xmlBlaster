@@ -6,7 +6,10 @@
    <description>
      <p>
      To allow portable development, the xmlBlaster C++ clients can be compiled with <i>ant</i>
-     from Apache ...
+     from Apache using xmlBlaster/build.xml
+     </p>
+     <p>
+     [TODO: DESCRIPTION]
      </p>
    </description>
 
@@ -45,7 +48,7 @@
    
    <date>2002 08 27</date>
    
-   <revision>$Revision: 1.4 $</revision>
+   <revision>$Revision: 1.5 $</revision>
 
    <testcase status="OPEN">
       <name>-</name>

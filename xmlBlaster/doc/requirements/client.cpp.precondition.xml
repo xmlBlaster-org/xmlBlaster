@@ -10,19 +10,19 @@
 
      <p>To use the c++ client library several libraries are needed.
         <ul>
-	   <li>parser library (currently only apache's xerces-c is supported)</li>
-	   <li>CORBA library (MICO, TAO and ORBACUS are supported)</li>
-	   <li>thread library: boost</li>
-	</ul>
+           <li>parser library (currently only apache's xerces-c is supported)</li>
+           <li>CORBA library (MICO, TAO and ORBACUS are supported)</li>
+           <li>thread library: boost</li>
+        </ul>
      </p>
      <p><b>XERCES-C</b><br/>
         you can download the xerces-c library from <a href="http://xml.apache.org/xerces-c/index.html">
-	apache's homepage</a>. Please follow their instructions on how to install/build the xerces 
-	library for your platform. <b>The version must be 2.2.0 or older</b>.
-	<br/>
-	Now, when building with ant, the xerces-c library will be used. In build.properties make sure that
-	the $XMLCPP_VER is empty and that the links to the directories for xerces and the used CORBA are
-	correct.
+        apache's homepage</a>. Please follow their instructions on how to install/build the xerces 
+        library for your platform. <b>The version must be 2.2.0 or higher (because of XMLString::release() usage)</b>.
+        <br/>
+        Now, when building with ant, the xerces-c library will be used. In build.properties make sure that
+        the $XMLCPP_VER is empty and that the links to the directories for xerces and the used CORBA are
+        correct.
      </p>
      <p><b>CORBA</b><br/>
      <b>MICO</b><br/>
@@ -31,9 +31,9 @@
      follow as usual the instructions given there. Once it is installed, open the file
      build.properties in the $XMBLASTER_HOME directory. There you must adjust <br/>
      <ul>
-        <li>CORBA_CPP</li>
-	<li>CORBACPP_HOME</li>
-	<li>CORBACPP_VER</li>
+        <li>corba.product</li>
+        <li>CORBACPP_HOME</li>
+        <li>CORBACPP_VER</li>
      </ul>
      to the correct values. 
      <br/>
@@ -42,35 +42,91 @@
      </p>
      <p>
         <b>Threads Library</b><br/>
-	Currently the threads library used in xmlBlaster is the boost threads library. It is part of the
-	client library itself, so you don't need to retreive it separately. However, if you would like to 
-	find more information about it, or if you want another version you can find it on
-	<a href="http://www.boost.org">the boost homepage</a>.
-	</p>In the build.properties there are two parameters which tell ant where to find the sources and
-	the includes for the thread library. If you use the default don't make any change. If you use an
-	external boost, then you can point to its thread sources with the variable THREADS_SRC and to the
-	includes with THREADS_INC.
-	<p>
+        Currently the threads library used in xmlBlaster is the boost threads library. It is part of the
+        client library itself, so you don't need to retreive it separately. However, if you would like to 
+        find more information about it, or if you want another version you can find it on
+        <a href="http://www.boost.org">the boost homepage</a>.
+        </p>In the build.properties there are two parameters which tell ant where to find the sources and
+        the includes for the thread library. If you use the default don't make any change. If you use an
+        external boost, then you can point to its thread sources with the variable THREADS_SRC and to the
+        includes with THREADS_INC.
+        <p>
      </p>
    </description>
 
    <configuration where="client">
+   <p>
+   Take a copy from xmlBlaster/build.properties to ${user.home}/build.properties and
+   edit it to find the installation directory of the CORBA lib and XERCES lib.
+   </p>
 <pre>
-XMLCPP_HOME   = /usr/local
-XMLCPP_VER    =
-CORBA_CPP     = mico
+#------------------------------------------------------------------------------
+# C++ UNIX example with ACE+TAO 1.3 and xerces 2.2 using g++ 3.2
+#XMLCPP_HOME   = /opt/xerces-c-src2_2_0-bin
+#XMLCPP_VER    = 
+#corba.product = TAO
+#CORBACPP_HOME = /opt/ACE_wrappers/TAO
+#CORBACPP_VER  = 
+#------------------------------------------------------------------------------
+
+#------------------------------------------------------------------------------
+# C++ Unix/Linux example with mico 2.3.7 and xerces 2.2
+XMLCPP_HOME   = /usr/local/xerces-c
+XMLCPP_VER    = 
 CORBACPP_HOME = /usr/local/mico
+corba.product = MICO
 CORBACPP_VER  = 2.3.7
-THREAD_SRC    = src/c++/libs/thread/src
-THREAD_INC    = src/c++
+#------------------------------------------------------------------------------
+
+#------------------------------------------------------------------------------
+# C++ Windows example with ACE+TAO 1.3 and xerces 2.2 using VC++ 7
+#use-msvc      = 1
+#XMLCPP_HOME   = C:/Dev/xerces-c2_2_0-win32
+#XMLCPP_VER    = _2
+#corba.product = TAO
+#CORBACPP_HOME = C:/Dev/ACE_wrappers/TAO
+#idl.cmd       = C:/Dev/ACE_wrappers/bin/tao_idl.exe
+#CORBACPP_VER  = 
+#------------------------------------------------------------------------------
+
+#------------------------------------------------------------------------------
+# C++ Windows example with mico 2.3.8 and xerces 2.2 using VC++ 7
+#use-msvc      = 1
+#XMLCPP_HOME   = C:/Dev/xerces-c2_2_0-win32
+#XMLCPP_VER    = _2
+#CORBACPP_HOME = C:/Dev/mico
+#corba.product = MICO
+#idl.cmd       = ${CORBACPP_HOME}/win32-bin/idl
+#CORBACPP_VER  = 238
+#------------------------------------------------------------------------------
+
+#------------------------------------------------------------------------------
+# Usage help:
+#
+# corba.product = MICO   (Choose one of MICO, TAO)
+#
+#  Note: The code supports one of OMNIORB, ORBACUS, MICO, TAO, ORBIX
+#   but the build.xml compile script currently only supports MICO or TAO
+#   Extend src/c++/client/protocol/corba/CompatibleCorba.h for another ORB
+#
+# XMLCPP_VER    = "" or _2D  (you need xerces 2.2 or above)
+#   Windows e.g.  xerces-c_2.lib or xerces-c_2D.lib
+#   Linux e.g.    libxerces-c.so.22.0
+#------------------------------------------------------------------------------
+
+#------------------------------------------------------------------------------
+# Note for Windows: You need to add the path to mico/bin/idl.exe
+# to your PATH environment
+#------------------------------------------------------------------------------
 </pre>
    </configuration>
 
+   <see type="REQ">client.cpp</see>
    <see type="REQ">client.cpp.tao</see>
 
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
    <date>2003 01 07</date>
-   <revision>$Revision: 1.2 $</revision>
+   <revision>$Revision: 1.3 $</revision>
 </requirement>
 
