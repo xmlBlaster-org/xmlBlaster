@@ -2,17 +2,16 @@ Howto start the Python/XmlRpc demo:
 
  - Start xmlBlaster
 
+      cd xmlBlaster
       java -jar lib/xmlBlaster.jar
 
 
- - Edit hello.py and change 'server_url' to point to your host.
-   (you can copy the url from the xmlBlaster logging output
-    when the XmlRpc server starts)
-
  - Run the Python demo client
+   (Pass as argument the url where xmlBlaster listens)
 
       cd xmlBlaster/demo/python
-      python hello.py
+      python  hello.py  http://myhost:8080
+
 
 Thats it!
 

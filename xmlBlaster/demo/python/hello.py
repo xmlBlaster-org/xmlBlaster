@@ -1,9 +1,12 @@
 import xmlrpclib
+import sys
 
-# Start with: python hello.py
+# Invoke:  python  hello.py  http://myhost:8080
 
-# Change the url to your hostname (see the output of xmlBlaster server):
-server_url = 'http://myHost:8080/';
+# The url to xmlBlaster (see the output of xmlBlaster server):
+server_url = sys.argv[1];
+#server_url = 'http://myHost:8080/';
+
 
 print "\nTrying to connect to xmlBlaster server on ", server_url, " ...\n"
 
