@@ -73,6 +73,7 @@
       The filter is applied before the message is forwarded from a slave
       node to its master node. So you can suppress cluster messages in the slave
       already.
+      </li>
       </ul>
       <p>
       </p>
@@ -114,7 +115,7 @@ content="veeerrrrrylongcooontenttttttt"
    <see type="REQ">mime.plugin.accessfilter</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 03 14</date>
-   <revision>$Revision: 1.6 $</revision>
+   <revision>$Revision: 1.7 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
