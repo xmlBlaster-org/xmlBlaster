@@ -11,7 +11,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 /**
  * Parsing/Serializing QoS (quality of service) of publish() and update().
  * @see org.xmlBlaster.test.classtest.qos.StatusQosFactoryTest
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public interface I_StatusQosFactory
 {

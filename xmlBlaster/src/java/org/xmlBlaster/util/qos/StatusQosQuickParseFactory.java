@@ -20,7 +20,7 @@ import org.xmlBlaster.util.XmlBlasterException;
  * @see org.xmlBlaster.util.qos.StatusQosData
  * @see org.xmlBlaster.util.qos.StatusQosSaxFactory
  * @see org.xmlBlaster.test.classtest.qos.StatusQosFactoryTest
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public class StatusQosQuickParseFactory implements I_StatusQosFactory
 {
