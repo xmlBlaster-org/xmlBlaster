@@ -58,6 +58,7 @@ public class PluginInfo {
     * @param typeVersion null: Choose default plugin pluginManager.getDefaultPluginName() <br />
     *             "undef": Don't load the plugin
     *             else: Load the given plugin or throw exception
+    *        Example: "SOCKET,1.0" or "RAM,1.0"
     */
    public PluginInfo(Global glob, I_PluginManager manager, String typeVersion) throws XmlBlasterException {
       this(glob, manager, typeVersion, (ContextNode)null);
@@ -68,6 +69,7 @@ public class PluginInfo {
     * @param typeVersion null: Choose default plugin pluginManager.getDefaultPluginName() <br />
     *             "undef": Don't load the plugin
     *             else: Load the given plugin or throw exception
+    *        Example: "SOCKET,1.0" or "RAM,1.0"
     */
    public PluginInfo(Global glob, I_PluginManager manager, String typeVersion, ContextNode contextNode) throws XmlBlasterException {
       if (typeVersion == null) {
