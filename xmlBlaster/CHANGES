@@ -2,6 +2,22 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.xxx [xxxxxxxxxx]
 ==============================
+ o Added new connect QoS setting 'reconnectSameClientOnly' which
+   allows us to enfoce a client singleton - if you need to assure
+   that a client can only connect exactly once, see
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.connect.html
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.configuration.html
+
+ o Exhaust of maxSessions throws now ErrorCode.USER_CONFIGURATION_MAXSESSION
+
+ o JAVA client: Calling xmlBlasterAccess.connect() multiple times without disconnect()
+   throws now ErrorCode.USER_CONNECT_MULTIPLE
+
+ o Removed deprecated 
+    org.xmlBlaster.util.ConnectQos
+    org.xmlBlaster.util.ConnectReturnQos
+    org.xmlBlaster.util.DisconnectQos
+   please use siblings from package org.xmlBlaster.client.qos
 
 Changes for 0.849 [2003-07-15]
 ==============================
