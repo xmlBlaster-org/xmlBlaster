@@ -12,6 +12,9 @@ Changes for 0.76 [May.7, 2000]
      See xmlBlaster/demo/html/systemInfo
      and online:
      http://www.xmlBlaster.org/systemInfo/systemInfo.html?ActionType=login&loginName=karl&passwd=secret
+	  Netscape 4.x on Linux/HPUX/Win and
+	  Netscape 4.7 / MSIE 5 on WinNT and Win98
+	  runs fine.
 
    - Bugfixes (especially memory leak fixed) in browser
      callback framework.
