@@ -3,3 +3,19 @@
 - dtd support
 
 - get for OID request
+
+Clients
+-------
+- Perl (ORB für Perl www.lunatech.com/research/corba/cope)
+- C++ (mico)
+- Tcl/Tk
+- Java
+- Phyton
+
+(alle freie Orb-Impl.......)
+
+Proteritäre Protokolle-Plugins (nicht CORBA)
+---------------------- 
+- Protokoll-Plugins (www.webdav.com)
+- zutandslose Protokolle
+
