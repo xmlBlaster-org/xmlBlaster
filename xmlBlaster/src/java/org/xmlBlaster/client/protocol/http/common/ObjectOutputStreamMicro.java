@@ -103,32 +103,35 @@ public class ObjectOutputStreamMicro implements I_ObjectStream {
     * writes a message to the output stream. The format of the message is
     * [oid]\0[key]\0[qos]\0[content]
     * where key and qos are (optional) String objects, and the content an (optional) byte[].
-    * So the example '\0\0' of length 2 is an empty message (which is not written to the stream),
-    * '\0\0aaa' is a message with no key no qos and a content 'aaa'.
+    * So the example '\0\0\0' of length 3 is an empty message (which is not written to the stream),
+    * 'xxx\0\0\0' is a message with an oid='xxx', no key no qos and no content.
+    * @param oid The oid of the message (can be null)
     * @param key The key of the message (can be null)
     * @param qos The qos of the message (can be null)
     * @param content The content of the message (can be null) 
-    * @return The length of the message. If the length is less than 2 (i.e. the message is empty
-    * because no key, no qos nor content), then it is not written to the stream.
+    * @return The length of the message. If the length is less than 3 (i.e. the message is empty
+    * because no oid, no key, no qos nor content), then it is not written to the stream.
     * 
+    * For oid, key qos and content: emtpy elements are threated as null elements.
     * @throws IOException
     */
    public static int writeMessage(OutputStream out, String oid, String key, String qos, byte[] content) 
       throws IOException {
       ByteArrayOutputStream baos = new ByteArrayOutputStream();
-      if (oid != null) {
+      if (oid != null && oid.length() > 0) {
          baos.write(oid.getBytes());
       } 
       baos.write(0);
-      if (key != null) {
+      if (key != null && key.length() > 0) {
          baos.write(key.getBytes());
       } 
       baos.write(0);
-      if (qos != null) baos.write(qos.getBytes());
+      if (qos != null && qos.length() > 0) 
+         baos.write(qos.getBytes());
       baos.write(0);
-      if (content != null) baos.write(content);
+      if (content != null && content.length > 0) baos.write(content);
       byte[] buf = baos.toByteArray();
-      if (buf.length > 2) {
+      if (buf.length > 3) {
          DataOutputStream dos = new DataOutputStream(out);
          //dos.write(buf, 0, buf.length); 
          dos.write(buf); 

@@ -71,42 +71,14 @@ public class ObjectInputStreamMicro implements I_ObjectStream {
       else throw new IOException("object of type with code='" + code + "' is not supported");
    }
 
-   public static Object[] readMessage(InputStream in, int length) throws IOException {
-      if (length < 3) return new Object[] { "", "", new byte[0] };
-      Object[] ret = new Object[3];
-      byte[] response = new byte[length];
-      int offset = 0;
-      DataInputStream dis = new DataInputStream(in);
-      while (offset < length-1) {
-         int size = dis.read(response, offset, response.length-offset); 
-         offset += size;
-         if (offset < length-1) {
-            try {
-               Thread.sleep(200L);
-            }
-            catch (Exception ex) {
-            }
-         }
-      }
-      
-      int pos = 0, i = pos;
-      while (response[i] != 0) i++;
-      ret[0] = new String(response, 0, i);
-      pos = ++i;
-
-      while (response[i] != 0) i++;
-      ret[1] = new String(response, pos, i-pos);
-      pos = ++i;
-
-      byte[] tmp = new byte[response.length-pos];
-      while (i < response.length) {
-         tmp[i-pos] = response[i];
-         i++;
-      }
-      ret[2] = tmp;
-      return ret;
-   }
-
+   /**
+    * 
+    * @param buffer the buffer from which to read the message
+    * @return the MsgHolder object.
+    * If one of the parameters was null or empty before serialization, it
+    * will be null here after reading it from the buffer.
+    * @throws IOException
+    */
    public static MsgHolder readMessage(byte[] buffer) throws IOException {
       if (buffer.length < 4) return new MsgHolder(null, null, null, null);
       
