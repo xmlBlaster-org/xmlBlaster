@@ -57,7 +57,7 @@
       Topics and messages:
       </p>
       <p>
-      A topic is a serve side instance which handles identical message oids. The first
+      A topic is a server side instance which handles identical message oids. The first
       message with a specific oid creates the topic in the server and further messages
       with identical oids are handled by this topic.
       </p>
@@ -160,7 +160,7 @@
    <see type="REQ">util.property</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 02 04</date>
-   <revision>$Revision: 1.9 $</revision>
+   <revision>$Revision: 1.10 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
