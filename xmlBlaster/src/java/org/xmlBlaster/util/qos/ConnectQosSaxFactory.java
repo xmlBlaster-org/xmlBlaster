@@ -288,7 +288,12 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
             SessionQos sessionQos = this.connectQosData.getSessionQos();
             for (ii = 0; ii < len; ii++) {
                if (attrs.getQName(ii).equalsIgnoreCase("name")) {
-                  sessionQos.setSessionName(new SessionName(glob, attrs.getValue(ii).trim()));
+                  if (glob.isServer()) { // Force the server node ID on connect
+                     sessionQos.setSessionName(new SessionName(glob, glob.getNodeId(), attrs.getValue(ii).trim()));
+                  }
+                  else {
+                     sessionQos.setSessionName(new SessionName(glob, attrs.getValue(ii).trim()));
+                  }
                }
                else if (attrs.getQName(ii).equalsIgnoreCase("timeout"))
                   sessionQos.setSessionTimeout((new Long(attrs.getValue(ii).trim())).longValue());
