@@ -107,13 +107,13 @@ usual software pricing scale.
 XmlBlaster MOM will be based on following modern technologies and standards to fulfill the goals.
 
 <itemizedlist>
-<listitem><emphasis>CORBA</emphasis> <ulink URL="http://www.omg.org">(http://www.omg.org)</ulink>
+<listitem>CORBA <ulink URL="http://www.omg.org">(http://www.omg.org)</ulink>
       <para>Allows multiple programming languages and hardware platforms to be integrated</para>  </listitem>
-<listitem><emphasis>XML </emphasis> <ulink URL="http://www.w3c.org">(http://www.w3c.org)</ulink>
+<listitem>XML <ulink URL="http://www.w3c.org">(http://www.w3c.org)</ulink>
       <para>Allows to describe problem domains in a new simple but powerful way</para></listitem>
-<listitem><emphasis>Java on the server side </emphasis> <ulink URL="http://java.sun.com">(http://java.sun.com)</ulink>
+<listitem>Java on the server side <ulink URL="http://java.sun.com">(http://java.sun.com)</ulink>
       <para>To allow easy portable code</para></listitem>
-<listitem><emphasis>MOM paradigms</emphasis>
+<listitem>MOM paradigms
       <para>To allow a loose coupling of distributed systems</para></listitem>
 </itemizedlist>
 
