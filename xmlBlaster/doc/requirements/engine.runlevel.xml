@@ -60,35 +60,39 @@
        An xml file describes the plugin configuration. It defines among other things startup and shutdown
        sequence, classname and plugin specific attributes. This file describes both plugins loaded
        by the runlevel manager (further called static plugins) and plugins which are loaded on client demand 
-       (further called dynamic plugins). The default name for this file is xmlBlaster.plugins.xml.
+       (further called dynamic plugins). The default name for this file is xmlBlasterPlugins.xml.
        </li>
      </ul>
      </p>
-     The xmlBlaster.plugins.xml file is searched in the following locations and the given order:
+     The xmlBlasterPlugins.xml file is searched in the following locations and the given order:
      <table border="1">
        <tr>
-         <th>Command line parameter '-pluginsFile'</th>
-         <th>-pluginsFile /tmp/xmlBlaster.plugins.xml</th>
+         <th>location or parameter</th>
+         <th>example</th>
        </tr>
        <tr>
-         <th>Local directory</th>
-         <th>.</th>
+         <td>Command line parameter '-pluginsFile'</td>
+         <td>-pluginsFile /tmp/xmlBlasterPlugins.xml</td>
        </tr>
        <tr>
-         <th>$PROJECT_HOME</th>
-         <th>java -DPROJECT_HOME=/opt/xmlBlaster ...</th>
+         <td>Local directory</td>
+         <td>.</td>
        </tr>
        <tr>
-         <th>$HOME</th>
-         <th>user.home</th>
+         <td>$PROJECT_HOME</td>
+         <td>java -DPROJECT_HOME=/opt/xmlBlaster ...</td>
        </tr>
        <tr>
-         <th>java.ext.dirs</th>
-         <th>/opt/jdk1.2.2/jre/lib/ext</th>
+         <td>$HOME</td>
+         <td>user.home</td>
        </tr>
        <tr>
-         <th>java.home</th>
-         <th>/opt/jdk1.2.2/jre/lib</th>
+         <td>java.ext.dirs</td>
+         <td>/opt/jdk1.2.2/jre/lib/ext</td>
+       </tr>
+       <tr>
+         <td>java.home</td>
+         <td>/opt/jdk1.2.2/jre/lib</td>
        </tr>
      </table>
 
@@ -186,26 +190,28 @@
      The plugin tag has the following attributes:
      <ul>
         <li><b>id</b> (mandatory) which is the name uniquely identifying this plugin configuration. The 
-     	    structure used to identify the plugins is type:name:subname:... where type and name are mandatory 
-	    while subname is optional. Examples of such names are queue:JDBC or queue:JDBC:test
+     	    structure used to identify the plugins is <i>type:name:subname:...</i> where <i>type</i> and 
+	    <i>name</i> are mandatory while <i>subname</i> is optional. Examples of such names are 
+	    <i>queue:JDBC</i> or <i>queue:JDBC:test</i>
 	</li>
         <li><b>className</b> (mandatory) the full name of the java class implementing the plugin.</li>
-	<li><b>jar</b> (optional) the comma separated list of jar files on which to search for the class
-	    to be loaded.
+	<li><b>jar</b> (optional) the coloumn (:) separated list of jar files on which to search for the 
+	    class to be loaded.
 	</li>
      </ul>
      Besides the attributes, the plugin element has the following subtags:
      <ul>
        <li><b>attribute</b> configuration parameters to be passed to the plugin (0 to n times)</li>
-       <li><b>action</b> the action to be undertaken on the specified circumstances</li>
+       <li><b>action</b> the action to be undertaken on the specified circumstances (0 to n times
+           where n is normally 2)</li>
      </ul>
-     The <i>action</i> subelement: <br />
+     The <i>action</i> subelement:<br />
      <ul>
        <li><b><i>do</i></b> attribute describing what to do on the specified event. It can be <b>LOAD</b> 
            (which means load the plugin) or <b>STOP</b> (which means shutdown the plugin). 
        </li>
        <li>The event is specified by the attributes <b><i>onStartupRunLevel</i></b> (which is fired if 
-           the run level change is incrementing) or <b><i>onShutdownRunLevel</i></b> (which is fired by 
+           the run level change is incrementing) or <b><i>onShutdownRunLevel</i></b> (which is fired by
 	   decrementing run level changes). The values of these attributes is an integer which corresponds 
 	   to the run level on which they have to be activated respectively deactivated. If these attributes
 	   are omitted, then the run level manager will not load (respectively unload) the plugin. The 
@@ -280,7 +286,7 @@ r 3
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 14</date>
-   <revision>$Revision: 1.9 $</revision>
+   <revision>$Revision: 1.10 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
