@@ -3,7 +3,7 @@ Name:      Constants.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding destination address attributes
-Version:   $Id: Constants.java,v 1.3 2002/02/14 15:00:44 ruff Exp $
+Version:   $Id: Constants.java,v 1.4 2002/02/25 17:05:45 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -129,5 +129,23 @@ public class Constants
    public static final String  DISCONNECT = "disconnect";
    //public static final String   EXCEPTION = "exception";
 
+   /**
+    * Checks if given string is a well known method name. 
+    * @param method E.g. "publish", this is checked if a known method
+    * @return true if method is known
+    */
+   public static final boolean checkMethodName(String method) {
+      if (Constants.GET.equals(method) ||
+          Constants.ERASE.equals(method) ||
+          Constants.PUBLISH.equals(method) ||
+          Constants.SUBSCRIBE.equals(method) ||
+          Constants.UNSUBSCRIBE.equals(method) ||
+          Constants.UPDATE.equals(method) ||
+          Constants.PING.equals(method) ||
+          Constants.CONNECT.equals(method) ||
+          Constants.DISCONNECT.equals(method))
+          return true;
+      return false;
+   }
 }
 
