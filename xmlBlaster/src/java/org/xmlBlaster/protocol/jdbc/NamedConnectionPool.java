@@ -3,7 +3,7 @@ Name:      NamedConnectionPool.java
 Project:   xmlBlaster.org
 Copyright: jutils.org, see jutils-LICENSE file
 Comment:   Basic handling of a pool of limited resources
-Version:   $Id: NamedConnectionPool.java,v 1.6 2000/07/09 13:55:16 ruff Exp $
+Version:   $Id: NamedConnectionPool.java,v 1.7 2000/07/10 09:19:09 ruff Exp $
            $Source: /opt/cvsroot/xmlBlaster/src/java/org/xmlBlaster/protocol/jdbc/NamedConnectionPool.java,v $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
@@ -59,7 +59,7 @@ import java.sql.DriverManager;
  * note that the connection parameters are optional:
  * <pre>
  *    String dbStmt = "select * from user_table";
- *    java.sql.Connection con = namedPool.reserve(dbUrl, dbUser, dbPasswd, 60*60*1000L, 100, 10*60*1000L, 10*60*1000L);
+ *    java.sql.Connection con = namedPool.reserve(dbUrl, dbUser, dbPasswd, 60*60*1000L, 100, 10*60*1000L);
  *    java.sql.Statement stmt = null;
  *    java.sql.ResultSet rs = null;
  *    try {
