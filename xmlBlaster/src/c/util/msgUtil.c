@@ -29,9 +29,9 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #if defined(__GNUC__) || defined(__ICC)
    /* To support query state with 'ident libxmlBlasterClientC.so' or 'what libxmlBlasterClientC.so'
       or 'strings libxmlBlasterClientC.so  | grep msgUtil.c' */
-   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: msgUtil.c,v 1.30 2004/08/28 17:15:07 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: msgUtil.c,v 1.31 2004/10/10 20:20:47 ruff Exp $ xmlBlaster @version@";
 #elif defined(__SUNPRO_CC)
-   static const char *rcsid_GlobalCpp  =  "@(#) $Id: msgUtil.c,v 1.30 2004/08/28 17:15:07 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  =  "@(#) $Id: msgUtil.c,v 1.31 2004/10/10 20:20:47 ruff Exp $ xmlBlaster @version@";
 #endif
 
 /**
@@ -140,7 +140,7 @@ Dll_Export void freeMsgUnit(MsgUnit *msgUnit)
 }
 
 /**
- * NOTE: You need to free the returned pointer with free()!
+ * NOTE: You need to free the returned pointer with xmlBlasterFree() or directly with free()!
  *
  * @param maxContentDumpLen for -1 get the complete content, else limit the
  *        content to the given number of bytes
@@ -176,7 +176,7 @@ Dll_Export char *messageUnitToXmlLimited(MsgUnit *msg, int maxContentDumpLen)
 }
 
 /**
- * NOTE: You need to free the returned pointer with free()!
+ * NOTE: You need to free the returned pointer with xmlBlasterFree() or directly with free()!
  *
  * @return A ASCII XML formatted message or NULL if out of memory
  */
