@@ -1282,7 +1282,6 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       this.dbInitialized = true;
    }
 
-
    private final ArrayList processResultSet(ResultSet rs, StorageId storageId, int numOfEntries, long numOfBytes, boolean onlyId)
       throws SQLException, XmlBlasterException {
 
@@ -1325,33 +1324,6 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          }
          count++;
       }
-
-      while ((rs.next()) && ((count < numOfEntries) || (numOfEntries <0))) {
-         if(onlyId) {
-            entries.add(new Long(rs.getLong(1)));
-         }
-         else {
-            long dataId = rs.getLong(1); // preStatement.setLong(1, dataId);
-            int prio = rs.getInt(2); // preStatement.setInt(2, prio);
-            String typeName = rs.getString(3); // preStatement.setString(3, typeName);
-//            boolean persistent = rs.getBoolean(4); // preStatement.setBoolean(4, persistent);
-            //this only to make ORACLE happy since it does not support BOOLEAN
-            String persistentAsChar = rs.getString(4);
-            boolean persistent = false;
-            if ("T".equalsIgnoreCase(persistentAsChar)) persistent = true;
-
-            long sizeInBytes = rs.getLong(5);
-//            byte[] blob = rs.getBytes(6); // preStatement.setObject(5, blob);
-            InputStream is = rs.getBinaryStream(6);
-
-            if (this.log.DUMP)
-               this.log.dump(ME, "processResultSet: dataId: " + dataId + ", prio: " + prio + ", typeName: " + typeName + " persistent: " + persistent);
-//            entries.add(this.factory.createEntry(prio, dataId, typeName, persistent, sizeInBytes, blob, storageId));
-            entries.add(this.factory.createEntry(prio, dataId, typeName, persistent, sizeInBytes, is, storageId));
-         }
-         count++;
-      }
-
       return entries;
    }
 
@@ -1920,14 +1892,14 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
       if (numOfEntries >= Integer.MAX_VALUE)
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, getLogId(queueName, nodeId, "deleteFirstEntries"),
-                  "The number of entries=" + numOfEntries + " to delete exceeds the maximum allowed byteSize");
+               "The number of entries=" + numOfEntries + " to be deleted is too big for this system");
 
       PreparedQuery query = null;
+
       try {
          String req = "select dataId,byteSize from " + this.entriesTableName + " WHERE queueName='" + queueName + "' AND nodeId='" + nodeId + "' ORDER BY prio DESC, dataid ASC";
          query = new PreparedQuery(pool, req, false, this.log, -1);
          // I only want the uniqueId (dataId)
-
          ret = processResultSetForDeleting(query.rs, (int)numOfEntries, amount);
 
          int nmax = ret.list.size();
