@@ -3,7 +3,7 @@ Name:      CompatibleCorba.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   functions to encapsulate corba-implementor specific stuff
-Version:   $Id: CompatibleCorba.cpp,v 1.3 2003/02/09 21:32:32 ruff Exp $
+Version:   $Id: CompatibleCorba.cpp,v 1.4 2003/02/13 13:59:00 ruff Exp $
 Author:    <Michele Laghi> laghi@swissinfo.org
 ----------------------------------------------------------------------------*/
 #ifdef _WINDOWS
@@ -12,6 +12,7 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 #endif
 
 #include <client/protocol/corba/CompatibleCorba.h>
+#include <boost/lexical_cast.hpp>
 
 using namespace std;
 
@@ -56,7 +57,17 @@ const char* to_string(const CORBA::Exception &ex ) {
 #ifdef  TAO
 
 const char* to_string(const CORBA::Exception &ex) {
-   return "Not yet Implemented";
+   string name(ex._name());
+   string repId(ex._rep_id());
+   //string typeCode(ex._type());
+   //string info(ex._info()); // info is not portable
+
+   string ret = "CORBA::Exception name=" + name
+          + " repId=" + repId
+          //+ " typeCode=" + typeCode
+          //+ " info=" + info
+          ;
+   return ret.c_str();
 }
 
 #endif  // TAO
