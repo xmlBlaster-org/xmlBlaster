@@ -150,7 +150,7 @@ public class CallbackAddress extends AddressBase
     */
    public String usage()
    {
-      String text = "";
+      String text = "\n";
       text += "Control xmlBlaster server side callback (if we install a local callback server):\n";
       text += "   -cb.sessionId       The session ID which is passed to our callback server update() method.\n";
       text += "   -cb.burstMode.collectTime Number of milliseconds xmlBlaster shall collect callback messages [" + CallbackAddress.DEFAULT_collectTime + "].\n";
