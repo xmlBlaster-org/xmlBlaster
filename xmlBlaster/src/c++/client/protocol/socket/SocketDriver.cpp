@@ -141,7 +141,10 @@ SocketDriver::SocketDriver(Global& global, Mutex& mutex, const string instanceNa
    } catch_MACRO("::Constructor", true)
 }
 
-/** Called on polling, must be synchronized from outside */
+/**
+ * Called on polling, must be synchronized from outside,
+ * throws an exception on failure
+ */
 void SocketDriver::reconnect(void)
 {
    log_.info(ME, "Trying to reconnect to server");
@@ -160,9 +163,8 @@ void SocketDriver::reconnect(void)
    try {
       if (log_.trace()) log_.trace(ME, "Before createCallbackServer");
       if (connection_->initialize(connection_, myUpdate, &socketException) == false) {
-         log_.error(ME, "Connection to xmlBlaster failed,"
-                " please start the server or check your configuration\n");
-         freeResources(true);
+         if (log_.trace()) log_.trace(ME, string("Reconnection to xmlBlaster failed, please start the server or check your network: ") + socketException.message);
+         throw socketException;
       }
       if (log_.trace()) log_.trace(ME, "After createCallbackServer");
    } catch_MACRO("::initialize", true)
@@ -291,7 +293,7 @@ ConnectReturnQos SocketDriver::connect(const ConnectQos& qos) //throw (XmlBlaste
             throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, "Please check your configuration to find the server");
          }
          else {
-            reconnect();
+            reconnect(); // Throws an exception on failure
             // Happens in ConnectionsHandler.cpp already: ???
             qos.getSessionQos().setSecretSessionId(secretSessionId_);
          }
@@ -566,8 +568,8 @@ vector<EraseReturnQos> SocketDriver::erase(const EraseKey& key, const EraseQos& 
       throw XmlBlasterException(COMMUNICATION_NOCONNECTION, ME, "Sorry, you are not connected to the server");
    }
    ::XmlBlasterException socketException;
+   Lock lock(mutex_);
    try {
-      Lock lock(mutex_);
       QosArr* retC = connection_->erase(connection_, key.toXml().c_str(), qos.toXml().c_str(), &socketException);
       if (*socketException.errorCode != 0) {
          throw socketException; // Is converted to util::XmlBlasterException in catch_MACRO
