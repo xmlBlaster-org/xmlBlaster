@@ -189,7 +189,6 @@ public class SubscribeTest extends TestCase {
       System.err.println("***SubscribeTest.testSubscribeTwice: testSubscribeTwice [SUCCESS]");
    }
 
-
    /**
     * We start all nodes as described in requirement
     * <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/cluster.html" target="others">cluster</a>
@@ -201,8 +200,6 @@ public class SubscribeTest extends TestCase {
    public void testSubscribe() {
       System.err.println("***SubscribeTest: Subscribe a message from a cluster slave ...");
 
-      log.error(ME, "TEST  testSubscribe is commented out!!");
-      /*
       try {
          System.err.println("->Connect to avalon ...");
          avalonCon = serverHelper.connect(serverHelper.getAvalonGlob(), null);
@@ -272,7 +269,7 @@ public class SubscribeTest extends TestCase {
       }
 
       System.err.println("***SubscribeTest: testSubscribe [SUCCESS]");
-      */
+
    }
 
    private void waitOnUpdate(final long timeout, final int numWait) {
