@@ -234,7 +234,8 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
    private void addSession(SessionInfo sessionInfo) throws XmlBlasterException {
       if (this.log.CALL) this.log.call(ME, "addSession '" + sessionInfo.getId() + "'");
       ConnectQosData connectQosData = sessionInfo.getConnectQos().getData();
-      if (!connectQosData.getPersistentProp().getValue()) return;
+      
+      if (connectQosData.getPersistentProp() == null || !connectQosData.getPersistentProp().getValue()) return;
       
       // is it a remote connect or from a recovery ?
       ClientProperty clientProperty = connectQosData.getClientProperty(PERSISTENCE_ID);
@@ -243,12 +244,11 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
          connectQosData.getClientProperties().put(PERSISTENCE_ID, new ClientProperty(this.global, PERSISTENCE_ID, "long", null, "" + uniqueId));
          SessionEntry entry = new SessionEntry(connectQosData.toXml(), uniqueId, (long)connectQosData.size());
          if (this.log.TRACE) this.log.trace(ME, "addSession (persistent) for NEW uniqueId: '" + entry.getUniqueId() + "'");
-         sessionInfo.setPersistenceId(entry.getUniqueId());
+         sessionInfo.setPersistenceId(uniqueId);
          this.sessionStore.put(entry);
       }
       else  {
          long uniqueId = clientProperty.getLongValue();
-         if (this.log.TRACE) this.log.trace(ME, "addSession (persistent) for OLD uniqueId: '" + uniqueId + "'");
          sessionInfo.setPersistenceId(uniqueId);
       }
    }
@@ -312,18 +312,21 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
          this.addSession(sessionInfo);         
       }
 
-      // is it a remote connect or from a recovery ?
+      // is it a remote connect ?
       ClientProperty clientProperty = subscribeQosData.getClientProperty(PERSISTENCE_ID);
       if (clientProperty == null) {
          long uniqueId = new Timestamp().getTimestamp();
          subscribeQosData.getClientProperties().put(PERSISTENCE_ID, new ClientProperty(this.global, PERSISTENCE_ID, "long", null, "" + uniqueId));
          QueryKeyData subscribeKeyData = (QueryKeyData)data;
+         
+         // to be found when the client usubscribes after a server crash ...
+         subscribeQosData.setSubscriptionId(subscriptionInfo.getSubscriptionId());         
          SubscribeEntry entry = new SubscribeEntry(subscribeKeyData.toXml(), subscribeQosData.toXml(), sessionInfo.getConnectQos().getSessionName().getAbsoluteName(), uniqueId, 0L);
          if (this.log.TRACE) this.log.trace(ME, "subscriptionAdd: putting to persistence NEW entry '" + entry.getUniqueId() + "' key='" + subscribeKeyData.toXml() + "' qos='" + subscribeQosData.toXml() + "' secretSessionId='" + sessionInfo.getSecretSessionId() + "'");
          subscriptionInfo.setPersistenceId(uniqueId);
          this.subscribeStore.put(entry);
       }
-      else  {
+      else  {    // ... or from a recovery ?
          long uniqueId = clientProperty.getLongValue();
          if (this.log.TRACE) this.log.trace(ME, "subscriptionAdd: filling OLD uniqueId into subscriptionInfo '" + uniqueId + "'");
          subscriptionInfo.setPersistenceId(uniqueId);
