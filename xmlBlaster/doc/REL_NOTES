@@ -1,11 +1,16 @@
     Release notes for xmlBlaster    (http://www.xmlBlaster.org)
 
+Changes for 0.78 [???     2000]
+===============================
+  - Bug fix in PoolManager.erase() method
+
+
 Changes for 0.77 [Jun, 3 2000]
 ===============================
   - Bugfix in Main - MainGUI swapping and log WARN toggle.
 
   - browser callback enhancement:
-    It is now possible to pass the loginname and the password
+    It is now possible to pass the login name and the password
     through the session object of the servlet (cookie).
     This allows you to use your own authentication.
     See client.browser.xml requirement how to do it.
