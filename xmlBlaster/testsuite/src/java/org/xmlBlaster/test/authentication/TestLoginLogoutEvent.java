@@ -249,7 +249,7 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
    public static Test suite()
    {
        TestSuite suite= new TestSuite();
-       suite.addTest(new TestLoginLogoutEvent(new Global(), "testLoginLogout", "Tim", "Joe"));
+       suite.addTest(new TestLoginLogoutEvent(new Global(), "testLoginLogout", "Gesa", "Ben"));
        return suite;
    }
 
