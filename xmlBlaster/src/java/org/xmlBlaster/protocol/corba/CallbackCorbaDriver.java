@@ -198,7 +198,7 @@ public class CallbackCorbaDriver implements I_CallbackDriver
     */
    public void shutdown()
    {
-      if (log.CALL) log.call(ME, "Entering shutdown ...");
+      if (log != null && log.CALL) log.call(ME, "Entering shutdown ...");
       if (this.cb != null) {
          // CorbaDriver.getOrb().disconnect(this.cb); TODO: !!! must be called delayed, otherwise the logout() call from the client is aborted with a CORBA exception
          this.cb._release();
@@ -207,7 +207,7 @@ public class CallbackCorbaDriver implements I_CallbackDriver
       }
       callbackAddress = null;
       // On disconnect: called once for sessionQueue and for last session for subjectQueue as well
-      if (log.TRACE) log.trace(ME, "Shutdown of CORBA callback client done.");
+      if (log != null && log.TRACE) log.trace(ME, "Shutdown of CORBA callback client done.");
    }
 
 }
