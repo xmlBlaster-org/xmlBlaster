@@ -19,8 +19,8 @@ import org.xmlBlaster.util.XmlBlasterException;
 public interface I_AdminSubject {
    public long getUptime();
    public long getNumUpdates();
-   public int getCbQueueNumMsgs();
-   public int getCbQueueMaxMsgs();
+   public long getCbQueueNumMsgs();
+   public long getCbQueueMaxMsgs();
    public int getNumSessions();
    public int getMaxSessions();
    public String getSessionList();

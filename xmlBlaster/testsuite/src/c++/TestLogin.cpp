@@ -3,7 +3,7 @@ Name:      TestLogin.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestLogin.cpp,v 1.2 2002/09/12 21:01:33 ruff Exp $
+Version:   $Id: TestLogin.cpp,v 1.3 2002/11/26 12:40:14 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 /**
@@ -169,8 +169,7 @@ public:
       }
       catch(serverIdl::XmlBlasterException &e) {
          string msg = me() + "-tearDown()";
-         string txt = "XmlBlasterException in erase(): ";
-         txt += e.reason;
+         string txt = string("XmlBlasterException in erase(): ") + string(e.errorCodeStr) + string(": ") + string(e.message);
          log_->error(msg, txt);
       }
       if (strArr.size() != 1) {
@@ -187,8 +186,7 @@ public:
       catch(serverIdl::XmlBlasterException &e) {
 
          string msg = me() + "-tearDown()";
-         string txt = "XmlBlasterException in erase(): ";
-         txt       += e.reason;
+         string txt = string("XmlBlasterException in erase(): ") + string(e.errorCodeStr) + string(": ") + string(e.message);
          log_->error(msg, txt);
       }
       if (strArr.size() != 1) {
@@ -223,11 +221,8 @@ public:
          log_->info(me(), txt);
       }
       catch(serverIdl::XmlBlasterException &e) {
-         log_->warn(me() + "-testSubscribeXPath",
-                       string("XmlBlasterException: ") + string(e.reason));
-         string
-            txt = string("subscribe - XmlBlasterException: ") +
-            string(e.reason);
+         log_->warn(me() + "-testSubscribeXPath", string("XmlBlasterException: ") + string(e.errorCodeStr) + ": " + string(e.message));
+         string txt = string("subscribe - XmlBlasterException: ") + string(e.errorCodeStr) + ": " + string(e.message);
          cerr << txt << endl;
          assert(0);
       }
@@ -267,9 +262,8 @@ public:
       }
       catch(serverIdl::XmlBlasterException &e) {
          log_->warn(me()+"-testPublish",
-                       string("XmlBlasterException: ") + string(e.reason));
-         string msg = string("publish - XmlBlasterException: ")
-            + string(e.reason);
+               string("XmlBlasterException: ") + string(e.errorCodeStr) + ": " + string(e.message));
+         string msg = string("publish - XmlBlasterException: ") + string(e.errorCodeStr) + ": " + string(e.message);
          cerr << msg << endl;
          assert(0);
       }
@@ -330,10 +324,8 @@ public:
             /*second*/ senderConnection_->publish(secondMsg);
       }
       catch(serverIdl::XmlBlasterException &e) {
-         log_->warn(me()+"-secondPublish",
-                       string("XmlBlasterException: ") + string(e.reason));
-         string msg = string("second - publish - XmlBlasterException: ")
-            + string(e.reason);
+         log_->warn(me()+"-secondPublish", string("XmlBlasterException: ") + string(e.errorCodeStr) + ": " + string(e.message));
+         string msg = string("second - publish - XmlBlasterException: ") + string(e.errorCodeStr) + ": " + string(e.message);
          cerr << msg << endl;
          assert(0);
       }
@@ -357,7 +349,7 @@ public:
          assert(0);
       }
       catch(serverIdl::XmlBlasterException &e) {
-         log_->info(me(), string("Success: ") + string(e.reason));
+         log_->info(me(), string("Success: ") + string(e.errorCodeStr) + ": " + string(e.message));
       }
 
       stopWatch_.wait(1000L); // wait a second

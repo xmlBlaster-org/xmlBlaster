@@ -12,7 +12,7 @@ import org.jutils.text.StringHelper;
 
 /**
  * @author  $Author: ruff $ ($Name:  $)
- * @version $Revision: 1.4 $ (State: $State) (Date: $Date: 2002/09/13 23:17:51 $)
+ * @version $Revision: 1.5 $ (State: $State) (Date: $Date: 2002/11/26 12:37:49 $)
  */
 public class SecurityQos extends SaxHandlerBase implements I_SecurityQos
 {
@@ -33,8 +33,9 @@ public class SecurityQos extends SaxHandlerBase implements I_SecurityQos
    private        String    a2BlasterSessionId = null;
 
 
-   public SecurityQos(String xmlQos_literal) throws XmlBlasterException {
-      this.log = Global.instance().getLog("a2Blaster"); 
+   public SecurityQos(Global glob, String xmlQos_literal) throws XmlBlasterException {
+      super(glob);
+      this.log = glob.getLog("a2Blaster"); 
       parse(xmlQos_literal);
    }
 
@@ -229,7 +230,7 @@ public class SecurityQos extends SaxHandlerBase implements I_SecurityQos
             "   ]]>\n" +
             "</securityService>";
 
-         SecurityQos qos = new SecurityQos(xml);
+         SecurityQos qos = new SecurityQos(glob, xml);
          System.out.println(qos.toXml());
       }
       catch(Throwable e) {

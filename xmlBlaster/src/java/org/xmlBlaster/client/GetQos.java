@@ -2,8 +2,6 @@
 Name:      GetQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Handling one QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: GetQos.java,v 1.4 2002/09/13 23:17:53 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -14,20 +12,8 @@ import org.xml.sax.Attributes;
 
 
 /**
- * QoS (quality of service) informations sent from server to client<br />
- * in the returned messages of a get() method call.
- * <p />
- * If you are a Java client you may use this class to parse the QoS argument.
- * <p />
- * Example:
- * <pre>
- *   &lt;qos> &lt;!-- GetQos -->
- *     &lt;state id='OK'/>
- *     &lt;sender>
- *        Tim
- *     &lt;/sender>
- *  &lt;/qos>
- * </pre>
+ * Handling one QoS (quality of service), knows how to parse it with SAX
+ * @deprecated  Use org.xmlBlaster.client.qos.GetReturnQos
  */
 public class GetQos extends org.xmlBlaster.util.XmlQoSBase
 {
@@ -50,6 +36,7 @@ public class GetQos extends org.xmlBlaster.util.XmlQoSBase
     */
    public GetQos(String xmlQoS_literal) throws XmlBlasterException
    {
+      super(Global.instance());
       this.log = Global.instance().getLog("core");
       if (log.CALL) log.call(ME, "Creating GetQos(" + xmlQoS_literal + ")");
       //if (log.CALL) log.call(ME, "Creating GetQos()");

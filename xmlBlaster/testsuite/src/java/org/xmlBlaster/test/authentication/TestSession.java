@@ -12,8 +12,8 @@ import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
@@ -287,7 +287,7 @@ public class TestSession extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      log.info(ME, "Receiving update of a message " + updateKey.getUniqueKey());
+      log.info(ME, "Receiving update of a message " + updateKey.getOid());
       numReceived++;
       return "";
    }

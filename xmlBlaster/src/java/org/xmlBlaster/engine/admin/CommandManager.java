@@ -54,7 +54,7 @@ public final class CommandManager implements I_RunlevelListener
    public CommandManager(Global glob, SessionInfo sessionInfo) {
       this.glob = glob;
       this.log = this.glob.getLog("admin");
-      this.ME = "CommandManager" + this.glob.getLogPraefixDashed();
+      this.ME = "CommandManager" + this.glob.getLogPrefixDashed();
       this.sessionInfo = sessionInfo;
       glob.getRunlevelManager().addRunlevelListener(this);
    }

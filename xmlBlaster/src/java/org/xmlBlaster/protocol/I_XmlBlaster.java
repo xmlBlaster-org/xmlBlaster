@@ -3,7 +3,7 @@ Name:      I_XmlBlaster.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native Interface to xmlBlaster
-Version:   $Id: I_XmlBlaster.java,v 1.12 2002/06/28 15:31:12 ruff Exp $
+Version:   $Id: I_XmlBlaster.java,v 1.13 2002/11/26 12:39:02 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol;
@@ -39,7 +39,7 @@ public interface I_XmlBlaster
     *
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public void unSubscribe(String sessionId, String xmlKey_literal, String unSubscribeQoS_literal) throws XmlBlasterException;
+   public String[] unSubscribe(String sessionId, String xmlKey_literal, String unSubscribeQos_literal) throws XmlBlasterException;
 
    /**
     * Publish a message.

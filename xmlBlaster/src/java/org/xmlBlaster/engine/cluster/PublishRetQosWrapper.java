@@ -7,10 +7,10 @@ Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.cluster;
 
-import org.xmlBlaster.client.PublishRetQos;
+import org.xmlBlaster.client.qos.PublishReturnQos;
 
 /**
- * This class holds the PublishRetQos (the returned QoS of a publish() call) and
+ * This class holds the PublishReturnQos (the returned QoS of a publish() call) and
  * the NodeDomainInfo object responsible for the publish() and allows us to return
  * them both on method return. 
  * <p />
@@ -20,11 +20,11 @@ import org.xmlBlaster.client.PublishRetQos;
 public final class PublishRetQosWrapper {
 
    private NodeDomainInfo nodeDomainInfo;
-   private PublishRetQos publishRetQos;
-   public PublishRetQosWrapper(NodeDomainInfo nodeDomainInfo, PublishRetQos publishRetQos) {
+   private PublishReturnQos publishRetQos;
+   public PublishRetQosWrapper(NodeDomainInfo nodeDomainInfo, PublishReturnQos publishRetQos) {
       this.nodeDomainInfo = nodeDomainInfo;
       this.publishRetQos = publishRetQos;
    }
    public NodeDomainInfo getNodeDomainInfo() { return nodeDomainInfo; }
-   public PublishRetQos getPublishRetQos() { return publishRetQos; }
+   public PublishReturnQos getPublishReturnQos() { return publishRetQos; }
 }

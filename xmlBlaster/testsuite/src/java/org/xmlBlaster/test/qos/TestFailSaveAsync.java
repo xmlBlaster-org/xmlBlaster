@@ -2,8 +2,6 @@
 Name:      TestFailSaveAsync.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Testing publish()
-Version:   $Id: TestFailSaveAsync.java,v 1.2 2002/09/13 23:18:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -16,11 +14,11 @@ import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.recorder.I_InvocationRecorder;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.client.PublishKeyWrapper;
-import org.xmlBlaster.client.PublishQosWrapper;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
-import org.xmlBlaster.client.EraseRetQos;
+import org.xmlBlaster.client.key.PublishKey;
+import org.xmlBlaster.client.qos.PublishQos;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_ConnectionProblems;
 import org.xmlBlaster.engine.helper.Address;
@@ -80,8 +78,8 @@ public class TestFailSaveAsync extends TestCase implements I_Callback, I_Connect
    /** publish rate of tailback msg/sec */
    private final long pullbackRate = 1;
 
-   PublishKeyWrapper publishKeyWrapper;
-   PublishQosWrapper publishQosWrapper;
+   PublishKey publishKeyWrapper;
+   PublishQos publishQosWrapper;
 
    /**
     * Constructs the TestFailSaveAsync object.
@@ -146,15 +144,15 @@ public class TestFailSaveAsync extends TestCase implements I_Callback, I_Connect
           fail("setUp() - login failed: " + e.toString());
       }
 
-      publishKeyWrapper = new PublishKeyWrapper("emptyOid", contentMime);
-      publishKeyWrapper.wrap("<TestFailSaveAsync-AGENT id='192.168.124.10' subId='1' type='generic'/>");
+      publishKeyWrapper = new PublishKey(glob, "emptyOid", contentMime);
+      publishKeyWrapper.setClientTags("<TestFailSaveAsync-AGENT id='192.168.124.10' subId='1' type='generic'/>");
       /*
          String xmlKey = "<key oid='" + oid + "' contentMime='" + contentMime + "'>\n" +
                          "   <TestFailSaveAsync-AGENT id='192.168.124.10' subId='1' type='generic'>" +
                          "   </TestFailSaveAsync-AGENT>" +
                          "</key>";
       */
-      publishQosWrapper = new PublishQosWrapper(); // == "<qos></qos>"
+      publishQosWrapper = new PublishQos(glob); // == "<qos></qos>"
    }
 
    /**
@@ -170,9 +168,9 @@ public class TestFailSaveAsync extends TestCase implements I_Callback, I_Connect
                       "</key>";
       try {
          try {
-            EraseRetQos[] arr = con.erase(xmlKey, null);
+            EraseReturnQos[] arr = con.erase(xmlKey, null);
             assertEquals("Wrong number of message erased", maxMsg-failMsg, arr.length);  // expect 80 to delete as the first 20 are lost when server 'crashed'
-         } catch(XmlBlasterException e) { assertTrue("tearDown - XmlBlasterException: " + e.reason, false); }
+         } catch(XmlBlasterException e) { assertTrue("tearDown - XmlBlasterException: " + e.getMessage(), false); }
 
          con.disconnect(null);
       }
@@ -202,8 +200,8 @@ public class TestFailSaveAsync extends TestCase implements I_Callback, I_Connect
          log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
          assertTrue("returned null subscribeOid", subscribeOid != null);
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.reason);
-         assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
+         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
       }
    }
 
@@ -303,11 +301,11 @@ public class TestFailSaveAsync extends TestCase implements I_Callback, I_Connect
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
       synchronized (this) {
 
-         String oid = updateKey.getUniqueKey();
+         String oid = updateKey.getOid();
 
          numReceived++;
 
-         assertEquals("Wrong sender", senderName, updateQos.getSender());
+         assertEquals("Wrong sender", senderName, updateQos.getSender().getLoginName());
          assertEquals("Message contentMime is corrupted", contentMime, updateKey.getContentMime());
 
          int ii = 0;

@@ -7,7 +7,10 @@ package org.xmlBlaster.test.authentication;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.*;
-import org.xmlBlaster.client.*;
+import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.client.I_ConnectionProblems;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -104,7 +107,7 @@ public class TestSessionReconnect extends TestCase implements I_Callback
                      con.flushQueue();    // send all tailback messages
                      // con.resetQueue(); // or discard them (it is our choice)
                   } catch (XmlBlasterException e) {
-                     log.error(ME, "Exception during reconnection recovery: " + e.reason);
+                     log.error(ME, "Exception during reconnection recovery: " + e.getMessage());
                   }
                }
 
@@ -148,7 +151,7 @@ public class TestSessionReconnect extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      log.info(ME, "Receiving update of a message " + updateKey.getUniqueKey());
+      log.info(ME, "Receiving update of a message " + updateKey.getOid());
       numReceived++;
       return "";
    }

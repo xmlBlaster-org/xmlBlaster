@@ -2,6 +2,7 @@ package org.xmlBlaster.authentication.plugins.demo;
 
 import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.MethodName;
 
 public class Subject implements I_Subject {
    private String       name = null;
@@ -26,7 +27,7 @@ public class Subject implements I_Subject {
    /**
     * Check if the user is permited (authorized) to do something
     */
-   public boolean isAuthorized(String actionKey, String key) {
+   public boolean isAuthorized(MethodName actionKey, String key) {
       gui.printAction(actionKey);
       gui.printKey(key);
       gui.printName(name);
@@ -48,7 +49,7 @@ public class Subject implements I_Subject {
    void authenticate(String passwd) throws XmlBlasterException {
       // throw new XmlBlasterException(ME + ".authenticationFailed", "Wrong identity!");
       // dummy implementation
-      gui.printAction("LOGIN");
+      gui.printAction(MethodName.CONNECT);
       gui.printKey("");
       gui.printName(name);
       if(!gui.getAccessDecision()) throw new XmlBlasterException("AccessDenied!", "Login Failed");

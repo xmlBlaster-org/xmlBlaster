@@ -3,7 +3,7 @@ Name:      MainGUI.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: MainGUI.java,v 1.52 2002/06/27 15:17:46 ruff Exp $
+Version:   $Id: MainGUI.java,v 1.53 2002/11/26 12:37:41 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -12,10 +12,11 @@ import org.jutils.time.StopWatch;
 
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.engine.RequestBroker;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.engine.xml2java.GetQoS;
+import org.xmlBlaster.engine.qos.GetQosServer;
+import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -157,6 +158,8 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
 
    /**
     * Event fired by LogChannel.java through interface LogableDevice.
+    * <p />
+    * log.addLogDevice(this);
     * <p />
     * Log output into TextArea<br />
     * If the number of lines displayed is too big, cut half of them
@@ -361,7 +364,7 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
                log.info(ME, "Dump end");
             }
             catch(XmlBlasterException ee) {
-               log.error(ME, "Sorry, dump failed: " + ee.reason);
+               log.error(ME, "Sorry, dump failed: " + ee.getMessage());
             }
          }
       }
@@ -643,12 +646,12 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
                   for (int ii=0; ii<msgArr.length; ii++) {
                      /*
                      UpdateKey updateKey = new UpdateKey();
-                     updateKey.init(msgArr[ii].xmlKey);
+                     updateKey.init(msgArr[ii].getKey());
                      queryOutput.append("### UpdateKey:\n" + updateKey.printOn().toString());
                      */
-                     queryOutput.append("### XmlKey:\n" + msgArr[ii].xmlKey);
+                     queryOutput.append("### XmlKey:\n" + msgArr[ii].getKey());
                      queryOutput.append("\n");
-                     queryOutput.append("### Content:\n" + new String(msgArr[ii].content) + "\n");
+                     queryOutput.append("### Content:\n" + new String(msgArr[ii].getContent()) + "\n");
                      queryOutput.append("======================================================\n");
                   }
                   if (msgArr.length == 0) {
@@ -662,7 +665,7 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
                         queryOutput.setText("****** Sorry, no match ******");
                   }
                } catch(XmlBlasterException e) {
-                  log.error(ME, "XmlBlasterException: " + e.reason);
+                  log.error(ME, "XmlBlasterException: " + e.getMessage());
                }
                break;
             case KeyEvent.VK_DOWN:
@@ -722,8 +725,9 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
          con.setSecurityPluginData("htpasswd", "1.0", loginName, passwd);
          sessionId = authenticate.login(loginName, passwd, null, null); // synchronous access only, no callback.
          */
-         unsecureSessionInfo = authenticate.unsecureCreateSession("__sys__GuiQuery");
-         log.info(ME, "login for '__sys__GuiQuery' successful.");
+         SessionName subjectName = new SessionName(glob, "__sys__GuiQuery");
+         unsecureSessionInfo = authenticate.unsecureCreateSession(subjectName);
+         log.info(ME, "login for '" + subjectName.getAbsoluteName() + "' successful.");
       }
 
       /**
@@ -734,11 +738,12 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
          try {
             XmlKey kk = new XmlKey(this.authenticate.getGlobal(), "<key oid='' queryType='" + queryType + "'>" + queryString + "</key>");
             stop.restart();
-            MessageUnit[] msgArr = this.authenticate.getGlobal().getRequestBroker().get(unsecureSessionInfo, kk, new GetQoS(this.authenticate.getGlobal(), null));
+            MessageUnit[] msgArr = this.authenticate.getGlobal().getRequestBroker().get(
+                     unsecureSessionInfo, kk, new GetQosServer(this.authenticate.getGlobal(), "<qos/>"));
             log.info(ME, "Got " + msgArr.length + " messages for query '" + queryString + "'" + stop.nice());
             return msgArr;
          } catch(XmlBlasterException e) {
-            log.error(ME, "XmlBlasterException: " + e.reason);
+            log.error(ME, "XmlBlasterException: " + e.getMessage());
             return new MessageUnit[0];
          }
       }

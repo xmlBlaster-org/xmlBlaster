@@ -3,7 +3,7 @@ Name:      TestSubMulti.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubMulti.java,v 1.2 2002/09/13 23:18:31 ruff Exp $
+Version:   $Id: TestSubMulti.java,v 1.3 2002/11/26 12:40:40 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -13,13 +13,13 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
-import org.xmlBlaster.client.EraseRetQos;
-import org.xmlBlaster.client.SubscribeKeyWrapper;
-import org.xmlBlaster.client.SubscribeQosWrapper;
-import org.xmlBlaster.client.PublishKeyWrapper;
-import org.xmlBlaster.client.PublishQosWrapper;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
+import org.xmlBlaster.client.key.SubscribeKey;
+import org.xmlBlaster.client.qos.SubscribeQos;
+import org.xmlBlaster.client.key.PublishKey;
+import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
 import junit.framework.*;
@@ -101,9 +101,9 @@ public class TestSubMulti extends TestCase implements I_Callback
    protected void tearDown()
    {
       try {
-         EraseRetQos[] arr = con.erase("<key oid='"+publishOid+"'/>", "<qos/>");
+         EraseReturnQos[] arr = con.erase("<key oid='"+publishOid+"'/>", "<qos/>");
          assertEquals("Erase", 1, arr.length);
-      } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.reason); }
+      } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.getMessage()); }
 
       con.disconnect(null);
    }
@@ -117,20 +117,20 @@ public class TestSubMulti extends TestCase implements I_Callback
       log.info(ME, "Subscribing using XPath syntax ...");
       try {
         {
-          SubscribeKeyWrapper key = new SubscribeKeyWrapper("//key/location[@dest='agent-192.168.10.218']", "XPATH");
-          SubscribeQosWrapper qos = new SubscribeQosWrapper();
+          SubscribeKey key = new SubscribeKey(glob, "//key/location[@dest='agent-192.168.10.218']", "XPATH");
+          SubscribeQos qos = new SubscribeQos(glob);
           con.subscribe(key.toXml(), qos.toXml(),this);
         }
 
         {
-          SubscribeKeyWrapper key = new SubscribeKeyWrapper("//key[@contentMimeExtended='action']/location[@dest='agent-192.168.10.218' and @driver='PSD1']", "XPATH");
-          SubscribeQosWrapper qos = new SubscribeQosWrapper();
+          SubscribeKey key = new SubscribeKey(glob, "//key[@contentMimeExtended='action']/location[@dest='agent-192.168.10.218' and @driver='PSD1']", "XPATH");
+          SubscribeQos qos = new SubscribeQos(glob);
           con.subscribe(key.toXml(), qos.toXml(), this);
         }
       }
       catch(XmlBlasterException e) {
-        log.warn(ME, "XmlBlasterException: " + e.reason);
-        assertTrue("publish - XmlBlasterException: " + e.reason, false);
+        log.warn(ME, "XmlBlasterException: " + e.getMessage());
+        assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
    }
 
@@ -143,18 +143,18 @@ public class TestSubMulti extends TestCase implements I_Callback
       log.info(ME, "Publishing a message ...");
       numReceived = 0;
 
-      PublishKeyWrapper key = new PublishKeyWrapper("", contentMime, contentMimeExtended);
-      key.wrap("<location dest='agent-192.168.10.218' driver='PSD1'></location>");
-      PublishQosWrapper qos = new PublishQosWrapper();
+      PublishKey key = new PublishKey(glob, "", contentMime, contentMimeExtended);
+      key.setClientTags("<location dest='agent-192.168.10.218' driver='PSD1'></location>");
+      PublishQos qos = new PublishQos(glob);
       senderContent = "some content";
       MessageUnit msgUnit = new MessageUnit(key.toXml(), senderContent.getBytes(), qos.toXml());
       try {
          sentTimestamp = new Timestamp();
-         publishOid = con.publish(msgUnit).getOid();
+         publishOid = con.publish(msgUnit).getKeyOid();
          log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.reason);
-         assertTrue("publish - XmlBlasterException: " + e.reason, false);
+         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
    }
 
@@ -180,13 +180,13 @@ public class TestSubMulti extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      log.info(ME, "Receiving update of message oid=" + updateKey.getUniqueKey() + "...");
+      log.info(ME, "Receiving update of message oid=" + updateKey.getOid() + "...");
 
       numReceived += 1;
 
-      assertEquals("Wrong sender", senderName, updateQos.getSender());
+      assertEquals("Wrong sender", senderName, updateQos.getSender().getLoginName());
       try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Sleep to assure that publish() is returned with publishOid
-      assertEquals("Wrong oid of message returned", publishOid, updateKey.getUniqueKey());
+      assertEquals("Wrong oid of message returned", publishOid, updateKey.getOid());
       assertEquals("Message content is corrupted", new String(senderContent), new String(content));
       assertEquals("Message contentMime is corrupted", contentMime, updateKey.getContentMime());
       assertEquals("Message contentMimeExtended is corrupted", contentMimeExtended, updateKey.getContentMimeExtended());

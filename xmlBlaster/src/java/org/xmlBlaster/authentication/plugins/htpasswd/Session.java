@@ -13,7 +13,9 @@ import org.xmlBlaster.authentication.plugins.I_Manager;
 import org.xmlBlaster.authentication.plugins.I_Session;
 import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.MethodName;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.jutils.log.LogChannel;
 
@@ -27,6 +29,7 @@ import org.jutils.log.LogChannel;
 public class Session implements I_Session, I_Subject {
 
    private static final String ME = "Session";
+   private final Global glob;
    private final LogChannel log;
 
    protected Manager secMgr = null;
@@ -42,13 +45,14 @@ public class Session implements I_Session, I_Subject {
    protected String passwd = null;
 
    public Session( Manager sm, String sessionId ) throws XmlBlasterException {
-      log = sm.getGlobal().getLog("auth");
+      this.glob = sm.getGlobal();
+      this.log = this.glob.getLog("auth");
       log.trace(ME, "Initializing HTACCESS Session sm="+sm+", sessionId="+sessionId+".");
 
-      secMgr = sm;
+      this.secMgr = sm;
       this.sessionId = sessionId;
 
-      htpasswd = new HtPasswd(sm.getGlobal());
+      this.htpasswd = new HtPasswd(sm.getGlobal());
    }
 
    /**
@@ -60,7 +64,7 @@ public class Session implements I_Session, I_Subject {
     *                                exist or the passwd is incorrect.
     */
    public String init( String securityQos_literal ) throws XmlBlasterException {
-      return init(new SecurityQos(securityQos_literal));
+      return init(new SecurityQos(this.glob, securityQos_literal));
    }
 
    /**
@@ -110,7 +114,7 @@ public class Session implements I_Session, I_Subject {
     * Known action keys:
     *    publish, subscribe, get, erase, ... see Constants.PUBLISH etc.
     */
-   public boolean isAuthorized(String actionKey, String key) {
+   public boolean isAuthorized(MethodName actionKey, String key) {
       if (authenticated == false) {
          log.warn(ME+".AccessDenied", "Authentication of user " + getName() + " failed");
          return false;
@@ -160,6 +164,10 @@ public class Session implements I_Session, I_Subject {
       return xmlMsg;
    }
 
+   public byte[] importMessage(byte[] xmlMsg) throws XmlBlasterException {
+      return xmlMsg;
+   }
+
    /**
     * encrypt, sign, seal ... an outgoing message
     * <p/>
@@ -175,6 +183,10 @@ public class Session implements I_Session, I_Subject {
    }
 
    public String exportMessage(String xmlMsg) throws XmlBlasterException {
+      return xmlMsg;
+   }
+
+   public byte[] exportMessage(byte[] xmlMsg) throws XmlBlasterException {
       return xmlMsg;
    }
 }

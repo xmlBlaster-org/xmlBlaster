@@ -22,10 +22,10 @@ public class XmlBlasterClassLoader extends URLClassLoader {
    private final LogChannel log;
    private final boolean useXmlBlasterClassloader;
 
-   public XmlBlasterClassLoader(URL[] urls) {
+   public XmlBlasterClassLoader(Global glob, URL[] urls) {
       super(urls);
-      log = Global.instance().getLog("classloader");
-      useXmlBlasterClassloader = Global.instance().getProperty().get("classloader.xmlBlaster", false);
+      log = glob.getLog("classloader");
+      useXmlBlasterClassloader = glob.getProperty().get("classloader.xmlBlaster", false);
    }
 
    public Class loadClass(String name) throws ClassNotFoundException {

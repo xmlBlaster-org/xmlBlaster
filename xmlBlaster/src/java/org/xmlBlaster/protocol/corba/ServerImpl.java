@@ -3,13 +3,14 @@ Name:      ServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: ServerImpl.java,v 1.19 2002/05/30 09:49:22 ruff Exp $
+Version:   $Id: ServerImpl.java,v 1.20 2002/11/26 12:39:04 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.enum.ErrorCode;
 import org.jutils.time.StopWatch;
 import org.xmlBlaster.protocol.corba.serverIdl.*;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
@@ -27,6 +28,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
 //public class ServerImpl implements ServerOperations {    // TIE approach
 
    private final String ME = "ServerImpl";
+   private final Global glob;
    private final LogChannel log;
    private final org.omg.CORBA.ORB orb;
    private final I_XmlBlaster blaster;
@@ -37,7 +39,8 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
     */
    public ServerImpl(Global glob, org.omg.CORBA.ORB orb, I_XmlBlaster blaster) throws XmlBlasterException
    {
-      this.log = glob.getLog("corba");
+      this.glob = glob;
+      this.log = this.glob.getLog("corba");
       if (log.CALL) log.call(ME, "Entering constructor with ORB argument");
       this.orb = orb;
       this.blaster = blaster;
@@ -71,7 +74,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
          return oid;
       }
       catch (org.xmlBlaster.util.XmlBlasterException e) {
-         throw new XmlBlasterException(e.id, e.reason); // transform native exception to Corba exception
+         throw CorbaDriver.convert(e); // transform native exception to Corba exception
       }
    }
 
@@ -79,19 +82,21 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
    /**
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public void unSubscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
+   public String[] unSubscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       try {
          if (log.CALL) log.call(ME, "Entering unSubscribe() xmlKey=\n" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
          if (log.DUMP) log.dump(ME, "unSubscribe()\n" + xmlKey_literal + "\n" + qos_literal);
          StopWatch stop=null; if (log.TIME) stop = new StopWatch();
 
-         blaster.unSubscribe(getSessionId(), xmlKey_literal, qos_literal);
+         String[] strArr = blaster.unSubscribe(getSessionId(), xmlKey_literal, qos_literal);
 
          if (log.TIME) log.time(ME, "Elapsed time in unSubscribe()" + stop.nice());
+
+         return strArr;
       }
       catch (org.xmlBlaster.util.XmlBlasterException e) {
-         throw new XmlBlasterException(e.id, e.reason); // transform native exception to Corba exception
+         throw CorbaDriver.convert(e); // transform native exception to Corba exception
       }
    }
 
@@ -105,12 +110,12 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
          if (log.CALL) log.call(ME, "Entering publish() ...");
          if (log.DUMP) log.dump(ME, "publish()\n" + msgUnit.xmlKey + "\n" + msgUnit.qos);
 
-         String retVal = blaster.publish(getSessionId(), CorbaDriver.convert(msgUnit));
+         String retVal = blaster.publish(getSessionId(), CorbaDriver.convert(glob, msgUnit));
 
          return retVal;
       }
       catch (org.xmlBlaster.util.XmlBlasterException e) {
-         throw new XmlBlasterException(e.id, e.reason); // transform native exception to Corba exception
+         throw CorbaDriver.convert(e); // transform native exception to Corba exception
       }
    }
 
@@ -134,14 +139,14 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
             return returnArr;
          }
 
-         org.xmlBlaster.engine.helper.MessageUnit[] internalUnitArr = CorbaDriver.convert(msgUnitArr);   // convert Corba to internal ...
+         org.xmlBlaster.engine.helper.MessageUnit[] internalUnitArr = CorbaDriver.convert(glob, msgUnitArr);   // convert Corba to internal ...
 
          String[] strArr = blaster.publishArr(getSessionId(), internalUnitArr);
 
          return strArr;
       }
       catch (org.xmlBlaster.util.XmlBlasterException e) {
-         throw new XmlBlasterException(e.id, e.reason); // transform native exception to Corba exception
+         throw CorbaDriver.convert(e); // transform native exception to Corba exception
       }
    }
 
@@ -159,7 +164,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
          if (log.CALL) log.call(ME, "Entering publishOneway(" + msgUnitArr.length + ") ...");
          log.info(ME, "Entering publishOneway(" + msgUnitArr.length + ") ...");
 
-         org.xmlBlaster.engine.helper.MessageUnit[] internalUnitArr = CorbaDriver.convert(msgUnitArr);   // convert Corba to internal ...
+         org.xmlBlaster.engine.helper.MessageUnit[] internalUnitArr = CorbaDriver.convert(glob, msgUnitArr);   // convert Corba to internal ...
          blaster.publishOneway(getSessionId(), internalUnitArr);
       }
       catch (Throwable e) {
@@ -183,7 +188,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
          return retArr;
       }
       catch (org.xmlBlaster.util.XmlBlasterException e) {
-         throw new XmlBlasterException(e.id, e.reason); // transform native exception to Corba exception
+         throw CorbaDriver.convert(e); // transform native exception to Corba exception
       }
    }
 
@@ -208,7 +213,7 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
          return corbaUnitArr;
       }
       catch (org.xmlBlaster.util.XmlBlasterException e) {
-         throw new XmlBlasterException(e.id, e.reason); // transform native exception to Corba exception
+         throw CorbaDriver.convert(e); // transform native exception to Corba exception
       }
    }
 
@@ -233,7 +238,9 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
          sessionId = convert(active_oid);
       } catch (Exception e) {
          log.error(ME+".AccessCheckProblem", "Sorry, can't find out who you are, access denied");
-         throw new XmlBlasterException("AccessCheckProblem", "Sorry, can't find out who you are, access denied");
+         throw CorbaDriver.convert(new org.xmlBlaster.util.XmlBlasterException(glob,
+                        ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED, ME,
+                        "Sorry, can't find out who you are, access denied"));
       }
       return sessionId;
    }

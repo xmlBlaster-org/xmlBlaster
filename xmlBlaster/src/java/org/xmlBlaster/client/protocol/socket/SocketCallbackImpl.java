@@ -2,9 +2,6 @@
 Name:      SocketCallbackImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Helper to connect to xmlBlaster using plain socket
-Version:   $Id: SocketCallbackImpl.java,v 1.28 2002/09/15 18:53:58 ruff Exp $
-Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
 
@@ -15,7 +12,6 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.protocol.socket.Parser;
 import org.xmlBlaster.protocol.socket.Executor;
-import org.xmlBlaster.client.protocol.ConnectionException;
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
 import org.xmlBlaster.client.protocol.I_CallbackServer;
 
@@ -23,7 +19,7 @@ import java.io.IOException;
 
 
 /**
- * Used for client to receive xmlBlaster callbacks. 
+ * Used for client to receive xmlBlaster callbacks over plain sockets. 
  * <p />
  * One instance of this for each client, as a separate thread blocking
  * on the socket input stream waiting for messages from xmlBlaster. 
@@ -102,7 +98,7 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
 
       while(running) {
 
-         Parser receiver = new Parser();
+         Parser receiver = new Parser(glob);
          try {
             receiver.parse(iStream); // This method blocks until a message arrives
 
@@ -126,7 +122,6 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
             if (running == true) {
                log.error(ME, "Closing connection to server: " + e.toString());
                sockCon.shutdown();
-               //throw new ConnectionException(ME, e.toString());  // does a sockCon.shutdown(); ?
                // Exceptions ends nowhere but terminates the thread
             }
          }

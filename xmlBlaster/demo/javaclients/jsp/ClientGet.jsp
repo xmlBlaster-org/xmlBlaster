@@ -14,10 +14,10 @@
    <%@ page import = "org.xmlBlaster.client.protocol.XmlBlasterConnection" %>
    <%@ page import = "org.xmlBlaster.client.I_Callback" %>
    <%@ page import = "org.xmlBlaster.util.ConnectQos" %>
-   <%@ page import = "org.xmlBlaster.client.UpdateKey" %>
-   <%@ page import = "org.xmlBlaster.client.UpdateQos" %>
-   <%@ page import = "org.xmlBlaster.client.GetKeyWrapper" %>
-   <%@ page import = "org.xmlBlaster.client.GetQosWrapper" %>
+   <%@ page import = "org.xmlBlaster.client.key.UpdateKey" %>
+   <%@ page import = "org.xmlBlaster.client.qos.UpdateQos" %>
+   <%@ page import = "org.xmlBlaster.client.key.GetKey" %>
+   <%@ page import = "org.xmlBlaster.client.qos.GetQos" %>
    <%@ page import = "org.xmlBlaster.util.XmlBlasterException" %>
    <%@ page import = "org.xmlBlaster.util.XmlBlasterProperty" %>
    <%@ page import = "org.xmlBlaster.engine.helper.MessageUnit" %>
@@ -39,9 +39,9 @@
             log.info(ME, "Now we are connected to xmlBlaster MOM server");
 
             log.info(ME, "Getting a message - checking free memory in server ...");
-            // GetKeyWrapper helps us to create this string "<key oid='__cmd:?freeMem' queryType='EXACT'></key>";
-            GetKeyWrapper key = new GetKeyWrapper("__cmd:?freeMem", "EXACT");
-            GetQosWrapper qos = new GetQosWrapper(); // helps us to create "<qos></qos>":
+            // GetKey helps us to create this string "<key oid='__cmd:?freeMem' queryType='EXACT'></key>";
+            GetKey key = new GetKey(glob, "__cmd:?freeMem", "EXACT");
+            GetQos qos = new GetQos(glob); // helps us to create "<qos></qos>":
 
             try {
                MessageUnit[] msgArr = null;
@@ -58,8 +58,8 @@
                }
                out.println();
             } catch(XmlBlasterException e) {
-               log.warn(ME, "XmlBlasterException: " + e.reason);
-               out.println(e.reason);
+               log.warn(ME, "XmlBlasterException: " + e.getMessage());
+               out.println(e.getMessage());
             }
             
             blasterConnection.logout();

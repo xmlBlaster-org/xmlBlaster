@@ -3,7 +3,7 @@ Name:      I_AccessFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface for access plugins
-Version:   $Id: I_AccessFilter.java,v 1.6 2002/08/26 14:32:03 ruff Exp $
+Version:   $Id: I_AccessFilter.java,v 1.7 2002/11/26 12:38:47 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime;
@@ -17,16 +17,19 @@ import org.xmlBlaster.engine.mime.Query;
 
 /**
  * This interface hides the real protocol used to check messages. 
- * <p />
+ * <p>
  * The interface may be used to filter messages on subscribe() or get() access.
  * Only messages where the match() method returns true
  * are sent via update() to the client
- * <p />
- * Note that you can manipulate the content of a message with your plugin
- * but changing the XmlKey or QoS is not allowed.
- * <p />
+ * </p>
+ * <p>
+ * Note that you are not allowed to manipulate the content or XmlKey or QoS of a message with your plugin
+ * as this would affect all other subscribers (you are working on a reference to the
+ * original message).
+ * </p>
+ * <p>
  * The plugin with your filter rules must implement this interface.
- * <p />
+ * </p>
  * Steps to add a new plugin:
  * <ul>
  *    <li>Code the plugin.<br />
@@ -42,7 +45,7 @@ import org.xmlBlaster.engine.mime.Query;
  *    </li>
  * </ul>
  *
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  * @author ruff@swand.lake.de
  */
 public interface I_AccessFilter
@@ -72,9 +75,11 @@ public interface I_AccessFilter
 
    /**
     * Check if the filter rule matches for this message. 
-    * <p />
-    * You may manipulate the content of the message, but not the key and qos or other attributes
-    * of the MessageUnitWrapper object.
+    * <p>
+    * Note that you are not allowed to manipulate the content or XmlKey or QoS of a message with your plugin
+    * as this would affect all other subscribers (you are working on a reference to the
+    * original message).
+    * </p>
     * @param publisher The session object describing the publisher
     * @param receiver The session object describing the receiver
     * @param msgUnitWrapper  The message to check (access the raw message with msgUnitWrapper.getMessageUnit())
@@ -88,11 +93,9 @@ public interface I_AccessFilter
     * @return true If the filter matches this message, else false
     * @exception XmlBlasterException Is thrown on problems, for example if the MIME type
     *            does not fit to message content.<br />
-    *            Take care throwing an exception, as the
-    *            exception is routed back to the publisher. Subscribers which where served before
-    *            may receive the update, subscribers which are served after us won't get it.
-    *            For the publisher it looks as if the publish failed completely. Probably it is
-    *            best to return 'false' instead and log the situation.
+    *            Take care throwing an exception, the message is not updated and is send as 'deadMessage'
+    *            (or whatever the current error handler has implemented).
+    *            Probably it is best to return 'false' instead and log the situation.
     */
    public boolean match(SessionInfo publisher, SessionInfo receiver, MessageUnitWrapper msgUnitWrapper, Query query) throws XmlBlasterException;
 

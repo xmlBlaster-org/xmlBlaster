@@ -3,7 +3,7 @@ Name:      CallbackSoapDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using SOAP interface.
-Version:   $Id: CallbackSoapDriver.java,v 1.3 2002/08/26 11:04:26 ruff Exp $
+Version:   $Id: CallbackSoapDriver.java,v 1.4 2002/11/26 12:39:20 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.soap;
@@ -14,7 +14,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.engine.queue.MsgQueueEntry;
+import org.xmlBlaster.util.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.client.protocol.soap.SoapConnection; // The SoapException to XmlBlasterException converter
 
 import org.jafw.saw.*;
@@ -115,7 +115,7 @@ public class CallbackSoapDriver implements I_CallbackDriver
          soapClient = TransportConnectionManager.createTransportConnection(sawURL);
       } catch (SOAPException e) {
          log.error(ME, "FaultCode: " + e.getFaultCode() + " FaultString: " + e.getFaultString());
-         throw new XmlBlasterException("SOAPException", e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_ADDRESS, "SOAP-CallbackHandleInvalid", "", e);
       }
    }
 
@@ -133,8 +133,9 @@ public class CallbackSoapDriver implements I_CallbackDriver
     * </pre>
     * @exception e.id="CallbackFailed", should be caught and handled appropriate
     */
-   public final String[] sendUpdate(MsgQueueEntry[] msg) throws XmlBlasterException {
-      if (msg == null || msg.length < 1) throw new XmlBlasterException(ME, "Illegal update argument");
+   public final String[] sendUpdate(MsgQueueUpdateEntry[] msg) throws XmlBlasterException {
+      if (msg == null || msg.length < 1)
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal sendUpdate() argument");
  
       log.error(ME, "sendUpdate() not implemented");
       return new String[0];
@@ -146,7 +147,7 @@ public class CallbackSoapDriver implements I_CallbackDriver
             Vector args = new Vector();
             MessageUnit msgUnit = msg[ii].getMessageUnit();
             args.addElement(callbackAddress.getSessionId());
-            args.addElement(msgUnit.getXmlKey());
+            args.addElement(msgUnit.getKey());
             args.addElement(msgUnit.getContent());
             args.addElement(msgUnit.getQos());
           
@@ -154,8 +155,8 @@ public class CallbackSoapDriver implements I_CallbackDriver
 
             retVal[ii] = (String)soapClient.execute("update", args);
 
-            if (log.TRACE) log.trace(ME, "Successfully sent message '" + msgUnit.getXmlKey()
-                + "' update from sender '" + msg[0].getPublisherName() + "' to '" + callbackAddress.getSessionId() + "'");
+            if (log.TRACE) log.trace(ME, "Successfully sent message '" + msgUnit.getKey()
+                + "' update from sender '" + msg[0].getSender() + "' to '" + callbackAddress.getSessionId() + "'");
          }
          return retVal;
       }
@@ -163,13 +164,14 @@ public class CallbackSoapDriver implements I_CallbackDriver
          XmlBlasterException e = SoapConnection.extractXmlBlasterException(ex);
          String str = "Sending message to " + callbackAddress.getAddress() + " failed in client: " + ex.toString();
          if (log.TRACE) log.trace(ME + ".sendUpdate", str);
-         throw new XmlBlasterException("CallbackFailed", str);
+         // TODO: distinguish between communication exception and exception thrown by remote user
+         throw new XmlBlasterException(glob, ErrorCode.USER_UNKNOWN, ME, "", e);
       }
       catch (Throwable e) {
          String str = "Sending message to " + callbackAddress.getAddress() + " failed: " + e.toString();
          if (log.TRACE) log.trace(ME + ".sendUpdate", str);
          e.printStackTrace();
-         throw new XmlBlasterException("CallbackFailed", str);
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "", e);
       }
       */
    }
@@ -178,8 +180,9 @@ public class CallbackSoapDriver implements I_CallbackDriver
     * The oneway variant, without return value. 
     * @exception XmlBlasterException Is never from the client (oneway).
     */
-   public void sendUpdateOneway(MsgQueueEntry[] msg) throws XmlBlasterException {
-      if (msg == null || msg.length < 1) throw new XmlBlasterException(ME, "Illegal updateOneway argument");
+   public void sendUpdateOneway(MsgQueueUpdateEntry[] msg) throws XmlBlasterException {
+      if (msg == null || msg.length < 1)
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal sendUpdateOneway() argument");
  
       log.error(ME, "sendUpdateOneway() not implemented");
       /*
@@ -189,7 +192,7 @@ public class CallbackSoapDriver implements I_CallbackDriver
             Vector args = new Vector();
             MessageUnit msgUnit = msg[ii].getMessageUnit();
             args.addElement(callbackAddress.getSessionId());
-            args.addElement(msgUnit.getXmlKey());
+            args.addElement(msgUnit.getKey());
             args.addElement(msgUnit.getContent());
             args.addElement(msgUnit.getQos());
           
@@ -197,21 +200,22 @@ public class CallbackSoapDriver implements I_CallbackDriver
 
             soapClient.execute("updateOneway", args);
 
-            if (log.TRACE) log.trace(ME, "Successfully sent message '" + msgUnit.getXmlKey()
-                + "' update from sender '" + msg[0].getPublisherName() + "' to '" + callbackAddress.getSessionId() + "'");
+            if (log.TRACE) log.trace(ME, "Successfully sent message '" + msgUnit.getKey()
+                + "' update from sender '" + msg[0].getSender() + "' to '" + callbackAddress.getSessionId() + "'");
          }
       }
       catch (SoapException ex) {
          XmlBlasterException e = SoapConnection.extractXmlBlasterException(ex);
-         String str = "Sending oneway message to " + callbackAddress.getAddress() + " failed in client: " + ex.toString();
-         if (log.TRACE) log.trace(ME + ".sendUpdateOneway", str);
-         throw new XmlBlasterException("CallbackFailed", str);
+         String str = "Sending message to " + callbackAddress.getAddress() + " failed in client: " + ex.toString();
+         if (log.TRACE) log.trace(ME + ".sendUpdate", str);
+         // TODO: distinguish between communication exception and exception thrown by remote user
+         throw new XmlBlasterException(glob, ErrorCode.USER_UNKNOWN, ME, "", e);
       }
       catch (Throwable e) {
-         String str = "Sending oneway message to " + callbackAddress.getAddress() + " failed: " + e.toString();
-         if (log.TRACE) log.trace(ME + ".sendUpdateOneway", str);
+         String str = "Sending message to " + callbackAddress.getAddress() + " failed: " + e.toString();
+         if (log.TRACE) log.trace(ME + ".sendUpdate", str);
          e.printStackTrace();
-         throw new XmlBlasterException("CallbackFailed", str);
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "", e);
       }
       */
    }
@@ -249,7 +253,8 @@ public class CallbackSoapDriver implements I_CallbackDriver
          //then the return will always be null, but there will be a SOAPException thrown if an error occurs
          if (returnParam == null) {
             log.error(ME, "I got a null response for ping(), something went wrong");
-            throw new XmlBlasterException("CallbackPingFailed", "Soap callback ping failed, null was returned");
+            throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
+                      "Soap callback ping failed, null was returned");
          } else {
             Class returnType = returnParam.getType();
             log.info(ME, "Return had class type of: " + returnType.getName());
@@ -260,7 +265,8 @@ public class CallbackSoapDriver implements I_CallbackDriver
       } catch (SOAPException se) {
          //If there was an error while invoking the call
          log.error(ME, "Ping failed, faultCode: " + se.getFaultCode() + " faultString: " + se.getFaultString());
-         throw new XmlBlasterException("CallbackPingFailed", "Soap callback ping failed: " + se.toString());
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
+                     "SOAP callback ping failed", se);
       }
    }
 

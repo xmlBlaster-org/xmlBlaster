@@ -11,8 +11,8 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.I_ConnectionProblems;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -61,7 +61,7 @@ public class TestLogout extends TestCase implements I_Callback
                   try {
                      con.flushQueue();    // send all tailback messages
                   } catch (XmlBlasterException e) {
-                     log.error(ME, "Exception during reconnection recovery: " + e.reason);
+                     log.error(ME, "Exception during reconnection recovery: " + e.getMessage());
                   }
                }
                public void lostConnection() {
@@ -108,7 +108,7 @@ public class TestLogout extends TestCase implements I_Callback
    /**
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-      fail("Receiving update of a message " + updateKey.getUniqueKey());
+      fail("Receiving update of a message " + updateKey.getOid());
       return "";
    }
 

@@ -3,7 +3,7 @@ Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: AuthServerImpl.java,v 1.21 2002/05/16 19:58:34 ruff Exp $
+Version:   $Id: AuthServerImpl.java,v 1.22 2002/11/26 12:39:03 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -18,6 +18,7 @@ import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
 import org.xmlBlaster.protocol.corba.serverIdl.ServerHelper;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.ConnectReturnQos;
+import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
 import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.engine.xml2java.*;
@@ -141,7 +142,9 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
 
       if (loginName==null || passwd==null || qos_literal==null) {
          log.error(ME+"InvalidArguments", "login failed: please use no null arguments for login()");
-         throw new XmlBlasterException("loginFailed.InvalidArguments", "login failed: please use no null arguments for login()");
+         throw CorbaDriver.convert(new org.xmlBlaster.util.XmlBlasterException(glob,
+                     ErrorCode.USER_SECURITY_AUTHENTICATION_ILLEGALARGUMENT, ME,
+                     "Login failed: please use no null arguments for login()"));
       }
 
       try {
@@ -154,14 +157,19 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
 
          // Build return handle ...
          ServerRef ref = returnQos.getServerRef();
-         if (ref == null) throw new XmlBlasterException(ME+".internal", "Can't determine server reference.");
+         if (ref == null) {
+            throw CorbaDriver.convert(new org.xmlBlaster.util.XmlBlasterException(glob,
+                     ErrorCode.INTERNAL_CONNECTIONFAILURE,
+                     ME,
+                     "Can't determine server reference."));
+         }
          String xmlBlasterIOR = ref.getAddress();
          org.xmlBlaster.protocol.corba.serverIdl.Server xmlBlaster =
                             ServerHelper.narrow(orb.string_to_object(xmlBlasterIOR));
          return xmlBlaster;
       }
       catch (org.xmlBlaster.util.XmlBlasterException e) {
-         throw new XmlBlasterException(e.id, e.reason); // transform native exception to Corba exception
+         throw CorbaDriver.convert(e); // transform native exception to Corba exception
       }
    }
 
@@ -175,7 +183,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
       try {
          return connect(new ConnectQos(glob, qos_literal)).toXml();
       } catch (org.xmlBlaster.util.XmlBlasterException e) {
-         throw new XmlBlasterException(e.id, e.reason); // transform native exception to Corba exception
+         throw CorbaDriver.convert(e); // transform native exception to Corba exception
       }
    }
 
@@ -207,7 +215,8 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
       } catch (Exception e) {
          e.printStackTrace();
          log.error(ME+".Corba", e.toString());
-         throw new XmlBlasterException(ME + ".Corba.connectFailed", "connect failed: " + e.toString());
+         throw CorbaDriver.convert(new org.xmlBlaster.util.XmlBlasterException(glob,
+                     ErrorCode.INTERNAL_CONNECTIONFAILURE, ME, "connect failed: " + e.toString()));
       }
 
       try {
@@ -218,7 +227,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
          returnQos.setServerRef(new ServerRef("IOR", serverIOR));
       }
       catch (org.xmlBlaster.util.XmlBlasterException e) {
-         throw new XmlBlasterException(e.id, e.reason); // transform native exception to Corba exception
+         throw CorbaDriver.convert(e); // transform native exception to Corba exception
       }
 
       if (log.TIME) log.time(ME, "Elapsed time in connect()" + stop.nice());
@@ -233,7 +242,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
          authenticate.disconnect(sessionId, qos_literal); // throws XmlBlasterException (eg if not connected (init not called, timeout etc.) or someone else than the session owner called disconnect!)
       }
       catch (org.xmlBlaster.util.XmlBlasterException e) {
-         throw new XmlBlasterException(e.id, e.reason); // transform native exception to Corba exception
+         throw CorbaDriver.convert(e); // transform native exception to Corba exception
       }
       if (log.CALL) log.call(ME, "Exiting disconnect()");
    }
@@ -261,7 +270,10 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
          if (log.TRACE) log.trace(ME, "POA oid=<" + sessionId + ">");
       } catch (Exception e) {
          log.error(ME+".Unknown", "Sorry, you are unknown. No logout possible.");
-         throw new XmlBlasterException("CorbaUnknown", "Sorry, you are not known with CORBA");
+         throw CorbaDriver.convert(new org.xmlBlaster.util.XmlBlasterException(glob,
+                     ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED,
+                     ME,
+                     "Sorry, you are not known with CORBA"));
       }
       return sessionId;
    }

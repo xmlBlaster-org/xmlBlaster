@@ -3,7 +3,7 @@ Name:      ProtocolManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   ProtocolManager which loads protocol plugins
-Version:   $Id: ProtocolManager.java,v 1.8 2002/09/19 19:17:16 ruff Exp $
+Version:   $Id: ProtocolManager.java,v 1.9 2002/11/26 12:39:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol;
 
@@ -52,7 +52,7 @@ public class ProtocolManager extends PluginManagerBase implements I_RunlevelList
       super(glob);
       this.glob = glob;
       this.log = glob.getLog("protocol");
-      this.ME = "ProtocolManager" + this.glob.getLogPraefixDashed();
+      this.ME = "ProtocolManager" + this.glob.getLogPrefixDashed();
       this.cbProtocolManager = new CbProtocolManager(glob);
       if (log.CALL) log.call(ME, "Constructor ProtocolManager");
       glob.getRunlevelManager().addRunlevelListener(this);
@@ -180,8 +180,8 @@ public class ProtocolManager extends PluginManagerBase implements I_RunlevelList
          try {
             driver.activate();
          } catch (XmlBlasterException e) {
-            log.error(ME, "Initializing of driver " + driver.getName() + " failed:" + e.reason);
-            //throw new XmlBlasterException("Driver.NoInit", "Initializing of driver " + driver.getName() + " failed:" + e.reason);
+            log.error(ME, "Initializing of driver " + driver.getName() + " failed:" + e.getMessage());
+            //throw new XmlBlasterException("Driver.NoInit", "Initializing of driver " + driver.getName() + " failed:" + e.getMessage());
          }
          catch(Throwable e) {
             log.error(ME, "Ignoring problems on loading protocol driver: " + e.toString());

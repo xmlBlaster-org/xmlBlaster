@@ -50,6 +50,8 @@ public final class RunlevelManager
    public static final int RUNLEVEL_RUNNING = 9;
    public static final int RUNLEVEL_RUNNING_POST = 10;
 
+   private final I_RunlevelListener[] DUMMY_ARR = new I_RunlevelListener[0];
+
 
    /**
     * For listeners who want to be informed about runlevel changes. 
@@ -65,7 +67,7 @@ public final class RunlevelManager
       this.glob = glob;
       this.log = glob.getLog("core");
       instanceCounter++;
-      this.ME = "RunlevelManager"/* + instanceCounter*/ + this.glob.getLogPraefixDashed();
+      this.ME = "RunlevelManager"/* + instanceCounter*/ + this.glob.getLogPrefixDashed();
       if (log.CALL) log.call(ME, "Incarnated run level manager #" + instanceCounter);
    }
 
@@ -73,7 +75,7 @@ public final class RunlevelManager
     * Sets the cluster node ID as soon as it is known. 
     */
    public void setId(String id) {
-      this.ME = "RunlevelManager" + this.glob.getLogPraefixDashed();
+      this.ME = "RunlevelManager" + this.glob.getLogPrefixDashed();
    }
 
    /**
@@ -217,27 +219,31 @@ public final class RunlevelManager
 
    private final int fireRunlevelEvent(int from, int to, boolean force) throws XmlBlasterException {
       int numErrors = 0;
+
+      // Take a snapshot of current listeners (to avoid ConcurrentModificationException in iterator)
+      I_RunlevelListener[] listeners;
       synchronized (runlevelListenerSet) {
          if (runlevelListenerSet.size() == 0)
             return numErrors;
-         Iterator iterator = runlevelListenerSet.iterator();
-         while (iterator.hasNext()) {
-            I_RunlevelListener li = (I_RunlevelListener)iterator.next();
-            try {
-               li.runlevelChange(from, to, force);
-               if (log.TRACE) {
-                  if (isMajorLevel(to)) {
-                     if (from < to)
-                        log.trace(ME, li.getName() + " successful startup to run level=" + to + ", errors=" + numErrors + ".");
-                     else
-                        log.trace(ME, li.getName() + " successful shutdown to run level=" + to + ", errors=" + numErrors + ".");
-                  }
+         listeners = (I_RunlevelListener[])runlevelListenerSet.toArray(DUMMY_ARR);
+      }
+
+      for (int ii=0; ii<listeners.length; ii++) {
+         I_RunlevelListener li = listeners[ii];
+         try {
+            li.runlevelChange(from, to, force);
+            if (log.TRACE) {
+               if (isMajorLevel(to)) {
+                  if (from < to)
+                     log.trace(ME, li.getName() + " successful startup to run level=" + to + ", errors=" + numErrors + ".");
+                  else
+                     log.trace(ME, li.getName() + " successful shutdown to run level=" + to + ", errors=" + numErrors + ".");
                }
             }
-            catch (XmlBlasterException e) {
-               log.warn(ME, "Changing from run level=" + from + " to level=" + to + " failed for component " + li.getName() + ": " + e.toString());
-               numErrors++;
-            }
+         }
+         catch (XmlBlasterException e) {
+            log.warn(ME, "Changing from run level=" + from + " to level=" + to + " failed for component " + li.getName() + ": " + e.toString());
+            numErrors++;
          }
       }
       return numErrors;

@@ -3,7 +3,7 @@ Name:      TestCallback.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestCallback.java,v 1.1 2002/09/12 21:01:43 ruff Exp $
+Version:   $Id: TestCallback.java,v 1.2 2002/11/26 12:40:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -17,9 +17,9 @@ import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
-import org.xmlBlaster.client.EraseRetQos;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
@@ -41,8 +41,8 @@ public class TestCallback extends TestCase implements I_Callback
    private String passwd = "secret";
    private int numReceived = 0;         // error checking
 
-   private boolean isDeadLetter = false;
-   private String subscribeDeadLetterOid = null;
+   private boolean isDeadMessage = false;
+   private String subscribeDeadMessageOid = null;
    private XmlBlasterConnection conAdmin = null;
    private String publishOid = null;
 
@@ -79,12 +79,12 @@ public class TestCallback extends TestCase implements I_Callback
       }
 
       try {
-         conAdmin = new XmlBlasterConnection();
+         conAdmin = new XmlBlasterConnection(glob);
          ConnectQos qos = new ConnectQos(glob, "admin", passwd);
          conAdmin.connect(qos, this);
 
-         subscribeDeadLetterOid = conAdmin.subscribe("<key oid='__sys__deadLetter'/>", null).getSubscriptionId();
-         log.info(ME, "Success: Subscribe on " + subscribeDeadLetterOid + " done");
+         subscribeDeadMessageOid = conAdmin.subscribe("<key oid='__sys__deadMessage'/>", null).getSubscriptionId();
+         log.info(ME, "Success: Subscribe on " + subscribeDeadMessageOid + " done");
       }
       catch (Exception e) {
          log.error(ME, e.toString());
@@ -102,7 +102,7 @@ public class TestCallback extends TestCase implements I_Callback
       if (isSocket) return;
       try {
          if (conAdmin != null) {
-            EraseRetQos[] strArr = conAdmin.erase("<key oid='" + publishOid + "'/>", null);
+            EraseReturnQos[] strArr = conAdmin.erase("<key oid='" + publishOid + "'/>", null);
             if (strArr.length != 1) log.error(ME, "ERROR: Erased " + strArr.length + " messages");
             conAdmin.disconnect(new DisconnectQos());
          }
@@ -122,7 +122,7 @@ public class TestCallback extends TestCase implements I_Callback
       log.info(ME, "testCallbackFailure() ...");
       try {
          log.info(ME, "Connecting ...");
-         XmlBlasterConnection con = new XmlBlasterConnection();
+         XmlBlasterConnection con = new XmlBlasterConnection(glob);
          ConnectQos qos = new ConnectQos(glob, name, passwd);
          con.connect(qos, this); // Login to xmlBlaster
 
@@ -132,12 +132,12 @@ public class TestCallback extends TestCase implements I_Callback
          log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
 
          MessageUnit msgUnit = new MessageUnit("<key oid='testCallbackMsg'/>", "Bla".getBytes(), null);
-         publishOid = con.publish(msgUnit).getOid();
+         publishOid = con.publish(msgUnit).getKeyOid();
          log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
 
          waitOnUpdate(2000L, 1);
-         assertTrue("Expected a dead letter", isDeadLetter);
-         isDeadLetter = false;
+         assertTrue("Expected a dead letter", isDeadMessage);
+         isDeadMessage = false;
 
          try { // this should fail
             con.subscribe("<key oid='testCallbackMsg'/>", null);
@@ -162,9 +162,9 @@ public class TestCallback extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      log.info(ME, "Receiving update of a message " + updateKey.getUniqueKey());
+      log.info(ME, "Receiving update of a message " + updateKey.getOid());
       numReceived++;
-      isDeadLetter = updateKey.isDeadLetter();
+      isDeadMessage = updateKey.isDeadMessage();
       return "";
    }
 

@@ -3,7 +3,7 @@ Name:      Address.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding address string and protocol string
-Version:   $Id: Address.java,v 1.11 2002/09/13 23:18:00 ruff Exp $
+Version:   $Id: Address.java,v 1.12 2002/11/26 12:38:44 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -32,7 +32,7 @@ public class Address extends AddressBase
    private String nodeId = null;
 
    /** TODO: Move this attribute to CbQueueProperty.java */
-   private int maxMsg;
+   private long maxMsg;
 
    /**
     */
@@ -50,24 +50,13 @@ public class Address extends AddressBase
       setType(type);
    }
 
-   public void setMaxMsg(int maxMsg) {
+   public void setMaxMsg(long maxMsg) {
       this.maxMsg = maxMsg;
    }
 
-   public int getMaxMsg() {
+   public long getMaxMsg() {
       return this.maxMsg;
    }
-
-    /*
-    * @param type    The protocol type, e.g. "IOR", "EMAIL", "XML-RPC"
-    * @param address A address address for your client, suitable to the protocol
-   public Address(String type, String address) {
-      super("address");
-      initialize();
-      setType(type);
-      setAddress(address);
-   }
-      */
 
    /**
     * @param type    The protocol type, e.g. "IOR", "EMAIL", "XML-RPC"
@@ -107,6 +96,7 @@ public class Address extends AddressBase
       setMinSize(glob.getProperty().get("compress.minSize", DEFAULT_minSize));
       setPtpAllowed(glob.getProperty().get("ptpAllowed", DEFAULT_ptpAllowed));
       setSessionId(glob.getProperty().get("sessionId", DEFAULT_sessionId));
+      setDispatchPlugin(glob.getProperty().get("DispatchPlugin.defaultPlugin", DEFAULT_dispatchPlugin));
       if (nodeId != null) {
          setPort(glob.getProperty().get("port["+nodeId+"]", getPort()));
          setPort(glob.getProperty().get("client.port["+nodeId+"]", getPort())); // this is stronger (do we need it?)
@@ -122,10 +112,12 @@ public class Address extends AddressBase
          setMinSize(glob.getProperty().get("compress.minSize["+nodeId+"]", getMinSize()));
          setPtpAllowed(glob.getProperty().get("ptpAllowed["+nodeId+"]", isPtpAllowed()));
          setSessionId(glob.getProperty().get("sessionId["+nodeId+"]", getSessionId()));
+         setDispatchPlugin(glob.getProperty().get("DispatchPlugin.defaultPlugin["+nodeId+"]", dispatchPlugin));
       }
 
-      // TODO: This is handled in QueueProperty.java already -> 
-      setMaxMsg(glob.getProperty().get("queue.maxMsg", CbQueueProperty.DEFAULT_maxMsgDefault));
+      // TODO: This is handled in QueueProperty.java already ->
+      long maxMsg = glob.getProperty().get("queue.maxMsg", CbQueueProperty.DEFAULT_maxMsgDefault);
+      setMaxMsg(maxMsg);
       if (nodeId != null) {
          setMaxMsg(glob.getProperty().get("queue.maxMsg["+nodeId+"]", getMaxMsg()));
       }
@@ -164,7 +156,7 @@ public class Address extends AddressBase
       String text = "";
       text += "Control fail save connection to xmlBlaster server:\n";
       // is in QueueProperty.java: text += "   -queue.maxMsg       The max. capacity of the client queue in number of messages [" + CbQueueProperty.DEFAULT_maxMsgDefault + "].\n";
-    //text += "   -queue.onOverflow   Error handling when queue is full, 'block | deadLetter' [" + CbQueueProperty.DEFAULT_onOverflow + "].\n";
+    //text += "   -queue.onOverflow   Error handling when queue is full, 'block | deadMessage' [" + CbQueueProperty.DEFAULT_onOverflow + "].\n";
     //text += "   -queue.onFailure    Error handling when connection failed (after all retries etc.) [" + CbQueueProperty.DEFAULT_onFailure + "].\n";
       text += "   -burstMode.collectTimeOneway Number of milliseconds we shall collect oneway publish messages [" + Address.DEFAULT_collectTime + "].\n";
       text += "                       This allows performance tuning, try set it to 200.\n";
@@ -173,6 +165,7 @@ public class Address extends AddressBase
       text += "   -retries            How often to retry if connection fails (-1 is forever) [" + getDefaultRetries() + "]\n";
       text += "   -delay              Delay between connection retries in milliseconds [" + getDefaultDelay() + "]\n";
       text += "                       A delay value > 0 switches fails save mode on, 0 switches it off\n";
+    //text += "   -DispatchPlugin.defaultPlugin  Specify your specific dispatcher plugin [" + CallbackAddress.DEFAULT_dispatchPlugin + "]\n";
     //text += "   -compress.type      With which format message be compressed on callback [" + Address.DEFAULT_compressType + "]\n";
     //text += "   -compress.minSize   Messages bigger this size in bytes are compressed [" + Address.DEFAULT_minSize + "]\n";
       return text;

@@ -13,7 +13,7 @@ SRC_JAVA_DIR = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster/util
 
 #------------------------------------------------------------------------------
 # directory 'servlet' not compiled in standard distribution, see servlet/README
-SUB_DIRS = pool protocol recorder classloader plugin
+SUB_DIRS = pool protocol recorder classloader plugin dispatch queue queuemsg qos key
 LOCAL_FILES := $(patsubst %.java,$(CLASS_DIR)/%.class,$(wildcard *.java))
 #------------------------------------------------------------------------------
 

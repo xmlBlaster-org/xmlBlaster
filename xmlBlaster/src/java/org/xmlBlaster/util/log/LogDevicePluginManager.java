@@ -3,12 +3,15 @@ Name:      LogDeviceManagerBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   PluginManager to load logging plugins.
-------------------------------------------------------------------------------*/package org.xmlBlaster.util.log;
+------------------------------------------------------------------------------*/
+package org.xmlBlaster.util.log;
+
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.I_PluginManager;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.ErrorCode;
 
 import java.util.Hashtable;
 import java.util.Properties;
@@ -19,7 +22,7 @@ import java.net.URL;
  * A plugin manager for pluggable log device factories.
  *
  * <p>It's possible to add pluggable log devices to xmlBlaster.properties. 
- * A pluggable log device is identifyed by the plugin name <b>LoggableDevicePlugin</b>. By implementing the {@link I_LogDeviceFactory} a logger may be dynamically added to the available loggers in XmlBlaster. For example to ad a Console logger plugin the following would typically be specifyed as a property:</p>
+ * A pluggable log device is identified by the plugin name <b>LoggableDevicePlugin</b>. By implementing the {@link I_LogDeviceFactory} a logger may be dynamically added to the available loggers in XmlBlaster. For example to ad a Console logger plugin the following would typically be specifyed as a property:</p>
  <pre>
   LoggableDevicePlugin[console][1.0]=org.xmlBlaster.util.log.ConsoleLogDeviceFactory
  </pre>
@@ -33,14 +36,14 @@ LoggableDevicePlugin[file][1.0]=org.xmlBlaster.util.log.FileLogDeviceFactory,log
 <pre>
 logDevice=console
 </pre>
-<p>But also that for a particular LogChannel another configuration should be used. In this case all logging done agains the cb LogChannel would go both to the console and the file loggers. If console had not been specifyed, only file would be used for cb.</p>
+<p>But also that for a particular LogChannel another configuration should be used. In this case all logging done against the cb LogChannel would go both to the console and the file loggers. If console had not been specifyed, only file would be used for cb.</p>
 <pre>
 logDevice[cb]=console,file
 </pre>
  *
  *
  * @author Peter Antman
- * @version $Revision: 1.1 $ $Date: 2002/11/07 13:10:26 $
+ * @version $Revision: 1.2 $ $Date: 2002/11/26 12:39:54 $
  */
 
 public class LogDevicePluginManager implements I_PluginManager {
@@ -119,7 +122,7 @@ public class LogDevicePluginManager implements I_PluginManager {
          try {
             plugin.init(glob, pluginInfo);
          } catch (XmlBlasterException e) {
-            throw new XmlBlasterException(ME+".NoInit", "Initializing of plugin " + plugin.getType() + " failed:" + e.reason);
+            throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME, "Initializing of plugin " + plugin.getType() + " failed", e);
          }
       }
       managers.put(pluginName, plugin);

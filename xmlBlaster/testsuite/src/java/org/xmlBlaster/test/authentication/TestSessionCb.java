@@ -12,17 +12,17 @@ import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
-import org.xmlBlaster.client.PublishRetQos;
-import org.xmlBlaster.client.SubscribeKeyWrapper;
-import org.xmlBlaster.client.SubscribeQosWrapper;
-import org.xmlBlaster.client.SubscribeRetQos;
-import org.xmlBlaster.client.PublishKeyWrapper;
-import org.xmlBlaster.client.PublishQosWrapper;
-import org.xmlBlaster.client.EraseKeyWrapper;
-import org.xmlBlaster.client.EraseQosWrapper;
-import org.xmlBlaster.client.EraseRetQos;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.qos.PublishReturnQos;
+import org.xmlBlaster.client.key.SubscribeKey;
+import org.xmlBlaster.client.qos.SubscribeQos;
+import org.xmlBlaster.client.qos.SubscribeReturnQos;
+import org.xmlBlaster.client.key.PublishKey;
+import org.xmlBlaster.client.qos.PublishQos;
+import org.xmlBlaster.client.key.EraseKey;
+import org.xmlBlaster.client.qos.EraseQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -51,7 +51,7 @@ public class TestSessionCb extends TestCase
    private XmlBlasterConnection con2 = null;
    private String assertInUpdate = null;
    private String oid = "TestSessionCb-msg";
-   private int deadLetterCounter = 0;
+   private int deadMessageCounter = 0;
 
    /**
    * Test does not work with SOCKET protocol as here we use the same socket for
@@ -86,8 +86,8 @@ public class TestSessionCb extends TestCase
    protected void tearDown() {
       if (isSocket) return;
       try {
-         EraseKeyWrapper ek = new EraseKeyWrapper(oid);
-         EraseQosWrapper eq = new EraseQosWrapper();
+         EraseKey ek = new EraseKey(glob, oid);
+         EraseQos eq = new EraseQos(glob);
          con2.erase(ek.toXml(), eq.toXml());
       } catch (XmlBlasterException e) {
          log.error(ME, e.toString());
@@ -114,9 +114,9 @@ public class TestSessionCb extends TestCase
                }
             });
 
-         SubscribeKeyWrapper sk = new SubscribeKeyWrapper(oid);
-         SubscribeQosWrapper sq = new SubscribeQosWrapper();
-         SubscribeRetQos sr1 = con1.subscribe(sk.toXml(), sq.toXml());
+         SubscribeKey sk = new SubscribeKey(glob, oid);
+         SubscribeQos sq = new SubscribeQos(glob);
+         SubscribeReturnQos sr1 = con1.subscribe(sk.toXml(), sq.toXml());
 
          try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait some time
          assertTrue(assertInUpdate, assertInUpdate == null);
@@ -132,29 +132,29 @@ public class TestSessionCb extends TestCase
                }
             });
 
-         sk = new SubscribeKeyWrapper(oid);
-         sq = new SubscribeQosWrapper();
-         SubscribeRetQos sr2 = con2.subscribe(sk.toXml(), sq.toXml());
+         sk = new SubscribeKey(glob, oid);
+         sq = new SubscribeQos(glob);
+         SubscribeReturnQos sr2 = con2.subscribe(sk.toXml(), sq.toXml());
 
-         sk = new SubscribeKeyWrapper(Constants.OID_DEAD_LETTER);
-         sq = new SubscribeQosWrapper();
-         SubscribeRetQos srDeadLetter = con2.subscribe(sk.toXml(), sq.toXml(), new I_Callback() {
+         sk = new SubscribeKey(glob, Constants.OID_DEAD_LETTER);
+         sq = new SubscribeQos(glob);
+         SubscribeReturnQos srDeadMessage = con2.subscribe(sk.toXml(), sq.toXml(), new I_Callback() {
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-               deadLetterCounter++;
-               log.info(ME, "Reveiving asynchronous message '" + updateKey.getOid() + "' in deadLetter handler, content=" + new String(content));
+               deadMessageCounter++;
+               log.info(ME, "Reveiving asynchronous message '" + updateKey.getOid() + "' in deadMessage handler, content=" + new String(content));
                assertEquals("No dead letter received", Constants.OID_DEAD_LETTER, updateKey.getOid());
                return "";
             }
          });  // subscribe with our specific update handler
 
-         PublishKeyWrapper pk = new PublishKeyWrapper(oid, "text/plain", "1.0");
-         PublishQosWrapper pq = new PublishQosWrapper();
+         PublishKey pk = new PublishKey(glob, oid, "text/plain", "1.0");
+         PublishQos pq = new PublishQos(glob);
          MessageUnit msgUnit = new MessageUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
-         PublishRetQos retQos = con2.publish(msgUnit);
+         PublishReturnQos retQos = con2.publish(msgUnit);
          log.info(ME, "Published message oid=" + oid);
 
          try { Thread.currentThread().sleep(2000); } catch( InterruptedException i) {} // Wait some time
-         assertEquals("DeadLetter is missing", 1, deadLetterCounter);
+         assertEquals("DeadMessage is missing", 1, deadMessageCounter);
          assertTrue("Update is missing", assertInUpdate != null);
 
          try {

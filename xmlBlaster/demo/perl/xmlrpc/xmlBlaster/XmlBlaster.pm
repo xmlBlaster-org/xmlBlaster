@@ -15,7 +15,7 @@ use Frontier::Client;
 use xmlBlaster::Exception ;
 use xmlBlaster::ConnectQos ;
 use xmlBlaster::MessageUnit ;
-use xmlBlaster::PublishRetQos ;
+use xmlBlaster::PublishReturnQos ;
 
 use strict;
 
@@ -120,7 +120,7 @@ sub publish
 
 	#print '='x40,"\n",Dumper( $xml ),"\n",'='x40,"\n" ;
 
-	my $publishretqos = xmlBlaster::PublishRetQos->new( $xml );
+	my $publishretqos = xmlBlaster::PublishReturnQos->new( $xml );
 
 	#print '='x40,"\n",Dumper( $publishretqos ),"\n",'='x40,"\n" ;
 

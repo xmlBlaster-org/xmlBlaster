@@ -3,18 +3,19 @@ Name:      CallbackJdbcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using jdbc interface.
-Version:   $Id: CallbackJdbcDriver.java,v 1.11 2002/08/26 11:04:24 ruff Exp $
+Version:   $Id: CallbackJdbcDriver.java,v 1.12 2002/11/26 12:39:10 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.engine.queue.MsgQueueEntry;
+import org.xmlBlaster.util.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.ErrorCode;
 
 
 /**
@@ -96,46 +97,66 @@ public class CallbackJdbcDriver implements I_CallbackDriver
     * This method is enforced by interface I_CallbackDriver and is called by xmlBlaster
     * @exception e.id="CallbackFailed", should be caught and handled appropriate
     */
-   public final String[] sendUpdate(MsgQueueEntry[] msg) throws XmlBlasterException
+   public final String[] sendUpdate(MsgQueueUpdateEntry[] msg) throws XmlBlasterException
    {
-      if (msg == null || msg.length < 1) throw new XmlBlasterException(ME, "Illegal update argument");
-      if (log.TRACE) log.trace(ME, "xmlBlaster.update(" + msg[0].getUniqueKey() + ") to " + callbackAddress.getAddress());
+      try {
+         if (msg == null || msg.length < 1)
+            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal sendUpdate() argument");
+         if (log.TRACE) log.trace(ME, "xmlBlaster.update(" + msg[0].getLogId() + ") to " + callbackAddress.getAddress());
 
-      JdbcDriver driver = (JdbcDriver)glob.getObjectEntry("JdbcDriver-"+glob.getId());
-      if (driver == null) {
-         log.error(ME, "Can't find JdbcDriver instance");
-         Thread.currentThread().dumpStack();
-         throw new XmlBlasterException(ME, "Internal error, can't find JdbcDriver instance");
+         String id ="JdbcDriver-"+glob.getId(); 
+         JdbcDriver driver = (JdbcDriver)glob.getObjectEntry(id);
+         if (driver == null) {
+            log.error(ME, "Can't find JdbcDriver instance");
+            Thread.currentThread().dumpStack();
+            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "Internal error, can't find JdbcDriver instance '" + id + "'");
+         }
+         for (int ii=0; ii<msg.length; ii++) {
+            driver.update(msg[ii].getSender().getAbsoluteName(), msg[ii].getMessageUnit().getContent());
+         }
+         String[] ret = new String[msg.length];
+         for (int ii=0; ii<ret.length; ii++)
+            ret[ii] = Constants.RET_OK;
+         return ret;
       }
-      for (int ii=0; ii<msg.length; ii++) {
-         driver.update(msg[ii].getPublisherName(), msg[ii].getMessageUnit().getContent());
+      catch (XmlBlasterException xmlBlasterException) {
+
+         // WE ONLY ACCEPT ErrorCode.USER... FROM CLIENTS !
+         if (xmlBlasterException.isUser())
+            throw xmlBlasterException;
+
+         throw new XmlBlasterException(glob, ErrorCode.USER_UPDATE_ERROR, ME,
+                   "JDBC processing problem", xmlBlasterException);
       }
-      String[] ret = new String[msg.length];
-      for (int ii=0; ii<ret.length; ii++)
-         ret[ii] = Constants.RET_OK;
-      return ret;
+      catch (Throwable throwable) {
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
+                   "Internal JDBC processing problem", throwable);
+      }
    }
 
    /**
     * The oneway variant, without return value. 
     * @exception XmlBlasterException Is never from the client (oneway).
     */
-   public void sendUpdateOneway(MsgQueueEntry[] msg) throws XmlBlasterException
+   public void sendUpdateOneway(MsgQueueUpdateEntry[] msg) throws XmlBlasterException
    {
-      if (msg == null || msg.length < 1) throw new XmlBlasterException(ME, "Illegal update argument");
-      if (log.TRACE) log.trace(ME, "xmlBlaster.update(" + msg[0].getUniqueKey() + ") to " + callbackAddress.getAddress());
+      if (msg == null || msg.length < 1) 
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal sendUpdateOneway() argument");
+      if (log.TRACE) log.trace(ME, "xmlBlaster.update(" + msg[0].getLogId() + ") to " + callbackAddress.getAddress());
 
-      JdbcDriver driver = (JdbcDriver)glob.getObjectEntry("JdbcDriver-"+glob.getId());
+      String id = "JdbcDriver-"+glob.getId();
+      JdbcDriver driver = (JdbcDriver)glob.getObjectEntry(id);
       if (driver == null) {
          log.error(ME, "Can't find JdbcDriver instance");
          Thread.currentThread().dumpStack();
-         throw new XmlBlasterException(ME, "Internal error, can't find JdbcDriver instance");
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "Internal error, can't find JdbcDriver instance '" + id + "'");
       }
       for (int ii=0; ii<msg.length; ii++) {
          try {
-            driver.update(msg[ii].getPublisherName(), msg[ii].getMessageUnit().getContent());
+            driver.update(msg[ii].getSender().getAbsoluteName(), msg[ii].getMessageUnit().getContent());
          } catch (Throwable e) {
-            throw new XmlBlasterException("CallbackOnewayFailed", "JDBC Callback of " + ii + "th message '" + msg[ii].getUniqueKey() + "' to client [" + callbackAddress.getSessionId() + "] from [" + msg[ii].getPublisherName() + "] failed, reason=" + e.toString());
+            throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
+               "JDBC Callback of " + ii + "th message '" + msg[ii].getLogId() + "' to client [" + callbackAddress.getSessionId() + "] from [" + msg[ii].getSender() + "] failed.", e);
          }
       }
    }

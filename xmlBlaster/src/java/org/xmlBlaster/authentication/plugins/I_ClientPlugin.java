@@ -1,6 +1,7 @@
 package org.xmlBlaster.authentication.plugins;
 
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
 /**
@@ -17,9 +18,9 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  * <p />
  * For every plugin type you need, you need on instance of this class.
  */
-public interface I_ClientPlugin {
+public interface I_ClientPlugin extends I_MsgSecurityInterceptor {
 
-   //public void init(String[] param) throws XmlBlasterException;
+   public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo) throws XmlBlasterException;
 
    /**
     * @return The plugin type, e.g. "htpasswd"
@@ -42,36 +43,4 @@ public interface I_ClientPlugin {
    public I_SecurityQos getSecurityQos();
    
    public void setSessionData(String sessionData);
-
-   // --- message handling ----------------------------------------------------
-
-   /**
-    * decrypt, check, unseal ... an incomming message. 
-    * <p/>
-    * Use this to import (decrypt) the xmlKey or xmlQos
-    * @param str The the received message (which is probably crypted)
-    * @return The original message
-    * @exception XmlBlasterException Thrown i.e. if the message has been modified
-    * @see #exportMessage(String)
-    */
-   public String importMessage(String str) throws XmlBlasterException;
-   /** Use this to import (decrypt) the content */
-   public byte[] importMessage(byte[] content) throws XmlBlasterException;
-   /** Use this to import (decrypt) separately the xmlKey,content,qos of MessageUnit */
-   public MessageUnit importMessage(MessageUnit msg) throws XmlBlasterException;
-
-   /**
-    * encrypt, sign, seal ... an outgoing message. 
-    * <p/>
-    * Use this to export (encrypt) the xmlKey or xmlQos
-    * @param str The source message
-    * @return The probably more secure string
-    * @exception XmlBlasterException Thrown if the message cannot be processed
-    * @see #importMessage(String)
-    */
-   public String exportMessage(String xmlMsg) throws XmlBlasterException;
-   /** Use this to export (encrypt) the content */
-   public byte[] exportMessage(byte[] xmlMsg) throws XmlBlasterException;
-   /** Use this to export (encrypt) separately the xmlKey,content,qos of MessageUnit */
-   public MessageUnit exportMessage(MessageUnit msg) throws XmlBlasterException;
 }

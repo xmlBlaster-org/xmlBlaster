@@ -1,7 +1,17 @@
 // xmlBlaster/demo/javaclients/PtpSend.java
 import org.jutils.log.LogChannel;
-import org.xmlBlaster.util.*;
-import org.xmlBlaster.client.*;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.ConnectQos;
+import org.xmlBlaster.util.ConnectReturnQos;
+import org.xmlBlaster.util.DisconnectQos;
+import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.client.key.PublishKey;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.PublishQos;
+import org.xmlBlaster.client.qos.PublishReturnQos;
+import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.Destination;
@@ -64,17 +74,17 @@ public class PtpSend
          log.info(ME, "Send " + numSend + " messages to '" + receiverName + "' sleeping " + delay + " millis inbetween");
          for (int ii=0; ii<numSend; ii++) {
             try {
-               PublishKeyWrapper pk = new PublishKeyWrapper("PtpSend", "text/plain", "1.0");
+               PublishKey pk = new PublishKey(glob, "PtpSend", "text/plain", "1.0");
 
-               PublishQosWrapper pq = new PublishQosWrapper();
-               Destination dest = new Destination(receiverName);
+               PublishQos pq = new PublishQos(glob);
+               Destination dest = new Destination(new SessionName(glob, receiverName));
                dest.forceQueuing(glob.getProperty().get("forceQueuing", false));
                pq.addDestination(dest);
 
                MessageUnit msgUnit = new MessageUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
                
-               PublishRetQos retQos = sender.publish(msgUnit);
-               log.info(senderName, "Published message '" + retQos.getOid() + "' to " + receiverName);
+               PublishReturnQos retQos = sender.publish(msgUnit);
+               log.info(senderName, "Published message '" + retQos.getKeyOid() + "' to " + receiverName);
             }
             catch (XmlBlasterException e) {
                log.warn(ME, "We have a problem: " + e.toString());

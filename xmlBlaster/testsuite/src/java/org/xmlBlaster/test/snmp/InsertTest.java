@@ -4,7 +4,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.xml2java.PublishQos;
+import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.Destination;
 

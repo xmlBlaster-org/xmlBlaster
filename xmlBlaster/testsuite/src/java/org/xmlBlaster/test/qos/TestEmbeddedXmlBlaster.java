@@ -13,9 +13,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.client.GetKeyWrapper;
-import org.xmlBlaster.client.GetQosWrapper;
-import org.xmlBlaster.client.XmlDbMessageWrapper;
+import org.xmlBlaster.client.key.GetKey;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.test.Util;
@@ -46,8 +44,6 @@ public class TestEmbeddedXmlBlaster extends TestCase
    private String passwd = "secret";
    private EmbeddedXmlBlaster serverThread;
    private int serverPort = 7615;
-
-   private XmlDbMessageWrapper wrap = null;
 
    /**
     * Constructs the TestEmbeddedXmlBlaster object. 

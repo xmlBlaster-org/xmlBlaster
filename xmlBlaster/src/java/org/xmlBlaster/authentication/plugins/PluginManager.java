@@ -33,7 +33,7 @@ public class PluginManager extends PluginManagerBase {
       super(glob);
       this.glob = glob;
       this.log = glob.getLog("auth");
-      this.ME =  "SecurityPluginManager" + this.glob.getLogPraefixDashed();
+      this.ME =  "SecurityPluginManager" + this.glob.getLogPrefixDashed();
       if (glob.getProperty().get("Security.Server.allowSimpleDriver", false)) {
          // Print a warning, because the old, unsecure xmlBlaster behavior is enabled!
          log.warn(ME, "* * * Security risk * * * : Security.Server.allowSimpleDriver=true");

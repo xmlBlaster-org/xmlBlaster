@@ -25,7 +25,7 @@
          <td>xmlKey</td><td>string</td><td>The XML encoded key containing the subscriptionId</td>
          </tr>
          <tr>
-         <td>xmlQos</td><td>string</td><td>The XML encoded Quality of Service QoS (see UnSubscribeQosWrapper link below)</td>
+         <td>xmlQos</td><td>string</td><td>The XML encoded Quality of Service QoS (see UnSubscribeQos link below)</td>
          </tr>
          <tr>
          <td>XmlBlasterException</td><td>exception</td><td>Thrown on error</td>
@@ -69,24 +69,26 @@
       A typical Java client code to unSubscribe:
       </p>
       <pre>
-   import org.xmlBlaster.client.*;
+   import org.xmlBlaster.client.key.SubscribeKey;
+   import org.xmlBlaster.client.qos.*;
+
    ...
 
    // subscribe:
 
-   SubscribeKeyWrapper sk = new SubscribeKeyWrapper("MyOid");
+   SubscribeKey sk = new SubscribeKey(glob, "MyOid");
 
-   SubscribeQosWrapper sq = new SubscribeQosWrapper();
+   SubscribeQos sq = new SubscribeQos(glob);
 
-   SubscribeRetQos sr = con.subscribe(sk.toXml(), sq.toXml());
+   SubscribeReturnQos sr = con.subscribe(sk.toXml(), sq.toXml());
 
    ...
 
    // unSubscribe:
 
-   UnSubscribeKeyWrapper uk = new UnSubscribeKeyWrapper(sr.getSubscriptionId());
+   UnSubscribeKey uk = new UnSubscribeKey(glob, sr.getSubscriptionId());
 
-   UnSubscribeQosWrapper uq = new UnSubscribeQosWrapper();
+   UnSubscribeQos uq = new UnSubscribeQos(glob);
 
    con.unSubscribe(uk.toXml(), uq.toXml());
       </pre>
@@ -100,15 +102,15 @@
 
    <see type="REQ">interface</see>
 
-   <see type="API">org.xmlBlaster.client.UnSubscribeKeyWrapper</see>
-   <see type="API">org.xmlBlaster.client.UnSubscribeQosWrapper</see>
+   <see type="API">org.xmlBlaster.client.key.UnSubscribeKey</see>
+   <see type="API">org.xmlBlaster.client.UnSubscribeQos</see>
    <see type="API">org.xmlBlaster.protocol.xmlrpc.XmlBlasterImpl</see>
    <see type="API">org.xmlBlaster.protocol.rmi.XmlBlasterImpl</see>
    <see type="API">org.xmlBlaster.client.protocol.XmlBlasterConnection</see>
 
    <author>ruff@swand.lake.de</author>
    <date>2002 06 28</date>
-   <revision>$Revision: 1.3 $</revision>
+   <revision>$Revision: 1.4 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the unSubscribe method invocation</comment>

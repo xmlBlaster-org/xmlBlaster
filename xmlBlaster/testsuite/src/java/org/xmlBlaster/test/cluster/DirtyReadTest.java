@@ -5,7 +5,15 @@ import org.xmlBlaster.util.Global;
 
 // for client connections:
 import org.xmlBlaster.util.*;
-import org.xmlBlaster.client.*;
+import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.client.key.PublishKey;
+import org.xmlBlaster.client.key.SubscribeKey;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.PublishQos;
+import org.xmlBlaster.client.qos.PublishReturnQos;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.qos.SubscribeQos;
+import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.Constants;
@@ -97,13 +105,13 @@ public class DirtyReadTest extends TestCase {
 
       final String oid = isDirtyReadTest ? "PublishToBilbo-DirtyRead" : "PublishToBilbo-NODirtyRead";
 
-      SubscribeKeyWrapper sk;
-      SubscribeQosWrapper sq;
-      SubscribeRetQos srq;
+      SubscribeKey sk;
+      SubscribeQos sq;
+      SubscribeReturnQos srq;
 
-      PublishKeyWrapper pk;
-      PublishQosWrapper pq;
-      PublishRetQos prq;
+      PublishKey pk;
+      PublishQos pq;
+      PublishReturnQos prq;
       MessageUnit msgUnit;
 
       try {
@@ -119,9 +127,9 @@ public class DirtyReadTest extends TestCase {
 
 
          System.err.println("->Subscribe '" + oid + "' from frodo ...");
-         sk = new SubscribeKeyWrapper(oid);
+         sk = new SubscribeKey(glob, oid);
          sk.setDomain(domain);
-         sq = new SubscribeQosWrapper();
+         sq = new SubscribeQos(glob);
          srq = frodoCon.subscribe(sk.toXml(), sq.toXml(), new I_Callback() {
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                log.info(ME+":"+serverHelper.getFrodoGlob().getId(), "Reveiving asynchronous message '" + updateKey.getOid() + "' in " + oid + " handler");
@@ -136,13 +144,13 @@ public class DirtyReadTest extends TestCase {
 
 
          System.err.println("->Check publish '" + oid + "', frodo should get it ...");
-         pk = new PublishKeyWrapper(oid, "text/plain", "1.0", domain);
-         pq = new PublishQosWrapper();
+         pk = new PublishKey(glob, oid, "text/plain", "1.0", domain);
+         pq = new PublishQos(glob);
          msgUnit = new MessageUnit(pk.toXml(), contentStr.getBytes(), pq.toXml());
          prq = frodoCon.publish(msgUnit);
          log.info(ME+":"+serverHelper.getFrodoGlob().getId(), "Published message of domain='" + pk.getDomain() + "' and content='" + contentStr +
                                     "' to xmlBlaster node with IP=" + serverHelper.getFrodoGlob().getProperty().get("port",0) +
-                                    ", the returned QoS is: " + prq.getOid());
+                                    ", the returned QoS is: " + prq.getKeyOid());
 
          try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait some time
          assertEquals("frodo has not received message", 1, updateCounterFrodo);

@@ -5,6 +5,7 @@ import org.xmlBlaster.authentication.plugins.I_Session;
 import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.MethodName;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.jutils.log.LogChannel;
 
@@ -50,7 +51,7 @@ public class Session implements I_Session, I_Subject {
     *                                exist or the passwd is incorrect.
     */
    public String init(String xmlQoS_literal) throws XmlBlasterException {
-      return init(new SecurityQos(xmlQoS_literal));
+      return init(new SecurityQos(secMgr.getGlobal(), xmlQoS_literal));
    }
 
 
@@ -104,7 +105,7 @@ public class Session implements I_Session, I_Subject {
     * Known action keys:
     *    publish, subscribe, get, erase, ... see Constants.PUBLISH etc.
     */
-   public boolean isAuthorized(String actionKey, String key)
+   public boolean isAuthorized(MethodName actionKey, String key)
    {
       if (authenticated == false) {
          log.warn(ME+".AccessDenied", "Authentication of user " + getName() + " failed");
@@ -153,8 +154,11 @@ public class Session implements I_Session, I_Subject {
       return msg;
    }
 
-   public String importMessage(String xmlMsg) throws XmlBlasterException
-   {
+   public String importMessage(String xmlMsg) throws XmlBlasterException {
+      return xmlMsg;
+   }
+
+   public byte[] importMessage(byte[] xmlMsg) throws XmlBlasterException {
       return xmlMsg;
    }
 
@@ -172,9 +176,11 @@ public class Session implements I_Session, I_Subject {
 
    }
 
-   public String exportMessage(String xmlMsg) throws XmlBlasterException
-   {
+   public String exportMessage(String xmlMsg) throws XmlBlasterException {
       return xmlMsg;
    }
 
+   public byte[] exportMessage(byte[] xmlMsg) throws XmlBlasterException {
+      return xmlMsg;
+   }
 }

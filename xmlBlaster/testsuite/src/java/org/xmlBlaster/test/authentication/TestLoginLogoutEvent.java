@@ -11,8 +11,8 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -110,8 +110,8 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
          try {
             firstConnection.unSubscribe(xmlKey, qos);
          } catch(XmlBlasterException e) {
-            log.warn(ME+"-subscribe", "XmlBlasterException: " + e.reason);
-            assertTrue("unSubscribe - XmlBlasterException: " + e.reason, false);
+            log.warn(ME+"-subscribe", "XmlBlasterException: " + e.getMessage());
+            assertTrue("unSubscribe - XmlBlasterException: " + e.getMessage(), false);
          }
 
          firstConnection.disconnect(null);
@@ -139,8 +139,8 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
          assertTrue("returned null subscribeOid", subscribeOid != null);
          log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
       } catch(XmlBlasterException e) {
-         log.warn(ME+"-subscribe", "XmlBlasterException: " + e.reason);
-         assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
+         log.warn(ME+"-subscribe", "XmlBlasterException: " + e.getMessage());
+         assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
       }
    }
 
@@ -173,7 +173,7 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
                           "<key oid='__sys__UserList' queryType='EXACT'></key>",
                           "<qos></qos>");
          assertTrue(msgArr.length == 1);
-         String clients = new String(msgArr[0].content);
+         String clients = new String(msgArr[0].getContent());
          log.info(ME, "Current '__sys__UserList' is\n" + clients);
          StringTokenizer st = new StringTokenizer(clients);
          int found = 0;
@@ -187,7 +187,7 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
          assertTrue("Check of '__sys__UserList' failed", found==2);
       }
       catch (XmlBlasterException e) {
-         log.error(ME, e.id + ": " + e.reason);
+         log.error(ME, e.getMessage());
          assertTrue("Second login failed", false);
       }
 
@@ -207,9 +207,11 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      numReceived++;
       String name = new String(content);
-      log.info(ME, cbSessionId + " - Receiving update of a message " + updateKey.getUniqueKey() + ", event for client " + name);
+      if (name.startsWith("_"))
+         return "";  // Ignore internal logins from plugins
+      numReceived++;
+      log.info(ME, cbSessionId + " - Receiving update of a message " + updateKey.getOid() + ", event for client " + name);
 
       if (expectedName != null)
          assertEquals("Wrong login name returned", expectedName, name);

@@ -2,45 +2,39 @@
 Name:      Destination.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Holding destination address attributes
-Version:   $Id: Destination.java,v 1.6 2002/09/13 23:18:00 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.SessionName;
 
 /**
  * Holding destination address attributes.
  * <p />
  * This class corresponds to the QOS destination tag
+ * @author ruff@swand.lake.de
  */
-public class Destination
+public class Destination implements java.io.Serializable
 {
    private String ME = "Destination";
 
    /** The destination address (==login name) or the XPath query string */
-   private String destination = null;
+   private SessionName destination = null;
+   private String queryStr;
    /** EXACT is default */
    private String queryType = "EXACT";
    /** No queuing is default */
    private boolean DEFAULT_forceQueuing = false;
    private boolean forceQueuing = DEFAULT_forceQueuing;
 
-
-   /**
-    * Constructs the specialized quality of service destination object.
-    */
-   public Destination()
-   {
-   }
-
+   public Destination() { } // for SAX parser
 
    /**
     * Constructs the specialized quality of service destination object.
     * @param address The destination address (EXACT),
     *                this is typically the login name of another client
     */
-   public Destination(String address)
-   {
+   public Destination(SessionName address) {
       setDestination(address);
    }
 
@@ -50,51 +44,50 @@ public class Destination
     * @param address The destination address or query string
     * @param queryType "EXACT" or "XPATH"
     */
-   public Destination(String address, String queryType)
-   {
+    // @exception IllegalArgumentException for XPATH (not implemented yet)
+   public Destination(String address, String queryType) {
       setQueryType(queryType);
-      setDestination(address);
+      if (isXPathQuery()) {
+         queryStr = address;
+         Global.instance().getLog("core").error(ME, "Query type " + queryType + " is not implemented");
+         //throw new IllegalArgumentException(ME+": Query type " + queryType + " is not implemented");
+      }
+      else {
+         setDestination(new SessionName(Global.instance(), address));
+      }
    }
-
 
    /**
     * @return true/false
     */
-   public boolean isXPathQuery()
-   {
+   public boolean isXPathQuery() {
       return queryType.equals("XPATH");
    }
 
-
    /**
     * @return true/false
     */
-   public boolean isExactAddress()
-   {
+   public boolean isExactAddress() {
       return queryType.equals("EXACT");
    }
 
    /**
     * Check if the address is a sessionId
-    */
-   public boolean isSessionId()
-   {
+   public boolean isSessionId() {
       if (destination == null)
          return false;
       if (!isExactAddress())
          return false;
-      return destination.startsWith(Constants.SESSIONID_PRAEFIX);
+      return destination.startsWith(Constants.SESSIONID_PREFIX);
    }
-
+    */
 
    /**
     * @return true/false
     */
-   public boolean forceQueuing()
-   {
+   public boolean forceQueuing() {
       return forceQueuing;
    }
-
 
    /**
     * Set queuing of messages.
@@ -103,18 +96,15 @@ public class Destination
     * false: Default is that on PtP messages when the destination address is
     *        not online, an Exception is thrown
     */
-   public void forceQueuing(boolean forceQueuing)
-   {
+   public void forceQueuing(boolean forceQueuing) {
       this.forceQueuing = forceQueuing;
    }
-
 
    /**
     * Set the destination address or the destination query string.
     * @param destination The destination address or the query string
     */
-   public final void setDestination(String destination)
-   {
+   public final void setDestination(SessionName destination) {
       this.destination = destination;
    }
 
@@ -122,36 +112,32 @@ public class Destination
    /**
     * @param The destination address or XPath query string
     */
-   public final String getDestination()
-   {
+   public final SessionName getDestination() {
       return destination;
    }
 
-
    /**
     * @param queryType The query type, one of "EXACT" | "XPATH"
+    * @exception IllegalArgumentException for unknown queryType
     */
-   public final void setQueryType(String queryType)
-   {
+   public final void setQueryType(String queryType) {
       if (queryType.equalsIgnoreCase("EXACT"))
          this.queryType = queryType;
       else if (queryType.equalsIgnoreCase("XPATH"))
-         org.xmlBlaster.util.Global.instance().getLog(null).error(ME, "Sorry, destination queryType='" + queryType + "' is not supported");
+         Global.instance().getLog("core").error(ME, "Query type " + queryType + " is not implemented");
+         //throw new IllegalArgumentException(ME+": Query type " + queryType + " is not implemented");
       else
-         org.xmlBlaster.util.Global.instance().getLog(null).error(ME, "Sorry, destination queryType='" + queryType + "' is not supported");
+         throw new IllegalArgumentException(ME+": Query type " + queryType + " is not implemented");
    }
-
 
    /**
     * Get the XML ASCII representation of this object.
     * <br>
     * @return The destination as a XML ASCII string
     */
-   public final String toXml()
-   {
+   public final String toXml() {
       return toXml((String)null);
    }
-
 
    /**
     * Dump state of this object into a XML ASCII string.
@@ -159,34 +145,29 @@ public class Destination
     * @param extraOffset indenting of tags for nice output
     * @return The Destination as a XML ASCII string
     */
-   public final String toXml(String extraOffset)
-   {
-      StringBuffer sb = new StringBuffer();
-      String offset = "\n   ";
+   public final String toXml(String extraOffset) {
+      StringBuffer sb = new StringBuffer(256);
+      String offset = "\n ";
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
 
-      sb.append(offset + "<destination");
+      sb.append(offset).append("<destination");
       if (!"EXACT".equals(queryType))
-         sb.append(" queryType='" + queryType + "'");
+         sb.append(" queryType='").append(queryType).append("'");
       if (forceQueuing != DEFAULT_forceQueuing)
-         sb.append(" forceQueuing='" + forceQueuing + "'");
-      sb.append(">");
-      sb.append(destination);
-      sb.append("</destination>");
+         sb.append(" forceQueuing='").append(forceQueuing).append("'");
+      sb.append(">").append(destination).append("</destination>");
 
       return sb.toString();
    }
-
 
    /**
     * Only for testing
     *    java org.xmlBlaster.engine.Destination
     */
-   public static void main(String args[])
-   {
+   public static void main(String args[]) {
       Destination dest = new Destination();
-      dest.setDestination("Johann");
+      dest.setDestination(new SessionName(Global.instance(), "Johann"));
       dest.forceQueuing(true);
       System.out.println(dest.toXml());
    }

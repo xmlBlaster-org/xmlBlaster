@@ -9,7 +9,7 @@ package org.xmlBlaster.test;
 import junit.framework.*;
 
 /**
- * java -Djava.compiler= junit.swingui.TestRunner -noloading org.xmlBlaster.test.AllTests
+ * java -Xms18M -Xmx156M -Djava.compiler= junit.swingui.TestRunner -noloading org.xmlBlaster.test.AllTests
  */
 public class AllTests extends junit.framework.TestCase
 {
@@ -24,6 +24,7 @@ public class AllTests extends junit.framework.TestCase
     suite.addTest(org.xmlBlaster.test.qos.AllTests.suite());
     suite.addTest(org.xmlBlaster.test.authentication.AllTests.suite());
     suite.addTest(org.xmlBlaster.test.mime.AllTests.suite());
+    suite.addTest(org.xmlBlaster.test.dispatch.AllTests.suite());
     suite.addTest(org.xmlBlaster.test.jdbc.AllTests.suite());
     suite.addTest(org.xmlBlaster.test.snmp.AllTests.suite());
     suite.addTest(org.xmlBlaster.test.persistence.AllTests.suite());

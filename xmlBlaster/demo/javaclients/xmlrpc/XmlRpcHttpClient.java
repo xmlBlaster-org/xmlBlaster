@@ -3,7 +3,7 @@ Name:      XmlRpcHttpClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code to post a xml-rpc message thru the HTTP protocol
-Version:   $Id: XmlRpcHttpClient.java,v 1.16 2002/09/18 16:27:14 laghi Exp $
+Version:   $Id: XmlRpcHttpClient.java,v 1.17 2002/11/26 12:36:33 ruff Exp $
 Author:    Michele Laghi (laghi@swissinfo.org)
 ------------------------------------------------------------------------------*/
 
@@ -21,8 +21,8 @@ import org.xmlBlaster.protocol.xmlrpc.*;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 
-import org.xmlBlaster.client.PublishKeyWrapper;
-import org.xmlBlaster.client.SubscribeKeyWrapper;
+import org.xmlBlaster.client.key.PublishKey;
+import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
 /**
@@ -87,13 +87,13 @@ public class XmlRpcHttpClient
          String contentString = "This is a simple Test Message for the xml-rpc Protocol";
          byte[] content = contentString.getBytes();
 
-         PublishKeyWrapper xmlKey = new PublishKeyWrapper("", "text/plain", null);
+         PublishKey xmlKey = new PublishKey(glob, "", "text/plain", null);
 
          MessageUnit msgUnit = new MessageUnit(xmlKey.toXml(), content, "<qos><forceUpdate /></qos>");
          client.publish(msgUnit);
          log.info(ME, "Published a message");
 
-         client.logout();
+         client.disconnect(null);
       }
       catch (XmlBlasterException ex) {
          log.error(ME, "exception: " + ex.toString());

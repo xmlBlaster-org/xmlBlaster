@@ -48,7 +48,7 @@ public class CbProtocolManager extends PluginManagerBase
       super(glob);
       this.glob = glob;
       this.log = glob.getLog("protocol");
-      this.ME = "CbProtocolManager" + this.glob.getLogPraefixDashed();
+      this.ME = "CbProtocolManager" + this.glob.getLogPrefixDashed();
       if (log.CALL) log.call(ME, "Constructor CbProtocolManager");
    }
 

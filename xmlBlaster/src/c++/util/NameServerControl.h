@@ -3,7 +3,7 @@ Name:      NameServerControl.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to handle the NameServer stuff (bind, unbind, resolve ...)
-Author:    <Michele Laghi> michele.laghi@attglobal.net
+Author:    <Michele Laghi> laghi@swissinfo.org
 -----------------------------------------------------------------------------*/
 
 #ifndef _UTIL_NAMESERVERCONTROL_H
@@ -142,14 +142,16 @@ namespace util {
 //             throw NSControlException(1, "can't resolve `NameService'");
                string txt = me() + ".NameServerControl()";
                string msg = "can't resolve the NameService";
-               throw serverIdl::XmlBlasterException(txt.c_str(), msg.c_str());
+               throw serverIdl::XmlBlasterException("communication.noConnection", "client", txt.c_str(), "en",
+                      msg.c_str(), "", "", "", "", "", "");
             }
       
             if(CORBA::is_nil(obj.in())) {
 //             throw NSControlException(2, "`NameService' is a nil obj.ref");
                string txt = me() + ".NameServerControl()";
                string msg = "NameService in not a nil reference";
-               throw serverIdl::XmlBlasterException(txt.c_str(), msg.c_str());
+               throw serverIdl::XmlBlasterException("communication.noConnection", "client", txt.c_str(), "en",
+                      msg.c_str(), "", "", "", "", "", "");
             }
       
             try {
@@ -164,7 +166,8 @@ namespace util {
 //             throw NSControlException(20, msg);
 #endif
                string txt = me() + ".NameServerControl()";
-               throw serverIdl::XmlBlasterException(txt.c_str(), msg.c_str());
+               throw serverIdl::XmlBlasterException("communication.noConnection", "client", txt.c_str(), "en",
+                      msg.c_str(), "", "", "", "", "", "");
             }
             
             if(CORBA::is_nil(namingContext_.in())) {
@@ -172,7 +175,8 @@ namespace util {
 //                "`NameService' is not a NamingContext object reference");
                string txt = me() + ".NameServerControl()";
                string msg = "NameService is not a NamingContext reference";
-               throw serverIdl::XmlBlasterException(txt.c_str(), msg.c_str());
+               throw serverIdl::XmlBlasterException("communication.noConnection", "client", txt.c_str(), "en",
+                      msg.c_str(), "", "", "", "", "", "");
             }
          }
 
@@ -206,19 +210,22 @@ namespace util {
 //             throw NSControlException(4,"1. invalid name exception");
                string txt = me() + ".bindContext(...)";
                string msg = "invalid name exception";
-               throw serverIdl::XmlBlasterException(txt.c_str(), msg.c_str());
+               throw serverIdl::XmlBlasterException("communication.noConnection", "client", txt.c_str(), "en",
+                      msg.c_str(), "", "", "", "", "", "");
             }
             catch(const CosNaming::NamingContext::CannotProceed&) {
 //             throw NSControlException(5,"1. can not proceed exception");
                string txt = me() + ".bindContext(...)";
                string msg = "can not proceed exception";
-               throw serverIdl::XmlBlasterException(txt.c_str(), msg.c_str());
+               throw serverIdl::XmlBlasterException("communication.noConnection", "client", txt.c_str(), "en",
+                      msg.c_str(), "", "", "", "", "", "");
             }
             catch(const CosNaming::NamingContext::NotFound&) {
 //             throw NSControlException(6,"1. name not found exception");
                string txt = me() + ".bindContext(...)";
                string msg = "name not found exception";
-               throw serverIdl::XmlBlasterException(txt.c_str(), msg.c_str());
+               throw serverIdl::XmlBlasterException("communication.noConnection", "client", txt.c_str(), "en",
+                      msg.c_str(), "", "", "", "", "", "");
             }
          }
             
@@ -269,7 +276,8 @@ namespace util {
 //             throw NSControlException(6,"1. name not found exception");
                string txt = me() + ".bind()";
                string msg = "name not found exception";
-               throw serverIdl::XmlBlasterException(txt.c_str(), msg.c_str());
+               throw serverIdl::XmlBlasterException("communication.noConnection", "client", txt.c_str(), "en",
+                      msg.c_str(), "", "", "", "", "", "");
             }
          }
 
@@ -331,19 +339,22 @@ namespace util {
 //             throw NSControlException(6,"resolve: name not found exception");
                string txt = me() + ".resolve()";
                string msg = "name not found exception";
-               throw serverIdl::XmlBlasterException(txt.c_str(), msg.c_str());
+               throw serverIdl::XmlBlasterException("communication.noConnection", "client", txt.c_str(), "en",
+                      msg.c_str(), "", "", "", "", "", "");
             }
             catch(const CosNaming::NamingContext::CannotProceed&) {
 //             throw NSControlException(5,"resolve: can't proceed exception");
                string txt = me() + ".bind()";
                string msg = "can't proceed exception";
-               throw serverIdl::XmlBlasterException(txt.c_str(), msg.c_str());
+               throw serverIdl::XmlBlasterException("communication.noConnection", "client", txt.c_str(), "en",
+                      msg.c_str(), "", "", "", "", "", "");
             }
             catch(const CosNaming::NamingContext::InvalidName & /*ex*/ ) {
 //             throw NSControlException(4,"resolve: invalid name exception");
                string txt = me() + ".bind()";
                string msg = "invalid name exception";
-               throw serverIdl::XmlBlasterException(txt.c_str(), msg.c_str());
+               throw serverIdl::XmlBlasterException("communication.noConnection", "client", txt.c_str(), "en",
+                      msg.c_str(), "", "", "", "", "", "");
             }
             return CORBA::Object::_duplicate(ret);
          }

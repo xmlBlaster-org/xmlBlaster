@@ -75,4 +75,7 @@ public class ConnectReturnQos {
    public String getPublicSessionId() {
       return connectQos.getPublicSessionId();
    }
+   public String getUserId() {
+      return connectQos.getUserId();
+   }
 }

@@ -3,8 +3,8 @@ Name:      CompatibleCorba.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   functions to encapsulate corba-implementor specific stuff
-Version:   $Id: CompatibleCorba.cpp,v 1.5 2002/08/27 13:14:05 johnson Exp $
-Author:    <Michele Laghi> michele.laghi@attglobal.net
+Version:   $Id: CompatibleCorba.cpp,v 1.6 2002/11/26 12:37:37 ruff Exp $
+Author:    <Michele Laghi> laghi@swissinfo.org
 ----------------------------------------------------------------------------*/
 #pragma warning(disable:4786)
 
@@ -38,3 +38,14 @@ const char* to_string(const CORBA::Exception &ex) {
 }
 
 #endif  // MICO
+
+/*****************************************************************
+ *                    ORBIX 2000 (ver 2.0) 
+ *****************************************************************/
+#ifdef ORBIX
+
+const char* to_string(const CORBA::Exception &ex ) {
+  return ex._rep_id();
+}
+
+#endif //ORBIX

@@ -3,7 +3,7 @@ Name:      XmlKey.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKey.java,v 1.29 2002/09/19 09:15:20 antman Exp $
+Version:   $Id: XmlKey.java,v 1.30 2002/11/26 12:38:57 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -185,7 +185,7 @@ public final class XmlKey
    private void init(Global glob, String xmlKey_literal, boolean isPublish) throws XmlBlasterException {
       if (glob == null) {
          this.glob = new Global();
-         glob.getLog().warn(ME, "Created new Global");
+         glob.getLog("core").warn(ME, "Created new Global");
       }
       else
          this.glob = glob;
@@ -216,7 +216,7 @@ public final class XmlKey
     * Try to find out if this is an internal message only
    public boolean isLocalMessage() throws XmlBlasterException
    {
-      if (getKeyOid().startsWith(Constants.INTERNAL_OID_PRAEFIX) &&
+      if (getKeyOid().startsWith(Constants.INTERNAL_OID_PREFIX) &&
           getKeyOid().indexOf("["+glob.getId()+"]") >= 0)
          return true;
 
@@ -228,12 +228,12 @@ public final class XmlKey
     */
 
    /**
-    * Test if oid is '__sys__deadLetter'. 
+    * Test if oid is '__sys__deadMessage'. 
     * <p />
     * Dead letters are unrecoverable lost messages, usually an administrator
     * should subscribe to those messages.
     */
-   public final boolean isDeadLetter() throws XmlBlasterException {
+   public final boolean isDeadMessage() throws XmlBlasterException {
       return getUniqueKey().equals(Constants.OID_DEAD_LETTER);
    }
 
@@ -461,20 +461,25 @@ public final class XmlKey
    }
 
    /**
-    * Accessing the internal state of xmlBlaster.
-    * <br />
-    * @return true if accessing <__sys__xy>
+    * Messages starting with "_" are reserved for usage in plugins
     */
-   public final boolean isInternalMsg() throws XmlBlasterException {
-      String oid = getKeyOid(); 
-      if (oid == null) {
-         log.warn(ME, "Can't determine key oid");
+   public final boolean isPluginInternal() {
+      try {
+         return (getUniqueKey() == null) ? false : (getUniqueKey().startsWith(Constants.INTERNAL_OID_PREFIX_FOR_PLUGINS) && !getUniqueKey().startsWith(Constants.INTERNAL_OID_PREFIX_FOR_CORE));
+      } catch (XmlBlasterException e) {
          return false;
       }
-      if (oid.startsWith(Constants.INTERNAL_OID_PRAEFIX)) // "__sys__")
-         return true;
-      else
+   }
+
+   /**
+    * Messages starting with "__" are reserved for internal usage
+    */
+   public final boolean isInternal() {
+      try {
+         return (getUniqueKey() == null) ? false : getUniqueKey().startsWith(Constants.INTERNAL_OID_PREFIX_FOR_CORE);
+      } catch (XmlBlasterException e) {
          return false;
+      }
    }
 
    /**
@@ -790,7 +795,7 @@ public final class XmlKey
          sb.append(offset).append("   <keyType>").append(keyType).append("</keyType>");
          sb.append(offset).append("   <isGeneratedOid>").append(isGeneratedOid()).append("</isGeneratedOid>");
          sb.append(offset).append("   <isPublish>").append(isPublish).append("</isPublish>");
-         sb.append(offset).append("   <isInternalMsg>").append(isInternalMsg()).append("</isInternalMsg>");
+         sb.append(offset).append("   <isInternal>").append(isInternal()).append("</isInternal>");
          if (xmlToDom != null)
             sb.append(xmlToDom.printOn(extraOffset + "   ").toString());
          sb.append(offset).append("</XmlKey>");
@@ -901,7 +906,7 @@ public final class XmlKey
     * For subscribe() and get() and cluster messages.
     * @return never null
     */
-   public final AccessFilterQos[] getFilterQos() throws XmlBlasterException {
+   public final AccessFilterQos[] getAccessFilterArr() throws XmlBlasterException {
       if (filterVec == null)
          saxParse(); // initialize
 
@@ -1011,7 +1016,7 @@ public final class XmlKey
             String oid = key.getKeyOid();
             startTime = System.currentTimeMillis();
             for (int ii=0; ii<count; ii++) {
-               AccessFilterQos[] qosArr = key.getFilterQos();
+               AccessFilterQos[] qosArr = key.getAccessFilterArr();
                key.filterVec = null; // force new parsing
             }
             elapsed = System.currentTimeMillis() - startTime;

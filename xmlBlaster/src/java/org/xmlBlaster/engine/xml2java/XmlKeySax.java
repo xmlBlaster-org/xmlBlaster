@@ -161,7 +161,7 @@ public class XmlKeySax extends SaxHandlerBase
             System.out.println("\nTEST1 ...");
             XmlKey xmlKey = new XmlKey(glob, xml);
             //System.out.println(xmlKey.toXml());
-            AccessFilterQos[] qosArr = xmlKey.getFilterQos();
+            AccessFilterQos[] qosArr = xmlKey.getAccessFilterArr();
             for (int ii=0; ii<qosArr.length; ii++) {
                System.out.println(qosArr[ii].toXml());
             }

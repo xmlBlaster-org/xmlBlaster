@@ -123,6 +123,7 @@ public class PluginLoader {
          if (log.TRACE) log.trace(ME, "Trying Class.forName('"+param[0]+"') ...");
          Class cl = java.lang.Class.forName(param[0]);
          clntPlugin = (I_ClientPlugin)cl.newInstance();
+         clntPlugin.init(glob, null);
          if (log.TRACE) log.trace(ME, "Found I_ClientPlugin '"+param[0]+"'");
       }
       catch (IllegalAccessException e) {

@@ -3,7 +3,7 @@ Name:      TestPub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestPub.java,v 1.2 2002/09/13 23:18:29 ruff Exp $
+Version:   $Id: TestPub.java,v 1.3 2002/11/26 12:40:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -12,10 +12,10 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
-import org.xmlBlaster.client.EraseRetQos;
-import org.xmlBlaster.client.PublishQosWrapper;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
+import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
@@ -103,10 +103,10 @@ public class TestPub extends TestCase implements I_Callback
                       "</key>";
       String qos = "<qos></qos>";
       try {
-         EraseRetQos[] arr = senderConnection.erase(xmlKey, qos);
+         EraseReturnQos[] arr = senderConnection.erase(xmlKey, qos);
          assertEquals("Erase", 1, arr.length);
          assertTrue(assertInUpdate, assertInUpdate == null);
-      } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.reason); }
+      } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.getMessage()); }
 
       senderConnection.disconnect(null);
    }
@@ -129,8 +129,8 @@ public class TestPub extends TestCase implements I_Callback
          subscribeOid = senderConnection.subscribe(xmlKey, qos).getSubscriptionId();
          log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.reason);
-         assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
+         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
       }
       assertTrue("returned null subscribeOid", subscribeOid != null);
       assertTrue("returned subscribeOid is empty", 0 != subscribeOid.length());
@@ -151,7 +151,7 @@ public class TestPub extends TestCase implements I_Callback
                       "   <TestPub-AGENT id='192.168.124.10' subId='1' type='generic'>" +
                       "   </TestPub-AGENT>" +
                       "</key>";
-      PublishQosWrapper qosWrapper = new PublishQosWrapper();
+      PublishQos qosWrapper = new PublishQos(glob);
       qosWrapper.setReadonly(true);
       String qos = qosWrapper.toXml(); // == "<qos><readonly /></qos>"
 
@@ -159,18 +159,18 @@ public class TestPub extends TestCase implements I_Callback
 
       if (first) {
          try {
-            publishOid = senderConnection.publish(msgUnit).getOid();
+            publishOid = senderConnection.publish(msgUnit).getKeyOid();
             log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
          } catch(XmlBlasterException e) {
-            log.warn(ME, "XmlBlasterException: " + e.reason);
-            assertTrue("publish - XmlBlasterException: " + e.reason, false);
+            log.warn(ME, "XmlBlasterException: " + e.getMessage());
+            assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
          }
          assertTrue("returned publishOid == null", publishOid != null);
          assertTrue("returned publishOid", 0 != publishOid.length());
       }
       else {
          try {
-            publishOid = senderConnection.publish(msgUnit).getOid();
+            publishOid = senderConnection.publish(msgUnit).getKeyOid();
             assertTrue("Publishing readonly protected message again should not be possible", false);
          } catch(XmlBlasterException e) {
             log.info(ME, "Success: Publishing again throws an exception");
@@ -221,11 +221,11 @@ public class TestPub extends TestCase implements I_Callback
 
       numReceived += 1;
 
-      assertInUpdate = "Wrong sender, expected:" + senderName + " but was:" + updateQos.getSender();
-      assertEquals("Wrong sender", senderName, updateQos.getSender());
+      assertInUpdate = "Wrong sender, expected:" + senderName + " but was:" + updateQos.getSender().getLoginName();
+      assertEquals("Wrong sender", senderName, updateQos.getSender().getLoginName());
 
-      assertInUpdate = "Wrong oid of message returned expected:" + publishOid + " but was:" + updateKey.getUniqueKey();
-      assertEquals("Wrong oid of message returned", publishOid, updateKey.getUniqueKey());
+      assertInUpdate = "Wrong oid of message returned expected:" + publishOid + " but was:" + updateKey.getOid();
+      assertEquals("Wrong oid of message returned", publishOid, updateKey.getOid());
 
       assertInUpdate = "Message content is corrupted expected:" + new String(senderContent) + " but was:" + new String(content);
       assertEquals("Message content is corrupted", new String(senderContent), new String(content));

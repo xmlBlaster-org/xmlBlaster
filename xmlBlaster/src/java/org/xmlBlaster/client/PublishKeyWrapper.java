@@ -2,62 +2,28 @@
 Name:      PublishKeyWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Handling one xmlKey
-Version:   $Id: PublishKeyWrapper.java,v 1.15 2002/09/13 23:17:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
-import org.xmlBlaster.util.XmlBlasterException;
-
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.key.MsgKeyData;
 
 /**
- * This class encapsulates the Message meta data and unique identifier (key) of a publish() message.
- * <p />
- * A typical <b>publish</b> key could look like this:<br />
- * <pre>
- *     &lt;key oid='4711' contentMime='text/xml'>
- *        &lt;AGENT id='192.168.124.20' subId='1' type='generic'>
- *           &lt;DRIVER id='FileProof' pollingFreq='10'>
- *           &lt;/DRIVER>
- *        &lt;/AGENT>
- *     &lt;/key>
- * </pre>
- * <br />
- * Note that the AGENT and DRIVER tags are application know how, which you have to supply to the wrap() method.<br />
- * A well designed xml hierarchy of your problem domain is essential for a proper working xmlBlaster
- * <p />
- * This is exactly the key how it was published from the data source.
- *
- * @see org.xmlBlaster.client.KeyWrapper
- * <p />
- * see xmlBlaster/src/dtd/PublishKeyWrapper.xml
- * <p />
- * see http://www.w3.org/TR/xpath
+ * @deprecated Use org.xmlBlaster.client.key.PublishKey instead
  */
-public class PublishKeyWrapper extends KeyWrapper
+public class PublishKeyWrapper
 {
    private final static String ME = "PublishKeyWrapper";
-   /** value from attribute <key oid="" contentMime="..."> */
-   private String contentMime = "text/plain";
-   /** value from attribute <key oid="" contentMimeExtended="..."> */
-   private String contentMimeExtended = null;
-   /** value from attribute <key oid="" domain="..."> */
-   private String domain = null;
-   private String clientTags = null;
-
+   private final MsgKeyData msgKeyData;
 
    /**
     * Constructor with given oid and contentMime.
     * @param oid is optional and will be generated if ""
     * @param contentMime the MIME type of the content e.g. "text/xml" or "image/gif"
     */
-   public PublishKeyWrapper(String oid, String contentMime)
-   {
-      super(oid);
-      if (contentMime != null)
-         this.contentMime = contentMime;
+   public PublishKeyWrapper(String oid, String contentMime) {
+      this(oid, contentMime, null);
    }
-
 
    /**
     * Constructor with given oid and contentMime.
@@ -66,15 +32,9 @@ public class PublishKeyWrapper extends KeyWrapper
     * @param contentMimeExtended Use it for whatever, e.g. the version number or parser infos for your content<br />
     *        set to null if not needed
     */
-   public PublishKeyWrapper(String oid, String contentMime, String contentMimeExtended)
-   {
-      super(oid);
-      if (contentMime != null)
-         this.contentMime = contentMime;
-      if (contentMimeExtended != null)
-         this.contentMimeExtended = contentMimeExtended;
+   public PublishKeyWrapper(String oid, String contentMime, String contentMimeExtended) {
+      this(oid, contentMime, contentMimeExtended, null);
    }
-
 
    /**
     * Constructor with given oid and contentMime.
@@ -83,61 +43,61 @@ public class PublishKeyWrapper extends KeyWrapper
     * @param contentMimeExtended Use it for whatever, e.g. the version number or parser infos for your content<br />
     *        set to null if not needed
     */
-   public PublishKeyWrapper(String oid, String contentMime, String contentMimeExtended, String domain)
-   {
-      super(oid);
-      if (contentMime != null)
-         this.contentMime = contentMime;
-      if (contentMimeExtended != null)
-         this.contentMimeExtended = contentMimeExtended;
-      if (domain != null)
-         this.domain = domain;
+   public PublishKeyWrapper(String oid, String contentMime, String contentMimeExtended, String domain) {
+      this.msgKeyData = new MsgKeyData(Global.instance());
+      this.msgKeyData.setOid(oid);
+      this.msgKeyData.setContentMime(contentMime);
+      this.msgKeyData.setContentMimeExtended(contentMimeExtended);
+      this.msgKeyData.setDomain(domain);
    }
 
+   public MsgKeyData getData() {
+      return this.msgKeyData;
+   }
+
+   /**
+    * Access the $lt;key oid="...">.
+    * @return The unique key oid
+    */
+   public final String getOid() {
+      return this.msgKeyData.getOid();
+   }
+
+   /**
+    * Set the $lt;key oid="...">.
+    * @param The unique key oid
+    */
+   public final void setOid(String oid) {
+      this.msgKeyData.setOid(oid);
+   }
+
+   public void setDomain(String domain) {
+      this.msgKeyData.setDomain(domain);
+   }
 
    /**
     * Access the domain setting
     * @return A domain string or null
     */
-   public String getDomain()
-   {
-      return this.domain;
+   public String getDomain() {
+      return this.msgKeyData.getDomain();
    }
-
 
    /**
     * Converts the data in XML ASCII string.
     * @return An XML ASCII string
     */
-   public String toString()
-   {
-      return toXml();
+   public String toString() {
+      return this.msgKeyData.toString();
    }
-
 
    /**
     * Converts the data in XML ASCII string.
     * @return An XML ASCII string
     */
-   public String toXml()
-   {
-      StringBuffer sb = new StringBuffer(256);
-      sb.append("<key oid='").append(oid).append("'");
-      sb.append(" contentMime='").append(contentMime).append("'");
-      if (contentMimeExtended != null && contentMimeExtended.length() > 0)
-         sb.append(" contentMimeExtended='").append(contentMimeExtended).append("'");
-      if (domain != null && domain.length() > 0)
-         sb.append(" domain='").append(domain).append("'");
-      if (clientTags != null && clientTags.trim().length() > 0) {
-         sb.append(">\n");
-         sb.append(clientTags.trim());
-         sb.append("\n</key>");
-      }
-      else
-         sb.append("/>");
-      return sb.toString();
+   public String toXml() {
+      return this.msgKeyData.toXml();
    }
-
 
    /**
     * May be used to integrate your application tags.
@@ -145,9 +105,8 @@ public class PublishKeyWrapper extends KeyWrapper
     * Derive your special PublishKey class from this.
     * @param str Your tags in ASCII XML syntax
     */
-   public String wrap(String str)
-   {
-      clientTags = str;
-      return this.toXml();
+   public String wrap(String str) {
+      this.msgKeyData.setClientTags(str);
+      return this.msgKeyData.toXml();
    }
 }

@@ -2,14 +2,16 @@
 Name:      XmlDbMessageWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Wrapping a SQL request with XML.
-Version:   $Id: XmlDbMessageWrapper.java,v 1.6 2001/03/05 09:02:39 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.Destination;
+import org.xmlBlaster.client.key.PublishKey;
+import org.xmlBlaster.client.qos.PublishQos;
 
 
 /**
@@ -20,7 +22,7 @@ import org.xmlBlaster.engine.helper.Destination;
  */
 public class XmlDbMessageWrapper
  {
-
+   private final Global glob;
    private static String ME = "XmlDbMessageWrapper";
    private String content;
    private String user = null;
@@ -36,13 +38,13 @@ public class XmlDbMessageWrapper
     * @param passwd The DB password
     * @param url    Any valid JDBC url, e.g. "jdbc:postgresql://24.3.47.214/postgres");
     */
-   public XmlDbMessageWrapper(String user, String passwd, String url)
+   public XmlDbMessageWrapper(Global glob, String user, String passwd, String url)
    {
+      this.glob = glob;
       this.user = user;
       this.passwd = passwd;
       this.url = url;
    }
-
 
    /**
     * Set the query properties.
@@ -56,7 +58,6 @@ public class XmlDbMessageWrapper
       init("query", limit, confirm, queryStr);
    }
 
-
    /**
     * Set the update/insert/delete properties.
     * <p />
@@ -67,7 +68,6 @@ public class XmlDbMessageWrapper
    {
       init("update", 1, confirm, updateStr);
    }
-
 
    /**
     * Set the query properties.
@@ -99,7 +99,6 @@ public class XmlDbMessageWrapper
       content = tmp.toString();
    }
 
-
    /**
     * Returns the 'message content' which is the SQL request coded in XML.
     */
@@ -109,7 +108,6 @@ public class XmlDbMessageWrapper
       return content;
    }
 
-
    /**
     * Creates the complete message for you, which you can publish to xmlBlaster.
     * <p />
@@ -117,8 +115,8 @@ public class XmlDbMessageWrapper
     */
    public MessageUnit toMessage() throws XmlBlasterException
    {
-      PublishQosWrapper qos = new PublishQosWrapper(new Destination("__sys__jdbc"));
-      PublishKeyWrapper key = new PublishKeyWrapper("", "text/xml", "SQL_QUERY");
+      PublishQos qos = new PublishQos(glob, new Destination(new SessionName(Global.instance(), "__sys__jdbc")));
+      PublishKey key = new PublishKey(glob, "", "text/xml", "SQL_QUERY");
       return new MessageUnit(key.toXml(), toXml().getBytes(), qos.toXml());
    }
 }

@@ -173,7 +173,7 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
       for (int ii=0; keyMappings!=null && ii<keyMappings.length; ii++) {
          if (xmlKey.match(keyMappings[ii])) {
             if (log.TRACE) log.trace(ME, "Found master='" + nodeDomainInfo.getNodeId().getId() + "' stratum=" + nodeDomainInfo.getStratum() + " for message oid='" + msgWrapper.getUniqueKey() + "' domain='" + xmlKey.getDomain() + "'.");
-            AccessFilterQos[] filterQos = keyMappings[ii].getFilterQos();
+            AccessFilterQos[] filterQos = keyMappings[ii].getAccessFilterArr();
             if (filterQos != null && filterQos.length > 0) {
                if (log.TRACE) log.trace(ME, "Found " + filterQos.length + " key specific filter rules in XmlKey ...");
                for (int jj=0; jj<filterQos.length; jj++) {
@@ -197,7 +197,7 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
       }
 
       // Check for user supplied filters <master><filter>... These are the filter based queries
-      AccessFilterQos[] filterQos = nodeDomainInfo.getFilterQos();
+      AccessFilterQos[] filterQos = nodeDomainInfo.getAccessFilterArr();
       if (filterQos != null && filterQos.length > 0) {
          if (log.TRACE) log.trace(ME, "Found " + filterQos.length + " global filter rules ...");
          for (int jj=0; jj<filterQos.length; jj++) {

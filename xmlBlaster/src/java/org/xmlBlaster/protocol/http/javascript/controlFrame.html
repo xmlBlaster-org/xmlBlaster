@@ -41,7 +41,7 @@
                alert("Please enter your text to publish");
                return;
             }
-            var key = new top.PublishKeyWrapper(null, "text/xml", "chatDemo");
+            var key = new top.PublishKey(glob, null, "text/xml", "chatDemo");
             key.wrap("<chatDemo />");
             top.publish(new top.MessageWrapper(key, strText, null));
          }

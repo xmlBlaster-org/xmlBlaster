@@ -12,9 +12,9 @@ import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
-import org.xmlBlaster.client.EraseRetQos;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
 import junit.framework.*;
@@ -86,9 +86,9 @@ public class TestSubNoDup extends TestCase implements I_Callback
          if (publishOid != null) {
             String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'/>";
             try {
-               EraseRetQos[] arr = senderConnection.erase(xmlKey, "<qos/>");
+               EraseReturnQos[] arr = senderConnection.erase(xmlKey, "<qos/>");
                assertEquals("Erase", 1, arr.length);
-            } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.reason); }
+            } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.getMessage()); }
          }
 
          senderConnection.disconnect(null);
@@ -135,8 +135,8 @@ public class TestSubNoDup extends TestCase implements I_Callback
          log.info(ME, "Success: Subscribe 3 on " + subscribeId3 + " done");
 
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.reason);
-         assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
+         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
       }
    }
 
@@ -153,11 +153,11 @@ public class TestSubNoDup extends TestCase implements I_Callback
       senderContent = "Yeahh, i'm the new content";
       MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), "<qos/>");
       try {
-         publishOid = senderConnection.publish(msgUnit).getOid();
+         publishOid = senderConnection.publish(msgUnit).getKeyOid();
          log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.reason);
-         assertTrue("publish - XmlBlasterException: " + e.reason, false);
+         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
 
       assertTrue("returned publishOid == null", publishOid != null);
@@ -183,8 +183,8 @@ public class TestSubNoDup extends TestCase implements I_Callback
          senderConnection.unSubscribe("<key oid='" + subscribeId3 + "'/>", qos);
          log.info(ME, "Success: unSubscribe 3 on " + subscribeId3 + " done");
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.reason);
-         assertTrue("unSubscribe - XmlBlasterException: " + e.reason, false);
+         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         assertTrue("unSubscribe - XmlBlasterException: " + e.getMessage(), false);
       }
    }
 
@@ -262,7 +262,7 @@ public class TestSubNoDup extends TestCase implements I_Callback
     * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-      if (log.CALL) log.call(ME, "Receiving update of a message ...");
+      log.info(ME, "Receiving update of a message " + updateKey.getOid() + " state=" + updateQos.getState());
 
       numReceived += 1;
 
@@ -271,7 +271,7 @@ public class TestSubNoDup extends TestCase implements I_Callback
 
       if (!duplicates)
          assertEquals("engine.qos.update.subscriptionId: Wrong subscriptionId", subscribeId1, updateQos.getSubscriptionId());
-      assertEquals("Wrong oid of message returned", publishOid, updateKey.getUniqueKey());
+      assertEquals("Wrong oid of message returned", publishOid, updateKey.getOid());
       assertEquals("Message content is corrupted", new String(senderContent), new String(content));
       assertEquals("Message contentMime is corrupted", contentMime, updateKey.getContentMime());
 
@@ -303,7 +303,6 @@ public class TestSubNoDup extends TestCase implements I_Callback
       testSub.setUp();
       testSub.testPublishAfterMultiSubscribeNoDup();
       testSub.tearDown();
-
       testSub = new TestSubNoDup(glob, "TestSubNoDup");
       testSub.setUp();
       testSub.testPublishAfterMultiSubscribe();

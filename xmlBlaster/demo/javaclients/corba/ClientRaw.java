@@ -2,15 +2,13 @@
 Name:      ClientRaw.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Demo code how to access xmlBlaster using CORBA
-Version:   $Id: ClientRaw.java,v 1.12 2002/09/13 23:17:40 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.corba;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.client.UpdateKey; // To SAX parse the received XML key
-import org.xmlBlaster.client.UpdateQos; // To SAX parse the received XML QoS
+import org.xmlBlaster.client.key.UpdateKey; // To SAX parse the received XML key
+import org.xmlBlaster.client.qos.UpdateQos; // To SAX parse the received XML QoS
 import org.jutils.init.Args;
 import org.jutils.time.StopWatch;
 import org.jutils.io.FileUtil;
@@ -123,7 +121,7 @@ public class ClientRaw
             xmlBlaster = authServer.login(loginName, passwd, qos);
             log.info(ME, "Login done");
          } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-            log.warn(ME, "XmlBlasterException: " + e.reason);
+            log.warn(ME, "XmlBlasterException: " + e.getMessage());
          }
 
 
@@ -138,7 +136,7 @@ public class ClientRaw
             try {
                xmlBlaster.subscribe(xmlKey, "<qos></qos>");
             } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-               log.warn(ME, "XmlBlasterException: " + e.reason);
+               log.warn(ME, "XmlBlasterException: " + e.getMessage());
             }
             log.info(ME, "Subscribe done, there should be no Callback" + stop.nice());
          }
@@ -164,7 +162,7 @@ public class ClientRaw
                String publishOid = xmlBlaster.publish(msgUnit);
                log.trace(ME, "Returned oid=" + publishOid);
             } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-               log.warn(ME, "XmlBlasterException: " + e.reason);
+               log.warn(ME, "XmlBlasterException: " + e.getMessage());
             }
             log.info(ME, "Publishing done, there should be a callback now" + stop.nice());
          }
@@ -180,7 +178,7 @@ public class ClientRaw
          try {
             authServer.logout(xmlBlaster);
          } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-            log.warn(ME, "XmlBlasterException: " + e.reason);
+            log.warn(ME, "XmlBlasterException: " + e.getMessage());
          }
 
          //----------- Shutdown my callback server -----------------
@@ -269,9 +267,9 @@ class RawCallback implements BlasterCallbackOperations
          UpdateQos qos = null;
          try { // SAX parse the received message key and QoS:
             key = new UpdateKey(glob, msgUnit.xmlKey);
-            qos = new UpdateQos(glob, msgUnit.xmlKey);
+            qos = new UpdateQos(glob, msgUnit.qos);
          } catch (org.xmlBlaster.util.XmlBlasterException e) {
-            log.error(ME, e.reason);
+            log.error(ME, e.getMessage());
          }
          log.plain(ME, "\n================== BlasterCallback update START =============");
          log.plain(ME, "Callback invoked for " + key.toString() + " content length = " + msgUnit.content.length);

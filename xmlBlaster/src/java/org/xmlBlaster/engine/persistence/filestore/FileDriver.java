@@ -15,7 +15,7 @@ import org.jutils.JUtilsException;
 import org.xmlBlaster.util.XmlBlasterException;
 
 import org.xmlBlaster.engine.xml2java.XmlKey;
-import org.xmlBlaster.engine.xml2java.PublishQos;
+import org.xmlBlaster.engine.qos.PublishQosServer;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.MessageUnitWrapper;
 import org.xmlBlaster.authentication.SessionInfo;
@@ -125,9 +125,9 @@ public class FileDriver implements I_PersistenceDriver
    public final void store(MessageUnitWrapper messageWrapper) throws XmlBlasterException
    {
       XmlKey xmlKey = messageWrapper.getXmlKey();
-      PublishQos qos = messageWrapper.getPublishQos();
+      PublishQosServer qos = messageWrapper.getPublishQos();
       String mime = messageWrapper.getContentMime();
-      byte[] content = messageWrapper.getMessageUnit().content;
+      byte[] content = messageWrapper.getMessageUnit().getContent();
 
       String oid = xmlKey.getKeyOid(); // The file name
 
@@ -184,7 +184,7 @@ public class FileDriver implements I_PersistenceDriver
 
          String xmlQos_literal = FileUtil.readAsciiFile(path, oid + XMLQOS_TOKEN);
 
-         msgUnit = new MessageUnit(xmlKey_literal, content, xmlQos_literal);
+         msgUnit = new MessageUnit(glob, xmlKey_literal, content, xmlQos_literal);
 
          if (log.TRACE) log.trace(ME, "Successfully fetched message " + oid);
          if (log.DUMP) log.dump(ME, "Successfully fetched message\n" + msgUnit.toXml());

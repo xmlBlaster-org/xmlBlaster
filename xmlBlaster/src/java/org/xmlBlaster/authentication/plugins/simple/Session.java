@@ -32,7 +32,7 @@ public class Session implements I_Session {
       this.sessionId = sessionId;
       // Up to now, we've a session, but no subject where it belongs to.
       // Thus, it gets a dummy, a subjet with nearly no rights.
-      if (dummyUsr == null) dummyUsr = new Subject();
+      if (dummyUsr == null) dummyUsr = new Subject(secMgr.getGlobal());
    }
 
 
@@ -45,7 +45,7 @@ public class Session implements I_Session {
     *                                exist or the passwd is incorrect.
     */
    public String init(String xmlQos_literal) throws XmlBlasterException {
-      return init(new SecurityQos(xmlQos_literal));
+      return init(new SecurityQos(secMgr.getGlobal(), xmlQos_literal));
    }
 
    /**
@@ -121,8 +121,11 @@ public class Session implements I_Session {
       return msg;
    }
 
-   public String importMessage(String xmlMsg) throws XmlBlasterException
-   {
+   public String importMessage(String xmlMsg) throws XmlBlasterException {
+      return xmlMsg;
+   }
+
+   public byte[] importMessage(byte[] xmlMsg) throws XmlBlasterException {
       return xmlMsg;
    }
 
@@ -140,9 +143,11 @@ public class Session implements I_Session {
 
    }
 
-   public String exportMessage(String xmlMsg) throws XmlBlasterException
-   {
+   public String exportMessage(String xmlMsg) throws XmlBlasterException {
       return xmlMsg;
    }
 
+   public byte[] exportMessage(byte[] xmlMsg) throws XmlBlasterException {
+      return xmlMsg;
+   }
 }

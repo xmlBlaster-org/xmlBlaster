@@ -2,8 +2,6 @@
 Name:      TestFailSave.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Testing publish()
-Version:   $Id: TestFailSave.java,v 1.2 2002/09/13 23:18:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -11,14 +9,15 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
-import org.xmlBlaster.client.PublishQosWrapper;
+import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_ConnectionProblems;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
-import org.xmlBlaster.client.SubscribeRetQos;
-import org.xmlBlaster.client.EraseRetQos;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.qos.SubscribeReturnQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.engine.helper.Address;
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -136,10 +135,10 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
                       "</key>";
       String qos = "<qos></qos>";
       try {
-         EraseRetQos[] arr = con.erase(xmlKey, qos);
+         EraseReturnQos[] arr = con.erase(xmlKey, qos);
          assertEquals("Wrong number of message erased", arr.length, (numPublish - numStop));
          assertTrue(assertInUpdate, assertInUpdate == null);
-      } catch(XmlBlasterException e) { log.error(ME, "XmlBlasterException: " + e.reason); }
+      } catch(XmlBlasterException e) { log.error(ME, "XmlBlasterException: " + e.getMessage()); }
 
       try { Thread.currentThread().sleep(500L); } catch( InterruptedException i) {}    // Wait some time
       con.disconnect(null);
@@ -163,12 +162,12 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
                       "</key>";
       String qos = "<qos></qos>";
       try {
-         SubscribeRetQos subscriptionId = con.subscribe(xmlKey, qos);
+         SubscribeReturnQos subscriptionId = con.subscribe(xmlKey, qos);
          log.info(ME, "Success: Subscribe on subscriptionId=" + subscriptionId.getSubscriptionId() + " done");
          assertTrue("returned null subscriptionId", subscriptionId != null);
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.reason);
-         assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
+         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
       }
    }
 
@@ -186,7 +185,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
                       "   </TestFailSave-AGENT>" +
                       "</key>";
       String content = "" + counter;
-      PublishQosWrapper qosWrapper = new PublishQosWrapper(); // == "<qos></qos>"
+      PublishQos qosWrapper = new PublishQos(glob); // == "<qos></qos>"
       MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes(), qosWrapper.toXml());
 
       con.publish(msgUnit);
@@ -221,12 +220,12 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
             //assertEquals("numReceived after publishing", ii+1, numReceived); // message arrived?
          }
          catch(XmlBlasterException e) {
-            if (e.id.equals("TryingReconnect"))
-               log.warn(ME, e.id + " exception: Lost connection, my connection layer is polling");
-            else if (e.id.equals("NoConnect"))
+            if (e.getErrorCode() == ErrorCode.COMMUNICATION_NOCONNECTION_POLLING)
+               log.warn(ME, "Lost connection, my connection layer is polling: " + e.getMessage());
+            else if (e.getErrorCode() == ErrorCode.COMMUNICATION_NOCONNECTION_DEAD)
                assertTrue("Lost connection, my connection layer is NOT polling", false);
             else
-               assertTrue("Publishing problems id=" + e.id + ": " + e.reason, false);
+               assertTrue("Publishing problems: " + e.getMessage(), false);
          }
       }
 
@@ -249,7 +248,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
          con.flushQueue();    // send all tailback messages
          // con.resetQueue(); // or discard them (it is our choice)
       } catch (XmlBlasterException e) {
-         assertTrue("Exception during reconnection recovery: " + e.reason, false);
+         assertTrue("Exception during reconnection recovery: " + e.getMessage(), false);
       }
    }
 
@@ -280,17 +279,17 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
       }
 
       numReceived += 1;
-      log.info(ME, "Receiving update of message oid=" + updateKey.getUniqueKey() + " numReceived=" + numReceived + " ...");
+      log.info(ME, "Receiving update of message oid=" + updateKey.getOid() + " numReceived=" + numReceived + " ...");
 
-      assertInUpdate = "Wrong sender, expected:" + senderName + " but was:" + updateQos.getSender();
-      assertEquals("Wrong sender", senderName, updateQos.getSender());
+      assertInUpdate = "Wrong sender, expected:" + senderName + " but was:" + updateQos.getSender().getLoginName();
+      assertEquals("Wrong sender", senderName, updateQos.getSender().getLoginName());
 
       assertInUpdate = "Message contentMime is corrupted expected:" + contentMime + " but was:" + updateKey.getContentMime();
       assertEquals("Message contentMime is corrupted", contentMime, updateKey.getContentMime());
 
       String oid = "Message" + "-" + numReceived;
-      assertInUpdate = "Wrong oid of message returned expected:" + oid + " but was:" + updateKey.getUniqueKey();
-      assertEquals("Message oid is wrong", oid, updateKey.getUniqueKey());
+      assertInUpdate = "Wrong oid of message returned expected:" + oid + " but was:" + updateKey.getOid();
+      assertEquals("Message oid is wrong", oid, updateKey.getOid());
 
       assertInUpdate = null;
       messageArrived = true;

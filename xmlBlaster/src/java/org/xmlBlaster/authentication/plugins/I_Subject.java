@@ -1,14 +1,10 @@
 package org.xmlBlaster.authentication.plugins;
 
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.MethodName;
 
 /**
- *
- *
- * @author  $Author: ruff $ ($Name:  $)
- * @version $Revision: 1.4 $ (State: $State) (Date: $Date: 2002/02/14 15:02:45 $)
  */
-
 public interface I_Subject {
 
    /**
@@ -24,9 +20,9 @@ public interface I_Subject {
     * a message under the key >>thisIsAMessageKey<<
     *
     * Known action keys:
-    *    publish, subscribe, get, erase, ... see Constants.PUBLISH etc.
+    *    publish, subscribe, get, erase, ...
     */
-   public boolean isAuthorized(String actionKey, String key);
+   public boolean isAuthorized(MethodName actionKey, String key);
 
    /**
     * Get the subjects login-name.

@@ -33,6 +33,10 @@
          are published as <i>dead letters</i> (the login session is destroyed as well).
          Redelivering can be switched off, resulting in immediate <i>dead letters</i> and
          garbage collection of resources.
+         <p>
+          Note: The redeliver information is lost on server crash (the redeliver counter
+          is not persistent).
+         </p>
          </li>
          <li>For PtP messages it could be reasonable to inform the sender of the message about
          this situation [needs to be specified]</li>
@@ -273,7 +277,7 @@ import org.xmlBlaster.engine.helper.CallbackAddress;
    <see type="API">org.xmlBlaster.engine.helper.CallbackAddress</see>
    <see type="API">org.xmlBlaster.engine.helper.QueueProperty</see>
    <see type="API">org.xmlBlaster.util.ConnectQos</see>
-   <see type="API">org.xmlBlaster.client.UpdateQos</see>
+   <see type="API">org.xmlBlaster.client.qos.UpdateQos</see>
    <see type="API">org.xmlBlaster.test.qos.TestCallbackConfig</see>
    <see type="REQ">engine.queue</see>
    <see type="REQ">engine.qos.login.callback</see>
@@ -282,7 +286,7 @@ import org.xmlBlaster.engine.helper.CallbackAddress;
    <see type="REQ">util.property.env</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 02 04</date>
-   <revision>$Revision: 1.22 $</revision>
+   <revision>$Revision: 1.23 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Check failure handling</comment>

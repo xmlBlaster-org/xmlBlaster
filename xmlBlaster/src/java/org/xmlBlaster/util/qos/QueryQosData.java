@@ -1,0 +1,215 @@
+/*------------------------------------------------------------------------------
+Name:      QueryQosData.java
+Project:   xmlBlaster.org
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+------------------------------------------------------------------------------*/
+package org.xmlBlaster.util.qos;
+
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.engine.helper.AccessFilterQos;
+
+import java.util.ArrayList;
+
+/**
+ * Data container handling of query / access QoS. 
+ * <p>
+ * This data holder is accessible through decorators, each of them allowing a specialized view on the data:
+ * </p>
+ * <ul>
+ * <li>SubscribeQos QoS of a subscribe() invocation (Client side)</i>
+ * <li>UnSubscribeQos QoS of a unSubscribe() invocation (Client side)</i>
+ * <li>EraseQos QoS of an erase() invocation (Client side)</i>
+ * <li>GetQos QoS of an get() invocation (Client side)</i>
+ * </ul>
+ * <p>
+ * For the xml representation see QueryQosSaxFactory.
+ * </p>
+ * @see org.xmlBlaster.util.qos.QueryQosSaxFactory
+ * @see org.xmlBlaster.test.classtest.qos.QueryQosFactoryTest
+ * @author ruff@swand.lake.de
+ */
+public final class QueryQosData implements java.io.Serializable
+{
+   private String ME = "QueryQosData";
+   private transient final Global glob;
+   private transient final I_QueryQosFactory factory;
+   private final String serialData;
+
+   /** A client can force a specific subscription id */
+   private String subscriptionId;
+
+   /** not yet supported */
+   private boolean meta = true;
+
+   /** not yet supported */
+   private boolean content = true;
+
+   private boolean local = true;
+
+   /** send on subscribe an initial update with the current message */
+   private boolean initialUpdate = true;
+
+   /** for erase(): Notify the subscribers on erase? */
+   private boolean notify = true;
+
+   /** Mime based filter rules */
+   private ArrayList filters = null;
+   private transient AccessFilterQos[] filterArr = null; // To cache the filters in an array
+
+   /**
+    * Constructs the specialized quality of service object for query informations,
+    * e.g. for a subscribe() call
+    * @param The factory which knows how to serialize and parse me
+    */
+   public QueryQosData(Global glob) {
+      this(glob, null, null);
+   }
+
+   /**
+    * Constructs the specialized quality of service object for query informations,
+    * e.g. for a subscribe() call
+    * @param The factory which knows how to serialize and parse me
+    */
+   public QueryQosData(Global glob, I_QueryQosFactory factory) {
+      this(glob, factory, null);
+   }
+
+   /**
+    * Constructs the specialized quality of service object for a publish() call.
+    * For internal use only, this message is sent from the persistence layer
+    * @param the XML based ASCII string
+    * @param true
+    */
+   public QueryQosData(Global glob, I_QueryQosFactory factory, String serialData) {
+      this.glob = glob;
+      this.factory = (factory==null) ? glob.getQueryQosFactory() : factory;
+      this.serialData = serialData;
+   }
+
+
+   /**
+    * Do we want to have an initial update on subscribe if the message
+    * exists already?
+    *
+    * @return true if initial update wanted
+    *         false if only updates on new publishes are sent
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.subscribe.initialUpdate.html">The engine.qos.subscribe.initialUpdate requirement</a>
+    */
+   public void setWantInitialUpdate(boolean initialUpdate) {
+      this.initialUpdate = initialUpdate;
+   }
+
+   public boolean getWantInitialUpdate() {
+      return this.initialUpdate;
+   }
+
+   public void setWantNotify(boolean notify) {
+      this.notify = notify;
+   }
+
+   public boolean getWantNotify() {
+      return this.notify;
+   }
+
+   /**
+    * false Inhibit the delivery of messages to myself if i have published it.
+    */
+   public void setWantLocal(boolean local) {
+      this.local = local;
+   }
+
+   /**
+    * false Inhibit the delivery of messages to myself if i have published it.
+    */
+   public boolean getWantLocal() {
+      return this.local;
+   }
+
+   /**
+    * @param meta false: Don't send me the meta information of a message key
+    */
+   public void setWantMeta(boolean meta) {
+      this.meta = meta;
+   }
+
+   /**
+    * @return false: Don't send me the meta information of a message key
+    */
+   public boolean getWantMeta() {
+      return this.meta;
+   }
+
+   /**
+    * If false, the update contains not the content (it is a notify of change only)
+    * TODO: Implement in server!!!
+    */
+   public void setWantContent(boolean content) {
+      this.content = content;
+   }
+
+   public boolean getWantContent() {
+      return this.content;
+   }
+
+   /**
+    * Adds your subplied subscribe filter
+    */
+   public void addAccessFilter(AccessFilterQos filter) {
+      if (filters == null) filters = new ArrayList();
+      filterArr = null; // clear cache
+      this.filters.add(filter);
+   }
+
+   public ArrayList getAccessFilters() {
+      return this.filters;
+   }
+
+   /**
+    * Return the subscribe filters or null if none is specified. 
+    */
+   public final AccessFilterQos[] getAccessFilterArr() {
+      if (filterArr != null || filters == null || filters.size() < 1)
+         return filterArr;
+
+      filterArr = (AccessFilterQos[])filters.toArray(new AccessFilterQos[filters.size()]);
+      return filterArr;
+   }
+
+   /**
+    * Get the identifier (unique handle) for this subscription. 
+    * @return The id or null if not specified by client.
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.subscribe.id.html">The engine.qos.subscribe.id requirement</a>
+    */
+   public final String getSubscriptionId() {
+      return this.subscriptionId;
+   }
+
+   /**
+    * Force the identifier (unique handle) for this subscription. 
+    * Usually you let the identifier be generated by xmlBlaster.
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.subscribe.id.html">The engine.qos.subscribe.id requirement</a>
+    */
+   public final void setSubscriptionId(String subscriptionId) {
+      this.subscriptionId = subscriptionId;
+   }
+
+   /**
+    * Dump state of this object into a XML ASCII string.
+    * <br>
+    * @return internal state of the query as a XML ASCII string
+    */
+   public String toXml() {
+      return toXml((String)null);
+   }
+
+   /**
+    * Dump state of this object into a XML ASCII string.
+    * <br>
+    * @param extraOffset indenting of tags for nice output
+    * @return internal state of the query as a XML ASCII string
+    */
+   public String toXml(String extraOffset) {
+      return factory.writeObject(this, extraOffset);
+   }
+}
+

@@ -112,22 +112,17 @@ public class AuthenticateImpl
       if (log.CALL) log.call(ME, "Entering connect(qos=" + qos_literal + ")");
 
       StopWatch stop=null; if (log.TIME) stop = new StopWatch();
-      try {
-         ConnectQos connectQos = new ConnectQos(glob, qos_literal);
-         ConnectReturnQos returnQos = authenticate.connect(connectQos);
-         returnValue = returnQos.toXml();
+      ConnectQos connectQos = new ConnectQos(glob, qos_literal);
+      ConnectReturnQos returnQos = authenticate.connect(connectQos);
+      returnValue = returnQos.toXml();
 
-         returnValueStripped = StringHelper.replaceAll(returnValue, "<![CDATA[", "");
-         returnValueStripped = StringHelper.replaceAll(returnValueStripped, "]]>", "");
-         if (!returnValueStripped.equals(returnValue)) {
-            log.trace(ME, "Stripped CDATA tags surrounding security credentials, XML-RPC does not like it (Helma does not escape ']]>'). " +
-                           "This shouldn't be a problem as long as your credentials doesn't contain '<'");
-         }
-         if (log.TIME) log.time(ME, "Elapsed time in connect()" + stop.nice());
+      returnValueStripped = StringHelper.replaceAll(returnValue, "<![CDATA[", "");
+      returnValueStripped = StringHelper.replaceAll(returnValueStripped, "]]>", "");
+      if (!returnValueStripped.equals(returnValue)) {
+         log.trace(ME, "Stripped CDATA tags surrounding security credentials, XML-RPC does not like it (Helma does not escape ']]>'). " +
+                        "This shouldn't be a problem as long as your credentials doesn't contain '<'");
       }
-      catch (org.xmlBlaster.util.XmlBlasterException e) {
-         throw new XmlBlasterException(e.id, e.reason); // transform native exception to Corba exception
-      }
+      if (log.TIME) log.time(ME, "Elapsed time in connect()" + stop.nice());
 
       return returnValueStripped;
    }

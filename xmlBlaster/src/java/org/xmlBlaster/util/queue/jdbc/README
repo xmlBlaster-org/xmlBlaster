@@ -1,0 +1,58 @@
+Here follows a short description on how to quickly install postgres on a 
+linux.
+
+Download and install postgres accordingly to the instructions you get from 
+postgres (see http://www.postgres.org)
+
+Once it is installed you can congfigure it by invoking the following:
+
+initdb /tmp/postgres/data
+postmaster -i -N 256 -B 512 -D /tmp/postgres/data > logfile 2>&1 & 
+createdb test
+
+The first line initializes postgres.
+
+The second line starts the postgres server (important here is the -i flag).
+You need to increase the allowed number of users and buffers (see options -N and -B)
+for running the testsuite.
+
+On the third line a db with the name
+'test' is created. Note that the first and the third line need only to be 
+invoked the first time you start postgres. 
+
+Configure in xmlBlaster.properties:
+-----------------------------------------------------------------
+JdbcDriver.drivers=sun.jdbc.odbc.JdbcOdbcDriver:ORG.as220.tinySQL.dbfFileDriver:org.postgresql.Driver
+#JdbcDriver.drivers=oracle.jdbc.driver.OracleDriver
+#JdbcDriver.drivers=sun.jdbc.odbc.JdbcOdbcDriver:ORG.as220.tinySQL.dbfFileDriver:oracle.jdbc.driver.OracleDriver:org.gjt.mm.mysql.Driver:org.postgresql.Driver,de.sag.jdbc.adabasd.ADriver:com.sybase.jdbc2.jdbc.SybDriver
+
+# settings for postgres ...
+JdbcDriver.drivers=org.postgresql.Driver
+JdbcDriver.postgresql.mapping=string=text,longint=bigint,int=integer,boolean=char(1),tables=pg_tables
+cb.queue.persistent.url=jdbc:postgresql://localhost/test
+cb.queue.persistent.user=postgres
+cb.queue.persistent.password=
+ 
+# settings for oracle
+#JdbcDriver.drivers=oracle.jdbc.driver.OracleDriver
+ 
+#JdbcDriver.Oracle.mapping=string=VARCHAR(128),longint=NUMBER(19),int=NUMBER(10),blob=long raw,boolean=CHAR(1),tables=ALL_TABLES,tablename=TABLE_NAME
+ 
+#cb.queue.persistent.url=jdbc:oracle:thin:@localhost:1521:xmlb
+#cb.queue.persistent.user=xmlblaster
+#cb.queue.persistent.password=secret
+ 
+cb.queue.persistent.connectionPoolSize=3
+cb.queue.persistent.connectionBusyTimeout=90000
+cb.queue.persistent.maxWaitingThreads=300
+cb.queue.defaultPlugin=RAM,1.0
+cb.queue.persistent.tablePrefix=xmlBlaster
+cb.queue.persistent.tableAllocationIncrement=2
+-----------------------------------------------------------------
+   
+
+Enjoy 
+Michele
+
+
+

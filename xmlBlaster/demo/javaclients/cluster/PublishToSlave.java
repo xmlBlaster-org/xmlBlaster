@@ -3,10 +3,17 @@ package javaclients.cluster;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.*;
-import org.xmlBlaster.client.*;
+import org.xmlBlaster.util.enum.PriorityEnum;
+import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.client.key.PublishKey;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.key.EraseKey;
+import org.xmlBlaster.client.qos.PublishQos;
+import org.xmlBlaster.client.qos.PublishReturnQos;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.engine.helper.Constants;
 
 
 /**
@@ -55,19 +62,20 @@ public class PublishToSlave implements I_Callback
          ConnectReturnQos conRetQos = con.connect(qos, this);  // Login to xmlBlaster, register for updates
          log.info("PublishToSlave", "Connected to xmlBlaster.");
 
-         PublishKeyWrapper pk = new PublishKeyWrapper("PublishToSlave."+domain, "text/xml", "1.0", domain);
-         PublishQosWrapper pq = new PublishQosWrapper();
-         pq.setPriority(Constants.LOW_PRIORITY);
+         PublishKey pk = new PublishKey(glob, "PublishToSlave."+domain, "text/xml", "1.0");
+         pk.setDomain(domain);
+         PublishQos pq = new PublishQos(glob);
+         pq.setPriority(PriorityEnum.LOW_PRIORITY);
          for (int i=0; i<numPublish; i++) {
             if (interactivePublish) {
                System.out.println("Hit a key to publish ...");
                try { System.in.read(); } catch(Exception e2) { }
             }
             MessageUnit msgUnit = new MessageUnit(pk.toXml(), content.getBytes(), pq.toXml());
-            PublishRetQos retQos = con.publish(msgUnit);
+            PublishReturnQos retQos = con.publish(msgUnit);
             log.info("PublishToSlave", "Published #" + (i+1) + " message oid=" + pk.getOid() + " of domain='" + pk.getDomain() + "' and content='" + content +
                                     "' to xmlBlaster node with IP=" + glob.getProperty().get("port",0) +
-                                    ", the returned QoS is: " + retQos.getOid());
+                                    ", the returned QoS is: " + retQos.getKeyOid());
          }
       }
       catch (Exception e) {
@@ -78,8 +86,8 @@ public class PublishToSlave implements I_Callback
          try { System.in.read(); } catch(Exception e2) { }
 
          /*
-         EraseKeyWrapper ek = new EraseKeyWrapper("PublishToSlave");
-         EraseQosWrapper eq = new EraseQosWrapper();
+         EraseKey ek = new EraseKey(glob, "PublishToSlave");
+         EraseQos eq = new EraseQos(glob);
          con.erase(ek.toXml(), uq.toXml());
          */
          

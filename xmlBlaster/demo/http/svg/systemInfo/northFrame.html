@@ -23,7 +23,7 @@ COMMENT:
             top.xmlBlasterWindow.Log.trace("northFrame is receiving " + messageQueue.length + " updates");
             for( var i = 0; i < messageQueue.length; i++ ) {
                var keyOid = messageQueue[i].key.oid;
-               var content = messageQueue[i].content;
+               var content = messageQueue[i].getContent();
                updateFrame(keyOid, content);
             }
             top.xmlBlasterWindow.Log.trace("Processed " + i + " SVG updates");
@@ -37,9 +37,9 @@ COMMENT:
          function initialize() {
             top.xmlBlasterWindow.Log.trace("Registering '" + self.name + "' for updates in initialize()");
             top.xmlBlasterWindow.addUpdateListener( self );
-            top.xmlBlasterWindow.subscribe(new top.xmlBlasterWindow.SubscribeKeyWrapper("cpuinfo"));
+            top.xmlBlasterWindow.subscribe(new top.xmlBlasterWindow.SubscribeKey(glob, "cpuinfo"));
             top.xmlBlasterWindow.Log.trace("OK, subscribed to cpuinfo");
-            top.xmlBlasterWindow.subscribe(new top.xmlBlasterWindow.SubscribeKeyWrapper("meminfo"));
+            top.xmlBlasterWindow.subscribe(new top.xmlBlasterWindow.SubscribeKey(glob, "meminfo"));
             top.xmlBlasterWindow.Log.trace("OK, subscribed to meminfo");
             // Uncomment to test the other methods:
             //test();
@@ -54,20 +54,20 @@ COMMENT:
             top.xmlBlasterWindow.Log.INFO = true;
 
             {
-               var key = new top.xmlBlasterWindow.PublishKeyWrapper("MessageFromBrowser");
+               var key = new top.xmlBlasterWindow.PublishKey(glob, "MessageFromBrowser");
                var content = "Hello from browser";
                var qos = "<qos></qos>";
                var message = new top.xmlBlasterWindow.MessageWrapperLiteral(key, content, qos);
                top.xmlBlasterWindow.publish(message);
                top.xmlBlasterWindow.Log.info("OK, published " + key.oid);
 
-               top.xmlBlasterWindow.subscribe(new top.xmlBlasterWindow.SubscribeKeyWrapper("MessageFromBrowser"));
+               top.xmlBlasterWindow.subscribe(new top.xmlBlasterWindow.SubscribeKey(glob, "MessageFromBrowser"));
 
-               top.xmlBlasterWindow.unSubscribe(new top.xmlBlasterWindow.SubscribeKeyWrapper("MessageFromBrowser"));
+               top.xmlBlasterWindow.unSubscribe(new top.xmlBlasterWindow.SubscribeKey(glob, "MessageFromBrowser"));
             }
 
             {
-               var key = new top.xmlBlasterWindow.PublishKeyWrapper("TmpMessageFromBrowser");
+               var key = new top.xmlBlasterWindow.PublishKey(glob, "TmpMessageFromBrowser");
                var content = "Temporary hello from browser";
                var qos = "<qos></qos>";
                var message = new top.xmlBlasterWindow.MessageWrapperLiteral(key, content, qos);
@@ -75,7 +75,7 @@ COMMENT:
                top.xmlBlasterWindow.publish(message);
                top.xmlBlasterWindow.Log.info("OK, published " + key.oid);
 
-               top.xmlBlasterWindow.erase(new top.xmlBlasterWindow.SubscribeKeyWrapper("TmpMessageFromBrowser"));
+               top.xmlBlasterWindow.erase(new top.xmlBlasterWindow.SubscribeKey(glob, "TmpMessageFromBrowser"));
                top.xmlBlasterWindow.Log.info("OK, erased " + key.oid);
             }
          }
@@ -112,7 +112,7 @@ COMMENT:
             var typeName = "CPU";
             if (keyOid == "meminfo") typeName = "RAM";
             var textName = "text." + typeName;
-   	      //svgdoc.getElementById(textName).firstChild.nodeValue = typeName+" "+value+"%"
+              //svgdoc.getElementById(textName).firstChild.nodeValue = typeName+" "+value+"%"
             svgdoc.getElementById(textName).getFirstChild.setData(typeName+" "+value+"%")
             */
 

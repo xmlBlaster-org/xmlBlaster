@@ -3,7 +3,7 @@ Name:      PublishLenChecker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface hiding the real callback protocol
-Version:   $Id: PublishLenChecker.java,v 1.10 2002/08/26 11:04:19 ruff Exp $
+Version:   $Id: PublishLenChecker.java,v 1.11 2002/11/26 12:38:48 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime.demo;
@@ -139,7 +139,7 @@ public class PublishLenChecker implements I_Plugin, I_PublishFilter
          throw new XmlBlasterException(ME, "Illegal argument in intercept() call - msgUnitWrapper is null");
       }
 
-      if (msgUnitWrapper.getXmlKey().isInternalMsg())
+      if (msgUnitWrapper.getXmlKey().isInternal())
          return "";  // ignore internal messages
 
       MessageUnit msgUnit = msgUnitWrapper.getMessageUnit();

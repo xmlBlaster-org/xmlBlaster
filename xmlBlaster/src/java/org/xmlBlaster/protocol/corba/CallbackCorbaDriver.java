@@ -3,7 +3,7 @@ Name:      CallbackCorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using CORBA
-Version:   $Id: CallbackCorbaDriver.java,v 1.30 2002/09/10 18:56:56 ruff Exp $
+Version:   $Id: CallbackCorbaDriver.java,v 1.31 2002/11/26 12:39:03 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -11,7 +11,8 @@ package org.xmlBlaster.protocol.corba;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.queue.MsgQueueEntry;
+import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
@@ -23,7 +24,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackHelper;
  * <p>
  * The BlasterCallback.update() method of the client will be invoked
  *
- * @version $Revision: 1.30 $
+ * @version $Revision: 1.31 $
  * @author $Author: ruff $
  */
 public class CallbackCorbaDriver implements I_CallbackDriver
@@ -50,12 +51,12 @@ public class CallbackCorbaDriver implements I_CallbackDriver
       this.callbackAddress = callbackAddress;
       String callbackIOR = callbackAddress.getAddress();
       try {
-         cb = BlasterCallbackHelper.narrow(CorbaDriver.getOrb().string_to_object(callbackIOR));
+         this.cb = BlasterCallbackHelper.narrow(CorbaDriver.getOrb().string_to_object(callbackIOR));
          if (log.TRACE) log.trace(ME, "Accessing client callback reference using given IOR string");
       }
-      catch (Exception e) {
+      catch (Throwable e) {
          log.error(ME, "The given callback IOR ='" + callbackIOR + "' is invalid: " + e.toString());
-         throw new XmlBlasterException("CallbackHandleInvalid", "The given callback IOR is invalid: " + e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_ADDRESS, "Corba-CallbackHandleInvalid", "The given callback IOR is invalid: " + e.toString());
       }
    }
 
@@ -67,12 +68,18 @@ public class CallbackCorbaDriver implements I_CallbackDriver
       return "IOR";
    }
 
-   /** Enforced by I_Plugin */
+   /**
+    * Enforced by I_Plugin
+    * @return "IOR"
+    */
    public String getType() {
       return getProtocolId();
    }
 
-   /** Enforced by I_Plugin */
+   /**
+    * Enforced by I_Plugin
+    * @return "1.0"
+    */
    public String getVersion() {
       return "1.0";
    }
@@ -96,38 +103,50 @@ public class CallbackCorbaDriver implements I_CallbackDriver
     * This sends the update to the client.
     * @exception e.id="CallbackFailed", should be caught and handled appropriate
     */
-   public final String[] sendUpdate(MsgQueueEntry[] msg) throws XmlBlasterException {
-      if (msg == null || msg.length < 1 || msg[0] == null) {
+   public final String[] sendUpdate(MsgQueueUpdateEntry[] msgArr) throws XmlBlasterException {
+      if (msgArr == null || msgArr.length < 1 || msgArr[0] == null) {
          Thread.currentThread().dumpStack();
-         throw new XmlBlasterException(ME, "Illegal update argument");
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal sendUpdate() argument");
       }
 
-      org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] updateArr = new org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[msg.length];
-      for (int ii=0; ii<msg.length; ii++) {
-         updateArr[ii] = convert(msg[ii].getMessageUnit());
+      org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] updateArr = new org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[msgArr.length];
+      for (int ii=0; ii<msgArr.length; ii++) {
+         updateArr[ii] = convert(msgArr[ii].getMessageUnit());
       }
 
       try {
-         if (log.TRACE) log.trace(ME, "xmlBlaster.update(" + msg[0].getUniqueKey() + ") to " + callbackAddress.getAddress());
-         String[] arr = cb.update(callbackAddress.getSessionId(), updateArr);
-         if (log.TRACE) log.trace(ME, "xmlBlaster.update(" + msg[0].getUniqueKey() + ") done.");
+         if (log.TRACE) log.trace(ME, "xmlBlaster.update(" + msgArr[0].getLogId() + ") to " + callbackAddress.getAddress());
+         String[] arr = this.cb.update(callbackAddress.getSessionId(), updateArr);
+         if (log.TRACE) log.trace(ME, "xmlBlaster.update(" + msgArr[0].getLogId() + ") done.");
          return arr;
-      } catch (org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-         if (callbackAddress == null)
-            throw new XmlBlasterException("CallbackFailed", "CORBA Callback of " + msg.length +
-                   " messages '" + msg[0].getUniqueKey() + "' to callback address NULL from [" +
-                   msg[0].getPublisherName() + "] failed.\nException thrown by client: id=" +
-                   e.id + " reason=" + e.reason);
-         else
-            throw new XmlBlasterException("CallbackFailed", "CORBA Callback of " + msg.length +
-                   " messages '" + msg[0].getUniqueKey() + "' to client [" +
-                   callbackAddress.getSessionId() + "] from [" + msg[0].getPublisherName() + "] failed.\nException thrown by client: id=" +
-                   e.id + " reason=" + e.reason);
+      } catch (org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException ex) {
+         XmlBlasterException xmlBlasterException = CorbaDriver.convert(glob, ex);
+
+         // WE ONLY ACCEPT ErrorCode.USER... FROM CLIENTS !
+         if (xmlBlasterException.isUser())
+            throw xmlBlasterException;
+
+         if (callbackAddress == null) {
+            throw new XmlBlasterException(glob, ErrorCode.USER_UPDATE_ERROR, ME,
+                   "CORBA Callback of " + msgArr.length + " messages '" + msgArr[0].getLogId() +
+                   "' to callback address NULL from [" +
+                   msgArr[0].getSender() + "] failed.",
+                   xmlBlasterException);
+         }
+         else {
+            throw new XmlBlasterException(glob, ErrorCode.USER_UPDATE_ERROR, ME,
+                   "CORBA Callback of " + msgArr.length +
+                   " messages '" + msgArr[0].getLogId() + "' to client [" +
+                   callbackAddress.getSessionId() + "] from [" + msgArr[0].getSender() + "] failed.",
+                   xmlBlasterException);
+         }
       } catch (Throwable e) {
          if (callbackAddress == null)
-            throw new XmlBlasterException("CallbackFailed", "CORBA Callback of " + msg.length + " messages '" + msg[0].getUniqueKey() + "' to callbackAddress=null from [" + msg[0].getPublisherName() + "] failed, reason=" + e.toString());
+            throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
+                "CORBA Callback of " + msgArr.length + " messages '" + msgArr[0].getLogId() + "' to callbackAddress=null from [" + msgArr[0].getSender() + "] failed, reason=" + e.toString());
          else
-            throw new XmlBlasterException("CallbackFailed", "CORBA Callback of " + msg.length + " messages '" + msg[0].getUniqueKey() + "' to client [" + callbackAddress.getSessionId() + "] from [" + msg[0].getPublisherName() + "] failed, reason=" + e.toString());
+            throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
+                "CORBA Callback of " + msgArr.length + " messages '" + msgArr[0].getLogId() + "' to client [" + callbackAddress.getSessionId() + "] from [" + msgArr[0].getSender() + "] failed, reason=" + e.toString());
       }
    }
 
@@ -135,21 +154,23 @@ public class CallbackCorbaDriver implements I_CallbackDriver
     * The oneway variant, without return value. 
     * @exception XmlBlasterException Is never from the client (oneway).
     */
-   public final void sendUpdateOneway(MsgQueueEntry[] msg) throws XmlBlasterException
+   public final void sendUpdateOneway(MsgQueueUpdateEntry[] msgArr) throws XmlBlasterException
    {
-      if (msg == null || msg.length < 1) throw new XmlBlasterException(ME, "Illegal updateOneway argument");
-      if (log.TRACE) log.trace(ME, "xmlBlaster.updateOneway(" + msg[0].getUniqueKey() + ") to " + callbackAddress.getAddress());
-      //log.info(ME, "xmlBlaster.updateOneway(" + msg.length + ")");
+      if (msgArr == null || msgArr.length < 1)
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal sendUpdateOneway() argument");
+      if (log.TRACE) log.trace(ME, "xmlBlaster.updateOneway(" + msgArr[0].getLogId() + ") to " + callbackAddress.getAddress());
+      //log.info(ME, "xmlBlaster.updateOneway(" + msgArr.length + ")");
 
-      org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] updateArr = new org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[msg.length];
-      for (int ii=0; ii<msg.length; ii++) {
-         updateArr[ii] = convert(msg[ii].getMessageUnit());
+      org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] updateArr = new org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[msgArr.length];
+      for (int ii=0; ii<msgArr.length; ii++) {
+         updateArr[ii] = convert(msgArr[ii].getMessageUnit());
       }
 
       try {
-         cb.updateOneway(callbackAddress.getSessionId(), updateArr);
+         this.cb.updateOneway(callbackAddress.getSessionId(), updateArr);
       } catch (Throwable e) {
-         throw new XmlBlasterException("CallbackOnewayFailed", "CORBA oneway callback of " + msg.length + " messages '" + msg[0].getUniqueKey() + "' to client [" + callbackAddress.getSessionId() + "] from [" + msg[0].getPublisherName() + "] failed, reason=" + e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
+               "CORBA oneway callback of " + msgArr.length + " messages '" + msgArr[0].getLogId() + "' to client [" + callbackAddress.getSessionId() + "] from [" + msgArr[0].getSender() + "] failed", e);
       }
    }
 
@@ -164,9 +185,10 @@ public class CallbackCorbaDriver implements I_CallbackDriver
    {
       if (log.CALL) log.call(ME, "ping client");
       try {
-         return cb.ping(qos);
+         return this.cb.ping(qos);
       } catch (Throwable e) {
-         throw new XmlBlasterException("CallbackPingFailed", "CORBA callback ping failed: " + e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
+                     "CORBA callback ping failed", e);
       }
    }
 
@@ -175,7 +197,7 @@ public class CallbackCorbaDriver implements I_CallbackDriver
     */
    public static final org.xmlBlaster.protocol.corba.serverIdl.MessageUnit convert(org.xmlBlaster.engine.helper.MessageUnit mu)
    {
-      return new org.xmlBlaster.protocol.corba.serverIdl.MessageUnit(mu.xmlKey, mu.content, mu.qos);
+      return new org.xmlBlaster.protocol.corba.serverIdl.MessageUnit(mu.getKey(), mu.getContent(), mu.getQos());
    }
 
 
@@ -186,11 +208,11 @@ public class CallbackCorbaDriver implements I_CallbackDriver
    public void shutdown()
    {
       if (log.CALL) log.call(ME, "Entering shutdown ...");
-      if (cb != null) {
-         // CorbaDriver.getOrb().disconnect(cb); TODO: !!! must be called delayed, otherwise the logout() call from the client is aborted with a CORBA exception
-         cb._release();
-         //cbfactory.releaseCb(cb);
-         cb = null;
+      if (this.cb != null) {
+         // CorbaDriver.getOrb().disconnect(this.cb); TODO: !!! must be called delayed, otherwise the logout() call from the client is aborted with a CORBA exception
+         this.cb._release();
+         //cbfactory.releaseCb(this.cb);
+         this.cb = null;
       }
       callbackAddress = null;
       // On disconnect: called once for sessionQueue and for last session for subjectQueue as well

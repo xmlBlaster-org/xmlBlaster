@@ -12,9 +12,9 @@ import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
-import org.xmlBlaster.client.EraseRetQos;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.Constants;
 
@@ -79,9 +79,9 @@ public class TestErase extends TestCase implements I_Callback
          if (publishOid != null) {
             String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'/>";
             try {
-               EraseRetQos[] arr = con.erase(xmlKey, "<qos/>");
+               EraseReturnQos[] arr = con.erase(xmlKey, "<qos/>");
                // can be erased already in our tests
-            } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.reason); }
+            } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.getMessage()); }
          }
 
          con.disconnect(null);
@@ -108,8 +108,8 @@ public class TestErase extends TestCase implements I_Callback
          log.info(ME, "Success: Subscribe on " + subscribeId + " done");
       }
       catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.reason);
-         assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
+         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
       }
    }
 
@@ -126,11 +126,11 @@ public class TestErase extends TestCase implements I_Callback
       senderContent = "Yeahh, i'm the new content";
       MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), "<qos/>");
       try {
-         publishOid = con.publish(msgUnit).getOid();
+         publishOid = con.publish(msgUnit).getKeyOid();
          log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.reason);
-         assertTrue("publish - XmlBlasterException: " + e.reason, false);
+         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
 
       assertTrue("returned publishOid == null", publishOid != null);
@@ -150,8 +150,8 @@ public class TestErase extends TestCase implements I_Callback
          con.unSubscribe("<key oid='" + subscribeId + "'/>", qos);
          log.info(ME, "Success: unSubscribe on " + subscribeId + " done");
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.reason);
-         assertTrue("unSubscribe - XmlBlasterException: " + e.reason, false);
+         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         assertTrue("unSubscribe - XmlBlasterException: " + e.getMessage(), false);
       }
    }
 
@@ -159,9 +159,9 @@ public class TestErase extends TestCase implements I_Callback
       if (publishOid != null) {
          String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'/>";
          try {
-            EraseRetQos[] arr = con.erase(xmlKey, "<qos/>");
+            EraseReturnQos[] arr = con.erase(xmlKey, "<qos/>");
             assertEquals("Erase", 1, arr.length);
-         } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.reason); }
+         } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.getMessage()); }
       }
    }
 
@@ -229,7 +229,7 @@ public class TestErase extends TestCase implements I_Callback
       // Wait that publish() returns and set 'publishOid' properly
       try { Thread.currentThread().sleep(200); } catch( InterruptedException i) {}
 
-      assertEquals("Wrong oid of message returned", publishOid, updateKey.getUniqueKey());
+      assertEquals("Wrong oid of message returned", publishOid, updateKey.getOid());
       assertEquals("Message content is corrupted", new String(senderContent), new String(content));
       assertEquals("Message contentMime is corrupted", contentMime, updateKey.getContentMime());
 

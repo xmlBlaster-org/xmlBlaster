@@ -18,6 +18,7 @@ public class AllTests {
       TestSuite suite= new TestSuite("All xmlBlaster class tests");
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.GlobalTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.GlobalLogTest.class));
+      suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.SessionNameTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.XmlKeySaxTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.FileIOTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.TimeoutTest.class));
@@ -25,10 +26,13 @@ public class AllTests {
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.PublishRetQosTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.EraseRetQosTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.SubscribeRetQosTest.class));
-      suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.PublishQosTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.ConnectQosTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.DisconnectQosTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.CommandWrapperTest.class));
+      suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.XmlBlasterExceptionTest.class));
+      suite.addTest(org.xmlBlaster.test.classtest.key.AllTests.suite());
+      suite.addTest(org.xmlBlaster.test.classtest.qos.AllTests.suite());
+      suite.addTest(org.xmlBlaster.test.classtest.queue.AllTests.suite());
       return suite;
    }
 }

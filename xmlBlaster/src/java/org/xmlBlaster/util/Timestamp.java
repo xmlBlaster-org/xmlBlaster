@@ -3,7 +3,7 @@ Name:      Timestamp.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Timestamp.java,v 1.2 2002/03/13 16:41:34 ruff Exp $
+Version:   $Id: Timestamp.java,v 1.3 2002/11/26 12:39:30 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
@@ -53,7 +53,7 @@ package org.xmlBlaster.util;
  * </pre>
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>
  */
-public class Timestamp implements Comparable
+public class Timestamp implements Comparable, java.io.Serializable
 {
    public static final int MILLION = 1000000;
    public static final int BILLION = 1000000000;
@@ -64,10 +64,10 @@ public class Timestamp implements Comparable
    private long timestamp;
 
    /** Cache for string representation */
-   private String strFormat = null;
+   private transient String strFormat = null;
 
    /** You may overwrite the tag name for XML dumps in derived classes, defaults to &lt;timestamp ... */
-   protected String tagName = "timestamp";
+   protected transient String tagName = "timestamp";
 
 
    /**
@@ -260,12 +260,12 @@ public class Timestamp implements Comparable
    public String toXml(String extraOffset, boolean literal)
    {
       StringBuffer sb = new StringBuffer(200);
-      String offset = "\n   ";
+      String offset = "\n ";
       if (extraOffset != null)
          offset += extraOffset;
       if (literal) {
          sb.append(offset).append("<").append(tagName).append(" nanos='").append(getTimestamp()).append("'>");
-         sb.append(offset).append("   ").append(toString());
+         sb.append(offset).append(" ").append(toString());
          sb.append(offset).append("</").append(tagName).append(">");
       }
       else {

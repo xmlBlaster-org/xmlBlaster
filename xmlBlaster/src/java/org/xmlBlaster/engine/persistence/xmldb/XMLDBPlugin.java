@@ -3,7 +3,6 @@ Name:      XMLDBPlugin.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a XMLDB Plugin
-Version:   $Id: XMLDBPlugin.java,v 1.9 2002/09/29 23:54:22 goetzger Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence.xmldb;
@@ -118,9 +117,9 @@ public class XMLDBPlugin implements I_PersistenceDriver
 
       /*
       XmlKey xmlKey = messageWrapper.getXmlKey();
-      PublishQos qos = messageWrapper.getPublishQos();
+      PublishQosServer qos = messageWrapper.getPublishQos();
       String mime = messageWrapper.getContentMime();
-      byte[] content = messageWrapper.getMessageUnit().content;
+      byte[] content = messageWrapper.getMessageUnit().getContent();
       */
 
       // TODO is getMessageUnit().key more performant, but is it complete ???
@@ -130,11 +129,11 @@ public class XMLDBPlugin implements I_PersistenceDriver
       String key = messageWrapper.getXmlKey().toXml();
 
       db.addDocument(key, oid + XMLKEY_TOKEN);
-      db.addDocument(BEGCON_TOKEN + new String(messageWrapper.getMessageUnit().content) + ENDCON_TOKEN, oid + XMLCON_TOKEN);
+      db.addDocument(BEGCON_TOKEN + new String(messageWrapper.getMessageUnit().getContent()) + ENDCON_TOKEN, oid + XMLCON_TOKEN);
       db.addDocument(messageWrapper.getPublishQos().toXml(), oid + XMLQOS_TOKEN);
 
-      // log.trace(ME, "<content><![CDATA["+ new String(messageWrapper.getMessageUnit().content)+"]]></content>");
-      //        log.trace(ME, new String(messageWrapper.getMessageUnit().content));
+      // log.trace(ME, "<content><![CDATA["+ new String(messageWrapper.getMessageUnit().getContent())+"]]></content>");
+      //        log.trace(ME, new String(messageWrapper.getMessageUnit().getContent()));
 
       if (log.TRACE) log.trace(ME, "Successfully stored; oid= " + oid + "key= " + key );
    }
@@ -152,7 +151,7 @@ public class XMLDBPlugin implements I_PersistenceDriver
       if (log.CALL) log.call(ME, "update");
 
       String oid = messageWrapper.getXmlKey().getKeyOid();
-      db.addDocument(BEGCON_TOKEN + new String(messageWrapper.getMessageUnit().content) + ENDCON_TOKEN, oid + XMLCON_TOKEN);
+      db.addDocument(BEGCON_TOKEN + new String(messageWrapper.getMessageUnit().getContent()) + ENDCON_TOKEN, oid + XMLCON_TOKEN);
       // Store the sender as well:
       db.addDocument(messageWrapper.getPublishQos().toXml(), oid + XMLQOS_TOKEN);
 

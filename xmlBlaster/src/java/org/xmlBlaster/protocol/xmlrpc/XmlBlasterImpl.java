@@ -41,10 +41,10 @@ public class XmlBlasterImpl
    /**
     * Constructor.
     */
-   public XmlBlasterImpl(org.xmlBlaster.protocol.I_XmlBlaster blasterNative)
+   public XmlBlasterImpl(Global glob, org.xmlBlaster.protocol.I_XmlBlaster blasterNative)
       throws XmlBlasterException
    {
-      log = Global.instance().getLog("xmlrpc");
+      log = glob.getLog("xmlrpc");
       if (log.CALL) log.call(ME, "Entering constructor ...");
       this.blasterNative = blasterNative;
    }
@@ -74,17 +74,17 @@ public class XmlBlasterImpl
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.unSubscribe.html">The interface.unSubscribe requirement</a>
     */
-   public String unSubscribe(String sessionId, String xmlKey_literal, String qos_literal)
+   public Vector unSubscribe(String sessionId, String xmlKey_literal, String qos_literal)
       throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "Entering unSubscribe() xmlKey=\n" + xmlKey_literal + ") ...");
       StopWatch stop=null; if (log.TIME) stop = new StopWatch();
 
-      blasterNative.unSubscribe(sessionId, xmlKey_literal, qos_literal);
+      String[] retArr = blasterNative.unSubscribe(sessionId, xmlKey_literal, qos_literal);
 
       if (log.TIME) log.time(ME, "Elapsed time in unSubscribe()" + stop.nice());
 
-      return "";
+      return ProtoConverter.stringArray2Vector(retArr);
    }
 
 
@@ -137,7 +137,7 @@ public class XmlBlasterImpl
       MessageUnit msgUnit = ProtoConverter.vector2MessageUnit(msgUnitWrap);
 
       // convert the xml literal strings
-      //XmlKey xmlKey = new XmlKey(msgUnit.getXmlKey(), true);
+      //XmlKey xmlKey = new XmlKey(msgUnit.getKey(), true);
       //PublishQos publishQos = new PublishQos(msgUnit.getQos());
 
       // String retVal = blasterNative.publish(sessionId, xmlKey, msgUnit, publishQos);

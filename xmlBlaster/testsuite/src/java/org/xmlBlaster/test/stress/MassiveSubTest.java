@@ -3,7 +3,6 @@ Name:      MassiveSubTest.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: MassiveSubTest.java,v 1.3 2002/10/24 22:49:31 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.stress;
 
@@ -15,15 +14,13 @@ import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
-import org.xmlBlaster.client.PublishRetQos;
-import org.xmlBlaster.client.EraseRetQos;
-import org.xmlBlaster.client.SubscribeRetQos;
-import org.xmlBlaster.client.SubscribeKeyWrapper;
-import org.xmlBlaster.client.SubscribeQosWrapper;
-import org.xmlBlaster.client.PublishKeyWrapper;
-import org.xmlBlaster.client.PublishQosWrapper;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.qos.PublishReturnQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
+import org.xmlBlaster.client.key.SubscribeKey;
+import org.xmlBlaster.client.qos.SubscribeQos;
+import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.CbQueueProperty;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
@@ -41,7 +38,6 @@ import junit.framework.*;
  * <p>If withEmbedded is set to true will run without an embedded server.</p>
  *
  * @author Peter Antman
- * @version $Revision: 1.3 $
  */
 
 public class MassiveSubTest extends TestCase implements I_Callback {
@@ -195,9 +191,9 @@ public class MassiveSubTest extends TestCase implements I_Callback {
             "</key>";
          String qos = "<qos></qos>";
          try {
-            EraseRetQos[] arr = oneConnection.erase(xmlKey, qos);
+            EraseReturnQos[] arr = oneConnection.erase(xmlKey, qos);
             assertEquals("Erase", 1, arr.length);
-         } catch(XmlBlasterException e) { fail("Erase-XmlBlasterException: " + e.reason); }
+         } catch(XmlBlasterException e) { fail("Erase-XmlBlasterException: " + e.getMessage()); }
       }
       
       oneConnection.disconnect(null);
@@ -219,10 +215,10 @@ public class MassiveSubTest extends TestCase implements I_Callback {
 
       String passwd = "secret";
 
-      SubscribeKeyWrapper subKeyW = new SubscribeKeyWrapper(publishOid1);
+      SubscribeKey subKeyW = new SubscribeKey(glob, publishOid1);
       String subKey = subKeyW.toXml(); // "<key oid='" + publishOid1 + "' queryType='EXACT'></key>";
 
-      SubscribeQosWrapper subQosW = new SubscribeQosWrapper(); // "<qos></qos>";
+      SubscribeQos subQosW = new SubscribeQos(glob); // "<qos></qos>";
       String subQos = subQosW.toXml();
 
       manyClients = new Client[numSubscribers];
@@ -287,10 +283,10 @@ public class MassiveSubTest extends TestCase implements I_Callback {
          }
          try {
             sub.subscribeOid = sub.connection.subscribe(subKey, subQos).getSubscriptionId();
-            log.trace(ME, "Client " + sub.loginName + " subscribed to " + subKeyW.getUniqueKey());
+            log.trace(ME, "Client " + sub.loginName + " subscribed to " + subKeyW.getOid());
          } catch(XmlBlasterException e) {
-            log.warn(ME, "XmlBlasterException: " + e.reason);
-            assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
+            log.warn(ME, "XmlBlasterException: " + e.getMessage());
+            assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
          }
          
          manyClients[ii] = sub;
@@ -321,7 +317,7 @@ public class MassiveSubTest extends TestCase implements I_Callback {
       String qos = "<qos></qos>";
       try {
          MessageUnit[] msgArr = oneConnection.get(xmlKey, qos);
-         String mem = new String(msgArr[0].content);
+         String mem = new String(msgArr[0].getContent());
          return new Long(mem).longValue();
       } catch (XmlBlasterException e) {
          log.warn(ME, e.toString());
@@ -348,13 +344,13 @@ public class MassiveSubTest extends TestCase implements I_Callback {
          for (int i = 0; i < noToPub;i++) {
             senderContent = senderContent+"-"+i;
             MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
-            String tmp = oneConnection.publish(msgUnit).getOid();
+            String tmp = oneConnection.publish(msgUnit).getKeyOid();
             assertEquals("Wrong publishOid1", publishOid1, tmp);
             log.info(ME, "Success: Publishing done for " + i +", returned oid=" + publishOid1);
          }
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.reason);
-         assertTrue("publishOne - XmlBlasterException: " + e.reason, false);
+         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         assertTrue("publishOne - XmlBlasterException: " + e.getMessage(), false);
       }
    }
    /**
@@ -364,7 +360,7 @@ public class MassiveSubTest extends TestCase implements I_Callback {
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      //log.info(ME, "Client " + loginName + " receiving update of message oid=" + updateKey.getUniqueKey() + "...");
+      //log.info(ME, "Client " + loginName + " receiving update of message oid=" + updateKey.getOid() + "...");
       numReceived++;
 
       if (numReceived == numToRec) {

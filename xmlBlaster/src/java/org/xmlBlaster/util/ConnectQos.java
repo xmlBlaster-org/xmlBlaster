@@ -3,25 +3,27 @@ Name:      ConnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: ConnectQos.java,v 1.31 2002/09/12 21:01:28 ruff Exp $
+Version:   $Id: ConnectQos.java,v 1.32 2002/11/26 12:39:27 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.engine.helper.Address;
+import org.xmlBlaster.engine.helper.AddressBase;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.engine.helper.QueueProperty;
 import org.xmlBlaster.engine.helper.CbQueueProperty;
 import org.xmlBlaster.engine.helper.ServerRef;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.PluginLoader;
-import org.xmlBlaster.client.QosWrapper;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.xml.sax.Attributes;
 import java.util.Vector;
+import java.util.ArrayList;
 import java.io.Serializable;
 
 
@@ -43,7 +45,14 @@ import java.io.Serializable;
  *        &lt;session timeout='3600000' maxSessions='10' clearSessions='false' sessionId='4e56890ghdFzj0' publicSessionId='9'>
  *        &lt;/session>
  *        &lt;ptp>true&lt;/ptp>
- *        &lt;queue relating='session' maxMsg='1000' maxSize='4000' onOverflow='deadLetter'>
+ *        &lt;!-- The client side queue: -->
+ *        &lt;queue relating='client' type='CACHE' version='1.0' maxMsg='1000' maxSize='4000' onOverflow='exception'>
+ *           &lt;address type='IOR' sessionId='4e56890ghdFzj0'>
+ *              IOR:10000010033200000099000010....
+ *           &lt;/address>
+ *        &lt;queue>
+ *        &lt;!-- The server side callback queue: -->
+ *        &lt;queue relating='session' type='CACHE' version='1.0' maxMsg='1000' maxSize='4000' onOverflow='deadMessage'>
  *           &lt;callback type='IOR' sessionId='4e56890ghdFzj0'>
  *              IOR:10000010033200000099000010....
  *              &lt;burstMode collectTime='400' />
@@ -124,21 +133,27 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    private transient boolean inSession = false;
    private transient boolean inSessionId = false;
    private transient boolean inCallback = false;
+   private transient boolean inAddress = false;
    
    /** Helper for SAX parsing */
-   private transient CbQueueProperty tmpProp = null;
+   private transient CbQueueProperty tmpCbProp = null;
    /** Helper for SAX parsing */
-   private transient CallbackAddress tmpAddr = null;
+   private transient CallbackAddress tmpCbAddr = null;
 
-   /** Holding queue properties */
-   protected transient Vector queuePropertyVec = new Vector();
-   /** Holding queue property if subject related, a reference to a queuePropertyVec entry */
+   /** Holding queue properties for the server side callback queue */
+   protected transient Vector cbQueuePropertyVec = new Vector();
+   /** Holding queue property if subject related, a reference to a cbQueuePropertyVec entry */
    private transient CbQueueProperty subjectCbQueueProperty = null;
-   /** Holding queue property if session related, a reference to a queuePropertyVec entry */
+   /** Holding queue property if session related, a reference to a cbQueuePropertyVec entry */
    private transient CbQueueProperty sessionCbQueueProperty = null;
 
-   /** The Address object holding the connection configuration */
-   private Address address = null;
+
+   /** Holding queue properties for the client side invocation queue */
+   protected transient ArrayList clientQueuePropertyList = new ArrayList();
+   /** Helper for SAX parsing */
+   private transient QueueProperty tmpProp = null;
+   /** Helper for SAX parsing */
+   private transient Address tmpAddr = null;
 
    /** The node id to which we want to connect */
    private String nodeId = null;
@@ -150,6 +165,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     */
    public ConnectQos(Global glob) throws XmlBlasterException
    {
+      super(glob);
       initialize(glob);
    }
    
@@ -160,6 +176,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     */
    public ConnectQos(Global glob, String xmlQoS_literal) throws XmlBlasterException
    {
+      super(glob);
       //if (log.DUMP) log.dump(ME, "Creating ConnectQos(" + xmlQoS_literal + ")");
       //addressArr = null;
       initialize(glob);
@@ -178,6 +195,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     */
    public ConnectQos(Global glob, String mechanism, String version, String loginName, String password) throws XmlBlasterException
    {
+      super(glob);
       initialize(glob);
       securityQos = getPlugin(mechanism,version).getSecurityQos();
       securityQos.setUserId(loginName);
@@ -191,6 +209,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     */
    public ConnectQos(Global glob, String loginName, String password) throws XmlBlasterException
    {
+      super(glob);
       initialize(glob);
       securityQos = getPlugin(null, null).getSecurityQos();
       securityQos.setUserId(loginName);
@@ -210,6 +229,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     */
    public ConnectQos(Global glob, I_SecurityQos securityQos) throws XmlBlasterException
    {
+      super(glob);
       initialize(glob);
       this.securityQos = securityQos;
    }
@@ -222,6 +242,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     */
    public ConnectQos(Global glob, CallbackAddress callback) throws XmlBlasterException
    {
+      super(glob);
       initialize(glob);
       addCallbackAddress(callback);
    }
@@ -233,6 +254,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     */
    public ConnectQos(String nodeId, Global glob) throws XmlBlasterException
    {
+      super(glob);
       this.nodeId = nodeId;
       initialize(glob);
    }
@@ -241,6 +263,8 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    {
       tmpAddr = null;
       tmpProp = null;
+      tmpCbAddr = null;
+      tmpCbProp = null;
       if (glob == null) {
          //Thread.currentThread().dumpStack();
          glob = new Global();
@@ -296,11 +320,11 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     * If more than one CbQueueProperty exists, the first is chosen. (Verify this behavior)!
     */
    public final CbQueueProperty getCbQueueProperty() {
-      if (queuePropertyVec.size() > 0)
-         return (CbQueueProperty)queuePropertyVec.elementAt(0);
+      if (cbQueuePropertyVec.size() > 0)
+         return (CbQueueProperty)cbQueuePropertyVec.elementAt(0);
 
       addCbQueueProperty(new CbQueueProperty(glob, Constants.RELATING_SESSION, nodeId));
-      return (CbQueueProperty)queuePropertyVec.elementAt(0);
+      return (CbQueueProperty)cbQueuePropertyVec.elementAt(0);
    }
 
    /**
@@ -646,7 +670,10 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     * @param address  An object containing the protocol (e.g. EMAIL) the address (e.g. hugo@welfare.org) and the connection properties
     */
    public final void setAddress(Address address) {
-      this.address = address;
+      QueueProperty prop = new QueueProperty(glob, nodeId); // Use default queue properties for this xmlBlaster access address
+      prop.setAddress(address);
+      addClientQueueProperty(prop);
+      //clientQueuePropertyArr = null; // reset to be recalculated on demand
    }
 
    /**
@@ -655,11 +682,47 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     * @return never null
     */
    public final Address getAddress() {
-      if (this.address == null) {
+      Address address = getClientQueueProperty().getCurrentAddress();
+      if (address == null) {
+         log.error(ME, "Internal error, can't access address instance in queue");
+         throw new IllegalArgumentException(ME + ": Internal error, can't access address instance in queue");
+      }
+      return address;
+   }
+
+   /**
+    * The connection address and properties of the xmlBlaster server
+    * we want connect to.
+    * @return never null
+    */
+   public final AddressBase[] getAddresses() {
+      return getClientQueueProperty().getAddresses();
+   }
+
+   /**
+    * Adds a queue description. 
+    * This allows to set all supported attributes of a client side queue and an address to reach xmlBlaster
+    * @param prop The property object of the client side queue which shall be established. 
+    * @see org.xmlBlaster.engine.helper.Address
+    */
+   public final void addClientQueueProperty(QueueProperty prop) {
+      if (prop == null) return;
+      clientQueuePropertyList.add(prop);
+   }
+
+   /**
+    * @return never null
+    */
+   public QueueProperty getClientQueueProperty() {
+      if (clientQueuePropertyList.size() < 1) {
          if (log.TRACE) log.trace(ME, "Creating default server address instance");
          setAddress(glob.getBootstrapAddress());
       }
-      return this.address;
+      if (clientQueuePropertyList.size() < 1) {
+         log.error(ME, "Internal error, can't access address instance");
+         throw new IllegalArgumentException(ME + ": Internal error, can't access address instance");
+      }
+      return (QueueProperty)clientQueuePropertyList.get(0);
    }
 
    /**
@@ -690,15 +753,12 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
             Thread.currentThread().dumpStack();
          }
          this.sessionCbQueueProperty = prop;
-         queuePropertyVec.addElement(prop);
+         cbQueuePropertyVec.addElement(prop);
       }
       else if (prop.isSubjectRelated()) {
          if (this.subjectCbQueueProperty != null) log.warn(ME, "addCbQueueProperty() overwrites previous subject queue setting");
          this.subjectCbQueueProperty = prop;
-         queuePropertyVec.addElement(prop);
-      }
-      else if (prop.isUnrelated()) {
-         log.error(ME, "You can't add a queue of type 'unrelated' to connect QoS, this is only supported with subscribe QoS");
+         cbQueuePropertyVec.addElement(prop);
       }
    }
 
@@ -734,7 +794,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       return null;
    }
 
-   public final String getUserId() throws XmlBlasterException
+   public final String getUserId()
    {
       if (securityQos==null)
          return "NoLoginName";
@@ -781,19 +841,31 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       }
 
       if (inCallback) {
-         tmpAddr.startElement(uri, localName, name, character, attrs);
+         tmpCbAddr.startElement(uri, localName, name, character, attrs);
          return;
       }
 
       if (name.equalsIgnoreCase("callback")) {
          inCallback = true;
          if (!inQueue) {
-            tmpProp = new CbQueueProperty(glob, null, null); // Use default queue properties for this callback address
-            addCbQueueProperty(tmpProp);
+            tmpCbProp = new CbQueueProperty(glob, null, null); // Use default queue properties for this callback address
+            addCbQueueProperty(tmpCbProp);
          }
-         tmpAddr = new CallbackAddress(glob);
+         tmpCbAddr = new CallbackAddress(glob);
+         tmpCbAddr.startElement(uri, localName, name, character, attrs);
+         tmpCbProp.setCallbackAddress(tmpCbAddr);
+         return;
+      }
+
+      if (name.equalsIgnoreCase("address")) {
+         inAddress = true;
+         if (!inQueue) {
+            tmpProp = new QueueProperty(glob, null); // Use default queue properties for this connection address
+            addClientQueueProperty(tmpProp);
+         }
+         tmpAddr = new Address(glob);
          tmpAddr.startElement(uri, localName, name, character, attrs);
-         tmpProp.setCallbackAddress(tmpAddr);
+         tmpProp.setAddress(tmpAddr);
          return;
       }
 
@@ -804,9 +876,22 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
             character.setLength(0);
             return;
          }
-         tmpProp = new CbQueueProperty(glob, null, null);
-         tmpProp.startElement(uri, localName, name, attrs);
-         addCbQueueProperty(tmpProp);
+         if (inAddress) {
+            log.error(ME, "<queue> tag is not allowed inside <address> tag, element ignored.");
+            character.setLength(0);
+            return;
+         }
+         String related = attrs.getValue("relating");
+         if ("client".equalsIgnoreCase(related)) {
+            tmpProp = new QueueProperty(glob, null);
+            tmpProp.startElement(uri, localName, name, attrs);
+            addClientQueueProperty(tmpProp);
+         }
+         else {
+            tmpCbProp = new CbQueueProperty(glob, null, null);
+            tmpCbProp.startElement(uri, localName, name, attrs);
+            addCbQueueProperty(tmpCbProp);
+         }
          character.setLength(0);
          return;
       }
@@ -931,6 +1016,12 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
 
       if (inCallback) {
          if (name.equalsIgnoreCase("callback")) inCallback = false;
+         tmpCbAddr.endElement(uri, localName, name, character);
+         return;
+      }
+
+      if (inAddress) {
+         if (name.equalsIgnoreCase("address")) inAddress = false;
          tmpAddr.endElement(uri, localName, name, character);
          return;
       }
@@ -1064,11 +1155,13 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       else
          sb.append("'/>");
 
-      if (address != null)
-         sb.append(address.toXml(extraOffset));
+      for (int ii=0; ii<clientQueuePropertyList.size(); ii++) {
+         QueueProperty ad = (QueueProperty)clientQueuePropertyList.get(ii);
+         sb.append(ad.toXml(extraOffset));
+      }
       
-      for (int ii=0; ii<queuePropertyVec.size(); ii++) {
-         CbQueueProperty ad = (CbQueueProperty)queuePropertyVec.elementAt(ii);
+      for (int ii=0; ii<cbQueuePropertyVec.size(); ii++) {
+         CbQueueProperty ad = (CbQueueProperty)cbQueuePropertyVec.elementAt(ii);
          sb.append(ad.toXml(extraOffset));
       }
       
@@ -1109,8 +1202,9 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          Global glob = new Global(args);
          ConnectQos qos;
          qos = new ConnectQos(glob, new CallbackAddress(glob, "IOR"));
-         I_SecurityQos securityQos = new org.xmlBlaster.authentication.plugins.simple.SecurityQos("joe", "secret");
+         I_SecurityQos securityQos = new org.xmlBlaster.authentication.plugins.simple.SecurityQos(glob, "joe", "secret");
          qos.setSecurityQos(securityQos);
+         qos.getAddress(); // Force creation of default address
          System.out.println("Output from manually crafted QoS:\n" + qos.toXml());
 
          String xml =
@@ -1129,7 +1223,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
             "   <session timeout='3600000' maxSessions='20' clearSessions='false'>\n" +
             "      <sessionId>anId</sessionId>\n" +
             "   </session>\n" +
-            "   <queue relating='unrelated' maxMsg='1000' maxSize='4000' onOverflow='deadLetter'>\n" +
+            "   <queue relating='session' maxMsg='1000' maxSize='4000' onOverflow='deadMessage'>\n" +
             "      <callback type='IOR' sessionId='4e56890ghdFzj0' pingInterval='60000' retries='1' delay='60000' useForSubjectQueue='true'>\n" +
             "         <ptp>true</ptp>\n" +
             "         IOR:00011200070009990000....\n" +
@@ -1149,7 +1243,13 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
             "      http:/www.mars.universe:8080/RPC2\n" +
             "   </callback>\n" +
             "   <queue relating='session' maxMsg='1600' maxSize='2000'/>\n" +
-            "   <queue relating='subject' maxMsg='1600' maxSize='2000' expires='360000000'/>\n" +
+            "   <queue relating='client' maxMsg='9600' maxSize='92000' expires='960000000'>\n" +
+            "      <address type='IOR' sessionId='clientAAXX' pingInterval='99000' retries='9' delay='90000'>\n" +
+            "         IOR:00011200070009990000....\n" +
+            "         <compress type='gzip' minSize='1000' />\n" +
+            "         <burstMode collectTime='400' />\n" +
+            "      </address>\n" +
+            "   </queue>\n" +
             "   <serverRef type='IOR'>\n" +
             "      IOR:00011200070009990000....\n" +
             "   </serverRef>\n" +
@@ -1161,10 +1261,10 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
             "   </serverRef>\n" +
             "</qos>\n";
 
-         System.out.println("=====Original XML========\n");
+         System.out.println("=====Original XML========:\n");
          System.out.println(xml);
          qos = new ConnectQos(glob, xml);
-         System.out.println("=====Parsed and dumped===\n");
+         System.out.println("=====Parsed and dumped===:\n");
          System.out.println(qos.toXml());
          
          qos.setSecurityPluginData("htpasswd", "1.0", "joe", "secret");

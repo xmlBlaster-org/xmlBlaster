@@ -3,7 +3,7 @@ Name:      I_XmlBlaster.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native Interface to xmlBlaster
-Version:   $Id: I_XmlBlaster.java,v 1.6 2002/05/30 09:52:28 ruff Exp $
+Version:   $Id: I_XmlBlaster.java,v 1.7 2002/11/26 12:39:16 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
@@ -37,7 +37,7 @@ public interface I_XmlBlaster extends java.rmi.Remote
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public void unSubscribe(String sessionId, String xmlKey_literal, String unSubscribeQoS_literal)
+   public String[] unSubscribe(String sessionId, String xmlKey_literal, String unSubscribeQos_literal)
                            throws RemoteException, XmlBlasterException;
 
    /**

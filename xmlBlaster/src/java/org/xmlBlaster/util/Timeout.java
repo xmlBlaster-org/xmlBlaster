@@ -201,7 +201,7 @@ public class Timeout extends Thread
    public final Timestamp addTimeoutListener(I_Timeout listener, long delay, Object userData)
    {
       Timestamp key = null;
-      if (delay < 1) Log.warn(ME, "addTimeoutListener with delay = " + delay);
+      if (delay < 1) System.out.println(ME + ": addTimeoutListener with delay = " + delay);
       int nanoCounter = 0;
       long timeMillis = System.currentTimeMillis();
       synchronized (map) {
@@ -231,7 +231,7 @@ public class Timeout extends Thread
     * 
     * NOTE: The returned timeout handle is different from the original one.<p />
     *
-    * NOTE: If you are not shure if the key has elapsed already try this:
+    * NOTE: If you are not sure if the key has elapsed already try this:
     * <pre>
     *  timeout.removeTimeoutListener(timeoutHandle);
     *  timeoutHandle = timeout.addTimeoutListener(this, "1000L", "UserData");

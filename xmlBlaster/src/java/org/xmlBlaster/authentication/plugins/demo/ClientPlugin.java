@@ -1,5 +1,7 @@
 package org.xmlBlaster.authentication.plugins.demo;
 
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
@@ -16,8 +18,13 @@ import org.xmlBlaster.authentication.plugins.I_SecurityQos;
  */
 public class ClientPlugin implements I_ClientPlugin {
    public static final String ME = "ClientPlugin";
+   private Global glob;
 
    public ClientPlugin() {
+   }
+
+   public void init(Global glob, PluginInfo pluginInfo) {
+      this.glob = glob;
    }
 
    public String getType()
@@ -36,7 +43,7 @@ public class ClientPlugin implements I_ClientPlugin {
     */
    public I_SecurityQos getSecurityQos()
    {
-      return new SecurityQos(); // "demo" "1.0"
+      return new SecurityQos(this.glob); // "demo" "1.0"
    }
 
    public void setSessionData(String sessionData)
@@ -56,9 +63,9 @@ public class ClientPlugin implements I_ClientPlugin {
     */
    public MessageUnit importMessage(MessageUnit msg) throws XmlBlasterException {
       // dummy implementation
-      msg.xmlKey = importMessage(msg.xmlKey);
-      msg.qos = importMessage(msg.qos);
-      msg.content = importMessage(msg.content);
+      msg = new MessageUnit(importMessage(msg.getKey()),
+                            importMessage(msg.getContent()),
+                            importMessage(msg.getQos()));
 
       return msg;
    }
@@ -92,9 +99,9 @@ public class ClientPlugin implements I_ClientPlugin {
     */
    public MessageUnit exportMessage(MessageUnit msg) throws XmlBlasterException {
       // dummy implementation
-      msg.xmlKey = exportMessage(msg.xmlKey);
-      msg.qos = exportMessage(msg.qos);
-      msg.content = exportMessage(msg.content);
+      msg = new MessageUnit(exportMessage(msg.getKey()), 
+                            exportMessage(msg.getContent()),
+                            exportMessage(msg.getQos()));
 
       return msg;
 

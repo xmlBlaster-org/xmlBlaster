@@ -104,7 +104,7 @@ public class TimeoutTest extends TestCase {
       keyArr[2] = timeout.addTimeoutListener(dummy, 4000L, "timer-4000");
 
       keyArr[3] = timeout.addTimeoutListener(dummy, 2000L, "timer-5500");
-      try { keyArr[3] = timeout.refreshTimeoutListener(keyArr[3], 5500L); } catch (XmlBlasterException e) { fail("Refresh failed: " + e.reason); }
+      try { keyArr[3] = timeout.refreshTimeoutListener(keyArr[3], 5500L); } catch (XmlBlasterException e) { fail("Refresh failed: " + e.getMessage()); }
       long diffT = keyArr[3].getMillis() - System.currentTimeMillis();
       assertTrue("ERROR: refresh failed", (Math.abs(5500L - diffT) <= 30));
 
@@ -116,7 +116,7 @@ public class TimeoutTest extends TestCase {
 
       Timestamp key = timeout.addTimeoutListener(dummy, 1000L, "timer-1000");
       timeout.removeTimeoutListener(key);
-      try { key = timeout.refreshTimeoutListener(key, 1500L); } catch (XmlBlasterException e) { log.info(ME, "Refresh failed which is OK (it is a test): " + e.reason); }
+      try { key = timeout.refreshTimeoutListener(key, 1500L); } catch (XmlBlasterException e) { log.info(ME, "Refresh failed which is OK (it is a test): " + e.getMessage()); }
 
       assertEquals("Should not be expired", false, timeout.isExpired(keyArr[2]));
 

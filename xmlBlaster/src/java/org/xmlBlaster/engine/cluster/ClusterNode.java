@@ -13,8 +13,8 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.ConnectReturnQos;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_ConnectionProblems;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
@@ -24,7 +24,6 @@ import org.xmlBlaster.engine.helper.Address;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.xml2java.XmlKey;
-import org.xmlBlaster.engine.xml2java.PublishQos;
 import org.xmlBlaster.authentication.SessionInfo;
 
 import java.util.Map;
@@ -82,7 +81,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
       this.log = this.glob.getLog("cluster");
       this.nodeInfo = new NodeInfo(glob, nodeId);
       this.state = new NodeStateInfo(glob);
-      this.ME = "ClusterNode" + glob.getLogPraefixDashed() + "-" + "/node/" + getId() + "/";
+      this.ME = "ClusterNode" + glob.getLogPrefixDashed() + "-" + "/node/" + getId() + "/";
       this.connectGlob = glob.getClone(new String[0]);
 //!!!      addDomainInfo(new NodeDomainInfo());
    }
@@ -374,11 +373,11 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
       if (isLocalNode()) {
-         log.error(ME, "Receiving unexpected update of message oid=" + updateKey.getUniqueKey() + " from xmlBlaster node '" + getId() + "' sessionId=" + cbSessionId);
+         log.error(ME, "Receiving unexpected update of message oid=" + updateKey.getOid() + " from xmlBlaster node '" + getId() + "' sessionId=" + cbSessionId);
          Thread.currentThread().dumpStack();
       }
       else {
-         if (log.CALL) log.call(ME, "Receiving update of message oid=" + updateKey.getUniqueKey() + " from xmlBlaster node '" + getId() + "' sessionId=" + cbSessionId);
+         if (log.CALL) log.call(ME, "Receiving update of message oid=" + updateKey.getOid() + " from xmlBlaster node '" + getId() + "' sessionId=" + cbSessionId);
       }
 
       // Important: Do authentication of sender:
@@ -389,7 +388,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
 
       // Publish messages to our RequestBroker WITHOUT ANY FURTHER SECURITY CHECKS:
 
-      String ret = glob.getRequestBroker().update(sessionInfo, updateKey, content, updateQos);
+      String ret = glob.getRequestBroker().update(sessionInfo, updateKey, content, updateQos.getData());
       if (ret == null || ret.length() < 1)
          return Constants.RET_FORWARD_ERROR;   // OK like this?
       return Constants.RET_OK;
@@ -405,7 +404,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
          String ip = glob.getLocalIP();
          java.util.Random ran = new java.util.Random();
          StringBuffer buf = new StringBuffer(512);
-         buf.append(Constants.SESSIONID_PRAEFIX).append(ip).append("-").append(glob.getId()).append("-");
+         buf.append(Constants.SESSIONID_PREFIX).append(ip).append("-").append(glob.getId()).append("-");
          buf.append(System.currentTimeMillis()).append("-").append(ran.nextInt()).append("-").append((counter++));
          String sessionId = buf.toString();
          if (log.TRACE) log.trace(ME, "Created sessionId='" + sessionId + "'");

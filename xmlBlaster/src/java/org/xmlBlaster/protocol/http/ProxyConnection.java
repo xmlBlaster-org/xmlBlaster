@@ -3,7 +3,7 @@ Name:      ProxyConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: ProxyConnection.java,v 1.33 2002/09/13 23:18:11 ruff Exp $
+Version:   $Id: ProxyConnection.java,v 1.34 2002/11/26 12:39:08 ruff Exp $
 Author:    Marcel Ruff ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
@@ -13,8 +13,8 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.engine.helper.Constants;
 
@@ -35,7 +35,7 @@ import javax.servlet.http.*;
  * The BlasterHttpProxy class is a global instance, which allows to retrieve
  * this ProxyConnection through the login name or the sessionId.
  * <p />
- * @version $Revision: 1.33 $
+ * @version $Revision: 1.34 $
  * @author laghi@swissinfo.org
  * @author ruff@swand.lake.de
  */
@@ -93,7 +93,7 @@ public class ProxyConnection implements I_Callback
     */
    public String update(String sessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      log.trace(ME,"----------Update:"+updateKey.getUniqueKey());
+      log.trace(ME,"----------Update:"+updateKey.getOid());
       String[] s_arr = new String[3];
       s_arr[0] = updateKey.toString();
       s_arr[1] = new String(content);
@@ -122,7 +122,7 @@ public class ProxyConnection implements I_Callback
          // Logout from xmlBlaster
          if (xmlBlasterConnection != null) {
             BlasterHttpProxy.cleanupByLoginName(xmlBlasterConnection.getLoginName());
-            xmlBlasterConnection.logout();
+            xmlBlasterConnection.disconnect(null);
             log.info(ME, "Corba connection for '" + xmlBlasterConnection.getLoginName() + "' removed");
             xmlBlasterConnection = null;
          }
@@ -160,7 +160,7 @@ public class ProxyConnection implements I_Callback
             // Logout from xmlBlaster if no browser uses this connection anymore
             if (xmlBlasterConnection != null) {
                BlasterHttpProxy.cleanupByLoginName(xmlBlasterConnection.getLoginName());
-               xmlBlasterConnection.logout();
+               xmlBlasterConnection.disconnect(null);
                log.info(ME, "Corba connection for '" + xmlBlasterConnection.getLoginName() + "' for browser with sessionId=" + sessionId + " removed");
                xmlBlasterConnection = null;
             }

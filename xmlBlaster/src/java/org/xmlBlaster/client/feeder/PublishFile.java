@@ -3,14 +3,14 @@ Name:      PublishFile.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a client to publish files to xmlBlaster
-Version:   $Id: PublishFile.java,v 1.24 2002/09/13 23:17:57 ruff Exp $
+Version:   $Id: PublishFile.java,v 1.25 2002/11/26 12:38:01 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.feeder;
 
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.client.PublishKeyWrapper;
-import org.xmlBlaster.client.PublishQosWrapper;
-import org.xmlBlaster.client.PublishRetQos;
+import org.xmlBlaster.client.key.PublishKey;
+import org.xmlBlaster.client.qos.PublishQos;
+import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -128,7 +128,7 @@ public class PublishFile
             log.error(ME, "File MIME type is unknown, specify MIME type as '-m <MIME>', for example '-m \"image/gif\"' (get help with -?)");
             System.exit(1);
          }
-         PublishKeyWrapper publishKey = new PublishKeyWrapper(body, contentMime, contentMimeExtended);
+         PublishKey publishKey = new PublishKey(glob, body, contentMime, contentMimeExtended);
          xmlKey = publishKey.toXml();  // default <key oid=......></key>
       }
       if (xmlKey == null) {
@@ -146,7 +146,7 @@ public class PublishFile
          xmlQos = xmlQosGiven;
       }
       if (xmlQos == null) {
-         PublishQosWrapper publishQos = new PublishQosWrapper();
+         PublishQos publishQos = new PublishQos(glob);
          xmlQos = publishQos.toXml();  // default qos = "<qos></qos>"
       }
 
@@ -201,7 +201,7 @@ public class PublishFile
     */
    protected void tearDown()
    {
-      senderConnection.logout();
+      senderConnection.disconnect(null);
    }
 
 
@@ -215,11 +215,11 @@ public class PublishFile
       MessageUnit msgUnit = new MessageUnit(xmlKey, content, qos);
       try {
          StopWatch stop = new StopWatch();
-         PublishRetQos publish = senderConnection.publish(msgUnit);
+         PublishReturnQos publish = senderConnection.publish(msgUnit);
          log.info(ME, "Success: Publishing done: " + publish.toXml() + "\n" + stop.nice());
-         //log.info(ME, "Success: Publishing done, returned message oid=" + publish.getOid() + stop.nice());
+         //log.info(ME, "Success: Publishing done, returned message oid=" + publish.getKeyOid() + stop.nice());
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.reason);
+         log.warn(ME, "XmlBlasterException: " + e.getMessage());
       }
    }
 

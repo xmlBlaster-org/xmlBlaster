@@ -3,8 +3,8 @@ package javaclients.jdbc;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.client.GetKeyWrapper;
-import org.xmlBlaster.client.GetQosWrapper;
+import org.xmlBlaster.client.key.GetKey;
+import org.xmlBlaster.client.qos.GetQos;
 import org.xmlBlaster.client.XmlDbMessageWrapper;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
@@ -70,7 +70,7 @@ public class XmlDBClientSync
     * Send the SQL message.
     */
    private void query() {
-      XmlDbMessageWrapper wrap = new XmlDbMessageWrapper(
+      XmlDbMessageWrapper wrap = new XmlDbMessageWrapper(glob,
          glob.getProperty().get("user", "postgres"),
          glob.getProperty().get("pass", ""),
          glob.getProperty().get("url",  "jdbc:postgresql://24.3.47.214/postgres"));
@@ -84,13 +84,13 @@ public class XmlDBClientSync
 
       try {
          log.info(ME, "Sending command string:\n" + wrap.toXml());
-         GetKeyWrapper key = new GetKeyWrapper("__sys__jdbc");
+         GetKey key = new GetKey(glob, "__sys__jdbc");
          key.wrap(wrap.toXml());
-         GetQosWrapper qos = new GetQosWrapper();
+         GetQos qos = new GetQos(glob);
          // get() blocks until the query is finished ...
          MessageUnit[] msgUnitArr = corbaConnection.get(key.toXml(), qos.toXml());
          if (msgUnitArr.length > 0)
-            log.plain(ME, new String(msgUnitArr[0].content));
+            log.plain(ME, new String(msgUnitArr[0].getContent()));
          else
             log.info(ME, "No results for your query");
       }

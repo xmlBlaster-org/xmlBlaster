@@ -3,7 +3,7 @@ Name:      HttpIORServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Delivering the Authentication Service IOR over HTTP
-Version:   $Id: HttpIORServer.java,v 1.23 2002/09/11 14:48:37 ruff Exp $
+Version:   $Id: HttpIORServer.java,v 1.24 2002/11/26 12:37:44 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -30,7 +30,7 @@ import java.io.*;
  * multi homed hosts.
  * <p />
  * Change code to be a generic HTTP server, not only for CORBA bootstrapping
- * @version $Revision: 1.23 $
+ * @version $Revision: 1.24 $
  * @author $Author: ruff $
  */
 public class HttpIORServer extends Thread
@@ -57,7 +57,7 @@ public class HttpIORServer extends Thread
       this.log = glob.getLog("protocol");
       this.ip_addr = ip_addr;
       this.HTTP_PORT = port;
-      this.ME +=  this.glob.getLogPraefixDashed();
+      this.ME +=  this.glob.getLogPrefixDashed();
       if (this.HTTP_PORT <= 0) {
          if (log.CALL) log.call(ME, "Internal HttpServer not started, as port is " + this.HTTP_PORT);
          return;
@@ -96,7 +96,7 @@ public class HttpIORServer extends Thread
          listen = new ServerSocket(HTTP_PORT, backlog, InetAddress.getByName(ip_addr));
          while (running) {
             Socket accept = listen.accept();
-            //log.trace(ME, "New incoming request on port=" + HTTP_PORT + " ...");
+            log.trace(ME, "New incoming request on port=" + HTTP_PORT + " ...");
             if (!running) {
                log.info(ME, "Closing http server port=" + HTTP_PORT + ".");
                break;
@@ -175,7 +175,7 @@ class HandleRequest extends Thread
    public HandleRequest(Global glob, LogChannel log, Socket sock, Hashtable knownRequests)
    {
       this.glob = glob;
-      this.ME = "HandleRequest" + this.glob.getLogPraefixDashed();
+      this.ME = "HandleRequest" + this.glob.getLogPrefixDashed();
       this.log = log;
       this.sock = sock;
       this.knownRequests = knownRequests;

@@ -3,14 +3,14 @@ Name:      HelloWorld.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Applet test for xmlBlaster
-Version:   $Id: HelloWorld.java,v 1.18 2002/09/13 23:17:39 ruff Exp $
+Version:   $Id: HelloWorld.java,v 1.19 2002/11/26 12:36:23 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.HelloWorldApplet;
 
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
@@ -164,7 +164,7 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
          String qos = "<qos></qos>";
          try {
             corbaConnection.erase(xmlKey, qos);
-         } catch(XmlBlasterException e) { log.error(ME+"-tearDown()", "XmlBlasterException in erase(): " + e.reason); }
+         } catch(XmlBlasterException e) { log.error(ME+"-tearDown()", "XmlBlasterException in erase(): " + e.getMessage()); }
       }
 
       if (corbaConnection != null)
@@ -185,7 +185,7 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
          corbaConnection.subscribe(xmlKey, qos);
          log.info(ME, "Success: Subscribe on " + oid + " done");
       } catch(XmlBlasterException e) {
-         log.warn(ME+"-doSubscribe", "XmlBlasterException: " + e.reason);
+         log.warn(ME+"-doSubscribe", "XmlBlasterException: " + e.getMessage());
       }
    }
 
@@ -199,7 +199,7 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
          // With ForceUpdate, following messages with the same content will be updated
          corbaConnection.publish(msgUnit);
       } catch(XmlBlasterException e) {
-         log.warn(ME+"-doPublish", "XmlBlasterException: " + e.reason);
+         log.warn(ME+"-doPublish", "XmlBlasterException: " + e.getMessage());
       }
       log.info(ME, "Success: Published message");
    }

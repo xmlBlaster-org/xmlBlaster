@@ -3,14 +3,13 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling global data
-Version:   $Id: Global.java,v 1.24 2002/09/19 20:56:43 ruff Exp $
+Version:   $Id: Global.java,v 1.25 2002/11/26 12:38:22 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.callback.CbWorkerPool;
 import org.xmlBlaster.engine.RequestBroker;
 import org.xmlBlaster.engine.cluster.NodeId;
 import org.xmlBlaster.engine.helper.Constants;
@@ -20,6 +19,11 @@ import org.xmlBlaster.engine.admin.CommandManager;
 import org.xmlBlaster.engine.admin.extern.MomClientGateway;
 import org.xmlBlaster.protocol.ProtocolManager;
 import org.xmlBlaster.authentication.Authenticate;
+import org.xmlBlaster.engine.helper.AddressBase;
+import org.xmlBlaster.util.dispatch.DeliveryManager;
+import org.xmlBlaster.util.dispatch.DeliveryConnectionsHandler;
+import org.xmlBlaster.engine.dispatch.CbDeliveryConnectionsHandler;
+
 
 import java.util.*;
 import java.io.IOException;
@@ -40,12 +44,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    private RequestBroker requestBroker = null;
    private NodeId nodeId = null;
    private ClusterManager clusterManager;
-   private Timeout burstModeTimer;
-   private Timeout cbPingTimer;
    private Timeout sessionTimer;
-   private Timeout messageTimer;
-
-   private CbWorkerPool cbWorkerPool;
 
    private boolean useCluster = true; // default
    private boolean firstUseCluster = true; // to allow caching
@@ -59,26 +58,11 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
 
 
    public void shutdown() { 
+      super.shutdown();
       log.info(ME, "Destroying global handle");
-      if (cbWorkerPool != null) {
-         // registered itsell to Runlevel changes cbWorkerPool.shutdown();
-         cbWorkerPool = null;
-      }
-      if (burstModeTimer != null) {
-         burstModeTimer.shutdown();
-         burstModeTimer = null;
-      }
-      if (cbPingTimer != null) {
-         cbPingTimer.shutdown();
-         cbPingTimer = null;
-      }
       if (sessionTimer != null) {
          sessionTimer.shutdown();
          sessionTimer = null;
-      }
-      if (messageTimer != null) {
-         messageTimer.shutdown();
-         messageTimer = null;
       }
    }
 
@@ -211,7 +195,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
     * <p />
     * Used for logging
     */
-   public final String getLogPraefix() {
+   public final String getLogPrefix() {
       if (useCluster()) {
          /*
           Switch of too much logging if no other cluster is around does
@@ -234,19 +218,19 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
     * Used for logging
     * @param post the postfix string like "client"
     */
-   public final String getLogPraefixDashed(String post) {
-      String prae = getLogPraefix();
+   public final String getLogPrefixDashed(String post) {
+      String prae = getLogPrefix();
       return (prae.length() < 1) ? ("-" + post) : ("-/node/" + getAdminId() + "/" + post); // relativ or absolute addressed
    }
 
    /**
-    * Same as getLogPraefix() but if in cluster environment a "-" is praefixed
+    * Same as getLogPrefix() but if in cluster environment a "-" is prefixed
     * like "-/node/heron/". 
     * <p />
     * Useful for logging information of classes like Authenticate.java
     */
-   public final String getLogPraefixDashed() {
-      String prae = getLogPraefix();
+   public final String getLogPrefixDashed() {
+      String prae = getLogPrefix();
       if (prae.length() > 0)
          return "-" + prae;
       return "";
@@ -265,7 +249,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
          synchronized(this) {
             if (this.clusterManager == null) {
                this.clusterManager = new ClusterManager(this, sessionInfo);
-               this.ME = "Global" + getLogPraefixDashed();
+               this.ME = "Global" + getLogPrefixDashed();
             }
          }
       }
@@ -301,34 +285,6 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    }
 
    /**
-    * Access the handle of the burst mode timer thread. 
-    * @return The Timeout instance
-    */
-   public final Timeout getBurstModeTimer() {
-      if (this.burstModeTimer == null) {
-         synchronized(this) {
-            if (this.burstModeTimer == null)
-               this.burstModeTimer = new Timeout("BurstmodeTimer");
-         }
-      }
-      return this.burstModeTimer;
-   }
-
-   /**
-    * Access the handle of the callback ping timer thread. 
-    * @return The Timeout instance
-    */
-   public final Timeout getCbPingTimer() {
-      if (this.cbPingTimer == null) {
-         synchronized(this) {
-            if (this.cbPingTimer == null)
-               this.cbPingTimer = new Timeout("CbPingTimer");
-         }
-      }
-      return this.cbPingTimer;
-   }
-
-   /**
     * Access the handle of the user session timer thread. 
     * @return The Timeout instance
     */
@@ -336,38 +292,10 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
       if (this.sessionTimer == null) {
          synchronized(this) {
             if (this.sessionTimer == null)
-               this.sessionTimer = new Timeout("SessionTimer");
+               this.sessionTimer = new Timeout("XmlBlaster.SessionTimer");
          }
       }
       return this.sessionTimer;
-   }
-
-   /**
-    * Access the handle of the message expiry timer thread. 
-    * @return The Timeout instance
-    */
-   public final Timeout getMessageTimer() {
-      if (this.messageTimer == null) {
-         synchronized(this) {
-            if (this.messageTimer == null)
-               this.messageTimer = new Timeout("MessageTimer");
-         }
-      }
-      return this.messageTimer;
-   }
-
-   /**
-    * Access the handle of the callback thread pool. 
-    * @return The CbWorkerPool instance
-    */
-   public final CbWorkerPool getCbWorkerPool() {
-      if (this.cbWorkerPool == null) {
-         synchronized(this) {
-            if (this.cbWorkerPool == null)
-               this.cbWorkerPool = new CbWorkerPool(this);
-         }
-      }
-      return this.cbWorkerPool;
    }
 
    /**
@@ -443,8 +371,25 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
       return xmlKey.getUniqueKey().startsWith("__cmd:");
    }
 
+   /**
+    * Returns the callback layer implementation 'CbDeliveryConnectionsHandler'. 
+    * In util.Global we return the client side implementation 'ClientDeliveryConnectionsHandler'
+    * @return A new instance of CbDeliveryConnectionsHandler
+    */
+   public DeliveryConnectionsHandler createDeliveryConnectionsHandler(DeliveryManager deliveryManager, AddressBase[] addrArr) throws XmlBlasterException {
+      return new CbDeliveryConnectionsHandler(this, deliveryManager, addrArr);
+   }
+
+   /**
+    * Sets the authentication in the engine.Global scope. 
+    * <p>
+    * Additionally the I_Authentication is registered in the <i>util.Global.addObjectEntry</i>
+    * under the name <i>"/xmlBlaster/I_Authenticate"</i> (see Constants.I_AUTHENTICATE_PROPERTY_KEY).<br />
+    * This allows lookup similar to a naming service if we are in the same JVM.
+    */
    public void setAuthenticate(Authenticate auth) {
       this.authenticate = auth;
+      addObjectEntry(Constants.I_AUTHENTICATE_PROPERTY_KEY, this.authenticate);
    }
 
    public Authenticate getAuthenticate() {
@@ -552,7 +497,8 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
       sb.append("   -trace[corba]       Switch on trace mode only for IOR driver.\n");
       sb.append("   -call[cluster]      Show method calls in the cluster module.\n");
       sb.append("   -trace[mime]        Trace code in mime based filter plugins.\n");
-      sb.append("    Supported is [core], [auth], [cb], [mime], [corba], [xmlrpc] [admin]\n");
+      sb.append("    Supported is [core], [auth], [dispatch], [mime], [corba], [xmlrpc] [admin]\n");
       return sb.toString();
    }
 }
+

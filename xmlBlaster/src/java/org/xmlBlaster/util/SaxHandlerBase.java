@@ -3,7 +3,7 @@ Name:      SaxHandlerBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Default handling of Sax callbacks
-Version:   $Id: SaxHandlerBase.java,v 1.19 2002/09/19 09:14:55 antman Exp $
+Version:   $Id: SaxHandlerBase.java,v 1.20 2002/11/26 12:39:29 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -54,12 +54,12 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler
     */
    public SaxHandlerBase() {
        // TODO: use specific glob and not Global - set to deprecated
-      this(Global.instance());
+      this(null);
    }
 
    public SaxHandlerBase(Global glob) {
-      this.glob = glob;
-      this.log = Global.instance().getLog(null);
+      this.glob = (glob == null) ? Global.instance() : glob;
+      this.log = this.glob.getLog(null);
       if (log.CALL) log.trace(ME, "Creating new SaxHandlerBase");
    }
 
@@ -110,8 +110,10 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler
             if (log.TRACE) log.trace(ME, location + ": Parsing execution stopped half the way");
             return;
          }
-         log.error(ME, "Error while SAX parsing: " + location + ": " + e.toString() + "\n" + xmlData);
-         e.printStackTrace();
+         if (log.TRACE) {
+            log.trace(ME, "Error while SAX parsing: " + location + ": " + e.toString() + "\n" + xmlData);
+            e.printStackTrace();
+         }
          throw new XmlBlasterException(ME, "Error while SAX parsing: " + location + ": " + e.toString() + "\n" + xmlData);
       }
       finally {

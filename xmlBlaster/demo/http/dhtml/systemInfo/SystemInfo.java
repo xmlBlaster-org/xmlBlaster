@@ -3,7 +3,7 @@ Name:      SystemInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Servlet to monitor system load on web server
-Version:   $Id: SystemInfo.java,v 1.7 2002/09/13 23:17:39 ruff Exp $
+Version:   $Id: SystemInfo.java,v 1.8 2002/11/26 12:36:22 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package http.dhtml.systemInfo;
@@ -16,7 +16,9 @@ import org.xmlBlaster.protocol.http.Util;
 import org.xmlBlaster.protocol.http.BlasterHttpProxy;
 import org.xmlBlaster.protocol.http.HttpPushHandler;
 import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.client.*;
+import org.xmlBlaster.client.key.SubscribeKey;
+import org.xmlBlaster.client.qos.SubscribeQos;
+import org.xmlBlaster.client.qos.UpdateQos;
 
 import javax.servlet.*;
 import javax.servlet.http.*;
@@ -106,14 +108,14 @@ public class SystemInfo extends HttpServlet
          // any valid key oid.
          log.info(ME,"Got request for " + actionType + ", sessionId=" + sessionId + " ...");
 
-         SubscribeKeyWrapper xmlKey = new SubscribeKeyWrapper(actionType);
-         SubscribeQosWrapper xmlQos = new SubscribeQosWrapper();
+         SubscribeKey xmlKey = new SubscribeKey(null, actionType);
+         SubscribeQos xmlQos = new SubscribeQos(null);
 
          String ret = corbaConnection.subscribe(xmlKey.toXml(), xmlQos.toXml()).getSubscriptionId();
          log.info(ME, "Subscribed to " + actionType + "=" + ret);
       }
       catch (XmlBlasterException e) {
-         String text = "Error from xmlBlaster: " + e.reason;
+         String text = "Error from xmlBlaster: " + e.getMessage();
          log.error(ME, text);
          popupError(response, text);
          return;

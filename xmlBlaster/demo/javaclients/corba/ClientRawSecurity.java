@@ -3,7 +3,7 @@ Name:      ClientRawSecurity.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code how to access xmlBlaster using CORBA
-Version:   $Id: ClientRawSecurity.java,v 1.12 2002/09/13 23:17:40 ruff Exp $
+Version:   $Id: ClientRawSecurity.java,v 1.13 2002/11/26 12:36:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.corba;
 
@@ -143,7 +143,7 @@ public class ClientRawSecurity
             xmlBlaster = ServerHelper.narrow(orb.string_to_object(xmlBlasterIOR));
 
          } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-            log.warn(ME, "XmlBlasterException: " + e.reason);
+            log.warn(ME, "XmlBlasterException: " + e.getMessage());
          }
 
 
@@ -158,7 +158,7 @@ public class ClientRawSecurity
             try {
                xmlBlaster.subscribe(xmlKey, "<qos></qos>");
             } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-               log.warn(ME, "XmlBlasterException: " + e.reason);
+               log.warn(ME, "XmlBlasterException: " + e.getMessage());
             }
             log.info(ME, "Subscribe done, there should be no Callback" + stop.nice());
          }
@@ -184,7 +184,7 @@ public class ClientRawSecurity
                String publishOid = xmlBlaster.publish(msgUnit);
                log.trace(ME, "Returned oid=" + publishOid);
             } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-               log.warn(ME, "XmlBlasterException: " + e.reason);
+               log.warn(ME, "XmlBlasterException: " + e.getMessage());
             }
             log.info(ME, "Publishing done, there should be a callback now" + stop.nice());
          }
@@ -202,7 +202,7 @@ public class ClientRawSecurity
             authServer._release();
             xmlBlaster._release();
          } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-            log.warn(ME, "XmlBlasterException: " + e.reason);
+            log.warn(ME, "XmlBlasterException: " + e.getMessage());
          }
 
          //----------- Shutdown my callback server -----------------

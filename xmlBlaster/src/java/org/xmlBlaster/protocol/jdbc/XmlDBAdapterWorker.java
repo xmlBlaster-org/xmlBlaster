@@ -4,19 +4,20 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   The thread that does the actual connection and interaction
- * Version:   $Id: XmlDBAdapterWorker.java,v 1.18 2002/08/12 13:32:10 ruff Exp $
+ * Version:   $Id: XmlDBAdapterWorker.java,v 1.19 2002/11/26 12:39:12 ruff Exp $
  * ------------------------------------------------------------------------------
  */
 package org.xmlBlaster.protocol.jdbc;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.Destination;
-import org.xmlBlaster.client.UpdateQos;
-import org.xmlBlaster.client.PublishKeyWrapper;
-import org.xmlBlaster.client.PublishQosWrapper;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.key.PublishKey;
+import org.xmlBlaster.client.qos.PublishQos;
 
 import java.sql.ResultSet;
 import java.sql.Connection;
@@ -67,10 +68,9 @@ public class XmlDBAdapterWorker extends Thread {
       MessageUnit[] msgArr = adap.query();
       try {
          if (msgArr.length > 0) {
-            PublishKeyWrapper key = new PublishKeyWrapper("__sys_jdbc."+ME, "text/xml", "SQLQuery");
-            PublishQosWrapper qos = new PublishQosWrapper(new Destination(cust));
-            msgArr[0].xmlKey = key.toXml();
-            msgArr[0].qos = qos.toXml();
+            PublishKey key = new PublishKey(glob, "__sys_jdbc."+ME, "text/xml", "SQLQuery");
+            PublishQos qos = new PublishQos(glob, new Destination(new SessionName(glob, cust)));
+            msgArr[0] = new MessageUnit(msgArr[0], key.toXml(), null, qos.toXml());
             String  oid = callback.publish(msgArr[0]);
             if (log.DUMP) log.plain(ME, "Delivered Results...\n" + new String(content));
          }
@@ -78,7 +78,7 @@ public class XmlDBAdapterWorker extends Thread {
             if (log.TRACE) log.trace(ME, "No result message returned to client");
       }
       catch (XmlBlasterException e) {
-         log.error(ME, "Exception in notify: " + e.reason);
+         log.error(ME, "Exception in notify: " + e.getMessage());
       }
       catch (Exception e) {
          e.printStackTrace();

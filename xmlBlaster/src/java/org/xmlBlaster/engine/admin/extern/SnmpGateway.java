@@ -60,7 +60,7 @@ public final class SnmpGateway implements I_ExternGateway // , SnmpInterface ?
    public boolean initialize(Global glob, CommandManager commandManager) throws XmlBlasterException {
       this.glob = glob;
       this.log = this.glob.getLog("admin");
-      this.ME = "SnmpGateway" + this.glob.getLogPraefixDashed();
+      this.ME = "SnmpGateway" + this.glob.getLogPrefixDashed();
       this.manager = commandManager;
 
       boolean useSnmp = glob.getProperty().get("admin.snmp", false);

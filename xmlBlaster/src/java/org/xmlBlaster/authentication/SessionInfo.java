@@ -10,10 +10,11 @@ package org.xmlBlaster.authentication;
 import org.jutils.log.LogChannel;
 
 import org.xmlBlaster.engine.Global;
-import org.xmlBlaster.engine.queue.MsgQueue;
-import org.xmlBlaster.engine.queue.SessionMsgQueue;
-import org.xmlBlaster.engine.queue.MsgQueueEntry;
+import org.xmlBlaster.engine.MessageUnitWrapper;
+import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.engine.helper.AddressBase;
+import org.xmlBlaster.engine.helper.CbQueueProperty;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.admin.I_AdminSession;
 import org.xmlBlaster.authentication.SubjectInfo;
@@ -23,7 +24,15 @@ import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.DisconnectQos;
+import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.queue.I_Queue;
+import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
+import org.xmlBlaster.util.queuemsg.MsgQueueUpdateEntry;
+import org.xmlBlaster.util.dispatch.DeliveryManager;
+import org.xmlBlaster.util.error.I_MsgErrorHandler;
+import org.xmlBlaster.util.error.MsgErrorInfo;
+import org.xmlBlaster.engine.MsgErrorHandler;
 
 
 
@@ -52,7 +61,8 @@ public class SessionInfo implements I_Timeout, I_AdminSession
 {
    public static long sentMessages = 0L;
    private String ME = "SessionInfo";
-   private final String id;
+   /** The cluster wide unique identifier of the session e.g. "/node/heron/client/joe/2" */
+   private final SessionName sessionName;
    private SubjectInfo subjectInfo = null; // all client informations
    private I_Session securityCtx = null;
    private static long instanceCounter = 0L;
@@ -62,14 +72,18 @@ public class SessionInfo implements I_Timeout, I_AdminSession
    private Timestamp timerKey = null;
    private final Global glob;
    private final LogChannel log;
+   /** Do error recovery if message can't be delivered and we give it up */
+   private final MsgErrorHandler msgErrorHandler;
+   /** manager for sending callback messages */
+   private final DeliveryManager deliveryManager;
 
    /**
     * All MessageUnit which shall be delivered to the current session of the client
-    * are queued here to be ready to deliver. 
+    * are queued here to be ready to deliver.
     * <p />
     * Node objects = MsgQueueEntry
     */
-   private MsgQueue sessionQueue;
+   private I_Queue sessionQueue;
 
    // Enforced by I_AdminSubject
    /** Incarnation time of this object instance in millis */
@@ -81,8 +95,7 @@ public class SessionInfo implements I_Timeout, I_AdminSession
     * @param subjectInfo the SubjectInfo with the login informations for this client
     */
    public SessionInfo(SubjectInfo subjectInfo, I_Session securityCtx, ConnectQos connectQos, Global glob)
-          throws XmlBlasterException
-   {
+          throws XmlBlasterException {
       this.glob = glob;
       this.log = this.glob.getLog("auth");
       if (securityCtx==null) {
@@ -91,15 +104,16 @@ public class SessionInfo implements I_Timeout, I_AdminSession
          throw new XmlBlasterException(ME+".illegalArgument", tmp);
       }
 
-      String prae = glob.getLogPraefix();
+      //String prefix = glob.getLogPrefix();
       subjectInfo.checkNumberOfSessions(connectQos);
 
       synchronized (SessionInfo.class) {
          instanceId = instanceCounter;
          instanceCounter++;
       }
-      this.id = ((prae.length() < 1) ? "client/" : (prae+"/client/")) + subjectInfo.getLoginName() + "/" + getPublicSessionId();
-      this.ME = "SessionInfo-" + id;
+      //this.id = ((prefix.length() < 1) ? "client/" : (prefix+"/client/")) + subjectInfo.getLoginName() + "/" + getPublicSessionId();
+      this.sessionName = new SessionName(glob, subjectInfo.getSubjectName(), getPublicSessionId());
+      this.ME = "SessionInfo-" + this.sessionName.getAbsoluteName();
 
       if (log.CALL) log.call(ME, "Creating new SessionInfo " + instanceId + ": " + subjectInfo.toString());
       this.uptime = System.currentTimeMillis();
@@ -107,9 +121,26 @@ public class SessionInfo implements I_Timeout, I_AdminSession
       this.securityCtx = securityCtx;
       this.connectQos = connectQos;
 
-                                          // securityCtx.getSessionId()
-      this.sessionQueue = new SessionMsgQueue("-" + this.id,
-                                              this, connectQos.getSessionCbQueueProperty(), glob);
+      if (this.connectQos.getSessionCbQueueProperty().getCallbackAddresses().length > 0) {
+         this.msgErrorHandler = new MsgErrorHandler(glob, this);
+
+         String type = connectQos.getSessionCbQueueProperty().getType();
+         String version = connectQos.getSessionCbQueueProperty().getVersion();
+         this.sessionQueue = glob.getQueuePluginManager().getPlugin(type, version, "cb:"+this.sessionName.getAbsoluteName(), connectQos.getSessionCbQueueProperty());
+
+         this.deliveryManager = new DeliveryManager(glob, this.msgErrorHandler,
+                                this.securityCtx, this.sessionQueue,
+                                this.connectQos.getSessionCbQueueProperty().getCallbackAddresses());
+
+         //log.error(ME, "TESTCODE, SYNC MODE ...");
+         //this.deliveryManager.switchToSyncMode(); //TEST ONLY !!!
+      }
+      else { // No callback configured
+         this.msgErrorHandler = null;
+         this.sessionQueue = null;
+         this.deliveryManager = null;
+      }
+
       this.expiryTimer = glob.getSessionTimer();
       if (connectQos.getSessionTimeout() > 0L) {
          if (log.TRACE) log.trace(ME, "Setting expiry timer for " + getLoginName() + " to " + connectQos.getSessionTimeout() + " msec");
@@ -120,7 +151,7 @@ public class SessionInfo implements I_Timeout, I_AdminSession
    }
 
    /**
-    * This is a unique instance id per JVM. 
+    * This is a unique instance id per JVM.
     * <p />
     * It is NOT the secret sessionId and may be published with PtP messages
     * without security danger
@@ -131,7 +162,18 @@ public class SessionInfo implements I_Timeout, I_AdminSession
    }
 
    /**
-    * This is a unique instance id per JVM. 
+    * Check if a callback was configured (if client has passed a callback address on connect).
+    */
+   public final boolean hasCallback() {
+      return this.deliveryManager != null;
+   }
+
+   public final I_MsgErrorHandler getMsgErrorHandler() {
+      return this.msgErrorHandler;
+   }
+
+   /**
+    * This is a unique instance id per JVM.
     * <p />
     * It is NOT the secret sessionId and may be published with PtP messages
     * without security danger
@@ -143,8 +185,7 @@ public class SessionInfo implements I_Timeout, I_AdminSession
       return ""+getInstanceId();
    }
 
-   public void finalize()
-   {
+   public void finalize() {
       if (timerKey != null) {
          this.expiryTimer.removeTimeoutListener(timerKey);
          timerKey = null;
@@ -153,15 +194,21 @@ public class SessionInfo implements I_Timeout, I_AdminSession
       if (log.TRACE) log.trace(ME, "finalize - garbage collected " + getSessionId());
    }
 
-   public void shutdown()
-   {
+   public void shutdown() {
       if (log.CALL) log.call(ME, "shutdown() of session");
       if (timerKey != null) {
          this.expiryTimer.removeTimeoutListener(timerKey);
          timerKey = null;
       }
-      this.sessionQueue.shutdown();
-      this.sessionQueue = null;
+      boolean force = false;
+      if (this.sessionQueue != null) {
+         this.sessionQueue.shutdown(force);
+         this.sessionQueue = null;
+      }
+      if (this.msgErrorHandler != null)
+         this.msgErrorHandler.shutdown();
+      if (this.deliveryManager != null)
+         this.deliveryManager.shutdown();
       this.subjectInfo = null;
       // this.securityCtx = null; We need it in finalize() getSessionId()
       this.connectQos = null;
@@ -169,22 +216,27 @@ public class SessionInfo implements I_Timeout, I_AdminSession
    }
 
    /**
+    * @return null if no callback is configured
+    */
+   public final DeliveryManager getDeliveryManager() {
+      return this.deliveryManager;
+   }
+
+   /**
     * Call this to reactivate the session expiry to full value
     */
-   public final void refreshSession() throws XmlBlasterException
-   {
+   public final void refreshSession() throws XmlBlasterException {
       if (connectQos.getSessionTimeout() > 0L) {
          timerKey = this.expiryTimer.addOrRefreshTimeoutListener(this, connectQos.getSessionTimeout(), null, timerKey);
       }
    }
 
    /**
-    * We are notified when this session expires. 
+    * We are notified when this session expires.
     * @param userData You get bounced back your userData which you passed
     *                 with Timeout.addTimeoutListener()
     */
-   public final void timeout(Object userData)
-   {
+   public final void timeout(Object userData) {
       synchronized (this) {
          timerKey = null;
          log.warn(ME, "Session timeout for " + getLoginName() + " occurred, session '" + getSessionId() + "' is expired, autologout");
@@ -201,10 +253,9 @@ public class SessionInfo implements I_Timeout, I_AdminSession
    /**
     * Is the given address the same as our?
     */
-   public final boolean hasAddress(CallbackAddress addr)
-   {
+   public final boolean hasAddress(AddressBase addr) {
       if (addr == null) return false;
-      CallbackAddress[] arr = getSessionQueue().getProperty().getCallbackAddresses();
+      CallbackAddress[] arr = ((CbQueueProperty)getSessionQueue().getProperties()).getCallbackAddresses();
       for (int ii=0; arr!=null && ii<arr.length; ii++) {
          // if (arr[ii].isSameAddress(addr))
          if (arr[ii].equals(addr))
@@ -214,58 +265,62 @@ public class SessionInfo implements I_Timeout, I_AdminSession
    }
 
    /**
+    * Put the given message into the queue
     */
-   public final void queueMessage(MsgQueueEntry entry) throws XmlBlasterException
-   {
+   public final void queueMessage(MessageUnitWrapper msgUnitWrapper) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Queing message");
-      if (entry == null) {
+      if (msgUnitWrapper == null) {
          log.error(ME+".Internal", "Can't queue null message");
          throw new XmlBlasterException(ME+".Internal", "Can't queue null message");
       }
 
-      sessionQueue.putMsg(entry);
-   }
+      MsgQueueUpdateEntry entry = new MsgQueueUpdateEntry(glob,
+         msgUnitWrapper.getMessageUnit(), sessionQueue, msgUnitWrapper.getUniqueKey(),
+         msgUnitWrapper.getPublishQos().getData(), getSessionName());
 
+      queueMessage(entry);
+   }
 
    /**
-    * This is the unique identifier of the session
-    * <p />
-    * @return sessionId
+    * Put the given message entry into the queue
     */
-   public final String getUniqueKey()
-   {
-      return getSessionId();
+   public final void queueMessage(MsgQueueEntry entry) throws XmlBlasterException {
+      if (!hasCallback())
+         throw new XmlBlasterException(ME, "No callback configured, can't send message " + entry.getKeyOid());
+
+      try {
+         sessionQueue.put(entry, false);
+         deliveryManager.notifyAboutNewEntry();
+      }
+      catch (Throwable e) {
+         log.warn(ME, e.toString());
+         msgErrorHandler.handleError(new MsgErrorInfo(glob, entry, e));
+      }
    }
 
-   public final ConnectQos getConnectQos()
-   {
+   public final ConnectQos getConnectQos() {
       return this.connectQos;
    }
-
 
    /**
     * Access the unique login name of a client.
     * <br />
     * @return loginName
     */
-   public final String getLoginName()
-   {
+   public final String getLoginName() {
       return (subjectInfo==null)?"--":subjectInfo.getLoginName();
    }
-
 
    /**
     * Accessing the SubjectInfo object
     * <p />
     * @return SubjectInfo
     */
-   public final SubjectInfo getSubjectInfo()
-   {
+   public final SubjectInfo getSubjectInfo() {
       return subjectInfo;
    }
 
-   public String getSessionId()
-   {
+   public String getSessionId() {
       return this.securityCtx.getSessionId();
    }
 
@@ -279,43 +334,48 @@ public class SessionInfo implements I_Timeout, I_AdminSession
 
    /**
     * This queue holds all messages which where addressed to this session
-    * @return never null
+    * @return null if no callback was configured
     */
-   public MsgQueue getSessionQueue() {
+   public I_Queue getSessionQueue() {
       return sessionQueue;
    }
 
    /**
-    * Unique identifier: /node/heron/client/<loginName>/<publicSessionId>,
+    * Cluster wide unique identifier: /node/heron/client/<loginName>/<publicSessionId>,
     * e.g. for logging only
     * <p />
     * @return e.g. "client/joe/2
     */
-   public final String getId()
-   {
-      return this.id;
+   public final String getId() {
+      return this.sessionName.getAbsoluteName();
    }
 
+   public final SessionName getSessionName() {
+      return this.sessionName;
+   }
+
+   /**
+    * Check cluster wide if the sessions are identical
+    */
+   public boolean isSameSession(SessionInfo sessionInfo) {
+      return getId().equals(sessionInfo.getId());
+   }
 
    /**
     * @see #getId
     */
-   public final String toString()
-   {
+   public final String toString() {
       return getId();
    }
-
 
    /**
     * Dump state of this object into a XML ASCII string.
     * <br>
     * @return internal state of SessionInfo as a XML ASCII string
     */
-   public final String toXml() throws XmlBlasterException
-   {
+   public final String toXml() throws XmlBlasterException {
       return toXml((String)null);
    }
-
 
    /**
     * Dump state of this object into a XML ASCII string.
@@ -323,16 +383,15 @@ public class SessionInfo implements I_Timeout, I_AdminSession
     * @param extraOffset indenting of tags for nice output
     * @return internal state of SessionInfo as a XML ASCII string
     */
-   public final String toXml(String extraOffset) throws XmlBlasterException
-   {
+   public final String toXml(String extraOffset) throws XmlBlasterException {
       StringBuffer sb = new StringBuffer(256);
       String offset = "\n   ";
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
 
-      sb.append(offset).append("<SessionInfo id='").append(instanceId).append("' sessionId='").append(getUniqueKey());
-      sb.append("' publicSessionId='").append(getPublicSessionId()).append("'>");
-      sb.append(sessionQueue.toXml(extraOffset+"   "));
+      sb.append(offset).append("<SessionInfo id='").append(getId()).append("'>");
+      if (hasCallback())
+         sb.append(sessionQueue.toXml(extraOffset+"   "));
       sb.append(offset).append("</SessionInfo>");
 
       return sb.toString();
@@ -347,18 +406,21 @@ public class SessionInfo implements I_Timeout, I_AdminSession
    }
    /**
     * How many update where sent for this client, the sum of all session and
-    * subject queues of this clients. 
-    */ 
+    * subject queues of this clients.
+    */
    public final long getNumUpdates() {
-      return this.sessionQueue.getNumUpdates();
+      if (this.deliveryManager == null) return 0L;
+      return this.deliveryManager.getDeliveryStatistic().getNumUpdate();
    }
 
-   public final int getCbQueueNumMsgs() {
-      return sessionQueue.size();
+   public final long getCbQueueNumMsgs() {
+      if (this.sessionQueue == null) return 0L;
+      return sessionQueue.getNumOfEntries();
    }
 
-   public final int getCbQueueMaxMsgs() {
-      return sessionQueue.capacity();
+   public final long getCbQueueMaxMsgs() {
+      if (this.sessionQueue == null) return 0L;
+      return sessionQueue.getMaxNumOfEntries();
    }
 
    public final String getKillSession() throws XmlBlasterException {

@@ -3,7 +3,7 @@ Name:      TestInvocationRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing the InvocationRecorder
-Version:   $Id: TestInvocationRecorder.java,v 1.2 2002/09/13 23:18:28 ruff Exp $
+Version:   $Id: TestInvocationRecorder.java,v 1.3 2002/11/26 12:40:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -17,12 +17,12 @@ import org.xmlBlaster.util.recorder.I_InvocationRecorder;
 import org.xmlBlaster.client.protocol.I_XmlBlaster;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
-import org.xmlBlaster.client.PublishRetQos;
-import org.xmlBlaster.client.SubscribeRetQos;
-import org.xmlBlaster.client.EraseRetQos;
-import org.xmlBlaster.client.PublishQosWrapper;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.qos.PublishReturnQos;
+import org.xmlBlaster.client.qos.SubscribeReturnQos;
+import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.I_CallbackRaw;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
@@ -127,16 +127,16 @@ public class TestInvocationRecorder extends TestCase implements I_XmlBlaster, I_
          recorder.update(clientName, msgUnitArr);
       }
       catch(XmlBlasterException e) {
-         log.error(ME, "problems feeding the recorder: " + e.reason);
-         assertTrue("problems feeding the recorder: " + e.reason, false);
+         log.error(ME, "problems feeding the recorder: " + e.getMessage());
+         assertTrue("problems feeding the recorder: " + e.getMessage(), false);
       }
 
       try {
          recorder.pullback(0L, 0L, (float)1.0);
       }
       catch(XmlBlasterException e) {
-         log.error(ME, "problems with recorder.pullback: " + e.reason);
-         assertTrue("problems recorder pullback: " + e.reason, false);
+         log.error(ME, "problems with recorder.pullback: " + e.getMessage());
+         assertTrue("problems recorder pullback: " + e.getMessage(), false);
       }
 
       assertEquals("numSubscribe: ", 1, numSubscribe);
@@ -152,7 +152,7 @@ public class TestInvocationRecorder extends TestCase implements I_XmlBlaster, I_
    /**
     * @return dummy to match I_InvocationRecorder interface
     */
-   public SubscribeRetQos subscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
+   public SubscribeReturnQos subscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "subscribe() ...");
       numSubscribe++;
@@ -166,10 +166,11 @@ public class TestInvocationRecorder extends TestCase implements I_XmlBlaster, I_
     * For I_InvocationRecorder interface
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public void unSubscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
+   public UnSubscribeReturnQos[] unSubscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "unSubscribe() ...");
       numUnSubscribe++;
+      return null;
    }
 
 
@@ -177,7 +178,7 @@ public class TestInvocationRecorder extends TestCase implements I_XmlBlaster, I_
     * @return dummy to match I_InvocationRecorder interface
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public PublishRetQos publish(MessageUnit msgUnit) throws XmlBlasterException
+   public PublishReturnQos publish(MessageUnit msgUnit) throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "publish() ...");
       numPublish++;
@@ -200,11 +201,11 @@ public class TestInvocationRecorder extends TestCase implements I_XmlBlaster, I_
     * @return dummy to match I_InvocationRecorder interface
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public PublishRetQos[] publishArr(MessageUnit [] msgUnitArr) throws XmlBlasterException
+   public PublishReturnQos[] publishArr(MessageUnit [] msgUnitArr) throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "publishArr() ...");
       numPublishArr++;
-      return new PublishRetQos[0];
+      return new PublishReturnQos[0];
    }
 
 
@@ -212,11 +213,11 @@ public class TestInvocationRecorder extends TestCase implements I_XmlBlaster, I_
     * @return dummy to match I_InvocationRecorder interface
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public EraseRetQos[] erase(String xmlKey_literal, String qos_literal) throws XmlBlasterException
+   public EraseReturnQos[] erase(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "erase() ...");
       numErase++;
-      return new EraseRetQos[0];
+      return new EraseReturnQos[0];
    }
 
 

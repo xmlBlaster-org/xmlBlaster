@@ -60,7 +60,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
 
    private Set telnetInstancesSet;
 
-   private Timeout expiryTimer = new Timeout("TelnetSessionTimer");
+   private Timeout expiryTimer = new Timeout("XmlBlaster.TelnetSessionTimer");
    private Timestamp timerKey = null;
    private long sessionTimeout = 3600000L; // autologout after 1 hour
 
@@ -91,7 +91,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
       this.glob = glob;
       this.log = this.glob.getLog("admin");
       this.instanceCounter++;
-      this.ME = "TelnetGateway" + this.instanceCounter + this.glob.getLogPraefixDashed();
+      this.ME = "TelnetGateway" + this.instanceCounter + this.glob.getLogPrefixDashed();
       this.telnetInstancesSet = new HashSet();
       this.commandManager = commandManager;
       this.sessionTimeout = glob.getProperty().get("admin.remoteconsole.sessionTimeout", sessionTimeout);
@@ -152,7 +152,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
                glob.getAuthenticate().disconnect(connectRetQos.getSessionId(), null);
             }
             catch (org.xmlBlaster.util.XmlBlasterException e) {
-               log.warn(e.id, e.reason);
+               log.warn(ME, e.getMessage());
             }
             log.info(ME, "Logout of '" + loginName + "', telnet connection destroyed");
             connectRetQos = null;
@@ -321,7 +321,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
             for (int ii=0; ii<msgs.length; ii++) {
                MessageUnit msg = msgs[ii];
                if (msg.getQos().startsWith("text/plain"))
-                  sb.append(msg.getXmlKey()).append("=").append(msg.getContentStr()).append(CRLF);
+                  sb.append(msg.getKey()).append("=").append(msg.getContentStr()).append(CRLF);
                else
                   sb.append(msg.toXml());
             }
@@ -403,25 +403,20 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
          throw new XmlBlasterException("loginFailed.InvalidArguments", "login failed: please use 'connect loginName password'");
       }
 
-      try {
-         ConnectQos connectQos = new ConnectQos(glob, loginName, passwd);
-         connectQos.setSessionTimeout(sessionTimeout);
-         this.connectRetQos = glob.getAuthenticate().connect(connectQos);
-         this.loginName = loginName;
-         this.sessionId = connectRetQos.getSessionId();
-         isLogin = true;
+      ConnectQos connectQos = new ConnectQos(glob, loginName, passwd);
+      connectQos.setSessionTimeout(sessionTimeout);
+      this.connectRetQos = glob.getAuthenticate().connect(connectQos);
+      this.loginName = loginName;
+      this.sessionId = connectRetQos.getSessionId();
+      isLogin = true;
 
-         if (connectQos.getSessionTimeout() > 0L) {
-            stopTimer();
-            if (log.TRACE) log.trace(ME, "Setting expiry timer for " + loginName + " to " + connectQos.getSessionTimeout() + " msec");
-            timerKey = this.expiryTimer.addTimeoutListener(this, connectQos.getSessionTimeout(), null);
-         }
-         else
-            log.info(ME, "Session for " + loginName + " lasts forever, requested expiry timer was 0");
+      if (connectQos.getSessionTimeout() > 0L) {
+         stopTimer();
+         if (log.TRACE) log.trace(ME, "Setting expiry timer for " + loginName + " to " + connectQos.getSessionTimeout() + " msec");
+         timerKey = this.expiryTimer.addTimeoutListener(this, connectQos.getSessionTimeout(), null);
       }
-      catch (org.xmlBlaster.util.XmlBlasterException e) {
-         throw new XmlBlasterException(e.id, e.reason); // transform native exception to Corba exception
-      }
+      else
+         log.info(ME, "Session for " + loginName + " lasts forever, requested expiry timer was 0");
    }
 
    public void shutdown() {

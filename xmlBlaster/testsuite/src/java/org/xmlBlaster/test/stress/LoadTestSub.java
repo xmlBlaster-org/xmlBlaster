@@ -3,7 +3,7 @@ Name:      LoadTestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: LoadTestSub.java,v 1.5 2002/09/24 16:19:30 ruff Exp $
+Version:   $Id: LoadTestSub.java,v 1.6 2002/11/26 12:40:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.stress;
 
@@ -14,10 +14,10 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
-import org.xmlBlaster.client.PublishRetQos;
-import org.xmlBlaster.client.EraseRetQos;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.qos.PublishReturnQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.I_Callback;
 
 import junit.framework.*;
@@ -129,9 +129,9 @@ public class LoadTestSub extends TestCase implements I_Callback
                       "</key>";
       String qos = "<qos></qos>";
       try {
-         EraseRetQos[] arr = senderConnection.erase(xmlKey, qos);
+         EraseReturnQos[] arr = senderConnection.erase(xmlKey, qos);
          if (arr.length != 1) log.error(ME, "Erased " + arr.length + " messages:");
-      } catch(XmlBlasterException e) { log.error(ME, "XmlBlasterException: " + e.reason); }
+      } catch(XmlBlasterException e) { log.error(ME, "XmlBlasterException: " + e.getMessage()); }
 
       senderConnection.disconnect(null);
    }
@@ -157,8 +157,8 @@ public class LoadTestSub extends TestCase implements I_Callback
          subscribeOid = senderConnection.subscribe(xmlKey, qos).getSubscriptionId();
          log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.reason);
-         // assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
+         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         // assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
       }
    }
 
@@ -184,14 +184,14 @@ public class LoadTestSub extends TestCase implements I_Callback
       //String qos = "<qos><isDurable>true</isDurable></qos>";
 
       MessageUnit[] arr = new MessageUnit[burstModePublish];
-      PublishRetQos[] publishOids;
+      PublishReturnQos[] publishOids;
       for (int kk=0; kk<burstModePublish; kk++)
          arr[kk] = new MessageUnit(xmlKey, someContent.getBytes(), qos);
       stopWatch = new StopWatch();
       try {
          for (int ii=0; ii<numPublish; ) {
             for (int jj=0; jj<burstModePublish; jj++) {
-               arr[jj].content = new String(someContent + (ii+1)).getBytes();
+               arr[jj] = new MessageUnit(arr[jj], null, new String(someContent + (ii+1)).getBytes(), null);
             }
             ii+=burstModePublish;
             if (publishOneway)
@@ -210,8 +210,8 @@ public class LoadTestSub extends TestCase implements I_Callback
          log.info(ME, "Success: Publishing done, " + numPublish + " messages sent, average messages/second = " + avg);
          //assertEquals("oid is different", oid, publishOid);
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.reason);
-         assertTrue("publish - XmlBlasterException: " + e.reason, false);
+         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
 
       // assertTrue("returned publishOid == null", publishOid != null);

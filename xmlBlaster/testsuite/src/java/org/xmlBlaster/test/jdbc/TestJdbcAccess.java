@@ -12,14 +12,16 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.client.GetKeyWrapper;
-import org.xmlBlaster.client.GetQosWrapper;
+import org.xmlBlaster.client.key.GetKey;
+import org.xmlBlaster.client.qos.GetQos;
 import org.xmlBlaster.client.XmlDbMessageWrapper;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.test.Util;
 
 import junit.framework.*;
+
+import java.util.Vector;
 
 
 /**
@@ -73,29 +75,13 @@ public class TestJdbcAccess extends TestCase
    protected void setUp()
    {
       // We register here the demo plugin with xmlBlaster server, supplying an argument to the plugin
-      String[] args = {
-         "-port",        // For all protocol we may use set an alternate server port
-         "" + serverPort,
-         "-socket.port",
-         "" + (serverPort-1),
-         "-rmi.registryPort",
-         "" + (serverPort-2),
-         "-xmlrpc.port",
-         "" + (serverPort-3),
-         "-client.port",
-         "" + serverPort,
-         "-ProtocolPlugin[IOR][1.0]",
-         "org.xmlBlaster.protocol.corba.CorbaDriver",
-         "-ProtocolPlugin[JDBC][1.0]",
-         "org.xmlBlaster.protocol.jdbc.JdbcDriver",
-         "-CbProtocolPlugin[IOR][1.0]",
-         "org.xmlBlaster.protocol.corba.CallbackCorbaDriver",
-         "-CbProtocolPlugin[JDBC][1.0]",
-         "org.xmlBlaster.protocol.jdbc.CallbackJdbcDriver",
-         "-JdbcDriver.drivers",
-         "ORG.as220.tinySQL.dbfFileDriver",
-      };
-      glob.init(args);
+      Vector argsVec = Util.getOtherServerPortVec(serverPort);
+      String tmp = glob.getProperty().get("JdbcDriver.drivers", (String)null);
+      if (tmp == null || tmp.indexOf("ORG.as220.tinySQL.dbfFileDriver") < 0) {
+         argsVec.add("-JdbcDriver.drivers");
+         argsVec.add("ORG.as220.tinySQL.dbfFileDriver");
+      }
+      glob.init((String[])argsVec.toArray(new String[argsVec.size()]));
 
       serverThread = EmbeddedXmlBlaster.startXmlBlaster(glob);
       log.info(ME, "XmlBlaster is ready for testing JDBC access");
@@ -111,7 +97,7 @@ public class TestJdbcAccess extends TestCase
          log.error(ME, "Can't connect to xmlBlaster: " + e.toString());
       }
 
-      wrap = new XmlDbMessageWrapper("joe", "secret", "jdbc:dbfFile:.");
+      wrap = new XmlDbMessageWrapper(glob, "joe", "secret", "jdbc:dbfFile:.");
       wrap.initUpdate(true, "DROP TABLE IF EXISTS cars");
       String result = invokeSyncQuery(wrap, 1, null);
    }
@@ -167,12 +153,12 @@ public class TestJdbcAccess extends TestCase
       try {
          log.info(ME, "Sending command string");
          if (log.TRACE) log.trace(ME, "Sending command string:\n" + wrap.toXml()); // Junit report does not like it
-         GetKeyWrapper key = new GetKeyWrapper("__sys__jdbc");
+         GetKey key = new GetKey(glob, "__sys__jdbc");
          key.wrap(wrap.toXml());
-         GetQosWrapper qos = new GetQosWrapper();
+         GetQos qos = new GetQos(glob);
          MessageUnit[] msgUnitArr = con.get(key.toXml(), qos.toXml());
          if (msgUnitArr.length > 0) {
-            String result = new String(msgUnitArr[0].content);
+            String result = new String(msgUnitArr[0].getContent());
             if (log.TRACE) log.trace(ME, result);
             if (token != null && result.indexOf(token) < 0)
                fail("Token " + token + " not found in result");
@@ -181,7 +167,7 @@ public class TestJdbcAccess extends TestCase
             log.info(ME, "No results for your query");
          }
          assertEquals("Wrong number of results", numResultRowsExpected, msgUnitArr.length);
-         return new String(msgUnitArr[0].content);
+         return new String(msgUnitArr[0].getContent());
       }
       catch (Exception e) { 
          fail("Query failed: " + e.toString());

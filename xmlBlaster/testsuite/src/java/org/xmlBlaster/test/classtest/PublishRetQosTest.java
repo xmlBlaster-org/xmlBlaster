@@ -9,15 +9,7 @@ import org.xmlBlaster.engine.helper.Constants;
 import junit.framework.*;
 
 /**
- * Test PublishRetQos. 
- * <p />
- * All methods starting with 'test' and without arguments are invoked automatically
- * <p />
- * TODO: http://xmlunit.sourceforge.net/
- * <p />
- * Invoke: java -Djava.compiler= junit.textui.TestRunner -noloading org.xmlBlaster.test.classtest.PublishRetQosTest
- * @see org.xmlBlaster.client.PublishRetQos
- * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html" target="others">the interface.publish requirement</a>
+ * @deprecated Is deprecated because of PublishRetQos is deprecated
  */
 public class PublishRetQosTest extends TestCase {
    protected Global glob;

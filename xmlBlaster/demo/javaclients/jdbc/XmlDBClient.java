@@ -5,8 +5,8 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.XmlDbMessageWrapper;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
 
 
 /**
@@ -98,7 +98,7 @@ public class XmlDBClient implements I_Callback
     * Send the SQL message.
     */
    private void query() {
-      XmlDbMessageWrapper wrap = new XmlDbMessageWrapper(
+      XmlDbMessageWrapper wrap = new XmlDbMessageWrapper(glob,
          glob.getProperty().get("user", "postgres"),
          glob.getProperty().get("pass", ""),
          glob.getProperty().get("url",  "jdbc:postgresql://24.3.47.214/postgres"));

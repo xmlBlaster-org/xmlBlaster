@@ -11,7 +11,18 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.client.*;
+import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.client.key.PublishKey;
+import org.xmlBlaster.client.key.EraseKey;
+import org.xmlBlaster.client.key.GetKey;
+import org.xmlBlaster.client.key.SubscribeKey;
+import org.xmlBlaster.client.key.UnSubscribeKey;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.PublishQos;
+import org.xmlBlaster.client.qos.PublishReturnQos;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.qos.SubscribeQos;
+import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.Constants;
 
@@ -52,7 +63,7 @@ public class TestSubXPathMany extends TestCase
     */
    public TestSubXPathMany(String name) {
        super(name);
-       this.glob = Global.instance();
+       this.glob = new Global();
        this.log = glob.getLog(null);
    }
 
@@ -121,16 +132,16 @@ public class TestSubXPathMany extends TestCase
    protected void tearDown() {
       if (con1 != null) {
          try {
-            EraseKeyWrapper ek = new EraseKeyWrapper("command-navigation");
-            EraseQosWrapper eq = new EraseQosWrapper();
+            EraseKey ek = new EraseKey(glob, "command-navigation");
+            EraseQos eq = new EraseQos(glob);
             con1.erase(ek.toXml(), eq.toXml());
 
-            ek = new EraseKeyWrapper("command-radar-1");
-            eq = new EraseQosWrapper();
+            ek = new EraseKey(glob, "command-radar-1");
+            eq = new EraseQos(glob);
             con1.erase(ek.toXml(), eq.toXml());
 
-            ek = new EraseKeyWrapper("dummyTestSubXPathMany");
-            eq = new EraseQosWrapper();
+            ek = new EraseKey(glob, "dummyTestSubXPathMany");
+            eq = new EraseQos(glob);
             con1.erase(ek.toXml(), eq.toXml());
          }
          catch (XmlBlasterException e) {
@@ -149,17 +160,17 @@ public class TestSubXPathMany extends TestCase
       log.info(ME, "*****Subscribing using XPath syntax ...");
 
       try {
-         SubscribeKeyWrapper sk = new SubscribeKeyWrapper("//key[@oid = 'command-navigation']", Constants.XPATH);
-         SubscribeQosWrapper sq = new SubscribeQosWrapper();
+         SubscribeKey sk = new SubscribeKey(glob, "//key[@oid = 'command-navigation']", Constants.XPATH);
+         SubscribeQos sq = new SubscribeQos(glob);
          String subId = con1.subscribe(sk.toXml(), sq.toXml()).getSubscriptionId();
 
          String xpath2 = "//key[starts-with(@oid,'command-radar')]";
-         sk = new SubscribeKeyWrapper(xpath2, Constants.XPATH);
-         sq = new SubscribeQosWrapper();
+         sk = new SubscribeKey(glob, xpath2, Constants.XPATH);
+         sq = new SubscribeQos(glob);
          subId = con2.subscribe(sk.toXml(), sq.toXml()).getSubscriptionId();
 
-         sk = new SubscribeKeyWrapper(xpath2, Constants.XPATH);
-         sq = new SubscribeQosWrapper();
+         sk = new SubscribeKey(glob, xpath2, Constants.XPATH);
+         sq = new SubscribeQos(glob);
          subId = con3.subscribe(sk.toXml(), sq.toXml()).getSubscriptionId();
       }
       catch (XmlBlasterException e) {
@@ -174,20 +185,20 @@ public class TestSubXPathMany extends TestCase
       log.info(ME, "*****Publishing messages ...");
 
       try {
-         PublishKeyWrapper pk = new PublishKeyWrapper("command-navigation", "text/plain", "1.0");
-         PublishQosWrapper pq = new PublishQosWrapper();
+         PublishKey pk = new PublishKey(glob, "command-navigation", "text/plain", "1.0");
+         PublishQos pq = new PublishQos(glob);
          MessageUnit msgUnit = new MessageUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
-         PublishRetQos retQos = con1.publish(msgUnit);
+         PublishReturnQos retQos = con1.publish(msgUnit);
          log.info(ME, "Published message '" + pk.getOid() + "'");
 
-         pk = new PublishKeyWrapper("command-radar-1", "text/plain", "1.0");
-         pq = new PublishQosWrapper();
+         pk = new PublishKey(glob, "command-radar-1", "text/plain", "1.0");
+         pq = new PublishQos(glob);
          msgUnit = new MessageUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
          retQos = con1.publish(msgUnit);
          log.info(ME, "Published message '" + pk.getOid() + "'");
 
-         pk = new PublishKeyWrapper("dummyTestSubXPathMany", "text/plain", "1.0");
-         pq = new PublishQosWrapper();
+         pk = new PublishKey(glob, "dummyTestSubXPathMany", "text/plain", "1.0");
+         pq = new PublishQos(glob);
          msgUnit = new MessageUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
          retQos = con1.publish(msgUnit);
          log.info(ME, "Published message '" + pk.getOid() + "'");

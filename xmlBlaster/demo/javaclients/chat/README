@@ -1,5 +1,8 @@
 This is a pretty basic kind of CORBA based chat-application but worth a try.
 
+If you want to have generated speech for arriving messages
+copy config/speed.properties to your home directory (only with JDK 1.4 or better).
+
 Compile it (make all) and start it like that:
 
    java javaclients.chat.SimpleChat -loginName "Nickname"

@@ -44,15 +44,14 @@ public class XmlBlasterClassloaderTest extends TestCase {
          }
       }
 
-      // Füge ein xerces.jar am Anfang ein, damit im Classpath einen anderen XML-Parser
-      // vorne steht.
+      // Add a xerces.jar at the beginning, so that CLASSPATH contains another XML-Parser in front.
       try {
          urls = new URL[2];
          urls[0] = new URL(path+"ant/xerces.jar");
          urls[1] = new URL(path+"xmlBlaster.jar");
       }
       catch (MalformedURLException ex) {
-         Log.error("XmlBlasterClassloaderTest", "error. >>>"+ex.toString());
+         log.error("XmlBlasterClassloaderTest", "error. >>>"+ex.toString());
       }
 
       cl = cl.newInstance(urls);

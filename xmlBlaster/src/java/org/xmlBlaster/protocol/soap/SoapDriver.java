@@ -3,7 +3,7 @@ Name:      SoapDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   SoapDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: SoapDriver.java,v 1.8 2002/09/06 20:37:12 ruff Exp $
+Version:   $Id: SoapDriver.java,v 1.9 2002/11/26 12:39:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.soap;
 
@@ -131,7 +131,7 @@ public class SoapDriver implements I_Driver
    public void init(Global glob, I_Authenticate authenticate, I_XmlBlaster xmlBlasterImpl)
       throws XmlBlasterException {
       this.glob = glob;
-      this.ME = "SoapDriver" + this.glob.getLogPraefixDashed();
+      this.ME = "SoapDriver" + this.glob.getLogPrefixDashed();
       this.log = glob.getLog("soap");
       if (log.CALL) log.call(ME, "Entering init()");
       this.authenticate = authenticate;

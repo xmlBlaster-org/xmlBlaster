@@ -3,7 +3,7 @@ Name:      SubscribeMessage.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code to subscribe from command line for a message
-Version:   $Id: SubscribeMessage.java,v 1.18 2002/09/13 23:17:58 ruff Exp $
+Version:   $Id: SubscribeMessage.java,v 1.19 2002/11/26 12:38:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.reader;
 
@@ -12,12 +12,12 @@ import org.jutils.init.Args;
 import org.jutils.JUtilsException;
 
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.SubscribeKeyWrapper;
-import org.xmlBlaster.client.SubscribeQosWrapper;
-import org.xmlBlaster.client.SubscribeRetQos;
+import org.xmlBlaster.client.key.SubscribeKey;
+import org.xmlBlaster.client.qos.SubscribeQos;
+import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -130,21 +130,21 @@ public class SubscribeMessage implements I_Callback
    private void tearDown()
    {
       unSubscribe(subscriptionHandle);
-      xmlBlasterConnection.logout();
+      xmlBlasterConnection.disconnect(null);
    }
 
 
    private String subscribe(String xmlKey, String queryType)
    {
       try {
-         SubscribeKeyWrapper xmlKeyWr = new SubscribeKeyWrapper(xmlKey, queryType);
-         SubscribeQosWrapper xmlQos = new SubscribeQosWrapper();
-         SubscribeRetQos ret = xmlBlasterConnection.subscribe(xmlKeyWr.toXml(), xmlQos.toXml());
+         SubscribeKey xmlKeyWr = new SubscribeKey(glob, xmlKey, queryType);
+         SubscribeQos xmlQos = new SubscribeQos(glob);
+         SubscribeReturnQos ret = xmlBlasterConnection.subscribe(xmlKeyWr.toXml(), xmlQos.toXml());
          String subscriptionId = ret.getSubscriptionId();
          log.info(ME, "Subscribed to [" + xmlKey + "], subscriptionId=" + subscriptionId);
          return subscriptionId;
       } catch(XmlBlasterException e) {
-         log.error(ME, "XmlBlasterException:\n" + e.reason);
+         log.error(ME, "XmlBlasterException:\n" + e.getMessage());
          System.exit(1);
       }
       return null;
@@ -159,12 +159,12 @@ public class SubscribeMessage implements I_Callback
    {
       if (subscriptionId == null || subscriptionId.length() < 1) return;
       try {
-         SubscribeKeyWrapper xmlKey = new SubscribeKeyWrapper(subscriptionId);
-         SubscribeQosWrapper xmlQos = new SubscribeQosWrapper();
+         SubscribeKey xmlKey = new SubscribeKey(glob, subscriptionId);
+         SubscribeQos xmlQos = new SubscribeQos(glob);
          xmlBlasterConnection.unSubscribe(xmlKey.toXml(), xmlQos.toXml());
          if (log.TRACE) log.trace(ME, "Unsubscribed from " + subscriptionId + " (GML and XML Packages)");
       } catch(XmlBlasterException e) {
-         log.warn(ME, "unSubscribe(" + subscriptionId + ") failed: XmlBlasterException: " + e.reason);
+         log.warn(ME, "unSubscribe(" + subscriptionId + ") failed: XmlBlasterException: " + e.getMessage());
       }
    }
 
@@ -172,7 +172,7 @@ public class SubscribeMessage implements I_Callback
    public String update(String loginName, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
       System.out.println("");
-      System.out.println("============= START " + updateKey.getUniqueKey() + " =======================");
+      System.out.println("============= START " + updateKey.getOid() + " =======================");
       log.info(ME, "Receiving update of a message ...");
       System.out.println("<xmlBlaster>");
       System.out.println(updateKey.toString());
@@ -182,7 +182,7 @@ public class SubscribeMessage implements I_Callback
       System.out.println("</content>");
       System.out.println(updateQos.toString());
       System.out.println("</xmlBlaster>");
-      System.out.println("============= END " + updateKey.getUniqueKey() + " =========================");
+      System.out.println("============= END " + updateKey.getOid() + " =========================");
       System.out.println("");
       return Constants.RET_OK; // "<qos><state id='OK'/></qos>";
    }

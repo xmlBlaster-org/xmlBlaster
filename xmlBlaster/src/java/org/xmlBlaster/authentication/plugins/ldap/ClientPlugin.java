@@ -1,5 +1,7 @@
 package org.xmlBlaster.authentication.plugins.ldap;
 
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
@@ -23,8 +25,13 @@ import org.xmlBlaster.authentication.plugins.ldap.SecurityQos;
  */
 public class ClientPlugin implements I_ClientPlugin {
    public static final String ME = "ClientPlugin";
+   private Global glob;
 
    public ClientPlugin() {
+   }
+
+   public void init(Global glob, PluginInfo pluginInfo) {
+      this.glob = glob;
    }
 
    public String getType()
@@ -43,7 +50,7 @@ public class ClientPlugin implements I_ClientPlugin {
     */
    public I_SecurityQos getSecurityQos()
    {
-      return new SecurityQos(); // "ldap" "1.0"
+      return new SecurityQos(this.glob); // "ldap" "1.0"
    }
 
    public void setSessionData(String sessionData)

@@ -3,12 +3,13 @@ Name:      I_Callback.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to easy get the callback messages
-Version:   $Id: I_Callback.java,v 1.9 2002/05/01 21:40:00 ruff Exp $
+Version:   $Id: I_Callback.java,v 1.10 2002/11/26 12:37:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
 import org.xmlBlaster.util.XmlBlasterException;
-
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
 
 /**
  * This is a little helper class wraps the different, protocol specific
@@ -17,7 +18,7 @@ import org.xmlBlaster.util.XmlBlasterException;
  * You may use this, if you don't want to program with the rawer CORBA BlasterCallback.update()
  * or RMI or XML-RPC.
  *
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public interface I_Callback

@@ -12,6 +12,11 @@ import org.xmlBlaster.util.Global;
 /**
  * Holding some Constants
  * See xmlBlaster/src/c++/util/Constants.h
+ * <p>
+ * Probably we should change the code to use the 
+ * <a href="http://developer.java.sun.com/developer/JDCTechTips/2001/tt0807.html">enum pattern</a>
+ * for some of the constants in this class
+ * </p>
  */
 public class Constants
 {
@@ -24,6 +29,14 @@ public class Constants
    public final static long HOUR_IN_MILLIS = MINUTE_IN_MILLIS*60;
    public final static long DAY_IN_MILLIS = HOUR_IN_MILLIS * 24;
    public final static long WEEK_IN_MILLIS = DAY_IN_MILLIS * 7;
+
+   /**
+    * The native authentication instance of the xmlBlaster server is available
+    * under this key in Global.instance().getProperties(). 
+    * <pre>
+    * </pre>
+    */
+   public final static String I_AUTHENTICATE_PROPERTY_KEY = "/xmlBlaster/I_Authenticate";
 
 
    /**
@@ -54,69 +67,6 @@ public class Constants
     */
    public static final long[] XMLBLASTER_OID_ROOT = { 1, 3, 6, 1, 4, 1, Constants.XMLBLASTER_SNMP }; // 11662
 
-   /**
-    * The minimum priority of a message (0).
-    */
-   public final static int MIN_PRIORITY = 0;
-
-   /**
-    * The lower priority of a message (2).
-    */
-   public final static int LOW_PRIORITY = 3;
-
-   /**
-    * The default priority of a message (5).
-    */
-   public final static int NORM_PRIORITY = 5;
-
-   /**
-    * The higher priority of a message (7).
-    */
-   public final static int HIGH_PRIORITY = 7;
-
-   /**
-    * The maximum priority of a message (9).
-    */
-   public final static int MAX_PRIORITY = 9;
-
-
-   /**
-    * Parses given string to extract the priority of a message
-    * @param prio For example "HIGH" or 7
-    * @param defaultPriority Value to use if not parseable
-    * @return The int value for the message priority
-    */
-   public final static int getPriority(String prio, int defaultPriority) {
-      if (prio != null) {
-         prio = prio.trim();
-         try {
-            return new Integer(prio).intValue();
-         } catch (NumberFormatException e) {
-            prio = prio.toUpperCase();
-            if (prio.startsWith("MIN"))
-               return Constants.MIN_PRIORITY;
-            else if (prio.startsWith("LOW"))
-               return Constants.LOW_PRIORITY;
-            else if (prio.startsWith("NORM"))
-               return Constants.NORM_PRIORITY;
-            else if (prio.startsWith("HIGH"))
-               return Constants.HIGH_PRIORITY;
-            else if (prio.startsWith("MAX"))
-               return Constants.MAX_PRIORITY;
-            else
-               Global.instance().getLog("core").warn(ME, "Wrong format of <priority>" + prio +
-                    "</priority>, expected a number between (inclusiv) 0 - 9, setting to message priority to "
-                    + defaultPriority);
-         }
-      }
-      if (defaultPriority < Constants.MIN_PRIORITY || defaultPriority > Constants.MAX_PRIORITY) {
-          Global.instance().getLog("core").warn(ME, "Wrong message defaultPriority=" + defaultPriority + " given, setting to NORM_PRIORITY");
-          return Constants.NORM_PRIORITY;
-      }
-      return defaultPriority;
-   }
-
-
    // Status id, on error usually an exception is thrown so we don't need "ERROR":
 
    /** The returned message status if OK */
@@ -127,9 +77,13 @@ public class Constants
    //public final static String STATE_STALE = "STALE"; // needs to be implemented as another message timer TODO!!!
    //public final static String RET_STALE = "<qos><state id='" + Constants.STATE_STALE + "'/></qos>";
    
-   /** The returned message status if message timeout occured (but not erased) */
+   /** The returned message status if message timeout occurred (but not erased) */
    public final static String STATE_TIMEOUT = "TIMEOUT";
    public final static String RET_TIMEOUT = "<qos><state id='" + Constants.STATE_TIMEOUT + "'/></qos>";
+   
+   /** The returned message status if message is expired (timeout occurred and is erased) */
+   public final static String STATE_EXPIRED = "EXPIRED";
+   public final static String RET_EXPIRED = "<qos><state id='" + Constants.STATE_EXPIRED + "'/></qos>";
    
    /** The returned message status if message is explicitly erased by a call to erase() */
    public final static String STATE_ERASED = "ERASED";
@@ -146,17 +100,17 @@ public class Constants
    */
    public final static String INFO_QUEUED = "QUEUED";
 
-   /** Type of a message queue */
+   /** Type of a message callback queue */
    public final static String RELATING_SESSION = "session";
-   /** Type of a message queue */
+   /** Type of a message callback queue */
    public final static String RELATING_SUBJECT = "subject";
-   /** Type of a message queue */
-   public final static String RELATING_UNRELATED = "unrelated";
+   /** Type of a message queue  on client side */
+   public final static String RELATING_CLIENT = "client";
 
-   /** message queue onOverflow handling, default is blocking until queue takes messages again */
+   /* message queue onOverflow handling, blocking until queue takes messages again (client side) */
    public final static String ONOVERFLOW_BLOCK = "block";
    /** message queue onOverflow handling */
-   public final static String ONOVERFLOW_DEADLETTER = "deadLetter";
+   public final static String ONOVERFLOW_DEADMESSAGE = "deadMessage";
    /** message queue onOverflow handling */
    public final static String ONOVERFLOW_DISCARD = "discard";
    /** message queue onOverflow handling */
@@ -168,71 +122,24 @@ public class Constants
    public final static String ONEXHAUST_KILL_SESSION = "killSession";
 
 
-   /** Praefix to create a sessionId */
-   public final static String SESSIONID_PRAEFIX = "sessionId:";
-   public final static String SUBSCRIPTIONID_PRAEFIX = "__subId:";
+   /** Prefix to create a sessionId */
+   public final static String SESSIONID_PREFIX = "sessionId:";
+   public final static String SUBSCRIPTIONID_PREFIX = "__subId:";
    /** If subscription ID is given by client, e.g. "__subId:/node/heron/client/joe/3/34"
      * see Requirement engine.qos.subscribe.id
      */
-   public final static String SUBSCRIPTIONID_CLIENT_PRAEFIX = "__subId:/node/";
+   public final static String SUBSCRIPTIONID_CLIENT_PREFIX = "__subId:/node/";
 
-   public final static String INTERNAL_OID_PRAEFIX = "__sys__";
-   public final static String INTERNAL_OID_CLUSTER_PRAEFIX = INTERNAL_OID_PRAEFIX +"cluster";  // "__sys__cluster"
+   public final static String INTERNAL_OID_PREFIX_FOR_PLUGINS = "_";
+   public final static String INTERNAL_OID_PREFIX_FOR_CORE = "__";
+   public final static String INTERNAL_OID_PREFIX = "__sys__";  // Should be replaced by INTERNAL_OID_PREFIX_FOR_CORE in future
+   public final static String INTERNAL_OID_CLUSTER_PREFIX = INTERNAL_OID_PREFIX +"cluster";  // "__sys__cluster"
 
    /** JDBC access messages */
-   public final static String JDBC_OID = INTERNAL_OID_PRAEFIX + "jdbc";
+   public final static String JDBC_OID = INTERNAL_OID_PREFIX + "jdbc";
 
    /** message queue onOverflow handling */
-   public final static String OID_DEAD_LETTER = INTERNAL_OID_PRAEFIX + "deadLetter";
-
-   // action key --- xmlBlaster supported method names used to ckeck access rights, for raw socket messages etc.
-   /** The get() method */
-   public static final String         GET = "get";
-   /** The erase() method */
-   public static final String       ERASE = "erase";
-   /** The publish() method */
-   public static final String     PUBLISH = "publish";
-   /** The publishArr() method */
-   public static final String     PUBLISH_ARR = "publishArr";
-   /** The publishOneway() method */
-   public static final String PUBLISH_ONEWAY = "publishOneway";
-   /** The subscribe() method */
-   public static final String   SUBSCRIBE = "subscribe";
-   /** The unSubscribe() method */
-   public static final String UNSUBSCRIBE = "unSubscribe";
-   /** The update() method */
-   public static final String      UPDATE = "update";
-   /** The updateOneway() method */
-   public static final String UPDATE_ONEWAY = "updateOneway";
-   /** The ping() method */
-   public static final String        PING = "ping";
-   /** The connect() method */
-   public static final String     CONNECT = "connect";
-   /** The disconnect() method */
-   public static final String  DISCONNECT = "disconnect";
-   //public static final String   EXCEPTION = "exception";
-
-   /**
-    * Checks if given string is a well known method name. 
-    * @param method E.g. "publish", this is checked if a known method
-    * @return true if method is known
-    */
-   public static final boolean checkMethodName(String method) {
-      if (Constants.GET.equals(method) ||
-          Constants.ERASE.equals(method) ||
-          Constants.PUBLISH.equals(method) ||
-          Constants.PUBLISH_ARR.equals(method) ||
-          Constants.PUBLISH_ONEWAY.equals(method) ||
-          Constants.SUBSCRIBE.equals(method) ||
-          Constants.UNSUBSCRIBE.equals(method) ||
-          Constants.UPDATE.equals(method) ||
-          Constants.UPDATE_ONEWAY.equals(method) ||
-          Constants.PING.equals(method) ||
-          Constants.CONNECT.equals(method) ||
-          Constants.DISCONNECT.equals(method))
-          return true;
-      return false;
-   }
+   public final static String OID_DEAD_LETTER = INTERNAL_OID_PREFIX + "deadMessage";
 
    /** For xml key attribute, contentMimeExtended="1.0" */
    public static final String DEFAULT_CONTENT_MIME_EXTENDED = "1.0";

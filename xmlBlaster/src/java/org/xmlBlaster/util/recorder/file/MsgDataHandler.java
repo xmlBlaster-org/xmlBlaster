@@ -7,7 +7,7 @@ package org.xmlBlaster.util.recorder.file;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.enum.MethodName;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
 import java.io.RandomAccessFile;
@@ -29,35 +29,26 @@ final class MsgDataHandler implements I_UserDataHandler
       
       RequestContainer cont = (RequestContainer)userData;
 
-      ra.writeUTF(cont.method);
+      ra.writeUTF(cont.method.getMethodName());
       
-      if (cont.method.equals(Constants.PUBLISH_ARR) || cont.method.equals(Constants.PUBLISH_ONEWAY) ||
-               cont.method.equals(Constants.UPDATE) || cont.method.equals(Constants.UPDATE_ONEWAY)) {
+      if (cont.method.wantsMsgArrArg() || cont.method.wantsStrMsgArrArg()) { // e.g. MethodName.PUBLISH
 
-         if (cont.method.equals(Constants.UPDATE) || cont.method.equals(Constants.UPDATE_ONEWAY)) {
+         if (cont.method.wantsStrMsgArrArg()) { // UPDATE and UPDATE_ONEWAY
             ra.writeUTF(cont.cbSessionId);
          }
          ra.writeInt(cont.msgUnitArr.length);
          for (int i=0;i<cont.msgUnitArr.length;i++) {
-            ra.writeUTF(cont.msgUnitArr[i].getXmlKey());
+            ra.writeUTF(cont.msgUnitArr[i].getKey());
             ra.writeInt(cont.msgUnitArr[i].getContent().length);
             ra.write(cont.msgUnitArr[i].getContent());
             ra.writeUTF(cont.msgUnitArr[i].getQos());
          }
       }
-      else if (cont.method.equals(Constants.SUBSCRIBE) || cont.method.equals(Constants.UNSUBSCRIBE) ||
-               cont.method.equals(Constants.ERASE) || cont.method.equals(Constants.GET)) {
+      else if (cont.method.wantsKeyQosArg()) { // e.g. MethodName.SUBSCRIBE)
          ra.writeUTF(cont.xmlKey);
          ra.writeUTF(cont.xmlQos);
       }
-      else if (cont.method.equals(Constants.PUBLISH)) {
-         ra.writeUTF(cont.msgUnit.getXmlKey());
-         ra.writeInt(cont.msgUnit.getContent().length);
-         ra.write(cont.msgUnit.getContent());
-         ra.writeUTF(cont.msgUnit.getQos());
-      }
-      else if (cont.method.equals(Constants.CONNECT) || cont.method.equals(Constants.DISCONNECT) ||
-               cont.method.equals(Constants.PING)) {
+      else if (cont.method.wantsQosArg()) { // e.g. MethodName.CONNECT
          ra.writeUTF(cont.xmlQos);
       }
       else
@@ -70,12 +61,11 @@ final class MsgDataHandler implements I_UserDataHandler
       String key;
       byte[] content;
 
-      cont.method = ra.readUTF();
+      cont.method = MethodName.toMethodName(ra.readUTF());
 
-      if (cont.method.equals(Constants.PUBLISH_ARR) || cont.method.equals(Constants.PUBLISH_ONEWAY) ||
-               cont.method.equals(Constants.UPDATE) || cont.method.equals(Constants.UPDATE_ONEWAY)) {
+      if (cont.method.wantsMsgArrArg() || cont.method.wantsStrMsgArrArg()) { // e.g. MethodName.PUBLISH
 
-         if (cont.method.equals(Constants.UPDATE) || cont.method.equals(Constants.UPDATE_ONEWAY)) {
+         if (cont.method.wantsStrMsgArrArg()) { // UPDATE and UPDATE_ONEWAY
             cont.cbSessionId = ra.readUTF();
          }
          cont.msgUnitArr = new MessageUnit[ra.readInt()];
@@ -86,18 +76,11 @@ final class MsgDataHandler implements I_UserDataHandler
             cont.msgUnitArr[i] = new MessageUnit(key, content, ra.readUTF());
          }
       }
-      else if (cont.method.equals(Constants.SUBSCRIBE) || cont.method.equals(Constants.UNSUBSCRIBE) ||
-               cont.method.equals(Constants.ERASE) || cont.method.equals(Constants.GET)) {
+      else if (cont.method.wantsKeyQosArg()) { // e.g. MethodName.SUBSCRIBE)
          cont.xmlKey = ra.readUTF();
          cont.xmlQos = ra.readUTF();
       }
-      else if (cont.method.equals(Constants.PUBLISH)) { 
-         key = ra.readUTF();
-         content = new byte[ra.readInt()];
-         ra.read(content);
-         cont.msgUnit = new MessageUnit(key, content, ra.readUTF());
-      }
-      else if (cont.method.equals(Constants.CONNECT) || cont.method.equals(Constants.DISCONNECT) || cont.method.equals(Constants.PING)) {
+      else if (cont.method.wantsQosArg()) { // e.g. MethodName.CONNECT
          cont.xmlQos = ra.readUTF();
       }
       else

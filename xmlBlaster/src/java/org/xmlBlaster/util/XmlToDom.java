@@ -3,7 +3,7 @@ Name:      XmlToDom.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper which parses a XML ASCII string into a DOM tree
-Version:   $Id: XmlToDom.java,v 1.18 2002/09/19 09:14:55 antman Exp $
+Version:   $Id: XmlToDom.java,v 1.19 2002/11/26 12:39:34 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -37,10 +37,10 @@ public class XmlToDom
     * @param The original key in XML syntax, for example:<br>
     *        <pre><key oid="This is the unique attribute"></key></pre>
     */
-   public XmlToDom(Global glob,String xmlKey_literal) throws XmlBlasterException
+   public XmlToDom(Global glob, String xmlKey_literal) throws XmlBlasterException
    {
       this.glob = glob;
-      log = org.xmlBlaster.util.Global.instance().getLog("core");
+      log = this.glob.getLog("core");
       create(xmlKey_literal);
    }
 

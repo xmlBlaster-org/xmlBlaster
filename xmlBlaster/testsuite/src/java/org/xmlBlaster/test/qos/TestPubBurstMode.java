@@ -3,7 +3,7 @@ Name:      TestPubBurstMode.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestPubBurstMode.java,v 1.2 2002/09/13 23:18:29 ruff Exp $
+Version:   $Id: TestPubBurstMode.java,v 1.3 2002/11/26 12:40:39 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -14,11 +14,11 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
-import org.xmlBlaster.client.PublishRetQos;
-import org.xmlBlaster.client.EraseRetQos;
-import org.xmlBlaster.client.PublishQosWrapper;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.qos.PublishReturnQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
+import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
@@ -107,9 +107,9 @@ public class TestPubBurstMode extends TestCase
                       "</key>";
       String qos = "<qos></qos>";
       try {
-         EraseRetQos[] arr = senderConnection.erase(xmlKey, qos);
+         EraseReturnQos[] arr = senderConnection.erase(xmlKey, qos);
          assertEquals("Erase", 1, arr.length);
-      } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.reason); }
+      } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.getMessage()); }
 
       senderConnection.disconnect(null);
    }
@@ -126,7 +126,7 @@ public class TestPubBurstMode extends TestCase
                       "   <TestPubBurstMode-AGENT id='192.168.124.10' subId='1' type='generic'>" +
                       "   </TestPubBurstMode-AGENT>" +
                       "</key>";
-      PublishQosWrapper qosWrapper = new PublishQosWrapper();
+      PublishQos qosWrapper = new PublishQos(glob);
       String qos = qosWrapper.toXml(); // == "<qos></qos>"
 
       MessageUnit[] msgUnitArr = new MessageUnit[numPublish];
@@ -135,7 +135,7 @@ public class TestPubBurstMode extends TestCase
          msgUnitArr[ii] = new MessageUnit(xmlKey, senderContent.getBytes(), qos);
       }
 
-      PublishRetQos[] publishOidArr = null;
+      PublishReturnQos[] publishOidArr = null;
       try {
          log.info(ME, "Publishing " + numPublish + " messages in burst mode ...");
          stopWatch = new StopWatch();
@@ -144,8 +144,8 @@ public class TestPubBurstMode extends TestCase
          log.info(ME, "Published " + numPublish + " messages in burst mode in " + elapsed + " sec: " +
                        (long)(numPublish/elapsed) + " messages/sec");
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.reason);
-         assertTrue("publish - XmlBlasterException: " + e.reason, false);
+         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
       assertTrue("returned publishOidArr == null", publishOidArr != null);
       assertEquals("returned publishOidArr", numPublish, publishOidArr.length);

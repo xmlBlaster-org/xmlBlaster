@@ -2,8 +2,6 @@
 Name:      RouteInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Holding the message specific information about a node.
-Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.cluster;
 
@@ -11,8 +9,9 @@ import org.xmlBlaster.util.Timestamp;
 
 /**
  * This class holds the information about a route node which the message passed. 
+ * @author ruff@swand.lake.de
  */
-public final class RouteInfo {
+public final class RouteInfo implements java.io.Serializable {
 
    private NodeId nodeId;
    private int stratum;
@@ -110,11 +109,11 @@ public final class RouteInfo {
    public final String toXml(String extraOffset)
    {
       StringBuffer sb = new StringBuffer(126);
-      String offset = "\n   ";
+      String offset = "\n ";
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
 
-      sb.append(offset).append("   <node id='").append(getNodeId());
+      sb.append(offset).append(" <node id='").append(getNodeId());
       sb.append("' stratum='").append(getStratum());
       sb.append("' timestamp='").append(getTimestamp().getTimestamp()).append("'");
       //if (dirtyRead != NodeDomainInfo.DEFAULT_dirtyRead)

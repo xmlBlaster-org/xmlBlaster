@@ -2,8 +2,6 @@
 Name:      UpdateQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Handling one QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: UpdateQos.java,v 1.8 2002/09/19 14:12:48 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -15,6 +13,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.cluster.RouteInfo;
 import org.xmlBlaster.engine.cluster.NodeId;
 import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.enum.PriorityEnum;
 
 import org.xml.sax.Attributes;
 
@@ -23,36 +22,7 @@ import java.util.Vector;
 /**
  * QoS (quality of service) informations sent from server to client<br />
  * via the update() method from the I_Callback interface.
- * <p />
- * If you are a Java client you may use this class to parse the QoS argument.
- * <p />
- * Example:
- * <pre>
- *   &lt;qos> &lt;!-- UpdateQos -->
- *     &lt;state id='OK'/>
- *     &lt;sender>Tim&lt;/sender>
- *     &lt;priority>5&lt;/priority>
- *     &lt;subscriptionId>subId:1&lt;/subscriptionId>
- *     &lt;rcvTimestamp nanos='1007764305862000002'> &lt;!-- UTC time when message was created in xmlBlaster server with a publish() call, in nanoseconds since 1970 -->
- *           2001-12-07 23:31:45.862000002   &lt;!-- The nanos from above but human readable -->
- *     &lt;/rcvTimestamp>
- *     &lt;expiration remainingLife='1200'/> &lt;!-- Calculated relative to when xmlBlaster has sent the message [milliseconds] -->
- *     &lt;queue index='0' of='1'/> &lt;!-- If queued messages are flushed on login -->
- *     &lt;redeliver>4&lt;/redeliver>
- *     &lt;route>
- *        &lt;node id='heron'/>
- *     &lt;/route>
- *  &lt;/qos>
- * </pre>
- * The receive timestamp can be delivered in human readable form as well
- * by setting on server command line:
- * <pre>
- *   -cb.recieveTimestampHumanReadable true
- *
- *   &lt;rcvTimestamp nanos='1015959656372000000'>
- *     2002-03-12 20:00:56.372
- *   &lt;/rcvTimestamp>
- * </pre>
+ * @deprecated  Use org.xmlBlaster.client.qos.UpdateQos
  */
 public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
 {
@@ -67,7 +37,7 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
    /** helper flag for SAX parsing: parsing inside <priority> ? */
    private boolean inPriority = false;
    /** The priority of the message */
-   private int priority = Constants.NORM_PRIORITY;
+   private PriorityEnum priority = PriorityEnum.NORM_PRIORITY;
 
    /** helper flag for SAX parsing: parsing inside <sender> ? */
    private boolean inSender = false;
@@ -114,6 +84,7 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
     */
    public UpdateQos(Global glob, String xmlQoS_literal) throws XmlBlasterException
    {
+      super(glob);
       this.log = glob.getLog("client");
       if (log.CALL) log.call(ME, "Entering UpdateQos() (a message arrived)");
       init(xmlQoS_literal);
@@ -133,7 +104,7 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
     * @return priority 0-9
     * @see org.xmlBlaster.engine.helper.Constants
     */
-   public int getPriority()
+   public PriorityEnum getPriority()
    {
       return priority;
    }
@@ -469,8 +440,13 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
 
       if(name.equalsIgnoreCase("priority")) {
          inPriority = false;
-         priority = Constants.getPriority(character.toString(), Constants.NORM_PRIORITY);
-         // if (log.TRACE) log.trace(ME, "Found priority = " + priority);
+         try {
+            priority = PriorityEnum.parsePriority(character.toString());
+         }
+         catch (IllegalArgumentException e) {
+            priority = PriorityEnum.NORM_PRIORITY;
+            log.warn(ME, "Problems parsing priority, setting priority to " + priority.toString() + ": " + e.toString());
+         }
          character.setLength(0);
          return;
       }
@@ -556,7 +532,7 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
       if (sender != null) {
          sb.append(offset).append("   <sender>").append(sender).append("</sender>");
       }
-      if (priority != Constants.NORM_PRIORITY) {
+      if (priority != PriorityEnum.NORM_PRIORITY) {
          sb.append(offset).append("   <priority>").append(priority).append("</priority>");
       }
       if (subscriptionId != null) {
@@ -592,72 +568,10 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
       return sb.toString();
    }
 
-   /**
-    * Wrapper to create the returned QoS (with update method). 
-    * Used by the xmlBlaster server. 
-    * Creates the callback QoS of the update() method. 
-    * <p />
-    * The XML syntax is described in the class description.
-    * @param index Index of entry in queue
-    * @param max Number of entries in queue
-    * @param state One of Constants.STATE_OK | Constants.STATE_EXPIRED | Constants.STATE_ERASED
-    * @param redeliver If > 0, the message is redelivered after a failure
-    */
-   public static final String toXml(String subscriptionId,
-                 org.xmlBlaster.engine.MessageUnitWrapper msgUnitWrapper,
-                 int index, int max, String state, int redeliver, String nodeId) {
-      if (msgUnitWrapper == null || state == null) {
-         Global.instance().getLog("client").error("UpdateQos", "Arguments for UpdateQos are invalid: subscriptionId == " + subscriptionId + " msgUnitWrapper=" + msgUnitWrapper + " state=" + state);
-         throw new IllegalArgumentException("Arguments for UpdateQos are invalid");
-      }
-
-      // Check with RequestBroker.get() !!!
-      StringBuffer sb = new StringBuffer(512);
-      sb.append("\n<qos>");
-
-      if (!org.xmlBlaster.engine.helper.Constants.STATE_OK.equals(state)) {
-         sb.append("\n <state id='").append(state).append("'/>");
-      }
-
-      sb.append("\n <sender>").append(msgUnitWrapper.getPublisherName()).append("</sender>");
-      sb.append("\n <priority>").append(msgUnitWrapper.getPublishQos().getPriority()).append("</priority>");
-
-      if (subscriptionId != null)
-         sb.append("\n <subscriptionId>").append(subscriptionId).append("</subscriptionId>");
-      
-      sb.append(msgUnitWrapper.getXmlRcvTimestamp());
-
-      if (msgUnitWrapper.getPublishQos().getRemainingLife() > 0L)
-         sb.append("\n <expiration remainingLife='").append(msgUnitWrapper.getPublishQos().getRemainingLife()).append("'/>");
-
-      if (max > 0)
-         sb.append("\n <queue index='").append(index).append("' size='").append(max).append("'/>");
-      if (redeliver > 0)
-         sb.append("\n <redeliver>").append(redeliver).append("</redeliver>");
-
-      org.xmlBlaster.engine.cluster.RouteInfo[] routes = msgUnitWrapper.getPublishQos().getRouteNodes();
-      if (routes.length > 0) {
-         sb.append("\n <route>");
-         for (int ii=0; ii<routes.length; ii++)
-            sb.append(routes[ii].toXml());
-         sb.append("\n </route>");
-      }
-      /*
-      if (nodeId != null && nodeId.length() > 0) {
-         sb.append("\n <route>"); // server internal added routing informations
-         sb.append("\n  <node id='").append(nodeId).append("'/>");
-         sb.append("\n </route>"); // server internal added routing informations
-      }
-      */
-      sb.append("\n</qos>");
-      return sb.toString();
-   }
-
    public final String toString()
    {
       return toXml(null);
    }
-
 
    /**
     *  For testing invoke: java org.xmlBlaster.client.UpdateQos

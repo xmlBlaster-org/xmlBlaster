@@ -23,7 +23,7 @@
          <td>msg</td><td>MessageUnit</td><td>A structure containing an XML key, an XML QoS and the binary message content (see MessageUnit link below)</td>
          </tr>
          <tr>
-         <td>return</td><td>string</td><td>An XML based return string containing status and other informations (see PublishRetQos link below)</td>
+         <td>return</td><td>string</td><td>An XML based return string containing status and other informations (see PublishReturnQos link below)</td>
          </tr>
          <tr>
          <td>XmlBlasterException</td><td>exception</td><td>Thrown on error</td>
@@ -102,33 +102,37 @@
       A typical Java client code in Publish/Subscribe mode:
       </p>
       <pre>
-   import org.xmlBlaster.client.*;
+   import org.xmlBlaster.client.key.PublishKey;
+   import org.xmlBlaster.client.qos.PublishQos;
+
    ...
 
-   PublishKeyWrapper pk = new PublishKeyWrapper("HelloWorld4", "text/plain", "1.0");
+   PublishKey pk = new PublishKey(glob, "HelloWorld4", "text/plain", "1.0");
 
-   PublishQosWrapper pq = new PublishQosWrapper();
+   PublishQos pq = new PublishQos(glob);
 
    MessageUnit msgUnit = new MessageUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
 
-   PublishRetQos retQos = con.publish(msgUnit);
+   PublishReturnQos retQos = con.publish(msgUnit);
       </pre>
 
       <p>
       A typical Java client code in PtP mode:
       </p>
       <pre>
-   import org.xmlBlaster.client.*;
+   import org.xmlBlaster.client.key.PublishKey;
+   import org.xmlBlaster.client.qos.PublishQos;
+
    ...
 
-   PublishKeyWrapper pk = new PublishKeyWrapper("HelloWorld5", "text/plain", "1.0");
+   PublishKey pk = new PublishKey(glob, "HelloWorld5", "text/plain", "1.0");
 
-   PublishQosWrapper pq = new PublishQosWrapper();
+   PublishQos pq = new PublishQos(glob);
    pq.addDestination(new Destination("michelle"));
 
    MessageUnit msgUnit = new MessageUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
 
-   PublishRetQos retQos = con.publish(msgUnit);
+   PublishReturnQos retQos = con.publish(msgUnit);
       </pre>
 
    <p>
@@ -140,8 +144,8 @@
    </configuration>
 
    <see type="API">org.xmlBlaster.engine.helper.MessageUnit</see>
-   <see type="API">org.xmlBlaster.client.PublishQosWrapper</see>
-   <see type="API">org.xmlBlaster.client.PublishRetQos</see>
+   <see type="API">org.xmlBlaster.client.qos.PublishQos</see>
+   <see type="API">org.xmlBlaster.client.qos.PublishReturnQos</see>
    <see type="API">org.xmlBlaster.client.protocol.XmlBlasterConnection</see>
    <see type="API">org.xmlBlaster.protocol.xmlrpc.XmlBlasterImpl</see>
 
@@ -160,7 +164,7 @@
  
    <author>ruff@swand.lake.de</author>
    <date>2002 06 01</date>
-   <revision>$Revision: 1.8 $</revision>
+   <revision>$Revision: 1.9 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the publish method invocation</comment>
@@ -168,7 +172,7 @@
       <test tool="SUITE">org.xmlBlaster.test.qos.TestPtD</test>
       <test tool="SUITE">org.xmlBlaster.test.cluster.PublishTest</test>
       <test tool="SUITE">org.xmlBlaster.test.classtest.PublishQosTest</test>
-      <test tool="SUITE">org.xmlBlaster.test.classtest.PublishRetQosTest</test>
+      <test tool="SUITE">org.xmlBlaster.test.classtest.PublishReturnQosTest</test>
    </testcase>
 </requirement>
 

@@ -3,7 +3,7 @@ Name:      RmiConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: RmiConnection.java,v 1.26 2002/06/27 11:04:53 ruff Exp $
+Version:   $Id: RmiConnection.java,v 1.27 2002/11/26 12:38:10 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.rmi;
@@ -13,11 +13,11 @@ import org.xmlBlaster.protocol.rmi.I_AuthServer;
 import org.xmlBlaster.protocol.rmi.I_XmlBlaster;
 
 import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
-import org.xmlBlaster.client.protocol.ConnectionException;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.XmlBlasterSecurityManager;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.util.ConnectQos;
@@ -50,7 +50,7 @@ import java.applet.Applet;
  * <p />
  * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http
  *
- * @version $Revision: 1.26 $
+ * @version $Revision: 1.27 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class RmiConnection implements I_XmlBlasterConnection
@@ -164,7 +164,7 @@ public class RmiConnection implements I_XmlBlasterConnection
    /**
     * Reset
     */
-   public void init()
+   public void resetConnection()
    {
       authServer = null;
       blasterServer = null;
@@ -177,11 +177,11 @@ public class RmiConnection implements I_XmlBlasterConnection
     * We use this for similar handling as org.omg exceptions.
     * @return Server
     */
-   private I_XmlBlaster getXmlBlaster() throws ConnectionException
-   {
+   private I_XmlBlaster getXmlBlaster() throws XmlBlasterException {
       if (blasterServer == null) {
          if (log.TRACE) log.trace(ME, "No RMI connection available.");
-         throw new ConnectionException(ME+".init", "The RMI xmlBlaster handle is null, no connection available");
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
+                                       "The RMI xmlBlaster handle is null, no connection available");
       }
       return blasterServer;
    }
@@ -197,7 +197,7 @@ public class RmiConnection implements I_XmlBlasterConnection
    /**
     * @param qos Has all credentials
     */
-   public ConnectReturnQos connect(ConnectQos qos) throws XmlBlasterException, ConnectionException
+   public ConnectReturnQos connect(ConnectQos qos) throws XmlBlasterException
    {
       if (qos == null)
          throw new XmlBlasterException(ME+".connect()", "Please specify a valid QoS");
@@ -224,7 +224,7 @@ public class RmiConnection implements I_XmlBlasterConnection
     * @param qos       The Quality of Service for this client
     * @exception       XmlBlasterException if login fails
     */
-   public void login(String loginName, String passwd, ConnectQos qos) throws XmlBlasterException, ConnectionException
+   public void login(String loginName, String passwd, ConnectQos qos) throws XmlBlasterException
    {
       this.ME = "RmiConnection-" + loginName;
       if (log.CALL) log.call(ME, "login() ...");
@@ -251,7 +251,7 @@ public class RmiConnection implements I_XmlBlasterConnection
     * @return The returned qos, containing the sessionId
     * @exception       XmlBlasterException if login fails
     */
-   public ConnectReturnQos loginRaw() throws XmlBlasterException, ConnectionException
+   public ConnectReturnQos loginRaw() throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "loginRaw(" + loginName + ") ...");
       try {
@@ -262,14 +262,16 @@ public class RmiConnection implements I_XmlBlasterConnection
             this.sessionId = this.connectReturnQos.getSessionId();
          }
          else {
-            this.sessionId = authServer.login(loginName, passwd, loginQos.toXml());
+            log.error(ME, "NOT IMPLEMENTED");
+            //this.sessionId = authServer.login(loginName, passwd, loginQos.toXml());
+            throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "NOT IMPLEMENTED");
          }
          if (log.TRACE) log.trace(ME, "Success, login for " + loginName);
          if (log.DUMP) log.dump(ME, loginQos.toXml());
          return this.connectReturnQos;
       } catch(RemoteException e) {
          if (log.TRACE) log.trace(ME, "Login failed for " + loginName);
-         throw new ConnectionException("LogingFailed", e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "Login failed for " + loginName);
       }
    }
 
@@ -301,17 +303,17 @@ public class RmiConnection implements I_XmlBlasterConnection
             authServer.disconnect(sessionId, (qos==null)?"":qos.toXml());
          }
          shutdown();
-         init();
+         resetConnection();
          return true;
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: [" + e.id + "]" + " " + e.reason);
+         log.warn(ME, "XmlBlasterException: " + e.getMessage());
       } catch(RemoteException e) {
          log.warn(ME, e.toString());
          e.printStackTrace();
       }
 
       shutdown();
-      init();
+      resetConnection();
       return false;
    }
 
@@ -340,15 +342,15 @@ public class RmiConnection implements I_XmlBlasterConnection
     * see explanations of publish() method.
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public final String subscribe(String xmlKey, String qos) throws XmlBlasterException, ConnectionException
+   public final String subscribe(String xmlKey, String qos) throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "subscribe() ...");
       try {
          return getXmlBlaster().subscribe(sessionId, xmlKey, qos);
       } catch(XmlBlasterException e) {
-         throw new XmlBlasterException(e.id, e.reason);
+         throw e;
       } catch(Exception e) {
-         throw new ConnectionException(ME+".InvokeError", e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "subscribe", e);
       }
    }
 
@@ -357,15 +359,15 @@ public class RmiConnection implements I_XmlBlasterConnection
     * Enforced by I_XmlBlasterConnection interface (fail save mode)
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public final void unSubscribe(String xmlKey, String qos) throws XmlBlasterException, ConnectionException
+   public final String[] unSubscribe(String xmlKey, String qos) throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "unSubscribe() ...");
       try {
-         getXmlBlaster().unSubscribe(sessionId, xmlKey, qos);
+         return getXmlBlaster().unSubscribe(sessionId, xmlKey, qos);
       } catch(XmlBlasterException e) {
-         throw new XmlBlasterException(e.id, e.reason);
+         throw e;
       } catch(Exception e) {
-         throw new ConnectionException(ME+".InvokeError", e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "unSubscribe", e);
       }
    }
 
@@ -380,16 +382,16 @@ public class RmiConnection implements I_XmlBlasterConnection
     * Enforced by I_XmlBlasterConnection interface (fail save mode)
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public final String publish(MessageUnit msgUnit) throws XmlBlasterException, ConnectionException
+   public final String publish(MessageUnit msgUnit) throws XmlBlasterException
    {
       if (log.TRACE) log.trace(ME, "Publishing ...");
       try {
          return getXmlBlaster().publish(sessionId, msgUnit);
       } catch(XmlBlasterException e) {
-         if (log.TRACE) log.trace(ME, "XmlBlasterException: " + e.reason);
-         throw new XmlBlasterException(e.id, e.reason);
+         if (log.TRACE) log.trace(ME, "XmlBlasterException: " + e.getMessage());
+         throw e;
       } catch(Exception e) {
-         throw new ConnectionException(ME+".InvokeError", e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "publish", e);
       }
    }
 
@@ -397,16 +399,16 @@ public class RmiConnection implements I_XmlBlasterConnection
    /**
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public String[] publishArr(MessageUnit [] msgUnitArr) throws XmlBlasterException, ConnectionException
+   public String[] publishArr(MessageUnit [] msgUnitArr) throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "publishArr() ...");
       try {
          return getXmlBlaster().publishArr(sessionId, msgUnitArr);
       } catch(XmlBlasterException e) {
-         if (log.TRACE) log.trace(ME, "XmlBlasterException: " + e.reason);
-         throw new XmlBlasterException(e.id, e.reason);
+         if (log.TRACE) log.trace(ME, "XmlBlasterException: " + e.getMessage());
+         throw e;
       } catch(Exception e) {
-         throw new ConnectionException(ME+".InvokeError", e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "publishArr", e);
       }
    }
 
@@ -414,7 +416,7 @@ public class RmiConnection implements I_XmlBlasterConnection
     * RMI does not support oneway messages. 
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public void publishOneway(MessageUnit [] msgUnitArr) throws XmlBlasterException, ConnectionException
+   public void publishOneway(MessageUnit [] msgUnitArr) throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "publishOneway(), RMI does not support oneway, we switch to publishArr() ...");
       publishArr(msgUnitArr);
@@ -423,15 +425,15 @@ public class RmiConnection implements I_XmlBlasterConnection
    /**
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public final String[] erase(String xmlKey, String qos) throws XmlBlasterException, ConnectionException
+   public final String[] erase(String xmlKey, String qos) throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "erase() ...");
       try {
          return getXmlBlaster().erase(sessionId, xmlKey, qos);
       } catch(XmlBlasterException e) {
-         throw new XmlBlasterException(e.id, e.reason);
+         throw e;
       } catch(Exception e) {
-         throw new ConnectionException(ME+".InvokeError", e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "erase", e);
       }
    }
 
@@ -439,16 +441,16 @@ public class RmiConnection implements I_XmlBlasterConnection
    /**
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public final MessageUnit[] get(String xmlKey, String qos) throws XmlBlasterException, ConnectionException
+   public final MessageUnit[] get(String xmlKey, String qos) throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "get() ...");
       try {
          return getXmlBlaster().get(sessionId, xmlKey, qos);
       } catch(XmlBlasterException e) {
-         throw new XmlBlasterException(e.id, e.reason);
+         throw e;
       } catch(Exception e) {
          e.printStackTrace();
-         throw new ConnectionException(ME+".InvokeError", e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "get", e);
       }
    }
 
@@ -457,12 +459,11 @@ public class RmiConnection implements I_XmlBlasterConnection
     * Check server.
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public String ping(String str) throws ConnectionException
-   {
+   public String ping(String str) throws XmlBlasterException {
       try {
          return getXmlBlaster().ping(str);
       } catch(Exception e) {
-         throw new ConnectionException(ME+".InvokeError", e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "ping", e);
       }
    }
 

@@ -13,10 +13,10 @@ import org.xmlBlaster.util.ConnectReturnQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
-import org.xmlBlaster.client.SubscribeQosWrapper;
-import org.xmlBlaster.client.EraseRetQos;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.qos.SubscribeQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.Constants;
 
@@ -104,9 +104,9 @@ public class TestSubId extends TestCase implements I_Callback
       String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'>\n" +
                       "</key>";
       try {
-         EraseRetQos[] arr = senderConnection.erase(xmlKey, "<qos/>");
+         EraseReturnQos[] arr = senderConnection.erase(xmlKey, "<qos/>");
          assertEquals("Erase", 1, arr.length);
-      } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.reason); }
+      } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.getMessage()); }
 
       senderConnection.disconnect(null);
    }
@@ -123,11 +123,11 @@ public class TestSubId extends TestCase implements I_Callback
 
       String xmlKey = "<key oid='" + oidExact + "' queryType='EXACT'>\n" +
                       "</key>";
-      SubscribeQosWrapper sq = new SubscribeQosWrapper();
+      SubscribeQos sq = new SubscribeQos(glob);
       String serverName = "heron";
       int myCounter = 99;
       try {
-         sentSubscribeId = Constants.SUBSCRIPTIONID_CLIENT_PRAEFIX + serverName +
+         sentSubscribeId = Constants.SUBSCRIPTIONID_CLIENT_PREFIX + serverName +
                   "/client/" + connectQos.getUserId() +
                   "/" + connectReturnQos.getPublicSessionId() +
                   "/" + myCounter;
@@ -135,11 +135,11 @@ public class TestSubId extends TestCase implements I_Callback
          numReceived = 0;
          subscribeId = null;
          subscribeId = senderConnection.subscribe(xmlKey, sq.toXml()).getSubscriptionId();
-         assertEquals("The returned subscriptionId is wrong", sentSubscribeId, subscribeId);
+         assertEquals("Sent sentSubscribeId= " + sentSubscribeId + " The returned subscriptionId=" + subscribeId + " is wrong", sentSubscribeId, subscribeId);
          log.info(ME, "Success: Subscribe on " + subscribeId + " done");
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.reason);
-         fail("subscribe - XmlBlasterException: " + e.reason);
+         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         fail("subscribe - XmlBlasterException: " + e.getMessage());
       }
       assertTrue("returned null subscribeId", subscribeId != null);
       assertTrue("returned subscribeId is empty", 0 != subscribeId.length());
@@ -161,11 +161,11 @@ public class TestSubId extends TestCase implements I_Callback
       senderContent = "Yeahh, i'm the new content";
       MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
       try {
-         publishOid = senderConnection.publish(msgUnit).getOid();
+         publishOid = senderConnection.publish(msgUnit).getKeyOid();
          log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.reason);
-         assertTrue("publish - XmlBlasterException: " + e.reason, false);
+         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
 
       assertTrue("returned publishOid == null", publishOid != null);
@@ -197,15 +197,16 @@ public class TestSubId extends TestCase implements I_Callback
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
       if (log.CALL) log.call(ME, "Receiving update of a message ...");
+      log.info(ME, "sentSubscribeId=" + sentSubscribeId + ":" + updateQos.toXml());
 
       numReceived += 1;
 
       // Wait that publish() returns and set 'publishOid' properly
       try { Thread.currentThread().sleep(200); } catch( InterruptedException i) {}
 
-      assertEquals("Wrong sender", senderName, updateQos.getSender());
+      assertEquals("Wrong sender", senderName, updateQos.getSender().getLoginName());
       assertEquals("engine.qos.update.subscriptionId: Wrong subscriptionId", subscribeId, updateQos.getSubscriptionId());
-      assertEquals("Wrong oid of message returned", publishOid, updateKey.getUniqueKey());
+      assertEquals("Wrong oid of message returned", publishOid, updateKey.getOid());
       assertEquals("Message content is corrupted", new String(senderContent), new String(content));
       assertEquals("Message contentMime is corrupted", contentMime, updateKey.getContentMime());
       assertEquals("Message contentMimeExtended is corrupted", contentMimeExtended, updateKey.getContentMimeExtended());

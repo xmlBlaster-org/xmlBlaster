@@ -14,8 +14,8 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.client.UpdateQos;
-import org.xmlBlaster.client.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.key.UpdateKey;
 
 import org.jafw.saw.*;
 import org.jafw.saw.rpc.*;

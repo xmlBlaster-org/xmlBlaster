@@ -2,17 +2,17 @@
 Name:      MessageUnit.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Container for a message.
-Version:   $Id: MessageUnit.java,v 1.10 2002/06/18 11:34:51 ruff Exp $
-Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
-import org.xmlBlaster.client.PublishKeyWrapper;
-import org.xmlBlaster.client.PublishQosWrapper;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.qos.MsgQosData;
+import org.xmlBlaster.util.key.MsgKeyData;
+import org.xmlBlaster.client.key.PublishKey;
+import org.xmlBlaster.client.qos.PublishQos;
 
 /**
- * Encapsulates the xmlKey, content and qos.
+ * Encapsulates the xmlKey, content and qos. 
  * <p />
  * The data is NOT interpreted or parsed in the container, e.g.
  * qos contains the literal, XML based ASCII string.
@@ -22,17 +22,28 @@ import org.xmlBlaster.client.PublishQosWrapper;
  * The constructor arguments are checked to be not null and corrected
  * to "" or 'new byte[0]' if they are null
  */
-public class MessageUnit implements java.io.Serializable
+public final class MessageUnit implements java.io.Serializable
 {
-   public String xmlKey;
-   public byte[] content;
-   public String qos;
+   private String xmlKey;
+   private byte[] content;
+   private String qos;
+
+   private transient Global glob;
+   private transient MsgQosData msgQosData; // cache
+   private transient MsgKeyData msgKeyData; // cache
 
    /**
     * The normal constructor. 
     */
-   public MessageUnit(String xmlKey, byte[] content, String qos)
-   {
+   public MessageUnit(String xmlKey, byte[] content, String qos) {
+      this((Global)null, xmlKey, content, qos);
+   }
+
+   /**
+    * The normal constructor. 
+    */
+   public MessageUnit(Global glob, String xmlKey, byte[] content, String qos) {
+      this.glob = (glob == null) ? Global.instance() : glob;
       setKey(xmlKey);
       setContent(content);
       setQos(qos);
@@ -41,8 +52,15 @@ public class MessageUnit implements java.io.Serializable
    /**
     * This is a temporary constructor used for the javascript (rhino) client
     */
-   public MessageUnit(String xmlKey, String contentAsString, String qos)
-   {
+   public MessageUnit(String xmlKey, String contentAsString, String qos) {
+      this(null, xmlKey, contentAsString, qos);
+   }
+
+   /**
+    * This is a temporary constructor used for the javascript (rhino) client
+    */
+   public MessageUnit(Global glob, String xmlKey, String contentAsString, String qos) {
+      this.glob = (glob == null) ? Global.instance() : glob;
       setKey(xmlKey);
       setContent(contentAsString.getBytes());
       setQos(qos);
@@ -51,65 +69,134 @@ public class MessageUnit implements java.io.Serializable
    /**
     * This is a constructor suitable for clients. 
     */
-   public MessageUnit(PublishKeyWrapper xmlKey, String contentAsString, PublishQosWrapper qos)
-   {
-      setKey(xmlKey.toXml());
-      setContent(contentAsString.getBytes());
-      setQos(qos.toXml());
+   public MessageUnit(Global glob, PublishKey key, String contentAsString, PublishQos qos) {
+      this(glob, key, contentAsString.getBytes(), qos);
    }
 
    /**
     * This is a constructor suitable for clients. 
     */
-   public MessageUnit(PublishKeyWrapper xmlKey, byte[] content, PublishQosWrapper qos)
-   {
-      setKey(xmlKey.toXml());
+   public MessageUnit(Global glob, PublishKey key, byte[] content, PublishQos qos) {
+      this.glob = (glob == null) ? Global.instance() : glob;
+      this.msgKeyData = key.getData();
+      this.msgQosData = qos.getData();
+      setKey(key.toXml());
       setContent(content);
       setQos(qos.toXml());
    }
 
-   public final void setKey(String xmlKey){
+   /**
+    * Shallow clone this message unit.
+    * <p>
+    *  In order to keep up with performance we don't encapsulate the content in an immutable object.
+    *  Keep in mind however that you should never (ever) change the content of a MessageUnit since
+    *  such a change would affect the messages to all other reference of this message (e.g. subscribers)
+    *  and therefore it might lead to unpredictable (and undesired) results.
+    * </p>
+    * <p>Example:</p>
+    * <pre> 
+    * byte[] content = msgUnit.getContent();
+    * content[6] = (byte)'A';  // NOT ALLOWED !
+    * </pre> 
+    * @parameter content  If you pass null note that the byte[] is a reference
+    *                     to the original and you should not manipulate it
+    */
+   public MessageUnit(MessageUnit old, String xmlKey, byte[] content, String qos) {
+      glob = old.getGlobal();
+      setKey( (xmlKey==null) ? old.getKey() : xmlKey);
+      setContent( (content==null) ? old.getContent() : content);
+      setQos( (qos==null) ? old.getQos() : qos);
+   }
+
+   Global getGlobal() {
+      return glob;
+   }
+
+   public void setGlobal(Global glob) {
+      this.glob = glob;
+   }
+
+   private final void setKey(String xmlKey){
       if (xmlKey == null)
          this.xmlKey = "";
       else
          this.xmlKey = xmlKey;
    }
 
-   public final void setQos(String qos){
+   private final void setQos(String qos){
       if (qos == null)
          this.qos = "";
       else
          this.qos = qos;
    }
 
-   public final void setContent(byte[] content) {
+   private final void setContent(byte[] content) {
       if (content == null)
          this.content = new byte[0];
       else
          this.content = content;
    }
 
-   public final String getXmlKey() {
+   /**
+    * The raw string
+    */
+   public final String getKey() {
       return this.xmlKey;
    }
+
+   /**
+    * @deprecated use getKey()
+    */
+   public final String getXmlKey() {
+      return getKey();
+   }
+
+   /**
+    * Get the raw content. 
+    * <p>
+    * For performance reasons you get a reference to the internal byte[] buffer and no copy.
+    * Note that you are not allowed to manipulate the returned byte[].
+    * </p>
+    */
    public final byte[] getContent() {
       return this.content;
    }
+
    public final String getContentStr() {
       return new String(this.content);
    }
+
+   /**
+    * The QoS
+    */
    public final String getQos() {
       return this.qos;
    }
+
+   public MsgKeyData getMsgKeyData() {
+      if (this.msgKeyData == null) {
+         this.msgKeyData = new MsgKeyData(glob, (org.xmlBlaster.util.key.I_MsgKeyFactory)null, this.xmlKey);
+      }
+      return this.msgKeyData;
+   }
+
+   public MsgQosData getMsgQosData() {
+      if (this.msgQosData == null) {
+         this.msgQosData = new MsgQosData(glob, this.qos);
+      }
+      return this.msgQosData;
+   }
+
    /**
-    * Clone this message unit.
+    * Deep clone this message unit. 
     * <p />
     * You can't manipulate the data in the original MessageUnit
+    * The content byte[] is new allocated (a copy)
     */
    public final MessageUnit getClone() {
       byte[] newContent = new byte[content.length];
       System.arraycopy(content, 0,  newContent, 0, content.length);
-      return new MessageUnit(xmlKey, content, qos);
+      return new MessageUnit(glob, xmlKey, content, qos);
    }
 
    /** 

@@ -39,6 +39,8 @@ java -Xms18M -Xmx64M \
      -Djava.security.policy=${XMLBLASTER_HOME}/config/xmlBlaster.policy \
      -jar ${XMLBLASTER_HOME}/lib/xmlBlaster.jar "$@"
 
+# Redirect:
+#  > ${STDOUT_LOG} 2>&1 &
 
 #. ${XMLBLASTER_HOME}/.bashrc
 

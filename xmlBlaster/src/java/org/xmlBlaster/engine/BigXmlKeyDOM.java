@@ -3,14 +3,13 @@ Name:      BigXmlKeyDOM.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Building a huge DOM tree for all known MessageUnit xmlKey
-Version:   $Id: BigXmlKeyDOM.java,v 1.29 2002/09/19 09:19:47 antman Exp $
+Version:   $Id: BigXmlKeyDOM.java,v 1.30 2002/11/26 12:38:21 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.engine.xml2java.XmlKeyDom;
-import org.xmlBlaster.util.XmlQoSBase;
 import org.xmlBlaster.util.XmlNotPortable;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.Authenticate;

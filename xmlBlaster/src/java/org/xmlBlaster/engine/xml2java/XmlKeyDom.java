@@ -3,7 +3,7 @@ Name:      XmlKeyDom.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Building a huge DOM tree for all known MessageUnit xmlKey
-Version:   $Id: XmlKeyDom.java,v 1.17 2002/09/19 09:15:20 antman Exp $
+Version:   $Id: XmlKeyDom.java,v 1.18 2002/11/26 12:38:58 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -13,7 +13,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.engine.RequestBroker;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.util.I_MergeDomNode;
-import org.xmlBlaster.util.XmlQoSBase;
+import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlNotPortable;
 
@@ -127,7 +127,7 @@ public class XmlKeyDom implements I_MergeDomNode
     *
     * TODO: a query Handler, allowing drivers for REGEX, XPath, SQL, etc. queries
     */
-   public final Vector parseKeyOid(SessionInfo sessionInfo, XmlKey xmlKey, XmlQoSBase qos)  throws XmlBlasterException
+   public final Vector parseKeyOid(SessionInfo sessionInfo, XmlKey xmlKey, QueryQosData qos)  throws XmlBlasterException
    {
       Vector xmlKeyVec = new Vector();
       String clientName = sessionInfo.toString();

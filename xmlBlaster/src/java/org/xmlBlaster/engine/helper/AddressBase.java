@@ -3,7 +3,7 @@ Name:      AddressBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address string including protocol
-Version:   $Id: AddressBase.java,v 1.15 2002/06/23 10:48:14 ruff Exp $
+Version:   $Id: AddressBase.java,v 1.16 2002/11/26 12:38:44 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -30,18 +30,21 @@ public abstract class AddressBase
    protected String rootTag = null;
 
    /** The unique address, e.g. the CORBA IOR string */
-   protected String address = "";
+   private String address;
 
-   public static final String DEFAULT_hostname = "";
-   protected String hostname = DEFAULT_hostname;
-   protected boolean isCardcodedHostname = false; // set to true if setHostname() was explicitly called by user
+   private String hostname;
+   protected boolean isHardcodedHostname = false; // set to true if setHostname() was explicitly called by user
 
    public static final int DEFAULT_port = 3412;
-   protected int port = DEFAULT_port;
+   private int port = DEFAULT_port;
 
    /** The unique protocol type, e.g. "IOR" */
    public static final String DEFAULT_type = "IOR";
    protected String type = DEFAULT_type;
+   
+   /** The protocol version, e.g. "1.0" */
+   public static final String DEFAULT_version = "1.0";
+   protected String version = DEFAULT_version;
    
    /** BurstMode: The time to collect messages for publish/update */
    public static final long DEFAULT_collectTime = 0L;
@@ -93,6 +96,19 @@ public abstract class AddressBase
    protected boolean useForSubjectQueue = DEFAULT_useForSubjectQueue;
 
    /**
+    * Does client whish a dispatcher plugin. 
+    * <p>
+    * Set to "undef" forces to switch off, or e.g. "Priority,1.0" to access the PriorizedDeliveryPlugin
+    * </p>
+    * <p>
+    * Setting it to 'null' (which is the default) lets the server choose the plugin
+    * </p>
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/delivery.control.plugin.html">The delivery.control.plugin requirement</a>
+    */
+   public String DEFAULT_dispatchPlugin = null;
+   protected String dispatchPlugin = DEFAULT_dispatchPlugin;
+
+   /**
     */
    public AddressBase(Global glob, String rootTag) {
       this.glob = glob;
@@ -104,7 +120,7 @@ public abstract class AddressBase
     * A nice human readable name for this address (used for logging)
     */
    public final String getName() {
-      return hostname+":"+port;
+      return getHostname()+":"+getPort();
    }
 
    /**
@@ -148,33 +164,49 @@ public abstract class AddressBase
    }
 
    /**
+    * @param version   The protocol version, e.g. "1.0"
+    */
+   public final void setVersion(String version) {
+      this.version = version;
+   }
+
+   /**
     * Updates the internal address as well. 
     * @param host An IP or DNS
     */
    public final void setHostname(String host) {
-      this.hostname = (host==null) ? "" : host;
-      if (this.hostname.length() < 1)
-         this.address = "";
-      else {
-         this.address = "http://" + this.hostname;
-         if (getPort() > 0)
-            this.address += ":" + getPort();
-      }
-      isCardcodedHostname = true;
+      initHostname(host);
+      isHardcodedHostname = true;
+   }
+
+   protected final void initHostname(String hostname) {
+      this.hostname = hostname;
+      this.address = null; // reset cache
    }
 
    /**
     * @return true if the hostname is explicitly set by user with setHostname()
     * false if it is determined automatically
     */
-   public boolean isCardcodedHostname() {
-      return isCardcodedHostname;
+   public boolean isHardcodedHostname() {
+      return isHardcodedHostname;
+   }
+
+   /**
+    * Check if a hostname is set already
+    */
+   public boolean hasHostname() {
+      return this.hostname != null;
    }
 
    /**
     * @return The Hostname, IP or "" if not known
     */
    public final String getHostname() {
+      if (this.hostname == null) {
+         this.hostname = glob.getBootstrapHostname();
+         this.address = null; // reset cache
+      }
       return this.hostname;
    }
 
@@ -184,16 +216,16 @@ public abstract class AddressBase
     */
    public final void setPort(int port) {
       this.port = port;
-      if (this.hostname.length() < 1)
-         this.address = "";
-      else {
-         this.address = "http://" + this.hostname;
-         if (getPort() > 0)
-            this.address += ":" + getPort();
-      }
+      this.address = null; // reset cache
    }
 
    public final int getPort() {
+      /*
+      if (this.port == 0) {
+         this.port = glob.getBootstrapPort();
+         this.address = null; // reset cache
+      }
+      */
       return this.port;
    }
 
@@ -212,6 +244,11 @@ public abstract class AddressBase
     * @return e.g. "IOR:00001100022...." or "et@universe.com" or ""
     */
    public final String getAddress() {
+      if (this.address == null) {
+         this.address = "http://" + getHostname();
+         if (getPort() > 0)
+            this.address += ":" + getPort();
+      }
       return address;
    }
 
@@ -221,6 +258,14 @@ public abstract class AddressBase
     */
    public final String getType() {
       return type;
+   }
+
+   /**
+    * Returns the protocol version.
+    * @return e.g. "1.0" or null
+    */
+   public final String getVersion() {
+      return version;
    }
 
    /**
@@ -292,7 +337,7 @@ public abstract class AddressBase
     * @param pingInterval The pause time between pings in millis
     */
    public void setPingInterval(long pingInterval) {
-      if (pingInterval < 0L)
+      if (pingInterval <= 0L)
          this.pingInterval = 0L;
       else if (pingInterval < 10L) {
          log.warn(ME, "pingInterval=" + pingInterval + " msec is too short, setting it to 10 millis");
@@ -422,6 +467,32 @@ public abstract class AddressBase
    }
 
    /**
+    * Specify your dispatcher plugin configuration. 
+    * <p>
+    * Set to "undef" to switch off, or to e.g. "Priority,1.0" to access the PriorizedDeliveryPlugin
+    * </p>
+    * <p>
+    * This overwrites the xmlBlaster.properties default setting e.g.:
+    * <pre>
+    * DispatchPlugin[Priority][1.0]=org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin
+    * DispatchPlugin[SlowMotion][1.0]=org.xmlBlaster.util.dispatch.plugins.motion.SlowMotion
+    * DispatchPlugin.defaultPlugin=Priority,1.0
+    * </pre>
+    * </p>
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/delivery.control.plugin.html">The delivery.control.plugin requirement</a>
+    */
+   public void setDispatchPlugin(String dispatchPlugin) {
+      this.dispatchPlugin = dispatchPlugin;
+   }
+
+   /**
+    * @return "undef" or e.g. "Priority,1.0"
+    */
+   public String getDispatchPlugin() {
+      return this.dispatchPlugin;
+   }
+
+   /**
     * Called for SAX callback start tag
     */
    public final void startElement(String uri, String localName, String name, StringBuffer character, Attributes attrs) {
@@ -439,6 +510,9 @@ public abstract class AddressBase
             for (int i = 0; i < len; i++) {
                if( attrs.getQName(i).equalsIgnoreCase("type") ) {
                   setType(attrs.getValue(i).trim());
+               }
+               else if( attrs.getQName(i).equalsIgnoreCase("version") ) {
+                  setVersion(attrs.getValue(i).trim());
                }
                else if( attrs.getQName(i).equalsIgnoreCase("hostname") ) {
                   setHostname(attrs.getValue(i).trim());
@@ -483,6 +557,9 @@ public abstract class AddressBase
                }
                else if( attrs.getQName(i).equalsIgnoreCase("useForSubjectQueue") ) {
                   this.useForSubjectQueue = new Boolean(attrs.getValue(i).trim()).booleanValue();
+               }
+               else if( attrs.getQName(i).equalsIgnoreCase("dispatchPlugin") ) {
+                  this.dispatchPlugin = attrs.getValue(i).trim();
                }
                else {
                   log.error(ME, "Ignoring unknown attribute " + attrs.getQName(i) + " in " + rootTag + " section.");
@@ -599,7 +676,9 @@ public abstract class AddressBase
       offset += extraOffset;
 
       sb.append(offset).append("<").append(rootTag).append(" type='").append(getType()).append("'");
-      if (!DEFAULT_hostname.equals(getHostname()))
+      if (getVersion() != null && !getVersion().equals(DEFAULT_version))
+          sb.append(" version='").append(getVersion()).append("'");
+      if (getHostname() != null)
           sb.append(" hostname='").append(getHostname()).append("'");
       if (DEFAULT_port != getPort())
           sb.append(" port='").append(getPort()).append("'");
@@ -615,6 +694,8 @@ public abstract class AddressBase
           sb.append(" oneway='").append(oneway()).append("'");
       if (DEFAULT_useForSubjectQueue != this.useForSubjectQueue)
           sb.append(" useForSubjectQueue='").append(this.useForSubjectQueue).append("'");
+      if (DEFAULT_dispatchPlugin != this.dispatchPlugin)
+          sb.append(" dispatchPlugin='").append(this.dispatchPlugin).append("'");
       sb.append(">");
       if (getAddress() != null)
          sb.append(offset).append("   ").append(getAddress());

@@ -49,7 +49,6 @@ import org.jaxen.dom.DOMXPath;
  *
  * @author Peter Antman
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/mime.plugin.access.xpath.html">The mime.plugin.access.xpath requirement</a>
- * @version $Revision: 1.2 $ $Date: 2002/09/30 10:02:30 $
  */
 
 public class XPathFilter implements I_Plugin, I_AccessFilter {
@@ -138,13 +137,7 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
     * @param msgUnit The message to check
     * @param query   The Query instance holding the xpath expression from your filter.<br />
     * @return true   The filter xpath expression matches the message content.
-    * @exception XmlBlasterException Is thrown on problems, for example if the MIME type
-    *            does not fit to message content.<br />
-    *            Take care throwing an exception, as the
-    *            exception is routed back to the publisher. Subscribers which where served before
-    *            may receive the update, subscribers which are served after us won't get it.
-    *            For the publisher it looks as if the publish failed completely. Probably it is
-    *            best to return 'false' instead and log the situation.
+    * @exception see I_AccessFilter#match()
     */
    public boolean match(SessionInfo publisher, SessionInfo receiver, MessageUnitWrapper msgUnitWrapper, Query query) throws XmlBlasterException {
       if (msgUnitWrapper == null) {

@@ -84,7 +84,7 @@ public:
          log_.info(me(), "Successful login");
       }
       catch (serverIdl::XmlBlasterException &ex) {
-         log_.error(me(), string(ex.reason));
+         log_.error(me(), string(ex.errorCodeStr) + ": " + string(ex.message));
          usage();
          assert(0);
       }
@@ -112,7 +112,7 @@ public:
          log_.info(me(), "Success, erased a message");
       }
       catch(serverIdl::XmlBlasterException &e) {
-         log_.error(me(), "XmlBlasterException: " + string(e.reason));
+         log_.error(me(), "XmlBlasterException: " + string(e.errorCodeStr) + ": " + string(e.message));
       }
       if (strArr.size() != 1) {
          log_.error(me(), "Erased " + lexical_cast<string>(strArr.size()) + " messages");
@@ -166,7 +166,7 @@ public:
          log_.info(me(), "Success, published a message");
       }
       catch(serverIdl::XmlBlasterException &e) {
-         log_.error(me(), "publish - XmlBlasterException: " + string(e.reason));
+         log_.error(me(), "publish - XmlBlasterException: " + string(e.errorCodeStr) + ": " + string(e.message));
          usage();
          assert(0);
       }
@@ -191,7 +191,7 @@ public:
       }
       catch(serverIdl::XmlBlasterException &e) {
          log_.error(me(), string("XmlBlasterException for trying to get ")
-                    + "a message: " + string(e.reason));
+                    + "a message: " + string(e.errorCodeStr) + ": "+ string(e.message));
          usage();
          assert(0);
       }
@@ -213,7 +213,7 @@ public:
             log_.info(me(), string("Success"));
          }
          catch(serverIdl::XmlBlasterException &e) {
-            log_.error(me(), "Exception for a not existing message" + string(e.reason));
+            log_.error(me(), "Exception for a not existing message: " + string(e.errorCodeStr) + ": "+ string(e.message));
             assert(0);
          }
       }

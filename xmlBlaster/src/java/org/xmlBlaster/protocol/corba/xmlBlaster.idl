@@ -13,7 +13,7 @@ Compile:   JacORB Java 1.2:
            COPE Perl:
               idl2perl -imp xmlBlaster.idl
 Author:    ruff@swand.lake.de
-Version:   $Id: xmlBlaster.idl,v 1.10 2002/06/25 17:41:43 ruff Exp $
+Version:   $Id: xmlBlaster.idl,v 1.11 2002/11/26 12:39:04 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _xmlBlaster_IDL_
@@ -32,8 +32,6 @@ module serverIdl
    typedef sequence<XmlType> XmlTypeArr;
 
    typedef sequence<octet> ContentType;
-   typedef sequence<string> StringArr;
-   typedef string ExceptionIdType;
 
    /**
     * This contains all informations about a Message and the Message itself.
@@ -56,8 +54,17 @@ module serverIdl
     */
    exception XmlBlasterException
    {
-      ExceptionIdType id;  // unique error code: "Modulname.ReasonID"
-      string reason;       // in English
+      string errorCodeStr;
+      string node;
+      string location;
+      string lang;
+      string message;
+      string versionInfo;
+      string timestampStr;
+      string stackTrace;
+      string embeddedMessage;
+      string transactionInfo;
+      string reserved;
    };
 
 }; // org::xmlBlaster::protocol::corba::serverIdl
@@ -235,9 +242,10 @@ module serverIdl
        *                See xmlBlaster/src/dtd/XmlKey.xml for a description
        * @param qos     Quality of Service, flags to control canceling of a subscription<br>
        *                See xmlBlaster/src/dtd/XmlQoS.xml for a description
+       * @return XML string array with the subscription id's
        * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.unSubscribe.html" target="others">the interface.unSubscribe requirement</a>
        */
-      void unSubscribe(in XmlType xmlKey, in XmlType qos)
+      XmlTypeArr unSubscribe(in XmlType xmlKey, in XmlType qos)
                                           raises(XmlBlasterException);
 
 
@@ -276,7 +284,7 @@ module serverIdl
        * @exception On severe problem an XmlBlasterException is thrown, all messages
        *            of this array should be treated as lost
        */
-      StringArr publishArr(in MessageUnitArr msgUnitArr)
+      XmlTypeArr publishArr(in MessageUnitArr msgUnitArr)
                                           raises(XmlBlasterException);
 
       /**

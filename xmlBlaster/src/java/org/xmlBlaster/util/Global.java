@@ -15,14 +15,39 @@ import org.jutils.log.LogDeviceFile;
 import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.engine.helper.Address;
+import org.xmlBlaster.engine.helper.AddressBase;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.client.PluginLoader;
+import org.xmlBlaster.util.key.I_MsgKeyFactory;
+import org.xmlBlaster.util.key.MsgKeySaxFactory;
+import org.xmlBlaster.util.key.I_QueryKeyFactory;
+import org.xmlBlaster.util.key.QueryKeySaxFactory;
+import org.xmlBlaster.util.qos.I_MsgQosFactory;
+import org.xmlBlaster.util.qos.MsgQosSaxFactory;
+import org.xmlBlaster.util.qos.I_QueryQosFactory;
+import org.xmlBlaster.util.qos.QueryQosSaxFactory;
+import org.xmlBlaster.util.qos.I_StatusQosFactory;
+import org.xmlBlaster.util.qos.StatusQosSaxFactory;
+import org.xmlBlaster.util.qos.StatusQosQuickParseFactory;
 import org.xmlBlaster.util.recorder.RecorderPluginManager;
 import org.xmlBlaster.util.classloader.ClassLoaderFactory;
+import org.xmlBlaster.util.queue.QueuePluginManager;
+import org.xmlBlaster.util.dispatch.plugins.DispatchPluginManager;
+import org.xmlBlaster.util.dispatch.DeliveryManager;
+import org.xmlBlaster.util.dispatch.DeliveryWorkerPool;
+import org.xmlBlaster.util.dispatch.DeliveryConnectionsHandler;
+import org.xmlBlaster.client.dispatch.ClientDeliveryConnectionsHandler;
+import org.xmlBlaster.client.protocol.ProtocolPluginManager;
+import org.xmlBlaster.client.protocol.CbServerPluginManager;
 import org.xmlBlaster.authentication.HttpIORServer;
 import org.xmlBlaster.util.log.LogDevicePluginManager;
 import org.xmlBlaster.util.log.I_LogDeviceFactory;
 import org.jutils.log.LogableDevice;
+
+import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.queue.jdbc.JdbcManager;
+import org.xmlBlaster.util.queue.jdbc.JdbcConnectionPool;
+import org.xmlBlaster.util.queuemsg.MsgQueueEntryFactory;
 
 import java.util.Properties;
 
@@ -37,7 +62,7 @@ import java.util.Hashtable;
 import java.util.Enumeration;
 
 import java.net.Socket;
-
+import java.sql.SQLException;
 import org.xmlBlaster.util.JAXPFactory;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -54,7 +79,7 @@ public class Global implements Cloneable
    private static Global firstInstance = null;
 
    /** Version string, please change for new releases (4 digits) */
-   private String versionDefault = "0.80dev";
+   private String versionDefault = "0.8x";
    /** This will be replaced by build.xml with the current version */
    private String version = "@version@";
    /** This will be replaced by build.xml with the build timestamp */
@@ -76,9 +101,9 @@ public class Global implements Cloneable
 
    protected String addressNormalized = null;
 
-
    // deprecated
-   protected org.xmlBlaster.util.Log log;
+   //protected org.xmlBlaster.util.Log log;
+   protected final LogChannel log;
 
    /** The xmlBlaster class loader factory */
    private ClassLoaderFactory classLoaderFactory = null;
@@ -86,8 +111,15 @@ public class Global implements Cloneable
    protected /*final*/ Map nativeCallbackDriverMap;
    /** Store objects in the scope of one client connection or server instance */
    protected /*final*/ Map objectMap;
-   protected Address bootstrapAddress = null;
-   protected PluginLoader clientSecurityLoader = null;
+   protected Address bootstrapAddress;
+   protected PluginLoader clientSecurityLoader;
+
+   protected QueuePluginManager queuePluginManager;
+
+   protected DispatchPluginManager dispatchPluginManager;
+
+   protected ProtocolPluginManager protocolPluginManager;
+   protected CbServerPluginManager cbServerPluginManager;
 
    protected RecorderPluginManager recorderPluginManager = null;
    private HttpIORServer httpServer = null;  // xmlBlaster publishes his AuthServer IOR
@@ -99,11 +131,26 @@ public class Global implements Cloneable
    protected DocumentBuilderFactory docBuilderFactory = null;
    protected TransformerFactory transformerFactory = null;
 
-   protected LogDevicePluginManager logDevicePluginManager = null;
-   protected int counter = 0;
+   protected I_MsgKeyFactory msgKeyFactory;
+   protected I_QueryKeyFactory queryKeyFactory;
+   protected I_MsgQosFactory msgQosFactory;
+   protected I_QueryQosFactory queryQosFactory;
+   protected I_StatusQosFactory statusQosFactory;
 
+   protected Timeout cbPingTimer;
+   protected Timeout burstModeTimer;
+   protected Timeout messageTimer;
+   protected Timeout jdbcConnectionPoolTimer;
+   protected DeliveryWorkerPool deliveryWorkerPool;
+
+   protected LogDevicePluginManager logDevicePluginManager = null;
    /** used to guard agains log device plugin loading making cirkular calls*/
    private boolean creatingLogInstance = false;
+
+   protected static int counter = 0;
+
+   /** a hastable keeping all JdbcManager objects: one per DB */
+   protected Hashtable jdbcQueueManagers = null;
 
    /**
     * Constructs an initial Global object.
@@ -124,7 +171,8 @@ public class Global implements Cloneable
       initId();
       logDevicePluginManager = new LogDevicePluginManager(this);
       logDefault = new LogChannel(null, getProperty());
-      log = new org.xmlBlaster.util.Log(); // old style
+      log = logDefault;
+      //log = new org.xmlBlaster.util.Log(); // old style
       initLog(logDefault);
       nativeCallbackDriverMap = Collections.synchronizedMap(new HashMap());
       objectMap = Collections.synchronizedMap(new HashMap());
@@ -184,7 +232,8 @@ public class Global implements Cloneable
       initId();
       logDevicePluginManager = new LogDevicePluginManager(this);
       logDefault = new LogChannel(null, getProperty());
-      log = new org.xmlBlaster.util.Log(); // old style
+      log = logDefault;
+      //log = new org.xmlBlaster.util.Log(); // old style
       initLog(logDefault);
       nativeCallbackDriverMap = Collections.synchronizedMap(new HashMap());
       objectMap = Collections.synchronizedMap(new HashMap());
@@ -196,6 +245,7 @@ public class Global implements Cloneable
     */
    public Global(org.xmlBlaster.util.Global utilGlob) {
       counter++;
+      log = utilGlob.getLog(null);
       shallowCopy(utilGlob);
       //Thread.currentThread().dumpStack();
    }
@@ -277,9 +327,9 @@ public class Global implements Cloneable
     */
    private void initLog(LogChannel lc) {
       String key = lc.getChannelKey();
-      boolean useOld = true;//Used to guarante some logging
+      boolean useOld = true;//Used to guaranty some logging
       
-      // There are situations where the manager is actually not there beacuse
+      // There are situations where the manager is actually not there because
       // its parent sets up logging
       if (logDevicePluginManager != null) {
          // We have to protect this part, if the plugin bootstrapping makes us
@@ -292,7 +342,7 @@ public class Global implements Cloneable
             }
             creatingLogInstance=true;
                
-            // Get the plugins for the lc.key, first try with key, then globaly
+            // Get the plugins for the lc.key, first try with key, then global
             String[] devices = null;
             if (key != null)
                devices = getProperty().get("logDevice[" + key + "]", new String[0], ",");
@@ -322,7 +372,7 @@ public class Global implements Cloneable
       }
       
       if (useOld) {
-         log.info(ME,"Using old logging behaviour");
+         if (log.TRACE) log.trace(ME,"Using old logging behaviour for '" + key + "'");
          //System.err.println("Using old logging behaviour");
          //Old behaviour
          boolean bVal = getProperty().get("logConsole", true);
@@ -346,7 +396,7 @@ public class Global implements Cloneable
 
 
       // Old logging style:
-      log.initialize(this);
+      //log.initialize(this);
    }
 
    /**
@@ -414,7 +464,7 @@ public class Global implements Cloneable
          return b;
       }
       catch (JUtilsException e) {
-         throw new XmlBlasterException(e.id, e.reason);
+         throw new XmlBlasterException(e.id, e.getMessage());
       }
    }
 
@@ -448,11 +498,11 @@ public class Global implements Cloneable
 
          if (value == true) {
             logDefault.addLogLevelChecked(logLevel);
-            Log.addLogLevel(logLevel); // deprecated
+            //Log.addLogLevel(logLevel); // deprecated
          }
          else {
             logDefault.removeLogLevelChecked(logLevel);
-            Log.removeLogLevel(logLevel); // deprecated
+            //Log.removeLogLevel(logLevel); // deprecated
          }
 
          for (Enumeration e = logChannels.elements(); e.hasMoreElements();) {
@@ -468,7 +518,7 @@ public class Global implements Cloneable
          }
       }
       catch (JUtilsException e) {
-         throw new XmlBlasterException(e.id, e.reason);
+         throw new XmlBlasterException(e.id, e.getMessage());
       }
    }
 
@@ -501,17 +551,10 @@ public class Global implements Cloneable
          return logDefault.isLoglevelEnabled(logLevel);
       }
       catch (JUtilsException e) {
-         throw new XmlBlasterException(e.id, e.reason);
+         throw new XmlBlasterException(e.id, e.getMessage());
       }
    }
 
-   /**
-    * Access the logging class.
-    * @deprecated Use getLog(String) instead, e.g. <code>LogChannel log = glob.getLog(null);</code>
-    */
-   public final org.xmlBlaster.util.Log getLog() {
-      return log;
-   }
    /**
     * private, called from constructor
     * @return -1 on error
@@ -523,7 +566,7 @@ public class Global implements Cloneable
    /**
     * private, called from constructor
     * @param args arguments to initilize the property with.
-    * @param loadPropFile if loading of xmlBlaster.properties file should be done, if false no loadning of the file is done.
+    * @param loadPropFile if loading of xmlBlaster.properties file should be done, if false no loading of the file is done.
     * @return -1 on error
     */
    private int initProps(String[] args, boolean loadPropFile) {
@@ -575,6 +618,9 @@ public class Global implements Cloneable
    {
       this.args = (args==null) ? new String[0] : args;
 
+      if (this.args != null && this.args.length > 0)
+         this.bootstrapAddress = null;   // clear cached address
+
       try {
          property.addArgs2Props(this.args);
 
@@ -584,8 +630,8 @@ public class Global implements Cloneable
          // TODO: loop through logChannels Hashtable!!!
 
          // Old style:
-         log.setLogLevel(property);   // Initialize logging as well.
-         log.initialize(this);
+         //log.setLogLevel(property);   // Initialize logging as well.
+         //log.initialize(this);
 
          return property.wantsHelp() ? 1 : 0;
       } catch (JUtilsException e) {
@@ -641,7 +687,15 @@ public class Global implements Cloneable
     * @return ""
     */
    public String getStrippedId() {
-      String strippedId = StringHelper.replaceAll(getId(), "/", "");
+      return getStrippedString(getId());
+   }
+
+
+   /**
+    * Utility method to strip any string
+    */
+   public final static String getStrippedString(String text) {
+      String strippedId = StringHelper.replaceAll(text, "/", "");
       strippedId = StringHelper.replaceAll(strippedId, ".", "_");
       strippedId = StringHelper.replaceAll(strippedId, ":", "_");
       return StringHelper.replaceAll(strippedId, "\\", "");
@@ -658,14 +712,14 @@ public class Global implements Cloneable
    /**
     * Is coded in derived engine.Global
     */
-   public String getLogPraefixDashed() {
+   public String getLogPrefixDashed() {
       return "";
    }
 
    /**
     * Is coded in derived engine.Global
     */
-   public String getLogPraefix() {
+   public String getLogPrefix() {
       return "";
    }
 
@@ -691,6 +745,8 @@ public class Global implements Cloneable
                new Global();
          }
       }
+      //System.out.println("Accessing Global.instance()");
+      //Thread.currentThread().dumpStack();
       return firstInstance;
    }
 
@@ -726,8 +782,13 @@ public class Global implements Cloneable
          g.bootstrapAddress = null;
          g.clientSecurityLoader = null;
          g.recorderPluginManager = null;
+         g.msgQosFactory = this.msgQosFactory;
+         g.queryQosFactory = this.queryQosFactory;
+         g.statusQosFactory = this.statusQosFactory;
+         g.dispatchPluginManager = null; // Force a new instance of DispatchPluginManager (which has its separate cache of plugins)
+
          if (g.id != id)
-            log.error(ME, "g.id=" + g.id + " and id=" + id);
+            getLog("core").error(ME, "g.id=" + g.id + " and id=" + id);
          return g;
       }
       catch (CloneNotSupportedException e) {
@@ -744,12 +805,83 @@ public class Global implements Cloneable
    }
 
    /**
-    * The command line arguments only. 
+    * The command line arguments only.
     * @return the arguments, is never null
     */
    public final String[] getArgs()
    {
       return this.args;
+   }
+
+   /**
+    * Return a factory parsing key XML strings from publish() and update() messages.
+    */
+   public final I_MsgKeyFactory getMsgKeyFactory() {
+      if (this.msgKeyFactory == null) {
+         synchronized (this) {
+            if (this.msgKeyFactory == null) {
+               this.msgKeyFactory = new MsgKeySaxFactory(this);
+            }
+         }
+      }
+      return this.msgKeyFactory;
+   }
+
+   /**
+    * Return a factory parsing key XML strings from subscribe() and other query invocations. 
+    */
+   public final I_QueryKeyFactory getQueryKeyFactory() {
+      if (this.queryKeyFactory == null) {
+         synchronized (this) {
+            if (this.queryKeyFactory == null) {
+               this.queryKeyFactory = new QueryKeySaxFactory(this);
+            }
+         }
+      }
+      return this.queryKeyFactory;
+   }
+
+   /**
+    * Return a factory parsing QoS XML strings from publish() and update() messages.
+    */
+   public final I_MsgQosFactory getMsgQosFactory() {
+      if (this.msgQosFactory == null) {
+         synchronized (this) {
+            if (this.msgQosFactory == null) {
+               this.msgQosFactory = new MsgQosSaxFactory(this);
+            }
+         }
+      }
+      return this.msgQosFactory;
+   }
+
+   /**
+    * Return a factory parsing QoS XML strings from publish() and update() messages.
+    */
+   public final I_QueryQosFactory getQueryQosFactory() {
+      if (this.queryQosFactory == null) {
+         synchronized (this) {
+            if (this.queryQosFactory == null) {
+               this.queryQosFactory = new QueryQosSaxFactory(this);
+            }
+         }
+      }
+      return this.queryQosFactory;
+   }
+
+   /**
+    * Return a factory parsing QoS XML strings from subcribe(), unSubscribe() and erase() returns. 
+    */
+   public final I_StatusQosFactory getStatusQosFactory() {
+      if (this.statusQosFactory == null) {
+         synchronized (this) {
+            if (this.statusQosFactory == null) {
+               //this.statusQosFactory = new StatusQosSaxFactory(this);
+               this.statusQosFactory = new StatusQosQuickParseFactory(this);
+            }
+         }
+      }
+      return this.statusQosFactory;
    }
 
    /**
@@ -794,7 +926,8 @@ public class Global implements Cloneable
     * This is helpful if you have more than one XmlBlasterConnection or cluster nodes
     * running in the same JVM
     *
-    * @param key  e.g. "SOCKET192.168.2.2:7604" from 'cbAddr.getType() + cbAddr.getAddress()'
+    * @param key  e.g. <i>"SOCKET192.168.2.2:7604"</i> from 'cbAddr.getType() + cbAddr.getAddress()'<br />
+    *             or <i>"/xmlBlaster/I_Authenticate"</i>
     * @return The instance of this object
     */
    public final Object getObjectEntry(String key)
@@ -851,22 +984,41 @@ public class Global implements Cloneable
       if (bootstrapAddress == null) {
          if (log.CALL) log.call(ME, "Entering getBootstrapAddress(), trying to resolve one ...");
          bootstrapAddress = new Address(this);
-         boolean supportOldStyle = true; // for a while we support the old style -iorHost and -iorPort
-         if (supportOldStyle) {
-            String iorHost = getProperty().get("iorHost", getLocalIP());
-            int iorPort = getProperty().get("iorPort", Constants.XMLBLASTER_PORT);
-            bootstrapAddress.setHostname(getProperty().get("hostname", iorHost));
-            bootstrapAddress.setPort(getProperty().get("port", iorPort));
-         }
-         else {
-            bootstrapAddress.setHostname(getProperty().get("hostname", getLocalIP()));
-            bootstrapAddress.setPort(getProperty().get("port", Constants.XMLBLASTER_PORT));
-         }
+         bootstrapAddress.setHostname(getBootstrapHostname());
+         bootstrapAddress.setPort(getBootstrapPort());
          bootstrapAddress.setAddress("http://" + bootstrapAddress.getHostname() + ":" + bootstrapAddress.getPort());
          if (log.TRACE) log.trace(ME, "Initialized bootstrapAddress to host=" + bootstrapAddress.getHostname() +
                         " port=" + bootstrapAddress.getPort() + ": " + bootstrapAddress.getAddress());
       }
       return bootstrapAddress;
+   }
+
+   /**
+    * Please prefer getBootstrapAddress().getHostname() as this is cached and better performing
+    */
+   public final String getBootstrapHostname() {
+      boolean supportOldStyle = true; // for a while we support the old style -iorHost and -iorPort
+      if (supportOldStyle) {
+         String iorHost = getProperty().get("iorHost", getLocalIP());
+         return getProperty().get("hostname", iorHost);
+      }
+      else {
+         return getProperty().get("hostname", getLocalIP());
+      }
+   }
+
+   /**
+    * Please prefer getBootstrapAddress().getPort() as this is cached and better performing
+    */
+   public final int getBootstrapPort() {
+      boolean supportOldStyle = true; // for a while we support the old style -iorHost and -iorPort
+      if (supportOldStyle) {
+         int iorPort = getProperty().get("iorPort", Constants.XMLBLASTER_PORT);
+         return getProperty().get("port", iorPort);
+      }
+      else {
+         return getProperty().get("port", Constants.XMLBLASTER_PORT);
+      }
    }
 
    /**
@@ -929,6 +1081,7 @@ public class Global implements Cloneable
    public String accessFromInternalHttpServer(Address address, String urlPath, boolean verbose) throws XmlBlasterException
    {
       if (logDefault.CALL) logDefault.call(ME, "Entering accessFromInternalHttpServer(" + ((address==null)?"null":address.getAddress()) + ") ...");
+      //log.info(ME, "accessFromInternalHttpServer address=" + address.toXml());
       Address addr = address;
       if (addr != null && addr.getPort() > 0) {
          if (addr.getHostname() == null || addr.getHostname().length() < 1) {
@@ -964,11 +1117,13 @@ public class Global implements Cloneable
       catch(MalformedURLException e) {
          String text = "XmlBlaster not found on host " + addr.getHostname() + " and port " + addr.getPort() + ".";
          logDefault.error(ME, text + e.toString());
+         e.printStackTrace();
          throw new XmlBlasterException(ME+"NoHttpServer", text);
       }
       catch(IOException e) {
          if (verbose) logDefault.warn(ME, "XmlBlaster not found on host " + addr.getHostname() + " and port " + addr.getPort() + ": " + e.toString());
-         throw new XmlBlasterException(ME+"NoHttpServer", "XmlBlaster not found on host " + addr.getHostname() + " and port " + addr.getPort() + ".");
+         throw new XmlBlasterException(this, ErrorCode.COMMUNICATION_NOCONNECTION, ME+"NoHttpServer",
+                   "XmlBlaster not found on host " + addr.getHostname() + " and port " + addr.getPort() + ".", e);
       }
    }
 
@@ -982,25 +1137,27 @@ public class Global implements Cloneable
     */
    public final String getLocalIP()
    {
-      if (ip_addr == null) {
-         ip_addr = getBootstrapAddress().getHostname();
-         if (ip_addr == null || ip_addr.length() < 1) {
+      if (this.ip_addr == null) {
+         if (getBootstrapAddress().hasHostname()) { // check if hostname is available to avoid infinit looping
+            this.ip_addr = getBootstrapAddress().getHostname();
+         }
+         else {
             try {
-               ip_addr = java.net.InetAddress.getLocalHost().getHostAddress(); // e.g. "204.120.1.12"
+               this.ip_addr = java.net.InetAddress.getLocalHost().getHostAddress(); // e.g. "204.120.1.12"
             } catch (java.net.UnknownHostException e) {
                logDefault.warn(ME, "Can't determine local IP address, try e.g. '-hostname 192.168.10.1' on command line: " + e.toString());
             }
-            if (ip_addr == null) ip_addr = "127.0.0.1";
+            if (this.ip_addr == null) this.ip_addr = "127.0.0.1";
          }
       }
-      return ip_addr;
+      return this.ip_addr;
    }
 
    /**
     * Needed by java client helper classes to load
     * the security plugin
     */
-   public PluginLoader getClientSecurityPluginLoader() {
+   public final PluginLoader getClientSecurityPluginLoader() {
       synchronized (PluginLoader.class) {
          if (clientSecurityLoader == null)
             clientSecurityLoader = new PluginLoader(this);
@@ -1018,6 +1175,26 @@ public class Global implements Cloneable
             recorderPluginManager = new RecorderPluginManager(this);
       }
       return recorderPluginManager;
+   }
+
+   public final QueuePluginManager getQueuePluginManager() {
+      if (queuePluginManager == null) {
+         synchronized (QueuePluginManager.class) {
+            if (queuePluginManager == null)
+               queuePluginManager = new QueuePluginManager(this);
+         }
+      }
+      return queuePluginManager;
+   }
+
+   public final DispatchPluginManager getDispatchPluginManager() {
+      if (dispatchPluginManager == null) {
+         synchronized (DispatchPluginManager.class) {
+            if (dispatchPluginManager == null)
+               dispatchPluginManager = new DispatchPluginManager(this);
+         }
+      }
+      return dispatchPluginManager;
    }
 
    /**
@@ -1071,13 +1248,13 @@ public class Global implements Cloneable
             if (log.DUMP) log.dump(ME, getProperty().toXml());
             saxFactory = JAXPFactory.newSAXParserFactory(
                getProperty().get(
-                  "javax.xml.parsers.SAXParserFactory", 
+                  "javax.xml.parsers.SAXParserFactory",
                   "org.apache.crimson.jaxp.SAXParserFactoryImpl")
                );
          } catch (FactoryConfigurationError e) {
             throw new XmlBlasterException(ME+"SAXParserFactoryError",e.getMessage());
          } // end of try-catch
-         
+
       } // end of if ()
       return saxFactory;
    }
@@ -1092,7 +1269,7 @@ public class Global implements Cloneable
             if (log.DUMP) log.dump(ME, getProperty().toXml());
             docBuilderFactory =JAXPFactory.newDocumentBuilderFactory(
                getProperty().get(
-                  "javax.xml.parsers.DocumentBuilderFactory", 
+                  "javax.xml.parsers.DocumentBuilderFactory",
                   "org.apache.crimson.jaxp.DocumentBuilderFactoryImpl")
                );
          } catch (FactoryConfigurationError e) {
@@ -1111,7 +1288,7 @@ public class Global implements Cloneable
          try {
             transformerFactory =JAXPFactory.newTransformerFactory(
                getProperty().get(
-                  "javax.xml.transform.TransformerFactory", 
+                  "javax.xml.transform.TransformerFactory",
                   "org.apache.xalan.processor.TransformerFactoryImpl")
                );
          } catch (TransformerFactoryConfigurationError e) {
@@ -1119,6 +1296,219 @@ public class Global implements Cloneable
          } // end of try-catch
       } // end of if ()
       return transformerFactory;
+   }
+
+
+
+   /**
+    * Returns a JdbcManager for a specific queue. It strips the queueId to
+    * find out to which manager it belongs. If such a manager does not exist
+    * yet, it is created and initialized.
+    * A queueId must be of the kind: cb:some/id/or/someother
+    * where the important requirement here is that it contains a ':' character.
+    * text on the left side of the separator (in this case 'cb') tells which
+    * kind of queue it is: for example a callback queue (cb) or a client queue.
+    */
+   public synchronized JdbcManager getJdbcQueueManager(String queueId)
+      throws XmlBlasterException {
+
+      String location = ME + "/Queue '" + queueId + "'";
+
+      if (this.jdbcQueueManagers == null) this.jdbcQueueManagers = new Hashtable();
+
+      int pos = queueId.indexOf(":");
+      if (pos < 0)
+         throw new XmlBlasterException(location, "getJdbcQueueManager: separator ':' not found in the queueId '" + queueId + "' please change it to a correct queueId");
+
+      String managerName = queueId.substring(0, pos);
+
+      Object obj = this.jdbcQueueManagers.get(managerName);
+      JdbcManager manager = null;
+      if (obj == null) {
+
+         MsgQueueEntryFactory factory = new MsgQueueEntryFactory();
+         factory.initialize(this, managerName);
+         JdbcConnectionPool pool = new JdbcConnectionPool();
+         try {
+            pool.initialize(this, managerName + ".queue.persistent");
+            manager = new JdbcManager(pool, factory);
+            pool.setConnectionListener(manager);
+            manager.setUp();
+         }
+         catch (ClassNotFoundException ex) {
+            this.log.error(location, "getJdbcQueueManager class not found: " + ex.getMessage());
+            throw new XmlBlasterException(location, "getJdbcQueueManager class not found: " + ex.getMessage());
+         }
+         catch (SQLException ex) {
+            this.log.error(location, "getJdbcQueueManager SQL exception: " + ex.getMessage());
+            throw new XmlBlasterException(location, "getJdbcQueueManager SQL exception: " + ex.getMessage());
+         }
+
+         this.jdbcQueueManagers.put(managerName, manager);
+      }
+      else manager = (JdbcManager)obj;
+
+      try {
+         if (!manager.getPool().isInitialized())
+            manager.getPool().initialize(this, managerName + ".queue.persistent");
+      }
+      catch (ClassNotFoundException ex) {
+         throw new XmlBlasterException(location, "getJdbcQueueManager: class not found when initializing the connection pool" + ex.getMessage());
+      }
+      catch (SQLException ex) {
+         throw new XmlBlasterException(location, "getJdbcQueueManager: sql exception when initializing the connection pool: " + ex.getMessage());
+      }
+      return manager;
+   }
+
+
+   /**
+    * This notation is URLEncoder since JDK 1.4.
+    * To avoid deprecation warnings
+    * at many places and support JDK < 1.4 we provide it here
+    * and simply map it to the old encode(String)
+    */
+   public static String encode(String s, String enc) {
+      return java.net.URLEncoder.encode(s);
+   }
+
+   /**
+    * This notation is URLDecoder since JDK 1.4.
+    * To avoid deprecation warnings
+    * at many places and support JDK < 1.4 we provide it here
+    * and simply map it to the old encode(String)
+    */
+   public static String decode(String s, String enc) {
+      return java.net.URLDecoder.decode(s);
+   }
+
+   /**
+    * Access the handle of the burst mode timer thread. 
+    * @return The Timeout instance
+    */
+   public final ProtocolPluginManager getProtocolPluginManager() {
+      if (this.protocolPluginManager == null) {
+         synchronized(this) {
+            if (this.protocolPluginManager == null)
+               this.protocolPluginManager = new ProtocolPluginManager(this);
+         }
+      }
+      return this.protocolPluginManager;
+   }
+
+   /**
+    * Access the handle of the burst mode timer thread. 
+    * @return The Timeout instance
+    */
+   public final CbServerPluginManager getCbServerPluginManager() {
+      if (this.cbServerPluginManager == null) {
+         synchronized(this) {
+            if (this.cbServerPluginManager == null)
+               this.cbServerPluginManager = new CbServerPluginManager(this);
+         }
+      }
+      return this.cbServerPluginManager;
+   }
+
+   /**
+    * Access the handle of the burst mode timer thread. 
+    * @return The Timeout instance
+    */
+   public final Timeout getBurstModeTimer() {
+      if (this.burstModeTimer == null) {
+         synchronized(this) {
+            if (this.burstModeTimer == null)
+               this.burstModeTimer = new Timeout("XmlBlaster.BurstmodeTimer");
+         }
+      }
+      return this.burstModeTimer;
+   }
+
+   /**
+    * Access the handle of the callback ping timer thread. 
+    * @return The Timeout instance
+    */
+   public final Timeout getCbPingTimer() {
+      if (this.cbPingTimer == null) {
+         synchronized(this) {
+            if (this.cbPingTimer == null)
+               this.cbPingTimer = new Timeout("XmlBlaster.CbPingTimer");
+         }
+      }
+      return this.cbPingTimer;
+   }
+
+   /**
+    * Access the handle of the message expiry timer thread. 
+    * @return The Timeout instance
+    */
+   public final Timeout getMessageTimer() {
+      if (this.messageTimer == null) {
+         synchronized(this) {
+            if (this.messageTimer == null)
+               this.messageTimer = new Timeout("XmlBlaster.MessageTimer");
+         }
+      }
+      return this.messageTimer;
+   }
+
+
+   /**
+    * Access the handle of the jdbcConnectionPool timer (the timer for the
+    * polling when the connection has been lost).
+    * @return The Timeout instance
+    */
+   public final Timeout getJdbcConnectionPoolTimer() {
+      if (this.jdbcConnectionPoolTimer == null) {
+         synchronized(this) {
+            if (this.jdbcConnectionPoolTimer == null)
+               this.jdbcConnectionPoolTimer = new Timeout("XmlBlaster.JdbcConnectionPoolTimer");
+         }
+      }
+      return this.jdbcConnectionPoolTimer;
+   }
+
+
+   /**
+    * Access the handle of the callback thread pool. 
+    * @return The DeliveryWorkerPool instance
+    */
+   public final DeliveryWorkerPool getDeliveryWorkerPool() {
+      if (this.deliveryWorkerPool == null) {
+         synchronized(this) {
+            if (this.deliveryWorkerPool == null)
+               this.deliveryWorkerPool = new DeliveryWorkerPool(this);
+         }
+      }
+      return this.deliveryWorkerPool;
+   }
+
+   /**
+    * Returns the client access layer implementations 'ClientDeliveryConnectionsHandler'
+    */
+   public DeliveryConnectionsHandler createDeliveryConnectionsHandler(DeliveryManager deliveryManager, AddressBase[] addrArr) throws XmlBlasterException {
+      return new ClientDeliveryConnectionsHandler(this, deliveryManager, addrArr);
+   }
+
+   public void shutdown() { 
+      log.info(ME, "Destroying global handle");
+      if (deliveryWorkerPool != null) {
+         deliveryWorkerPool.shutdown();
+         // registered itself to Runlevel changes deliveryWorkerPool.shutdown();?
+         deliveryWorkerPool = null;
+      }
+      if (burstModeTimer != null) {
+         burstModeTimer.shutdown();
+         burstModeTimer = null;
+      }
+      if (cbPingTimer != null) {
+         cbPingTimer.shutdown();
+         cbPingTimer = null;
+      }
+      if (messageTimer != null) {
+         messageTimer.shutdown();
+         messageTimer = null;
+      }
    }
 
    /**

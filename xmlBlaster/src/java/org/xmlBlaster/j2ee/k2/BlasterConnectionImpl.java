@@ -21,9 +21,8 @@ import javax.resource.ResourceException;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.client.PublishRetQos;
-import org.xmlBlaster.client.SubscribeRetQos;
-import org.xmlBlaster.client.EraseRetQos;
+import org.xmlBlaster.client.qos.PublishReturnQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
 
 import org.xmlBlaster.j2ee.k2.client.BlasterConnection;
 
@@ -75,10 +74,10 @@ public class BlasterConnectionImpl implements BlasterConnection {
     /**
      * Publish one message
      */
-    public PublishRetQos publish(MessageUnit msgUnit)
+    public PublishReturnQos publish(MessageUnit msgUnit)
         throws XmlBlasterException {
         checkSanity();
-        PublishRetQos ret = null;
+        PublishReturnQos ret = null;
         try {
             ret = mc.getBlasterConnection().publish(msgUnit);
         }catch(XmlBlasterException ex) {
@@ -99,10 +98,10 @@ public class BlasterConnectionImpl implements BlasterConnection {
     /**
      * Publish one or more message
      */
-    public PublishRetQos[] publishArr(MessageUnit[] msgUnitArr) 
+    public PublishReturnQos[] publishArr(MessageUnit[] msgUnitArr) 
         throws  XmlBlasterException{
         checkSanity();
-        PublishRetQos[] ret = null;
+        PublishReturnQos[] ret = null;
         try {
             ret = mc.getBlasterConnection().publishArr(msgUnitArr);
         }catch(XmlBlasterException ex) {
@@ -123,10 +122,10 @@ public class BlasterConnectionImpl implements BlasterConnection {
     /**
      * Erase message(s), I think
      */
-    public EraseRetQos[] erase(String xmlKey,String qos) 
+    public EraseReturnQos[] erase(String xmlKey,String qos) 
         throws XmlBlasterException {
         checkSanity();
-        EraseRetQos[] ret = null;
+        EraseReturnQos[] ret = null;
         try {
             ret = mc.getBlasterConnection().erase(xmlKey,qos);
         }catch(XmlBlasterException ex) {

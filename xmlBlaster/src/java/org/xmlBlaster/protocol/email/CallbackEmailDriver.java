@@ -3,15 +3,16 @@ Name:      CallbackEmailDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using email
-Version:   $Id: CallbackEmailDriver.java,v 1.23 2002/09/13 23:18:09 ruff Exp $
+Version:   $Id: CallbackEmailDriver.java,v 1.24 2002/11/26 12:39:06 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.email;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.protocol.I_CallbackDriver;
-import org.xmlBlaster.engine.queue.MsgQueueEntry;
+import org.xmlBlaster.util.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.Constants;
@@ -94,9 +95,10 @@ public class CallbackEmailDriver implements I_CallbackDriver
    /**
     * This sends the update to the client.
     */
-   public final String[] sendUpdate(MsgQueueEntry[] msg) throws XmlBlasterException
+   public final String[] sendUpdate(MsgQueueUpdateEntry[] msg) throws XmlBlasterException
    {
-      if (msg == null || msg.length < 1) throw new XmlBlasterException(ME, "Illegal update argument");
+      if (msg == null || msg.length < 1) 
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal sendUpdate() argument");
       if (log.TRACE) log.trace(ME, "xmlBlaster.update(" + msg.length + ") to " + callbackAddress.getSessionId());
       try {
          String smtpHost = glob.getProperty().get("EmailDriver.smtpHost", "localhost");
@@ -128,9 +130,11 @@ public class CallbackEmailDriver implements I_CallbackDriver
             ret[ii] = Constants.RET_OK; // "<qos><state id='OK'/></qos>";
          return ret;
       } catch (Throwable e) {
+         // ErrorCode.USER* errors can't arrive here
+
          String str = "Sorry, email callback failed, no mail sent to " + callbackAddress.getAddress() + ": " + e.toString();
          log.warn(ME + ".EmailSendError", str);
-         throw new XmlBlasterException(ME + ".EmailSendError", str);
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, str);
       }
    }
 
@@ -138,7 +142,7 @@ public class CallbackEmailDriver implements I_CallbackDriver
     * The oneway variant, without return value. 
     * @exception XmlBlasterException Is never from the client (oneway).
     */
-   public void sendUpdateOneway(MsgQueueEntry[] msg) throws XmlBlasterException
+   public void sendUpdateOneway(MsgQueueUpdateEntry[] msg) throws XmlBlasterException
    {
       sendUpdate(msg);
    }
@@ -156,7 +160,7 @@ public class CallbackEmailDriver implements I_CallbackDriver
       return "";
    }
 
-   private String getMailBody(MsgQueueEntry[] msg) throws XmlBlasterException
+   private String getMailBody(MsgQueueUpdateEntry[] msg) throws XmlBlasterException
    {
       StringBuffer sb = new StringBuffer();
       String offset = "\n";
@@ -164,7 +168,7 @@ public class CallbackEmailDriver implements I_CallbackDriver
       sb.append(offset).append("<xmlBlaster>");
       for (int ii=0; ii<msg.length; ii++) {
          MessageUnit msgUnit = msg[ii].getMessageUnit();
-         sb.append(offset).append(msgUnit.getXmlKey()).append("\n");
+         sb.append(offset).append(msgUnit.getKey()).append("\n");
          sb.append(offset).append("   <content><![CDATA[").append(new String(msgUnit.getContent())).append("]]></content>");
          sb.append(offset).append(msgUnit.getQos());
       }

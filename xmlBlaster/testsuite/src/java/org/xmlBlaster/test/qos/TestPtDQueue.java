@@ -3,7 +3,7 @@ Name:      TestPtDQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtDQueue.java,v 1.2 2002/09/13 23:18:28 ruff Exp $
+Version:   $Id: TestPtDQueue.java,v 1.3 2002/11/26 12:40:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -12,8 +12,8 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
@@ -87,7 +87,7 @@ public class TestPtDQueue extends TestCase implements I_Callback
       catch (XmlBlasterException e) {
           log.error(ME, e.toString());
           e.printStackTrace();
-          assertTrue("login - XmlBlasterException: " + e.reason, false);
+          assertTrue("login - XmlBlasterException: " + e.getMessage(), false);
       }
    }
 
@@ -127,7 +127,7 @@ public class TestPtDQueue extends TestCase implements I_Callback
          senderContent = "Hi " + receiverName + ", who are you? " + senderName;
          MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), qos);
          try {
-            publishOid = senderConnection.publish(msgUnit).getOid();
+            publishOid = senderConnection.publish(msgUnit).getKeyOid();
             log.error(ME, "Publishing to a not logged in client should throw an exception, forceQueuing is not set");
             assertTrue("Publishing to a not logged in client should throw an exception, forceQueuing is not set", false);
          } catch(XmlBlasterException e) {
@@ -155,11 +155,11 @@ public class TestPtDQueue extends TestCase implements I_Callback
          senderContent = "Hi " + receiverName + ", who are you? " + senderName;
          MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), qos);
          try {
-            publishOid = senderConnection.publish(msgUnit).getOid();
+            publishOid = senderConnection.publish(msgUnit).getKeyOid();
             log.info(ME, "Sending done, returned oid=" + publishOid);
          } catch(XmlBlasterException e) {
-            log.error(ME, "publish() XmlBlasterException: " + e.reason);
-            assertTrue("publish - XmlBlasterException: " + e.reason, false);
+            log.error(ME, "publish() XmlBlasterException: " + e.getMessage());
+            assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
          }
 
          waitOnUpdate(1000L);
@@ -173,7 +173,7 @@ public class TestPtDQueue extends TestCase implements I_Callback
          } catch (XmlBlasterException e) {
              log.error(ME, e.toString());
              e.printStackTrace();
-             assertTrue("login - XmlBlasterException: " + e.reason, false);
+             assertTrue("login - XmlBlasterException: " + e.getMessage(), false);
              return;
          }
 
@@ -194,8 +194,8 @@ public class TestPtDQueue extends TestCase implements I_Callback
 
       numReceived += 1;
 
-      assertEquals("Wrong sender", senderName, updateQos.getSender());
-      assertEquals("Wrong oid of message returned", publishOid, updateKey.getUniqueKey());
+      assertEquals("Wrong sender", senderName, updateQos.getSender().getLoginName());
+      assertEquals("Wrong oid of message returned", publishOid, updateKey.getOid());
       assertEquals("Message content is corrupted", new String(senderContent), new String(content));
 
       messageArrived = true;

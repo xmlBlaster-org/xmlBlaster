@@ -3,7 +3,13 @@ package org.xmlBlaster.test.memoryleak;
 // xmlBlaster/demo/javaclients/PublishErase.java
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.*;
-import org.xmlBlaster.client.*;
+import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.client.key.EraseKey;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.PublishQos;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.qos.EraseQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
@@ -46,8 +52,8 @@ public class PublishErase
          });  // Login to xmlBlaster, default handler for updates
 
          String xmlKey = null;
-         PublishQosWrapper qw = new PublishQosWrapper();
-         EraseQosWrapper eq = new EraseQosWrapper();
+         PublishQos qw = new PublishQos(glob);
+         EraseQos eq = new EraseQos(glob);
          System.out.println("qos = " + qw.toXml() );
          byte[] b = new byte[1024];
          long lCount = 0L;
@@ -60,8 +66,8 @@ public class PublishErase
 
             try { Thread.currentThread().sleep(5L); } catch( InterruptedException i) {}
 
-            EraseKeyWrapper ek = new EraseKeyWrapper("" + lCount);
-            EraseRetQos[] er = con.erase(ek.toXml(), eq.toXml());
+            EraseKey ek = new EraseKey(glob, "" + lCount);
+            EraseReturnQos[] er = con.erase(ek.toXml(), eq.toXml());
          
             // System.out.println(new Timestamp(System.currentTimeMillis())+":"+lCount);
             if ((lCount % 1000L) == 0) {

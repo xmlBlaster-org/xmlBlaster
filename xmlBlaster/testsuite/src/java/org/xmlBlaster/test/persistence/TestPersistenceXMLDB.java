@@ -3,7 +3,7 @@ Name:      TestPersistenceXMLDB.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing durable messages using dbXMLDriver Persistence
-Version:   $Id: TestPersistenceXMLDB.java,v 1.3 2002/09/15 18:58:10 ruff Exp $
+Version:   $Id: TestPersistenceXMLDB.java,v 1.4 2002/11/26 12:40:36 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.persistence;
 
@@ -13,8 +13,8 @@ import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.engine.helper.Constants;
@@ -193,12 +193,12 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
 
       MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), qos);
       try {
-         String returnedOid = sc.publish(msgUnit).getOid();
+         String returnedOid = sc.publish(msgUnit).getKeyOid();
          assertEquals("Returned oid is invalid", publishOid, returnedOid);
          log.info(ME, "Sending of '" + senderContent + "' done, returned oid '" + publishOid + "'");
       } catch(XmlBlasterException e) {
-         log.error(ME, "publish() XmlBlasterException: " + e.reason);
-         assertTrue("publish - XmlBlasterException: " + e.reason, false);
+         log.error(ME, "publish() XmlBlasterException: " + e.getMessage());
+         assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
    } // end of sendDurable
 
@@ -216,7 +216,7 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
       try {
          sc.subscribe(xmlKeySub, "<qos></qos>");
       } catch(XmlBlasterException e2) {
-         log.warn(ME, "XmlBlasterException: " + e2.reason);
+         log.warn(ME, "XmlBlasterException: " + e2.getMessage());
       }
       //log.trace(ME, "Subscribed to '" + xmlKeySub + "' ...");
    } // end of subscribe
@@ -260,8 +260,8 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
       log.plain("content", (new String(content)).toString());
       log.plain("UpdateQos", updateQos.toXml());
 
-      assertEquals("Wrong sender", senderName, updateQos.getSender());
-      assertEquals("Wrong oid of message returned", publishOid, updateKey.getUniqueKey());
+      assertEquals("Wrong sender", senderName, updateQos.getSender().getLoginName());
+      assertEquals("Wrong oid of message returned", publishOid, updateKey.getOid());
       assertEquals("Message content is corrupted", new String(senderContent), new String(content));
       return "";
    }

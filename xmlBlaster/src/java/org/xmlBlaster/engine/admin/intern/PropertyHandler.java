@@ -38,7 +38,7 @@ final public class PropertyHandler implements I_CommandHandler, I_Plugin {
       this.glob = glob;
       this.log = this.glob.getLog("admin");
       this.commandManager = commandManager;
-      this.ME = "PropertyHandler" + this.glob.getLogPraefixDashed();
+      this.ME = "PropertyHandler" + this.glob.getLogPrefixDashed();
       this.commandManager.register("sysprop", this);
       log.info(ME, "Property administration plugin is initialized");
    }
@@ -119,6 +119,7 @@ final public class PropertyHandler implements I_CommandHandler, I_Plugin {
       if (cmd.getTail() == null)
          throw new XmlBlasterException(ME, "Please pass a command which has a valid property added, '" + cmd.getCommand() + "' is too short, aborted request.");
 
+      /*
       String cmdString = cmd.getTail().trim();
       if (cmdString.startsWith("?"))
          cmdString = cmdString.substring(1);
@@ -129,6 +130,9 @@ final public class PropertyHandler implements I_CommandHandler, I_Plugin {
 
       String key = cmdString.substring(0,equalsIndex).trim();
       String value = cmdString.substring(equalsIndex+1);
+      */
+      String key = cmd.getKey();
+      String value = cmd.getValue();
          
       if (isLogLevelRequest(key)) {
          boolean bool = glob.changeLogLevel(key, value.trim());
@@ -142,7 +146,7 @@ final public class PropertyHandler implements I_CommandHandler, I_Plugin {
             return ret;
          }
          catch (JUtilsException e) {
-            throw new XmlBlasterException(e.id, e.reason);
+            throw new XmlBlasterException(e.id, e.getMessage());
          }
       }
    }

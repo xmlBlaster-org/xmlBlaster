@@ -2,8 +2,6 @@
 Name:      TestFailSavePing.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Testing publish()
-Version:   $Id: TestFailSavePing.java,v 1.2 2002/09/13 23:18:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -12,13 +10,14 @@ import org.jutils.init.Property;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.client.PublishQosWrapper;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
-import org.xmlBlaster.client.EraseRetQos;
+import org.xmlBlaster.client.qos.PublishQos;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_ConnectionProblems;
 import org.xmlBlaster.engine.helper.Address;
@@ -138,9 +137,9 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
                       "</key>";
       String qos = "<qos></qos>";
       try {
-         EraseRetQos[] arr = con.erase(xmlKey, qos);
+         EraseReturnQos[] arr = con.erase(xmlKey, qos);
          assertEquals("Wrong number of message erased", 1, arr.length);
-      } catch(XmlBlasterException e) { assertTrue("tearDown - XmlBlasterException: " + e.reason, false); }
+      } catch(XmlBlasterException e) { assertTrue("tearDown - XmlBlasterException: " + e.getMessage(), false); }
 
       try { Thread.currentThread().sleep(500L); } catch( InterruptedException i) {}    // Wait some time
       con.disconnect(null);
@@ -169,8 +168,8 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
          log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
          assertTrue("returned null subscribeOid", subscribeOid != null);
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.reason);
-         assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
+         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
       }
    }
 
@@ -189,7 +188,7 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
                       "   </TestFailSavePing-AGENT>" +
                       "</key>";
       String content = "" + counter;
-      PublishQosWrapper qosWrapper = new PublishQosWrapper(); // == "<qos></qos>"
+      PublishQos qosWrapper = new PublishQos(glob); // == "<qos></qos>"
       MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes(), qosWrapper.toXml());
 
       con.publish(msgUnit);
@@ -203,7 +202,7 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
    public void testFailSave()
    {
       testSubscribe();
-      try { Thread.currentThread().sleep(200L); } catch( InterruptedException i) {}
+      try { Thread.currentThread().sleep(2000L); } catch( InterruptedException i) {}
       EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
       try { Thread.currentThread().sleep(3000L); } catch( InterruptedException i) {}    // Wait some time, ping should activate login polling
 
@@ -236,12 +235,12 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
          assertEquals("numReceived is wrong", 1, numReceived);
       }
       catch(XmlBlasterException e) {
-         if (e.id.equals("TryingReconnect"))
-            log.warn(ME, e.id + " exception: Lost connection, my connection layer is polling");
-         else if (e.id.equals("NoConnect"))
+         if (e.getErrorCode() == ErrorCode.COMMUNICATION_NOCONNECTION_POLLING)
+            log.warn(ME, "Lost connection, my connection layer is polling: " + e.getMessage());
+         else if (e.getErrorCode() == ErrorCode.COMMUNICATION_NOCONNECTION_DEAD)
             assertTrue("Lost connection, my connection layer is not polling", false);
          else
-            assertTrue("Publishing problems id=" + e.id + ": " + e.reason, false);
+            assertTrue("Publishing problems: " + e.getMessage(), false);
       }
 
       con.resetQueue(); // discard messages (dummy)
@@ -266,15 +265,15 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      log.info(ME, "Receiving update of message oid=" + updateKey.getUniqueKey() + " ...");
+      log.info(ME, "Receiving update of message oid=" + updateKey.getOid() + " ...");
 
       numReceived += 1;
 
-      assertEquals("Wrong sender", senderName, updateQos.getSender());
+      assertEquals("Wrong sender", senderName, updateQos.getSender().getLoginName());
       assertEquals("Message contentMime is corrupted", contentMime, updateKey.getContentMime());
 
       String oid = "Message-1";
-      assertEquals("Message oid is wrong", oid, updateKey.getUniqueKey());
+      assertEquals("Message oid is wrong", oid, updateKey.getOid());
 
       messageArrived = true;
       return "";

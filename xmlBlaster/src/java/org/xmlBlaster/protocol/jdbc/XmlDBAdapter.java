@@ -3,7 +3,7 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   The thread that does the actual connection and interaction
- * Version:   $Id: XmlDBAdapter.java,v 1.24 2002/09/19 09:15:32 antman Exp $
+ * Version:   $Id: XmlDBAdapter.java,v 1.25 2002/11/26 12:39:12 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
@@ -13,7 +13,7 @@ import org.xmlBlaster.util.XmlNotPortable;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.Destination;
-import org.xmlBlaster.client.PublishKeyWrapper;
+import org.xmlBlaster.client.key.PublishKey;
 
 import org.w3c.dom.Text;
 import org.w3c.dom.Document;
@@ -143,7 +143,7 @@ public class XmlDBAdapter
          document = queryDB(descriptor);
       }
       catch (XmlBlasterException e) {
-         //log.error(e.id, "query failed: " + e.reason);
+         //log.error(e.id, "query failed: " + e.getMessage());
          return getResponseMessage(e.toXml().getBytes(), "XmlBlasterException");
       }
 
@@ -310,7 +310,7 @@ public class XmlDBAdapter
     */
    private MessageUnit[] getResponseMessage(byte[] content, String contentMimeExtended)
    {
-      PublishKeyWrapper key = new PublishKeyWrapper("__sys_jdbc."+ME, "text/xml", contentMimeExtended);
+      PublishKey key = new PublishKey(glob, "__sys_jdbc."+ME, "text/xml", contentMimeExtended);
       // GetReturnQoS qos = new GetReturnQos(); !!! still missing, Hack
 
       MessageUnit mu = new MessageUnit(key.toXml(), content, "<qos></qos>");

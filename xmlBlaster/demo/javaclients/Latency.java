@@ -1,7 +1,13 @@
 // xmlBlaster/demo/javaclients/Latency.java
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.*;
-import org.xmlBlaster.client.*;
+import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.client.key.SubscribeKey;
+import org.xmlBlaster.client.key.PublishKey;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.PublishQos;
+import org.xmlBlaster.client.qos.SubscribeQos;
+import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
@@ -52,12 +58,12 @@ public class Latency implements I_Callback
          ConnectQos qos = new ConnectQos(glob);
          con.connect(qos, this);  // Login to xmlBlaster, register for updates
 
-         PublishKeyWrapper pk = new PublishKeyWrapper("Latency", "text/xml");
-         PublishQosWrapper pq = new PublishQosWrapper();
+         PublishKey pk = new PublishKey(glob, "Latency", "text/xml", "1.0");
+         PublishQos pq = new PublishQos(glob);
          MessageUnit msgUnit = new MessageUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
 
-         SubscribeKeyWrapper sk = new SubscribeKeyWrapper("Latency");
-         SubscribeQosWrapper sq = new SubscribeQosWrapper();
+         SubscribeKey sk = new SubscribeKey(glob, "Latency");
+         SubscribeQos sq = new SubscribeQos(glob);
          String subId = con.subscribe(sk.toXml(), sq.toXml()).getSubscriptionId();
 
          int numSend = glob.getProperty().get("numSend", 10);

@@ -2,8 +2,6 @@
 Name:      SimpleChat.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Demo of a simple chat client for xmlBlaster as java application
-Version:   $Id: SimpleChat.java,v 1.33 2002/10/07 16:08:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.chat;
 
@@ -15,10 +13,10 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
-import org.xmlBlaster.client.GetKeyWrapper;
-import org.xmlBlaster.client.PublishRetQos;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.key.GetKey;
+import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_ConnectionProblems;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
@@ -66,7 +64,7 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
    private Label label;
 
    private java.lang.reflect.Method speakMethod = null;
-        private Object                   speaker     = null;
+   private Object                   speaker     = null;
 
    public SimpleChat(Global glob){
       super(glob.getProperty().get("loginName", "SimpleChat - <NoName>"));
@@ -90,15 +88,15 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
 
                 //prepare the speach synthetizer ...
       try {
-         Class speech = Class.forName("com.eclettic.speech.DefaultInputSpeaker");
-         java.lang.reflect.Constructor constr = speech.getConstructor(null);
-         this.speaker = constr.newInstance(null);
-         Class[] argClasses = new Class[1];
-         argClasses[0] = String.class;
-         this.speakMethod = speech.getMethod("speak", argClasses);
+        Class speech = Class.forName("com.eclettic.speech.DefaultInputSpeaker");
+        java.lang.reflect.Constructor constr = speech.getConstructor(null);
+        this.speaker = constr.newInstance(null);
+        Class[] argClasses = new Class[1];
+        argClasses[0] = String.class;
+        this.speakMethod = speech.getMethod("speak", argClasses);
       }
       catch (Throwable ex) {
-         log.error(ME, "Speech support failed (you need JDK 1.4): " + ex.toString());
+         log.error(ME, "Audio output of messages not activated, please use JDK 1.4 or better and add speech.jar to your classpath: " + ex.toString());
       }
 
       label.setText(logFileName);
@@ -115,7 +113,7 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
       try {
          xmlBlasterConnection.publish(msgUnit);
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.reason);
+         log.warn(ME, "XmlBlasterException: " + e.getMessage());
       }
       log.trace(ME, "Publishing done");
    }
@@ -128,12 +126,12 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
 
       publishMessage("I am retrieving the connected users list (ignore this)");
       try {
-         GetKeyWrapper getKeyWrapper = new GetKeyWrapper("__sys__UserList");
+         GetKey getKeyWrapper = new GetKey(glob, "__sys__UserList");
          MessageUnit[] msgUnit = xmlBlasterConnection.get(getKeyWrapper.toXml(),"<qos></qos>");
          if (msgUnit != null) {
             for (int i=0; i < msgUnit.length; i++) {
                 appendOutput("users: " + System.getProperty("line.separator") +
-                            new String(msgUnit[i].content) + 
+                            new String(msgUnit[i].getContent()) + 
                             System.getProperty("line.separator"));
             }
             appendOutput("these where all users connected" + 
@@ -150,28 +148,30 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
       // MAIN-Frame
       this.setLayout(new BorderLayout());
       fPanel = new Panel();
-      this.add(fPanel);
+      fPanel.setLayout(new BorderLayout());
+      this.add("North", fPanel);
 
       // Button to connect to xmlBlaster
       connectButton = new Button("Connect");
       connectButton.setActionCommand("connect");
       connectButton.addActionListener(this);
-      fPanel.add("North",connectButton);
+      fPanel.add(connectButton, BorderLayout.WEST);
+
 
       label = new Label("LOGGING");
-      fPanel.add("West",label);
+      add(label, BorderLayout.SOUTH);
 
       // Button for sending message (Publish )
       actionButton = new Button("Send");
       actionButton.setActionCommand("send");
       actionButton.addActionListener(this);
-      fPanel.add("South",actionButton);
+      fPanel.add(actionButton, BorderLayout.EAST);
 
       // Button for requesting list of who is connected
       whoisThereButton = new Button("Who is There ?");
       whoisThereButton.setActionCommand("whoisThere");
       whoisThereButton.addActionListener(this);
-      fPanel.add("South", whoisThereButton);
+      fPanel.add(whoisThereButton, BorderLayout.SOUTH);
 
 
 
@@ -182,16 +182,18 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
       soundButton = new Button(soundText);
       soundButton.setActionCommand("sound");
       soundButton.addActionListener(this);
-      fPanel.add("South", soundButton);
+      fPanel.add(soundButton, BorderLayout.NORTH);
 
       // Textfield for input
       input = new TextField(60);
       input.addActionListener(this);
-      fPanel.add("South",input);
+      fPanel.add(input, BorderLayout.CENTER);
 
       // Textfield for output (which comes from xmlBlaster callback)
       output = new TextArea("",12,80);
-      add("South",output);
+      output.setEditable(false);
+//      add("South",output);
+      add("Center",output);
    }
 
    // event-handler
@@ -250,8 +252,11 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
    /** adds text to output-field */
    public void appendOutput(String text){
       output.append(text);
+//      output.insert(text, 0);
+
       try { FileUtil.appendToFile(logFileName, text); } catch(JUtilsException e) { log.warn(ME, "Can't log message:" + e.toString()); }
-      output.repaint();
+      //output.repaint();
+      this.repaint();
    }
 
    /**
@@ -264,19 +269,20 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
       String msgContent = new String(content);
 
       if (this.withSound) {
-        java.awt.Toolkit.getDefaultToolkit().beep();
+         java.awt.Toolkit.getDefaultToolkit().beep();
 
-                if ((this.speakMethod != null) && (this.speaker !=null)) {
-                try {
-                        Object[] args = new Object[1];
-                args[0] = msgContent;
-                                        this.speakMethod.invoke(this.speaker, args);
-                }
-                catch (Exception ex){
-                }
-                }
-                        toFront();
-                }
+         if ((this.speakMethod != null) && (this.speaker !=null)) {
+            try {
+               Object[] args = new Object[1];
+               args[0] = msgContent;
+               this.speakMethod.invoke(this.speaker, args);
+            }
+            catch (Throwable ex){
+               log.error(ME, "Audio output of messages not activated, please use JDK 1.4 or better and add speech.jar to your classpath: " + ex.toString());
+            }
+         }
+         toFront();
+      }
 
 
       DateFormat df = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
@@ -329,7 +335,7 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
          xmlBlasterConnection.subscribe(xmlKeyPub, "<qos></qos>");
          log.trace(ME, "Subscribed to '" + publishOid + "' ...");
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.reason);
+         log.warn(ME, "XmlBlasterException: " + e.getMessage());
       }
    }
 
@@ -342,7 +348,7 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
          try {
             xmlBlasterConnection.unSubscribe(xmlKey, qos);
          } catch(XmlBlasterException e) {
-            log.warn(ME, "XmlBlasterException: " + e.reason);
+            log.warn(ME, "XmlBlasterException: " + e.getMessage());
          }
          log.info(ME, "Unsubscribe done");
       }

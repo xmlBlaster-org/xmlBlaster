@@ -14,7 +14,7 @@ package org.xmlBlaster.engine.cluster;
  * @since 0.79e
  * @url http://www.xmlBlaster.org/xmlBlaster/doc/requirements/cluster.html
  */
-public final class NodeId implements Comparable
+public final class NodeId implements Comparable, java.io.Serializable
 {
    private static final String ME = "NodeId";
 

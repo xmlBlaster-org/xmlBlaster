@@ -4,6 +4,7 @@ import org.jutils.log.LogChannel;
 import org.jutils.time.StopWatch;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.recorder.file.FileIO;
 import org.xmlBlaster.util.recorder.file.I_UserDataHandler;
 
@@ -227,10 +228,10 @@ public class FileIOTest extends TestCase {
                fileIO.writeNext("World-" + ii);
             }
             catch (XmlBlasterException e) {
-               if (e.id.indexOf("FileLost") == -1)
+               if (e.getErrorCode() == ErrorCode.RESOURCE_FILEIO)
                   fail("Wrong exception thrown: " + e.toString());
                else
-                  System.out.println(e.reason);
+                  System.out.println(e.getMessage());
                   
             }
          }
@@ -293,10 +294,10 @@ public class FileIOTest extends TestCase {
                count++;
             }
             catch (XmlBlasterException e) {
-               if (e.id.indexOf("FileLost") == -1)
+               if (e.getErrorCode() == ErrorCode.RESOURCE_FILEIO_FILELOST)
                   fail("Wrong exception thrown: " + e.toString());
                else {
-                  System.out.println(e.reason);
+                  System.out.println(e.getMessage());
                   break; // no more data to read
                }
                   

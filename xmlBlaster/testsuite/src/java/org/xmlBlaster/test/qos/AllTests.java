@@ -62,6 +62,7 @@ public class AllTests
       suite.addTest(TestPubBurstMode.suite());
       suite.addTest(TestPubForce.suite());
       suite.addTest(TestErase.suite());
+      suite.addTest(TestUpdateClientException.suite());
       suite.addTest(TestInvocationRecorder.suite());
       suite.addTest(TestFailSave.suite());
       suite.addTest(TestFailSavePing.suite());

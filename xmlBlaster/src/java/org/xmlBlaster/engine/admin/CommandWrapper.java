@@ -77,11 +77,21 @@ public final class CommandWrapper
 
    private void parse() throws XmlBlasterException {
 
-      StringTokenizer st = new StringTokenizer(cmd, "/");
+      String prefix = cmd;
+
+      int questionIndex = cmd.indexOf("?");
+      int equalsIndex = cmd.indexOf("=");
+      if (questionIndex >= 0 && equalsIndex >= 0 && questionIndex < equalsIndex)  {
+         parseKeyValue();
+         prefix = cmd.substring(0,equalsIndex);
+         if (log.TRACE) log.trace(ME, "prefix=" + prefix + " key=" + key + " value=" + value);
+      }
+
+      StringTokenizer st = new StringTokenizer(prefix, "/");
       int ii=1;
       while (st.hasMoreTokens()) {
          String token = (String)st.nextToken();
-         if (log.TRACE) log.trace(ME, "Parsing '" + cmd + "' ii=" + ii + " token=" + token);
+         if (log.TRACE) log.trace(ME, "Parsing '" + prefix + "' ii=" + ii + " token=" + token);
          if (ii==1)
             root = token;
          else if (ii == 2)

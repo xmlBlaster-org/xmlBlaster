@@ -7,8 +7,6 @@ Comment:   Baseclass to load plugins.
 package org.xmlBlaster.util.plugin;
 
 import org.jutils.log.LogChannel;
-import org.xmlBlaster.authentication.plugins.I_Session;
-import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.classloader.ClassLoaderFactory;
@@ -35,44 +33,92 @@ import java.net.URL;
 abstract public class PluginManagerBase implements I_PluginManager{
 
    private static String ME = "PluginManagerBase";
-   protected Hashtable managers = new Hashtable(); // currently loaded plugins
+   protected Hashtable pluginCache = new Hashtable(); // currently loaded plugins
    private final Global glob;
    private final LogChannel log;
+   public final static String NO_PLUGIN_TYPE = "undef";
 
    protected PluginManagerBase(org.xmlBlaster.util.Global glob) {
       this.glob = glob;
       this.log = glob.getLog("classloader");
    }
 
+   protected Global getGlobal() {
+      return this.glob;
+   }
+
+   /**
+    * @param type and version with comma separator e.g. "RMI,1.0"
+    */
+   public I_Plugin getPluginObject(String typeVersion) throws XmlBlasterException {
+      if (typeVersion == null)
+         return null;
+      String type_;
+      String version_;
+      int i = typeVersion.indexOf(',');
+      if (i==-1) {  // version is optional
+         version_ = null;
+         type_ = typeVersion;
+      }
+      else {
+         version_ = typeVersion.substring(i+1);
+         type_ = typeVersion.substring(0,i);
+      }
+      return getPluginObject(type_, version_);
+   }
+
    /**
     * Return a specific plugin, if one is loaded already it is taken from cache. 
     * <p/>
+    * This code is thread save.
     * @param String The type of the requested plugin.
     * @param String The version of the requested plugin.
-    * @return I_Plugin The plugin which is suitable to handle the request.
+    * @return I_Plugin The plugin which is suitable to handle the request or null if type=="undef"
     * @exception XmlBlasterException Thrown if no suitable plugin has been found.
     */
    public I_Plugin getPluginObject(String type, String version) throws XmlBlasterException {
-      if (log.CALL) log.call(ME+".getPluginObject()", "Loading plugin type=" + type + " version=" + version + " property=" + createPluginPropertyKey(type, version));
+      PluginInfo pluginInfo = new PluginInfo(glob, this, type, version);
+      return getPluginObject(pluginInfo);
+   }
+
+   /**
+    * Return a specific plugin, if one is loaded already it is taken from cache. 
+    * <p/>
+    * This code is thread save.
+    * @param String The type of the requested plugin.
+    * @param String The version of the requested plugin.
+    * @return I_Plugin The plugin which is suitable to handle the request or null if type=="undef"
+    * @exception XmlBlasterException Thrown if no suitable plugin has been found.
+    */
+   public I_Plugin getPluginObject(PluginInfo pluginInfo) throws XmlBlasterException {
+      if (log.CALL) log.call(ME+".getPluginObject()", "Loading plugin " + pluginInfo.toString());
       I_Plugin plug = null;
 
-      PluginInfo pluginInfo = new PluginInfo(glob, this, type, version);
+      if (pluginInfo.ignorePlugin())
+         return null;
 
-      // check in hash if plugin is instanciated already
-      plug = (I_Plugin)managers.get(pluginInfo.getClassName());
-      if (plug!=null) return plug;
+      synchronized (this) {
+         // check in hash if plugin is instanciated already
+         plug = getFromPluginCache(pluginInfo.getClassName());
+         if (plug!=null) return plug;
 
-      // not in hash, instanciat plugin
-      plug = instantiatePlugin(pluginInfo);
+         // not in hash, instanciate plugin
+         plug = instantiatePlugin(pluginInfo);
+      }
 
       return plug;
+   }
+
+   public I_Plugin getFromPluginCache(String className) {
+      if (className == null) return null;
+      return (I_Plugin)pluginCache.get(className);
    }
 
    /**
     * Is called after a plugin in instantiated, allows the base class to do specific actions.
     * Is NOT called when plugin got from cache.
     */
-   abstract public void postInstantiate(I_Plugin plugin, PluginInfo pluginInfo) throws XmlBlasterException;
+   abstract protected void postInstantiate(I_Plugin plugin, PluginInfo pluginInfo) throws XmlBlasterException;
 
    /**
     * @param type can be null
@@ -117,12 +163,15 @@ abstract public class PluginManagerBase implements I_PluginManager{
     * @param String[] The first element of this array contains the class name
     *                 e.g. org.xmlBlaster.authentication.plugins.Manager<br />
     *                 Following elements are arguments for the plugin. (Like in c/c++ the command-line arguments.)
-    * @return I_Plugin
+    * @return I_Plugin or null if plugin type is set to "undef"
     * @exception XmlBlasterException Thrown if loading or initializing failed.
     */
    protected I_Plugin instantiatePlugin(PluginInfo pluginInfo) throws XmlBlasterException
    {
       // separate parameter and plugin name
+
+      if (pluginInfo.ignorePlugin())
+         return null;
 
       I_Plugin plugin = null;
       String pluginName = pluginInfo.getClassName();
@@ -143,6 +192,7 @@ abstract public class PluginManagerBase implements I_PluginManager{
          }
       }
       catch (XmlBlasterException e) {
+         if (log.TRACE) log.trace(ME, "instantiatePlugin for '" + pluginName + "' failed: " + e.toString());
          throw e;
       }
       catch (IllegalAccessException e) {
@@ -166,12 +216,21 @@ abstract public class PluginManagerBase implements I_PluginManager{
             postInstantiate(plugin, pluginInfo);
             log.info(ME, "Plugin '" + pluginName + "' successfully initialized.");
          } catch (XmlBlasterException e) {
-            //log.error(ME, "Initializing of plugin " + plugin.getType() + " failed:" + e.reason);
-            throw new XmlBlasterException(ME+".NoInit", "Initializing of plugin " + plugin.getType() + " failed:" + e.reason);
+            //log.error(ME, "Initializing of plugin " + plugin.getType() + " failed:" + e.getMessage());
+            throw new XmlBlasterException(ME+".NoInit", "Initializing of plugin " + plugin.getType() + " failed:" + e.getMessage());
          }
       }
-      managers.put(pluginName, plugin);
+      pluginCache.put(pluginName, plugin);
 
       return plugin;
+   }
+
+   /**
+    * Plugin with type=="undef" are ignored
+    */
+   public final static boolean ignorePlugin(String typeVersion) {
+      if (NO_PLUGIN_TYPE.equalsIgnoreCase(typeVersion) || "undef,1.0".equalsIgnoreCase(typeVersion))
+         return true;
+      return false;
    }
 }

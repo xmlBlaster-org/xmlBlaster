@@ -3,7 +3,7 @@ Name:      CallbackAddress.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback address string and protocol string
-Version:   $Id: CallbackAddress.java,v 1.20 2002/07/21 13:12:08 ruff Exp $
+Version:   $Id: CallbackAddress.java,v 1.21 2002/11/26 12:38:45 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -17,7 +17,8 @@ import org.xml.sax.Attributes;
  * <pre>
  * &lt;callback type='XML-RPC' sessionId='4e56890ghdFzj0'
  *           pingInterval='60000' retries='5' delay='10000'
- *           oneway='false' useForSubjectQueue='true'>
+ *           oneway='false' useForSubjectQueue='true'
+ *           dispatchPlugin='Priority,1.0'>
  *    http://server:8080/cb
  *    &lt;compress type='gzip' minSize='1000'/>
  *    &lt;burstMode collectTime='400'/>
@@ -75,7 +76,7 @@ public class CallbackAddress extends AddressBase
     * Configure property settings
     */
    private void initialize() {
-      this.hostname = glob.getCbHostname(); // don't use setHostname() as it would set isCardcodedHostname=true
+      initHostname(glob.getCbHostname()); // don't use setHostname() as it would set isCardcodedHostname=true
       setPort(glob.getProperty().get("cb.port", getPort()));
       setType(glob.getProperty().get("cb.protocol", getType()));
       setCollectTime(glob.getProperty().get("cb.burstMode.collectTime", DEFAULT_collectTime)); // sync update()
@@ -89,6 +90,7 @@ public class CallbackAddress extends AddressBase
       setMinSize(glob.getProperty().get("cb.compress.minSize", DEFAULT_minSize));
       setPtpAllowed(glob.getProperty().get("cb.ptpAllowed", DEFAULT_ptpAllowed));
       setSessionId(glob.getProperty().get("cb.sessionId", DEFAULT_sessionId));
+      setDispatchPlugin(glob.getProperty().get("cb.DispatchPlugin.defaultPlugin", DEFAULT_dispatchPlugin));
       if (nodeId != null) {
          setPort(glob.getProperty().get("cb.port["+nodeId+"]", getPort()));
          setType(glob.getProperty().get("cb.protocol["+nodeId+"]", getType()));
@@ -103,6 +105,7 @@ public class CallbackAddress extends AddressBase
          setMinSize(glob.getProperty().get("cb.compress.minSize["+nodeId+"]", minSize));
          setPtpAllowed(glob.getProperty().get("cb.ptpAllowed["+nodeId+"]", ptpAllowed));
          setSessionId(glob.getProperty().get("cb.sessionId["+nodeId+"]", sessionId));
+         setDispatchPlugin(glob.getProperty().get("cb.DispatchPlugin.defaultPlugin["+nodeId+"]", dispatchPlugin));
       }
    }
 
@@ -139,11 +142,12 @@ public class CallbackAddress extends AddressBase
       text += "                         The burst mode allows performance tuning, try set it to 200.\n";
       text += "   -cb.oneway          Shall the update() messages be send oneway (no application level ACK) [" + CallbackAddress.DEFAULT_oneway + "]\n";
       text += "   -cb.pingInterval    Pinging every given milliseconds [" + getDefaultPingInterval() + "]\n";
-      text += "   -cb.retries         How often to retry if callback fails [" + getDefaultRetries() + "]\n";
+      text += "   -cb.retries         How often to retry if callback fails (-1 forever, 0 no retry, > 0 number of retries) [" + getDefaultRetries() + "]\n";
       text += "   -cb.delay           Delay between callback retries in milliseconds [" + getDefaultDelay() + "]\n";
       text += "   -cb.compress.type   With which format message be compressed on callback [" + CallbackAddress.DEFAULT_compressType + "]\n";
       text += "   -cb.compress.minSize Messages bigger this size in bytes are compressed [" + CallbackAddress.DEFAULT_minSize + "]\n";
       text += "   -cb.ptpAllowed      PtP messages wanted? false prevents spamming [" + CallbackAddress.DEFAULT_ptpAllowed + "]\n";
+      //text += "   -cb.DispatchPlugin.defaultPlugin  Specify your specific dispatcher plugin [" + CallbackAddress.DEFAULT_dispatchPlugin + "]\n";
       return text;
    }
 

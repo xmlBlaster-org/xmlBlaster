@@ -3,7 +3,7 @@ Name:      TestCallbackConfig.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestCallbackConfig.java,v 1.2 2002/09/13 23:18:28 ruff Exp $
+Version:   $Id: TestCallbackConfig.java,v 1.3 2002/11/26 12:40:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -17,9 +17,9 @@ import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
-import org.xmlBlaster.client.EraseRetQos;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.CallbackAddress;
@@ -42,8 +42,8 @@ public class TestCallbackConfig extends TestCase implements I_Callback
    private String passwd = "secret";
    private int numReceived = 0;         // error checking
 
-   private boolean isDeadLetter = false;
-   private String subscribeDeadLetterOid = null;
+   private boolean isDeadMessage = false;
+   private String subscribeDeadMessageOid = null;
    private XmlBlasterConnection con = null;
    private String publishOid = null;
    private String cbSessionId = "topSecret";
@@ -70,7 +70,7 @@ public class TestCallbackConfig extends TestCase implements I_Callback
    protected void setUp()
    {
       try {
-         con = new XmlBlasterConnection();
+         con = new XmlBlasterConnection(glob);
          ConnectQos qos = new ConnectQos(null, "admin", passwd);
          
          // We configure detailed how our callback is handled by xmlBlaster
@@ -88,6 +88,7 @@ public class TestCallbackConfig extends TestCase implements I_Callback
       }
       catch (Exception e) {
          log.error(ME, e.toString());
+         e.printStackTrace();
          assertTrue(e.toString(), false);
       }
    }
@@ -101,7 +102,7 @@ public class TestCallbackConfig extends TestCase implements I_Callback
    {
       try {
          if (con != null) {
-            EraseRetQos[] strArr = con.erase("<key oid='" + publishOid + "'/>", null);
+            EraseReturnQos[] strArr = con.erase("<key oid='" + publishOid + "'/>", null);
             if (strArr.length != 1) log.error(ME, "ERROR: Erased " + strArr.length + " messages");
             con.disconnect(new DisconnectQos());
          }
@@ -120,7 +121,7 @@ public class TestCallbackConfig extends TestCase implements I_Callback
       try {
          con.subscribe("<key oid='testCallbackMsg'/>", null);
 
-         publishOid = con.publish(new MessageUnit("<key oid='testCallbackMsg'/>", "Bla".getBytes(), null)).getOid();
+         publishOid = con.publish(new MessageUnit("<key oid='testCallbackMsg'/>", "Bla".getBytes(), null)).getKeyOid();
 
          log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
 
@@ -141,7 +142,7 @@ public class TestCallbackConfig extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      log.info(ME, "Receiving update of a message " + updateKey.getUniqueKey());
+      log.info(ME, "Receiving update of a message " + updateKey.getOid());
       numReceived++;
       if (!this.cbSessionId.equals(cbSessionId))
          log.error(ME, "Invalid cbSessionId");

@@ -3,7 +3,7 @@ Name:      XmlRpcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   XmlRpcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: XmlRpcDriver.java,v 1.37 2002/09/14 23:13:13 ruff Exp $
+Version:   $Id: XmlRpcDriver.java,v 1.38 2002/11/26 12:39:25 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
@@ -38,6 +38,7 @@ import java.io.IOException;
  *
  * The interface I_Driver is needed by xmlBlaster to instantiate and shutdown
  * this driver implementation.
+ * @see <a href="http://marc.theaimsgroup.com/?l=rpc-user&m=102009663407418&w=2">Configuring SSL with XmlRpc</a>
  * @author ruff@swand.lake.de
  */
 public class XmlRpcDriver implements I_Driver
@@ -114,7 +115,7 @@ public class XmlRpcDriver implements I_Driver
       throws XmlBlasterException
    {
       this.glob = glob;
-      this.ME = "XmlRpcDriver" + this.glob.getLogPraefixDashed();
+      this.ME = "XmlRpcDriver" + this.glob.getLogPrefixDashed();
       this.log = glob.getLog("xmlrpc");
       if (log.CALL) log.call(ME, "Entering init()");
       this.authenticate = authenticate;
@@ -157,7 +158,7 @@ public class XmlRpcDriver implements I_Driver
          webServer = new WebServer(xmlPort, inetAddr);
          // publish the public methods to the XmlRpc web server:
          webServer.addHandler("authenticate", new AuthenticateImpl(glob, authenticate));
-         webServer.addHandler("xmlBlaster", new XmlBlasterImpl(xmlBlasterImpl));
+         webServer.addHandler("xmlBlaster", new XmlBlasterImpl(glob, xmlBlasterImpl));
          //serverUrl = "http://" + hostname + ":" + xmlPort + "/";
          log.info(ME, "Started successfully XML-RPC driver, access url=" + serverUrl);
       } catch (IOException e) {

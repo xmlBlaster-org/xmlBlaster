@@ -3,7 +3,7 @@ Name:      SocketDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   SocketDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: SocketDriver.java,v 1.28 2002/09/15 17:07:24 ruff Exp $
+Version:   $Id: SocketDriver.java,v 1.29 2002/11/26 12:39:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -84,7 +84,7 @@ public class SocketDriver extends Thread implements I_Driver
     * Note: getName() is enforced by interface I_Driver, but is already defined in Thread class
     */
    public SocketDriver() {
-      super("SocketDriver");
+      super("XmlBlaster.SocketDriver");
    }
 
    /**
@@ -147,7 +147,7 @@ public class SocketDriver extends Thread implements I_Driver
       throws XmlBlasterException
    {
       this.glob = glob;
-      this.ME = "SocketDriver" + this.glob.getLogPraefixDashed();
+      this.ME = "SocketDriver" + this.glob.getLogPrefixDashed();
       this.log = glob.getLog("socket");
       if (log.CALL) log.call(ME, "Entering init()");
       this.authenticate = authenticate;

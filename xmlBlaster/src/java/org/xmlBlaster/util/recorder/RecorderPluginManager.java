@@ -3,7 +3,7 @@ Name:      RecorderPluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for queuing of tail back messages
-Version:   $Id: RecorderPluginManager.java,v 1.5 2002/08/26 09:08:19 ruff Exp $
+Version:   $Id: RecorderPluginManager.java,v 1.6 2002/11/26 12:40:08 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.recorder;
@@ -13,7 +13,6 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.plugin.PluginManagerBase;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.plugin.I_Plugin;
-import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.recorder.I_InvocationRecorder;
 import org.xmlBlaster.client.I_CallbackRaw;
@@ -47,7 +46,7 @@ public class RecorderPluginManager extends PluginManagerBase {
    }
 
    /**
-    * Return a specific MIME based message filter plugin. 
+    * Return a specific filter plugin. 
     * <p/>
     * @param String The type of the requested plugin.
     * @param String The version of the requested plugin.
@@ -62,11 +61,17 @@ public class RecorderPluginManager extends PluginManagerBase {
 
       PluginInfo pluginInfo = new PluginInfo(glob, this, type, version);
 
-      plugin = (I_InvocationRecorder)managers.get(pluginInfo.getClassName());
-      if (plugin!=null) return plugin;
+      try {
+         plugin = (I_InvocationRecorder)getFromPluginCache(pluginInfo.getClassName());
+         if (plugin!=null) return plugin;
 
-      plugin = loadPlugin(pluginInfo);
-      plugin.initialize(glob, fn, maxEntries, serverCallback, clientCallback);
+         plugin = loadPlugin(pluginInfo);
+         plugin.initialize(glob, fn, maxEntries, serverCallback, clientCallback);
+      }
+      catch(Throwable e) {
+         log.error(ME, "Can't load plugin: " + pluginInfo.toString());
+         e.printStackTrace();
+      }
 
       return plugin;
    }
@@ -101,9 +106,7 @@ public class RecorderPluginManager extends PluginManagerBase {
    /**
     * Loads a invocation recorder plugin. 
     * <p/>
-    * @param String[] The first element of this array contains the class name
-    *                 e.g. org.xmlBlaster.util.recorder.RamRecorder<br />
-    *                 Following elements are arguments for the plugin. (Like in c/c++ the command-line arguments.)
+    * @param pluginInfo The struct containing the plugin specific data
     * @return I_InvocationRecorder
     * @exception XmlBlasterException Thrown if loading or initializing failed.
     */

@@ -3,7 +3,7 @@ Name:      TestPtD.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtD.java,v 1.2 2002/09/13 23:18:28 ruff Exp $
+Version:   $Id: TestPtD.java,v 1.3 2002/11/26 12:40:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -16,8 +16,8 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
 import junit.framework.*;
@@ -90,10 +90,10 @@ public class TestPtD extends TestCase implements I_Callback
          receiverConnection = new XmlBlasterConnection(glob);
          receiverConnection.connect(new ConnectQos(glob, receiverName, passwd), this);
 
-         receiver2Connection = new XmlBlasterConnection();
+         receiver2Connection = new XmlBlasterConnection(glob);
          receiver2Connection.connect(new ConnectQos(glob, receiver2Name, passwd), this);
 
-         senderConnection = new XmlBlasterConnection();
+         senderConnection = new XmlBlasterConnection(glob);
          senderConnection.connect(new ConnectQos(glob, senderName, passwd), this);
       }
       catch (Exception e) {
@@ -139,11 +139,11 @@ public class TestPtD extends TestCase implements I_Callback
       senderContent = "Hi " + receiverName + ", i love you, " + senderName;
       MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), qos);
       try {
-         publishOid = senderConnection.publish(msgUnit).getOid();
+         publishOid = senderConnection.publish(msgUnit).getKeyOid();
          log.info(ME, "Sending done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
-         log.error(ME, "publish() XmlBlasterException: " + e.reason);
-         assertTrue("publish - XmlBlasterException: " + e.reason, false);
+         log.error(ME, "publish() XmlBlasterException: " + e.getMessage());
+         assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
 
       waitOnUpdate(5000L, 1);
@@ -176,11 +176,11 @@ public class TestPtD extends TestCase implements I_Callback
       senderContent = "Hi " + receiver2Name + ", i know you are listening, " + senderName;
       MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), qos);
       try {
-         publishOid = senderConnection.publish(msgUnit).getOid();
+         publishOid = senderConnection.publish(msgUnit).getKeyOid();
          log.info(ME, "Sending done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
-         log.error(ME, "publish() XmlBlasterException: " + e.reason);
-         assertTrue("publish - XmlBlasterException: " + e.reason, false);
+         log.error(ME, "publish() XmlBlasterException: " + e.getMessage());
+         assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
 
       waitOnUpdate(5000L, 2);
@@ -202,8 +202,8 @@ public class TestPtD extends TestCase implements I_Callback
       // Wait that publish() returns and set 'publishOid' properly
       try { Thread.currentThread().sleep(200); } catch( InterruptedException i) {}
 
-      assertEquals("Wrong sender", senderName, updateQos.getSender());
-      assertEquals("Wrong oid of message returned", publishOid, updateKey.getUniqueKey());
+      assertEquals("Wrong sender", senderName, updateQos.getSender().getLoginName());
+      assertEquals("Wrong oid of message returned", publishOid, updateKey.getOid());
       assertEquals("Message content is corrupted", new String(senderContent), new String(content));
       return "";
    }

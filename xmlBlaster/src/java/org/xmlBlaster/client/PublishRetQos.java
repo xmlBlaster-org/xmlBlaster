@@ -2,7 +2,6 @@
 Name:      PublishRetQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Handling the returned QoS (quality of service)
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -15,22 +14,10 @@ import org.xml.sax.Attributes;
 
 
 /**
- * Handling the returned QoS (quality of service) of a publish() call. 
- * <p />
- * If you are a Java client and use the XmlBlasterConnection helper class
- * you get this object as the publish() return value.
- * <p />
- * Example:
- * <pre>
- *   &lt;qos>
- *     &lt;state id='OK' info='QUEUED[bilbo]'/>
- *     &lt;key oid='yourMessageOid'/>
- *  &lt;/qos>
- * </pre>
- * @see org.xmlBlaster.test.classtest.PublishRetQosTest
- * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html" target="others">the interface.publish requirement</a>
+ * Handling the returned QoS (quality of service)
+ * @deprecated  Use org.xmlBlaster.client.qos.PublishReturnQos
  */
-public final class PublishRetQos /*extends org.xmlBlaster.util.XmlQoSBase*/ implements I_RetQos
+public final class PublishRetQos implements I_RetQos
 {
    private String ME = "PublishRetQos";
    private final LogChannel log;

@@ -3,18 +3,18 @@ Name:      Executor.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Send/receive messages over outStream and inStream. 
-Version:   $Id: Executor.java,v 1.30 2002/10/25 09:07:25 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.MethodName;
+import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.engine.MessageUnitWrapper;
+import org.xmlBlaster.util.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.engine.helper.Constants;
-import org.xmlBlaster.client.protocol.ConnectionException; // Move java file to server package!
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;
@@ -45,7 +45,7 @@ import java.util.Collections;
 public abstract class Executor implements ExecutorBase
 {
    private String ME = "SocketExecutor";
-   private final Global glob;
+   protected final Global glob;
    private final LogChannel log;
    /** The socket connection to/from one client */
    protected Socket sock;
@@ -53,8 +53,8 @@ public abstract class Executor implements ExecutorBase
    protected InputStream iStream;
    /** Writing to socket */
    protected OutputStream oStream;
-   /** The praefix to create a unique requestId namspace (is set to the loginName) */
-   protected String praefix = null;
+   /** The prefix to create a unique requestId namspace (is set to the loginName) */
+   protected String prefix = null;
    /** The unique client sessionId */
    protected String sessionId = null;
    /** The client login name */
@@ -182,11 +182,11 @@ public abstract class Executor implements ExecutorBase
       if (log.TRACE) log.trace(ME, "Garbage Collected");
    }
 
-   public Socket getSocket() throws ConnectionException
+   public Socket getSocket() throws XmlBlasterException
    {
       if (this.sock == null) {
          if (log.TRACE) log.trace(ME, "No socket connection available.");
-         throw new ConnectionException(ME+".init", "No plain socket connection available.");
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "No plain socket connection available.");
       }
       return this.sock;
    }
@@ -197,9 +197,9 @@ public abstract class Executor implements ExecutorBase
    protected final void setLoginName(String loginName) {
       this.loginName = loginName;
       if (loginName != null && loginName.length() > 0)
-         this.praefix = this.loginName + ":";
+         this.prefix = this.loginName + ":";
       else
-         this.praefix = null;
+         this.prefix = null;
    }
 
    /**
@@ -248,7 +248,7 @@ public abstract class Executor implements ExecutorBase
       if (receiver.isInvoke()) {
          // handling invocations ...
 
-         if (Constants.PUBLISH_ONEWAY.equals(receiver.getMethodName())) {
+         if (MethodName.PUBLISH_ONEWAY == receiver.getMethodName()) {
             MessageUnit[] arr = receiver.getMessageArr();
             if (arr == null || arr.length < 1) {
                log.error(ME, "Invocation of " + receiver.getMethodName() + "() failed, missing arguments");
@@ -256,14 +256,14 @@ public abstract class Executor implements ExecutorBase
             }
             xmlBlasterImpl.publishOneway(receiver.getSessionId(), arr);
          }
-         else if (Constants.PUBLISH.equals(receiver.getMethodName())) {
+         else if (MethodName.PUBLISH == receiver.getMethodName()) {
             MessageUnit[] arr = receiver.getMessageArr();
             if (arr == null || arr.length < 1)
                throw new XmlBlasterException(ME, "Invocation of " + receiver.getMethodName() + "() failed, missing arguments");
             String[] response = xmlBlasterImpl.publishArr(receiver.getSessionId(), arr);
             executeResponse(receiver, response);
          }
-         else if (Constants.UPDATE_ONEWAY.equals(receiver.getMethodName())) {
+         else if (MethodName.UPDATE_ONEWAY == receiver.getMethodName()) {
             MessageUnit[] arr = receiver.getMessageArr();
             if (arr == null || arr.length < 1) {
                log.error(ME, "Invocation of " + receiver.getMethodName() + "() failed, missing arguments");
@@ -271,49 +271,48 @@ public abstract class Executor implements ExecutorBase
             }
             this.cbClient.updateOneway(receiver.getSessionId(), arr);
          }
-         else if (Constants.UPDATE.equals(receiver.getMethodName())) {
+         else if (MethodName.UPDATE == receiver.getMethodName()) {
             MessageUnit[] arr = receiver.getMessageArr();
             if (arr == null || arr.length < 1)
                throw new XmlBlasterException(ME, "Invocation of " + receiver.getMethodName() + "() failed, missing arguments");
             String[] response = this.cbClient.update(receiver.getSessionId(), arr);
             executeResponse(receiver, response);
          }
-         else if (Constants.GET.equals(receiver.getMethodName())) {
+         else if (MethodName.GET == receiver.getMethodName()) {
             MessageUnit[] arr = receiver.getMessageArr();
             if (arr == null || arr.length != 1)
                throw new XmlBlasterException(ME, "Invocation of " + receiver.getMethodName() + "() failed, wrong arguments");
-            MessageUnit[] response = xmlBlasterImpl.get(receiver.getSessionId(), arr[0].getXmlKey(), arr[0].getQos());
+            MessageUnit[] response = xmlBlasterImpl.get(receiver.getSessionId(), arr[0].getKey(), arr[0].getQos());
             executeResponse(receiver, response);
          }
-         else if (Constants.PING.equals(receiver.getMethodName())) {
+         else if (MethodName.PING == receiver.getMethodName()) {
             executeResponse(receiver, Constants.RET_OK); // "<qos><state id='OK'/></qos>"
          }
-         else if (Constants.SUBSCRIBE.equals(receiver.getMethodName())) {
+         else if (MethodName.SUBSCRIBE == receiver.getMethodName()) {
             MessageUnit[] arr = receiver.getMessageArr();
             if (arr == null || arr.length != 1)
                throw new XmlBlasterException(ME, "Invocation of " + receiver.getMethodName() + "() failed, wrong arguments");
-            String response = xmlBlasterImpl.subscribe(receiver.getSessionId(), arr[0].getXmlKey(), arr[0].getQos());
+            String response = xmlBlasterImpl.subscribe(receiver.getSessionId(), arr[0].getKey(), arr[0].getQos());
             executeResponse(receiver, response);
          }
-         else if (Constants.UNSUBSCRIBE.equals(receiver.getMethodName())) {
+         else if (MethodName.UNSUBSCRIBE == receiver.getMethodName()) {
             MessageUnit[] arr = receiver.getMessageArr();
             if (arr == null || arr.length != 1)
                throw new XmlBlasterException(ME, "Invocation of " + receiver.getMethodName() + "() failed, wrong arguments");
-            xmlBlasterImpl.unSubscribe(receiver.getSessionId(), arr[0].getXmlKey(), arr[0].getQos());
-            // !!! TODO better return value?
-            executeResponse(receiver, Constants.RET_OK);
-         }
-         else if (Constants.ERASE.equals(receiver.getMethodName())) {
-            MessageUnit[] arr = receiver.getMessageArr();
-            if (arr == null || arr.length != 1)
-               throw new XmlBlasterException(ME, "Invocation of " + receiver.getMethodName() + "() failed, wrong arguments");
-            String[] response = xmlBlasterImpl.erase(receiver.getSessionId(), arr[0].getXmlKey(), arr[0].getQos());
+            String[] response = xmlBlasterImpl.unSubscribe(receiver.getSessionId(), arr[0].getKey(), arr[0].getQos());
             executeResponse(receiver, response);
          }
-         else if (Constants.CONNECT.equals(receiver.getMethodName())) {
+         else if (MethodName.ERASE == receiver.getMethodName()) {
+            MessageUnit[] arr = receiver.getMessageArr();
+            if (arr == null || arr.length != 1)
+               throw new XmlBlasterException(ME, "Invocation of " + receiver.getMethodName() + "() failed, wrong arguments");
+            String[] response = xmlBlasterImpl.erase(receiver.getSessionId(), arr[0].getKey(), arr[0].getQos());
+            executeResponse(receiver, response);
+         }
+         else if (MethodName.CONNECT == receiver.getMethodName()) {
             return false;
          }
-         else if (Constants.DISCONNECT.equals(receiver.getMethodName())) {
+         else if (MethodName.DISCONNECT == receiver.getMethodName()) {
             return false;
          }
          else {
@@ -334,23 +333,24 @@ public abstract class Executor implements ExecutorBase
       removeResponseListener(receiver.getRequestId());
 
       if (receiver.isResponse()) {
-         if (Constants.GET.equals(receiver.getMethodName())) {
+         if (receiver.getMethodName().returnsMsgArr()) { // GET returns MessageUnit[]
             listener.responseEvent(receiver.getRequestId(), receiver.getMessageArr());
          }
-         else if (Constants.ERASE.equals(receiver.getMethodName()) ||
-                  Constants.UPDATE.equals(receiver.getMethodName()) ||
-                  Constants.PUBLISH.equals(receiver.getMethodName())) {
+         else if (receiver.getMethodName().returnsStringArr()) {  // PUBLISH etc. return String[]
             listener.responseEvent(receiver.getRequestId(), receiver.getQosArr());
          }
-         else {
+         else if (receiver.getMethodName().returnsString()) { // SUBSCRIBE, CONNECT etc. return a String
             listener.responseEvent(receiver.getRequestId(), receiver.getQos());
+         }
+         else {  // SUBSCRIBE, CONNECT etc. return a String
+            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "The method " + receiver.getMethodName() + " is not expected in this context");
          }
       }
       else if (receiver.isException()) { // XmlBlasterException
          listener.responseEvent(receiver.getRequestId(), receiver.getException());
       }
       else {
-         log.error(ME, "Invalid response message");
+         log.error(ME, "PANIC: Invalid response message for " + receiver.getMethodName());
          listener.responseEvent(receiver.getRequestId(), new XmlBlasterException(ME, "Invalid response message '" + receiver.getMethodName()));
       }
 
@@ -369,7 +369,7 @@ public abstract class Executor implements ExecutorBase
     */
    public Object execute(Parser parser, boolean expectingResponse) throws XmlBlasterException, IOException {
 
-      String requestId = parser.createRequestId(praefix);
+      String requestId = parser.createRequestId(prefix);
       if (log.TRACE) log.trace(ME, "Invoking  parser type='" + parser.getTypeStr() + "' message " + parser.getMethodName() + "(requestId=" + requestId + ") expectingResponse=" + expectingResponse);
 
       final Object[] response = new Object[1];  // As only final variables are accessable from the inner class, we put the response in this array
@@ -476,7 +476,7 @@ public abstract class Executor implements ExecutorBase
     * Send a one way response message back to the other side
     */
    protected final void executeResponse(Parser receiver, Object response) throws XmlBlasterException, IOException {
-      Parser returner = new Parser(Parser.RESPONSE_BYTE, receiver.getRequestId(),
+      Parser returner = new Parser(glob, Parser.RESPONSE_BYTE, receiver.getRequestId(),
                            receiver.getMethodName(), receiver.getSessionId());
       if (response instanceof String)
          returner.addMessage((String)response);
@@ -500,7 +500,7 @@ public abstract class Executor implements ExecutorBase
     * Send a one way exception back to the other side
     */
    protected final void executeExecption(Parser receiver, XmlBlasterException e) throws XmlBlasterException, IOException {
-      Parser returner = new Parser(Parser.EXCEPTION_BYTE, receiver.getRequestId(), receiver.getMethodName(), receiver.getSessionId());
+      Parser returner = new Parser(glob, Parser.EXCEPTION_BYTE, receiver.getRequestId(), receiver.getMethodName(), receiver.getSessionId());
       returner.setChecksum(false);
       returner.setCompressed(false);
       returner.addException(e);

@@ -73,7 +73,7 @@ TODO
    <property file="build.properties" />
  
    <property name="name" value="xmlBlaster"/>
-   <property name="version" value="0.80dev"/>
+   <property name="version" value="0.8x"/>
    <property name="year" value="1999-2002"/>
  
    <!-- property name="build.compiler" value="classic"/ -->
@@ -127,7 +127,7 @@ TODO
    <property name="cp.orb" value="lib/idl.jar:lib/jacorb.jar"/>
    <property name="cp.core" value="lib/concurrent.jar:lib/remotecons.jar:lib/servlet.jar:lib/junit.jar:${JAVA_HOME}/lib/tools.jar:lib/xmlrpc.jar:lib/a2Blaster.jar:lib/jutils.jar:lib/gnu-regexp.jar"/>
    <property name="cp.other" value="lib/mail.jar:lib/activation.jar:lib/batik/batik.jar:lib/batik/js.jar:lib/jax.jar"/>
-   <property name="cp.db" value="lib/Xindice/xalan-2.0.1.jar:lib/Xindice/xindice.jar:lib/Xindice/xmldb.jar"/>
+   <property name="cp.db" value="lib/Xindice/xalan-2.0.1.jar:lib/Xindice/xindice.jar:lib/Xindice/xmldb.jar:lib/jdbc7.2dev-1.2.jar"/>
    <property name="cp.xpath" value="lib/xpath/jaxen-core.jar:lib/xpath/jaxen-dom.jar:lib/xpath/saxpath.jar"/>
    <property name="cp.test" value="${testsuite.java.dir}:lib/testsuite.jar"/>
 
@@ -345,6 +345,7 @@ TODO
       <!-- convert idl -->
       <echo message="Converting idl..."/>
       <property name="idlBuild.required" value="true" />
+      <echo message="Comparing ${idl.dir}/xmlBlaster.idl to ${idl.dir}/serverIdl/Server.java"/>
       <uptodate property="idlBuild.required" targetfile="${idl.dir}/serverIdl/Server.java" value="false">
          <srcfiles dir= "${idl.dir}" includes="xmlBlaster.idl"/>
       </uptodate>
@@ -427,7 +428,7 @@ TODO
             optimize="${optimize}"
             deprecation="${deprecation}"
             target="${JVM.target}" />
-      <jar destfile="${build.dir}/demo.jar" basedir="${build.dest}" includes="javaclients/**/*.class,http/**/*.class,HelloWorld*"/>
+      <jar destfile="${build.dir}/demo.jar" basedir="${build.dest}" includes="javaclients/**/*.class,http/**/*.class,Hello*"/>
       <copy file="${build.dir}/demo.jar" tofile="${lib.dir}/demo.jar"/>
    </target>
  
@@ -440,7 +441,7 @@ TODO
       <delete file="${lib.dir}/testsuite.jar"/>
       <delete file="${build.dir}/${name}.jar"/>
       <jar destfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}"
-           includes="org/**/*.*,javaclients/**/*.class,http/**/*.class,html/systemInfo/*.class,xmlBlaster.policy,*.gif,*.properties,HelloWorld*,doc/requirements/*"/>
+           includes="org/**/*.*,javaclients/**/*.class,http/**/*.class,html/systemInfo/*.class,xmlBlaster.policy,*.gif,*.properties,Hello*,doc/requirements/*"/>
       <copy file="${build.dir}/${name}.jar" tofile="${lib.dir}/${name}.jar"/>
    </target>
  
@@ -702,7 +703,7 @@ TODO
       <echo message="Creating javadoc documentation"/>
       <mkdir dir="${javadoc.dir}"/>
       <javadoc packagenames="org.xmlBlaster.*,javaclients"
-               sourcepath="${src.java.dir}:${testsuite.java.dir}:${demo.dir}"
+               sourcepath="${src.java.dir}:${testsuite.java.dir}:${demo.dir}:${demo.java.dir}"
                classpath="${cp}"
                destdir="${javadoc.dir}"
                author="true"
@@ -1149,7 +1150,7 @@ TODO
       <echo message=" CORBACPP_HOME = ${CORBACPP_HOME}"/>
       <echo message=" CORBACPP_VER  = ${CORBACPP_VER}"/>
  
-      <!-- C++ compilation needs some OS dependend settings (sorry, if have only UNIX & WINDOWS to test) -->
+      <!-- C++ compilation needs some OS dependend settings (sorry, but we currently only have UNIX & WINDOWS to test) -->
       <switch value="${os.family}" caseinsensitive="false">
          <case value="unix">
             <property name="WIN_TOKEN" value="" />
@@ -1209,6 +1210,7 @@ TODO
          <fileset dir="${src.cpp.dir}/generated" includes="*.cpp"/>
          <fileset dir="${src.cpp.dir}/util" includes="*.cpp" />
          <fileset dir="${src.cpp.dir}/client" includes="*.cpp" />
+         <fileset dir="${src.cpp.dir}/libs/thread/src" includes="*.cpp"/>
          <includepath location="${src.cpp.dir}" />
          <!-- sysincludepath location="${STL_HOME}/stlport" /-->
          <sysincludepath location="${CORBACPP_HOME}/include" />
@@ -1216,7 +1218,8 @@ TODO
          <sysincludepath location="${XMLCPP_HOME}/src" if="windows" />               <!-- xerces win32 -->
          <sysincludepath location="${XMLCPP_HOME}/include" />           <!-- xerces 1.6.0 -->
          <sysincludepath location="${XMLCPP_HOME}/include/xercesc" />   <!-- Since xerces 1.7.0 -->
-         <defineset>
+
+        <defineset>
             <define name="MICO" value="1" />
             <define name="pedantic" />
             <define name="Wall" />
@@ -1281,6 +1284,7 @@ TODO
          <libset dir="${lib.dir}" libs="xmlBlasterClient" />
 
          <syslibset dir="/lib" libs="dl" if="unix"/> <!-- if="Linux" -->
+         <syslibset dir="/usr/lib" libs="pthread" if="unix"/> <!-- if="Linux" -->
 
          <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/lib" />
          <linkerarg value="-Wl,-rpath=${XMLCPP_HOME}/lib" />

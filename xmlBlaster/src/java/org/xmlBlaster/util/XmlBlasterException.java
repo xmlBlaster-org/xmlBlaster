@@ -3,127 +3,544 @@ Name:      XmlBlasterException.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Basic xmlBlaster exception.
-Version:   $Id: XmlBlasterException.java,v 1.8 2002/09/13 23:18:18 ruff Exp $
+Version:   $Id: XmlBlasterException.java,v 1.9 2002/11/26 12:39:32 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
-import java.io.*;
-import org.xmlBlaster.client.protocol.ConnectionException;
+import java.io.StringWriter;
+import java.io.PrintWriter;
+import java.io.ByteArrayOutputStream;
+import java.text.MessageFormat;
+import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.Global;
 import org.jutils.JUtilsException;
 
 
 /**
  * The basic exception handling class for xmlBlaster.
- * <p />
+ * <p>
  * This exception will be thrown in remote RMI calls as well.
- * <p />
- * Set "-Log.exception true" on command line to get Log.error()
- * for a new XmlBlasterException thrown (includes method and line number).
+ * </p>
+ * <p>
+ * The getMessage() method returns a configurable formatted string
+ * here is an example how to configure the format in your xmlBlaster.properties:
+ * <pre>
+ *  XmlBlasterException.logFormat=XmlBlasterException errorCode=[{0}] node=[{1}] location=[{2}] message=[{4} : {8}]
+ *  XmlBlasterException.logFormat.internal= XmlBlasterException errorCode=[{0}] node=[{1}] location=[{2}]\nmessage={4} : {8}\nversionInfo={5}\nstackTrace={7}
+ *  XmlBlasterException.logFormat.resource= defaults to XmlBlasterException.logFormat
+ *  XmlBlasterException.logFormat.communication= defaults to XmlBlasterException.logFormat
+ *  XmlBlasterException.logFormat.user= defaults to XmlBlasterException.logFormat
+ *  XmlBlasterException.logFormat.transaction= defaults to XmlBlasterException.logFormat
+ *  XmlBlasterException.logFormat.legacy= defaults to XmlBlasterException.logFormat
+ * </pre>
+ * where the replacements are:
+ * <pre>
+ *  {0} = errorCodeStr
+ *  {1} = node
+ *  {2} = location
+ *  {3} = lang
+ *  {4} = message
+ *  {5} = versionInfo
+ *  {6} = timestamp
+ *  {7} = stackTrace
+ *  {8} = embeddedMessage
+ *  {9} = transactionInfo
+ * </pre>
  * @author "Marcel Ruff" <ruff@swand.lake.de>
+ * @since 0.8+ with extended attributes
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.errorcodes.html">The admin.errorcodes requirement</a>
+ * @see org.xmlBlaster.test.classtest.XmlBlasterExceptionTest
  */
 public class XmlBlasterException extends Exception implements java.io.Serializable
 {
-   public String id;
-   public String reason;
+   transient private final Global glob;
+   transient private ErrorCode errorCodeEnum;
+   private String errorCodeStr;
+   private final String node;
+   private final String location;
+   private final String lang;
+   private final String versionInfo;
+   transient private Timestamp timestamp;
+   private final long timestampNanos;
+   private final String stackTrace;
 
-   /** Set to true if a new exception shall be logged with Log.error() */
-   private static boolean logException;
-   
-   /** Where to find the method and line number in the stack trace */
-   private static int numIgnore;
+   transient private final Throwable cause; // Since JDK 1.4 this is available in Throwable, we keep it here to support older JDK versions
+   private String embeddedMessage;
+   private final String transactionInfo;
 
-   
-   static {
-      logException = Global.instance().getProperty().get("Log.exception", false);
-      String jvm = System.getProperty("java.vm.info");
-      numIgnore = 3;
-      if (jvm != null) {
-         if (jvm.indexOf("IBM") >= 0)
-            numIgnore = 5;
+   private final static String DEFAULT_LOGFORMAT = "XmlBlasterException errorCode=[{0}] node=[{1}] location=[{2}] message=[{4} : {8}]";
+   private final static String DEFAULT_LOGFORMAT_INTERNAL = "XmlBlasterException node=[{1}] location=[{2}]\n" +
+                                                            "{8}\n" +
+                                                            "stackTrace={7}\n" +
+                                                            "versionInfo={5}\n";
+   private final String logFormatInternal;
+   private final String logFormatResource;
+   private final String logFormatCommunication;
+   private final String logFormatUser;
+   private final String logFormatTransaction;
+   private final String logFormatLegacy;
+   private final String logFormat;
+
+   public XmlBlasterException(Global glob, ErrorCode errorCodeEnum, String location, String message) {
+      this(glob, errorCodeEnum, location, message, (Throwable)null);
+   }
+
+   public XmlBlasterException(Global glob, ErrorCode errorCodeEnum, String location, String message, Throwable cause) {
+      this(glob, errorCodeEnum, (String)null, location, (String)null, message, (String)null, (Timestamp)null,
+           (String)null, (String)null, (String)null, cause);
+   }
+
+   /**
+    * For internal use: Deserializing and exception creation from CORBA XmlBlasterException
+    */
+   public XmlBlasterException(Global glob, ErrorCode errorCodeEnum, String node, String location, 
+                               String lang, String message, String versionInfo, Timestamp timestamp,
+                               String stackTrace, String embeddedMessage, String transcationInfo) {
+      this(glob, errorCodeEnum, node, location, lang, message, versionInfo, timestamp,
+           stackTrace, embeddedMessage, transcationInfo, (Throwable)null);
+   }
+
+   private XmlBlasterException(Global glob, ErrorCode errorCodeEnum, String node, String location, 
+                               String lang, String message, String versionInfo, Timestamp timestamp,
+                               String stackTrace, String embeddedMessage, String transcationInfo, Throwable cause) {
+      //super(message, cause); // JDK 1.4 only
+      super(message);
+      this.glob = (glob == null) ? Global.instance() : glob;
+      this.logFormat = this.glob.getProperty().get("XmlBlasterException.logFormat", DEFAULT_LOGFORMAT);
+      this.logFormatInternal = this.glob.getProperty().get("XmlBlasterException.logFormat.internal", DEFAULT_LOGFORMAT_INTERNAL);
+      this.logFormatResource = this.glob.getProperty().get("XmlBlasterException.logFormat.resource", this.logFormat);
+      this.logFormatCommunication = this.glob.getProperty().get("XmlBlasterException.logFormat.communication", this.logFormat);
+      this.logFormatUser = this.glob.getProperty().get("XmlBlasterException.logFormat.user", this.logFormat);
+      this.logFormatTransaction = this.glob.getProperty().get("XmlBlasterException.logFormat.transaction", this.logFormat);
+      this.logFormatLegacy = this.glob.getProperty().get("XmlBlasterException.logFormat.legacy", this.logFormat);
+
+      this.errorCodeEnum = (errorCodeEnum == null) ? ErrorCode.INTERNAL_UNKNOWN : errorCodeEnum;
+      this.errorCodeStr = this.errorCodeEnum.getErrorCode();
+      this.node = (node == null) ? this.glob.getId() : node;
+      this.location = location;
+      this.lang = (lang == null) ? "en" : lang; // System.getProperty("user.language");
+      this.versionInfo = (versionInfo == null) ? createVersionInfo() : versionInfo;
+      this.timestamp = (timestamp == null) ? new Timestamp() : timestamp;
+      this.timestampNanos = this.timestamp.getTimestamp();
+
+      this.cause = cause;
+      this.stackTrace = (stackTrace == null) ? createStackTrace() : stackTrace;
+      this.embeddedMessage = (embeddedMessage == null) ?
+                                ((this.cause == null) ? "" : this.cause.toString()) : embeddedMessage; // cause.toString() is <classname>:getMessage()
+      this.transactionInfo = (transcationInfo == null) ? "<transaction/>" : transcationInfo;
+   }
+
+   public final void changeErrorCode(ErrorCode errorCodeEnum) {
+      if (this.embeddedMessage == null || this.embeddedMessage.length() < 1) {
+         this.embeddedMessage = "Original erroCode=" + this.errorCodeStr;
       }
+      this.errorCodeEnum = (errorCodeEnum == null) ? ErrorCode.INTERNAL_UNKNOWN : errorCodeEnum;
+      this.errorCodeStr = this.errorCodeEnum.getErrorCode();
    }
 
-   public XmlBlasterException(String id, String reason)
-   {
-      this.id = id;
-      this.reason = reason;
-      if (logException) log();
+   public final Global getGlobal() {
+      return this.glob;
    }
 
-   public XmlBlasterException(JUtilsException e)
-   {
-      this.id = e.id;
-      this.reason = e.reason;
-      if (logException) log();
-   }
-
-   public XmlBlasterException(ConnectionException e)
-   {
-      this.id = e.id;
-      this.reason = e.reason;
-      if (logException) log();
-   }
-
-   private void log()
-   {
-      String location = null;
-      try {
-         StringWriter stringWriter = new StringWriter();
-         PrintWriter printWriter = new PrintWriter(stringWriter);
-         (new Exception()).printStackTrace(printWriter);
-         String trace = stringWriter.getBuffer().toString();
-         StringReader stringReader = new StringReader(trace);
-         BufferedReader bufferedReader = new BufferedReader(stringReader);
-         //for (int ii=0; ii<numIgnore; ii++) System.out.println(bufferedReader.readLine()); // ignore first 3 lines (is this location)
-         for (int ii=0; ii<numIgnore; ii++) bufferedReader.readLine(); // ignore first 3 lines (is this location)
-         String stackEntry = bufferedReader.readLine().trim();
-         int space = stackEntry.indexOf(" ");
-         int paren = stackEntry.indexOf("(");
-         int colon = stackEntry.indexOf(":");
-         String method = stackEntry.substring(space + 1, paren);
-         String sourceName = stackEntry.substring(paren + 1, colon);
-         int line = 0;
+   /**
+    * @return The error code enumeration object, is never null
+    */
+   public final ErrorCode getErrorCode() {
+      if (this.errorCodeEnum == null) {
          try {
-            paren = stackEntry.indexOf(")");
-            String ln = stackEntry.substring(colon+1, paren);
-            line = Integer.parseInt(ln);
+            this.errorCodeEnum = ErrorCode.toErrorCode(this.errorCodeStr);
          }
-         catch (NumberFormatException e) {}
-         //location = sourceName + ":" + method + ":" + line;
-         location = method + ":" + line;
+         catch (IllegalArgumentException e) {
+            this.errorCodeEnum = ErrorCode.INTERNAL_UNKNOWN;
+         }
       }
-      catch (IOException e) {}
-
-      if (location != null)
-         Global.instance().getLog(null).error(location + "-" + id, reason);
-      else
-         Global.instance().getLog(null).error(id, reason);
-
+      return this.errorCodeEnum;
    }
 
-   public String toString()
-   {
-      return "id=" + id + " reason=" + reason;
+   public final String getErrorCodeStr() {
+      return this.errorCodeStr;
+   }
+
+   public final String getNode() {
+      return this.node;
+   }
+
+   public final String getLocation() {
+      return this.location;
+   }
+
+   public final String getLang() {
+      return this.lang;
+   }
+
+   /**
+    * Configurable with property <i>XmlBlasterException.logFormat</i>,
+    * <i>XmlBlasterException.logFormat.internal</i> <i>XmlBlasterException.logFormat.resource</i> etc.
+    * @return e.g. errorCode + ": " + getMessage() + ": " + getEmbeddedMessage()
+    */
+   public String getMessage() {
+      Object[] arguments = {  errorCodeStr,  // {0}
+                              node,          // {1}
+                              location,      // {2}
+                              lang,          // {3}
+                              getRawMessage(), // {4}
+                              versionInfo,   // {5}
+                              timestamp.toString(),  // {6}
+                              stackTrace,    // {7}
+                              embeddedMessage, // {8}
+                              transactionInfo }; // {9}
+      if (isInternal()) {
+         return MessageFormat.format(this.logFormatInternal, arguments);
+      }
+      else if (isResource()) {
+         return MessageFormat.format(this.logFormatResource, arguments);
+      }
+      else if (isCommunication()) {
+         return MessageFormat.format(this.logFormatCommunication, arguments);
+      }
+      else if (isUser()) {
+         return MessageFormat.format(this.logFormatUser, arguments);
+      }
+      else if (errorCodeEnum == ErrorCode.LEGACY) {
+         return MessageFormat.format(this.logFormatLegacy, arguments);
+      }
+      else {
+         return MessageFormat.format(this.logFormat, arguments);
+      }
+   }
+
+   /**
+    * @return The original message text
+    */
+   public final String getRawMessage() {
+      return super.getMessage();
+   }
+
+   /**
+    * A comma separated list with key/values containing detailed
+    * information about the server environment
+    */
+   public final String getVersionInfo() {
+      return this.versionInfo;
+   }
+
+   /**
+    * Timestamp when exception was thrown
+    */
+   public final Timestamp getTimestamp() {
+      if (this.timestamp == null) {
+         this.timestamp = new Timestamp(this.timestampNanos);
+      }
+      return this.timestamp;
+   }
+
+   /**
+    * The original exception, note that this is not serialized. 
+    * @return The original exception or null
+    */
+   public final Throwable getEmbeddedException() {
+      //return getCause(); // JDK 1.4 or better only
+      return this.cause;
+   }
+
+   /**
+    * @return The stack trace or null, e.g.
+    * <pre>
+    *  stackTrace= errorCode=internal.unknown message=Bla bla
+    *    at org.xmlBlaster.util.XmlBlasterException.main(XmlBlasterException.java:488)
+    * </pre>
+    * The first line is the result from toString() and the following lines
+    * are the stackTrace
+    */
+   public final String getStackTraceStr() {
+      return this.stackTrace;
+   }
+
+   /**
+    * @return The toString() of the embedded exception which is <classname>:getMessage()<br />
+    *         or null if not applicable
+    */
+   public final String getEmbeddedMessage() {
+      return this.embeddedMessage;
+   }
+
+   /**
+    * @return Not defined yet
+    */
+   public final String getTransactionInfo() {
+      return this.transactionInfo;
+   }
+
+   public boolean isInternal() {
+      return this.errorCodeStr.startsWith("internal");
+   }
+
+   public boolean isResource() {
+      return this.errorCodeStr.startsWith("resource");
+   }
+
+   public boolean isCommunication() {
+      return this.errorCodeStr.startsWith("communication");
+   }
+
+   public boolean isUser() {
+      return this.errorCodeStr.startsWith("user");
+   }
+
+   public boolean isTransaction() {
+      return this.errorCodeStr.startsWith("transaction");
+   }
+
+   private String createStackTrace() {
+      StringWriter sw = new StringWriter();
+      PrintWriter pw = new PrintWriter(sw);
+      if (this.cause != null) {
+         cause.printStackTrace(pw);
+      }
+      printStackTrace(pw);  // prints: toString() and in next lines the stack trace
+      return sw.toString().trim();
+   }
+
+   private String createVersionInfo() {
+      StringBuffer buf = new StringBuffer(512);
+      buf.append("version=").append(this.glob.getVersion()).append(",");
+      buf.append("os.name=").append(System.getProperty("os.name", "unknown").trim()).append(",");
+      buf.append("os.version=").append(System.getProperty("os.version", "unknown").trim()).append(",");
+      buf.append("java.vm.vendor=").append(System.getProperty("java.vm.vendor", "unknown").trim()).append(",");
+      buf.append("java.vm.version=").append(System.getProperty("java.vm.version", "unknown").trim()).append(",");
+      buf.append("os.arch=").append(System.getProperty("os.arch", "unknown").trim()).append(",");
+      buf.append("build.timestamp=").append(this.glob.getBuildTimestamp()).append(",");
+      buf.append("build.java.vendor=").append(this.glob.getBuildJavaVendor()).append(",");
+      buf.append("build.java.version=").append(this.glob.getBuildJavaVersion()); // .append(",");
+      return buf.toString();
+   }
+
+   /**
+    * @deprecated Please use constructor which uses ErrorCode
+    */
+   public XmlBlasterException(String location, String message) {
+      this((Global)null, ErrorCode.LEGACY, location, message, (Throwable)null);
+   }
+
+   /**
+    * @deprecated Please use constructor which uses ErrorCode
+    */
+   public XmlBlasterException(JUtilsException e) {
+      this((Global)null, ErrorCode.LEGACY, e.id, e.reason);
+   }
+
+   /**
+    * Caution: The syntax is used by parseToString() to parse the stringified exception again.<br />
+    * This is used by XmlRpc, see XmlRpcConnection.extractXmlBlasterException()
+    */
+   public String toString() {
+      return "errorCode=" + getErrorCodeStr() + " message=" + getRawMessage();
+   }
+
+   /**
+    * Parsing what toString() produced
+    */
+   public static XmlBlasterException parseToString(Global glob, String toString) {
+      String errorCode = toString;
+      String reason = toString;
+      int start = toString.indexOf("errorCode=");
+      int end = toString.indexOf(" message=");
+      if (start >= 0) {
+         if (end >= 0) {
+            try { errorCode = toString.substring(start+"errorCode=".length(), end); } catch(IndexOutOfBoundsException e1) {}
+         }
+         else {
+            try { errorCode = toString.substring(start+"errorCode=".length()); } catch(IndexOutOfBoundsException e2) {}
+         }
+      }
+      if (end >= 0) {
+         try { reason = toString.substring(end+" message=".length()); } catch(IndexOutOfBoundsException e3) {}
+      }
+      try {
+         return new XmlBlasterException(glob, ErrorCode.toErrorCode(errorCode), "XmlBlasterException", reason);
+      }
+      catch (IllegalArgumentException e) {
+         glob.getLog("core").warn("XmlBlasterException", "Parsing exception string <" + toString + "> failed: " + e.toString());
+         return new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, "XmlBlasterException", toString);
+      }
    }
 
    /**
     * Create a XML representation of the Exception.
     * <pre>
-    *   &lt;exception id='" + id + "'>
+    *   &lt;exception errorCode='resource.outOfMemory'>
     *      &lt;class>JavaClass&lt;/class>
-    *      &lt;reason>&lt;![cdata[
-    *        bla bla
-    *      ]]>&lt;/reason>
+    *      &lt;message>&lt;![cdata[  bla bla ]]>&lt;/message>
     *   &lt;/exception>
     * </pre>
     */
-   public String toXml()
-   {
-      StringBuffer buf = new StringBuffer(reason.length() + 256);
-      buf.append("<exception id='").append(id).append("'>\n");
+   public String toXml() {
+      StringBuffer buf = new StringBuffer(getMessage().length() + 256);
+      buf.append("<exception errorCode='").append(getErrorCodeStr()).append("'>\n");
       buf.append("   <class>").append(getClass().getName()).append("</class>\n");
-      buf.append("   <reason><![CDATA[").append(reason).append("]]></reason>\n");
+      buf.append("   <node>").append(getNode()).append("</node>\n");
+      buf.append("   <location>").append(getLocation()).append("</location>\n");
+      buf.append("   <lang>").append(getLang()).append("</lang>\n");
+      buf.append("   <message><![CDATA[").append(getRawMessage()).append("]]></message>\n");
+      buf.append("   <versionInfo>").append(getVersionInfo()).append("</versionInfo>\n");
+      buf.append("   <timestamp>").append(getTimestamp().toString()).append("</timestamp>\n");
+      buf.append("   <stackTrace><![CDATA[").append(getStackTraceStr()).append("]]></stackTrace>\n");
+      buf.append("   <embeddedMessage><![CDATA[").append(getEmbeddedMessage()).append("]]></embeddedMessage>\n");
+      //buf.append("   <transactionInfo><![CDATA[").append(getTransactionInfo()).append("]]></transactionInfo>\n");
       buf.append("</exception>");
       return buf.toString();
+   }
+
+   /**
+    * Serialize the complete exception
+    */
+   public byte[] toByteArr() {
+      ByteArrayOutputStream byteOut = new ByteArrayOutputStream(1024);
+      PrintWriter out = new PrintWriter(byteOut);
+      out.write(getErrorCodeStr());
+      out.write(0);
+      out.write(getNode());
+      out.write(0);
+      out.write(getLocation());
+      out.write(0);
+      out.write(getLang());
+      out.write(0);
+      out.write(getRawMessage());
+      out.write(0);
+      out.write(getVersionInfo());
+      out.write(0);
+      out.write(getTimestamp().toString());
+      out.write(0);
+      out.write(getStackTraceStr());
+      out.write(0);
+      out.write(getEmbeddedMessage());
+      out.write(0);
+      out.write(getTransactionInfo());
+      out.write(0);
+      out.flush();
+      byte[] result = byteOut.toByteArray();
+      return result;
+   }
+
+   /**
+    * Serialize the complete exception
+    */
+   public static XmlBlasterException parseByteArr(Global glob, byte[] data) {
+      if (data == null)
+         return new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, "XmlBlasterException", "Can't parse given serial XmlBlasterException data");
+      int start = 0;
+      int end = start;
+      
+      for (end=start; end<data.length; end++)
+         if (data[end] == 0)
+            break;
+      String errorCodeStr = new String(data, start, end-start);
+
+      start = end+1;
+      for (end=start; end<data.length; end++)
+         if (data[end] == 0)
+            break;
+      String node = new String(data, start, end-start);
+
+      start = end+1;
+      for (end=start; end<data.length; end++)
+         if (data[end] == 0)
+            break;
+      String location = new String(data, start, end-start);
+
+      start = end+1;
+      for (end=start; end<data.length; end++)
+         if (data[end] == 0)
+            break;
+      String lang = new String(data, start, end-start);
+
+      start = end+1;
+      for (end=start; end<data.length; end++)
+         if (data[end] == 0)
+            break;
+      String message = new String(data, start, end-start);
+
+      start = end+1;
+      for (end=start; end<data.length; end++)
+         if (data[end] == 0)
+            break;
+      String versionInfo = new String(data, start, end-start);
+
+      start = end+1;
+      for (end=start; end<data.length; end++)
+         if (data[end] == 0)
+            break;
+      String timestampStr = new String(data, start, end-start);
+
+      start = end+1;
+      for (end=start; end<data.length; end++)
+         if (data[end] == 0)
+            break;
+      String stackTrace = new String(data, start, end-start);
+
+      start = end+1;
+      for (end=start; end<data.length; end++)
+         if (data[end] == 0)
+            break;
+      String embeddedMessage = new String(data, start, end-start);
+
+      start = end+1;
+      for (end=start; end<data.length; end++)
+         if (data[end] == 0)
+            break;
+      String transactionInfo = new String(data, start, end-start);
+
+      return new XmlBlasterException(glob, ErrorCode.toErrorCode(errorCodeStr),
+                               node, location, lang, message, versionInfo, Timestamp.valueOf(timestampStr),
+                               stackTrace, embeddedMessage, transactionInfo);
+   }
+
+   /**
+    * If throwable is of type XmlBlasterException it is just casted (and location/message are ignored)
+    * else if throwable is one if IllegalArgumentException, NullpointerException or OutOfMemoryError
+    * it is converted to an XmlBlasterException with corresponding ErrorCode
+    * otherwise the ErrorCode is INTERNAL_UNKNOWN
+    * @param location null if not of interest
+    * @param message null if not of interest
+    * @param throwable Any exception type you can think of
+    * @return An exception of type XmlBlasterException
+    */
+   public static XmlBlasterException convert(Global glob, String location, String message, Throwable throwable) {
+      if (throwable instanceof XmlBlasterException) {
+         return (XmlBlasterException)throwable;
+      }
+      else if (throwable instanceof NullPointerException) {
+         return new XmlBlasterException(glob, ErrorCode.INTERNAL_NULLPOINTER, location, message, throwable);
+      }
+      else if (throwable instanceof IllegalArgumentException) {
+         return new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, location, message, throwable);
+      }
+      else if (throwable instanceof OutOfMemoryError) {
+         return new XmlBlasterException(glob, ErrorCode.RESOURCE_OUTOFMEMORY, location, message, throwable);
+      }
+      else {
+         return new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, location, message, throwable);
+      }
+   }
+
+   /**
+    * java org.xmlBlaster.util.XmlBlasterException
+    */
+   public static void main(String[] args) {
+      Global glob = new Global(args);
+      XmlBlasterException e = new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_BYTES, "LOC", "Bla bla");
+      System.out.println(e.toXml());
+      byte[] serial = e.toByteArr();
+      System.out.println("\n" + new String(serial));
+      XmlBlasterException back = parseByteArr(glob, serial);
+      System.out.println("BACK\n" + back.toXml());
+      System.out.println("\ngetMessage:\n" + back.getMessage());
+
+      e = new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, "LOC", "Bla bla");
+      System.out.println("\ngetMessage:\n" + e.getMessage());
+
+      e = XmlBlasterException.convert(glob, null, null, new IllegalArgumentException("wrong args"));
+      System.out.println("\ngetMessage:\n" + e.getMessage());
    }
 }

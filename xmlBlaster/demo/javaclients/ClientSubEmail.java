@@ -3,7 +3,7 @@ Name:      ClientSubEmail.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSubEmail.java,v 1.15 2002/08/23 21:46:38 ruff Exp $
+Version:   $Id: ClientSubEmail.java,v 1.16 2002/11/26 12:36:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -14,11 +14,11 @@ import org.jutils.init.Args;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.util.ConnectQos;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
-import org.xmlBlaster.client.EraseRetQos;
-import org.xmlBlaster.client.SubscribeKeyWrapper;
-import org.xmlBlaster.client.SubscribeQosWrapper;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
+import org.xmlBlaster.client.key.SubscribeKey;
+import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.CallbackAddress;
@@ -105,20 +105,20 @@ public class ClientSubEmail implements I_Callback
          {
             log.info(ME, "Subscribing using XPath syntax ...");
 
-            // SubscribeKeyWrapper helps us to create this string:
+            // SubscribeKey helps us to create this string:
             //   "<key oid='' queryType='XPATH'>" +
             //   "   /xmlBlaster/key/ClientSubEmail-AGENT" +
             //   "</key>";
-            SubscribeKeyWrapper key = new SubscribeKeyWrapper("/xmlBlaster/key/DemoMail", "XPATH");
+            SubscribeKey key = new SubscribeKey(glob, "/xmlBlaster/key/DemoMail", "XPATH");
 
-            // SubscribeKeyWrapper helps us to create "<qos></qos>":
-            SubscribeQosWrapper qos = new SubscribeQosWrapper();
+            // SubscribeKey helps us to create "<qos></qos>":
+            SubscribeQos qos = new SubscribeQos(glob);
 
             try {
                blasterConnection.subscribe(key.toXml(), qos.toXml());
                log.info(ME, "Subscribe done, there should be no Callback");
             } catch(XmlBlasterException e) {
-               log.warn(ME, "XmlBlasterException: " + e.reason);
+               log.warn(ME, "XmlBlasterException: " + e.getMessage());
             }
          }
 
@@ -145,10 +145,10 @@ public class ClientSubEmail implements I_Callback
             MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes(), "<qos></qos>");
             log.info(ME, "Publishing ...");
             try {
-               publishOid = blasterConnection.publish(msgUnit).getOid();
+               publishOid = blasterConnection.publish(msgUnit).getKeyOid();
                log.info(ME, "Publishing done, returned oid=" + publishOid);
             } catch(XmlBlasterException e) {
-               log.warn(ME, "XmlBlasterException: " + e.reason);
+               log.warn(ME, "XmlBlasterException: " + e.getMessage());
             }
          }
 
@@ -167,9 +167,9 @@ public class ClientSubEmail implements I_Callback
                             "<key oid='" + publishOid + "' queryType='EXACT'>\n" +
                             "</key>";
             try {
-               EraseRetQos[] arr = blasterConnection.erase(xmlKey, "<qos></qos>");
+               EraseReturnQos[] arr = blasterConnection.erase(xmlKey, "<qos></qos>");
                if (arr.length != 1) log.error(ME, "Erased " + arr.length + " messages:");
-            } catch(XmlBlasterException e) { log.error(ME, "XmlBlasterException: " + e.reason); }
+            } catch(XmlBlasterException e) { log.error(ME, "XmlBlasterException: " + e.getMessage()); }
          }
 
          blasterConnection.disconnect(null);

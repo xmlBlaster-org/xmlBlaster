@@ -3,7 +3,7 @@ Name:      StringStripper.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to strip a string containing separators into a vector
-Author:    <Michele Laghi> michele.laghi@attglobal.net
+Author:    <Michele Laghi> laghi@swissinfo.org
 -----------------------------------------------------------------------------*/
 
 #ifndef _UTIL_STRINGSTRIPPER_H

@@ -43,7 +43,7 @@ final public class MsgHandler implements I_CommandHandler, I_Plugin {
       this.glob = glob;
       this.log = this.glob.getLog("admin");
       this.commandManager = commandManager;
-      this.ME = "MsgHandler" + this.glob.getLogPraefixDashed();
+      this.ME = "MsgHandler" + this.glob.getLogPrefixDashed();
       this.commandManager.register("msg", this);
       log.info(ME, "Message administration plugin is initialized");
    }
@@ -162,7 +162,7 @@ final public class MsgHandler implements I_CommandHandler, I_Plugin {
       String xmlKey = "<key oid='" + oid + "'/>";
       String qos = "<qos/>";
 
-      MessageUnit[] msgUnitArr = xmlBlaster.get(sessionId, xmlKey, qos);
+      MessageUnit[] msgUnitArr = xmlBlaster.get(sessionId, xmlKey, qos); // The returned array is a clone, we may manipulate it
 
       if (msgUnitArr.length < 1) {
          log.info(ME, cmd.getCommand() + " Message oid=" + oid + " not found");
@@ -178,8 +178,8 @@ final public class MsgHandler implements I_CommandHandler, I_Plugin {
                       " try something like '?content=Hello world'");
 
       for (int ii=0; ii<msgUnitArr.length; ii++) {
-         msgUnitArr[ii].setContent(value.getBytes());
-         msgUnitArr[ii].setQos("<qos/>"); // We kill the original QoS
+         // Shallow clone: Setting new content. We keep the original key, but kill the original QoS
+         msgUnitArr[ii] = new MessageUnit(msgUnitArr[ii], null, value.getBytes(), "<qos/>");
       }
       String[] retArr = xmlBlaster.publishArr(sessionId, msgUnitArr);
 

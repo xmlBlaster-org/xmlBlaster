@@ -5,7 +5,20 @@ import org.xmlBlaster.util.Global;
 
 // for client connections:
 import org.xmlBlaster.util.*;
-import org.xmlBlaster.client.*;
+import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.client.key.PublishKey;
+import org.xmlBlaster.client.key.EraseKey;
+import org.xmlBlaster.client.key.GetKey;
+import org.xmlBlaster.client.key.SubscribeKey;
+import org.xmlBlaster.client.key.UnSubscribeKey;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.PublishQos;
+import org.xmlBlaster.client.qos.PublishReturnQos;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.qos.SubscribeQos;
+import org.xmlBlaster.client.qos.SubscribeReturnQos;
+import org.xmlBlaster.client.qos.UnSubscribeQos;
+import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.Constants;
@@ -101,13 +114,14 @@ public class PublishTest extends TestCase {
          assertTrue(assertInUpdate, assertInUpdate == null);
          assertInUpdate = null;
 
-         PublishKeyWrapper pk = new PublishKeyWrapper(oid, "text/plain", "1.0", domain);
-         PublishQosWrapper pq = new PublishQosWrapper();
+         PublishKey pk = new PublishKey(glob, oid, "text/plain", "1.0");
+         pk.setDomain(domain);
+         PublishQos pq = new PublishQos(glob);
          MessageUnit msgUnit = new MessageUnit(pk.toXml(), contentStr.getBytes(), pq.toXml());
-         PublishRetQos prq = bilboCon.publish(msgUnit);
+         PublishReturnQos prq = bilboCon.publish(msgUnit);
          log.info(ME+":"+serverHelper.getBilboGlob().getId(), "Published message of domain='" + pk.getDomain() + "' and content='" + contentStr +
                                     "' to xmlBlaster node with IP=" + serverHelper.getBilboGlob().getProperty().get("port",0) +
-                                    ", the returned QoS is: " + prq.getOid());
+                                    ", the returned QoS is: " + prq.getKeyOid());
 
          heronCon = serverHelper.connect(serverHelper.getHeronGlob(), new I_Callback() {  // Login to xmlBlaster, register for updates
                public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
@@ -122,29 +136,29 @@ public class PublishTest extends TestCase {
          assertInUpdate = null;
 
          System.err.println("->Check if the message has reached the master node heron ...");
-         GetKeyWrapper gk = new GetKeyWrapper(oid);
+         GetKey gk = new GetKey(glob, oid);
          MessageUnit[] msgs = heronCon.get(gk.toXml(), null);
          assertTrue("Invalid msgs returned", msgs != null);
          assertEquals("Invalid number of messages returned", 1, msgs.length);
-         assertTrue("Invalid message oid returned", msgs[0].getXmlKey().indexOf(oid) > 0);
-         log.info(ME+":"+serverHelper.getHeronGlob().getId(), "SUCCESS: Got message:" + msgs[0].getXmlKey());
+         assertTrue("Invalid message oid returned", msgs[0].getKey().indexOf(oid) > 0);
+         log.info(ME+":"+serverHelper.getHeronGlob().getId(), "SUCCESS: Got message:" + msgs[0].getKey());
 
          System.err.println("->Check if the message is available at the slave node bilbo ...");
-         gk = new GetKeyWrapper(oid);
+         gk = new GetKey(glob, oid);
          gk.setDomain(domain);
          msgs = bilboCon.get(gk.toXml(), null);
          assertTrue("Invalid msgs returned", msgs != null);
          assertEquals("Invalid number of messages returned", 1, msgs.length);
-         log.info(ME+":"+serverHelper.getBilboGlob().getId(), "SUCCESS: Got message:" + msgs[0].getXmlKey());
+         log.info(ME+":"+serverHelper.getBilboGlob().getId(), "SUCCESS: Got message:" + msgs[0].getKey());
 
          System.err.println("->Trying to erase the message at the slave node ...");
-         EraseKeyWrapper ek = new EraseKeyWrapper(oid);
+         EraseKey ek = new EraseKey(glob, oid);
          ek.setDomain(domain);
-         EraseQosWrapper eq = new EraseQosWrapper();
+         EraseQos eq = new EraseQos(glob);
          bilboCon.erase(ek.toXml(), eq.toXml());
 
          // Check if erased ...
-         gk = new GetKeyWrapper(oid);
+         gk = new GetKey(glob, oid);
          msgs = heronCon.get(gk.toXml(), null);
          assertTrue("Invalid msgs returned", msgs != null);
          assertEquals("Invalid number of messages returned", 0, msgs.length);
@@ -153,10 +167,10 @@ public class PublishTest extends TestCase {
          System.err.println("***PublishTest: Publish a message to a cluster slave - frodo is offline ...");
 
          System.err.println("->Subscribe from heron, the message is currently erased ...");
-         SubscribeKeyWrapper sk = new SubscribeKeyWrapper(oid);
+         SubscribeKey sk = new SubscribeKey(glob, oid);
          sk.setDomain(domain);
-         SubscribeQosWrapper sq = new SubscribeQosWrapper();
-         SubscribeRetQos srq = heronCon.subscribe(sk.toXml(), sq.toXml(), new I_Callback() {
+         SubscribeQos sq = new SubscribeQos(glob);
+         SubscribeReturnQos srq = heronCon.subscribe(sk.toXml(), sq.toXml(), new I_Callback() {
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                assertInUpdate = serverHelper.getHeronGlob().getId() + ": Reveiving unexpected asynchronous update message";
                assertEquals(assertInUpdate, oid, updateKey.getOid());
@@ -175,20 +189,21 @@ public class PublishTest extends TestCase {
          serverHelper.stopFrodo();
 
          System.err.println("->Check: heron hasn't got the message ...");
-         gk = new GetKeyWrapper(oid);
+         gk = new GetKey(glob, oid);
          msgs = heronCon.get(gk.toXml(), null);
          assertTrue("Invalid msgs returned", msgs != null);
          assertEquals("Invalid number of messages returned", 0, msgs.length);
          log.info(ME+":"+serverHelper.getHeronGlob().getId(), "SUCCESS: Got no message after erase");
 
          // publish again ...
-         pk = new PublishKeyWrapper(oid, "text/plain", "1.0", domain);
-         pq = new PublishQosWrapper();
+         pk = new PublishKey(glob, oid, "text/plain", "1.0");
+         pk.setDomain(domain);
+         pq = new PublishQos(glob);
          msgUnit = new MessageUnit(pk.toXml(), contentStr.getBytes(), pq.toXml());
          prq = bilboCon.publish(msgUnit);
          log.info(ME+":"+serverHelper.getBilboGlob().getId(), "Published message of domain='" + pk.getDomain() + "' and content='" + contentStr +
                                     "' to xmlBlaster node with IP=" + serverHelper.getBilboGlob().getProperty().get("port",0) +
-                                    ", the returned QoS is: " + prq.getOid());
+                                    ", the returned QoS is: " + prq.getKeyOid());
 
 
          assertEquals("heron is not reachable, publish should not have come through", 0, updateCounterHeron);
@@ -210,9 +225,9 @@ public class PublishTest extends TestCase {
          assertInUpdate = null;
 
          System.err.println("->Subscribe from frodo, is he able to organize it?");
-         sk = new SubscribeKeyWrapper(oid);
+         sk = new SubscribeKey(glob, oid);
          sk.setDomain(domain);
-         sq = new SubscribeQosWrapper();
+         sq = new SubscribeQos(glob);
          srq = frodoCon.subscribe(sk.toXml(), sq.toXml(), new I_Callback() {
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                log.info(ME+":"+serverHelper.getFrodoGlob().getId(), "Reveiving asynchronous message '" + updateKey.getOid() + "' in " + oid + " handler");
@@ -233,18 +248,18 @@ public class PublishTest extends TestCase {
          updateCounterBilbo = 0;
 
          System.err.println("->Check unSubscribe from client frodo ...");
-         UnSubscribeKeyWrapper uk = new UnSubscribeKeyWrapper(srq.getSubscriptionId());
-         UnSubscribeQosWrapper uq = new UnSubscribeQosWrapper();
+         UnSubscribeKey uk = new UnSubscribeKey(glob, srq.getSubscriptionId());
+         UnSubscribeQos uq = new UnSubscribeQos(glob);
          frodoCon.unSubscribe(uk.toXml(), uq.toXml());
 
          System.err.println("->Check publish, frodo should not get it ...");
-         pk = new PublishKeyWrapper(oid, "text/plain", "1.0", domain);
-         pq = new PublishQosWrapper();
+         pk = new PublishKey(glob, oid, "text/plain", "1.0", domain);
+         pq = new PublishQos(glob);
          msgUnit = new MessageUnit(pk.toXml(), contentStr.getBytes(), pq.toXml());
          prq = frodoCon.publish(msgUnit);
          log.info(ME+":"+serverHelper.getFrodoGlob().getId(), "Published message of domain='" + pk.getDomain() + "' and content='" + contentStr +
                                     "' to xmlBlaster node with IP=" + serverHelper.getFrodoGlob().getProperty().get("port",0) +
-                                    ", the returned QoS is: " + prq.getOid());
+                                    ", the returned QoS is: " + prq.getKeyOid());
 
          try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait some time
          assertEquals("frodo is unSubscribed and should not receive message", 0, updateCounterFrodo);

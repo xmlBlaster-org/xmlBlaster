@@ -2,14 +2,13 @@
 Name:      BlasterCache.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Helper to cache messages from xmlBlaster.
-Version:   $Id: BlasterCache.java,v 1.12 2002/09/13 23:17:53 ruff Exp $
-Author:    konrad.krafft@doubleslash.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
 
 import java.util.*;
 
@@ -23,6 +22,7 @@ import java.util.*;
  * If the CorbaConnection has switched this cache on,
  * a get() automatically makes a subscribe() behind the scenes as well
  * and subsequent get()s are high performing local calls.
+ * @author konrad.krafft@doubleslash.de
  */
 public class BlasterCache
 {
@@ -99,7 +99,7 @@ public class BlasterCache
       if(query2SubId.size() < size) {
          addSubscription( xmlKey, subId );
          for( int i = 0; i < units.length; i++ )
-            update( subId, units[i].xmlKey, units[i].content, units[i].qos );
+            update( subId, units[i].getKey(), units[i].getContent(), units[i].getQos() );
          return true;
       }
       else

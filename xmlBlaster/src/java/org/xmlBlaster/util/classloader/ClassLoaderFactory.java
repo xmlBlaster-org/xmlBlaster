@@ -145,7 +145,7 @@ public class ClassLoaderFactory {
          }
          log.trace(ME, text);
       }
-      return new XmlBlasterClassLoader(stringToUrl(classPath) );
+      return new XmlBlasterClassLoader(this.glob, stringToUrl(classPath) );
    }
    /**
     * Retrievs the base path for the object related classpath.

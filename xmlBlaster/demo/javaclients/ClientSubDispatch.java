@@ -3,7 +3,7 @@ Name:      ClientSubDispatch.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSubDispatch.java,v 1.11 2002/07/24 12:12:33 ruff Exp $
+Version:   $Id: ClientSubDispatch.java,v 1.12 2002/11/26 12:36:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -13,11 +13,11 @@ import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
-import org.xmlBlaster.client.EraseRetQos;
-import org.xmlBlaster.client.SubscribeKeyWrapper;
-import org.xmlBlaster.client.SubscribeQosWrapper;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
+import org.xmlBlaster.client.key.SubscribeKey;
+import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
 
@@ -60,8 +60,8 @@ public class ClientSubDispatch implements I_Callback
 
          // Subscribe to messages with XPATH using some helper classes
          log.info(ME, "Subscribing #1 for anonymous callback class using XPath syntax ...");
-         SubscribeKeyWrapper key = new SubscribeKeyWrapper("//DispatchTest", "XPATH");
-         SubscribeQosWrapper qos = new SubscribeQosWrapper();
+         SubscribeKey key = new SubscribeKey(glob, "//DispatchTest", "XPATH");
+         SubscribeQos qos = new SubscribeQos(glob);
          blasterConnection.subscribe(key.toXml(), qos.toXml(), new I_Callback() {
                public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                   log.info(ME, "Receiving message with specialized update() #1 ...");
@@ -75,7 +75,7 @@ public class ClientSubDispatch implements I_Callback
 
 
          log.info(ME, "Subscribing #2 for anonymous callback class using XPath syntax ...");
-         key = new SubscribeKeyWrapper("A message id");
+         key = new SubscribeKey(glob, "A message id");
          blasterConnection.subscribe(key.toXml(), qos.toXml(), new I_Callback() {
                public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                   log.info(ME, "Receiving message with specialized update() #2 ...");
@@ -98,7 +98,7 @@ public class ClientSubDispatch implements I_Callback
                            "</key>";
          String content = "Some content #1";
          MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes(), "<qos></qos>");
-         publishOid1 = blasterConnection.publish(msgUnit).getOid();
+         publishOid1 = blasterConnection.publish(msgUnit).getKeyOid();
          log.info(ME, "Publishing done, returned oid=" + publishOid1);
 
          try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait a second
@@ -108,7 +108,7 @@ public class ClientSubDispatch implements I_Callback
                   "</key>";
          content = "Some content #2";
          msgUnit = new MessageUnit(xmlKey, content.getBytes(), "<qos></qos>");
-         publishOid2 = blasterConnection.publish(msgUnit).getOid();
+         publishOid2 = blasterConnection.publish(msgUnit).getKeyOid();
          log.info(ME, "Publishing done, returned oid=" + publishOid2);
 
 
@@ -128,7 +128,7 @@ public class ClientSubDispatch implements I_Callback
          // cleaning up .... erase() the previous published message
          xmlKey = "<key oid='" + publishOid1 + "' queryType='EXACT'>\n" +
                   "</key>";
-         EraseRetQos[] strArr = blasterConnection.erase(xmlKey, "<qos></qos>");
+         EraseReturnQos[] strArr = blasterConnection.erase(xmlKey, "<qos></qos>");
          if (strArr.length != 1) log.error(ME, "Erased " + strArr.length + " message.");
 
          xmlKey = "<key oid='" + publishOid2 + "' queryType='EXACT'>\n" +
@@ -139,7 +139,7 @@ public class ClientSubDispatch implements I_Callback
          blasterConnection.disconnect(null);
       }
       catch(XmlBlasterException e) {
-         log.error(ME, "XmlBlasterException: " + e.reason);
+         log.error(ME, "XmlBlasterException: " + e.getMessage());
       }
       catch (Exception e) {
          log.error(ME, "Client failed: " + e.toString());

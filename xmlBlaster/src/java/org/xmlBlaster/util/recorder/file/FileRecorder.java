@@ -11,13 +11,16 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.MethodName;
 import org.xmlBlaster.util.recorder.I_InvocationRecorder;
+import org.xmlBlaster.util.qos.StatusQosData;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.client.I_CallbackRaw;
-import org.xmlBlaster.client.SubscribeRetQos;
-import org.xmlBlaster.client.EraseRetQos;
-import org.xmlBlaster.client.PublishRetQos;
+import org.xmlBlaster.client.qos.SubscribeReturnQos;
+import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
+import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.protocol.I_XmlBlaster;
 
 import java.io.IOException;
@@ -56,10 +59,11 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
    private final MessageUnit[] dummyMArr = new MessageUnit[0];
    private final String[] dummySArr = new String[0];
    private final String dummyS = "";
-   private final PublishRetQos[] dummyPubRetQosArr = new PublishRetQos[0];
-   private PublishRetQos dummyPubRet;
-   private SubscribeRetQos dummySubRet;
-   private final EraseRetQos[] dummyEraseRetQosArr = new EraseRetQos[0];
+   private final PublishReturnQos[] dummyPubRetQosArr = new PublishReturnQos[0];
+   private PublishReturnQos dummyPubRet;
+   private SubscribeReturnQos dummySubRet;
+   private UnSubscribeReturnQos[] dummyUnSubRet = new UnSubscribeReturnQos[0];
+   private final EraseReturnQos[] dummyEraseReturnQosArr = new EraseReturnQos[0];
 
    private long maxEntries;
 
@@ -87,8 +91,12 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
       this.serverCallback = serverCallback;
       this.clientCallback = clientCallback;
       this.log = glob.getLog("recorder");
-      this.dummyPubRet = new PublishRetQos(glob, Constants.STATE_OK, Constants.INFO_QUEUED);
-      this.dummySubRet = new SubscribeRetQos(glob, Constants.STATE_OK, Constants.INFO_QUEUED);
+      StatusQosData statRetQos = new StatusQosData(glob);
+      statRetQos.setStateInfo(Constants.INFO_QUEUED);
+      this.dummyPubRet = new PublishReturnQos(glob, statRetQos);
+      StatusQosData subRetQos = new StatusQosData(glob);
+      subRetQos.setStateInfo(Constants.INFO_QUEUED);
+      this.dummySubRet = new SubscribeReturnQos(glob, subRetQos);
 
       fileName = createPathString(fn);
 
@@ -185,7 +193,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
 
    /**
     * @param mode
-    *        ONOVERFLOW_BLOCK = "block", ONOVERFLOW_DEADLETTER = "deadLetter",
+    *        ONOVERFLOW_DEADMESSAGE = "deadMessage",
     *        ONOVERFLOW_DISCARD = "discard", ONOVERFLOW_DISCARDOLDEST = "discardOldest",
     *        ONOVERFLOW_EXCEPTION = "exception"
     */
@@ -396,31 +404,31 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
     if (serverCallback != null) 
     {
       // This should be faster then reflection
-      if (cont.method.equals("publish")) 
-      { serverCallback.publish(cont.msgUnit);
-        return;
-      }
-      else if (cont.method.equals("get")) 
-      { serverCallback.get(cont.xmlKey, cont.xmlQos);
-        return;
-      }
-      else if (cont.method.equals("subscribe")) 
-      { serverCallback.subscribe(cont.xmlKey, cont.xmlQos);
-        return;
-      }
-      else if (cont.method.equals("unSubscribe")) 
-      { serverCallback.unSubscribe(cont.xmlKey, cont.xmlQos);
-        return;
-      }
-      else if (cont.method.equals("publishOneway")) 
+      if (cont.method == MethodName.PUBLISH_ONEWAY) 
       { serverCallback.publishOneway(cont.msgUnitArr);
         return;
       }
-      else if (cont.method.equals("publishArr")) 
-      { serverCallback.publishArr(cont.msgUnitArr);
+      else if (cont.method == MethodName.PUBLISH) 
+      { 
+        if (cont.msgUnitArr.length == 1) // simulate single PUBLISH
+           serverCallback.publish(cont.msgUnitArr[0]);
+        else
+           serverCallback.publishArr(cont.msgUnitArr); // PUBLISH_ARR
         return;
       }
-      else if (cont.method.equals("erase")) 
+      else if (cont.method == MethodName.GET) 
+      { serverCallback.get(cont.xmlKey, cont.xmlQos);
+        return;
+      }
+      else if (cont.method == MethodName.SUBSCRIBE) 
+      { serverCallback.subscribe(cont.xmlKey, cont.xmlQos);
+        return;
+      }
+      else if (cont.method == MethodName.UNSUBSCRIBE) 
+      { serverCallback.unSubscribe(cont.xmlKey, cont.xmlQos);
+        return;
+      }
+      else if (cont.method == MethodName.ERASE) 
       { serverCallback.erase(cont.xmlKey, cont.xmlQos);
         return;
       }
@@ -429,12 +437,12 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
     if (clientCallback != null) 
     {
       // This should be faster then reflection
-      if (cont.method.equals("update")) 
+      if (cont.method == MethodName.UPDATE) 
       {
         clientCallback.update(cont.cbSessionId, cont.msgUnitArr);
         return;
       }
-      else if (cont.method.equals("updateOneway")) 
+      else if (cont.method == MethodName.UPDATE_ONEWAY) 
       {
         clientCallback.updateOneway(cont.cbSessionId, cont.msgUnitArr);
         return;
@@ -448,10 +456,10 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
   /**
    * storing subscribe request
    */
-  public SubscribeRetQos subscribe(String xmlKey, String qos) throws XmlBlasterException
+  public SubscribeReturnQos subscribe(String xmlKey, String qos) throws XmlBlasterException
   {
     RequestContainer cont = new RequestContainer();
-    cont.method = "subscribe";
+    cont.method = MethodName.SUBSCRIBE;
     cont.xmlKey = xmlKey;
     cont.xmlQos = qos;
     try
@@ -466,10 +474,10 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
   /**
    * storing unSubscribe request
    */
-  public void unSubscribe(String xmlKey, String qos) throws XmlBlasterException
+  public UnSubscribeReturnQos[] unSubscribe(String xmlKey, String qos) throws XmlBlasterException
   {
     RequestContainer cont = new RequestContainer();
-    cont.method = "unSubscribe";
+    cont.method = MethodName.UNSUBSCRIBE;
     cont.xmlKey = xmlKey;
     cont.xmlQos = qos;
     try
@@ -478,16 +486,17 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
     catch(IOException ex) {
        throw new XmlBlasterException(ME, cont.method + " invocation: " + ex.toString());
     }
+    return dummyUnSubRet;
   }
 
   /**
    * storing publish request
    */
-  public PublishRetQos publish(MessageUnit msgUnit) throws XmlBlasterException
+  public PublishReturnQos publish(MessageUnit msgUnit) throws XmlBlasterException
   {
     RequestContainer cont = new RequestContainer();
-    cont.method = "publish";
-    cont.msgUnit = msgUnit;
+    cont.method = MethodName.PUBLISH;
+    cont.msgUnitArr = new MessageUnit[] { msgUnit };
     try
     { rb.writeNext(cont);
     }
@@ -503,7 +512,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
   public void publishOneway(MessageUnit[] msgUnitArr) throws XmlBlasterException
   { 
     RequestContainer cont = new RequestContainer();
-    cont.method = "publishOneway";
+    cont.method = MethodName.PUBLISH_ONEWAY;
     cont.msgUnitArr = msgUnitArr;
     try
     { rb.writeNext(cont);
@@ -516,10 +525,10 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
   /**
    * storing publishArr request
    */
-  public PublishRetQos[] publishArr(MessageUnit[] msgUnitArr) throws XmlBlasterException
+  public PublishReturnQos[] publishArr(MessageUnit[] msgUnitArr) throws XmlBlasterException
   { 
     RequestContainer cont = new RequestContainer();
-    cont.method = "publishArr";
+    cont.method = MethodName.PUBLISH;
     cont.msgUnitArr = msgUnitArr;
     try
     { rb.writeNext(cont);
@@ -533,10 +542,10 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
   /**
    * storing erase request
    */
-  public EraseRetQos[] erase(String xmlKey, String qos) throws XmlBlasterException
+  public EraseReturnQos[] erase(String xmlKey, String qos) throws XmlBlasterException
   { 
     RequestContainer cont = new RequestContainer();
-    cont.method = "erase";
+    cont.method = MethodName.ERASE;
     cont.xmlKey = xmlKey;
     cont.xmlQos = qos;
     try
@@ -545,7 +554,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
     catch(IOException ex) {
        throw new XmlBlasterException(ME, cont.method + " invocation: " + ex.toString());
     }
-    return dummyEraseRetQosArr;
+    return dummyEraseReturnQosArr;
   }
 
   /**
@@ -554,7 +563,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
   public MessageUnit[] get(String xmlKey, String qos) throws XmlBlasterException
   {
     RequestContainer cont = new RequestContainer();
-    cont.method = "get";
+    cont.method = MethodName.GET;
     cont.xmlKey = xmlKey;
     cont.xmlQos = qos;
     try
@@ -576,7 +585,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
    public String[] update(String cbSessionId, MessageUnit[] msgUnitArr) throws XmlBlasterException
    {
       RequestContainer cont = new RequestContainer();
-      cont.method = "update";
+      cont.method = MethodName.UPDATE;
       cont.cbSessionId = cbSessionId;
       cont.msgUnitArr = msgUnitArr;
       try {
@@ -596,7 +605,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
   public void updateOneway(String cbSessionId, MessageUnit[] msgUnitArr) // throws XmlBlasterException
   {
     RequestContainer cont = new RequestContainer();
-    cont.method = "updateOneway";
+    cont.method = MethodName.UPDATE_ONEWAY;
     cont.cbSessionId = cbSessionId;
     cont.msgUnitArr = msgUnitArr;
     try

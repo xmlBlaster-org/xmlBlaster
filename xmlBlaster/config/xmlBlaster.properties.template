@@ -73,12 +73,77 @@ EmailDriver.from=xmlblast@localhost
 
 
 #------------------------------------------------------------------------------
-# List of all jdbc drivers to initalize for the XmlDBAdapter
+# Customize queue implementation
+# SEE: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.queue.html
+QueuePlugin[JDBC][1.0]=org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin
+#QueuePlugin[NATIV][1.0]=org.xmlBlaster.util.queue.nativ.NativeQueuePlugin
+QueuePlugin[RAM][1.0]=org.xmlBlaster.util.queue.ram.RamQueuePlugin
+QueuePlugin[CACHE][1.0]=org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin
+#------------------------------------------------------------------------------
+
+
+#------------------------------------------------------------------------------
+# Customize dispatcher plugin
+# SEE: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/dispatch.plugin.html
+DispatchPlugin[Priority][1.0]=org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin
+#DispatchPlugin.defaultPlugin=Priority,1.0
+DispatchPlugin.defaultPlugin=undef
+#cb.DispatchPlugin.defaultPlugin=Priority,1.0
+cb.DispatchPlugin.defaultPlugin=undef
+
+# SEE: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/delivery.plugin.priorizedDelivery.html
+PriorizedDeliveryPlugin.config=<msgDispatch defaultStatus='64k' defaultAction='send'> \
+   <onStatus oid='_bandwidth.status' content='64k' defaultAction='destroy'> \
+     <action do='send'  ifPriority='7-9'/> \
+     <action do='queue'  ifPriority='2-6'/> \
+  </onStatus> \
+   <onStatus oid='_bandwidth.status' content='2M'> \
+     <action do='send'  ifPriority='0-9'/> \
+   </onStatus> \
+ </msgDispatch>
+ 
+#------------------------------------------------------------------------------
+
+
+#------------------------------------------------------------------------------
+# List of all jdbc drivers to initalize for the XmlDBAdapter and for the jdbc peristence queue
 # Don't forget to add the corresponding jdbc jar file to your CLASSPATH as well.
 # SEE: http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.service.rdbms.html 
-JdbcDriver.drivers=sun.jdbc.odbc.JdbcOdbcDriver,ORG.as220.tinySQL.dbfFileDriver
-#JdbcDriver.drivers=oracle.jdbc.driver.OracleDriver
-#JdbcDriver.drivers=sun.jdbc.odbc.JdbcOdbcDriver,ORG.as220.tinySQL.dbfFileDriver,oracle.jdbc.driver.OracleDriver,org.gjt.mm.mysql.Driver,org.postgresql.Driver,de.sag.jdbc.adabasd.ADriver,com.sybase.jdbc2.jdbc.SybDriver
+JdbcDriver.drivers=sun.jdbc.odbc.JdbcOdbcDriver:\
+                   ORG.as220.tinySQL.dbfFileDriver:\
+                   oracle.jdbc.driver.OracleDriver:\
+                   org.gjt.mm.mysql.Driver:\
+                   org.postgresql.Driver:\
+                   de.sag.jdbc.adabasd.ADriver:\
+                   com.sybase.jdbc2.jdbc.SybDriver
+
+# Now you can configure your database access.
+# Note that first the default setting e.g.
+#   'queue.persistent.url'
+# is checked but a specific setting e.g.
+#   'cb.queue.persistent.url'
+# has precedence.
+
+JdbcDriver.mapping[postgres]=string=text,longint=bigint,int=integer,boolean=char(1),tables=pg_tables,connectionErrorCodes=1089:17002
+JdbcDriver.mapping[Oracle]=string=VARCHAR(128),longint=NUMBER(19),int=NUMBER(10),blob=long raw,boolean=CHAR(1),tables=ALL_TABLES,tablename=TABLE_NAME,connectionErrorCodes=1089:17002
+# further database specifications here ...
+
+# settings for postgres ... (check that JdbcDriver.drivers contains org.postgresql.Driver)
+queue.persistent.url=jdbc:postgresql://localhost/test
+queue.persistent.user=postgres
+queue.persistent.password=
+ 
+# settings for Oracle 
+#queue.persistent.url=jdbc:oracle:thin:@localhost:1521:xmlb
+#queue.persistent.user=xmlblaster
+#queue.persistent.password=secret
+ 
+queue.persistent.connectionPoolSize=1
+queue.persistent.connectionBusyTimeout=90000
+queue.persistent.maxWaitingThreads=300
+queue.defaultPlugin=RAM,1.0
+queue.persistent.tablePrefix=xmlBlaster
+queue.persistent.tableAllocationIncrement=2
 #------------------------------------------------------------------------------
 
 
@@ -132,8 +197,9 @@ logDevice=console
 #------------------------------------------------------------------------------
 
 #------------------------------------------------------------------------------
-# When an XmlBlasterException is thrown, log it to console
-Log.exception=false
+# When an XmlBlasterException is thrown, how to format the getMessage() string, see:
+# http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.errorcodes.html
+XmlBlasterException.logFormat= XmlBlasterException errorCode=[{0}] node=[{1}] location=[{2}] message=[{4} : {8}]
 
 # Control logging output format (examples are provided below)
 # <timestamp>:<levelStr>:<instance>:<text>
@@ -179,18 +245,6 @@ LogFormat.Time=MEDIUM
 
 
 #------------------- Global setting for the persistence -----------------------
-#
-# supported and implemented tpyes and versions of persistence plugins:
-#
-#         || Type                |
-#         |+===========+=========+
-#         || filestore | xmldb   |
-# ========++-----------+---------+
-# Version || 1.0       | xindice |
-#         ||           |         |
-#         ||           |         |
-#
-
 # Lazy recover (not at server startup but on demand) is not yet supported.
 Persistence.Driver[xmldb][xindice]=org.xmlBlaster.engine.persistence.xmldb.XMLDBPlugin
 Persistence.LazyRecovery=true
@@ -199,48 +253,24 @@ Persistence.Driver.Type=filestore
 Persistence.Driver.Version=1.0
 Persistence.Path=${user.home}${file.separator}tmp
 
-# Persistence.Driver.Type=xmldb
-# Persistence.Driver.Version=xindice
-# Persistence.Driver.Version=eXist
-# Persistence.Path=xmldb:xindice:///db/xmlBlaster
-
-#-------------------  Xindice database ------------------------------------------
-# see $XMLBLASTER_HOME/README or list-archive on http://www.xmlBlaster.org for
-# more details
-# This persistence Layer needs Xindice from http://www.dbXML.org installed and running
-#
-# developed with release 'Xindice 1.0rc1 (DarkHorse)'
-#
-# Collection needs to be created manually by:
-# xindiceadmin ac -c /db -n xmlBlaster
-# see http://www.dbXML.org for more details
-# see http://xml.apache.org/xindice for more details ???
-#
-#	Setting up your desired CollectionPath
-#	default is xmldb:xindice:///db
-#Persistence.Path=xmldb:xindice:///db
-#	Setting up your desired CollectionName
-#	default is xmlBlaster
-#Persistence.Collection=xmlBlaster
-#
-#	Sets the Driver of the Xindice Database Implementation
-#       default is org.apache.xindice.client.xmldb.DatabaseImpl
-#	!! Leave it, as long as you don't know what you're doing !!
-#Persistence.xindiceDriver=org.apache.xindice.client.xmldb.DatabaseImpl
-#	Sets the xindiceFilterClasss of the Xindice Database Implementation
-#       default is org.apache.xindice.core.filer.BTreeFiler
-#	!! Leave it, as long as you don't know what you're doing !!
-#Persistence.xindiceFilterClass=org.apache.xindice.core.filer.BTreeFiler
-#
-#-------------------  Filestore database --------------------------------------
-# at the moment 'nothing'.
+# XIndice:
+# SEE: http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.persistence.xmldb.html
+# SEE: http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.persistence.xmldb.xindice.html
+#Persistence.Driver.Type=xmldb
+#Persistence.Driver.Version=xindice
+#Persistence.Driver.Version=eXist
+#Persistence.Path=xmldb:xindice:///db/xmlBlaster
 #------------------------------------------------------------------------------
 
+
+#------------------------------------------------------------------------------
 #
 # JAXP parsers. Currently only crimson is actually possible to use. 
 #
 javax.xml.parsers.SAXParserFactory=org.apache.crimson.jaxp.SAXParserFactoryImpl
 javax.xml.parsers.DocumentBuilderFactory=org.apache.crimson.jaxp.DocumentBuilderFactoryImpl
+#------------------------------------------------------------------------------
+
 
 #------------------------------------------------------------------------------
 # Any other custom properties can be added here. 

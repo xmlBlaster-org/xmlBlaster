@@ -3,14 +3,13 @@ Name:      DisconnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: DisconnectQos.java,v 1.6 2002/09/13 23:18:18 ruff Exp $
+Version:   $Id: DisconnectQos.java,v 1.7 2002/11/26 12:39:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.PluginLoader;
-import org.xmlBlaster.client.QosWrapper;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 import org.xml.sax.Attributes;
 import java.io.Serializable;
@@ -45,6 +44,7 @@ public class DisconnectQos extends org.xmlBlaster.util.XmlQoSBase implements Ser
     */
    public DisconnectQos()
    {
+      super(Global.instance());
    }
 
    /**
@@ -52,6 +52,7 @@ public class DisconnectQos extends org.xmlBlaster.util.XmlQoSBase implements Ser
     */
    public DisconnectQos(String xmlQoS_literal) throws XmlBlasterException
    {
+      super(Global.instance());
       init(xmlQoS_literal);
    }
 
@@ -179,7 +180,7 @@ public class DisconnectQos extends org.xmlBlaster.util.XmlQoSBase implements Ser
    public static void main(String[] args)
    {
       try {
-         org.xmlBlaster.util.XmlBlasterProperty.init(args);
+         new org.xmlBlaster.util.Global(args);
          DisconnectQos qos = new DisconnectQos();
          qos.clearSessions(true);
          qos.deleteSubjectQueue(false);

@@ -426,9 +426,9 @@ public class HttpPushHandler
    public void update( String updateKey, String content, String updateQos )
    {
       try {
-         String codedKey     = URLEncoder.encode( updateKey );
-         String codedContent = URLEncoder.encode( content );
-         String codedQos     = URLEncoder.encode( updateQos );
+         String codedKey     = Global.encode( updateKey, BlasterHttpProxyServlet.ENCODING );
+         String codedContent = Global.encode( content, BlasterHttpProxyServlet.ENCODING );
+         String codedQos     = Global.encode( updateQos, BlasterHttpProxyServlet.ENCODING );
 
          if (log.TRACE) log.trace(ME,"update dump: " + updateKey.substring(0,50) + " ...");
          /*
@@ -481,7 +481,7 @@ public class HttpPushHandler
    public void message( String text )
    {
       try {
-         String codedText = URLEncoder.encode(text);
+         String codedText = Global.encode(text, BlasterHttpProxyServlet.ENCODING);
 
          if (isApplet)
             push(new PushDataItem(PushDataItem.LOGGING, "##message##"+codedText+"##\n"));
@@ -503,7 +503,7 @@ public class HttpPushHandler
    public void error(String text)
    {
       try {
-         String codedText = URLEncoder.encode(text);
+         String codedText = Global.encode(text, BlasterHttpProxyServlet.ENCODING);
 
          if (isApplet)
             push(new PushDataItem(PushDataItem.LOGGING, "##error##"+codedText+"##\n"));

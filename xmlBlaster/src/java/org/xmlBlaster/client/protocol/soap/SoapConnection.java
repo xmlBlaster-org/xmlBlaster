@@ -17,13 +17,15 @@ import org.xmlBlaster.util.ConnectReturnQos;
 import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.util.protocol.ProtoConverter;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.ErrorCode;
 
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.xml2java.*;
-import org.xmlBlaster.client.UpdateQos;
-import org.xmlBlaster.client.UpdateKey;
+import org.xmlBlaster.client.qos.GetQos;
+import org.xmlBlaster.client.qos.EraseQos;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
-import org.xmlBlaster.client.protocol.ConnectionException;
 
 import java.applet.Applet;
 
@@ -112,21 +114,22 @@ public class SoapConnection implements I_XmlBlasterConnection
       }
    }
 
-   public void init() {
+   public void resetConnection() {
       log.trace(ME, "SoapCLient is initialized, no connection available");
       this.soapClient = null;
    }
 
-   private TransportConnection getSoapClient() throws ConnectionException {
+   private TransportConnection getSoapClient() throws XmlBlasterException {
       if (this.soapClient == null) {
          if (log.TRACE) log.trace(ME, "No SOAP connection available.");
-         throw new ConnectionException(ME+".init", "No SOAP connection available.");
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
+                                       "The SOAP xmlBlaster handle is null, no connection available");
       }
       return this.soapClient;
    }
 
    /** @deprecated Use connect() */
-   public void login(String loginName, String passwd, ConnectQos qos) throws XmlBlasterException, ConnectionException {
+   public void login(String loginName, String passwd, ConnectQos qos) throws XmlBlasterException {
       throw new XmlBlasterException(ME, "login is not supported any more, please use connect()");
    }
 
@@ -134,7 +137,7 @@ public class SoapConnection implements I_XmlBlasterConnection
     * Login to the server.
     * @exception       XmlBlasterException if login fails
     */
-   public ConnectReturnQos connect(ConnectQos qos) throws XmlBlasterException, ConnectionException {
+   public ConnectReturnQos connect(ConnectQos qos) throws XmlBlasterException {
       if (qos == null)
          throw new XmlBlasterException(ME+".connect()", "Please specify a valid QoS");
 
@@ -158,7 +161,7 @@ public class SoapConnection implements I_XmlBlasterConnection
     * For internal use only.
     * @exception       XmlBlasterException if login fails
     */
-   public ConnectReturnQos loginRaw() throws XmlBlasterException, ConnectionException {
+   public ConnectReturnQos loginRaw() throws XmlBlasterException {
       try {
          initSoapClient();
          // prepare the argument vector for the method call
@@ -204,7 +207,8 @@ public class SoapConnection implements I_XmlBlasterConnection
       /*
       catch (IOException e) {
          log.error(ME+".login", "IO exception: " + e.toString());
-         throw new ConnectionException(ME+".LoginFailed", e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
+                                       "The SOAP login to xmlBlaster possible");
       }
       catch (SOAPException e) {
          throw extractXmlBlasterException(e);
@@ -255,7 +259,7 @@ public class SoapConnection implements I_XmlBlasterConnection
       }
       finally {
          shutdown();
-         init();
+         resetConnection();
       }
       return true;
    }
@@ -285,7 +289,7 @@ public class SoapConnection implements I_XmlBlasterConnection
     * Subscribe to messages.
     * <p />
     */
-   public final String subscribe (String xmlKey_literal, String qos_literal) throws XmlBlasterException, ConnectionException {
+   public final String subscribe (String xmlKey_literal, String qos_literal) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering subscribe(id=" + sessionId + ")");
       log.error(ME, "NOT IMPLEMENTED");
       return "";
@@ -304,7 +308,7 @@ public class SoapConnection implements I_XmlBlasterConnection
       }
       catch (IOException e1) {
          log.error(ME+".subscribe", "IO exception: " + e1.toString());
-         throw new ConnectionException(ME+".subscribe", e1.toString());
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "subscribe", e1);
       }
       catch (SoapException e) {
          throw extractXmlBlasterException(e);
@@ -318,7 +322,7 @@ public class SoapConnection implements I_XmlBlasterConnection
     * @see org.xmlBlaster.engine.RequestBroker
     */
    public final void unSubscribe (String xmlKey_literal,
-                                 String qos_literal) throws XmlBlasterException, ConnectionException {
+                                 String qos_literal) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering unsubscribe(): id=" + sessionId);
       log.error(ME, "NOT IMPLEMENTED");
       /*
@@ -333,7 +337,7 @@ public class SoapConnection implements I_XmlBlasterConnection
       }
       catch (IOException e1) {
          log.error(ME+".unSubscribe", "IO exception: " + e1.toString());
-         throw new ConnectionException("IO exception", e1.toString());
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "unSubscribe", e1);
       }
       catch (SoapException e) {
          throw extractXmlBlasterException(e);
@@ -344,20 +348,20 @@ public class SoapConnection implements I_XmlBlasterConnection
    /**
     * Publish a message.
     */
-   public final String publish(MessageUnit msgUnit) throws XmlBlasterException, ConnectionException {
+   public final String publish(MessageUnit msgUnit) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering publish(): id=" + sessionId);
       log.error(ME, "NOT IMPLEMENTED");
       return "";
       /*
-      //PublishQos publishQos = new PublishQos(msgUnit.qos);
-      //msgUnit.qos = publishQos.toXml();
+      //PublishQos publishQos = new PublishQos(msgUnit.getQos());
+      //msgUnit.getQos() = publishQos.toXml();
 
       try {
          Vector args = new Vector();
          args.addElement(sessionId);
-         args.addElement(msgUnit.xmlKey);
-         args.addElement(msgUnit.content);
-         args.addElement(msgUnit.qos);
+         args.addElement(msgUnit.getKey());
+         args.addElement(msgUnit.getContent());
+         args.addElement(msgUnit.getQos());
 
          return (String)getSoapClient().execute("xmlBlaster.publish", args);
       }
@@ -368,7 +372,7 @@ public class SoapConnection implements I_XmlBlasterConnection
       }
       catch (IOException e1) {
          log.error(ME+".publish", "IO exception: " + e1.toString());
-         throw new ConnectionException("IO exception", e1.toString());
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "publish", e1);
       }
       catch (SoapException e) {
          throw extractXmlBlasterException(e);
@@ -383,7 +387,7 @@ public class SoapConnection implements I_XmlBlasterConnection
     * @see org.xmlBlaster.engine.RequestBroker
     */
    public final String[] publishArr(MessageUnit[] msgUnitArr)
-      throws XmlBlasterException, ConnectionException {
+      throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering publishArr: id=" + sessionId);
       log.error(ME, "NOT IMPLEMENTED");
       return new String[0];
@@ -415,7 +419,7 @@ public class SoapConnection implements I_XmlBlasterConnection
 
       catch (IOException e1) {
          log.error(ME+".publishArr", "IO exception: " + e1.toString());
-         throw new ConnectionException("IO exception", e1.toString());
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "publishArr", e);
       }
       catch (SoapException e) {
          throw extractXmlBlasterException(e);
@@ -429,7 +433,7 @@ public class SoapConnection implements I_XmlBlasterConnection
     * @see org.xmlBlaster.engine.RequestBroker
     */
    public final void publishOneway(MessageUnit[] msgUnitArr)
-      throws XmlBlasterException, ConnectionException
+      throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "Entering publishOneway: id=" + sessionId);
       log.error(ME, "NOT IMPLEMENTED");
@@ -454,7 +458,7 @@ public class SoapConnection implements I_XmlBlasterConnection
       }
       catch (IOException e1) {
          log.error(ME+".publishOneway", "IO exception: " + e1.toString());
-         throw new ConnectionException("IO exception", e1.toString());
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "publishOneway", e1);
       }
       catch (SoapException e) {
          throw extractXmlBlasterException(e);
@@ -467,8 +471,8 @@ public class SoapConnection implements I_XmlBlasterConnection
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public final String[] erase (XmlKey xmlKey, EraseQoS eraseQoS)
-      throws XmlBlasterException, ConnectionException
+   public final String[] erase (XmlKey xmlKey, EraseQosServer eraseQoS)
+      throws XmlBlasterException
    {
       String xmlKey_literal = xmlKey.toXml();
       String eraseQoS_literal = eraseQoS.toXml();
@@ -482,7 +486,7 @@ public class SoapConnection implements I_XmlBlasterConnection
     * @see org.xmlBlaster.engine.RequestBroker
     */
    public final String[] erase(String xmlKey_literal, String qos_literal)
-      throws XmlBlasterException, ConnectionException {
+      throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering erase() id=" + sessionId);
       log.error(ME, "NOT IMPLEMENTED");
       return new String[0];
@@ -506,7 +510,7 @@ public class SoapConnection implements I_XmlBlasterConnection
 
       catch (IOException e1) {
          log.error(ME+".erase", "IO exception: " + e1.toString());
-         throw new ConnectionException("IO exception", e1.toString());
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "erase", e1);
       }
 
       catch (SoapException e) {
@@ -520,8 +524,8 @@ public class SoapConnection implements I_XmlBlasterConnection
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public final MessageUnit[] get (XmlKey xmlKey, GetQoS getQoS)
-      throws XmlBlasterException, ConnectionException {
+   public final MessageUnit[] get (XmlKey xmlKey, GetQosServer getQoS)
+      throws XmlBlasterException {
       String xmlKey_literal = xmlKey.toXml();
       String getQoS_literal = getQoS.toXml();
 
@@ -535,7 +539,7 @@ public class SoapConnection implements I_XmlBlasterConnection
     * @see org.xmlBlaster.engine.RequestBroker
     */
    public final MessageUnit[] get(String xmlKey_literal,
-                                  String qos_literal) throws XmlBlasterException, ConnectionException
+                                  String qos_literal) throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "Entering get() xmlKey=\n" + xmlKey_literal + ") ...");
       log.error(ME, "NOT IMPLEMENTED");
@@ -557,7 +561,7 @@ public class SoapConnection implements I_XmlBlasterConnection
       }
       catch (IOException e1) {
          log.error(ME+".get", "IO exception: " + e1.toString());
-         throw new ConnectionException("IO exception", e1.toString());
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "get", e1);
       }
       catch (SoapException e) {
          throw extractXmlBlasterException(e);
@@ -595,7 +599,7 @@ public class SoapConnection implements I_XmlBlasterConnection
     * Check server.
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public String ping(String str) throws ConnectionException {
+   public String ping(String str) {
       Call call = new Call();
       call.setService(xmlBlasterService);
       call.setMethodName("ping");
@@ -610,7 +614,7 @@ public class SoapConnection implements I_XmlBlasterConnection
          //then the return will always be null, but there will be a SOAPException thrown if an error occurs
          if (returnParam == null) {
             log.error(ME, "I got a null response for ping(), something went wrong");
-            throw new ConnectionException(ME+".InvokeError", "I got a null response for ping(), something went wrong");
+            throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "I got a null response for ping(), something went wrong");
          } else {
             Class returnType = returnParam.getType();
             log.info(ME, "Return had class type of: " + returnType.getName());
@@ -620,7 +624,7 @@ public class SoapConnection implements I_XmlBlasterConnection
          }
       } catch (SOAPException se) {
          log.error(ME, "Ping failed, faultCode: " + se.getFaultCode() + " faultString: " + se.getFaultString());
-         throw new ConnectionException(ME+".InvokeError", "Soap ping failed: " + se.toString());
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "ping", se);
       }
    }
 
@@ -699,13 +703,13 @@ public class SoapConnection implements I_XmlBlasterConnection
          String contentString = "This is a simple Test Message for the xml-rpc Protocol";
          byte[] content = contentString.getBytes();
 
-         org.xmlBlaster.client.PublishKeyWrapper xmlKey = new org.xmlBlaster.client.PublishKeyWrapper("", "text/xml", null);
+         org.xmlBlaster.client.key.PublishKey xmlKey = new org.xmlBlaster.client.key.PublishKey("", "text/xml", null);
 
          MessageUnit msgUnit = new MessageUnit(xmlKey.toXml(), content, "<qos></qos>");
          String publishOid = proxy.publish(sessionId, msgUnit);
          log.info(ME, "Published message with " + publishOid);
 
-         org.xmlBlaster.client.SubscribeKeyWrapper subscribeKey = new org.xmlBlaster.client.SubscribeKeyWrapper(publishOid);
+         org.xmlBlaster.client.key.SubscribeKey subscribeKey = new org.xmlBlaster.client.key.SubscribeKey(publishOid);
 
          log.info(ME, "Subscribe key: " + subscribeKey.toXml());
 

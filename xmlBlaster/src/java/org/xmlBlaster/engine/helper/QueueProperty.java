@@ -25,6 +25,7 @@ public class QueueProperty extends QueuePropertyBase
     */
    public QueueProperty(Global glob, String nodeId) {
       super(glob, nodeId);
+      relating = Constants.RELATING_CLIENT;
       initialize();
    }
 
@@ -33,7 +34,7 @@ public class QueueProperty extends QueuePropertyBase
     */
    public final String getSettings() {
       StringBuffer buf = new StringBuffer(256);
-      buf.append("onOverflow=").append(getOnOverflow()).append(" onFailure=").append(getOnFailure()).append(" maxMsg=").append(getMaxMsg());
+      buf.append("type=").append(getType()).append(" onOverflow=").append(getOnOverflow()).append(" onFailure=").append(getOnFailure()).append(" maxMsg=").append(getMaxMsg());
       if (getCurrentAddress() != null)
          buf.append(" ").append(getCurrentAddress().getSettings());
       return buf.toString();
@@ -52,12 +53,16 @@ public class QueueProperty extends QueuePropertyBase
       setExpires(glob.getProperty().get("queue.expires", DEFAULT_maxExpires));
       setOnOverflow(glob.getProperty().get("queue.onOverflow", DEFAULT_onOverflow));
       setOnFailure(glob.getProperty().get("queue.onFailure", DEFAULT_onFailure));
+      setType(glob.getProperty().get("queue.type", DEFAULT_type));
+      setVersion(glob.getProperty().get("queue.version", DEFAULT_version));
       if (nodeId != null) {
          setMaxMsg(glob.getProperty().get("queue.maxMsg["+nodeId+"]", getMaxMsg()));
          setMaxSize(glob.getProperty().get("queue.maxSize["+nodeId+"]", getMaxSize()));
          setExpires(glob.getProperty().get("queue.expires["+nodeId+"]", getExpires()));
          setOnOverflow(glob.getProperty().get("queue.onOverflow["+nodeId+"]", getOnOverflow()));
          setOnFailure(glob.getProperty().get("queue.onFailure["+nodeId+"]", getOnFailure()));
+         setType(glob.getProperty().get("queue.type["+nodeId+"]", getType()));
+         setVersion(glob.getProperty().get("queue.version["+nodeId+"]", getVersion()));
       }
    }
 
@@ -77,10 +82,10 @@ public class QueueProperty extends QueuePropertyBase
 
    /**
     * @return null if none available
-    */
    public Address[] getAddresses() {
       return (Address[])this.addressArr;
    }
+    */
 
    /**
     * @return null if none available
@@ -100,6 +105,8 @@ public class QueueProperty extends QueuePropertyBase
       text += "   -queue.maxMsg       The maximum allowed number of messages in this queue [" + DEFAULT_maxMsgDefault + "].\n";
       text += "                       0 switches recording of invocations off.\n";
       text += "                       -1 sets it to unlimited.\n";
+      text += "   -queue.type         The queue plugin type [" + DEFAULT_type + "].\n";
+      text += "   -queue.version      The queue plugin type [" + DEFAULT_version + "].\n";
       text += "   -recorder.type      The plugin type to use for tail back messages in fail save mode [FileRecorder]\n";
       text += "   -recorder.version   The version of the plugin [1.0]\n";
       text += "   -recorder.path      The path (without file name) for the file for FileRecorder [<is generated>]\n";
@@ -108,7 +115,7 @@ public class QueueProperty extends QueuePropertyBase
       text += "   -recorder.mode      The on-overflow mode: " + Constants.ONOVERFLOW_EXCEPTION + " | " + Constants.ONOVERFLOW_DISCARD + " | " + Constants.ONOVERFLOW_DISCARDOLDEST + " [" + Constants.ONOVERFLOW_EXCEPTION + "]\n";
     //text += "   -queue.maxSize      The maximum size in kBytes of this queue [" + DEFAULT_sizeDefault + "].\n";
     //text += "   -queue.expires      If not otherwise noted a queue dies after these milliseconds [" + DEFAULT_expiresDefault + "].\n";
-    //text += "   -queue.onOverflow   What happens if queue is full. " + Constants.ONOVERFLOW_BLOCK + " | " + Constants.ONOVERFLOW_DEADLETTER + " [" + DEFAULT_onOverflow + "]\n";
+    //text += "   -queue.onOverflow   What happens if queue is full. " + Constants.ONOVERFLOW_BLOCK + " | " + Constants.ONOVERFLOW_DEADMESSAGE + " [" + DEFAULT_onOverflow + "]\n";
     //text += "   -queue.onFailure    What happens if the data sink connection has a failure [" + DEFAULT_onFailure + "]\n";
       return text;
    }

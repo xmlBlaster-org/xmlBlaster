@@ -3,7 +3,7 @@ Name:      ClientSubscriptions.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling subscriptions, collected for each Client
-Version:   $Id: ClientSubscriptions.java,v 1.30 2002/07/07 19:21:23 ruff Exp $
+Version:   $Id: ClientSubscriptions.java,v 1.31 2002/11/26 12:38:21 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -11,7 +11,6 @@ package org.xmlBlaster.engine;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.jutils.log.LogChannel;
-import org.xmlBlaster.util.XmlQoSBase;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.authentication.I_ClientListener;
@@ -29,7 +28,7 @@ import java.io.*;
  * the instance is handled by RequestBroker.
  * <p />
  * The interface SubscriptionListener informs about subscribe/unsubscribe events
- * @version: $Id: ClientSubscriptions.java,v 1.30 2002/07/07 19:21:23 ruff Exp $
+ * @version: $Id: ClientSubscriptions.java,v 1.31 2002/11/26 12:38:21 ruff Exp $
  * @author Marcel Ruff
  */
 public class ClientSubscriptions implements I_ClientListener, SubscriptionListener
@@ -51,7 +50,7 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
     * <br>
     * Used for performing logout.
     * <p>
-    * key   = client.getUniqueKey()
+    * key   = client.getSessionName().getRelativeName()
     * value = subMap (Collections.synchronizedMap(new HashMap());)
     *         with SubscriptionInfo objects
     */
@@ -83,7 +82,7 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
    {
       this.glob = glob;
       this.requestBroker = requestBroker;
-      this.ME = "ClientSubscriptions" + this.glob.getLogPraefixDashed();
+      this.ME = "ClientSubscriptions" + this.glob.getLogPrefixDashed();
       this.log = requestBroker.getGlobal().getLog("core");
       requestBroker.addSubscriptionListener(this);
       authenticate.addClientListener(this);
@@ -114,7 +113,7 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
       Object obj;
       Map subMap;
       synchronized(clientSubscriptionMap) {
-         obj = clientSubscriptionMap.get(sessionInfo.getUniqueKey());
+         obj = clientSubscriptionMap.get(sessionInfo.getSessionName().getRelativeName());
          if (obj == null)
             return null;
          subMap = (Map)obj;
@@ -145,7 +144,7 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
       Object obj;
       Map subMap;
       synchronized(clientSubscriptionMap) {
-         obj = clientSubscriptionMap.get(sessionInfo.getUniqueKey());
+         obj = clientSubscriptionMap.get(sessionInfo.getSessionName().getRelativeName());
          if (obj == null) {
             if (log.TRACE) log.trace(ME, "Session '" + sessionInfo.getId() + "' is unknown! Message '" + keyOid + "' ignored");
             return null;
@@ -163,12 +162,12 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
          while (iterator.hasNext()) {
             SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
             if (exactOnly && isAQuery(sub.getXmlKey())) {
-               if (log.TRACE) log.trace(ME, "Ignoring subscription " + sub.getUniqueKey() +
+               if (log.TRACE) log.trace(ME, "Ignoring subscription " + sub.getSubscriptionId() +
                       " for session '" + sessionInfo.getId() + "' for message '" + keyOid + "'");
                continue;
             }
             if (keyOid.equals(sub.getKeyOid())) {
-               if (log.TRACE) log.trace(ME, "Found subscription " + sub.getUniqueKey() +
+               if (log.TRACE) log.trace(ME, "Found subscription " + sub.getSubscriptionId() +
                       " for session '" + sessionInfo.getId() + "' for message '" + keyOid + "'");
                if (vec == null) vec = new Vector();
                vec.addElement(sub);
@@ -204,11 +203,11 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
                while (iterator2.hasNext()) {
                   SubscriptionInfo sub = (SubscriptionInfo)iterator2.next();
                   if (exactOnly && isAQuery(sub.getXmlKey())) {
-                     if (log.TRACE) log.trace(ME, "Ignoring subscription " + sub.getUniqueKey() + " for message '" + keyOid + "'");
+                     if (log.TRACE) log.trace(ME, "Ignoring subscription " + sub.getSubscriptionId() + " for message '" + keyOid + "'");
                      continue;
                   }
                   if (keyOid.equals(sub.getKeyOid())) {
-                     if (log.TRACE) log.trace(ME, "Found subscription " + sub.getUniqueKey() + " for message '" + keyOid + "'");
+                     if (log.TRACE) log.trace(ME, "Found subscription " + sub.getSubscriptionId() + " for message '" + keyOid + "'");
                      if (vec == null) vec = new Vector();
                      vec.addElement(sub);
                   }
@@ -290,7 +289,7 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
       }
       for (int ii=0; ii<vec.size(); ii++) {
          SubscriptionInfo sub = (SubscriptionInfo)vec.elementAt(ii);
-         if (log.TRACE) log.trace(ME, "Erase event for oid=" + uniqueKey + "', removing subId=" + sub.getUniqueKey() + " ...");
+         if (log.TRACE) log.trace(ME, "Erase event for oid=" + uniqueKey + "', removing subId=" + sub.getSubscriptionId() + " ...");
          subscriptionRemove(new SubscriptionEvent(sub));
       }
    }
@@ -309,7 +308,7 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
       SessionInfo sessionInfo = subscriptionInfo.getSessionInfo();
       if (log.TRACE) log.trace(ME, "Subscription add event for client " + sessionInfo.getId());
       XmlKey xmlKey = subscriptionInfo.getXmlKey();
-      String uniqueKey = sessionInfo.getUniqueKey();
+      String uniqueKey = sessionInfo.getSessionName().getRelativeName();
 
       // Insert into first map:
       Object obj;
@@ -323,8 +322,8 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
          else {
             subMap = (Map)obj;
          }
-         subMap.put(subscriptionInfo.getUniqueKey(), subscriptionInfo);
-         if (log.TRACE) log.trace(ME, "Adding subscriptionId=" + subscriptionInfo.getUniqueKey() + " to subMap of client " + sessionInfo.getLoginName());
+         subMap.put(subscriptionInfo.getSubscriptionId(), subscriptionInfo);
+         if (log.TRACE) log.trace(ME, "Adding subscriptionId=" + subscriptionInfo.getSubscriptionId() + " to subMap of client " + sessionInfo.getLoginName());
       }
 
 
@@ -365,7 +364,7 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
          return;
       }
 
-      String subscriptionInfoUniqueKey = subscriptionInfo.getUniqueKey();
+      String subscriptionInfoUniqueKey = subscriptionInfo.getSubscriptionId();
       SessionInfo sessionInfo = subscriptionInfo.getSessionInfo();
 
       if (log.TRACE) log.trace(ME, "Subscription remove event for client " + sessionInfo.toString() + " for subscriptionId=" + subscriptionInfoUniqueKey);
@@ -392,7 +391,7 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
     */
    private void removeFromClientSubscriptionMap(SessionInfo sessionInfo, String subscriptionInfoUniqueKey) throws XmlBlasterException
    {
-      String uniqueKey = sessionInfo.getUniqueKey();
+      String uniqueKey = sessionInfo.getSessionName().getRelativeName();
 
       Object obj;
       synchronized(clientSubscriptionMap) {
@@ -420,10 +419,10 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
             while (iterator.hasNext()) {
                SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
                if (isAQuery(sub.getXmlKey())) {
-                  if (log.TRACE) log.trace(ME, "Ignoring subscription " + sub.getUniqueKey() + " from MessageUnitHandler '" + sub.getKeyOid() + "'");
+                  if (log.TRACE) log.trace(ME, "Ignoring subscription " + sub.getSubscriptionId() + " from MessageUnitHandler '" + sub.getKeyOid() + "'");
                   continue;
                }
-               if (log.TRACE) log.trace(ME, "Removing subscription " + sub.getUniqueKey() + " from MessageUnitHandler '" + sub.getKeyOid() + "'");
+               if (log.TRACE) log.trace(ME, "Removing subscription " + sub.getSubscriptionId() + " from MessageUnitHandler '" + sub.getKeyOid() + "'");
                sub.removeSubscribe(); // removes me from MessageUnitHandler::subscriberMap
             }
          }
@@ -453,7 +452,7 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
    private void removeFromQuerySubscribeRequestsSet(SessionInfo sessionInfo, String subscriptionInfoUniqueKey) throws XmlBlasterException
    {
       if (log.TRACE) log.trace(ME, "removing client " + sessionInfo.toString() + " subscriptionInfoUniqueKey=" + subscriptionInfoUniqueKey + " from querySubscribeRequestsSet with size=" + querySubscribeRequestsSet.size() + " ...");
-      String uniqueKey = sessionInfo.getUniqueKey();
+      String uniqueKey = sessionInfo.getSessionName().getRelativeName();
 
       Vector vec = new Vector(querySubscribeRequestsSet.size());
 
@@ -462,13 +461,13 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
          Iterator iterator = querySubscribeRequestsSet.iterator();
          while (iterator.hasNext()) {
             SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
-            if (sub.getSessionInfo().getUniqueKey().equals(uniqueKey) && subscriptionInfoUniqueKey == null ||
-                subscriptionInfoUniqueKey == sub.getUniqueKey()) {
+            if (sub.getSessionInfo().getSessionName().getRelativeName().equals(uniqueKey) && subscriptionInfoUniqueKey == null ||
+                subscriptionInfoUniqueKey == sub.getSubscriptionId()) {
                vec.addElement(sub);
             }
          }
          for (int ii=0; ii<vec.size(); ii++) {
-            if (log.TRACE) log.trace(ME, "Removing subscription " + ((SubscriptionInfo)vec.elementAt(ii)).getUniqueKey() + " from querySubscribeRequestsSet");
+            if (log.TRACE) log.trace(ME, "Removing subscription " + ((SubscriptionInfo)vec.elementAt(ii)).getSubscriptionId() + " from querySubscribeRequestsSet");
             querySubscribeRequestsSet.remove(vec.elementAt(ii));
          }
       }
@@ -512,7 +511,7 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
                while (iterator2.hasNext()) {
                   SubscriptionInfo sub = (SubscriptionInfo)iterator2.next();
                   if (sub.getXmlKey().isExact())
-                     sb.append(offset).append("      <id>").append(sub.getUniqueKey()).append("</id>");
+                     sb.append(offset).append("      <id>").append(sub.getSubscriptionId()).append("</id>");
                }
             }
          }
@@ -523,7 +522,7 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
          Iterator iterator = querySubscribeRequestsSet.iterator();
          while (iterator.hasNext()) {
             SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
-            //sb.append(offset).append("      <id>").append(sub.getUniqueKey()).append("</id>");
+            //sb.append(offset).append("      <id>").append(sub.getSubscriptionId()).append("</id>");
             sb.append(offset).append(sub.toXml(extraOffset + "      "));
          }
       }

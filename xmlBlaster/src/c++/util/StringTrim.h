@@ -3,7 +3,7 @@ Name:      StringTrim.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to emulate the java String.trim() method
-Author:    <Michele Laghi> michele.laghi@attglobal.net
+Author:    <Michele Laghi> laghi@swissinfo.org
 -----------------------------------------------------------------------------*/
 
 #ifndef _UTIL_STRINGTRIM_H

@@ -1,0 +1,102 @@
+/*------------------------------------------------------------------------------
+Name:      GetQos.java
+Project:   xmlBlaster.org
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+------------------------------------------------------------------------------*/
+package org.xmlBlaster.client.qos;
+
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.qos.QueryQosData;
+import org.xmlBlaster.engine.mime.Query;
+import org.xmlBlaster.engine.helper.AccessFilterQos;
+
+/**
+ * This class encapsulates the QoS (quality of service) of a get() request. 
+ * <p />
+ * A full specified <b>get</b> qos could look like this:<br />
+ * <pre>
+ *&lt;qos>
+ *   &lt;meta>false&lt;/meta>       &lt;!-- Don't return me the xmlKey meta data -->
+ *   &lt;content>false&lt;/content> &lt;!-- Don't return me the content data (notify only) -->
+ *   &lt;filter type='myPlugin' version='1.0'>a!=100&lt;/filter>
+ *                                  &lt;!-- MIME access filters plugin -->
+ *&lt;/qos>
+ * </pre>
+ * <p />
+ * see xmlBlaster/src/dtd/XmlQoS.xml
+ * @see org.xmlBlaster.util.qos.QueryQosData
+ * @see org.xmlBlaster.util.qos.QueryQosSaxFactory
+ * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.get.html">get interface</a>
+ * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/mime.plugin.accessfilter.html">MIME access filter requirement</a>
+ */
+public final class GetQos
+{
+   private String ME = "GetQos";
+   private final Global glob;
+   private final QueryQosData queryQosData;
+
+   /**
+    * Constructor for default qos (quality of service).
+    */
+   public GetQos(Global glob) {
+      this.glob = (glob==null) ? Global.instance() : glob;
+      this.queryQosData = new QueryQosData(glob, glob.getQueryQosFactory()); 
+   }
+
+   /*
+    * Shall key meta information be delivered?
+   public void setWantMeta(String meta) {
+      this.queryQosData.setWantMeta(meta);
+   }
+    */
+
+   /**
+    * If false, the update contains not the content (it is a notify of change only)
+    * <p />
+    * This may be useful if you have huge contents, and you only want to be informed about a change
+    * TODO: Implement in server!!!
+    */
+   public void setWantContent(boolean content) {
+      this.queryQosData.setWantContent(content);
+   }
+
+   /**
+    * Adds your supplied get filter. 
+    * <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/mime.plugin.accessfilter.html">The access filter plugin requirement</a>
+    */
+   public void addAccessFilter(AccessFilterQos filter) {
+      this.queryQosData.addAccessFilter(filter);
+   }
+
+   /**
+    * Converts the data into a valid XML ASCII string.
+    * @return An XML ASCII string
+    */
+   public String toString() {
+      return this.queryQosData.toXml();
+   }
+
+   /**
+    * Converts the data into a valid XML ASCII string.
+    * @return An XML ASCII string
+    */
+   public String toXml() {
+      return this.queryQosData.toXml();
+   }
+
+   /** For testing: java org.xmlBlaster.client.qos.GetQos */
+   public static void main(String[] args) {
+      Global glob = new Global(args);
+      try {
+         GetQos qos = new GetQos(glob);
+         qos.setWantContent(false);
+         qos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter", "1.0", new Query(glob, "800")));
+         qos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter", "3.2", new Query(glob, "a<10")));
+         System.out.println(qos.toXml());
+      }
+      catch (Throwable e) {
+         System.out.println("Test failed: " + e.toString());
+      }
+   }
+}

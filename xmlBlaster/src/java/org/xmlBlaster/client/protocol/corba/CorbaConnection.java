@@ -8,7 +8,6 @@ Author:    ruff@swand.lake.de
 package org.xmlBlaster.client.protocol.corba;
 
 import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
-import org.xmlBlaster.client.protocol.ConnectionException;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
@@ -17,6 +16,10 @@ import org.xmlBlaster.util.ConnectReturnQos;
 import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.util.JdkCompatible;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.ErrorCode;
+
+import org.xmlBlaster.util.plugin.I_Plugin;
+import org.xmlBlaster.util.plugin.PluginInfo;
 
 import org.jutils.io.FileUtil;
 import org.jutils.JUtilsException;
@@ -70,11 +73,11 @@ import java.applet.Applet;
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
-public class CorbaConnection implements I_XmlBlasterConnection
+public class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
 {
    private String ME = "CorbaConnection";
-   private final Global glob;
-   private final LogChannel log;
+   private Global glob;
+   private LogChannel log;
 
    // HACK May,24 2000 !!! (search 'Thread leak' in this file to remove the hack again and remove the two 'static' qualifiers below.)
    // Thread leak from JacORB 1.2.2, the threads
@@ -101,6 +104,12 @@ public class CorbaConnection implements I_XmlBlasterConnection
    private boolean firstAttempt = true;
 
    /**
+    * Called by plugin loader which calls init(Global, PluginInfo) thereafter. 
+    */
+   public CorbaConnection() {
+   }
+
+   /**
     * CORBA client access to xmlBlaster for <strong>normal client applications</strong>.
     * <p />
     * @param glob  parameters given on command line
@@ -112,17 +121,9 @@ public class CorbaConnection implements I_XmlBlasterConnection
     *    <li>-ns true/false, if a naming service shall be used</li>
     * </ul>
     */
-   public CorbaConnection(Global glob)
-   {
-      this.glob = glob;
-      this.log = glob.getLog("corba");
-      if (orb == null) { // Thread leak !!!
-         CorbaDriver.initializeOrbEnv(glob,true);
-         orb = org.omg.CORBA.ORB.init(glob.getArgs(), null);
-      }
-      init();
+   public CorbaConnection(Global glob) {
+      init(glob, null);
    }
-
 
    /**
     * CORBA client access to xmlBlaster for <strong>applets</strong>.
@@ -148,10 +149,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
     *  </pre>
     * @param ap  Applet handle
     */
-   public CorbaConnection(Global glob, Applet ap)
-   {
-      this.glob = glob;
-      this.log = glob.getLog("corba");
+   public CorbaConnection(Global glob, Applet ap) {
        // try to force to use JacORB instead of builtin CORBA:
       String orbClassName = "org.jacorb.orb.ORB";
       String orbSingleton = "org.jacorb.orb.ORBSingleton";
@@ -159,18 +157,44 @@ public class CorbaConnection implements I_XmlBlasterConnection
       props.put("org.omg.CORBA.ORBClass", orbClassName);
       props.put("org.omg.CORBA.ORBSingletonClass", orbSingleton);
 
-      log.info(ME, "Using ORB=" + orbClassName + " and ORBSingleton=" + orbSingleton);
-
       orb = org.omg.CORBA.ORB.init(ap, props);
 
-      init();
+      init(glob, null);
+
+      log.info(ME, "Using ORB=" + orbClassName + " and ORBSingleton=" + orbSingleton);
+   }
+
+   /** 
+    * Enforced by I_Plugin
+    * @return "IOR"
+    */
+   public String getType() {
+      return getProtocol();
+   }
+
+   /** Enforced by I_Plugin */
+   public String getVersion() {
+      return "1.0";
+   }
+
+   /**
+    * This method is called by the PluginManager (enforced by I_Plugin). 
+    * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
+    */
+   public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo) {
+      this.glob = glob;
+      this.log = glob.getLog("corba");
+      if (orb == null) { // Thread leak !!!
+         CorbaDriver.initializeOrbEnv(glob,true);
+         orb = org.omg.CORBA.ORB.init(glob.getArgs(), null);
+      }
+      resetConnection();
    }
 
    /**
     * Reset
     */
-   public void init()
-   {
+   public void resetConnection() {
       authServer   = null;
       xmlBlaster   = null;
    }
@@ -178,8 +202,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
    /**
     * @return The connection protocol name "IOR"
     */
-   public final String getProtocol()
-   {
+   public final String getProtocol() {
       return "IOR";
    }
 
@@ -187,22 +210,21 @@ public class CorbaConnection implements I_XmlBlasterConnection
     * Accessing the orb handle.
     * @return org.omg.CORBA.ORB
     */
-   public org.omg.CORBA.ORB getOrb()
-   {
+   public org.omg.CORBA.ORB getOrb() {
       return orb;
    }
 
    /**
     * Accessing the xmlBlaster handle.
-    * For internal use, throws an ordinary Exception if xmlBlaster==null
+    * For internal use, throws a COMMUNICATION XmlBlasterException if xmlBlaster==null
     * We use this for similar handling as org.omg exceptions.
     * @return Server
     */
-   private Server getXmlBlaster() throws ConnectionException
-   {
+   private Server getXmlBlaster() throws XmlBlasterException {
       if (xmlBlaster == null) {
          if (log.TRACE) log.trace(ME, "No CORBA connection available.");
-         throw new ConnectionException(ME+".init", "The CORBA xmlBlaster handle is null, no connection available");
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
+                                       "The CORBA xmlBlaster handle is null, no connection available");
       }
       return xmlBlaster;
    }
@@ -283,8 +305,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
     * @exception XmlBlasterException id="NoAuthService"
     *
     */
-   public AuthServer getAuthenticationService(boolean verbose) throws XmlBlasterException, ConnectionException
-   {
+   public AuthServer getAuthenticationService(boolean verbose) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "getAuthenticationService() ...");
       if (authServer != null) {
          return authServer;
@@ -360,13 +381,12 @@ public class CorbaConnection implements I_XmlBlasterConnection
             return authServer;
          }
          catch(Throwable e) {
-            //if (verbose || log.TRACE) log.trace(ME + ".NoAuthService", text);
-            throw new ConnectionException("NoAuthService", text);
+            throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, text);
          }
       }
       if (log.TRACE) log.trace(ME, "No -ns ...");
 
-      throw new ConnectionException("NoAuthService", text);
+      throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, text);
    }
 
 
@@ -382,8 +402,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
     *                  The authentication tags should be set already if security manager is switched on
     * @exception       XmlBlasterException if login fails
     */
-   public void login(String loginName, String passwd, ConnectQos qos) throws XmlBlasterException, ConnectionException
-   {
+   public void login(String loginName, String passwd, ConnectQos qos) throws XmlBlasterException {
       this.ME = "CorbaConnection-" + loginName;
       if (log.CALL) log.call(ME, "login() ...");
       if (xmlBlaster != null) {
@@ -414,10 +433,9 @@ public class CorbaConnection implements I_XmlBlasterConnection
     *                  The authentication tags should be set already if security manager is switched on
     * @exception       XmlBlasterException if login fails
     */
-   public ConnectReturnQos connect(ConnectQos qos) throws XmlBlasterException, ConnectionException
-   {
+   public ConnectReturnQos connect(ConnectQos qos) throws XmlBlasterException {
       if (qos == null)
-         throw new XmlBlasterException(ME+".connect()", "Please specify a valid QoS");
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Please pass a valid QoS for connect()");
 
       this.ME = "CorbaConnection-" + qos.getUserId();
       if (log.CALL) log.call(ME, "connect() ...");
@@ -441,8 +459,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
     * Is invoked when we poll for the server, for example after we have lost the connection. 
     * Enforced by interface I_XmlBlasterConnection
     */
-   public ConnectReturnQos loginRaw() throws XmlBlasterException, ConnectionException
-   {
+   public ConnectReturnQos loginRaw() throws XmlBlasterException {
       return doLogin(false);
    }
 
@@ -456,8 +473,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
     * @return The returned QoS or null
     * @exception       XmlBlasterException if login fails
     */
-   public ConnectReturnQos doLogin(boolean verbose) throws XmlBlasterException, ConnectionException
-   {
+   public ConnectReturnQos doLogin(boolean verbose) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "loginRaw(" + loginName + ") ...");
 
       try {
@@ -481,15 +497,16 @@ public class CorbaConnection implements I_XmlBlasterConnection
          return this.connectReturnQos;
       }
       catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-         log.warn(ME, "Login failed for " + loginName + ": id=" + e.id + ": reason=" + e.reason);
-         if (log.TRACE) log.trace(ME, "Login failed for " + loginName + ": id=" + e.id + ": reason=" + e.reason);
-         if (log.DUMP) log.dump(ME, "Login failed for " + loginName + " connectQos=" + connectQos.toXml());
-         throw new ConnectionException(e.id, e.reason);
+         XmlBlasterException xmlBlasterException = CorbaDriver.convert(glob, e);
+         //xmlBlasterException.changeErrorCode(ErrorCode.COMMUNICATION_NOCONNECTION);
+         if (log.DUMP) log.dump(ME, "Login failed for " + loginName + ": " + xmlBlasterException.getMessage() + " connectQos=" + connectQos.toXml());
+         throw xmlBlasterException; // Wrong credentials 
       }
       catch(Throwable e) {
-         if (log.TRACE) log.trace(ME, "Login failed for " + loginName + ": "+ e.toString());
-         if (log.DUMP) log.dump(ME, "Login failed for " + loginName + " connectQos=" + connectQos.toXml());
-         throw new ConnectionException(ME, e.toString());
+         XmlBlasterException xmlBlasterException = XmlBlasterException.convert(glob, ME, "Login failed", e);
+         xmlBlasterException.changeErrorCode(ErrorCode.COMMUNICATION_NOCONNECTION);
+         if (log.DUMP) log.dump(ME, "Login failed for " + loginName + ": " + xmlBlasterException.getMessage() + " connectQos=" + connectQos.toXml());
+         throw xmlBlasterException;
       }
    }
 
@@ -498,11 +515,9 @@ public class CorbaConnection implements I_XmlBlasterConnection
     * Access the login name.
     * @return your login name or null if you are not logged in
     */
-   public String getLoginName()
-   {
+   public String getLoginName() {
       return loginName;
    }
-
 
    /**
     * Logout from the server.
@@ -510,8 +525,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
     * @return true successfully logged out
     *         false failure on logout
     */
-   public boolean disconnect(DisconnectQos qos)
-   {
+   public boolean disconnect(DisconnectQos qos) {
       if (log.CALL) log.call(ME, "disconnect() ...");
 
       if (xmlBlaster == null) {
@@ -538,11 +552,13 @@ public class CorbaConnection implements I_XmlBlasterConnection
          xmlBlaster = null;
          return true;
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: [" + e.id + "]" + " " + e.reason);
+         log.warn(ME, "Remote exception: " + CorbaDriver.convert(glob, e).getMessage());
       } catch(org.omg.CORBA.OBJ_ADAPTER e) {
-         log.warn(ME, "No disconnect possible, no CORBA connection: " + e.toString());
+         XmlBlasterException xmlBlasterException = XmlBlasterException.convert(glob, ME, "No disconnect possible, no CORBA connection", e);
+         log.warn(ME, xmlBlasterException.getMessage());
       } catch(Throwable e) {
-         log.warn(ME, e.toString());
+         XmlBlasterException xmlBlasterException = XmlBlasterException.convert(glob, ME, null, e);
+         log.warn(ME, xmlBlasterException.getMessage());
          e.printStackTrace();
       }
 
@@ -558,8 +574,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
     * Shut down the callback server.
     * Is called by logout()
     */
-   public boolean shutdown()
-   {
+   public boolean shutdown() {
       if (this.authServer != null) {
          this.authServer._release();
          this.authServer = null;
@@ -574,43 +589,38 @@ public class CorbaConnection implements I_XmlBlasterConnection
    /**
     * @return true if you are logged in
     */
-   public boolean isLoggedIn()
-   {
+   public boolean isLoggedIn() {
       return xmlBlaster != null;
    }
-
 
    /**
     * Enforced by I_XmlBlasterConnection interface (fail save mode).
     * see explanations of publish() method.
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public final String subscribe(String xmlKey, String qos) throws XmlBlasterException, ConnectionException
-   {
+   public final String subscribe(String xmlKey, String qos) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "subscribe() ...");
       try {
          return getXmlBlaster().subscribe(xmlKey, qos);
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-         throw new XmlBlasterException(e.id, e.reason); // transform Corba exception to native exception
+         throw CorbaDriver.convert(glob, e); // transform Corba exception to native exception
       } catch(Throwable e) {
-         throw new ConnectionException(ME+".InvokeError", e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "subscribe", e);
       }
    }
-
 
    /**
     * Enforced by I_XmlBlasterConnection interface (fail save mode)
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public final void unSubscribe(String xmlKey, String qos) throws XmlBlasterException, ConnectionException
-   {
+   public final String[] unSubscribe(String xmlKey, String qos) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "unSubscribe() ...");
       try {
-         getXmlBlaster().unSubscribe(xmlKey, qos);
+         return getXmlBlaster().unSubscribe(xmlKey, qos);
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-         throw new XmlBlasterException(e.id, e.reason); // transform Corba exception to native exception
+         throw CorbaDriver.convert(glob, e); // transform Corba exception to native exception
       } catch(Throwable e) {
-         throw new ConnectionException(ME+".InvokeError", e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "unSubscribe", e);
       }
    }
 
@@ -625,16 +635,16 @@ public class CorbaConnection implements I_XmlBlasterConnection
     * Enforced by I_XmlBlasterConnection interface (fail save mode)
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public final String publish(MessageUnit msgUnit) throws XmlBlasterException, ConnectionException
-   {
+   public final String publish(MessageUnit msgUnit) throws XmlBlasterException {
       if (log.TRACE) log.trace(ME, "Publishing ...");
       try {
          return getXmlBlaster().publish(CorbaDriver.convert(msgUnit));
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-         if (log.TRACE) log.trace(ME, "XmlBlasterException: " + e.reason);
-         throw new XmlBlasterException(e.id, e.reason); // transform Corba exception to native exception
+         if (log.TRACE) log.trace(ME, "XmlBlasterException: " + e.getMessage());
+         throw CorbaDriver.convert(glob, e); // transform Corba exception to native exception
       } catch(Throwable e) {
-         throw new ConnectionException(ME+".InvokeError", e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
+               "CORBA invocation of '" + msgUnit.getMsgKeyData().getOid() + "' failed: " + e.toString());
       }
    }
 
@@ -642,46 +652,44 @@ public class CorbaConnection implements I_XmlBlasterConnection
    /**
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public String[] publishArr(MessageUnit [] msgUnitArr) throws XmlBlasterException, ConnectionException
+   public String[] publishArr(MessageUnit [] msgUnitArr) throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "publishArr() ...");
       try {
          return getXmlBlaster().publishArr(CorbaDriver.convert(msgUnitArr));
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-         if (log.TRACE) log.trace(ME, "XmlBlasterException: " + e.reason);
-         throw new XmlBlasterException(e.id, e.reason); // transform Corba exception to native exception
+         if (log.TRACE) log.trace(ME, "XmlBlasterException: " + e.getMessage());
+         throw CorbaDriver.convert(glob, e); // transform Corba exception to native exception
       } catch(Throwable e) {
-         throw new ConnectionException(ME+".InvokeError", e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "publishArr", e);
       }
    }
 
    /**
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public void publishOneway(MessageUnit[] msgUnitArr) throws XmlBlasterException, ConnectionException
-   {
+   public void publishOneway(MessageUnit[] msgUnitArr) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "publishOneway() ...");
       try {
          getXmlBlaster().publishOneway(CorbaDriver.convert(msgUnitArr));
       } catch(Throwable e) {
-         throw new ConnectionException(ME+".InvokeError", e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "publishOneway", e);
       }
    }
 
    /**
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public final String[] erase(String xmlKey, String qos) throws XmlBlasterException, ConnectionException
-   {
+   public final String[] erase(String xmlKey, String qos) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "erase() ...");
       if (xmlKey==null) xmlKey = "";
       if (qos==null) qos = "";
       try {
          return getXmlBlaster().erase(xmlKey, qos);
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-         throw new XmlBlasterException(e.id, e.reason); // transform Corba exception to native exception
+         throw CorbaDriver.convert(glob, e); // transform Corba exception to native exception
       } catch(Throwable e) {
-         throw new ConnectionException(ME+".InvokeError", e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "erase", e);
       }
    }
 
@@ -689,16 +697,14 @@ public class CorbaConnection implements I_XmlBlasterConnection
    /**
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public final MessageUnit[] get(String xmlKey, String qos) throws XmlBlasterException, ConnectionException
-   {
+   public final MessageUnit[] get(String xmlKey, String qos) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "get() ...");
       try {
-         return CorbaDriver.convert(getXmlBlaster().get(xmlKey, qos));
+         return CorbaDriver.convert(glob, getXmlBlaster().get(xmlKey, qos));
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-         throw new XmlBlasterException(e.id, e.reason); // transform Corba exception to native exception
+         throw CorbaDriver.convert(glob, e); // transform Corba exception to native exception
       } catch(Throwable e) {
-         e.printStackTrace();
-         throw new ConnectionException(ME+".InvokeError", e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "get", e);
       }
    }
 
@@ -706,12 +712,11 @@ public class CorbaConnection implements I_XmlBlasterConnection
     * Check server.
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public String ping(String qos) throws ConnectionException
-   {
+   public String ping(String qos) throws XmlBlasterException {
       try {
          return getXmlBlaster().ping(qos);
       } catch(Throwable e) {
-         throw new ConnectionException(ME+".InvokeError", e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "ping", e);
       }
    }
 

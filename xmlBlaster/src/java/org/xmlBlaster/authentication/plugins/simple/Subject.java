@@ -3,23 +3,26 @@ package org.xmlBlaster.authentication.plugins.simple;
 import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.MethodName;
 import org.jutils.log.LogChannel;
 
 /**
  * @author  $Author: ruff $ ($Name:  $)
- * @version $Revision: 1.4 $ (State: $State) (Date: $Date: 2002/09/13 23:17:53 $)
+ * @version $Revision: 1.5 $ (State: $State) (Date: $Date: 2002/11/26 12:37:55 $)
  */
 
 public class Subject implements I_Subject {
    private String ME="SimpleSecuritySubject";
    private String name = null;
+   private final Global glob;
 
 
-   public Subject() {
+   public Subject(Global glob) {
+      this(glob, null);
    }
 
-
-   public Subject(String userId) {
+   public Subject(Global glob, String userId) {
+      this.glob = glob;
       this.name = userId;
    }
 
@@ -32,7 +35,7 @@ public class Subject implements I_Subject {
    /**
     * Check if the user is permited (authorized) to do something
     */
-   public boolean isAuthorized(String actionKey, String key) {
+   public boolean isAuthorized(MethodName actionKey, String key) {
 //System.out.println("### User: "+getName()+" is permitted to "+actionKey+" "+key+" ###");
       return true; // dummy implementation;
    }
@@ -51,7 +54,7 @@ public class Subject implements I_Subject {
    void authenticate(String passwd) throws XmlBlasterException {
       // throw new XmlBlasterException(ME + ".authenticationFailed", "Wrong identity!");
       // dummy implementation
-      Global.instance().getLog("simple").info(ME, "Access for " + getName() + " granted, without further checks.");
+      this.glob.getLog("simple").info(ME, "Access for " + getName() + " granted, without further checks.");
    }
 
 }

@@ -42,7 +42,7 @@ function get(key, qos)
 }
 
 /**
- * @param key SubscribeKeyWrapper object or literal as xml ASCII string "<key oid='' ...</key>"
+ * @param key SubscribeKey object or literal as xml ASCII string "<key oid='' ...</key>"
  * @param qos QosWrapper object or a literal string like "<qos>...</qos>"
  */
 function subscribe(key, qos)
@@ -87,7 +87,7 @@ function erase(key, qos)
  *        for publish() calls it contains a content as well.
  *
  * Note: The MessageWrapperLiteral may contain the key and qos as literal xml ASCII string
- *              or as one of the wrapper objects, e.g. QosWrapper() or SubscribeKeyWrapper()
+ *              or as one of the wrapper objects, e.g. QosWrapper() or SubscribeKey(glob, )
  */
 function request(methodName, msgWrapper)
 {
@@ -190,14 +190,14 @@ function browserReady()
 /**
  * Constructor for a XmlKey helper object.
  * If you have own meta data, add it with the method wrap:
- * Example: var key = new top.SubscribeKeyWrapper(null, "text/xml", null);
+ * Example: var key = new top.SubscribeKey(glob, null, "text/xml", null);
  *          key.wrap("<Name id='Joe' />");
  * @param oid:String The unique message identifier, is optional and will be generated if null
  * @param contentMime:String The MIME type of the content e.g. "text/xml" or "image/gif"
  * @param contentMimeExtended:String Use it for whatever, e.g. the version number or parser
  *        infos for your content set to null if not needed
  */
-function SubscribeKeyWrapper(oid, contentMime, contentMimeExtended)
+function SubscribeKey(glob, oid, contentMime, contentMimeExtended)
 {
    if (oid == null)
       this.oid = '';
@@ -210,10 +210,10 @@ function SubscribeKeyWrapper(oid, contentMime, contentMimeExtended)
       this.contentMime = contentMime;
 
    this.contentMimeExtended = contentMimeExtended;
-   this.wrap = SubscribeKeyWrapperWrap;
-   this.toXml = SubscribeKeyWrapperToXml;
+   this.wrap = SubscribeKeyWrap;
+   this.toXml = SubscribeKeyToXml;
 }
-function SubscribeKeyWrapperToXml()
+function SubscribeKeyToXml()
 {
    var str='';
    str += "<key oid='" + this.oid + "'";
@@ -227,7 +227,7 @@ function SubscribeKeyWrapperToXml()
    if (Log.INFO) Log.info(str);
    return str;
 }
-function SubscribeKeyWrapperWrap(tags)
+function SubscribeKeyWrap(tags)
 {
    if ((typeof tags) == "undefined" || tags == null)
       this.tags = '';
@@ -238,14 +238,14 @@ function SubscribeKeyWrapperWrap(tags)
 /**
  * Constructor for a XmlKey helper object.
  * If you have own meta data, add it with the method wrap:
- * Example: var key = new top.PublishKeyWrapper(null, "text/xml", null);
+ * Example: var key = new top.PublishKey(glob, null, "text/xml", null);
  *          key.wrap("<Name id='Joe' />");
  * @param oid:String The unique message identifier, is optional and will be generated if null
  * @param contentMime:String The MIME type of the content e.g. "text/xml" or "image/gif"
  * @param contentMimeExtended:String Use it for whatever, e.g. the version number or parser
  *        infos for your content set to null if not needed
  */
-function PublishKeyWrapper(oid, contentMime, contentMimeExtended)
+function PublishKey(glob, oid, contentMime, contentMimeExtended)
 {
    if (oid == null)
       this.oid = '';
@@ -258,10 +258,10 @@ function PublishKeyWrapper(oid, contentMime, contentMimeExtended)
       this.contentMime = contentMime;
 
    this.contentMimeExtended = contentMimeExtended;
-   this.wrap = PublishKeyWrapperWrap;
-   this.toXml = PublishKeyWrapperToXml;
+   this.wrap = PublishKeyWrap;
+   this.toXml = PublishKeyToXml;
 }
-function PublishKeyWrapperToXml()
+function PublishKeyToXml()
 {
    var str='';
    str += "<key oid='" + this.oid + "'";
@@ -275,7 +275,7 @@ function PublishKeyWrapperToXml()
    if (Log.TRACE) Log.trace("PublishKey=" + str);
    return str;
 }
-function PublishKeyWrapperWrap(tags)
+function PublishKeyWrap(tags)
 {
    if ((typeof tags) == "undefined" || tags == null)
       this.tags = '';
@@ -396,7 +396,7 @@ function UpdateQos(xml)
  * Create a message object, which contains the xmlBlaster message as string literals
  *
  * example:
-      var key = new PublishKeyWrapper();
+      var key = new PublishKey(glob, );
       var messageWrapperLiteral = new MessageWrapperLiteral(key.toXml(), "Hello World..", "<qos></qos>");
 
  * @param key:String  The meta data

@@ -3,7 +3,7 @@ Name:      RamRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   RamRecorder for client messages
-Version:   $Id: RamRecorder.java,v 1.10 2002/09/12 21:01:32 ruff Exp $
+Version:   $Id: RamRecorder.java,v 1.11 2002/11/26 12:40:13 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.recorder.ram;
@@ -15,13 +15,16 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.recorder.I_InvocationRecorder;
+import org.xmlBlaster.util.qos.StatusQosData;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.client.I_CallbackRaw;
-import org.xmlBlaster.client.PublishRetQos;
-import org.xmlBlaster.client.SubscribeRetQos;
-import org.xmlBlaster.client.EraseRetQos;
+import org.xmlBlaster.client.qos.PublishReturnQos;
+import org.xmlBlaster.client.qos.SubscribeReturnQos;
+import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.protocol.I_XmlBlaster;
 
 import java.util.*;
@@ -45,7 +48,7 @@ import java.util.*;
 public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRaw
 {
    private String ME = "RamRecorder";
-
+   private Global glob;
    private LogChannel log;
 
    /**
@@ -64,10 +67,11 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
    private final MessageUnit[] dummyMArr = new MessageUnit[0];
    private final String[] dummySArr = new String[0];
    private final String dummyS = new String();
-   private final PublishRetQos[] dummyPubRetQosArr = new PublishRetQos[0];
-   private PublishRetQos dummyPubRet;
-   private SubscribeRetQos dummySubRet;
-   private final EraseRetQos[] dummyEraseRetQosArr = new EraseRetQos[0];
+   private final PublishReturnQos[] dummyPubRetQosArr = new PublishReturnQos[0];
+   private PublishReturnQos dummyPubRet;
+   private SubscribeReturnQos dummySubRet;
+   private final UnSubscribeReturnQos[] dummyUbSubRetQosArr = new UnSubscribeReturnQos[0];
+   private final EraseReturnQos[] dummyEraseReturnQosArr = new EraseReturnQos[0];
 
 
    /** Empty constructor for plugin manager */
@@ -80,9 +84,14 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
    public void initialize(Global glob, String fn, long maxEntries, I_XmlBlaster serverCallback,
                              I_CallbackRaw clientCallback)
    {
+      this.glob = glob;
       this.log = glob.getLog("recorder");
-      this.dummyPubRet = new PublishRetQos(glob, Constants.STATE_OK, Constants.INFO_QUEUED);
-      this.dummySubRet = new SubscribeRetQos(glob, Constants.STATE_OK, Constants.INFO_QUEUED);
+      StatusQosData statRetQos = new StatusQosData(glob);
+      statRetQos.setStateInfo(Constants.INFO_QUEUED);
+      this.dummyPubRet = new PublishReturnQos(glob, statRetQos);
+      StatusQosData subQos = new StatusQosData(glob);
+      subQos.setStateInfo(Constants.INFO_QUEUED);
+      this.dummySubRet = new SubscribeReturnQos(glob, subQos);
 
       if (log.CALL) log.call(ME, "Initializing new RamRecorder(" + maxEntries + ") ...");
       if (maxEntries >= Integer.MAX_VALUE) {
@@ -124,7 +133,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
    }
 
    /**
-    * @param ONOVERFLOW_BLOCK = "block", ONOVERFLOW_DEADLETTER = "deadLetter",
+    * @param ONOVERFLOW_DEADMESSAGE = "deadMessage",
     *        ONOVERFLOW_DISCARD = "discard", ONOVERFLOW_DISCARDOLDEST = "discardOldest",
     *        ONOVERFLOW_EXCEPTION = "exception"
     */
@@ -154,7 +163,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
          return queue.isFull();
       }
       catch (JUtilsException e) {
-         throw new XmlBlasterException(e);
+         throw convert(e);
       }
    }
 
@@ -256,8 +265,8 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
    public void playback(long startDate, long endDate, double motionFactor) throws XmlBlasterException
    {
       // !!! implement similar to pullback() but using the iterator to process the queue
-      log.error(ME + ".NoImpl", "Sorry, playback() is not implemented, use pullback() or implement it");
-      throw new XmlBlasterException(ME + ".NoImpl", "Sorry, only pullback is implemented");
+      log.error(ME + "." + ErrorCode.INTERNAL_NOTIMPLEMENTED.getErrorCode(), "Sorry, playback() is not implemented, use pullback() or implement it");
+      throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "Sorry, only pullback is implemented");
    }
 
 
@@ -320,7 +329,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     * @exception XmlBlasterException if queue is full with id="<driverName>.MaxSize"
     */
-   public SubscribeRetQos subscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
+   public SubscribeReturnQos subscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       InvocationContainer cont = new InvocationContainer();
       cont.method = "subscribe";
@@ -330,9 +339,16 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
          queue.push(cont);
       }
       catch (JUtilsException e) {
-         throw new XmlBlasterException(e);
+         throw convert(e);
       }
       return dummySubRet;
+   }
+
+   private XmlBlasterException convert(JUtilsException e) {
+      if (e.id.indexOf(".MaxSize") >= 0)
+         return new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, e.id, e.reason);
+      else 
+         return new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, e.id, e.reason);
    }
 
 
@@ -341,7 +357,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     * @exception XmlBlasterException if queue is full
     */
-   public void unSubscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
+   public UnSubscribeReturnQos[] unSubscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       InvocationContainer cont = new InvocationContainer();
       cont.method = "unSubscribe";
@@ -351,8 +367,9 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
          queue.push(cont);
       }
       catch (JUtilsException e) {
-         throw new XmlBlasterException(e);
+         throw convert(e);
       }
+      return dummyUbSubRetQosArr;
    }
 
 
@@ -361,17 +378,17 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     * @exception XmlBlasterException if queue is full
     */
-   public PublishRetQos publish(MessageUnit msgUnit) throws XmlBlasterException
+   public PublishReturnQos publish(MessageUnit msgUnit) throws XmlBlasterException
    {
       InvocationContainer cont = new InvocationContainer();
       cont.method = "publish";
       cont.msgUnit = msgUnit;
-      cont.xmlQos = msgUnit.qos;
+      cont.xmlQos = msgUnit.getQos();
       try {
          queue.push(cont);
       }
       catch (JUtilsException e) {
-         throw new XmlBlasterException(e);
+         throw convert(e);
       }
       return dummyPubRet;
    }
@@ -395,7 +412,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     * @exception XmlBlasterException if queue is full
     */
-   public PublishRetQos[] publishArr(MessageUnit [] msgUnitArr) throws XmlBlasterException
+   public PublishReturnQos[] publishArr(MessageUnit [] msgUnitArr) throws XmlBlasterException
    {
       InvocationContainer cont = new InvocationContainer();
       cont.method = "publishArr";
@@ -404,7 +421,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
          queue.push(cont);
       }
       catch (JUtilsException e) {
-         throw new XmlBlasterException(e);
+         throw convert(e);
       }
       return dummyPubRetQosArr;
    }
@@ -415,7 +432,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     * @exception XmlBlasterException if queue is full
     */
-   public EraseRetQos[] erase(String xmlKey_literal, String qos_literal) throws XmlBlasterException
+   public EraseReturnQos[] erase(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       InvocationContainer cont = new InvocationContainer();
       cont.method = "erase";
@@ -425,9 +442,9 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
          queue.push(cont);
       }
       catch (JUtilsException e) {
-         throw new XmlBlasterException(e);
+         throw convert(e);
       }
-      return dummyEraseRetQosArr;
+      return dummyEraseReturnQosArr;
    }
 
 
@@ -446,7 +463,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
          queue.push(cont);
       }
       catch (JUtilsException e) {
-         throw new XmlBlasterException(e);
+         throw convert(e);
       }
       return dummyMArr;
    }
@@ -476,7 +493,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
       try {
          queue.push(cont);
       } catch (JUtilsException e) {
-         throw new XmlBlasterException(e);
+         throw convert(e);
       }
       String[] ret=new String[msgUnitArr.length];
       for (int i=0; i<ret.length; i++) ret[i] = "";
@@ -497,7 +514,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
       try {
          queue.push(cont);
       } catch (JUtilsException e) {
-         log.error(ME, "Can't push updateOneway(): " + e.reason);
+         log.error(ME, "Can't push updateOneway(): " + e.getMessage());
       }
    }
 

@@ -3,14 +3,16 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.46 2002/09/19 20:59:28 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.47 2002/11/26 12:39:03 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.JdkCompatible;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.engine.*;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.protocol.I_Authenticate;
@@ -118,7 +120,7 @@ public class CorbaDriver implements I_Driver
    public synchronized void init(Global glob, I_Authenticate authenticate, I_XmlBlaster xmlBlasterImpl) throws XmlBlasterException
    {
       this.glob = glob;
-      this.ME = "CorbaDriver" + this.glob.getLogPraefixDashed();
+      this.ME = "CorbaDriver" + this.glob.getLogPrefixDashed();
       this.log = glob.getLog("corba");
       this.authenticate = authenticate;
       this.xmlBlasterImpl = xmlBlasterImpl;
@@ -218,7 +220,7 @@ public class CorbaDriver implements I_Driver
                log.info(ME, "Published AuthServer IOR to naming service on " + System.getProperty("ORBInitRef.NameService"));
             }
             catch (XmlBlasterException e) {
-               log.warn(ME + ".NoNameService", e.reason);
+               log.warn(ME + ".NoNameService", e.getMessage());
                nc = null;
                if (glob.getBootstrapAddress().getPort() > 0) {
                   log.info(ME, "You don't need the naming service, i'll switch to builtin http IOR download");
@@ -499,25 +501,54 @@ public class CorbaDriver implements I_Driver
       return org.omg.CORBA.ORB.init(new String[0], null);
    }
 
+   /**
+    * Converts the internal CORBA XmlBlasterException to the util.XmlBlasterException. 
+    */
+   public static final org.xmlBlaster.util.XmlBlasterException convert(Global glob, org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException eCorba) {
+      org.xmlBlaster.util.XmlBlasterException ex = 
+         new XmlBlasterException(glob, ErrorCode.toErrorCode(eCorba.errorCodeStr),
+                               eCorba.node, eCorba.location, eCorba.lang, eCorba.message, eCorba.versionInfo,
+                               Timestamp.valueOf(eCorba.timestampStr),
+                               eCorba.stackTrace, eCorba.embeddedMessage, eCorba.transactionInfo);
+      return ex;
+   }
+
+   /**
+    * Converts the util.XmlBlasterException to the internal CORBA XmlBlasterException. 
+    */
+   public static final org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException convert(org.xmlBlaster.util.XmlBlasterException eUtil) {
+      return new org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException(
+                 eUtil.getErrorCodeStr(),
+                 eUtil.getNode(),
+                 eUtil.getLocation(),
+                 eUtil.getLang(),
+                 eUtil.getRawMessage(),
+                 eUtil.getVersionInfo(),
+                 eUtil.getTimestamp().toString(),
+                 eUtil.getStackTraceStr(),
+                 eUtil.getEmbeddedMessage(),
+                 eUtil.getTransactionInfo(),
+                 ""); // transform native exception to Corba exception
+   }
 
    /**
     * Converts the internal CORBA message unit to the internal representation.
     */
-   public static final org.xmlBlaster.engine.helper.MessageUnit convert(org.xmlBlaster.protocol.corba.serverIdl.MessageUnit mu)
+   public static final org.xmlBlaster.engine.helper.MessageUnit convert(Global glob, org.xmlBlaster.protocol.corba.serverIdl.MessageUnit mu)
    {
-      return new org.xmlBlaster.engine.helper.MessageUnit(mu.xmlKey, mu.content, mu.qos);
+      return new org.xmlBlaster.engine.helper.MessageUnit(glob, mu.xmlKey, mu.content, mu.qos);
    }
 
 
    /**
     * Converts the internal CORBA message unit array to the internal representation.
     */
-   public static final org.xmlBlaster.engine.helper.MessageUnit[] convert(org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] msgUnitArr)
+   public static final org.xmlBlaster.engine.helper.MessageUnit[] convert(Global glob, org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] msgUnitArr)
    {
       // convert Corba to internal ...
       org.xmlBlaster.engine.helper.MessageUnit[] internalUnitArr = new org.xmlBlaster.engine.helper.MessageUnit[msgUnitArr.length];
       for (int ii=0; ii<msgUnitArr.length; ii++) {
-         internalUnitArr[ii] = CorbaDriver.convert(msgUnitArr[ii]);
+         internalUnitArr[ii] = CorbaDriver.convert(glob, msgUnitArr[ii]);
       }
       return internalUnitArr;
    }
@@ -528,7 +559,7 @@ public class CorbaDriver implements I_Driver
     */
    public static final org.xmlBlaster.protocol.corba.serverIdl.MessageUnit convert(org.xmlBlaster.engine.helper.MessageUnit mu)
    {
-      return new org.xmlBlaster.protocol.corba.serverIdl.MessageUnit(mu.xmlKey, mu.content, mu.qos);
+      return new org.xmlBlaster.protocol.corba.serverIdl.MessageUnit(mu.getKey(), mu.getContent(), mu.getQos());
    }
 
 

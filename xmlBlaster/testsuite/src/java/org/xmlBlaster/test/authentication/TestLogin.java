@@ -12,9 +12,9 @@ import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
-import org.xmlBlaster.client.EraseRetQos;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
@@ -123,12 +123,12 @@ public class TestLogin extends TestCase implements I_Callback
          String xmlKey = "<key oid='" + firstOid + "' queryType='EXACT'>\n</key>";
          String qos = "<qos></qos>";
          try {
-            EraseRetQos[] arr = callbackConnection.erase(xmlKey, qos);
+            EraseReturnQos[] arr = callbackConnection.erase(xmlKey, qos);
             if (arr != null && arr.length != 1) log.error(ME, "Erased " + arr.length + " messages:");
             assertEquals("Wrong number of messages erased", 1, arr.length);
          } catch(XmlBlasterException e) {
-            log.error(ME+"-tearDown()", "XmlBlasterException in erase(): " + e.reason);
-            fail(ME+"-tearDown() XmlBlasterException in erase(): " + e.reason);
+            log.error(ME+"-tearDown()", "XmlBlasterException in erase(): " + e.getMessage());
+            fail(ME+"-tearDown() XmlBlasterException in erase(): " + e.getMessage());
          }
       }
 
@@ -136,14 +136,14 @@ public class TestLogin extends TestCase implements I_Callback
          String xmlKey = "<key oid='" + secondOid + "' queryType='EXACT'>\n</key>";
          String qos = "<qos></qos>";
          try {
-            EraseRetQos[] arr = callbackConnection.erase(xmlKey, qos);
+            EraseReturnQos[] arr = callbackConnection.erase(xmlKey, qos);
             if (arr.length != 1) {
                log.error(ME, "Erased " + arr.length + " messages:");
                assertEquals("Wrong number of messages erased", 1, arr.length);
             }
          } catch(XmlBlasterException e) { 
-            log.error(ME+"-tearDown()", "XmlBlasterException in erase(): " + e.reason);
-            fail(ME+"-tearDown() XmlBlasterException in erase(): " + e.reason);
+            log.error(ME+"-tearDown()", "XmlBlasterException in erase(): " + e.getMessage());
+            fail(ME+"-tearDown() XmlBlasterException in erase(): " + e.getMessage());
          }
       }
 
@@ -174,8 +174,8 @@ public class TestLogin extends TestCase implements I_Callback
          assertTrue("returned subscribeOid is empty", 0 != subscribeOid.length());
          log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
       } catch(XmlBlasterException e) {
-         log.warn(ME+"-toSubscribeXPath", "XmlBlasterException: " + e.reason);
-         assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
+         log.warn(ME+"-toSubscribeXPath", "XmlBlasterException: " + e.getMessage());
+         assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
       }
    }
 
@@ -191,16 +191,16 @@ public class TestLogin extends TestCase implements I_Callback
       if (log.TRACE) log.trace(ME, "Publishing a message ...");
 
       numReceived = 0;
-      msgUnit.qos = "<qos></qos>";
+      msgUnit = new MessageUnit(msgUnit, null, null, "<qos></qos>");
       if (ptp)
-         msgUnit.qos = "<qos>\n<destination>\n" + secondName + "\n</destination>\n</qos>";
+         msgUnit = new MessageUnit(msgUnit, null, null, "<qos>\n<destination>\n" + secondName + "\n</destination>\n</qos>");
       try {
-         publishOid = callbackConnection.publish(msgUnit).getOid();
-         log.info(ME, "Success: Publish " + msgUnit.getXmlKey() + " done");
+         publishOid = callbackConnection.publish(msgUnit).getKeyOid();
+         log.info(ME, "Success: Publish " + msgUnit.getKey() + " done");
          assertEquals("oid is different", firstOid, publishOid);
       } catch(XmlBlasterException e) {
-         log.warn(ME+"-doPublish", "XmlBlasterException: " + e.reason);
-         assertTrue("publish - XmlBlasterException: " + e.reason, false);
+         log.warn(ME+"-doPublish", "XmlBlasterException: " + e.getMessage());
+         assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
 
       assertTrue("returned publishOid == null", publishOid != null);
@@ -246,10 +246,10 @@ public class TestLogin extends TestCase implements I_Callback
                          "</key>";
          String content = "Some content";
          MessageUnit mu = new MessageUnit(xmlKey, content.getBytes(), "<qos></qos>");
-         publishOid = secondConnection.publish(mu).getOid();
+         publishOid = secondConnection.publish(mu).getKeyOid();
       } catch(XmlBlasterException e) {
-         log.warn(ME+"-secondPublish", "XmlBlasterException: " + e.reason);
-         assertTrue("second - publish - XmlBlasterException: " + e.reason, false);
+         log.warn(ME+"-secondPublish", "XmlBlasterException: " + e.getMessage());
+         assertTrue("second - publish - XmlBlasterException: " + e.getMessage(), false);
       }
       waitOnUpdate(2000L, 2); // 2 messages (we have subscribed 2 times, and the old session remained on relogin)
 
@@ -260,7 +260,7 @@ public class TestLogin extends TestCase implements I_Callback
       // test logout with following subscribe()
       callbackConnection.disconnect(null);
       try {
-         publishOid = callbackConnection.publish(msgUnit).getOid();
+         publishOid = callbackConnection.publish(msgUnit).getKeyOid();
          assertTrue("Didn't expect successful publish after logout", false);
       } catch(XmlBlasterException e) {
          log.info(ME, "Success got exception for publishing after logout: " + e.toString());
@@ -280,7 +280,7 @@ public class TestLogin extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      log.info(ME, "Receiving update of a message " + updateKey.getUniqueKey());
+      log.info(ME, "Receiving update of a message " + updateKey.getOid());
       numReceived++;
       return "";
    }

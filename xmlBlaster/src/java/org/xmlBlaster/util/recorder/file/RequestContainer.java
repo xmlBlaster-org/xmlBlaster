@@ -11,6 +11,7 @@ package org.xmlBlaster.util.recorder.file;
 import java.io.Serializable;
 
 import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.enum.MethodName;
 
 /**
  * Contains fields for all necessary data provided by each
@@ -21,11 +22,11 @@ public class RequestContainer implements Serializable
 {
   long timestamp;
   /** publish/subscribe/get etc. */
-  String method;
+  MethodName method;
   String cbSessionId;
   String xmlKey;
   String xmlQos;
-  MessageUnit msgUnit;
+  //MessageUnit msgUnit;
   MessageUnit[] msgUnitArr;
 
   RequestContainer()

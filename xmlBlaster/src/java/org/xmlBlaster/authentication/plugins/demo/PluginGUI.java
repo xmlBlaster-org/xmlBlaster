@@ -3,7 +3,7 @@ package org.xmlBlaster.authentication.plugins.demo;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
-import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.enum.MethodName;
 import org.jutils.log.LogChannel;
 
 
@@ -237,39 +237,38 @@ public class PluginGUI extends JFrame {
       outName.setText(name);
    }
 
-   
    /**************************************************************************
     * Displays actions
     * <br />
     * @param key The action type
     **************************************************************************/
-   public void printAction(String key) {
-      actionOut.setText(key);
+   public void printAction(MethodName key) {
+      actionOut.setText(key.toString());
       outKey.disable();
-      if (key.equals("LOGIN")) {
+      if(key == MethodName.CONNECT) {
          outKey.setText("");
          outKey.setEditable(false);
          outQoS.setText("");
          outQoS.setEditable(false);
          outContent.setText("");
          outContent.setEditable(false);
-      } else if(key.equals(Constants.GET)) {
+      } else if(key == MethodName.GET) {
          outKey.setEditable(true);
          outQoS.setEditable(true);
          outContent.setEditable(false);
-      } else if(key.equals(Constants.ERASE)) {
+      } else if(key == MethodName.ERASE) {
          outKey.setEditable(true);
          outQoS.setEditable(true);
          outContent.setEditable(false);
-      } else if(key.equals(Constants.PUBLISH)) {
+      } else if(key == MethodName.PUBLISH) {
          outKey.setEditable(true);
          outQoS.setEditable(true);
          outContent.setEditable(true);
-      } else if(key.equals(Constants.SUBSCRIBE)) {
+      } else if(key == MethodName.SUBSCRIBE) {
          outKey.setEditable(true);
          outQoS.setEditable(true);
          outContent.setEditable(false);
-      } else if(key.equals(Constants.UNSUBSCRIBE)) {
+      } else if(key == MethodName.UNSUBSCRIBE) {
          outKey.setEditable(true);
          outQoS.setEditable(true);
          outContent.setEditable(false);

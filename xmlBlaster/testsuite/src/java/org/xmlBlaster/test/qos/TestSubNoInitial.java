@@ -3,7 +3,7 @@ Name:      TestSubNoInitial.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubNoInitial.java,v 1.2 2002/09/13 23:18:31 ruff Exp $
+Version:   $Id: TestSubNoInitial.java,v 1.3 2002/11/26 12:40:41 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -14,11 +14,11 @@ import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
-import org.xmlBlaster.client.SubscribeQosWrapper;
-import org.xmlBlaster.client.PublishRetQos;
-import org.xmlBlaster.client.EraseRetQos;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.qos.SubscribeQos;
+import org.xmlBlaster.client.qos.PublishReturnQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
 import junit.framework.*;
@@ -110,11 +110,11 @@ public class TestSubNoInitial extends TestCase implements I_Callback
                       "</key>";
       String qos = "<qos></qos>";
       try {
-         EraseRetQos[] arr = senderConnection.erase(xmlKey, qos);
+         EraseReturnQos[] arr = senderConnection.erase(xmlKey, qos);
          assertEquals("Erase", 1, arr.length);
          waitOnUpdate(5000L);
          assertTrue(assertInUpdate, assertInUpdate == null);
-      } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.reason); }
+      } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.getMessage()); }
 
       senderConnection.disconnect(null);
    }
@@ -133,15 +133,15 @@ public class TestSubNoInitial extends TestCase implements I_Callback
                       "</key>";
       numReceived = 0;
       subscribeOid = null;
-      SubscribeQosWrapper sk = new SubscribeQosWrapper();
-      sk.setInitialUpdate(false);
+      SubscribeQos sk = new SubscribeQos(glob);
+      sk.setWantInitialUpdate(false);
       String qos = sk.toXml(); // "<qos><initialUpdate>false</initialUpdate></qos>";
       try {
          subscribeOid = senderConnection.subscribe(xmlKey, qos).getSubscriptionId();
          log.info(ME, "Success: Subscribe subscription-id=" + subscribeOid + " done");
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.reason);
-         assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
+         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
       }
       assertTrue("returned null subscribeOid", subscribeOid != null);
       assertTrue("returned subscribeOid is empty", 0 != subscribeOid.length());
@@ -169,12 +169,12 @@ public class TestSubNoInitial extends TestCase implements I_Callback
       MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
       try {
          sentTimestamp = new Timestamp();
-         PublishRetQos tmp = senderConnection.publish(msgUnit);
-         assertEquals("Wrong publishOid", publishOid, tmp.getOid());
+         PublishReturnQos tmp = senderConnection.publish(msgUnit);
+         assertEquals("Wrong publishOid", publishOid, tmp.getKeyOid());
          log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.reason);
-         assertTrue("publish - XmlBlasterException: " + e.reason, false);
+         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
    }
 
@@ -209,7 +209,7 @@ public class TestSubNoInitial extends TestCase implements I_Callback
     */
    public String update(String cbSessionId_, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      log.info(ME, "Receiving update of message oid=" + updateKey.getUniqueKey() + " subId=" + updateQos.getSubscriptionId() + " ...");
+      log.info(ME, "Receiving update of message oid=" + updateKey.getOid() + " subId=" + updateQos.getSubscriptionId() + " ...");
 
       numReceived += 1;
 
@@ -217,13 +217,13 @@ public class TestSubNoInitial extends TestCase implements I_Callback
       assertEquals("Wrong cbSessionId", this.cbSessionId, cbSessionId_);
 
       assertInUpdate = "Wrong sender, expected:" + senderName + " but was:" + updateQos.getSender();
-      assertEquals("Wrong sender", senderName, updateQos.getSender());
+      assertEquals("Wrong sender", senderName, updateQos.getSender().getLoginName());
 
       assertInUpdate = "Wrong subscriptionId, expected:" + subscribeOid + " but was:" + updateQos.getSubscriptionId();
       assertEquals("engine.qos.update.subscriptionId: Wrong subscriptionId", subscribeOid, updateQos.getSubscriptionId());
 
-      assertInUpdate = "Wrong oid of message returned expected:" + publishOid + " but was:" + updateKey.getUniqueKey();
-      assertEquals("Wrong oid of message returned", publishOid, updateKey.getUniqueKey());
+      assertInUpdate = "Wrong oid of message returned expected:" + publishOid + " but was:" + updateKey.getOid();
+      assertEquals("Wrong oid of message returned", publishOid, updateKey.getOid());
 
       assertInUpdate = "Message content is corrupted expected:" + new String(senderContent) + " but was:" + new String(content);
       assertEquals("Message content is corrupted", new String(senderContent), new String(content));

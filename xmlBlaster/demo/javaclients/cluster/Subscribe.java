@@ -3,7 +3,12 @@ package javaclients.cluster;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.*;
-import org.xmlBlaster.client.*;
+import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.client.key.SubscribeKey;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.qos.SubscribeQos;
+import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.Constants;
@@ -48,10 +53,10 @@ public class Subscribe implements I_Callback
 
          String domain = glob.getProperty().get("domain", "RUGBY_NEWS");
 
-         SubscribeKeyWrapper sk = new SubscribeKeyWrapper("PublishToSlave."+domain, Constants.EXACT);
+         SubscribeKey sk = new SubscribeKey(glob, "PublishToSlave."+domain, Constants.EXACT);
          sk.setDomain(domain);
-         SubscribeQosWrapper sq = new SubscribeQosWrapper();
-         SubscribeRetQos subId = con.subscribe(sk.toXml(), sq.toXml());
+         SubscribeQos sq = new SubscribeQos(glob);
+         SubscribeReturnQos subId = con.subscribe(sk.toXml(), sq.toXml());
          log.info(ME, "Subscribed message of domain='" + sk.toXml() + //domain +
                       "' from xmlBlaster node with IP=" + glob.getProperty().get("port",0) +
                       ", the returned subscriptionId is: " + subId.getSubscriptionId());

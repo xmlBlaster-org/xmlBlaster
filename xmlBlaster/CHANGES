@@ -1,8 +1,113 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
-
-Changes for 0.8x [xxx, xx 2002]
+Changes for 0.8x [xxx, xx 200x]
 ===============================
+
+ o Introduced SessionName.java for unified naming of clients, see
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.failsave.html
+
+ o TODO: Helma-XmlRpc throws XmlBlasterException.toString() back
+   to the client, many informations are missing.
+   We need to create a temporary exception which returns from toString()
+   the complete XmlBlasterException XML dump, and on client
+   side a XML parser which parses it back to the original XmlBlasterException
+
+ o CORBA xmlBlaster.idl incompatible change:
+   - The XmlBlasterException struct is extended with new attributes
+   - The unSubscribe() method now returns a string[] instead of void
+
+ o SOCKET protocol extension:
+   The XmlBlasterException transports in the content
+   the complete exception information.
+   See XmlBlasterException.java toByteArr() for the serialization syntax.
+
+ o SOCKET protocol incompatible change:
+   unSubscribe returns now a String[] instead of a String
+
+ o The xmlBlaster.properties entry "JdbcDriver.drivers" now expects
+   a ":" instead of "," as a seperator
+
+ o Administrative interface for messages:
+   Added support to transport the value to set in the message
+   content instead of being forced to provide it in the key oid
+
+ o For plugin writers:
+   xmlKey.isInternalMsg() changed to xmlKey.isInternal()
+   to be consistent with client side naming.
+
+ o Mime access plugin interface behaviour changed:
+   When the plugin throws an exception this is not routed back to
+   the publisher anymore but produces a dead letter instead.
+   See javadoc of org.xmlBlaster.engine.mime.I_AccessFilter#match()
+
+ o Added listener framework for queue put() events (events when somebody
+   puts something into the queue).
+   This allows synchronous method invocation over the I_Queue interface
+   which is needed on client side in normal operation.
+   On error we just need to unregister the put listener and the
+   queueing is activated
+
+ o Changed error behaviour for callback invocations (from subscribes):
+   - Any error during callback will cause a I_MsgErrorHandler invocation
+   - Now also problems before the message is put into the callback queue
+     and exceptions from the access filter plugin are handled like this
+
+ o Bugfix: ConcurrentModificationException in MessageUnitHandler 
+   is resolved by not working on the Iterator directly any more
+
+ o Added redesigned framework seperating the QoS data from
+   the parser.
+   This allows:
+    * Using other formats than XML (e.g. serialized objects)
+    * Tranporting the same QoS object for publish(), update() and get()-returns
+   Incompatible client Key changes (Java):
+    * client.PublishKeyWrapper     -> client.key.PublishKey
+    * client.SubscribeKeyWrapper   -> client.key.SubscribeKey
+    * client.SubscribeKeyWrapper   -> client.key.UnSubscribeKey
+    * client.GetKeyWrapper         -> client.key.GetKey
+    * client.EraseKeyWrapper       -> client.key.EraseKey
+    * client.UpdateKeyWrapper      -> client.key.UpdateKey
+   Incompatible client QoS changes (Java):
+    * client.PublishQosWrapper     -> client.qos.PublishQos
+    * client.PublishRetWrapper     -> client.qos.PublishReturnQos
+    * client.UpdateQos             -> client.qos.UpdateQos
+    * ---                          -> client.qos.UpdateReturnQos
+    * client.GetQosWrapper         -> client.qos.GetQos
+    * ---                          -> client.qos.GetReturnQos
+    * client.SubscribeQosWrapper   -> client.qos.SubscribeQos
+    * client.SubscribeRetQos       -> client.qos.SubscribeReturnQos
+    * client.UnSubscribeQosWrapper -> client.qos.UnSubscribeQos
+    * ---                          -> client.qos.UnSubscribeReturnQos
+    * client.EraseQosWrapper       -> client.qos.EraseQos
+    * client.EraseRetQos           -> client.qos.EraseReturnQos
+   Incompatible client changes (Perl):
+    * EraseRetQos.pm               -> EraseReturnQos.pm
+    * PublishRetQos.pm;            -> PublishReturnQos.pm
+   Incompatible subscribe XML QoS change for forced subscriptionId:
+    *  <qos><subscribe id='_subId:1'/></qos>
+
+ o Made key/content/qos in MessageUnit.java private,
+   use the corresponding get() methods to access the data.
+   The MessageUnit object is now immutable
+
+ o Added MsgErrorHandler.java as a central point of error handling
+   for lost messages
+
+ o Replaced package engine.queue by a plugin framework util.queue
+
+ o Removed ONOVERFLOW_BLOCK (it caused deadlock)
+ 
+ o Removed XmlBlasterProperty.java and Log.java (they where deprecated)
+   Use glob.getProperty() and glob.getLog(null) instead
+
+ o Renamed deadLetter to deadMessage as proposed by Adam Williams
+
+ o Removed deprecated login/logout in RMI drivers
+
+
+Changes for 0.8+ [Nov, 25 2002]
+=====================================
+
   - Fixed memory leak for volatile messages, happened when a volatile
     message is in a callback queue and the client disappears silently
     Reported by David Kerry
@@ -80,7 +185,7 @@ Changes for 0.80 [Sep, 25 2002]
       http://www.xmlblaster.org/xmlBlaster/doc/requirements/util.classloader.PluginClassLoader.html
   
   - Fixed memory leaks
-    * For unsuscessful logins
+    * For unsuccessful logins
     * Removed allocation of SubjectInfo in htpasswd
 
   - INCOMPATIBLE mime access plugin interface change.
@@ -335,7 +440,7 @@ Changes for 0.79f [Jun, 17 2002]
   - Incompatible changes:
     ---------------------
     * publish() returns now XML string instead of the plain oid
-      Introduced PublishRetQos, see
+      Introduced PublishReturnQos, see
       http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html
 
     * Incompatible change of ConnectQos:
@@ -459,7 +564,7 @@ Changes for 0.79e [Mar, 27 2002]
     <noContent/> to <content>false</content>
     <noLocal/>   to <local>false</local>
     Constructor of SubscribeQosWrapper() is inverted!
-    Constructor of GetQosWrapper() is inverted!
+    Constructor of GetQosWrapper(gob) is inverted!
 
   - New high performing Timestamp supporting unique message timestamps
     with simulated nanoseconds
@@ -1212,7 +1317,7 @@ Changes for 0.71 [Jan.20 2000]
 
         - Added the incredible MOM slide show, see http://www.xmlBlaster.org
 
-        - Added SubscribeKeyWrapper.java SubscribeQosWrapper.java as client helper
+        - Added SubscribeKey.java SubscribeQosWrapper.java as client helper
           to help to hide raw XML ASCII strings
 
         - Added simple persistent store (file based)

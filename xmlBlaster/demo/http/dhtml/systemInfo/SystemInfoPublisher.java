@@ -3,7 +3,7 @@ Name:      SystemInfoPublisher.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a client to publish system infos to xmlBlaster
-Version:   $Id: SystemInfoPublisher.java,v 1.6 2002/09/13 23:17:39 ruff Exp $
+Version:   $Id: SystemInfoPublisher.java,v 1.7 2002/11/26 12:36:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package http.dhtml.systemInfo;
 
@@ -15,8 +15,8 @@ import org.jutils.JUtilsException;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.client.PublishKeyWrapper;
-import org.xmlBlaster.client.PublishQosWrapper;
+import org.xmlBlaster.client.key.PublishKey;
+import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
 import java.io.File;
@@ -75,7 +75,7 @@ public class SystemInfoPublisher
             publish("meminfo", mem);
          }
          catch (XmlBlasterException e) {
-            log.error(ME, e.reason);
+            log.error(ME, e.getMessage());
          }
       }
 
@@ -140,14 +140,14 @@ public class SystemInfoPublisher
       String xmlKey = "<key oid='" + oid + "' contentMime='text/plain' contentMimeExtended='systemInfo'>\n" +
                       "   <systemInfo />" +
                       "</key>";
-      PublishQosWrapper qosWrapper = new PublishQosWrapper();
+      PublishQos qosWrapper = new PublishQos(glob);
       String qos = qosWrapper.toXml(); // == "<qos></qos>"
       MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes(), qos);
 
       try {
          con.publish(msgUnit);
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.reason);
+         log.warn(ME, "XmlBlasterException: " + e.getMessage());
       }
 
       log.info(ME, "Published message " + oid + " with value " + content);

@@ -3,7 +3,7 @@ Name:      ClientGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster with RMI
-Version:   $Id: ClientGet.java,v 1.14 2002/09/13 23:17:42 ruff Exp $
+Version:   $Id: ClientGet.java,v 1.15 2002/11/26 12:36:30 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.rmi;
 
@@ -87,7 +87,7 @@ public class ClientGet
                publishOid = blasterServer.publish(sessionId, msgUnit);
                log.info(ME, "   Returned oid=" + publishOid);
             } catch(XmlBlasterException e) {
-               log.warn(ME, "XmlBlasterException: " + e.reason);
+               log.warn(ME, "XmlBlasterException: " + e.getMessage());
             }
             log.trace(ME, "Publishing done" + stop.nice());
          }
@@ -104,14 +104,14 @@ public class ClientGet
             try {
                msgArr = blasterServer.get(sessionId, xmlKey, "<qos></qos>");
             } catch(XmlBlasterException e) {
-               log.error(ME, "XmlBlasterException: " + e.reason);
+               log.error(ME, "XmlBlasterException: " + e.getMessage());
             }
 
             log.info(ME, "Got " + msgArr.length + " messages:");
             for (int ii=0; ii<msgArr.length; ii++) {
-               log.plain(ME, msgArr[ii].xmlKey +
+               log.plain(ME, msgArr[ii].getKey() +
                           "\n################### RETURN CONTENT: ##################\n\n" +
-                           new String(msgArr[ii].content) +
+                           new String(msgArr[ii].getContent()) +
                           "\n\n#######################################");
             }
          }
@@ -136,7 +136,7 @@ public class ClientGet
                publishOid = blasterServer.publish(sessionId, msgUnit);
                log.info(ME, "   Returned oid=" + publishOid);
             } catch(XmlBlasterException e) {
-               log.warn(ME, "XmlBlasterException: " + e.reason);
+               log.warn(ME, "XmlBlasterException: " + e.getMessage());
             }
             log.trace(ME, "Publishing done" + stop.nice());
          }
@@ -152,7 +152,7 @@ public class ClientGet
          try {
             msgArr = blasterServer.get(sessionId, xmlKey, "<qos></qos>");
          } catch(XmlBlasterException e) {
-            log.error(ME, "XmlBlasterException: " + e.reason);
+            log.error(ME, "XmlBlasterException: " + e.getMessage());
          }
 
          if (msgArr.length == 1)
@@ -160,9 +160,9 @@ public class ClientGet
          else
             log.error(ME, "Got " + msgArr.length + " messages:");
          for (int ii=0; ii<msgArr.length; ii++) {
-            log.plain(ME, msgArr[ii].xmlKey +
+            log.plain(ME, msgArr[ii].getKey() +
                           "\n################### RETURN CONTENT: ##################\n\n" +
-                          new String(msgArr[ii].content) +
+                          new String(msgArr[ii].getContent()) +
                           "\n\n#######################################");
          }
 

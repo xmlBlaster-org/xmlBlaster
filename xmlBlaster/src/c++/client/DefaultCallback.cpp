@@ -42,6 +42,9 @@ DefaultCallback::DefaultCallback(const string &name, I_Callback *boss,
 serverIdl::XmlTypeArr* 
 DefaultCallback::update(const char* sessionId,
                         const serverIdl::MessageUnitArr& msgUnitArr) 
+#ifdef ORBIX
+            IT_THROW_DECL ((CORBA::SystemException))
+#endif
 {
 
    // typedef StringSequenceTmpl<CORBA::String_var> StringArr;
@@ -123,6 +126,9 @@ DefaultCallback::update(const char* sessionId,
 void 
 DefaultCallback::updateOneway(const char* sessionId,
                               const serverIdl::MessageUnitArr& msgUnitArr) 
+#ifdef ORBIX
+            IT_THROW_DECL ((CORBA::SystemException))
+#endif
 {
    if (log_.CALL) { log_.call(me(), "Receiving update of " + lexical_cast<string>(msgUnitArr.length()) + " message ..."); }
    
@@ -174,6 +180,9 @@ DefaultCallback::updateOneway(const char* sessionId,
  */
 char*
 DefaultCallback::ping(const char *qos) 
+#ifdef ORBIX
+            IT_THROW_DECL ((CORBA::SystemException))
+#endif
 {
    if (log_.CALL) log_.call(me(), "ping(" + string(qos) + ") ...");
    return CORBA::string_dup("");

@@ -5,7 +5,6 @@ Name:      requirement.dtd
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Validates xml requirements
-Version:   $Id: requirement.dtd,v 1.22 2002/11/17 19:59:37 laghi Exp $
 -->
 
 <!ELEMENT requirement (
@@ -86,7 +85,7 @@ Version:   $Id: requirement.dtd,v 1.22 2002/11/17 19:59:37 laghi Exp $
    the type REQ creates a link to another requirement file
    The INTERNET opens a link in a new window
    Example: (don't give any extensions)
-   <see type="API">org.xmlBlaster.client.PublishQosWrapper</see>
+   <see type="API">org.xmlBlaster.client.qos.PublishQos</see>
  -->
 <!ATTLIST see type (API | REQ | OTHER | INTERNET | LOCAL) "API">
 

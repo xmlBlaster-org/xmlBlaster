@@ -3,7 +3,7 @@ Name:      ClientXml.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientXml.java,v 1.23 2002/07/24 12:12:33 ruff Exp $
+Version:   $Id: ClientXml.java,v 1.24 2002/11/26 12:36:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -14,8 +14,8 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
@@ -77,11 +77,11 @@ public class ClientXml implements I_Callback
             log.trace(ME, "Publishing ...");
             stop.restart();
             try {
-               publishOid = blasterConnection.publish(msgUnit).getOid();
+               publishOid = blasterConnection.publish(msgUnit).getKeyOid();
                log.info(ME, "   Returned oid=" + publishOid);
                log.trace(ME, "Publishing done" + stop.nice());
             } catch(XmlBlasterException e) {
-               log.error(ME, "Punlishing failed, XmlBlasterException: " + e.reason);
+               log.error(ME, "Punlishing failed, XmlBlasterException: " + e.getMessage());
             }
          }
 
@@ -96,7 +96,7 @@ public class ClientXml implements I_Callback
             String subId = blasterConnection.subscribe(xmlKey, "<qos></qos>").getSubscriptionId();
             log.trace(ME, "Subscribed to '" + subId + "' ..." + stop.nice());
          } catch(XmlBlasterException e) {
-            log.error(ME, "Subscribe failed, XmlBlasterException: " + e.reason);
+            log.error(ME, "Subscribe failed, XmlBlasterException: " + e.getMessage());
          }
 
          try { Thread.currentThread().sleep(2000); } catch( InterruptedException i) {} // Wait a second
@@ -109,7 +109,7 @@ public class ClientXml implements I_Callback
             blasterConnection.unSubscribe(xmlKey, "<qos></qos>");
             log.info(ME, "Unsubscribe done" + stop.nice());
          } catch(XmlBlasterException e) {
-            log.error(ME, "Unsubscribe failed, XmlBlasterException: " + e.reason);
+            log.error(ME, "Unsubscribe failed, XmlBlasterException: " + e.getMessage());
          }
 
 
@@ -124,7 +124,7 @@ public class ClientXml implements I_Callback
             blasterConnection.subscribe(xmlKey, "<qos></qos>");
             log.trace(ME, "Subscribe done, there should be a Callback");
          } catch(XmlBlasterException e) {
-            log.error(ME, "subscribe failed, XmlBlasterException: " + e.reason);
+            log.error(ME, "subscribe failed, XmlBlasterException: " + e.getMessage());
          }
 
          try { Thread.currentThread().sleep(2000); } catch( InterruptedException i) {} // Wait a second
@@ -139,10 +139,10 @@ public class ClientXml implements I_Callback
                log.trace(ME, "Publishing ...");
                stop.restart();
                try {
-                  String str = blasterConnection.publish(msgUnit).getOid();
+                  String str = blasterConnection.publish(msgUnit).getKeyOid();
                   log.trace(ME, "Publishing done" + stop.nice());
                } catch(XmlBlasterException e) {
-                  log.error(ME, "Publishing failed, XmlBlasterException: " + e.reason);
+                  log.error(ME, "Publishing failed, XmlBlasterException: " + e.getMessage());
                }
             }
          }
@@ -164,7 +164,7 @@ public class ClientXml implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      log.info(ME, "Receiving update of message [" + updateKey.getUniqueKey() + "]");
+      log.info(ME, "Receiving update of message [" + updateKey.getOid() + "]");
       return "";
    }
 

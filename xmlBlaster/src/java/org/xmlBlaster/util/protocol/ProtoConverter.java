@@ -3,7 +3,7 @@ Name:      ProtoConverter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Converter used to convert native data to protocol-specific data.
-Version:   $Id: ProtoConverter.java,v 1.6 2002/09/18 16:40:53 laghi Exp $
+Version:   $Id: ProtoConverter.java,v 1.7 2002/11/26 12:39:57 ruff Exp $
 Author:    "Michele Laghi" (laghi@swissinfo.org)
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.protocol;
@@ -77,7 +77,7 @@ public class ProtoConverter {
    public static Vector messageUnit2Vector (MessageUnit msg)
    {
       Vector ret = new Vector();
-      ret.addElement(msg.getXmlKey());
+      ret.addElement(msg.getKey());
       ret.addElement(msg.getContent());
       ret.addElement(msg.getQos());
       return ret;
@@ -218,7 +218,7 @@ public class ProtoConverter {
       for (int i=0; i < 5; i++) {
          msgs[i] = new MessageUnit("<key uid='" + i + "'></key>", content, "<qos></qos>");
          strings[i] = new String("string nr. " + (i+1) );
-         System.out.println(msgs[i].getXmlKey() + " " + strings[i]);
+         System.out.println(msgs[i].getKey() + " " + strings[i]);
       }
 
 
@@ -232,7 +232,7 @@ public class ProtoConverter {
          System.out.println("\n\nReconverted Messages: ");
 
          for (int i=0; i < msgs2.length; i++) {
-            System.out.println(msgs2[i].getXmlKey() + " " + strings2[i]);
+            System.out.println(msgs2[i].getKey() + " " + strings2[i]);
          }
 
       }

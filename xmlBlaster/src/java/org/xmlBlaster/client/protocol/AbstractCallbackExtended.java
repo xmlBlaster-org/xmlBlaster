@@ -3,15 +3,16 @@ Name:      AbstractCallbackExtended.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Easly extended class for protocol-unaware xmlBlaster clients.
-Version:   $Id: AbstractCallbackExtended.java,v 1.12 2002/09/18 16:37:54 laghi Exp $
+Version:   $Id: AbstractCallbackExtended.java,v 1.13 2002/11/26 12:38:06 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol;
 
 import org.jutils.log.LogChannel;
 
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -23,7 +24,7 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  * extend this class because one of the update methods is abstract.
  * <p>
  *
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
@@ -34,15 +35,14 @@ public abstract class AbstractCallbackExtended implements I_CallbackExtended
    protected final LogChannel log;
 
    /**
-    * The constructor does nothing.
+    * @param glob If null we use Global.instance()
     */
-   public AbstractCallbackExtended(Global glob)
-   {
-      this.glob = glob;
-      this.log = glob.getLog(null);
+   public AbstractCallbackExtended(Global glob) {
+      this.glob = (glob==null) ? Global.instance() : glob;
+      this.log = glob.getLog("client");
    }
 
-   abstract I_ClientPlugin getSecurityPlugin();
+   public abstract I_ClientPlugin getSecurityPlugin();
 
    /**
     * It parses the string literals passed in the argument list and calls
@@ -67,24 +67,36 @@ public abstract class AbstractCallbackExtended implements I_CallbackExtended
          content = secPlgn.importMessage(content);
          updateQosLiteral = secPlgn.importMessage(updateQosLiteral);
       }
-      try {
-         UpdateKey updateKey = new UpdateKey(glob, updateKeyLiteral);
-         //updateKey.init(updateKeyLiteral); // does the parsing
-         UpdateQos updateQos = new UpdateQos(glob, updateQosLiteral); // does the parsing
 
+      UpdateKey updateKey = null;
+      UpdateQos updateQos = null;
+      try {
+         updateKey = new UpdateKey(glob, updateKeyLiteral);
+         //updateKey.init(updateKeyLiteral); // does the parsing
+         updateQos = new UpdateQos(glob, updateQosLiteral); // does the parsing
+      }
+      catch (XmlBlasterException e) {
+         log.error(ME + ".update", "Parsing error: " + e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.USER_UPDATE_ILLEGALARGUMENT, ME+".update", "Parsing error", e);
+      }
+
+      try {
          // Now we know all about the received message, dump it or do some checks
          /*
          if (log.DUMP) log.dump(ME+".UpdateKey", "\n" + updateKey.toXml());
          if (log.DUMP) log.dump(ME+".content", "\n" + new String(content));
          if (log.DUMP) log.dump(ME+".UpdateQos", "\n" + updateQos.toXml());
          */
-         if (log.TRACE) log.trace(ME, "Received message [" + updateKey.getUniqueKey() + "] from publisher " + updateQos.getSender());
+         if (log.TRACE) log.trace(ME, "Received message [" + updateKey.getOid() + "] from publisher " + updateQos.getSender());
 
          return update(cbSessionId, updateKey, content, updateQos);
       }
       catch (XmlBlasterException e) {
-         log.error(ME + ".update", "Parsing error: " + e.toString());
-         throw new XmlBlasterException("Parsing Error", "check the key passed" + e.toString());
+         throw e;
+      }
+      catch (Throwable e) {
+         log.warn(ME + ".update", "Error in client user code of update(): " + e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.USER_UPDATE_INTERNALERROR, ME+".update", "Error in client code", e);
       }
    }
 
@@ -131,7 +143,7 @@ public abstract class AbstractCallbackExtended implements I_CallbackExtended
       String[] retArr = new String[msgUnitArr.length];
       for (int ii=0; ii<msgUnitArr.length; ii++) {
          MessageUnit msgUnit = msgUnitArr[ii];
-         retArr[ii] = update(cbSessionId, msgUnit.xmlKey, msgUnit.content, msgUnit.qos);
+         retArr[ii] = update(cbSessionId, msgUnit.getKey(), msgUnit.getContent(), msgUnit.getQos());
       }
       return retArr;
    }

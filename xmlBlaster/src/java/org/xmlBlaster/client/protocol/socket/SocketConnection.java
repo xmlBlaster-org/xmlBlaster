@@ -3,7 +3,7 @@ Name:      SocketConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles connection to xmlBlaster with plain sockets
-Version:   $Id: SocketConnection.java,v 1.36 2002/09/15 18:53:43 ruff Exp $
+Version:   $Id: SocketConnection.java,v 1.37 2002/11/26 12:38:12 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -19,16 +19,16 @@ import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.ConnectReturnQos;
 import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.enum.MethodName;
 
 import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.xml2java.XmlKey;
-import org.xmlBlaster.engine.xml2java.EraseQoS;
-import org.xmlBlaster.engine.xml2java.GetQoS;
+import org.xmlBlaster.engine.qos.GetQosServer;
+import org.xmlBlaster.engine.qos.EraseQosServer;
 import org.xmlBlaster.protocol.socket.ExecutorBase;
 import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
-import org.xmlBlaster.client.protocol.ConnectionException;
 import org.xmlBlaster.client.protocol.I_CallbackServer;
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
 
@@ -105,11 +105,12 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    /**
     * Get the raw socket handle
     */
-   public Socket getSocket() throws ConnectionException
+   public Socket getSocket() throws XmlBlasterException
    {
       if (this.sock == null) {
          if (log.TRACE) log.trace(ME, "No socket connection available.");
-         throw new ConnectionException(ME+".init", "No plain socket connection available.");
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
+                                       "No plain SOCKET connection available.");
       }
       return this.sock;
    }
@@ -121,7 +122,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    /**
     * Connects to xmlBlaster with one socket connection. 
     */
-   private void initSocketClient() throws XmlBlasterException, ConnectionException
+   private void initSocketClient() throws XmlBlasterException
    {
       if (isConnected())
          return;
@@ -193,12 +194,13 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          String str = "XmlBlaster server is unknown, '-socket.hostname=<ip>': " + e.toString();
          if (log.TRACE) log.trace(ME+".constructor", str);
          //e.printStackTrace(); 
-         throw new ConnectionException(ME, str);
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, 
+                                       "XmlBlaster server is unknown, '-socket.hostname=<ip>'", e);
       }
       catch (Throwable e) {
          if (!(e instanceof IOException) && !(e instanceof java.net.ConnectException)) e.printStackTrace();
-         String str = "Socket client connection to " + hostname + " on port " + port + " failed, try options '-socket.hostname <ip> -socket.port <port>' and check if the xmlBlaster server has loaded the socket driver in xmlBlaster.properties: " + e.toString();
-         throw new ConnectionException(ME, str);
+         String str = "Socket client connection to " + hostname + " on port " + port + " failed, try options '-socket.hostname <ip> -socket.port <port>' and check if the xmlBlaster server has loaded the socket driver in xmlBlaster.properties";
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, str, e);
       }
    }
 
@@ -206,7 +208,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    /**
     * Reset the driver on problems
     */
-   public void init()
+   public void resetConnection()
    {
       if (log.TRACE) log.trace(ME, "SocketClient is re-initialized, no connection available");
       this.shutdown();
@@ -244,7 +246,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     * @exception       XmlBlasterException if login fails
     * @deprecated Use #connect(ConnectQos qos) instead
     */
-   public void login(String loginName, String passwd, ConnectQos qos) throws XmlBlasterException, ConnectionException
+   public void login(String loginName, String passwd, ConnectQos qos) throws XmlBlasterException
    {
       if (qos == null)
          this.loginQos = new ConnectQos(glob);
@@ -256,7 +258,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    }
 
 
-   public ConnectReturnQos connect(ConnectQos qos) throws XmlBlasterException, ConnectionException
+   public ConnectReturnQos connect(ConnectQos qos) throws XmlBlasterException
    {
       if (qos == null)
          throw new XmlBlasterException(ME+".connect()", "Please specify a valid QoS");
@@ -285,12 +287,12 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     * The qos needs to be set up correctly if you wish a callback
     * @exception       XmlBlasterException if login fails
     */
-   public ConnectReturnQos loginRaw() throws XmlBlasterException, ConnectionException
+   public ConnectReturnQos loginRaw() throws XmlBlasterException
    {
       try {
 
          if (passwd == null) { // connect() the new schema
-            Parser parser = new Parser(Parser.INVOKE_BYTE, Constants.CONNECT, sessionId); // sessionId is usually null on login, on reconnect != null
+            Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.CONNECT, sessionId); // sessionId is usually null on login, on reconnect != null
             parser.addQos(loginQos.toXml());
             String resp = (String)getCbReceiver().execute(parser, WAIT_ON_RESPONSE);
             this.connectReturnQos = new ConnectReturnQos(glob, resp);
@@ -306,13 +308,10 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       catch (XmlBlasterException e) {
          throw e;
       }
-      catch (ConnectionException e) {
-         throw e;
-      }
       catch (Throwable e) {
          if (!(e instanceof IOException) && !(e instanceof java.net.ConnectException)) e.printStackTrace();
          if (log.TRACE) log.trace(ME+".loginRaw", e.toString());
-         throw new XmlBlasterException(ME, e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "login failed", e);
       }
    }
 
@@ -340,7 +339,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     * <p />
     * @param sessionId The client sessionId
     */       
-   public boolean disconnect(DisconnectQos qos)
+   public boolean disconnect(DisconnectQos qos) throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "Entering logout/disconnect: id=" + sessionId);
 
@@ -350,7 +349,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       }
 
       try {
-         Parser parser = new Parser(Parser.INVOKE_BYTE, Constants.DISCONNECT, sessionId);
+         Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.DISCONNECT, sessionId);
          parser.addQos((qos==null)?"":qos.toXml());
          // We close first the callback thread, this could be a bit early ?
          getCbReceiver().running = false; // To avoid error messages as xmlBlaster closes the connection during disconnect()
@@ -360,12 +359,11 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          return true;
       }
       catch (XmlBlasterException e) {
-         //log.error(ME+".disconnect", e.toString());
-         throw new ConnectionException(ME+".disconnect", e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "disconnect", e);
       }
       catch (IOException e1) {
          if (log.TRACE) log.trace(ME+".disconnect", "IO exception: " + e1.toString());
-         throw new ConnectionException(ME+".disconnect", e1.toString());
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "disconnect", e1);
       }
    }
 
@@ -408,7 +406,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     * <p />
     * Opens the socket connection if not logged in.
     */
-   public I_CallbackServer getCallbackServer() throws ConnectionException, XmlBlasterException
+   public I_CallbackServer getCallbackServer() throws XmlBlasterException
    {
       return getCbReceiver();
    }
@@ -418,7 +416,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     * <p />
     * Returns the valid SocketCallbackImpl, opens the socket connection if not logged in.
     */
-   private final SocketCallbackImpl getCbReceiver() throws ConnectionException, XmlBlasterException
+   private final SocketCallbackImpl getCbReceiver() throws XmlBlasterException
    {
       if (!isConnected()) {
          initSocketClient();
@@ -432,18 +430,18 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public final String subscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException, ConnectionException
+   public final String subscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "Entering subscribe(id=" + sessionId + ")");
       try {
-         Parser parser = new Parser(Parser.INVOKE_BYTE, Constants.SUBSCRIBE, sessionId);
+         Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.SUBSCRIBE, sessionId);
          parser.addKeyAndQos(xmlKey_literal, qos_literal);
          Object response = getCbReceiver().execute(parser, WAIT_ON_RESPONSE);
          return (String)response; // return the QoS
       }
       catch (IOException e1) {
          if (log.TRACE) log.trace(ME+".subscribe", "IO exception: " + e1.toString());
-         throw new ConnectionException(ME+".subscribe", e1.toString());
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "subscribe", e1);
       }
    }
 
@@ -452,22 +450,21 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public final void unSubscribe(String xmlKey_literal,
-                                 String qos_literal) throws XmlBlasterException, ConnectionException
+   public final String[] unSubscribe(String xmlKey_literal,
+                                 String qos_literal) throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "Entering unSubscribe(): id=" + sessionId);
       if (log.DUMP) log.dump(ME, "Entering unSubscribe(): id=" + sessionId + " key='" + xmlKey_literal + "' qos='" + qos_literal + "'");
 
       try {
-         Parser parser = new Parser(Parser.INVOKE_BYTE, Constants.UNSUBSCRIBE, sessionId);
+         Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.UNSUBSCRIBE, sessionId);
          parser.addKeyAndQos(xmlKey_literal, qos_literal);
          Object response = getCbReceiver().execute(parser, WAIT_ON_RESPONSE);
-         // return (String)response; // return the QoS TODO
-         return;
+         return (String[])response;
       }
       catch (IOException e1) {
          if (log.TRACE) log.trace(ME+".unSubscribe", "IO exception: " + e1.toString());
-         throw new ConnectionException(ME+".unSubscribe", e1.toString());
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "unSubscribe", e1);
       }
    }
 
@@ -476,12 +473,11 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     * The normal publish is handled here like a publishArr
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public final String publish(MessageUnit msgUnit) throws XmlBlasterException, ConnectionException
-   {
+   public final String publish(MessageUnit msgUnit) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering publish(): id=" + sessionId);
 
       try {
-         Parser parser = new Parser(Parser.INVOKE_BYTE, Constants.PUBLISH, sessionId);
+         Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.PUBLISH, sessionId);
          parser.addMessage(msgUnit);
          Object response = getCbReceiver().execute(parser, WAIT_ON_RESPONSE);
          String[] arr = (String[])response; // return the QoS
@@ -489,7 +485,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       }
       catch (IOException e1) {
          if (log.TRACE) log.trace(ME+".publish", "IO exception: " + e1.toString());
-         throw new ConnectionException(ME+".publish", e1.toString());
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "publish", e1);
       }
    }
 
@@ -498,9 +494,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public final String[] publishArr(MessageUnit[] msgUnitArr)
-      throws XmlBlasterException, ConnectionException
-   {
+   public final String[] publishArr(MessageUnit[] msgUnitArr) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering publishArr: id=" + sessionId);
 
       if (msgUnitArr == null) {
@@ -509,14 +503,14 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
                                        "The argument of method publishArr() are invalid");
       }
       try {
-         Parser parser = new Parser(Parser.INVOKE_BYTE, Constants.PUBLISH, sessionId);
+         Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.PUBLISH, sessionId);
          parser.addMessage(msgUnitArr);
          Object response = getCbReceiver().execute(parser, WAIT_ON_RESPONSE);
          return (String[])response; // return the QoS
       }
       catch (IOException e1) {
          if (log.TRACE) log.trace(ME+".publishArr", "IO exception: " + e1.toString());
-         throw new ConnectionException(ME+".publishArr", e1.toString());
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "publishArr", e1);
       }
    }
 
@@ -525,8 +519,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public final void publishOneway(MessageUnit[] msgUnitArr) throws ConnectionException
-   {
+   public final void publishOneway(MessageUnit[] msgUnitArr) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering publishOneway: id=" + sessionId);
 
       if (msgUnitArr == null) {
@@ -535,19 +528,19 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       }
 
       try {
-         Parser parser = new Parser(Parser.INVOKE_BYTE, Constants.PUBLISH_ONEWAY, sessionId);
+         Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.PUBLISH_ONEWAY, sessionId);
          parser.addMessage(msgUnitArr);
          getCbReceiver().execute(parser, ONEWAY);
       }
       catch (Throwable e) {
          if (log.TRACE) log.trace(ME+".publishOneway", "Sending of oneway message failed: " + e.toString());
-         throw new ConnectionException(ME+".publishOneway", e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "publishOneway", e);
       }
    }
 
    /*
    public final String[] sendUpdate(MessageUnit[] msgUnitArr)
-      throws XmlBlasterException, ConnectionException
+      throws XmlBlasterException
       see HandleClient.java
    */
 
@@ -557,9 +550,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public final String[] erase (XmlKey xmlKey, EraseQoS eraseQoS)
-      throws XmlBlasterException, ConnectionException
-   {
+   public final String[] erase (XmlKey xmlKey, EraseQosServer eraseQoS) throws XmlBlasterException {
       String xmlKey_literal = xmlKey.toXml();
       String eraseQoS_literal = eraseQoS.toXml();
 
@@ -571,20 +562,18 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public final String[] erase(String xmlKey_literal, String qos_literal)
-      throws XmlBlasterException, ConnectionException
-   {
+   public final String[] erase(String xmlKey_literal, String qos_literal) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering erase() id=" + sessionId);
 
       try {
-         Parser parser = new Parser(Parser.INVOKE_BYTE, Constants.ERASE, sessionId);
+         Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.ERASE, sessionId);
          parser.addKeyAndQos(xmlKey_literal, qos_literal);
          Object response = getCbReceiver().execute(parser, WAIT_ON_RESPONSE);
          return (String[])response; // return the QoS TODO
       }
       catch (IOException e1) {
          if (log.TRACE) log.trace(ME+".erase", "IO exception: " + e1.toString());
-         throw new ConnectionException(ME+".erase", e1.toString());
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "erase", e1);
       }
    }
 
@@ -593,8 +582,8 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public final MessageUnit[] get (XmlKey xmlKey, GetQoS getQoS)
-      throws XmlBlasterException, ConnectionException
+   public final MessageUnit[] get (XmlKey xmlKey, GetQosServer getQoS)
+      throws XmlBlasterException
    {
       String xmlKey_literal = xmlKey.toXml();
       String getQoS_literal = getQoS.toXml();
@@ -608,18 +597,18 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     * @see org.xmlBlaster.engine.RequestBroker
     */
    public final MessageUnit[] get(String xmlKey_literal,
-                                  String qos_literal) throws XmlBlasterException, ConnectionException
+                                  String qos_literal) throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "Entering get() xmlKey=\n" + xmlKey_literal + ") ...");
       try {
-         Parser parser = new Parser(Parser.INVOKE_BYTE, Constants.GET, sessionId);
+         Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.GET, sessionId);
          parser.addKeyAndQos(xmlKey_literal, qos_literal);
          Object response = getCbReceiver().execute(parser, WAIT_ON_RESPONSE);
          return (MessageUnit[])response;
       }
       catch (IOException e1) {
          if (log.TRACE) log.trace(ME+".get", "IO exception: " + e1.toString());
-         throw new ConnectionException(ME+".get", e1.toString());
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "get", e1);
       }
    }
 
@@ -627,17 +616,17 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     * Check server.
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public String ping(String qos) throws ConnectionException, XmlBlasterException
+   public String ping(String qos) throws XmlBlasterException
    {
       try {
-         Parser parser = new Parser(Parser.INVOKE_BYTE, Constants.PING, null); // sessionId not necessary
+         Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.PING, null); // sessionId not necessary
          parser.addQos(""); // ("<qos><state id='OK'/></qos>");
          Object response = getCbReceiver().execute(parser, WAIT_ON_RESPONSE);
          return (String)response;
       }
       catch (IOException e1) {
          if (log.TRACE) log.trace(ME+".ping", "IO exception: " + e1.toString());
-         throw new ConnectionException(ME+".ping", e1.toString());
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "ping", e1);
       }
    }
 

@@ -3,7 +3,7 @@ Name:      TestSubXPath.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubXPath.java,v 1.2 2002/09/13 23:18:31 ruff Exp $
+Version:   $Id: TestSubXPath.java,v 1.3 2002/11/26 12:40:41 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -12,9 +12,9 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
-import org.xmlBlaster.client.EraseRetQos;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
 import junit.framework.*;
@@ -75,7 +75,7 @@ public class TestSubXPath extends TestCase implements I_Callback
    protected void setUp()
    {
       try {
-         senderConnection = new XmlBlasterConnection(); // Find orb
+         senderConnection = new XmlBlasterConnection(glob); // Find orb
          String passwd = "secret";
          senderConnection.login(senderName, passwd, null, this); // Login to xmlBlaster
       }
@@ -98,9 +98,9 @@ public class TestSubXPath extends TestCase implements I_Callback
                       "   /xmlBlaster/key/AGENT" +
                       "</key>";
       try {
-         EraseRetQos[] arr = senderConnection.erase(xmlKey, "<qos/>");
+         EraseReturnQos[] arr = senderConnection.erase(xmlKey, "<qos/>");
          assertEquals("Erase", numPublish, arr.length);
-      } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.reason); }
+      } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.getMessage()); }
 
       senderConnection.disconnect(null);
    }
@@ -123,8 +123,8 @@ public class TestSubXPath extends TestCase implements I_Callback
          subscribeOid = senderConnection.subscribe(xmlKey, qos).getSubscriptionId();
          log.info(ME, "Success: Subscribe on " + subscribeOid + " done:\n" + xmlKey);
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.reason);
-         assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
+         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
       }
       assertTrue("returned null subscribeOid", subscribeOid != null);
       assertTrue("returned subscribeOid is empty", 0 != subscribeOid.length());
@@ -151,11 +151,11 @@ public class TestSubXPath extends TestCase implements I_Callback
          String content = "Content: message_" + counter;
          MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes(), "<qos></qos>");
          try {
-            publishOid = senderConnection.publish(msgUnit).getOid();
+            publishOid = senderConnection.publish(msgUnit).getKeyOid();
             log.info(ME, "Success: Publishing #" + counter + " done, returned oid=" + publishOid);
          } catch(XmlBlasterException e) {
-            log.warn(ME, "XmlBlasterException: " + e.reason);
-            assertTrue("publish - XmlBlasterException: " + e.reason, false);
+            log.warn(ME, "XmlBlasterException: " + e.getMessage());
+            assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
          }
 
          assertTrue("returned publishOid == null", publishOid != null);
@@ -192,11 +192,11 @@ public class TestSubXPath extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      log.info(ME, "Receiving update of message oid=" + updateKey.getUniqueKey() + " subId=" + updateQos.getSubscriptionId() + " ...");
+      log.info(ME, "Receiving update of message oid=" + updateKey.getOid() + " subId=" + updateQos.getSubscriptionId() + " ...");
 
       numReceived += 1;
 
-      assertEquals("Wrong sender", senderName, updateQos.getSender());
+      assertEquals("Wrong sender", senderName, updateQos.getSender().getLoginName());
       String contentStr = new String(content);
       assertEquals("Message content is corrupted", "Content: message_3", contentStr);
       assertEquals("Message contentMime is corrupted", contentMime, updateKey.getContentMime());

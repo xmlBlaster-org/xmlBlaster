@@ -2,8 +2,6 @@
 Name:      TestSubscribeFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestSubscribeFilter.java,v 1.2 2002/09/13 23:18:27 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.mime;
 
@@ -14,12 +12,13 @@ import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
-import org.xmlBlaster.client.EraseRetQos;
-import org.xmlBlaster.client.SubscribeQosWrapper;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
+import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.AccessFilterQos;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.test.Util;
@@ -42,7 +41,7 @@ import junit.framework.*;
  */
 public class TestSubscribeFilter extends TestCase implements I_Callback
 {
-   private static String ME = "Tim";
+   private static String ME = "TestSubscribeFilter";
    private final Global glob;
    private final LogChannel log;
 
@@ -50,6 +49,7 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
    private String name;
    private String passwd = "secret";
    private int numReceived = 0;         // error checking
+   private String updateOid;
    private EmbeddedXmlBlaster serverThread;
    private int serverPort = 7624;
    private int filterMessageContentBiggerAs = 10;
@@ -112,14 +112,17 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
 
       // Subscribe to a message with a supplied filter
       try {
-         SubscribeQosWrapper qos = new SubscribeQosWrapper();
+         SubscribeQos qos = new SubscribeQos(glob);
          qos.addAccessFilter(new AccessFilterQos(glob, "ContentLenFilter", "1.0", ""+filterMessageContentBiggerAs));
 
          String subscribeOid = con.subscribe("<key oid='MSG'/>", qos.toXml()).getSubscriptionId();
          log.info(ME, "Success: Subscribe subscription-id=" + subscribeOid + " done");
+
+         con.subscribe("<key oid='" + Constants.OID_DEAD_LETTER + "'/>", "<qos/>");
+        
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.reason);
-         assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
+         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
       }
    }
 
@@ -133,9 +136,9 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
       try { Thread.currentThread().sleep(200L); } catch( InterruptedException i) {}   // Wait 200 milli seconds, until all updates are processed ...
 
       try {
-         EraseRetQos[] arr = con.erase("<key oid='MSG'/>", "<qos/>");
+         EraseReturnQos[] arr = con.erase("<key oid='MSG'/>", "<qos/>");
          assertEquals("Erase", 1, arr.length);
-      } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.reason); }
+      } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.getMessage()); }
 
       con.disconnect(null);
 
@@ -158,8 +161,8 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
       try {
          con.publish(new MessageUnit("<key oid='MSG'/>", "1234567890".getBytes(), null));
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.reason);
-         assertTrue("publish - XmlBlasterException: " + e.reason, false);
+         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
       waitOnUpdate(2000L, 1); // message should come back as it is only 10 bytes
 
@@ -168,8 +171,8 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
       try {
          con.publish(new MessageUnit("<key oid='MSG'/>", "12345678901".getBytes(), null));
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.reason);
-         assertTrue("publish - XmlBlasterException: " + e.reason, false);
+         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
       waitOnUpdate(2000L, 0); // message should be filtered as it is longer 10 bytes
 
@@ -177,9 +180,11 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
       log.info(ME, "TEST 3: Test what happens if the plugin throws an exception");
       try {   // see THROW_EXCEPTION_FOR_LEN=3
          con.publish(new MessageUnit("<key oid='MSG'/>", "123".getBytes(), null));
-         assertTrue("publish forced the plugin to throw an XmlBlasterException, but it didn't happen", false);
+         waitOnUpdate(2000L, 1); // a dead message should come
+         assertEquals("", Constants.OID_DEAD_LETTER, updateOid);
+         log.info(ME, "SUCCESS: Dead message arrived");
       } catch(XmlBlasterException e) {
-         log.info(ME, "SUCCESS: We expected an XmlBlasterException: " + e.reason);
+         fail("publish forced the plugin to throw an XmlBlasterException, but it should not reach the publisher: " + e.toString());
       }
       waitOnUpdate(2000L, 0); // no message expected on exception
 
@@ -193,7 +198,8 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      log.info(ME, "Receiving update of a message " + updateKey.getUniqueKey());
+      log.info(ME, "Receiving update of a message '" + updateKey.getOid() + "' state=" + updateQos.getState());
+      updateOid = updateKey.getOid();
       numReceived++;
       return "";
    }

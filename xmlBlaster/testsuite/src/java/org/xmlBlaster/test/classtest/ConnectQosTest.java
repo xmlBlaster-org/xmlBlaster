@@ -52,7 +52,7 @@ public class ConnectQosTest extends TestCase {
          "   <session timeout='" + sessionTimeout + "' maxSessions='20' clearSessions='false'>\n" +
          "      <sessionId>anId</sessionId>\n" +
          "   </session>\n" +
-         "   <queue relating='unrelated' maxMsg='1000' maxSize='4000' onOverflow='deadLetter'>\n" +
+         "   <queue relating='subject' maxMsg='1000' maxSize='4000' onOverflow='deadMessage'>\n" +
          "      <callback type='IOR' sessionId='4e56890ghdFzj0' pingInterval='60000' retries='1' delay='60000' useForSubjectQueue='true'>\n" +
          "         <ptp>true</ptp>\n" +
          "         IOR:00011200070009990000....\n" +

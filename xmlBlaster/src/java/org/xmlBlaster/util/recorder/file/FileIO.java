@@ -12,6 +12,7 @@ import java.io.SyncFailedException;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.ErrorCode;
 
 /**
  * This is the generic interface to the harddisk. 
@@ -46,10 +47,11 @@ import org.xmlBlaster.util.XmlBlasterException;
  */
 public class FileIO
 {
+   private final String ME = "FileIO";
    private final Global glob;
    private long currReadPos;
    private long lastReadPos;
-   private File f;
+   private File file;
    private RandomAccessFile ra;
 
    private long numUnread;
@@ -104,7 +106,7 @@ public class FileIO
       numUnread = 0L;
       numLost = 0L;
 
-      f = mkfile(fileName);
+      file = mkfile(fileName);
       try {
          /*
            Implementation note:<br />
@@ -120,10 +122,10 @@ public class FileIO
          }
          else
          */
-            ra = new RandomAccessFile(f, "rw");
+            ra = new RandomAccessFile(file, "rw");
       }
       catch (java.lang.IllegalArgumentException e) {
-         ra = new RandomAccessFile(f, "rw");
+         ra = new RandomAccessFile(file, "rw");
       }
       if (ra.length() <= 24L) {
          ra.writeLong(0L); // currReadPos
@@ -156,7 +158,10 @@ public class FileIO
     * Of an XmlBlasterExeption from the user data handler
     */
    public synchronized Object readNext(boolean autoCommit) throws IOException, XmlBlasterException {
-      if (!f.exists()) {
+      if (file == null) {
+         initialize(); // after a call to destroy
+      }
+      if (!file.exists()) {
          numFileDeleteLost = getNumUnread();
          initialize();
          throw new XmlBlasterException("FileRecorder.FileLost",
@@ -204,13 +209,16 @@ public class FileIO
    /**
     * Write more data. 
     * @exception XmlBlasterException<br />
-    *  "FileRecorder.FileLost" If file disappeared, we create a new and store the message<br />
-    *  "FileRecorder.MaxSize" Maximum size reached in Exception mode<br />
+    *  "ErrorCode.FileRecorder.FileLost" If file disappeared, we create a new and store the message<br />
+    *  "ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES" Maximum size reached in Exception mode<br />
     *  Of an XmlBlasterExeption from the user data handler
     */
    public void writeNext(Object data) throws IOException, XmlBlasterException {
       String errorText = null;
-      if (!f.exists()) {
+      if (file == null) {
+         initialize(); // after a call to destroy
+      }
+      if (!file.exists()) {
          numFileDeleteLost = getNumUnread();
          errorText = fileName + " disappeared, " + getNumUnread() + " messages are lost, creating a new one and storing your message.";
          initialize();
@@ -230,9 +238,9 @@ public class FileIO
             return;
          }
          else {
-            String text = "Maximun size=" + maxEntries + " of '" + fileName + "' reached, message rejected.";
+            String text = "Maximum size=" + maxEntries + " of '" + fileName + "' reached, message rejected.";
             glob.getLog("recorder").warn("FileRecorder.MaxSize", text);
-            throw new XmlBlasterException("FileRecorder.MaxSize", text);
+            throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, text);
          }
       }
 
@@ -245,7 +253,7 @@ public class FileIO
 
       if (errorText != null) {
          glob.getLog("recorder").error("FileRecorder.FileLost", errorText);
-         throw new XmlBlasterException("FileRecorder.FileLost", errorText);
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_FILEIO_FILELOST, ME, errorText);
       }
    }
 
@@ -275,7 +283,7 @@ public class FileIO
       }
 
       if (currReadPos >= ra.length()) {
-         f.delete(); // EOF
+         file.delete(); // EOF
          //System.out.println("FileIO: EOF of '" + fileName + "' reached, all data read, initializing file");
          initialize();
       }
@@ -357,9 +365,9 @@ public class FileIO
    /** Destroy data */
    public void destroy() {
       shutdown();
-      if (f != null) {
-         f.delete();
-         f = null;
+      if (file != null) {
+         file.delete();
+         file = null;
       }
    }
 }

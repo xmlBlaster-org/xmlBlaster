@@ -3,7 +3,7 @@ Name:      TestSub.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.cpp,v 1.1 2002/09/12 17:31:15 ruff Exp $
+Version:   $Id: TestSub.cpp,v 1.2 2002/11/26 12:40:14 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #include <boost/lexical_cast.hpp>
@@ -118,7 +118,7 @@ private:
          strArr = senderConnection_->erase(xmlKey, qos);
       }
       catch(serverIdl::XmlBlasterException &e) {
-         log_.error(me(), string("XmlBlasterException: ") + string(e.reason));
+         log_.error(me(), string("XmlBlasterException: ") + string(e.errorCodeStr) + ": " + string(e.message));
       }
       if (strArr.size() != 1) {
          log_.error(me(), "Erased " + lexical_cast<string>(strArr.size()) + " messages");
@@ -145,8 +145,8 @@ private:
       }
       catch(serverIdl::XmlBlasterException &e) {
          log_.warn(me(), string("XmlBlasterException: ")
-                      + string(e.reason));
-         cerr << "subscribe - XmlBlasterException: " << string(e.reason)
+                      + string(e.errorCodeStr) + ": " + string(e.message));
+         cerr << "subscribe - XmlBlasterException: " << string(e.errorCodeStr) + ": " + string(e.message)
               << endl;
          assert(0);
       }
@@ -188,7 +188,7 @@ private:
          if (testType == TEST_ONEWAY) {
             serverIdl::MessageUnitArr_var msgUnitArr = new serverIdl::MessageUnitArr;
             msgUnitArr->length(1);
-            msgUnitArr[0] = msgUnit;
+            msgUnitArr[0u] = msgUnit;
             senderConnection_->publishOneway(msgUnitArr);
             //delete msgUnitArr;
             log_.info(me(), string("Success: Publishing oneway done (old style)"));
@@ -205,14 +205,14 @@ private:
          else {
             serverIdl::MessageUnitArr_var msgUnitArr = new serverIdl::MessageUnitArr;
             msgUnitArr->length(1);
-            msgUnitArr[0] = msgUnit;
+            msgUnitArr[0u] = msgUnit;
             senderConnection_->publishArr(msgUnitArr);
             //delete msgUnitArr;
             log_.info(me(), string("Success: Publishing array done (old style)"));
          }
       }
       catch(serverIdl::XmlBlasterException &e) {
-         log_.warn(me(), string("XmlBlasterException: ")+string(e.reason));
+         log_.warn(me(), string("XmlBlasterException: ")+string(e.errorCodeStr) + ": " + string(e.message));
          assert(0);
       }
    }
@@ -259,7 +259,7 @@ private:
          }
       }
       catch(serverIdl::XmlBlasterException &e) {
-         log_.warn(me(), string("XmlBlasterException: ")+string(e.reason));
+         log_.warn(me(), string("XmlBlasterException: ")+string(e.errorCodeStr) + ": " + string(e.message));
          assert(0);
       }
    }

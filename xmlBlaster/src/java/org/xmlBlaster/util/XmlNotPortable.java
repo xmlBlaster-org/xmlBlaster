@@ -3,10 +3,13 @@ Name:      XmlNotPortable.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   XmlNotPortable hold none portable xml code
-Version:   $Id: XmlNotPortable.java,v 1.4 2002/04/24 06:39:44 ruff Exp $
+Version:   $Id: XmlNotPortable.java,v 1.5 2002/11/26 12:39:33 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
+
+import org.xmlBlaster.util.Global;
+import org.jutils.log.LogChannel;
 
 import java.io.IOException;
 import org.w3c.dom.Document;
@@ -17,6 +20,7 @@ import org.w3c.dom.Document;
 public class XmlNotPortable
 {
    private static final String ME = "XmlNotPortable";
+   private static final LogChannel log = Global.instance().getLog("core");
 
    public static final java.io.ByteArrayOutputStream write(org.w3c.dom.Document document) throws IOException
    {
@@ -73,7 +77,7 @@ public class XmlNotPortable
             // handle exception
          }
          */
-         Log.error(ME, "Code to write XML-ASCII is missing for document class=" + document.getClass().getName());
+         log.error(ME, "Code to write XML-ASCII is missing for document class=" + document.getClass().getName());
       }
       return out;
    }
@@ -88,19 +92,19 @@ public class XmlNotPortable
     */
    public static final void mergeNode(org.w3c.dom.Document document, org.w3c.dom.Node node)
    {
-      if (Log.CALL) Log.call(ME, "mergeNode()");
-      if (Log.DUMP) Log.dump(ME, "mergeNode=" + node.toString());
+      if (log.CALL) log.call(ME, "mergeNode()");
+      if (log.DUMP) log.dump(ME, "mergeNode=" + node.toString());
 
       if (document instanceof org.apache.crimson.tree.XmlDocument) {
          ((org.apache.crimson.tree.XmlDocument)document).changeNodeOwner(node); // not DOM portable
       }
       else {
-         Log.error(ME, "Code to merge XML-documents is missing for document class=" + document.getClass().getName());
+         log.error(ME, "Code to merge XML-documents is missing for document class=" + document.getClass().getName());
       }
 
       document.getDocumentElement().appendChild(node);
 
-      if (Log.CALL) Log.call(ME, "Successfully merged tree");
+      if (log.CALL) log.call(ME, "Successfully merged tree");
    }
 
 
@@ -114,7 +118,7 @@ public class XmlNotPortable
     */
    public static final void replaceNode(org.w3c.dom.Node oldNode, org.w3c.dom.Node newNode)
    {
-      if (Log.TRACE) Log.trace(ME, "replaceNode=" + oldNode.toString());
+      if (log.TRACE) log.trace(ME, "replaceNode=" + oldNode.toString());
 
       org.w3c.dom.Document document = oldNode.getOwnerDocument();
 
@@ -122,7 +126,7 @@ public class XmlNotPortable
          ((org.apache.crimson.tree.XmlDocument)document).changeNodeOwner(newNode); // not DOM portable
       }
       else {
-         Log.error(ME, "Code to replace XML-nodes is missing for document class=" + document.getClass().getName());
+         log.error(ME, "Code to replace XML-nodes is missing for document class=" + document.getClass().getName());
       }
 
       org.w3c.dom.Node parentNode = oldNode.getParentNode();
@@ -135,7 +139,7 @@ public class XmlNotPortable
          parentNode.removeChild(oldNode);
       }
 
-      if (Log.TRACE) Log.trace(ME, "Successfully replaced node");
+      if (log.TRACE) log.trace(ME, "Successfully replaced node");
    }
 
 }

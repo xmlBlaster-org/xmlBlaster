@@ -12,7 +12,7 @@ import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.xml2java.XmlKey;
-import org.xmlBlaster.engine.xml2java.PublishQos;
+import org.xmlBlaster.engine.qos.PublishQosServer;
 import org.xmlBlaster.engine.admin.CommandManager;
 import org.xmlBlaster.engine.admin.CommandWrapper;
 import org.xmlBlaster.engine.admin.I_ExternGateway;
@@ -55,7 +55,7 @@ public final class MomClientGateway implements I_ExternGateway
       if (!useMessages) return false;
 
       this.instanceCounter++;
-      this.ME = "MomClientGateway" + this.instanceCounter + this.glob.getLogPraefixDashed();
+      this.ME = "MomClientGateway" + this.instanceCounter + this.glob.getLogPrefixDashed();
       this.commandManager = commandManager;
       return true;
    }
@@ -99,8 +99,9 @@ public final class MomClientGateway implements I_ExternGateway
       for (int ii=0; ii<msgs.length; ii++) {
          MessageUnit msg = msgs[ii];
          if (msg.getQos().startsWith("text/plain")) { // A virtual msgUnit from a key/value property
-            msg.setQos("<qos/>");
-            msg.setKey("<key oid='__cmd:" + msg.getXmlKey() + "' contentMime='text/plain'/>");
+            String newKey = "<key oid='__cmd:" + msg.getKey() + "' contentMime='text/plain'/>";
+            // A shallow copy, null -> use the given msg.getContent()
+            msgs[ii] = new MessageUnit(msg, newKey, null, "<qos/>");
          }
       }
       return msgs;
@@ -109,10 +110,10 @@ public final class MomClientGateway implements I_ExternGateway
    /**
     * Called by RequestBroker on publish() of command messages. 
     * @param sessionInfo The client
-    * @param xmlKey The key oid, for example "__cmd:/node/heron/?numClients"
+    * @param xmlKey The key oid, for example "__cmd:/node/heron/?numClients=5"
     */
    public String setCommand(SessionInfo sessionInfo, XmlKey xmlKey, MessageUnit msgUnit,
-                    PublishQos publishQos, boolean isClusterUpdate) throws XmlBlasterException {
+                    PublishQosServer publishQos, boolean isClusterUpdate) throws XmlBlasterException {
       String cmdType = "set";
       String command = xmlKey.getUniqueKey();
       if (command == null) {
@@ -125,7 +126,11 @@ public final class MomClientGateway implements I_ExternGateway
       }
 
       int dotIndex = command.indexOf(":");
-      String query = command.substring(dotIndex+1).trim();  // "/node/heron/?numClients"
+      String query = command.substring(dotIndex+1).trim();  // "/node/heron/?numClients=5"
+
+      if (query.indexOf("=") == -1) {
+         query = query + "=" + msgUnit.getContentStr();     // "/node/heron/?numClients=99"
+      }
 
       SetReturn ret = commandManager.set(sessionInfo.getSessionId(), query);
 

@@ -2,22 +2,21 @@
 Name:      TestPublishFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestPublishFilter.java,v 1.1 2002/09/12 21:01:41 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.mime;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.client.PublishQosWrapper;
-import org.xmlBlaster.client.PublishRetQos;
-import org.xmlBlaster.client.EraseRetQos;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
+import org.xmlBlaster.client.qos.PublishQos;
+import org.xmlBlaster.client.qos.PublishReturnQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.Constants;
@@ -148,32 +147,32 @@ public class TestPublishFilter extends TestCase
       log.info(ME, "TEST 1: Testing filtered message");
       String content = "12345678901"; // content is too long, our plugin denies this message
       try {
-         PublishRetQos rq = con.publish(new MessageUnit("<key oid='MSG'/>", content.getBytes(), null));
-         log.info(ME, "TEST 1: SUCESS returned state=" + rq.getStateId());
-         assertTrue("Return OK", !Constants.STATE_OK.equals(rq.getStateId()));
+         PublishReturnQos rq = con.publish(new MessageUnit("<key oid='MSG'/>", content.getBytes(), null));
+         log.info(ME, "TEST 1: SUCESS returned state=" + rq.getState());
+         assertTrue("Return OK", !Constants.STATE_OK.equals(rq.getState()));
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.reason);
-         assertTrue("publish - XmlBlasterException: " + e.reason, false);
+         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
       try {
          MessageUnit[] msgUnits = con.get("<key oid='MSG'/>", null);
          assertTrue("Invalid return", msgUnits!=null);
          assertEquals("Expected no returned message", 0, msgUnits.length);
       } catch(XmlBlasterException e) {
-         log.warn(ME, "get - XmlBlasterException: " + e.reason);
-         fail("get - XmlBlasterException: " + e.reason);
+         log.warn(ME, "get - XmlBlasterException: " + e.getMessage());
+         fail("get - XmlBlasterException: " + e.getMessage());
       }
 
 
       log.info(ME, "TEST 2: Testing unfiltered message");
       content = "1234567890";
       try {
-         PublishRetQos rq = con.publish(new MessageUnit("<key oid='MSG'/>", content.getBytes(), null));
-         assertEquals("Return not OK", Constants.STATE_OK, rq.getStateId());
+         PublishReturnQos rq = con.publish(new MessageUnit("<key oid='MSG'/>", content.getBytes(), null));
+         assertEquals("Return not OK", Constants.STATE_OK, rq.getState());
          log.info(ME, "TEST 2: SUCESS");
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.reason);
-         assertTrue("publish - XmlBlasterException: " + e.reason, false);
+         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
       try {
          MessageUnit[] msgUnits = con.get("<key oid='MSG'/>", null);
@@ -183,8 +182,8 @@ public class TestPublishFilter extends TestCase
                 msgUnits[0].getContent().length == content.length());
          log.info(ME, "Success: Got one message.");
       } catch(XmlBlasterException e) {
-         log.warn(ME, "get - XmlBlasterException: " + e.reason);
-         fail("get - XmlBlasterException: " + e.reason);
+         log.warn(ME, "get - XmlBlasterException: " + e.getMessage());
+         fail("get - XmlBlasterException: " + e.getMessage());
       }
 
       log.info(ME, "TEST 3: Test what happens if the plugin throws an exception");
@@ -192,13 +191,13 @@ public class TestPublishFilter extends TestCase
          con.publish(new MessageUnit("<key oid='MSG'/>", "123".getBytes(), null));
          fail("publish - expected an XmlBlasterException");
       } catch(XmlBlasterException e) {
-         log.warn(ME, "TEST 3: SUCCESS XmlBlasterException: " + e.reason);
+         log.warn(ME, "TEST 3: SUCCESS XmlBlasterException: " + e.getMessage());
       }
 
       try {
-         EraseRetQos[] arr = con.erase("<key oid='MSG'/>", null);
+         EraseReturnQos[] arr = con.erase("<key oid='MSG'/>", null);
          assertEquals("Erased problem", 1, arr.length);
-      } catch(XmlBlasterException e) { fail(ME + " XmlBlasterException: " + e.reason); }
+      } catch(XmlBlasterException e) { fail(ME + " XmlBlasterException: " + e.getMessage()); }
 
       log.info(ME, "Success in testFilter()");
    }
@@ -218,45 +217,45 @@ public class TestPublishFilter extends TestCase
       log.info(ME, "TEST 1: Testing filtered PtP message");
       String content = "12345678901"; // content is too long, our plugin denies this message
       try {
-         PublishQosWrapper pq = new PublishQosWrapper();
-         pq.addDestination(new Destination(name));
-         PublishRetQos rq = con.publish(new MessageUnit("<key oid='MSG'/>", content.getBytes(), pq.toXml()));
-         log.info(ME, "TEST 1: SUCESS returned state=" + rq.getStateId());
-         assertTrue("Return OK", !Constants.STATE_OK.equals(rq.getStateId()));
+         PublishQos pq = new PublishQos(glob);
+         pq.addDestination(new Destination(new SessionName(glob, name)));
+         PublishReturnQos rq = con.publish(new MessageUnit("<key oid='MSG'/>", content.getBytes(), pq.toXml()));
+         log.info(ME, "TEST 1: SUCESS returned state=" + rq.getState());
+         assertTrue("Return OK", !Constants.STATE_OK.equals(rq.getState()));
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.reason);
-         assertTrue("publish - XmlBlasterException: " + e.reason, false);
+         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
       try {
          MessageUnit[] msgUnits = con.get("<key oid='MSG'/>", null);
          assertTrue("Invalid return", msgUnits!=null);
          assertEquals("Expected no returned message", 0, msgUnits.length);
       } catch(XmlBlasterException e) {
-         log.warn(ME, "get - XmlBlasterException: " + e.reason);
-         fail("get - XmlBlasterException: " + e.reason);
+         log.warn(ME, "get - XmlBlasterException: " + e.getMessage());
+         fail("get - XmlBlasterException: " + e.getMessage());
       }
 
       log.info(ME, "TEST 2: Testing unfiltered PtP message");
       content = "1234567890";
       try {
-         PublishQosWrapper pq = new PublishQosWrapper();
-         pq.addDestination(new Destination(name));
-         PublishRetQos rq = con.publish(new MessageUnit("<key oid='MSG'/>", content.getBytes(), pq.toXml()));
-         assertEquals("Return not OK", Constants.STATE_OK, rq.getStateId());
+         PublishQos pq = new PublishQos(glob);
+         pq.addDestination(new Destination(new SessionName(glob, name)));
+         PublishReturnQos rq = con.publish(new MessageUnit("<key oid='MSG'/>", content.getBytes(), pq.toXml()));
+         assertEquals("Return not OK", Constants.STATE_OK, rq.getState());
          log.info(ME, "TEST 2: SUCESS");
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.reason);
-         assertTrue("publish - XmlBlasterException: " + e.reason, false);
+         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
 
       log.info(ME, "TEST 3: Test what happens if the plugin throws an exception");
       try {   // see THROW_EXCEPTION_FOR_LEN=3
-         PublishQosWrapper pq = new PublishQosWrapper();
-         pq.addDestination(new Destination(name));
+         PublishQos pq = new PublishQos(glob);
+         pq.addDestination(new Destination(new SessionName(glob, name)));
          con.publish(new MessageUnit("<key oid='MSG'/>", "123".getBytes(), pq.toXml()));
          fail("publish - expected an XmlBlasterException");
       } catch(XmlBlasterException e) {
-         log.warn(ME, "TEST 3: SUCCESS XmlBlasterException: " + e.reason);
+         log.warn(ME, "TEST 3: SUCCESS XmlBlasterException: " + e.getMessage());
       }
 
       try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait some time

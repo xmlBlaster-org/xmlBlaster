@@ -44,7 +44,7 @@ public class Session implements I_Session {
     *                                exist or the passwd is incorrect.
     */
    public String init(String securityQos_literal) throws XmlBlasterException {
-      return init(new SecurityQos(securityQos_literal));
+      return init(new SecurityQos(secMgr.getGlobal(), securityQos_literal));
    }
 
 
@@ -119,12 +119,14 @@ public class Session implements I_Session {
     */
    public MessageUnit importMessage(MessageUnit msg) throws XmlBlasterException {
       // dummy implementation
-      msg.xmlKey = importMessage(msg.xmlKey);
-      //secMgr.getGUI().printKey(msg.xmlKey);
-      msg.qos = importMessage(msg.qos);
-      secMgr.getGUI().printQoS(msg.qos);
-      msg.content = importMessage(msg.content);
-      secMgr.getGUI().printContent(new String(msg.content));
+      msg = new MessageUnit(importMessage(msg.getKey()),
+                            importMessage(msg.getContent()),
+                            importMessage(msg.getQos()));
+
+      //secMgr.getGUI().printKey(msg.getKey());
+      secMgr.getGUI().printQoS(msg.getQos());
+      secMgr.getGUI().printContent(msg.getContentStr());
+
       return msg;
    }
 
@@ -139,7 +141,7 @@ public class Session implements I_Session {
       return ret;
    }
 
-   private byte[] importMessage(byte[] byteArr) throws XmlBlasterException
+   public byte[] importMessage(byte[] byteArr) throws XmlBlasterException
    {
       secMgr.getGUI().printInputStream(new String(byteArr));
       byte[] newByteArr = crypter.decrypt(byteArr);
@@ -158,9 +160,9 @@ public class Session implements I_Session {
     */
    public MessageUnit exportMessage(MessageUnit msg) throws XmlBlasterException {
       // dummy implementation
-      msg.xmlKey = exportMessage(msg.xmlKey);
-      msg.qos = exportMessage(msg.qos);
-      msg.content = exportMessage(msg.content);
+      msg = new MessageUnit(exportMessage(msg.getKey()),
+                            exportMessage(msg.getContent()),
+                            exportMessage(msg.getQos()));
 
       return msg;
 
@@ -176,7 +178,7 @@ public class Session implements I_Session {
       return ret;
    }
 
-   private byte[] exportMessage(byte[] byteArr) throws XmlBlasterException
+   public byte[] exportMessage(byte[] byteArr) throws XmlBlasterException
    {
       secMgr.getGUI().printOutputStream(new String(byteArr));
       byte[] newByteArr = crypter.crypt(byteArr);

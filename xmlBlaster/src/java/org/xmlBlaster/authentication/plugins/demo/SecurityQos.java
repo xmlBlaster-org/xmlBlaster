@@ -1,6 +1,7 @@
 package org.xmlBlaster.authentication.plugins.demo;
 
 import org.xml.sax.Attributes;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SaxHandlerBase;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
@@ -35,12 +36,14 @@ public class SecurityQos extends SaxHandlerBase implements I_SecurityQos
    private String user = "";
    private String passwd = "";
 
-   public SecurityQos()
+   public SecurityQos(Global glob)
    {
+      super(glob);
    }
 
-   public SecurityQos(String loginName, String password)
+   public SecurityQos(Global glob, String loginName, String password)
    {
+      super(glob);
       this.user = loginName;
       this.passwd = password;
    }

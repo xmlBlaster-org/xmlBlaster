@@ -5,7 +5,18 @@ import org.xmlBlaster.util.Global;
 
 // for client connections:
 import org.xmlBlaster.util.*;
-import org.xmlBlaster.client.*;
+import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.client.key.PublishKey;
+import org.xmlBlaster.client.key.EraseKey;
+import org.xmlBlaster.client.key.SubscribeKey;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.PublishQos;
+import org.xmlBlaster.client.qos.PublishReturnQos;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.qos.SubscribeQos;
+import org.xmlBlaster.client.qos.SubscribeReturnQos;
+import org.xmlBlaster.client.qos.EraseQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.Constants;
@@ -124,18 +135,18 @@ public class EraseTest extends TestCase {
                });
 
             System.err.println("->Subscribe from bilbo ...");
-            SubscribeKeyWrapper sk = new SubscribeKeyWrapper(oid);
+            SubscribeKey sk = new SubscribeKey(glob, oid);
             sk.setDomain(domain);
-            SubscribeQosWrapper sq = new SubscribeQosWrapper();
-            SubscribeRetQos srq = bilboCon.subscribe(sk.toXml(), sq.toXml());
+            SubscribeQos sq = new SubscribeQos(glob);
+            SubscribeReturnQos srq = bilboCon.subscribe(sk.toXml(), sq.toXml());
          }
 
          System.err.println("->Publish to avalon ...");
-         PublishKeyWrapper avalon_pk = new PublishKeyWrapper(oid, "text/plain", "1.0", domain);
-         PublishQosWrapper avalon_pq = new PublishQosWrapper();
+         PublishKey avalon_pk = new PublishKey(glob, oid, "text/plain", "1.0", domain);
+         PublishQos avalon_pq = new PublishQos(glob);
          MessageUnit avalon_msgUnit = new MessageUnit(avalon_pk.toXml(), contentStr.getBytes(), avalon_pq.toXml());
-         PublishRetQos avalon_prq = avalonCon.publish(avalon_msgUnit);
-         assertEquals("oid changed", oid, avalon_prq.getOid());
+         PublishReturnQos avalon_prq = avalonCon.publish(avalon_msgUnit);
+         assertEquals("oid changed", oid, avalon_prq.getKeyOid());
 
 
          try { Thread.currentThread().sleep(2000); } catch( InterruptedException i) {}
@@ -147,10 +158,10 @@ public class EraseTest extends TestCase {
 
          isErase = true;
          System.err.println("->Trying to erase the message at the avalon slave node ...");
-         EraseKeyWrapper ek = new EraseKeyWrapper(oid);
+         EraseKey ek = new EraseKey(glob, oid);
          ek.setDomain(domain);
-         EraseQosWrapper eq = new EraseQosWrapper();
-         EraseRetQos[] arr = avalonCon.erase(ek.toXml(), eq.toXml());
+         EraseQos eq = new EraseQos(glob);
+         EraseReturnQos[] arr = avalonCon.erase(ek.toXml(), eq.toXml());
          assertEquals("Erase", 1, arr.length);
 
          try { Thread.currentThread().sleep(2000); } catch( InterruptedException i) {}

@@ -3,7 +3,7 @@ Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Authentication access for RMI clients.
-Version:   $Id: AuthServerImpl.java,v 1.18 2002/09/13 23:18:13 ruff Exp $
+Version:   $Id: AuthServerImpl.java,v 1.19 2002/11/26 12:39:16 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
@@ -47,19 +47,17 @@ public class AuthServerImpl extends UnicastRemoteObject implements org.xmlBlaste
       this.authenticate = authenticate;
    }
 
-   /**
+   /*
     * Does a login, returns a handle to xmlBlaster interface.
     * <p />
     * @param loginName The unique login name
     * @param passwd
     * @return sessionId The unique ID for this client
     * @exception XmlBlasterException If user is unknown
-    * @deprecated
-    */
    public String login(String loginName, String passwd, String qos_literal)
                         throws RemoteException, XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "Entering login(loginName=" + loginName/* + ", qos=" + qos_literal */ + ")");
+      if (log.CALL) log.call(ME, "Entering login(loginName=" + loginName + ")");
 
       if (loginName==null || passwd==null || qos_literal==null) {
          log.error(ME+"InvalidArguments", "login failed: please use no null arguments for login()");
@@ -77,9 +75,10 @@ public class AuthServerImpl extends UnicastRemoteObject implements org.xmlBlaste
          return returnQos.getSessionId();
       }
       catch (org.xmlBlaster.util.XmlBlasterException e) {
-         throw new XmlBlasterException(e.id, e.reason); // transform native exception to Corba exception
+         throw new XmlBlasterException(e.id, e.getMessage()); // transform native exception to Corba exception
       }
    }
+    */
 
    /**
     * Login to xmlBlaster.
@@ -99,14 +98,9 @@ public class AuthServerImpl extends UnicastRemoteObject implements org.xmlBlaste
       if (log.CALL) log.call(ME, "Entering connect(qos=" + qos_literal + ")");
 
       StopWatch stop=null; if (log.TIME) stop = new StopWatch();
-      try {
-         ConnectReturnQos returnQos = authenticate.connect(connectQos);
-         returnValue = returnQos.toXml();
-         if (log.TIME) log.time(ME, "Elapsed time in connect()" + stop.nice());
-      }
-      catch (org.xmlBlaster.util.XmlBlasterException e) {
-         throw new XmlBlasterException(e.id, e.reason); // transform native exception to Corba exception
-      }
+      ConnectReturnQos returnQos = authenticate.connect(connectQos);
+      returnValue = returnQos.toXml();
+      if (log.TIME) log.time(ME, "Elapsed time in connect()" + stop.nice());
 
       return returnValue;
    }
@@ -119,19 +113,18 @@ public class AuthServerImpl extends UnicastRemoteObject implements org.xmlBlaste
       if (log.CALL) log.call(ME, "Exiting disconnect()");
    }
 
-   /**
+   /*
     * Does a logout.
     * <p />
     * @param sessionId The client sessionId
     * @exception XmlBlasterException If sessionId is invalid
-    * @deprecated Use disconnect() instead
-    */
    public void logout(final String sessionId)
                         throws RemoteException, XmlBlasterException
    {
       if (log.CALL) log.call(ME, "Entering logout()");
       disconnect(sessionId, (new DisconnectQos()).toXml());
    }
+    */
 
    /**
     * Ping to check if the authentication server is alive. 

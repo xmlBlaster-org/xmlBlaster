@@ -8,6 +8,7 @@ package org.xmlBlaster.engine.cluster;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.I_RunlevelListener;
 import org.xmlBlaster.engine.RunlevelManager;
@@ -16,15 +17,15 @@ import org.xmlBlaster.engine.helper.Address;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.xml2java.XmlKey;
-import org.xmlBlaster.engine.xml2java.PublishQos;
-import org.xmlBlaster.engine.xml2java.SubscribeQoS;
-import org.xmlBlaster.engine.xml2java.GetQoS;
-import org.xmlBlaster.engine.xml2java.EraseQoS;
+import org.xmlBlaster.engine.qos.PublishQosServer;
+import org.xmlBlaster.engine.qos.SubscribeQosServer;
+import org.xmlBlaster.engine.qos.GetQosServer;
+import org.xmlBlaster.engine.qos.EraseQosServer;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.protocol.I_Driver;
-import org.xmlBlaster.client.SubscribeRetQos;
-import org.xmlBlaster.client.PublishRetQos;
-import org.xmlBlaster.client.EraseRetQos;
+import org.xmlBlaster.client.qos.SubscribeReturnQos;
+import org.xmlBlaster.client.qos.PublishReturnQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.authentication.SessionInfo;
 
@@ -98,7 +99,7 @@ public final class ClusterManager implements I_RunlevelListener
       this.glob = glob;
       this.sessionInfo = sessionInfo;
       this.log = this.glob.getLog("cluster");
-      this.ME = "ClusterManager" + this.glob.getLogPraefixDashed();
+      this.ME = "ClusterManager" + this.glob.getLogPrefixDashed();
       glob.getRunlevelManager().addRunlevelListener(this);
    }
 
@@ -115,7 +116,8 @@ public final class ClusterManager implements I_RunlevelListener
          String tmp = "No load balancer plugin type='" + this.pluginLoadBalancerType + "' version='" + this.pluginLoadBalancerVersion + "' found, clustering switched off";
          log.error(ME, tmp);
          //Thread.currentThread().dumpStack();
-         throw new XmlBlasterException("ClusterManager.PluginFailed", tmp); // is caught in RequestBroker.java
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED,
+            ME, tmp); // is caught in RequestBroker.java
       }
 
       this.clusterNodeMap = new TreeMap(new NodeComparator());
@@ -167,12 +169,12 @@ public final class ClusterManager implements I_RunlevelListener
    private void publish() {
       if (log.TRACE) log.trace(ME, "publish() of cluster internal messages is missing");
    /*
-      StringBuffer buf = new StringBuffer(256);
-      buf.append("<key oid='").append(Constants.OID_CLUSTER_INFO).append("[").append(getId()).append("]").append("'><").append(Constants.OID_CLUSTER_INFO)("/></key>");
-      msgUnit.setKey(buf.toString());
-      msgUnit.setQos(pubQos.toXml());
+      StringBuffer keyBuf = new StringBuffer(256);
+      keyBuf.append("<key oid='").append(Constants.OID_CLUSTER_INFO).append("[").append(getId()).append("]").append("'><").append(Constants.OID_CLUSTER_INFO)("/></key>");
+      String qos = pubQos.toXml());
       XmlKey xmlKey = new XmlKey(msgUnit.getXmlKey(), true);
-      retArr[ii] = publish(unsecureSessionInfo, xmlKey, msgUnit, new PublishQos(glob, msgUnit.getQos()));
+      clone msgUnit
+      retArr[ii] = publish(unsecureSessionInfo, xmlKey, msgUnit, new PublishQosServer(glob, msgUnit.getQos()));
    */
    }
 
@@ -262,7 +264,7 @@ public final class ClusterManager implements I_RunlevelListener
       if (con == null)
          return null;
 
-      PublishQos publishQos = msgWrapper.getPublishQos();
+      PublishQosServer publishQos = msgWrapper.getPublishQos();
       if (nodeDomainInfo.getDirtyRead() == true) {
          // mark QoS of published message that we dirty read the message:
          RouteInfo[] ris = publishQos.getRouteNodes();
@@ -274,10 +276,10 @@ public final class ClusterManager implements I_RunlevelListener
             ris[ris.length-1].setDirtyRead(true);
          }
       }
-      MessageUnit msgUnit = msgWrapper.getMessageUnit();
-      msgUnit.setQos(publishQos.toXml());
+      // Set the new qos ...
+      MessageUnit msgUnitShallowClone = new MessageUnit(msgWrapper.getMessageUnit(), null, null, publishQos.toXml());
 
-      return new PublishRetQosWrapper(nodeDomainInfo, con.publish(msgUnit));
+      return new PublishRetQosWrapper(nodeDomainInfo, con.publish(msgUnitShallowClone));
    }
 
    /**
@@ -288,12 +290,12 @@ public final class ClusterManager implements I_RunlevelListener
     *         Otherwise the normal publish return value of the remote cluster node.  
     * @exception XmlBlasterException and RuntimeExceptions are just forwarded to the caller
     */
-   public SubscribeRetQos forwardSubscribe(SessionInfo publisherSession, XmlKey xmlKey, SubscribeQoS subscribeQos) throws XmlBlasterException {
+   public SubscribeReturnQos forwardSubscribe(SessionInfo publisherSession, XmlKey xmlKey, SubscribeQosServer subscribeQos) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering forwardSubscribe(" + xmlKey.getUniqueKey() + ")");
 
       MessageUnitWrapper msgWrapper = new MessageUnitWrapper(glob, glob.getRequestBroker(), xmlKey,
-                                      new MessageUnit(xmlKey.literal(), new byte[0], subscribeQos.toXml()),
-                                      /*!!! subscribeQos.toXml()*/ new PublishQos(glob, ""));
+                                      new MessageUnit(glob, xmlKey.literal(), new byte[0], subscribeQos.toXml()),
+                                      /*!!! subscribeQos.toXml()*/ new PublishQosServer(glob, ""));
       NodeDomainInfo nodeDomainInfo = getConnection(publisherSession, msgWrapper);
       if (nodeDomainInfo == null)
          return null;
@@ -314,12 +316,12 @@ public final class ClusterManager implements I_RunlevelListener
     *         Otherwise the normal get return value of the remote cluster node.  
     * @exception XmlBlasterException and RuntimeExceptions are just forwarded to the caller
     */
-   public MessageUnit[] forwardGet(SessionInfo publisherSession, XmlKey xmlKey, GetQoS getQos) throws XmlBlasterException {
+   public MessageUnit[] forwardGet(SessionInfo publisherSession, XmlKey xmlKey, GetQosServer getQos) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering forwardGet(" + xmlKey.getUniqueKey() + ")");
 
       MessageUnitWrapper msgWrapper = new MessageUnitWrapper(glob, glob.getRequestBroker(), xmlKey,
-                                      new MessageUnit(xmlKey.literal(), new byte[0], getQos.toXml()),
-                                      /*!!! getQos.toXml()*/ new PublishQos(glob, ""));
+                                      new MessageUnit(glob, xmlKey.literal(), new byte[0], getQos.toXml()),
+                                      /*!!! getQos.toXml()*/ new PublishQosServer(glob, ""));
       NodeDomainInfo nodeDomainInfo = getConnection(publisherSession, msgWrapper);
       if (nodeDomainInfo == null)
          return null;
@@ -340,12 +342,12 @@ public final class ClusterManager implements I_RunlevelListener
     *         Otherwise the normal erase return value of the remote cluster node.  
     * @exception XmlBlasterException and RuntimeExceptions are just forwarded to the caller
     */
-   public EraseRetQos[] forwardErase(SessionInfo publisherSession, XmlKey xmlKey, EraseQoS eraseQos) throws XmlBlasterException {
+   public EraseReturnQos[] forwardErase(SessionInfo publisherSession, XmlKey xmlKey, EraseQosServer eraseQos) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering forwardErase(" + xmlKey.getUniqueKey() + ")");
 
       MessageUnitWrapper msgWrapper = new MessageUnitWrapper(glob, glob.getRequestBroker(), xmlKey,
-                                      new MessageUnit(xmlKey.literal(), new byte[0], eraseQos.toXml()),
-                                      /*!!! eraseQos.toXml()*/ new PublishQos(glob, ""));
+                                      new MessageUnit(glob, xmlKey.literal(), new byte[0], eraseQos.toXml()),
+                                      /*!!! eraseQos.toXml()*/ new PublishQosServer(glob, ""));
       NodeDomainInfo nodeDomainInfo = getConnection(publisherSession, msgWrapper);
       if (nodeDomainInfo == null)
          return null;
@@ -467,10 +469,10 @@ public final class ClusterManager implements I_RunlevelListener
 
       if (log.CALL) log.call(ME, "Entering getConnection(" + msgWrapper.getUniqueKey() + "), testing " + getClusterNodeMap().size() + " known cluster nodes ...");
 
-      if (msgWrapper.getUniqueKey() != null && msgWrapper.getUniqueKey().startsWith(Constants.INTERNAL_OID_PRAEFIX)) {
+      if (msgWrapper.getUniqueKey() != null && msgWrapper.getUniqueKey().startsWith(Constants.INTERNAL_OID_PREFIX)) {
          // key oid can be null for XPath subscription
          // internal system messages are handled locally
-         if (msgWrapper.getXmlKey().getUniqueKey().startsWith(Constants.INTERNAL_OID_CLUSTER_PRAEFIX))
+         if (msgWrapper.getXmlKey().getUniqueKey().startsWith(Constants.INTERNAL_OID_CLUSTER_PREFIX))
             log.error(ME, "Forwarding of " + msgWrapper.getXmlKey().getUniqueKey() + " implementation is missing");
             // !!! TODO: forward system messages with cluster info of foreign nodes!
          return null;
@@ -484,7 +486,7 @@ public final class ClusterManager implements I_RunlevelListener
                                      // Sorted by stratum (0 is the first entry) -> see NodeDomainInfo.compareTo
       int numRulesFound = 0;                             // For nicer logging of warnings
 
-      PublishQos publishQos = msgWrapper.getPublishQos();
+      PublishQosServer publishQos = msgWrapper.getPublishQos();
       if (publishQos.count(glob.getNodeId()) > 1) { // Checked in RequestBroker as well with warning
          log.warn(ME, "Warning, message oid='" + msgWrapper.getXmlKey().getUniqueKey() +
             "' passed my node id='" + glob.getId() + "' before, we have a circular routing problem, keeping message locally");

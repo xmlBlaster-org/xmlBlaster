@@ -25,8 +25,8 @@
 #	done with BRANCH_0_7_9g on date 2002-07-08
 #
 #	- create package 'XmlBlaster' to encapsulate xml-rpc calls.
-#	- create package 'EraseRetQos'
-#	- create package 'PublishRetQos'
+#	- create package 'EraseReturnQos'
+#	- create package 'PublishReturnQos'
 #
 # 2002-02-11 16:27 mad@ktaland.com
 #
@@ -49,7 +49,7 @@ use lib( '.' );
 use xmlBlaster::Exception ;
 use xmlBlaster::XmlBlaster ;
 use xmlBlaster::MessageUnit ;
-use xmlBlaster::EraseRetQos ;
+use xmlBlaster::EraseReturnQos ;
 
 my $securityServiceType = 'htpasswd' ;
 
@@ -183,7 +183,7 @@ sub testPubGet {
 	my $eraseRetQos_aref = $srv2->erase( $key );
 
 	foreach( @$eraseRetQos_aref ){
-		my $eraseRetQos = xmlBlaster::EraseRetQos->new( $_ );
+		my $eraseRetQos = xmlBlaster::EraseReturnQos->new( $_ );
 		print "Erased message = [", $eraseRetQos->keyOid() , "]\n";
 	}
 

@@ -3,7 +3,7 @@ Name:      TestSubDispatch.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubDispatch.java,v 1.2 2002/09/13 23:18:30 ruff Exp $
+Version:   $Id: TestSubDispatch.java,v 1.3 2002/11/26 12:40:39 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -12,10 +12,10 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
-import org.xmlBlaster.client.SubscribeRetQos;
-import org.xmlBlaster.client.EraseRetQos;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.qos.SubscribeReturnQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
 import junit.framework.*;
@@ -53,8 +53,8 @@ public class TestSubDispatch extends TestCase implements I_Callback
    private int numReceived = 0;         // error checking
    private final String contentMime = "text/xml";
    private final String contentMimeExtended = "1.0";
-
-   private SubscribeRetQos subscribeRetQos = null; // declare here to allow inner class access
+           
+   private SubscribeReturnQos subscribeRetQos = null; // declare here to allow inner class access
 
    private String assertInUpdate = null;
 
@@ -82,7 +82,7 @@ public class TestSubDispatch extends TestCase implements I_Callback
    protected void setUp()
    {
       try {
-         senderConnection = new XmlBlasterConnection(); // Find orb
+         senderConnection = new XmlBlasterConnection(glob); // Find orb
          String passwd = "secret";
          senderConnection.login(senderName, passwd, null, this); // Login to xmlBlaster
       }
@@ -106,9 +106,9 @@ public class TestSubDispatch extends TestCase implements I_Callback
                       "</key>";
       String qos = "<qos></qos>";
       try {
-         EraseRetQos[] arr = senderConnection.erase(xmlKey, qos);
+         EraseReturnQos[] arr = senderConnection.erase(xmlKey, qos);
          assertEquals("Erase", 1, arr.length);
-      } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.reason); }
+      } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.getMessage()); }
 
       senderConnection.disconnect(null);
    }
@@ -134,9 +134,9 @@ public class TestSubDispatch extends TestCase implements I_Callback
                   log.info(ME, "Receiving message with specialized update() ...");
                   numReceived += 1;
 
-                  assertEquals("Wrong sender", senderName, updateQos.getSender());
+                  assertEquals("Wrong sender", senderName, updateQos.getSender().getLoginName());
                   assertEquals("engine.qos.update.subscriptionId: Wrong subscriptionId", subscribeRetQos.getSubscriptionId(), updateQos.getSubscriptionId());
-                  assertEquals("Wrong oid of message returned", publishOid, updateKey.getUniqueKey());
+                  assertEquals("Wrong oid of message returned", publishOid, updateKey.getOid());
                   assertEquals("Message content is corrupted", new String(senderContent), new String(content));
                   assertEquals("Message contentMime is corrupted", contentMime, updateKey.getContentMime());
                   assertEquals("Message contentMimeExtended is corrupted", contentMimeExtended, updateKey.getContentMimeExtended());
@@ -150,8 +150,8 @@ public class TestSubDispatch extends TestCase implements I_Callback
          assertTrue("returned subscribeId is empty", 0 != subscribeRetQos.getSubscriptionId().length());
          log.info(ME, "Success: Subscribe subscription-id=" + subscribeRetQos.getSubscriptionId() + " done");
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.reason);
-         assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
+         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
       }
    }
 
@@ -176,12 +176,12 @@ public class TestSubDispatch extends TestCase implements I_Callback
       senderContent = "Yeahh, i'm the new content";
       MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
       try {
-         String tmp = senderConnection.publish(msgUnit).getOid();
+         String tmp = senderConnection.publish(msgUnit).getKeyOid();
          assertEquals("Wrong publishOid", publishOid, tmp);
          log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.reason);
-         assertTrue("publish - XmlBlasterException: " + e.reason, false);
+         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
    }
 
@@ -210,8 +210,8 @@ public class TestSubDispatch extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      assertInUpdate = "Receiving update of message oid=" + updateKey.getUniqueKey() + " state=" + updateQos.getState() + " in default update handler ...";
-      log.error(ME, "Receiving update of message oid=" + updateKey.getUniqueKey() + " state=" + updateQos.getState() + " in default update handler ...");
+      assertInUpdate = "Receiving update of message oid=" + updateKey.getOid() + " state=" + updateQos.getState() + " in default update handler ...";
+      log.error(ME, "Receiving update of message oid=" + updateKey.getOid() + " state=" + updateQos.getState() + " in default update handler ...");
       return "";
    }
 

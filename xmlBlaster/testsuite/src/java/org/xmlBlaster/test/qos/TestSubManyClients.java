@@ -3,7 +3,7 @@ Name:      TestSubManyClients.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubManyClients.java,v 1.2 2002/09/13 23:18:31 ruff Exp $
+Version:   $Id: TestSubManyClients.java,v 1.3 2002/11/26 12:40:39 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -15,15 +15,15 @@ import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
-import org.xmlBlaster.client.PublishRetQos;
-import org.xmlBlaster.client.EraseRetQos;
-import org.xmlBlaster.client.SubscribeRetQos;
-import org.xmlBlaster.client.SubscribeKeyWrapper;
-import org.xmlBlaster.client.SubscribeQosWrapper;
-import org.xmlBlaster.client.PublishKeyWrapper;
-import org.xmlBlaster.client.PublishQosWrapper;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.qos.PublishReturnQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
+import org.xmlBlaster.client.qos.SubscribeReturnQos;
+import org.xmlBlaster.client.key.SubscribeKey;
+import org.xmlBlaster.client.qos.SubscribeQos;
+import org.xmlBlaster.client.key.PublishKey;
+import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
 import org.xmlBlaster.test.Util;
@@ -102,7 +102,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
       log.info(ME, "Setting up test ...");
       numReceived = 0;
       try {
-         oneConnection = new XmlBlasterConnection(); // Find orb
+         oneConnection = new XmlBlasterConnection(glob); // Find orb
          String passwd = "secret";
          oneConnection.login(oneName, passwd, null, this); // Login to xmlBlaster
       }
@@ -141,9 +141,9 @@ public class TestSubManyClients extends TestCase implements I_Callback
                          "</key>";
          String qos = "<qos></qos>";
          try {
-            EraseRetQos[] arr = oneConnection.erase(xmlKey, qos);
+            EraseReturnQos[] arr = oneConnection.erase(xmlKey, qos);
             assertEquals("Erase", 1, arr.length);
-         } catch(XmlBlasterException e) { fail("Erase-XmlBlasterException: " + e.reason); }
+         } catch(XmlBlasterException e) { fail("Erase-XmlBlasterException: " + e.getMessage()); }
       }
 
       {
@@ -152,9 +152,9 @@ public class TestSubManyClients extends TestCase implements I_Callback
                          "</key>";
          String qos = "<qos></qos>";
          try {
-            EraseRetQos[] arr = oneConnection.erase(xmlKey, qos);
+            EraseReturnQos[] arr = oneConnection.erase(xmlKey, qos);
             assertEquals("Ersae", 1, arr.length);
-         } catch(XmlBlasterException e) { fail("Erase-XmlBlasterException: " + e.reason); }
+         } catch(XmlBlasterException e) { fail("Erase-XmlBlasterException: " + e.getMessage()); }
       }
 
       oneConnection.disconnect(null);
@@ -171,10 +171,10 @@ public class TestSubManyClients extends TestCase implements I_Callback
 
       String passwd = "secret";
 
-      SubscribeKeyWrapper subKeyW = new SubscribeKeyWrapper(publishOid1);
+      SubscribeKey subKeyW = new SubscribeKey(glob, publishOid1);
       String subKey = subKeyW.toXml(); // "<key oid='" + publishOid1 + "' queryType='EXACT'></key>";
 
-      SubscribeQosWrapper subQosW = new SubscribeQosWrapper(); // "<qos></qos>";
+      SubscribeQos subQosW = new SubscribeQos(glob); // "<qos></qos>";
       String subQos = subQosW.toXml();
 
       manyClients = new Client[numClients];
@@ -200,10 +200,10 @@ public class TestSubManyClients extends TestCase implements I_Callback
 
          try {
             sub.subscribeOid = sub.connection.subscribe(subKey, subQos).getSubscriptionId();
-            log.info(ME, "Client " + sub.loginName + " subscribed to " + subKeyW.getUniqueKey());
+            log.info(ME, "Client " + sub.loginName + " subscribed to " + subKeyW.getOid());
          } catch(XmlBlasterException e) {
-            log.warn(ME, "XmlBlasterException: " + e.reason);
-            assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
+            log.warn(ME, "XmlBlasterException: " + e.getMessage());
+            assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
          }
 
          manyClients[ii] = sub;
@@ -228,7 +228,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
       String qos = "<qos></qos>";
       try {
          MessageUnit[] msgArr = oneConnection.get(xmlKey, qos);
-         String mem = new String(msgArr[0].content);
+         String mem = new String(msgArr[0].getContent());
          return new Long(mem).longValue();
       } catch (XmlBlasterException e) {
          log.warn(ME, e.toString());
@@ -254,12 +254,12 @@ public class TestSubManyClients extends TestCase implements I_Callback
       MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
       try {
          stopWatch = new StopWatch();
-         String tmp = oneConnection.publish(msgUnit).getOid();
+         String tmp = oneConnection.publish(msgUnit).getKeyOid();
          assertEquals("Wrong publishOid1", publishOid1, tmp);
          log.info(ME, "Success: Publishing done, returned oid=" + publishOid1);
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.reason);
-         assertTrue("publishOne - XmlBlasterException: " + e.reason, false);
+         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         assertTrue("publishOne - XmlBlasterException: " + e.getMessage(), false);
       }
    }
 
@@ -304,18 +304,18 @@ public class TestSubManyClients extends TestCase implements I_Callback
    {
       if (log.TRACE) log.trace(ME, "Subscribing ...");
 
-      SubscribeKeyWrapper subKeyW = new SubscribeKeyWrapper(publishOid2);
+      SubscribeKey subKeyW = new SubscribeKey(glob, publishOid2);
       String subKey = subKeyW.toXml(); // "<key oid='" + publishOid2 + "' queryType='EXACT'></key>";
 
-      SubscribeQosWrapper subQosW = new SubscribeQosWrapper(); // "<qos></qos>";
+      SubscribeQos subQosW = new SubscribeQos(glob); // "<qos></qos>";
       String subQos = subQosW.toXml();
 
       try {
-         SubscribeRetQos subscribeOid = oneConnection.subscribe(subKey, subQos);
-         log.info(ME, "Client " + oneName + " subscribed to " + subKeyW.getUniqueKey());
+         SubscribeReturnQos subscribeOid = oneConnection.subscribe(subKey, subQos);
+         log.info(ME, "Client " + oneName + " subscribed to " + subKeyW.getOid());
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.reason);
-         assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
+         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
       }
    }
 
@@ -329,10 +329,10 @@ public class TestSubManyClients extends TestCase implements I_Callback
    {
       if (log.TRACE) log.trace(ME, "Publishing a message ...");
 
-      PublishKeyWrapper pubKeyW = new PublishKeyWrapper(publishOid2, contentMime, contentMimeExtended);
+      PublishKey pubKeyW = new PublishKey(glob, publishOid2, contentMime, contentMimeExtended);
       String pubKey = pubKeyW.toXml(); // "<key oid='" + publishOid2 + "' contentMime='" + contentMime + "' contentMimeExtended='" + contentMimeExtended + "'></key>"
 
-      PublishQosWrapper pubQosW = new PublishQosWrapper();
+      PublishQos pubQosW = new PublishQos(glob);
       String pubQos = pubQosW.toXml(); // "<qos></qos>"
 
       long usedBefore = getUsedServerMemory();
@@ -347,11 +347,11 @@ public class TestSubManyClients extends TestCase implements I_Callback
          String senderContent = "New content from publisher " + client.loginName;
          MessageUnit msgUnit = new MessageUnit(pubKey, senderContent.getBytes(), pubQos);
          try {
-            PublishRetQos tmp = oneConnection.publish(msgUnit);
-            assertEquals("Wrong publishOid2", publishOid2, tmp.getOid());
+            PublishReturnQos tmp = oneConnection.publish(msgUnit);
+            assertEquals("Wrong publishOid2", publishOid2, tmp.getKeyOid());
          } catch(XmlBlasterException e) {
-            log.warn(ME, "XmlBlasterException: " + e.reason);
-            assertTrue("publishOne - XmlBlasterException: " + e.reason, false);
+            log.warn(ME, "XmlBlasterException: " + e.getMessage());
+            assertTrue("publishOne - XmlBlasterException: " + e.getMessage(), false);
          }
       }
 
@@ -373,7 +373,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      //log.info(ME, "Client " + loginName + " receiving update of message oid=" + updateKey.getUniqueKey() + "...");
+      //log.info(ME, "Client " + loginName + " receiving update of message oid=" + updateKey.getOid() + "...");
       numReceived++;
 
       if (numReceived == numClients) {

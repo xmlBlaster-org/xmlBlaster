@@ -3,18 +3,19 @@ Name:      CallbackNativeDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using native interface.
-Version:   $Id: CallbackNativeDriver.java,v 1.11 2002/09/13 23:18:13 ruff Exp $
+Version:   $Id: CallbackNativeDriver.java,v 1.12 2002/11/26 12:39:13 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.nativ;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.engine.queue.MsgQueueEntry;
+import org.xmlBlaster.util.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.ErrorCode;
 
 
 /**
@@ -95,15 +96,31 @@ public class CallbackNativeDriver implements I_CallbackDriver
     * This method is enforced by interface I_CallbackDriver and is called by
     * @exception e.id="CallbackFailed", should be caught and handled appropriate
     */
-   public final String[] sendUpdate(MsgQueueEntry[] msg) throws XmlBlasterException
+   public final String[] sendUpdate(MsgQueueUpdateEntry[] msg) throws XmlBlasterException
    {
-      if (msg == null || msg.length < 1) throw new XmlBlasterException(ME, "Illegal update argument");
-      log.info(ME, "xmlBlaster.update(" + msg[0].getUniqueKey() + ") from sender " + msg[0].getPublisherName() + " to " + callbackAddress.getAddress());
+      try {
+         if (msg == null || msg.length < 1) 
+            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal sendUpdate() argument");
+         log.info(ME, "xmlBlaster.update(" + msg[0].getLogId() + ") from sender " + msg[0].getSender() + " to " + callbackAddress.getAddress());
 
-      String[] ret = new String[msg.length];
-      for (int ii=0; ii<ret.length; ii++)
-         ret[ii] = Constants.RET_OK; // "<qos><state id='OK'/></qos>";
-      return ret;
+         String[] ret = new String[msg.length];
+         for (int ii=0; ii<ret.length; ii++)
+            ret[ii] = Constants.RET_OK; // "<qos><state id='OK'/></qos>";
+         return ret;
+      }
+      catch (XmlBlasterException xmlBlasterException) {
+
+         // WE ONLY ACCEPT ErrorCode.USER... FROM CLIENTS !
+         if (xmlBlasterException.isUser())
+            throw xmlBlasterException;
+
+         throw new XmlBlasterException(glob, ErrorCode.USER_UPDATE_ERROR, ME,
+                   "JDBC processing problem", xmlBlasterException);
+      }
+      catch (Throwable throwable) {
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME,
+                   "Internal JDBC processing problem", throwable);
+      }
    }
 
 
@@ -111,10 +128,11 @@ public class CallbackNativeDriver implements I_CallbackDriver
     * The oneway variant, without return value. 
     * @exception XmlBlasterException Is never from the client (oneway).
     */
-   public void sendUpdateOneway(MsgQueueEntry[] msg) throws XmlBlasterException
+   public void sendUpdateOneway(MsgQueueUpdateEntry[] msg) throws XmlBlasterException
    {
-      if (msg == null || msg.length < 1) throw new XmlBlasterException(ME, "Illegal updateOneway argument");
-      log.info(ME, "xmlBlaster.updateOneway(" + msg[0].getUniqueKey() + ") from sender " + msg[0].getPublisherName() + " to " + callbackAddress.getAddress());
+      if (msg == null || msg.length < 1) 
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal sendUpdateOneway() argument");
+      log.info(ME, "xmlBlaster.updateOneway(" + msg[0].getLogId() + ") from sender " + msg[0].getSender() + " to " + callbackAddress.getAddress());
    }
 
    /**

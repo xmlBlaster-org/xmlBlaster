@@ -3,7 +3,7 @@ Name:      TestUnSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestUnSub.java,v 1.2 2002/09/13 23:18:31 ruff Exp $
+Version:   $Id: TestUnSub.java,v 1.3 2002/11/26 12:40:42 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -12,10 +12,9 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
-import org.xmlBlaster.client.SubscribeRetQos;
-import org.xmlBlaster.client.EraseRetQos;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
 import junit.framework.*;
@@ -100,9 +99,9 @@ public class TestUnSub extends TestCase implements I_Callback
                       "<key oid='" + publishOid + "' queryType='EXACT'>\n" +
                       "</key>";
       try {
-         EraseRetQos[] arr = senderConnection.erase(xmlKey, "<qos/>");
+         EraseReturnQos[] arr = senderConnection.erase(xmlKey, "<qos/>");
          assertEquals("Erase", 1, arr.length);
-      } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.reason); }
+      } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.getMessage()); }
 
       senderConnection.disconnect(null);
    }
@@ -128,8 +127,8 @@ public class TestUnSub extends TestCase implements I_Callback
          subscribeOid = senderConnection.subscribe(xmlKey, qos).getSubscriptionId();
          log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.reason);
-         assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
+         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
       }
       assertTrue("returned null subscribeOid", subscribeOid != null);
       assertTrue("returned subscribeOid is empty", 0 != subscribeOid.length());
@@ -153,8 +152,8 @@ public class TestUnSub extends TestCase implements I_Callback
          senderConnection.unSubscribe(xmlKey, qos);
          log.info(ME, "Success: UnSubscribe with " + xpath + " done");
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.reason);
-         assertTrue("unSubscribe - XmlBlasterException: " + e.reason, false);
+         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         assertTrue("unSubscribe - XmlBlasterException: " + e.getMessage(), false);
       }
    }
 
@@ -175,8 +174,8 @@ public class TestUnSub extends TestCase implements I_Callback
          senderConnection.unSubscribe(xmlKey, qos);
          log.info(ME, "Success: UnSubscribe on " + subscribeOid + " done");
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.reason);
-         assertTrue("unSubscribe - XmlBlasterException: " + e.reason, false);
+         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         assertTrue("unSubscribe - XmlBlasterException: " + e.getMessage(), false);
       }
    }
 
@@ -201,11 +200,11 @@ public class TestUnSub extends TestCase implements I_Callback
       senderContent = "Yeahh, i'm the new content";
       MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
       try {
-         publishOid = senderConnection.publish(msgUnit).getOid();
+         publishOid = senderConnection.publish(msgUnit).getKeyOid();
          log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.reason);
-         assertTrue("publish - XmlBlasterException: " + e.reason, false);
+         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
 
       assertTrue("returned publishOid == null", publishOid != null);
@@ -256,8 +255,8 @@ public class TestUnSub extends TestCase implements I_Callback
 
       numReceived += 1;
 
-      assertEquals("Wrong sender", senderName, updateQos.getSender());
-      assertEquals("Wrong oid of message returned", publishOid, updateKey.getUniqueKey());
+      assertEquals("Wrong sender", senderName, updateQos.getSender().getLoginName());
+      assertEquals("Wrong oid of message returned", publishOid, updateKey.getOid());
       assertEquals("Message content is corrupted", new String(senderContent), new String(content));
       assertEquals("Message contentMime is corrupted", contentMime, updateKey.getContentMime());
       assertEquals("Message contentMimeExtended is corrupted", contentMimeExtended, updateKey.getContentMimeExtended());

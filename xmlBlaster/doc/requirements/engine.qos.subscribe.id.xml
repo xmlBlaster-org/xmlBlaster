@@ -30,21 +30,23 @@
 &lt;/qos>
      </pre>
      <p>
-     For java clients there is a praefix constant in org.xmlBlaster.engine.helper.Constants.java
+     For java clients there is a prefix constant in org.xmlBlaster.engine.helper.Constants.java
      which you can use to build a unique subscription ID:
      </p>
      <pre>
-   public final static String SUBSCRIPTIONID_CLIENT_PRAEFIX = "__subId:/node/";
+   public final static String SUBSCRIPTIONID_CLIENT_PREFIX = "__subId:/node/";
      </pre>
    </description>
    <example lang="Java">
       <![CDATA[
+import org.xmlBlaster.client.qos.SubscribeQos;
+
 ...
 
 try {
-   SubscribeQosWrapper sq = new SubscribeQosWrapper();
+   SubscribeQos sq = new SubscribeQos(glob);
 
-   String subId = Constants.SUBSCRIPTIONID_CLIENT_PRAEFIX + serverName +
+   String subId = Constants.SUBSCRIPTIONID_CLIENT_PREFIX + serverName +
                   "/client/" + connectQos.getUserId() +
                   "/" + connectReturnQos.getPublicSessionId() +
                   "/" + myCounter;
@@ -59,11 +61,11 @@ catch (Exception e) {
 ...
       ]]>
    </example>
-   <see>org.xmlBlaster.client.SubscribeQosWrapper</see>
+   <see>org.xmlBlaster.client.qos.SubscribeQos</see>
    <author>ruff@swand.lake.de</author>
    <hacker>ruff@swand.lake.de</hacker>
    <date>2002 06 26</date>
-   <revision>$Revision: 1.3 $</revision>
+   <revision>$Revision: 1.4 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

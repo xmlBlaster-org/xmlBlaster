@@ -3,7 +3,7 @@ Name:      GetMessage.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code to get from command line a message
-Version:   $Id: GetMessage.java,v 1.3 2002/06/18 13:51:53 ruff Exp $
+Version:   $Id: GetMessage.java,v 1.4 2002/11/26 12:38:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.reader;
 
@@ -12,11 +12,11 @@ import org.jutils.init.Args;
 import org.jutils.JUtilsException;
 
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.GetKeyWrapper;
-import org.xmlBlaster.client.GetQosWrapper;
+import org.xmlBlaster.client.key.GetKey;
+import org.xmlBlaster.client.qos.GetQos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -91,8 +91,8 @@ public class GetMessage
          e.printStackTrace();
       }
 
-      GetKeyWrapper xmlKeyWr = new GetKeyWrapper(xmlKey, queryType);
-      GetQosWrapper xmlQos = new GetQosWrapper();
+      GetKey xmlKeyWr = new GetKey(glob, xmlKey, queryType);
+      GetQos xmlQos = new GetQos(glob);
       MessageUnit[] msgs = xmlBlasterConnection.get(xmlKeyWr.toXml(), xmlQos.toXml());
       log.info(ME, "Got " + msgs.length + " messages for '" + xmlKey + "'");
       for (int ii=0; ii<msgs.length; ii++) {

@@ -1,6 +1,7 @@
 package org.xmlBlaster.authentication.plugins.simple;
 
 import org.xml.sax.Attributes;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SaxHandlerBase;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
@@ -30,12 +31,14 @@ public final class SecurityQos extends SaxHandlerBase implements I_SecurityQos
    private String user = null;
    private String passwd = null;
 
-   public SecurityQos()
+   public SecurityQos(Global glob)
    {
+      super(glob);
    }
 
-   public SecurityQos(String xmlQoS_literal) throws XmlBlasterException
+   public SecurityQos(Global glob, String xmlQoS_literal) throws XmlBlasterException
    {
+      super(glob);
       parse(xmlQoS_literal);
    }
 
@@ -48,8 +51,9 @@ public final class SecurityQos extends SaxHandlerBase implements I_SecurityQos
       init(xmlQoS_literal);
    }
 
-   public SecurityQos(String loginName, String password)
+   public SecurityQos(Global glob, String loginName, String password)
    {
+      super(glob);
       this.user = loginName;
       this.passwd = password;
    }
@@ -195,7 +199,7 @@ public final class SecurityQos extends SaxHandlerBase implements I_SecurityQos
    public static void main(String[] args)
    {
       try {
-         org.xmlBlaster.util.XmlBlasterProperty.init(args);
+         Global glob = new Global(args);
          String xml =
             "<securityService type=\"simple\" version=\"1.0\">\n" +
             "   <![CDATA[\n" +
@@ -205,7 +209,7 @@ public final class SecurityQos extends SaxHandlerBase implements I_SecurityQos
             "</securityService>";
 
          System.out.println("Original:\n" + xml);
-         SecurityQos qos = new SecurityQos(xml);
+         SecurityQos qos = new SecurityQos(glob, xml);
          System.out.println("Result:\n" + qos.toXml());
          qos.setUserId("AnotherUser");
          qos.setCredential("AnotherPassword");

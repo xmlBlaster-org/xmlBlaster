@@ -4,7 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster: for now a simplified version 
            without caching and without failsave mode.
-Author:    <Michele Laghi> michele.laghi@attglobal.net
+Author:    <Michele Laghi> laghi@swissinfo.org
 -----------------------------------------------------------------------------*/
 
 #ifndef _CLIENT_CORBACONNECTION_H
@@ -283,7 +283,7 @@ namespace org { namespace xmlBlaster {
       /**
        * @deprecated Please use the STL vector variant
        */
-      serverIdl::StringArr* CorbaConnection::publishArr(const serverIdl::MessageUnitArr& msgUnitArr);
+      serverIdl::XmlTypeArr* CorbaConnection::publishArr(const serverIdl::MessageUnitArr& msgUnitArr);
 
       /**
        * Publish a bulk of messages without ACK. 

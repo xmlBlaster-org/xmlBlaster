@@ -3,14 +3,16 @@ Name:      Parser.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Parser class for raw socket messages
-Version:   $Id: Parser.java,v 1.34 2002/09/15 11:17:22 ruff Exp $
+Version:   $Id: Parser.java,v 1.35 2002/11/26 12:39:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
 import org.jutils.log.LogChannel;
 
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.enum.MethodName;
+import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
 import java.io.IOException;
@@ -83,6 +85,7 @@ public class Parser
    */
 
    private static final String ME = "Parser";
+   private final Global glob;
 
    private final LogChannel log;
    
@@ -116,7 +119,7 @@ public class Parser
    private int version;
 
    private String requestId;
-   private String methodName;
+   private MethodName methodName;
    private String sessionId;
    private long lenUnzipped;
    private long checkSumResult;
@@ -136,18 +139,19 @@ public class Parser
    /**
     * The same parser object may be reused. 
     */
-   public Parser() {
-      this((byte)0, (String)null, (String)null, (String)null);
+   public Parser(Global glob) {
+      this(glob, (byte)0, (String)null, (MethodName)null, (String)null);
    }
 
 
-   public Parser(byte type, String methodName, String sessionId) {
-      this(type, (String)null, methodName, sessionId);
+   public Parser(Global glob, byte type, MethodName methodName, String sessionId) {
+      this(glob, type, (String)null, methodName, sessionId);
    }
 
 
-   public Parser(byte type, String requestId, String methodName, String sessionId) {
-      log = org.xmlBlaster.util.Global.instance().getLog("socket");
+   public Parser(Global glob, byte type, String requestId, MethodName methodName, String sessionId) {
+      this.glob = glob;
+      this.log = glob.getLog("socket");
       msgVec = new Vector();
       initialize();
       setType(type);
@@ -237,16 +241,16 @@ public class Parser
     * will be bounced back with the return value or with an
     * exception occurred during this request
     * </p>
-    * @param praefix If desired you can specify a prefix for the request ID, e.g. "joe:"
-    * @return An ID (unique in this JVM scope), e.g. "joe:3400" or "3400" if praefix is null
+    * @param prefix If desired you can specify a prefix for the request ID, e.g. "joe:"
+    * @return An ID (unique in this JVM scope), e.g. "joe:3400" or "3400" if prefix is null
     */
-   public final String createRequestId(String praefix) {
+   public final String createRequestId(String prefix) {
       if (this.requestId == null || this.requestId.length() < 1) {
-         if (praefix == null) praefix = "";
+         if (prefix == null) prefix = "";
          synchronized(Parser.class) {
             if (this.counter >= (Long.MAX_VALUE-1L)) this.counter = 0L;
             this.counter++;
-            this.requestId = praefix+this.counter;
+            this.requestId = prefix+this.counter;
          }
       }
       return this.requestId;
@@ -261,16 +265,16 @@ public class Parser
       return this.requestId;
    }
 
-   /** For example Constants.PUBLISH */
-   public final void setMethodName(String methodName) {
+   /** For example MethodName.PUBLISH */
+   public final void setMethodName(MethodName methodName) {
       this.methodName = methodName;
    }
 
    /**
-    * For example Constants.PUBLISH
+    * For example MethodName.PUBLISH
     * @return unchecked
     */
-   public final String getMethodName() {
+   public final MethodName getMethodName() {
       return this.methodName;
    }
    
@@ -324,7 +328,7 @@ public class Parser
    public final void addException(XmlBlasterException e) {
       if (!msgVec.isEmpty())
          throw new IllegalArgumentException(ME+".addException() may only be invoked once");
-      MessageUnit msg = new MessageUnit(e.reason, (byte[])null, e.id);
+      MessageUnit msg = new MessageUnit(e.getMessage(), e.toByteArr(), e.getErrorCodeStr());
       msgVec.add(msg);
    }
 
@@ -354,6 +358,18 @@ public class Parser
       for (int ii=0; ii<arr.length; ii++)
          msgVec.add(arr[ii]);
    }
+
+   /**
+    * Use for methods update, publish. 
+    * <br />
+    * Use for return value of method get.
+    * <br />
+    * Multiple adds are OK
+   public final void addMessage(MsgQueueEntry[] arr) {
+      for (int ii=0; ii<arr.length; ii++)
+         msgVec.add(arr[ii].getMessageUnit());
+   }
+    */
 
    /**
     * Add a QoS value, use for methods connect, disconnect, ping.
@@ -456,7 +472,7 @@ public class Parser
          throw new IllegalArgumentException(ME + ": getException() is called without having an exception");
       }
       MessageUnit msg = (MessageUnit)msgVec.elementAt(0);
-      return new XmlBlasterException(msg.getQos(), msg.getXmlKey());
+      return XmlBlasterException.parseByteArr(glob, msg.getContent());
    }
 
    /**
@@ -534,7 +550,7 @@ public class Parser
     * <p />
     * This method blocks until a message arrives
     */
-   public final void parse(InputStream in) throws IOException {
+   public final void parse(InputStream in) throws IOException, IllegalArgumentException {
       if (log.CALL) log.call(ME, "Entering parse()");
 
       initialize();
@@ -542,7 +558,7 @@ public class Parser
       Buf buf = readOneMsg(in); // blocks until one message is read
 
       if (buf == null) {
-         setMethodName(Constants.PING);
+         setMethodName(MethodName.PING);
          return; // The shortest ping ever
       }
 
@@ -565,7 +581,7 @@ public class Parser
       buf.offset = NUM_FIELD_LEN+FLAG_FIELD_LEN;
 
       requestId = toString(buf);
-      methodName = toString(buf);
+      methodName = MethodName.toMethodName(toString(buf));
       sessionId = toString(buf);
 
       lenUnzipped = toInt0(buf, -1);
@@ -580,14 +596,16 @@ public class Parser
          qos = toString(buf);
          if (buf.offset >= buf.buf.length) break;
 
-         MessageUnit msgUnit = new MessageUnit(null, (byte[])null, qos);
-         addMessage(msgUnit);
-
-         msgUnit.setKey(toString(buf));
-         if (buf.offset >= buf.buf.length) break;
+         String key = toString(buf);
+         if (buf.offset >= buf.buf.length) {
+            MessageUnit msgUnit = new MessageUnit(key, (byte[])null, qos);
+            addMessage(msgUnit);
+            break;
+         }
 
          if (log.TRACE) log.trace(ME, "Getting messageUnit #" + ii);
-         msgUnit.setContent(toByte(buf));
+         MessageUnit msgUnit = new MessageUnit(key, toByte(buf), qos);
+         addMessage(msgUnit);
 
          if (buf.offset >= buf.buf.length) break;
       }
@@ -640,12 +658,6 @@ public class Parser
     */
    public final byte[] createRawMsg() throws XmlBlasterException {
 
-      if (Constants.checkMethodName(methodName) == false) {
-         String str = "Can't send message, method '" + methodName + " is unknown";
-         //log.error(ME, str);
-         throw new IllegalArgumentException(ME + ": " + str);
-      }
-
       try {
          long len = getUserDataLen() + 500;
          ByteArray out = new ByteArray((int)len);
@@ -686,7 +698,7 @@ public class Parser
          out.write(createRequestId(null).getBytes());
          out.write(NULL_BYTE);
 
-         out.write(getMethodName().getBytes());
+         out.write(getMethodName().getMethodNameBytes());
          out.write(NULL_BYTE);
 
          out.write(getSessionId().getBytes());
@@ -698,13 +710,13 @@ public class Parser
 
          for (int ii=0; ii<msgVec.size(); ii++) {
             MessageUnit unit = (MessageUnit)msgVec.elementAt(ii);
-            out.write(unit.qos.getBytes());
+            out.write(unit.getQos().getBytes());
             out.write(NULL_BYTE);
-            out.write(unit.xmlKey.getBytes());
+            out.write(unit.getKey().getBytes());
             out.write(NULL_BYTE);
-            out.write((""+unit.content.length).getBytes());
+            out.write((""+unit.getContent().length).getBytes());
             out.write(NULL_BYTE);
-            out.write(unit.content);
+            out.write(unit.getContent());
          }
 
          if (checksum == true) {
@@ -895,16 +907,17 @@ public class Parser
    /** java org.xmlBlaster.protocol.socket.Parser */
    public static void main( String[] args ) {
       try {
+         Global glob = new Global(args);
          byte[] rawMsg = null;
          String testName;
 
          testName = "Testing qos/key/content";
          System.out.println("\n----------------------\n"+testName);
          {
-            Parser parser = new Parser();
+            Parser parser = new Parser(glob);
             parser.setType(Parser.INVOKE_BYTE);
             parser.setRequestId("7711");
-            parser.setMethodName(Constants.PUBLISH);
+            parser.setMethodName(MethodName.PUBLISH);
             parser.setSessionId("oxf6hZs");
             parser.setChecksum(false);
             parser.setCompressed(false);
@@ -916,7 +929,7 @@ public class Parser
             System.out.println(testName + ": Created and ready to send: \n|" + send + "|");
          }
          {
-            Parser receiver = new Parser();
+            Parser receiver = new Parser(glob);
             ByteArrayInputStream in = new ByteArrayInputStream(rawMsg);
             receiver.parse(in);
             //System.out.println("\nReceived: \n" + receiver.dump());
@@ -931,10 +944,10 @@ public class Parser
          testName = "Testing many qos/key/content";
          System.out.println("\n----------------------\n"+testName);
          {
-            Parser parser = new Parser();
+            Parser parser = new Parser(glob);
             parser.setType(Parser.INVOKE_BYTE);
             parser.setRequestId("7711");
-            parser.setMethodName(Constants.PUBLISH);
+            parser.setMethodName(MethodName.PUBLISH);
             parser.setSessionId("oxf6hZs");
             parser.setChecksum(false);
             parser.setCompressed(false);
@@ -948,7 +961,7 @@ public class Parser
             System.out.println(testName + ": Created and ready to send: \n|" + send + "|");
          }
          {
-            Parser receiver = new Parser();
+            Parser receiver = new Parser(glob);
             ByteArrayInputStream in = new ByteArrayInputStream(rawMsg);
             receiver.parse(in);
             //System.out.println("\nReceived: \n" + receiver.dump());
@@ -963,10 +976,10 @@ public class Parser
          testName = "Testing qos/key";
          System.out.println("\n----------------------\n"+testName);
          {
-            Parser parser = new Parser();
+            Parser parser = new Parser(glob);
             parser.setType(Parser.INVOKE_BYTE);
             parser.setRequestId("7711");
-            parser.setMethodName(Constants.GET);
+            parser.setMethodName(MethodName.GET);
             parser.setSessionId("oxf6hZs");
             parser.setChecksum(false);
             parser.setCompressed(false);
@@ -977,7 +990,7 @@ public class Parser
             System.out.println(testName + ": Created and ready to send: \n|" + send + "|");
          }
          {
-            Parser receiver = new Parser();
+            Parser receiver = new Parser(glob);
             ByteArrayInputStream in = new ByteArrayInputStream(rawMsg);
             receiver.parse(in);
             //System.out.println("\nReceived: \n" + receiver.dump());
@@ -993,10 +1006,10 @@ public class Parser
          testName = "Testing qos return";
          System.out.println("\n----------------------\n"+testName);
          {
-            Parser parser = new Parser();
+            Parser parser = new Parser(glob);
             parser.setType(Parser.RESPONSE_BYTE);
             parser.setRequestId("7711");
-            parser.setMethodName(Constants.PUBLISH);
+            parser.setMethodName(MethodName.PUBLISH);
             parser.setSessionId("oxf6hZs");
             parser.setChecksum(false);
             parser.setCompressed(false);
@@ -1007,7 +1020,7 @@ public class Parser
             System.out.println(testName + ": Created and ready to send: \n|" + send + "|");
          }
          {
-            Parser receiver = new Parser();
+            Parser receiver = new Parser(glob);
             ByteArrayInputStream in = new ByteArrayInputStream(rawMsg);
             receiver.parse(in);
             if (receiver.getMessageArr().length != 1) {
@@ -1025,10 +1038,10 @@ public class Parser
          testName = "Testing nothing";
          System.out.println("\n----------------------\n"+testName);
          {
-            Parser parser = new Parser();
+            Parser parser = new Parser(glob);
             parser.setType(Parser.INVOKE_BYTE);
             parser.setRequestId("7711");
-            parser.setMethodName(Constants.GET);
+            parser.setMethodName(MethodName.GET);
             parser.setSessionId("oxf6hZs");
             parser.setChecksum(false);
             parser.setCompressed(false);
@@ -1038,7 +1051,7 @@ public class Parser
             System.out.println(testName + ": Created and ready to send: \n|" + send + "|");
          }
          {
-            Parser receiver = new Parser();
+            Parser receiver = new Parser(glob);
             ByteArrayInputStream in = new ByteArrayInputStream(rawMsg);
             receiver.parse(in);
             if (receiver.getMessageArr().length > 0) {
@@ -1063,7 +1076,7 @@ public class Parser
             System.out.println(testName + ": Created and ready to send: \n|" + send + "|");
          }
          {
-            Parser receiver = new Parser();
+            Parser receiver = new Parser(glob);
             receiver.setSessionId(null);
             ByteArrayInputStream in = new ByteArrayInputStream(rawMsg);
             receiver.parse(in);
@@ -1086,10 +1099,10 @@ public class Parser
          testName = "Testing XmlBlasterException";
          System.out.println("\n----------------------\n"+testName);
          {
-            Parser parser = new Parser();
+            Parser parser = new Parser(glob);
             parser.setType(Parser.EXCEPTION_BYTE);
             parser.setRequestId("7711");
-            parser.setMethodName(Constants.PUBLISH);
+            parser.setMethodName(MethodName.PUBLISH);
             parser.setSessionId("oxf6hZs");
             parser.setChecksum(false);
             parser.setCompressed(false);
@@ -1101,7 +1114,7 @@ public class Parser
             System.out.println(testName + ": Created and ready to send: \n|" + send + "|");
          }
          {
-            Parser receiver = new Parser();
+            Parser receiver = new Parser(glob);
             ByteArrayInputStream in = new ByteArrayInputStream(rawMsg);
             receiver.parse(in);
             //System.out.println("\nReceived: \n" + receiver.dump());
@@ -1117,10 +1130,10 @@ public class Parser
          testName = "Testing qos/key/content return value";
          System.out.println("\n----------------------\n"+testName);
          {
-            Parser parser = new Parser();
+            Parser parser = new Parser(glob);
             parser.setType(Parser.RESPONSE_BYTE);
             parser.setRequestId("7711");
-            parser.setMethodName(Constants.GET);
+            parser.setMethodName(MethodName.GET);
             //parser.setSessionId("oxf6hZs");
             parser.setChecksum(false);
             parser.setCompressed(false);
@@ -1132,7 +1145,7 @@ public class Parser
             System.out.println(testName + ": Created and ready to send: \n|" + send + "|");
          }
          {
-            Parser receiver = new Parser();
+            Parser receiver = new Parser(glob);
             ByteArrayInputStream in = new ByteArrayInputStream(rawMsg);
             receiver.parse(in);
             //System.out.println("\nReceived: \n" + receiver.dump());
@@ -1147,10 +1160,10 @@ public class Parser
          testName = "Testing a QoS return value";
          System.out.println("\n----------------------\n"+testName);
          {
-            Parser parser = new Parser();
+            Parser parser = new Parser(glob);
             parser.setType(Parser.RESPONSE_BYTE);
             parser.setRequestId("7711");
-            parser.setMethodName(Constants.ERASE);
+            parser.setMethodName(MethodName.ERASE);
             //parser.setSessionId("");
             parser.setChecksum(false);
             parser.setCompressed(false);
@@ -1161,7 +1174,7 @@ public class Parser
             System.out.println(testName + ": Created and ready to send: \n|" + send + "|");
          }
          {
-            Parser receiver = new Parser();
+            Parser receiver = new Parser(glob);
             ByteArrayInputStream in = new ByteArrayInputStream(rawMsg);
             receiver.parse(in);
             //System.out.println("\nReceived: \n" + receiver.dump());

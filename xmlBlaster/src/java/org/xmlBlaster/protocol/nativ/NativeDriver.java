@@ -3,7 +3,7 @@ Name:      NativeDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   NativeDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: NativeDriver.java,v 1.19 2002/08/26 11:04:25 ruff Exp $
+Version:   $Id: NativeDriver.java,v 1.20 2002/11/26 12:39:13 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.nativ;
 
@@ -106,7 +106,7 @@ public class NativeDriver implements I_Driver
    public void init(final Global glob, I_Authenticate authenticate, I_XmlBlaster xmlBlasterImpl) throws XmlBlasterException
    {
       this.glob = glob;
-      this.ME = "NativeDriver" + this.glob.getLogPraefixDashed();
+      this.ME = "NativeDriver" + this.glob.getLogPrefixDashed();
       this.log = glob.getLog("native");
       this.authenticate = authenticate;
       this.xmlBlasterImpl = xmlBlasterImpl;
@@ -146,7 +146,7 @@ public class NativeDriver implements I_Driver
          String publishOid = xmlBlasterImpl.publish(sessionId, msgUnit);
          log.info(ME, "Sending done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
-         log.error(ME, "publish() XmlBlasterException: " + e.reason);
+         log.error(ME, "publish() XmlBlasterException: " + e.getMessage());
       }
    }
 

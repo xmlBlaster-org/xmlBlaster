@@ -17,11 +17,11 @@
       </qos>
       ]]>
    </example>
-   <see type="API">org.xmlBlaster.client.PublishQosWrapper</see>
-   <see type="API">org.xmlBlaster.client.PublishKeyWrapper</see>
+   <see type="API">org.xmlBlaster.client.qos.PublishQos</see>
+   <see type="API">org.xmlBlaster.client.key.PublishKey</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 02 25</date>
-   <revision>$Revision: 1.5 $</revision>
+   <revision>$Revision: 1.6 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

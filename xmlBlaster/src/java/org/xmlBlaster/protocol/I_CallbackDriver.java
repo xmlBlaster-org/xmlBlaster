@@ -11,7 +11,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.CallbackAddress;
-import org.xmlBlaster.engine.queue.MsgQueueEntry;
+import org.xmlBlaster.util.queuemsg.MsgQueueUpdateEntry;
 
 
 /**
@@ -59,16 +59,19 @@ public interface I_CallbackDriver extends I_Plugin
     *     &lt;state id='OK'/>  &lt;!-- Client processing state OK | ERROR ... see Constants.java -->
     *  &lt;/qos>
     * </pre>
-    * @exception On callback problems you need to throw a XmlBlasterException e.id="CallbackFailed",
-    *            the message will queued until the client logs in again
+    * @exception On callback problems you need to throw an XmlBlasterException and
+    *            the message will queued until the client logs in again.<br />
+    * NOTE: A remote user may only throw ErrorCode.USER*, you have to check the received ErrorCode
+    *       and transform it to a e.g ErrorCode.USER_UPDATE_ERROR if it is no user error.<br />
+    * NOTE: All connection problems need to be thrown as ErrorCode.COMMUNICATION* errors.
     */
-   public String[] sendUpdate(MsgQueueEntry[] msg) throws XmlBlasterException;
+   public String[] sendUpdate(MsgQueueUpdateEntry[] msg) throws XmlBlasterException;
 
    /**
     * The oneway variant, without return value
     * @exception XmlBlasterException Is never from the client (oneway).
     */
-   public void sendUpdateOneway(MsgQueueEntry[] msg) throws XmlBlasterException;
+   public void sendUpdateOneway(MsgQueueUpdateEntry[] msg) throws XmlBlasterException;
 
    /**
     * Ping to check if xmlBlaster is alive. 

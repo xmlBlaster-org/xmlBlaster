@@ -46,13 +46,13 @@ public interface I_XmlBlasterConnection
     * @param client A handle to your callback if desired or null
     * @return ConnectReturnQos
     */
-   public ConnectReturnQos connect(ConnectQos qos) throws XmlBlasterException, ConnectionException;
+   public ConnectReturnQos connect(ConnectQos qos) throws XmlBlasterException;
 
    /**
     * Logout from xmlBlaster. 
     * @param qos The QoS or null
     */
-   public boolean disconnect(DisconnectQos qos) throws XmlBlasterException, ConnectionException;
+   public boolean disconnect(DisconnectQos qos) throws XmlBlasterException;
 
    // Could make sense to the SOCKET driver, returns new SocketCallbackImpl
    //public I_CallbackServer getCbServerInstance() throws XmlBlasterException;
@@ -65,12 +65,12 @@ public interface I_XmlBlasterConnection
    /**
     * Try to login to xmlBlaster. 
     */
-   public void login(String loginName, String passwd, ConnectQos qos) throws XmlBlasterException, ConnectionException;
+   public void login(String loginName, String passwd, ConnectQos qos) throws XmlBlasterException;
 
    /**
     * Is invoked when we poll for the server, for example after we have lost the connection. 
     */
-   public ConnectReturnQos loginRaw() throws XmlBlasterException, ConnectionException;
+   public ConnectReturnQos loginRaw() throws XmlBlasterException;
 
    /*
     * @deprecated Use disconnect() instead
@@ -80,15 +80,13 @@ public interface I_XmlBlasterConnection
    public boolean shutdown();
 
    /** Reset the driver on problems */
-   public void init();
+   public void resetConnection();
 
    public String getLoginName();
 
    public boolean isLoggedIn();
 
-   public String ping(String qos) throws XmlBlasterException, ConnectionException;
-
-   // NOTE: All methods from I_XmlBlaster like publish()/subscribe() can throw the ConnectionException as well!
+   public String ping(String qos) throws XmlBlasterException;
 
    //public static void usage();
 
@@ -96,7 +94,7 @@ public interface I_XmlBlasterConnection
 
    public org.xmlBlaster.engine.helper.MessageUnit[] get(java.lang.String xmlKey, java.lang.String qos) throws XmlBlasterException;
 
-   public void unSubscribe(java.lang.String xmlKey, java.lang.String qos) throws XmlBlasterException;
+   public String[] unSubscribe(java.lang.String xmlKey, java.lang.String qos) throws XmlBlasterException;
 
    public String publish(org.xmlBlaster.engine.helper.MessageUnit msgUnit) throws XmlBlasterException;
 

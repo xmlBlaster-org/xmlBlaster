@@ -51,11 +51,11 @@
       ]]>
    </example>
    <see type="REQ">engine.qos.publish.destination.PtP</see>
-   <see type="API">org.xmlBlaster.client.PublishQosWrapper</see>
-   <see type="API">org.xmlBlaster.client.PublishKeyWrapper</see>
+   <see type="API">org.xmlBlaster.client.qos.PublishQos</see>
+   <see type="API">org.xmlBlaster.client.key.PublishKey</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 01 17</date>
-   <revision>$Revision: 1.6 $</revision>
+   <revision>$Revision: 1.7 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>

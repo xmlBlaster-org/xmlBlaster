@@ -2,7 +2,10 @@ package org.xmlBlaster.test.memoryleak;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.*;
-import org.xmlBlaster.client.*;
+import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.PublishQos;
+import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
@@ -43,7 +46,7 @@ public class PublishSame
          });  // Login to xmlBlaster, default handler for updates
 
          String xmlKey = null;
-         PublishQosWrapper qw = new PublishQosWrapper();
+         PublishQos qw = new PublishQos(glob);
          System.out.println("qos = " + qw.toXml() );
          byte[] b = new byte[1024];
          while(true) {

@@ -4,13 +4,10 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
 /**
- *
- *
  * @author  W. Kleinertz
- * @version $Revision: 1.6 $ (State: $State) (Date: $Date: 2002/05/19 12:55:38 $)
  */
 
-public interface I_Session {
+public interface I_Session extends I_MsgSecurityInterceptor {
 
    /**
     * Initialize a new session.<br\>
@@ -58,8 +55,8 @@ public interface I_Session {
     *
     * @param String The new sessionId.
     * @exception XmlBlasterException Thrown if the new sessionId is already in use.
-    * @deprecated
     */
+    // @deprecated
    public void changeSessionId(String sessionId) throws XmlBlasterException;
 
    /**
@@ -68,29 +65,4 @@ public interface I_Session {
     * @param String The sessionId.
     */
    public String getSessionId();
-
-   // --- message handling ----------------------------------------------------
-
-   /**
-    * decrypt, check, unseal ... an incomming message
-    * <p/>
-    * @param MessageUnit The the received message
-    * @return MessageUnit The original message
-    * @exception XmlBlasterException Thrown i.e. if the message has been modified
-    * @see #importMessage(MessageUnit)
-    */
-   public MessageUnit importMessage(MessageUnit msg) throws XmlBlasterException;
-   public String importMessage(String xmlMsg) throws XmlBlasterException;
-
-   /**
-    * encrypt, sign, seal ... an outgoing message
-    * <p/>
-    * @param MessageUnit The source message
-    * @return MessageUnit
-    * @exception XmlBlasterException Thrown if the message cannot be processed
-    * @see #importMessage(MessageUnit)
-    */
-   public MessageUnit exportMessage(MessageUnit msg) throws XmlBlasterException;
-   public String exportMessage(String xmlMsg) throws XmlBlasterException;
-
 }

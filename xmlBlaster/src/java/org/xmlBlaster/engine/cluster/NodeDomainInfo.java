@@ -146,7 +146,7 @@ public final class NodeDomainInfo implements Comparable
    /**
     * Return the cluster master filters or null if none is specified. 
     */
-   public final AccessFilterQos[] getFilterQos()
+   public final AccessFilterQos[] getAccessFilterArr()
    {
       if (filterArr != null || filterVec == null || filterVec.size() < 1)
          return filterArr;
@@ -413,7 +413,7 @@ public final class NodeDomainInfo implements Comparable
       for (int ii=0; keyArr != null && ii<keyArr.length; ii++)
          sb.append(offset).append("   ").append(keyArr[ii].literal());
 
-      AccessFilterQos[] filterArr = getFilterQos();
+      AccessFilterQos[] filterArr = getAccessFilterArr();
       for (int ii=0; filterArr != null && ii<filterArr.length; ii++)
          sb.append(filterArr[ii].toXml(extraOffset+"   "));
 

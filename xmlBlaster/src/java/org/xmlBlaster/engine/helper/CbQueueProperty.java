@@ -3,7 +3,7 @@ Name:      CbQueueProperty.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: CbQueueProperty.java,v 1.4 2002/06/15 16:08:33 ruff Exp $
+Version:   $Id: CbQueueProperty.java,v 1.5 2002/11/26 12:38:45 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -23,13 +23,13 @@ public class CbQueueProperty extends QueuePropertyBase
    private final LogChannel log;
 
    /**
-    * @param relating  To what is this queue related: Constants.RELATING_SESSION | Constants.RELATING_SUBJECT | Constants.RELATING_UNRELATED
+    * @param relating  To what is this queue related: Constants.RELATING_SESSION | Constants.RELATING_SUBJECT
     * @param nodeId    If not null, the command line properties will look for prop[nodeId] as well,
     * e.g. -queue.maxMsg and -queue.maxMsg[heron] will be searched
     */
    public CbQueueProperty(Global glob, String relating, String nodeId) {
       super(glob, nodeId);
-      this.log = glob.getLog("cb");
+      this.log = glob.getLog("dispatch");
       initialize();
       setRelating(relating);
    }
@@ -39,7 +39,7 @@ public class CbQueueProperty extends QueuePropertyBase
     */
    public final String getSettings() {
       StringBuffer buf = new StringBuffer(256);
-      buf.append("onOverflow=").append(getOnOverflow()).append(" onFailure=").append(getOnFailure()).append(" maxMsg=").append(getMaxMsg());
+      buf.append("type=").append(getType()).append(" onOverflow=").append(getOnOverflow()).append(" onFailure=").append(getOnFailure()).append(" maxMsg=").append(getMaxMsg());
       if (getCurrentCallbackAddress() != null)
          buf.append(" ").append(getCurrentCallbackAddress().getSettings());
       return buf.toString();
@@ -55,20 +55,30 @@ public class CbQueueProperty extends QueuePropertyBase
       // Set the queue properties
       setMaxMsg(glob.getProperty().get("cb.queue.maxMsg", DEFAULT_maxMsgDefault));
       setMaxSize(glob.getProperty().get("cb.queue.maxSize", DEFAULT_sizeDefault));
+      setMaxMsgCache(glob.getProperty().get("cb.queue.maxMsgCache", DEFAULT_maxMsgCacheDefault));
+      setMaxSizeCache(glob.getProperty().get("cb.queue.maxSizeCache", DEFAULT_sizeCacheDefault));
+      setStoreSwapLevel(glob.getProperty().get("cb.queue.storeSwapLevel", (long)(DEFAULT_storeSwapLevelRatio*this.maxSizeCache)));
+      setStoreSwapSize(glob.getProperty().get("cb.queue.storeSwapSize", (long)(DEFAULT_storeSwapSizeRatio*this.maxSizeCache)));
+      setReloadSwapLevel(glob.getProperty().get("cb.queue.reloadSwapLevel", (long)(DEFAULT_reloadSwapLevelRatio*this.maxSizeCache)));
+      setReloadSwapSize(glob.getProperty().get("cb.queue.reloadSwapSize", (long)(DEFAULT_reloadSwapSizeRatio*this.maxSizeCache)));
       setExpires(glob.getProperty().get("cb.queue.expires", DEFAULT_maxExpires));
       setOnOverflow(glob.getProperty().get("cb.queue.onOverflow", DEFAULT_onOverflow));
       setOnFailure(glob.getProperty().get("cb.queue.onFailure", DEFAULT_onFailure));
+      setType(glob.getProperty().get("cb.queue.type", DEFAULT_type));
+      setVersion(glob.getProperty().get("cb.queue.version", DEFAULT_version));
       if (nodeId != null) {
          setMaxMsg(glob.getProperty().get("cb.queue.maxMsg["+nodeId+"]", getMaxMsg()));
          setMaxSize(glob.getProperty().get("cb.queue.maxSize["+nodeId+"]", getMaxSize()));
          setExpires(glob.getProperty().get("cb.queue.expires["+nodeId+"]", getExpires()));
          setOnOverflow(glob.getProperty().get("cb.queue.onOverflow["+nodeId+"]", getOnOverflow()));
          setOnFailure(glob.getProperty().get("cb.queue.onFailure["+nodeId+"]", getOnFailure()));
+         setType(glob.getProperty().get("cb.queue.type["+nodeId+"]", getType()));
+         setVersion(glob.getProperty().get("cb.queue.version["+nodeId+"]", getVersion()));
       }
    }
 
    /**
-    * @param relating    To what is this queue related: Constants.RELATING_SESSION | Constants.RELATING_SUBJECT | Constants.RELATING_UNRELATED
+    * @param relating    To what is this queue related: Constants.RELATING_SESSION | Constants.RELATING_SUBJECT
     */
    public final void setRelating(String relating) {
       if (relating == null) {
@@ -80,8 +90,6 @@ public class CbQueueProperty extends QueuePropertyBase
          this.relating = Constants.RELATING_SESSION;
       else if (Constants.RELATING_SUBJECT.equals(relating))
          this.relating = Constants.RELATING_SUBJECT;
-      else if (Constants.RELATING_UNRELATED.equals(relating))
-         this.relating = Constants.RELATING_UNRELATED;
       else {
          log.warn(ME, "The queue relating attribute is invalid '" + relating + "', setting to session scope");
          this.relating = Constants.RELATING_SESSION;
@@ -94,24 +102,13 @@ public class CbQueueProperty extends QueuePropertyBase
    public final boolean isSessionRelated() {
       return Constants.RELATING_SESSION.equals(getRelating());
    }
-   public final boolean isUnrelated() {
-      return Constants.RELATING_UNRELATED.equals(getRelating());
-   }
 
-   public final boolean onOverflowDeadLetter() {
-      if (Constants.ONOVERFLOW_DEADLETTER.equalsIgnoreCase(getOnOverflow()))
+   public final boolean onOverflowDeadMessage() {
+      if (Constants.ONOVERFLOW_DEADMESSAGE.equalsIgnoreCase(getOnOverflow()))
          return true;
       return false;
    }
 
-   /**
-    * The default mode is to send a dead letter if callback fails permanently
-    */
-   public final boolean onFailureDeadLetter() {
-      if (Constants.ONOVERFLOW_DEADLETTER.equalsIgnoreCase(getOnFailure()))
-         return true;
-      return false;
-   }
 
    /**
     * Currently only one address is allowed, failover addresses will be implemented in a future version
@@ -128,7 +125,7 @@ public class CbQueueProperty extends QueuePropertyBase
    }
 
    /**
-    * @return null if none available
+    * @return array with size 0 if none available
     */
    public CallbackAddress[] getCallbackAddresses()
    {
@@ -155,12 +152,16 @@ public class CbQueueProperty extends QueuePropertyBase
    public final String usage() {
       String text = "";
       text += "Control the callback queue properties:\n";
-      text += "   -cb.queue.maxMsg   The maximum allowed number of messages in this queue [" + DEFAULT_maxMsgDefault + "].\n";
-    //text += "   -cb.queue.maxSize  The maximum size in kBytes of this queue [" + DEFAULT_sizeDefault + "].\n";
+      text += "   -cb.queue.maxMsg       The maximum allowed number of messages in this queue [" + DEFAULT_maxMsgDefault + "].\n";
+      text += "   -cb.queue.maxMsgCache  The maximum allowed number of messages in the cache of this queue [" + DEFAULT_maxMsgDefault + "].\n";
+      text += "   -cb.queue.maxSize      The maximum size in kBytes of this queue [" + DEFAULT_sizeDefault + "].\n";
+      text += "   -cb.queue.maxSizeCache The maximum size in kBytes in the cache of this queue [" + DEFAULT_sizeDefault + "].\n";
     //text += "   -cb.queue.expires  If not otherwise noted a queue dies after these milliseconds [" + DEFAULT_expiresDefault + "].\n";
-    //text += "   -cb.queue.onOverflow What happens if queue is full. " + Constants.ONOVERFLOW_BLOCK + " | " + Constants.ONOVERFLOW_DEADLETTER + " [" + DEFAULT_onOverflow + "]\n";
+    //text += "   -cb.queue.onOverflow What happens if queue is full. " + Constants.ONOVERFLOW_BLOCK + " | " + Constants.ONOVERFLOW_DEADMESSAGE + " [" + DEFAULT_onOverflow + "]\n";
       text += "   -cb.queue.onOverflow What happens if queue is full [" + DEFAULT_onOverflow + "]\n";
       text += "   -cb.queue.onFailure  Error handling when callback failed [" + DEFAULT_onFailure + "]\n";
+      text += "   -cb.queue.type       The plugin type [" + DEFAULT_type + "]\n";
+      text += "   -cb.queue.version    The plugin version [" + DEFAULT_version + "]\n";
       return text;
    }
 

@@ -3,7 +3,7 @@ Name:      ClientGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientQuery.java,v 1.21 2002/07/24 12:12:33 ruff Exp $
+Version:   $Id: ClientQuery.java,v 1.22 2002/11/26 12:36:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -13,7 +13,7 @@ import org.jutils.init.Args;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.client.UpdateKey;
+import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
 
@@ -64,12 +64,12 @@ public class ClientQuery
             msgArr = con.get(xmlKey, "<qos></qos>");
             log.info(ME, "Got " + msgArr.length + " messages for query '" + queryString + "':");
             for (int ii=0; ii<msgArr.length; ii++) {
-               UpdateKey updateKey = new UpdateKey(glob, msgArr[ii].xmlKey);
+               UpdateKey updateKey = new UpdateKey(glob, msgArr[ii].getKey());
                log.info("UpdateKey", "\n" + updateKey.toXml());
-               log.info("content", "\n" + new String(msgArr[ii].content) + "\n");
+               log.info("content", "\n" + new String(msgArr[ii].getContent()) + "\n");
             }
          } catch(XmlBlasterException e) {
-            log.error(ME, "XmlBlasterException: " + e.reason);
+            log.error(ME, "XmlBlasterException: " + e.getMessage());
          }
 
          con.disconnect(null);

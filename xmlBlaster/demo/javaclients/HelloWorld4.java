@@ -5,7 +5,19 @@ import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.ConnectReturnQos;
 import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.client.*;
+import org.xmlBlaster.client.I_ConnectionProblems;
+import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.client.key.SubscribeKey;
+import org.xmlBlaster.client.key.PublishKey;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.key.EraseKey;
+import org.xmlBlaster.client.qos.PublishQos;
+import org.xmlBlaster.client.qos.PublishReturnQos;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.qos.SubscribeQos;
+import org.xmlBlaster.client.qos.SubscribeReturnQos;
+import org.xmlBlaster.client.qos.EraseQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
@@ -47,7 +59,7 @@ public class HelloWorld4
                      con.flushQueue();    // send all tailback messages
                      // con.resetQueue(); // or discard them (it is our choice)
                   } catch (XmlBlasterException e) {
-                     log.error(ME, "Exception during reconnection recovery: " + e.reason);
+                     log.error(ME, "Exception during reconnection recovery: " + e.getMessage());
                   }
                }
 
@@ -91,14 +103,14 @@ public class HelloWorld4
             log.info(ME, "Not connected to xmlBlaster, proceeding in fail save mode ...");
 
 
-         SubscribeKeyWrapper sk = new SubscribeKeyWrapper("Banking");
-         SubscribeQosWrapper sq = new SubscribeQosWrapper();
-         SubscribeRetQos sr1 = con.subscribe(sk.toXml(), sq.toXml());
+         SubscribeKey sk = new SubscribeKey(glob, "Banking");
+         SubscribeQos sq = new SubscribeQos(glob);
+         SubscribeReturnQos sr1 = con.subscribe(sk.toXml(), sq.toXml());
 
 
-         sk = new SubscribeKeyWrapper("HelloWorld4");
-         sq = new SubscribeQosWrapper();
-         SubscribeRetQos sr2 = con.subscribe(sk.toXml(), sq.toXml(), new I_Callback() {
+         sk = new SubscribeKey(glob, "HelloWorld4");
+         sq = new SubscribeQos(glob);
+         SubscribeReturnQos sr2 = con.subscribe(sk.toXml(), sq.toXml(), new I_Callback() {
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                if (updateKey.getOid().equals("HelloWorld4"))
                   log.info(ME, "Receiving asynchronous message '" + updateKey.getOid() +
@@ -111,16 +123,16 @@ public class HelloWorld4
          });  // subscribe with our specific update handler
 
 
-         PublishKeyWrapper pk = new PublishKeyWrapper("HelloWorld4", "text/plain", "1.0");
-         PublishQosWrapper pq = new PublishQosWrapper();
+         PublishKey pk = new PublishKey(glob, "HelloWorld4", "text/plain", "1.0");
+         PublishQos pq = new PublishQos(glob);
          MessageUnit msgUnit = new MessageUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
-         PublishRetQos retQos = con.publish(msgUnit);
+         PublishReturnQos retQos = con.publish(msgUnit);
          log.info(ME, "Published message '" + pk.getOid() + "'");
 
 
-         pk = new PublishKeyWrapper("Banking", "text/plain", "1.0");
-         pk.wrap("<Account><withdraw/></Account>"); // Add banking specific meta data
-         pq = new PublishQosWrapper();
+         pk = new PublishKey(glob, "Banking", "text/plain", "1.0");
+         pk.setClientTags("<Account><withdraw/></Account>"); // Add banking specific meta data
+         pq = new PublishQos(glob);
          msgUnit = new MessageUnit(pk.toXml(), "Ho".getBytes(), pq.toXml());
          retQos = con.publish(msgUnit);
          log.info(ME, "Published message '" + pk.getOid() + "'");
@@ -136,12 +148,12 @@ public class HelloWorld4
          
          if (con != null) {
             try {
-               EraseQosWrapper eq = new EraseQosWrapper();
+               EraseQos eq = new EraseQos(glob);
 
-               EraseKeyWrapper ek = new EraseKeyWrapper("HelloWorld4");
-               EraseRetQos[] er = con.erase(ek.toXml(), eq.toXml());
+               EraseKey ek = new EraseKey(glob, "HelloWorld4");
+               EraseReturnQos[] er = con.erase(ek.toXml(), eq.toXml());
                
-               ek = new EraseKeyWrapper("Banking");
+               ek = new EraseKey(glob, "Banking");
                er = con.erase(ek.toXml(), eq.toXml());
 
                // Wait on message erase events

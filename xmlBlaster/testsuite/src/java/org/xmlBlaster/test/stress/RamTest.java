@@ -3,7 +3,7 @@ Name:      RamTest.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: RamTest.java,v 1.4 2002/09/14 23:06:05 ruff Exp $
+Version:   $Id: RamTest.java,v 1.5 2002/11/26 12:40:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.stress;
 
@@ -14,8 +14,8 @@ import org.jutils.runtime.Memory;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.client.PublishRetQos;
-import org.xmlBlaster.client.EraseRetQos;
+import org.xmlBlaster.client.qos.PublishReturnQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.protocol.corba.serverIdl.*;
 import org.xmlBlaster.protocol.corba.clientIdl.*;
@@ -113,10 +113,10 @@ public class RamTest extends TestCase
                          "</key>";
          String qos = "<qos></qos>";
          try {
-            EraseRetQos[] arr = senderConnection.erase(xmlKey, qos);
+            EraseReturnQos[] arr = senderConnection.erase(xmlKey, qos);
             assertTrue("returned erased oid array == null", null != arr);
             assertEquals("num erased messages is wrong", 1, arr.length);
-         } catch(XmlBlasterException e) { log.error(ME, "XmlBlasterException: " + e.reason); }
+         } catch(XmlBlasterException e) { log.error(ME, "XmlBlasterException: " + e.getMessage()); }
       }
 
       long avg = 0;
@@ -162,16 +162,16 @@ public class RamTest extends TestCase
          assertTrue("returned msgArr == null", null != msgArr);
          assertEquals("msgArr.length!=1", 1, msgArr.length);
          assertTrue("returned msgArr[0].msgUnit == null", null != msgArr[0]);
-         assertTrue("returned msgArr[0].msgUnit.content == null", null != msgArr[0].content);
-         assertTrue("returned msgArr[0].msgUnit.content.length == 0", 0 != msgArr[0].content.length);
-         String mem = new String(msgArr[0].content);
+         assertTrue("returned msgArr[0].msgUnit.content == null", null != msgArr[0].getContent());
+         assertTrue("returned msgArr[0].msgUnit.content.length == 0", 0 != msgArr[0].getContent().length);
+         String mem = new String(msgArr[0].getContent());
          usedMemBefore = new Long(mem).longValue();
          log.info(ME, "xmlBlaster used allocated memory before publishing = " + Memory.byteString(usedMemBefore));
 
 
          stopWatch = new StopWatch();
          // 2. publish all the messages
-         PublishRetQos[] publishOidArr = senderConnection.publishArr(msgUnitArr);
+         PublishReturnQos[] publishOidArr = senderConnection.publishArr(msgUnitArr);
 
          long avg = 0;
          double elapsed = stopWatch.elapsed();
@@ -185,13 +185,13 @@ public class RamTest extends TestCase
 
          // 3. Query the memory allocated in xmlBlaster after publishing all the messages
          msgArr = senderConnection.get(xmlKey, qos);
-         long usedMemAfter = new Long(new String(msgArr[0].content)).longValue();
+         long usedMemAfter = new Long(new String(msgArr[0].getContent())).longValue();
          log.info(ME, "xmlBlaster used allocated memory after publishing = " + Memory.byteString(usedMemAfter));
          log.info(ME, "Consumed memory for each message = " + Memory.byteString((usedMemAfter-usedMemBefore)/numPublish));
 
       } catch(XmlBlasterException e) {
-         log.warn(ME, "XmlBlasterException: " + e.reason);
-         assertTrue("publish - XmlBlasterException: " + e.reason, false);
+         log.warn(ME, "XmlBlasterException: " + e.getMessage());
+         assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       } catch(Exception e) {
          log.warn(ME, "Exception: " + e.toString());
          e.printStackTrace();

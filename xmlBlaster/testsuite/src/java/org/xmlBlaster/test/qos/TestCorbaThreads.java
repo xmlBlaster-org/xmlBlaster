@@ -3,7 +3,7 @@ Name:      TestCorbaThreads.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestCorbaThreads.java,v 1.1 2002/09/12 21:01:43 ruff Exp $
+Version:   $Id: TestCorbaThreads.java,v 1.2 2002/11/26 12:40:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -17,8 +17,8 @@ import org.xmlBlaster.client.protocol.corba.CorbaCallbackServer;
 import org.xmlBlaster.client.protocol.I_CallbackServer;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.protocol.corba.serverIdl.*;
 import org.xmlBlaster.protocol.corba.clientIdl.*;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
@@ -101,7 +101,8 @@ public class TestCorbaThreads extends TestCase implements I_CallbackExtended
    protected void tearDown() {
       EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
       // reset to default server port (necessary if other tests follow in the same JVM).
-      Util.resetPorts();
+      Util.resetPorts(glob);
+      log.info(ME, "Ports reset to default: " + glob.getProperty().toXml());
    }
 
    /**
@@ -198,5 +199,6 @@ public class TestCorbaThreads extends TestCase implements I_CallbackExtended
 
       TestCorbaThreads testSub = new TestCorbaThreads(glob, "TestCorbaThreads");
       testSub.testThread();
+      testSub.tearDown();
    }
 }

@@ -28,9 +28,9 @@ public:
   BlasterCallback_impl()  {}
   ~BlasterCallback_impl() {}
 
-  serverIdl::StringArr* update(const char* /*sessionId*/, const serverIdl::MessageUnitArr& messageUnitArr) {
+  serverIdl::XmlTypeArr* update(const char* /*sessionId*/, const serverIdl::MessageUnitArr& messageUnitArr) {
     int nmax = messageUnitArr.length();
-    serverIdl::StringArr *res = new serverIdl::StringArr(nmax);
+    serverIdl::XmlTypeArr *res = new serverIdl::XmlTypeArr(nmax);
     res->length(nmax);
     cout << endl;
     cout << "Callback invoked: there are " << nmax << " messages" << endl;
@@ -188,7 +188,7 @@ int main(int argc, char* argv[]) {
     try {
       xmlBlaster->subscribe(xmlKey.c_str(), qualityOfService.c_str());
     } catch(XmlBlasterException e) {
-      cerr << "XmlBlasterException: " << e.reason << endl;
+      cerr << "XmlBlasterException: " << e.errorCodeStr << ": " << e.message << endl;
     }
 
     cout << "Subscribed to '" << publishOid << "' ..." << endl;
@@ -198,7 +198,7 @@ int main(int argc, char* argv[]) {
     orb->run ();
 
   } catch(serverIdl::XmlBlasterException e) {
-    cerr << "Caught Server Exception: " << e.reason << endl;
+    cerr << "Caught Server Exception: " << e.errorCodeStr << ": " << e.message << endl;
   } catch(const CORBA::Exception &ex) {
     cerr << "CORBA: " << ex << endl;
   } catch (...) {

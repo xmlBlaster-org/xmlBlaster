@@ -24,7 +24,7 @@ COMMENT:
                top.xmlBlasterWindow.setReady( self, false );
                var keyOid = messageQueue[i].key.oid;
                var frameName = keyOid + "Frame";  // Frame name is for example "cpuinfoFrame"
-               var content = messageQueue[i].content;
+               var content = messageQueue[i].getContent();
                updateFrame(frameName, content);
             }
             top.xmlBlasterWindow.setReady( self, true );

@@ -13,13 +13,12 @@ import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.client.PublishQosWrapper;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
-import org.xmlBlaster.client.SubscribeRetQos;
-import org.xmlBlaster.client.GetKeyWrapper;
-import org.xmlBlaster.client.GetQosWrapper;
-import org.xmlBlaster.client.EraseRetQos;
+import org.xmlBlaster.client.qos.PublishQos;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.qos.SubscribeReturnQos;
+import org.xmlBlaster.client.key.GetKey;
+import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.test.Util;
@@ -100,11 +99,11 @@ public class BigMessage extends TestCase implements I_Callback
    protected void tearDown() {
       try {
          log.info(ME, "Erasing message " + oid + " ...");
-         EraseRetQos[] arr = con.erase("<key oid='" + oid + "'/>", "<qos/>");
+         EraseReturnQos[] arr = con.erase("<key oid='" + oid + "'/>", "<qos/>");
          log.info(ME, "Erasing of message " + oid + " done.");
          assertEquals("Wrong number of message erased", 1, arr.length);
          assertTrue(assertInUpdate, assertInUpdate == null);
-      } catch(XmlBlasterException e) { log.error(ME, "XmlBlasterException: " + e.reason); }
+      } catch(XmlBlasterException e) { log.error(ME, "XmlBlasterException: " + e.getMessage()); }
 
       con.disconnect(null);
 
@@ -130,7 +129,7 @@ public class BigMessage extends TestCase implements I_Callback
       }
       log.info(ME, "Allocated message content with size=" + content.length/1000000 + " MB");
       try {
-         PublishQosWrapper qosWrapper = new PublishQosWrapper(); // == "<qos></qos>"
+         PublishQos qosWrapper = new PublishQos(glob); // == "<qos></qos>"
          MessageUnit msgUnit = new MessageUnit("<key oid='" + oid + "'/>", content, "<qos/>");
          stopWatch = new StopWatch();
          
@@ -143,21 +142,21 @@ public class BigMessage extends TestCase implements I_Callback
 
          log.info(ME, "Success: Publishing of " + oid + " with size=" + contentSize/1000000 + " MB done, avg=" + avg + " KB/sec " + stopWatch.nice());
       } catch(XmlBlasterException e) {
-         log.error(ME, "XmlBlasterException: " + e.reason);
-         fail("Can't publish huge message: " + e.reason); 
+         log.error(ME, "XmlBlasterException: " + e.getMessage());
+         fail("Can't publish huge message: " + e.getMessage()); 
       }
 
       messageArrived = false;
 
       try {
-         SubscribeRetQos subscriptionId = con.subscribe("<key oid='" + oid + "'/>", "<qos/>");
+         SubscribeReturnQos subscriptionId = con.subscribe("<key oid='" + oid + "'/>", "<qos/>");
          log.info(ME, "Success: Subscribe on subscriptionId=" + subscriptionId.getSubscriptionId() + " done");
       } catch(XmlBlasterException e) {
-         log.error(ME, "XmlBlasterException: " + e.reason);
-         fail("subscribe - XmlBlasterException: " + e.reason);
+         log.error(ME, "XmlBlasterException: " + e.getMessage());
+         fail("subscribe - XmlBlasterException: " + e.getMessage());
       }
 
-      waitOnUpdate(8000L);
+      waitOnUpdate(12000L);
       assertTrue(assertInUpdate, assertInUpdate == null);
       assertEquals("Message not arrived", true, messageArrived);
 
@@ -180,14 +179,14 @@ public class BigMessage extends TestCase implements I_Callback
          return ""; // We ignore the erase event on tearDown
       }
 
-      log.info(ME, "Receiving update of message oid=" + updateKey.getUniqueKey() + 
+      log.info(ME, "Receiving update of message oid=" + updateKey.getOid() + 
                    " size=" + content.length + " ...");
 
-      assertInUpdate = "Wrong sender, expected:" + name + " but was:" + updateQos.getSender();
-      assertEquals("Wrong sender", name, updateQos.getSender());
+      assertInUpdate = "Wrong sender, expected:" + name + " but was:" + updateQos.getSender().getLoginName();
+      assertEquals("Wrong sender", name, updateQos.getSender().getLoginName());
 
-      assertInUpdate = "Wrong oid of message returned expected:" + oid + " but was:" + updateKey.getUniqueKey();
-      assertEquals("Message oid is wrong", oid, updateKey.getUniqueKey());
+      assertInUpdate = "Wrong oid of message returned expected:" + oid + " but was:" + updateKey.getOid();
+      assertEquals("Message oid is wrong", oid, updateKey.getOid());
 
       assertInUpdate = "Wrong message size arrived in update, expected:" + contentSize + " but was:" + content.length;
       assertEquals("Wrong message size arrived", contentSize, content.length);

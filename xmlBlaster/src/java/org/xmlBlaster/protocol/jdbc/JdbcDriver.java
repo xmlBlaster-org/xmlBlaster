@@ -3,7 +3,7 @@ Name:      JdbcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   JdbcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: JdbcDriver.java,v 1.35 2002/09/11 10:43:17 ruff Exp $
+Version:   $Id: JdbcDriver.java,v 1.36 2002/11/26 12:39:10 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
@@ -105,7 +105,7 @@ public class JdbcDriver implements I_Driver, I_Publish
    public void init(Global glob, I_Authenticate authenticate, I_XmlBlaster xmlBlasterImpl) throws XmlBlasterException
    {
       this.glob = glob;
-      this.ME = "JdbcDriver" + this.glob.getLogPraefixDashed();
+      this.ME = "JdbcDriver" + this.glob.getLogPrefixDashed();
       this.log = glob.getLog("jdbc");
       this.glob.addObjectEntry("JdbcDriver-"+glob.getId(), this);
       this.authenticate = authenticate;
@@ -190,7 +190,7 @@ public class JdbcDriver implements I_Driver, I_Publish
       text += "JdbcDriver options:\n";
       text += "   -JdbcDriver.password  The internal xmlBlaster-password for the JDBC driver.\n";
       text += "   -JdbcDriver.drivers   List of all jdbc drivers to initalize, e.g.\n";
-      text += "                         oracle.jdbc.driver.OracleDriver,org.gjt.mm.mysql.Driver,postgresql.Driver.\n";
+      text += "                         oracle.jdbc.driver.OracleDriver:org.gjt.mm.mysql.Driver,postgresql.Driver.\n";
       text += "\n";
       return text;
    }
@@ -223,7 +223,7 @@ public class JdbcDriver implements I_Driver, I_Publish
     */
    private void initDrivers() {
       String            drivers = glob.getProperty().get("JdbcDriver.drivers", "sun.jdbc.odbc.JdbcOdbcDriver");
-      StringTokenizer   st = new StringTokenizer(drivers, ",");
+      StringTokenizer   st = new StringTokenizer(drivers, ":");
       int               numDrivers = st.countTokens();
       String            driver = "";
 
@@ -241,7 +241,7 @@ public class JdbcDriver implements I_Driver, I_Publish
          }
       }
       if (numDrivers == 0) {
-         log.warn(ME, "No JDBC driver in xmlBlaster.properties given, set 'JdbcDriver.drivers' to point to your DB drivers if wanted, e.g. JdbcDriver.drivers=oracle.jdbc.driver.OracleDriver,org.gjt.mm.mysql.Driver,postgresql.Driver");
+         log.warn(ME, "No JDBC driver in xmlBlaster.properties given, set 'JdbcDriver.drivers' to point to your DB drivers if wanted, e.g. JdbcDriver.drivers=oracle.jdbc.driver.OracleDriveri:org.gjt.mm.mysql.Driver:postgresql.Driver");
       }
    }
 }

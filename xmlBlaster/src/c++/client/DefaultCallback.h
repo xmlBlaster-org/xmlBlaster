@@ -96,19 +96,31 @@ namespace org { namespace xmlBlaster {
        * @param qos              Quality of Service of the MessageUnit
        */
       serverIdl::XmlTypeArr* update(const char* sessionId,
-                                    const serverIdl::MessageUnitArr& msgUnitArr);
+                                    const serverIdl::MessageUnitArr& msgUnitArr)
+#ifdef ORBIX
+            IT_THROW_DECL ((CORBA::SystemException))
+#endif
+      ;
 
       /**
        * This is the oneway variant, not returning a value (no application level ACK). 
        * @see update()
        */
-      void updateOneway(const char* sessionId, const serverIdl::MessageUnitArr& msgUnitArr);
+      void updateOneway(const char* sessionId, const serverIdl::MessageUnitArr& msgUnitArr)
+#ifdef ORBIX
+            IT_THROW_DECL ((CORBA::SystemException))
+#endif
+      ;
 
       /**
        * Check the callback server.
        * @see xmlBlaster.idl
        */
-      char *ping(const char *qos);
+      char *ping(const char *qos)
+#ifdef ORBIX
+            IT_THROW_DECL ((CORBA::SystemException))
+#endif
+      ;
 
    }; // class DefaultCallback
 }} // namespace

@@ -27,9 +27,7 @@ import javax.xml.transform.TransformerFactoryConfigurationError;
  *
  * <p>Use this factory when you need to localy override the System default settings for the JAXP parser and transformer factories.</p>
  *
- *
  * @author Peter Antman
- * @version $Revision: 1.3 $ $Date: 2002/11/25 23:01:29 $
  */
 
 public class JAXPFactory {
@@ -104,12 +102,12 @@ public class JAXPFactory {
       try {
          ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
          if (classLoader == null) {
-            Log.warn(ME, "newInstance: 'Thread.currentThread().getContextClassLoader()' returns null!");
+            Global.instance().getLog("core").warn(ME, "newInstance: 'Thread.currentThread().getContextClassLoader()' returns null!");
             return Class.forName(className).newInstance();
          }
          Class fac =classLoader.loadClass(className);
          if (fac == null) {
-            Log.warn(ME, "newInstance: 'classLoader.loadClass(" + className + ")' returns null!");
+            Global.instance().getLog("core").warn(ME, "newInstance: 'classLoader.loadClass(" + className + ")' returns null!");
          }
 
          return fac.newInstance();

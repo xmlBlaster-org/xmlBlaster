@@ -3,7 +3,7 @@ Name:      UriAuthority.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Parse authentication URI
-Version:   $Id: UriAuthority.java,v 1.3 2002/06/18 18:07:42 ruff Exp $
+Version:   $Id: UriAuthority.java,v 1.4 2002/11/26 12:39:32 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -37,6 +37,7 @@ import java.net.URLDecoder;
  */
 public class UriAuthority
 {
+   private final org.jutils.log.LogChannel log;
    private final String ME="UriAuthority";
    private final String uri; // Server-based authority: [<user:password>@]<host>[:<port>]
    /** The user encoded with URLEncoder */
@@ -47,12 +48,15 @@ public class UriAuthority
    private String host;      // null ==> registry-based
    /** The server port, -1 is undefined */
    private int port = -1;
+   /** UTF-8 which is recommended */
+   public final static String ENCODING = "UTF-8";
 
    /**
     * @param uri The complete authority part of an URI. It can be URLEncoded
     */
    public UriAuthority(String uri) {
       this.uri = uri.trim();
+      this.log = org.xmlBlaster.util.Global.instance().getLog("core");
       initialize();
    }
 
@@ -64,9 +68,10 @@ public class UriAuthority
     * @param host The host part
     * @param port The port number
     */
-   public UriAuthority(String user, String password, String host, int port) {
-      if (user != null) this.user = URLEncoder.encode(user.trim());
-      if (password != null) this.password = URLEncoder.encode(password.trim());
+   public UriAuthority(String user, String password, String host, int port) throws java.io.UnsupportedEncodingException {
+      this.log = org.xmlBlaster.util.Global.instance().getLog("core");
+      if (user != null) this.user = Global.encode(user.trim(), ENCODING);
+      if (password != null) this.password = Global.encode(password.trim(), ENCODING);
       this.host = host.trim();
       this.port = port;
       uri = toString();
@@ -115,9 +120,9 @@ public class UriAuthority
    /** @return Not encoded. Null if not known */
    public String getUser() {
       try {
-         return URLDecoder.decode(user);
+         return org.xmlBlaster.util.Global.decode(user, ENCODING);
       } catch(Throwable e) {
-         Log.error(ME, "URLDecoder problem: " + e.toString());
+         log.error(ME, "URLDecoder problem: " + e.toString());
          return user;
       }
    }
@@ -125,9 +130,9 @@ public class UriAuthority
    /** @return Not encoded. Null if not known */
    public String getPassword() {
       try {
-         return URLDecoder.decode(password);
+         return org.xmlBlaster.util.Global.decode(password, ENCODING);
       } catch(Throwable e) {
-         Log.error(ME, "URLDecoder problem: " + e.toString());
+         log.error(ME, "URLDecoder problem: " + e.toString());
          return user;
       }
    }
@@ -158,10 +163,10 @@ public class UriAuthority
    public String toString() {
       StringBuffer buf = new StringBuffer(128);
       try {
-         if (user!=null) buf.append(URLDecoder.decode(user));
-         if (password!=null) buf.append(":").append(URLDecoder.decode(password));
+         if (user!=null) buf.append(org.xmlBlaster.util.Global.decode(user, ENCODING));
+         if (password!=null) buf.append(":").append(org.xmlBlaster.util.Global.decode(password, ENCODING));
       } catch(Throwable e) {
-         Log.error(ME, "URLDecoder problem: " + e.toString());
+         log.error(ME, "URLDecoder problem: " + e.toString());
          return user;
       }
       if (host!=null) buf.append("@").append(host);
@@ -221,7 +226,14 @@ public class UriAuthority
    }
    static boolean test(String user, String password)
    {
-      UriAuthority uri= new UriAuthority(user, password, "localhost", 3412);
+      UriAuthority uri;
+      try {
+         uri= new UriAuthority(user, password, "localhost", 3412);
+      }
+      catch (Exception e) {
+         System.err.println("ERROR: "+e.toString());
+         return false;
+      }
       String result = user + "@localhost:3412";
       if (password != null)
          result = user + ":" + password + "@localhost:3412";

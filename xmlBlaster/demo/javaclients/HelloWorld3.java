@@ -1,7 +1,27 @@
 // xmlBlaster/demo/javaclients/HelloWorld3.java
 import org.jutils.log.LogChannel;
-import org.xmlBlaster.util.*;
-import org.xmlBlaster.client.*;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.ConnectQos;
+import org.xmlBlaster.util.ConnectReturnQos;
+import org.xmlBlaster.util.DisconnectQos;
+import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.key.PublishKey;
+import org.xmlBlaster.client.key.GetKey;
+import org.xmlBlaster.client.key.SubscribeKey;
+import org.xmlBlaster.client.key.UnSubscribeKey;
+import org.xmlBlaster.client.key.EraseKey;
+import org.xmlBlaster.client.qos.GetQos;
+import org.xmlBlaster.client.qos.GetReturnQos;
+import org.xmlBlaster.client.qos.PublishQos;
+import org.xmlBlaster.client.qos.PublishReturnQos;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.qos.UpdateReturnQos;
+import org.xmlBlaster.client.qos.SubscribeQos;
+import org.xmlBlaster.client.qos.SubscribeReturnQos;
+import org.xmlBlaster.client.qos.EraseQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
+import org.xmlBlaster.client.qos.UnSubscribeQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
@@ -11,7 +31,7 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  * <p />
  * We use java client helper classes to generate the raw xml strings, e.g.:
  * <pre>
- *   PublishKeyWrapper pk = new PublishKeyWrapper("HelloWorld3", "text/xml");
+ *   PublishKey pk = new PublishKey(glob, "HelloWorld3", "text/xml");
  * 
  * generates:
  *
@@ -25,10 +45,12 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  */
 public class HelloWorld3 implements I_Callback
 {
+   private final Global glob;
    private final LogChannel log;
 
    public HelloWorld3(Global glob) {
-      log = glob.getLog(null);
+      this.glob = glob;
+      this.log = glob.getLog(null);
       try {
          XmlBlasterConnection con = new XmlBlasterConnection(glob);
 
@@ -40,39 +62,43 @@ public class HelloWorld3 implements I_Callback
          con.connect(qos, this);  // Login to xmlBlaster, register for updates
 
 
-         PublishKeyWrapper pk = new PublishKeyWrapper("HelloWorld3", "text/xml");
-         pk.wrap("<org.xmlBlaster><demo/></org.xmlBlaster>");
-         PublishQosWrapper pq = new PublishQosWrapper();
+         PublishKey pk = new PublishKey(glob, "HelloWorld3", "text/xml", "1.0");
+         pk.setClientTags("<org.xmlBlaster><demo/></org.xmlBlaster>");
+         PublishQos pq = new PublishQos(glob);
          MessageUnit msgUnit = new MessageUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
          con.publish(msgUnit);
 
 
-         GetKeyWrapper gk = new GetKeyWrapper("HelloWorld3");
-         MessageUnit[] msgs = con.get(gk.toXml(), null);
+         GetKey gk = new GetKey(glob, "HelloWorld3");
+         GetQos gq = new GetQos(glob);
+         MessageUnit[] msgs = con.get(gk.toXml(), gq.toXml());
+         GetReturnQos grq = new GetReturnQos(glob, msgs[0].getQos());
 
-         log.info("", "Accessed xmlBlaster message with content '" + new String(msgs[0].getContent()) + "'");
+         log.info("", "Accessed xmlBlaster message with content '" + new String(msgs[0].getContent()) +
+                      "' and status=" + grq.getState());
 
 
-         SubscribeKeyWrapper sk = new SubscribeKeyWrapper("HelloWorld3");
-         SubscribeQosWrapper sq = new SubscribeQosWrapper();
-         SubscribeRetQos subRet = con.subscribe(sk.toXml(), sq.toXml());
+         SubscribeKey sk = new SubscribeKey(glob, "HelloWorld3");
+         SubscribeQos sq = new SubscribeQos(glob);
+         SubscribeReturnQos subRet = con.subscribe(sk.toXml(), sq.toXml());
 
 
          msgUnit = new MessageUnit(pk.toXml(), "Ho".getBytes(), pq.toXml());
-         con.publish(msgUnit);
+         PublishReturnQos prq = con.publish(msgUnit);
 
+         log.info("", "Got status='" + prq.getState() + "' for published message '" + prq.getKeyOid());
 
          try { Thread.currentThread().sleep(1000); } 
          catch( InterruptedException i) {} // wait a second to receive update()
 
 
-         UnSubscribeKeyWrapper uk = new UnSubscribeKeyWrapper(subRet.getSubscriptionId());
-         UnSubscribeQosWrapper uq = new UnSubscribeQosWrapper();
+         UnSubscribeKey uk = new UnSubscribeKey(glob, subRet.getSubscriptionId());
+         UnSubscribeQos uq = new UnSubscribeQos(glob);
          con.unSubscribe(uk.toXml(), uq.toXml());
 
-         EraseKeyWrapper ek = new EraseKeyWrapper("HelloWorld3");
-         EraseQosWrapper eq = new EraseQosWrapper();
-         EraseRetQos[] eraseArr = con.erase(ek.toXml(), eq.toXml());
+         EraseKey ek = new EraseKey(glob, "HelloWorld3");
+         EraseQos eq = new EraseQos(glob);
+         EraseReturnQos[] eraseArr = con.erase(ek.toXml(), eq.toXml());
 
          DisconnectQos dq = new DisconnectQos();
          con.disconnect(dq);
@@ -94,7 +120,9 @@ public class HelloWorld3 implements I_Callback
       log.info("", "Received asynchronous message '" + updateKey.getOid() +
                    "' state=" + updateQos.getState() +
                    " content=" + new String(content) + " from xmlBlaster");
-      return "";
+
+      UpdateReturnQos uq = new UpdateReturnQos(glob);
+      return uq.toXml();
    }
 
    /**

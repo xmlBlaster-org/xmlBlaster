@@ -32,12 +32,12 @@
          <td>xmlKey</td><td>string</td><td>The XML encoded key containing the oid or XPATH query to select messages to subscribe</td>
          </tr>
          <tr>
-         <td>xmlQos</td><td>string</td><td>The XML encoded Quality of Service QoS (see SubscribeQosWrapper link below)</td>
+         <td>xmlQos</td><td>string</td><td>The XML encoded Quality of Service QoS (see SubscribeQos link below)</td>
          </tr>
          <tr>
          <td>return</td><td>string</td>
          <td>An XML encoded string containing status and the unique
-            subscription ID (see SubscribeRetQos link below).
+            subscription ID (see SubscribeReturnQos link below).
             You need to remember the subscriptionId for unsubscribing later.
          </td>
          </tr>
@@ -139,14 +139,17 @@
       A typical Java client code for an EXACT subscription:
       </p>
       <pre>
-   import org.xmlBlaster.client.*;
+   import org.xmlBlaster.client.key.SubscribeKey;
+   import org.xmlBlaster.client.qos.SubscribeQos;
+   import org.xmlBlaster.client.qos.SubscribeReturnQos;
+
    ...
 
-   SubscribeKeyWrapper sk = new SubscribeKeyWrapper("MyOid");
+   SubscribeKey sk = new SubscribeKey(glob, "MyOid");
 
-   SubscribeQosWrapper sq = new SubscribeQosWrapper();
+   SubscribeQos sq = new SubscribeQos(glob);
 
-   SubscribeRetQos sr = con.subscribe(sk.toXml(), sq.toXml());
+   SubscribeReturnQos sr = con.subscribe(sk.toXml(), sq.toXml());
 
    System.out.println("Success, subscriptionId=" + sr.getSubscriptionId());
 
@@ -161,15 +164,19 @@
       A typical Java client code for an XPATH subscription:
       </p>
       <pre>
-   import org.xmlBlaster.client.*;
+   import org.xmlBlaster.client.key.SubscribeKey;
+   import org.xmlBlaster.client.qos.SubscribeQos;
+   import org.xmlBlaster.client.qos.SubscribeReturnQos;
+   import org.xmlBlaster.engine.helper.Constants;
+
    ...
 
-   SubscribeKeyWrapper sk = new SubscribeKeyWrapper("/xmlBlaster/key[@oid='radar.track']",
+   SubscribeKey sk = new SubscribeKey(glob, "/xmlBlaster/key[@oid='radar.track']",
                             Constants.XPATH);
 
-   SubscribeQosWrapper sq = new SubscribeQosWrapper();
+   SubscribeQos sq = new SubscribeQos(glob);
 
-   SubscribeRetQos sr = con.subscribe(sk.toXml(), sq.toXml());
+   SubscribeReturnQos sr = con.subscribe(sk.toXml(), sq.toXml());
 
    System.out.println("Success, subscriptionId=" + sr.getSubscriptionId());
 
@@ -182,15 +189,18 @@
       which uses selection of master nodes with message domains:
       </p>
       <pre>
-   import org.xmlBlaster.client.*;
+   import org.xmlBlaster.client.key.SubscribeKey;
+   import org.xmlBlaster.client.qos.SubscribeQos;
+   import org.xmlBlaster.client.qos.SubscribeReturnQos;
+
    ...
 
-   SubscribeKeyWrapper sk = new SubscribeKeyWrapper("MyMessageOid");
+   SubscribeKey sk = new SubscribeKey(glob, "MyMessageOid");
 
    sk.setDomain("RUGBY_NEWS"); // Subscription is forwarded from slaves to master
    // without setting the domain the subscribe would just be handled by the slave connected to
 
-   SubscribeRetQos sr = con.subscribe(sk.toXml(), null);
+   SubscribeReturnQos sr = con.subscribe(sk.toXml(), null);
 
    System.out.println("Success, subscriptionId=" + sr.getSubscriptionId());
 
@@ -207,14 +217,14 @@
    <see type="REQ">client.subscribe.dispatch</see>
 
    <see type="API">org.xmlBlaster.engine.xml2java.XmlKey</see>
-   <see type="API">org.xmlBlaster.client.SubscribeQosWrapper</see>
-   <see type="API">org.xmlBlaster.client.SubscribeRetQos</see>
+   <see type="API">org.xmlBlaster.client.qos.SubscribeQos</see>
+   <see type="API">org.xmlBlaster.client.qos.SubscribeReturnQos</see>
    <see type="API">org.xmlBlaster.client.protocol.XmlBlasterConnection</see>
    <see type="API">org.xmlBlaster.protocol.xmlrpc.XmlBlasterImpl</see>
 
    <author>ruff@swand.lake.de</author>
    <date>2002 06 01</date>
-   <revision>$Revision: 1.8 $</revision>
+   <revision>$Revision: 1.9 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the subscribe method invocation</comment>
@@ -227,7 +237,7 @@
       <test tool="SUITE">org.xmlBlaster.test.qos.TestSubDispatch</test>
       <test tool="SUITE">org.xmlBlaster.test.qos.TestSubLostClient</test>
       <test tool="SUITE">org.xmlBlaster.test.qos.TestSubMulti</test>
-      <test tool="SUITE">org.xmlBlaster.test.classtest.SubscribeRetQosTest</test>
+      <test tool="SUITE">org.xmlBlaster.test.classtest.qos.StatusQosFactoryTest</test>
       <test tool="SUITE">org.xmlBlaster.test.cluster.SubscribeTest</test>
       <test tool="SUITE">org.xmlBlaster.test.cluster.SubscribeXPathTest</test>
    </testcase>

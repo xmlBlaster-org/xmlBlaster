@@ -1,7 +1,17 @@
 // xmlBlaster/demo/javaclients/HelloWorld5.java
 import org.jutils.log.LogChannel;
-import org.xmlBlaster.util.*;
-import org.xmlBlaster.client.*;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.ConnectQos;
+import org.xmlBlaster.util.ConnectReturnQos;
+import org.xmlBlaster.util.DisconnectQos;
+import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.client.key.PublishKey;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.PublishQos;
+import org.xmlBlaster.client.qos.PublishReturnQos;
+import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.Destination;
@@ -58,8 +68,8 @@ public class HelloWorld5
 
                   try {
                      // Send an ACK back ...
-                     PublishKeyWrapper pk = new PublishKeyWrapper("HelloWorld5:ACK", "text/plain");
-                     PublishQosWrapper pq = new PublishQosWrapper();
+                     PublishKey pk = new PublishKey(glob, "HelloWorld5:ACK", "text/plain", "1.0");
+                     PublishQos pq = new PublishQos(glob);
                      pq.addDestination(new Destination(updateQos.getSender()));
                      MessageUnit msgUnit = new MessageUnit(pk.toXml(), "ACK".getBytes(), pq.toXml());
                      boolean oneway = false; // just for demo, you can try a variant with never blocking oneway
@@ -70,7 +80,7 @@ public class HelloWorld5
                         log.info(receiverName, "Published message '" + pk.getOid() + "' to " + updateQos.getSender());
                      }
                      else {
-                        PublishRetQos retQos = receiver.publish(msgUnit);
+                        PublishReturnQos retQos = receiver.publish(msgUnit);
                         log.info(receiverName, "Published message '" + pk.getOid() + "' to " + updateQos.getSender());
                      }
                   }
@@ -86,12 +96,12 @@ public class HelloWorld5
          }
 
          // Send a message to 'receiver'
-         PublishKeyWrapper pk = new PublishKeyWrapper("HelloWorld5", "text/plain", "1.0");
-         PublishQosWrapper pq = new PublishQosWrapper();
-         pq.addDestination(new Destination(receiverName));
+         PublishKey pk = new PublishKey(glob, "HelloWorld5", "text/plain", "1.0");
+         PublishQos pq = new PublishQos(glob);
+         pq.addDestination(new Destination(new SessionName(glob, receiverName)));
          MessageUnit msgUnit = new MessageUnit(pk.toXml(), "Hi".getBytes(), pq.toXml());
-         PublishRetQos retQos = sender.publish(msgUnit);
-         log.info(senderName, "Published message '" + retQos.getOid() + "' to " + receiverName);
+         PublishReturnQos retQos = sender.publish(msgUnit);
+         log.info(senderName, "Published message '" + retQos.getKeyOid() + "' to " + receiverName);
 
       }
       catch (XmlBlasterException e) {

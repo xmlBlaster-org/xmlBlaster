@@ -8,6 +8,7 @@ package org.xmlBlaster.engine.admin.intern;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.plugin.I_Plugin;
+import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -46,7 +47,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
       this.glob = glob;
       this.log = this.glob.getLog("admin");
       this.commandManager = commandManager;
-      this.ME = "CoreHandler" + this.glob.getLogPraefixDashed();
+      this.ME = "CoreHandler" + this.glob.getLogPrefixDashed();
       this.commandManager.register("DEFAULT", this);
       this.commandManager.register("client", this);
       log.info(ME, "Core administration plugin is initialized");
@@ -111,7 +112,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
       if (loginName == null || loginName.length() < 1 || loginName.startsWith("?"))
          throw new XmlBlasterException(ME, "Please pass a command which has a valid client name in '" + cmd.getCommand() + "' with '" + loginName + "' is invalid");
 
-      SubjectInfo subjectInfo = glob.getAuthenticate().getSubjectInfoByName(loginName);
+      SubjectInfo subjectInfo = glob.getAuthenticate().getSubjectInfoByName(new SessionName(glob, loginName));
       if (subjectInfo == null)
          throw new XmlBlasterException(ME, "Please pass a command which has a valid client name in '" + cmd.getCommand() + "' client '" + loginName + "' is unknown");
 
@@ -170,7 +171,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
       if (loginName == null || loginName.length() < 1 || loginName.startsWith("?"))
          throw new XmlBlasterException(ME, "Please pass a command which has a valid client name in '" + cmd.getCommand() + "' with '" + loginName + "' is invalid");
 
-      SubjectInfo subjectInfo = glob.getAuthenticate().getSubjectInfoByName(loginName);
+      SubjectInfo subjectInfo = glob.getAuthenticate().getSubjectInfoByName(new SessionName(glob, loginName));
       if (subjectInfo == null)
          throw new XmlBlasterException(ME, "Please pass a command which has a valid client name in '" + cmd.getCommand() + "' client '" + loginName + "' is unknown");
 

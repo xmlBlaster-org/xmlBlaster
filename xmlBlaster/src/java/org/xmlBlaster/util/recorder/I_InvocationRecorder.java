@@ -3,7 +3,7 @@ Name:      I_InvocationRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface for storing tail back messages
-Version:   $Id: I_InvocationRecorder.java,v 1.4 2002/06/02 21:18:46 ruff Exp $
+Version:   $Id: I_InvocationRecorder.java,v 1.5 2002/11/26 12:40:08 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.recorder;
@@ -35,7 +35,7 @@ public interface I_InvocationRecorder extends I_XmlBlaster, I_CallbackRaw
                              I_CallbackRaw clientCallback) throws XmlBlasterException;
 
    /**
-    * @param ONOVERFLOW_BLOCK = "block", ONOVERFLOW_DEADLETTER = "deadLetter",
+    * @param ONOVERFLOW_DEADMESSAGE = "deadMessage",
     *        ONOVERFLOW_DISCARD = "discard", ONOVERFLOW_DISCARDOLDEST = "discardOldest",
     *        ONOVERFLOW_EXCEPTION = "exception"
     */

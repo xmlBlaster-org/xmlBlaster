@@ -3,98 +3,398 @@ Name:      I_Queue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface for the queues (persistent and cache)
-Version:   $Id: I_Queue.java,v 1.2 2002/09/30 10:02:30 ruff Exp $
-Author:    ruff@swand.lake.de, laghi@swissinfo.org
 ------------------------------------------------------------------------------*/
+
 package org.xmlBlaster.util.queue;
+
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 
+import java.util.ArrayList;
+
+
 /**
- * The Interface which all queues (persistent queues and cache queues) must
- * implement.
+ * The Interface which all queues (persistent queues and cache queues) must implement.
  *
- * ?? All questions are marked with ??
- * - Should we provide methods which delete all msg with a given oid ?
- * - Should we provide a switch which activates/deactivates the possibility
- *   to store the history of a message (since in some cases this might be
- *   undesidered).
+ * Note on shared store (or single point of persistence). In most cases the storage
+ * of the raw data for the queues is done centrally, for example in a database
+ * or on a file system or on the Ram. We call this space which is shared by all
+ * queues a 'shared store' or in case of persistent queues 'single point of
+ * persistence'. On this space each queue is represented by a 'persistent queue
+ * entity' (which in case of a DB could be a Table). In such a design it is
+ * theoretically possible to have two queues (two java objects on the same- or on
+ * different JVM) which point to the same persistent queue entity. It should be
+ * avoided to have that happen simultaneously since wether the persistent queue
+ * entity, nor the two objects have knowledge of each other. This could lead to
+ * unexpected and undesired results in case the queues store part of the
+ * information on cache.
+ * <p>
+ * As an example for sorting see org.xmlBlaster.util.queuemsg.MsgQueueEntry#compare(MsgQueueEntry)
+ * </p>
+ * @author laghi@swissinfo.org
+ * @author ruff@swand.lake.de
  */
 public interface I_Queue
 {
+
    /**
-    * Gets the references of the messages in the queue. Note that the data
+    * Is called after the instance is created.
+    * @param uniqueQueueId A unique name, allowing to create a unique name for a persistent store (e.g. file name)
+    *                "update:/node/heron/client/joe/2", "history:<oid>", "client:joe/2"
+    * @param userData For example a Properties object or a String[] args object passing the configuration data
+    */
+   public void initialize(String uniqueQueueId, Object userData)
+      throws XmlBlasterException;
+
+   /**
+    * Allows to overwrite properties which where passed on initialize()
+    * The properties which support hot configuration are depending on the used implementation
+    */
+   public void setProperties(Object userData) throws XmlBlasterException;
+
+   /**
+    * Access the current queue configuration
+    */
+   public Object getProperties();
+
+   /**
+    * Register a listener which wants to be informed on put() events.
+    * <p />
+    * Only one listener is currently supported.
+    * @exception IllegalArgumentException If a listener is registered already 
+    */
+   public void addPutListener(I_QueuePutListener l);
+
+   /**
+    * Remove the listener which wanted to be informed on put() events. 
+    * <p />
+    * The currently registered listener is removed.
+    * If no listener is registered, this call is silently ignored
+    * @param The given listener is currently ignored
+    */
+   public void removePutListener(I_QueuePutListener l);
+
+   /**
+    * Gets the references of the entries in the queue. Note that the data
     * which is referenced here may be changed by other threads.
     */
-	QueueEntryId[] getEntryReferences () throws XmlBlasterException;
+   long[] getEntryReferences() throws XmlBlasterException;
 
    /**
-    * Gets a copy of the entries (the messages) in the queue. If the queue
-    * is modified, this copy will not be affected. This method is useful for
-    * client browsing.
+    * Gets a copy of the entries (e.g. the messages) in the queue. If the queue
+    * is modified, this copy will not be affected. This method is useful for client browsing.
     */
-	MsgQueueEntry[] getEntries ()throws XmlBlasterException;
-
+   ArrayList getEntries() throws XmlBlasterException;
 
    /**
-    * Puts one message queue entry on top of the queue.
-    * @param msgQueueEntry the message queue entry to put into the queue.
+    * Puts one queue entry on top of the queue possibly waiting indefinitely until it is accepted.
+    * @param msgQueueEntry the queue entry to put into the queue.
+    * @param ignorePutInterceptor if set to 'true' the put will not inform the
+    *        QueuePutListener that a put occurred.
     * @throws XmlBlasterException in case an error occurs. Possible causes of
-    *         error can be a communication exception of the underlying
-    *         implementation (jdbc, file system etc).
+    * error can be a communication exception of the underlying implementation (jdbc, file system etc).
+    * @return Some ACK object or null if none is supplied
+    * @see I_QueuePutListener#put(I_QueueEntry)
+    * 
     */
-   void put (MsgQueueEntry msgQueueEntry) throws XmlBlasterException;
-
-	/**
-    * Takes a message out of the queue. The ordering is first priority and
-    * secondly timestamp.
-    * @return MsgQueueEntry the least element with respect to the given ordering
-    * @throws XmlBlasterException in case the underlying implementation gets
-    *         an exception while retrieving the element.
-    */
-   MsgQueueEntry take () throws XmlBlasterException;
+   Object put(I_QueueEntry queueEntry, boolean ignorePutInterceptor)
+      throws XmlBlasterException;
 
    /**
-    * Returns the first element in the queue but does not remove it from that
-    * queue (leaves it untouched).
-    * @return MsgQueueEntry the least element with respect to the given
-    *         ordering or null if the queue is empty.
+    * Puts given queue entries on top of the queue, possibly waiting indefinitely until it is accepted.
+    * @param msgQueueEntries the queue entry to put into the queue.
+    * @param ignorePutInterceptor if set to 'true' the put will not inform the
+    *        QueuePutListener that a put occurred.
+    * @throws XmlBlasterException in case an error occurs. Possible causes of
+    * error can be a communication exception of the underlying implementation (jdbc, file system etc).
+    * @return An ACK object for each queueEntry (ackObject.length == queueEntries.length) or null
+    * @see I_QueuePutListener#put(I_QueueEntry[])
+    */
+   Object[] put(I_QueueEntry[] queueEntries, boolean ignorePutInterceptor)
+      throws XmlBlasterException;
+
+   /**
+    * Returns the unique ID of this queue
+    */
+   String getQueueId();
+
+   /**
+    * Takes an entry out of the queue. The ordering is first priority and secondly timestamp.
+    * This method blocks until one entry is found
+    * @return I_QueueEntry the least element with respect to the given ordering
+    * @throws XmlBlasterException in case the underlying implementation gets an exception while retrieving the element.
+    */
+   I_QueueEntry take() throws XmlBlasterException;
+
+   /**
+    * Takes given number of entries out of the queue. The ordering is first priority and secondly
+    * timestamp. The more restrictive of the limits (numOfEntries, numOfBytes) decides how many entries
+    * to take. This method blocks until at least one entry is found.
+    * @param numOfEntries Take numOfEntries entries, if -1 take all entries currently found. If there
+    *        are less than so many entries in the queue, all entries are taken.
+    * @param numOfBytes so many entries are returned as not to exceed the amount specified. If the first
+    *        entry is bigger than this amount, it is returned anyway.
+    * @return list with I_QueueEntry, the least elements with respect to the given ordering, or size()==0
+    * @throws XmlBlasterException in case the underlying implementation gets an exception while retrieving the element.
+    */
+   ArrayList take(int numOfEntries, long numOfBytes) throws XmlBlasterException;
+
+   /**
+    * Takes given number of entries out of the queue. The ordering is first priority and secondly timestamp.
+    * This method blocks until at least one entry is found
+    * @param numOfEntries Take numOfEntries entries, if -1 take all entries currently found
+    * @param numOfBytes so many entries are returned as not to exceed the amount specified. If the first
+    *        entry is bigger than this amount, it is returned anyway.
+    * @param minPriority The lower priority (inclusive), usually 0 lowest, 9 highest
+    * @param maxPriority The higher priority (inclusive), usually 0 lowest, 9 highest
+    * @return list with I_QueueEntry, the least elements with respect to the given ordering, or size()==0
+    * @throws XmlBlasterException in case the underlying implementation gets an exception while retrieving the element.
+    */
+   ArrayList takeWithPriority(int numOfEntries, long numOfBytes, int minPriority, int maxPriority) throws XmlBlasterException;
+
+   /**
+    * Takes entries from the back of the queue. It takes so many entries as the
+    * most restrictive of the limits specified in the argument list.
+    * If you invoke this method as:
+    * takeLowest(10, 50000L, someEntry);
+    * It will take maximum 10 entries to a maximum sum of 50 kB (all entries
+    * together) and maximum to the entry specified as 'someEntry' (exclusive).
+    * If there is no entry of lower order (lower priority and higher uniqueId)
+    * than the one specified, an empty array list is returned.
+    * A further restriction is the following: At least one entry must be left
+    * on the queue. In other words the queue is not allowed to be completely
+    * emptied, since this would result in loops.
+    *
+    * @param numOfEntries inclusive, zero up to numOfEntries, if -1 up to the whole queue
+    * @param numOfBytes inclusive, and minimum one is returned (but not if limitEntry suppress it)
+    * @param numOfEntries
+    * @param numOfBytes
+    * @param entry
+    * @return the list containing all entries which fit into the constrains.
+    */
+   ArrayList takeLowest(int numOfEntries, long numOfBytes, I_QueueEntry limitEntry)
+      throws XmlBlasterException;
+
+   /**
+    * Returns the first element in the queue
+    * but does not remove it from that queue (leaves it untouched).
+    * This method does not block.
+    * @return I_QueueEntry the least element with respect to the given ordering or null if the queue is empty.
     * @throws XmlBlasterException if the underlying implementation gets an exception.
     */
-   MsgQueueEntry peek () throws XmlBlasterException;
+   I_QueueEntry peek() throws XmlBlasterException;
 
-	/**
-    * Returns the number of elements in this queue
+   /**
+    * Returns maximum the first num element in the queue
+    * but does not remove it from that queue (leaves it untouched).
+    * This method does not block.
+    * @param numOfEntries Access num entries, if -1 access all entries currently found
+    * @param numOfBytes is the maximum size in bytes of the array to return, -1 is unlimited .
+    * @return list with I_QueueEntry, the least elements with respect to the given ordering, or size()==0
+    * @throws XmlBlasterException if the underlying implementation gets an exception.
+    */
+   ArrayList peek(int numOfEntries, long numOfBytes) throws XmlBlasterException;
+
+   /**
+    * Returns maximum the first num element in the queue with same priority as the first one
+    * but does not remove it from that queue (leaves it untouched).
+    * This method does not block.
+    * @param numOfEntries Access num entries, if -1 access all entries currently found
+    * @param numOfBytes so many entries are returned as not to exceed the amount specified. If the first
+    *        entry is bigger than this amount, it is returned anyway. -1 is unlimited.
+    * @return list with I_QueueEntry, the least elements with respect to the given ordering, or size()==0
+    * @throws XmlBlasterException if the underlying implementation gets an exception.
+    */
+   ArrayList peekSamePriority(int numOfEntries, long numOfBytes) throws XmlBlasterException;
+
+   /**
+    * Returns maximum given number of entries from the queue (none blocking).
+    * @param numOfEntries Access num entries, if -1 take all entries currently found
+    * @param numOfBytes so many entries are returned as not to exceed the amout specified. If the first
+    *        entry is bigger than this amount, it is returned anyway.
+    * @param minPriority The lower priority (inclusive), usually 0 lowest, 9 highest, <0 is not allowed
+    * @param maxPriority The higher priority (inclusive), usually 0 lowest, 9 highest, <0 is not allowed
+    * @return list with I_QueueEntry, the least elements with respect to the given ordering, or size()==0
+    * @throws XmlBlasterException in case the underlying implementation gets an exception while retrieving the element.
+    */
+   ArrayList peekWithPriority(int numOfEntries, long numOfBytes, int minPriority, int maxPriority) throws XmlBlasterException;
+
+   /**
+    * It returns the entries which are higher than the entry specified in the argument list.
+    * @param limitEntry the entry which limits the peek. Only entries of higher order, i.e.
+    *        entries having a higher priority, or same priority and lower uniqueId are
+    *        returned. If entryLimit is null or no entries are higher than entryLimit,
+    *        an empty list is returned.
+    * Note: The limitEntry does not need to be in the queue.
+    */
+   ArrayList peekWithLimitEntry(I_QueueEntry limitEntry) throws XmlBlasterException;
+
+   /**
+    * Removes the first element in the queue
+    * This method does not block.
+    * @return the size in bytes of the removed elements
+    * @throws XmlBlasterException if the underlying implementation gets an exception.
+    */
+   int remove() throws XmlBlasterException;
+
+   /**
+    * Removes max num messages.
+    * This method does not block.
+    * @param numOfEntries Erase num entries or less if less entries are available, -1 erases everything
+    * @param numOfBytes so many entries are returned as not to exceed the amout specified. If the first
+    *        entry is bigger than this amount, it is removed anyway.
+    * @return Number of entries erased
+    * @throws XmlBlasterException if the underlying implementation gets an exception.
+    */
+   long remove(long num, long numOfEntries) throws XmlBlasterException;
+
+   /**
+    * Removes max numOfEntries messages (or less depending on the numOfBytes).
+    * This method does not block.
+    * @param numOfEntries Erase num entries or less if less entries are available, -1 erases everything
+    * @param numOfBytes so many entries are returned as not to exceed the amout specified. If the first
+    *        entry is bigger than this amount, it is returned anyway.
+    * @param minPriority The lower priority (inclusive), usually 0 lowest, 9 highest
+    * @param maxPriority The higher priority (inclusive), usually 0 lowest, 9 highest
+    * @return Number of entries erased
+    * @throws XmlBlasterException in case the underlying implementation gets an exception while retrieving the element.
+    */
+   long removeWithPriority(long numOfEntries, long numOfBytes, int minPriority, int maxPriority) throws XmlBlasterException;
+
+   /**
+    * Returns the number of elements in this queue.
+    * If the implementation of this interface is not able to return the correct
+    * number of entries (for example if the implementation must make a remote
+    * call to a DB which is temporarly not available) it will return -1.
     * @return int the number of elements currently in the queue
     */
-   int size () throws XmlBlasterException;
+   long getNumOfEntries();
 
-	/**
-    * Sets the maximum size of this queue
-    * @param maxSize the maximum  number of entries allowed for this queue
-    *
-    * ?? What should be done if the new size is lower than the current
-    * ?? number of elements in the queue ??
+   /**
+    * Returns the number of elements having the durable flag set in this queue.
+    * If the implementation of this interface is not able to return the correct
+    * number of entries (for example if the implementation must make a remote
+    * call to a DB which is temporarly not available) it will return -1.
+    * @return int the number of elements currently in the queue
     */
-   void capacity (int maxSize) throws XmlBlasterException;
+   long getNumOfDurableEntries();
 
-	/**
+   /**
     * returns the maximum number of elements for this queue
     * @return int the maximum number of elements in the queue
     */
-   int capacity () throws XmlBlasterException;
+   long getMaxNumOfEntries();
 
    /**
-    * Updates the given message queue entry with a new value. Note that this
+    * Returns the amount of bytes currently in the queue
+    * If the implementation of this interface is not able to return the correct
+    * number of entries (for example if the implementation must make a remote
+    * call to a DB which is temporarly not available) it will return -1.
+    * @return int the number of elements currently in the queue
+    */
+   long getNumOfBytes();
+
+   /**
+    * Returns the amount of bytes used by the durable entries in the queue
+    * If the implementation of this interface is not able to return the correct
+    * number of entries (for example if the implementation must make a remote
+    * call to a DB which is temporarly not available) it will return -1.
+    * @return int the number of elements currently in the queue
+    */
+   long getNumOfDurableBytes();
+
+   /**
+    * returns the capacity (maximum bytes) for this queue
+    * @return int the maximum number of elements in the queue
+    */
+   long getMaxNumOfBytes();
+
+   /*
+    * Updates the given queue entry with a new value. Note that this
     * can be used if an entry with the unique id already exists.
-	 * ?? Does this really make sense here since we need to store history ??
+    * ?? Does this really make sense here since we need to store history ??
     * ?? Should we define a switch which can deactivate storage of history ??
     */
-   int update (MsgQueueEntry msgQueueEntry) throws XmlBlasterException;
+//   int update(I_QueueEntry queueEntry) throws XmlBlasterException;
 
-	/**
-    * Erases the given queue entry.
-    * @param msgQueueEntry the message to erase.
+   /*
+    * Removes the given entry.
+    * @param dataId the unique id. It must be unique within the storage area
+    *        of the implementing queue. In other words, if the underlying
+    *        implementation is on RAM, then the storage area is the JVM, that
+    *        is the queue must be unique in the same JVM. If the queue is a
+    *        jdbc, the dataId is unique in the DB used.
+    * @returns the number of elements erased (0 or 1)
     */
-   int erase (MsgQueueEntry msgQueueEntry) throws XmlBlasterException;
+//   int removeRandom(long dataId) throws XmlBlasterException;
 
+   /*
+    * Removes the given entries.
+    * @param dataIdArray the entries to erase.
+    * @return the number of elements erased.
+    */
+//   long removeRandom(long[] dataIdArray) throws XmlBlasterException;
+
+   /**
+    * Removes the given entries.
+    * @param queueEntries the entries to erase.
+    * @return the number of elements erased.
+    */
+   long removeRandom(I_QueueEntry[] queueEntries) throws XmlBlasterException;
+
+   /**
+    * Removes the given entry.
+    * @param entry The entry to erase.
+    * @return the number of elements erased.
+    */
+   int removeRandom(I_QueueEntry entry) throws XmlBlasterException;
+
+   /**
+    * Removes all the transient entries (the ones which have the flag 'durable'
+    * set to false.
+    */
+   int removeTransient() throws XmlBlasterException;
+
+   /**
+    * Remove all queue entries
+    */
+   public long clear();
+
+   /**
+    * Shutdown the implementation, sync with data store
+    * @param true: force shutdown, don't flush everything
+    */
+   public void shutdown(boolean force);
+
+
+   /**
+    * removes the head of the queue until (but not included) the entry specified
+    * as the argument.
+    * @param toEntry the entry until to remove.
+    * @return long the number of entries deleted.
+    */
+   public long removeHead(I_QueueEntry toEntry) throws XmlBlasterException;
+
+
+   /**
+    * destroys all the resources associated to this queue. This means that all
+    * temporary and persistent resources are removed.
+    */
+   public void destroy() throws XmlBlasterException;
+
+   /**
+    * performs what has to be done when the Queue Plugin shuts down.
+    */
+   public boolean isShutdown();
+
+   /**
+    * @return a human readable usage help string
+    */
+   public String usage();
+
+   /**
+    * @param extraOffset Indent the dump with given ASCII blanks
+    * @return An xml encoded dump
+    */
+   public String toXml(String extraOffset);
 }

@@ -79,7 +79,7 @@ public class AuthenticateImpl
          if (log.TIME) log.time(ME, "Elapsed time in connect()" + stop.nice());
       }
       catch (org.xmlBlaster.util.XmlBlasterException e) {
-         throw new XmlBlasterException(e.id, e.reason); // transform native exception to Corba exception
+         throw new XmlBlasterException(e.id, e.getMessage()); // transform native exception to Corba exception
       }
 
       return returnValueStripped;

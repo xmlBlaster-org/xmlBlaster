@@ -76,10 +76,15 @@ public class Util
 
    public static void resetPorts()
    {
+      resetPorts(Global.instance());
+   }
+
+   public static void resetPorts(Global glob)
+   {
       try {
-         Global.instance().getProperty().addArgs2Props(getDefaultServerPorts());
+         glob.getProperty().addArgs2Props(getDefaultServerPorts());
       } catch(org.jutils.JUtilsException e) {
-         Global.instance().getLog("test").error(ME, e.toString());
+         glob.getLog("test").error(ME, e.toString());
       }
    }
 

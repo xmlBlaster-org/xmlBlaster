@@ -22,9 +22,9 @@ public interface I_AdminSession {
    /** How many messages where sent to this clients login session */
    public long getNumUpdates();
    /** How many messages are in this clients session callback queue */
-   public int getCbQueueNumMsgs();
+   public long getCbQueueNumMsgs();
    /** How many messages are max. allowed in this clients session callback queue */
-   public int getCbQueueMaxMsgs();
+   public long getCbQueueMaxMsgs();
    /** Destroy the session (force logout) */
    public String getKillSession() throws XmlBlasterException;
 }

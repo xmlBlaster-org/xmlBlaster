@@ -96,7 +96,10 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    CLASSPATH=${XMLBLASTER_HOME}/lib/a2Blaster.jar:${CLASSPATH}
 
    #jdbc
-   #CLASSPATH=${XMLBLASTER_HOME}/lib/jdbc7.0-1.2.jar:${CLASSPATH}
+   CLASSPATH=${XMLBLASTER_HOME}/lib/jdbc7.2dev-1.2.jar:${CLASSPATH}
+   CLASSPATH=${XMLBLASTER_HOME}/lib/classes12.zip:${CLASSPATH}
+   CLASSPATH=${XMLBLASTER_HOME}/lib/nls_charset12.zip:${CLASSPATH}
+
    #CLASSPATH=/home/a2blaster/a2Blaster/lib/a2Blaster.jar:${CLASSPATH}
    CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/ant/xerces.jar
    # jutils.jar is now included in xmlBlaster.jar

@@ -52,7 +52,7 @@ import java.sql.DriverManager;
  * </pre>
  * or in xmlBlaster.properties, e.g.<br />
  * <pre>
- *    JdbcDriver.drivers=oracle.jdbc.driver.OracleDriver,org.gjt.mm.mysql.Driver,postgresql.Driver,de.sag.jdbc.adabasd.ADriver,sun.jdbc.odbc.JdbcOdbcDriver,com.sybase.jdbc2.jdbc.SybDriver
+ *    JdbcDriver.drivers=oracle.jdbc.driver.OracleDriver,org.gjt.mm.mysql.Driver:postgresql.Driver,de.sag.jdbc.adabasd.ADriver:sun.jdbc.odbc.JdbcOdbcDriver:com.sybase.jdbc2.jdbc.SybDriver
  * </pre>
  * You use reserve() to get a connection and need to call release() after using it,
  * note that the connection parameters are optional:

@@ -19,9 +19,8 @@ package org.xmlBlaster.j2ee.k2.client;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.client.PublishRetQos;
-import org.xmlBlaster.client.SubscribeRetQos;
-import org.xmlBlaster.client.EraseRetQos;
+import org.xmlBlaster.client.qos.PublishReturnQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
 
 /**
  * K2 Connection interface for xmlBlaster. 
@@ -36,7 +35,7 @@ public interface BlasterConnection  {
     /**
        Don't know yet if we really should allow asyncronous stuff here
        
-       public SubscribeRetQos subscribe(String xmlKey, String qos) 
+       public SubscribeReturnQos subscribe(String xmlKey, String qos) 
     throws XmlBlasterException;
         
         public void unSubscribe(String xmlKey, String qos) 
@@ -52,19 +51,19 @@ public interface BlasterConnection  {
     /**
      * Publish one message
      */
-    public PublishRetQos publish(MessageUnit msgUnit)
+    public PublishReturnQos publish(MessageUnit msgUnit)
        throws XmlBlasterException;
     
     /**
      * Publish one or more message
      */
-    public PublishRetQos[] publishArr(MessageUnit[] msgUnitArr) 
+    public PublishReturnQos[] publishArr(MessageUnit[] msgUnitArr) 
        throws XmlBlasterException;
     
     /**
      * Erase message(s), I think
      */
-    public EraseRetQos[] erase(String xmlKey,String qos) 
+    public EraseReturnQos[] erase(String xmlKey,String qos) 
        throws XmlBlasterException;
     
     /**

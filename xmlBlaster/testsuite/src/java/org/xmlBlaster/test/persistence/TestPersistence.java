@@ -3,7 +3,7 @@ Name:      TestPersistence.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing durable messages
-Version:   $Id: TestPersistence.java,v 1.3 2002/09/15 18:57:38 ruff Exp $
+Version:   $Id: TestPersistence.java,v 1.4 2002/11/26 12:40:36 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.persistence;
 
@@ -15,9 +15,9 @@ import org.jutils.io.FileUtil;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
-import org.xmlBlaster.client.EraseRetQos;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -96,9 +96,9 @@ public class TestPersistence extends TestCase implements I_Callback
       String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'>\n</key>";
       String qos = "<qos></qos>";
       try {
-         EraseRetQos[] arr = senderConnection.erase(xmlKey, qos);
+         EraseReturnQos[] arr = senderConnection.erase(xmlKey, qos);
          assertEquals("Erase", 1, arr.length);
-      } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.reason); }
+      } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.getMessage()); }
       checkContent(false);
 
       senderConnection.disconnect(null);
@@ -122,12 +122,12 @@ public class TestPersistence extends TestCase implements I_Callback
 
       MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), qos);
       try {
-         String returnedOid = senderConnection.publish(msgUnit).getOid();
+         String returnedOid = senderConnection.publish(msgUnit).getKeyOid();
          assertEquals("Retunred oid is invalid", publishOid, returnedOid);
          log.info(ME, "Sending of '" + senderContent + "' done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
-         log.error(ME, "publish() XmlBlasterException: " + e.reason);
-         assertTrue("publish - XmlBlasterException: " + e.reason, false);
+         log.error(ME, "publish() XmlBlasterException: " + e.getMessage());
+         assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
 
       waitOnUpdate(1000L, 0);
@@ -194,8 +194,8 @@ public class TestPersistence extends TestCase implements I_Callback
 
       numReceived += 1;
 
-      assertEquals("Wrong sender", senderName, updateQos.getSender());
-      assertEquals("Wrong oid of message returned", publishOid, updateKey.getUniqueKey());
+      assertEquals("Wrong sender", senderName, updateQos.getSender().getLoginName());
+      assertEquals("Wrong oid of message returned", publishOid, updateKey.getOid());
       assertEquals("Wrong mime of message returned", "text/plain", updateKey.getContentMime());
       assertEquals("Wrong extended mime of message returned", "2.0", updateKey.getContentMimeExtended());
       assertEquals("Wrong domain of message returned", "RUGBY", updateKey.getDomain());

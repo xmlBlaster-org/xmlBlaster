@@ -13,8 +13,8 @@ import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -73,7 +73,7 @@ public class ClientPersistence implements I_Callback
       try {
          senderConnection.subscribe(xmlKeyPub, "<qos></qos>");
       } catch(XmlBlasterException e2) {
-         log.warn(ME, "XmlBlasterException: " + e2.reason);
+         log.warn(ME, "XmlBlasterException: " + e2.getMessage());
       }
       log.trace(ME, "Subscribed to '" + publishOid + "' ...");
    }

@@ -3,7 +3,7 @@ Name:      TestVolatile.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing volatile messages
-Version:   $Id: TestVolatile.java,v 1.3 2002/09/14 23:05:01 ruff Exp $
+Version:   $Id: TestVolatile.java,v 1.4 2002/11/26 12:40:44 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -13,9 +13,9 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
-import org.xmlBlaster.client.EraseRetQos;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -71,7 +71,7 @@ public class TestVolatile extends TestCase implements I_Callback
    {
       try {
          String passwd = "secret";
-         senderConnection = new XmlBlasterConnection();
+         senderConnection = new XmlBlasterConnection(glob);
          ConnectQos qos = new ConnectQos(glob); // == "<qos></qos>";
          senderConnection.login(senderName, passwd, qos, this);
       }
@@ -94,9 +94,9 @@ public class TestVolatile extends TestCase implements I_Callback
       String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'>\n</key>";
       String qos = "<qos></qos>";
       try {
-         EraseRetQos[] arr = senderConnection.erase(xmlKey, qos);
+         EraseReturnQos[] arr = senderConnection.erase(xmlKey, qos);
          assertEquals("Erase", 0, arr.length);   // The volatile message schould not exist !!
-      } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.reason); }
+      } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.getMessage()); }
 
       senderConnection.disconnect(null);
    }
@@ -119,12 +119,12 @@ public class TestVolatile extends TestCase implements I_Callback
 
       MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), qos);
       try {
-         String returnedOid = senderConnection.publish(msgUnit).getOid();
+         String returnedOid = senderConnection.publish(msgUnit).getKeyOid();
          assertEquals("Retunred oid is invalid", publishOid, returnedOid);
          log.info(ME, "Sending of '" + senderContent + "' done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
-         log.error(ME, "publish() XmlBlasterException: " + e.reason);
-         assertTrue("publish - XmlBlasterException: " + e.reason, false);
+         log.error(ME, "publish() XmlBlasterException: " + e.getMessage());
+         assertTrue("publish - XmlBlasterException: " + e.getMessage(), false);
       }
    }
 
@@ -147,8 +147,8 @@ public class TestVolatile extends TestCase implements I_Callback
          senderConnection.subscribe(xmlKey, qos);
          log.info(ME, "Subscribing of '" + publishOid + "' done");
       } catch(XmlBlasterException e) {
-         log.error(ME, "publish() XmlBlasterException: " + e.reason);
-         assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
+         log.error(ME, "publish() XmlBlasterException: " + e.getMessage());
+         assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
       }
    }
 
@@ -184,8 +184,8 @@ public class TestVolatile extends TestCase implements I_Callback
 
       numReceived += 1;
 
-      assertEquals("Wrong sender", senderName, updateQos.getSender());
-      assertEquals("Wrong oid of message returned", publishOid, updateKey.getUniqueKey());
+      assertEquals("Wrong sender", senderName, updateQos.getSender().getLoginName());
+      assertEquals("Wrong oid of message returned", publishOid, updateKey.getOid());
       assertEquals("Message content is corrupted", new String(senderContent), new String(content));
       return "";
    }

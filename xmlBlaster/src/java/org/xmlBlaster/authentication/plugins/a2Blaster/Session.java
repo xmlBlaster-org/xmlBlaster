@@ -2,6 +2,7 @@ package org.xmlBlaster.authentication.plugins.a2Blaster;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.MethodName;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.authentication.plugins.I_Manager;
@@ -11,11 +12,7 @@ import org.a2Blaster.engine.A2BlasterException;
 import org.a2Blaster.client.api.CorbaConnection;
 
 /**
- *
- * @author  $Author: ruff $ ($Name:  $)
- * @version $Revision: 1.7 $ (State: $State) (Date: $Date: 2002/09/13 23:17:51 $)
  */
-
 public class Session implements I_Session, I_Subject {
    private static final String                    ME = "Session";
    private static final String               baseKey = "/org/xmlBlaster/";
@@ -93,7 +90,7 @@ public class Session implements I_Session, I_Subject {
     * implements: I_Session.init();<br>
     */
    public String init(String securityQos_literal) throws XmlBlasterException {
-      return init(new SecurityQos(securityQos_literal));
+      return init(new SecurityQos(secMgr.getGlobal(), securityQos_literal));
    }
 
    /**
@@ -193,21 +190,17 @@ public class Session implements I_Session, I_Subject {
    public MessageUnit importMessage(MessageUnit msg) throws XmlBlasterException {
       // dummy implementation
       if (log.CALL) log.call(ME+".importMessage(...)", "-------START-----\n");
-      if (log.DUMP) log.dump(ME+".importMessage(...)", "in: key="+msg.xmlKey+
-                             " content="+msg.content+" qos="+msg.qos);
-
-      if (log.DUMP) log.dump(ME+".importMessage(...)", "out: key="+msg.xmlKey+
-                             " content="+msg.content+" qos="+msg.qos);
-      if (log.CALL) log.call(ME+".importMessage(...)=...", "-------END-------\n");
-
+      if (log.DUMP) log.dump(ME+".importMessage(...)", "in: "+msg.toXml());
       return msg;
    }
 
-   public String importMessage(String xmlMsg) throws XmlBlasterException
-   {
+   public String importMessage(String xmlMsg) throws XmlBlasterException {
       return xmlMsg;
    }
 
+   public byte[] importMessage(byte[] xmlMsg) throws XmlBlasterException {
+      return xmlMsg;
+   }
 
    /**
     * encrypt, sign, seal ... an outgoing message
@@ -221,18 +214,16 @@ public class Session implements I_Session, I_Subject {
    public MessageUnit exportMessage(MessageUnit msg) throws XmlBlasterException {
       // dummy implementation
       if (log.CALL) log.call(ME+".exportMessage(...)", "-------START-----\n");
-      if (log.DUMP) log.dump(ME+".exportMessage(...)", "in: key="+msg.xmlKey+
-                             " content="+msg.content+" qos="+msg.qos);
-
-      if (log.DUMP) log.dump(ME+".exportMessage(...)", "out: key="+msg.xmlKey+
-                             " content="+msg.content+" qos="+msg.qos);
-      if (log.CALL) log.call(ME+".exportMessage(...)=...", "-------END-------\n");
+      if (log.DUMP) log.dump(ME+".exportMessage(...)", "in "+msg.toXml());
 
       return msg;
    }
 
-   public String exportMessage(String xmlMsg) throws XmlBlasterException
-   {
+   public String exportMessage(String xmlMsg) throws XmlBlasterException {
+      return xmlMsg;
+   }
+
+   public byte[] exportMessage(byte[] xmlMsg) throws XmlBlasterException {
       return xmlMsg;
    }
 
@@ -240,7 +231,7 @@ public class Session implements I_Session, I_Subject {
     * Check if the user is permited (authorized) to do something
     * implements: I_Subject.isAuthorized(String, String)<br>
     */
-   public boolean isAuthorized(String actionKey, String key) {
+   public boolean isAuthorized(MethodName actionKey, String key) {
       CorbaConnection con = null;
       boolean   permitted = false;
 

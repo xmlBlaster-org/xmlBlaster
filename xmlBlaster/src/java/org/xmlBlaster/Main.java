@@ -3,7 +3,6 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.107 2002/10/01 09:52:04 goetzger Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -124,11 +123,11 @@ public class Main implements I_RunlevelListener, I_Main
    {
       this.glob = glob;
       this.log = glob.getLog("core");
-      this.ME = "Main" + glob.getLogPraefixDashed();
+      this.ME = "Main" + glob.getLogPrefixDashed();
       //try { log.info(ME, glob.getDump()); } catch (Throwable e) { System.out.println(ME + ": " + e.toString()); e.printStackTrace(); }
 
       showUsage = glob.wantsHelp();
-      Thread.currentThread().setName("XmlBlaster MainThread");
+      Thread.currentThread().setName("XmlBlaster.MainThread");
 
       if (glob.wantsHelp())
          showUsage = true;
@@ -275,10 +274,10 @@ public class Main implements I_RunlevelListener, I_Main
                   }
                }
                catch(XmlBlasterException e) {
-                  log.error(ME, "Sorry, dump failed: " + e.reason);
+                  log.error(ME, "Sorry, dump failed: " + e.getMessage());
                }
                catch(JUtilsException e) {
-                  log.error(ME, "Sorry, dump failed: " + e.reason);
+                  log.error(ME, "Sorry, dump failed: " + e.getMessage());
                }
             }
             else if (line.toLowerCase().equals("q")) {

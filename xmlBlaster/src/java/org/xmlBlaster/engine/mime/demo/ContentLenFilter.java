@@ -3,7 +3,7 @@ Name:      ContentLenFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface hiding the real callback protocol
-Version:   $Id: ContentLenFilter.java,v 1.16 2002/08/26 14:13:50 ruff Exp $
+Version:   $Id: ContentLenFilter.java,v 1.17 2002/11/26 12:38:48 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime.demo;
@@ -12,6 +12,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -128,13 +129,7 @@ public class ContentLenFilter implements I_Plugin, I_AccessFilter
     * @param query   The max. message length as given by the subscriber/getter.<br />
     *                If null we use 1 MByte as max size
     * @return true   If message is not too long
-    * @exception XmlBlasterException Is thrown on problems, for example if the MIME type
-    *            does not fit to message content.<br />
-    *            Take care throwing an exception, as the
-    *            exception is routed back to the publisher. Subscribers which where served before
-    *            may receive the update, subscribers which are served after us won't get it.
-    *            For the publisher it looks as if the publish failed completely. Probably it is
-    *            best to return 'false' instead and log the situation.
+    * @exception see I_AccessFilter#match()
     */
    public boolean match(SessionInfo publisher, SessionInfo receiver, MessageUnitWrapper msgUnitWrapper, Query query) throws XmlBlasterException {
       if (msgUnitWrapper == null) {
@@ -154,8 +149,16 @@ public class ContentLenFilter implements I_Plugin, I_AccessFilter
             maxLen = DEFAULT_MAX_LEN;
 
          if (msgUnit.getContent().length == THROW_EXCEPTION_FOR_LEN) {
+            if (Constants.OID_DEAD_LETTER.equals(msgUnitWrapper.getUniqueKey())) {
+               log.info(ME, "Dead messages pass through");
+               return true;  // message will be delivered
+            }
+            if (Constants.STATE_ERASED.equals(msgUnitWrapper.getPublishQos().getState())) {
+               log.info(ME, "Messages with state=" + Constants.STATE_ERASED + " pass through");
+               return true;  // message will be delivered
+            }
             log.info(ME, "Test what happens if we throw an exception");
-            throw new XmlBlasterException(ME, "Test what happens if we throw an exception");
+            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Test what happens if we throw an exception");
          }
          if (msgUnit.getContent().length > maxLen) {
             log.info(ME, "Message access denied, msgLen=" + msgUnit.getContent().length + " max allowed=" + maxLen);
@@ -170,9 +173,8 @@ public class ContentLenFilter implements I_Plugin, I_AccessFilter
          throw e;
       }
       catch (Throwable e) {
-         String tmp = "Can't filter message, your filter string '" + query + "' is illegal, expected a max size integer: " + e.toString();
-         log.error(ME, tmp);
-         throw new XmlBlasterException(ME, tmp);
+         log.error(ME, "Can't filter message, your filter string '" + query + "' is illegal, expected a max size integer: " + e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Can't filter message, your filter string '" + query + "' is illegal, expected a max size integer", e);
       }
    }
 

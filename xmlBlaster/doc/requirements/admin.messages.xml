@@ -77,6 +77,20 @@
 
    </example>
 
+   <example lang="any" type="HTML">
+   <p>
+   When publishing a command, the new value can be transported in the content of the 
+   message as well. In this case omit the '=' sign in the key oid:
+   </p>
+   <pre>
+  key =     "&lt;key oid='__cmd:?pluginConfig'/>"
+  content = "&lt;myPlugin maxValues='15'/>"
+  qos =     "&lt;qos/>"
+   </pre>
+
+
+   </example>
+
    <configuration where="server">
       <table border="1">
          <tr>
@@ -108,9 +122,9 @@
    
    <author>ruff@swand.lake.de</author>
    
-   <date>2002 05 18</date>
+   <date>2002 11 25</date>
    
-   <revision>$Revision: 1.5 $</revision>
+   <revision>$Revision: 1.6 $</revision>
 
    <testcase status="OPEN">
       <name>-</name>

@@ -3,7 +3,7 @@ Name:      CompatibleCorba.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper header to encapsulate all corba-implementor specific stuff
-Author:    <Michele Laghi> michele.laghi@attglobal.net
+Author:    <Michele Laghi> laghi@swissinfo.org
 ----------------------------------------------------------------------------*/
 
 #ifndef _COMPATIBLECORBA_H
@@ -92,7 +92,7 @@ Author:    <Michele Laghi> michele.laghi@attglobal.net
  *****************************************************************/
 #ifdef  TAO
 #define CLIENT_INCLUDE(NAME)      <BUILD_INCLUDE(NAME, C.h)>
-#define SERVER_INCLUDE(NAME)      <BUILD_INCLUDE(NAME, S.h)>
+#define SERVER_INCLUDE(NAME)      <BUILD_INCLUDE(NAME, S.hh)>
 #define CORBA_HEADER              <tao/CORBA.h>
 #define COSCONTAINEMENT           <not_implemented.h> // what is this ??
 #define COSOBJECTIDENTITY         <not_implemented.h>
@@ -110,6 +110,31 @@ Author:    <Michele Laghi> michele.laghi@attglobal.net
 #define COSTYPEDEVENTCHANNELADMIN <not_implemented.h>
 #define COSTYPEDEVENT             <not_implemented.h>
 #endif  // TAO
+
+
+/*****************************************************************
+ *                     ORBIX 2000 (ver. 2.0 )
+ *****************************************************************/
+#ifdef ORBIX
+#define CLIENT_INCLUDE(NAME)      <BUILD_INCLUDE(NAME, .h)>
+#define SERVER_INCLUDE(NAME)      <BUILD_INCLUDE(NAME, S.h)>
+#define CORBA_HEADER              <omg/orb.hh> 
+#define COSCONTAINEMENT           <not_implemented.h>
+#define COSOBJECTIDENTITY         <not_implemented.h>
+#define COSREFERENCE              <not_implemented.h>
+#define COSEVENTCHANNELADMIN      <omg/CosEventChannelAdmin.hh>
+#define COSEVENTCOMM              <omg/CosEventComm.hh>
+#define COSRELATIONSHIPS          <not_implemented.h>
+#define COSGRAPHS                 <not_implemented.h>
+#define COSTIME                   <not_implemented.h>
+#define COSGRAPHSEXTENSION        <not_implemented.h>
+#define COSTRADING                <omg/CosTrading.hh>
+#define COSNAMING                 <omg/CosNaming.hh>
+#define COSPROPERTY               <not_implemented.h>
+#define COSTRADINGREPOS           <omg/CosTradingRepos.hh>
+#define COSTYPEDEVENTCHANNELADMIN <not_implemented.h>
+#define COSTYPEDEVENT             <omg/CosTypedEventComm.hh>
+#endif //ORBIX
 
 /**************************************************************
  *         GENERAL STUFF COMMON TO ALL IMPLEMENTORS 

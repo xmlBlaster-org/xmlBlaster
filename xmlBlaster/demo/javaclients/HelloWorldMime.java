@@ -1,7 +1,27 @@
 // xmlBlaster/demo/javaclients/HelloWorldMime.java
 import org.jutils.log.LogChannel;
-import org.xmlBlaster.util.*;
-import org.xmlBlaster.client.*;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.ConnectQos;
+import org.xmlBlaster.util.ConnectReturnQos;
+import org.xmlBlaster.util.DisconnectQos;
+import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.client.key.GetKey;
+import org.xmlBlaster.client.key.SubscribeKey;
+import org.xmlBlaster.client.key.UnSubscribeKey;
+import org.xmlBlaster.client.key.PublishKey;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.key.EraseKey;
+import org.xmlBlaster.client.qos.GetQos;
+import org.xmlBlaster.client.qos.PublishQos;
+import org.xmlBlaster.client.qos.PublishReturnQos;
+import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.qos.SubscribeQos;
+import org.xmlBlaster.client.qos.SubscribeReturnQos;
+import org.xmlBlaster.client.qos.UnSubscribeQos;
+import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
+import org.xmlBlaster.client.qos.EraseQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.AccessFilterQos;
@@ -14,7 +34,7 @@ import org.xmlBlaster.engine.helper.AccessFilterQos;
  * <p />
  * We use java client helper classes to generate the raw xml strings, e.g.:
  * <pre>
- *   PublishKeyWrapper pk = new PublishKeyWrapper("HelloWorldMime", "text/xml");
+ *   PublishKey pk = new PublishKey(glob, "HelloWorldMime", "text/xml");
  * 
  * generates:
  *
@@ -40,25 +60,25 @@ public class HelloWorldMime implements I_Callback
          con.connect(qos, this);  // Login to xmlBlaster, register for updates
 
 
-         PublishKeyWrapper pk = new PublishKeyWrapper("HelloWorldMime", "text/xml");
-         pk.wrap("<org.xmlBlaster><demo/></org.xmlBlaster>");
-         PublishQosWrapper pq = new PublishQosWrapper();
+         PublishKey pk = new PublishKey(glob, "HelloWorldMime", "text/xml");
+         pk.setClientTags("<org.xmlBlaster><demo/></org.xmlBlaster>");
+         PublishQos pq = new PublishQos(glob);
          MessageUnit msgUnit = new MessageUnit(pk.toXml(), "<news type='sport'/>".getBytes(), pq.toXml());
          con.publish(msgUnit);
 
 
-         GetKeyWrapper gk = new GetKeyWrapper("HelloWorldMime");
-         GetQosWrapper gq = new GetQosWrapper();
+         GetKey gk = new GetKey(glob, "HelloWorldMime");
+         GetQos gq = new GetQos(glob);
          gq.addAccessFilter(new AccessFilterQos(glob, "XPathFilter", "1.0", "/news[@type='sport']"));
          MessageUnit[] msgs = con.get(gk.toXml(), gq.toXml());
 
          log.info("", "Accessed xmlBlaster message synchronous with get() with content '" + new String(msgs[0].getContent()) + "'");
 
 
-         SubscribeKeyWrapper sk = new SubscribeKeyWrapper("HelloWorldMime");
-         SubscribeQosWrapper sq = new SubscribeQosWrapper();
+         SubscribeKey sk = new SubscribeKey(glob, "HelloWorldMime");
+         SubscribeQos sq = new SubscribeQos(glob);
          sq.addAccessFilter(new AccessFilterQos(glob, "XPathFilter", "1.0", "/news[@type='fishing']"));
-         SubscribeRetQos subRet = con.subscribe(sk.toXml(), sq.toXml());
+         SubscribeReturnQos subRet = con.subscribe(sk.toXml(), sq.toXml());
 
 
          msgUnit = new MessageUnit(pk.toXml(), "<news type='fishing'/>".getBytes(), pq.toXml());
@@ -69,13 +89,13 @@ public class HelloWorldMime implements I_Callback
          catch( InterruptedException i) {} // wait a second to receive update()
 
 
-         UnSubscribeKeyWrapper uk = new UnSubscribeKeyWrapper(subRet.getSubscriptionId());
-         UnSubscribeQosWrapper uq = new UnSubscribeQosWrapper();
+         UnSubscribeKey uk = new UnSubscribeKey(glob, subRet.getSubscriptionId());
+         UnSubscribeQos uq = new UnSubscribeQos(glob);
          con.unSubscribe(uk.toXml(), uq.toXml());
 
-         EraseKeyWrapper ek = new EraseKeyWrapper("HelloWorldMime");
-         EraseQosWrapper eq = new EraseQosWrapper();
-         EraseRetQos[] eraseArr = con.erase(ek.toXml(), eq.toXml());
+         EraseKey ek = new EraseKey(glob, "HelloWorldMime");
+         EraseQos eq = new EraseQos(glob);
+         EraseReturnQos[] eraseArr = con.erase(ek.toXml(), eq.toXml());
 
          DisconnectQos dq = new DisconnectQos();
          con.disconnect(dq);

@@ -42,7 +42,7 @@ public class XmlKeySaxTest extends TestCase {
             "  </key>";
 
          XmlKey xmlKey = new XmlKey(glob, xml);
-         AccessFilterQos[] qosArr = xmlKey.getFilterQos();
+         AccessFilterQos[] qosArr = xmlKey.getAccessFilterArr();
          assertEquals("Missing filters", 2, qosArr.length);
          assertEquals("Wrong filter", "8000", qosArr[0].getQuery().toString());
          assertEquals("Wrong filter", "bug", qosArr[1].getQuery().toString());

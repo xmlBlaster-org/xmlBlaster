@@ -3,7 +3,7 @@ Name:      Transceiver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a svg client using batik
-Version:   $Id: Transceiver.java,v 1.7 2002/09/19 13:47:06 laghi Exp $
+Version:   $Id: Transceiver.java,v 1.8 2002/11/26 12:36:32 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.svg.batik;
 
@@ -23,11 +23,11 @@ import org.xmlBlaster.util.XmlBlasterException;
 
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.PublishRetQos;
+import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.DisconnectQos;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQos;
+import org.xmlBlaster.client.key.UpdateKey;
+import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.util.XmlToDom;
 import org.xmlBlaster.util.XmlNotPortable;
@@ -41,7 +41,7 @@ import org.apache.batik.dom.svg.SVGDocumentFactory;
 import java.util.StringTokenizer;
 
 /**
- * @author $Author: laghi $ (laghi@swissinfo.org)
+ * @author $Author: ruff $ (laghi@swissinfo.org)
  */
 
 public class Transceiver implements I_Callback
@@ -120,8 +120,8 @@ public class Transceiver implements I_Callback
             // retrieve the file content
             byte[] content = this.readFromFile(this.svgFileName);
             MessageUnit messageUnit = new MessageUnit(xmlKey, content, qos);
-            PublishRetQos ret = this.xmlBlasterConnection.publish(messageUnit);
-            log.info(ME, "constructor: " + ret.getOid());
+            PublishReturnQos ret = this.xmlBlasterConnection.publish(messageUnit);
+            log.info(ME, "constructor: " + ret.getKeyOid());
          }
          else if (svgSlave != null) {
             this.svgFileName = svgSlave;
@@ -333,8 +333,8 @@ public class Transceiver implements I_Callback
 
       MessageUnit messageUnit = new MessageUnit(xmlKey, content, qos);
       try {
-         PublishRetQos ret = this.xmlBlasterConnection.publish(messageUnit);
-         log.trace(ME, "move: " + ret.getOid());
+         PublishReturnQos ret = this.xmlBlasterConnection.publish(messageUnit);
+         log.trace(ME, "move: " + ret.getKeyOid());
       }
       catch (XmlBlasterException ex) {
          log.error(ME, ".move exception when publishing: " + ex.getMessage());

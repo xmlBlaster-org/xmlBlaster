@@ -3,7 +3,7 @@ Name:      RamTest.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: RamTest.cpp,v 1.1 2002/09/12 17:31:15 ruff Exp $
+Version:   $Id: RamTest.cpp,v 1.2 2002/11/26 12:40:14 ruff Exp $
 ---------------------------------------------------------------------------*/
 
 #include <string>
@@ -114,7 +114,7 @@ public:
          }
          catch(serverIdl::XmlBlasterException &e) {
             log_.error(me(), string("XmlBlasterException: ")
-                       + string(e.reason));
+                    + string(e.errorCodeStr) + ": " + string(e.message));
          }
       }
       log_.info(me(), "Erased " + lexical_cast<string>(NUM_PUBLISH) + " messages");
@@ -192,7 +192,7 @@ public:
       }
 
       catch(serverIdl::XmlBlasterException &e) {
-         log_.warn(me(), string("XmlBlasterException: ")+string(e.reason));
+         log_.warn(me(), string("XmlBlasterException: ") + string(e.errorCodeStr) + ": "+string(e.message));
          assert(0);
       }
       catch(CORBA::Exception &e) {

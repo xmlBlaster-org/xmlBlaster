@@ -3,7 +3,7 @@ Name:      EmbeddedXmlBlaster.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to create/start/stop a xmlBlaster server in a thread
-Version:   $Id: EmbeddedXmlBlaster.java,v 1.2 2002/09/11 16:38:05 kkrafft2 Exp $
+Version:   $Id: EmbeddedXmlBlaster.java,v 1.3 2002/11/26 12:39:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -13,7 +13,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.classloader.ClassLoaderFactory;
 import org.xmlBlaster.util.classloader.XmlBlasterClassLoader;
 
-import org.xmlBlaster.client.*;
+import org.xmlBlaster.client.key.SubscribeKey;
 
 
 /**
@@ -43,11 +43,11 @@ public class EmbeddedXmlBlaster
    public static EmbeddedXmlBlaster startXmlBlaster(int serverPort)
    {
       Global glob = Global.instance().getClone(null);
-      String[] args = new String[4];
-      args[0] = "-port";
-      args[1] = "" + serverPort;
-      args[2] = "-doBlocking";
-      args[3] = "false";
+      String[] args = {
+         "-port", "" + serverPort,
+         "-doBlocking", "false",
+         "-xmlBlaster.isEmbedded", "true"
+         }; 
       glob.init(args);
       EmbeddedXmlBlaster serverThread = new EmbeddedXmlBlaster(glob);
       serverThread.run();
@@ -75,7 +75,10 @@ public class EmbeddedXmlBlaster
    {
       Global glob = Global.instance().getClone(args);
       glob.setId(clusterNodeId);
-      String[] args2 = { "-doBlocking", "false" };
+      String[] args2 = {
+         "-doBlocking", "false",
+         "-xmlBlaster.isEmbedded", "true"
+         }; 
       glob.init(args2);
       EmbeddedXmlBlaster serverThread = new EmbeddedXmlBlaster(glob);
       serverThread.run();
@@ -96,7 +99,10 @@ public class EmbeddedXmlBlaster
     */
    public static EmbeddedXmlBlaster startXmlBlaster(Global glob)
    {
-      String[] args = { "-doBlocking", "false" };
+      String[] args = {
+         "-doBlocking", "false",
+         "-xmlBlaster.isEmbedded", "true"
+         }; 
       glob.init(args);
       EmbeddedXmlBlaster serverThread = new EmbeddedXmlBlaster(glob);
       serverThread.run();
