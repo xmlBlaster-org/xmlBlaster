@@ -1,5 +1,11 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
+ o SOCKET protocol on Java client side:
+   - Fixed exception handling from update() calls
+   - Added 'virtual' callback server shutdown
+   - Fixed MsgUnit[] return from get() call to be of length=0 if no message is returned
+     Before the array contained one entry with empty key/qos
+
  o The msgStore cache implementation supports now LRU (last recently used) lookup
 
  o added setter and getter for subject queue property in ConnectQos
