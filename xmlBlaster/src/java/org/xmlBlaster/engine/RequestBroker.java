@@ -120,6 +120,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
    private SubscribePluginManager subscribePluginManager = null;
    private final Map subscribeFilterMap = Collections.synchronizedMap(new HashMap());
 
+   private final Object pubSubMonitor = new Object();
 
    /**
     * One instance of this represents one xmlBlaster server.
@@ -924,14 +925,14 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
          if (publishQos.isPubSubStyle()) {
             if (Log.TRACE) Log.trace(ME, "Doing publish() in Pub/Sub style");
 
-            //----- 1. set new value or create the new message:
             MessageUnitHandler msgUnitHandler = null;
-            boolean contentChanged = true;
-            {
+            synchronized(messageContainerMap) {
+               //----- 1. set new value or create the new message:
+               boolean contentChanged = true;
                if (Log.TRACE) Log.trace(ME, "Handle the new arrived Pub/Sub message ...");
                boolean messageExisted = false; // to shorten the synchronize block
 
-               synchronized(messageContainerMap) {
+               //synchronized(messageContainerMap) {
                   Object obj = messageContainerMap.get(xmlKey.getUniqueKey());
                   if (obj == null) {
                      msgUnitHandler = new MessageUnitHandler(this, xmlKey, new MessageUnitWrapper(this, xmlKey, msgUnit, publishQos));
@@ -941,7 +942,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
                      msgUnitHandler = (MessageUnitHandler)obj;
                      messageExisted = true;
                   }
-               }
+               //}
 
                boolean isYetUnpublished = !msgUnitHandler.isPublishedWithData(); // remember here as it may be changed in setContent()
 
@@ -953,26 +954,26 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
                   try {
                      xmlKey.mergeRootNode(bigXmlKeyDOM);                   // merge the message DOM tree into the big xmlBlaster DOM tree
                   } catch (XmlBlasterException e) {
-                     synchronized(messageContainerMap) {
+                     //synchronized(messageContainerMap) {
                         messageContainerMap.remove(xmlKey.getUniqueKey()); // it didn't exist before, so we have to clean up
-                     }
+                     //}
                      throw new XmlBlasterException(e.id, e.reason);
                   }
                }
-            }
 
-            //----- 2. now we can send updates to all interested clients:
-            if (contentChanged || publishQos.forceUpdate()) // if the content changed of the publisher forces updates ...
-               msgUnitHandler.invokeCallback(sessionInfo);
+               //----- 2. now we can send updates to all interested clients:
+               if (contentChanged || publishQos.forceUpdate()) // if the content changed of the publisher forces updates ...
+                  msgUnitHandler.invokeCallback(sessionInfo);
 
-            // this gap is not 100% thread save
+               // this gap is not 100% thread save
 
-            //----- 3. check all known query subscriptions if the new message fits as well
-            // TODO: Only check if it is a new message (XmlKey is immutable)
-            checkExistingSubscriptions(sessionInfo, xmlKey, msgUnitHandler, publishQos);
+               //----- 3. check all known query subscriptions if the new message fits as well
+               // TODO: Only check if it is a new message (XmlKey is immutable)
+               checkExistingSubscriptions(sessionInfo, xmlKey, msgUnitHandler, publishQos);
 
-            // We can't do it here, first all callback calls must be successful - the CbWorker does it
-            //eraseVolatile(sessionInfo, msgUnitHandler);
+               // We can't do it here, first all callback calls must be successful - the CbWorker does it
+               //eraseVolatile(sessionInfo, msgUnitHandler);
+            } // end synchronized messageContainerMap
          }
          else if (publishQos.isPTP_Style()) {
             if (Log.TRACE) Log.trace(ME, "Doing publish() in PtP or broadcast style");
