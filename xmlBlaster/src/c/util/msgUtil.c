@@ -30,6 +30,7 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #endif
 
 static const char *LOG_TEXT[] = { "NOLOG", "ERROR", "WARN", "INFO", "CALL", "TIME", "TRACE", "DUMP", "PLAIN" };
+static const int numLOG_TEXT = 9; /* sizeof(LOG_TEXT) returns 36 which is not what we want */
 
 #define ESC "\033[0m"; /* Reset color to original values */
 #define BOLD "\033[1m"
@@ -771,7 +772,7 @@ Dll_Export void xmlBlasterDefaultLogging(XMLBLASTER_LOG_LEVEL currLevel,
 Dll_Export XMLBLASTER_LOG_LEVEL parseLogLevel(const char *logLevelStr)
 {
    int i;
-   int len = sizeof(LOG_TEXT);
+   int len = numLOG_TEXT;
    if (logLevelStr == 0 || *logLevelStr == '\0' ) {
       return LOG_WARN;
    }
