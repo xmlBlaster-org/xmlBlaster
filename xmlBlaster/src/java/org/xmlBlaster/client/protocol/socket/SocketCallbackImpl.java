@@ -3,7 +3,7 @@ Name:      SocketCallbackImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using plain socket
-Version:   $Id: SocketCallbackImpl.java,v 1.24 2002/09/12 11:59:49 ruff Exp $
+Version:   $Id: SocketCallbackImpl.java,v 1.25 2002/09/14 23:12:41 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -25,7 +25,8 @@ import java.io.IOException;
 /**
  * Used for client to receive xmlBlaster callbacks. 
  * <p />
- * One instance of this for each client. 
+ * One instance of this for each client, as a separate thread blocking
+ * on the socket input stream waiting for messages from xmlBlaster. 
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  * @see org.xmlBlaster.protocol.socket.Parser
  */
@@ -56,7 +57,6 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
       this.ME = "SocketCallbackImpl-" + sockCon.getLoginName();
       this.sockCon = sockCon;
       this.callbackAddressStr = sockCon.getLocalAddress();
-      this.SOCKET_DEBUG = sockCon.SOCKET_DEBUG;
 
       Thread t = new Thread(this, "XmlBlaster.SOCKET.callback-"+sockCon.getLoginName());
       t.setPriority(glob.getProperty().get("socket.threadPrio", Thread.NORM_PRIORITY));
@@ -96,15 +96,22 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
    public void run()
    {
       log.info(ME, "Started callback receiver");
-      Parser receiver = new Parser();
-      receiver.SOCKET_DEBUG = SOCKET_DEBUG;
       
       while(running) {
 
+         Parser receiver = new Parser();
          try {
             receiver.parse(iStream); // This method blocks until a message arrives
-            if (SOCKET_DEBUG>1) log.info(ME, "Receiving message >" + Parser.toLiteral(receiver.createRawMsg()) + "<");
-            receive(receiver);       // Parse the message and invoke callback to client code
+            if (log.DUMP) log.dump(ME, "Receiving message >" + Parser.toLiteral(receiver.createRawMsg()) + "<\n" + receiver.dump());
+
+//            receive(receiver);       // Parse the message and invoke callback to client code
+
+            // Parse the message and invoke callback to client code in a seperate thread
+            // to avoid dead lock when client does a e.g. publish() during this update()
+            WorkerThread t = new WorkerThread(glob, this, receiver);
+            t.setPriority(glob.getProperty().get("socket.cbInvokerThreadPrio", Thread.NORM_PRIORITY));
+            t.start();
+
          }
          catch(XmlBlasterException e) {
             log.error(ME, e.toString());
@@ -136,6 +143,10 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
       return addr;
    }
 
+   final SocketConnection getSocketConnection() {
+      return sockCon;
+   }
+
    /**
     * Shutdown callback, called by SocketConnection on problems
     * @return true everything is OK, false if probably messages are lost on shutdown
@@ -152,6 +163,7 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
             buf.append(key);
          }
          log.warn(ME, "There are " + responseListenerMap.size() + " messages pending without a response, request IDs are " + buf.toString());
+         responseListenerMap.clear();
          return false;
       }
       return true;
