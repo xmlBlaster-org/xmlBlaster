@@ -6,6 +6,8 @@ Comment:   Interface to access information about a client instance
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.admin;
 
+import org.xmlBlaster.util.XmlBlasterException;
+
 /**
  * Declares available methods of a session for administration. 
  * <p />
@@ -15,8 +17,14 @@ package org.xmlBlaster.engine.admin;
  * @since 0.79f
  */
 public interface I_AdminSession {
+   /** Uptime in seconds */
    public long getUptime();
+   /** How many messages where sent to this clients login session */
    public long getNumUpdates();
+   /** How many messages are in this clients session callback queue */
    public int getCbQueueNumMsgs();
+   /** How many messages are max. allowed in this clients session callback queue */
    public int getCbQueueMaxMsgs();
+   /** Destroy the session (force logout) */
+   public String getKillSession() throws XmlBlasterException;
 }

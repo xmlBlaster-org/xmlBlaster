@@ -367,4 +367,9 @@ public class SessionInfo implements I_Timeout, I_AdminSession
    public final int getCbQueueMaxMsgs() {
       return sessionQueue.capacity();
    }
+
+   public final String getKillSession() throws XmlBlasterException {
+      glob.getAuthenticate().disconnect(securityCtx.getSessionId(), "<qos/>");
+      return getId() + " killed";
+   }
 }
