@@ -83,10 +83,9 @@ public class TestC extends TestCase
    }
 
    /**
-    * Create a RDBMS table, fill some data and destroy it again. 
-    * We use the tinySQL dBase C driver for testing.
+    * Test all C method invocations against a running xmlBlaster. 
     */
-   public void testC()
+   public void test_C_MethodInvocations()
    {
       Runtime runtime = Runtime.getRuntime();
       String[] commandArr = { "../../../../c/bin/TestMethods" };
@@ -94,10 +93,14 @@ public class TestC extends TestCase
       //String[] commandArr = { "testsuite/src/c/bin/TestMethods" };
       String[] envArr = { "" };
 
-      log.info(ME, "######## Start testC('" + commandArr[0] + "')");
+      log.info(ME, "######## Start test_C_MethodInvocations('" + commandArr[0] + "')");
 
       Execute e = new Execute(glob, commandArr, envArr);
       e.run();
+
+      if (e.getErrorText() != null) {
+         fail(e.getErrorText());
+      }
 
       if (e.getStdout().indexOf("[TEST FAIL]") != -1) {
          fail("C client library test '" + commandArr[0] + "' + failed: " + e.getStdout());
@@ -106,7 +109,67 @@ public class TestC extends TestCase
          fail("C client library test '" + commandArr[0] + "' + failed: " + e.getStderr());
       }
 
-      log.info(ME, "######## SUCCESS testC('" + commandArr[0] + "'): " + e.getStdout());
+      log.info(ME, "######## SUCCESS test_C_MethodInvocations('" + commandArr[0] + "'): " + e.getStdout());
+   }
+
+   /**
+    * Test the C API with illegal arguments. 
+    */
+   public void test_C_IllegalArguments()
+   {
+      Runtime runtime = Runtime.getRuntime();
+      String[] commandArr = { "../../../../c/bin/TestError" };
+      //String[] commandArr = { "../../../../../c/bin/TestError" };
+      //String[] commandArr = { "testsuite/src/c/bin/TestError" };
+      String[] envArr = { "" };
+
+      log.info(ME, "######## Start test_C_IllegalArguments('" + commandArr[0] + "')");
+
+      Execute e = new Execute(glob, commandArr, envArr);
+      e.run();
+
+      if (e.getErrorText() != null) {
+         fail(e.getErrorText());
+      }
+
+      if (e.getStdout().indexOf("[TEST FAIL]") != -1) {
+         fail("C client library test '" + commandArr[0] + "' + failed: " + e.getStdout());
+      }
+      if (e.getStderr().indexOf("[TEST FAIL]") != -1) {
+         fail("C client library test '" + commandArr[0] + "' + failed: " + e.getStderr());
+      }
+
+      log.info(ME, "######## SUCCESS test_C_IllegalArguments('" + commandArr[0] + "'): " + e.getStdout());
+   }
+
+   /**
+    * Test all C method invocations against a running xmlBlaster. 
+    */
+   public void test_C_Stress()
+   {
+      Runtime runtime = Runtime.getRuntime();
+      String[] commandArr = { "../../../../c/bin/TestStress" };
+      //String[] commandArr = { "../../../../../c/bin/TestStress" };
+      //String[] commandArr = { "testsuite/src/c/bin/TestStress" };
+      String[] envArr = { "" };
+
+      log.info(ME, "######## Start test_C_Stress('" + commandArr[0] + "')");
+
+      Execute e = new Execute(glob, commandArr, envArr);
+      e.run();
+
+      if (e.getErrorText() != null) {
+         fail(e.getErrorText());
+      }
+
+      if (e.getStdout().indexOf("[TEST FAIL]") != -1) {
+         fail("C client library test '" + commandArr[0] + "' + failed: " + e.getStdout());
+      }
+      if (e.getStderr().indexOf("[TEST FAIL]") != -1) {
+         fail("C client library test '" + commandArr[0] + "' + failed: " + e.getStderr());
+      }
+
+      log.info(ME, "######## SUCCESS test_C_Stress('" + commandArr[0] + "'): " + e.getStdout());
    }
 
    /**
@@ -121,7 +184,9 @@ public class TestC extends TestCase
       }
       TestC test = new TestC("TestC");
       test.setUp();
-      test.testC();
+      test.test_C_MethodInvocations();
+      test.test_C_IllegalArguments();
+      test.test_C_Stress();
       test.tearDown();
    }
 }
