@@ -202,7 +202,7 @@ public class Timeout extends Thread
             }
             else {
                nanoCounter++; // We loop to avoid two similar keys, this should happen very seldom
-               System.out.println("Looping nanoCounter=" + nanoCounter);
+               //System.out.println("Looping nanoCounter=" + nanoCounter);
             }
          }
       }
