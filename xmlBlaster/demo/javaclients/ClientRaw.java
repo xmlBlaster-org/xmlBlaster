@@ -3,7 +3,7 @@ Name:      ClientRaw.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code how to access xmlBlaster using CORBA
-Version:   $Id: ClientRaw.java,v 1.3 1999/12/14 12:19:54 ruff Exp $
+Version:   $Id: ClientRaw.java,v 1.4 2000/01/30 18:44:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -174,6 +174,7 @@ public class ClientRaw
 
    public static void main(String args[])
    {
+      Log.setLogLevel(args);
       new ClientRaw(args);
       Log.exit(ClientRaw.ME, "Good bye");
    }

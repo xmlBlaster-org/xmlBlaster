@@ -3,7 +3,7 @@ Name:      ClientPubDestination.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster and publishing to destinations
-Version:   $Id: ClientPubDestination.java,v 1.3 1999/12/14 23:19:27 ruff Exp $
+Version:   $Id: ClientPubDestination.java,v 1.4 2000/01/30 18:44:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -204,6 +204,7 @@ public class ClientPubDestination
     */
    public static void main(String args[])
    {
+      Log.setLogLevel(args);
       ClientPubDestination cl = new ClientPubDestination(args);
 
       if (cl.testScenario() == true)

@@ -3,7 +3,7 @@ Name:      ClientErase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientErase.java,v 1.3 1999/12/14 12:19:54 ruff Exp $
+Version:   $Id: ClientErase.java,v 1.4 2000/01/30 18:44:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -107,13 +107,14 @@ public class ClientErase
       catch (Exception e) {
           e.printStackTrace();
       }
-      
+
       // corbaConnection.getOrb().run(); // Usually your client won't exit after this, uncomment the run() method
    }
 
 
    public static void main(String args[])
    {
+      Log.setLogLevel(args);
       new ClientErase(args);
       Log.exit(ClientErase.ME, "Good bye");
    }
