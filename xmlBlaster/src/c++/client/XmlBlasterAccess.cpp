@@ -60,6 +60,8 @@ ConnectReturnQos XmlBlasterAccess::connect(const ConnectQos& qos, I_Callback *cl
 {
    ME = string("XmlBlasterAccess-") + qos.getSessionQos().getAbsoluteName();
    if (log_.call()) log_.call(ME, "::connect");
+   if (log_.dump()) log_.dump(ME, string("::connect: qos: ") + qos.toXml());
+
    connectQos_ = qos;
    SecurityQos securityQos = connectQos_.getSecurityQos();
 //   initSecuritySettings(securityQos.getPluginType(), securityQos.getPluginVersion());
@@ -111,7 +113,7 @@ void XmlBlasterAccess::createDefaultCbServer()
 I_CallbackServer*
 XmlBlasterAccess::initCbServer(const string& loginName, const string& type, const string& version)
 {
-   log_.call(ME, "::initCbServer");
+   if (log_.call()) log_.call(ME, string("::initCbServer: loginName='") + loginName + "' type='" + type + "' version='" + version +"'");
    if (log_.trace()) log_.trace(ME, string("Using 'client.cbProtocol=") + type + string("' to be used by ") + getServerNodeId() + string(", trying to create the callback server ..."));
    I_CallbackServer* server = &(global_.getCbServerPluginManager().getPlugin(instanceName_, type, version));
    if (log_.trace()) log_.trace(ME, "After callback plugin creation");

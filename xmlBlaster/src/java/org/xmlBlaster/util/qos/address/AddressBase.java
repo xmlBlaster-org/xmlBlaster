@@ -792,11 +792,14 @@ public abstract class AddressBase
    {
       String text = "";
     //text += "   -oneway             Shall the publish() messages be send oneway (no application level ACK) [" + Address.DEFAULT_oneway + "]\n";
+      text += "   -dispatch/" + this.instanceName + "/protocol      Protocol to use for this address [" + DEFAULT_type + "]\n";
+      text += "   -dispatch/" + this.instanceName + "/port          Port to use for the protocol [" + DEFAULT_port + "]\n";
       text += "   -dispatch/" + this.instanceName + "/pingInterval  Pinging every given milliseconds [" + getDefaultPingInterval() + "]\n";
       text += "   -dispatch/" + this.instanceName + "/retries       How often to retry if connection fails (-1 is forever) [" + getDefaultRetries() + "]\n";
       text += "   -dispatch/" + this.instanceName + "/delay         Delay between connection retries in milliseconds [" + getDefaultDelay() + "]\n";
-      text += "                                      A delay value > 0 switches fails save mode on, 0 \n";
-      text += "                                      switches it off\n";
+      text += "                                                     A delay value > 0 switches fails save mode on, 0 \n";
+      text += "                                                     switches it off\n";
+
       return text;
    }
 }

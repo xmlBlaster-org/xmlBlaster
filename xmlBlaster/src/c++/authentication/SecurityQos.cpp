@@ -16,7 +16,7 @@ namespace org { namespace xmlBlaster { namespace authentication {
 SecurityQos::SecurityQos(Global& global,
                          const string& loginName,
                          const string& password)
-   : ME("SecurityQos"), global_(global)
+   : ME("SecurityQos"), global_(global), log_(global.getLog("core"))
 {
 
    string help = global_.getProperty().getStringProperty("Security.Client.DefaultPlugin", "htpasswd,1.0");
@@ -33,16 +33,21 @@ SecurityQos::SecurityQos(Global& global,
    }
 
    user_ = global_.getProperty().getStringProperty("user", "");
-   if (user_ == "")
+   if (log_.trace())  log_.trace(ME, string("constructor: 'user' prop is '") + user_ + "'");
+
+   if (user_ == "") {
       user_ = global_.getProperty().getStringProperty("USER", "unknown");
+      if (log_.trace())  log_.trace(ME, string("constructor: 'USER' prop is '") + user_ + "'");
+   }
 
    if (loginName != "") user_ = loginName;
    passwd_ =  global_.getProperty().getStringProperty("passwd", "");
    if (password != "") passwd_ = password;
+   if (log_.trace())  log_.trace(ME, string("constructor: user is '") + user_ + "'");
 }
 
 SecurityQos::SecurityQos(const SecurityQos& securityQos)
-   : ME("SecurityQos"), global_(securityQos.global_)
+   : ME("SecurityQos"), global_(securityQos.global_), log_(securityQos.log_)
 {
    copy(securityQos);
 }

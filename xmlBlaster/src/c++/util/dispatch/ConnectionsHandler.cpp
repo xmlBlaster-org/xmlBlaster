@@ -88,7 +88,7 @@ ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
 
    if (connectQos_) {
       delete connectQos_;
-      connectQos_ = NULL;
+      connectQos_ = 0;
    }
    connectQos_ = new ConnectQos(qos);
    retries_ = connectQos_->getAddress().getRetries();
@@ -105,7 +105,7 @@ ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
    }
    if (connectReturnQos_) {
       delete connectReturnQos_;
-      connectReturnQos_ = NULL;
+      connectReturnQos_ = 0;
    }
 
    try {

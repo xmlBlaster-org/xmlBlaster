@@ -33,6 +33,7 @@ namespace org { namespace xmlBlaster { namespace authentication {
    private:
       const string ME;
       Global&      global_;
+      Log&         log_;
       string       type_;
       string       version_;
       string       user_;

@@ -3,7 +3,7 @@ Name:      QueuePropertyBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.cpp,v 1.16 2003/03/26 22:28:13 ruff Exp $
+Version:   $Id: QueuePropertyBase.cpp,v 1.17 2003/03/30 21:09:21 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 
@@ -57,7 +57,7 @@ void QueuePropertyBase::initialize(const string& propertyPrefix)
    if (log_.call()) log_.call(ME, string("::initialize with property prefix '") + propertyPrefix + "'");
    propertyPrefix_ = propertyPrefix;
    string prefix = getPrefix();
-   if (log_.trace()) log_.trace(ME, "::initialize: got the prefix");
+   if (log_.trace()) log_.trace(ME, string("::initialize: got the prefix '") + prefix + "'");
 
    // Do we need this range settings?
    setMinExpires(global_.getProperty().getTimestampProperty("queue.expires.min", DEFAULT_minExpires));
@@ -109,6 +109,7 @@ void QueuePropertyBase::initialize(const string& propertyPrefix)
       setType(global_.getProperty().getStringProperty(prefix+"type["+nodeId_+"]", getType()));
       setVersion(global_.getProperty().getStringProperty(prefix+"version["+nodeId_+"]", getVersion()));
    }
+   if (log_.dump()) log_.dump(ME, string("::initialize the property is: ") + toXml());
 }
 
 /*
