@@ -23,7 +23,7 @@ static bool myUpdate(MsgUnitArr *msgUnitArr, void *userData,
 {
    size_t i;
    bool testException = false;
-   /* XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)userData; */
+   XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)userData;
    if (userData != 0) ;  /* Supress compiler warning */
 
    for (i=0; i<msgUnitArr->len; i++) {
@@ -42,6 +42,32 @@ static bool myUpdate(MsgUnitArr *msgUnitArr, void *userData,
                XMLBLASTEREXCEPTION_MESSAGE_LEN);
       return false;
    }
+
+   if (xa->callbackMultiThreaded == true) {
+      /* publish from inside the update thread is not supported,
+         the multi threaded update() delivery pool implementation is not finished,
+         see -plugin/socket/multiThreaded true */
+      char *response = (char *)0;
+      MsgUnit msgUnit;
+      XmlBlasterException xmlBlasterException;
+      printf("[client] Publishing message 'HelloWorldCb from update thread' ...\n");
+      msgUnit.key = strcpyAlloc("<key oid='HelloWorldCb'/>");
+      msgUnit.content = strcpyAlloc("Some message payload");
+      msgUnit.contentLen = strlen(msgUnit.content);
+      msgUnit.qos =strcpyAlloc("<qos><persistent/></qos>");
+      response = xa->publish(xa, &msgUnit, &xmlBlasterException);
+      freeMsgUnitData(&msgUnit);
+      if (*xmlBlasterException.errorCode != 0) {
+         printf("[client] Caught exception in publish errorCode=%s, message=%s\n",
+                  xmlBlasterException.errorCode, xmlBlasterException.message);
+         xa->disconnect(xa, 0, &xmlBlasterException);
+         freeXmlBlasterAccessUnparsed(xa);
+         exit(EXIT_FAILURE);
+      }
+      printf("[client] Publish success, returned status is '%s'\n", response);
+      xmlBlasterFree(response);
+   }
+ 
    return true;
 }
 
@@ -163,7 +189,7 @@ int main(int argc, char** argv)
       printf("[client] Publish success, returned status is '%s'\n", response);
       xmlBlasterFree(response);
    }
-
+ 
    {  /* unSubscribe ... */
       const char *key = "<key oid='HelloWorld'/>";
       const char *qos = "<qos/>";
