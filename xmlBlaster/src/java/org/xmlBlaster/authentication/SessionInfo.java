@@ -197,7 +197,7 @@ public class SessionInfo implements I_Timeout, I_AdminSession
          timerKey = null;
       }
 
-      if (log.TRACE) log.trace(ME, "finalize - garbage collected " + getSessionId());
+      if (log.TRACE) log.trace(ME, "finalize - garbage collected " + getSecretSessionId());
    }
 
    public void shutdown() {
@@ -216,7 +216,7 @@ public class SessionInfo implements I_Timeout, I_AdminSession
       if (this.deliveryManager != null)
          this.deliveryManager.shutdown();
       this.subjectInfo = null;
-      // this.securityCtx = null; We need it in finalize() getSessionId()
+      // this.securityCtx = null; We need it in finalize() getSecretSessionId()
       this.connectQos = null;
       this.expiryTimer = null;
    }
@@ -245,11 +245,11 @@ public class SessionInfo implements I_Timeout, I_AdminSession
    public final void timeout(Object userData) {
       synchronized (this) {
          timerKey = null;
-         log.warn(ME, "Session timeout for " + getLoginName() + " occurred, session '" + getSessionId() + "' is expired, autologout");
+         log.warn(ME, "Session timeout for " + getLoginName() + " occurred, session '" + getSecretSessionId() + "' is expired, autologout");
          DisconnectQosServer qos = new DisconnectQosServer(glob);
          qos.deleteSubjectQueue(true);
          try {
-            glob.getAuthenticate().disconnect(getSessionId(), qos.toXml());
+            glob.getAuthenticate().disconnect(getSecretSessionId(), qos.toXml());
          } catch (XmlBlasterException e) {
             log.error(ME, "Internal problem with disconnect: " + e.toString());
          }
@@ -307,11 +307,14 @@ public class SessionInfo implements I_Timeout, I_AdminSession
    }
 
    public final void updateConnectQos(ConnectQosServer newConnectQos) throws XmlBlasterException {
-      CbQueueProperty cpQueueProperty = newConnectQos.getSessionCbQueueProperty();
+      CbQueueProperty cbQueueProperty = newConnectQos.getSessionCbQueueProperty();
       if (this.deliveryManager != null) {
-         this.deliveryManager.getDeliveryConnectionsHandler().initialize(cpQueueProperty.getCallbackAddresses());
+         this.deliveryManager.updateProperty(cbQueueProperty);
          log.info(ME, "Successfully reconfigured callback address with new settings, other reconfigurations are not yet implemented");
+         deliveryManager.notifyAboutNewEntry();
       }
+      //NO: we keep always the original secret sessionId on reconnect
+      //securityCtx.changeSecretSessionId(newConnectQos.getSessionQos().getSecretSessionId());
    }
 
    /**
@@ -335,8 +338,8 @@ public class SessionInfo implements I_Timeout, I_AdminSession
    /**
     * @return The secret sessionId of this login session
     */
-   public String getSessionId() {
-      return this.securityCtx.getSessionId();
+   public String getSecretSessionId() {
+      return this.securityCtx.getSecretSessionId();
    }
 
    public I_Session getSecuritySession() {
@@ -438,7 +441,7 @@ public class SessionInfo implements I_Timeout, I_AdminSession
    }
 
    public final String getKillSession() throws XmlBlasterException {
-      glob.getAuthenticate().disconnect(securityCtx.getSessionId(), "<qos/>");
+      glob.getAuthenticate().disconnect(securityCtx.getSecretSessionId(), "<qos/>");
       return getId() + " killed";
    }
 }
