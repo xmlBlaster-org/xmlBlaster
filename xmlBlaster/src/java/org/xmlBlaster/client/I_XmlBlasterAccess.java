@@ -217,7 +217,7 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
    I_CallbackServer getCbServer();
 
    /**
-    * Create a descriptive ME, for logging only
+    * A unique name for this client, for logging only
     * @return e.g. "/node/heron/client/joe/3"
     */
    String getId();
