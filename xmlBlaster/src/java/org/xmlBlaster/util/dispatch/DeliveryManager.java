@@ -757,7 +757,12 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
          // NOTE: We would need to remove the 'final' qualifier to be able to set to null
 
          if (this.msgInterceptor != null) {
-            this.msgInterceptor.shutdown(this);
+            try {
+               this.msgInterceptor.shutdown(this);
+            }
+            catch (XmlBlasterException e) {
+               log.warn(ME, "Ignoring problems during shutdown of plugin: " + e.getMessage());
+            }
             //this.msgInterceptor = null;
          }
          if (this.deliveryConnectionsHandler != null) {
