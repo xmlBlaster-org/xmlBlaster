@@ -1,9 +1,8 @@
-This is xmlBlaster version 0.902 *stable* 2004-05-11
+This is xmlBlaster version 0.903 *stable* 2004-05-13
 
 
-Fixed a run level bug in the server core.
-
-The C++ client library now supports a persistent queue.
+Fixed a bug in the C and C++ client library, fixed
+telnet access.
 
 XmlBlaster  is  under development or productive in a huge range
 of  industries  like  satellite  control,  air  traffic control
@@ -33,9 +32,6 @@ http://www.xmlblaster.org/xmlBlaster/RELEASE_NOTES
 
 Known bugs:
 -----------
-1.   telnet/remoteconsole   loops  forever  after  shutdown  of
-   embeeded   xmlBlaster   (switch  off  in  such a  case  with
-   -admin.remoteconsole.port 0)
 
-2. Connection problems to remote RMI servers
+1. Connection problems to remote RMI servers
 

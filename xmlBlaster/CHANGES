@@ -1,6 +1,6 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
-Changes for xxx -> see cvs main branch
+Changes for 0.903 [2004-05-13]
 ==============================
 
  o Fixed telnet access bug which was introduced in 0.902
