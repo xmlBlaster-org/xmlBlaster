@@ -4,13 +4,6 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles the org::xmlBlaster::client::protocol::I_XmlBlasterConnections 
 ------------------------------------------------------------------------------*/
-
-/**
- * Interface for XmlBlaster, the supported methods on c++ client side. This is
- * a pure virtual class.
- * <p />
- * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
- */
 #ifndef _UTIL_DISPATCH_CONNECTIONSHANDLER_H
 #define _UTIL_DISPATCH_CONNECTIONSHANDLER_H
 
@@ -33,13 +26,19 @@ class I_Queue;
 
 namespace org { namespace xmlBlaster { namespace util { namespace dispatch {
 
+/**
+ * Interface for XmlBlaster, the supported methods on c++ client side. This is
+ * a pure virtual class.
+ * <p />
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
+ */
 class Dll_Export ConnectionsHandler : public I_Timeout, public org::xmlBlaster::util::dispatch::I_ConnectionsHandler
 {
 private:
    const std::string ME;
    org::xmlBlaster::util::qos::ConnectQos* connectQos_;
    org::xmlBlaster::util::qos::ConnectReturnQos* connectReturnQos_;
-   org::xmlBlaster::client::I_ConnectionProblems* connectionProblems_;
+   org::xmlBlaster::client::I_ConnectionProblems* connectionProblemsListener_;
    org::xmlBlaster::client::protocol::I_XmlBlasterConnection* connection_;
    enum States status_;
    org::xmlBlaster::util::Global& global_;

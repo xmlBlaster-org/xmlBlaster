@@ -39,7 +39,7 @@ ConnectionsHandler::ConnectionsHandler(org::xmlBlaster::util::Global& global,
 {
    ClientQueueProperty prop(global_, "");
    connectQos_         = NULL;
-   connectionProblems_ = NULL;
+   connectionProblemsListener_ = NULL;
    connectReturnQos_   = NULL;
    connection_         = NULL;
    queue_              = NULL;
@@ -124,7 +124,7 @@ ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
    }
    catch (XmlBlasterException &ex) {
       if (log_.trace()) log_.trace(ME, "exception occured when connecting");
-      if ( ex.isCommunication() && connectionProblems_) return queueConnect();
+      if ( ex.isCommunication() && pingIsStarted_) return queueConnect();
       else {
          if (log_.trace()) log_.trace(ME, string("the exception in connect is ") + ex.toXml());
          throw ex;
@@ -139,7 +139,7 @@ ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
    }
    enum States oldState = status_;
    status_ = CONNECTED;
-   if (connectionProblems_) connectionProblems_->reachedAlive(oldState, this);
+   if (connectionProblemsListener_) connectionProblemsListener_->reachedAlive(oldState, this);
    // start the ping if in failsafe, i.e. if delay > 0
    startPinger();
    if (log_.dump()) log_.dump(ME, string("::connect, the return qos is: ") + connectReturnQos_->toXml());
@@ -165,7 +165,7 @@ bool ConnectionsHandler::disconnect(const DisconnectQos& qos)
    bool ret = connection_->disconnect(qos);
    enum States oldState = status_;
    status_ = DEAD;
-   if (connectionProblems_) connectionProblems_->reachedDead(oldState, this);
+   if (connectionProblemsListener_) connectionProblemsListener_->reachedDead(oldState, this);
    return ret;
 }
 
@@ -278,7 +278,7 @@ PublishReturnQos ConnectionsHandler::publish(const MessageUnit& msgUnit)
       return connection_->publish(msgUnit);
    }   
    catch (XmlBlasterException& ex) {
-      if ( ex.isCommunication() && connectionProblems_) {
+      if ( ex.isCommunication() && pingIsStarted_) {
          toPollingOrDead(&ex);
          return queuePublish(msgUnit);
       }
@@ -378,7 +378,7 @@ vector<EraseReturnQos> ConnectionsHandler::erase(const EraseKey& key, const Eras
 void ConnectionsHandler::initFailsafe(I_ConnectionProblems* connectionProblems)
 {
 //   Lock lock(connectionMutex_);
-   connectionProblems_ = connectionProblems;
+   connectionProblemsListener_ = connectionProblems;
 }
 
 void ConnectionsHandler::toPollingOrDead(const org::xmlBlaster::util::XmlBlasterException* reason)
@@ -390,7 +390,7 @@ void ConnectionsHandler::toPollingOrDead(const org::xmlBlaster::util::XmlBlaster
                     ((reason != 0) ? (": " + reason->getMessage()) : ""));
       status_ = DEAD;
       connection_->shutdown();
-      if (connectionProblems_) connectionProblems_->reachedDead(oldState, this);
+      if (connectionProblemsListener_) connectionProblemsListener_->reachedDead(oldState, this);
       return;
    }
 
@@ -407,7 +407,7 @@ void ConnectionsHandler::toPollingOrDead(const org::xmlBlaster::util::XmlBlaster
    }
    */
    connection_->shutdown();
-   if (connectionProblems_) connectionProblems_->reachedPolling(oldState, this);
+   if (connectionProblemsListener_) connectionProblemsListener_->reachedPolling(oldState, this);
    startPinger();
 }
 
@@ -456,7 +456,7 @@ void ConnectionsHandler::timeout(void * /*userData*/)
             bool doFlush = true;
             enum States oldState = status_;
             status_ = CONNECTED;
-            if ( connectionProblems_ ) doFlush = connectionProblems_->reachedAlive(oldState, this);
+            if ( connectionProblemsListener_ ) doFlush = connectionProblemsListener_->reachedAlive(oldState, this);
  
             Lock lock(publishMutex_); // lock here to avoid publishing while flushing queue (to ensure sequence)
             if (sessionId != lastSessionId) {
@@ -466,6 +466,9 @@ void ConnectionsHandler::timeout(void * /*userData*/)
             if (doFlush) {
                try {
                   flushQueueUnlocked(queue_, true);
+               }
+               catch (const XmlBlasterException &ex) {
+                  log_.warn(ME, "An exception occured when trying to asynchroneously flush the contents of the queue. Probably not all messages have been sent. These unsent messages are still in the queue:" + ex.getMessage());
                }
                catch (...) {
                   log_.warn(ME, "an exception occured when trying to asynchroneously flush the contents of the queue. Probably not all messages have been sent. These unsent messages are still in the queue");
@@ -483,8 +486,8 @@ void ConnectionsHandler::timeout(void * /*userData*/)
          else {
             enum States oldState = status_;
             status_ = DEAD;
-            if ( connectionProblems_ ) {
-               connectionProblems_->reachedDead(oldState, this);
+            if ( connectionProblemsListener_ ) {
+               connectionProblemsListener_->reachedDead(oldState, this);
                // stopping
             }
          }
@@ -539,8 +542,8 @@ ConnectReturnQos& ConnectionsHandler::queueConnect()
    queue_->put(entry);
    enum States oldState = status_;
    status_ = POLLING;
-   if ( connectionProblems_ ) {
-      connectionProblems_->reachedPolling(oldState, this);
+   if ( connectionProblemsListener_ ) {
+      connectionProblemsListener_->reachedPolling(oldState, this);
       // stopping
    }
    startPinger();
@@ -572,7 +575,7 @@ long ConnectionsHandler::flushQueue()
          return 0;
       }
       log_.info(ME, "Created queue [" + queue_->getType() + "][" + queue_->getVersion() + "] which contains " +
-                    lexical_cast<string>(queue_->getNumOfEntries()) + " entries, we send them to the server");
+                    lexical_cast<string>(queue_->getNumOfEntries()) + " entries.");
    }
 
    return flushQueueUnlocked(queue_, true);
@@ -586,6 +589,10 @@ long ConnectionsHandler::flushQueueUnlocked(I_Queue *queueToFlush, bool doRemove
    if (status_ != CONNECTED || connection_ == NULL) return -1;
 
    long ret = 0;
+   if (!queueToFlush->empty()) {
+      log_.info(ME, "Queue [" + queue_->getType() + "][" + queue_->getVersion() + "] contains " +
+                  lexical_cast<string>(queue_->getNumOfEntries()) + " entries, we send them to the server");
+   }
    while (!queueToFlush->empty()) {
       log_.trace(ME, "flushQueueUnlocked: flushing one priority sweep");
       const vector<EntryType> entries = queueToFlush->peekWithSamePriority();
@@ -600,7 +607,7 @@ long ConnectionsHandler::flushQueueUnlocked(I_Queue *queueToFlush, bool doRemove
          }
          catch (XmlBlasterException &ex) {
            if (ex.isCommunication()) toPollingOrDead(&ex);
-           if (doRemove) queueToFlush->randomRemove(entries.begin(), iter);
+           //if (doRemove) queueToFlush->randomRemove(entries.begin(), iter);
            throw ex;
          }
          iter++;
