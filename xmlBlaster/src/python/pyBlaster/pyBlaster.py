@@ -227,7 +227,7 @@ class XmlBlasterClient:
         print "==> ::SUBSCRIBE:: <=="
         self.proxy.xmlBlaster.subscribe(self.sessionId, xmlKey, qos)
         
-    def unsubscribe(self, xmlKey, qos):
+    def unSubscribe(self, xmlKey, qos):
         """
         Unsubscribe from messages.
 
@@ -238,7 +238,7 @@ class XmlBlasterClient:
         @see org.xmlBlaster.engine.RequestBroker
         """
         print "==> ::UNSUBSCRIBE:: <=="
-        self.proxy.xmlBlaster.unsubscribe(self.sessionId, xmlKey, qos)
+        self.proxy.xmlBlaster.unSubscribe(self.sessionId, xmlKey, qos)
             
     def get(self, xmlKey, qos):
         """
