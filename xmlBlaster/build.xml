@@ -612,6 +612,8 @@ TODO
             <exclude name="README"/>
          </fileset>
       </copy>
+      <copy tofile="${build.dest}/org/xmlBlaster/test/j2ee/blasterClient.properties" file="${src.java.dir}/org/xmlBlaster/j2ee/k2/blasterk2.properties"/>
+      <copy tofile="${build.dest}/org/xmlBlaster/test/j2ee/blasterServer.properties" file="./config/xmlBlaster-jmx.properties.template"/>
       <javac srcdir="${build.src}/testsuite/src/java"
             destdir="${build.dest}"
             classpath="${cp}:${lib.dir}/${name}.jar"
@@ -809,6 +811,7 @@ TODO
          <test name="org.xmlBlaster.test.snmp.AllTests" fork="yes" todir="${report.dir}"/>
          <test name="org.xmlBlaster.test.persistence.AllTests" fork="yes" todir="${report.dir}"/>
          <test name="org.xmlBlaster.test.cluster.AllTests" fork="yes" todir="${report.dir}"/>
+         <test name="org.xmlBlaster.test.j2ee.AllTests" fork="yes" todir="${report.dir}"/>
          <test name="org.xmlBlaster.test.stress.AllTests" fork="yes" todir="${report.dir}"/>
          <test name="org.xmlBlaster.test.jmx.AllTests" fork="yes" todir="${report.dir}"/>
          <!-- build.sh -Dtest.class="org.xmlBlaster.test.C.AllTests" runTests -->
