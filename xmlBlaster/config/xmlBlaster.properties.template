@@ -43,7 +43,6 @@ queue/connection/defaultPlugin=RAM,1.0
 # Authentication and Authorization
 Security.Server.Plugin[simple][1.0]=org.xmlBlaster.authentication.plugins.simple.Manager
 Security.Server.Plugin[gui][1.0]=org.xmlBlaster.authentication.plugins.demo.Manager
-Security.Server.Plugin[a2Blaster][1.0]=org.xmlBlaster.authentication.plugins.a2Blaster.Manager
 Security.Server.Plugin[ldap][1.0]=org.xmlBlaster.authentication.plugins.ldap.Manager
 Security.Server.Plugin[htpasswd][1.0]=org.xmlBlaster.authentication.plugins.htpasswd.Manager
 
@@ -58,7 +57,6 @@ Security.Server.Plugin.htpasswd.secretfile=NONE
 #Security.Client.DefaultPlugin=htpasswd,1.0
 Security.Client.Plugin[gui][1.0]=org.xmlBlaster.authentication.plugins.demo.ClientPlugin
 Security.Client.Plugin[simple][1.0]=org.xmlBlaster.authentication.plugins.simple.ClientPlugin
-Security.Client.Plugin[a2Blaster][1.0]=org.xmlBlaster.authentication.plugins.a2Blaster.ClientPlugin
 Security.Client.Plugin[ldap][1.0]=org.xmlBlaster.authentication.plugins.ldap.ClientPlugin
 Security.Client.Plugin[htpasswd][1.0]=org.xmlBlaster.authentication.plugins.htpasswd.ClientPlugin
 #------------------------------------------------------------------------------
