@@ -13,13 +13,17 @@ using namespace std;
 namespace org { namespace xmlBlaster { namespace util {
    
 Destination::Destination(Global& global,
-                         const SessionQos& sessionQos,
+                         const SessionName& sessionName,
                          const string &queryType,
                          bool forceQueuing)
                        : global_(global),
                          log_(global.getLog("org.xmlBlaster.util")),
-                         sessionQos_(sessionQos)
+                         sessionName_(0)
 {
+   SessionName *p = new SessionName(global_, sessionName.getAbsoluteName());
+   SessionNameRef r(p);
+   sessionName_ = r;
+
    queryType_     = queryType;
    forceQueuing_  = forceQueuing;
 }
@@ -30,15 +34,19 @@ Destination::Destination(Global& global,
                          bool forceQueuing)
                        : global_(global),
                          log_(global.getLog("org.xmlBlaster.util")),
-                         sessionQos_(SessionQos(global, address))
+                         sessionName_(0)
 {
+   SessionName *p = new SessionName(global_, address);
+   SessionNameRef r(p);
+   sessionName_ = r;
+
    queryType_     = queryType;
    forceQueuing_  = forceQueuing;
 }
 
 
 Destination::Destination(const Destination& dest)
-   : global_(dest.global_), log_(dest.log_), sessionQos_(dest.sessionQos_)
+   : global_(dest.global_), log_(dest.log_), sessionName_(0)
 {
    copy(dest);
 }
@@ -69,14 +77,16 @@ void Destination::forceQueuing(bool forceQueuing)
    forceQueuing_ = forceQueuing;
 }
 
-void Destination::setDestination(const SessionQos& sessionQos)
+/*
+void Destination::setDestination(const SessionName& sessionName)
 {
-   sessionQos_ = sessionQos;
+   sessionName_ = sessionName;
 }
+*/
 
-SessionQos Destination::getDestination() const
+SessionNameRef Destination::getDestination() const
 {
-   return sessionQos_;
+   return sessionName_;
 }
 
 void Destination::setQueryType(const string &queryType)
@@ -95,7 +105,7 @@ string Destination::toXml(const string &extraOffset) const
    string ret;
    ret += offset + "<destination queryType='" + queryType_ + "'";
    ret += " forceQueuing='" + lexical_cast<string>(forceQueuing()) + "'";
-   ret +=  ">" + sessionQos_.getAbsoluteName() + "</destination>";
+   ret +=  ">" + sessionName_->getAbsoluteName() + "</destination>";
    return ret;
 }
 

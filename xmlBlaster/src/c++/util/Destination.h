@@ -9,13 +9,12 @@ Comment:   Holding destination address attributes
 #define _UTIL_DESTINATION_H
  
 #include <util/xmlBlasterDef.h>
-#include <util/qos/SessionQos.h>
+#include <util/SessionName.h>
+#include <util/I_Log.h>
 #include <string>
 
 namespace org { namespace xmlBlaster { namespace util {
 
-using namespace qos;
-   
 /**
  * Holding destination address attributes.
  * <p />
@@ -31,7 +30,7 @@ private:
    org::xmlBlaster::util::I_Log& log_;
 
    /** The destination address (==login name) or the XPath query std::string */
-   org::xmlBlaster::util::qos::SessionQos sessionQos_;
+   org::xmlBlaster::util::SessionNameRef sessionName_;
    /** EXACT is default */
    std::string queryType_;
    /** No queuing is default */
@@ -39,6 +38,10 @@ private:
 
    void copy(const Destination& dest)
    {
+      SessionName *p = new SessionName(global_, dest.sessionName_->getAbsoluteName());
+      SessionNameRef r(p);
+      sessionName_ = r;
+
       queryType_    = dest.queryType_;
       forceQueuing_ = dest.forceQueuing_;
    }
@@ -49,7 +52,7 @@ public:
     * Constructs the specialized quality of service destination object.
     */
    Destination(org::xmlBlaster::util::Global& global,
-               const org::xmlBlaster::util::qos::SessionQos& sessionQos,
+               const org::xmlBlaster::util::SessionName& sessionName,
                const std::string &queryType="EXACT",
                bool forceQueuing=false);
 
@@ -87,16 +90,16 @@ public:
     */
    void forceQueuing(bool forceQueuing);
 
-   /**
+   /*
     * Set the destination address or the destination query std::string.
     * @param destination The destination address or the query std::string
+   void setDestination(const org::xmlBlaster::util::SessionName& sessionName);
     */
-   void setDestination(const org::xmlBlaster::util::qos::SessionQos& sessionQos);
 
    /**
     * @param The destination address or XPath query std::string
     */
-   org::xmlBlaster::util::qos::SessionQos getDestination() const;
+   org::xmlBlaster::util::SessionNameRef getDestination() const;
 
    /**
     * @param queryType The query type, one of "EXACT" | "XPATH"
