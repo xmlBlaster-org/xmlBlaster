@@ -85,7 +85,12 @@ else
    echo -e "$BLACK_LTGREEN      Using JacORB_HOME=${JacORB_HOME}  $ESC"
 fi
 
-if ! [ -d ${JacORB_HOME} ] ; then
+if [ -d ${JacORB_HOME} ] ; then
+   if ! [ -f ${HOME}/.jacorb_properties ]; then
+	   cp ${JacORB_HOME}/jacorb_properties.template ${HOME}/.jacorb_properties
+		echo -e "$BLACK_RED   Please edit and customize ${HOME}/.jacorb_properties   $ESC"
+	fi
+else
    echo -e "$BLACK_RED   The directory JacORB_HOME=$JacORB_HOME doesn't exist   $ESC"
 fi
 
