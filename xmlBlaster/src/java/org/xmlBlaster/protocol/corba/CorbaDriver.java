@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.20 2001/09/04 11:51:50 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.21 2001/09/30 13:48:15 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -83,6 +83,15 @@ public class CorbaDriver implements I_Driver
          System.setProperty("org.omg.CORBA.ORBSingletonClass", XmlBlasterProperty.get("org.omg.CORBA.ORBSingletonClass", "org.jacorb.orb.ORBSingleton"));
       }
 
+      // We use default Port 7608 for naming service to listen ...
+      // Start Naming service
+      //    jaco -DOAPort=7608  org.jacorb.naming.NameServer /tmp/ns.ior
+      // and xmlBlaster will find it automatically if on same host
+      if (System.getProperty("ORBInitRef.NameService") == null) {
+         System.setProperty("ORBInitRef.NameService", XmlBlasterProperty.get("ORBInitRef.NameService", "corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root"));
+         Log.trace(ME, "Using corbaloc ORBInitRef.NameService=corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root to find a naming service");
+      }
+
       orb = org.omg.CORBA.ORB.init(args, null);
       try {
          rootPOA = org.omg.PortableServer.POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
@@ -157,7 +166,7 @@ public class CorbaDriver implements I_Driver
                name[0].kind = "MOM";
 
                nc.bind(name, authRef);
-               Log.info(ME, "Published AuthServer IOR to naming service");
+               Log.info(ME, "Published AuthServer IOR to naming service on " + System.getProperty("ORBInitRef.NameService"));
             }
             catch (XmlBlasterException e) {
                Log.warn(ME + ".NoNameService", e.reason);
@@ -315,7 +324,8 @@ public class CorbaDriver implements I_Driver
       }
       catch (Exception e) {
          if (Log.TRACE) Log.trace(ME + ".NoNameService", e.toString());
-         throw new XmlBlasterException(ME + ".NoNameService", "No CORBA naming service found - read docu at <http://www.jacorb.org> if you want one.");
+         throw new XmlBlasterException(ME + ".NoNameService", "No CORBA naming service found - start <xmlBlaster/bin/ns ns.ior> if you want one.");
+         //throw new XmlBlasterException(ME + ".NoNameService", "No CORBA naming service found - read docu at <http://www.jacorb.org> if you want one.");
       }
    }
 

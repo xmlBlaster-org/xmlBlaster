@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.26 2001/09/05 12:21:27 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.27 2001/09/30 13:48:34 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -67,7 +67,7 @@ import java.io.IOException;
  * first time the ORB is created.<br />
  * This will be fixed as soon as possible.
  *
- * @version $Revision: 1.26 $
+ * @version $Revision: 1.27 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class CorbaConnection implements I_XmlBlasterConnection
@@ -112,10 +112,22 @@ public class CorbaConnection implements I_XmlBlasterConnection
    public CorbaConnection(String[] args)
    {
       if (orb == null) { // Thread leak !!!
+
          // If not set, force to use JacORB instead of JDK internal ORB (which is outdated)
          if (System.getProperty("org.omg.CORBA.ORBClass") == null) {
             System.setProperty("org.omg.CORBA.ORBClass", XmlBlasterProperty.get("org.omg.CORBA.ORBClass", "org.jacorb.orb.ORB"));
             System.setProperty("org.omg.CORBA.ORBSingletonClass", XmlBlasterProperty.get("org.omg.CORBA.ORBSingletonClass", "org.jacorb.orb.ORBSingleton"));
+         }
+
+         // We use default Port 7608 for naming service to listen ...
+         // Start Naming service
+         //    jaco -DOAPort=7608  org.jacorb.naming.NameServer /tmp/ns.ior
+         // and xmlBlaster will find it automatically if on same host
+         //
+         // (Clients usually don't publish their IOR to a naming service, the transfer it via QoS to xmlBlaster)
+         if (System.getProperty("ORBInitRef.NameService") == null) {
+            System.setProperty("ORBInitRef.NameService", XmlBlasterProperty.get("ORBInitRef.NameService", "corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root"));
+            Log.trace(ME, "Using corbaloc ORBInitRef.NameService=corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root to find a naming service");
          }
          orb = org.omg.CORBA.ORB.init(args, null);
       }
