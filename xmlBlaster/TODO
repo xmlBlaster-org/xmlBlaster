@@ -3,8 +3,8 @@ TODO for release 0.80
 ---------------------
 
 (1) Generic support for DOM  and SAX in the xmlBlaster (JAXP)  [ok]
-(2) Integrate persistence support with Xindice                 [--]
-(3) Perl support(src/perl) with xmlrpc and not with COPE.      [--]
+(2) Integrate persistence support with Xindice                 [ok]
+(3) Perl support(src/perl) with xmlrpc and not with COPE.      [ok]
 (4) Suport for searching in our Maillinglist                   [ok]
 (5) Integrate XmlRpc                                           [ok]
 (6) Integrate XmlRpc for Python                                [ok]
@@ -16,7 +16,7 @@ TODO for release 0.80
 (12) Configure the xmlBlaster by xmlBlaster.xml                [--]
 (13) CLASSPATH is to long                                      [ok]
 (14) xmlBlaster HP support for all browsers                    [ok]
-(15) New callback framework                                    [--]
+(15) New callback framework                                    [ok]
 (16) Embed BeanShell or Javascript scripting                   [--]
 (17) drop xerces in lib/ant                                    [--]
 
@@ -92,18 +92,7 @@ TECHNOLOGY
 
 SERVER
 ------
-(1) Reliability of update() callback
-    The update() method is declared oneway, so the xmlBlaster
-    can't guarantee if the update is delivered.
-
-    Perhaps there should be 2 update variants,
-    one blocking (no keyword oneway) and one none-blocking (with keyword oneway).
-
-    In the blocking mode, xmlBlaster would need a timeout
-    or an extra thread per update client, so that not
-    one client can block the whole update sequence.
-
-(2) Transaction support, based on:
+    Transaction support, based on:
     Java(tm) Transaction Service (JTS) 1.0 Specification.
     JTS specifies the implementation of a Transaction Manager which
     supports the Java(tm) Transaction API (JTA) 1.0 Specification.
@@ -134,10 +123,6 @@ AUTHENTICATE
     * rename AuthServer to AuthenticationService
     * rename Server to xmlBlaster
 
-(3) Authentication (login etc)
-    Plugin possibility for existing user management systems
-    * JNDI with XML based LDAP access http://www.dsml.org/about.html
-
 AUTHORIZATION
 -------------
 (1) Authorization (ACL access control lists)
@@ -156,15 +141,8 @@ AUTHORIZATION
 HOMEPAGE
 --------
 (1) cvsweb access using  http://www.lyra.org/viewcvs/
-(2) Allow search e.g. with glimpse http://glimpse.cs.arizona.edu/
-    Wilma at http://www.hpc.uh.edu/majordomo/#wilma integrates glimpse and MHonArc
-    or
-      http://Dig http://www.htdig.org/
-    for an example see
-      http://www.xray.mpe.mpg.de/mailing-lists/perl5-porters/
-      http://www.hpc.uh.edu/fvwm/archive/
 
-(3) Documentation formatting from XML to PDF (XSL-FO):  Unicorn Formatting Objects (UFO)
+(2) Documentation formatting from XML to PDF (XSL-FO):  Unicorn Formatting Objects (UFO)
     http://www.unicorn-enterprises.com/
 
 TESTSUITE:
