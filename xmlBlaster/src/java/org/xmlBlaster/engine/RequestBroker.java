@@ -610,6 +610,10 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
       try {
          if (log.CALL) log.call(ME, "Entering get(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "') ...");
 
+         if (glob.isAdministrationCommand(xmlKey)) {
+            return glob.getMomClientGateway().getCommand(sessionInfo, xmlKey.getUniqueKey());
+         }
+
          // Note: Internal messages are currently not checkable with the mime access filter
          if (xmlKey.isInternalMsg())
             updateInternalStateInfo(unsecureSessionInfo);
