@@ -60,6 +60,8 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
 
    private int notifyCounter = 0;
 
+   private boolean isShutdown = false;
+
    /**
     * @param msgQueue The message queue witch i use (!!! TODO: this changes, we should pass it on every method where needed)
     * @param addrArr The addresses i shall connect to
@@ -232,7 +234,8 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
       //       we don't need to take care of ErrorCode.COMMUNICATION*
       if (log.CALL) log.call(ME, "Async delivery failed connection state is " + deliveryConnectionsHandler.getState().toString() + ": " + throwable.toString());
       if (entryList == null) {
-         log.warn(ME, "Didn't expect null entryList in handleWorkerException() for throwable " + throwable.getMessage());
+         if (!this.isShutdown)
+            log.warn(ME, "Didn't expect null entryList in handleWorkerException() for throwable " + throwable.getMessage());
          return;
       }
 
@@ -424,6 +427,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
 
       if (log.TRACE) log.trace(ME, "Executing useBurstModeTimer() collectTime=" + collectTime + " deliveryWorkerIsActive=" + deliveryWorkerIsActive);
       synchronized (this) {
+         if (this.isShutdown) return false;
          if (this.timerKey == null) {
             log.info(ME, "Starting burstMode timer with " + collectTime + " msec");
             this.timerKey = burstModeTimer.addTimeoutListener(this, collectTime, null);
@@ -450,6 +454,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
    private void startWorkerThread(boolean fromTimeout) {
       if (this.deliveryWorkerIsActive == false) {
          synchronized (this) {
+            if (this.isShutdown) return;
             if (this.deliveryWorkerIsActive == false) { // send message directly
                this.deliveryWorkerIsActive = true;
                this.notifyCounter = 0;
@@ -484,6 +489,8 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
     * @return true is status is OK and we can try to send a message
     */
    private boolean checkSending() {
+      if (this.isShutdown) return false; // assert
+
       if (msgQueue.isShutdown()) { // assert
          log.error(ME, "The queue is shutdown, can't activate callback worker thread.");
          Thread.currentThread().dumpStack();
@@ -548,6 +555,8 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
    void setDeliveryWorkerIsActive(boolean val) {
       deliveryWorkerIsActive = val;
       if (val == false) {
+         if (this.isShutdown) return;
+
          if (msgQueue.getNumOfEntries() > 0) {
             if (log.TRACE) log.trace(ME, "Finished callback job. Giving a kick to send the remaining " + msgQueue.getNumOfEntries() + " messages.");
             try {
@@ -584,26 +593,32 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
     */
    public void shutdown() {
       if (log.CALL) log.call(ME, "Entering shutdown ...");
-      removeBurstModeTimer();
+      if (this.isShutdown) return;
+      synchronized (this) {
+         if (this.isShutdown) return;
+         this.isShutdown = true;
 
-      // NOTE: We would need to remove the 'final' qualifier to be able to set to null
+         removeBurstModeTimer();
 
-      if (this.msgInterceptor != null) {
-         this.msgInterceptor.shutdown(this);
-         //this.msgInterceptor = null;
+         // NOTE: We would need to remove the 'final' qualifier to be able to set to null
+
+         if (this.msgInterceptor != null) {
+            this.msgInterceptor.shutdown(this);
+            //this.msgInterceptor = null;
+         }
+         if (deliveryConnectionsHandler != null) {
+            this.deliveryConnectionsHandler.shutdown();
+            //this.deliveryConnectionsHandler = null;
+         }
+         removeBurstModeTimer();
+         //this.burstModeTimer = null;
+         //this.msgQueue = null;
+         //this.failureListener = null;
+         //this.securityInterceptor = null;
+         //this.deliveryWorkerPool = null;
+         if (this.syncDeliveryWorker != null)
+            this.syncDeliveryWorker.shutdown();
       }
-      if (deliveryConnectionsHandler != null) {
-         this.deliveryConnectionsHandler.shutdown();
-         //this.deliveryConnectionsHandler = null;
-      }
-      removeBurstModeTimer();
-      //this.burstModeTimer = null;
-      //this.msgQueue = null;
-      //this.failureListener = null;
-      //this.securityInterceptor = null;
-      //this.deliveryWorkerPool = null;
-      if (this.syncDeliveryWorker != null)
-         this.syncDeliveryWorker.shutdown();
    }
 
    /**
