@@ -1,0 +1,38 @@
+This is a demo which shows the possibilities of xmlBlaster when
+combining it with javascript (using the rhino lifeConnect feature)
+and with SVG. It has currently been tested with the batik browser
+but it should also work with Mozilla (with native svg).
+
+How to use it:
+1) start a session of the xmlBlaster server (the chessRhino.svg is
+configured for the localhost. If you use an other host, please 
+change chessRhino.svg) by invoking
+java org.xmlBlaster.Main
+
+2) On another terminal start the svgbrowser from batik by invoking
+java org.apache.batik.apps.svgbrowser.Main demo/javaclients/svg/rhino/chessRhino.svg
+This loads already the chess game.
+
+3) start another svgbrowser on another terminal as you did in 2) and then you can start
+to play chess.
+
+
+To test the performance you can start another client which randomly moves around the chess
+pieces. This can be done by invoking:
+
+java javaclients.svg.rhino.ChessMover -interval 30
+
+where 30 here would be the number of milliseconds the application waits between 
+the movement of each piece.
+
+
+Enjoy
+
+Michele (laghi@swissinfo.org)
+
+
+
+
+
+
+
