@@ -1,0 +1,125 @@
+These are examples on how to access xmlBlaster from a C++ client
+
+* The C++ clients use the MICO (C++) CORBA library
+  and the XML Xerces C++ library.
+  Some headers from http://www.boost.org are included as well.
+
+* The xmlBlaster server runs with JacORB (Java)
+
+* C++ Compilation is done with ant, go to xmlBlaster root directory and type:
+
+     build.bat cpp-test
+  
+  or
+
+     build.sh cpp-test
+
+  which will first compile the xmlBlasterClient shared library (dll/so/sl)
+  and then some C++ executables to test C++ access to xmlBlaster.
+
+  This should compile with g++ on all OS (tested on Linux),
+  and with MS Visual C++ 6.
+
+* IMPORTANT:
+  See xmlBlaster/src/c++/README how to build the
+     xmlBlasterClient.dll   (shared library Windows)
+     libxmlBlasterClient.so (shared library Linux)
+  on problems.
+
+
+To run the clients, change to the 'bin' directory:
+
+   TestGet -h
+
+displays usage informations.
+
+
+Using POA, passing IOR with internal http download:
+---------------------------------------------------
+
+a) Start the xmlBlaster server
+
+   java org.xmlBlaster.Main
+
+
+b) And connect with the C++ client (cd $XMLBLASTER_HOME/testsuite/src/c++/bin)
+
+   TestGet -hostname <HostWhereXmlBlasterRuns>
+
+
+Using POA, passing IOR by file:
+-------------------------------
+
+a) Start the xmlBlaster server
+
+   java org.xmlBlaster.Main -ior.file /tmp/ior.dat
+
+
+b) And connect with the C++ client (cd $XMLBLASTER_HOME/testsuite/src/c++/bin)
+
+   TestGet -ior.file /tmp/ior.dat
+
+
+Using POA (clientPOA.cpp) with a naming service:
+------------------------------------------------
+
+You need to have a running web server and set the DocumentRoot to e.g.
+
+   export DocumentRoot=/opt/local/httpd/html
+
+3) Start the naming service (with a running web server)
+
+   java -DOAPort=7608 org.jacorb.naming.NameServer ${DocumentRoot}/NS_Ref
+
+
+4) Start the xmlBlaster server (The web server URL is in jacorb.properties)
+
+   java org.xmlBlaster.Main
+
+
+5) And connect with the C++ client
+
+   ./clientPOA -ORBNamingIOR `cat ${DocumentRoot}/NS_Ref`
+
+
+On problems edit $HOME/jacorb.properties and set
+   jacorb.verbosity=1
+
+
+
+mico C++ callback:
+------------------
+
+When using -ORBIIOPAddr, Mico will only listen on
+the one interface that handles this IP address, so servers will only
+be addressable using that exact address.
+
+You might want to try using -ORBIIOPAddr inet::9000 instead; Mico
+will then listen on INADDR_ANY.
+
+
+run forever:
+------------
+
+ while (!finished) {
+    orb->perform_work ();
+ }
+
+
+mico name service with JacORB:
+------------------------------
+
+nsd --ior $HOME/NS_Ref -ORBNoCodeSets -ORBIIOAddr inet:155.157.20.64:12456 &
+
+The path $HOME/NS_Ref must match the entry in jacorb.properties
+
+-  clientPOA -ORBNamigAddr corbaname::localhost:7608#MyService
+-  TestGet -ORBNamigAddr corbaname::localhost:7608#xmlBlaster-Authenticate.MOM
+-  TestGet -ORBNamigAddr corbaname:rir:/NameService#xmlBlaster-Authenticate.MOM
+
+From mico mailing list: You can use the IOR string
+directly using '-ORBNamingIOR IOR:....'. Second, you can put the IOR into
+a file, and then use '-ORBNamingIOR file:///where/is/that/file'.
+
+client -ORBInitRef NameService=corbaloc:iiop:1.2@127.0.0.1:1050/NameService
+I can use mico client access j2eesdk 1.3 ejb server under win2000.
