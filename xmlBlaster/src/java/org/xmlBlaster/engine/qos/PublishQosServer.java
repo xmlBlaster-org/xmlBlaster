@@ -17,6 +17,7 @@ import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.cluster.NodeId;
 import org.xmlBlaster.util.cluster.RouteInfo;
+import org.xmlBlaster.engine.queuemsg.TopicEntry;
 
 import java.util.ArrayList;
 
@@ -34,22 +35,24 @@ public final class PublishQosServer
    private String ME = "PublishQosServer";
    private final Global glob;
    private final MsgQosData msgQosData;
+   private boolean isClusterUpdate = false;
+   private TopicEntry topicEntry;
 
    /**
     * Constructor which accepts parsed object. 
     */
    public PublishQosServer(Global glob, QosData msgQosData) {
-      this(glob, (MsgQosData)msgQosData);
+      this(glob, (MsgQosData)msgQosData, false);
    }
 
    /**
     * Constructor which accepts parsed object.
+    * @param fromPersistenceStore true if recovered from persistency
     */
-   public PublishQosServer(Global glob, MsgQosData msgQosData) {
+   public PublishQosServer(Global glob, MsgQosData msgQosData, boolean fromPersistenceStore) {
       this.glob = glob;
       this.msgQosData = msgQosData;
-
-      this.msgQosData.setFromPersistenceStore(false);
+      this.msgQosData.setFromPersistenceStore(fromPersistenceStore);
       if (!this.msgQosData.isFromPersistenceStore()) {
          this.msgQosData.touchRcvTimestamp();
       }
@@ -68,17 +71,11 @@ public final class PublishQosServer
    /**
     * Constructs the specialized quality of service object for a publish() call.
     * For internal use only, this message is sent from the persistence layer
-    * @param the XML based ASCII string
-    * @param true
+    * @param xmlQos The XML based ASCII string
+    * @param fromPersistenceStore true if recovered from persistency
     */
    public PublishQosServer(Global glob, String xmlQos, boolean fromPersistenceStore) throws XmlBlasterException {
-      this.glob = glob;
-      this.msgQosData = glob.getMsgQosFactory().readObject(xmlQos);
-      this.msgQosData.setFromPersistenceStore(fromPersistenceStore);
-      if (!fromPersistenceStore) {
-         this.msgQosData.touchRcvTimestamp();
-      }
-      completeDestinations();
+      this(glob, glob.getMsgQosFactory().readObject(xmlQos), fromPersistenceStore);
    }
 
    /**
@@ -103,6 +100,31 @@ public final class PublishQosServer
     */
    public MsgQosData getData() {
       return this.msgQosData;
+   }
+
+   public boolean isClusterUpdate() {
+      return this.isClusterUpdate;
+   }
+
+   /**
+    * The PublishQosServer supports to transport information about cluster callbacks
+    */
+   public void setClusterUpdate(boolean isClusterUpdate) {
+      this.isClusterUpdate = isClusterUpdate;
+   }
+
+   /**
+    * @return Not null if administratice message which is recovered from persistency
+    */
+   public TopicEntry getTopicEntry() {
+      return this.topicEntry;
+   }
+
+   /**
+    * The PublishQosServer supports to transport a topicEntry instance
+    */
+   public void setTopicEntry(TopicEntry topicEntry) {
+      this.topicEntry = topicEntry;
    }
 
    /**
