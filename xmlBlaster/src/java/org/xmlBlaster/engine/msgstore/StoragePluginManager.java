@@ -58,7 +58,7 @@ public class StoragePluginManager extends PluginManagerBase
    public StoragePluginManager(Global glob) {
       super(glob);
       this.glob = glob;
-      this.log = glob.getLog("core");
+      this.log = glob.getLog("persistence");
       this.ME = "StoragePluginManager" + this.glob.getLogPrefixDashed();
       if (log.CALL) log.call(ME, "Constructor StoragePluginManager");
    }
@@ -81,6 +81,7 @@ public class StoragePluginManager extends PluginManagerBase
     * @return The plugin for this type and version or null if none is specified or type=="undef"
     */
    public I_Map getPlugin(String type, String version, StorageId storageId, QueuePropertyBase props) throws XmlBlasterException {
+      if (log.CALL) log.call(ME, "getPlugin(type="+type+", version="+version+", storageId="+storageId+", pluginEnvClass="+this.pluginEnvClass+")");
       return getPlugin(new PluginInfo(glob, this, type, version,
                                       new ContextNode(glob, this.pluginEnvClass, storageId.getPrefix(), glob.getContextNode())),
                        storageId, props);

@@ -47,7 +47,7 @@ public final class MapPlugin implements I_Map, I_Plugin
    public void initialize(StorageId uniqueMapId, Object userData) throws XmlBlasterException {
       setProperties(userData); // sets this.property
       this.glob = this.property.getGlobal();
-      this.log = glob.getLog("cache");
+      this.log = glob.getLog("persistence");
 
 
       this.mapId = uniqueMapId;
@@ -94,6 +94,7 @@ public final class MapPlugin implements I_Map, I_Plugin
     */
    public I_MapEntry get(final long uniqueId) throws XmlBlasterException {
       final String key = ""+uniqueId;
+      if (log.CALL) log.call(ME, "get(" + key + ")");
       synchronized (this.storage) {
          return (I_MapEntry)this.storage.get(key);
       }
@@ -103,6 +104,7 @@ public final class MapPlugin implements I_Map, I_Plugin
     * @see I_Map#getAll()
     */
    public I_MapEntry[] getAll() throws XmlBlasterException {
+      if (log.CALL) log.call(ME, "getAll()");
       synchronized (this.storage) {
          return (I_MapEntry[])this.storage.values().toArray(new I_MapEntry[this.storage.size()]);
       }
@@ -115,6 +117,7 @@ public final class MapPlugin implements I_Map, I_Plugin
       if (entry == null) {
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "put(I_MapEntry="+entry+")");
       }
+      if (log.CALL) log.call(ME, "put(" + entry.getLogId() + ")");
 
       if (getNumOfEntries() > property.getMaxMsg()) { // Allow superload one time only
          String reason = "Message store overflow, number of entries=" + property.getMaxMsg() +
@@ -155,6 +158,7 @@ public final class MapPlugin implements I_Map, I_Plugin
    }
 
    public int remove(final I_MapEntry mapEntry) throws XmlBlasterException {
+      if (log.CALL) log.call(ME, "remove(" + mapEntry.getLogId() + ")");
       synchronized (this.storage) {
          I_MapEntry entry = (I_MapEntry)this.storage.remove(mapEntry.getUniqueIdStr());
          if (entry == null)
@@ -177,6 +181,7 @@ public final class MapPlugin implements I_Map, I_Plugin
    }
 
    public long clear() {
+      if (log.CALL) log.call(ME, "clear()");
       synchronized(this.storage) {
          long ret = (long)this.storage.size();
          this.storage.clear();
@@ -229,7 +234,7 @@ public final class MapPlugin implements I_Map, I_Plugin
    }
 
    public final void shutdown(boolean force) {
-      if (log.TRACE) log.trace(ME, "Entering shutdown(" + this.storage.size() + ")");
+      if (log.CALL) log.call(ME, "Entering shutdown(" + this.storage.size() + ")");
       //Thread.currentThread().dumpStack();
       synchronized (this.storage) {
          if (this.storage.size() > 0) {

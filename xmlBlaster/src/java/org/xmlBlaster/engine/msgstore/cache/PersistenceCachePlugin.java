@@ -115,7 +115,7 @@ public class PersistenceCachePlugin implements I_Plugin, I_ConnectionListener, I
 
          this.property = null;
          this.glob = (org.xmlBlaster.engine.Global)((QueuePropertyBase)userData).getGlobal();
-         this.log = glob.getLog("queue");
+         this.log = glob.getLog("persistence");
          this.ME = this.getClass().getName() + "-" + uniqueQueueId;
          this.queueId = uniqueQueueId;
          try {
@@ -124,7 +124,7 @@ public class PersistenceCachePlugin implements I_Plugin, I_ConnectionListener, I
          catch(Throwable e) {
             throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "Can't configure queue, your properties are invalid", e);
          }
-         if (log.CALL) log.call(ME, "Entering initialize()");
+         if (log.CALL) log.call(ME, "Entering initialize(" + getType() + ", " + getVersion() + ")");
 
          StoragePluginManager pluginManager = glob.getStoragePluginManager();
          QueuePropertyBase queuePropertyBase = (QueuePropertyBase)userData;
@@ -217,6 +217,7 @@ public class PersistenceCachePlugin implements I_Plugin, I_ConnectionListener, I
     */
    public void setProperties(Object userData) throws XmlBlasterException {
       if (userData == null) return;
+      if (log.CALL) log.call(ME, "Entering setProperties()");
       QueuePropertyBase newProp;
       try {
          newProp = (QueuePropertyBase)userData;
@@ -258,7 +259,7 @@ public class PersistenceCachePlugin implements I_Plugin, I_ConnectionListener, I
       if (mapEntry == null)
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "put(I_MapEntry="+mapEntry+")");
 
-      if (log.CALL) this.log.call(ME, "put mapEntry " + mapEntry.getLogId());
+      if (log.CALL) this.log.call(ME, "put(" + mapEntry.getLogId() + ")");
       XmlBlasterException e = null;
       int numPersistentPut = 0;
       int numTransientPut = 0;
@@ -369,6 +370,8 @@ public class PersistenceCachePlugin implements I_Plugin, I_ConnectionListener, I
     * @see I_Map#get(long)
     */
    public I_MapEntry get(final long uniqueId) throws XmlBlasterException {
+      if (log.CALL) log.call(ME, "Entering get(" + uniqueId + ")");
+
       I_MapEntry mapEntry = this.transientStore.get(uniqueId);
       if (mapEntry != null) {
          return mapEntry;
@@ -401,6 +404,7 @@ public class PersistenceCachePlugin implements I_Plugin, I_ConnectionListener, I
     * @see I_Map[]#getAll()
     */
    public I_MapEntry[] getAll() throws XmlBlasterException {
+      if (log.CALL) log.call(ME, "Entering getAll()");
       synchronized (this) {
          //log.error(ME, "getAll() DEBUG ONLY: numSwapped=" + numSwapped() + " transient=" + this.transientStore.getNumOfEntries() + " persistentStore=" + this.persistentStore.getNumOfEntries());
          //log.error(ME, "getAll() DEBUG ONLY: " + toXml(""));
@@ -431,7 +435,7 @@ public class PersistenceCachePlugin implements I_Plugin, I_ConnectionListener, I
     * @see I_Map#remove(I_MapEntry)
     */
    public int remove(final I_MapEntry mapEntry) throws XmlBlasterException {
-      if (log.CALL) this.log.call(ME, "Removing mapEntry " + mapEntry.getLogId());
+      if (log.CALL) this.log.call(ME, "remove(" + mapEntry.getLogId() + ")");
       synchronized (this) {
          // search in RAM storage
          int num = this.transientStore.remove(mapEntry);
