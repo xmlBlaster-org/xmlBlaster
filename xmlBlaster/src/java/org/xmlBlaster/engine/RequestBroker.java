@@ -173,7 +173,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
 
       //this.burstModeTimer = new Timeout("BurstmodeTimer");
 
-      myselfLoginName = new SessionName(glob, glob.getAdminId(), internalLoginNamePrefix + "[" + glob.getAdminId() + "]");
+      myselfLoginName = new SessionName(glob, glob.getNodeId(), internalLoginNamePrefix + "[" + glob.getAdminId() + "]");
       this.unsecureSessionInfo = authenticate.unsecureCreateSession(myselfLoginName);
 
       try {
@@ -1296,6 +1296,24 @@ synchronized (this) { // Change to snychronized(messageUnitHandler) {
             for (int ii = 0; ii<destinationList.size(); ii++) {
                Destination destination = (Destination)destinationList.get(ii);
                if (log.TRACE) log.trace(ME, "Delivering message to destination [" + destination.getDestination() + "]");
+               log.info(ME, "Delivering message to destination [" + destination.getDestination() + "]");
+
+               if (useCluster) {
+                  if (!isClusterUpdate) { // updates from other nodes are arriving here in publish as well
+                     try {
+                        PublishReturnQos ret = glob.getClusterManager().forwardPtpPublish(sessionInfo, msgUnitWrapper, destination);
+                        if (ret != null) { // Message was forwarded to another cluster
+                           retVal = ret; // TODO: How to return multiple retVal from multiple destinations? !!!
+                           continue;
+                        }
+                     }
+                     catch (XmlBlasterException e) {
+                        e.printStackTrace();
+                        throw e;
+                     }
+                  }
+               }
+
                if (destination.getDestination().isSession()) {
                   SessionInfo receiverSessionInfo = authenticate.getSessionInfo(destination.getDestination());
                   if (receiverSessionInfo == null) {
