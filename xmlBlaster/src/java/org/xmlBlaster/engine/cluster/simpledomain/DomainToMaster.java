@@ -158,6 +158,7 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
       //XmlKey xmlKey = msgWrapper.getMessageUnitHandler().getXmlKey(); // This key from the current messsage is DOM parsed
       XmlKey xmlKey = msgWrapper.getXmlKey();
 
+      /*
       // Look if we can handle it simple ...
       if (xmlKey.isDefaultDomain()) {
          if (nodeDomainInfo.getClusterNode().isLocalNode()) {
@@ -176,6 +177,7 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
             }
          }
       }
+      */
 
       XmlKey[] keyMappings = nodeDomainInfo.getKeyMappings();  // These are the key based queries
 
@@ -184,8 +186,26 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
       for (int ii=0; keyMappings!=null && ii<keyMappings.length; ii++) {
          if (xmlKey.match(keyMappings[ii])) {
             log.info(ME, "Found master='" + nodeDomainInfo.getNodeId().getId() + "' stratum=" + nodeDomainInfo.getStratum() + " for message oid='" + msgWrapper.getUniqueKey() + "' domain='" + xmlKey.getDomain() + "'.");
-            clusterNode = nodeDomainInfo.getClusterNode(); // Found the master
-            return clusterNode;
+            AccessFilterQos[] filterQos = keyMappings[ii].getFilterQos();
+            if (filterQos != null) {
+               log.info(ME, "Found " + filterQos.length + " filter rules in XmlKey ...");
+               for (int jj=0; jj<filterQos.length; jj++) {
+                  I_AccessFilter filter = glob.getRequestBroker().getAccessPluginManager().getAccessFilter(
+                                                filterQos[jj].getType(),
+                                                filterQos[jj].getVersion(), 
+                                                xmlKey.getContentMime(),
+                                                xmlKey.getContentMimeExtended());
+                  log.info(ME, "Checking filter='" + filterQos[jj].getQuery() + "' on message content='" + msgWrapper.getMessageUnit().getContentStr() + "'");
+                  SubjectInfo subjectInfo = null; // TODO: Pass sessionInfo.getSubjectInfo() or subjectInfo here
+                  if (filter != null && filter.match(subjectInfo, subjectInfo,
+                                                msgWrapper, filterQos[jj].getQuery())) {
+                     log.info(ME, "Found master='" + nodeDomainInfo.getNodeId().getId() + "' stratum=" + nodeDomainInfo.getStratum() + " for message oid='" + msgWrapper.getUniqueKey() + "' with filter='" + filterQos[jj].getQuery() + "'.");
+                     return nodeDomainInfo.getClusterNode(); // Found the master
+                  }
+               }
+            }
+            else
+               return nodeDomainInfo.getClusterNode(); // Found the master
          }
       }
 
