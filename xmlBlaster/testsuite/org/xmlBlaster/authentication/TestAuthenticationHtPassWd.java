@@ -15,7 +15,7 @@ public class TestAuthenticationHtPassWd extends TestCase
 {
   private ServerThread serverThread = null;
   private final String RIGHT_USERNAME = "existingUser";
-  private final String START_WITH_USERNAME = "existing";
+  private final String PARTIAL_USERNAME = "existingSomeThingElseStandsBehind";
   private final String RIGHT_PASSWORD = "existingUserPW";
   private final String WRONG_USERNAME = "notExistingUser";
   private final String WRONG_PASSWORD = "notExistingUserPW";
@@ -36,6 +36,7 @@ public class TestAuthenticationHtPassWd extends TestCase
     this.userhome = glob.getProperty().get("user.home","/home/astelzl")+java.io.File.separatorChar;
     try
     { FileUtil.writeFile(userhome+"test.htpasswd","existingUser:yZum5CYzDk.EE\n");
+      FileUtil.writeFile(userhome+"test.htpasswd2","existing:yZum5CYzDk.EE\n");
       FileUtil.writeFile(userhome+"test.htpasswd1","*");
     }
     catch(Exception ex)
@@ -53,7 +54,7 @@ public class TestAuthenticationHtPassWd extends TestCase
     String[] args = new String[4+ports.length];
     switch (testcase)
     { case 1: args[0] = "-Security.Server.Plugin.htpasswd.secretfile";      
-              args[1] = userhome+"test.htpasswd";
+              args[1] = userhome+"test.htpasswd2";
               args[2] = "-Security.Server.Plugin.htpasswd.allowPartialUsername";
               args[3] = "true";
               break;
@@ -99,7 +100,7 @@ public class TestAuthenticationHtPassWd extends TestCase
       ex.printStackTrace();
     }
     try
-    { ConnectQos qos = new ConnectQos(glob,START_WITH_USERNAME, RIGHT_PASSWORD);
+    { ConnectQos qos = new ConnectQos(glob,PARTIAL_USERNAME, RIGHT_PASSWORD);
       ConnectReturnQos conRetQos = con.connect(qos, null);
       con.disconnect(null);
     }
