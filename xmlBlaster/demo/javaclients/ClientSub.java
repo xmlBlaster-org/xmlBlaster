@@ -3,7 +3,7 @@ Name:      ClientSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSub.java,v 1.2 1999/12/13 12:42:58 ruff Exp $
+Version:   $Id: ClientSub.java,v 1.3 1999/12/13 12:44:46 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -18,8 +18,8 @@ import org.xmlBlaster.clientIdl.*;
 
 
 /**
- * This client tests the method subscribe() with a later publish() with XPath query
- * The subscribe() should be recognized for this later arriving publish()
+ * This client tests the method subscribe() with a later publish() with XPath query.<br />
+ * The subscribe() should be recognized for this later arriving publish(). 
  * <p>
  * This client may be invoked multiple time on the same xmlBlaster server,
  * as it cleans up everything after his test are done.
