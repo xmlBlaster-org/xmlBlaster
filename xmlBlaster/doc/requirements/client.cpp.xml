@@ -265,7 +265,7 @@ int main(int args, char ** argv)
        <tr>
        <td>3</td>
        <td>Linux 2.4.18</td>
-       <td><a href="http://www.gnu.org/software/gcc/gcc.html">g++</a> 3.2</td>
+       <td><a href="http://gcc.gnu.org/">g++</a> 3.2</td>
        <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.842</a></td>
        <td><a href="http://omniorb.sourceforge.net" target="others">omnithread</a>, <a href="http://www.boost.org" target="others">boost</a></td>
        <td>CORBA: <a href="http://www.cs.wustl.edu/~schmidt/TAO.html" target="others">ACE 5.3 and TAO 1.3</a></td>
@@ -278,7 +278,7 @@ int main(int args, char ** argv)
        <tr>
        <td>4</td>
        <td>Linux 2.4.4 and 2.4.18</td>
-       <td><a href="http://www.gnu.org/software/gcc/gcc.html">g++</a> 2.95.3 and 3.2</td>
+       <td><a href="http://gcc.gnu.org/">g++</a> 2.95.3 and 3.2</td>
        <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.842</a></td>
        <td><a href="http://omniorb.sourceforge.net" target="others">omnithread</a>, <a href="http://www.boost.org" target="others">boost</a></td>
        <td>CORBA: <a href="http://www.mico.org/" target="others">mico 2.3.7</a></td>
@@ -317,7 +317,7 @@ int main(int args, char ** argv)
        <tr>
        <td>7</td>
        <td>Linux 2.4.4</td>
-       <td><a href="http://www.gnu.org/software/gcc/gcc.html">gcc 2.95.3 compiler</a></td>
+       <td><a href="http://gcc.gnu.org/">gcc 2.95.3 compiler</a></td>
        <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.842</a></td>
        <td><a href="http://omniorb.sourceforge.net" target="others">omnithread</a></td>
        <td>CORBA: <a href="http://www.iona.com/" target="others">Orbix E2A v. 5.1</a></td>
@@ -330,7 +330,7 @@ int main(int args, char ** argv)
        <tr>
        <td>8</td>
        <td>Linux 2.4.4</td>
-       <td><a href="http://www.gnu.org/software/gcc/gcc.html">gcc 2.95.3 compiler</a></td>
+       <td><a href="http://gcc.gnu.org/">gcc 2.95.3 compiler</a></td>
        <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.844</a></td>
        <td><a href="http://omniorb.sourceforge.net" target="others">omnithread</a></td>
        <td>CORBA: <a href="http://www.iona.com/" target="others">ORBACUS v. 4.1.0</a></td>
@@ -343,7 +343,7 @@ int main(int args, char ** argv)
        <tr>
        <td>9</td>
        <td>Linux 2.4.20</td>
-       <td><a href="http://www.gnu.org/software/gcc/gcc.html">g++</a> 3.3</td>
+       <td><a href="http://gcc.gnu.org/">g++</a> 3.3</td>
        <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.846</a></td>
        <td><a href="http://omniorb.sourceforge.net" target="others">omnithread</a></td>
        <td>CORBA: <a href="http://www.cs.wustl.edu/~schmidt/TAO.html" target="others">ACE 5.3 and TAO 1.3</a></td>
@@ -356,7 +356,7 @@ int main(int args, char ** argv)
        <tr>
        <td>10</td>
        <td>Linux 2.4.20</td>
-       <td><a href="http://www.gnu.org/software/gcc/gcc.html">g++</a> 3.3</td>
+       <td><a href="http://gcc.gnu.org/">g++</a> 3.3</td>
        <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.846</a></td>
        <td><a href="http://omniorb.sourceforge.net" target="others">omnithread</a></td>
        <td>CORBA: <a href="http://www.mico.org" target="others">mico 2.3.8</a></td>
@@ -369,7 +369,7 @@ int main(int args, char ** argv)
        <tr>
        <td>11</td>
        <td>Linux 2.4.20</td>
-       <td><a href="http://www.gnu.org/software/gcc/gcc.html">g++</a> 3.3</td>
+       <td><a href="http://gcc.gnu.org/">g++</a> 3.3</td>
        <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.848+</a></td>
        <td><a href="http://omniorb.sourceforge.net" target="others">omnithread</a></td>
        <td>CORBA: <a href="http://omniorb.sourceforge.net/" target="others">OmniORB 4.0.1</a></td>
@@ -395,7 +395,7 @@ int main(int args, char ** argv)
        <tr>
        <td>13</td>
        <td>Linux 2.4.21</td>
-       <td><a href="http://www.gnu.org/software/gcc/gcc.html">g++</a> 3.3.1</td>
+       <td><a href="http://gcc.gnu.org/">g++</a> 3.3.1</td>
        <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.85e+</a></td>
        <td><a href="http://omniorb.sourceforge.net" target="others">omnithread</a></td>
        <td>CORBA: <a href="http://www.mico.org" target="others">mico 2.3.11 (is now multi threaded)</a></td>
@@ -408,7 +408,7 @@ int main(int args, char ** argv)
        <tr>
        <td>14</td>
        <td>Linux 2.4.21</td>
-       <td><a href="http://www.gnu.org/software/gcc/gcc.html">g++</a> 3.3.1</td>
+       <td><a href="http://gcc.gnu.org/">g++</a> 3.3.1</td>
        <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.85e+</a></td>
        <td><a href="http://omniorb.sourceforge.net" target="others">omnithread</a></td>
        <td><a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.socket.html" target="others">SOCKET</a></td>
@@ -460,7 +460,7 @@ int main(int args, char ** argv)
        <tr>
        <td>18</td>
        <td>IBM s390 with Linux 2.4.19</td>
-       <td><a href="http://www.gnu.org/software/gcc/gcc.html">g++</a> 3.2.2</td>
+       <td><a href="http://gcc.gnu.org/">g++</a> 3.2.2</td>
        <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.9</a></td>
        <td><a href="http://omniorb.sourceforge.net" target="others">omnithread</a></td>
        <td><a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.socket.html" target="others">SOCKET</a></td>
@@ -535,6 +535,6 @@ cvs log Global.cpp
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
    <date>2003 01 15</date>
-   <revision>$Revision: 1.29 $</revision>
+   <revision>$Revision: 1.30 $</revision>
 </requirement>
 

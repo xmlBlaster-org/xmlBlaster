@@ -145,7 +145,7 @@ sqlite> .exit
        <tr>
        <td>1</td>
        <td>Linux 2.6.4</td>
-       <td><a href="http://www.gnu.org/software/gcc/gcc.html" target="others">g++ and gcc 3.3.3</a></td>
+       <td><a href="http://gcc.gnu.org/" target="others">g++ and gcc 3.3.3</a></td>
        <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.901+</a></td>
        <td><a href="http://www.gnu.org/software/libc/" target="others">pthread</a></td>
        <td>2004-05-04</td>
@@ -260,7 +260,7 @@ TestQueue
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2004 04 09</date>
-   <revision>$Revision: 1.2 $</revision>
+   <revision>$Revision: 1.3 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
