@@ -23,6 +23,7 @@ import junit.framework.*;
  */
 public class PublishQosTest extends TestCase {
    protected Global glob;
+   protected LogChannel log;
    int counter = 0;
 
    public PublishQosTest(String name) {
@@ -31,6 +32,7 @@ public class PublishQosTest extends TestCase {
 
    protected void setUp() {
       this.glob = Global.instance();
+      this.log = glob.getLog(null);
    }
 
    public void testParse() {
@@ -121,7 +123,8 @@ public class PublishQosTest extends TestCase {
          assertEquals("", 5, qos.getPriority());
          assertEquals("", false, qos.isFromPersistenceStore());
          assertTrue("", timestamp.getTimestamp() < qos.getRcvTimestamp().getTimestamp());
-         assertTrue("", (qos.getRcvTimestamp().getTimestamp()-timestamp.getTimestamp()) < 2000000L); // nanos (2 sec)
+         assertTrue("rcv="+qos.getRcvTimestamp().getTimestamp()+" now="+timestamp.getTimestamp()+" diff="+(qos.getRcvTimestamp().getTimestamp()-timestamp.getTimestamp()),
+                   (qos.getRcvTimestamp().getTimestamp()-timestamp.getTimestamp())/1000L < 1000000L); // micors (1 sec)
          assertEquals("", null, qos.getDestinations());
       }
       catch (XmlBlasterException e) {
