@@ -291,6 +291,11 @@ public class Timeout extends Thread
 
    /**
     * Checks if key is null -> addTimeoutListener else refreshTimeoutListener() in a thread save way. 
+    * <br />
+    * Note however that your passed key is different from the returned key and you need
+    * to synchronize this call to avoid having a stale key (two threads enter this method
+    * the same time, the key gets invalid by the first thread and the second passed a stale key
+    * as the first thread has not yet returned to update 'key')
     */
    public final Timestamp addOrRefreshTimeoutListener(I_Timeout listener, long delay, Object userData, Timestamp key) 
       throws XmlBlasterException
