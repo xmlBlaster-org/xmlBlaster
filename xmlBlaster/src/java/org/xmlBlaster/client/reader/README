@@ -19,3 +19,11 @@ How to get help:
 
    java org.xmlBlaster.client.reader.SubscribeMessage -?
 
+
+
+Example to get synchronous a message:
+=====================================
+
+
+   java org.xmlBlaster.client.reader.GetMessage -oid __cmd:?clientList
+

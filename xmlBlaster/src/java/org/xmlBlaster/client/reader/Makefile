@@ -14,7 +14,8 @@ SRC_JAVA_DIR = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster/client/reader
 
 #------------------------------------------------------------------------------
 LOCAL_FILES = \
-			$(CLASS_DIR)/SubscribeMessage.class
+			$(CLASS_DIR)/SubscribeMessage.class \
+			$(CLASS_DIR)/GetMessage.class
 #------------------------------------------------------------------------------
 
 
