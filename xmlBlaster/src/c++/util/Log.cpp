@@ -3,7 +3,7 @@ Name:      Log.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.cpp,v 1.8 2002/08/27 13:01:28 johnson Exp $
+Version:   $Id: Log.cpp,v 1.9 2002/08/27 13:14:05 johnson Exp $
 ----------------------------------------------------------------------------*/
 
 #include <util/Log.h>
