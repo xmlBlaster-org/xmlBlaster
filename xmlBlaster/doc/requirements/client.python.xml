@@ -39,10 +39,11 @@
    </configuration>
 
    <see type="CODE" lang="PYTHON">pyBlaster/pyBlaster.py</see>
+   <see type="INTERNET" lang="PYTHON">http://www.xmlBlaster.org/xmlBlaster/src/python/README</see>
    <see type="REQ">interface</see>
 
    <author><a href="mailto:spex66@gmx.net">Peter Arwanitis</a></author>
    <date>2003 05 01</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
 </requirement>
 
