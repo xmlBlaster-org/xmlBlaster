@@ -3,7 +3,7 @@ Name:      SimpleChat.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo of a simple chat client for xmlBlaster as java application
-Version:   $Id: SimpleChat.java,v 1.14 2000/10/18 20:45:41 ruff Exp $
+Version:   $Id: SimpleChat.java,v 1.15 2000/10/21 20:50:03 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.chat;
 
@@ -14,15 +14,13 @@ import org.jutils.JUtilsException;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlKeyBase;
-import org.xmlBlaster.engine.helper.CallbackAddress;
-import org.xmlBlaster.protocol.corba.serverIdl.Server;
-import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
-import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackOperations;
-import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackPOATie;
-import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackHelper;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.LoginQosWrapper;
+import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
+import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.engine.helper.CallbackAddress;
+import org.xmlBlaster.engine.helper.MessageUnit;
 
 import org.omg.CosNaming.*;
 import java.awt.event.*;
@@ -38,16 +36,15 @@ import java.awt.*;
  * @author Mike Groezinger
  */
 
-public class SimpleChat extends Frame implements BlasterCallbackOperations, ActionListener{
+public class SimpleChat extends Frame implements I_Callback, ActionListener{
 
    // XmlBlaster attributes
-   private Server xmlBlaster = null;
+   private XmlBlasterConnection corbaConnection = null;
    private static String ME = "Mike´s TestClient";
    private static String passwd ="some";
    private static String qos = "<qos></qos>";
    private String publishOid = "javaclients.chat.SimpleChat";
-   private String xmlKey = "";
-   private XmlBlasterConnection corbaConnection = null;
+   private String xmlKey = null;
 
    // UI elements
    private Button connectButton, actionButton;
@@ -59,8 +56,11 @@ public class SimpleChat extends Frame implements BlasterCallbackOperations, Acti
    public SimpleChat(String title, String args[]){
       super(title);
       try {
-         XmlBlasterProperty.init(args);
+         if (XmlBlasterProperty.init(args))
+            usage();
+
       } catch(org.jutils.JUtilsException e) {
+         usage();
          Log.panic(ME, e.toString());
       }
 
@@ -68,9 +68,7 @@ public class SimpleChat extends Frame implements BlasterCallbackOperations, Acti
          new WindowAdapter() {
             public void windowClosing(WindowEvent event)
             {
-               if (xmlBlaster != null){
-                  logout();
-               }
+               logout();
                System.exit(0);
             }
          }
@@ -125,14 +123,13 @@ public class SimpleChat extends Frame implements BlasterCallbackOperations, Acti
          //logout from server
          else if((connectButton.getLabel()).equals("Logout")){
             logout();
-            xmlBlaster = null;
             connectButton.setLabel("Connect");
          }
       }
       // publish new message
       else if(command.equals("send") ||( (ev.getSource()) instanceof TextField )){
 
-         if (xmlBlaster == null) {
+         if (corbaConnection == null) {
             Log.error(ME, "Please log in first");
             return;
          }
@@ -142,11 +139,11 @@ public class SimpleChat extends Frame implements BlasterCallbackOperations, Acti
          xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
                          "<key oid='" + publishOid + "' contentMime='text/plain'>\n" +
                          "</key>";
-         org.xmlBlaster.protocol.corba.serverIdl.MessageUnit msgUnit = new org.xmlBlaster.protocol.corba.serverIdl.MessageUnit(xmlKey, content.getBytes(), "<qos></qos>");
+         MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes(), "<qos></qos>");
          Log.trace(ME, "Publishing ...");
          try {
-            String str = xmlBlaster.publish(msgUnit);
-         } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
+            String str = corbaConnection.publish(msgUnit);
+         } catch(XmlBlasterException e) {
             Log.warn(ME, "XmlBlasterException: " + e.reason);
          }
          Log.trace(ME, "Publishing done");
@@ -159,27 +156,12 @@ public class SimpleChat extends Frame implements BlasterCallbackOperations, Acti
       output.append(text);
    }
 
-   /** CallBack of xmlBlaster */
-   public void update(org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] msgUnitArr)
+   /** CallBack of xmlBlaster via I_Callback */
+   public void update(String loginName, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
    {
-
-      for (int ii=0; ii<msgUnitArr.length; ii++) {
-         org.xmlBlaster.protocol.corba.serverIdl.MessageUnit msgUnit = msgUnitArr[ii];
-         XmlKeyBase xmlKey = null;
-         UpdateQoS updateQoS = null;
-         try {
-            xmlKey = new XmlKeyBase(msgUnit.xmlKey);
-            updateQoS = new UpdateQoS(msgUnit.qos);
-            String tmp = updateQoS.printOn().toString();
-
-         } catch (XmlBlasterException e) {
-            Log.error(ME, e.reason);
-         }
-         String msgContent = new String(msgUnit.content);
-         appendOutput("[" + updateQoS.getSender() +"]: " + msgContent +"\n");
-         Log.info(ME, "CallBack\n");
-      }
-
+      String msgContent = new String(content);
+      appendOutput("[" + updateQoS.getSender() +"]: " + msgContent +"\n");
+      Log.info(ME, "CallBack\n");
    }
 
    /** find xmlBlaster server, login and subscribe  */
@@ -192,32 +174,16 @@ public class SimpleChat extends Frame implements BlasterCallbackOperations, Acti
             throw new XmlBlasterException(e);
          }
 
-         //----------- Find orb ----------------------------------
          corbaConnection = new XmlBlasterConnection(args);
-
-         //---------- Building a Callback server ----------------------
-         // Getting the default POA implementation "RootPOA"
-         org.omg.PortableServer.POA rootPOA =
-            org.omg.PortableServer.POAHelper.narrow(corbaConnection.getOrb().resolve_initial_references("RootPOA"));
-         rootPOA.the_POAManager().activate();
-
-         // Intializing my Callback interface:
-         BlasterCallbackPOATie callbackTie = new BlasterCallbackPOATie(this);
-         BlasterCallback callback = BlasterCallbackHelper.narrow(rootPOA.servant_to_reference( callbackTie ));
-
-         //----------- Login to xmlBlaster -----------------------
-         CallbackAddress addr = new CallbackAddress("IOR", corbaConnection.getOrb().object_to_string(callback));
-         LoginQosWrapper qos = new LoginQosWrapper(addr); // == "<qos><callback type='IOR'>IOR:00113220001...</callback></qos>";
-
-         xmlBlaster = corbaConnection.login(ME, passwd, qos);
+         corbaConnection.login(ME, passwd, null, this);
 
          //----------- Subscribe to OID -------
          Log.trace(ME, "Subscribing using the exact oid ...");
-         String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'>\n" +
+         String xmlKeyPub = "<key oid='" + publishOid + "' queryType='EXACT'>\n" +
                          "</key>";
          try {
-            xmlBlaster.subscribe(xmlKey, "<qos></qos>");
-         } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
+            corbaConnection.subscribe(xmlKeyPub, "<qos></qos>");
+         } catch(XmlBlasterException e) {
             Log.warn(ME, "XmlBlasterException: " + e.reason);
          }
          Log.trace(ME, "Subscribed to '" + publishOid + "' ...");
@@ -229,19 +195,29 @@ public class SimpleChat extends Frame implements BlasterCallbackOperations, Acti
 
    /** unsubsrcibe and logout from xmlBlaster */
    public void logout(){
-      if (xmlBlaster == null) return;
+      if (corbaConnection == null) return;
       //----------- Unsubscribe from the previous message --------
-      Log.trace(ME, "Unsubscribe ...");
-      try {
-         xmlBlaster.unSubscribe(xmlKey, qos);
-      } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
-         Log.warn(ME, "XmlBlasterException: " + e.reason);
+      if (xmlKey != null) {
+         Log.trace(ME, "Unsubscribe ...");
+         try {
+            corbaConnection.unSubscribe(xmlKey, qos);
+         } catch(XmlBlasterException e) {
+            Log.warn(ME, "XmlBlasterException: " + e.reason);
+         }
+         Log.info(ME, "Unsubscribe done");
       }
-      Log.info(ME, "Unsubscribe done");
 
       //----------- Logout --------------------------------------
       Log.trace(ME, "Logout ...");
       corbaConnection.logout();
+   }
+
+   private void usage() {
+      Log.plain("\nAvailable options:");
+      Log.plain("   -name               The login name");
+      XmlBlasterConnection.usage();
+      Log.usage();
+      Log.exit(ME, "Example: jaco javaclients.chat.SimpleChat -name Heidi");
    }
 
    public static void main(String args[]) {

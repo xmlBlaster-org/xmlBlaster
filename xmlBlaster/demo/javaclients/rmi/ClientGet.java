@@ -3,7 +3,7 @@ Name:      ClientGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster with RMI
-Version:   $Id: ClientGet.java,v 1.7 2000/09/15 17:16:10 ruff Exp $
+Version:   $Id: ClientGet.java,v 1.8 2000/10/21 20:50:03 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.rmi;
 
@@ -39,7 +39,7 @@ import java.net.MalformedURLException;
  *  ${JacORB_HOME}/bin/jaco javaclients.rmi.ClientGet -name "Jeff"
  *
  *  Options:
- *     -rmi.hostname localhost       // Where the server rmi registry is
+ *     -rmi.Hostname localhost       // Where the server rmi registry is
  *     -rmi.RegistryPort 1099        // Port of server rmi registry
  *
  *  or directly:
@@ -218,7 +218,7 @@ public class ClientGet
          Log.warn(ME, "Can't determin your hostname");
          hostname = "localhost";
       }
-      hostname = XmlBlasterProperty.get("rmi.hostname", hostname);
+      hostname = XmlBlasterProperty.get("rmi.Hostname", hostname);
 
       // default xmlBlaster RMI publishing port is 1099
       int registryPort = XmlBlasterProperty.get("rmi.RegistryPort",
