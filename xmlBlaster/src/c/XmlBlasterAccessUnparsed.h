@@ -111,13 +111,18 @@ typedef struct Dll_Export XmlBlasterAccessUnparsed {
    bool isInitialized;
    UpdateFp clientsUpdateFp;
    bool callbackMultiThreaded;    /* Shall update messages be transported to the client code in a thread per request? */
+   bool lowLevelAutoAck;
    long responseTimeout;
+   /*
    XmlBlasterBlob responseBlob;
-   char responseType;             /* XMLBLASTER_MSG_TYPE_ENUM */
+   char responseType;             // XMLBLASTER_MSG_TYPE_ENUM
+   */
    pthread_t callbackThreadId;
-   pthread_mutex_t responseMutex; /* Needed for boss/worker model to block until an update arrives */
+   /*
+   pthread_mutex_t responseMutex;
    bool responseMutexIsLocked;
    pthread_cond_t responseCond;
+   */
 } XmlBlasterAccessUnparsed;
 
 /**

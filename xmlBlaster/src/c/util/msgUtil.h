@@ -57,6 +57,8 @@ typedef struct MsgUnit {
 typedef struct MsgUnitStructArr {
    /** Oneway updates are marked with true */
    bool isOneway;
+   /** Who has to free this struct? */
+   bool ownedByCallbackServer;
    /** Authenticate callback messages, this sessionId is returned by xmlBlaster and was initially passed from the client on login */
    char secretSessionId[MAX_SESSIONID_LEN];
    size_t len;
@@ -75,10 +77,18 @@ typedef struct QosStructArr {
  * Used to transport information back to callback functions
  */
 typedef struct MsgRequestInfoStruct {
-   const char *requestIdStr;
+   void *xa; /* XmlBlasterAccessUnparsed * */
+   char requestIdStr[MAX_REQUESTID_LEN];
    const char *methodName;
-   char responseType;
+   char responseType;             /* XMLBLASTER_MSG_TYPE_ENUM */
    XmlBlasterBlob blob;
+   XmlBlasterBlob responseBlob;
+#ifdef XB_USE_PTHREADS
+   pthread_mutex_t responseMutex; /* Needed for boss/worker model to block until an update arrives */
+   bool responseMutexIsLocked;
+   pthread_cond_t responseCond;
+   bool rollback;
+#endif
 } MsgRequestInfo;
 
 /* See helper.h */

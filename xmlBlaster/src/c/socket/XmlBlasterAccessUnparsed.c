@@ -38,7 +38,7 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket
  */
 typedef struct Dll_Export UpdateContainer {
    XmlBlasterAccessUnparsed *xa;
-   MsgUnitArr *msgUnitArr;
+   MsgUnitArr **msgUnitArr;
    void *userData;
    XmlBlasterException exception;     /* Holding a clone from the original as the callback thread may use it for another message */
    SocketDataHolder socketDataHolder; /* Holding a clone from the original */
@@ -56,13 +56,13 @@ static QosArr *xmlBlasterErase(XmlBlasterAccessUnparsed *xa, const char * const 
 static MsgUnitArr *xmlBlasterGet(XmlBlasterAccessUnparsed *xa, const char * const key, const char * qos, XmlBlasterException *exception);
 static char *xmlBlasterPing(XmlBlasterAccessUnparsed *xa, const char * const qos, XmlBlasterException *exception);
 static bool isConnected(XmlBlasterAccessUnparsed *xa);
-static void responseEvent(void /*XmlBlasterAccessUnparsed*/ *userP, void /*SocketDataHolder*/ *socketDataHolder);
-static MsgRequestInfo *preSendEvent(void /*XmlBlasterAccessUnparsed*/ *userP, MsgRequestInfo *msgRequestInfo, XmlBlasterException *exception);
-static MsgRequestInfo *postSendEvent(void /*XmlBlasterAccessUnparsed*/ *userP, MsgRequestInfo *msgRequestInfo, XmlBlasterException *exception);
+static void responseEvent(MsgRequestInfo *msgRequestInfoP, void /*SocketDataHolder*/ *socketDataHolder);
+static MsgRequestInfo *preSendEvent(MsgRequestInfo *msgRequestInfo, XmlBlasterException *exception);
+static MsgRequestInfo *postSendEvent(MsgRequestInfo *msgRequestInfo, XmlBlasterException *exception);
 static bool checkArgs(XmlBlasterAccessUnparsed *xa, const char *methodName, bool checkIsConnected, XmlBlasterException *exception);
-static bool defaultUpdate(MsgUnitArr *msgUnitArr, void *userData, XmlBlasterException *xmlBlasterException, void/*SocketDataHolder*/ *socketDataHolder);
-static bool interceptUpdate(MsgUnitArr *msgUnitArr, void *userData, XmlBlasterException *xmlBlasterException, void/*SocketDataHolder*/ *socketDataHolder);
-static bool mutexUnlock(XmlBlasterAccessUnparsed *xa, XmlBlasterException *exception);
+static bool defaultUpdate(MsgUnitArr **msgUnitArr, void *userData, XmlBlasterException *xmlBlasterException, void/*SocketDataHolder*/ *socketDataHolder);
+static bool interceptUpdate(MsgUnitArr **msgUnitArr, void *userData, XmlBlasterException *xmlBlasterException, void/*SocketDataHolder*/ *socketDataHolder);
+static bool mutexUnlock(MsgRequestInfo *msgRequestInfoP, XmlBlasterException *exception);
 
 /**
  * Create an instance for access xmlBlaster. 
@@ -106,36 +106,17 @@ Dll_Export XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed(int argc, const
    xa->clientsUpdateFp = 0;
    xa->callbackMultiThreaded = xa->props->getBool(xa->props, "plugin/socket/multiThreaded", false);
    xa->callbackMultiThreaded = xa->props->getBool(xa->props, "dispatch/callback/plugin/socket/multiThreaded", xa->callbackMultiThreaded);
+   xa->lowLevelAutoAck = xa->props->getBool(xa->props, "plugin/socket/lowLevelAutoAck", false);
+   xa->lowLevelAutoAck = xa->props->getBool(xa->props, "dispatch/callback/plugin/socket/lowLevelAutoAck", xa->lowLevelAutoAck);
+
    if (xa->callbackMultiThreaded == true) {
-      xa->log(xa->logUserP, xa->logLevel, LOG_WARN, __FILE__, "Sorry, multi threaded callback delivery is implemented but not functional yet, use it for experiments only");
+      xa->log(xa->logUserP, xa->logLevel, LOG_INFO, __FILE__, "Multi threaded callback delivery is activated with -plugin/socket/multiThreaded true");
       /*xa->callbackMultiThreaded = false;*/
    }
    xa->responseTimeout = xa->props->getLong(xa->props, "plugin/socket/responseTimeout", 60000L); /* One minute (given in millis) */
    xa->responseTimeout = xa->props->getLong(xa->props, "dispatch/connection/plugin/socket/responseTimeout", xa->responseTimeout);
    /* ERROR HANDLING ? xa->log(xa->logUserP, xa->logLevel, LOG_WARN, __FILE__, "Your configuration '-plugin/socket/responseTimeout %s' is invalid", argv[iarg]); */
-   memset(&xa->responseBlob, 0, sizeof(XmlBlasterBlob));
-   xa->responseType = 0;
    xa->callbackThreadId = 0;
-   xa->responseMutexIsLocked = false; /* Only to remember if the client thread holds the lock */
-#  ifdef _WINDOWS
-   xa->responseMutex = PTHREAD_MUTEX_INITIALIZER;
-   xa->responseCond = PTHREAD_COND_INITIALIZER;
-#  else
-   /* On Linux gcc & SUN CC:
-        "parse error before '{' token"
-      when initializing directly, so we do a hack here:
-      (NOTE: using pthread_cond_init() would be the choice to
-      initialize but this only works with dynamic conds)
-   */
-   {
-      pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-      xa->responseMutex = mutex;
-   }
-   {
-      pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
-      xa->responseCond = cond;
-   }
-#  endif
 
    if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__,
                                 "Created handle: -logLevel=%s -plugin/socket/responseTimeout=%ld",
@@ -164,15 +145,17 @@ Dll_Export void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xa)
    }
    if (xa->callbackP != 0) {
       xa->callbackP->shutdown(xa->callbackP);
-      if (xa->callbackThreadId != 0) {
+      if (!xa->callbackP->isShutdown) {
          retVal = pthread_join(xa->callbackThreadId, 0);
          if (retVal != 0) {
             xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__, "join problem return value is %d", retVal);
          }
          else {
             if (xa->logLevel>=LOG_INFO) xa->log(xa->logUserP, xa->logLevel, LOG_INFO, __FILE__,
-                                        "Pthread_join(id=%ld) succeded for callback server thread", xa->callbackThreadId);
+                                        "Pthread_join(id=%ld) succeeded for callback server thread", xa->callbackThreadId);
          }
+/*         if (xa->logLevel>=LOG_INFO) xa->log(xa->logUserP, xa->logLevel, LOG_INFO, __FILE__,
+                                        "Pthread_join(id=%ld) COMMENTED OUT"); */
          xa->callbackThreadId = 0;
       }
       freeCallbackServerUnparsed(xa->callbackP);
@@ -286,17 +269,39 @@ static bool isConnected(XmlBlasterAccessUnparsed *xa)
  * @param msgRequestInfo Contains some informations about the request, may not be NULL
  * @param exception May not be NULL
  * @return The same (or a manipulated/encrypted) msgRequestInfo, if NULL the exception is filled. 
- *         If msgRequestInfo->blob.data was changed and malloc()'d by you, the caller will free() it.
+ *         If msgRequestInfoP->blob.data was changed and malloc()'d by you, the caller will free() it.
  *         If you return NULL you need to call removeResponseListener() to avoid a memory leak.
  */
-static MsgRequestInfo *preSendEvent(void *userP, MsgRequestInfo *msgRequestInfo, XmlBlasterException *exception)
+static MsgRequestInfo *preSendEvent(MsgRequestInfo *msgRequestInfoP, XmlBlasterException *exception)
 {
    bool retVal;
-   XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)userP;
+   XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)msgRequestInfoP->xa;
+
+   /* ======== Initialize threading ====== */
+   msgRequestInfoP->responseMutexIsLocked = false; /* Only to remember if the client thread holds the lock */
+#  ifdef _WINDOWS
+   msgRequestInfoP->responseMutex = PTHREAD_MUTEX_INITIALIZER;
+   msgRequestInfoP->responseCond = PTHREAD_COND_INITIALIZER;
+#  else
+   /* On Linux gcc & SUN CC:
+        "parse error before '{' token"
+      when initializing directly, so we do a hack here:
+      (NOTE: using pthread_cond_init() would be the choice to
+      initialize but this only works with dynamic conds)
+   */
+   {
+      pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+      msgRequestInfoP->responseMutex = mutex;
+   }
+   {
+      pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+      msgRequestInfoP->responseCond = cond;
+   }
+#  endif
 
    if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__,
-                                "preSendEvent(%s) occurred", msgRequestInfo->methodName);
-   retVal = xa->callbackP->addResponseListener(xa->callbackP, xa, msgRequestInfo->requestIdStr, responseEvent);
+                                "preSendEvent(%s) occurred", msgRequestInfoP->methodName);
+   retVal = xa->callbackP->addResponseListener(xa->callbackP, msgRequestInfoP, responseEvent);
    if (retVal == false) {
       strncpy0(exception->errorCode, "user.internal", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
@@ -306,18 +311,18 @@ static MsgRequestInfo *preSendEvent(void *userP, MsgRequestInfo *msgRequestInfo,
    }
 
    if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__,
-                  "preSendEvent(requestId=%s, xa->responseBlob.dataLen=%d), entering lock",
-                  msgRequestInfo->requestIdStr, xa->responseBlob.dataLen);
-   if ((retVal = pthread_mutex_lock(&xa->responseMutex)) != 0) {
+                  "preSendEvent(requestId=%s, msgRequestInfoP->responseBlob.dataLen=%d), entering lock",
+                  msgRequestInfoP->requestIdStr, msgRequestInfoP->responseBlob.dataLen);
+   if ((retVal = pthread_mutex_lock(&msgRequestInfoP->responseMutex)) != 0) {
       strncpy0(exception->errorCode, "user.internal", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
                "[%.100s:%d] Error trying to lock responseMutex %d", __FILE__, __LINE__, retVal);
       if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, exception->message);
       return (MsgRequestInfo *)0;
    }
-   xa->responseMutexIsLocked = true; /* Only if the client thread holds the lock */
+   msgRequestInfoP->responseMutexIsLocked = true; /* Only if the client thread holds the lock */
 
-   return msgRequestInfo;
+   return msgRequestInfoP;
 }
 
 /**
@@ -328,30 +333,30 @@ static MsgRequestInfo *preSendEvent(void *userP, MsgRequestInfo *msgRequestInfo,
  * @param socketDataHolder is on the stack and does not need to be freed, the 'data' member is
  *        malloc()'d and must be freed by the caller.
  */
-static void responseEvent(void *userP, void /*SocketDataHolder*/ *socketDataHolder) {
+static void responseEvent(MsgRequestInfo *msgRequestInfoP, void /*SocketDataHolder*/ *socketDataHolder) {
    int retVal;
    SocketDataHolder *s = (SocketDataHolder *)socketDataHolder;
-   XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)userP;
+   XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)msgRequestInfoP->xa;
 
-   if ((retVal = pthread_mutex_lock(&xa->responseMutex)) != 0) {
+   if ((retVal = pthread_mutex_lock(&msgRequestInfoP->responseMutex)) != 0) {
       xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__, "Trying to lock responseMutex in responseEvent() failed %d", retVal);
       /* return; */
    }
    if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, "responseEvent() responseMutex is LOCKED");
 
-   blobcpyAlloc(&xa->responseBlob, s->blob.data, s->blob.dataLen);
-   xa->responseType = s->type;
+   blobcpyAlloc(&msgRequestInfoP->responseBlob, s->blob.data, s->blob.dataLen);
+   msgRequestInfoP->responseType = s->type;
 
-   if ((retVal = pthread_cond_signal(&xa->responseCond)) != 0) {
+   if ((retVal = pthread_cond_signal(&msgRequestInfoP->responseCond)) != 0) {
       xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__, "Trying to signal waiting thread in responseEvent() fails %d", retVal);
       /* return; */
    }
 
    if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__,
                                 "responseEvent(requestId '%s', msgType=%c, dataLen=%d) occurred, wake up signal sent",
-                                s->requestId, xa->responseType, xa->responseBlob.dataLen);
+                                s->requestId, msgRequestInfoP->responseType, msgRequestInfoP->responseBlob.dataLen);
 
-   if ((retVal = pthread_mutex_unlock(&xa->responseMutex)) != 0) {
+   if ((retVal = pthread_mutex_unlock(&msgRequestInfoP->responseMutex)) != 0) {
       xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__, "Trying to unlock responseMutex in responseEvent() failed %d", retVal);
       /* return; */
    }
@@ -363,70 +368,75 @@ static void responseEvent(void *userP, void /*SocketDataHolder*/ *socketDataHold
  * @param userP May not be NULL, is of type XmlBlasterAccessUnparsed *
  * @param msgRequestInfo Contains some informations about the request, may not be NULL
  * @param exception May not be NULL
- * @return The returned string from a request is written into msgRequestInfo->data,
+ * @return The returned string from a request is written into msgRequestInfoP->data,
  *         the caller needs to free() it.
  */
-static MsgRequestInfo *postSendEvent(void *userP, MsgRequestInfo *msgRequestInfo, XmlBlasterException *exception)
+static MsgRequestInfo *postSendEvent(MsgRequestInfo *msgRequestInfoP, XmlBlasterException *exception)
 {
-   XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)userP;
+   XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)msgRequestInfoP->xa;
    struct timespec abstime;
    bool useTimeout = false;
+
+   if (msgRequestInfoP->rollback) {
+      mutexUnlock(msgRequestInfoP, exception);
+      return (MsgRequestInfo *)0;
+   }
 
    if (xa->responseTimeout > 0 && getAbsoluteTime(xa->responseTimeout, &abstime) == true) {
       useTimeout = true;
    }
 
-   if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, "postSendEvent(requestId=%s) responseMutex is LOCKED, entering wait ...", msgRequestInfo->requestIdStr);
+   if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, "postSendEvent(requestId=%s) responseMutex is LOCKED, entering wait ...", msgRequestInfoP->requestIdStr);
    /* Wait for response, the callback server delivers it */
-   while (xa->responseType == 0) { /* Protect for spurious wake ups (e.g. by SIGUSR1) */
+   while (msgRequestInfoP->responseType == 0) { /* Protect for spurious wake ups (e.g. by SIGUSR1) */
       if (useTimeout == true) {
-         int error = pthread_cond_timedwait(&xa->responseCond, &xa->responseMutex, &abstime);
+         int error = pthread_cond_timedwait(&msgRequestInfoP->responseCond, &msgRequestInfoP->responseMutex, &abstime);
          if (error == ETIMEDOUT) {
-            xa->callbackP->removeResponseListener(xa->callbackP, msgRequestInfo->requestIdStr);
+            xa->callbackP->removeResponseListener(xa->callbackP, msgRequestInfoP->requestIdStr);
             strncpy0(exception->errorCode, "resource.exhaust", XMLBLASTEREXCEPTION_ERRORCODE_LEN); /* ErrorCode.RESOURCE_EXHAUST */
             SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%.100s:%d] Waiting on response for '%s()' with requestId=%s timed out after blocking %ld millis",
-                    __FILE__, __LINE__, msgRequestInfo->methodName, msgRequestInfo->requestIdStr, xa->responseTimeout);
+                    __FILE__, __LINE__, msgRequestInfoP->methodName, msgRequestInfoP->requestIdStr, xa->responseTimeout);
             if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, exception->message);
             return (MsgRequestInfo *)0;
          }
       }
       else {
-         pthread_cond_wait(&xa->responseCond, &xa->responseMutex); /* Wakes up from responseEvent() */
+         pthread_cond_wait(&msgRequestInfoP->responseCond, &msgRequestInfoP->responseMutex); /* Wakes up from responseEvent() */
          if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__,
-            "Wake up tread, response of length %d arrived", xa->responseBlob.dataLen);
+            "Wake up tread, response of length %d arrived", msgRequestInfoP->responseBlob.dataLen);
       }
    }
 
-   /* if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, "postSendEvent(requestId=%s) i woke up, entering unlock ...", msgRequestInfo->requestIdStr); */
-   if (mutexUnlock(xa, exception) == false)
+   /* if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, "postSendEvent(requestId=%s) i woke up, entering unlock ...", msgRequestInfoP->requestIdStr); */
+   if (mutexUnlock(msgRequestInfoP, exception) == false)
       return (MsgRequestInfo *)0;
 
-   msgRequestInfo->responseType = xa->responseType;
-   msgRequestInfo->blob.dataLen = xa->responseBlob.dataLen;
-   msgRequestInfo->blob.data = xa->responseBlob.data;
+   msgRequestInfoP->blob.dataLen = msgRequestInfoP->responseBlob.dataLen;
+   msgRequestInfoP->blob.data = msgRequestInfoP->responseBlob.data;
 
    if (xa->logLevel>=LOG_TRACE)
       xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__,
          "Thread #%ld woke up in postSendEvent() for msgType=%c and dataLen=%d",
-         msgRequestInfo->requestIdStr, msgRequestInfo->responseType, msgRequestInfo->blob.dataLen);
+         msgRequestInfoP->requestIdStr, msgRequestInfoP->responseType, msgRequestInfoP->blob.dataLen);
 
-   xa->responseType = 0;
-   xa->responseBlob.dataLen = 0;
-   xa->responseBlob.data = 0; /* msgRequestInfo->blob.data is now responsible to free() the data */
+   msgRequestInfoP->responseType = 0;
+   msgRequestInfoP->responseBlob.dataLen = 0;
+   msgRequestInfoP->responseBlob.data = 0; /* msgRequestInfoP->blob.data is now responsible to free() the data */
    
-   return msgRequestInfo;
+   return msgRequestInfoP;
 }
 
 /**
  * @param exception The exception struct, can be null
  * @return false on error, the exception struct is filled in this case and the lock is not released
  */
-static bool mutexUnlock(XmlBlasterAccessUnparsed *xa, XmlBlasterException *exception) {
+static bool mutexUnlock(MsgRequestInfo *msgRequestInfoP, XmlBlasterException *exception) {
+   XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)msgRequestInfoP->xa;
    int retVal;
-   if (xa->responseMutexIsLocked == false)
+   if (msgRequestInfoP->responseMutexIsLocked == false)
       return true;
-   xa->responseMutexIsLocked = false;
-   if ((retVal = pthread_mutex_unlock(&xa->responseMutex)) != 0) {
+   msgRequestInfoP->responseMutexIsLocked = false;
+   if ((retVal = pthread_mutex_unlock(&msgRequestInfoP->responseMutex)) != 0) {
       char embeddedText[XMLBLASTEREXCEPTION_MESSAGE_LEN];
       if (exception == 0) {
          return false;
@@ -548,9 +558,7 @@ static char *xmlBlasterConnect(XmlBlasterAccessUnparsed *xa, const char * const 
    response = xa->connectionP->connect(xa->connectionP, qos_, exception);
 
    free(qos_);
-   freeBlobHolderContent(&xa->responseBlob);
-
-   if (*exception->errorCode != 0) mutexUnlock(xa, exception);
+   /* freeBlobHolderContent(&xa->responseBlob); */
 
    /* The response was handled by a callback to postSendEvent */
 
@@ -574,7 +582,6 @@ static bool xmlBlasterDisconnect(XmlBlasterAccessUnparsed *xa, const char * cons
    bool p;
    if (checkArgs(xa, "disconnect", true, exception) == false ) return 0;
    p = xa->connectionP->disconnect(xa->connectionP, qos, exception);
-   if (*exception->errorCode != 0) mutexUnlock(xa, exception);
    return p;
 }
 
@@ -589,7 +596,6 @@ static char *xmlBlasterPublish(XmlBlasterAccessUnparsed *xa, MsgUnit *msgUnit, X
    char *p;
    if (checkArgs(xa, "publish", true, exception) == false ) return 0;
    p = xa->connectionP->publish(xa->connectionP, msgUnit, exception);
-   if (*exception->errorCode != 0) mutexUnlock(xa, exception);
    return p;
 }
 
@@ -604,7 +610,6 @@ static QosArr *xmlBlasterPublishArr(XmlBlasterAccessUnparsed *xa, MsgUnitArr *ms
    QosArr *p;
    if (checkArgs(xa, "publishArr", true, exception) == false ) return 0;
    p = xa->connectionP->publishArr(xa->connectionP, msgUnitArr, exception);
-   if (*exception->errorCode != 0) mutexUnlock(xa, exception);
    return p;
 }
 
@@ -618,7 +623,6 @@ static void xmlBlasterPublishOneway(XmlBlasterAccessUnparsed *xa, MsgUnitArr *ms
 {
    if (checkArgs(xa, "publishOneway", true, exception) == false ) return;
    xa->connectionP->publishOneway(xa->connectionP, msgUnitArr, exception);
-   if (*exception->errorCode != 0) mutexUnlock(xa, exception);
 }
 
 /**
@@ -631,7 +635,6 @@ static char *xmlBlasterSubscribe(XmlBlasterAccessUnparsed *xa, const char * cons
    char *p;
    if (checkArgs(xa, "subscribe", true, exception) == false ) return 0;
    p = xa->connectionP->subscribe(xa->connectionP, key, qos, exception);
-   if (*exception->errorCode != 0) mutexUnlock(xa, exception);
    return p;
 }
 
@@ -647,7 +650,6 @@ static QosArr *xmlBlasterUnSubscribe(XmlBlasterAccessUnparsed *xa, const char * 
    QosArr *p;
    if (checkArgs(xa, "unSubscribe", true, exception) == false ) return 0;
    p = xa->connectionP->unSubscribe(xa->connectionP, key, qos, exception);
-   if (*exception->errorCode != 0) mutexUnlock(xa, exception);
    return p;
 }
 
@@ -664,7 +666,6 @@ static QosArr *xmlBlasterErase(XmlBlasterAccessUnparsed *xa, const char * const 
    QosArr *p;
    if (checkArgs(xa, "erase", true, exception) == false ) return 0;
    p = xa->connectionP->erase(xa->connectionP, key, qos, exception);
-   if (*exception->errorCode != 0) mutexUnlock(xa, exception);
    return p;
 }
 
@@ -681,7 +682,6 @@ static char *xmlBlasterPing(XmlBlasterAccessUnparsed *xa, const char * const qos
    char *p;
    if (checkArgs(xa, "ping", true, exception) == false ) return 0;
    p = xa->connectionP->ping(xa->connectionP, qos, exception);
-   mutexUnlock(xa, 0); /* to be on the safe side */
    return p;
 }
 
@@ -696,7 +696,6 @@ static MsgUnitArr *xmlBlasterGet(XmlBlasterAccessUnparsed *xa, const char * cons
    MsgUnitArr *msgUnitArr;
    if (checkArgs(xa, "get", true, exception) == false ) return 0;
    msgUnitArr = xa->connectionP->get(xa->connectionP, key, qos, exception);
-   if (*exception->errorCode != 0) mutexUnlock(xa, exception);
    return msgUnitArr;
 }
 
@@ -750,11 +749,12 @@ static bool checkArgs(XmlBlasterAccessUnparsed *xa, const char *methodName,
  * about the unhandled callback messages.
  * @see UpdateFp in CallbackServerUnparsed.h
  */
-static bool defaultUpdate(MsgUnitArr *msgUnitArr, void *userData, XmlBlasterException *exception, void /*SocketDataHolder*/ *socketDataHolder)
+static bool defaultUpdate(MsgUnitArr **msgUnitArrPP, void *userData, XmlBlasterException *exception, void /*SocketDataHolder*/ *socketDataHolder)
 {
    size_t i;
    bool testException = false;
    XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)userData;
+   MsgUnitArr *msgUnitArr = *msgUnitArrPP;
 
    for (i=0; i<msgUnitArr->len; i++) {
       const char *key = msgUnitArr->msgUnitArr[i].key;
@@ -783,7 +783,7 @@ static bool defaultUpdate(MsgUnitArr *msgUnitArr, void *userData, XmlBlasterExce
 static bool runUpdate(UpdateContainer *container)
 {
    XmlBlasterAccessUnparsed *xa = container->xa;
-   MsgUnitArr *msgUnitArr = container->msgUnitArr;
+   MsgUnitArr *msgUnitArr = *container->msgUnitArr;
    void *userData = container->userData;
    XmlBlasterException *exception = &container->exception;
    SocketDataHolder *socketDataHolder = &container->socketDataHolder;
@@ -793,12 +793,18 @@ static bool runUpdate(UpdateContainer *container)
 
    retVal = xa->clientsUpdateFp(msgUnitArr, userData, exception);
 
-   if (retVal == true) {
-      xa->callbackP->sendResponse(xa->callbackP, socketDataHolder, msgUnitArr);
+   if (xa->lowLevelAutoAck) {
    }
    else {
-      xa->callbackP->sendXmlBlasterException(xa->callbackP, socketDataHolder, exception);
+      if (retVal == true) {
+         xa->callbackP->sendResponse(xa->callbackP, socketDataHolder, msgUnitArr);
+      }
+      else {
+         xa->callbackP->sendXmlBlasterException(xa->callbackP, socketDataHolder, exception);
+      }
    }
+   freeMsgUnitArr(*container->msgUnitArr);
+   *container->msgUnitArr = 0;
 
    free(container);
 
@@ -812,9 +818,11 @@ static bool runUpdate(UpdateContainer *container)
  * it to the clients update. 
  * @see UpdateFp in CallbackServerUnparsed.h
  */
-static bool interceptUpdate(MsgUnitArr *msgUnitArr, void *userData, XmlBlasterException *exception, void /*SocketDataHolder*/ *socketDataHolder)
+static bool interceptUpdate(MsgUnitArr **msgUnitArrPP, void *userData,
+                            XmlBlasterException *exception, void /*SocketDataHolder*/ *socketDataHolder)
 {
    XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)userData;
+   MsgUnitArr *msgUnitArr = *msgUnitArrPP;
 
    if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, "interceptUpdate(): Received message");
 
@@ -822,13 +830,15 @@ static bool interceptUpdate(MsgUnitArr *msgUnitArr, void *userData, XmlBlasterEx
       return xa->clientsUpdateFp(msgUnitArr, userData, exception);
    }
 
+   msgUnitArr->ownedByCallbackServer = false;
+
    {
       pthread_t tid;
       int threadRet = 0;
       UpdateContainer *container = (UpdateContainer*)malloc(sizeof(UpdateContainer));
       
       container->xa = xa;
-      container->msgUnitArr = msgUnitArr;
+      container->msgUnitArr = msgUnitArrPP;
       container->userData = userData;
       memcpy(&container->exception, exception, sizeof(XmlBlasterException));
       memcpy(&container->socketDataHolder, socketDataHolder, sizeof(SocketDataHolder));
@@ -851,9 +861,20 @@ static bool interceptUpdate(MsgUnitArr *msgUnitArr, void *userData, XmlBlasterEx
          "interceptUpdate: Received message and delegated it to a separate thread 0x%x to deliver", (int)tid);
    }
 
+   if (xa->lowLevelAutoAck) {
+      size_t i;
+      for (i=0; i<msgUnitArr->len; i++) {
+         msgUnitArr->msgUnitArr[i].responseQos = strcpyAlloc("<qos><state id='OK'/></qos>");
+      }
+
+      *exception->errorCode = 0;
+      return true;
+   }
+   else {
+      *exception->errorCode = 0;
+      return false;
+   }
    /* Don't send the update response now */
-   *exception->errorCode = 0;
-   return false;
 }
 
 #ifdef XmlBlasterAccessUnparsedMain /* compile a standalone test program */

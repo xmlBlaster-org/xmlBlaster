@@ -29,7 +29,7 @@ static int runCallbackServer(CallbackServerUnparsed *cb);
 static bool createCallbackServer(CallbackServerUnparsed *cb);
 static bool isListening(CallbackServerUnparsed *cb);
 static bool readMessage(CallbackServerUnparsed *cb, SocketDataHolder *socketDataHolder, XmlBlasterException *exception);
-static bool addResponseListener(CallbackServerUnparsed *cb, void *userP, const char *requestId, ResponseFp responseEventFp);
+static bool addResponseListener(CallbackServerUnparsed *cb, MsgRequestInfo *msgRequestInfoP, ResponseFp responseEventFp);
 static ResponseListener *removeResponseListener(CallbackServerUnparsed *cb, const char *requestId);
 static void sendResponseVoid(CallbackServerUnparsed *cb, void *socketDataHolder, MsgUnitArr *msgUnitArr);
 static void sendResponse(CallbackServerUnparsed *cb, SocketDataHolder *socketDataHolder, MsgUnitArr *msgUnitArr);
@@ -66,7 +66,7 @@ CallbackServerUnparsed *getCallbackServerUnparsed(int argc, const char* const* a
    cb->portCB = cb->props->getInt(cb->props, "dispatch/callback/plugin/socket/port", DEFAULT_CALLBACK_SERVER_PORT);
    cb->update = update;
    cb->updateUserData = updateUserData; /* A optional pointer from the client code which is returned to the update() function call */
-   memset(cb->responseListener, 0, MAX_RESPONSE_LISTENER_SIZE*sizeof(char *));
+   memset(cb->responseListener, 0, MAX_RESPONSE_LISTENER_SIZE*sizeof(ResponseListener));
    cb->addResponseListener = addResponseListener;
    cb->removeResponseListener = removeResponseListener;
    cb->isShutdown = false;
@@ -112,18 +112,17 @@ void freeCallbackServerUnparsed(CallbackServerUnparsed *cb)
    }
 }
 
-static bool addResponseListener(CallbackServerUnparsed *cb, void *userP, const char *requestId, ResponseFp responseEventFp) {
+static bool addResponseListener(CallbackServerUnparsed *cb, MsgRequestInfo *msgRequestInfoP, ResponseFp responseEventFp) {
    int i;
    if (responseEventFp == 0) {
       return false;
    }
    for (i=0; i<MAX_RESPONSE_LISTENER_SIZE; i++) {
-      if (cb->responseListener[i].requestId == 0) {
-         cb->responseListener[i].userP = userP;
-         cb->responseListener[i].requestId = requestId;
+      if (cb->responseListener[i].msgRequestInfoP == 0) {
+         cb->responseListener[i].msgRequestInfoP = msgRequestInfoP;
          cb->responseListener[i].responseEventFp = responseEventFp;
          if (cb->logLevel>=LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__,
-            "addResponseListener(i=%d, requestId=%s)", i, requestId);
+            "addResponseListener(i=%d, requestId=%s)", i, msgRequestInfoP->requestIdStr);
          return true;
       }
    }
@@ -138,10 +137,10 @@ static ResponseListener *getResponseListener(CallbackServerUnparsed *cb, const c
       return 0;
    }
    for (i=0; i<MAX_RESPONSE_LISTENER_SIZE; i++) {
-      if (cb->responseListener[i].requestId == 0) {
+      if (cb->responseListener[i].msgRequestInfoP == 0) {
          continue;
       }
-      if (!strcmp(cb->responseListener[i].requestId, requestId)) {
+      if (!strcmp(cb->responseListener[i].msgRequestInfoP->requestIdStr, requestId)) {
          return &cb->responseListener[i];
       }
    }
@@ -152,11 +151,11 @@ static ResponseListener *getResponseListener(CallbackServerUnparsed *cb, const c
 static ResponseListener *removeResponseListener(CallbackServerUnparsed *cb, const char *requestId) {
    int i;
    for (i=0; i<MAX_RESPONSE_LISTENER_SIZE; i++) {
-      if (cb->responseListener[i].requestId == 0) {
+      if (cb->responseListener[i].msgRequestInfoP == 0) {
          continue;
       }
-      if (!strcmp(cb->responseListener[i].requestId, requestId)) {
-         cb->responseListener[i].requestId = 0;
+      if (!strcmp(cb->responseListener[i].msgRequestInfoP->requestIdStr, requestId)) {
+         cb->responseListener[i].msgRequestInfoP = 0;
          return &cb->responseListener[i];
       }
    }
@@ -189,6 +188,7 @@ static int runCallbackServer(CallbackServerUnparsed *cb)
       XmlBlasterException xmlBlasterException;
       SocketDataHolder socketDataHolder;
       MsgUnitArr *msgUnitArr;
+      MsgUnitArr **msgUnitArrPP;
       bool success;      
 
       memset(&xmlBlasterException, 0, sizeof(XmlBlasterException));
@@ -217,8 +217,9 @@ static int runCallbackServer(CallbackServerUnparsed *cb)
          ResponseListener *listener = getResponseListener(cb, socketDataHolder.requestId);
          if (listener != 0) {
             /* This is a response for a request (no callback for us) */
-            ResponseListener *r = removeResponseListener(cb, socketDataHolder.requestId);
-            listener->responseEventFp(r->userP, &socketDataHolder);
+            MsgRequestInfo *msgRequestInfoP = listener->msgRequestInfoP;
+            removeResponseListener(cb, socketDataHolder.requestId);
+            listener->responseEventFp(msgRequestInfoP, &socketDataHolder);
             freeBlobHolderContent(&socketDataHolder.blob);
             if (cb->logLevel>=LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__,
                "Forwarded message with requestId '%s' to response listener", socketDataHolder.requestId);
@@ -232,6 +233,8 @@ static int runCallbackServer(CallbackServerUnparsed *cb)
       }
 
       msgUnitArr = parseMsgUnitArr(socketDataHolder.blob.dataLen, socketDataHolder.blob.data);
+      msgUnitArrPP = &msgUnitArr;
+      msgUnitArr->ownedByCallbackServer = true;
 
       if (cb->logLevel>=LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__,
          "Received requestId '%s' callback %s()",
@@ -254,7 +257,7 @@ static int runCallbackServer(CallbackServerUnparsed *cb)
             
             strcpy(msgUnitArr->secretSessionId, socketDataHolder.secretSessionId);
             msgUnitArr->isOneway = (strcmp(socketDataHolder.methodName, XMLBLASTER_UPDATE_ONEWAY) == 0);
-            success = cb->update(msgUnitArr, cb->updateUserData, &xmlBlasterException, &socketDataHolder);
+            success = cb->update(msgUnitArrPP, cb->updateUserData, &xmlBlasterException, &socketDataHolder);
          }
       }
       else {
@@ -282,8 +285,12 @@ static int runCallbackServer(CallbackServerUnparsed *cb)
          }
       }
 
+      /* TODO: Add mutex! */
+      if (*msgUnitArrPP != 0 && (*msgUnitArrPP)->ownedByCallbackServer) {
+         freeMsgUnitArr(*msgUnitArrPP);
+         *msgUnitArrPP = 0;
+      }
       freeBlobHolderContent(&socketDataHolder.blob);
-      freeMsgUnitArr(msgUnitArr);
    }
 
    cb->isShutdown = true;

@@ -68,7 +68,7 @@ typedef bool (* IsListening)(CallbackServerUnparsed *cb);
  *         If false and *xmlBlasterException.errorCode==0 we don't send a return message (useful for update dispatcher thread to do it later)
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.update.html
  */
-typedef bool (*UpdateCbFp)(MsgUnitArr *msg, void *userData, XmlBlasterException *xmlBlasterException, void/*SocketDataHolder*/ *socketDataHolder);
+typedef bool (*UpdateCbFp)(MsgUnitArr **msg, void *userData, XmlBlasterException *xmlBlasterException, void/*SocketDataHolder*/ *socketDataHolder);
 
 typedef void (* ShutdownCallbackServerRaw)(CallbackServerUnparsed *cb);
 
@@ -77,15 +77,16 @@ typedef void ( * CallbackServerUnparsedSendXmlBlasterException)(CallbackServerUn
 
 #define MAX_RESPONSE_LISTENER_SIZE 100
 
-typedef void (* ResponseFp)(void *userP, void /*SocketDataHolder*/ *socketDataHolder); /* using void * to avoid including the socket specific header */
+typedef void (* ResponseFp)(MsgRequestInfo *msgRequestInfoP, void /*SocketDataHolder*/ *socketDataHolder); /* using void * to avoid including the socket specific header */
 
 typedef struct ResponseListenerStruct {
-   void *userP;
-   const char *requestId;
+   MsgRequestInfo *msgRequestInfoP;
+   /*void *userP;
+   const char *requestId;*/
    ResponseFp responseEventFp;
 } ResponseListener;
 
-typedef bool ( * AddResponseListener)(CallbackServerUnparsed *cb, void *userP, const char *requestId, ResponseFp responseEventFp);
+typedef bool ( * AddResponseListener)(CallbackServerUnparsed *cb, MsgRequestInfo *msgRequestInfoP, ResponseFp responseEventFp);
 typedef ResponseListener * ( * RemoveResponseListener)(CallbackServerUnparsed *cb, const char *requestId);
 
 typedef void  ( * CallbackServerUnparsedLogging)(void *logUserP, XMLBLASTER_LOG_LEVEL currLevel, XMLBLASTER_LOG_LEVEL level, const char *location, const char *fmt, ...);

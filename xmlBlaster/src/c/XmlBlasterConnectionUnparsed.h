@@ -42,8 +42,8 @@ typedef MsgUnitArr *( * XmlBlasterConnectionUnparsedGet)(XmlBlasterConnectionUnp
 typedef char *( * XmlBlasterConnectionUnparsedPing)(XmlBlasterConnectionUnparsed *xb, const char * const qos, XmlBlasterException *exception);
 typedef bool  ( * XmlBlasterConnectionUnparsedIsConnected)(XmlBlasterConnectionUnparsed *xb);
 typedef void  ( * XmlBlasterConnectionUnparsedShutdown)(XmlBlasterConnectionUnparsed *xb);
-typedef MsgRequestInfo *( * XmlBlasterConnectionUnparsedPreSendEvent)(void *userP, MsgRequestInfo *msgRequestInfo, XmlBlasterException *exception);
-typedef MsgRequestInfo *( * XmlBlasterConnectionUnparsedPostSendEvent)(void *userP, MsgRequestInfo *msgRequestInfo, XmlBlasterException *exception);
+typedef MsgRequestInfo *( * XmlBlasterConnectionUnparsedPreSendEvent)(MsgRequestInfo *msgRequestInfo, XmlBlasterException *exception);
+typedef MsgRequestInfo *( * XmlBlasterConnectionUnparsedPostSendEvent)(MsgRequestInfo *msgRequestInfo, XmlBlasterException *exception);
 
 /**
  * All client access to xmlBlaster goes over this struct and its function pointers. 

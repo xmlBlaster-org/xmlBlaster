@@ -381,7 +381,9 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
    size_t rawMsgLen = 0;
    char *rawMsg = (char *)0;
    char *rawMsgStr;
-   char requestIdStr[MAX_REQUESTID_LEN];
+   MsgRequestInfo *requestInfoP;
+   MsgRequestInfo requestInfo;
+   memset(&requestInfo, 0, sizeof(MsgRequestInfo));
 
    if (data_ == 0) {
       data_ = "";
@@ -411,21 +413,22 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
    if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__,
       "sendData() requestId '%ld' increment to '%ld', dataLen=%d",
       xb->requestId, xb->requestId+1, dataLen_);
-   xb->requestId++;
-   if (xb->requestId > 1000000000) xb->requestId = 0;
-   SNPRINTF(requestIdStr, MAX_REQUESTID_LEN, "%-ld", xb->requestId);
 
+   {
+      long tmp = ++xb->requestId; /* TODO: We need to sync requestId !!!! */
+      if (xb->requestId > 1000000000) xb->requestId = 0;
+      SNPRINTF(requestInfo.requestIdStr, MAX_REQUESTID_LEN, "%-ld", tmp);
+   }
+
+   requestInfo.methodName = methodName;
    if (xb->preSendEvent != 0) {
       /* A callback function pointer is registered to be notified just before sending */
-      MsgRequestInfo *requestInfoP;
-      MsgRequestInfo requestInfo;
       XmlBlasterBlob blob;
       blobcpyAlloc(&blob, data_, dataLen_); /* Take a clone, the preSendEvent() function may manipulate it */
-      requestInfo.methodName = methodName;
-      requestInfo.requestIdStr = requestIdStr;
       requestInfo.blob.dataLen = blob.dataLen;
       requestInfo.blob.data = blob.data;
-      requestInfoP = xb->preSendEvent(xb->preSendEvent_userP, &requestInfo, exception);
+      requestInfo.xa = xb->preSendEvent_userP;
+      requestInfoP = xb->preSendEvent(&requestInfo, exception);
       if (*exception->message != 0) {
          if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__,
             "Re-throw exception from preSendEvent errorCode=%s message=%s", exception->errorCode, exception->message);
@@ -441,12 +444,12 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
          /* The callback function has changed/manipulated the user data */
          freeBlobHolderContent(&blob);
       }
-      rawMsg = encodeSocketMessage(msgType, requestIdStr, methodName, xb->secretSessionId,
+      rawMsg = encodeSocketMessage(msgType, requestInfo.requestIdStr, requestInfo.methodName, xb->secretSessionId,
                              requestInfoP->blob.data, requestInfoP->blob.dataLen, xb->logLevel >= LOG_DUMP, &rawMsgLen);
       freeBlobHolderContent(&requestInfoP->blob);
    }
    else {
-      rawMsg = encodeSocketMessage(msgType, requestIdStr, methodName, xb->secretSessionId,
+      rawMsg = encodeSocketMessage(msgType, requestInfo.requestIdStr, requestInfo.methodName, xb->secretSessionId,
                              data_, dataLen_, xb->logLevel >= LOG_DUMP, &rawMsgLen);
    }
    
@@ -460,6 +463,10 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
       strncpy0(exception->errorCode, "communication.noConnection", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] Lost connection to xmlBlaster server", __FILE__, __LINE__);
       free(rawMsg);
+      if (xb->postSendEvent != 0) {
+         requestInfo.rollback = true;
+         requestInfoP = xb->postSendEvent(&requestInfo, exception);
+      }
       return false;
    }
 
@@ -469,6 +476,10 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
       strncpy0(exception->errorCode, "user.connect", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] ERROR Sent only %ld bytes from %lu", __FILE__, __LINE__, (long)numSent, (unsigned long)rawMsgLen);
       free(rawMsg);
+      if (xb->postSendEvent != 0) {
+         requestInfo.rollback = true;
+         requestInfoP = xb->postSendEvent(&requestInfo, exception);
+      }
       return false;
    }
 
@@ -482,15 +493,11 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
 
       if (xb->postSendEvent != 0) {
          /* A callback function pointer is registered to be notified just after sending */
-         MsgRequestInfo *requestInfoP;
-         MsgRequestInfo requestInfo;
-         requestInfo.methodName = methodName;
-         requestInfo.requestIdStr = requestIdStr;
          requestInfo.responseType = 0;
          requestInfo.blob.dataLen = 0;
          requestInfo.blob.data = 0;
          /* Here the thread blocks until a response from CallbackServer arrives */
-         requestInfoP = xb->postSendEvent(xb->postSendEvent_userP, &requestInfo, exception);
+         requestInfoP = xb->postSendEvent(&requestInfo, exception);
          if (*exception->message != 0) {
             if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__,
                "Re-throw exception from preSendEvent errorCode=%s message=%s", exception->errorCode, exception->message);
@@ -502,7 +509,7 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
          memset(responseSocketDataHolder, 0, sizeof(SocketDataHolder));
          responseSocketDataHolder->type = requestInfoP->responseType;
          responseSocketDataHolder->version = XMLBLASTER_SOCKET_VERSION;
-         strncpy0(responseSocketDataHolder->requestId, requestIdStr, MAX_REQUESTID_LEN);
+         strncpy0(responseSocketDataHolder->requestId, requestInfo.requestIdStr, MAX_REQUESTID_LEN);
          strncpy0(responseSocketDataHolder->methodName, methodName, MAX_METHODNAME_LEN);
 
          if (requestInfoP->responseType == MSG_TYPE_EXCEPTION) { /* convert XmlBlasterException thrown from remote */
@@ -515,7 +522,7 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
             responseSocketDataHolder->blob.data = requestInfoP->blob.data;     /* The responseSocketDataHolder is now responsible to free(responseSocketDataHolder->blob.data) */
          }
          if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__,
-            "requestId '%s' returns dataLen=%d", requestIdStr, requestInfoP->blob.dataLen);
+            "requestId '%s' returns dataLen=%d", requestInfo.requestIdStr, requestInfoP->blob.dataLen);
       }
       else {
          /* Wait on the response ourself */
