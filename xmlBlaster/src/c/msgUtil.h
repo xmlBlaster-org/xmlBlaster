@@ -11,9 +11,9 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #define true 1
 #define false 0
 
-#ifdef _LINUX
-#ifndef u_short
-#define u_short unsigned short
+#ifdef GCC_ANSI  /* Set -DGCC_ANSI on command line if you use the 'gcc --ansi' flag */
+#ifndef __USE_BSD /* gcc -ansi on Linux: */
+   typedef unsigned short u_short;
 #endif
 #endif
 

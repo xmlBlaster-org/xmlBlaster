@@ -638,7 +638,7 @@ int main(int argc, char** argv)
       }
    }
    printf("[client] Good bye.\n");
-   return 0; //exit(0);
+   return 0; /*exit(0);*/
 }
 #endif /* #ifdef XmlBlasterAccessUnparsedMain */
 
