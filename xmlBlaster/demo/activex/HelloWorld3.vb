@@ -30,10 +30,11 @@ Module HelloWorld3
                Handles xmlBlaster.XmlScriptAccessSource_Event_update
       Try
          Dim age As String
-         age = msg.getQos().getClientProperty("myAge").getStringValue()
+         age = msg.getQos().getClientProperty("myAge", "-99")
          Console.WriteLine("SUCCESS: Update arrived: " & msg.getCbSessionId() & _
                  ", oid=" & msg.getKey().getOid() & _
                  ", content=" & msg.getContentStr() & _
+                 ", state=" & msg.getQos().getState() & _
                  ", myAge=" & age)
          ' How to pass a byte[]?
          'Dim len As Int32 = msg.getContent().length
@@ -57,7 +58,7 @@ Module HelloWorld3
 
       Dim prop As Object = xmlBlaster.createPropertiesInstance()
       prop.setProperty("protocol", "SOCKET")
-      prop.setProperty("trace", "false")
+      prop.setProperty("-trace", "false")
       xmlBlaster.initialize(prop)
 
       Try
@@ -107,8 +108,10 @@ Module HelloWorld3
 
          ' Publish again, message arrives asynchronously in
          ' Sub XmlScriptAccess_update() (see above)
-         publishReturnQos = xmlBlaster.publish(key, "Ho", qos)
+         publishReturnQos = xmlBlaster.publishStr(key, "Ho", qos)
          Console.WriteLine("Got publish response:" & publishReturnQos.toXml())
+
+         ' MsgBox("Waiting on messages, try 'java javaclients.HelloWorldPublish -oid HelloWorld3 -content OOO' ...")
 
          ' Give control to the main loop to receive the update event
          System.Windows.Forms.Application.DoEvents()
