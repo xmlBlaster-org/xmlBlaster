@@ -183,18 +183,20 @@ public class ReferenceEntry extends MsgQueueEntry
          I_Map cache = getMsgUnitCache();
          if (cache == null) return;
          // we need to synchronize it over the caching process
+         boolean preDestroyed = false;
+         MsgUnitWrapper msgUnitWrapper = null;
          synchronized(cache) {
-            MsgUnitWrapper msgUnitWrapper = getMsgUnitWrapper();
+            msgUnitWrapper = getMsgUnitWrapper();
             if (msgUnitWrapper != null) {
-               boolean done = msgUnitWrapper.incrementReferenceCounter(incr, storageId);
-               if (!done) {
-                  log.error(ME+"-"+getLogId(), "incr="+incr+" to '" + storageId + "' failed, entry is swapped");
-               }
+               preDestroyed = msgUnitWrapper.incrementReferenceCounter(incr, storageId);
             }
             else {
                log.error(ME+"-"+getLogId(), "No no meat found, incr=" + incr);
             }
             msgUnitWrapper = null;
+         }
+         if (preDestroyed && msgUnitWrapper != null) {
+            msgUnitWrapper.toDestroyed();
          }
       }
       catch (Throwable ex) {

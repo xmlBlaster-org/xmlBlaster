@@ -238,7 +238,10 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
    /**
     * Invoked by ReferenceEntry.java to support reference counting
     * @param storageId
-    * @return false if the entry is outdated (is swapped away)
+    * @return false if the entry is not predistroied, true if it is
+    *         predestroyied. NOTE1: the caller must ensure to invoke toDestroyed() in cases
+    *         'true' is returned. NOTE2: The invocation toDestroye() must be done
+    *         outside from any sync on the cache.
     */
    public boolean incrementReferenceCounter(int count, StorageId storageId) throws XmlBlasterException {
       
@@ -282,9 +285,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
             }
          }
       } // sync cache                               isDestroyed()
-      if (this.state == PRE_DESTROYED) //this.referenceCounter <= 0L)
-         toDestroyed();
-      return true;
+      return this.state == PRE_DESTROYED; //this.referenceCounter <= 0L)
    }
 
    /**
@@ -548,7 +549,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
       return this.state == DESTROYED || this.state == PRE_DESTROYED;
    }
 
-   private void toDestroyed() {
+   public void toDestroyed() {
       //this.glob.getLog("core").info(ME, "Entering toDestroyed(oldState=" + getStateStr() + ")");
       synchronized (this) {
          if (this.timerKey != null) {
