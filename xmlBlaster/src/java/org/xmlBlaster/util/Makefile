@@ -17,6 +17,7 @@ LOCAL_FILES = \
 			$(CLASS_DIR)/FileUtil.class \
 			$(CLASS_DIR)/XmlKeyBase.class \
 			$(CLASS_DIR)/XmlQoSBase.class \
+			$(CLASS_DIR)/SaxHandlerBase.class \
 			$(CLASS_DIR)/StopWatch.class \
 			$(CLASS_DIR)/XmlProcessor.class \
 			$(CLASS_DIR)/XmlToDom.class \

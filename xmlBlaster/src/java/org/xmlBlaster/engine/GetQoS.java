@@ -3,7 +3,7 @@ Name:      GetQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: GetQoS.java,v 1.2 1999/12/09 13:28:36 ruff Exp $
+Version:   $Id: GetQoS.java,v 1.3 1999/12/16 09:29:23 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -42,7 +42,8 @@ public class GetQoS extends org.xmlBlaster.util.XmlQoSBase
     */
    public void startElement(String name, AttributeList attrs)
    {
-      super.startElement(name, attrs);
+      if (super.startElementBase(name, attrs) == true)
+         return;
 
       if (Log.TRACE) Log.trace(ME, "Entering startElement for " + name);
 
@@ -57,7 +58,8 @@ public class GetQoS extends org.xmlBlaster.util.XmlQoSBase
     */
    public void endElement(String name)
    {
-      super.endElement(name);
+      if (super.endElementBase(name) == true)
+         return;
 
       if (Log.TRACE) Log.trace(ME, "Entering endElement for " + name);
    }

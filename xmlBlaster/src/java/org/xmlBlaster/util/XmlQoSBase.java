@@ -3,7 +3,7 @@ Name:      XmlQoSBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: XmlQoSBase.java,v 1.5 1999/12/09 00:11:06 ruff Exp $
+Version:   $Id: XmlQoSBase.java,v 1.6 1999/12/16 09:29:23 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -15,32 +15,23 @@ import org.xml.sax.helpers.*;
 
 /**
  * In good old C days this would have been named a 'flag' (with bit wise setting)<br />
- * But this allows to specify QoS (quality of service) in XML syntax. 
+ * But this allows to specify QoS (quality of service) in XML syntax.
  * <p />
  * With XML there are no problems to extend the services of the xmlBlaster in unlimited ways.<br />
  * The xml string is parsed with a SAX parser, since no persistent DOM tree is needed
  * and SAX is much faster.
  * <p />
- * You may use this as a base class for your specialized QoS.
+ * You may use this as a base class for your specialized QoS.<br />
+ * The &lt;qos> tag is parsed here, and you provide the parsing of the inner tags.
  */
-public class XmlQoSBase extends HandlerBase
+public class XmlQoSBase extends SaxHandlerBase
 {
    private String ME = "XmlQoSBase";
-
-   // private static final String DEFAULT_PARSER_NAME =  // com.ibm.xml.parsers.SAXParser // com.sun.xml.parser.ValidatingParser
-   protected StringBuffer character = new StringBuffer();
    protected boolean inQos = false;     // parsing inside <qos> ? </qos>
 
 
    /**
-    * The original key in XML syntax, for example:
-    * <code>   &lt;qos>&lt;/qos>"</code>
-    */
-   protected String xmlQoS_literal;
-
-
-   /**
-    * Constructs an un initialized QoS (quality of service) object. 
+    * Constructs an un initialized QoS (quality of service) object.
     * You need to call the init() method to parse the XML string.
     */
    public XmlQoSBase()
@@ -50,179 +41,64 @@ public class XmlQoSBase extends HandlerBase
 
 
    /**
-    * Constructs an un initialized QoS (quality of service) object. 
-    * @deprecated Use the empty constructor
+    * Start element callback.
+    * <p />
+    * You may include this into your derived startElement() method like this:<br />
+    * <pre>
+    *  if (super.startElementBase(name, attrs) == true)
+    *     return;
+    * </pre>
+    * @return true if the tag is parsed here, the derived class doesn't need to look at this tag anymore
+    *         false this tag is not handled by this Base class
     */
-   public XmlQoSBase(String xmlQoS_literal)
-   {
-      if (Log.CALLS) Log.trace(ME, "Creating new XmlQoSBase");
-   }
-
-
-   /*
-    * This method parses the given quality of service XML string using the SAX parser. 
-    * @param xmlQoS_literal Quality of service in XML notation
-    */
-   public void init(String xmlQoS_literal) throws XmlBlasterException
-   {
-      if (xmlQoS_literal == null)
-         xmlQoS_literal = "";
-
-      this.xmlQoS_literal = xmlQoS_literal;
-
-      if (xmlQoS_literal.length() > 0) {
-         parse(xmlQoS_literal);
-      }
-   }
-
-
-   /**
-    * Does the actual parsing
-    * @param xmlData Quality of service in XML notation
-    */
-   private void parse(String xmlData) throws XmlBlasterException
-   {
-      try {
-         Parser parser = ParserFactory.makeParser(); // DEFAULT_PARSER_NAME
-         parser.setDocumentHandler(this);
-         parser.setErrorHandler(this);
-         parser.setDTDHandler(this);
-         parser.parse(new InputSource(new StringReader(xmlData)));
-      }
-      catch (Exception e) {
-         Log.error(ME, "Error while parsing QoS: " + e.toString());
-         e.printStackTrace();
-         throw new XmlBlasterException(ME, "Error while parsing QoS: " + e.toString());
-      }
-   }
-
-
-   /**
-    * @return returns the literal xml string
-    */
-   public String toString()
-   {
-      return xmlQoS_literal;
-   }
-
-
-   /** Processing instruction. */
-   public void processingInstruction(String target, String data)
-   {
-   }
-
-
-   /** Start document. */
-   public void startDocument()
-   {
-   }
-
-
-   /** Start element. */
-   public void startElement(String name, AttributeList attrs)
+   protected final boolean startElementBase(String name, AttributeList attrs)
    {
       if (name.equalsIgnoreCase("qos")) {
          inQos = true;
-         return;
+         return true;
       }
+      return false;
    }
 
 
    /**
-    * Characters.
-    * The text between two tags, in the following example 'Hello':
-    * <key>Hello</key>
+    * Start element.
+    * <p />
+    * Default implementation, knows how to parse &lt;qos> but knows nothing about the tags inside of qos
     */
-   public void characters(char ch[], int start, int length)
+   public void startElement(String name, AttributeList attrs)
    {
-      character.append(new String(ch, start, length));
+      startElementBase(name, attrs);
    }
 
 
-   /** Ignorable whitespace. */
-   public void ignorableWhitespace(char ch[], int start, int length)
-   {
-   }
-
-
-   /** End element. */
-   public void endElement(String name) {
+   /**
+    * End element callback.
+    * <p />
+    * You may include this into your derived endElement() method like this:<br />
+    * <pre>
+    *  if (super.endElementBase(name) == true)
+    *     return;
+    * </pre>
+    * @return true if the tag is parsed here, the derived class doesn't need to look at this tag anymore
+    *         false this tag is not handled by this Base class
+    */
+   protected final boolean endElementBase(String name) {
       if( name.equalsIgnoreCase("qos") ) {
          inQos = false;
          character = new StringBuffer();
-         return;
+         return true;
       }
+      return false;
    }
 
 
-   /** End document. */
-   public void endDocument() {
-   }
-
-
-   //
-   // ErrorHandler methods
-   //
-
-   /** Warning. */
-   public void warning(SAXParseException ex)
+   /** End element.
+    * <p />
+    * Default implementation, knows how to parse &lt;qos> but knows nothing about the tags inside of qos
+    */
+   public void endElement(String name)
    {
-      Log.warning(ME, getLocationString(ex) + ": " + ex.getMessage());
-   }
-
-
-   /** Error. */
-   public void error(SAXParseException ex)
-   {
-      Log.warning(ME, getLocationString(ex) + ": " + ex.getMessage());
-   }
-
-
-   /** Fatal error. */
-   public void fatalError(SAXParseException ex) throws SAXException
-   {
-      if(inQos) {
-         Log.warning(ME, getLocationString(ex) + ": " + ex.getMessage());
-         throw ex;
-      }
-   }
-
-
-   /** Fatal error. */
-   public void notationDecl(String name, String publicId, String systemId)
-   {
-      if (Log.TRACE) Log.trace(ME, "notationDecl(name="+name+", publicId="+publicId+", systemId="+systemId+")");
-   }
-
-
-   /** Fatal error. */
-   public void unparsedEntityDecl(String name, String publicId, String systemId, String notationName)
-   {
-      if (Log.TRACE) Log.trace(ME, "unparsedEntityDecl(name="+name+
-                                          ", publicId="+publicId+
-                                          ", systemId="+systemId+
-                                          ", notationName="+notationName+")");
-   }
-
-
-   /** Returns a string of the location. */
-   private String getLocationString(SAXParseException ex)
-   {
-      StringBuffer str = new StringBuffer();
-
-      String systemId = ex.getSystemId();
-      if (systemId != null) {
-          int index = systemId.lastIndexOf('/');
-          if (index != -1)
-              systemId = systemId.substring(index + 1);
-          str.append(systemId);
-      }
-      str.append(':');
-      str.append(ex.getLineNumber());
-      str.append(':');
-      str.append(ex.getColumnNumber());
-
-      return str.toString();
-
+      endElementBase(name);
    }
 }
