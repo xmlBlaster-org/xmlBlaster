@@ -246,7 +246,35 @@ public:
     */
    long flushQueue();
 
+	/**
+	 * Same as isAlive() || isPolling()
+	 * @return true if connect() call was successful, even if we are polling
+	 */
    bool isConnected() const;
+
+	/**
+	 * Check if we are 'online'. 
+	 * @return true if connected with server and ready
+	 */
+   bool isAlive() const;
+
+	/**
+	 * Check if we are polling for the server. 
+	 * @return true if polling for the server
+	 */
+   bool isPolling() const;
+
+	/**
+	 * Check if this handle is still useful
+	 * @return true if we have given up
+	 */
+   bool isDead() const;
+
+   /**
+    * Get connection status string for logging. 
+    * @return "ALIVE" | "POLLING" | "DEAD"
+    */
+   std::string getStatusString() const;
 
 };
 

@@ -75,7 +75,7 @@ public:
 
    /**
     * Logout from xmlBlaster. If the status is DEAD it returns false and writes a warning. If the status
-    * is CONNECTED it disconnects. If the status is something else, it throws an exception.
+    * is ALIVE it disconnects. If the status is something else, it throws an exception.
     * @param qos The QoS or null
     */
    bool disconnect(const org::xmlBlaster::util::qos::DisconnectQos& qos);
@@ -128,11 +128,30 @@ public:
 
    bool isFailsafe() const;
 
+	/**
+	 * Same as isAlive() || isPolling()
+	 * @return true if connect() call was successful, even if we are polling
+	 */
    bool isConnected() const;
+
+	/**
+	 * @return true if connected with server and ready
+	 */
+   bool isAlive() const;
+
+	/**
+	 * @return true if polling for the server
+	 */
+   bool isPolling() const;
+
+	/**
+	 * @return true if we have given up
+	 */
+   bool isDead() const;
 
    /**
     * Get connection status string for logging. 
-    * @return "CONNECTED" | "POLLING" | "DEAD"
+    * @return "ALIVE" | "POLLING" | "DEAD"
     */
    std::string getStatusString() const;
 

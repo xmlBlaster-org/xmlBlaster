@@ -118,7 +118,7 @@ ConnectReturnQos XmlBlasterAccess::connect(const ConnectQos& qos, I_Callback *cl
    
    // Is done in ConnectionsHandler.cpp
    //global_.setId(connectReturnQos_.getSessionQos().getAbsoluteName());
-   
+
    return connectReturnQos_;
 }
 
@@ -449,7 +449,32 @@ bool XmlBlasterAccess::isConnected() const
    if (!connection_) return false;
    return connection_->isConnected();
 }
+
+bool XmlBlasterAccess::isAlive() const
+{
+   if (!connection_) return false;
+   return connection_->isAlive();
+}
+
+bool XmlBlasterAccess::isPolling() const
+{
+   if (!connection_) return false;
+   return connection_->isPolling();
+}
+
+bool XmlBlasterAccess::isDead() const
+{
+   if (!connection_) return false;
+   return connection_->isDead();
+}
  
+
+std::string XmlBlasterAccess::getStatusString() const
+{
+   if (!connection_) return "DEAD";
+   return connection_->getStatusString();
+}
+
 
 }}} // namespaces
 

@@ -147,7 +147,7 @@ ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
    connectQos_->getSessionQos().setSecretSessionId(connectReturnQos_->getSessionQos().getSecretSessionId());
 
    enum States oldState = status_;
-   status_ = CONNECTED;
+   status_ = ALIVE;
    if (connectionProblemsListener_) connectionProblemsListener_->reachedAlive(oldState, this);
    // start the ping if in failsafe, i.e. if delay > 0
    startPinger();
@@ -434,12 +434,12 @@ void ConnectionsHandler::timeout(void * /*userData*/)
    timestamp_ = 0;
    if (doStopPing_) return; // then it must stop
    if ( log_.call() ) log_.call(ME, string("ping timeout occured with status '") + getStatusString() + "'" );
-   if (status_ == CONNECTED) { // then I am pinging
-      if ( log_.trace() ) log_.trace(ME, "ping timeout: status is 'CONNECTED'");
+   if (status_ == ALIVE) { // then I am pinging
+      if ( log_.trace() ) log_.trace(ME, "ping timeout: status is 'ALIVE'");
       try {
          if (connection_) {
             connection_->ping("<qos/>");
-            if ( log_.trace() ) log_.trace(ME, "lowlevel ping returned: status is 'CONNECTED'");
+            if ( log_.trace() ) log_.trace(ME, "lowlevel ping returned: status is 'ALIVE'");
             startPinger();
          }
       }
@@ -473,7 +473,7 @@ void ConnectionsHandler::timeout(void * /*userData*/)
  
             bool doFlush = true;
             enum States oldState = status_;
-            status_ = CONNECTED;
+            status_ = ALIVE;
             if ( connectionProblemsListener_ ) doFlush = connectionProblemsListener_->reachedAlive(oldState, this);
  
             Lock lock(publishMutex_); // lock here to avoid publishing while flushing queue (to ensure sequence)
@@ -606,7 +606,7 @@ long ConnectionsHandler::flushQueueUnlocked(I_Queue *queueToFlush, bool doRemove
 {
    if ( log_.call() ) log_.call(ME, "flushQueueUnlocked");
            if (!queueToFlush || queueToFlush->empty()) return 0;
-   if (status_ != CONNECTED || connection_ == NULL) return -1;
+   if (status_ != ALIVE || connection_ == NULL) return -1;
 
    long ret = 0;
    if (!queueToFlush->empty()) {
@@ -682,7 +682,7 @@ bool ConnectionsHandler::startPinger()
    }
    if (delay > 0 && pingInterval > 0) {
       long delta = delay;
-      if (status_ == CONNECTED) delta = pingInterval;
+      if (status_ == ALIVE) delta = pingInterval;
       timestamp_ = global_.getPingTimer().addTimeoutListener(this, delta, NULL);
       pingIsStarted_ = true;
    }
@@ -691,7 +691,7 @@ bool ConnectionsHandler::startPinger()
 
 string ConnectionsHandler::getStatusString() const
 {
-   if (status_ == CONNECTED) return "CONNECTED";
+   if (status_ == ALIVE) return "ALIVE";
    else if (status_ == POLLING) return "POLLING";
    else if (status_ == DEAD) return "DEAD";
    else if (status_ == START) return "START";
@@ -701,7 +701,22 @@ string ConnectionsHandler::getStatusString() const
 
 bool ConnectionsHandler::isConnected() const
 {
-   return status_ == CONNECTED || status_ == POLLING;
+   return status_ == ALIVE || status_ == POLLING;
+}
+
+bool ConnectionsHandler::isAlive() const
+{
+   return status_ == ALIVE;
+}
+
+bool ConnectionsHandler::isPolling() const
+{
+   return status_ == POLLING;
+}
+
+bool ConnectionsHandler::isDead() const
+{
+   return status_ == DEAD;
 }
 
 ConnectReturnQos ConnectionsHandler::connectRaw(const ConnectQos& connectQos)

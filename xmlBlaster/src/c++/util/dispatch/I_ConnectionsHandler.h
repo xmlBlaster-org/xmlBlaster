@@ -26,7 +26,7 @@ class I_Queue;
 
 namespace org { namespace xmlBlaster { namespace util { namespace dispatch {
 
-enum States {START, CONNECTED, POLLING, DEAD, END};
+enum States {START, ALIVE, POLLING, DEAD, END};
 
 class Dll_Export I_ConnectionsHandler : public org::xmlBlaster::client::protocol::I_XmlBlasterConnection
 {
