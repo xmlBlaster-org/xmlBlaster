@@ -3,7 +3,7 @@ Name:      Global.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Global.cpp,v 1.1 2002/12/05 21:33:39 laghi Exp $
+Version:   $Id: Global.cpp,v 1.2 2002/12/06 13:55:58 laghi Exp $
 ------------------------------------------------------------------------------*/
 #include <util/Global.h>
 
@@ -88,6 +88,20 @@ namespace org { namespace xmlBlaster { namespace util {
    const char * const* Global::getArgc()
    {
       return argc_;
+   }
+
+   string Global::getLocalIP() const
+   {
+      // change this to a better way later ...
+      return string("127.0.0.1");
+   }
+
+   string Global::getBootstrapHostname()
+   {
+      string ret = getProperty().getProperty(string("hostname"));
+      if (ret == "") return getLocalIP();
+      return ret;
+
    }
 
 }}}; // namespace
