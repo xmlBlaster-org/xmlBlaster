@@ -190,7 +190,6 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_Plugin, I_Connect
       QueuePropertyBase ramCopy = (QueuePropertyBase)queuePropertyBase.clone();
       ramCopy.setMaxMsg(queuePropertyBase.getMaxMsgCache());
       ramCopy.setMaxBytes(queuePropertyBase.getMaxBytesCache());
-      ramCopy.setCacheQueue(true);
       return ramCopy;
    }
 
