@@ -49,6 +49,11 @@ public final class MomClientGateway implements I_ExternGateway
    public boolean initialize(Global glob, CommandManager commandManager) throws XmlBlasterException {
       this.glob = glob;
       this.log = this.glob.getLog("admin");
+
+      boolean useMessages = glob.getProperty().get("admin.messages", true);
+      useMessages = glob.getProperty().get("admin.messages[" + glob.getId() + "]", useMessages);
+      if (!useMessages) return false;
+
       this.instanceCounter++;
       this.ME = "MomClientGateway" + this.instanceCounter + this.glob.getLogPraefixDashed();
       this.commandManager = commandManager;
