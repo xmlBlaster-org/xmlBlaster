@@ -408,7 +408,7 @@ public class I_MapTest extends TestCase {
                assertTrue("Missing entry", result != null);
                assertEquals(ME+": Wrong result", queueEntries[1].getUniqueId(), result.getUniqueId());
             }
-            i_map.remove(queueEntries[1]); // Remove one
+            i_map.remove(queueEntries[1].getUniqueId()); // Remove one
             assertEquals("", 1, i_map.getNumOfEntries());
             assertEquals("", 1, i_map.getNumOfPersistentEntries());
 
