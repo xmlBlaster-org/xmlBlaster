@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.28 2000/03/13 16:17:02 ruff Exp $
+Version:   $Id: Main.java,v 1.29 2000/05/03 08:17:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -139,25 +139,34 @@ public class Main
                Log.info(ME, "Published AuthServer IOR to naming service");
             }
             catch (XmlBlasterException e) {
-               Log.info(ME, "AuthServer IOR is not published to naming service");
                nc = null;
+               if (iorPort > 0) {
+                  Log.info(ME, "You don't need the naming service, i'll switch to builtin http IOR download");
+               }
+               else if (iorFile != null) {
+                  Log.info(ME, "You don't need the naming service, i'll switch to iorFile = " + iorFile);
+               }
+               else {
+                  usage();
+                  Log.panic(ME, "You switched off the internal http server and you didn't specify a file name for IOR dump! Sorry - good bye.");
+               }
             } catch (org.omg.CORBA.COMM_FAILURE e) {
                nc = null;
                if (iorPort > 0) {
                   Log.info(ME, "Can't publish AuthServer to naming service, is your naming service really running?\n" +
                                e.toString() +
-                               "\nYou don't need the naming service, i'll switch to builtin http IOR download");
+                               "You don't need the naming service, i'll switch to builtin http IOR download");
                }
                else if (iorFile != null) {
                   Log.info(ME, "Can't publish AuthServer to naming service, is your naming service really running?\n" +
                                e.toString() +
-                               "\nYou don't need the naming service, i'll switch to iorFile = " + iorFile);
+                               "You don't need the naming service, i'll switch to iorFile = " + iorFile);
                }
                else {
                   usage();
                   Log.panic(ME, "Can't publish AuthServer to naming service, is your naming service really running?\n" +
                                e.toString() +
-                               "\n\nYou switched off the internal http server and you didn't specify a file name for IOR dump! Sorry - good bye.");
+                               "\nYou switched off the internal http server and you didn't specify a file name for IOR dump! Sorry - good bye.");
                }
             }
          }
@@ -289,12 +298,11 @@ public class Main
     */
    private NamingContext getNamingService() throws XmlBlasterException
    {
-      NamingContext nameService = null;
-
       if (Log.CALLS) Log.calls(ME, "getNamingService() ...");
-      if (nameService != null)
-         return nameService;
+      if (nc != null)
+         return nc;
 
+      NamingContext nameService = null;
       try {
          // Get a reference to the Name Service, CORBA compliant:
          org.omg.CORBA.Object nameServiceObj = orb.resolve_initial_references("NameService");
@@ -314,8 +322,11 @@ public class Main
          return nameService; // Note: the naming service IOR is successfully evaluated (from a IOR),
                              // but it is not sure that the naming service is really running
       }
+      catch (XmlBlasterException e) {
+         throw e;
+      }
       catch (Exception e) {
-         Log.warning(ME + ".NoNameService", "Can't access naming service" + e.toString());
+         Log.warning(ME + ".NoNameService", "Can't access naming service: " + e.toString());
          throw new XmlBlasterException(ME + ".NoNameService", e.toString());
       }
    }
