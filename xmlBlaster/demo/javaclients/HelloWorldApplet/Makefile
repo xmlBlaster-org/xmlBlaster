@@ -21,4 +21,4 @@ $(CLASS_DIR)/%.class: %.java
 all: $(LOCAL_FILES)
 
 clean:
-	rm $(CLASS_DIR)/*.class 
+	$(RM) $(CLASS_DIR)/*.class 
