@@ -46,7 +46,7 @@ public final class OrbInstanceFactory
     * <pre>
     *  org.omg.CORBA.ORBClass=org.jacorb.orb.ORB
     *  org.omg.CORBA.ORBSingletonClass=org.jacorb.orb.ORBSingleton
-    *  ORBInitRef.NameService=corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root
+    *  -ORBInitRef NameService=corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root
     * </pre>
     *
     * Forces to use JacORB instead of JDK internal ORB (which is outdated)
@@ -152,21 +152,13 @@ public final class OrbInstanceFactory
       // Start Naming service
       //    jaco -DOAPort=7608  org.jacorb.naming.NameServer /tmp/ns.ior
       // and xmlBlaster will find it automatically if on same host
-      if (System.getProperty("ORBInitRef.NameService") == null) {
-         JdkCompatible.setSystemProperty("ORBInitRef.NameService", glob.getProperty().get("ORBInitRef.NameService", "corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root"));
-         if (log.TRACE) log.trace(ME, "Using corbaloc ORBInitRef.NameService=corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root to find a naming service");
-      }
-      else {
-         if (log.TRACE) log.trace(ME, "Using system ORBInitRef.NameService=" + System.getProperty("ORBInitRef.NameService"));
-      }
       */
       if (glob.getProperty().get("ORBInitRef", (String)null) != null) {
          String tmp = glob.getProperty().get("ORBInitRef", "NameService=corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root");
          // -ORBInitRef "NameService=corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root"
          //JdkCompatible.setSystemProperty("ORBInitRef", tmp);
          props.put("ORBInitRef", tmp);
-         if (log.TRACE) log.trace(ME, "Using corbaloc -ORBInitRef NameService="+glob.getProperty().get("ORBInitRef.NameService",(String)null)+" to find a naming service");
-         //log.error(ME, "DEBUG ONLY: Using corbaloc -ORBInitRef NameService="+glob.getProperty().get("ORBInitRef.NameService",(String)null)+" to find a naming service");
+         if (log.TRACE) log.trace(ME, "Using corbaloc -ORBInitRef NameService="+glob.getProperty().get("ORBInitRef",(String)null)+" to find a naming service");
       }
       return props;
    }

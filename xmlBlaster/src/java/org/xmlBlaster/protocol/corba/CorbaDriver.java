@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.62 2003/04/04 17:34:50 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.63 2003/04/17 13:30:33 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -294,7 +294,7 @@ public class CorbaDriver implements I_Driver
                   throw new XmlBlasterException(glob, ErrorCode.RESOURCE_UNAVAILABLE, ME, "Can't bind to naming service");
                }
 
-               log.info(ME, "Published AuthServer IOR to NameService '" + System.getProperty("ORBInitRef.NameService") +
+               log.info(ME, "Published AuthServer IOR to NameService '" + System.getProperty("ORBInitRef") +
                             "' with name '" + getString(nameXmlBlaster) + "/" + getString(nameNode) + "'");
             }
             catch (XmlBlasterException e) {
@@ -518,7 +518,7 @@ public class CorbaDriver implements I_Driver
       }
       catch (Exception e) {
          if (log.TRACE) log.trace(ME + ".NoNameService", e.toString() + ": " + e.getMessage());
-         throw XmlBlasterException.convert(glob, ErrorCode.RESOURCE_CONFIGURATION, ME + ".NoNameService", "No CORBA naming service found - start <xmlBlaster/bin/ns ns.ior> and specify <ORBInitRef.NameService=...> if you want one.", e);
+         throw XmlBlasterException.convert(glob, ErrorCode.RESOURCE_CONFIGURATION, ME + ".NoNameService", "No CORBA naming service found - start <xmlBlaster/bin/ns ns.ior> and specify <-ORBInitRef NameService=...> if you want one.", e);
          //throw new XmlBlasterException(ME + ".NoNameService", "No CORBA naming service found - read docu at <http://www.jacorb.org> if you want one.");
       }
    }
@@ -620,6 +620,7 @@ public class CorbaDriver implements I_Driver
       text += "   java -DOAIAddr=<ip> Use '-ior.hostname'\n";
       text += "   java -DOAPort=<nr>  Use '-ior.port'\n";
       text += "   java -Djacorb.verbosity=3  Switch CORBA debugging on\n";
+      text += "   java ... -ORBInitRef NameService=corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root\n";
       text += "\n";
       return text;
    }

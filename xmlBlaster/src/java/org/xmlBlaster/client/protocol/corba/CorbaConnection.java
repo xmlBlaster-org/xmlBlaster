@@ -384,7 +384,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
 
                NamingContextExt namingContextExt = getNamingService();
                NameComponent [] nameXmlBlaster = new NameComponent[] { new NameComponent(contextId, contextKind) };
-               if (log.TRACE) log.trace(ME, "Query NameServer ORBInitRef.NameService=" + System.getProperty("ORBInitRef.NameService") +
+               if (log.TRACE) log.trace(ME, "Query NameServer -ORBInitRef NameService=" + System.getProperty("ORBInitRef") +
                              " to find the xmlBlaster root context " + CorbaDriver.getString(nameXmlBlaster));
                org.omg.CORBA.Object obj = namingContextExt.resolve(nameXmlBlaster);
                NamingContext relativeContext = org.omg.CosNaming.NamingContextExtHelper.narrow(obj);
@@ -464,8 +464,8 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
                         log.error(ME, str);
                         throw new Exception(str);
                      }
-                     log.info(ME, "Choosing only available server '" + firstServerName + "' in CORBA NameService ORBInitRef.NameService=" +
-                                  System.getProperty("ORBInitRef.NameService"));
+                     log.info(ME, "Choosing only available server '" + firstServerName + "' in CORBA NameService -ORBInitRef NameService=" +
+                                  System.getProperty("ORBInitRef"));
                      this.authServer = authServerFirst;
                      return authServerFirst;
                   }
@@ -475,7 +475,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
                }
 
                log.info(ME, "Accessing xmlBlaster using a naming service '" + nameXmlBlaster[0].id + "." + nameXmlBlaster[0].kind + "/" +
-                              nameNode[0].id + "." + nameNode[0].kind + "' on " + System.getProperty("ORBInitRef.NameService"));
+                              nameNode[0].id + "." + nameNode[0].kind + "' on " + System.getProperty("ORBInitRef"));
                return this.authServer;
             }
             catch(Throwable e) {
@@ -789,6 +789,8 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
       text += "   java -DOAIAddr=<ip> Use '-ior.hostnameCB'\n";
       text += "   java -DOAPort=<nr>  Use '-ior.portCB'\n";
       text += "   java -Djacorb.verbosity=3  Switch CORBA debugging on\n";
+      text += "   java ... -ORBInitRef NameService=corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root\n";
+      text += "   java -DORBInitRef.NameService=corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root\n";
       text += "\n";
       return text;
    }
