@@ -14,7 +14,6 @@ import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.property.PropString;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.client.qos.PublishQos;
-import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_ConnectionStateListener;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
@@ -26,6 +25,8 @@ import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 
 import org.xmlBlaster.test.Util;
+import org.xmlBlaster.test.Msg;
+import org.xmlBlaster.test.MsgInterceptor;
 import junit.framework.*;
 
 
@@ -44,28 +45,25 @@ import junit.framework.*;
  * </pre>
  * @see org.xmlBlaster.client.I_XmlBlasterAccess
  */
-public class TestFailSave extends TestCase implements I_Callback, I_ConnectionStateListener
+public class TestFailSave extends TestCase implements I_ConnectionStateListener
 {
    private static String ME = "TestFailSave";
    private final Global glob;
    private final LogChannel log;
 
-   private boolean messageArrived = false;
-
    private int serverPort = 7604;
    private EmbeddedXmlBlaster serverThread;
 
+   private MsgInterceptor updateInterceptor;
    private I_XmlBlasterAccess con;
    private String senderName;
 
-   private int numReceived = 0;         // error checking
    private int numPublish = 8;
    private int numStop = 3;
+   private int numStart = 5;
    private final String contentMime = "text/plain";
 
    private final long reconnectDelay = 2000L;
-
-   private String assertInUpdate = null;
 
    /**
     * Constructs the TestFailSave object.
@@ -81,7 +79,6 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionSt
       this.senderName = loginName;
    }
 
-
    /**
     * Sets up the fixture.
     * <p />
@@ -94,8 +91,6 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionSt
       serverThread = EmbeddedXmlBlaster.startXmlBlaster(glob);
       log.info(ME, "XmlBlaster is ready for testing on port " + serverPort);
       try {
-         numReceived = 0;
-
          con = glob.getXmlBlasterAccess(); // Find orb
 
          String passwd = "secret";
@@ -110,17 +105,18 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionSt
 
          connectQos.setAddress(addressProp);
 
-         // and do the login ...
-         con.connect(connectQos, this);  // Login to xmlBlaster, register for updates
+         this.updateInterceptor = new MsgInterceptor(this.glob, log, null); // Collect received msgs
+
+         con.connect(connectQos, this.updateInterceptor);  // Login to xmlBlaster, register for updates
       }
       catch (XmlBlasterException e) {
-          log.warn(ME, "setUp() - login failed");
-          fail("setUp() - login faile");
+          log.warn(ME, "setUp() - login failed: " + e.getMessage());
+          fail("setUp() - login fail: " + e.getMessage());
       }
       catch (Exception e) {
           log.error(ME, "setUp() - login failed: " + e.toString());
           e.printStackTrace();
-          fail("setUp() - login faile");
+          fail("setUp() - login fail: " + e.toString());
       }
    }
 
@@ -148,13 +144,13 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionSt
             assertEquals("Wrong number of message erased", (numPublish - numStop), arr.length);
          else
             assertEquals("Wrong number of message erased", numPublish, arr.length);
-         assertTrue(assertInUpdate, assertInUpdate == null);
       } catch(XmlBlasterException e) { log.error(ME, "XmlBlasterException: " + e.getMessage()); }
 
       try { Thread.currentThread().sleep(500L); } catch( InterruptedException i) {}    // Wait some time
       con.disconnect(null);
 
-      EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
+      EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
+      this.serverThread = null;
 
       // reset to default server port (necessary if other tests follow in the same JVM).
       Util.resetPorts();
@@ -164,7 +160,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionSt
    /**
     * TEST: Subscribe to messages with XPATH.
     */
-   public void testSubscribe()
+   public void doSubscribe()
    {
       if (log.TRACE) log.trace(ME, "Subscribing using EXACT oid syntax ...");
 
@@ -209,26 +205,30 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionSt
     */
    public void testFailSave()
    {
-      //testSubscribe(); -> see reachedAlive()
+      //doSubscribe(); -> see reachedAlive()
       log.info(ME, "Going to publish " + numPublish + " messages, xmlBlaster will be down for message 3 and 4");
       for (int ii=0; ii<numPublish; ii++) {
          try {
             if (ii == numStop) { // 3
                log.info(ME, "Stopping xmlBlaster, but continue with publishing ...");
-               EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
+               EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
+               this.serverThread = null;
             }
-            if (ii == 5) {
+            if (ii == numStart) {
                log.info(ME, "Starting xmlBlaster again, expecting the previous published two messages ...");
                serverThread = EmbeddedXmlBlaster.startXmlBlaster(serverPort);
                log.info(ME, "xmlBlaster started, waiting on tail back messsages");
-               waitOnUpdate(reconnectDelay*2L); // Message-4 We need to wait until the client reconnected (reconnect interval)
-               waitOnUpdate(4000L); // Message-5
+               
+               // Message-4 We need to wait until the client reconnected (reconnect interval)
+               // Message-5
+               assertEquals("", 2, this.updateInterceptor.waitOnUpdate(reconnectDelay*2L, 2));
+               this.updateInterceptor.clear();
             }
             doPublish(ii+1);
-            waitOnUpdate(4000L);
-            assertTrue(assertInUpdate, assertInUpdate == null);
-            assertInUpdate = null;
-            //assertEquals("numReceived after publishing", ii+1, numReceived); // message arrived?
+            if (ii < numStop || ii >= numStart ) {
+               assertEquals("", 1, this.updateInterceptor.waitOnUpdate(4000L, 1));
+            }
+            this.updateInterceptor.clear();
          }
          catch(XmlBlasterException e) {
             if (e.getErrorCode() == ErrorCode.COMMUNICATION_NOCONNECTION_POLLING)
@@ -239,11 +239,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionSt
                assertTrue("Publishing problems: " + e.getMessage(), false);
          }
       }
-
-      try { Thread.currentThread().sleep(2000L); } catch( InterruptedException i) {}    // Wait some time
-      assertEquals("numReceived is wrong", numPublish, numReceived);
    }
-
 
    /**
     * This is the callback method invoked from I_XmlBlasterAccess
@@ -253,7 +249,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionSt
     */
    public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
       log.info(ME, "I_ConnectionStateListener: We were lucky, reconnected to xmlBlaster");
-      testSubscribe();    // initialize on startup and on reconnect
+      doSubscribe();    // initialize on startup and on reconnect
    }
 
    public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
@@ -265,65 +261,6 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionSt
    }
 
    /**
-    * This is the callback method invoked from xmlBlaster
-    * delivering us a new asynchronous message. 
-    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
-    */
-   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
-   {
-      log.info(ME, "Receiving update of a message state=" + updateQos.getState());
-
-      if (updateQos.isErased()) {
-         log.info(ME, "Ignore erase event");
-         return ""; // We ignore the erase event on tearDown
-      }
-
-      numReceived += 1;
-      log.info(ME, "Receiving update of message oid=" + updateKey.getOid() + " numReceived=" + numReceived + " ...");
-
-      assertInUpdate = "Wrong sender, expected:" + senderName + " but was:" + updateQos.getSender().getLoginName();
-      assertEquals("Wrong sender", senderName, updateQos.getSender().getLoginName());
-
-      assertInUpdate = "Message contentMime is corrupted expected:" + contentMime + " but was:" + updateKey.getContentMime();
-      assertEquals("Message contentMime is corrupted", contentMime, updateKey.getContentMime());
-
-      String oid = "Message" + "-" + numReceived;
-      assertInUpdate = "Wrong oid of message returned expected:" + oid + " but was:" + updateKey.getOid();
-      assertEquals("Message oid is wrong", oid, updateKey.getOid());
-
-      assertInUpdate = null;
-      messageArrived = true;
-      return "";
-   }
-
-
-   /**
-    * Little helper, waits until the variable 'messageArrive' is set
-    * to true, or returns when the given timeout occurs.
-    * @param timeout in milliseconds
-    */
-   private void waitOnUpdate(final long timeout)
-   {
-      long pollingInterval = 50L;  // check every 0.05 seconds
-      if (timeout < 50)  pollingInterval = timeout / 10L;
-      long sum = 0L;
-      while (!messageArrived) {
-         try {
-            Thread.currentThread().sleep(pollingInterval);
-         }
-         catch( InterruptedException i)
-         {}
-         sum += pollingInterval;
-         if (sum > timeout) {
-            log.info(ME, "Timeout of " + timeout + " occurred");
-            break;
-         }
-      }
-      messageArrived = false;
-   }
-
-
-   /**
     * Method is used by TestRunner to load these tests
     */
    public static Test suite()
@@ -333,7 +270,6 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionSt
        suite.addTest(new TestFailSave(new Global(), "testFailSave", loginName));
        return suite;
    }
-
 
    /**
     * Invoke: java org.xmlBlaster.test.qos.TestFailSave
