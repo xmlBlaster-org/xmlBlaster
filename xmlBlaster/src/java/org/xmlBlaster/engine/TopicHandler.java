@@ -1826,7 +1826,7 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
    private void notifySubscribersAboutErase(SessionName sessionName) {
       if (log.CALL) log.call(ME, "Sending client notification about message erase() event");
 
-      if (hasSubscribers()) {
+      if (isAlive()) {
          try {
             SessionInfo publisherSessionInfo = glob.getRequestBroker().getInternalSessionInfo();
             org.xmlBlaster.client.key.PublishKey pk = new org.xmlBlaster.client.key.PublishKey(glob,
