@@ -154,8 +154,9 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
 
       if (log.CALL) log.call(ME, "Entering login");
       if (isLoggedIn()) {
-         log.warn(ME, "You are already logged in, no relogin possible.");
-         return "";
+         log.warn(ME, "You are already logged in, we try again: " + toXml());
+         //log.warn(ME, "You are already logged in, no relogin possible.");
+         //return "";
       }
 
       try {
