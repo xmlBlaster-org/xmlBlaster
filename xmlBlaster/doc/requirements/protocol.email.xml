@@ -56,21 +56,21 @@
 
        <pre>
 
-<xmlBlaster>
-   <connect>
-      <securityPlugin type='simple' version='1.0'>
-         <xmlBlaster:user>fritz</xmlBlaster:user>
-         <passwd><![CDATA[secret    ]]></passwd>
-      </securityPlugin>
-   </connect>
-   <publish>
-      <key>xxxx</key>
-      <content xlink='sss.jpg'/><!-- this looks for the attachment sss.jpg -->
-      <qos></qos>
-   </publish>
-   <subscribe/>
-   <disconnect/>
-</xmlBlaster>
+&lt;xmlBlaster>
+   &lt;connect>
+      &lt;securityPlugin type='simple' version='1.0'>
+         &lt;xmlBlaster:user>fritz&lt;/xmlBlaster:user>
+         &lt;passwd>&lt;![CDATA[secret    ]]>&lt;/passwd>
+      &lt;/securityPlugin>
+   &lt;/connect>
+   &lt;publish>
+      &lt;key>xxxx&lt;/key>
+      &lt;content xlink='sss.jpg'/>&lt;!-- this looks for the attachment sss.jpg -->
+      &lt;qos>&lt;/qos>
+   &lt;/publish>
+   &lt;subscribe/>
+   &lt;disconnect/>
+&lt;/xmlBlaster>
 
        </pre>
 
@@ -131,7 +131,7 @@
    <see type="API">org.xmlBlaster.protocol.email.EmailDriver</see>
    <author>laghi@swissinfo.org</author>
    <date>2002 09 23</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
