@@ -112,7 +112,7 @@ public final class QueryKeyData extends KeyData implements java.io.Serializable,
    /**
     * Should be avoided to call directly.
     */
-   void setQueryType(String queryType) throws XmlBlasterException {
+   public void setQueryType(String queryType) throws XmlBlasterException {
       this.queryType = checkQueryType(queryType);
       /*
       checkQueryType(queryType);
@@ -214,7 +214,7 @@ public final class QueryKeyData extends KeyData implements java.io.Serializable,
     * For subscribe() and get() and cluster messages.
     * @return never null
     */
-   public AccessFilterQos[] getAccessFilterArr() {
+   public synchronized AccessFilterQos[] getAccessFilterArr() {
       if (filterArr != null)
          return filterArr;
 
@@ -226,7 +226,10 @@ public final class QueryKeyData extends KeyData implements java.io.Serializable,
       return filterArr;
    }
 
-   public void addFilter(AccessFilterQos qos) {
+   /*
+    * For cluster master lookup only
+    */
+   public synchronized void addFilter(AccessFilterQos qos) {
       if (filterList == null) filterList = new ArrayList();
       filterList.add(qos);
       filterArr = null;

@@ -17,6 +17,7 @@ import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
+import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.util.MsgUnit;
 
 import org.xmlBlaster.test.Util;
@@ -47,6 +48,7 @@ public class TestSubMultiSubscribe extends TestCase
    private final LogChannel log;
 
    private String subscribeId;
+   private final String myDomain = "myDomain";
    private MsgInterceptor updateInterceptor;
    
    private String publishOid = "HelloMessageMultiSub";
@@ -67,6 +69,7 @@ public class TestSubMultiSubscribe extends TestCase
     * Sets up the fixture.
     */
    protected void setUp() {
+      this.subscribeId = null;
       try {
          connection = glob.getXmlBlasterAccess(); // Find orb
          ConnectQos qos = new ConnectQos(glob);
@@ -103,13 +106,16 @@ public class TestSubMultiSubscribe extends TestCase
    /**
     * Subscribe multiple times to the same message with &lt;multiSubscribe>false&lt;/multiSubscribe>
     */
-   public void subscribe() {
+   public void subscribe(String queryString, String queryType, AccessFilterQos aq, int numSub) {
       if (log.TRACE) log.trace(ME, "Subscribing ...");
       try {
-         for(int i=0; i<10; i++) {
-            SubscribeKey key = new SubscribeKey(glob, publishOid);
+         for(int i=0; i<numSub; i++) {
+            SubscribeKey key = new SubscribeKey(glob, queryString, queryType);
             SubscribeQos qos = new SubscribeQos(glob);
             qos.setMultiSubscribe(false);
+            if (aq != null) {
+               qos.addAccessFilter(aq);
+            }
             SubscribeReturnQos ret = this.connection.subscribe(key.toXml(), qos.toXml());
             log.info(ME, "Subscribe #" + i + " state=" + ret.getState() + " subscriptionId=" + ret.getSubscriptionId());
             if (subscribeId == null) {
@@ -132,10 +138,11 @@ public class TestSubMultiSubscribe extends TestCase
    public void publish() {
       if (log.TRACE) log.trace(ME, "Publishing a message ...");
 
-      String xmlKey = "<key oid='" + publishOid + "'/>";
+      String xmlKey = "<key oid='" + publishOid + "' domain='"+myDomain+"'/>";
       String senderContent = "Yeahh, i'm the new content";
+      String xmlQos = "<qos><clientProperty name='phone'>1200003</clientProperty></qos>";
       try {
-         MsgUnit msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), "<qos/>");
+         MsgUnit msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), xmlQos);
          publishOid = connection.publish(msgUnit).getKeyOid();
          log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
@@ -167,11 +174,110 @@ public class TestSubMultiSubscribe extends TestCase
     * TEST: Construct a message and publish it,
     * the first subscription shouldn't  receive the message as local==false
     */
-   public void testMultiSubscribe() {
-      log.info(ME, "testMultiSubscribe ...");
+   public void testMultiSubscribeOid() {
+      log.info(ME, "testMultiSubscribeOid ...");
       
-      subscribe();   // there should be no Callback 
+      subscribe(publishOid, Constants.EXACT, null, 10);   // there should be no Callback 
       assertEquals("", 0, this.updateInterceptor.waitOnUpdate(1000L, 0));
+
+      int numPub = 5;
+      for (int i=0; i<numPub; i++)
+         publish();     // We expect numPub updates only
+      assertEquals("", numPub, this.updateInterceptor.waitOnUpdate(1000L, publishOid, Constants.STATE_OK));
+      this.updateInterceptor.clear();
+
+      unSubscribe(); // One single unSubscribe should be enough
+
+      publish();
+      assertEquals("", 0, this.updateInterceptor.waitOnUpdate(1000L, 0));
+   }
+
+   /**
+    * TEST: Construct a message and publish it,
+    * the first subscription shouldn't  receive the message as local==false
+    */
+   public void testMultiSubscribeXPath() {
+      log.info(ME, "testMultiSubscribeXPath ...");
+      
+      subscribe("//key[@oid='"+publishOid+"']", Constants.XPATH, null, 10);   // there should be no Callback 
+      assertEquals("", 0, this.updateInterceptor.waitOnUpdate(1000L, 0));
+
+      int numPub = 5;
+      for (int i=0; i<numPub; i++)
+         publish();     // We expect numPub updates only
+      assertEquals("", numPub, this.updateInterceptor.waitOnUpdate(1000L, publishOid, Constants.STATE_OK));
+      this.updateInterceptor.clear();
+
+      unSubscribe(); // One single unSubscribe should be enough
+
+      publish();
+      assertEquals("", 0, this.updateInterceptor.waitOnUpdate(1000L, 0));
+   }
+
+   /**
+    * TEST: Change AccessFilter of SubscribeQos and test if reconfiguration works. 
+    */
+   public void testSubscribeReconfigure() {
+      log.info(ME, "testSubscribeReconfigure ...");
+
+      final String filterType = "Sql92Filter";
+      final String filterVersion = "1.0";
+      String filterQuery = "phone LIKE '12%3'";
+
+      {
+         log.info(ME, "Matching accessFilter");
+         AccessFilterQos aq = new AccessFilterQos(glob, filterType, filterVersion, filterQuery);
+         subscribe("//key[@oid='"+publishOid+"']", Constants.XPATH, aq, 1);
+         assertEquals("", 0, this.updateInterceptor.waitOnUpdate(1000L, 0));
+
+         publish();
+         assertEquals("", 1, this.updateInterceptor.waitOnUpdate(1000L, publishOid, Constants.STATE_OK));
+         this.updateInterceptor.clear();
+      }
+
+      {
+         log.info(ME, "NOT matching accessFilter");
+         filterQuery = "phone LIKE '1XX%3'";
+         AccessFilterQos aq = new AccessFilterQos(glob, filterType, filterVersion, filterQuery);
+         subscribe("//key[@oid='"+publishOid+"']", Constants.XPATH, aq, 1);
+         assertEquals("", 0, this.updateInterceptor.waitOnUpdate(1000L, 0));
+
+         publish();
+         assertEquals("", 0, this.updateInterceptor.waitOnUpdate(1000L, 0));
+         this.updateInterceptor.clear();
+      }
+
+      {
+         log.info(ME, "Matching accessFilter");
+         filterQuery = "phone LIKE '12%3'";
+         AccessFilterQos aq = new AccessFilterQos(glob, filterType, filterVersion, filterQuery);
+         subscribe("//key[@oid='"+publishOid+"']", Constants.XPATH, aq, 1);
+         assertEquals("", 0, this.updateInterceptor.waitOnUpdate(1000L, 0));
+
+         publish();
+         assertEquals("", 1, this.updateInterceptor.waitOnUpdate(1000L, publishOid, Constants.STATE_OK));
+         this.updateInterceptor.clear();
+      }
+
+      unSubscribe(); // One single unSubscribe should be enough
+
+      publish();
+      assertEquals("", 0, this.updateInterceptor.waitOnUpdate(1000L, 0));
+   }
+
+   /**
+    * TEST: Construct a message and publish it,
+    * the first subscription shouldn't  receive the message as local==false
+    */
+   public void testMultiSubscribeDomain() {
+      log.info(ME, "testMultiSubscribeDomain ...");
+      
+      // For domain queries the topic must exist: Therefor publish one message to create it!
+      publish();     // We expect numPub updates only
+
+      subscribe(myDomain, Constants.DOMAIN, null, 10);   // there should be no Callback 
+      assertEquals("", 1, this.updateInterceptor.waitOnUpdate(1000L, 1));
+      this.updateInterceptor.clear();
 
       int numPub = 5;
       for (int i=0; i<numPub; i++)
@@ -190,7 +296,10 @@ public class TestSubMultiSubscribe extends TestCase
     */
    public static Test suite() {
        TestSuite suite= new TestSuite();
-       suite.addTest(new TestSubMultiSubscribe(new Global(), "testMultiSubscribe"));
+       suite.addTest(new TestSubMultiSubscribe(new Global(), "testMultiSubscribeOid"));
+       suite.addTest(new TestSubMultiSubscribe(new Global(), "testMultiSubscribeXPath"));
+       suite.addTest(new TestSubMultiSubscribe(new Global(), "testSubscribeReconfigure"));
+       suite.addTest(new TestSubMultiSubscribe(new Global(), "testMultiSubscribeDomain"));
        return suite;
    }
 
@@ -207,7 +316,10 @@ public class TestSubMultiSubscribe extends TestCase
       }
       TestSubMultiSubscribe testSub = new TestSubMultiSubscribe(glob, "TestSubMultiSubscribe");
       testSub.setUp();
-      testSub.testMultiSubscribe();
+      //testSub.testMultiSubscribeOid();
+      //testSub.testMultiSubscribeXPath();
+      testSub.testSubscribeReconfigure();
+      //testSub.testMultiSubscribeDomain();
       testSub.tearDown();
    }
 }

@@ -85,6 +85,11 @@
    &lt;!-- Filters messages i have subscribed as implemented in your plugin -->
    &lt;!-- Here we use the RegEx filter and only want content starting with 'H' -->
    &lt;filter type='GnuRegexFilter' version='1.0'>^H.*$&lt;/filter>
+
+   &lt;!-- http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.queryspec.html -->
+   &lt;querySpec type='QueueQuery' version='1.0'>
+      &lt;![CDATA[maxEntries=3;maxSize=-1;consumable=false;waitingDelay=0]]&gt;
+   &lt;/querySpec>
                                 
    &lt;!-- Default is to deliver the current entry (numEntries='1'), '-1' deliver all (default: 1) -->
    &lt;!-- newestFirst let you change the delivery order, it defaults to true -->
@@ -106,8 +111,19 @@
       <td>You can mark a subscription to be persistent. If the server crashes or is restarted the
           clients session and this subscription is restored.
           Please read the 
-	  <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.persistence.subscription.html">engine.persistence.subscription</a>
-	  requirements for details.
+          <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.persistence.subscription.html">engine.persistence.subscription</a>
+          requirements for details.
+      </td>
+      </tr>
+      <tr>
+      <td>multiSubscribe</td>
+      <td>
+     If you subscribe with the same client (the same login session) multiple 
+     times to the same message you will receive this message multiple times,
+     one update for each subscription. This can be suppressed, for details please
+     read the 
+     <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.subscribe.multiSubscribe.html">engine.qos.subscribe.multiSubscribe</a>
+     requirement.
       </td>
       </tr>
       <tr>
@@ -115,19 +131,19 @@
       <td>If set to true (which is default) an erase notification message is sent
           to the subscriber when the topic is erased.
           The <i>state</i> in the message UpdateQoS is set to Constants.STATE_ERASED="ERASED"
-	  <br />
+          <br />
           <b>Note:</b> For <i>exact</i> subscriptions this subscription gets invalid when the topic is explicitly erased
           and you need to subscribe again. For <i>XPath</i> subscriptions the subscription remains,
           if the same topic is created again the Xpath will match and renew the subscription. Here you
-	  may choose to set notify to false.
+          may choose to set notify to false.
       </td>
       </tr>
       <tr>
       <td>filter</td>
       <td>To further filter messages with a full text analyze you can add a filter rule.
           Please read the 
-	  <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/mime.plugin.accessfilter.html">mime.plugin.accessfilter</a>
-	  requirements for details. There are XPath, regular expression and SQL 92 filter plugins available.
+          <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/mime.plugin.accessfilter.html">mime.plugin.accessfilter</a>
+          requirements for details. There are XPath, regular expression and SQL 92 filter plugins available.
       </td>
       </tr>
       </table>
@@ -330,6 +346,7 @@
       <test tool="SUITE">org.xmlBlaster.test.qos.TestSubDispatch</test>
       <test tool="SUITE">org.xmlBlaster.test.qos.TestSubLostClient</test>
       <test tool="SUITE">org.xmlBlaster.test.qos.TestSubMulti</test>
+      <test tool="SUITE">org.xmlBlaster.test.qos.TestSubMultiSubscribe</test>
       <test tool="SUITE">org.xmlBlaster.test.classtest.qos.StatusQosFactoryTest</test>
       <test tool="SUITE">org.xmlBlaster.test.cluster.SubscribeTest</test>
       <test tool="SUITE">org.xmlBlaster.test.cluster.SubscribeXPathTest</test>

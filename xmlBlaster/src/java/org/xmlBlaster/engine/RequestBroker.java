@@ -768,9 +768,15 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
          String returnOid = "";
 
          if (subscribeQos.getMultiSubscribe() == false) {
-            Vector vec =  clientSubscriptions.getSubscriptionByOid(sessionInfo, xmlKey.getOid(), false);
+            Vector vec =  clientSubscriptions.getSubscription(sessionInfo, xmlKey);
             if (vec != null && vec.size() > 0) {
-               log.warn(ME, "Ignoring duplicate subscription '" + xmlKey.getOid() + "' as you have set multiSubscribe to false");
+               for (int i=0; i<vec.size(); i++) {
+                  SubscriptionInfo sub = (SubscriptionInfo)vec.elementAt(i);
+                  sub.update(subscribeQos);
+               }
+               log.warn(ME, "Ignoring duplicate subscription '" + 
+                       ((xmlKey.getOid()==null)?((xmlKey.getDomain()==null)?xmlKey.getQueryString():xmlKey.getDomain()):xmlKey.getOid()) +
+                        "' as you have set multiSubscribe to false");
                StatusQosData qos = new StatusQosData(glob, MethodName.SUBSCRIBE);
                SubscriptionInfo i = (SubscriptionInfo)vec.elementAt(0);
                qos.setState(Constants.STATE_WARN);
@@ -793,6 +799,9 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
             KeyData xmlKeyExact = keyDataArr[jj];
             if (xmlKeyExact == null && xmlKey.isExact()) // subscription on a yet unknown message ...
                xmlKeyExact = xmlKey;
+            else if (xmlKeyExact != null && xmlKey.isDomain()) {
+               xmlKeyExact.setQueryType(xmlKey.getQueryType());
+            }
             SubscriptionInfo subs = null;
             if (sessionInfo.getConnectQos().duplicateUpdates() == false) {
                Vector vec =  clientSubscriptions.getSubscriptionByOid(sessionInfo, xmlKeyExact.getOid(), true);
@@ -1116,6 +1125,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
                 domain.equals(topicHandler.getMsgKeyData().getDomain()))
                strippedList.add(topicHandler.getMsgKeyData());
          }
+         if (log.TRACE) log.trace(ME + ".queryMatchingKeys(domain)", "Found " + strippedList.size() + " domain matches for '" + domain + "'");
          return (KeyData[])strippedList.toArray(new KeyData[strippedList.size()]);
       }
 
@@ -1173,6 +1183,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
             if (domain.equals(topicHandler.getMsgKeyData().getDomain()))
                strippedList.add(topicHandler);
          }
+         if (log.TRACE) log.trace(ME + ".queryMatchingTopics(domain)", "Found " + strippedList.size() + " domain matches for '" + domain + "'");
          return (TopicHandler[])strippedList.toArray(new TopicHandler[strippedList.size()]);
       }
 

@@ -3,8 +3,14 @@ The "#99999" numbers are Subversion revision numbers.
 
 Changes in current subversion repository (svn)
 ==============================================
+ o #12817 Extended multiSubscribe support
+   - Fixed multiSubscribe=false for XPath queries
+   - Added support to reconfigure AccessFilter settings for existing subscriptions
+   See: http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.subscribe.multiSubscribe.html
+
  o C++ client library:
-	- #12799 Added leaveServer(), still buggy under certain mutli threading states
+   - #12799 Added leaveServer(), still buggy under certain multi threading states
+   See: http://www.xmlblaster.org/xmlBlaster/doc/doxygen/cpp/html/classorg_1_1xmlBlaster_1_1client_1_1XmlBlasterAccess.html#a28
 
  o C client library:
    - #12781 Added missing pthread_cond_destroy() and pthread_mutex_destroy()

@@ -8,6 +8,7 @@ package org.xmlBlaster.engine;
 import org.xmlBlaster.engine.Global;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.key.KeyData;
+import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.authentication.I_ClientListener;
@@ -199,6 +200,49 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
          java.util.Collection c = ((Map)obj).values();
          return (SubscriptionInfo[])c.toArray(new SubscriptionInfo[c.size()]);
       }
+   }
+
+
+   /*
+    * If you have the key oid, the xpath query or domain of a message and a session it belongs to,
+    * you may access the SubscriptionInfo object here.
+    * <p />
+    * Note that TopicHandler.findSubscriber() will not return a SubscriptionInfo
+    * if never a message arrived for such a subscription, so prefer this method.
+    *
+    * @param sessionInfo All infos about the client
+    * @param queryKey The query to look for
+    * @return Vector containing corresponding subscriptionInfo objects<br />
+    *         is > 1 if this session has subscribed multiple times on the
+    *         same message, or null if this session has not subscribed it
+    */
+   public Vector getSubscription(SessionInfo sessionInfo, QueryKeyData queryKey) throws XmlBlasterException {
+      if (queryKey == null || sessionInfo==null) return null;
+      Object obj;
+      Map subMap;
+      synchronized(clientSubscriptionMap) {
+         obj = clientSubscriptionMap.get(sessionInfo.getSessionName().getRelativeName());
+         if (obj == null) {
+            if (log.TRACE) log.trace(ME, "Session '" + sessionInfo.getId() + "' is unknown, there was no subscription of this session yet.");
+            return null;
+         }
+         subMap = (Map)obj;
+      }
+
+      // Slow linear search of all subscribes of a session
+      // Don't use for performance critical tasks
+      Vector vec = null;
+      synchronized (subMap) {
+         Iterator iterator = subMap.values().iterator();
+         while (iterator.hasNext()) {
+            SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
+            if (queryKey.equals(sub.getKeyData())) {
+               if (vec == null) vec = new Vector();
+               vec.addElement(sub);
+            }
+         }
+      }
+      return vec;
    }
 
 

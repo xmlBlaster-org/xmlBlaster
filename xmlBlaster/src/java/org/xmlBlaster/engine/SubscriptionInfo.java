@@ -327,6 +327,28 @@ public final class SubscriptionInfo implements I_AdminSubscription /* implements
       return this.subscribeQos.getData();
    }
 
+   /**
+    * Supports limited reconfiguration with the given newQos. 
+    * @param newQos The new QueryQosData to use
+    */
+   public void update(SubscribeQosServer newQos) {
+      if (this.subscribeQos == null) {
+         this.subscribeQos = newQos;
+         if (log.TRACE) log.trace(ME, "Updated SubscribeQos for " + getId());
+      }
+      else {
+         AccessFilterQos[] arr = newQos.getAccessFilterArr();
+         if (log.TRACE) log.trace(ME, "Updated SubscribeQos AccessFilterArr for " + getId());
+         this.subscribeQos.getData().setFilters(arr);
+      }
+      /*
+      QuerySpecQos[] qarr = subscribeQos.getQuerySpecArr();
+      if (qarr != null) {
+         ...
+      }
+      */
+   }
+
    public SubscribeQosServer getSubscribeQosServer() {
       return this.subscribeQos;
    }

@@ -268,8 +268,20 @@ public final class QueryQosData extends QosData implements java.io.Serializable,
       return this.forceDestroy;
    }
 
+   public synchronized void setFilters(AccessFilterQos[] newFilters) {
+      if (newFilters == null) {
+         this.filters = null;
+      }
+      else {
+         this.filters = new ArrayList(newFilters.length);
+         for (int i=0; i<newFilters.length; i++)
+            this.filters.add(newFilters[i]);
+      }
+      this.filterArr = null; // Reset cache
+   }
+
    /**
-    * Adds your subplied subscribe filter
+    * Adds your supplied subscribe filter
     */
    public void addAccessFilter(AccessFilterQos filter) {
       if (filters == null) filters = new ArrayList();

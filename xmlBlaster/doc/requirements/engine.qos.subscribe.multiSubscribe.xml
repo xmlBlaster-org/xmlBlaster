@@ -22,7 +22,8 @@
 &lt;/qos>
      </pre>
      <p>
-     <i>multiSubscribe</i> to false the subsequent subscribes are ignored.
+     <code>multiSubscribe</code> to <code>false</code> the new subscription with
+     identical topic or XPath specification will be ignored.
      In this case the same subscription ID which you got on initial
      subscribe is returned.
      </p>
@@ -34,9 +35,18 @@
      </p>
      <p>
       The returned subscription ID is identical for identical subscribes,
-      additionally the returned <i>status</i> is set to <i>"WARNING"</i>. 
+      additionally the returned <code>status</code> is set to <code>"WARNING"</code>. 
       Note that you have to call unSubscribe() only once if all subscribes
-      used <i>multiSubscribe=false</i>.
+      used <code>multiSubscribe=false</code>.
+     </p>
+     <p>
+      If your SubscribeQos contains access filter rules
+      (see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/mime.plugin.accessfilter.html">requirement mime.plugin.accessfilter</a>)
+      and you have set <code>multiSubscribe</code> to <code>false</code> the existing subscription
+      will be re-configured with the new AccessFilter rule.<br />
+      Note: If you have set multiple identical subscription with <code>multiSubscribe=true</code> 
+      and later one with <code>multiSubscribe=false</code> this will reconfigure all existing identical
+      subscriptions.
      </p>
    </description>
    <example lang="Java">

@@ -7,6 +7,7 @@ package org.xmlBlaster.util.key;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.def.Constants;
 
@@ -210,6 +211,18 @@ public abstract class KeyData implements java.io.Serializable, Cloneable
       return this.queryType;
    }
 
+   public void setQueryType(String queryType)  throws XmlBlasterException {
+      this.queryType = queryType;
+   }
+
+   /**
+    * Access the query string like "//key"
+    * @return A query string or null
+    */
+   public String getQueryString() {
+      return this.queryString;
+   }
+
    public boolean isExact() {
       return Constants.EXACT.equals(this.queryType);
    }
@@ -225,6 +238,15 @@ public abstract class KeyData implements java.io.Serializable, Cloneable
 
    public boolean isDomain() {
       return Constants.DOMAIN.equals(this.queryType);
+   }
+
+   /**
+    * Check if same query is used
+    */
+   public boolean equals(KeyData other) {
+      return isExact() && other.isExact() && this.oid != null && this.oid.equals(other.getOid()) ||
+             isQuery() && other.isQuery() && this.queryString != null && this.queryString.trim().equals(other.getQueryString().trim()) ||
+             isDomain() && other.isDomain() && this.domain != null && this.domain.trim().equals(other.getDomain().trim());
    }
 
    /**

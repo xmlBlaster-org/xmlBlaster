@@ -17,6 +17,7 @@ import org.xmlBlaster.util.XmlBlasterException;
  * </p>
  * @see org.xmlBlaster.util.key.QueryKeySaxFactory
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html" target="others">the interface.subscribe requirement</a>
+ * @see org.xmlBlaster.test.qos.TestSubMultiSubscribe
  */
 public class SubscribeKey
 {
