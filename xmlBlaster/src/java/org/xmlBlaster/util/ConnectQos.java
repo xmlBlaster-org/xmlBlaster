@@ -3,7 +3,7 @@ Name:      ConnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: ConnectQos.java,v 1.15 2002/05/03 13:46:10 ruff Exp $
+Version:   $Id: ConnectQos.java,v 1.16 2002/05/03 16:39:12 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -937,17 +937,14 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       else
          sb.append("'/>");
 
+      if (address != null)
+         sb.append(address.toXml(extraOffset));
+      
       for (int ii=0; ii<queuePropertyVec.size(); ii++) {
          CbQueueProperty ad = (CbQueueProperty)queuePropertyVec.elementAt(ii);
          sb.append(ad.toXml(extraOffset));
       }
-      /*
-      for (int ii=0; ii<addressVec.size(); ii++) {
-         CallbackAddress ad = (CallbackAddress)addressVec.elementAt(ii);
-         sb.append(ad.toXml("   ")).append("\n");
-      }
-      */
-
+      
       for (int ii=0; ii<serverRefVec.size(); ii++) {
          ServerRef ref = (ServerRef)serverRefVec.elementAt(ii);
          sb.append(ref.toXml(extraOffset));
