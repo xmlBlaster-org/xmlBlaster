@@ -1,5 +1,6 @@
 // xmlBlaster/demo/javaclients/HelloWorld2.java
 import org.jutils.log.LogChannel;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.client.I_Callback;
@@ -10,20 +11,20 @@ import org.xmlBlaster.engine.helper.MessageUnit;
 
 
 /**
- * This client connects to xmlBlaster and subscribes to a message. 
+ * This client connects to xmlBlaster and subscribes to a message.
  * <p />
- * We then publish the message and receive it asynchronous in the update() method. 
+ * We then publish the message and receive it asynchronous in the update() method.
  * <p />
  * Invoke: java HelloWorld2
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.html" target="others">xmlBlaster interface</a>
  */
 public class HelloWorld2 implements I_Callback
 {
-   public HelloWorld2(String[] args) {
+   public HelloWorld2(final Global glob) {
       try {
-         XmlBlasterConnection con = new XmlBlasterConnection(args);
+         XmlBlasterConnection con = new XmlBlasterConnection(glob);
 
-         ConnectQos qos = new ConnectQos(null, "joe", "secret");
+         ConnectQos qos = new ConnectQos(glob, "joe", "secret");
          con.connect(qos, this);  // Login to xmlBlaster, register for updates
 
          con.subscribe("<key oid='HelloWorld2'/>", "<qos/>");
@@ -53,7 +54,22 @@ public class HelloWorld2 implements I_Callback
       return "";
    }
 
+   /**
+    * Try
+    * <pre>
+    *   java HelloWorld2 -help
+    * </pre>
+    * for usage help
+    */
    public static void main(String args[]) {
-      new HelloWorld2(args);
+      Global glob = new Global();
+
+      if (glob.init(args) != 0) { // Get help with -help
+         XmlBlasterConnection.usage();
+         glob.getLog(null).info("HelloWorld2", "Example: java HelloWorld2\n");
+         System.exit(1);
+      }
+
+      new HelloWorld2(glob);
    }
 }
