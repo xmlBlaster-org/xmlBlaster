@@ -7,6 +7,9 @@ Changes for 0.79 [?, ? 2000]
 
   - NOTE: JDK_HOME is not used anymore, use JAVA_HOME instead.
 
+  - build.xml:  Target 'all' collects demo and testuite classes
+    into xmlBlaster.jar as well.
+
   - added customized MANIFEST to xmlBlaster.jar, allowing
     to start xmlBlaster without any CLASSPATH setting:
 		java -jar lib/xmlBlaster.jar

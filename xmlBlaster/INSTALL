@@ -37,7 +37,7 @@ Unpack the distribution to some location ($HOME/xmlBlaster is a good spot).
 
 
 +----------------------------+
-| INSTALLATION IN 20 SECONDS |
+| INSTALLATION IN 30 SECONDS |
 +----------------------------+
 
 Start the server without environment settings:
@@ -50,9 +50,17 @@ Change to the installed xmlBlaster directory and type:
 
 Congratulations, now the server is running and ready!
 (orb.properties switches off the outdated, SUN delivered CORBA lib)
+Type a 'g' if you want the GUI to pop up.
 
-But - you may want to adjust some properties
-and start a demo client, please read the following section
+Now start a client:
+
+  java -classpath lib/xmlBlaster.jar javaclients.corba.ClientSub
+
+You should see some output on your terminal telling
+that a message is published and subscribed.
+
+But - if you want to adjust some properties
+or develop with xmlBlaster, please read the following section
 how to do it.
 
 

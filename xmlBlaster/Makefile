@@ -80,7 +80,7 @@ javadoc:
 	( cd ${SRC_TESTSUITE_TOP_DIR}/org/xmlBlaster; make html)
 
 jar:
-	( cd ${CLASS_TOP_DIR}; jar cvmf manifest.xmlBlaster ${JAR_DIR}/xmlBlaster.jar ./org ./testsuite ./javaclients)
+	( cd ${CLASS_TOP_DIR}; jar cmf manifest.xmlBlaster ${JAR_DIR}/xmlBlaster.jar ./org ./testsuite ./javaclients)
 
 
 test: all
