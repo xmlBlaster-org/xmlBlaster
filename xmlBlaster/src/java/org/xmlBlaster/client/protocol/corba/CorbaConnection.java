@@ -14,6 +14,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.ConnectReturnQos;
+import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.util.JdkCompatible;
 import org.xmlBlaster.util.XmlBlasterException;
 
@@ -509,9 +510,9 @@ public class CorbaConnection implements I_XmlBlasterConnection
     * @return true successfully logged out
     *         false failure on logout
     */
-   public boolean logout()
+   public boolean disconnect(DisconnectQos qos)
    {
-      if (log.CALL) log.call(ME, "logout() ...");
+      if (log.CALL) log.call(ME, "disconnect() ...");
 
       if (xmlBlaster == null) {
          shutdown();
@@ -527,7 +528,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
                authServer.logout(xmlBlaster);
             }
             else {
-               authServer.disconnect(sessionId,""); // secPlgn.exportMessage(""));
+               authServer.disconnect(sessionId, (qos==null)?"":qos.toXml()); // secPlgn.exportMessage(""));
             }
          }
          shutdown();

@@ -1152,7 +1152,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
       boolean ret = false;
       try {
-         ret = driver.logout();
+         ret = driver.disconnect(qos);
          log.info(ME, "Successful disconnect from " + getServerNodeId());
       } catch(Throwable e) {
          e.printStackTrace();

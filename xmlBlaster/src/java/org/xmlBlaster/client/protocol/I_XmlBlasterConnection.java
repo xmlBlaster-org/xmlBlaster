@@ -11,6 +11,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.ConnectReturnQos;
+import org.xmlBlaster.util.DisconnectQos;
 
 
 /**
@@ -46,7 +47,12 @@ public interface I_XmlBlasterConnection
     * @return ConnectReturnQos
     */
    public ConnectReturnQos connect(ConnectQos qos) throws XmlBlasterException, ConnectionException;
-   //public void disconnect(in string sessionId, in serverIdl::XmlType qos)
+
+   /**
+    * Logout from xmlBlaster. 
+    * @param qos The QoS or null
+    */
+   public boolean disconnect(DisconnectQos qos) throws XmlBlasterException, ConnectionException;
 
    // Could make sense to the SOCKET driver, returns new SocketCallbackImpl
    //public I_CallbackServer getCbServerInstance() throws XmlBlasterException;
@@ -66,7 +72,10 @@ public interface I_XmlBlasterConnection
     */
    public ConnectReturnQos loginRaw() throws XmlBlasterException, ConnectionException;
 
-   public boolean logout();
+   /*
+    * @deprecated Use disconnect() instead
+    */
+   //public boolean logout();
 
    public boolean shutdown();
 

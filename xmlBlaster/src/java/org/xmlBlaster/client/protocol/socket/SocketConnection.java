@@ -3,7 +3,7 @@ Name:      SocketConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles connection to xmlBlaster with plain sockets
-Version:   $Id: SocketConnection.java,v 1.25 2002/05/19 12:55:41 ruff Exp $
+Version:   $Id: SocketConnection.java,v 1.26 2002/06/27 11:04:54 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -17,6 +17,7 @@ import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.ConnectReturnQos;
+import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
 
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -352,7 +353,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     * <p />
     * @param sessionId The client sessionId
     */       
-   public boolean logout()
+   public boolean disconnect(DisconnectQos qos)
    {
       if (Log.CALL) Log.call(ME, "Entering logout/disconnect: id=" + sessionId);
 
@@ -362,7 +363,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
 
       try {
          Parser parser = new Parser(Parser.INVOKE_BYTE, Constants.DISCONNECT, sessionId);
-         parser.addQos(Constants.RET_OK); // "<qos><state id='OK'/></qos>"
+         parser.addQos((qos==null)?"":qos.toXml());
          // We close first the callback thread, this could be a bit early ?
          getCbReceiver().running = false; // To avoid error messages as xmlBlaster closes the connection during disconnect()
          getCbReceiver().execute(parser, ONEWAY);

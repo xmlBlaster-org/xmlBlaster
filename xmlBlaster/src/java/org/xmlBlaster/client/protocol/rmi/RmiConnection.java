@@ -3,7 +3,7 @@ Name:      RmiConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: RmiConnection.java,v 1.25 2002/06/23 10:58:59 ruff Exp $
+Version:   $Id: RmiConnection.java,v 1.26 2002/06/27 11:04:53 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.rmi;
@@ -22,6 +22,7 @@ import org.xmlBlaster.util.XmlBlasterSecurityManager;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.ConnectReturnQos;
+import org.xmlBlaster.util.DisconnectQos;
 
 import java.rmi.RemoteException;
 import java.rmi.Naming;
@@ -49,7 +50,7 @@ import java.applet.Applet;
  * <p />
  * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http
  *
- * @version $Revision: 1.25 $
+ * @version $Revision: 1.26 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class RmiConnection implements I_XmlBlasterConnection
@@ -291,18 +292,13 @@ public class RmiConnection implements I_XmlBlasterConnection
     * @return true successfully logged out
     *         false failure on gout
     */
-   public boolean logout()
+   public boolean disconnect(DisconnectQos qos)
    {
       if (log.CALL) log.call(ME, "logout() ...");
 
       try {
          if (authServer != null) {
-            if(passwd==null) {
-               authServer.disconnect(sessionId, "");
-            }
-            else {
-               authServer.logout(sessionId);
-            }
+            authServer.disconnect(sessionId, (qos==null)?"":qos.toXml());
          }
          shutdown();
          init();

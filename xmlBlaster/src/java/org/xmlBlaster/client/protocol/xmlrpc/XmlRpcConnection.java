@@ -3,7 +3,7 @@ Name:      XmlRpcConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native xmlBlaster Proxy. Can be called by the client in the same VM
-Version:   $Id: XmlRpcConnection.java,v 1.28 2002/06/23 10:51:43 ruff Exp $
+Version:   $Id: XmlRpcConnection.java,v 1.29 2002/06/27 11:04:54 ruff Exp $
 Author:    michele.laghi@attglobal.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.xmlrpc;
@@ -17,6 +17,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.ConnectReturnQos;
+import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.util.protocol.ProtoConverter;
 import org.xmlBlaster.util.XmlBlasterException;
 
@@ -254,7 +255,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
     * <p />
     * @param sessionId The client sessionId
     */
-   public boolean logout()
+   public boolean disconnect(DisconnectQos qos)
    {
       if (log.CALL) log.call(ME, "Entering logout: id=" + sessionId);
 
@@ -264,19 +265,11 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
 
       try {
          if (this.xmlRpcClient != null) {
-            if(passwd==null) {
-               // prepare the argument vector for the xml-rpc method call
-               Vector args = new Vector();
-               args.addElement(sessionId);
-               args.addElement(" "); // qos
-               this.xmlRpcClient.execute("authenticate.disconnect", args);
-            }
-            else {
-               // prepare the argument vector for the xml-rpc method call
-               Vector args = new Vector();
-               args.addElement(sessionId);
-               this.xmlRpcClient.execute("authenticate.logout", args);
-            }
+            // prepare the argument vector for the xml-rpc method call
+            Vector args = new Vector();
+            args.addElement(sessionId);
+            args.addElement((qos==null)?" ":qos.toXml()); // qos
+            this.xmlRpcClient.execute("authenticate.disconnect", args);
          }
          shutdown();
          init();
