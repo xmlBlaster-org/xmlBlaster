@@ -3,7 +3,7 @@ Name:      BlasterCallbackImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client callback
-Version:   $Id: BlasterCallbackImpl.java,v 1.6 1999/11/18 22:12:12 ruff Exp $
+Version:   $Id: BlasterCallbackImpl.java,v 1.7 1999/11/23 09:02:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.clientIdl;
 
@@ -59,10 +59,16 @@ public class BlasterCallbackImpl implements BlasterCallbackOperations { // tie a
 
    /**
     */
-   public void update(MessageUnit[] messageUnitArr, String[] qos_literal_Arr) throws XmlBlasterException {
+   public void update(MessageUnit[] messageUnitArr, String[] qos_literal_Arr)
+   {
       for (int ii=0; ii<messageUnitArr.length; ii++) {
          MessageUnit messageUnit = messageUnitArr[ii];
-         XmlKeyBase xmlKey = new XmlKeyBase(messageUnit.xmlKey);
+         XmlKeyBase xmlKey = null;
+         try {
+            xmlKey = new XmlKeyBase(messageUnit.xmlKey);
+         } catch (XmlBlasterException e) {
+            Log.error(ME, e.reason);
+         }
          Log.info(ME, "================== BlasterCallback update START =============");
          Log.info(ME, "Callback invoked for " + xmlKey.toString() + " content length = " + messageUnit.content.length);
          Log.info(ME, new String(messageUnit.content));

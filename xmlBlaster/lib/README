@@ -1,9 +1,9 @@
 
-  XPath interface for XT provides for DOM query API facifities on top of XT.
+  XPath interface for XT provides for DOM query API facilities on top of XT.
   It is implemented in Java language and complies with W3C's XPath Proposed
   Recommendation as is currently implemented in XT.
 
-  For detailed information about XT and XPath, refer to the following URLs.
+  For detailed information about XT and XPath, refer to the following URL.
 
   XPath: http://www.w3.org/TR/xpath
 

@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.8 1999/11/16 18:44:49 ruff Exp $
+Version:   $Id: Main.java,v 1.9 1999/11/23 09:02:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -27,7 +27,7 @@ public class Main
    {
       orb = org.omg.CORBA.ORB.init(args, null);
       try {
-         org.omg.PortableServer.POA rootPOA = 
+         org.omg.PortableServer.POA rootPOA =
          org.omg.PortableServer.POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
 
          // USING TIE:
@@ -36,7 +36,7 @@ public class Main
          // org.omg.PortableServer.Servant authServant = new AuthServerImpl(orb);
 
          // org.omg.CORBA.Object authRef = rootPOA.servant_to_reference(authServant);
-         // alternatively you can use (more performant)
+         // alternatively you can use (more performance)
          org.omg.CORBA.Object authRef = new AuthServerPOATie(new AuthServerImpl(orb))._this(orb);
 
          if( args.length == 1 ) {
@@ -45,7 +45,7 @@ public class Main
             PrintWriter ps = new PrintWriter(new FileOutputStream(new File( args[0] )));
             ps.println( orb.object_to_string( authRef ) );
             ps.close();
-         } 
+         }
          else {
             NamingContext nc = NamingContextHelper.narrow(orb.resolve_initial_references("NameService"));
             NameComponent [] name = new NameComponent[1];

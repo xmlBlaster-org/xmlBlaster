@@ -48,7 +48,7 @@ int main(int argc, char* argv[])
         cin  >> objref_str;
       }
 
-      // narrow IOR-String to Obj-Ref
+      // narrow IOR-String to object reference
       authServer_obj= AuthServer::_narrow(orb->string_to_object(objref_str));
 
 
@@ -65,7 +65,7 @@ int main(int argc, char* argv[])
       serverIdl::Server_ptr xmlBlaster = authServer_obj->login("Ben", "secret", callback_impl, "");
       cout << "Successfull login!" << endl;
 
-      
+
       //-------------- publish() a message -------------
       string xmlKey("<?xml version='1.0' encoding='ISO-8859-1' ?>\n"
                     "<key oid=''>\n"
@@ -95,8 +95,8 @@ int main(int argc, char* argv[])
       } catch(XmlBlasterException e) {
          cerr << "XmlBlasterException: " << e.reason << endl;
       }
-      cout << "Subscribed to '" << publishOid << "' ..." << endl;   
-                                                                    
+      cout << "Subscribed to '" << publishOid << "' ..." << endl;
+
 
       //-------------- wait for something to happen -------------------
       orb->run ();

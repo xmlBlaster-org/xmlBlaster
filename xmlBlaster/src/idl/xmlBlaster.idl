@@ -1,7 +1,7 @@
 /*------------------------------------------------------------------------------
 Name:      xmlBlaster.idl
 Project:   xmlBlaster.org
-Task:      Serverinterface
+Task:      Server interface
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Not even alpha
            String arguments my be used empty "", but never with null
@@ -9,11 +9,11 @@ Compile:   JacORB Java 1.2:
               $JacORB_HOME/bin/idl -p org.xmlBlaster -d ${XMLBLASTER_HOME}/src/java xmlBlaster.idl
            VisiBroker (no JacORB should be in CLASSPATH) Java 1.2:
               ${VBROKER_PATH}/bin/idl2java -root_dir ${XMLBLASTER_HOME}/src/java xmlBlaster.idl
-           Mico C++:
+           MICO C++:
               $MICO_HOME/bin/idl --poa --no-boa xmlBlaster.idl
            COPE Perl:
               idl2perl -imp xmlBlaster.idl
-Version:   $Id: xmlBlaster.idl,v 1.24 1999/11/23 08:06:45 ruff Exp $
+Version:   $Id: xmlBlaster.idl,v 1.25 1999/11/23 09:02:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _xmlBlaster_IDL_
@@ -28,7 +28,7 @@ Version:   $Id: xmlBlaster.idl,v 1.24 1999/11/23 08:06:45 ruff Exp $
 
 
 /**
- * Decration of common types
+ * Declaration of common types
  */
 module serverIdl
 {
@@ -60,7 +60,7 @@ module serverIdl
    exception XmlBlasterException
    {
       ExceptionIdType id;  // unique error code: "Modulname.ReasonID"
-      string reason;       // in english
+      string reason;       // in English
    };
 
 }; // org::xmlBlaster::serverIdl
@@ -69,9 +69,9 @@ module serverIdl
 
 
 /**
- * Decration of the client Callback interface.
+ * Declaration of the client Callback interface.
  * <p>
- * This interface must be implmented by the client.
+ * This interface must be implemented by the client.
  *
  * Declared before the server, so that the server declaration
  * can use the BlasterCallback interface
@@ -83,31 +83,31 @@ module serverIdl
 module clientIdl
 {
    /**
-    * This interface needs to be implemented by the clients using
-    * the AttributeServer
+    * This interface needs to be implemented by the clients. 
+    * <p>
     * The IOR of this BlasterCallback has to be passed initially to the
-    * xmlBlaster using the initCallback() method
+    * xmlBlaster using the login() method
     */
    interface BlasterCallback
    {
       /**
        * This update is invoked when the server calls back to the client.
        *
-       * oneway is choosen because of:
+       * oneway is chosen because of:
        *
        *  - better performance
        *  - server doesn't block (decoupling of server dependency on clients)
        * <p>
        * Note: MICO Orb (C++) and Cope Orb (Perl) don't like the combination
-       * of 'oneway' and 'raises Exception' simultanously,<br>
+       * of 'oneway' and 'raises Exception' simultaneously,<br>
        * where as Visigenic and JacORB have no problems with it.
        *
        * @param messageUnit Contains a sequence of 0 - n MessageUnit structs
-       * @param qos         Qualitiy of Service for each MessageUnit
+       * @param qos         Quality of Service for each MessageUnit
        */
      oneway void update(in serverIdl::MessageUnitArr messageUnitArr,
-                        in serverIdl::XmlTypeArr qosArr)
-                                raises(serverIdl::XmlBlasterException);
+                        in serverIdl::XmlTypeArr qosArr);
+                                //raises(serverIdl::XmlBlasterException);
    };
 
 }; // org::xmlBlaster::clientIdl
@@ -120,10 +120,10 @@ module clientIdl
 module serverIdl
 {
    /**
-    * This is an easy to use, message based, non adressing communication
+    * This is an easy to use, message based, non addressing communication
     * middleware interface.
     * <p>
-    * It allows event-driven instant communication between sperate modules.<br>
+    * It allows event-driven instant communication between separate modules.<br>
     *
     * COMMENTS:
     *   It is generic to avoid future changes to the IDL.<br>
@@ -138,29 +138,29 @@ module serverIdl
     *   allows enhanced performance and early error checking.
     *
     *   Authentication and Authorization is not supported, they will be
-    *   provided as seperate servers.<p>
+    *   provided as separate servers.<p>
     *
     *   The <KEY id=""> strings have to be handled in a hierarchical manner to avoid
     *   namespace conflicts or may be generated (as number) by the xmlBlaster-server.
     *
     * BENEFITS:
     *   xmlBlaster allows instant communication between different uncoupled modules
-    *   spread over the internet (publish / subscriber framework).
+    *   spread over the Internet (publish / subscriber framework).
     *
     *   For example:
     *   - Clipboard functionality to store permanent the clipboard entries
     *     of many clients
     *   - Task handling
-    *     This feature allows automatical notification, when a task
+    *     This feature allows automatic notification, when a task
     *     for a special user is available.
     *   - Inter client communication (chat rooms, graphic rooms etc.)
     *   - Broadcasts over well known attribute-keys
-    *     or by notifing all known client-callback interfaces
+    *     or by notifying all known client-callback interfaces
     *   - email like instant notifications
     *   - inter process 'model/view/controller' paradigm
     *   - synchronize html with embedded applets over the server
     *   - data and message transfer between subsystems
-    *   - controler support functionality like subsystem-alive slots,
+    *   - controller support functionality like subsystem-alive slots,
     *     start and stop events etc.
     *   - configuration attributes with auto-notification
     *   - Central logging facility for client/server systems
@@ -170,19 +170,19 @@ module serverIdl
     *   @see JNDI - Java Naming & Directory Interface, www.javasoft.com/products/jndi
     *   @see Observer Pattern, Gamma et.al
     *   @see CORBA Property Service, http://www.omg.org
-    *   @see CORBA Notifiction Service ftp://ftp.omg.org/pub/docs/telecom/98-01-01.pdf
+    *   @see CORBA Notification Service ftp://ftp.omg.org/pub/docs/telecom/98-01-01.pdf
     *   @see CORBA Event Service (push/pull concepts), http://www.omg.org
     *   @see CORBA Design Patterns, Mowbray Thomas J. et al. 'Dynamic Attributes'
-    *   @see Adressless message-event-middleware pattern
+    *   @see Addressless message-event-middleware pattern
     */
    interface Server
    {
       /**
-       * Asynchron read-access method.
+       * Asynchronous read-access method.
        * <p>
        * The result are returned to the
        * Client-Callback interface via the update() method.
-       * You need to implement the method BlasterCallback.update(AttributeSeq)
+       * You need to implement the method BlasterCallback.update()
        * This is the push modus.
        * <p>
        * Duplicate subscriptions are silently ignored (no Exception is thrown)
@@ -190,10 +190,8 @@ module serverIdl
        *
        * @param xmlKey  Key with attributes allowing Regex/XQL/SQL selection<br>
        *                See xmlKey.dtd for a description
-       *                HACK: Send a (none XML) String key in this alfa release!!!
-       * @param qos     Quality of Service, flags to control subscritpion<br>
+       * @param qos     Quality of Service, flags to control subscription<br>
        *                See qosSubscribe.dtd for a description
-       *                HACK: Specify the ClientCallback String IOR here!!!
        *
        * @see addListener in Java event model
        * @see addObserver in Java observer pattern
@@ -203,15 +201,13 @@ module serverIdl
 
 
       /**
-       * Synchron read-access methods
+       * Synchronic read-access methods
        * This is the pull modus.
        *
        * @param xmlKey  Key with attributes allowing Regex/XQL/SQL selection<br>
        *                See xmlKey.dtd for a description
-       *                HACK: Send a (none XML) String key in this alfa release!!!
-       * @param qos     Quality of Service, flags to control subscritpion<br>
+       * @param qos     Quality of Service, flags to control subscription<br>
        *                See qosSubscribe.dtd for a description
-       *                HACK: Specify the ClientCallback String IOR here!!!
        * @return Contains a sequence of 0 - n MessageUnit structs
        */
       MessageUnitArr get(in XmlType xmlKey, in XmlType qos)
@@ -224,7 +220,7 @@ module serverIdl
        *
        * @param xmlKey    Key with attributes allowing Regex/XQL/SQL selection<br>
        *                  See xmlKey.dtd for a description
-       * @param qos       Quality of Service, flags to control unsubscritpion<br>
+       * @param qos       Quality of Service, flags to control unsubscription<br>
        *                  See qosSubscribe.dtd for a description
        */
       /*oneway*/ void unSubscribe(in XmlType xmlKey, in XmlType qos)
@@ -238,7 +234,7 @@ module serverIdl
        * so this covers the SQL'ish INSERT and UPDATE.<p>
        *
        * @param messageUnit Contains a MessageUnit struct
-       * @param qos         Qualitiy of Service for MessageUnit
+       * @param qos         Quality of Service for MessageUnit
        *
        * @return String with the key oid of the messageUnit
        *         If you let the oid be generated, you need this information
@@ -257,15 +253,15 @@ module serverIdl
        * so this covers the SQL'ish INSERT and UPDATE.<p>
        *
        * For performance or transaction reasons, you can send a whole array
-       * of MessageUnits with one Invokation of publish()
+       * of MessageUnit with one Invocation of publish()
        *
        * @param messageUnit Contains a sequence of 0 - n MessageUnit structs
-       * @param qos         Qualitiy of Service for each MessageUnit
+       * @param qos         Quality of Service for each MessageUnit
        *
        * @return String array with the key oid's, corresponding to the index
        *         of messageUnitArr<br>
        *         If you let the oid be generated, you need this information
-       *         for further publishing to the same MessageUnits<br>
+       *         for further publishing to the same MessageUnit array<br>
        *         Rejected Messages will contain an empty string ""
        */
       StringArr publishArr(in MessageUnitArr messageUnitArr, in XmlTypeArr qosArr)
@@ -299,12 +295,12 @@ module authenticateIdl
        * This is a factory for server interfaces
        *
        * @param loginName A unique name - Not yet necessary
-       * @param passwd    Pasword - Not yet necessary
+       * @param passwd    Password - Not yet necessary
        * @param cb        Reference to the BlasterCallback interface or null for synchronous access
        * @param qos       Quality of Service, flags for additional client informations
-       *                  like clientCertificate (X.509), timeouts etc.
+       *                  like client certificate (X.509), timeout etc.
        *
-       * @return if the login is successfull, the xmlBlaster server interface is returned
+       * @return if the login is successful, the xmlBlaster server interface is returned
        * @exception if the login fails
        */
       serverIdl::Server login(in string loginName, in string passwd,
