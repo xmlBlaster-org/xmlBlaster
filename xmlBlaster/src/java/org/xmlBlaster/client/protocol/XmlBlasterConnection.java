@@ -1077,7 +1077,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * @see #disconnect(DisconnectQos)
     * @deprecated Please use disconnect() instead
     */
-   public synchronized boolean logout()
+   public boolean logout()
    {
       if (log.CALL) log.call(ME, "logout() ...");
       return disconnect(new DisconnectQos());
@@ -1128,22 +1128,31 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       if (recorder != null && recorder.getNumUnread() > 0)
          log.warn(ME, "You called disconnect(). Please note that there are " + recorder.getNumUnread() + " unsent invocations/messages in the queue");
 
-      synchronized (callbackMap) {
-         Set keys = callbackMap.keySet();
-         Iterator it = keys.iterator();
-         while(it.hasNext()) {
-            String subscriptionId = (String)it.next();
-            KeyWrapper key = new KeyWrapper(subscriptionId);
-            try {
-               driver.unSubscribe(key.toXml(), "");
+      while (true) {
+         String subscriptionId = null;
+         synchronized (callbackMap) {
+            Set keys = callbackMap.keySet();
+            Iterator it = keys.iterator();
+            if (it.hasNext()) {
+               subscriptionId = (String)it.next();
+               it.remove();
             }
-            catch(XmlBlasterException e) {
-               log.warn(ME+".logout", "Couldn't unsubscribe '" + subscriptionId + "' : " + e.toString());
-            }
-            catch(ConnectionException e) {
+            else
                break;
-            }
          }
+         KeyWrapper key = new KeyWrapper(subscriptionId);
+         try {
+            driver.unSubscribe(key.toXml(), "");
+         }
+         catch(XmlBlasterException e) {
+            log.warn(ME+".logout", "Couldn't unsubscribe '" + subscriptionId + "' : " + e.toString());
+         }
+         catch(ConnectionException e) {
+            break;
+         }
+      }
+
+      synchronized (callbackMap) {
          callbackMap.clear();
       }
 
@@ -2007,7 +2016,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
        * @param pingInterval How many milli seconds sleeping between the pings
        */
       PingThread(XmlBlasterConnection con, long pingInterval) {
-         super("LoginThread-" + getMe());
+         super("PingThread-" + getMe());
          this.con = con;
          this.ME = "PingThread-" + getMe();
          this.PING_INTERVAL = pingInterval;
