@@ -43,7 +43,7 @@ COMMENT:
           */
          function updateFrame(frameName, contentStr)
          {
-            var value = Number(contentStr);
+            var value = parseInt(contentStr);
 
             if (value < 1) value = 1;
             if (value > 100) value = 100;
