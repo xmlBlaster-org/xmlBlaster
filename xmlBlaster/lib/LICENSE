@@ -279,3 +279,8 @@ only the SNMP subagent module jax.jar is GPL only!
    This product includes software developed by the
    JAFWorks (http://www.jafworks.com).
 
+
+26) C++ multi threading support
+===============================
+   http://www.boost.org (license see: http://www.boost.org/more/lib_guide.htm#License)
+   http://omniorb.sourceforge.net/ The license is LGPL
