@@ -487,9 +487,10 @@ public final class ClusterManager
                + msgWrapper.getUniqueKey() + "' domain='" + msgWrapper.getXmlKey().getDomain() + "'");
          return null;
       }
-      else
-         log.info(ME, "Using master node '" + clusterNode.getId() + "' for message oid='"
+      else {
+         if (log.TRACE) log.info(ME, "Using master node '" + clusterNode.getId() + "' for message oid='"
                + msgWrapper.getUniqueKey() + "' domain='" + msgWrapper.getXmlKey().getDomain() + "'");
+      }
 
       return clusterNode.getXmlBlasterConnection();
    }
