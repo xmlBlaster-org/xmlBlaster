@@ -3,7 +3,7 @@ Name:      ConnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: ConnectQos.java,v 1.22 2002/06/06 13:45:56 stelzl Exp $
+Version:   $Id: ConnectQos.java,v 1.23 2002/06/10 22:28:32 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -34,7 +34,7 @@ import java.io.Serializable;
  * A typical <b>login</b> qos could look like this:<br />
  * <pre>
  *     &lt;qos>
- *        &lt;securityService type="simple" version="1.0">
+ *        &lt;securityService type="htpasswd" version="1.0">
  *          &lt;![CDATA[
  *          &lt;user>michele&lt;/user>
  *          &lt;passwd>secret&lt;/passwd>
@@ -247,6 +247,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          loginName = glob.getProperty().get("loginName["+nodeId+"]", loginName);
          passwd = glob.getProperty().get("passwd["+nodeId+"]", passwd);
       }
+      if (Log.TRACE) Log.trace(ME, "initialize loginName=" + loginName + " passwd=" + passwd + " nodeId=" + nodeId);
       securityQos = getPlugin(null,null).getSecurityQos();
       securityQos.setUserId(loginName);
       securityQos.setCredential(passwd);
@@ -329,9 +330,17 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     */
    public final void setUserId(String loginName) throws XmlBlasterException
    {
-      org.xmlBlaster.client.PluginLoader loader = glob.getClientSecurityPluginLoader();
-      I_ClientPlugin plugin = loader.getClientPlugin(null, null);
-      securityQos = plugin.getSecurityQos();
+      if (securityQos == null) {
+         org.xmlBlaster.client.PluginLoader loader = glob.getClientSecurityPluginLoader();
+         I_ClientPlugin plugin = loader.getClientPlugin(null, null);
+         securityQos = plugin.getSecurityQos();
+         String passwd = glob.getProperty().get("passwd", "secret");
+         if (nodeId != null) {
+            passwd = glob.getProperty().get("passwd["+nodeId+"]", passwd);
+         }
+         if (Log.TRACE) Log.trace(ME, "Initializing loginName=" + loginName + " passwd=" + passwd + " nodeId=" + nodeId);
+         securityQos.setCredential(passwd);
+      }
       securityQos.setUserId(loginName);
    }
 
@@ -1028,7 +1037,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          String xml =
             "<qos>\n" +
             /*
-            "   <securityService type=\"simple\" version=\"1.0\">\n" +
+            "   <securityService type='htpasswd' version='1.0'>\n" +
             "      <![CDATA[\n" +
             "         <user>aUser</user>\n" +
             "         <passwd>theUsersPwd</passwd>\n" +
@@ -1077,7 +1086,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          System.out.println("=====Parsed and dumped===\n");
          System.out.println(qos.toXml());
          
-         qos.setSecurityPluginData("simple", "1.0", "joe", "secret");
+         qos.setSecurityPluginData("htpasswd", "1.0", "joe", "secret");
          System.out.println("=====Added security======\n");
          System.out.println(qos.toXml());
       }
