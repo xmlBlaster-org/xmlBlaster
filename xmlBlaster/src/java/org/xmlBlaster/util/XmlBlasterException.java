@@ -76,7 +76,7 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
                                                             "stackTrace={7}\n" +
                                                             "versionInfo={5}\n" +
                                                             "errorCode description={10}\n";
-   private final String logFormatInternal;
+   private String logFormatInternal;
    private final String logFormatResource;
    private final String logFormatCommunication;
    private final String logFormatUser;
@@ -217,23 +217,47 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
                  this.cause instanceof OutOfMemoryError
               );
 
-      if (isInternal() || handleAsInternal) {
-         return MessageFormat.format(this.logFormatInternal, arguments);
+      try {
+         if (isInternal() || handleAsInternal) {
+            return MessageFormat.format(this.logFormatInternal, arguments);
+         }
+         else if (isResource()) {
+            return MessageFormat.format(this.logFormatResource, arguments);
+         }
+         else if (isCommunication()) {
+            return MessageFormat.format(this.logFormatCommunication, arguments);
+         }
+         else if (isUser()) {
+            return MessageFormat.format(this.logFormatUser, arguments);
+         }
+         else if (errorCodeEnum == ErrorCode.LEGACY) {
+            return MessageFormat.format(this.logFormatLegacy, arguments);
+         }
+         else {
+            return MessageFormat.format(this.logFormat, arguments);
+         }
       }
-      else if (isResource()) {
-         return MessageFormat.format(this.logFormatResource, arguments);
-      }
-      else if (isCommunication()) {
-         return MessageFormat.format(this.logFormatCommunication, arguments);
-      }
-      else if (isUser()) {
-         return MessageFormat.format(this.logFormatUser, arguments);
-      }
-      else if (errorCodeEnum == ErrorCode.LEGACY) {
-         return MessageFormat.format(this.logFormatLegacy, arguments);
-      }
-      else {
-         return MessageFormat.format(this.logFormat, arguments);
+      catch (IllegalArgumentException e) {
+         glob.getLog("core").error("XmlBlasterException", "Please check your formatting string for exceptions, usually set by 'XmlBlasterException.logFormat=...'" +
+                   " as described in http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.errorcodes.html: " + e.toString());
+         if (isInternal() || handleAsInternal) {
+            return MessageFormat.format(this.DEFAULT_LOGFORMAT_INTERNAL, arguments);
+         }
+         else if (isResource()) {
+            return MessageFormat.format(this.DEFAULT_LOGFORMAT, arguments);
+         }
+         else if (isCommunication()) {
+            return MessageFormat.format(this.DEFAULT_LOGFORMAT, arguments);
+         }
+         else if (isUser()) {
+            return MessageFormat.format(this.DEFAULT_LOGFORMAT, arguments);
+         }
+         else if (errorCodeEnum == ErrorCode.LEGACY) {
+            return MessageFormat.format(this.DEFAULT_LOGFORMAT, arguments);
+         }
+         else {
+            return MessageFormat.format(this.DEFAULT_LOGFORMAT, arguments);
+         }
       }
    }
 
@@ -580,6 +604,14 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
       else {
          return new XmlBlasterException(glob, errorCodeEnum, location, message, throwable);
       }
+   }
+
+   /**
+    * Overwrite the formatting of internal logs
+    * (the env property -XmlBlasterException.logFormat.internal)
+    */
+   public void setLogFormatInternal(String logFormatInternal) {
+      this.logFormatInternal = logFormatInternal;
    }
 
    /**
