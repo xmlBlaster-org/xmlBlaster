@@ -1,8 +1,5 @@
-This is xmlBlaster version 0.903 *stable* 2004-05-13
+This is xmlBlaster version 0.91 *stable* 2004-08-30
 
-
-Fixed a bug in the C and C++ client library, fixed
-telnet access.
 
 XmlBlaster  is  under development or productive in a huge range
 of  industries  like  satellite  control,  air  traffic control
@@ -10,6 +7,7 @@ telecommunication, radar, car industry, process monitoring etc.
 
 This  release  is backward compatible to the previous regarding
 the  client  server  communication protocols.
+The persistence layer is NOT compatible (see note below).
 
 It   is   tested   under   Linux/Solaris-SPARC/WinXP  with  JDK
 (1.2)1.3-1.5  and  g++  2.9x/3.x, icc 8, MSVisualC++ from 2003,
@@ -27,11 +25,50 @@ http://www.xmlBlaster.org
 See:
 ----
 http://www.xmlblaster.org/xmlBlaster/CHANGES
-http://www.xmlblaster.org/xmlBlaster/RELEASE_NOTES
 
 
-Known bugs:
------------
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+IMPORTANT COMPATIBILITY NOTE:
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-1. Connection problems to remote RMI servers
+The JDBC tables have changed incompatible from 0.903 to 0.91.
+
+  -> Removed XB_NODES table (is backward compatible)
+  -> Removed XB_QUEUES table (is backward compatible)
+  -> Removed column 'nodeId' from XB_ENTRIES (is NOT backward compatible)
+
+     There is now only a single table (PostgreSQL example):
+
+     CREATE TABLE xb_entries (
+       dataId bigint,
+       queueName text,
+       prio integer,
+       flag text,
+       durable char(1),
+       byteSize bigint,
+       blob bytea,
+       PRIMARY KEY (dataId, queueName)
+
+If you need to upgrade xmlBlaster having legacy data in your database
+do manually a
+
+   ALTER TABLE xb_entries DROP COLUMN nodeId'
+
+Otherwise just drop all old database tables
+ (for HSQLDB remove its files in the tmp directory, on Windows the
+  default %HOMEPATH%\tmp location for user 'joe' is
+  "C:\Documents and Settings\joe\tmp"
+  and on Linux "$HOME/tmp")
+
+If you forget this the exception text is something like:
+
+   [Aug 28, 2004 2:47:15 PM ERROR XmlBlaster.MainThread org.xmlBlaster.engine.msgstore.cache.PersistenceCachePlugin-topicStore:xmlBlaster_192_168_1_4_3412]
+   put: an error occured when writing to the persistent queue, the persistent entry __sys__UserList/2004-08-28 14:47:15.814 will temporarly be handled as transient.
+   Is the DB up and running ?
+   XmlBlasterException errorCode=[resource.db.unknown] serverSideException=true location=[JdbcManagerCommonTable.addEntry]
+   message=[An unknown error with the backend database using JDBC occurred ->
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.errorcodes.listing.html#resource.db.unknown :
+   java.sql.SQLException: Column count does not match in statement [INSERT INTO XB_ENTRIES VALUES ( ?, ?, ?, ?, ?, ?, ?)]]
+   [See URL http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.errorcodes.listing.html#resource.db.unknown]state
+
 

@@ -1,7 +1,7 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
-Changes for 0.904 [2004-08-30]
-==============================
+Changes for 0.91 [2004-08-30]
+=============================
 
  o Perl client library:
    - Added a retries and delay option to the subscribe/callback tag
@@ -69,7 +69,7 @@ Changes for 0.904 [2004-08-30]
 
    Exception text is:
       [Aug 28, 2004 2:47:15 PM ERROR XmlBlaster.MainThread org.xmlBlaster.engine.msgstore.cache.PersistenceCachePlugin-topicStore:xmlBlaster_192_168_1_4_3412]
-       put: an error occured when writing to the persistent queue, the persistent entry __sys__UserList/2004-08-28 14:47:15.814 will temporarly be handled as transient.
+       put: an error occurred when writing to the persistent queue, the persistent entry __sys__UserList/2004-08-28 14:47:15.814 will temporarily be handled as transient.
        Is the DB up and running ?
        XmlBlasterException errorCode=[resource.db.unknown] serverSideException=true location=[JdbcManagerCommonTable.addEntry]
        message=[An unknown error with the backend database using JDBC occurred ->
