@@ -1,6 +1,6 @@
 The Java package structure for xmlBlaster
 =========================================
-Version:   $Id: packages.txt,v 1.10 2000/09/20 20:49:55 ruff Exp $
+Version:   $Id: packages.txt,v 1.11 2000/10/07 13:21:27 kron Exp $
 
 - The 'engine' section is the implementation of xmlBlaster
 
@@ -58,9 +58,11 @@ Version:   $Id: packages.txt,v 1.10 2000/09/20 20:49:55 ruff Exp $
 
 org.xmlBlaster +- engine -+- xml2java
                |          |
-               |          +- xmldb -+- file
-               |          |         |
-               |          |         +- cache
+               |          +- helper
+               |          |
+               |          +- persistence -+- filestore
+               |          |               |
+               |          |               +- mudb
                |          |
                |          |
                |          +- transaction -+- jts
@@ -104,5 +106,14 @@ org.xmlBlaster +- engine -+- xml2java
                |          +- jdbc
                |
                +- client -+- feeder
+               |          |
+               |          +- protocol
+               |          |
+               |          +- reader
                |
-               +- util
+               +- util+- cpp
+                      |
+                      +- protocol
+                      | 
+                      +- servlet
+
