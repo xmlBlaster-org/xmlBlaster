@@ -742,7 +742,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          preStatement.setLong(4, sizeInBytes);
          
          ByteArrayInputStream blob_stream = new ByteArrayInputStream(blob);
-         preStatement.setBinaryStream(5, blob_stream,(int)sizeInBytes);
+         preStatement.setBinaryStream(5, blob_stream, blob.length); //(int)sizeInBytes);
          // preStatement.setBytes(5, blob);
 
          preStatement.setLong(6, dataId);
@@ -844,7 +844,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          else preStatement.setString(6, "F");
          preStatement.setLong(7, sizeInBytes);
          ByteArrayInputStream blob_stream = new ByteArrayInputStream(blob);
-         preStatement.setBinaryStream(8, blob_stream,(int)sizeInBytes);
+         preStatement.setBinaryStream(8, blob_stream, blob.length); //(int)sizeInBytes);
          // preStatement.setBytes(8, blob);
 
          if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "addEntry"), preStatement.toString());
@@ -1024,8 +1024,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             else preStatement.setString(6, "F");
             preStatement.setLong(7, sizeInBytes);
             ByteArrayInputStream blob_stream = new ByteArrayInputStream(blob);
-            preStatement.setBinaryStream(5, blob_stream,(int)sizeInBytes);
-            // preStatement.setBytes(8, blob);
+            preStatement.setBinaryStream(8, blob_stream, blob.length); //(int)sizeInBytes);
+            //preStatement.setBytes(8, blob);
             if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "addEntries"), preStatement.toString());
             preStatement.addBatch();
          }
@@ -1041,7 +1041,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             }
          }
          catch (Throwable ex1) {
-            this.log.error(ME, "error occured when trying to rollback after exception: reason: " + ex1.toString());
+            this.log.error(ME, "error occured when trying to rollback after exception: reason: " + ex1.toString() + " original reason:" + ex.toString());
+            ex.printStackTrace(); // original stack trace
          }
          this.log.warn(getLogId(queueName, nodeId, "addEntries"), "Could not insert entries: " + ex.toString());
          if (checkIfDBLoss(conn, getLogId(queueName, nodeId, "addEntries"), ex)) 
