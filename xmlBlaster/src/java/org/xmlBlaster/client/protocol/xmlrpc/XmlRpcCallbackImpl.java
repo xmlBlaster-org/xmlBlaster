@@ -3,7 +3,7 @@ Name:      XmlRpcCallbackImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: XmlRpcCallbackImpl.java,v 1.9 2002/05/11 09:36:24 ruff Exp $
+Version:   $Id: XmlRpcCallbackImpl.java,v 1.10 2002/06/23 10:51:43 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.xmlrpc;
@@ -11,7 +11,6 @@ package org.xmlBlaster.client.protocol.xmlrpc;
 
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
 
-import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.MessageUnit;
