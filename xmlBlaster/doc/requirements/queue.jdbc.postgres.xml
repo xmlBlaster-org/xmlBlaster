@@ -47,7 +47,7 @@ createdb test
        <pre>
 vacuumdb -f -v test       
        </pre>
-       <p>This example starts <i>vacuumdb</i> every 10 minutes for an xmlBlaster
+       <p>This example starts <i>vacuumdb</i> every 2 minutes for an xmlBlaster
        under heavy load with persistent messages:
        </p>
        <pre>
@@ -55,10 +55,18 @@ while [ 1 ] ; do
   echo "***** Starting vacuumdb *****"
   vacuumdb -f -v test
   echo "Sleeping until next vacuumdb"
-  sleep 600
+  sleep 120
 done
        </pre>
-
+       <p>
+       On Linux you should try to improve hard disk performance with
+       the <i>hdparm</i> command which can in many cases increase hard disk and
+       persistent message throughput significantly:
+       </p>
+       <pre>
+hdparm -d1 -c3 /dev/hda
+hdparm -t /dev/hda
+       </pre>
     </description>
 
     <example lang="Java" type="HTML">
@@ -143,7 +151,7 @@ done
 <!--   <see type="REQ">cluster</see> -->
    <author>laghi@swissinfo.org</author>
    <date>2002 11 17</date>
-   <revision>$Revision: 1.9 $</revision>
+   <revision>$Revision: 1.10 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
