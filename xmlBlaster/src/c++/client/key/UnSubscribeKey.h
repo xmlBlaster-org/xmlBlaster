@@ -86,7 +86,7 @@ public:
     */
    std::string wrap(const std::string& str);
 
-   org::xmlBlaster::util::key::QueryKeyData getData() const;
+   const org::xmlBlaster::util::key::QueryKeyData& getData() const;
 
 };
 

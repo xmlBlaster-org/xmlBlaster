@@ -76,7 +76,7 @@ string UnSubscribeKey::wrap(const string& str)
    return queryKeyData_.toXml();
 }
 
-QueryKeyData UnSubscribeKey::getData() const
+const QueryKeyData& UnSubscribeKey::getData() const
 {
    return queryKeyData_;
 }

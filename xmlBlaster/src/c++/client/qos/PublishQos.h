@@ -78,9 +78,9 @@ public:
    PublishQos(org::xmlBlaster::util::Global& global, bool persistent);
 
    /**
-    * Returns the internal data holder, please modify with care. 
+    * Returns the immutable internal data holder. 
     */
-   org::xmlBlaster::util::qos::MsgQosData& getData();
+   const org::xmlBlaster::util::qos::MsgQosData& getData();
 
    /**
     * Message priority.
@@ -190,6 +190,12 @@ public:
             const T_VALUE& value) {
       msgQosData_.addClientProperty(name, value);
    }
+
+   /**
+    * Set all clientProperties at once, overwrites all existing. 
+    * @param cm The new properties
+    */
+   void setClientProperties(const org::xmlBlaster::util::qos::QosData::ClientPropertyMap& cm);
 
    /**
     * Get a map containing all send client properties

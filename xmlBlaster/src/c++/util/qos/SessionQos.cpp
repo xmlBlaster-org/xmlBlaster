@@ -319,7 +319,7 @@ void SessionQosFactory::reset()
    sessionQos_ = new SessionQosData(global_);
 }
 
-SessionQosData SessionQosFactory::getData() const
+const SessionQosData& SessionQosFactory::getData() const
 {
    return *sessionQos_;
 }

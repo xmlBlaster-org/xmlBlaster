@@ -31,7 +31,7 @@ namespace org { namespace xmlBlaster { namespace client { namespace qos {
       setPersistent(persistent);
    }
 
-   MsgQosData& PublishQos::getData()
+   const MsgQosData& PublishQos::getData()
    {
       return msgQosData_;
    }
@@ -175,6 +175,11 @@ namespace org { namespace xmlBlaster { namespace client { namespace qos {
    void PublishQos::setTopicProperty(const TopicProperty& topicProperty)
    {
       msgQosData_.setTopicProperty(topicProperty);
+   }
+
+   void PublishQos::setClientProperties(const QosData::ClientPropertyMap& cm)
+   {
+      msgQosData_.setClientProperties(cm);
    }
 
    const QosData::ClientPropertyMap& PublishQos::getClientProperties() const

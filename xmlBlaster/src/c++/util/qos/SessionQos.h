@@ -153,7 +153,7 @@ public:
 
    void reset();
 
-   SessionQosData getData() const;
+   const SessionQosData& getData() const;
 
    SessionQosData readObject(const std::string& qos);
 

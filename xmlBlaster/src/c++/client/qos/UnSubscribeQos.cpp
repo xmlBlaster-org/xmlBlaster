@@ -58,7 +58,7 @@ string UnSubscribeQos::toXml() const
    return data_.toXml();
 }
 
-QueryQosData UnSubscribeQos::getData() const
+const QueryQosData& UnSubscribeQos::getData() const
 {
    return data_;
 }

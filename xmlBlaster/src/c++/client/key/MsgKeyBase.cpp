@@ -34,7 +34,7 @@ MsgKeyBase& MsgKeyBase::operator =(const MsgKeyBase& key)
    return *this;
 }
 
-MsgKeyData MsgKeyBase::getData() const
+const MsgKeyData& MsgKeyBase::getData() const
 {
    return msgKeyData_;
 }

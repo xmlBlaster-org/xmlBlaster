@@ -48,7 +48,7 @@ public:
 
    MsgKeyBase& operator =(const MsgKeyBase& key);
 
-   org::xmlBlaster::util::key::MsgKeyData getData() const;
+   const org::xmlBlaster::util::key::MsgKeyData& getData() const;
 
    org::xmlBlaster::util::Global& getGlobal() { return global_; }
 

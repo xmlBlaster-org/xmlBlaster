@@ -77,7 +77,7 @@ public:
     */
    std::string toXml() const;
 
-   org::xmlBlaster::util::qos::QueryQosData getData() const;
+   const org::xmlBlaster::util::qos::QueryQosData& getData() const;
 };
 
 }}}}
