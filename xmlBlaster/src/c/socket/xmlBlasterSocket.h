@@ -18,6 +18,7 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #include <util/msgUtil.h>
 
 #define  MAX_SESSIONID_LEN 256
+#define  MAX_MSG_LEN 1000000000
 
 /* Settings for MSG_FLAG_POS_TYPE */
 typedef enum XMLBLASTER_MSG_TYPE_ENUM {
