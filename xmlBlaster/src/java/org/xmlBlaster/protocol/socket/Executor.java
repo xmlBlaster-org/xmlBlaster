@@ -109,8 +109,22 @@ public abstract class Executor implements ExecutorBase
       this.sock = sock;
       this.sockUDP = sockUDP;
       this.xmlBlasterImpl = xmlBlasterImpl;
-      this.oStream = sock.getOutputStream();
-      this.iStream = sock.getInputStream();
+
+      if (Constants.COMPRESS_ZLIB_STREAM.equals(this.addressConfig.getCompressType())) { // Statically configured for server side protocol plugin
+         log.info(ME, "Full stream compression enabled with zlib");
+         this.iStream = new ZFlushInputStream(sock.getInputStream());
+         this.oStream =  new ZFlushOutputStream(sock.getOutputStream());
+      }
+      else if (Constants.COMPRESS_ZLIB.equals(this.addressConfig.getCompressType())) { // Compress each message indiviually
+         log.info(ME, "Message compression enabled with zlib, minimum size for compression is " + this.addressConfig.getMinSize() + " bytes");
+         this.iStream = new ZBlockInputStream(sock.getInputStream());
+         this.oStream = new ZBlockOutputStream(sock.getOutputStream(), (int)this.addressConfig.getMinSize());
+      }
+      else {
+         this.iStream = sock.getInputStream();
+         this.oStream = sock.getOutputStream();
+      }
+
       this.remoteSocketStr = sock.getInetAddress().toString() + ":" + sock.getPort();
       setResponseWaitTime(addressConfig.getEnv("responseTimeout", Constants.MINUTE_IN_MILLIS).getValue());
       if (log.TRACE) log.trace(ME, this.addressConfig.getEnvLookupKey("responseTimeout") + "=" + this.responseWaitTime);
