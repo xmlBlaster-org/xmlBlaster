@@ -3,7 +3,7 @@ Name:      NativeDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   NativeDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: NativeDriver.java,v 1.2 2000/06/26 15:31:35 ruff Exp $
+Version:   $Id: NativeDriver.java,v 1.3 2000/06/26 17:17:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.nativ;
 
@@ -112,6 +112,7 @@ public class NativeDriver implements I_Driver
    public void shutdown()
    {
       Log.info(ME, "Shutting down native driver ...");
+      try { authenticate.logout(sessionId); } catch(XmlBlasterException e) { }
    }
 
 
