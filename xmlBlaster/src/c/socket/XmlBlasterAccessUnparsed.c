@@ -111,8 +111,9 @@ Dll_Export XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed(int argc, const
                                 "Created handle: -logLevel=%s -plugin/socket/responseTimeout=%ld",
                                 getLogLevelStr(xa->logLevel), xa->responseTimeout);
 
-	pthread_mutex_init(&xa->writenMutex, NULL); /* returns always 0 */
-	pthread_mutex_init(&xa->readnMutex, NULL);
+   /* See: http://www.llnl.gov/computing/tutorials/workshops/workshop/pthreads/MAIN.html */
+   pthread_mutex_init(&xa->writenMutex, NULL); /* returns always 0 */
+   pthread_mutex_init(&xa->readnMutex, NULL);
    return xa;
 }
 
