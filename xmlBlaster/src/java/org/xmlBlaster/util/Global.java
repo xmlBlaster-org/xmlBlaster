@@ -94,7 +94,7 @@ public class Global implements Cloneable
    private static Global firstInstance = null;
 
    /** Version string, please change for new releases (4 digits) */
-   private String versionDefault = "0.845";
+   private String versionDefault = "0.845+";
    /** This will be replaced by build.xml with the current version */
    private String version = "@version@";
    /** This will be replaced by build.xml with the build timestamp */
@@ -1765,8 +1765,8 @@ public class Global implements Cloneable
    /**
     * Returns the client access layer implementations 'ClientDeliveryConnectionsHandler'
     */
-   public DeliveryConnectionsHandler createDeliveryConnectionsHandler(DeliveryManager deliveryManager, AddressBase[] addrArr) throws XmlBlasterException {
-      return new ClientDeliveryConnectionsHandler(this, deliveryManager, addrArr);
+   public DeliveryConnectionsHandler createDeliveryConnectionsHandler(DeliveryManager deliveryManager) throws XmlBlasterException {
+      return new ClientDeliveryConnectionsHandler(this, deliveryManager);
    }
 
    public void finalize() {
