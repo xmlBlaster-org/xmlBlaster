@@ -2,6 +2,14 @@
 <head>
 </head>
 
+PLS
+  PACKAGE
+    JOBS
+       AGENT
+       DRIVER
+          PARAMETER
+
+
 <body bgcolor="#dadada">
 
    <center>
@@ -72,14 +80,14 @@
    To allow performant parameter lookup, the XmlKey is organized with indexing parameters in hierarchical manners.<p>
 
    It is the responsibility of the clients to agree on a hierarchical indexing schema,<br>
-   for example the following two XmlKeys of two MessageUnits have similar XML tags:<p>
+   for example the following two XmlKeys of two MessageUnits have similar XML tags:<br>
+   <small><i>Note that the data itself (content) is not shown</i></small><p>
 
    <p><table border="8" bgcolor="#F0F0F0" cellpadding=8 cellspacing=8><tr><td><pre>
    &lt;key oid="Number1">
       &lt;Airport icao="EDDI">
         &lt;Runway id="1">
            &lt;WindVeloc w_id="2">
-             12
            &lt;/WindVeloc>
         &lt;/Runway>
       &lt;/Airport>
@@ -91,7 +99,6 @@
       &lt;Airport icao="EDDI">
          &lt;Runway id="1">
            &lt;WindVeloc w_id="1">
-             24
            &lt;/WindVeloc>
          &lt;/Runway>
       &lt;/Airport>
@@ -104,10 +111,8 @@
       &lt;Airport icao="EDDI">
         &lt;Runway id="1">
            &lt;WindVeloc w_id="2" oid_reference="Number1">
-             12
            &lt;/WindVeloc>
            &lt;WindVeloc w_id="1" oid_reference="Number2">
-             24
            &lt;/WindVeloc>
         &lt;/Runway>
       &lt;/Airport>
