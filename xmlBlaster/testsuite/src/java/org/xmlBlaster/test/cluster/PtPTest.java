@@ -94,6 +94,7 @@ public class PtPTest extends TestCase {
 
    /**
     * We start bilbo, frodo and heron nodes as described in requirement
+    * PtP messages are routed from ClientTo[bilbo] -> bilbo -> frodo -> heron -> ClientTo[heron]
     * <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/cluster.html" target="others">cluster</a>
     * publish a message to bilbo which should be routed to client XX which is logged in to heron.
     */ 
@@ -131,6 +132,7 @@ public class PtPTest extends TestCase {
          int num = 5;
          for (int i=0; i<num; i++) {
             PublishKey pk = new PublishKey(glob, oid, "text/plain", "1.0");
+            pk.setDomain("RUGBY_NEWS"); // heron is master: need for routing as heron is not directly connected to us
             PublishQos pq = new PublishQos(glob);
             SessionName sessionName = heronCon.getConnectReturnQos().getSessionName(); // destination client
             Destination destination = new Destination(sessionName);
