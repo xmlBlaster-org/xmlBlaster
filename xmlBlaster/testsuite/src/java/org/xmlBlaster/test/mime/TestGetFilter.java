@@ -3,7 +3,7 @@ Name:      TestGetFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestGetFilter.java,v 1.8 2003/03/25 22:09:36 ruff Exp $
+Version:   $Id: TestGetFilter.java,v 1.9 2003/04/03 13:13:48 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.mime;
 
@@ -120,9 +120,11 @@ public class TestGetFilter extends TestCase
       } catch(XmlBlasterException e) { log.error(ME, "XmlBlasterException: " + e.getMessage()); }
 
       con.disconnect(null);
+      con=null;
 
       try { Thread.currentThread().sleep(500L); } catch( InterruptedException i) {}    // Wait some time
-      EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
+      EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
+      this.serverThread = null;
 
       // reset to default server port (necessary if other tests follow in the same JVM).
       Util.resetPorts();

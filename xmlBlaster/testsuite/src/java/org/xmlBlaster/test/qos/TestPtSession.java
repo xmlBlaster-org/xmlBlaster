@@ -58,8 +58,8 @@ import junit.framework.*;
 public class TestPtSession extends TestCase
 {
    private static String ME = "TestPtSession";
-   private final Global glob;
-   private final LogChannel log;
+   private Global glob;
+   private LogChannel log;
 
    class ConHolder {
       public I_XmlBlasterAccess con;
@@ -214,13 +214,21 @@ public class TestPtSession extends TestCase
       for(int ii=0; ii<conHolderArr.length; ii++) {
          conHolderArr[ii].con.disconnect(null);
       }
+      this.conHolderArr = null;
 
       if (this.startEmbedded) {
-         EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
+         EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
+         this.serverThread = null;
 
          // reset to default server port (necessary if other tests follow in the same JVM).
          Util.resetPorts();
+
+         this.serverThread = null;
       }
+
+      log.error(ME, "DEBUG ONLY: tearDown() all resources released");
+      this.glob = null;
+      this.log = null;
    }
 
    /**

@@ -440,10 +440,12 @@ public class TestPriorizedDeliveryPlugin extends TestCase
       try { Thread.currentThread().sleep(200L); } catch( InterruptedException i) {} // Wait some time
 
       con.disconnect(null);
+      con = null;
 
       if (this.startEmbedded) {
          try { Thread.currentThread().sleep(500L); } catch( InterruptedException i) {} // Wait some time
-         EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
+         EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
+         this.serverThread = null;
       }
 
       // reset to default server port (necessary if other tests follow in the same JVM).

@@ -128,10 +128,12 @@ public class TestSynchronousCache extends TestCase {
       }
 
       con.disconnect(null);
+      con = null;
 
       if (this.startEmbedded) {
          try { Thread.currentThread().sleep(500L); } catch( InterruptedException i) {} // Wait some time
-         EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
+         EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
+         this.serverThread = null;
       }
 
       // reset to default server port (necessary if other tests follow in the same JVM).
@@ -192,8 +194,8 @@ public class TestSynchronousCache extends TestCase {
 
             for (int i=0; i<10; i++) {
                MsgUnit[] msgs = con.getCached(gk, gq);
-               GetReturnQos grq = new GetReturnQos(glob, msgs[0].getQos());
                assertEquals(this.synchronousCache.toXml(""), 1, msgs.length);
+               GetReturnQos grq = new GetReturnQos(glob, msgs[0].getQos());
                assertEquals("", 1, this.synchronousCache.getNumQueriesCached());
                log.info("", "Accessed xmlBlaster message with content '" + new String(msgs[0].getContent()) +
                               "' and status=" + grq.getState());
@@ -237,7 +239,7 @@ public class TestSynchronousCache extends TestCase {
                GetReturnQos grq = new GetReturnQos(glob, msgs[0].getQos());
                assertEquals(this.synchronousCache.toXml(""), 1, msgs.length);
                assertEquals("", 1, this.synchronousCache.getNumQueriesCached());
-               assertEquals("", publishReturnQos.getRcvTimestamp(), grq.getRcvTimestamp());
+               assertEquals("", publishReturnQos.getRcvTimestamp().getTimestamp(), grq.getRcvTimestamp().getTimestamp());
                assertEquals("", publishReturnQos.getKeyOid(), msgs[0].getKeyOid());
                assertEquals("", contentNew, msgs[0].getContentStr());
                log.info("", "Accessed xmlBlaster message with content '" + new String(msgs[0].getContent()) +
@@ -267,6 +269,7 @@ public class TestSynchronousCache extends TestCase {
 
             for (int i=0; i<10; i++) {
                MsgUnit[] msgs = con.getCached(gk, gq);
+               assertEquals("", 2, msgs.length);
                GetReturnQos grq0 = new GetReturnQos(glob, msgs[0].getQos());
                GetReturnQos grq1 = new GetReturnQos(glob, msgs[1].getQos());
                assertEquals(this.synchronousCache.toXml(""), 2, msgs.length);

@@ -116,9 +116,11 @@ public class BigMessage extends TestCase implements I_Callback
       } catch(XmlBlasterException e) { log.error(ME, "XmlBlasterException: " + e.getMessage()); }
 
       con.disconnect(null);
+      con=null;
 
       if (this.startEmbedded) {
-         EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
+         EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
+         this.serverThread = null;
          // reset to default server port (necessary if other tests follow in the same JVM).
          Util.resetPorts();
       }

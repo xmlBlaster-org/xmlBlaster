@@ -3,7 +3,7 @@ Name:      TestCorbaThreads.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestCorbaThreads.java,v 1.7 2003/03/31 09:46:13 ruff Exp $
+Version:   $Id: TestCorbaThreads.java,v 1.8 2003/04/03 13:13:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -100,7 +100,8 @@ public class TestCorbaThreads extends TestCase implements I_CallbackExtended
    }
 
    protected void tearDown() {
-      EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
+      EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
+      this.serverThread = null;
       // reset to default server port (necessary if other tests follow in the same JVM).
       Util.resetPorts(glob);
       log.info(ME, "Ports reset to default: " + glob.getProperty().toXml());

@@ -60,8 +60,8 @@ import junit.framework.*;
  */
 public class TestTopicLifeCycle extends TestCase implements I_Callback {
    private String ME = "TestTopicLifeCycle";
-   private final Global glob;
-   private final LogChannel log;
+   private Global glob;
+   private LogChannel log;
 
    private final String senderName = "Gesa";
    private I_XmlBlasterAccess con = null;
@@ -135,14 +135,18 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
       } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.getMessage()); }
 
       con.disconnect(null);
+      con=null;
 
       if (this.startEmbedded) {
          try { Thread.currentThread().sleep(500L); } catch( InterruptedException i) {} // Wait some time
-         EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
+         EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
+         this.serverThread = null;
       }
 
       // reset to default server port (necessary if other tests follow in the same JVM).
       Util.resetPorts();
+      this.glob = null;
+      this.log = null;
    }
 
    public EraseReturnQos[] sendErase(boolean forceDestroy) {

@@ -116,9 +116,12 @@ public class TestJdbcAccess extends TestCase
       }
 
       con.disconnect(null);
+      con=null;
 
       try { Thread.currentThread().sleep(100L); } catch( InterruptedException i) {}
-      EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
+      EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
+      this.serverThread = null;
+
 
       // reset to default server port (necessary if other tests follow in the same JVM).
       Util.resetPorts();

@@ -19,6 +19,7 @@ import java.lang.InterruptedException;
 import java.util.Vector;
 
 import junit.framework.Assert;
+import java.lang.ref.WeakReference;
 
 /**
  * Intercepts incoming message in update() and collects them in a Vector for nice handling. 
@@ -26,8 +27,8 @@ import junit.framework.Assert;
 public class MsgInterceptor extends Assert implements I_Callback 
 {
    private String ME = "Testsuite.MsgInterceptor";
-   private final Global glob;
-   private final LogChannel log;
+   private final WeakReference weakglob;
+   private final WeakReference weaklog;
    private I_Callback testsuite = null;
    //private Msgs msgs = null;
    private int verbosity = 2;
@@ -36,10 +37,18 @@ public class MsgInterceptor extends Assert implements I_Callback
     * @param testsuite If != null your update() variant will be called as well
     */
    public MsgInterceptor(Global glob, LogChannel log, I_Callback testsuite) {
-      this.glob = glob;
-      this.log = log;
+      this.weakglob = new WeakReference(glob);
+      this.weaklog = new WeakReference(log);
       this.testsuite = testsuite;
       //this.msgs = new Msgs();
+   }
+
+   public final Global getGlobal() {
+      return (Global)this.weakglob.get();
+   }
+
+   public final LogChannel getLog() {
+      return (LogChannel)this.weaklog.get();
    }
 
    public void setLogPrefix(String prefix) {
@@ -71,13 +80,13 @@ public class MsgInterceptor extends Assert implements I_Callback
       
       if (this.verbosity == 1) {
          String cont = (contentStr.length() > 10) ? (contentStr.substring(0,10)+"...") : contentStr;
-         log.info(ME, "Receiving update of a message oid=" + updateKey.getOid() +
+         getLog().info(ME, "Receiving update of a message oid=" + updateKey.getOid() +
                    " priority=" + updateQos.getPriority() +
                    " state=" + updateQos.getState() +
                    " content=" + cont);
       }
       else if (this.verbosity == 2) {
-         log.info(ME, "Receiving update #" + (count()+1) + " of a message cbSessionId=" + cbSessionId +
+         getLog().info(ME, "Receiving update #" + (count()+1) + " of a message cbSessionId=" + cbSessionId +
                       updateKey.toXml() + "\n" + new String(content) + updateQos.toXml());
       }
 
@@ -87,7 +96,7 @@ public class MsgInterceptor extends Assert implements I_Callback
       if (testsuite != null)
          return testsuite.update(cbSessionId, updateKey, content, updateQos);
       else {
-         UpdateReturnQos qos = new UpdateReturnQos(glob);
+         UpdateReturnQos qos = new UpdateReturnQos(getGlobal());
          return qos.toXml();
       }
    }
@@ -106,6 +115,10 @@ public class MsgInterceptor extends Assert implements I_Callback
     * countExpected are here.
     * <p>
     * ERASE notifies are not returned
+    * </p>
+    * <p>
+    * This method does not assert() it return the number of messages arrived
+    * which you can use to assert yourself.
     * </p>
     * @param timeout in milliseconds
     * @param oid The expected message oid, if null the oid is not checked (all oids are OK)
@@ -130,7 +143,7 @@ public class MsgInterceptor extends Assert implements I_Callback
 
          sum += pollingInterval;
          if (sum > timeout) {
-            log.error(ME, "timeout=" + timeout + " occurred for " + oid + " state=" + state + " countExpected=" + countExpected + " countArrived=" + countArrived);
+            getLog().error(ME, "timeout=" + timeout + " occurred for " + oid + " state=" + state + " countExpected=" + countExpected + " countArrived=" + countArrived);
             return countArrived; // Timeout occurred
          }
       }

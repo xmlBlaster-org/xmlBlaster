@@ -175,9 +175,11 @@ public class TestXPathSubscribeFilter extends TestCase implements I_Callback
       } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.getMessage()); }
       
       con.disconnect(null);
+      con=null;
       
       try { Thread.currentThread().sleep(500L); } catch( InterruptedException i) {}    // Wait some time
-      EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
+      EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
+      this.serverThread = null;
       
       // reset to default server port (necessary if other tests follow in the same JVM).
       Util.resetPorts();

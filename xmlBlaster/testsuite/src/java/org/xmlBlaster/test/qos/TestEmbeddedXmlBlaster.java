@@ -151,7 +151,8 @@ public class TestEmbeddedXmlBlaster extends TestCase
 
       // Stop xmlBlaster
       try { Thread.currentThread().sleep(100L); } catch( InterruptedException i) {}
-      EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
+      EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
+      this.serverThread = null;
 
 
       ThreadLister.listAllThreads(System.out);

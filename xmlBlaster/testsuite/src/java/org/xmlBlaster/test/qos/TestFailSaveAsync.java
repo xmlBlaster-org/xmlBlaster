@@ -19,6 +19,7 @@ import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_ConnectionStateListener;
@@ -27,6 +28,7 @@ import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 
 import org.xmlBlaster.test.Util;
+import org.xmlBlaster.test.MsgInterceptor;
 import junit.framework.*;
 
 
@@ -51,13 +53,14 @@ import junit.framework.*;
 public class TestFailSaveAsync extends TestCase implements I_Callback, I_ConnectionStateListener
 {
    private static String ME = "TestFailSaveAsync";
-   private final Global glob;
-   private final LogChannel log;
+   private Global glob;
+   private LogChannel log;
    private boolean messageArrived = false;
 
    private int serverPort = 7604;
    private EmbeddedXmlBlaster serverThread;
 
+   private MsgInterceptor updateInterceptor;
    private I_XmlBlasterAccess con;
    private String senderName;
 
@@ -83,20 +86,15 @@ public class TestFailSaveAsync extends TestCase implements I_Callback, I_Connect
    PublishKey publishKeyWrapper;
    PublishQos publishQosWrapper;
 
-   /**
-    * Constructs the TestFailSaveAsync object.
-    * <p />
-    * @param testName  The name used in the test suite
-    * @param loginName The name to login to the xmlBlaster
-    */
-   public TestFailSaveAsync(Global glob, String testName, String loginName)
-   {
-      super(testName);
-      this.glob = glob;
-      this.log = glob.getLog(null);
-      this.senderName = loginName;
+   public TestFailSaveAsync(String testName) {
+      this(null, testName);
    }
 
+   public TestFailSaveAsync(Global glob, String testName) {
+      super(testName);
+      this.glob = glob;
+      this.senderName = testName;
+   }
 
    /**
     * Sets up the fixture.
@@ -105,6 +103,9 @@ public class TestFailSaveAsync extends TestCase implements I_Callback, I_Connect
     */
    protected void setUp()
    {
+      this.glob = (this.glob == null) ? new Global() : this.glob;
+      this.log = this.glob.getLog("test");
+
       numReceived = 0;
       numTailbackReceived = 0;
       numNormalPublishReceived = 0;
@@ -132,8 +133,10 @@ public class TestFailSaveAsync extends TestCase implements I_Callback, I_Connect
 
          connectQos.setAddress(addressProp);
          
+         this.updateInterceptor = new MsgInterceptor(this.glob, log, this); // Collect received msgs
+
          // and do the login ...
-         con.connect(connectQos, this); // Login to xmlBlaster
+         con.connect(connectQos, this.updateInterceptor); // Login to xmlBlaster
       }
       catch (XmlBlasterException e) {
           log.warn(ME, "setUp() - login failed: " + e.toString());
@@ -167,9 +170,12 @@ public class TestFailSaveAsync extends TestCase implements I_Callback, I_Connect
       String xmlKey = "<key oid='' queryType='XPATH'>\n" +
                       "   //TestFailSaveAsync-AGENT" +
                       "</key>";
+      //String eraseQos = "<qos><notify>false</notify></qos>";
+      EraseQos eraseQos = new EraseQos(glob);
+      eraseQos.setWantNotify(false);
       try {
          try {
-            EraseReturnQos[] arr = con.erase(xmlKey, null);
+            EraseReturnQos[] arr = con.erase(xmlKey, eraseQos.toXml());
 
 
             PropString defaultPlugin = new PropString("CACHE,1.0");
@@ -187,10 +193,18 @@ public class TestFailSaveAsync extends TestCase implements I_Callback, I_Connect
       }
       finally {
          try { Thread.currentThread().sleep(200L); } catch( InterruptedException i) {}    // Wait some time
-         EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
+         EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
+         this.serverThread = null;
 
          // reset to default server port (necessary if other tests follow in the same JVM).
-         Util.resetPorts();
+         Util.resetPorts(glob);
+         this.glob = null;
+         this.log = null;
+         this.con = null;
+         this.updateInterceptor = null;
+         Global.instance().shutdown();
+         publishKeyWrapper = null;
+         publishQosWrapper = null;
       }
    }
 
@@ -244,11 +258,12 @@ public class TestFailSaveAsync extends TestCase implements I_Callback, I_Connect
     * TEST: Sendin 0-19 directly, sending 20-39 to recorder (no connection), sending 40-100 directly
     */
    public void testFailSave() {
-      subscribe();
+      // subscribe(); see reachedAlive()
 
       for (int ii=0; ii<maxEntries; ii++) {
          if (ii==failMsg) {
-            EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
+            EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
+            this.serverThread = null;
             Util.delay(600L);    // Wait some time, ping should activate login polling
             log.info(ME, "lostConnection, sending message " + ii + " - " + (reconnectMsg-1));
          }
@@ -268,13 +283,10 @@ public class TestFailSaveAsync extends TestCase implements I_Callback, I_Connect
 
       int numFailsave = reconnectMsg-failMsg;  // 20
       int numPublish = maxEntries-numFailsave;     // 80
-      waitOnUpdate(16000L + (long)((1000.0 * numPublish / publishRate) + (1000.0 * numFailsave / pullbackRate)), maxEntries);
+      long wait = 16000L + (long)((1000.0 * numPublish / publishRate) + (1000.0 * numFailsave / pullbackRate));
+      assertEquals("", maxEntries, this.updateInterceptor.waitOnUpdate(wait, maxEntries));
    }
 
-   /**
-    * This is the callback method invoked from I_XmlBlasterAccess
-    * informing the client in an asynchronous mode if the connection was established.
-    */
    public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
       log.info(ME, "I_ConnectionStateListener: We were lucky, (re)connected to xmlBlaster");
       subscribe();    // initialize subscription again
@@ -282,12 +294,6 @@ public class TestFailSaveAsync extends TestCase implements I_Callback, I_Connect
       allTailbackAreFlushed = true;
    }
 
-   /**
-    * This is the callback method invoked from I_XmlBlasterAccess
-    * informing the client in an asynchronous mode if the connection was lost.
-    * <p />
-    * This method is enforced through interface I_ConnectionStateListener
-    */
    public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
       log.warn(ME, "I_ConnectionStateListener: Lost connection to xmlBlaster");
       allTailbackAreFlushed = false;
@@ -341,6 +347,7 @@ public class TestFailSaveAsync extends TestCase implements I_Callback, I_Connect
 
          log.info(ME, "Update message oid=" + oid + " numReceived=" + numReceived + ", numNormalPublishReceived=" + numNormalPublishReceived + " numTailbackReceived=" + numTailbackReceived + " ...");
 
+         /* NOT SUPPORTED ANYMORE SINCE CLIENT SIDE QUEUE EMBEDDING (before supported by Recorder framework)
          // Check here async behavior:
          if (numReceived == 80) {
             int expectedTailback = (int)((80.-reconnectMsg)*(1.*pullbackRate/publishRate));
@@ -353,48 +360,13 @@ public class TestFailSaveAsync extends TestCase implements I_Callback, I_Connect
             }
             log.info(ME, "TEST SUCCESS: Expected tailback updates = " + expectedTailback + " and got " + numTailbackReceived);
          }
+         */
 
          messageArrived = true;
       
       } // synchronized as we have the client as publisher and the invocation recorder as a publisher
       
       return "";
-   }
-
-   /**
-    * Little helper, waits until the wanted number of messages are arrived
-    * or returns when the given timeout occurs.
-    * <p />
-    * @param timeout in milliseconds
-    * @param numWait how many messages to wait
-    */
-   private void waitOnUpdate(final long timeout, final int numWait)
-   {
-      long pollingInterval = 50L;  // check every 0.05 seconds
-      if (timeout < 50)  pollingInterval = timeout / 10L;
-      long sum = 0L;
-      while (numReceived < numWait) {
-         try {
-            Thread.currentThread().sleep(pollingInterval);
-         }
-         catch( InterruptedException i)
-         {}
-         sum += pollingInterval;
-         if (sum > timeout) {
-            log.warn(ME, "Timeout of " + timeout + " occurred");
-            break;
-         }
-      }
-   }
-
-   /**
-    * Method is used by TestRunner to load these tests
-    */
-   public static Test suite() {
-       TestSuite suite= new TestSuite();
-       String loginName = "Tim";
-       suite.addTest(new TestFailSaveAsync(new Global(), "testFailSave", loginName));
-       return suite;
    }
 
    /**
@@ -408,7 +380,7 @@ public class TestFailSaveAsync extends TestCase implements I_Callback, I_Connect
          glob.getLog(null).error(ME, "Init failed");
          System.exit(1);
       }
-      TestFailSaveAsync testSub = new TestFailSaveAsync(glob, "TestFailSaveAsync", "Tim");
+      TestFailSaveAsync testSub = new TestFailSaveAsync(glob, "TestFailSaveAsync");
       testSub.setUp();
       testSub.testFailSave();
       testSub.tearDown();

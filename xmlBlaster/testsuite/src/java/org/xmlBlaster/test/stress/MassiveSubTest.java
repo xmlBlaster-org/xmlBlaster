@@ -196,10 +196,12 @@ public class MassiveSubTest extends TestCase implements I_Callback {
       }
       
       oneConnection.disconnect(null);
+      oneConnection = null;
       log.info(ME, "Logout done");
       if (withEmbedded) {
          try { Thread.currentThread().sleep(100L); } catch( InterruptedException i) {}
-         EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
+         EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
+         this.serverThread = null;
          
          // reset to default server port (necessary if other tests follow in the same JVM).
          Util.resetPorts();

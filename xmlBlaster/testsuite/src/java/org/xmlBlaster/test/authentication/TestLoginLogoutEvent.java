@@ -48,8 +48,8 @@ import junit.framework.*;
 public class TestLoginLogoutEvent extends TestCase
 {
    private static String ME = "TestLoginLogoutEvent";
-   private final Global glob;
-   private final LogChannel log;
+   private Global glob;
+   private LogChannel log;
 
    private I_XmlBlasterAccess firstConnection;
    private String firstName;
@@ -134,6 +134,9 @@ public class TestLoginLogoutEvent extends TestCase
          this.secondConnection.disconnect(null);
          this.secondConnection = null;
       }
+      this.glob = null;
+      this.log = null;
+      Global.instance().shutdown();
    }
 
 
