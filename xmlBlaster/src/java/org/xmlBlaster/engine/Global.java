@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling global data
-Version:   $Id: Global.java,v 1.15 2002/06/13 13:20:16 ruff Exp $
+Version:   $Id: Global.java,v 1.16 2002/06/15 16:09:40 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -16,8 +16,7 @@ import org.xmlBlaster.engine.cluster.NodeId;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.cluster.ClusterManager;
 import org.xmlBlaster.engine.admin.CommandManager;
-import org.xmlBlaster.protocol.I_Driver;
-import org.xmlBlaster.protocol.I_CallbackDriver;
+import org.xmlBlaster.protocol.ProtocolManager;
 import org.xmlBlaster.authentication.Authenticate;
 
 import java.util.*;
@@ -33,6 +32,8 @@ public final class Global extends org.xmlBlaster.util.Global
 {
    private static final String ME = "Global";
 
+   private RunlevelManager runlevelManager;
+
    /** the authentication service */
    private Authenticate authenticate = null;
    /** the xmlBlaster core class */
@@ -44,26 +45,16 @@ public final class Global extends org.xmlBlaster.util.Global
    private Timeout sessionTimer;
    private Timeout messageTimer;
 
-   /** Vector holding all protocol I_Driver.java implementations, e.g. CorbaDriver */
-   private Vector protocols = new Vector();
-
-   /** Vector holding all callback protocol I_CallbackDriver.java implementations, e.g. CallbackCorbaDriver */
-   private Hashtable cbProtocols = new Hashtable();
-
    private CbWorkerPool cbWorkerPool;
 
    private boolean useCluster = true; // default
    private boolean firstUseCluster = true; // to allow caching
 
+   private ProtocolManager protocolManager;
+
    private CommandManager commandManager;
    private boolean useAdminManager = true;
    private boolean firstUseAdminManager = true; // to allow caching
-
-   private int currRunlevel = 0;
-   /**
-    * For listeners who want to be informed about runlevel changes. 
-    */
-   private final Set runlevelListenerSet = Collections.synchronizedSet(new HashSet());
 
    /**
     * One instance of this represents one xmlBlaster server.
@@ -115,7 +106,7 @@ public final class Global extends org.xmlBlaster.util.Global
       if (id != null) {
          nodeId = new NodeId(id);
          super.setId(nodeId.toString());
-         log.info(ME, "Setting xmlBlaster instance name (cluster node id) to '" + nodeId.toString() + "'");
+         log.info(ME, "Setting xmlBlaster instance name (-cluster.node.id) to '" + nodeId.toString() + "'");
       }
    }
 
@@ -142,129 +133,17 @@ public final class Global extends org.xmlBlaster.util.Global
       nodeId = new NodeId(id);
    }
 
-   public void addProtocolDriver(I_Driver driver) {
-      protocols.addElement(driver);
-   }
-
-   public void shutdownProtocolDrivers() {
-      for (int ii=0; ii<protocols.size(); ii++) {
-         I_Driver driver = (I_Driver)protocols.elementAt(ii);
-         try {
-            driver.shutdown();
-         }
-         catch (Throwable e) {
-            log.error(ME, "Shutdown of driver " + driver.getName() + " failed: " + e.toString());
+   /**
+    * Initialize runlevel manager used to start/stop xmlBlaster with different run levels. 
+    */
+   public final RunlevelManager getRunlevelManager() {
+      if (this.runlevelManager == null) {
+         synchronized(this) {
+            if (this.runlevelManager == null)
+               this.runlevelManager = new RunlevelManager(this);
          }
       }
-      protocols.clear();
-   }
-
-   /**
-    * Stops the protocol specific driver (e.g. XML-RPC) and
-    * removes the handle from the list
-    */
-   public void shutdownProtocolDriver(I_Driver driver) {
-      try {
-         driver.shutdown();
-      }
-      catch (Throwable e) {
-         log.error(ME, "Shutdown of driver " + driver.getName() + " failed: " + e.toString());
-      }
-      protocols.removeElement(driver);
-   }
-
-   /**
-    * Access all known I_Driver instances. 
-    * NOTE: Please don't manipulate the returned Vector
-    * @return The vector with protocol drivers, to be handled as immutable objects.
-    */
-   public Vector getProtocolDrivers() {
-      return protocols;
-   }
-
-   /**
-    * Access all I_Driver instances which have a public available address. 
-    * NOTE: Please don't manipulate the returned drivers
-    * @return Protocol drivers, to be handled as immutable objects.
-    */
-   public I_Driver[] getPublicProtocolDrivers() {
-      int num = 0;
-      for (int ii=0; ii<protocols.size(); ii++) {
-         I_Driver driver = (I_Driver)protocols.elementAt(ii);
-         if (driver.getRawAddress() != null)
-            num++;
-      }
-      I_Driver[] drivers = new I_Driver[num];
-      int count = 0;
-      for (int ii=0; ii<protocols.size(); ii++) {
-         I_Driver driver = (I_Driver)protocols.elementAt(ii);
-         if (driver.getRawAddress() != null)
-            drivers[count++] = driver;
-      }
-      return drivers;
-   }
-
-   /**
-    * Access all I_CallbackDriver instances which have a public available address. 
-    * NOTE: Please don't manipulate the returned drivers
-    * @return CbProtocol drivers, to be handled as immutable objects.
-    */
-    /*
-   public final I_CallbackDriver[] getCbProtocolDrivers() {
-      return (I_CallbackDriver[])cbProtocols.values().toArray(new I_CallbackDriver[cbProtocols.size()]);
-   }  */
-
-   /**
-    * @param driverType e.g. "RMI" or "IOR"
-    */
-   public final void addCbProtocolDriverClass(String driverType, Class driver) {
-      cbProtocols.put(driverType, driver);
-   }
-
-   public final Class getCbProtocolDriverClass(String driverType) {
-      return (Class)cbProtocols.get(driverType);
-   }
-
-   /**
-    * Creates a new instance of the given protocol driver type. 
-    * <p />
-    * You need to call cbDriver.init(glob, cbAddress) on it.
-    * @return The uninitialized driver, never null
-    * @exception XmlBlasterException on problems
-    */
-   public final I_CallbackDriver getCbProtocolDriver(String driverType) throws XmlBlasterException {
-      Class cl = getCbProtocolDriverClass(driverType);
-      String err = null;
-      try {
-         I_CallbackDriver cbDriver = (I_CallbackDriver)cl.newInstance();
-         if (log.TRACE) log.trace(ME, "Created callback driver for protocol '" + driverType + "'");
-         return cbDriver;
-      }
-      catch (IllegalAccessException e) {
-         err = "The protocol driver class '" + driverType + "' is not accessible\n -> check the driver name and/or the CLASSPATH to the driver";
-      }
-      catch (SecurityException e) {
-         err = "No right to access the protocol driver class or initializer '" + driverType + "'";
-      }
-      catch (Throwable e) {
-         err = "The protocol driver class or initializer '" + driverType + "' is invalid\n -> check the driver name and/or the CLASSPATH to the driver file: " + e.toString();
-      }
-      log.error(ME, err);
-      throw new XmlBlasterException(ME, err);
-   }
-
-   public final void shutdownCbProtocolDrivers() {
-      Iterator iterator = cbProtocols.values().iterator();
-      while (iterator.hasNext()) {
-         I_CallbackDriver driver = (I_CallbackDriver)iterator.next();
-         try {
-            driver.shutdown();
-         }
-         catch (Throwable e) {
-            log.error(ME, "Shutdown of driver " + driver.getName() + " failed: " + e.toString());
-         }
-      }
-      cbProtocols.clear();
+      return this.runlevelManager;
    }
 
    /**
@@ -312,6 +191,19 @@ public final class Global extends org.xmlBlaster.util.Global
    }
 
    /**
+    * Initialize protocol manager (to administer CORBA/RMI etc. plugins). 
+    */
+   public final ProtocolManager getProtocolManager() throws XmlBlasterException {
+      if (this.protocolManager == null) {
+         synchronized(this) {
+            if (this.protocolManager == null)
+               this.protocolManager = new ProtocolManager(this);
+         }
+      }
+      return this.protocolManager;
+   }
+
+   /**
     * Sets the unique node id of this xmlBlaster server instance (needed for clustering). 
     * <p />
     * The new node ID is only set if my current instance is null!
@@ -322,6 +214,7 @@ public final class Global extends org.xmlBlaster.util.Global
       if (nodeId == null && uniqueNodeIdName != null) {
          nodeId = new NodeId(uniqueNodeIdName);
          log.info(ME, "Setting xmlBlaster instance name to '" + nodeId.toString() + "'");
+         getRunlevelManager().setId(nodeId.getId());
       }
    }
 
@@ -453,84 +346,5 @@ public final class Global extends org.xmlBlaster.util.Global
 
    public RequestBroker getRequestBroker() {
       return this.requestBroker;
-   }
-
-   /**
-    * Adds the specified runlevel listener to receive subscribe/unSubscribe events.
-    */
-   public void addRunlevelListener(I_RunlevelListener l) {
-      if (l == null) {
-         return;
-      }
-      synchronized (runlevelListenerSet) {
-         runlevelListenerSet.add(l);
-      }
-   }
-
-   /**
-    * Removes the specified listener.
-    */
-   public void removeRunlevelListener(I_RunlevelListener l) {
-      if (l == null) {
-         return;
-      }
-      synchronized (runlevelListenerSet) {
-         runlevelListenerSet.remove(l);
-      }
-   }
-
-   /**
-    * Notify all Listeners that a message is erased. 
-    * <p />
-    * See Constants.RUNLEVEL_HALTED etc.
-    * @param newRunlevel The new run level we want to switch to
-    * @param force Ignore exceptions during change, currently only force == true is supported
-    * @return numErrors
-    */
-   public final int fireRunlevelEvent(int newRunlevel, boolean force) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "Changing from run level=" + currRunlevel + " to level=" + newRunlevel + " with force=" + force);
-      int numErrors = 0;
-      if (currRunlevel == newRunlevel) {
-         return numErrors;
-      }
-      try {
-         synchronized (runlevelListenerSet) {
-            if (runlevelListenerSet.size() == 0)
-               return numErrors;
-            Iterator iterator = runlevelListenerSet.iterator();
-            while (iterator.hasNext()) {
-               I_RunlevelListener li = (I_RunlevelListener)iterator.next();
-               try {
-                  li.runlevelChange(currRunlevel, newRunlevel, force);
-                  if (log.TRACE) log.trace(ME, li.getName() + " sucessfully changed from run level=" + currRunlevel + " to level=" + newRunlevel + ".");
-               }
-               catch (XmlBlasterException e) {
-                  log.warn(ME, "Changing from run level=" + currRunlevel + " to level=" + newRunlevel + " failed for component " + li.getName() + ": " + e.toString());
-                  numErrors++;
-               }
-            }
-         }
-      }
-      finally {
-         currRunlevel = newRunlevel;
-      }
-      return numErrors;
-   }
-
-   /**
-    * See Constants.java for runlevels
-    */
-   public int getCurrentRunlevel() {
-      return currRunlevel;
-   }
-
-   public boolean isHalted() {
-      return currRunlevel == Constants.RUNLEVEL_HALTED;
-   }
-   public boolean isStandby() {
-      return currRunlevel == Constants.RUNLEVEL_STANDBY;
-   }
-   public boolean isRunning() {
-      return currRunlevel == Constants.RUNLEVEL_RUNNING;
    }
 }
