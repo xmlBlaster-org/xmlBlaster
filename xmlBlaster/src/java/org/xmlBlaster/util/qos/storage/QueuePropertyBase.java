@@ -103,7 +103,7 @@ public abstract class QueuePropertyBase implements Cloneable
    public static final String DEFAULT_onFailure = Constants.ONOVERFLOW_DEADMESSAGE;
    protected PropString onFailure = new PropString(DEFAULT_onFailure);
 
-   /** The corresponding callback address */
+   /** The corresponding callback address, is set by derived classes */
    protected AddressBase[] addressArr = new AddressBase[0];
 
    /** To allow specific configuration parameters for specific cluster nodes */
@@ -526,7 +526,7 @@ public abstract class QueuePropertyBase implements Cloneable
     * @return null if none available
     */
    public AddressBase[] getAddresses() {
-      return addressArr;
+      return this.addressArr;
    }
 
    /**
