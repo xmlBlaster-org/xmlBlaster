@@ -3,7 +3,7 @@ Name:      ClientSubscriptions.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling subscriptions, collected for each Client
-Version:   $Id: ClientSubscriptions.java,v 1.2 1999/11/18 18:50:40 ruff Exp $
+Version:   $Id: ClientSubscriptions.java,v 1.3 1999/11/18 19:13:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -21,7 +21,7 @@ import java.io.*;
  * Handling subscriptions, collected for each Client
  *
  * The interface SubscriptionListener informs about subscribe/unsubscribe
- * @version: $Id: ClientSubscriptions.java,v 1.2 1999/11/18 18:50:40 ruff Exp $
+ * @version: $Id: ClientSubscriptions.java,v 1.3 1999/11/18 19:13:49 ruff Exp $
  * @author Marcel Ruff
  */
 public class ClientSubscriptions implements ClientListener, SubscriptionListener
@@ -220,8 +220,8 @@ public class ClientSubscriptions implements ClientListener, SubscriptionListener
             obj = clientSubscriptionMap.get(uniqueKey);
       }
       if (obj == null) {
-         Log.warning(ME + ".ClientDoesntExist", "Sorry, can't remove client subscription " + uniqueKey + " for " + clientInfo.toString() + ", client doesn't exist");
-         throw new XmlBlasterException(ME + ".ClientDoesntExist", "Sorry, can't remove client subscription " + uniqueKey + " for " + clientInfo.toString() + ", client doesn't exist");
+         if (Log.TRACE) Log.trace(ME + ".ClientDoesntExist", "Sorry, can't remove client subscription for " + clientInfo.toString() + ", client never subscribed something");
+         return;
       }
       Set subscriptionSet = (Set)obj;
       synchronized (subscriptionSet) {
