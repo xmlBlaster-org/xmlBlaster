@@ -7,7 +7,6 @@ telecommunication, radar, car industry, process monitoring etc.
 
 This  release  is backward compatible to the previous regarding
 the  client  server  communication protocols.
-The persistence layer is NOT compatible (see note below).
 
 It   is   tested   under   Linux/Solaris-SPARC/WinXP  with  JDK
 (1.2)1.3-1.5  and  g++  2.9x/3.x, icc 8, MSVisualC++ from 2003,
