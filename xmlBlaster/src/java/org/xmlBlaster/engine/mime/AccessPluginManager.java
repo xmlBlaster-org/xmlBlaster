@@ -3,7 +3,7 @@ Name:      AccessPluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for persistence
-Version:   $Id: AccessPluginManager.java,v 1.10 2002/05/16 15:36:23 ruff Exp $
+Version:   $Id: AccessPluginManager.java,v 1.11 2002/05/16 16:39:09 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime;
@@ -149,7 +149,7 @@ public class AccessPluginManager extends PluginManagerBase {
 
          // Check if the plugin is for all mime types
          key.setLength(0);
-         key.append(type).append(version);
+         key.append(type).append(version).append("*");
          obj = accessFilterMap.get(key.toString());
          if (obj != null) {
             return (I_AccessFilter)obj;
@@ -179,7 +179,7 @@ public class AccessPluginManager extends PluginManagerBase {
 
             // Check if the plugin is for all mime types
             key.setLength(0);
-            key.append(type).append(version);
+            key.append(type).append(version).append("*");
             obj = accessFilterMap.get(key.toString());
             if (obj != null) {
                return (I_AccessFilter)obj;
@@ -232,7 +232,7 @@ public class AccessPluginManager extends PluginManagerBase {
 
          for (int ii = 0; ii < mime.length; ii++) {
             if (mime[ii] == null || mime[ii].length() < 1 || mime[ii].equals("*"))
-               key.append(type).append(version);
+               key.append(type).append(version).append("*");
             else
                key.append(type).append(version).append(mime[ii]).append(mimeExtended[ii]);
             accessFilterMap.put(key.toString(), filterPlugin);
