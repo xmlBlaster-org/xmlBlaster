@@ -357,6 +357,13 @@ public final class ErrorCode implements java.io.Serializable
          }
       );
 
+   public static final ErrorCode USER_CONNECT_MULTIPLE = new ErrorCode("user.connect.multiple",
+         "You have invoked connect() multiple times",
+         new ResourceInfo[] {
+            new ResourceInfo(ResourceInfo.REQ, "interface.connect", "interface.connect")
+         }
+      );
+
    public static final ErrorCode USER_NOT_CONNECTED = new ErrorCode("user.notConnected",
          "Your operation is not possible, please login with connect() first",
          new ResourceInfo[] {

@@ -178,6 +178,12 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
    public ConnectReturnQos connect(ConnectQos qos, I_Callback updateListener) throws XmlBlasterException {
 
       synchronized (this) {
+         
+         if (isConnected() || this.connectInProgress) {
+            String text = "connect() rejected, you are connected already, please check your code";
+            throw new XmlBlasterException(glob, ErrorCode.USER_CONNECT_MULTIPLE, ME, text);
+         }
+
          this.connectInProgress = true;
          
          try {
@@ -817,7 +823,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
    /**
     * If we have reconnected to xmlBlaster and the xmlBlaster server instance
     * is another one which does not know our session state and subscribes we need to clear all
-    * chached subscribes etc.
+    * cached subscribes etc.
     */
    private void cleanupForNewServer() {
       if (this.updateDispatcher.size() > 0) {
