@@ -12,12 +12,11 @@ SRC_JAVA_DIR = $(XMLBLASTER_HOME)/demo/javaclients
 #------------------------------------------------------------------------------
 
 #------------------------------------------------------------------------------
-SUB_DIRS = chat
+SUB_DIRS = chat jdbc HelloWorldApplet
 #------------------------------------------------------------------------------
 
 
 #------------------------------------------------------------------------------
-SUB_DIRS = chat HelloWorldApplet
 LOCAL_FILES = \
 			$(CLASS_DIR)/Util.class \
 			$(CLASS_DIR)/BlasterCallbackImpl.class \
