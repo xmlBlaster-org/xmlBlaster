@@ -796,33 +796,41 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
    private final long removeRandomUnsync(I_Entry[] queueEntries) throws XmlBlasterException {
 
       long ret = 0L;
-      if (this.persistentQueue != null) {
-         ArrayList persistents = new ArrayList();
-         for (int i=0; i < queueEntries.length; i++) {
-            if (queueEntries[i].isPersistent()) persistents.add(queueEntries[i]);
-         }
-         if (this.log.TRACE) this.log.trace(ME, "removeRandom: remove " + persistents.size() + " persistent entries from persistent storage");
-         if (this.persistentQueue != null && this.isConnected) {
-            try {
-               this.persistentQueue.removeRandom((I_Entry[])persistents.toArray(new I_Entry[persistents.size()]));
+      try {
+         if (this.persistentQueue != null) {
+            ArrayList persistents = new ArrayList();
+            for (int i=0; i < queueEntries.length; i++) {
+               if (queueEntries[i].isPersistent()) persistents.add(queueEntries[i]);
             }
-            catch (XmlBlasterException ex) {
-               this.log.error(ME, "could not remove " + persistents.size() + " entries from the persistent queue. Probably due to failed connection to the DB");
+            if (this.log.TRACE) this.log.trace(ME, "removeRandom: remove " + persistents.size() + " persistent entries from persistent storage");
+            if (this.persistentQueue != null && this.isConnected) {
+               try {
+                  this.persistentQueue.removeRandom((I_Entry[])persistents.toArray(new I_Entry[persistents.size()]));
+               }
+               catch (XmlBlasterException ex) {
+                  this.log.error(ME, "could not remove " + persistents.size() + " entries from the persistent queue. Probably due to failed connection to the DB exception: " +  ex.getMessage());
+               }
             }
          }
+        
+         // and now the transient queue (the ram queue)
+         if (this.log.TRACE) this.log.trace(ME, "removeRandom: removing from transient queue " + queueEntries.length + " entries");
+         try {
+            ret = this.transientQueue.removeRandom(queueEntries);
+         }
+         catch (XmlBlasterException ex) {
+            this.log.error(ME, "could not remove " + queueEntries.length + " entries from the transient queue.: " + ex.getMessage());
+         }
+        
+         if (this.notifiedAboutAddOrRemove) {
+            for(int i=0; i<queueEntries.length; i++)
+               queueEntries[i].removed(this.queueId);
+         }
+         return ret;
       }
-
-      // and now the transient queue (the ram queue)
-      if (this.log.TRACE) this.log.trace(ME, "removeRandom: removing from transient queue " + queueEntries.length + " entries");
-      ret = this.transientQueue.removeRandom(queueEntries);
-
-      if (this.notifiedAboutAddOrRemove) {
-         for(int i=0; i<queueEntries.length; i++)
-            queueEntries[i].removed(this.queueId);
+      finally {
+         loadFromPersistence();
       }
-
-      loadFromPersistence();
-      return ret;
    }
 
 
