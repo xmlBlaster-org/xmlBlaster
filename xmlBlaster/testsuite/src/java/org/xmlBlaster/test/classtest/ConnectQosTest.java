@@ -113,7 +113,7 @@ public class ConnectQosTest extends TestCase {
          assertEquals("", sessionTimeout, sessionQos.getSessionTimeout());
          assertEquals("", 27, sessionQos.getMaxSessions());
          assertEquals("", true, sessionQos.clearSessions());
-         assertEquals("", "xyz", sessionQos.getSessionId());
+         assertEquals("", "xyz", sessionQos.getSecretSessionId());
 
          assertEquals("", false, qos.isPtpAllowed());
          assertEquals("", true, qos.isClusterNode());
