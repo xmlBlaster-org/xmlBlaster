@@ -1025,7 +1025,7 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
       if (log.TRACE) log.trace(ME, "After size of subscriberMap = " + this.subscriberMap.size());
 
       if (isDead()) {
-         if (this.subscriptionListener != null) {
+         if (this.subscriptionListener != null && subs != null) {
             try {
                this.subscriptionListener.subscriptionRemove(new SubscriptionEvent(subs));
             }
@@ -1050,7 +1050,7 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
             }
          }
       }
-      if (this.subscriptionListener != null) { 
+      if (this.subscriptionListener != null && subs != null) { 
          try {
             this.subscriptionListener.subscriptionRemove(new SubscriptionEvent(subs));
          }
