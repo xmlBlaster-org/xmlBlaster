@@ -86,7 +86,7 @@ function catchError(text, url, row)
    return true; // Suppress errors from browser
 }
 // Set event handler, to catch the internal errors as well
-top.onerror = catchError;
+self.onerror = catchError;
 for (var jj=0; jj<top.frames.length; jj++) {
    top.frames[ii].onerror = catchError;
 }
@@ -118,10 +118,10 @@ function logToWindow(level, codePos, text)
 
    if (logWindow == null || logWindow.closed) {
       logWindow = window.open("","XmlBlasterLog",
-                  "content=no-cache,scrollbars=yes,resizable=yes," +
+                  "content=no-cache," +
                   "width=500,height=400,screenX=300,screenY=200," +
-                  "menubar=no,status=no,toolbar=no,titlebar=no" +
-                  "alwaysraised=yes,dependent=yes");
+                  "menubar=no,status=no,toolbar=no,titlebar=no," +
+                  "scrollbars=yes,resizable=yes,alwaysraised=yes,dependent=yes");
    }
    var d = logWindow.document;
 
@@ -169,6 +169,7 @@ function logToWindow(level, codePos, text)
          "   </TR>";
    }
    tableStr += "</TABLE>";
+   tableStr += "<A HREF='javascript:opener.logEntries.length=0;'>clear</A>";
 
    d.writeln(tableStr);
    d.writeln('</BODY></HTML>');
@@ -184,6 +185,7 @@ function LogHandler()
    this.error = error_;       // Log.error() output
    this.warning = warning_;
    this.info = info_;
+   this.DEBUG = false;
 }
 
 // The log handler, use this to invoke your logging output
@@ -191,16 +193,3 @@ function LogHandler()
 //    Log.warning("Performance over internet is slow.");
 var Log = new LogHandler();
 
-
-
-/*
-   Encoding example:
-   The values are URL-encoded: http://localhost#varA%3DHello%2C%20%3BvarB%3Dworld%21
-   %21 is hex value for '!'
-   %3B is hex value for ';'
-   %3D is hex value for '='
-   %2C is hex value for ','
-   %26 is hex value for '&'
-   %20 is hex value for ' '
-   http://www.xy.com/?flag=jfl&frame=yes&id=38aa6c5ccece7
-*/

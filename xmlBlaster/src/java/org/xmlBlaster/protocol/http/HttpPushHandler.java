@@ -3,7 +3,7 @@ Name:      HttpPushHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: HttpPushHandler.java,v 1.10 2000/03/21 08:14:40 kkrafft2 Exp $
+Version:   $Id: HttpPushHandler.java,v 1.11 2000/03/27 07:33:18 kkrafft2 Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -206,11 +206,12 @@ public class HttpPushHandler
             1. The watch-wait cursor is displayed, until the doGet() leaves.
             2. Resizing the browser window doesn't resize the content.
          */
+         synchronized(outMulti) {
             outMulti.println("Content-Type: text/html");
             outMulti.println();
 
             StringBuffer buf = new StringBuffer(head);
-            buf.append(str);
+            buf.append(str);	 
             buf.append(tail);
 
             if (Log.DUMP) Log.dump(ME, "Sending to callbackFrame:\n" + buf.toString());
@@ -220,6 +221,7 @@ public class HttpPushHandler
             outMulti.println();
             outMulti.println("--End");
             outMulti.flush();
+         }
       }
       else {
          /*
@@ -232,6 +234,7 @@ public class HttpPushHandler
             4. Every line which is sent again to the browser is written after
                the previous one resulting in a list of ten rows.
          */
+         synchronized(outPlain) {
             res.setContentType("text/html");
 
             outPlain.println(head);
@@ -246,6 +249,7 @@ public class HttpPushHandler
 
             outPlain.flush();
             outPlain.close();
+         }
       }
    }
 
@@ -261,8 +265,9 @@ public class HttpPushHandler
          String codedContent           = URLEncoder.encode( content );
          String codedQos               = URLEncoder.encode( updateQos );
 
+         
+         Log.info(ME,"**********Update:"+updateKey.substring(0,40));
          /*
-         Log.info(ME,"************* Update an Browser *********************");
          Log.plain(ME,"Key:"+updateKey);
          Log.plain(ME,"\nContent:"+content);
          Log.info(ME,"************* End of Update *************************");

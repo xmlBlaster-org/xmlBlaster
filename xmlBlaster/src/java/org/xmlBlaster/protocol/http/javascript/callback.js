@@ -196,43 +196,131 @@ function MessageWrapperLiteral(key, content, qos)
 */
 function MessageWrapperDom(key, content, qos)
 {
-   this.key                     = key;
+   this.key             = key;
    this.content         = content;
    this.qos             = qos;
 }
 
 
 var queueing     = false;
-var messageQueue = new Array();
 var listenerList = new Array();
-//----------------------------------------------------------------------------------------------
-// add Callback Listener
-// every frame/window can register itself to receive the callbacks
-//----------------------------------------------------------------------------------------------
+
+
+function FrameMessageQueue( frameHandle )
+{
+   this.queueTime               = 500;
+   this.retries                 = 0;
+   this.ready                   = false;
+   this.timeOutHandle           = null;
+   this.frame                   = frameHandle;
+   this.messageQueue            = new Array();
+   this.queue                   = queue_;
+}
+
+function queue_( message )
+{
+   //Log.info("Queueing message "+message.key.oid+" in queue "+this.frame.name);
+   this.messageQueue[this.messageQueue.length] = message;
+
+   if( !queueing ) {
+      this.sendMessagQueue(this.frame.name);
+   }
+
+   if( this.messageQueue.length < 10 ) {
+      window.clearTimeout( this.timeOutHandle );
+      var call = "sendMessageQueue('"+this.frame.name+"')";
+      this.timeOutHandle = window.setTimeout( call, this.queueTime );
+   }
+}
+
+function sendMessageQueue(queueName)
+{
+   var fmq;
+   var i;
+   //Select queue by name
+   for(i = 0; i < listenerList.length; i++) {
+      if( listenerList[i].frame.name == queueName ) {
+         fmq = listenerList[i];
+         break;
+      }
+   }
+
+   if(i == listenerList.length) {
+      Log.error("Queue '"+queueName+"' not found.");
+      return;
+   }
+
+   if( fmq.ready ) {
+      if( fmq.frame.update != null ) {
+         fmq.frame.update( fmq.messageQueue );
+         var str = "Update:<br />"; 
+         for( var i = 0; i < fmq.messageQueue.length; i++ )
+            str += fmq.messageQueue[i].key.oid + "<br />";
+      	if(Log.DEBUG) Log.info("Queue["+fmq.frame.name+"]: "+str);
+      } 
+      else {
+      	if(Log.DEBUG) Log.warning("Queue["+fmq.frame.name+"]: frame has no update function.");
+      }
+      fmq.messageQueue.length = 0;
+      fmq.retries = 0;
+      return;
+   }
+   else {
+      if(Log.DEBUG) Log.warning("Frame "+fmq.frame.name+" is not ready. Try it again.");
+      if( fmq.retries > 200 ) {                            //more than 200*100ms = 20 sec. not availible
+         if(Log.DEBUG) Log.warning("Maximum number of retries reached for frame ["+fmq.frame.name+"].");
+         fmq.messageQueue.length = 0;
+         window.clearTimeout( fmq.timeOutHandle );
+         removeUpdateListener( fmq.frame );
+         return;
+      }
+      window.clearTimeout( fmq.timeOutHandle );
+      fmq.timeOutHandle = window.setTimeout( "sendMessageQueue('"+queueName+"')", fmq.queueTime );
+      fmq.retries++;
+   }
+}
+
+
+
+function setReady( frame, ready )
+{
+   for( i = 0; i < listenerList.length; i++) {
+      if( listenerList[i].frame.name == frame.name ) {
+         listenerList[i].ready = ready;
+         return;
+      }
+   }
+}
+
+
+/*
+ *
+ */
 function addUpdateListener( listenerFrame ) {
    if(listenerFrame.update==null) {
       return;
    }
 
    for( i = 0; i < listenerList.length; i++) {
-      if( listenerList[i].name == listenerFrame.name ) {
+      if( listenerList[i].frame.name == listenerFrame.name ) {
          return;
       }
    }
 
-   listenerList[listenerList.length] = listenerFrame;
+   var fmq = new FrameMessageQueue( listenerFrame );
+   listenerList[listenerList.length] = fmq;
    return;
 }
 
-//----------------------------------------------------------------------------------------------
-// remove Callback Listener
-// every frame/window can register itself to receive the callbacks
-//----------------------------------------------------------------------------------------------
+
+/*
+ *
+ */
 function removeUpdateListener( listenerFrame ) {
    var i;
    var found = false;
    for( i = 0; i < listenerList.length; i++) {
-      if( listenerList[i].name == listenerFrame.name ) {
+      if( listenerList[i].frame.name == listenerFrame.name ) {
          break;
          found = true;
       }
@@ -247,10 +335,9 @@ function removeUpdateListener( listenerFrame ) {
 
 }
 
-//---------------------------------------------------------------------------------------------
-// This is
-//
-//---------------------------------------------------------------------------------------------
+/*
+ *
+ */
 function removeUpdateListenerAtPos( index ) {
    if(index >= listenerList.length)
       return;
@@ -269,75 +356,49 @@ function removeUpdateListenerAtPos( index ) {
    return;
 }
 
+
+/*
+ *
+ */
 function showListener()
 {
    var str = "Listener:\n\n";
    for( var i = 0; i < listenerList.length; i++ ) {
-      str += "-" + listenerList[i].name + "\n";
-   }
-   str += "\n\nMessages:\n\n";
-   for( var i = 0; i < messageQueue.length; i++ ) {
-      str += "-" + messageQueue[i].key.oid + "\n\n";
+      str += "-" + listenerList[i].frame.name + ", ready="+listenerList[i].ready+"\n";
    }
    alert( str );
 }
 
-//---------------------------------------------------------------------------------------------
-// This is
-//
-//---------------------------------------------------------------------------------------------
-function fireMessageUpdateQueue()
+
+/*
+ *
+ */
+function fireMessageUpdateEvent( message )
 {
    for( var i = 0; i < listenerList.length;  ) {
-      if (listenerList[i].closed ||
-            listenerList[i].update == null) {
+      if (listenerList[i].frame.closed ) {
+         Log.warning("Frame has been closed, removing it ...");
          removeUpdateListenerAtPos( i );
          continue;
       }
       i++;
    }
 
-   for( var i = 0; i < listenerList.length; i++ ) {
-      //listenerList[i].stop();
-      listenerList[i].update( messageQueue );
-   }
-
    //showListener();
 
-   messageQueue.length = 0;
-
-}
-
-
-//---------------------------------------------------------------------------------------------
-// This is
-//
-//---------------------------------------------------------------------------------------------
-var timerHandle;
-function fireMessageUpdateEvent( message )
-{
-   if( queueing == true ) {
-      //put in message queue (max size = 10 entries)
-      if( messageQueue.length < 10 ) {
-         window.clearTimeout(timerHandle);
-         timerHandle = window.setTimeout( "fireMessageUpdateQueue()", 100 );
-      }
-      messageQueue[messageQueue.length] = message;
-   }
-   else {
-      messageQueue[messageQueue.length] = message;
-      fireMessageUpdateQueue();
+   for( var i = 0; i < listenerList.length; i++ ) {
+      listenerList[i].queue( message );
    }
 
 }
 
 
-
-
-//---------------------------------------------------------------------------------------------
-// This is
-//
-//---------------------------------------------------------------------------------------------
+/*
+ * This is update-Method which is called by the callback frame.
+ * @param updateKey:String
+ * @param content:String
+ * @param updateQoS:String
+ */
 function update( updateKey, content, updateQoS)
 {
     var updateKey_d     = unescape( updateKey.replace(/\+/g, " ") );
@@ -347,7 +408,7 @@ function update( updateKey, content, updateQoS)
    var key = new UpdateKey(updateKey_d);
    var qos = new UpdateQos(updateQoS_d);
 
-   //Log.info("Update coming in key.oid="+key.oid+"<br>content="+content_d);
+   if(Log.DEBUG) Log.info("Update coming in key.oid="+key.oid);
    if(key.contentMimeExtended.lastIndexOf("EXCEPTION") != -1) {
       alert("Exception:\n\n"+content_d );
    }
