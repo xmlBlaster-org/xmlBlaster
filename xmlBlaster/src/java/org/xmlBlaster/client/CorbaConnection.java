@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.26 2000/02/24 22:19:51 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.27 2000/02/25 13:50:15 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
@@ -23,6 +23,10 @@ import java.util.Properties;
  * This is a little helper class, helping a Java client to connect to xmlBlaster
  * using IIOP (CORBA).
  * <p>
+ * Please note that you don't need to use this wrapper, you can use the raw CORBA
+ * interface as well. You can also hack your own little wrapper, which does exactly
+ * what you want.
+ * <p>
  * There is a constructor for applets, and standalone Java clients.
  * <p />
  * If you need some fails save clients, you can invoke the xmlBlaster CORBA methods
@@ -39,12 +43,15 @@ import java.util.Properties;
  * to xmlBlaster.<br />
  * One drawback is, that the return values of your requests are lost, since you were none blocking
  * continuing during the connection was lost.
+ * <br />
+ * You should set jacorb.retries=0  in $HOME/.jacorb_properties if you use the fail save mode
+ *
  *
  * Invoke: jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestSub
  * <p />
  * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http
  *
- * @version $Revision: 1.26 $
+ * @version $Revision: 1.27 $
  * @author $Author: ruff $
  */
 public class CorbaConnection implements ServerOperations
@@ -57,12 +64,31 @@ public class CorbaConnection implements ServerOperations
    protected Server xmlBlaster = null;
    protected BlasterCallback callback = null;
    protected String loginName = null;
+   private String passwd = null;
    protected String qos = null;
 
-   /** Maximum polling in milli-sec */
-   private long pollTimeout = -1L;
    /** queue all the messages, and play them back through interface ServerOperations */
    private InvocationRecorder recorder = null;
+
+   /** This interface needs to be implemented by the client in fail save mode
+       The client gets notified about abnormal connection loss or reconnect */
+   private I_ConnectionProblems clientCallback = null;
+
+   /** true if we are in fails save mode and polling for xmlBlaster */
+   private boolean isReconnectPolling = false;
+
+   /** How many milli seconds sleeping before we retry a connection */
+   private long retryInterval;
+
+   /** Number of retries if connection cannot directly be established */
+   private int retries;
+
+   /** communicate from LoginThread back to CorbaConnection that we give up */
+   private boolean noConnect = false;
+
+   /** Remember the number of successful logins */
+   private long numLogins = 0L;
+
    // !!! remove these again:
    private MessageUnitContainer[] dummyMArr = new MessageUnitContainer[0];
    private String[] dummySArr = new String[0];
@@ -159,13 +185,21 @@ public class CorbaConnection implements ServerOperations
 
 
    /**
-    * @param timeout How long shall we try polling (in seconds), -1 == forever
-    * @param maxMessages How many messages shall we queue max
+    * Setup the fail save mode.
+    *
+    * @param callback The interface to notify the client about problems
+    * @param retryInterval How many milli seconds sleeping before we retry a connection
+    * @param retries Number of retries if connection cannot directly be established
+    *                passing -1 does polling forever
+    * @param maxInvocations How many messages shall we queue max
     */
-   public void initFailSave(I_ConnectionProblems callback, int timeout, int maxMessages)
+   public void initFailSave(I_ConnectionProblems callback, long retryInterval, int retries, int maxInvocations)
    {
-      this.pollTimeout = timeout * 1000L;
-      this.recorder = new InvocationRecorder(maxMessages, this, null);
+      if (Log.CALLS) Log.calls(ME, "Initializing fail save mode: retryInterval=" + retryInterval + ", retries=" + retries + ", maxInvocations=" + maxInvocations + "");
+      this.clientCallback = callback;
+      this.retryInterval = retryInterval;
+      this.retries = retries;
+      this.recorder = new InvocationRecorder(maxInvocations, this, null);
    }
 
 
@@ -187,7 +221,7 @@ public class CorbaConnection implements ServerOperations
     * @exception XmlBlasterException
     *                    CORBA error handling if no naming service is found
     */
-   public NamingContext getNamingService() throws XmlBlasterException
+   NamingContext getNamingService() throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "getNamingService() ...");
       if (nameService != null)
@@ -250,7 +284,7 @@ public class CorbaConnection implements ServerOperations
     * @return a handle on the AuthServer IDL interface
     *
     */
-   public AuthServer getAuthenticationService() throws XmlBlasterException
+   AuthServer getAuthenticationService() throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "getAuthenticationService() ...");
       if (authServer != null) {
@@ -286,7 +320,8 @@ public class CorbaConnection implements ServerOperations
             return authServer;
          }
          catch(Exception e) {
-            Log.warning(ME, "XmlBlaster not found on host " + iorHost + " and port " + iorPort + ". Trying to find a naming service ...");
+            if (!isReconnectPolling)
+               Log.warning(ME, "XmlBlaster not found on host " + iorHost + " and port " + iorPort + ". Trying to find a naming service ...");
          }
       }
 
@@ -306,7 +341,8 @@ public class CorbaConnection implements ServerOperations
             return authServer;
          }
          catch(Exception e) {
-            Log.error(ME, e.toString());
+            if (!isReconnectPolling)
+               Log.error(ME, "Can't access xmlBlaster Authentication Service, is the server running and ready?\n" + e.toString());
             String text = "Can't access xmlBlaster Authentication Service, is the server running and ready?\n" +
                           " - try to specify '-iorFile <fileName>' if server is running on same host\n" +
                           " - try to specify '-iorHost <hostName> -iorPort 7609' to locate xmlBlaster\n" +
@@ -359,16 +395,33 @@ public class CorbaConnection implements ServerOperations
 
       this.callback = callback;
       this.loginName = loginName;
+      this.passwd = passwd;
       this.qos = qos;
 
+      loginRaw();
+      return xmlBlaster;
+   }
+
+
+   /**
+    * Login to the server, providing your own BlasterCallback implementation.
+    * <p />
+    * For internal use only.
+    * @exception       XmlBlasterException if login fails
+    */
+   private void loginRaw() throws XmlBlasterException
+   {
+      if (Log.CALLS) Log.calls(ME, "loginRaw(" + loginName + ") ...");
       try {
          xmlBlaster = getAuthenticationService().login(loginName, passwd, callback, qos);
+         numLogins++;
          if (Log.TRACE) Log.trace(ME, "Success, login for " + loginName);
       } catch(XmlBlasterException e) {
-         Log.error(ME, "Login failed");
+         if (Log.TRACE) Log.trace(ME, "Login failed for " + loginName);
          throw e;
       }
-      return xmlBlaster;
+      if (isReconnectPolling)
+         clientCallback.reConnected();
    }
 
 
@@ -399,6 +452,50 @@ public class CorbaConnection implements ServerOperations
 
 
    /**
+    * If we lost the connection to xmlBlaster, handle it
+    */
+   private synchronized void handleConnectionException(Exception e) throws XmlBlasterException
+   {
+      if (noConnect) // LoginThread tried already and gave up
+         throw new XmlBlasterException("NoConnect", e.toString()); // Client may choose to exit
+
+      if (recorder == null)
+         throw new XmlBlasterException("NoConnect", e.toString()); // Client may choose to exit
+      else {
+         if (xmlBlaster != null) {
+            // the first time a org.omg.CORBA.COMM_FAILURE Exception is thrown
+            // then NullPointerExceptions (because of xmlBlaster==null)
+            Log.error(ME, "Lost connection to xmlBlaster server: " + e.toString());
+            authServer = null;
+            xmlBlaster = null;
+            clientCallback.lostConnection(); // notify client
+            doLoginPolling(false);
+            throw new XmlBlasterException("TryingReconnect", "Trying to find xmlBlaster again ..."); // Client may hope on reconnect
+         }
+         if (numLogins == 0L) {
+            doLoginPolling(true);
+            throw new XmlBlasterException("TryingConnect", "Trying to find xmlBlaster ...");
+         }
+      }
+
+   }
+
+
+   /**
+    * If we lost the connection to xmlBlaster, poll here to reconnect
+    */
+   private void doLoginPolling(boolean blocking)
+   {
+      Log.info(ME, "Going to poll for xmlBlaster and queue your messages ...");
+
+      LoginThread p = new LoginThread(this, retryInterval, retries);
+      p.start();
+      if (blocking)
+         try { p.join(); } catch(InterruptedException e) {}
+   }
+
+
+   /**
     * Access the login name.
     * @return your login name or null if you are not logged in
     */
@@ -412,13 +509,28 @@ public class CorbaConnection implements ServerOperations
     * Logout from the server.
     * @return true successfully logged out
     *         false failure on logout
+    * @deprecated Use logout() without arguments
     */
    public boolean logout(Server xmlBlaster)
+   {
+      return logout();
+   }
+
+
+   /**
+    * Logout from the server.
+    * @return true successfully logged out
+    *         false failure on logout
+    */
+   public boolean logout()
    {
       if (Log.CALLS) Log.calls(ME, "logout() ...");
 
       if (xmlBlaster == null) {
-         Log.warning(ME, "Please pass your xmlBlaster server handle for logout method");
+         if (recorder == null || recorder.size() == 0)
+            Log.warning(ME, "No logout, you are not logged in");
+         else
+            Log.warning(ME, "Logout! Please note that there are " + recorder.size() + " unsent invokations/messages in the queue");
          return false;
       }
 
@@ -496,13 +608,22 @@ public class CorbaConnection implements ServerOperations
 
 
    /**
-    * Enforced by ServerOperations interface (fail save mode)
+    * Enforced by ServerOperations interface (fail save mode).
+    * see explanations of publish() method.
     * @see xmlBlaster.idl
     */
-   public String subscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
+   public final String subscribe(String xmlKey, String qos) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "subscribe() ...");
-      return "";
+      try {
+         return xmlBlaster.subscribe(xmlKey, qos);
+      } catch(XmlBlasterException e) {
+         throw e;
+      } catch(Exception e) {
+         if (recorder != null) recorder.subscribe(xmlKey, qos);
+         handleConnectionException(e);
+      }
+      return ""; // never reached, there is always an exception thrown
    }
 
 
@@ -510,7 +631,7 @@ public class CorbaConnection implements ServerOperations
     * Enforced by ServerOperations interface (fail save mode)
     * @see xmlBlaster.idl
     */
-   public void unSubscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
+   public final void unSubscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "unSubscribe() ...");
    }
@@ -521,27 +642,25 @@ public class CorbaConnection implements ServerOperations
     * <p />
     * This is a wrapper around the raw CORBA publish() method
     * If the server disappears you get an exception.
+    * This call will not block.
     * <p />
     * Enforced by ServerOperations interface (fail save mode)
     * @see xmlBlaster.idl
     */
-   public String publish(MessageUnit msgUnit, String qos_literal) throws XmlBlasterException
+   public final String publish(MessageUnit msgUnit, String qos_literal) throws XmlBlasterException
    {
       if (Log.TRACE) Log.trace(ME, "Publishing ...");
       try {
          return xmlBlaster.publish(msgUnit, qos);
       } catch(XmlBlasterException e) {
-         Log.warning(ME, "XmlBlasterException: " + e.reason);
+         if (Log.TRACE) Log.trace(ME, "XmlBlasterException: " + e.reason);
          throw e;
-      } catch(Exception e) {
-         if (recorder != null) {
-            String text = "Exception: " + e.toString() + "\nGoing to poll for xmlBlaster and queue your messages ...";
-            Log.warning(ME, text);
-            throw new XmlBlasterException("TryingConnect", text);
-         }
-         Log.error(ME, e.toString());
-         throw new XmlBlasterException("NoConnect", e.toString());
+      } catch(Exception e) { // org.omg.CORBA.COMM_FAILURE (others as well??)
+                             // NullPointerException the following calls, because of xmlBlaster is set to null
+         if (recorder != null) recorder.publish(msgUnit, qos);
+         handleConnectionException(e);
       }
+      return dummyS; // never reached, there is always an exception thrown
    }
 
 
@@ -560,7 +679,7 @@ public class CorbaConnection implements ServerOperations
     * Enforced by ServerOperations interface (fail save mode)
     * @see xmlBlaster.idl
     */
-   public String[] erase(String xmlKey_literal, String qos_literal) throws XmlBlasterException
+   public final String[] erase(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "erase() ...");
       return dummySArr;
@@ -571,7 +690,7 @@ public class CorbaConnection implements ServerOperations
     * Enforced by ServerOperations interface (fail save mode)
     * @see xmlBlaster.idl
     */
-   public MessageUnitContainer[] get(String xmlKey_literal, String qos_literal) throws XmlBlasterException
+   public final MessageUnitContainer[] get(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "get() ...");
       return dummyMArr;
@@ -582,7 +701,7 @@ public class CorbaConnection implements ServerOperations
     * Enforced by ServerOperations interface (fail save mode)
     * @see xmlBlaster.idl
     */
-   public void setClientAttributes(String clientName, String xmlAttr_literal, String qos_literal) throws XmlBlasterException
+   public final void setClientAttributes(String clientName, String xmlAttr_literal, String qos_literal) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "setClientAttributes() ...");
    }
@@ -607,7 +726,50 @@ public class CorbaConnection implements ServerOperations
       recorder.reset();
    }
 
-}
+   /**
+    * Poll for xmlBlaster server
+    */
+   private class LoginThread extends Thread
+   {
+      private final String ME = "LoginThread";
+      private CorbaConnection corbaConnection;
+      private final long RETRY_INTERVAL; // would this be smarter? Property.getProperty("Failsave.retryInterval", 4000L);
+      private final int RETRIES;         // -1 = forever
+
+
+      /**
+       * @param retryInterval How many milli seconds sleeping before we retry a connection
+       * @param retries Number of retries if connection cannot directly be established
+       */
+      LoginThread(CorbaConnection corbaConnection, long retryInterval, int retries) {
+         this.corbaConnection = corbaConnection;
+         this.RETRY_INTERVAL = retryInterval;
+         this.RETRIES = retries;
+         if (Log.CALLS) Log.trace(ME, "Entering constructor retryInterval=" + retryInterval + " millis and retries=" + retries);
+      }
+
+      public void run() {
+         Log.info(ME, "Polling for xmlBlaster server");
+         corbaConnection.isReconnectPolling = true;
+         for (int ii=0; ii<RETRIES || RETRIES==-1; ii++) {
+            try {
+               corbaConnection.loginRaw();
+               Log.info(ME, "Success, a new connection is established.");
+               corbaConnection.isReconnectPolling = false;
+               return;
+            } catch(Exception e) {
+               Log.warning(ME, "No connection was established, the xmlBlaster server still seems to be down");
+               try {
+                  Thread.currentThread().sleep(RETRY_INTERVAL);
+               } catch (InterruptedException i) { }
+            }
+         }
+         corbaConnection.noConnect = true; // communicate back to CorbaConnection that we give up
+         Log.info(ME, "max polling for xmlBlaster server done, no success");
+      }
+   } // class LoginThread
+
+} // class CorbaConnection
 
 
 /**
@@ -682,5 +844,5 @@ class DefaultCallback implements BlasterCallbackOperations
          boss.update(loginName, updateKey, content, updateQoS); // Call my boss
       }
    }
-} // DefaultCallback
+} // class DefaultCallback
 
