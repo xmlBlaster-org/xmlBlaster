@@ -36,7 +36,7 @@ struct PropertiesStruct {
    const char *execName;
    /**
     * Access command line settings of for "myExec -logLevel TRACE".
-    * If the key is not found the envrionment is checked, if this
+    * If the key is not found the environment is checked, if this
     * does not contain the key the defaultValue is returned.
     * @param key e.g. "logLevel"
     * @param defaultValue e.g. "WARN"

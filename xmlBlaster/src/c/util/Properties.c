@@ -21,6 +21,8 @@ static long getLong(Properties *props, const char *key, long defaultValue);
 
 /**
  * Create an instance of a property struct. 
+ * NOTE: Our properties point on the passed argv memory, so you should
+ * not free the original argv memory.
  * @param argc The number of command line args
  * @param argv The command line arguments, argv[0] is expected to be the
  *             name of the process, argv[1] should start with '-' and 
