@@ -9,8 +9,8 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.RcvTimestamp;
-import org.xmlBlaster.engine.cluster.NodeId;
-import org.xmlBlaster.engine.cluster.RouteInfo;
+import org.xmlBlaster.util.cluster.NodeId;
+import org.xmlBlaster.util.cluster.RouteInfo;
 import org.xmlBlaster.util.enum.Constants;
 
 import java.util.ArrayList;
