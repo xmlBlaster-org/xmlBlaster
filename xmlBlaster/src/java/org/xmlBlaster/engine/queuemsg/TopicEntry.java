@@ -15,6 +15,7 @@ import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.enum.PriorityEnum;
 import org.xmlBlaster.engine.queuemsg.ServerEntryFactory;
 import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.engine.msgstore.I_MapEntry;
 
 
@@ -51,6 +52,7 @@ public final class TopicEntry implements I_MapEntry
 
    private transient boolean stored = false;
    private transient boolean swapped = false;
+   private transient Timestamp sortTimestamp;
 
    /**
     * Use this constructor if a new message object is fed by method publish(). 
@@ -277,6 +279,21 @@ public final class TopicEntry implements I_MapEntry
       this.swapped = swapped;
    }
 
+   /**
+    * Can be used by cache implementation to implement LRU
+    * @return null if not previously set by setSortTimestamp()
+    */
+   public final Timestamp getSortTimestamp() {
+      return this.sortTimestamp;
+   }
+
+   /**
+    * Can be used by cache implementation to implement LRU
+    * @return timestamp This is chosen by the cache algorithm
+    */
+   public final void setSortTimestamp(Timestamp timestamp) {
+      this.sortTimestamp = timestamp;
+   }
 
    /**
     * Measure size for XML-ASCII versus java.io.Serializable persistence. 

@@ -6,6 +6,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.engine.msgstore;
 
 import org.xmlBlaster.util.queue.I_Entry;
+import org.xmlBlaster.util.Timestamp;
 
 public interface I_MapEntry extends I_Entry, java.io.Serializable
 {
@@ -30,4 +31,14 @@ public interface I_MapEntry extends I_Entry, java.io.Serializable
     * @return The unique ID as a string (cached for performance)
     */
    String getUniqueIdStr();
+
+   /**
+    * Can be used by cache implementation to implement LRU
+    */
+   Timestamp getSortTimestamp();
+
+   /**
+    * Can be used by cache implementation to implement LRU
+    */
+   void setSortTimestamp(Timestamp timstamp);
 }

@@ -80,6 +80,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
 
    private boolean stored = false;
    private transient boolean swapped = false;
+   private transient Timestamp sortTimestamp;
 
 
    /**
@@ -646,6 +647,21 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
       this.returnObj = returnObj;
    }
 
+   /**
+    * Can be used by cache implementation to implement LRU
+    * @return null if not previously set by setSortTimestamp()
+    */
+   public final Timestamp getSortTimestamp() {
+      return this.sortTimestamp;
+   }
+
+   /**
+    * Can be used by cache implementation to implement LRU
+    * @return timestamp This is chosen by the cache algorithm
+    */
+   public final void setSortTimestamp(Timestamp timestamp) {
+      this.sortTimestamp = timestamp;
+   }
 
    /**
     * Measure size for XML-ASCII versus java.io.Serializable persistence. 

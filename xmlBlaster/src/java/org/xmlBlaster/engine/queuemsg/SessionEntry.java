@@ -23,6 +23,7 @@ public class SessionEntry implements I_MapEntry {
    private long uniqueId;
    private String uniqueIdStr;
    private long size; 
+   private transient Timestamp sortTimestamp;
 
 
    /**
@@ -150,5 +151,21 @@ public class SessionEntry implements I_MapEntry {
     */
    public void isSwapped(boolean swapped) {
       this.swapped = swapped;
+   }
+
+   /**
+    * Can be used by cache implementation to implement LRU
+    * @return null if not previously set by setSortTimestamp()
+    */
+   public final Timestamp getSortTimestamp() {
+      return this.sortTimestamp;
+   }
+
+   /**
+    * Can be used by cache implementation to implement LRU
+    * @return timestamp This is chosen by the cache algorithm
+    */
+   public final void setSortTimestamp(Timestamp timestamp) {
+      this.sortTimestamp = timestamp;
    }
 }
