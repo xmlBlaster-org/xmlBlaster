@@ -4,6 +4,15 @@ Changes for 0.xxx [xx, xxx 2003]
 ================================
  o added Martin's managed objects in the c++ clients 
 
+ o Java client library interface change, removed method
+   boolean disconnect(DisconnectQos disconnectQos, boolean clearClientQueue, boolean shutdown, boolean shutdownCb) 
+   Please configure the options in DisconnectQos and use disconnect(DisconnectQos)
+
+ o BUGFIX in java client library. If the client side tail back queue contains
+   persistent entries on disconnect they are kept and resent on new connection
+   of the same client (same pubSessionId).
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.disconnect.html
+
  o Merged basic JMX support from branch jmx_gui
 
  o BUGFIX: PersistentStore and PersistentQueue have now separate pools. Avoids
