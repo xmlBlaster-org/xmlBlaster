@@ -3,7 +3,7 @@ Name:      Timestamp.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Timestamp.cpp,v 1.12 2003/01/14 13:36:07 johnson Exp $
+Version:   $Id: Timestamp.cpp,v 1.13 2003/02/13 13:55:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #include <util/Timestamp.h>
@@ -82,7 +82,7 @@ string TimestampFactory::getTimeAsString(Timestamp timestamp)
     /* size_t nmax = */ strftime(ptr, 300, "%Y-%m-%d %H:%M:%S", help);
 
     string ret = string(ptr) + "." + lexical_cast<string>(nanos);
-    delete ptr;
+    delete[] ptr;
     return ret;
 }
 
