@@ -25,6 +25,8 @@ TODO:
 * Performance analysis with garbage collector http://wireless.java.sun.com/midp/articles/garbage/
   - Port to http://gongolo.usr.dsi.unimi.it/~vigna/fastUtil/?
   - Port to use Piccolo SAX parser ?
+  - http://www.thoughtcrime.org/profiler.html
+* Embeed RDBMS http://axion.tigris.org/features.html
 
 BUGS:
 
