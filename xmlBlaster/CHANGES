@@ -1,5 +1,7 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
+ o Fixed dead letter handling on callback queue overflow
+
  o C client library: Fixed bug in trim() which lead on stress tests
    to corrupted messages.
    Thanks to FdGiglio@naples.sema.slb.com
