@@ -27,7 +27,8 @@ static bool myUpdate(MsgUnitArr *msgUnitArr, void *userData,
 {
    size_t i;
    /*XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)userData;*/
-   if (userData != 0) ;  /* Supress compiler warning */
+   if (userData != 0) ;   /* Supress compiler warning */
+   if (exception != 0) ;  /* Supress compiler warning */
 
    for (i=0; i<msgUnitArr->len; i++) {
       char *xml = messageUnitToXml(&msgUnitArr->msgUnitArr[i]);
