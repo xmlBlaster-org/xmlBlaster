@@ -66,21 +66,20 @@ ssize_t readn(int fd, char *ptr, size_t nbytes)
 /**
  * Creates a raw blob to push over a socket as described in protocol.socket
  * @param msgUnit The message which we need to send
- * @param totalLen is returned which contains the number of bytes of the returned data
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
- * @return The raw 'serialized' MsgUnitArr as a char*, the caller needs to free() it.
+ * @return The raw 'serialized' MsgUnit as a char* in BlobHolder, the caller needs to free() it.
  */
-char *encodeMsgUnit(MsgUnit *msgUnit, size_t *totalLen, bool debug)
+BlobHolder encodeMsgUnit(MsgUnit *msgUnit, bool debug)
 {
    size_t qosLen=0, keyLen=0;
-   char *data;
    char contentLenStr[126];
    size_t currpos = 0;
+   BlobHolder blob;
+   memset(&blob, 0, sizeof(BlobHolder));
 
    if (msgUnit == 0) {
       if (debug) printf("[xmlBlasterSocket] ERROR Invalid msgUnit=NULL in encodeMsgUnit()\n");
-      *totalLen = 0;
-      return (char *)0;
+      return blob;
    }
    if (msgUnit->content == 0)
       msgUnit->contentLen = 0;
@@ -92,50 +91,49 @@ char *encodeMsgUnit(MsgUnit *msgUnit, size_t *totalLen, bool debug)
    if (msgUnit->key != 0)
       keyLen = strlen(msgUnit->key);
    
-   *totalLen = qosLen + 1 + keyLen + 1 + strlen(contentLenStr) + 1 + msgUnit->contentLen;
+   blob.dataLen = qosLen + 1 + keyLen + 1 + strlen(contentLenStr) + 1 + msgUnit->contentLen;
 
-   data = (char *)malloc(*totalLen);
+   blob.data = (char *)malloc(blob.dataLen);
 
    if (msgUnit->qos != 0)
-      memcpy(data+currpos, msgUnit->qos, qosLen+1); /* inclusive '\0' */
+      memcpy(blob.data+currpos, msgUnit->qos, qosLen+1); /* inclusive '\0' */
    else
-      *(data+currpos) = 0;
+      *(blob.data+currpos) = 0;
    currpos += qosLen+1;
 
    if (msgUnit->key != 0)
-      memcpy(data+currpos, msgUnit->key, keyLen+1); /* inclusive '\0' */
+      memcpy(blob.data+currpos, msgUnit->key, keyLen+1); /* inclusive '\0' */
    else
-      *(data+currpos) = 0;
+      *(blob.data+currpos) = 0;
    currpos += keyLen+1;
 
-   memcpy(data+currpos, contentLenStr, strlen(contentLenStr)+1); /* inclusive '\0' */
+   memcpy(blob.data+currpos, contentLenStr, strlen(contentLenStr)+1); /* inclusive '\0' */
    currpos += strlen(contentLenStr)+1;
 
    if (msgUnit->content != 0)
-      memcpy(data+currpos, msgUnit->content, msgUnit->contentLen);
+      memcpy(blob.data+currpos, msgUnit->content, msgUnit->contentLen);
    /* currpos += msgUnit->contentLen; */
 
-   return data;
+   return blob;
 }
 
 /**
  * Creates a raw blob to push over a socket as described in protocol.socket
  * @param msgUnitArr An array of messages
- * @param totalLen is returned (outparameter)
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
  * @return The raw 'serialized' MsgUnitArr as a char*, the caller needs to free() it.
  */
-char *encodeMsgUnitArr(MsgUnitArr *msgUnitArr, size_t *totalLen, bool debug)
+BlobHolder encodeMsgUnitArr(MsgUnitArr *msgUnitArr, bool debug)
 {
    size_t i;
-   char *data;
    size_t currpos = 0;
 
-   *totalLen = 0;
+   BlobHolder blob;
+   memset(&blob, 0, sizeof(BlobHolder));
 
    if (msgUnitArr == 0) {
       if (debug) printf("[xmlBlasterSocket] ERROR Invalid msgUnitArr=NULL in encodeMsgUnitArr()\n");
-      return (char *)0;
+      return blob;
    }
 
    /* First calculate total length to allocate */
@@ -154,10 +152,10 @@ char *encodeMsgUnitArr(MsgUnitArr *msgUnitArr, size_t *totalLen, bool debug)
       if (msgUnit->key != 0)
          keyLen = strlen(msgUnit->key);
    
-      *totalLen += qosLen + 1 + keyLen + 1 + strlen(contentLenStr) + 1 + msgUnit->contentLen;
+      blob.dataLen += qosLen + 1 + keyLen + 1 + strlen(contentLenStr) + 1 + msgUnit->contentLen;
    }
 
-   data = (char *)malloc(*totalLen);
+   blob.data = (char *)malloc(blob.dataLen);
 
    /* Now dump the message ... */
    for (i=0; i<msgUnitArr->len; i++) {
@@ -171,28 +169,28 @@ char *encodeMsgUnitArr(MsgUnitArr *msgUnitArr, size_t *totalLen, bool debug)
 
       if (msgUnit->qos != 0) {
          qosLen = strlen(msgUnit->qos);
-         memcpy(data+currpos, msgUnit->qos, qosLen+1); /* inclusive '\0' */
+         memcpy(blob.data+currpos, msgUnit->qos, qosLen+1); /* inclusive '\0' */
       }
       else
-         *(data+currpos) = 0;
+         *(blob.data+currpos) = 0;
       currpos += qosLen+1;
 
       if (msgUnit->key != 0) {
          keyLen = strlen(msgUnit->key);
-         memcpy(data+currpos, msgUnit->key, keyLen+1); /* inclusive '\0' */
+         memcpy(blob.data+currpos, msgUnit->key, keyLen+1); /* inclusive '\0' */
       }
       else
-         *(data+currpos) = 0;
+         *(blob.data+currpos) = 0;
       currpos += keyLen+1;
 
-      memcpy(data+currpos, contentLenStr, strlen(contentLenStr)+1); /* inclusive '\0' */
+      memcpy(blob.data+currpos, contentLenStr, strlen(contentLenStr)+1); /* inclusive '\0' */
       currpos += strlen(contentLenStr)+1;
 
       if (msgUnit->content != 0)
-         memcpy(data+currpos, msgUnit->content, msgUnit->contentLen);
+         memcpy(blob.data+currpos, msgUnit->content, msgUnit->contentLen);
       currpos += msgUnit->contentLen;
    }
-   return data;
+   return blob;
 }
 
 /**

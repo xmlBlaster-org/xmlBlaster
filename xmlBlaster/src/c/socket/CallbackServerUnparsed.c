@@ -417,8 +417,6 @@ static void sendResponse(CallbackServerUnparsed *cb, SocketDataHolder *socketDat
    memset(&msgUnit, 0, sizeof(MsgUnit));
 
    for (i=0; i<msgUnitArr->len; i++) {
-      size_t num;
-      char *tmp;
       if (cb->logLevel>=LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__,
          "Returning the UpdateReturnQos '%s' to the server.",
             msgUnitArr->msgUnitArr[i].responseQos);
@@ -431,14 +429,16 @@ static void sendResponse(CallbackServerUnparsed *cb, SocketDataHolder *socketDat
       }
 
       if (data == 0) {
-         data = encodeMsgUnit(&msgUnit, &dataLen, cb->logLevel >= LOG_DUMP);
+         BlobHolder blob = encodeMsgUnit(&msgUnit, cb->logLevel >= LOG_DUMP);
+         data = blob.data;
+         dataLen = blob.dataLen;
       }
       else {
-         tmp = encodeMsgUnit(&msgUnit, &num, cb->logLevel >= LOG_DUMP);
-         data = (char *)realloc(data, dataLen+num);
-         memcpy(data+dataLen, tmp, num);
-         dataLen += num;
-         free(tmp);
+         BlobHolder blob = encodeMsgUnit(&msgUnit, cb->logLevel >= LOG_DUMP);
+         data = (char *)realloc(data, dataLen+blob.dataLen);
+         memcpy(data+dataLen, blob.data, blob.dataLen);
+         dataLen += blob.dataLen;
+         free(blob.data);
       }
    }
 
@@ -462,8 +462,7 @@ static void sendXmlBlasterException(CallbackServerUnparsed *cb, SocketDataHolder
    size_t currpos = 0;
    char *rawMsg;
    size_t rawMsgLen;
-   size_t dataLen;
-   char *data;
+   BlobHolder blob;
    MsgUnit msgUnit; /* we (mis)use MsgUnit for simple transformation of the exception into a raw blob */
    memset(&msgUnit, 0, sizeof(MsgUnit));
    
@@ -478,12 +477,12 @@ static void sendXmlBlasterException(CallbackServerUnparsed *cb, SocketDataHolder
    
    memcpy((char *)msgUnit.content+currpos, exception->message, strlen(exception->message));
    
-   data = encodeMsgUnit(&msgUnit, &dataLen, cb->logLevel >= LOG_DUMP);
+   blob = encodeMsgUnit(&msgUnit, cb->logLevel >= LOG_DUMP);
 
    rawMsg = encodeSocketMessage(MSG_TYPE_EXCEPTION, socketDataHolder->requestId,
                              socketDataHolder->methodName, socketDataHolder->secretSessionId,
-                             data, dataLen, cb->logLevel >= LOG_DUMP, &rawMsgLen);
-   free(data);
+                             blob.data, blob.dataLen, cb->logLevel >= LOG_DUMP, &rawMsgLen);
+   free(blob.data);
    free((char *)msgUnit.content);
 
    /*ssize_t numSent =*/(void) writen(cb->acceptSocket, rawMsg, (int)rawMsgLen);
