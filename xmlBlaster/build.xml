@@ -431,6 +431,12 @@ TODO
       <copy file="./config/manifest.xmlBlaster" tofile="${build.dest}/manifest.xmlBlaster"/>
       <copy file="./config/xmlBlaster.policy" tofile="${build.dest}/xmlBlaster.policy" filtering="true"/>
       <copy file="${src.java.dir}/org/xmlBlaster/AppIcon.gif" tofile="${build.dest}/org/xmlBlaster/AppIcon.gif"/>
+      <copy file="${src.java.dir}/org/xmlBlaster/AppIcon.gif" tofile="${build.dest}/org/xmlBlaster/jmxgui/AppIcon.gif"/>
+      <copy file="${src.java.dir}/org/xmlBlaster/jmxgui/question.gif" tofile="${build.dest}/org/xmlBlaster/jmxgui/question.gif"/>
+      <copy file="${src.java.dir}/org/xmlBlaster/jmxgui/tims_rainbowfish.gif" tofile="${build.dest}/org/xmlBlaster/jmxgui/tims_rainbowfish.gif"/>
+      <copy file="${src.java.dir}/org/xmlBlaster/jmxgui/node.gif" tofile="${build.dest}/org/xmlBlaster/jmxgui/node.gif"/>
+      <copy file="${src.java.dir}/org/xmlBlaster/jmxgui/globe.gif" tofile="${build.dest}/org/xmlBlaster/jmxgui/globe.gif"/>
+      <copy file="${src.java.dir}/org/xmlBlaster/jmxgui/config.xml" tofile="${build.dest}/org/xmlBlaster/jmxgui/util/config.xml"/>
       <copy file="./config/jacorb.properties.template" tofile="${build.dest}/jacorb.properties" filtering="true"/>
       <copy file="./config/xmlBlaster.properties.template" tofile="${build.dest}/xmlBlaster.properties" filtering="true"/>
       <copy file="./config/xmlBlasterPlugins.xml.template" tofile="${build.dest}/xmlBlasterPlugins.xml" filtering="true"/>
@@ -776,6 +782,16 @@ TODO
       </parallel>
    </target>
 
+   <!-- =================================================================== -->
+   <!-- starts xmlBlaster JMX GUI                                           -->
+   <!-- =================================================================== -->
+   <target name="runJmxGUI" description="Run GUI that connects to jmx Server">
+   	<echo message="Starting the Controller GUI"/>
+        <java classname="org.xmlBlaster.jmxgui.Main" classpath="lib/xmlBlaster.jar" dir="." failonerror="true" fork="true">
+	        <sysproperty key="java.compiler" value="NONE"/>
+        </java>
+   </target>
+	 
    <!-- =================================================================== -->
    <!-- Creates a test report with junit                                    -->
    <!-- =================================================================== -->
