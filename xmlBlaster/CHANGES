@@ -1,5 +1,11 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
+ o added I_MsgDistributor plugin (acts in TopicHandler)
+
+ o Changed signature for I_AccessPlugin.check(...) by removing the publisherSessionInfo
+
+ o added multiple ConnectionStatusListeners to DispatchManager
+
  o changed nomenclature from 'Delivery' to 'Dispatch' to avoid confusion.
    Need to take the new xmlBlaster.properties
  

@@ -127,9 +127,9 @@ public class ContentLenFilter implements I_Plugin, I_AccessFilter
     * @exception see I_AccessFilter#match()
     * @see I_AccessFilter#match(SessionInfo, SessionInfo, MsgUnit, Query)
     */
-   public boolean match(SessionInfo publisher, SessionInfo receiver, MsgUnit msgUnit, Query query) throws XmlBlasterException {
+   public boolean match(SessionInfo receiver, MsgUnit msgUnit, Query query) throws XmlBlasterException {
       if (msgUnit == null) {
-         Thread.currentThread().dumpStack();
+         Thread.dumpStack();
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal argument in match() call");
       }
 

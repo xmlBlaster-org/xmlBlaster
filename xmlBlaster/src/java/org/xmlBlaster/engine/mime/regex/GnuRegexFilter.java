@@ -8,7 +8,6 @@ package org.xmlBlaster.engine.mime.regex;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.plugin.I_Plugin;
-import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.authentication.SessionInfo;
@@ -129,9 +128,9 @@ public class GnuRegexFilter implements I_Plugin, I_AccessFilter
     * @return true   The filter regex expression matches the message content.
     * @exception see I_AccessFilter#match()
     */
-   public boolean match(SessionInfo publisher, SessionInfo receiver, MsgUnit msgUnit, Query query) throws XmlBlasterException {
+   public boolean match(SessionInfo receiver, MsgUnit msgUnit, Query query) throws XmlBlasterException {
       if (msgUnit == null) {
-         Thread.currentThread().dumpStack();
+         Thread.dumpStack();
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal argument in regex match() call");
       }
 

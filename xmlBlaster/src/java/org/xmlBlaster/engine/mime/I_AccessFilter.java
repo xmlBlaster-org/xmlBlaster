@@ -3,7 +3,7 @@ Name:      I_AccessFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface for access plugins
-Version:   $Id: I_AccessFilter.java,v 1.9 2003/06/20 08:52:00 ruff Exp $
+Version:   $Id: I_AccessFilter.java,v 1.10 2003/10/22 18:35:16 laghi Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime;
@@ -45,7 +45,7 @@ import org.xmlBlaster.engine.mime.Query;
  *    </li>
  * </ul>
  *
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  * @author xmlBlaster@marcelruff.info
  */
 public interface I_AccessFilter
@@ -79,10 +79,8 @@ public interface I_AccessFilter
     * Note that you are not allowed to manipulate the content or XmlKey or QoS of a message with your plugin
     * as this would affect all other subscribers (you are working on a reference to the
     * original message).
+    * You can find out the publisher name like msgUnit.getQosData().getSender()
     * </p>
-    * @param publisher The session object describing the publisher, which may be null.<br />
-    *                  If null you can find out the publisher name like
-    *                  msgUnit.getQosData().getSender()
     * @param receiver The session object describing the receiver, is never null.
     * @param msgUnit  The message to check, is never null.
     * @param query   The query containing the filter rule on subscribe/get usually
@@ -100,7 +98,7 @@ public interface I_AccessFilter
     *            (see TopicHandler.java:1032).
     *            It is best to return 'false' instead and handle the situation yourself.
     */
-   public boolean match(SessionInfo publisher, SessionInfo receiver, MsgUnit msgUnit, Query query) throws XmlBlasterException;
+   public boolean match(SessionInfo receiver, MsgUnit msgUnit, Query query) throws XmlBlasterException;
 
    // TODO: have a match() variant for synchronous get() access:
    //   boolean match(SessionInfo session, MsgUnit msgUnit, Query query)

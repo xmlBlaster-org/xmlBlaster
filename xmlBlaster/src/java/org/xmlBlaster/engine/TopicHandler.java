@@ -10,6 +10,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.enum.MethodName;
 import org.xmlBlaster.util.context.ContextNode;
+import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.I_Entry;
@@ -138,6 +139,7 @@ public final class TopicHandler implements I_Timeout
 
    private final Object ADMIN_MONITOR = new Object();
 
+   private I_SubscriptionListener subscriptionListener;
 
    /**
     * Use this constructor if a subscription is made on a yet unknown object.
@@ -254,12 +256,6 @@ public final class TopicHandler implements I_Timeout
          String store = (maxEntriesStore > 0) ? "persistence/msgUnitStore/maxEntries="+maxEntriesStore : "message storage is switched off with persistence/msgUnitStore/maxEntries=0";
          log.info(ME, "New topic is ready, " + hist + ", " + store);
       }
-
-      // get the msgDistributor plugin if any
-      TopicProperty topicProperty = publishQosServer.getData().getTopicProperty();
-      String typeVersion = topicProperty.getMsgDistributor();
-      // PluginInfo pluginInfo = new PluginInfo(this.glob, this.glob.getMsgDistributorPluginManager(), typeVersion);
-      this.distributor = this.glob.getMsgDistributorPluginManager().getPlugin(typeVersion);
    }
 
    /**
@@ -799,6 +795,9 @@ public final class TopicHandler implements I_Timeout
 
       sub.addTopicHandler(this);
 
+      if (this.subscriptionListener != null) 
+         this.subscriptionListener.onAddSubscriber(sub);
+
       if (log.TRACE) log.trace(ME, "Client '" + sub.getSessionInfo().getId() + "' has successfully subscribed");
 
       if (isUnconfigured()) {
@@ -843,7 +842,7 @@ public final class TopicHandler implements I_Timeout
     * <p />
     * Generating dead letter and auto-logout to release all resources is done by DispatchWorker.
     */
-   private void handleCallbackFailed(Set removeSet) throws XmlBlasterException {
+   public void handleCallbackFailed(Set removeSet) throws XmlBlasterException {
       if (removeSet != null) {
          Iterator iterator = removeSet.iterator();
          while (iterator.hasNext()) {
@@ -875,6 +874,8 @@ public final class TopicHandler implements I_Timeout
       if (log.TRACE) log.trace(ME, "After size of subscriberMap = " + this.subscriberMap.size());
 
       if (isDead()) {
+         if (this.subscriptionListener != null) 
+            this.subscriptionListener.onRemoveSubscriber(subs);
          return subs; // during cleanup process
       }
 
@@ -892,6 +893,8 @@ public final class TopicHandler implements I_Timeout
             }
          }
       }
+      if (this.subscriptionListener != null) 
+         this.subscriptionListener.onRemoveSubscriber(subs);
       return subs;
    }
 
@@ -945,13 +948,10 @@ public final class TopicHandler implements I_Timeout
       if (log.TRACE) log.trace(ME, "Going to update dependent clients for " + msgUnitWrapper.getKeyOid() + ", subscriberMap.size() = " + this.subscriberMap.size());
 
       if (this.distributor != null) { // if there is a plugin
-         if (!this.distributor.syncDistribution(this, publisherSessionInfo, msgUnitWrapper)) {
-            this.distributor.handleError(this, publisherSessionInfo, msgUnitWrapper);
-         }
+         this.distributor.syncDistribution(msgUnitWrapper);
+         return;   
       }
       
-
-
       // Take a copy of the map entries (a current snapshot)
       // If we would iterate over the map directly we can risk a java.util.ConcurrentModificationException
       // when one of the callback fails and the entry is removed by the callback worker thread
@@ -1034,7 +1034,7 @@ public final class TopicHandler implements I_Timeout
                   I_AccessFilter filter = requestBroker.getAccessPluginManager().getAccessFilter(
                                             filterQos[ii].getType(), filterQos[ii].getVersion(), 
                                             getContentMime(), getContentMimeExtended());
-                  if (filter != null && filter.match(publisherSessionInfo, sub.getSessionInfo(),
+                  if (filter != null && filter.match(sub.getSessionInfo(),
                              msgUnitWrapper.getMsgUnit(), filterQos[ii].getQuery()) == false) {
                      return 1;
                   }
@@ -1371,7 +1371,7 @@ public final class TopicHandler implements I_Timeout
          }
 
          persistTopicEntry();
-
+         initMsgDistributorPlugin();
          this.state = ALIVE;
       }
    }
@@ -1485,6 +1485,7 @@ public final class TopicHandler implements I_Timeout
          this.dyingInProgress = true;
 
          try {
+            shutdownMsgDistributorPlugin();
             if (this.topicEntry != null) {
                removeTopicPersistence();
             }
@@ -1848,4 +1849,56 @@ public final class TopicHandler implements I_Timeout
       sb.append(offset).append("</TopicHandler>\n");
       return sb.toString();
    }
+   
+   public int removeFromHistory(I_Entry entry) throws XmlBlasterException {
+      return this.historyQueue.removeRandom(entry);
+   }   
+   
+   /**
+    * This method has the same behaviour as I_Queue.peek.
+    * @param maxNumOfEntries the maximum number of entries to retreive
+    * @param maxNumOfBytes the maximum number of bytes to retreive.
+    * @return the retreived entries
+    * @throws XmlBlasterException
+    * @see I_Queue.peek(int,long);
+    */
+   public ArrayList peekFromHistory(int maxNumOfEntries, long maxNumOfBytes) throws XmlBlasterException {
+      return this.historyQueue.peek(maxNumOfEntries, maxNumOfBytes);
+   }   
+
+   /**
+    * instantiates and initializes a MsgDistributorPlugin if the topic property requires so.
+    * If such a plugin exists already it is left untouched.
+    * @throws XmlBlasterException
+    */
+   private void initMsgDistributorPlugin() throws XmlBlasterException {
+      if (this.distributor != null) return;
+      String typeVersion = this.topicProperty.getMsgDistributor();
+      PluginInfo pluginInfo = new PluginInfo(this.glob, null, typeVersion);
+      pluginInfo.setUserData(this);
+      this.distributor = (I_MsgDistributor)this.glob.getMsgDistributorPluginManager().getPluginObject(pluginInfo);
+      this.subscriptionListener = this.distributor; 
+      if (this.subscriptionListener != null) {
+         SubscriptionInfo[] subs = getSubscriptionInfoArr();
+         for (int i=0; i < subs.length; i++)
+            this.subscriptionListener.onAddSubscriber(subs[i]);
+      }
+   }
+   
+   private void shutdownMsgDistributorPlugin() {
+      if (this.distributor == null) return;
+      synchronized(this) {
+         try {
+            this.distributor.shutdown();
+         }
+         catch (XmlBlasterException ex) {
+            this.log.error(ME, "shutdownMsgDistributorPlugin " + ex.getMessage());
+         }
+         finally {
+            this.distributor = null;
+            this.subscriptionListener = null;
+         }
+      }
+   }
+   
 }

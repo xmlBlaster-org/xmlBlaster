@@ -5,10 +5,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.distributor;
 
-import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.engine.MsgUnitWrapper;
-import org.xmlBlaster.engine.TopicHandler;
-import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
+import org.xmlBlaster.engine.I_SubscriptionListener;
+import org.xmlBlaster.util.plugin.I_Plugin;
 
 /**
  * I_MsgDistributor
@@ -16,9 +15,15 @@ import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  * 
  */
-public interface I_MsgDistributor extends I_ConnectionStatusListener {
+public interface I_MsgDistributor extends I_SubscriptionListener, I_Plugin {
 
-   boolean syncDistribution(TopicHandler topicHandler, SessionInfo publisherSessionInfo, MsgUnitWrapper msgUnitWrapper);
+   /**
+    * This method should not throw any exception so it is responsability of
+    * the plugin developer to catch Throwable and make the necessary
+    * error handling.
+    * 
+    * @param msgUnitWrapper the entry to distribute
+    */
+   void syncDistribution(MsgUnitWrapper msgUnitWrapper);
 
-   void handleError(TopicHandler topicHandler, SessionInfo publisherSessionInfo, MsgUnitWrapper msgUnitWrapper);
 }

@@ -44,7 +44,6 @@ import org.xmlBlaster.engine.queuemsg.ReferenceEntry;
 import org.xmlBlaster.engine.queuemsg.MsgQueueHistoryEntry;
 import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.engine.queuemsg.TopicEntry;
-import org.xmlBlaster.engine.persistence.I_PersistenceDriver;
 import org.xmlBlaster.engine.mime.I_AccessFilter;
 import org.xmlBlaster.engine.mime.AccessPluginManager;
 import org.xmlBlaster.engine.mime.I_PublishFilter;
@@ -146,7 +145,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
    /**
     * This Interface allows to hook in you own persistence driver, configure it through xmlBlaster.properties
     */
-   private I_PersistenceDriver persistenceDriver = null;
+   // private I_PersistenceDriver persistenceDriver = null;
 
    /** Flag for performance reasons only */
    private boolean useOldStylePersistence;
@@ -335,10 +334,10 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
          if (to == RunlevelManager.RUNLEVEL_STANDBY_PRE) {
            startupTopicStore();
          }
-         else if (to == RunlevelManager.RUNLEVEL_CLEANUP_PRE) {
+//         else if (to == RunlevelManager.RUNLEVEL_CLEANUP_PRE) {
            // Load all persistent topics from persistent storage
-           loadPersistentMessages();
-         }
+//           loadPersistentMessages();
+//         }
       }
 
       if (to < from) { // shutdown
@@ -495,7 +494,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
       if (log.CALL) log.call(ME, "Publishing " + entries.length + " dead messages.");
       if (entries == null) {
          log.error(ME, "deadMessage() with null argument");
-         Thread.currentThread().dumpStack();
+         Thread.dumpStack();
          return new String[0];
       }
 
@@ -530,7 +529,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
                                 origMsgUnit.toXml() + ": " +
                                 ((reason != null) ? (": " + reason) : "") );
                   retArr[ii] = entry.getKeyOid();
-                  Thread.currentThread().dumpStack();
+                  Thread.dumpStack();
                   continue;
                }
 
@@ -596,6 +595,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
    /**
     * Try to load all persistent stored messages.
     */
+/*   
    private void loadPersistentMessages()
    {
       if (this.useOldStylePersistence == false) return;
@@ -642,7 +642,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
       if (num > 0)
          log.info(ME,"Loaded " + num + " persistent messages from persistence to Memory.");
    }
-
+*/
 
    /**
     * This Interface allows to hook in your own persistence driver.
@@ -654,6 +654,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
     * Note that you can't change the driver during runtime (this would need some code added).
     * @return interface to the configured persistence driver or null if no is available
     */
+/*
    final I_PersistenceDriver getPersistenceDriver()
    {
       if (this.useOldStylePersistence == false) return (I_PersistenceDriver)null;
@@ -677,7 +678,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
       }
       return this.persistenceDriver;
    }
-
+*/
 
    /**
     * Setting attributes for a client.
@@ -972,7 +973,6 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
                                                      xmlKey.getContentMimeExtended());
                         if (log.TRACE) log.trace(ME, "get("+xmlKeyExact.getOid()+") filter=" + filter + " qos=" + getQos.toXml());
                         if (filter != null && filter.match(sessionInfo,
-                                                     sessionInfo,
                                                      msgUnitWrapper.getMsgUnit(),
                                                      filterQos[jj].getQuery()) == false)
                            continue NEXT_HISTORY; // filtered message is not send to client
@@ -1589,7 +1589,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
             publishReturnQos = new PublishReturnQos(glob, qos);
             publishReturnQos.getData().setRcvTimestamp(publishQos.getRcvTimestamp());
             log.error(ME, "Internal: did not excpect to build a PublishReturnQos, but message '" + msgKeyData.getOid() + "' is processed correctly");
-            Thread.currentThread().dumpStack();
+            Thread.dumpStack();
          }
 
          return publishReturnQos.toXml(); // Use the return value of the cluster master node

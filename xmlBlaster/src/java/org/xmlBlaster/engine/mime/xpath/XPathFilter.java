@@ -7,9 +7,7 @@ Comment:   Support check of message content with XPath expressions.
 package org.xmlBlaster.engine.mime.xpath;
 
 import org.jutils.log.LogChannel;
-import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.plugin.I_Plugin;
-import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.authentication.SessionInfo;
@@ -29,7 +27,6 @@ import org.w3c.dom.Document;
 
 import org.jaxen.SimpleFunctionContext;
 import org.jaxen.XPathFunctionContext;
-import org.jaxen.FunctionContext;
 import org.jaxen.Function;
 import org.jaxen.JaxenException;
 import org.jaxen.dom.DOMXPath;
@@ -60,7 +57,7 @@ import org.jaxen.dom.DOMXPath;
  * @author Peter Antman
  * @author Jens Askengren
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/mime.plugin.access.xpath.html">The mime.plugin.access.xpath requirement</a>
- * @version $Id: XPathFilter.java,v 1.8 2003/09/10 08:14:02 antman Exp $
+ * @version $Id: XPathFilter.java,v 1.9 2003/10/22 18:35:18 laghi Exp $
  */
 
 public class XPathFilter implements I_Plugin, I_AccessFilter {
@@ -163,9 +160,9 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
     *            For the publisher it looks as if the publish failed completely. Probably it is
     *            best to return 'false' instead and log the situation.
     */
-   public boolean match(SessionInfo publisher, SessionInfo receiver, MsgUnit msgUnitWrapper, Query query) throws XmlBlasterException {
+   public boolean match(SessionInfo receiver, MsgUnit msgUnitWrapper, Query query) throws XmlBlasterException {
       if (msgUnitWrapper == null) {
-         Thread.currentThread().dumpStack();
+         Thread.dumpStack();
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal argument in xpath match() call");
       }
       
@@ -238,7 +235,7 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
            int c2 = t.lastIndexOf(":");
 
            if (c1 == -1 || c2 == -1 || c1 == c2) {
-               throw new XmlBlasterException(ME, "Bad xpath extension function definition: \""
+               throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Bad xpath extension function definition: \""
                                              + t + "\". Expected: prefix \":\" function-name \":\" class");
            }
 
@@ -247,7 +244,7 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
            String klass = t.substring(c2+1);
 
            if (func.length() == 0 || klass.length() == 0) {
-               throw new XmlBlasterException(ME, "Bad xpath extension function definition: \""
+               throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Bad xpath extension function definition: \""
                                              + t + "\". Expected: prefix \":\" function-name \":\" class");
            }
 
@@ -255,7 +252,7 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
                
                Object o = Class.forName(klass).newInstance();
                if (!(o instanceof Function)) {
-                   throw new XmlBlasterException(ME, "Extension function \""
+                   throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Extension function \""
                                                  + klass + "\" does not implement org.jaxen.Function");
                }
 
@@ -263,7 +260,7 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
                    .registerFunction(("".equals(prefix)?null:prefix), func, (Function)o);
 
            } catch (Exception e) {
-               throw new XmlBlasterException(ME, "Could not load extension function \""
+               throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME,  "Could not load extension function \""
                                              + klass + "\": " + e.getMessage());
            }
        }
@@ -323,11 +320,11 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
                s.getColumnNumber() +
                " in systemID" + s.getSystemId();
          }
-         throw new XmlBlasterException(ME,"Could not parse xml: " + reason);
+         throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Could not parse xml: " + reason);
       }  catch (javax.xml.parsers.ParserConfigurationException ex) {
-         throw new XmlBlasterException(ME,"Could not setup parser " + ex);
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "Could not setup parser " + ex);
       } catch (java.io.IOException ex) {
-         throw new XmlBlasterException(ME,"Could not read xml " + ex);
+         throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Could not read xml " + ex);
       }
       
    } // end of try-catch

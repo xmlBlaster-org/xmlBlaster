@@ -4,11 +4,9 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.dispatch;
-
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Timestamp;
-import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
@@ -23,11 +21,12 @@ import org.xmlBlaster.util.queue.I_QueuePutListener;
 import org.xmlBlaster.util.queue.I_QueueEntry;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor;
-import org.xmlBlaster.util.dispatch.I_ConnectionStatusListener;
 import org.xmlBlaster.authentication.plugins.I_MsgSecurityInterceptor;
 import org.xmlBlaster.util.property.PropString;
 
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Iterator;
 
 /**
  * Manages the sending of messages and commands and does error recovery
@@ -46,7 +45,8 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
    private final I_MsgErrorHandler failureListener;
    private final I_MsgSecurityInterceptor securityInterceptor;
    private final I_MsgDispatchInterceptor msgInterceptor;
-   private I_ConnectionStatusListener connectionStatusListener;
+//   private I_ConnectionStatusListener connectionStatusListener;
+   private HashSet connectionStatusListeners;
    private final String typeVersion;
    /** If > 0 does burst mode */
    private long collectTime = -1L;
@@ -87,7 +87,9 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
       this.failureListener = failureListener;
       this.securityInterceptor = securityInterceptor;
       this.dispatchConnectionsHandler = this.glob.createDispatchConnectionsHandler(this);
-      this.connectionStatusListener = connectionStatusListener;
+      this.connectionStatusListeners = new HashSet();
+      if (connectionStatusListener != null) this.connectionStatusListeners.add(connectionStatusListener);
+      
 
       /*
        * Check i a plugin is configured ("DispatchPlugin/defaultPlugin")
@@ -136,19 +138,14 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
 
    /*
     * Register yourself if you want to be informed about the remote connection status. 
-    * NOTE: Currently max. one listener is implemented
     * @param connectionStatusListener The implementation which listens on connectionState events (e.g. XmlBlasterAccess.java)
     */
-   //public void addConnectionStatusListener(I_ConnectionStatusListener connectionStatusListener) {
-   //   if (this.connectionStatusListener != null) {
-   //      log.error(ME, "addConnectionStatusListener() ignored, there is already a listener registered");
-   //      return;
-   //   }
-   //   this.connectionStatusListener = connectionStatusListener;
-   //}
+   public void addConnectionStatusListener(I_ConnectionStatusListener connectionStatusListener) {
+      this.connectionStatusListeners.add(connectionStatusListener);
+   }
 
    public void removeConnectionStateListener(I_ConnectionStatusListener connectionStatusListener) {
-      this.connectionStatusListener = null;
+      this.connectionStatusListeners.remove(connectionStatusListener);
    }
 
    /**
@@ -194,9 +191,12 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
 
          synchronized (this.ALIVE_TRANSITION_MONITOR) {
             // 1. We allow a client to intercept and for example destroy all entries in the queue
-            if (this.connectionStatusListener != null)
-               this.connectionStatusListener.toAlive(this, oldState);
-
+            if (this.connectionStatusListeners.size() > 0) {
+               Iterator iter = this.connectionStatusListeners.iterator();
+               while (iter.hasNext()) {
+                  ((I_ConnectionStatusListener)iter.next()).toAlive(this, oldState);
+               }
+            }
             // 2. If a dispatch plugin is registered it may do its work
             if (this.msgInterceptor != null)
                this.msgInterceptor.toAlive(this, oldState);
@@ -219,8 +219,12 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
       switchToASyncMode();
 
       // 1. We allow a client to intercept and for example destroy all entries in the queue
-      if (this.connectionStatusListener != null)
-         this.connectionStatusListener.toPolling(this, oldState);
+      if (this.connectionStatusListeners.size() > 0) {
+         Iterator iter = this.connectionStatusListeners.iterator();
+         while (iter.hasNext()) {
+            ((I_ConnectionStatusListener)iter.next()).toPolling(this, oldState);
+         }
+      }
 
       // 2. If a dispatch plugin is registered it may do its work
       if (this.msgInterceptor != null)
@@ -234,8 +238,12 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
       ex.changeErrorCode(ErrorCode.COMMUNICATION_NOCONNECTION_DEAD);
       
       // 1. We allow a client to intercept and for example destroy all entries in the queue
-      if (this.connectionStatusListener != null)
-         this.connectionStatusListener.toDead(this, oldState, ex.getMessage());
+      if (this.connectionStatusListeners.size() > 0) {
+         Iterator iter = this.connectionStatusListeners.iterator();
+         while (iter.hasNext()) {
+            ((I_ConnectionStatusListener)iter.next()).toDead(this, oldState, ex.getMessage());
+         }
+      }
 
       // 2. If a dispatch plugin is registered it may do its work
       if (this.msgInterceptor != null)
@@ -761,6 +769,9 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
       synchronized (this) {
          if (this.isShutdown) return;
          this.isShutdown = true;
+
+         // remove all ConnectionStatusListeners
+         this.connectionStatusListeners.clear();
 
          removeBurstModeTimer();
 
