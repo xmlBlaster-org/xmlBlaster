@@ -695,19 +695,26 @@ public final class TopicHandler implements I_Timeout
                        Constants.SUBSCRIPTIONID_PtP);
                destinationClient.queueMessage(msgEntrySubject);
             }
-            // case 5
+            // case 5 (no handling in case session does not exist)
             else if (!forceQueing && destinationIsSession && sessionExists) {
                MsgQueueUpdateEntry msgEntry = new MsgQueueUpdateEntry(glob, cacheEntry,
                        receiverSessionInfo.getSessionQueue().getStorageId(), destination.getDestination(),
                        Constants.SUBSCRIPTIONID_PtP);
                receiverSessionInfo.queueMessage(msgEntry);
             }
-            // case 7         
-            else if (!forceQueing && !subjectExists) {
+            // case 7 + 5 (for session does not exist)      
+            else if (!forceQueing &&  ( (!subjectExists && !destinationIsSession)||(!sessionExists && destinationIsSession)) ) {
                String tmp = "Sending PtP message to '" + destination.getDestination() + "' failed, message is lost.";
                log.warn(ME, tmp);
                throw new XmlBlasterException(glob, ErrorCode.USER_PTP_UNKNOWNDESTINATION, ME, tmp +
                    " Client is not logged in and <destination forceQueuing='true'> is not set");
+            }
+            else {
+               String tmp = "Sending PtP message to '" + destination.getDestination() + "' failed, message is lost.";
+               String status = "destinationIsSession='" + destinationIsSession + "'" +
+                               " sessionExists='" + sessionExists + "' forceQueing='" + forceQueing + "' wantsPtP='" + wantsPtP +"'";  
+               throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, tmp +
+                "the combination '" + status + "' is not handled");
             }
          }
       }

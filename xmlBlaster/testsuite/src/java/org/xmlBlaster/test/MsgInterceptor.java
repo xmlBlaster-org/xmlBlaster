@@ -136,7 +136,7 @@ public class MsgInterceptor extends Assert implements I_Callback
          if (countArrived >= countExpected)
             return countArrived; // OK, no timeout
          try {
-            Thread.currentThread().sleep(pollingInterval);
+            Thread.sleep(pollingInterval);
          }
          catch( InterruptedException i)
          {}
@@ -173,7 +173,7 @@ public class MsgInterceptor extends Assert implements I_Callback
     */
    public int waitOnUpdate(final long timeout, String oid, String state) {
       try {
-         Thread.currentThread().sleep(timeout);
+         Thread.sleep(timeout);
       }
       catch( InterruptedException i)
       {}
