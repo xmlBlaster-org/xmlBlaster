@@ -240,7 +240,7 @@ bool parseSocketData(int xmlBlasterSocket, SocketDataHolder *socketDataHolder, X
    if (socketDataHolder->msgLen <= MSG_LEN_FIELD_LEN || socketDataHolder->msgLen > MAX_MSG_LEN) {
       strncpy0(exception->errorCode, "user.connect", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       sprintf(exception->message,
-              "[xmlBlasterSocket] ERROR Received numRead=%d header bytes with invalid message length='%s' parsed to '%ld'",
+              "[xmlBlasterSocket] ERROR Received numRead=%d header bytes with invalid message length='%s' parsed to '%d'",
               numRead, msgLenPtr, socketDataHolder->msgLen);
       if (debug) { printf(exception->message); printf("\n"); }
       return true;
