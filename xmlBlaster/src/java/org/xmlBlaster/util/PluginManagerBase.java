@@ -3,7 +3,7 @@ Name:      PluginManagerBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Baseclass to load plugins.
-Version:   $Id: PluginManagerBase.java,v 1.16 2002/08/23 21:34:45 ruff Exp $
+Version:   $Id: PluginManagerBase.java,v 1.17 2002/08/24 17:57:47 ruff Exp $
 Author:    W. Kleinertz (wkl), Heinrich Goetzger goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
@@ -188,6 +188,9 @@ abstract public class PluginManagerBase {
            Class cl = java.lang.Class.forName(pluginName);
            plugin = (I_Plugin)cl.newInstance();
          }
+      }
+      catch (XmlBlasterException e) {
+         throw e;
       }
       catch (IllegalAccessException e) {
          log.error(ME, "The plugin class '" + pluginName + "' is not accessible\n -> check the plugin name and/or the CLASSPATH to the plugin");
