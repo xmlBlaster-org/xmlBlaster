@@ -3,7 +3,7 @@ Name:      XmlBlasterException.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Basic xmlBlaster exception.
-Version:   $Id: XmlBlasterException.java,v 1.15 2002/12/31 14:26:33 ruff Exp $
+Version:   $Id: XmlBlasterException.java,v 1.16 2003/02/11 15:01:11 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -59,7 +59,7 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
    transient private ErrorCode errorCodeEnum;
    private String errorCodeStr;
    private final String node;
-   private final String location;
+   private String location;
    private final String lang;
    private final String versionInfo;
    transient private Timestamp timestamp;
@@ -169,6 +169,11 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
 
    public final String getLocation() {
       return this.location;
+   }
+
+   /** Overwrite the location */
+   public final void setLocation(String location) {
+      this.location = location;
    }
 
    public final String getLang() {
