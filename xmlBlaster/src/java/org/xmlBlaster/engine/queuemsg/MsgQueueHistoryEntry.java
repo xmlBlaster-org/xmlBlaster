@@ -7,13 +7,8 @@ package org.xmlBlaster.engine.queuemsg;
 
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.MsgUnitWrapper;
-import org.xmlBlaster.engine.TopicHandler;
-import org.xmlBlaster.util.key.MsgKeyData;
-import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.SessionName;
-import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.enum.PriorityEnum;
 import org.xmlBlaster.util.queue.StorageId;
@@ -43,6 +38,31 @@ public final class MsgQueueHistoryEntry extends ReferenceEntry
                               String keyOid, long msgUnitWrapperUniqueId, boolean isDurable) {
       super(ME, glob, ServerEntryFactory.ENTRY_TYPE_UPDATE_REF, priority, storageId,
             updateEntryTimestamp, keyOid, msgUnitWrapperUniqueId, isDurable, (SessionName)null);
+   }
+
+   /**
+    * Enforced by I_QueueEntry
+    * @return Allways the same int as the history queue is strictly chronologic
+    */
+   public final int getPriority() {
+      return PriorityEnum.NORM_PRIORITY.getInt();
+   }
+
+   /**
+    * The negative unique creation timestamp (unique in a Global of a virtual machine)
+    * Enforced by I_QueueEntry
+    * @param negative nano seconds to enforce LIFO behavior (the newest message is at the front)
+    */
+   public final long getUniqueId() {
+      return (this.uniqueIdTimestamp.getTimestamp()<0L) ? this.uniqueIdTimestamp.getTimestamp() : (-1)*this.uniqueIdTimestamp.getTimestamp();
+   }
+
+   /**
+    * The negative unique creation timestamp (unique in a Global of a virtual machine)
+    * @param negative nano seconds to enforce LIFO behavior (the newest message is at the front)
+    */
+   public final Long getUniqueIdLong() {
+      return new Long(getUniqueId());
    }
 
    /**
