@@ -45,7 +45,7 @@
       mime type are directed to the plugin. The mime type "*" registers the plugin for
       all message MIME types.
       </li>
-      <li>Filter supports synchronous access with get() and asynchronous access with subscribe()<br />
+      <li>Filter support for synchronous access with get() and asynchronous access with subscribe()<br />
       You can specify the filter rules with two xmlBlaster methods:
       <ol>
          <li>Synchronous access with the get() invocation:<br />
@@ -124,7 +124,7 @@ have a content shorter then 8 kBytes.
    <see type="REQ">util.property.env</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 03 14</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
