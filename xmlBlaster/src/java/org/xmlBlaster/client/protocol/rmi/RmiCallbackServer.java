@@ -3,8 +3,8 @@ Name:      RmiCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: RmiCallbackServer.java,v 1.18 2002/06/23 10:58:59 ruff Exp $
-Author:    ruff@swand.lake.de
+Version:   $Id: RmiCallbackServer.java,v 1.19 2002/12/18 12:34:45 ruff Exp $
+Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.rmi;
 
@@ -17,7 +17,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.CallbackAddress;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -200,13 +200,13 @@ public class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlast
     * <p />
     * It implements the interface I_XmlBlasterCallback
     * <p />
-    * The call is converted to the native MessageUnit, and the other update()
+    * The call is converted to the native MsgUnitRaw, and the other update()
     * method of this class is invoked.
     *
-    * @param msgUnitArr Contains a MessageUnit structs (your message) for CORBA
+    * @param msgUnitArr Contains a MsgUnitRaw structs (your message) for CORBA
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public String[] update(String cbSessionId, MessageUnit[] msgUnitArr) throws RemoteException, XmlBlasterException
+   public String[] update(String cbSessionId, MsgUnitRaw[] msgUnitArr) throws RemoteException, XmlBlasterException
    {
       if (msgUnitArr == null) throw new XmlBlasterException(ME, "Received update of null message");
       if (log.CALL) log.call(ME, "Entering update(" + cbSessionId + ") of " + msgUnitArr.length + " messages");
@@ -217,7 +217,7 @@ public class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlast
    /**
     * The oneway variant for better performance. 
     */
-   public void updateOneway(String cbSessionId, org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr) throws RemoteException
+   public void updateOneway(String cbSessionId, org.xmlBlaster.util.MsgUnitRaw[] msgUnitArr) throws RemoteException
    {
       if (msgUnitArr == null) return;
       if (log.CALL) log.call(ME, "Entering updateOneway(" + cbSessionId + ") of " + msgUnitArr.length + " messages");

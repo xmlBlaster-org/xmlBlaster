@@ -3,7 +3,7 @@ Name:      XmlBlasterConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP/RMI or XML-RPC
-Author:    ruff@swand.lake.de
+Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol;
 
@@ -46,7 +46,8 @@ import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.QueueProperty;
 import org.xmlBlaster.engine.helper.CbQueueProperty;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.xmlBlaster.util.Timestamp;
@@ -112,7 +113,7 @@ import java.util.Collections;
  * @see org.xmlBlaster.authentication.plugins.I_SecurityQos
  * @see org.xmlBlaster.test.qos.TestFailSave
  *
- * @author $Author: laghi $
+ * @author $Author: ruff $
  */
 public class XmlBlasterConnection extends AbstractCallbackExtended implements I_XmlBlaster, I_CallbackServer, I_Timeout
 {
@@ -168,7 +169,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    /** Remember the number of successful logins */
    private long numLogins = 0L;
 
-   private MessageUnit[] dummyMArr = new MessageUnit[0];
+   private MsgUnit[] dummyMArr = new MsgUnit[0];
    private String[] dummySArr = new String[0];
    private String dummyS = "";
 
@@ -514,7 +515,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       if (cache != null)
          return; // Is initialized already
       if (log.CALL) log.call(ME, "Initializing cache: size=" + size);
-      cache = new BlasterCache(size);
+      cache = new BlasterCache(glob, size);
       log.info(ME, "BlasterCache has been initialized with size="+size);
    }
 
@@ -1548,17 +1549,17 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * @exception ErrorCode.COMMUNICATION_NOCONNECTION_DEAD if we give up to connect<br />
     *            ErrorCode.COMMUNICATION_NOCONNECTION_POLLING if we are in fail save mode and polling for a connection and have no message recorder installed
     */
-   public final PublishReturnQos publish(MessageUnit msgUnit) throws XmlBlasterException
+   public final PublishReturnQos publish(MsgUnit msgUnit) throws XmlBlasterException
    {
       if (log.TRACE) log.trace(ME, "Publishing ...");
       if (driver==null) throw new XmlBlasterException(ME, "Sorry no connection to " + getServerNodeId() + ", publish() failed.");
       try {
          if (secPlgn!=null) {
-            MessageUnit mu = secPlgn.exportMessage(msgUnit);
+            MsgUnitRaw mu = secPlgn.exportMessage(msgUnit.getMsgUnitRaw());
             return new PublishReturnQos(glob, secPlgn.importMessage(driver.publish(mu)));
          }
          else {
-            return new PublishReturnQos(glob, driver.publish(msgUnit));
+            return new PublishReturnQos(glob, driver.publish(msgUnit.getMsgUnitRaw()));
          }
       } catch(XmlBlasterException e) {
          if (e.isCommunication()) {
@@ -1584,7 +1585,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    }
 
    /** Extract the key oid, if none is there insert one */
-   private String getAndReplaceOid(MessageUnit msgUnit) {
+   private String getAndReplaceOid(MsgUnit msgUnit) {
       String key = msgUnit.getKey();
       String oid = parseOid(key);
       if (oid == null || oid.length() < 1) {
@@ -1655,19 +1656,22 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">interface.publish requirement</a>
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public PublishReturnQos[] publishArr(MessageUnit [] msgUnitArr) throws XmlBlasterException
+   public PublishReturnQos[] publishArr(MsgUnit [] msgUnitArr) throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "publishArr() ...");
       if (driver==null) throw new XmlBlasterException(ME, "Sorry no connection to " + getServerNodeId() + ", publishArr() failed.");
       try {
          String[] arr;
          if (secPlgn!=null) { // security plugin allows e.g. crypting of messages ...
-            MessageUnit mu[] = exportAll(msgUnitArr);
+            MsgUnitRaw mu[] = exportAll(msgUnitArr);
             String[] result = driver.publishArr(mu);
             arr = importAll(result);
          }
          else { // security plugin not available
-            arr = driver.publishArr(msgUnitArr);
+            MsgUnitRaw mu[] = new MsgUnitRaw[msgUnitArr.length];
+            for(int i=0; i<msgUnitArr.length; i++)
+               mu[i] = msgUnitArr[i].getMsgUnitRaw();
+            arr = driver.publishArr(mu);
          }
          PublishReturnQos[] qosArr = new PublishReturnQos[arr.length];
          for (int ii=0; ii<qosArr.length; ii++)
@@ -1709,10 +1713,10 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
             this.publishOnewayTimer.removeTimeoutListener(this.publishOnewayTimerKey);
             this.publishOnewayTimerKey = null;
          }
-         MessageUnit[] msgUnitArr = new MessageUnit[this.publishOnewayBurstModeVec.size()];
+         MsgUnit[] msgUnitArr = new MsgUnit[this.publishOnewayBurstModeVec.size()];
          Iterator it = this.publishOnewayBurstModeVec.iterator();
          for (int i=0; it.hasNext(); i++) {
-            msgUnitArr[i] = (MessageUnit)it.next();
+            msgUnitArr[i] = (MsgUnit)it.next();
          }
          this.publishOnewayBurstModeVec.clear();
          log.info(ME+".flushPublishOnewaySet()", "Burst mode timeout after " + this.publishOnewayCollectTime + " millis occurred, publishing " + msgUnitArr.length + " oneway messages ...");
@@ -1723,7 +1727,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    /**
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public void publishOneway(MessageUnit [] msgUnitArr)
+   public void publishOneway(MsgUnit[] msgUnitArr)
    {
       publishOneway(msgUnitArr, false);
    }
@@ -1731,7 +1735,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    /**
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   private void publishOneway(MessageUnit [] msgUnitArr, boolean flushBurstMode)
+   private void publishOneway(MsgUnit[] msgUnitArr, boolean flushBurstMode)
    {
       if (log.CALL) log.call(ME, "publishOneway() ...");
       if (driver==null) {
@@ -1743,7 +1747,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
             synchronized(this.publishOnewayTimer) {
                //log.info(ME, "publishOneway() adding set ...");
                for (int ii = 0; ii<msgUnitArr.length; ii++) {
-                  this.publishOnewayBurstModeVec.addElement(msgUnitArr[ii].getClone());
+                  this.publishOnewayBurstModeVec.addElement(msgUnitArr[ii]);
                }
                if (this.publishOnewayTimerKey == null) {
                   if (log.TRACE) log.trace(ME, "Spanning timer = " +  this.publishOnewayCollectTime);
@@ -1753,9 +1757,14 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
             }
          }
 
-         MessageUnit[] mu = msgUnitArr;
+         MsgUnitRaw[] mu = null;
          if (secPlgn!=null) { // security plugin allows e.g. crypting of messages ...
             mu = exportAll(msgUnitArr);
+         }
+         else {
+            mu = new MsgUnitRaw[msgUnitArr.length];
+            for(int i=0; i<msgUnitArr.length; i++)
+               mu[i] = msgUnitArr[i].getMsgUnitRaw();
          }
          driver.publishOneway(mu);
       } catch(XmlBlasterException e) {
@@ -1823,9 +1832,9 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    }
 
 
-   private final MessageUnit[] getRaw(String xmlKey, String qos) throws XmlBlasterException
+   private final MsgUnit[] getRaw(String xmlKey, String qos) throws XmlBlasterException
    {
-      MessageUnit[] units = null;
+      MsgUnitRaw[] units = null;
       if (secPlgn!=null) {
          units = importAll(driver.get(secPlgn.exportMessage(xmlKey),
                                       secPlgn.exportMessage(qos)));
@@ -1833,7 +1842,14 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       else {
          units = driver.get(xmlKey, qos);
       }
-      return units;
+      if (units == null) {
+         return null;
+      }
+      MsgUnit[] msgUnitArr = new MsgUnit[units.length];
+      for(int i=0; i<units.length; i++) {
+         msgUnitArr[i] = new MsgUnit(glob, units[i].getKey(), units[i].getContent(), units[i].getQos());
+      }
+      return msgUnitArr;
    }
 
 
@@ -1842,9 +1858,9 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">interface.get requirement</a>
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public final MessageUnit[] get(String xmlKey, String qos) throws XmlBlasterException, IllegalArgumentException
+   public final MsgUnit[] get(String xmlKey, String qos) throws XmlBlasterException, IllegalArgumentException
    {
-      MessageUnit[] units = null;
+      MsgUnit[] units = null;
       if (log.CALL) log.call(ME, "get() ...");
       if (qos==null) qos = "";
       if (xmlKey==null) throw new IllegalArgumentException("Please provide a valid XmlKey for get()");
@@ -1898,20 +1914,20 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       return tmp;
    }
 
-   private MessageUnit[] importAll(MessageUnit[] msgUnitArr) throws XmlBlasterException
+   private MsgUnitRaw[] importAll(MsgUnitRaw[] msgUnitArr) throws XmlBlasterException
    {
-      MessageUnit mu[] = new MessageUnit[msgUnitArr.length];
+      MsgUnitRaw mu[] = new MsgUnitRaw[msgUnitArr.length];
       for(int i=0; i<msgUnitArr.length; i++) {
         mu[i]=secPlgn.importMessage(msgUnitArr[i]);
       }
       return mu;
    }
 
-   private MessageUnit[] exportAll(MessageUnit[] msgUnitArr) throws XmlBlasterException
+   private MsgUnitRaw[] exportAll(MsgUnit[] msgUnitArr) throws XmlBlasterException
    {
-      MessageUnit mu[] = new MessageUnit[msgUnitArr.length];
+      MsgUnitRaw mu[] = new MsgUnitRaw[msgUnitArr.length];
       for(int i=0; i<msgUnitArr.length; i++) {
-        mu[i]=secPlgn.exportMessage(msgUnitArr[i]);
+        mu[i]=secPlgn.exportMessage(msgUnitArr[i].getMsgUnitRaw());
       }
       return mu;
    }

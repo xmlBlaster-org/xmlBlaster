@@ -22,7 +22,7 @@ import org.xmlBlaster.util.XmlBlasterException;
  * with your own lowlevel RMI or CORBA coding as well.
  *
  * @see org.xmlBlaster.client.protocol.I_XmlBlasterConnection
- * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  */
 public interface I_CallbackServer
 {

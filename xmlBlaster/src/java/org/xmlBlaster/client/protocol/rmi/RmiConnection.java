@@ -3,8 +3,8 @@ Name:      RmiConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: RmiConnection.java,v 1.27 2002/11/26 12:38:10 ruff Exp $
-Author:    ruff@swand.lake.de
+Version:   $Id: RmiConnection.java,v 1.28 2002/12/18 12:34:45 ruff Exp $
+Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.rmi;
 
@@ -19,7 +19,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.XmlBlasterSecurityManager;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.ConnectReturnQos;
 import org.xmlBlaster.util.DisconnectQos;
@@ -50,8 +50,8 @@ import java.applet.Applet;
  * <p />
  * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http
  *
- * @version $Revision: 1.27 $
- * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
+ * @version $Revision: 1.28 $
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  */
 public class RmiConnection implements I_XmlBlasterConnection
 {
@@ -382,7 +382,7 @@ public class RmiConnection implements I_XmlBlasterConnection
     * Enforced by I_XmlBlasterConnection interface (fail save mode)
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public final String publish(MessageUnit msgUnit) throws XmlBlasterException
+   public final String publish(MsgUnitRaw msgUnit) throws XmlBlasterException
    {
       if (log.TRACE) log.trace(ME, "Publishing ...");
       try {
@@ -399,7 +399,7 @@ public class RmiConnection implements I_XmlBlasterConnection
    /**
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public String[] publishArr(MessageUnit [] msgUnitArr) throws XmlBlasterException
+   public String[] publishArr(MsgUnitRaw [] msgUnitArr) throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "publishArr() ...");
       try {
@@ -416,7 +416,7 @@ public class RmiConnection implements I_XmlBlasterConnection
     * RMI does not support oneway messages. 
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public void publishOneway(MessageUnit [] msgUnitArr) throws XmlBlasterException
+   public void publishOneway(MsgUnitRaw [] msgUnitArr) throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "publishOneway(), RMI does not support oneway, we switch to publishArr() ...");
       publishArr(msgUnitArr);
@@ -441,7 +441,7 @@ public class RmiConnection implements I_XmlBlasterConnection
    /**
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public final MessageUnit[] get(String xmlKey, String qos) throws XmlBlasterException
+   public final MsgUnitRaw[] get(String xmlKey, String qos) throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "get() ...");
       try {

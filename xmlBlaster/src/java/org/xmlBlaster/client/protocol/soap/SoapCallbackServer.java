@@ -13,7 +13,6 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.CallbackAddress;
-import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.key.UpdateKey;
 
@@ -47,7 +46,7 @@ import java.io.IOException;
  * can find the callback server.
  * <p />
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
- * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  */
 public class SoapCallbackServer implements I_CallbackServer
 {

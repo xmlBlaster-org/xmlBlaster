@@ -23,7 +23,7 @@ import java.io.IOException;
  * <p />
  * One instance of this for each client, as a separate thread blocking
  * on the socket input stream waiting for messages from xmlBlaster. 
- * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  * @see org.xmlBlaster.protocol.socket.Parser
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html">The protocol.socket requirement</a>
  */

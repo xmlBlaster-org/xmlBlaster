@@ -19,7 +19,7 @@ import org.xmlBlaster.util.protocol.ProtoConverter;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.engine.xml2java.*;
 import org.xmlBlaster.client.qos.GetQos;
 import org.xmlBlaster.client.qos.EraseQos;
@@ -41,7 +41,7 @@ import org.jafw.saw.transport.*;
  * xmlBlaster would be on the same VM, making this way the soap protocol
  * totally transparent.
  * <p />
- * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  */
 public class SoapConnection implements I_XmlBlasterConnection
 {
@@ -348,7 +348,7 @@ public class SoapConnection implements I_XmlBlasterConnection
    /**
     * Publish a message.
     */
-   public final String publish(MessageUnit msgUnit) throws XmlBlasterException {
+   public final String publish(MsgUnitRaw msgUnit) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering publish(): id=" + sessionId);
       log.error(ME, "NOT IMPLEMENTED");
       return "";
@@ -367,7 +367,7 @@ public class SoapConnection implements I_XmlBlasterConnection
       }
 
       catch (ClassCastException e) {
-         log.error(ME+".publish", "not a valid MessageUnit: " + e.toString());
+         log.error(ME+".publish", "not a valid MsgUnitRaw: " + e.toString());
          throw new XmlBlasterException("Not a valid Message Unit", "Class Cast Exception");
       }
       catch (IOException e1) {
@@ -386,7 +386,7 @@ public class SoapConnection implements I_XmlBlasterConnection
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public final String[] publishArr(MessageUnit[] msgUnitArr)
+   public final String[] publishArr(MsgUnitRaw[] msgUnitArr)
       throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering publishArr: id=" + sessionId);
       log.error(ME, "NOT IMPLEMENTED");
@@ -432,7 +432,7 @@ public class SoapConnection implements I_XmlBlasterConnection
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public final void publishOneway(MessageUnit[] msgUnitArr)
+   public final void publishOneway(MsgUnitRaw[] msgUnitArr)
       throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "Entering publishOneway: id=" + sessionId);
@@ -524,7 +524,7 @@ public class SoapConnection implements I_XmlBlasterConnection
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public final MessageUnit[] get (XmlKey xmlKey, GetQosServer getQoS)
+   public final MsgUnitRaw[] get (XmlKey xmlKey, GetQosServer getQoS)
       throws XmlBlasterException {
       String xmlKey_literal = xmlKey.toXml();
       String getQoS_literal = getQoS.toXml();
@@ -538,12 +538,12 @@ public class SoapConnection implements I_XmlBlasterConnection
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public final MessageUnit[] get(String xmlKey_literal,
+   public final MsgUnitRaw[] get(String xmlKey_literal,
                                   String qos_literal) throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "Entering get() xmlKey=\n" + xmlKey_literal + ") ...");
       log.error(ME, "NOT IMPLEMENTED");
-      return new MessageUnit[0];
+      return new MsgUnitRaw[0];
       /*
       try {
          Vector args = new Vector();
@@ -552,8 +552,8 @@ public class SoapConnection implements I_XmlBlasterConnection
          args.addElement(qos_literal);
 
          Vector retVector = (Vector)getSoapClient().execute("xmlBlaster.get", args);
-         // extractXmlBlasterException the vector of vectors to a MessageUnit[] type
-         return ProtoConverter.vector2MessageUnitArray(retVector);
+         // extractXmlBlasterException the vector of vectors to a MsgUnitRaw[] type
+         return ProtoConverter.vector2MsgUnitRawArray(retVector);
       }
       catch (ClassCastException e) {
          log.error(ME+".get", "not a valid Vector: " + e.toString());
@@ -610,7 +610,7 @@ public class SoapConnection implements I_XmlBlasterConnection
       try {
          Parameter returnParam = soapClient.invoke(call);
          
-         //Ensure we recieved a non null response, Note: if the call was invoking a 'void' method 
+         //Ensure we received a non null response, Note: if the call was invoking a 'void' method 
          //then the return will always be null, but there will be a SOAPException thrown if an error occurs
          if (returnParam == null) {
             log.error(ME, "I got a null response for ping(), something went wrong");
@@ -705,7 +705,7 @@ public class SoapConnection implements I_XmlBlasterConnection
 
          org.xmlBlaster.client.key.PublishKey xmlKey = new org.xmlBlaster.client.key.PublishKey("", "text/xml", null);
 
-         MessageUnit msgUnit = new MessageUnit(xmlKey.toXml(), content, "<qos></qos>");
+         MsgUnitRaw msgUnit = new MsgUnitRaw(xmlKey.toXml(), content, "<qos></qos>");
          String publishOid = proxy.publish(sessionId, msgUnit);
          log.info(ME, "Published message with " + publishOid);
 

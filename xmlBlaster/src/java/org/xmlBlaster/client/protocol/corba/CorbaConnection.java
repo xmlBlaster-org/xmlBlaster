@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Author:    ruff@swand.lake.de
+Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
 
@@ -25,7 +25,7 @@ import org.jutils.io.FileUtil;
 import org.jutils.JUtilsException;
 
 import org.xmlBlaster.engine.helper.Constants;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.engine.helper.ServerRef;
 import org.xmlBlaster.protocol.corba.CorbaDriver;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
@@ -71,7 +71,7 @@ import java.applet.Applet;
  * This will be fixed as soon as possible.
  *
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
- * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  */
 public class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
 {
@@ -635,7 +635,7 @@ public class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
     * Enforced by I_XmlBlasterConnection interface (fail save mode)
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public final String publish(MessageUnit msgUnit) throws XmlBlasterException {
+   public final String publish(MsgUnitRaw msgUnit) throws XmlBlasterException {
       if (log.TRACE) log.trace(ME, "Publishing ...");
       try {
          return getXmlBlaster().publish(CorbaDriver.convert(msgUnit));
@@ -643,8 +643,7 @@ public class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
          if (log.TRACE) log.trace(ME, "XmlBlasterException: " + e.getMessage());
          throw CorbaDriver.convert(glob, e); // transform Corba exception to native exception
       } catch(Throwable e) {
-         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
-               "CORBA invocation of '" + msgUnit.getMsgKeyData().getOid() + "' failed: " + e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "publish() failed", e);
       }
    }
 
@@ -652,7 +651,7 @@ public class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
    /**
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public String[] publishArr(MessageUnit [] msgUnitArr) throws XmlBlasterException
+   public String[] publishArr(MsgUnitRaw [] msgUnitArr) throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "publishArr() ...");
       try {
@@ -668,7 +667,7 @@ public class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
    /**
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public void publishOneway(MessageUnit[] msgUnitArr) throws XmlBlasterException {
+   public void publishOneway(MsgUnitRaw[] msgUnitArr) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "publishOneway() ...");
       try {
          getXmlBlaster().publishOneway(CorbaDriver.convert(msgUnitArr));
@@ -697,7 +696,7 @@ public class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
    /**
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
-   public final MessageUnit[] get(String xmlKey, String qos) throws XmlBlasterException {
+   public final MsgUnitRaw[] get(String xmlKey, String qos) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "get() ...");
       try {
          return CorbaDriver.convert(glob, getXmlBlaster().get(xmlKey, qos));

@@ -3,8 +3,8 @@ Name:      SocketConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles connection to xmlBlaster with plain sockets
-Version:   $Id: SocketConnection.java,v 1.37 2002/11/26 12:38:12 ruff Exp $
-Author:    ruff@swand.lake.de
+Version:   $Id: SocketConnection.java,v 1.38 2002/12/18 12:34:45 ruff Exp $
+Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
 
@@ -22,7 +22,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.enum.MethodName;
 
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.engine.qos.GetQosServer;
@@ -49,7 +49,7 @@ import org.xmlBlaster.protocol.socket.Parser;
  * <p />
  * All adjustable parameters are explained in {@link org.xmlBlaster.client.protocol.socket.SocketConnection#usage()}
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html">The protocol.socket requirement</a>
- * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  */
 public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
 {
@@ -473,7 +473,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     * The normal publish is handled here like a publishArr
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public final String publish(MessageUnit msgUnit) throws XmlBlasterException {
+   public final String publish(MsgUnitRaw msgUnit) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering publish(): id=" + sessionId);
 
       try {
@@ -494,7 +494,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public final String[] publishArr(MessageUnit[] msgUnitArr) throws XmlBlasterException {
+   public final String[] publishArr(MsgUnitRaw[] msgUnitArr) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering publishArr: id=" + sessionId);
 
       if (msgUnitArr == null) {
@@ -519,7 +519,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public final void publishOneway(MessageUnit[] msgUnitArr) throws XmlBlasterException {
+   public final void publishOneway(MsgUnitRaw[] msgUnitArr) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering publishOneway: id=" + sessionId);
 
       if (msgUnitArr == null) {
@@ -539,7 +539,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    }
 
    /*
-   public final String[] sendUpdate(MessageUnit[] msgUnitArr)
+   public final String[] sendUpdate(MsgUnitRaw[] msgUnitArr)
       throws XmlBlasterException
       see HandleClient.java
    */
@@ -582,7 +582,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public final MessageUnit[] get (XmlKey xmlKey, GetQosServer getQoS)
+   public final MsgUnitRaw[] get (XmlKey xmlKey, GetQosServer getQoS)
       throws XmlBlasterException
    {
       String xmlKey_literal = xmlKey.toXml();
@@ -596,7 +596,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public final MessageUnit[] get(String xmlKey_literal,
+   public final MsgUnitRaw[] get(String xmlKey_literal,
                                   String qos_literal) throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "Entering get() xmlKey=\n" + xmlKey_literal + ") ...");
@@ -604,7 +604,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.GET, sessionId);
          parser.addKeyAndQos(xmlKey_literal, qos_literal);
          Object response = getCbReceiver().execute(parser, WAIT_ON_RESPONSE);
-         return (MessageUnit[])response;
+         return (MsgUnitRaw[])response;
       }
       catch (IOException e1) {
          if (log.TRACE) log.trace(ME+".get", "IO exception: " + e1.toString());

@@ -3,12 +3,12 @@ Name:      I_XmlBlasterConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native Interface to xmlBlaster
-Author:    ruff@swand.lake.de
+Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol;
 
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.ConnectReturnQos;
 import org.xmlBlaster.util.DisconnectQos;
@@ -30,7 +30,7 @@ import org.xmlBlaster.util.DisconnectQos;
  *
  * @see org.xmlBlaster.client.protocol.XmlBlasterConnection
  *
- * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  */
 public interface I_XmlBlasterConnection
 {
@@ -92,15 +92,18 @@ public interface I_XmlBlasterConnection
 
    public java.lang.String subscribe(java.lang.String xmlKey, java.lang.String qos) throws XmlBlasterException;
 
-   public org.xmlBlaster.engine.helper.MessageUnit[] get(java.lang.String xmlKey, java.lang.String qos) throws XmlBlasterException;
+   public org.xmlBlaster.util.MsgUnitRaw[] get(java.lang.String xmlKey, java.lang.String qos) throws XmlBlasterException;
 
    public String[] unSubscribe(java.lang.String xmlKey, java.lang.String qos) throws XmlBlasterException;
 
-   public String publish(org.xmlBlaster.engine.helper.MessageUnit msgUnit) throws XmlBlasterException;
+   /**
+    * @param The msgUnit which is encrypted if a security plugin is activated
+    */
+   public String publish(org.xmlBlaster.util.MsgUnitRaw msgUnit) throws XmlBlasterException;
 
-   public void publishOneway(org.xmlBlaster.engine.helper.MessageUnit [] msgUnitArr) throws XmlBlasterException;
+   public void publishOneway(org.xmlBlaster.util.MsgUnitRaw [] msgUnitArr) throws XmlBlasterException;
 
-   public String[] publishArr(org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr) throws XmlBlasterException;
+   public String[] publishArr(org.xmlBlaster.util.MsgUnitRaw[] msgUnitArr) throws XmlBlasterException;
 
    public java.lang.String[] erase(java.lang.String xmlKey, java.lang.String qos) throws XmlBlasterException;
 }

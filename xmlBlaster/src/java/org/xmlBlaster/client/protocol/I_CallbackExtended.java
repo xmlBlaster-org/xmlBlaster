@@ -3,7 +3,7 @@ Name:      I_XmlRpcCallback.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to easy get the xml-rpc callback messages
-Version:   $Id: I_CallbackExtended.java,v 1.6 2002/09/18 16:37:54 laghi Exp $
+Version:   $Id: I_CallbackExtended.java,v 1.7 2002/12/18 12:35:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol;
 
@@ -19,7 +19,7 @@ import org.xmlBlaster.util.XmlBlasterException;
  * the 3 update() variants, so that the protocol drivers
  * can choose the update() they like most.
  *
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  */
 public interface I_CallbackExtended extends I_Callback, I_CallbackRaw
@@ -41,7 +41,7 @@ public interface I_CallbackExtended extends I_Callback, I_CallbackRaw
     * @param cbSessionId The session ID specified by the client which registered the callback
     * @param updateKeyLiteral The arrived key (as an xml-string)
     * @param content   The arrived message content
-    * @param updateQosLiteral  Quality of Service of the MessageUnit
+    * @param updateQosLiteral  Quality of Service of the MsgUnitRaw
     *                      (as an xml-string)
     * @see I_Callback
     * @see AbstractCallbackExtended

@@ -22,7 +22,7 @@ import org.xmlBlaster.client.protocol.I_CallbackServer;
  *
  * ClientCbServerProtocolPlugin[IOR][1.0]=org.xmlBlaster.client.protocol.corba.CorbaCallbackServer
  * </pre>
- * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.html" target="others">protocol</a>
  */
 public class CbServerPluginManager extends PluginManagerBase

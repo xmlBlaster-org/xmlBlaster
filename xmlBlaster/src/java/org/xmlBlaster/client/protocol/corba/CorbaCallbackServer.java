@@ -3,8 +3,8 @@ Name:      CorbaCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaCallbackServer.java,v 1.28 2002/11/26 12:38:09 ruff Exp $
-Author:    ruff@swand.lake.de
+Version:   $Id: CorbaCallbackServer.java,v 1.29 2002/12/18 12:34:44 ruff Exp $
+Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
 
@@ -20,7 +20,7 @@ import org.xmlBlaster.protocol.corba.CorbaDriver;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackPOATie;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackHelper;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.client.PluginLoader;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 
@@ -182,13 +182,13 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
     * <p />
     * It implements the interface BlasterCallbackOperations.
     * <p />
-    * The call is converted to the native MessageUnit, and the other update()
+    * The call is converted to the native MsgUnitRaw, and the other update()
     * method of this class is invoked.
     * <p />
     * This oneway method does not return something, it is high performing but
     * you loose the application level hand shake.
     *
-    * @param msgUnitArr Contains a MessageUnit structs (your message) for CORBA
+    * @param msgUnitArr Contains a MsgUnitRaw structs (your message) for CORBA
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public void updateOneway(String cbSessionId, org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] msgUnitArr)
@@ -200,9 +200,9 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
       if (log.CALL) log.call(ME, "Entering updateOneway(" + cbSessionId + ") of " + msgUnitArr.length + " messages");
 
       try {
-         // convert Corba to internal MessageUnit and call update() ...
-         MessageUnit[] localMsgUnitArr = CorbaDriver.convert(glob, msgUnitArr);
-         boss.updateOneway(cbSessionId, localMsgUnitArr);
+         // convert Corba to internal MsgUnitRaw and call update() ...
+         MsgUnitRaw[] localMsgUnitRawArr = CorbaDriver.convert(glob, msgUnitArr);
+         boss.updateOneway(cbSessionId, localMsgUnitRawArr);
       }
       catch (Throwable e) {
          log.error(ME, "updateOneway() failed, exception is not sent to xmlBlaster: " + e.toString());
@@ -216,10 +216,10 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
     * <p />
     * It implements the interface BlasterCallbackOperations.
     * <p />
-    * The call is converted to the native MessageUnit, and the other update()
+    * The call is converted to the native MsgUnitRaw, and the other update()
     * method of this class is invoked.
     *
-    * @param msgUnitArr Contains a MessageUnit structs (your message) for CORBA
+    * @param msgUnitArr Contains a MsgUnitRaw structs (your message) for CORBA
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public String[] update(String cbSessionId, org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] msgUnitArr)
@@ -235,9 +235,9 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
       }
 
       try {
-         // convert Corba to internal MessageUnit and call update() ...
-         MessageUnit[] localMsgUnitArr = CorbaDriver.convert(glob, msgUnitArr);
-         return boss.update(cbSessionId, localMsgUnitArr);
+         // convert Corba to internal MsgUnitRaw and call update() ...
+         MsgUnitRaw[] localMsgUnitRawArr = CorbaDriver.convert(glob, msgUnitArr);
+         return boss.update(cbSessionId, localMsgUnitRawArr);
       }
       catch(XmlBlasterException e) {
          log.error(ME, "Delivering message to client failed, message is lost: " + e.toString());

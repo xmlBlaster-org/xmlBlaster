@@ -2,8 +2,6 @@
 Name:      AbstractCallbackExtended.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Easly extended class for protocol-unaware xmlBlaster clients.
-Version:   $Id: AbstractCallbackExtended.java,v 1.13 2002/11/26 12:38:06 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol;
 
@@ -15,7 +13,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
 
 
 /**
@@ -24,9 +22,9 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  * extend this class because one of the update methods is abstract.
  * <p>
  *
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
- * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  */
 public abstract class AbstractCallbackExtended implements I_CallbackExtended
 {
@@ -54,13 +52,14 @@ public abstract class AbstractCallbackExtended implements I_CallbackExtended
     * @param cbSessionId The session ID specified by the client which registered the callback
     * @param updateKeyLiteral The arrived key (as an xml-string)
     * @param content   The arrived message content
-    * @param updateQosLiteral  Quality of Service of the MessageUnit
+    * @param updateQosLiteral  Quality of Service of the MsgUnitRaw
     *                      (as an xml-string)
     * @see I_CallbackExtended
     */
    public String update(String cbSessionId, String updateKeyLiteral, byte[] content,
                       String updateQosLiteral) throws XmlBlasterException
    {
+      // import (decrypt) message
       I_ClientPlugin secPlgn = getSecurityPlugin();
       if (secPlgn != null) {
          updateKeyLiteral = secPlgn.importMessage(updateKeyLiteral);
@@ -68,6 +67,7 @@ public abstract class AbstractCallbackExtended implements I_CallbackExtended
          updateQosLiteral = secPlgn.importMessage(updateQosLiteral);
       }
 
+      // parse XML key and QoS
       UpdateKey updateKey = null;
       UpdateQos updateQos = null;
       try {
@@ -80,6 +80,7 @@ public abstract class AbstractCallbackExtended implements I_CallbackExtended
          throw new XmlBlasterException(glob, ErrorCode.USER_UPDATE_ILLEGALARGUMENT, ME+".update", "Parsing error", e);
       }
 
+      // invoke client code
       try {
          // Now we know all about the received message, dump it or do some checks
          /*
@@ -89,7 +90,14 @@ public abstract class AbstractCallbackExtended implements I_CallbackExtended
          */
          if (log.TRACE) log.trace(ME, "Received message [" + updateKey.getOid() + "] from publisher " + updateQos.getSender());
 
-         return update(cbSessionId, updateKey, content, updateQos);
+         String ret = update(cbSessionId, updateKey, content, updateQos);
+
+         // export (encrypt) return value
+         if (secPlgn != null) {
+            ret = secPlgn.exportMessage(ret);
+         }
+
+         return ret;
       }
       catch (XmlBlasterException e) {
          throw e;
@@ -122,13 +130,13 @@ public abstract class AbstractCallbackExtended implements I_CallbackExtended
     * It implements the interface I_CallbackRaw, used for example by the
     * InvocationRecorder
     * <p />
-    * It nicely converts the raw MessageUnit with raw Strings and arrays
+    * It nicely converts the raw MsgUnitRaw with raw Strings and arrays
     * in corresponding objects and calls for every received message
     * the I_Callback.update(), which you need to implement in your code.
     *
-    * @param msgUnitArr Contains MessageUnit structs (your message) in native form
+    * @param msgUnitArr Contains MsgUnitRaw structs (your message) in native form
     */
-   public String[] update(String cbSessionId, MessageUnit [] msgUnitArr) throws XmlBlasterException
+   public String[] update(String cbSessionId, MsgUnitRaw [] msgUnitArr) throws XmlBlasterException
    {
       if (msgUnitArr == null) {
          log.warn(ME, "Entering update() with null array.");
@@ -142,7 +150,7 @@ public abstract class AbstractCallbackExtended implements I_CallbackExtended
 
       String[] retArr = new String[msgUnitArr.length];
       for (int ii=0; ii<msgUnitArr.length; ii++) {
-         MessageUnit msgUnit = msgUnitArr[ii];
+         MsgUnitRaw msgUnit = msgUnitArr[ii];
          retArr[ii] = update(cbSessionId, msgUnit.getKey(), msgUnit.getContent(), msgUnit.getQos());
       }
       return retArr;
@@ -151,7 +159,7 @@ public abstract class AbstractCallbackExtended implements I_CallbackExtended
    /**
     * The oneway variant without a return value or exception
     */
-   public void updateOneway(String cbSessionId, org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr)
+   public void updateOneway(String cbSessionId, org.xmlBlaster.util.MsgUnitRaw[] msgUnitArr)
    {
       try {
          update(cbSessionId, msgUnitArr);
@@ -170,7 +178,7 @@ public abstract class AbstractCallbackExtended implements I_CallbackExtended
     * @param cbSessionId The session ID specified by the client which registered the callback
     * @param updateKey   The arrived key (as an xml-string)
     * @param content     The arrived message content
-    * @param updateQos   Quality of Service of the MessageUnit as an xml-string
+    * @param updateQos   Quality of Service of the MsgUnitRaw as an xml-string
     * @see org.xmlBlaster.client.I_Callback
     */
    public abstract String update(String cbSessionId, UpdateKey updateKey, byte[] content,
