@@ -9,16 +9,6 @@ These are examples on how to access xmlBlaster from a C++ client
 -  TestGet -ORBNamigAddr corbaname:rir:/NameService#xmlBlaster-Authenticate.MOM
 
 
-C++ callback:
-
-When using -ORBIIOPAddr, Mico will only listen on
-the one interface that handles this IP address, so servers will only
-be addressable using that exact address.
-
-You might want to try using -ORBIIOPAddr inet::9000 instead; Mico
-will then listen on INADDR_ANY.
-
-
 
 1.) Install MICO (2.3) and set the environment variable to point to MICO
 
@@ -69,4 +59,24 @@ You need to have a running web server and set the DocumentRoot to e.g.
 
 On problems edit $HOME/jacorb.properties and set
    jacorb.verbosity=1
+
+
+
+mico C++ callback:
+------------------
+
+When using -ORBIIOPAddr, Mico will only listen on
+the one interface that handles this IP address, so servers will only
+be addressable using that exact address.
+
+You might want to try using -ORBIIOPAddr inet::9000 instead; Mico
+will then listen on INADDR_ANY.
+
+
+mico name service with JacORB:
+------------------------------
+
+nsd --ior $HOME/NS_Ref -ORBNoCodeSets -ORBIIOAddr inet:155.157.20.64:12456 &
+
+The path $HOME/NS_Ref must match the entry in jacorb.properties
 
