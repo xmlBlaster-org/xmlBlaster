@@ -3,7 +3,7 @@ Name:      XmlBlasterProxy.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native xmlBlaster Proxy. Can be called by the client in the same VM 
-Version:   $Id: XmlBlasterProxy.java,v 1.1 2000/08/30 00:21:58 laghi Exp $
+Version:   $Id: XmlBlasterProxy.java,v 1.2 2000/09/01 21:22:54 laghi Exp $
 Author:    michele.laghi@attglobal.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.xmlrpc;
@@ -20,6 +20,9 @@ import org.xmlBlaster.client.UpdateQoS;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.protocol.AbstractCallbackExtended;
 import org.xmlBlaster.util.protocol.ProtoConverter;
+
+import org.xmlBlaster.client.PublishKeyWrapper; // just for testing
+import org.xmlBlaster.client.SubscribeKeyWrapper; // just for testing
 
 import helma.xmlrpc.XmlRpcClient;
 import helma.xmlrpc.WebServer;
@@ -38,10 +41,10 @@ public class XmlBlasterProxy extends AbstractCallbackExtended
    implements org.xmlBlaster.protocol.I_XmlBlaster   
 {
    private String ME = "XmlBlasterProxy";
-   private String url = "http://localhost:8080"; // address of the xmlBlaster server
-   private int callbackPort = 8081; // port on which to listen to callback
+   protected String url = "http://localhost:8080"; // address of xmlBlaster server
+   protected int callbackPort = 8081; // port on which to listen to callback
    private XmlRpcClient xmlRpcClient = null; // xml-rpc client to send method calls.
-
+   protected WebServer webServer = null;
 
    /**
     * One instance of this represents one xmlBlaster server.
@@ -59,7 +62,7 @@ public class XmlBlasterProxy extends AbstractCallbackExtended
          this.xmlRpcClient = new XmlRpcClient(url);
 
          // start the WebServer object here (to receive callbacks)
-         WebServer webServer = new WebServer(callbackPort);
+         webServer = new WebServer(callbackPort);
          webServer.addHandler("$default", this);
 
       }
@@ -526,7 +529,7 @@ public class XmlBlasterProxy extends AbstractCallbackExtended
    {
       // build the proxy
       try {
-         XmlBlasterProxy proxy = new XmlBlasterProxy("http://localhost:8080/RPC2", 8081);
+         XmlBlasterProxy proxy = new XmlBlasterProxy("http://localhost:8080", 8081);
          
          String qos = "<qos><callback type='XML-RPC'>http://localhost:8081</callback></qos>";
          String sessionId = "Session1";
@@ -536,21 +539,24 @@ public class XmlBlasterProxy extends AbstractCallbackExtended
 
          String contentString = "This is a simple Test Message for the xml-rpc Protocol";
          byte[] content = contentString.getBytes();
-         String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n";
-         xmlKey += "<key oid='' contentMime='text/xml'>\n </key>";
-         
-         MessageUnit msgUnit = new MessageUnit(xmlKey, content, "<qos></qos>");
+
+         PublishKeyWrapper xmlKey = new PublishKeyWrapper("", "text/xml", null);
+      
+         MessageUnit msgUnit = new MessageUnit(xmlKey.toXml(), content, "<qos></qos>");
          String publishOid = proxy.publish(sessionId, msgUnit);
          System.err.println("Published message with " + publishOid);
 
-         xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n";
-         xmlKey += "<key oid='" + publishOid + "'>\n </key>";
+         SubscribeKeyWrapper subscribeKey = new SubscribeKeyWrapper(publishOid);
+         
+         System.err.println("Subscribe key: " + subscribeKey.toXml());
 
-         String qualityOfService = "";
-         
-         proxy.subscribe(sessionId, xmlKey, qualityOfService);
-         System.out.println("Subscribed to '" + publishOid + "' ...");
-         
+         proxy.subscribe(sessionId, subscribeKey.toXml(), "");
+
+         // wait some time if necessary ....
+         proxy.erase(sessionId, subscribeKey.toXml(), "");
+
+         System.exit(0);
+                  
       } catch(XmlBlasterException e) {
          System.err.println("XmlBlasterException: " + e.toString());
       }
