@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.53 2003/02/27 10:57:22 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.54 2003/02/27 11:26:17 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -677,6 +677,7 @@ public class CorbaDriver implements I_Driver
       String text = "\n";
       text += "CorbaDriver options:\n";
       text += "   -ior.file           Specify a file where to dump the IOR of the AuthServer (for client access).\n";
+      text += "   -ior                Clients can specify the raw IOR string directly (for client access).\n";
       text += "   -hostname           IP address where the builtin http server publishes its AuthServer IOR\n";
       text += "                       This is useful for multihomed hosts or dynamic dial in IPs.\n";
       text += "   -port               Port number where the builtin http server publishes its AuthServer IOR.\n";
