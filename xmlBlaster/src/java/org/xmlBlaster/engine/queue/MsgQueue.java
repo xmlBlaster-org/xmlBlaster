@@ -3,7 +3,7 @@ Name:      MsgQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: MsgQueue.java,v 1.20 2002/06/20 21:21:25 ruff Exp $
+Version:   $Id: MsgQueue.java,v 1.21 2002/06/27 11:10:38 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queue;
@@ -318,8 +318,8 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
    public final MsgQueueEntry[] takeMsgs()
    {
       if (isShutdown) {
-         log.error(ME, "The queue is shutdown, no message access is possible.");
-         Thread.currentThread().dumpStack();
+         log.warn(ME, "The queue is shutdown, no message access is possible.");
+         if (log.TRACE) Thread.currentThread().dumpStack();
          return new MsgQueueEntry[0];
       }
       int size = super.size();
