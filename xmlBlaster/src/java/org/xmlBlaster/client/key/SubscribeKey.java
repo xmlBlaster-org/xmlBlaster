@@ -11,7 +11,7 @@ import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.util.XmlBlasterException;
 
 /**
- * Wrap the XML key for a subscribe() invocation. 
+ * Wrap the XML key for a subscribe() invocation.
  * <p>
  * See QueryKeySaxFactory for a syntax description of the allowed xml structure
  * </p>
@@ -33,7 +33,7 @@ public class SubscribeKey
    }
 
    /**
-    * Constructor for XPath query. 
+    * Constructor for XPath query.
     * @param queryString  The String with e.g. XPath syntax
     * @param queryType    The query syntax, e.g. Constants.XPATH
     * @param XmlBlasterException for invalid queryType
@@ -47,7 +47,7 @@ public class SubscribeKey
    }
 
    /**
-    * Set the $lt;key oid="...">.
+    * Set the &lt;key oid="...">.
     * @param The unique key oid
     */
    public final void setOid(String oid) {
@@ -71,7 +71,7 @@ public class SubscribeKey
    }
 
    /**
-    * Your XPath query string. 
+    * Your XPath query string.
     * @param str Your tags in ASCII XML syntax
     */
    public void setQueryString(String tags) {
@@ -83,7 +83,7 @@ public class SubscribeKey
    }
 
    /**
-    * Give a hint to which cluster domain this Key belongs. 
+    * Give a hint to which cluster domain this Key belongs.
     */
    public void setDomain(String domain) {
       this.queryKeyData.setDomain(domain);

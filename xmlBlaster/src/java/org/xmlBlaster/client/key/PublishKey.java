@@ -10,7 +10,7 @@ import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.XmlBlasterException;
 
 /**
- * Wrap the XML key data for publish() invocations. 
+ * Wrap the XML key data for publish() invocations.
  * <p>
  * See MsgKeySaxFactory for a syntax description of the allowed xml structure
  * </p>
@@ -23,14 +23,14 @@ public class PublishKey
    private final MsgKeyData msgKeyData;
 
    /**
-    * Create a key data holder, the message oid is randomly generated. 
+    * Create a key data holder, the message oid is randomly generated.
     */
    public PublishKey(Global glob) {
       this.msgKeyData = new MsgKeyData(glob);
    }
 
    /**
-    * Create a key data holder with the given message oid. 
+    * Create a key data holder with the given message oid.
     */
    public PublishKey(Global glob, String oid) {
       this.msgKeyData = new MsgKeyData(glob);
@@ -38,7 +38,7 @@ public class PublishKey
    }
 
    /**
-    * Create a key data holder with the given message oid and its mime type. 
+    * Create a key data holder with the given message oid and its mime type.
     */
    public PublishKey(Global glob, String oid, String contentMime) {
       this.msgKeyData = new MsgKeyData(glob);
@@ -47,7 +47,7 @@ public class PublishKey
    }
 
    /**
-    * Create a key data holder with the given message oid and its mime types. 
+    * Create a key data holder with the given message oid and its mime types.
     */
    public PublishKey(Global glob, String oid, String contentMime, String contentMimeExtended) {
       this.msgKeyData = new MsgKeyData(glob);
@@ -57,7 +57,7 @@ public class PublishKey
    }
 
    /**
-    * Create a key data holder with the given message oid and its mime types. 
+    * Create a key data holder with the given message oid and its mime types.
     * @param domain The cluster domain
     */
    public PublishKey(Global glob, String oid, String contentMime, String contentMimeExtended, String domain) {
@@ -69,7 +69,7 @@ public class PublishKey
    }
 
    /**
-    * Pass a pre filled data object. 
+    * Pass a pre filled data object.
     */
    public PublishKey(Global glob, MsgKeyData msgKeyData) {
       this.msgKeyData = msgKeyData;
@@ -81,7 +81,7 @@ public class PublishKey
    }
 
    /**
-    * Set the $lt;key oid="...">.
+    * Set the &lt;key oid="...">.
     * @param The unique key oid
     */
    public void setOid(String oid) {
