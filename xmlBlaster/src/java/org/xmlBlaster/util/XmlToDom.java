@@ -3,7 +3,7 @@ Name:      XmlToDom.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper which parses a XML ASCII string into a DOM tree
-Version:   $Id: XmlToDom.java,v 1.19 2002/11/26 12:39:34 ruff Exp $
+Version:   $Id: XmlToDom.java,v 1.20 2002/12/18 11:50:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -190,7 +190,7 @@ public class XmlToDom
    /**
     * Dump state of this object into XML.
     * <br>
-    * @return XML state of MessageUnitHandler
+    * @return XML string
     */
    public final StringBuffer printOn() throws XmlBlasterException
    {
@@ -202,7 +202,7 @@ public class XmlToDom
     * Dump state of this object into XML.
     * <br>
     * @param extraOffset indenting of tags
-    * @return XML state of MessageUnitHandler
+    * @return XML string
     */
    public final StringBuffer printOn(String extraOffset) throws XmlBlasterException
    {
