@@ -5,8 +5,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 
@@ -27,14 +28,16 @@ import java.util.*;
 public class BlasterCache
 {
    private static final String ME = "BlasterCache";
+   private final Global glob;
 
    private Hashtable query2SubId             = null;
    private Hashtable subscriptions           = null;
    private int size                          = 0;
 
 
-   public BlasterCache(int size)
+   public BlasterCache(Global glob, int size)
    {
+      this.glob = glob;
       query2SubId = new Hashtable();
       subscriptions = new Hashtable();
       this.size = size;
@@ -47,11 +50,11 @@ public class BlasterCache
    }
 
 
-   public boolean update(String subId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
+   public boolean update(String subId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException
    {
       return update(subId, updateKey.toXml(), content, updateQos.toXml());
    }
-   public boolean update(String subId, String updateKey, byte[] content, String updateQos)
+   public boolean update(String subId, String updateKey, byte[] content, String updateQos) throws XmlBlasterException
    {
       Object obj = subscriptions.get( subId );
       if( obj == null ) {
@@ -59,14 +62,14 @@ public class BlasterCache
       }
       else {
          Hashtable messages = (Hashtable) obj;
-         messages.put(subId, new MessageUnit(updateKey, content, updateQos));
+         messages.put(subId, new MsgUnit(updateKey, content, updateQos));
          return true;
       }
    }
 
-   public MessageUnit[] get( String xmlKey, String xmlQos ) throws XmlBlasterException
+   public MsgUnit[] get( String xmlKey, String xmlQos ) throws XmlBlasterException
    {
-      MessageUnit[] messageUnits = null;
+      MsgUnit[] messageUnits = null;
 
       //Look into cache if xmlKey is already there
       String subId = (String)query2SubId.get(xmlKey);
@@ -74,12 +77,12 @@ public class BlasterCache
       //if yes, return the content of the cache entry
       if(subId != null) {
          Hashtable messages = (Hashtable)subscriptions.get( subId );
-         messageUnits = new MessageUnit[messages.size()];
+         messageUnits = new MsgUnit[messages.size()];
          int i = 0;
          Enumeration keys = messages.keys();
          Enumeration values = messages.elements();
          while( keys.hasMoreElements() && values.hasMoreElements() ) {
-            messageUnits[i] = (MessageUnit)values.nextElement();
+            messageUnits[i] = (MsgUnit)values.nextElement();
             i++;
          }
       }
@@ -94,7 +97,7 @@ public class BlasterCache
     * @return true - entry has been created
     *         false- cache is full
     */
-   public boolean newEntry( String subId, String xmlKey, MessageUnit[] units )
+   public boolean newEntry( String subId, String xmlKey, MsgUnit[] units ) throws XmlBlasterException
    {
       if(query2SubId.size() < size) {
          addSubscription( xmlKey, subId );
