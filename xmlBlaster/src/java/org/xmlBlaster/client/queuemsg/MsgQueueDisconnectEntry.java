@@ -10,8 +10,8 @@ import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.PriorityEnum;
-import org.xmlBlaster.util.enum.MethodName;
+import org.xmlBlaster.util.def.PriorityEnum;
+import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 

@@ -13,7 +13,7 @@ import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.authentication.I_ClientListener;
 import org.xmlBlaster.authentication.ClientEvent;
 import org.xmlBlaster.authentication.SessionInfo;
-import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.def.Constants;
 
 import java.util.*;
 

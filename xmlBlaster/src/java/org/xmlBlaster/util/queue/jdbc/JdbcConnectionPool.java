@@ -23,7 +23,7 @@ import java.util.Hashtable;
 
 // only for testing
 import org.xmlBlaster.util.I_Timeout;
-import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.def.ErrorCode;
 
 import org.xmlBlaster.util.queue.I_StorageProblemListener;
 import org.xmlBlaster.util.queue.I_StorageProblemNotifier;

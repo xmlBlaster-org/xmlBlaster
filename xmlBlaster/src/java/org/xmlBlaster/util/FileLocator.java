@@ -10,7 +10,7 @@ import org.xmlBlaster.util.Global;
 import java.io.File;
 import java.util.StringTokenizer;
 import java.util.Vector;
-import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.jutils.log.LogChannel;
 import java.net.URL;
 import java.io.InputStream;

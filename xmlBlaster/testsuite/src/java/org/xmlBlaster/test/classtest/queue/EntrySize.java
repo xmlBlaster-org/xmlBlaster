@@ -6,7 +6,7 @@ import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.queue.StorageId;
-import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.MsgUnitWrapper;
 import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;

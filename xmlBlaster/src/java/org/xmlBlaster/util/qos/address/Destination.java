@@ -7,7 +7,7 @@ package org.xmlBlaster.util.qos.address;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
-import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.def.Constants;
 
 /**
  * Holding destination address attributes.

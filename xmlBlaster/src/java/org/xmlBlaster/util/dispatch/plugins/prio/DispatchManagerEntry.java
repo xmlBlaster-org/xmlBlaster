@@ -59,8 +59,8 @@ public final class DispatchManagerEntry
       return this.currConnectionState;
    }
 
-   public void setCurrConnectionState(ConnectionStateEnum enum) {
-      this.currConnectionState = enum;
+   public void setCurrConnectionState(ConnectionStateEnum stateEnum) {
+      this.currConnectionState = stateEnum;
    }
 
    /**

@@ -10,8 +10,8 @@ package org.xmlBlaster.authentication;
 import org.jutils.log.LogChannel;
 
 import org.xmlBlaster.engine.Global;
-import org.xmlBlaster.util.enum.ErrorCode;
-import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.qos.address.CallbackAddress;

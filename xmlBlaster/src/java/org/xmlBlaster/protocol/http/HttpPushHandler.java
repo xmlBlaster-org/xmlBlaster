@@ -12,7 +12,7 @@ import org.jutils.text.StringHelper;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.MethodName;
+import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;

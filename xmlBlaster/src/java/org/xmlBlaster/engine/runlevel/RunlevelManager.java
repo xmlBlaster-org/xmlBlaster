@@ -8,7 +8,7 @@ package org.xmlBlaster.engine.runlevel;
 import org.jutils.log.LogChannel;
 import org.jutils.time.TimeHelper;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.authentication.Authenticate;
 

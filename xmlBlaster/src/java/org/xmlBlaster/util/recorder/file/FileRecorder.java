@@ -11,18 +11,18 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.MethodName;
+import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.recorder.I_InvocationRecorder;
 import org.xmlBlaster.util.qos.StatusQosData;
 import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.client.I_CallbackRaw;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.protocol.I_XmlBlaster;
-import org.xmlBlaster.util.enum.MethodName;
+import org.xmlBlaster.util.def.MethodName;
 
 import java.io.IOException;
 

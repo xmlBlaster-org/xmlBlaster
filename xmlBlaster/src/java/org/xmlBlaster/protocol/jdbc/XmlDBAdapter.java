@@ -3,7 +3,7 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   The thread that does the actual connection and interaction
- * Version:   $Id: XmlDBAdapter.java,v 1.30 2003/03/24 16:13:20 ruff Exp $
+ * Version:   $Id: XmlDBAdapter.java,v 1.31 2004/02/22 17:28:31 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
@@ -14,7 +14,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.qos.address.Destination;
-import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.engine.qos.GetReturnQosServer;
 import org.xmlBlaster.client.key.PublishKey;
 

@@ -3,7 +3,7 @@ package org.xmlBlaster.authentication.plugins.demo;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
-import org.xmlBlaster.util.enum.MethodName;
+import org.xmlBlaster.util.def.MethodName;
 import org.jutils.log.LogChannel;
 
 

@@ -9,7 +9,7 @@ package org.xmlBlaster.engine;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.engine.admin.I_AdminSubscription;
-import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.key.KeyData;

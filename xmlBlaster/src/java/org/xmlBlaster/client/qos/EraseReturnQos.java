@@ -8,7 +8,7 @@ package org.xmlBlaster.client.qos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.StatusQosData;
-import org.xmlBlaster.util.enum.MethodName;
+import org.xmlBlaster.util.def.MethodName;
 
 
 /**
@@ -67,7 +67,7 @@ public final class EraseReturnQos
    /**
     * Additional structured information about a state. 
     * @return "QUEUED" or "QUEUED[bilbo]"
-    * @see org.xmlBlaster.util.enum.Constants
+    * @see org.xmlBlaster.util.def.Constants
     */
    public String getStateInfo() {
       return this.statusQosData.getStateInfo();

@@ -9,7 +9,7 @@ package org.xmlBlaster.util;
 import java.lang.ref.WeakReference;
 import java.util.TreeMap;
 import java.util.NoSuchElementException;
-import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.def.ErrorCode;
 
 /**
  * Allows you be called back after a given delay.

@@ -8,7 +8,7 @@ package org.xmlBlaster.util.dispatch.plugins.prio;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.PriorityEnum;
+import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 
 /**

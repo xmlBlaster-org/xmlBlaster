@@ -9,7 +9,7 @@ import org.xmlBlaster.util.qos.StatusQosSaxFactory;
 import org.xmlBlaster.util.qos.StatusQosQuickParseFactory;
 import org.xmlBlaster.client.qos.GetReturnQos;
 import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.def.Constants;
 
 import junit.framework.*;
 

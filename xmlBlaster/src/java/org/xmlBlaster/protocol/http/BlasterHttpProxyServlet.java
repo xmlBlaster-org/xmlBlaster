@@ -11,7 +11,7 @@ import org.jutils.runtime.Memory;
 import org.jutils.time.TimeHelper;
 
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.EraseQos;
@@ -21,7 +21,7 @@ import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.MsgUnitRaw;
-import org.xmlBlaster.util.enum.MethodName;
+import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.key.UnSubscribeKey;
 import org.xmlBlaster.client.key.EraseKey;
@@ -71,19 +71,19 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
       if (!propertyRead) {
          propertyRead = true;
          // Add the web.xml parameters to our environment settings:
-         Enumeration enum = conf.getInitParameterNames();
+         Enumeration enumer = conf.getInitParameterNames();
          int count = 0;
-         while(enum.hasMoreElements()) {
-            if (enum.nextElement() == null)
+         while(enumer.hasMoreElements()) {
+            if (enumer.nextElement() == null)
                continue;
             count++;
          }
          String[] args = new String[2*count];
 
          count = 0;
-         enum = conf.getInitParameterNames();
-         while(enum.hasMoreElements()) {
-            String name = (String)enum.nextElement();
+         enumer = conf.getInitParameterNames();
+         while(enumer.hasMoreElements()) {
+            String name = (String)enumer.nextElement();
             if (name == null)
                continue;
             if (!name.startsWith("-"))

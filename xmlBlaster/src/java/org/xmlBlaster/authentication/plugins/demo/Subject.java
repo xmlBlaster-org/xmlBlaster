@@ -2,7 +2,7 @@ package org.xmlBlaster.authentication.plugins.demo;
 
 import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.MethodName;
+import org.xmlBlaster.util.def.MethodName;
 
 public class Subject implements I_Subject {
    private String       name = null;

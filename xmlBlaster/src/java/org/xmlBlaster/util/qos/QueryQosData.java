@@ -8,7 +8,7 @@ package org.xmlBlaster.util.qos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.util.property.PropBoolean;
-import org.xmlBlaster.util.enum.MethodName;
+import org.xmlBlaster.util.def.MethodName;
 
 import java.util.ArrayList;
 

@@ -7,7 +7,7 @@ package org.xmlBlaster.util.pool;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Timeout;
-import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.def.ErrorCode;
 
 import java.util.Hashtable;
 import java.util.Vector;

@@ -14,7 +14,7 @@ import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.util.cluster.NodeId;
 import org.xmlBlaster.util.cluster.RouteInfo;
-import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.def.Constants;
 
 import org.xml.sax.Attributes;
 

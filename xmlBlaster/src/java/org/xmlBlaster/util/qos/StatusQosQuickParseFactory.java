@@ -8,7 +8,7 @@ package org.xmlBlaster.util.qos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.RcvTimestamp;
-import org.xmlBlaster.util.enum.MethodName;
+import org.xmlBlaster.util.def.MethodName;
 
 /**
  * Parsing xml QoS (quality of service) of return status. 

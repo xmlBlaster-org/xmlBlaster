@@ -10,7 +10,7 @@ import org.xmlBlaster.engine.MsgUnitWrapper;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.Timestamp;
-import org.xmlBlaster.util.enum.PriorityEnum;
+import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.queue.StorageId;
 
 /**

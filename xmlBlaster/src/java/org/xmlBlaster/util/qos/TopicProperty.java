@@ -7,7 +7,7 @@ package org.xmlBlaster.util.qos;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.storage.MsgUnitStoreProperty;
 import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
 import org.xmlBlaster.util.property.PropBoolean;

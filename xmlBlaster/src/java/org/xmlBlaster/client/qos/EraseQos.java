@@ -7,7 +7,7 @@ package org.xmlBlaster.client.qos;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.qos.QueryQosData;
-import org.xmlBlaster.util.enum.MethodName;
+import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.qos.ClientProperty;
 
 /**

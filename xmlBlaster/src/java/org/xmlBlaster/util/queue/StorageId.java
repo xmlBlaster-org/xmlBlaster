@@ -7,7 +7,7 @@ package org.xmlBlaster.util.queue;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.def.ErrorCode;
 
 /**
  * Class encapsulating the unique id of a queue or a cache. 

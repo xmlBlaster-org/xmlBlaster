@@ -6,7 +6,7 @@ import org.xmlBlaster.util.plugin.I_Plugin;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.authentication.plugins.I_Manager;
 import org.xmlBlaster.authentication.plugins.I_Session;
 import org.xmlBlaster.authentication.Authenticate;

@@ -2,7 +2,7 @@ package org.xmlBlaster.test.classtest;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.def.ErrorCode;
 
 import junit.framework.*;
 

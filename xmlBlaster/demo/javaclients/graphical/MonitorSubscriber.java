@@ -63,9 +63,9 @@ public class MonitorSubscriber implements I_Callback {
    private String[] getAssociatedTexts(Figure fig) {
       if (fig == null) return null;
       ArrayList list = new ArrayList();
-      FigureEnumeration enum = fig.figures();
-      while (enum.hasNextFigure()) {
-         Figure fig1 = enum.nextFigure();
+      FigureEnumeration enumer = fig.figures();
+      while (enumer.hasNextFigure()) {
+         Figure fig1 = enumer.nextFigure();
          if (fig1.getTextHolder() != null) {
             String txt = fig1.getTextHolder().getText();
             if (isCommand(txt)) list.add(txt);
@@ -77,10 +77,10 @@ public class MonitorSubscriber implements I_Callback {
 
 
    private boolean prepareClient(Drawing drawing) {
-      FigureEnumeration enum = drawing.figures();
+      FigureEnumeration enumer = drawing.figures();
       boolean ret = false;
-      while (enum.hasNextFigure()) {
-         Figure fig = enum.nextFigure();
+      while (enumer.hasNextFigure()) {
+         Figure fig = enumer.nextFigure();
          String[] txt = getAssociatedTexts(fig);
          if (txt != null) {
             for (int i=0; i < txt.length; i++) {

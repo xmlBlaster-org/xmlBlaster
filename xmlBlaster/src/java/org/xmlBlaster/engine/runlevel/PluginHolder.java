@@ -8,8 +8,8 @@ package org.xmlBlaster.engine.runlevel;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.enum.ErrorCode;
-import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.def.Constants;
 
 import java.util.Hashtable;
 import java.util.Enumeration;
@@ -117,9 +117,9 @@ public class PluginHolder {
       if (this.pluginConfigsNodes!=null && node!=null) {
          Hashtable nodeTable = (Hashtable)this.pluginConfigsNodes.get(node);
          if (nodeTable != null) {
-            Enumeration enum = nodeTable.keys();
-            while (enum.hasMoreElements()) {
-               String key = (String)enum.nextElement();
+            Enumeration enumer = nodeTable.keys();
+            while (enumer.hasMoreElements()) {
+               String key = (String)enumer.nextElement();
                tmp.put(key, nodeTable.get(key));
             }
          }
@@ -131,9 +131,9 @@ public class PluginHolder {
       int size = tmp.size();
       PluginConfig[] ret = new PluginConfig[size];
       int i = 0;
-      Enumeration enum = tmp.keys();
-      while (enum.hasMoreElements()) {
-         String key = (String)enum.nextElement();
+      Enumeration enumer = tmp.keys();
+      while (enumer.hasMoreElements()) {
+         String key = (String)enumer.nextElement();
          ret[i] = (PluginConfig)tmp.get(key);
          i++;
       }
@@ -151,16 +151,16 @@ public class PluginHolder {
 
       sb.append(offset).append("<xmlBlaster>");
       // append all defaults ...
-      Enumeration enum = this.pluginConfigsDefault.keys();
-      while (enum.hasMoreElements()) {
-         String key = (String)enum.nextElement();
+      Enumeration enumer = this.pluginConfigsDefault.keys();
+      while (enumer.hasMoreElements()) {
+         String key = (String)enumer.nextElement();
          PluginConfig pluginConfig = (PluginConfig)this.pluginConfigsDefault.get(key);
          sb.append(pluginConfig.toXml(extraOffset + "   "));
       }
 
-      enum = this.pluginConfigsNodes.keys();
-      while (enum.hasMoreElements()) {
-         String nodeId = (String)enum.nextElement();
+      enumer = this.pluginConfigsNodes.keys();
+      while (enumer.hasMoreElements()) {
+         String nodeId = (String)enumer.nextElement();
          Hashtable nodeTable = (Hashtable)this.pluginConfigsNodes.get(nodeId);
          sb.append(offset).append("   ").append("<node id='").append(nodeId).append("'>");
          Enumeration enumNodes = nodeTable.keys();

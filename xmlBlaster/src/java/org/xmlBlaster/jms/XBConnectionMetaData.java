@@ -14,7 +14,7 @@ import javax.jms.ConnectionMetaData;
 import javax.jms.JMSException;
 
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.def.ErrorCode;
 
 /**
  * XBConnectionMetaData

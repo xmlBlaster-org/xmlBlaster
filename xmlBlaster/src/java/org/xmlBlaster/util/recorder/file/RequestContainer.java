@@ -11,7 +11,7 @@ package org.xmlBlaster.util.recorder.file;
 import java.io.Serializable;
 
 import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.util.enum.MethodName;
+import org.xmlBlaster.util.def.MethodName;
 
 /**
  * Contains fields for all necessary data provided by each

@@ -10,7 +10,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.engine.admin.I_CommandHandler;

@@ -18,7 +18,7 @@ import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.test.Util;

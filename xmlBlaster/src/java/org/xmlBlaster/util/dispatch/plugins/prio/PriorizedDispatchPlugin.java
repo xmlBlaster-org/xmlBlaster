@@ -10,7 +10,7 @@ import org.jutils.init.I_PropertyChangeListener;
 import org.jutils.init.PropertyChangeEvent;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.dispatch.plugins.I_MsgDispatchInterceptor;
 import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;

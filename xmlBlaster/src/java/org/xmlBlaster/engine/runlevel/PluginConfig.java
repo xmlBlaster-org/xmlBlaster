@@ -8,7 +8,7 @@ package org.xmlBlaster.engine.runlevel;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Timestamp;
-import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.def.Constants;
 
 import java.util.Vector;
 import java.util.Properties;
@@ -195,9 +195,9 @@ public class PluginConfig
 
       // and now the child elements (first attributes and then actions)
       String offset2 = offset + "   ";
-      Enumeration enum = this.attributes.keys();
-      while (enum.hasMoreElements()) {
-         String key =(String)enum.nextElement();
+      Enumeration enumer = this.attributes.keys();
+      while (enumer.hasMoreElements()) {
+         String key =(String)enumer.nextElement();
          String value = this.attributes.getProperty(key);
          sb.append(offset2).append("<attribute id='").append(key).append("'>");
          if (this.wrappedAttributes.contains(key)) {
@@ -207,9 +207,9 @@ public class PluginConfig
          sb.append("</attribute>");
       }
 
-      enum = this.actions.elements();
-      while (enum.hasMoreElements()) {
-         RunLevelAction value = (RunLevelAction)enum.nextElement();
+      enumer = this.actions.elements();
+      while (enumer.hasMoreElements()) {
+         RunLevelAction value = (RunLevelAction)enumer.nextElement();
          sb.append(value.toXml(extraOffset + "   "));
       }
       sb.append(offset).append("</plugin>");

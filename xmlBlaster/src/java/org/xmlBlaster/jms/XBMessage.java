@@ -21,9 +21,9 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SessionName;
-import org.xmlBlaster.util.enum.ErrorCode;
-import org.xmlBlaster.util.enum.MethodName;
-import org.xmlBlaster.util.enum.PriorityEnum;
+import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.ClientProperty;
@@ -96,9 +96,9 @@ public class XBMessage implements Message {
     */
    private void exportExtraHeader() {
       if (this.qos != null) { 
-         Enumeration enum = this.extraHeader.keys();
-         while (enum.hasMoreElements()) {
-            String key = (String)enum.nextElement();
+         Enumeration enumer = this.extraHeader.keys();
+         while (enumer.hasMoreElements()) {
+            String key = (String)enumer.nextElement();
             Object value = this.extraHeader.get(key);
             this.qos.addClientProperty("jms/" + key, ClientProperty.getPropertyType(value), (String)value);
          }

@@ -5,7 +5,7 @@ import java.net.URL;
 import java.io.*;
 import java.util.*;
 import org.apache.commons.codec.binary.Base64;
-import org.xmlBlaster.util.enum.MethodName;
+import org.xmlBlaster.util.def.MethodName;
 
 /**
  * Opens a persistent http connection to the servlet which is the proxy to xmlBlaster. 

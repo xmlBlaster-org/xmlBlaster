@@ -16,7 +16,7 @@ import javax.jms.JMSException;
 import javax.jms.ObjectMessage;
 
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.qos.MsgQosData;
 

@@ -8,7 +8,7 @@ Author:    xmlBlaster@marcelruff.info
 package org.xmlBlaster.engine.cluster;
 
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.def.Constants;
 
 import java.util.Map;
 import java.util.TreeMap;

@@ -14,7 +14,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.util.JdkCompatible;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.qos.address.Address;
 
 import org.xmlBlaster.util.plugin.I_Plugin;
@@ -23,7 +23,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
 import org.jutils.io.FileUtil;
 import org.jutils.JUtilsException;
 
-import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.qos.address.ServerRef;
 import org.xmlBlaster.protocol.corba.OrbInstanceFactory;

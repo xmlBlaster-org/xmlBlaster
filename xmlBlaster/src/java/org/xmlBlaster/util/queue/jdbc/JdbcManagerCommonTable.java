@@ -8,7 +8,7 @@ package org.xmlBlaster.util.queue.jdbc;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.Global;
 
 import java.sql.Connection;
@@ -2453,9 +2453,9 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          ownProperties = (java.util.Properties)pluginInfo.getParameters().clone();
       //overwrite our onw properties ...
       if (properties != null) {
-         java.util.Enumeration enum = properties.keys();
-         while (enum.hasMoreElements()) {
-            String key =(String)enum.nextElement();
+         java.util.Enumeration enumer = properties.keys();
+         while (enumer.hasMoreElements()) {
+            String key =(String)enumer.nextElement();
             ownProperties.put(key, properties.getProperty(key));
          }
       }

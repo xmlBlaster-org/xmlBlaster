@@ -7,7 +7,7 @@ Comment:   Handling one client property of QosData
 package org.xmlBlaster.util;
 
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.def.Constants;
 import org.apache.commons.codec.binary.Base64;
 
 /**

@@ -20,7 +20,7 @@ import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.def.Constants;
 
 
 import java.util.Vector;

@@ -7,7 +7,7 @@ package org.xmlBlaster.engine.dispatch;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
@@ -19,7 +19,7 @@ import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.util.dispatch.DispatchConnection;
 import org.xmlBlaster.authentication.plugins.I_MsgSecurityInterceptor;
-import org.xmlBlaster.util.enum.MethodName;
+import org.xmlBlaster.util.def.MethodName;
 
 
 /**

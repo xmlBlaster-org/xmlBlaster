@@ -8,7 +8,7 @@ package org.xmlBlaster.engine.qos;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.PriorityEnum;
+import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.qos.QosData;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.TopicProperty;

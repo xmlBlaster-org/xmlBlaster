@@ -7,7 +7,7 @@ Comment:   Holding serverRef address string and protocol string to
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos.address;
 
-import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.def.Constants;
 
 /**
  * Helper class holding serverRef address string and protocol string.

@@ -10,12 +10,12 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.*;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.MethodName;
-import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.qos.address.AddressBase;
-import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;

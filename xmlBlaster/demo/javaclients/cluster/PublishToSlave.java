@@ -3,7 +3,7 @@ package javaclients.cluster;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.*;
-import org.xmlBlaster.util.enum.PriorityEnum;
+import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.key.UpdateKey;

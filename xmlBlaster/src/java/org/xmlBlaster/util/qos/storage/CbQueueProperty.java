@@ -8,7 +8,7 @@ package org.xmlBlaster.util.qos.storage;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 
 /**

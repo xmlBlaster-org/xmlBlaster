@@ -9,7 +9,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.SubscribeKey;

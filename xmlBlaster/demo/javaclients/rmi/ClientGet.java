@@ -3,7 +3,7 @@ Name:      ClientGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster with RMI
-Version:   $Id: ClientGet.java,v 1.20 2003/05/23 09:04:24 ruff Exp $
+Version:   $Id: ClientGet.java,v 1.21 2004/02/22 17:24:44 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.rmi;
 
@@ -11,7 +11,7 @@ import org.jutils.time.StopWatch;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;

@@ -8,7 +8,7 @@ package org.xmlBlaster.client.qos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.qos.ClientProperty;
-import org.xmlBlaster.util.enum.MethodName;
+import org.xmlBlaster.util.def.MethodName;
 
 /**
  * This class encapsulates the QoS of an unSubcribe() request. 

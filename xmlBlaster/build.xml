@@ -699,7 +699,7 @@ TODO
       <unjar src="${lib.dir}/commons-codec.jar" dest="${build.dest}"/>
       <jar destfile="${build.war}/xmlBlasterAppletLib.jar"
            basedir="${build.dest}/"
-           includes="**/org/xmlBlaster/client/protocol/http/applet/*.class,**/org/xmlBlaster/util/enum/MethodName*,**/org/apache/commons/codec/binary/Base64.class,**/org/apache/commons/codec/*.class">
+           includes="**/org/xmlBlaster/client/protocol/http/applet/*.class,**/org/xmlBlaster/util/def/MethodName*,**/org/apache/commons/codec/binary/Base64.class,**/org/apache/commons/codec/*.class">
       </jar>
    </target>
 
@@ -1028,7 +1028,7 @@ TODO
     <target name="requirements" description="Creates html requirements from doc/requirements/ XML files">
 
       <!-- Create the errorCode listing requirement first: -->
-      <java classname="org.xmlBlaster.util.enum.ErrorCode" classpath="lib/xmlBlaster.jar:${cp}"
+      <java classname="org.xmlBlaster.util.def.ErrorCode" classpath="lib/xmlBlaster.jar:${cp}"
             dir="${xmlblaster_absolute_home}" failonerror="false" fork="true">
          <arg line="${req.dir}/admin.errorcodes.listing.xml"/>
       </java>

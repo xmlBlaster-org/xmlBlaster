@@ -6,7 +6,7 @@ import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.Timestamp;
-import org.xmlBlaster.util.enum.PriorityEnum;
+import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.queue.I_EntryFactory;
 import org.xmlBlaster.util.queue.StorageId;

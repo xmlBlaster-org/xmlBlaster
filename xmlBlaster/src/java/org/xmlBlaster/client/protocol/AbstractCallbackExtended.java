@@ -10,7 +10,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 import org.xmlBlaster.util.MsgUnitRaw;
@@ -22,7 +22,7 @@ import org.xmlBlaster.util.MsgUnitRaw;
  * extend this class because one of the update methods is abstract.
  * <p>
  *
- * @version $Revision: 1.15 $
+ * @version $Revision: 1.16 $
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  */

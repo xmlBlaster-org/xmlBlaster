@@ -4,7 +4,7 @@ import org.jutils.log.LogChannel;
 import org.jutils.time.StopWatch;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.recorder.file.FileIO;
 import org.xmlBlaster.util.recorder.file.I_UserDataHandler;
 

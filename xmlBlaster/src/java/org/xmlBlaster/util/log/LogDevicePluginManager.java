@@ -11,7 +11,7 @@ import org.xmlBlaster.util.plugin.I_PluginManager;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.def.ErrorCode;
 
 import java.util.Hashtable;
 import java.util.Properties;
@@ -43,7 +43,7 @@ logDevice[cb]=console,file
  *
  *
  * @author Peter Antman
- * @version $Revision: 1.3 $ $Date: 2002/12/18 15:19:51 $
+ * @version $Revision: 1.4 $ $Date: 2004/02/22 17:29:01 $
  */
 
 public class LogDevicePluginManager implements I_PluginManager {

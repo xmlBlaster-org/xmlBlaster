@@ -3,7 +3,7 @@ Name:      MainGUI.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: MainGUI.java,v 1.58 2003/12/15 15:39:43 ruff Exp $
+Version:   $Id: MainGUI.java,v 1.59 2004/02/22 17:27:40 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -13,7 +13,7 @@ import org.jutils.time.StopWatch;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.MsgUnitRaw;
-import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.RequestBroker;

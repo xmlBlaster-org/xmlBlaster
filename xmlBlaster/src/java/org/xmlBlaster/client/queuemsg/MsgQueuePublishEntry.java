@@ -13,8 +13,8 @@ import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.qos.address.Destination;
-import org.xmlBlaster.util.enum.PriorityEnum;
-import org.xmlBlaster.util.enum.MethodName;
+import org.xmlBlaster.util.def.PriorityEnum;
+import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 

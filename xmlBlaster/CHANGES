@@ -1,5 +1,10 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
+ o Ported java code to JDK 1.5
+   - As 'enum' is now (Jdk1.5) a reserved keyword we renamed our package 'enum' to 'def'
+     by replacing the token '.enum.' to '.def.' in the complete source tree.
+   - Compiling: build -DJVM.target=1.4 delete all
+
  o SOCKET protocol on Java client side:
    - Fixed exception handling from update() calls
    - Added 'virtual' callback server shutdown

@@ -11,7 +11,7 @@ import org.xmlBlaster.client.key.EraseKey;
 import org.xmlBlaster.client.key.GetKey;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.property.PropString;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.client.qos.EraseQos;

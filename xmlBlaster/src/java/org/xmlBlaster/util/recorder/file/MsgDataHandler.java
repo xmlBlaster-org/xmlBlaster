@@ -7,7 +7,7 @@ package org.xmlBlaster.util.recorder.file;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.MethodName;
+import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.MsgUnit;
 
 import java.io.RandomAccessFile;

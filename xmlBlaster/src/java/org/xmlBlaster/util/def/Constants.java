@@ -4,7 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding destination address attributes
 ------------------------------------------------------------------------------*/
-package org.xmlBlaster.util.enum;
+package org.xmlBlaster.util.def;
 
 
 /**

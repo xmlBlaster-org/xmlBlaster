@@ -3,7 +3,7 @@ Name:      PriorityEnum.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
-package org.xmlBlaster.util.enum;
+package org.xmlBlaster.util.def;
 
 
 /**

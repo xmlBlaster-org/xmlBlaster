@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2003 Peter Antman, Teknik i Media  <peter.antman@tim.se>
  *
- * $Id: JacorbUtil.java,v 1.1 2003/09/10 08:01:17 antman Exp $
+ * $Id: JacorbUtil.java,v 1.2 2004/02/22 17:28:26 ruff Exp $
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -27,12 +27,12 @@ import org.jutils.log.LogChannel;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.def.ErrorCode;
 /**
  * Helpers class to work with Jacorb in embedded J2EE environment.
  *
  * @author <a href="mailto:pra@tim.se">Peter Antman</a>
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 
 public class JacorbUtil {

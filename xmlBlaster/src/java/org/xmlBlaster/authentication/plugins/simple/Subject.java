@@ -3,12 +3,12 @@ package org.xmlBlaster.authentication.plugins.simple;
 import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.MethodName;
+import org.xmlBlaster.util.def.MethodName;
 import org.jutils.log.LogChannel;
 
 /**
  * @author  $Author: ruff $ ($Name:  $)
- * @version $Revision: 1.5 $ (State: $State) (Date: $Date: 2002/11/26 12:37:55 $)
+ * @version $Revision: 1.6 $ (State: $State) (Date: $Date: 2004/02/22 17:27:43 $)
  */
 
 public class Subject implements I_Subject {

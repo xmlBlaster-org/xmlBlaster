@@ -7,7 +7,7 @@ Comment:   Holding callback queue properties
 package org.xmlBlaster.util.qos.storage;
 
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.address.Address;
 
 /**

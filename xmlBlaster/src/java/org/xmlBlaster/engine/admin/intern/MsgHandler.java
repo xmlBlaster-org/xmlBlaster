@@ -11,7 +11,7 @@ import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.client.qos.PublishQos;

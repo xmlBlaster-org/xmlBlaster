@@ -9,11 +9,11 @@ package org.xmlBlaster.client.queuemsg;
 import org.jutils.log.LogChannel;
 
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Timestamp;
-import org.xmlBlaster.util.enum.MethodName;
-import org.xmlBlaster.util.enum.PriorityEnum;
+import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_EntryFactory;
 import org.xmlBlaster.util.queue.I_Entry;

@@ -8,7 +8,7 @@ package org.xmlBlaster.engine.queuemsg;
 
 import org.xmlBlaster.engine.msgstore.I_MapEntry;
 import org.xmlBlaster.util.Timestamp;
-import org.xmlBlaster.util.enum.PriorityEnum;
+import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.queue.StorageId;
 
 /**

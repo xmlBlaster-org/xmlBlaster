@@ -23,7 +23,7 @@ import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.qos.TopicProperty;

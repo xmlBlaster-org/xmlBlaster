@@ -3,7 +3,7 @@ Name:      OrbInstanceWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   OrbInstanceWrapper class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: OrbInstanceWrapper.java,v 1.4 2003/08/28 23:55:37 ruff Exp $
+Version:   $Id: OrbInstanceWrapper.java,v 1.5 2004/02/22 17:28:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -11,8 +11,8 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.ErrorCode;
-import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.def.Constants;
 import java.util.Properties;
 
 /**

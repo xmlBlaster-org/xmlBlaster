@@ -12,7 +12,7 @@ import java.io.SyncFailedException;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.def.ErrorCode;
 
 /**
  * This is the generic interface to the harddisk. 

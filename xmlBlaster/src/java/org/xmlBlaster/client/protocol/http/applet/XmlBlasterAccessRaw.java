@@ -10,7 +10,7 @@ import java.util.Properties;
 import java.util.StringTokenizer;
 
 import org.apache.commons.codec.binary.Base64;
-import org.xmlBlaster.util.enum.MethodName;
+import org.xmlBlaster.util.def.MethodName;
 
 /**
  * A java client implementation to access xmlBlaster using a persistent http connection

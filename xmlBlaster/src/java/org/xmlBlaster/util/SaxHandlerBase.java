@@ -3,7 +3,7 @@ Name:      SaxHandlerBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Default handling of Sax callbacks
-Version:   $Id: SaxHandlerBase.java,v 1.25 2003/12/07 11:57:14 ruff Exp $
+Version:   $Id: SaxHandlerBase.java,v 1.26 2004/02/22 17:28:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -23,7 +23,7 @@ import org.xml.sax.SAXNotSupportedException;
 import org.xml.sax.ext.LexicalHandler;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.parsers.SAXParser;
-import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.def.ErrorCode;
 
 
 /**

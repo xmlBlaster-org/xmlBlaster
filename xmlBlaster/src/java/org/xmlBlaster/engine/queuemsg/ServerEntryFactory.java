@@ -7,11 +7,11 @@ Comment:   Implementation for the I_EntryFactory
 package org.xmlBlaster.engine.queuemsg;
 
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.Timestamp;
-import org.xmlBlaster.util.enum.PriorityEnum;
+import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_EntryFactory;
 import org.xmlBlaster.util.queue.I_Entry;

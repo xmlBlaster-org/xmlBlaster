@@ -12,7 +12,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.test.util.Client;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.def.ErrorCode;
 
 import junit.framework.*;
 

@@ -6,7 +6,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.util.qos;
 
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.enum.MethodName;
+import org.xmlBlaster.util.def.MethodName;
 
 import java.util.ArrayList;
 import java.util.Map;

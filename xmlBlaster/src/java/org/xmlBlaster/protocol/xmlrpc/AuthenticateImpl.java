@@ -15,7 +15,7 @@ import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
 import org.xmlBlaster.engine.qos.DisconnectQosServer;
 import org.jutils.text.StringHelper;
-import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 
 /**

@@ -9,7 +9,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
-import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.qos.storage.ClientQueueProperty;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
@@ -113,7 +113,7 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
     * @param nodeId The node id with stripped special characters (see Global#getStrippedId)
     */
    public ConnectQosData(Global glob, I_ConnectQosFactory factory, String serialData, NodeId nodeId) {
-      super(glob, serialData, org.xmlBlaster.util.enum.MethodName.CONNECT);
+      super(glob, serialData, org.xmlBlaster.util.def.MethodName.CONNECT);
       this.factory = (factory == null) ? this.glob.getConnectQosFactory() : factory;
       this.nodeId = (nodeId == null) ? new NodeId(this.glob.getStrippedId()) : nodeId;
       this.sessionQos = new SessionQos(this.glob); // , this.nodeId); is handled by SessionName depending on client or server side

@@ -15,8 +15,8 @@ import org.xmlBlaster.authentication.plugins.I_Subject;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.ErrorCode;
-import org.xmlBlaster.util.enum.MethodName;
+import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.jutils.log.LogChannel;
 

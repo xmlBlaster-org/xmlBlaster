@@ -9,9 +9,9 @@ package org.xmlBlaster.engine.mime.xpath;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.authentication.SessionInfo;
-import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.mime.I_AccessFilter;
 import org.xmlBlaster.engine.mime.Query;
@@ -57,7 +57,7 @@ import org.jaxen.dom.DOMXPath;
  * @author Peter Antman
  * @author Jens Askengren
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/mime.plugin.access.xpath.html">The mime.plugin.access.xpath requirement</a>
- * @version $Id: XPathFilter.java,v 1.9 2003/10/22 18:35:18 laghi Exp $
+ * @version $Id: XPathFilter.java,v 1.10 2004/02/22 17:28:21 ruff Exp $
  */
 
 public class XPathFilter implements I_Plugin, I_AccessFilter {

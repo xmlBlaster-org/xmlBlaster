@@ -8,7 +8,7 @@ import org.xmlBlaster.util.key.I_MsgKeyFactory;
 import org.xmlBlaster.client.key.GetReturnKey;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.key.UpdateKey;
-import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.def.Constants;
 
 import junit.framework.*;
 

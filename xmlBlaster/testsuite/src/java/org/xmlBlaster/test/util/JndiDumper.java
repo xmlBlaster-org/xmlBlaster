@@ -41,9 +41,9 @@ public class JndiDumper {
       StringBuffer buf = new StringBuffer(contextName.length());
       for (int i=0; i < contextName.length(); i++) buf.append(" ");
       String offset = buf.toString();
-      NamingEnumeration enum = context.list("");
-      while (enum.hasMore()) {
-         NameClassPair pair = (NameClassPair)enum.next();
+      NamingEnumeration enumer = context.list("");
+      while (enumer.hasMore()) {
+         NameClassPair pair = (NameClassPair)enumer.next();
          Object obj = context.lookup(pair.getName());
          if (obj instanceof Context) scanContext(contextName + pair.getName() + "/", (Context)obj, out);         
          else {

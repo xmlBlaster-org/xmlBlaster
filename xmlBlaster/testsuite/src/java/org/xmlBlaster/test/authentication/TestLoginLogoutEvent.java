@@ -17,7 +17,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.SessionName;
-import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.def.Constants;
 
 import org.xmlBlaster.test.Util;
 import org.xmlBlaster.test.Msg;

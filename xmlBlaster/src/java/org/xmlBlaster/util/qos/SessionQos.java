@@ -9,7 +9,7 @@ package org.xmlBlaster.util.qos;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
-import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.cluster.NodeId;
 import org.xmlBlaster.util.property.PropLong;
 import org.xmlBlaster.util.property.PropInt;

@@ -7,7 +7,7 @@ import org.xmlBlaster.util.qos.SessionQos;
 import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.qos.I_ConnectQosFactory;
-import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.def.Constants;
 
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.AddressBase;

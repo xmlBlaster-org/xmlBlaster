@@ -3,7 +3,7 @@ Name:      RamRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   RamRecorder for client messages
-Version:   $Id: RamRecorder.java,v 1.15 2003/05/09 17:30:18 laghi Exp $
+Version:   $Id: RamRecorder.java,v 1.16 2004/02/22 17:29:50 ruff Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.recorder.ram;
@@ -15,10 +15,10 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.recorder.I_InvocationRecorder;
 import org.xmlBlaster.util.qos.StatusQosData;
-import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.client.I_CallbackRaw;
 import org.xmlBlaster.client.qos.PublishReturnQos;
@@ -26,7 +26,7 @@ import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.protocol.I_XmlBlaster;
-import org.xmlBlaster.util.enum.MethodName;
+import org.xmlBlaster.util.def.MethodName;
 import java.util.*;
 
 

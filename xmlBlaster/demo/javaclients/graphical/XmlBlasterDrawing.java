@@ -11,7 +11,7 @@ import CH.ifa.draw.framework.Figure;
 import CH.ifa.draw.standard.StandardDrawing;
 
 import org.jutils.log.LogChannel;
-import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.XmlBlasterException;

@@ -3,14 +3,14 @@ Name:      SoapDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   SoapDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: SoapDriver.java,v 1.12 2003/03/22 12:28:08 laghi Exp $
+Version:   $Id: SoapDriver.java,v 1.13 2004/02/22 17:28:33 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.soap;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.classloader.ClassLoaderFactory;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;

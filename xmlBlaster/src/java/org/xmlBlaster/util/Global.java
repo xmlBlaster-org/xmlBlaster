@@ -47,7 +47,7 @@ import org.xmlBlaster.util.log.LogDevicePluginManager;
 import org.xmlBlaster.util.log.I_LogDeviceFactory;
 import org.jutils.log.LogableDevice;
 
-import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.queue.jdbc.JdbcManagerCommonTable;
 import org.xmlBlaster.util.queue.I_EntryFactory;
 import org.xmlBlaster.util.plugin.PluginManagerBase;
@@ -1424,9 +1424,9 @@ public class Global implements Cloneable
          ownProperties = (java.util.Properties)pluginInfo.getParameters().clone();
       //overwrite our onw properties ...
       if (properties != null) {
-         java.util.Enumeration enum = properties.keys();
-         while (enum.hasMoreElements()) {
-            String key =(String)enum.nextElement();
+         java.util.Enumeration enumer = properties.keys();
+         while (enumer.hasMoreElements()) {
+            String key =(String)enumer.nextElement();
             ownProperties.put(key, properties.getProperty(key));
          }
       }

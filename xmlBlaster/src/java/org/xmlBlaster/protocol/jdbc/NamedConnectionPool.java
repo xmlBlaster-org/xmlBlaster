@@ -8,7 +8,7 @@ Author:    xmlBlaster@marcelruff.info
 package org.xmlBlaster.protocol.jdbc;
 
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.def.ErrorCode;
 
 import org.jutils.log.LogChannel;
 import org.jutils.runtime.Sleeper;

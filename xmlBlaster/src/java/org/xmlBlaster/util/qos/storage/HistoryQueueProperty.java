@@ -7,7 +7,7 @@ package org.xmlBlaster.util.qos.storage;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.def.Constants;
 
 /**
  * Helper class holding history queue properties.

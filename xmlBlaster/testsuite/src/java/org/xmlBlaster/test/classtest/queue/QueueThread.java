@@ -6,7 +6,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.jutils.log.LogChannel;
 import java.sql.SQLException;
-import org.xmlBlaster.util.enum.PriorityEnum;
+import org.xmlBlaster.util.def.PriorityEnum;
 import java.util.ArrayList;
 import org.xmlBlaster.util.queue.I_Queue;
 

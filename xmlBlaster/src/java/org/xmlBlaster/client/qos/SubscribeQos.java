@@ -11,7 +11,7 @@ import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.engine.mime.Query;
 import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.util.qos.HistoryQos;
-import org.xmlBlaster.util.enum.MethodName;
+import org.xmlBlaster.util.def.MethodName;
 
 /**
  * This class encapsulates the QoS (quality of service) of a subscribe() request. 

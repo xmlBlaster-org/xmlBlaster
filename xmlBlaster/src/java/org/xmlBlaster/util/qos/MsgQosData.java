@@ -6,14 +6,14 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.util.qos;
 
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.enum.PriorityEnum;
+import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.property.PropEntry;
 import org.xmlBlaster.util.property.PropLong;
 import org.xmlBlaster.util.property.PropBoolean;
 
 import org.xmlBlaster.util.qos.address.Destination;
-import org.xmlBlaster.util.enum.MethodName;
+import org.xmlBlaster.util.def.MethodName;
 
 import java.util.ArrayList;
 import java.util.Map;
@@ -361,7 +361,7 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
    /**
     * Message priority.
     * @return priority 0-9
-    * @see org.xmlBlaster.util.enum.PriorityEnum
+    * @see org.xmlBlaster.util.def.PriorityEnum
     */
    public PriorityEnum getPriority() {
       return priority;
@@ -371,7 +371,7 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
     * Set message priority value, PriorityEnum.NORM_PRIORITY (5) is default. 
     * PriorityEnum.MIN_PRIORITY (0) is slowest
     * whereas PriorityEnum.MAX_PRIORITY (9) is highest priority.
-    * @see org.xmlBlaster.util.enum.PriorityEnum
+    * @see org.xmlBlaster.util.def.PriorityEnum
     */
    public void setPriority(PriorityEnum priority) {
       this.priority = priority;
@@ -532,7 +532,7 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
     * Note the administrative messages have a default priority of MAX_PRIORITY
     * @param administrative true The message is only used to configure the topic<br />
     *        false The message contains useful content (and may as initial publish configure the topic as well)
-    * @see org.xmlBlaster.util.enum.PriorityEnum
+    * @see org.xmlBlaster.util.def.PriorityEnum
     */
    public void setAdministrative(boolean administrative) {
       this.administrative.setValue(administrative);

@@ -9,7 +9,7 @@ import org.xmlBlaster.util.context.ContextNode;
 import java.util.Properties;
 import java.util.StringTokenizer;
 import java.util.Enumeration;
-import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.def.ErrorCode;
 
 /**
  * Holds data about a plugin (immutable). 

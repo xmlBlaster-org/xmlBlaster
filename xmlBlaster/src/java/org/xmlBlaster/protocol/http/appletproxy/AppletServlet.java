@@ -10,9 +10,9 @@ import org.xmlBlaster.util.Global;
 import org.jutils.runtime.Memory;
 
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.util.enum.MethodName;
+import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.qos.MsgQosData;
@@ -73,10 +73,10 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
       super.init(conf);
 
       // Add the web.xml parameters to our environment settings:
-      Enumeration enum = conf.getInitParameterNames();
+      Enumeration enumer = conf.getInitParameterNames();
       Properties props = new Properties();
-      while(enum.hasMoreElements()) {
-         String name = (String)enum.nextElement();
+      while(enumer.hasMoreElements()) {
+         String name = (String)enumer.nextElement();
          if (name != null && name.length() > 0)
             props.setProperty(name, conf.getInitParameter(name));
       }

@@ -8,7 +8,7 @@ package org.xmlBlaster.client.qos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.StatusQosData;
-import org.xmlBlaster.util.enum.MethodName;
+import org.xmlBlaster.util.def.MethodName;
 
 /**
  * Handling the returned QoS (quality of service) of a subscribe() call.
@@ -93,7 +93,7 @@ public final class SubscribeReturnQos
    /**
     * Additional structured information about a state.
     * @return "QUEUED" or "QUEUED[bilbo]"
-    * @see org.xmlBlaster.util.enum.Constants
+    * @see org.xmlBlaster.util.def.Constants
     */
    public final String getStateInfo() {
       return this.statusQosData.getStateInfo();

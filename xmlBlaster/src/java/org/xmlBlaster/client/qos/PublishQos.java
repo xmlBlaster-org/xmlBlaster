@@ -8,13 +8,13 @@ package org.xmlBlaster.client.qos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SessionName;
-import org.xmlBlaster.util.enum.PriorityEnum;
+import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.qos.TopicProperty;
 import org.xmlBlaster.util.property.PropEntry;
-import org.xmlBlaster.util.enum.MethodName;
+import org.xmlBlaster.util.def.MethodName;
 
 
 /**

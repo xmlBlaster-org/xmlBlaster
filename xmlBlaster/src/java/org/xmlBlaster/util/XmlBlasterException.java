@@ -10,10 +10,10 @@ import java.io.StringWriter;
 import java.io.PrintWriter;
 import java.io.ByteArrayOutputStream;
 import java.text.MessageFormat;
-import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.def.Constants;
 import org.jutils.JUtilsException;
 
 

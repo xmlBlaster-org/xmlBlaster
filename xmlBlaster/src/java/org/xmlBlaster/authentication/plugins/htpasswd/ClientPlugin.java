@@ -7,7 +7,7 @@ import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.xmlBlaster.authentication.plugins.htpasswd.SecurityQos;
-import org.xmlBlaster.util.enum.MethodName;
+import org.xmlBlaster.util.def.MethodName;
 
 
 /**

@@ -9,12 +9,12 @@ import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.queue.StorageId;
-import org.xmlBlaster.util.enum.PriorityEnum;
+import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.engine.queuemsg.ServerEntryFactory;
-import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.engine.msgstore.I_MapEntry;
 

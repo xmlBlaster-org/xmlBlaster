@@ -9,7 +9,7 @@ package org.xmlBlaster.util.plugin;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.def.ErrorCode;
 
 import java.util.Hashtable;
 import java.util.StringTokenizer;
@@ -89,9 +89,9 @@ public class PluginRegistry {
       if (this.log.CALL) this.log.call(ME, "getPluginsOfGroup '" + type + "'");
       Vector ret = new Vector();
       synchronized(this) {
-         Enumeration enum = this.plugins.keys();
-         while (enum.hasMoreElements()) {
-            String key = (String)enum.nextElement();
+         Enumeration enumer = this.plugins.keys();
+         while (enumer.hasMoreElements()) {
+            String key = (String)enumer.nextElement();
             StringTokenizer tokenizer = new StringTokenizer(key, ":");
             if (tokenizer.hasMoreTokens()) {
                String token = tokenizer.nextToken();
@@ -113,9 +113,9 @@ public class PluginRegistry {
       if (this.log.CALL) this.log.call(ME, "getPluginsOfInterfaceI_Driver()");
       Vector ret = new Vector();
       synchronized(this) {
-         Enumeration enum = this.plugins.elements();
-         while (enum.hasMoreElements()) {
-            Object next = enum.nextElement();
+         Enumeration enumer = this.plugins.elements();
+         while (enumer.hasMoreElements()) {
+            Object next = enumer.nextElement();
             //log.error(ME, "Compare I_Driver: " + next.getClass().getName());
             if (next instanceof org.xmlBlaster.protocol.I_Driver) {
                if (log.TRACE) log.trace(ME, "Added I_Driver implementation " + next.getClass().getName());
@@ -134,9 +134,9 @@ public class PluginRegistry {
       if (this.log.CALL) this.log.call(ME, "getPluginsOfInterfaceI_Queue()");
       Vector ret = new Vector();
       synchronized(this) {
-         Enumeration enum = this.plugins.elements();
-         while (enum.hasMoreElements()) {
-            Object next = enum.nextElement();
+         Enumeration enumer = this.plugins.elements();
+         while (enumer.hasMoreElements()) {
+            Object next = enumer.nextElement();
             //log.error(ME, "Compare I_Queue: " + next.getClass().getName());
             if (next instanceof org.xmlBlaster.util.queue.I_Queue) {
                if (log.TRACE) log.trace(ME, "Added I_Queue implementation " + next.getClass().getName());

@@ -10,7 +10,7 @@ import junit.framework.*;
 import org.xmlBlaster.util.queue.QueuePluginManager;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.queue.jdbc.JdbcConnectionPool;
-import org.xmlBlaster.util.enum.PriorityEnum;
+import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.queue.StorageId;
 // import java.sql.SQLException;
 import org.xmlBlaster.util.queue.ReturnDataHolder;

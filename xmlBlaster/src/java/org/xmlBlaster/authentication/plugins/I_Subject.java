@@ -1,7 +1,7 @@
 package org.xmlBlaster.authentication.plugins;
 
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.MethodName;
+import org.xmlBlaster.util.def.MethodName;
 
 /**
  */

@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2003 Peter Antman, Teknik i Media  <peter.antman@tim.se>
  *
- * $Id: CallbackLocalDriver.java,v 1.2 2004/02/05 23:28:32 laghi Exp $
+ * $Id: CallbackLocalDriver.java,v 1.3 2004/02/22 17:28:31 ruff Exp $
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -21,7 +21,7 @@ package org.xmlBlaster.protocol.local;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
@@ -31,7 +31,7 @@ import org.xmlBlaster.util.qos.address.CallbackAddress;
  * <p>The requirements for this driver is that an object of type {@link I_LocalCallback} is registered in objectEntry at callbackAddress.getRawAddress().</p>
  *
  * @author <a href="mailto:pra@tim.se">Peter Antman</a>
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  * @see org.xmlBlaster.client.protocol.local.LocalCallbackImpl
  */
 

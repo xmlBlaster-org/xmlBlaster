@@ -4,13 +4,13 @@ import org.jutils.log.LogChannel;
 import org.jutils.time.StopWatch;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.PriorityEnum;
+import org.xmlBlaster.util.def.PriorityEnum;
 import org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.I_QueueEntry;
 import org.xmlBlaster.util.queue.I_StorageProblemListener;
-import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
 
@@ -280,16 +280,16 @@ public class CacheQueueTest extends TestCase {
                         boolean persistent = false;
                         for (int i=0; i < transients.length; i++) {
                            int prio = i % 3;
-                           PriorityEnum enum = PriorityEnum.toPriorityEnum(prio+4);
-                           DummyEntry entry = new DummyEntry(glob, enum, refQueue.getStorageId(), entrySize, persistent);
+                           PriorityEnum enumer = PriorityEnum.toPriorityEnum(prio+4);
+                           DummyEntry entry = new DummyEntry(glob, enumer, refQueue.getStorageId(), entrySize, persistent);
                            transients[i] = entry;
                            inputTable[prio].put(new Long(entry.getUniqueId()), entry);
                         }
                         persistent = true;
                         for (int i=0; i < persistentEntries.length; i++) {
                            int prio = i % 3;
-                           PriorityEnum enum = PriorityEnum.toPriorityEnum(prio+4);
-                           DummyEntry entry = new DummyEntry(glob, enum, refQueue.getStorageId(), entrySize, persistent);
+                           PriorityEnum enumer = PriorityEnum.toPriorityEnum(prio+4);
+                           DummyEntry entry = new DummyEntry(glob, enumer, refQueue.getStorageId(), entrySize, persistent);
                            persistentEntries[i] = entry;
                            inputTable[prio].put(new Long(entry.getUniqueId()), entry);
                         }

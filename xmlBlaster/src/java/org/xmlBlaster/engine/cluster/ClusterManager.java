@@ -8,7 +8,7 @@ package org.xmlBlaster.engine.cluster;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.QosData;
@@ -18,7 +18,7 @@ import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
 import org.xmlBlaster.engine.runlevel.RunlevelManager;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.Destination;
-import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.cluster.NodeId;
 import org.xmlBlaster.util.cluster.RouteInfo;
 import org.xmlBlaster.engine.xml2java.XmlKey;

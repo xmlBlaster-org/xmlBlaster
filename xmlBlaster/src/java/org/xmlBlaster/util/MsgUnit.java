@@ -5,13 +5,13 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
-import org.xmlBlaster.util.enum.MethodName;
-import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.qos.QosData;
 import org.xmlBlaster.util.key.KeyData;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.qos.PublishQos;
-import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.def.Constants;
 
 /**
  * Encapsulates the parsed xmlKey and QoS, and the raw content. 

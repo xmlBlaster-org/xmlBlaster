@@ -4,7 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client callback
            YOU MAY USE THIS AS YOUR Callback implementation, JUST TAKE A COPY OF IT
-Version:   $Id: BlasterCallbackImpl.java,v 1.15 2003/03/24 16:12:50 ruff Exp $
+Version:   $Id: BlasterCallbackImpl.java,v 1.16 2004/02/22 17:24:43 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.corba;
 
@@ -13,7 +13,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.util.MsgUnitRaw;
-import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.protocol.corba.clientIdl.*;
 
 

@@ -13,7 +13,7 @@ import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.property.PropString;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.client.qos.PublishQos;

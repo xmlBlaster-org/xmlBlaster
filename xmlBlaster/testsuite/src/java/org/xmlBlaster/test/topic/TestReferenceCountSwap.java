@@ -10,7 +10,7 @@ import org.jutils.init.Property;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
