@@ -40,6 +40,7 @@ public class HelloWorld2 implements I_Callback
          Global.waitOnKeyboardHit("\nHit a key to logout and terminate ...");
 
          con.erase("<key oid='HelloWorld2'/>", null);
+         try { Thread.currentThread().sleep(100); } catch(Exception e) { }  // To process erase event
          con.disconnect(null);
       }
       catch (Exception e) {
