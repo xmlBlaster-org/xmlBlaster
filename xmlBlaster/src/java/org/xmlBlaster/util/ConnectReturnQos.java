@@ -11,6 +11,28 @@ import org.xmlBlaster.util.XmlBlasterException;
  * It is used on the server side to wrap the return, and on the client side
  * to parse the returned ASCII xml string.
  * Please see documentation at ConnectQos which implements all features.
+ * <p />
+ * The only thing you may be interested in is the returned sessionId, example:
+ * <pre>
+ *   &lt;qos>
+ *      &lt;securityService type="simple" version="1.0">
+ *         &lt;![CDATA[
+ *         &lt;user>ClientSub&lt;/user>
+ *         &lt;passwd>secret&lt;/passwd>
+ *         ]]>
+ *      &lt;/securityService>
+ *      &lt;ptp>true&lt;/ptp>
+ *      &lt;session timeout='86400000' maxSessions='10' clearSessions='false'>
+ *         &lt;sessionId>sessionId:192.168.1.2-null-1018875420070--582319444-3&lt;/sessionId>
+ *      &lt;/session>
+ *      &lt;!-- QueueProperty -->
+ *      &lt;queue relating='session'>
+ *         &lt;callback type='SOCKET'>
+ *            192.168.1.2:33301
+ *         &lt;/callback>
+ *      &lt;/queue>
+ *   &lt;/qos>
+ * </pre>
  * @see org.xmlBlaster.util.ConnectQos
  */
 public class ConnectReturnQos {
