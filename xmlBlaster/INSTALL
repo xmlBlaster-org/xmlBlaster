@@ -24,12 +24,12 @@ But, if you are lazy, just use and enjoy xmlBlaster as delivered!
 | REQUIRED           |
 +--------------------+
 
-   - JDK 1.2 or 1.3
-   - A GNU 'make' utility recommended (if you want to rebuild xmlBlaster).
-     For DOS/Windows, e.g. cygwin's make.
-     Note that Windows nmake will not work properly with xmlBlaster Makefiles
-   - or -
-     You can use Ant.  See the build.xml file for more details.
+   - JDK 1.2, 1.3 or 1.4
+
+You need to set JAVA_HOME to point to your
+JDK installation, for example:
+
+  export JAVA_HOME=/opt/jdk
 
 
 The XmlBlaster distribution comes compiled and ready to go.
@@ -54,6 +54,7 @@ Congratulations, now the server is running and ready!
 Type a 'g' if you want the GUI to pop up.
 Use -help if you want usage infos.
 
+
 Now start a client:
 
   java -classpath lib/xmlBlaster.jar javaclients.ClientSub
@@ -66,9 +67,33 @@ Find out what command line options you have:
   java -classpath lib/xmlBlaster.jar javaclients.ClientSub -help
 
 
+To simplify usage, set your CLASSAPTH:
+
+  export CLASSPATH=<pathToXmlBlaster>/lib/xmlBlaster.jar  [UNIX,sh,ksh,bash]
+
+  set CLASSPATH=<pathToXmlBlaster>\lib\xmlBlaster.jar     [Windows]
+
+
 But - if you want to adjust some properties
 or develop with xmlBlaster, please read the following section
 how to do it.
+
+
++----------------------------+
+| CONFIGURATION              |
++----------------------------+
+
+There are two property files which you need to copy.
+
+   a) %HOME%/xmlBlaster.properties
+	   There is a template %XMLBLASTER_HOME%/config/xmlBlaster.properties.template
+		to use as a base.
+
+	b) %HOME%/jacorb.properties
+	   There is a template %XMLBLASTER_HOME%/config/jacorb.properties.template
+		to use as a base.
+		This file is needed only if you use the CORBA plugin.
+		A default setting is included in xmlBlaster.jar
 
 
 +-----------------------------------------+
@@ -86,194 +111,14 @@ ant build tool.
 
    WINDOWS:    build.bat all
 
-Now you are done, if you want to compile with the Make utility
-read the following sections.
+Now you are done.
 
+To see other compilation options (e.g. for C++) get the usage with:
 
-+-------------------------------------+
-| INSTALLATION FOR DEVELOPERS - UNIX  |
-+-------------------------------------+
+   UNIX:       build.sh
 
-If you want to compile with the Make utility:
+   WINDOWS:    build.bat
 
-1. Extend your CLASSPATH and PATH environment variable. 
-
-   a) If you use sh, ksh or bash, you may chose to source the
-      $XMLBLASTER_HOME/.bashrc into your environment.
-
-      export JAVA_HOME=/usr/local/jdk
-      export PATH=${JAVA_HOME}/bin:$PATH
-      export XMLBLASTER_HOME=${HOME}/xmlBlaster 
-      export JUTILS_HOME=${XMLBLASTER_HOME}
-      . ${XMLBLASTER_HOME}/.bashrc
-
-    This is the recommended way, since you will automatically
-    source all enhancements of new xmlBlaster releases.
-
-    After a new login you are ready to go to step 2.
-
-
-   b) If you did not follow step a), here is how to setup
-      your environment manually (examples for csh or tcsh):
-
-     setenv JAVA_HOME /usr/local/jdk
-     setenv PATH ${JAVA_HOME}/bin:$PATH
-
-     setenv XMLBLASTER_HOME ${HOME}/xmlBlaster
-     setenv JUTILS_HOME ${XMLBLASTER_HOME}
-
-     setenv JacORB_HOME ${XMLBLASTER_HOME}
-     setenv JacORB_LIB ${JacORB_HOME}/lib
-
-     setenv CLASSPATH ${XMLBLASTER_HOME}/classes:${CLASSPATH}
-     setenv CLASSPATH ${XMLBLASTER_HOME}/src/java:${CLASSPATH}
-     setenv CLASSPATH ${XMLBLASTER_HOME}/demo:${CLASSPATH}
-     setenv CLASSPATH ${XMLBLASTER_HOME}/lib/parser.jar:${CLASSPATH}
-     setenv CLASSPATH ${XMLBLASTER_HOME}/lib/jaxp.jar:${CLASSPATH}
-     setenv CLASSPATH ${XMLBLASTER_HOME}/lib/xtdash.jar:${CLASSPATH}
-     setenv CLASSPATH ${XMLBLASTER_HOME}/lib/omquery.jar:${CLASSPATH}
-     setenv CLASSPATH ${XMLBLASTER_HOME}/lib/servlet.jar:${CLASSPATH}
-     setenv CLASSPATH ${XMLBLASTER_HOME}/lib/test.jar:${CLASSPATH}
-     setenv CLASSPATH ${XMLBLASTER_HOME}/lib/xmlBlaster.jar:${CLASSPATH}
-     setenv CLASSPATH ${XMLBLASTER_HOME}/lib/jacorb.jar:${CLASSPATH}
-     setenv CLASSPATH ${XMLBLASTER_HOME}/lib/idl.jar:${CLASSPATH}
-     setenv CLASSPATH ${XMLBLASTER_HOME}/lib/gnu-regexp-1.0.8.jar:${CLASSPATH}
-     setenv CLASSPATH ${XMLBLASTER_HOME}/lib/xmlrpc.jar:${CLASSPATH}
-
-     # EJB/J2EE connector support (only with JDK1.3 because of javax.naming):
-     setenv CLASSPATH ${XMLBLASTER_HOME}/lib/connector.jar:${CLASSPATH}
-     setenv CLASSPATH ${XMLBLASTER_HOME}/lib/jaas.jar:${CLASSPATH}
-     setenv CLASSPATH ${XMLBLASTER_HOME}/lib/jta-spec1_0_1.jar:${CLASSPATH}
-     setenv CLASSPATH ${XMLBLASTER_HOME}/lib/jms.jar:${CLASSPATH}
-     setenv CLASSPATH ${XMLBLASTER_HOME}/lib/ejb2.0.jar:${CLASSPATH}
-     # JNDI, only needed for JDK 1.2, not for JDK 1.3
-     setenv CLASSPATH ${CLASSPATH}:${XMLBLASTER_HOME}/lib/jndi-jdk1_3_1.jar
-
-    You can do this automatically from your startup shell script.
-    After a new login you are ready to start the xmlBlaster (see below).
-
-
-2. Copy xmlBlaster/config/orb.properties to JAVA_HOME/jre/lib (exactly 'java.home'/lib)
-   or edit the existing orb.properties file.
-
-   This switches off the default CORBA from JDK 1.2, and replaces it with
-   the JacORB CORBA implementation.
-
-   If you want to avoid this, you need to specify on command line:
-      java -Dorg.omg.CORBA.ORBClass=org.jacorb.orb.ORB
-           -Dorg.omg.CORBA.ORBSingletonClass=org.jacorb.orb.ORBSingleton
-
-   If you use the delivered CorbaDrivers (Java helper classes)
-   JacORB is set as the default ORB already and you need to do nothing.
-
-
-3. There are two property files which you can adjust.
-   (They are copied automatically if you use the .bashrc from step 1a)
-
-   a) $HOME/xmlBlaster.properties
-      There is a template xmlBlaster/config/xmlBlaster.properties.template
-      to use as a base.
-
-   b) $HOME/jacorb.properties
-      There is a template xmlBlaster/config/jacorb.properties.template
-      to use as a base.
-
-   Note: With 'java -Duser.home=yourHome ...' you could set another
-         path to look for the property files.
-         See requirement xmlBlaster/doc/requirements/util.property.xml
-         for further search path.
-
-
-4. Notes on adjusting your environment setup.
-   You may wish to change the default environment setup for example
-   if you have JacORB installed already, or to include your MICO C++ Corba library.
-   You may do this with setting following variables before you source
-   ${XMLBLASTER_HOME}/.bashrc (Note this is optional):
-
-      export JacORB_HOME=/usr/local/JacORB   (to use your own JacORB installation)
-      export CORBACPP_HOME=/usr/local/mico   (to use C++ demo clients with mico)
-      export JIKES_HOME=/usr/local/jikes     (to use your jikes java compiler instead of javac, http://www.alphaworks.ibm.com/tech/jikes)
-
-
-+----------------------------------------+
-| INSTALLATION FOR DEVELOPERS - WINDOWS  |
-+----------------------------------------+
-
-If you want to compile with the Make utility:
-
-XmlBlaster comes compiled and ready to go.
-Unpack the distribution to some location ($HOME/xmlBlaster is a good spot).
-
-1. Extend your CLASSPATH and PATH environment variable. 
-
-    It would be best to make a special setXmlBlasterEnv-batch file. Assuming
-    the Java-JDK and xmlBlaster is installed on drive C.
-    
-    	C:\
-    	 |
-    	 +- jdk
-    	 +- xmlBlaster
-    	 
-     set JAVA_HOME=C:/jdk
-     set PATH=%JAVA_HOME%/bin;%PATH%
-     set XMLBLASTER_HOME=C:/xmlBlaster
-     set JUTILS_HOME=%XMLBLASTER_HOME%
-     set JacORB_HOME=%XMLBLASTER_HOME%
-     set JacORB_LIB=%JacORB_HOME%/lib
-
-     set CLASSPATH=%XMLBLASTER_HOME%/classes;%CLASSPATH%
-     set CLASSPATH=%XMLBLASTER_HOME%/src/java;%CLASSPATH%
-     set CLASSPATH=%XMLBLASTER_HOME%/demo;%CLASSPATH%
-     set CLASSPATH=%XMLBLASTER_HOME%/lib/omquery.jar;%CLASSPATH%
-     set CLASSPATH=%XMLBLASTER_HOME%/lib/xtdash.jar;%CLASSPATH%
-     set CLASSPATH=%XMLBLASTER_HOME%/lib/parser.jar;%CLASSPATH%
-     set CLASSPATH=%XMLBLASTER_HOME%/lib/jaxp.jar;%CLASSPATH%
-     set CLASSPATH=%XMLBLASTER_HOME%/lib/servlet.jar;%CLASSPATH%
-     set CLASSPATH=%XMLBLASTER_HOME%/lib/test.jar;%CLASSPATH%
-     set CLASSPATH=%JacORB_LIB%/jacorb.jar;%CLASSPATH%
-     set CLASSPATH=%JacORB_LIB%/idl.jar;%CLASSPATH%
-     set CLASSPATH=%XMLBLASTER_HOME%/lib/gun-regexp-1.0.8.jar;%CLASSPATH%
-     set CLASSPATH=%XMLBLASTER_HOME%/lib/xmlrpc.jar;%CLASSPATH%
-     
-     If you use the release version of xmlBlaster you should add the xmlBlaster.jar
-     to your classpath environment.
-     REM set CLASSPATH=%XMLBLASTER_HOME%/lib/xmlBlaster.jar;%classpath%
-
-
-    You can also put all the above settings to your startup script.
-    After a new login you are ready to start the xmlBlaster (see below).
-
-
-2. Copy %XMLBLASTER_HOME%/orb.properties to JAVA_HOME/jre/lib (exactly 'java.home'/lib)
-   or edit the existing orb.properties file.
-
-	This switches off the default CORBA from JDK 1.2, and replaces it with
-	the JacORB CORBA implementation.
-
-	If you want to avoid this, you need to specify on command line:
-	   java -Dorg.omg.CORBA.ORBClass=org.jacorb.orb.ORB
-		     -Dorg.omg.CORBA.ORBSingletonClass=org.jacorb.orb.ORBSingleton
-
-
-3. There are two property files which you need to copy.
-
-   a) %HOME%/xmlBlaster.properties
-	   There is a template %XMLBLASTER_HOME%/config/xmlBlaster.properties.template
-		to use as a base.
-
-	b) %HOME%/jacorb.properties
-	   There is a template %XMLBLASTER_HOME%/config/jacorb.properties.template
-		to use as a base.
-
-
-4. Notes on adjusting your environment setup.
-   You may wish to change the default environment setup for example
-   if you have JacORB installed already, or to include your MICO C++ Corba library.
-   You may do this with setting following variables before you source:
-
-      set JacORB_HOME=C:\JacORB       (to use your own JacORB installation)
-      set CORBACPP_HOME=C:\mico       (to use C++ demo clients with mico)
-      set JIKES_HOME=C:\jikes         (to use your jikes instead of javac)
 
 
 +--------------------+
@@ -282,6 +127,19 @@ Unpack the distribution to some location ($HOME/xmlBlaster is a good spot).
 
    See ${XMLBLASTER_HOME}/lib/README
    See ${XMLBLASTER_HOME}/src/java/org/xmlBlaster/README
+   See ${XMLBLASTER_HOME}/demo/javaclients/README
+
+	For C++ see
+      ${XMLBLASTER_HOME}/src/c++/README
+      ${XMLBLASTER_HOME}/testsuite/c++/README
+
+	For an overview of QoS see
+      ${XMLBLASTER_HOME}/src/dtd/XmlQoS.xml
+
+	To play Micheles SVG internet chess see
+      ${XMLBLASTER_HOME}/demo/javaclients/svg/batik/README
+
+	Explore the other READMEs flying around.
 
 
 
@@ -293,15 +151,6 @@ You have three options to start the xmlBlaster-Server.
 
 See the ${XMLBLASTER_HOME}/src/java/org/xmlBlaster/README file for more
 instructions.
-
-One important note:
-   You cannot start xmlBlaster on JDK 1.2/1.3 with the java command directly,
-   since this would use the JDK internal ORB (which is outdated).
-   - Start xmlBlaster like this:
-      java -Dorg.omg.CORBA.ORBClass=org.jacorb.orb.ORB
-           -Dorg.omg.CORBA.ORBSingletonClass=org.jacorb.orb.ORBSingleton
-   - Use our little script 'jaco' which does this, type 'jaco' instead of 'java'.
-   - Or install orb.properties (see above, the recommended way)
 
 1. A variant using the xmlBlaster built in http server (localhost / 7609 is default)
    (This is the Default-Startup)
@@ -462,10 +311,6 @@ from Kent Beck and Erich Gamma, see
 
 There is a GUI based and a command line based variant of the testsuite available.
 
-To invoke the testsuite simply type:
-
-   make test
-
 Please read the
    ${XMLBLASTER_HOME}/testsuite/org/xmlBlaster/README
 file for more informations.
@@ -473,140 +318,13 @@ file for more informations.
 You may also use the provided test clients to study the usage of xmlBlaster.
 
 
-+-----------------------+
-| HOW TO COMPILE - UNIX |
-+-----------------------+
 
-1. Compile using build.xml (the ant tool):
-  
-   build.sh all
-
- You get help with:
-
-   build.sh usage
-
-2. Compile using make:
-
- After you have set environment variables do a new login and type
-
-   make all
-
- in the XMLBLASTER_HOME directory. If you type make you get a usage 
- of all make options.
-
- Usage :
-
-   make all       --> makes everything new
-   make clean     --> deletes all classes
-   make distclean --> deletes all classes/doc/jar
-   make javadoc   --> call 'make javadoc' in xmlBlaster root dir
-   make demo      --> makes everything new and starts a demo
-   make test      --> makes everything new and starts a test scenario
-   make jar       --> makes jar files of all packages into directory $(JAR_DIR)
-
-
-
-+--------------------------+
-| HOW TO COMPILE - WINDOWS |
-+--------------------------+
-
-You can compile using build.bat or using Make (see following instructions)
-
-1. Compile using build.xml (the ant tool):
-  
-   build.bat all
-
- You get help with:
-
-   build.sh usage
-
-2. Compile using make:
-
-For the compilation on the Windows platform you need a proper make utility.
-It works perfect with cygwin environment. You can download it over this site:
-http://sourceware.cygnus.com/cygwin/mirrors.html.
-
-Switch the makefile.include file to the windows version
-   ren makefile.include makefile.include.ux
-   ren makefile.include.win makefile.include
-
-To compile you should set the following environment variables:
-   SET MAKE_MODE=UNIX
-      
-Add the path to the cygwin directory to your PATH environment variable.
-   SET PATH=%PATH%;<cygwin-installdir>\bin
-
-After you have set environment variables you can build the hole tree with
-the following command.
-
-   make all
-
-in the XMLBLASTER_HOME directory. If you type make you get a usage 
-of all make options.
-
-Usage :
-
-   make all       --> makes everything new
-   make clean     --> deletes all classes
-   make distclean --> deletes all classes/doc/jar
-   make javadoc   --> call 'make javadoc' in xmlBlaster root dir
-   make demo      --> makes everything new and starts a demo
-   make test      --> makes everything new and starts a test scenario
-   make jar       --> makes jar files of all packages into directory $(JAR_DIR)
-
-
-
-#################################################################
-#                                                               #
-#                     xmlBlaster clients                        #
-#                                                               #
-#################################################################
-
-
-                             C++ - client
--------------------------------------------------------------------------
-C++ clients with MICO 2.3.0 (http://www.mico.org)
-
-1) Install MICO
-   ./configure --disable-mini-stl --prefix=/usr/local/mico
-    make
-    make install
-
-2) Set the environment variable to point to MICO (needed for the Makefile)
-   export CORBACPP_HOME=/usr/local/mico
-	export LD_LIBRARY_PATH=${CORBACPP_HOME}/lib:$LD_LIBRARY_PATH
-
-3) cd ${XMLBLASTER_HOME}/testsuite/c++
-   and follow the instructions in ${XMLBLASTER_HOME}/testsuite/c++/README
-
-                            Perl - client
+                            Perl - Corba client
 -------------------------------------------------------------------------
 Perl clients with COPE 0.50_51 (http://www.lunatech.com/research/corba/cope/)
-You need MICO first
+You need MICO first (CORBA access)
+-------------------------------------------------------------------------
 
-1) get Exception-0.97_01A.tgz (ftp://ftp.matematik.su.se/pub/teke.)
-
-   perl Makefile.PL
-   make
-   make install    (su)
-
-2) get COPE
-   cvs -z3 -d :pserver:anonymous@cvs.lunatech.com:/home/cvscope/repo login
-     <password just type enter>
-   cvs -z3 -d :pserver:anonymous@cvs.lunatech.com:/home/cvscope/repo checkout
-
-   perl Makefile.PL
-   make
-   make install    (su)
-
-3) cd COPE/compat/MICO
-   c++  -I. -I$CORBACPP_HOME/include -I$CORBACPP_HOME/include/ministl  -O   -fno-exceptions -fexceptions -O0 -I/usr/local/include  -c irior.cc -o irior.o
-   c++  -I. -I$CORBACPP_HOME/include -I$CORBACPP_HOME/include/ministl  -O   -fno-exceptions -fexceptions -O0 -L$CORBACPP_HOME/libs -L/usr/local/lib  -rdynamic irior.o -lmico2.3.0 -lreadline -lncurses -ldl -lm   -o irior
-
-4) idl2perl -imp xmlBlaster.idl
-
-5) cd ${XMLBLASTER_HOME}/testsuite/perl
-   and follow the instructions in ${XMLBLASTER_HOME}/testsuite/perl/README
 
                          Tcl - Client
 -----------------------------------------------------------------------
@@ -621,53 +339,7 @@ a) Using Tcl clients with TclMico http://www.mico.org/
 b) Using tcljava (TclBlend/JACL) with an ordinary Java client
    This allows scripting of Java with Tcl, and embedding the
    Tcl interpreter (called jacl) into Java code.
-
- Here is a description how to use Tcl with MICO (a):
- First get a new Tcl release (e.g. 8.2) at http://www.scriptics.com
- or directly with cvs:
-    export CVSROOT=:pserver:cvs@cvs.scriptics.com:/cvsroot
-    cvs login   (passwd = cvs)
-
-    cvs -z9 checkout tcl8.2
-    cd tcl8.2/unix; autoconf; cd dltest ; autoconf ; cd ..
-    ./configure --enable-shared --enable-threads --prefix=/www/tcl
-    make
-    make install
-    cd /usr/bin; rm tclsh; ln -s /www/tcl/bin/tclsh8.2 tclsh
-
-    cvs -z9 checkout tk8.2
-    cd tk8.2/unix; autoconf;
-    ./configure --enable-shared --prefix=/www/tk
-    make
-    make install
-    cd /usr/X11R6/bin; rm wish; ln -s /www/tk/bin/wish8.2 wish
-    cd /www/tcl/lib; ln -s /www/tk/lib/tk8.2 tk8.2
-
-    tclmico-0.5c:
-      export TCLCORBACPP_HOME=/www/tclmico-0.5c
-    cd ${TCLCORBACPP_HOME}
-    ./configure --enable-shared --with-tcl=/www/tcl
-      make
-      tclsh
-         % load ./libtclmico[info sharedlibextension]
-          % package require tclmico
-          % corba::init -ORBIIOPAddr inet:localhost:4242
-
-     cd /usr/local/lib
-      ln -s libmico2.3.0.a libmico.a
-      ln -s libmico2.3.0.so libmico.so
-
-    cd ${TCLCORBACPP_HOME}/demo/hello-1
-    make all
-      export PATH=$PATH:${TCLCORBACPP_HOME}
-      export LD_LIBRARY_PATH=${TCLCORBACPP_HOME}:$LD_LIBRARY_PATH
-      ./server -ORBIIOPAddr inet:localhost:8123
-         ./client.tcl -ORBBindAddr inet:localhost:8123
-
-Here a description to setup TclJava (b):
-    cvs -z9 checkout tcljava
-    cd tcljava/unix; autoconf;
-    ./configure --with-jikes --with-jdk=/usr/local/jdk --with-tcl=/usr/local/tcl8.2 --prefix=/usr/local/tclJava
+-------------------------------------------------------------------------
 
 
                            Python - Client
@@ -679,7 +351,6 @@ Python clients with Fnorb-1.01 http://www.dstc.edu.au/Products/Fnorb/
    FNORB_HOME=/Where/You/Put/Fnorb 
    export PATH=$PATH:$FNORB_HOME/Fnorb/script 
    export PYTHONPATH=$PYTHONPATH:$FNORB_HOME 
-
 -------------------------------------------------------------------------
 
 
@@ -693,10 +364,6 @@ to compile and run xmlBlaster with orbacus do the following:
    
    download orbacus for java and/or orbacus for c++ from http://www.ooc.com.
    compile & install it according to the packages instructions.
-   cd ${XMLBLASTER_HOME}
-   source ./.bashrc orbacus (this prepares all configuration to handle orbacus specific stuff
-   make all
-
 -------------------------------------------------------------------------
 
 
@@ -716,14 +383,6 @@ Increasing jacorb.poa.queue_max=100 to 1000 does help nothing, +-2%
 
 Changing jacorb.poa.thread_priority=MAX_PRIORITY (10) to 5 (NORM_PRIORITY)
         does help nothing, +-2%
-
-
-
-Tuning with TowerJ native compiler:
------------------------------------
-
-This increases message throughput for approximatly 20-35%
-It runs very stable.
 
 
 
