@@ -3,7 +3,7 @@ Name:      ServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: ServerImpl.java,v 1.14 1999/11/18 16:59:56 ruff Exp $
+Version:   $Id: ServerImpl.java,v 1.15 1999/11/18 18:50:44 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.serverIdl;
 
@@ -136,8 +136,10 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
       ClientInfo clientInfo = authenticate.check();
 
       MessageUnit[] messageUnitArr = new MessageUnit[0];
-       // IMPLEMENT: Operation
 
+      Log.error(ME+".NotImplemented", "Sorry, get() is not yet implemented");
+      //throw new XmlBlasterException(ME+".NotImplemented", "Sorry, get() is not yet implemented");
+      
       if (Log.TIME) Log.time(ME, "Elapsed time in get()" + stop.nice());
       return messageUnitArr;
    }

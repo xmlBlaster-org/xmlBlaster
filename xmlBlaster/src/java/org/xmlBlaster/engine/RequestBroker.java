@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.14 1999/11/18 16:59:55 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.15 1999/11/18 18:50:41 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -33,7 +33,7 @@ public class RequestBroker implements ClientListener
    /**
     * All MessageUnitHandler objects are stored in this map. 
     * <p>
-    * key   = xmlKey.getUniqueKey()
+    * key   = messageUnithandler.gerUniqueKey() == xmlKey.getUniqueKey()
     * value = MessageUnitHandler object
     */
    final private Map messageContainerMap = Collections.synchronizedMap(new HashMap());
@@ -139,18 +139,20 @@ public class RequestBroker implements ClientListener
    {
       try {     // !!! synchronize is missing !!!
          Log.info(ME, "addKeyNode=" + node.toString());
-         
+
          xmlKeyDoc.changeNodeOwner(node);  // com.sun.xml.tree.XmlDocument::changeNodeOwner(node) // not DOM portable
-         
+
+         // !!! PENDING: If same key oid exists, remove the old and replace with new
+
          xmlKeyRootNode.appendChild(node);
-         
-         Log.info(ME, "New tree=" + xmlKeyRootNode.toString());
-         
+
+         if (Log.TRACE) Log.trace(ME, "Successfully merged tree");
+
          if (Log.DUMP) {  // dump the whole tree
             Writer out = new OutputStreamWriter (System.out);
             xmlKeyDoc.write(out);
          }
-   
+
          // !!! not performant, should be instantiated only just before needed
          //     whith stale check
          queryMgr = new com.fujitsu.xml.omquery.DomQueryMgr(xmlKeyDoc);             
@@ -183,7 +185,7 @@ public class RequestBroker implements ClientListener
       SubscriptionInfo subs = new SubscriptionInfo(clientInfo, xmlKey, subscribeQoS);
 
       if (xmlKey.getQueryType() == XmlKey.XPATH_QUERY) { // subscription without a given oid
-         
+
          fireSubscriptionEvent(subs, true);              // fires event for query subscription
 
          Enumeration nodeIter;
@@ -265,6 +267,8 @@ public class RequestBroker implements ClientListener
 
    /**
     * Low level subscribe, is called when the <key oid="..."> to subscribe is exactly known
+    * @param uniqueKey from XmlKey - oid
+    * @param subs
     */
    private void subscribeToOid(String uniqueKey, SubscriptionInfo subs) throws XmlBlasterException
    {
@@ -290,6 +294,7 @@ public class RequestBroker implements ClientListener
 
 
    /**
+    * SUPPORT FOR QUERY unSubscribe is still missing!!!
     */
    public void unSubscribe(ClientInfo clientInfo, XmlKey xmlKey, XmlQoS unSubscribeQoS) throws XmlBlasterException
    {
@@ -304,7 +309,7 @@ public class RequestBroker implements ClientListener
          throw new XmlBlasterException(ME + ".DoesntExist", "Sorry, can't unsubscribe, message unit doesn't exist: " + uniqueKey);
       }
       MessageUnitHandler msg = (MessageUnitHandler)obj;
- /* !!!!!!! */    SubscriptionInfo subs = new SubscriptionInfo(clientInfo, xmlKey, unSubscribeQoS);
+      SubscriptionInfo subs = new SubscriptionInfo(clientInfo, xmlKey, unSubscribeQoS); // to generate the subscription-uniqueKey
       int numRemoved = msg.removeSubscriber(subs);
       if (numRemoved < 1) {
          Log.warning(ME + ".NotSubscribed", "Sorry, can't unsubscribe, you never subscribed to " + uniqueKey);
@@ -322,6 +327,7 @@ public class RequestBroker implements ClientListener
     */
    public String[] publish(MessageUnit[] messageUnitArr, String[] qos_literal_Arr) throws XmlBlasterException
    {
+      if (Log.CALLS) Log.calls(ME, "Entering publish() ...");
       // !!! TODO: handling of qos
 
       String[] returnArr = new String[messageUnitArr.length];
@@ -336,35 +342,56 @@ public class RequestBroker implements ClientListener
 
          returnArr[ii] = xmlKey.getUniqueKey(); // id <key oid=""> was empty, there was a new oid generated
 
-         // 1. set new value or create the new message:
+         //----- 1. set new value or create the new message:
 
-         boolean existed = false; // to shorten the synchronize block
+         if (Log.TRACE) Log.trace(ME, "Step 1. Set new value or create the new message ...");
+         boolean messageExisted = false; // to shorten the synchronize block
 
          synchronized(messageContainerMap) {
             Object obj = messageContainerMap.get(xmlKey.getUniqueKey());
             if (obj == null) {
-               msgHandler = new MessageUnitHandler(requestBroker, messageUnit);
-               messageContainerMap.put(msgHandler.getUniqueKey(), msgHandler);
+               msgHandler = new MessageUnitHandler(requestBroker, xmlKey, messageUnit);
+               messageContainerMap.put(xmlKey.getUniqueKey(), msgHandler);
             }
             else {
                msgHandler = (MessageUnitHandler)obj;
-               existed = true;
+               messageExisted = true;
             }
          }
-         if (existed)
-            msgHandler.setContent(xmlKey, messageUnit.content);
 
-         
-         // 2. check all known query subscriptions if the new message fits as well
-         if (!existed) {
-            Log.error(ME, "Checking existing query subscriptions is still missing"); // !!!
+         if (messageExisted) {
+            msgHandler.setContent(xmlKey, messageUnit.content);
+         }
+         else {
+            try {
+               xmlKey.mergeRootNode();  // merge the message DOM tree into the big xmlBlaster DOM tree
+            } catch (XmlBlasterException e) {
+               synchronized(messageContainerMap) {
+                  messageContainerMap.remove(xmlKey.getUniqueKey()); // it didn't exist before, so we have to clean up
+               }
+               throw new XmlBlasterException(e.id, e.reason);
+            }
          }
 
-         
-         // 3. now we can send updates to all interested clients:
+
+
+         //----- 2. check all known query subscriptions if the new message fits as well
+         if (!messageExisted) {
+            Log.error(ME, "Step 2. Checking existing query subscriptions is still missing"); // !!!
+            Set set = clientSubscriptions.getQuerySubscribeRequestsSet();
+            Iterator iterator = set.iterator();
+            while (iterator.hasNext()) {
+               SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
+               // reuse CODE from subscribe() ...
+            }
+
+         }
+
+
+         //----- 3. now we can send updates to all interested clients:
 
          Map subscriberMap = msgHandler.getSubscriberMap();
-         if (Log.TRACE) Log.trace(ME, "subscriberMap.size() = " + subscriberMap.size());
+         if (Log.TRACE) Log.trace(ME, "Going to update dependent clients, subscriberMap.size() = " + subscriberMap.size());
 
          // DANGER: The whole update blocks if one client blocks - needs a redesign !!!
          // PREFORMANCE: All updates for each client should be collected !!!
@@ -374,13 +401,13 @@ public class RequestBroker implements ClientListener
             while (iterator.hasNext())
             {
                SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
-               if (Log.TRACE) Log.trace(ME, "xmlBlaster.update(" + xmlKey.getUniqueKey() + ") to " + sub.getClientInfo().toString());
                BlasterCallback cb = sub.getClientInfo().getCB();
                XmlQoSUpdate xmlQoS = new XmlQoSUpdate();
                MessageUnit[] marr = new MessageUnit[1];
                marr[0] = messageUnit;
                String[] qarr = new String[1];
                qarr[0] = xmlQoS.toString();
+               if (Log.TRACE) Log.trace(ME, "xmlBlaster.update(" + xmlKey.getUniqueKey() + ") to " + sub.getClientInfo().toString());
                cb.update(marr, qarr);
             }
          }

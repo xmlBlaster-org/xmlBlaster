@@ -3,7 +3,7 @@ Name:      XmlKeyBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKeyBase.java,v 1.6 1999/11/18 16:59:56 ruff Exp $
+Version:   $Id: XmlKeyBase.java,v 1.7 1999/11/18 18:50:44 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -233,11 +233,20 @@ public class XmlKeyBase
 
       checkForKeyAttr(tmpRootNode);
 
+      rootNode = tmpRootNode;  // everything successfull, assign the rootNode
+   }
+
+
+   /**
+    * Should be called by publish() to merge the local XmlKey DOM into the big xmlBlaster DOM tree
+    */
+   public void mergeRootNode() throws XmlBlasterException
+   {
+      org.w3c.dom.Node tmpRootNode = rootNode;
       if (isPublish) {
          if (Log.TRACE) Log.trace(ME, "Created DOM tree for " + keyOid + ", adding it to <xmlBlaster> tree");
          org.w3c.dom.Node node = RequestBroker.getInstance().addKeyNode(tmpRootNode);
       }
-
       rootNode = tmpRootNode;  // everything successfull, assign the rootNode
    }
 

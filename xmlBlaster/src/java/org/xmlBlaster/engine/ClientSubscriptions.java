@@ -3,7 +3,7 @@ Name:      ClientSubscriptions.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling subscriptions, collected for each Client
-Version:   $Id: ClientSubscriptions.java,v 1.1 1999/11/18 16:59:55 ruff Exp $
+Version:   $Id: ClientSubscriptions.java,v 1.2 1999/11/18 18:50:40 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -21,7 +21,7 @@ import java.io.*;
  * Handling subscriptions, collected for each Client
  *
  * The interface SubscriptionListener informs about subscribe/unsubscribe
- * @version: $Id: ClientSubscriptions.java,v 1.1 1999/11/18 16:59:55 ruff Exp $
+ * @version: $Id: ClientSubscriptions.java,v 1.2 1999/11/18 18:50:40 ruff Exp $
  * @author Marcel Ruff
  */
 public class ClientSubscriptions implements ClientListener, SubscriptionListener
@@ -40,9 +40,9 @@ public class ClientSubscriptions implements ClientListener, SubscriptionListener
     * Used for performant logout.
     * <p>
     * key   = client.getUniqueKey()
-    * value = clientSubscriptionSet with SubscriptionInfo objects
+    * value = clientSubscriptionSet (Collections.synchronizedSet(new HashSet());)
+    *         with SubscriptionInfo objects
     */
-   final private Set clientSubscriptionSet = Collections.synchronizedSet(new HashSet());
    final private Map clientSubscriptionMap = Collections.synchronizedMap(new HashMap());
 
 
@@ -57,7 +57,7 @@ public class ClientSubscriptions implements ClientListener, SubscriptionListener
     * value = SubscriptionInfo objects with generic subscriptions, but not
     *         those, who subscribed a MessageUnit exactly by a known oid
     */
-   final private Set subscribeRequestsSet = Collections.synchronizedSet(new HashSet());
+   final private Set querySubscribeRequestsSet = Collections.synchronizedSet(new HashSet());
 
 
    /**
@@ -101,6 +101,16 @@ public class ClientSubscriptions implements ClientListener, SubscriptionListener
 
 
    /**
+    * All known subscriptions which match a query,
+    * but not those subscriptions which address exactly via key-oid
+    */
+   public Set getQuerySubscribeRequestsSet()
+   {
+      return querySubscribeRequestsSet;
+   }
+
+
+   /**
     * Invoked on successfull client login (interface ClientListener)
     */
    public void clientAdded(ClientEvent e) throws XmlBlasterException
@@ -138,22 +148,34 @@ public class ClientSubscriptions implements ClientListener, SubscriptionListener
       ClientInfo clientInfo = subscriptionInfo.getClientInfo();
       if (Log.TRACE) Log.trace(ME, "Subscription add event for client " + clientInfo.toString());
       XmlKey xmlKey = subscriptionInfo.getXmlKey();
-      String uniqueKey = subscriptionInfo.getUniqueKey();
+      String uniqueKey = clientInfo.getUniqueKey();
 
       if (xmlKey.getQueryType() == XmlKey.PUBLISH) {
          Log.error(ME, "Subscription add event for PUBLISH message ignored");
          return;
       }
 
+      // Insert into first map:
       Object obj;
+      Set clientSubscriptionSet;
       synchronized(clientSubscriptionMap) {
-         obj = clientSubscriptionMap.put(uniqueKey, subscriptionInfo);
+         obj = clientSubscriptionMap.get(uniqueKey);
+         if (obj == null) {
+            clientSubscriptionSet = Collections.synchronizedSet(new HashSet());
+            clientSubscriptionMap.put(uniqueKey, clientSubscriptionSet);
+         }
+         else {
+            clientSubscriptionSet = (Set)obj;
+         }
+         clientSubscriptionSet.add(subscriptionInfo);
       }
 
-      if (xmlKey.getQueryType() != XmlKey.EXACT_QUERY) {
+
+      // Insert into second map:
+      if (xmlKey.getQueryType() != XmlKey.PUBLISH && xmlKey.getQueryType() != XmlKey.EXACT_QUERY) {
          obj=null;
-         synchronized(subscribeRequestsSet) {
-            subscribeRequestsSet.add(subscriptionInfo);
+         synchronized(querySubscribeRequestsSet) {
+            querySubscribeRequestsSet.add(subscriptionInfo);
          }
       }
    }
@@ -172,11 +194,13 @@ public class ClientSubscriptions implements ClientListener, SubscriptionListener
       try {
          removeFromClientSubscriptionMap(clientInfo, subscriptionInfo);
       } catch (XmlBlasterException e1) {
+         Log.error(ME+".subscriptionRemove", "removeFromClientSubscriptionMap: " + e1.toString());
       }
 
       try {
          removeFromSubscribeRequestsSet(clientInfo, subscriptionInfo);
       } catch (XmlBlasterException e2) {
+         Log.error(ME+".subscriptionRemove", "removeFromSubscribeRequestsSet: " + e2.toString());
       }
    }
 
@@ -196,8 +220,8 @@ public class ClientSubscriptions implements ClientListener, SubscriptionListener
             obj = clientSubscriptionMap.get(uniqueKey);
       }
       if (obj == null) {
-         Log.warning(ME + ".ClientDoesntExist", "Sorry, can't remove client subscription for " + clientInfo.toString() + ", client doesn't exist");
-         throw new XmlBlasterException(ME + ".ClientDoesntExist", "Sorry, can't remove client subscription for " + clientInfo.toString() + ", client doesn't exist");
+         Log.warning(ME + ".ClientDoesntExist", "Sorry, can't remove client subscription " + uniqueKey + " for " + clientInfo.toString() + ", client doesn't exist");
+         throw new XmlBlasterException(ME + ".ClientDoesntExist", "Sorry, can't remove client subscription " + uniqueKey + " for " + clientInfo.toString() + ", client doesn't exist");
       }
       Set subscriptionSet = (Set)obj;
       synchronized (subscriptionSet) {
@@ -219,11 +243,11 @@ public class ClientSubscriptions implements ClientListener, SubscriptionListener
    {  
       String uniqueKey = clientInfo.getUniqueKey();
 
-      Vector vec = new Vector(subscribeRequestsSet.size());
+      Vector vec = new Vector(querySubscribeRequestsSet.size());
 
       // Slow linear search!!!!
-      synchronized(subscribeRequestsSet) {
-         Iterator iterator = subscribeRequestsSet.iterator();
+      synchronized(querySubscribeRequestsSet) {
+         Iterator iterator = querySubscribeRequestsSet.iterator();
          while (iterator.hasNext()) {
             SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
             if (sub.getClientInfo().getUniqueKey().equals(uniqueKey) && wantedSubs == null ||
@@ -232,7 +256,7 @@ public class ClientSubscriptions implements ClientListener, SubscriptionListener
             }
          }
          for (int ii=0; ii<vec.size(); ii++)
-            subscribeRequestsSet.remove(vec.elementAt(ii));
+            querySubscribeRequestsSet.remove(vec.elementAt(ii));
       }
 
       vec = null;

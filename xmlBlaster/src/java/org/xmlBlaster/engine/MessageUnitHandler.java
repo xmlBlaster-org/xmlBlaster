@@ -3,7 +3,7 @@ Name:      MessageUnitHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling exactly one message content
-Version:   $Id: MessageUnitHandler.java,v 1.8 1999/11/18 16:59:55 ruff Exp $
+Version:   $Id: MessageUnitHandler.java,v 1.9 1999/11/18 18:50:40 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -72,9 +72,12 @@ public class MessageUnitHandler
 
 
    /**
-    * Constructor if a yet unknown object is fed by method set()
+    * Constructor if a yet unknown object is fed by method publish()
+    * @param requestBroker
+    * @param xmlKey Since it is parsed in the calling method, we don't need to do it again from messageUnit.xmlKey_literal
+    * @param the CORBA MessageUnit data container
     */
-   public MessageUnitHandler(RequestBroker requestBroker, MessageUnit messageUnit/*, QoSKey qosPublish*/) throws XmlBlasterException
+   public MessageUnitHandler(RequestBroker requestBroker, XmlKey xmlKey, MessageUnit messageUnit/*, QoSKey qosPublish*/) throws XmlBlasterException
    {
       if (requestBroker == null || messageUnit == null || messageUnit.xmlKey == null) {
          Log.error(ME, "Invalid constructor parameters");
@@ -86,7 +89,7 @@ public class MessageUnitHandler
 
       this.requestBroker = requestBroker;
       this.messageUnit = messageUnit;
-      this.xmlKey = new XmlKey(messageUnit.xmlKey);
+      this.xmlKey = xmlKey;
       this.uniqueKey = this.xmlKey.getUniqueKey();
       //this.qosPublish = qosPublish;
 
