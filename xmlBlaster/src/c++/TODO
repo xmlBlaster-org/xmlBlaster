@@ -5,6 +5,7 @@ and memory leak checked with valgrind.
 
 Following issues however remain:
 
+o Implement QuerySpec tag in QueryQos
 
 o Implement burstMode/maxEntries and burstMode/maxBytes methods in
   ConnectQos -> AddressBase
