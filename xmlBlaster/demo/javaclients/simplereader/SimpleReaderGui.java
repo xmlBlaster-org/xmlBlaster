@@ -63,6 +63,19 @@ public class SimpleReaderGui extends JFrame implements I_Callback {
         e.printStackTrace();
       }
 
+      // set the application icon
+      java.net.URL oUrl;
+      oUrl = this.getClass().getResource("AppIcon.gif");
+      Image img = null;
+      if (oUrl != null)
+         img = java.awt.Toolkit.getDefaultToolkit().getImage(oUrl);
+      if(img != null) {
+        this.setIconImage(img);
+        // System.out.println(img.toString());
+      } else {
+        System.out.println("AppIcon.gif not found");
+      } // -- if img != null
+      this.setTitle(ME);
    }
 
    public static void main(String[] args) {
@@ -180,9 +193,10 @@ public class SimpleReaderGui extends JFrame implements I_Callback {
 
    void jButton1_actionPerformed(ActionEvent e) {
       String text = jTextField1.getText();
+      this.setTitle(ME + "  " + text);
       try {
          SubscribeKey key = new SubscribeKey(xmlBlaster.getGlobal(), text, "XPATH");
-         SubscribeQos qos = new SubscribeQos( xmlBlaster.getGlobal() );
+         SubscribeQos qos = new SubscribeQos(xmlBlaster.getGlobal() );
          xmlBlaster.subscribe(key.toXml(), qos.toXml());
       }
       catch( Exception ex ) {
