@@ -3,7 +3,7 @@ Name:      AbstractCallbackExtended.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Easly extended class for protocol-unaware xmlBlaster clients.
-Version:   $Id: AbstractCallbackExtended.java,v 1.11 2002/06/25 09:22:51 ruff Exp $
+Version:   $Id: AbstractCallbackExtended.java,v 1.12 2002/09/18 16:37:54 laghi Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol;
 
@@ -23,8 +23,8 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  * extend this class because one of the update methods is abstract.
  * <p>
  *
- * @version $Revision: 1.11 $
- * @author "Michele Laghi" <michele.laghi@attglobal.net>
+ * @version $Revision: 1.12 $
+ * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public abstract class AbstractCallbackExtended implements I_CallbackExtended
