@@ -34,13 +34,17 @@ public final class ConnectQosServer
    public ConnectQosServer(Global glob, ConnectQosData connectQosData) {
       this.glob = (glob==null) ? Global.instance() : glob;
       this.connectQosData = connectQosData;
-      this.connectQosData.eraseClientQueueProperty(); // not of interest on server side
+
+      // better keep it for forwarding etc.
+      //this.connectQosData.eraseClientQueueProperty(); // not of interest on server side
    }
 
    public ConnectQosServer(Global glob, String xmlQos) throws XmlBlasterException {
       this.glob = (glob==null) ? Global.instance() : glob;
       this.connectQosData = glob.getConnectQosFactory().readObject(xmlQos);
-      this.connectQosData.eraseClientQueueProperty(); // not of interest on server side
+      
+      // better keep it for forwarding etc.
+      //this.connectQosData.eraseClientQueueProperty(); // not of interest on server side
    }
 
    public ConnectQosData getData() {
