@@ -121,11 +121,11 @@ public final class RunlevelManager
     */
    public final int changeRunlevel(String newRunlevel, boolean force) throws XmlBlasterException {
       if (newRunlevel == null || newRunlevel.length() < 1) {
-         String text = "Runlevel " + newRunlevel + " is not allowed, please chooes one of " +
+         String text = "Runlevel " + newRunlevel + " is not allowed, please choose one of " +
                        RUNLEVEL_HALTED + "|" + RUNLEVEL_STANDBY + "|" +
                        RUNLEVEL_CLEANUP + "|" + RUNLEVEL_RUNNING;
-         log.warn(ME, text);
-         throw new XmlBlasterException(ME, text);
+         if (log.TRACE) log.trace(ME, text);
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION, ME, text);
       }
 
       int level = 0;
@@ -172,11 +172,11 @@ public final class RunlevelManager
       log.info(ME, "Change request from run level " + toRunlevelStr(from) + " to run level " + toRunlevelStr(to) + " ...");
 
       if (!isMajorLevel(to)) {
-         String text = "Runlevel " + to + " is not allowed, please chooes one of " +
+         String text = "Runlevel " + to + " is not allowed, please choose one of " +
                        RUNLEVEL_HALTED + "|" + RUNLEVEL_STANDBY + "|" +
                        RUNLEVEL_CLEANUP + "|" + RUNLEVEL_RUNNING;
-         log.error(ME, text);
-         throw new XmlBlasterException(ME, text);
+         if (log.TRACE) log.trace(ME, text);
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION, ME, text);
       }
 
       if (from < to) { // startup
