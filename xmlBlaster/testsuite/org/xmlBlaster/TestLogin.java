@@ -2,8 +2,8 @@
 Name:      TestLogin.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Load test for xmlBlaster
-Version:   $Id: TestLogin.java,v 1.1 2000/01/11 00:29:43 ruff Exp $
+Comment:   Login/logout test for xmlBlaster
+Version:   $Id: TestLogin.java,v 1.2 2000/01/11 00:30:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -20,8 +20,8 @@ import test.framework.*;
 
 
 /**
- * This client does test login, logout, login without logout.<br />
- * Successful login/logout is checked with subscribe()/publish() calls
+ * This client does test login and logout.<br />
+ * login/logout combinations are checked with subscribe()/publish() calls
  * <p />
  * This client may be invoked multiple time on the same xmlBlaster server,
  * as it cleans up everything after his tests are done.
@@ -233,7 +233,7 @@ public class TestLogin extends TestCase implements I_Callback
          sum += pollingInterval;
          assert("Timeout of " + timeout + " occurred without update", sum <= timeout);
       }
-      
+
       // check if too many are arriving
       try { Thread.currentThread().sleep(timeout); } catch( InterruptedException i) {}
       assertEquals("Wrong number of messages arrived", numWait, numReceived);
