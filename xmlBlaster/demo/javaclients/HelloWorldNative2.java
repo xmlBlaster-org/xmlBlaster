@@ -33,10 +33,15 @@ import org.xmlBlaster.util.plugin.PluginInfo;
  *     &lt;action do='STOP' onShutdownRunlevel='6' sequence='5'/>
  *  &lt;/plugin>
  * </pre>
+ * <p>
+ * Note how the attributes <i>loginName</i> and <i>topicName</i> are passed to the plugin.
+ * </p>
+ * <p>
  * As a protocol driver to talk to xmlBlaster it has configured "LOCAL", this
  * plugin works only if client and server is in the same virtual machine (JVM).
  * Other protocols like CORBA or SOCKET would work as well but carry the overhead
  * of sending the message over TCP/IP.
+ * </p>
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.runlevel.html" target="others">run level requirement</a>
  */
 public class HelloWorldNative2 implements I_Plugin
