@@ -3,7 +3,7 @@ Name:      TestLogin.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestLogin.cpp,v 1.6 2002/12/10 18:45:43 laghi Exp $
+Version:   $Id: TestLogin.cpp,v 1.7 2003/01/08 17:09:49 laghi Exp $
 -----------------------------------------------------------------------------*/
 
 /**
@@ -404,7 +404,9 @@ private:
    }
    void usage()
    {
-      util::Log log_;
+      Global& glob = Global::getInstance();
+      glob.initialize();
+      util::Log& log_ = glob.getLog("test");
       log_.plain(me(), "----------------------------------------------------------");
       log_.plain(me(), "Testing C++/CORBA access to xmlBlaster");
       log_.plain(me(), "Usage:");

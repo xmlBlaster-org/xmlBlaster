@@ -158,10 +158,10 @@ public class CacheQueueTest extends TestCase {
       // set up the queues ....
       this.queues = new I_Queue[1];
       QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_SESSION, "/node/test");
-      prop.setMaxMsg(200L);
-      prop.setMaxMsgCache(100L);
-      prop.setMaxBytes(5000L);
-      prop.setMaxBytesCache(2000L);
+      prop.setMaxMsg(20L);
+      prop.setMaxMsgCache(10L);
+      prop.setMaxBytes(500L);
+      prop.setMaxBytesCache(200L);
 
       StorageId queueId = new StorageId("cb", "CacheQueueTest/config");
 
@@ -174,12 +174,12 @@ public class CacheQueueTest extends TestCase {
       long transientSize  = queue.getTransientQueue().getMaxNumOfBytes();
       long transientMsg   = queue.getTransientQueue().getMaxNumOfEntries();
 
-      assertEquals("Wrong persistent size", 5000L, persistentSize);
-      assertEquals("Wrong persistent num of msg", 200L, persistentMsg);
-      if (2000L != transientSize)
+      assertEquals("Wrong persistent size", 500L, persistentSize);
+      assertEquals("Wrong persistent num of msg", 20L, persistentMsg);
+      if (200L != transientSize)
          log.error(ME, "ERROR: Wrong transient size"+queue.getTransientQueue().toXml(""));
-      assertEquals("Wrong transient size"+queue.getTransientQueue().toXml(""), 2000L, transientSize);
-      assertEquals("Wrong num of transient msg", 100L, transientMsg);
+      assertEquals("Wrong transient size"+queue.getTransientQueue().toXml(""), 200L, transientSize);
+      assertEquals("Wrong num of transient msg", 10L, transientMsg);
 
    }
 
@@ -215,10 +215,10 @@ public class CacheQueueTest extends TestCase {
 
       // every content is 80 bytes which gives an entry size of 100 bytes (80+20)
 
-      long maxNumOfBytesCache[] = {7000L, 100000L};
-      long maxNumOfBytes[] = {7000L, 500000L};
-      int numOfTransientEntries[] = { 20, 500, 2000};
-      int numOfDurableEntries[] =  { 0, 20, 500, 2000};
+      long maxNumOfBytesCache[] = {700L, 10000L};
+      long maxNumOfBytes[] = {700L, 50000L};
+      int numOfTransientEntries[] = { 2, 50, 200};
+      int numOfDurableEntries[] =  { 0, 2, 50, 200};
 //      int numPrio[] = { 1, 5, 9};
 
 //      int it=0, id=0, ic=0, is=0;
@@ -228,8 +228,8 @@ public class CacheQueueTest extends TestCase {
                log.info(ME, "**** TEST maxNumOfBytesCache["+ic+"]=" + maxNumOfBytesCache[ic] + " maxNumOfBytes["+is+"]=" + maxNumOfBytes[is]);
                // a new queue each time here ...
                QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_SESSION, "/node/test");
-               prop.setMaxMsg(20000L);
-               prop.setMaxMsgCache(10000L);
+               prop.setMaxMsg(2000L);
+               prop.setMaxMsgCache(1000L);
                prop.setMaxBytes(maxNumOfBytes[is]);
                prop.setMaxBytesCache(maxNumOfBytesCache[ic]);
                StorageId queueId = new StorageId("cb", "CacheQueueTest/jdbc" + maxNumOfBytes[is] + "/ram" + maxNumOfBytesCache[ic]);
