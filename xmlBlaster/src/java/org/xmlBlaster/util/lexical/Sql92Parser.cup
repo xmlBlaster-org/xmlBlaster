@@ -16,11 +16,11 @@ import org.jutils.log.LogChannel;
    line and column number of the error). */
 parser code {:
 
-	protected final static String ME = "SqlParser";
-	protected Global global;
-	protected LogChannel log;
-	protected java.util.Map regexMap;
-	
+        protected final static String ME = "SqlParser";
+        protected Global global;
+        protected LogChannel log;
+        protected java.util.Map regexMap;
+        
     /* Constructor used inside xmlBlaster */
     public Sql92Parser(Global global, /*java.util.Map regexMap,*/ java_cup.runtime.Scanner s) {
        this(s);
@@ -32,29 +32,29 @@ parser code {:
           this.regexMap = new java.util.HashMap();
     }
 
-	public LikeOpWrapper getExpression(String expression, char escape, boolean simple) {
-	   String key = expression;
-	   if (escape != (char)0) {
-	      key += escape;
-	   }
-	   LikeOpWrapper wrapper = (LikeOpWrapper)this.regexMap.get(key);
-	   if (wrapper == null) {
-	      synchronized(this.regexMap) {
-	         wrapper = (LikeOpWrapper)this.regexMap.get(key);
-	         if (wrapper != null) return wrapper;
-	         try {
-   	            wrapper = new LikeOpWrapper(this.global, expression, escape, simple);
-   	            this.regexMap.put(key, wrapper);
-   	            return wrapper;
-	         }
-	         catch (org.xmlBlaster.util.XmlBlasterException ex) {
-	            ex.printStackTrace();
-	            throw new IllegalArgumentException(ex.getMessage());
-	         }
-	      }
-	   }
+        public LikeOpWrapper getExpression(String expression, char escape, boolean simple) {
+           String key = expression;
+           if (escape != (char)0) {
+              key += escape;
+           }
+           LikeOpWrapper wrapper = (LikeOpWrapper)this.regexMap.get(key);
+           if (wrapper == null) {
+              synchronized(this.regexMap) {
+                 wrapper = (LikeOpWrapper)this.regexMap.get(key);
+                 if (wrapper != null) return wrapper;
+                 try {
+                    wrapper = new LikeOpWrapper(this.global, expression, escape, simple);
+                    this.regexMap.put(key, wrapper);
+                    return wrapper;
+                 }
+                 catch (org.xmlBlaster.util.XmlBlasterException ex) {
+                    ex.printStackTrace();
+                    throw new IllegalArgumentException(ex.getMessage());
+                 }
+              }
+           }
            else return wrapper;
-	}
+        }
 
     /* 
        Change the method report_error so it will display the line and
@@ -196,10 +196,10 @@ logic_term  ::=
       | logic_factor:p
         {:
             if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "logic_term(logic_factor) '" +  p + "'");
-	    if (p == null) {
-	       RESULT  = new Boolean(false);
-	    }   
-	    else {
+            if (p == null) {
+               RESULT  = new Boolean(false);
+            }   
+            else {
                RESULT = p;
             }
         :}  
@@ -209,20 +209,20 @@ logic_factor ::=
         logic_factor:p1 AND logic_term:p2
         {: 
             if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "logic_factor(logic_factor AND logic_term): '" + p1 + " AND " + p2 + "'");
-	    if (p1 == null || p2 == null) {
-	       RESULT  = new Boolean(false);
-	    }   
-	    else {
+            if (p1 == null || p2 == null) {
+               RESULT  = new Boolean(false);
+            }   
+            else {
                RESULT = new Boolean(p1.booleanValue() && p2.booleanValue()); 
             }
         :}
       | pred:p
         {:
             if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "logic_factor(pred) '" +  p + "'");
-	    if (p == null) {
-	       RESULT  = new Boolean(false);
-	    }   
-	    else {
+            if (p == null) {
+               RESULT  = new Boolean(false);
+            }   
+            else {
                RESULT = p;
             }
         :}  
@@ -310,7 +310,7 @@ basic_pred ::=
                RESULT = new Boolean(false);
             }
             else {   
-               if (e1 instanceof String) RESULT = new Boolean(((String)e1).compareTo(e2) < 0); 
+               if (e1 instanceof String) RESULT = new Boolean(((String)e1).compareTo((String)e2) < 0); 
                else RESULT = new Boolean( ((Double)e1).doubleValue() < ((Double)e2).doubleValue());
             }   
           :}
@@ -321,7 +321,7 @@ basic_pred ::=
                RESULT = new Boolean(false);
             }
             else {   
-               if (e1 instanceof String) RESULT = new Boolean(((String)e1).compareTo(e2) <= 0); 
+               if (e1 instanceof String) RESULT = new Boolean(((String)e1).compareTo((String)e2) <= 0); 
                else RESULT = new Boolean( ((Double)e1).doubleValue() <= ((Double)e2).doubleValue());
             }   
           :}
@@ -332,7 +332,7 @@ basic_pred ::=
                RESULT = new Boolean(false);
             }
             else {   
-               if (e1 instanceof String) RESULT = new Boolean(((String)e1).compareTo(e2) > 0); 
+               if (e1 instanceof String) RESULT = new Boolean(((String)e1).compareTo((String)e2) > 0); 
                else RESULT = new Boolean( ((Double)e1).doubleValue() > ((Double)e2).doubleValue());
             }   
           :}
@@ -343,7 +343,7 @@ basic_pred ::=
                RESULT = new Boolean(false);
             }
             else {   
-               if (e1 instanceof String) RESULT = new Boolean(((String)e1).compareTo(e2) >= 0); 
+               if (e1 instanceof String) RESULT = new Boolean(((String)e1).compareTo((String)e2) >= 0); 
                else RESULT = new Boolean( ((Double)e1).doubleValue() >= ((Double)e2).doubleValue());
             }   
          :}
@@ -361,7 +361,7 @@ between_pred ::=
               }
               else {
                  if (e1 instanceof String) {
-                    RESULT = new Boolean((((String)e1).compareTo(e2) >= 0) && (((String)e1).compareTo(e3) <= 0));
+                    RESULT = new Boolean((((String)e1).compareTo((String)e2) >= 0) && (((String)e1).compareTo((String)e3) <= 0));
                  }
                  else {
                     RESULT = new Boolean(((Double)e1).doubleValue() >= ((Double)e2).doubleValue() && ((Double)e1).doubleValue() <= ((Double)e3).doubleValue());
@@ -544,28 +544,28 @@ math_term  ::=
         math_term:p1 PLUS math_term:p2
         {: 
             if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "math_term(math_term + math_term): '" + p1 + " + " + p2 + "'");
-       	    if (p1 == null) {
-       	       RESULT = p2;
-       	    }
+            if (p1 == null) {
+               RESULT = p2;
+            }
             else if (p2 == null) {
                RESULT = p1;
             }
-       	    else {                          
-       	       RESULT = new Double(p1.doubleValue() + p2.doubleValue());
-       	    }   
+            else {                          
+               RESULT = new Double(p1.doubleValue() + p2.doubleValue());
+            }   
         :}
       | math_term:p1 MINUS math_term:p2
         {: 
             if (parser.log.CALL) parser.log.call(Sql92Parser.ME, "math_term(math_term - math_term): '" + p1 + " - " + p2 + "'");
-       	    if (p1 == null) {
-       	       RESULT = p2;
-       	    }
+            if (p1 == null) {
+               RESULT = p2;
+            }
             else if (p2 == null) {
                RESULT = p1;
             }
-       	    else {                          
-       	       RESULT = new Double(p1.doubleValue() - p2.doubleValue());
-       	    }   
+            else {                          
+               RESULT = new Double(p1.doubleValue() - p2.doubleValue());
+            }   
         :}
       | math_factor:p
         {:
