@@ -88,6 +88,7 @@ final public class Authenticate implements I_Authenticate
                        String xmlQoS_literal, String sessionId)
                           throws XmlBlasterException
    {
+      Thread.currentThread().dumpStack();
       Log.error(ME, "login() not implemented");
       throw new XmlBlasterException(ME, "login() not implemented");
    }
@@ -109,7 +110,9 @@ final public class Authenticate implements I_Authenticate
       session.init(securityQos);
       I_Subject subject = session.getSubject();
       SubjectInfo subjectInfo = new SubjectInfo(subject, new QueueProperty(Constants.RELATING_SUBJECT), getGlobal());
-      return new SessionInfo(subjectInfo, session, new ConnectQos(), getGlobal());
+      ConnectQos connectQos = new ConnectQos();
+      connectQos.setSessionTimeout(0L);  // Lasts forever
+      return new SessionInfo(subjectInfo, session, connectQos, getGlobal());
    }
 
    /**
