@@ -1,45 +1,112 @@
 /*----------------------------------------------------------------------------------------------
-Name:      xmlBlaster.css
+Name: xmlBlaster.css
 <body bgcolor="#FFFFFF" link="#901B1B" vlink="#4D0F0F" alink="#F1C101" background="xmlBlasterBanner.gif">
+Note: The master file is from homepage/xmlBlaster.css
+      local copies of this file are in xmlBlaster/doc etc.
 ----------------------------------------------------------------------------------------------*/
 
-body {FONT-FAMILY: verdana,arial,helvetica,sans-serif; COLOR: black; BACKGROUND-COLOR: #FFFFFF; }
-table { width: "100%"; BORDER-WIDTH: 0; CELL-PADDING: 10; CELL-SPACING: 10; }
-td {FONT-FAMILY: verdana,arial,helvetica; COLOR: black; BACKGROUND-COLOR: #EEEEEE; font-size:90%;}
-th {FONT-FAMILY: verdana,arial,helvetica; COLOR: black; BACKGROUND-COLOR: #DDDDDD; font-size:100%;}
-p,i,li,ul,ol {FONT-FAMILY: verdana,arial,helvetica,sans-serif; COLOR: black; font-size:100%;}
-a {FONT-FAMILY: verdana,arial,helvetica,sans-serif; font-size:100%; color: #901B1B;}
+body {
+   FONT-FAMILY: verdana,arial,helvetica,sans-serif; 
+   COLOR: black; 
+   BACKGROUND-COLOR: #FFFFFF;
+   font-size:10pt; 
+}
+
+table { 
+   width: "100%"; 
+   BORDER-WIDTH: 0; 
+   CELL-PADDING: 10; 
+   CELL-SPACING: 10; 
+}
+
+td {
+   FONT-FAMILY: verdana,arial,helvetica,sans-serif; 
+   COLOR: black; 
+   BACKGROUND-COLOR: #EEEEEE; 
+   font-size:10pt;
+}
+
+th {
+   FONT-FAMILY: verdana,arial,helvetica,sans-serif; 
+   COLOR: black; 
+   BACKGROUND-COLOR: #DDDDDD; 
+   font-size:10pt;
+}
+
+p,i,li,ul,ol {
+   FONT-FAMILY: verdana,arial,helvetica,sans-serif; 
+   COLOR: black; 
+   font-size:10pt;
+}
+
+a {
+   FONT-FAMILY: verdana,arial,helvetica,sans-serif; 
+   font-size:10pt; 
+   color: #901B1B;
+}
 
 a:visited {color: #4D0F0F;}
 a:active {color: #F1C101;}
 
-.sitetitel {font-size: 180%; font-weight: bold; text-align : center;}
+
+h1 {
+  color:            #000000;
+  font-size:        18pt;
+  font-weight:      bold;
+}
+
+h2 {
+  color:            #000000;
+  font-size:        10pt;
+  font-weight:      bold;
+}
+
+h3 {
+  color:            #000000;
+  font-size:        8pt;
+  font-weight:      bold;
+}
+
+.sitetitel {font-size: 18pt; font-weight: bold; text-align : center;}
 .celltitel {font-weight: bold;}
-.small {font-size: 80%;}
+.small {font-size: 8pt;}
 .sideend {color: #aaaaaa}
 
+/*--- for normal ----*/
+td.norm {
+   FONT-FAMILY: verdana,arial,helvetica; 
+   COLOR: black;
+   BACKGROUND-COLOR: white;
+   font-size: 10pt;
+}
+
+td.news {
+   FONT-FAMILY: verdana,arial,helvetica;
+   COLOR: black;
+   BACKGROUND-COLOR: #F1C101;
+   font-size: 10pt;
+}
 
 /*----------------------------------------------------------------------------------------------
 	The folowing classes are used for the requirements tables:
 ----------------------------------------------------------------------------------------------*/
-#td.reqId {FONT-FAMILY: verdana,arial,helvetica; COLOR: black; BACKGROUND-COLOR: #DDDDDD; font-size:100%; vertical-align: top;}
-td.reqId {FONT-FAMILY: verdana,arial,helvetica; COLOR: black; BACKGROUND-COLOR: #FFC800; font-size:100%; vertical-align: top;}
-td.topic {FONT-FAMILY: verdana,arial,helvetica; COLOR: black; BACKGROUND-COLOR: #FFC800; font-size:100%;}
-td.description {FONT-FAMILY: verdana,arial,helvetica; COLOR: black; BACKGROUND-COLOR: #EEEEEE; font-size:100%;}
+td.reqId {FONT-FAMILY: verdana,arial,helvetica; COLOR: black; BACKGROUND-COLOR: #FFC800; font-size:10pt; vertical-align: top;}
+td.topic {FONT-FAMILY: verdana,arial,helvetica; COLOR: black; BACKGROUND-COLOR: #FFC800; font-size:10pt;}
+td.description {FONT-FAMILY: verdana,arial,helvetica; COLOR: black; BACKGROUND-COLOR: #EEEEEE; font-size:10pt;}
 ol,ul,li { margin-top:1em; }
 
-td.example {FONT-FAMILY: verdana,arial,helvetica; COLOR: black; BACKGROUND-COLOR: #EEEEEE; font-size:100%;}
+td.example {FONT-FAMILY: verdana,arial,helvetica; COLOR: black; BACKGROUND-COLOR: #EEEEEE; font-size:10pt;}
 /* OPEN/INWORK/CLOSED corresponds to status attribute in requirement.dtd: */ 
 td.OPEN { BACKGROUND-COLOR: #E6E6E6; }
 td.INWORK { BACKGROUND-COLOR: #FFFF99; }
 td.CLOSED { BACKGROUND-COLOR: #3DEB3D; }
 td.DEPRECATED { BACKGROUND-COLOR: #E6E6E6; }
 
-code {FONT-FAMILY: courier, monospace; FONT-STYLE: italic; font-size:100%; }
+code {FONT-FAMILY: courier, monospace; FONT-STYLE: italic; font-size:10pt; }
 code.BORDER {FONT-FAMILY: courier, monospace; COLOR: black; BACKGROUND-COLOR: #EEEEEE; font-size:80%;
              border-color:#EEEEEE; border-width:1px; border-style:inset; padding:5px; margin:0px; }
 
-pre {FONT-FAMILY: courier, monospace; font-size:100%; COLOR: black; BACKGROUND-COLOR: #FAFAFA; }
+pre {FONT-FAMILY: courier, monospace; font-size:10pt; COLOR: black; BACKGROUND-COLOR: #FAFAFA; }
 
 table.BORDER, pre.BORDER {FONT-FAMILY: courier, monospace; COLOR: black; BACKGROUND-COLOR: #FAFAFA; font-size:80%;
             border-color:#EEEEEE; border-width:1px; border-style:inset; padding:5px; margin:0px; }
@@ -50,3 +117,5 @@ pre.BORDER {FONT-FAMILY: courier, monospace; COLOR: black; BACKGROUND-COLOR: #FA
             border-color:#EEEEEE; border-width:1px; border-style:inset; padding:5px; margin:0px; }
 #pre.BORDER { font-family : 'courier new', monospace; background-color : #CCCCFF; border : #000000 1px solid;
              color : #000000; font-size : 90%; margin : 1.5em 2.5em; padding : 5px; }
+p.code {FONT-FAMILY: courier;}
+
