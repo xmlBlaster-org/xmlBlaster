@@ -526,13 +526,16 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
          }
       }
 
-      if (data.hasSubjectQueueProperty()) {
+      /*
+       NOTE: We can't optimize it away, as we need to check the Global env and args:
+       */
+      //if (data.hasSubjectQueueProperty()) {
          sb.append(data.getSubjectQueueProperty().toXml(extraOffset+Constants.INDENT));
-      }
+      //}
       
-      if (data.hasSessionCbQueueProperty()) {
+      //if (data.hasSessionCbQueueProperty()) {
          sb.append(data.getSessionCbQueueProperty().toXml(extraOffset+Constants.INDENT));
-      }
+      //}
 
       {
          ServerRef[] arr = data.getServerRefs();
