@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.85 2002/05/15 12:59:53 ruff Exp $
+Version:   $Id: Main.java,v 1.86 2002/05/15 16:55:39 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -73,6 +73,12 @@ public class Main
    /** Version string, please change for new releases (4 digits) */
    private String version = "0.79e";
 
+   public final int HALTED = 0;
+   public final int STANDBY = 5;
+   public final int RUNNING = 10;
+   /** The run level HALTED | STANDBY | RUNNING */
+   private int runLevel = HALTED;
+
    /**
     * true: If instance created by control panel<br />
     * false: running without GUI
@@ -126,6 +132,8 @@ public class Main
 
          catchSignals();
 
+         runLevel = STANDBY;
+
          loadDrivers();
 
          if (glob.getNodeId() == null) {
@@ -141,6 +149,8 @@ public class Main
          }
          
          createRemoteConsole();
+
+         runLevel = RUNNING;
 
          Log.info(ME, Memory.getStatistic());
 
@@ -291,6 +301,19 @@ public class Main
       }
 
       glob.shutdownProtocolDrivers();
+
+      runLevel = HALTED;
+   }
+
+
+   public boolean isHalted() {
+      return runLevel == HALTED;
+   }
+   public boolean isStandby() {
+      return runLevel == STANDBY;
+   }
+   public boolean isRunning() {
+      return runLevel == RUNNING;
    }
 
 
