@@ -2,6 +2,12 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes cvs
 ===========
+ o Cluster configuration change
+   The xml configuration expects now a standard ConnectQos markup instead of the old
+   specific <info> section. The old markup is still working but deprecated.
+   See http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.connect.html
+   See http://www.xmlblaster.org/xmlBlaster/doc/requirements/cluster.html
+
  o Java client API change:
    The ConnectQos constructor can now throw an XmlBlasterException if loading of
    SecurityPlugin fails
@@ -11,6 +17,8 @@ Changes cvs
    - We now support startWith() and endsWith() in mode 'Security.Server.Plugin.htpasswd.allowPartialUsername=true'
    - We now support '*:48fdja94jfd' entries which allow to set a wildcard password
      A matching specific user like 'joe:dfkj843f81' has precedence in password evaluation
+   - Replaced StreamTokenizer code with simpler line based file read because of problems with special chars
+   - Changed comments to start with '#' instead of '//'
    See: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/security.htpasswd.html
 
  o Cluster support: PtP messages now use the same cluster lookup code as Pub/Sub
