@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.84 2002/05/11 09:36:19 ruff Exp $
+Version:   $Id: Main.java,v 1.85 2002/05/15 12:59:53 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -66,8 +66,6 @@ public class Main
    private Authenticate authenticate = null;
    /** The singleton handle for this xmlBlaster server */
    private I_XmlBlaster xmlBlasterImpl = null;
-   /** command line arguments */
-   private String[] args = null;
    /** Version string, please change for new releases (4 digits) */
    private Global glob = null;
    /** A unique name for this xmlBlaster server instance, if running in a cluster */
@@ -86,7 +84,7 @@ public class Main
    {
       this.controlPanel = controlPanel;
       controlPanel.xmlBlasterMain = this;
-      init(args);
+      init(new Global(args));
    }
 
 
@@ -94,22 +92,30 @@ public class Main
     * Start xmlBlaster.
     * @param args The command line parameters
     */
-   public Main(String[] args)
+   public Main(org.xmlBlaster.util.Global utilGlob)
    {
-      init(args);
+      Global g = new Global(utilGlob); // engine.Global
+      init(g);
    }
 
-   private void init(String args[])
+   /**
+    * Start xmlBlaster.
+    * @param args The command line parameters
+    */
+   public Main(String[] args)
    {
-      this.args = args;
-      boolean showUsage = false;
+      init(new Global(args));
+   }
+
+   private void init(Global glob)
+   {
+      this.glob = glob;
+      boolean showUsage = glob.wantsHelp();
       Thread.currentThread().setName("XmlBlaster MainThread");
 
-      glob = new Global();
-      int ret = glob.init(args);
-      if (ret > 0)
+      if (glob.wantsHelp())
          showUsage = true;
-      else if (ret < 0) {
+      else if (glob.getErrorText() != null) {
          usage();
          Log.panic(ME, "Bye");
       }
