@@ -262,9 +262,12 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
    public String getUniqueKey() throws XmlBlasterException
    {
       if (uniqueKey == null) {
-         uniqueKey = SubscriptionInfo.generateUniqueKey(msgQueue, xmlKey, xmlQoSBase).toString();
+         if (querySub != null)
+            this.uniqueKey = querySub.getUniqueKey(); // My parent XPATH subscription object
+         else
+            this.uniqueKey = SubscriptionInfo.generateUniqueKey(msgQueue, xmlKey, xmlQoSBase).toString();
       }
-      return uniqueKey;
+      return this.uniqueKey;
    }
 
 
@@ -288,35 +291,25 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
     * @return A unique key for this particular subscription, for example:<br>
     *         <code>Subscription-00 11 4D 4D 4D 4D 4C 0B 33 04 03 3F -null-null-943279576139-2-</code>
     */
-   public static String generateUniqueKey(MsgQueue msgQueue, XmlKey xmlKey, XmlQoSBase xmlQoS) throws XmlBlasterException
+   private static final String generateUniqueKey(MsgQueue msgQueue, XmlKey xmlKey, XmlQoSBase xmlQoS) throws XmlBlasterException
    {
+      /*
       StringBuffer buf = new StringBuffer(126);
 
       buf.append(Constants.SUBSCRIPTIONID_PRAEFIX).append(msgQueue.getName());
 
       buf.append("-").append(xmlKey.getUniqueKey());
 
-      // !!!  still missing:  buf.append("-").append(xmlQoS.toString()); // !!!hack?
-
-      // Now EVERY subscription id is unique, we can't supress multiple subs on same
-      // message, from same client any more:
-      // Future coding that multi subs from same callback address are supressable?
-      // -> Can't do it - we need to unSubscribe() and need to rebuild the subscription id reproducable
-      // generateCounter(buf);    // Now EVERY subscription id is unique, we can't supress multiple subs on same 
-
       return buf.toString();
+      */
+
+      String buf;
+      synchronized (SubscriptionInfo.class) {
+         uniqueCounter++;
+         buf = "" + uniqueCounter;
+      }
+      return buf;
    }
-
-
-   /**
-    * Little helper method, which is synchronized.
-    */
-   synchronized private static void generateCounter(StringBuffer buf)
-   {
-      buf.append("-").append(uniqueCounter);
-      uniqueCounter++;
-   }
-
 
    /**
     * Dump state of this object into XML.
@@ -327,7 +320,6 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
    {
       return toXml((String)null);
    }
-
 
    /**
     * Dump state of this object into XML.
