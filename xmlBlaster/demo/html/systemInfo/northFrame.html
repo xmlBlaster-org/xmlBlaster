@@ -58,7 +58,7 @@ COMMENT:
 
             var doc = parent.frames[frameName].document;
             doc.open();
-
+            // Mozilla does not like the percent in <img width=...%, so we use pixels below
             var str =
                "<!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.0 Transitional//EN'>\n" +
                "<html>\n" +
@@ -66,11 +66,12 @@ COMMENT:
                "      <meta http-equiv='Content-Type' CONTENT='text/html; charset=ISO-8859-1'>\n" +
                "      <meta http-equiv='Pragma' content='no-cache'>\n" +
                "      <meta http-equiv='Expires' content='Tue, 31 Dec 1997 23:59:59 GMT'>\n" +
+               "      <title>Bar</title>\n" +
                "   </head>\n" +
                "<body>\n" +
                "   <p /><br />\n" +
                "   <center>\n" +
-               "   <table class='SystemLoad' border='1' cellpadding='2' cellspacing='2' bgcolor='#EEEEEE'>\n" +
+               "   <table class='SystemLoad' border='1' cellpadding='2' cellspacing='2' bgcolor='#EEEEEE' summary='bar graph'>\n" +
                "      <tr>\n" +
                "         <td width='60'>\n" +
                "            <font size='+1'>" + label + "</font>\n" +
@@ -78,14 +79,15 @@ COMMENT:
                "         <td width='40' align='center'>\n" +
                "            <font size='-1'>" + value + "%</font>\n" +
                "         </td>\n" +
-               "         <td width='300' valign='center'>\n" +
-               "            <img name='" + frameName + "Color' width='" + value + "%' height='10' src='/systemInfo/colors/" + frameName + ".gif' alt='Bar should display " + value + "%' />\n" +
+               "         <td width='300' valign='middle'>\n" +
+               "            <img name='" + frameName + "Color' width='" + value*300/100 + "' height='10' src='/systemInfo/colors/" + frameName + ".gif' alt='Bar should display " + value + "%' />\n" +
                "         </td>\n" +
                "      </tr>\n" +
                "   </table>\n" +
                "   </center>\n" +
                "\n" +
-               "</body>\n";
+               "</body>\n" +
+               "</html>\n";
             doc.write(str);
             doc.close();
             top.xmlBlasterWindow.setReady( self, true );
