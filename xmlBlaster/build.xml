@@ -152,11 +152,12 @@ TODO
    <property name="chmod.fail" value="true" />
 
    <property name="src.cpp.dir" value="./src/c++"/>
-   <property name="CORBACPP_VER" value="2.3.7"/>
-   <property name="CORBACPP_HOME" value="/opt/local/mico"/>
-   <property name="XMLCPP_VER" value="2"/>  <!-- 1_7_0 -->
+   <property name="CORBACPP_VER" value=""/> <!-- 2.3.7 -->
+   <property name="CORBACPP_HOME" value="/opt/ACE_wrappers/TAO"/> <!-- /opt/local/mico -->
+   <property name="XMLCPP_VER" value=""/>  <!-- 1_7_0 -->
    <property name="XMLCPP_HOME" value="/opt/local/xerces-c-src${XMLCPP_VER}"/>
    <property name="thread.impl" value="OMNITHREAD" /> <!-- Default setting is OMNITHREAD -->
+   <property name="corba.product" value="TAO" /> <!-- Setting default CORBA to "TAO" used in if="" clause below -->
 
    <compiler id="base-msvc" name="msvc" if="use-msvc">
       <defineset><define name="_WINDOWS" value="1" /></defineset>
