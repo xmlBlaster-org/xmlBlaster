@@ -3,7 +3,7 @@ Name:      FileUtil.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: FileUtil.java,v 1.2 1999/12/09 13:28:37 ruff Exp $
+Version:   $Id: FileUtil.java,v 1.3 1999/12/21 12:02:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -20,7 +20,7 @@ public class FileUtil
 
 
    /**
-    * Read a file into <code>String</code>. 
+    * Read a file into <code>String</code>.
     * <p />
     * All error handling and reporting is done by this method<br>
     * Nice function for testing
@@ -38,7 +38,7 @@ public class FileUtil
 
 
    /**
-    * Read a file into <code>byte[]</code>. 
+    * Read a file into <code>byte[]</code>.
     * <p />
     * All error handling and reporting is done by this method<br>
     * Nice function for testing
@@ -99,7 +99,7 @@ public class FileUtil
 
 
    /**
-    * Write data from <code>byte[]</code> into a file. 
+    * Write data from <code>byte[]</code> into a file.
     * <p />
     * All error handling and reporting is done by this method<br>
     * Nice function for testing
@@ -129,7 +129,7 @@ public class FileUtil
 
 
    /**
-    * Write data from <code>StringBuffer</code> into a file. 
+    * Write data from <code>StringBuffer</code> into a file.
     * <p />
     * All error handling and reporting is done by this method<br>
     * Nice function for testing
@@ -148,7 +148,7 @@ public class FileUtil
 
 
    /**
-    * Append data from into a file. 
+    * Append data from into a file.
     * <p />
     * Nice function for testing
     * @param outName  name of file including path
@@ -174,7 +174,7 @@ public class FileUtil
 
 
    /**
-    * Rename a file. 
+    * Rename a file.
     * <p />
     * @return true if succeeded
     */

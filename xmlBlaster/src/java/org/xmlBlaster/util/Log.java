@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.java,v 1.25 1999/12/17 10:00:56 ruff Exp $
+Version:   $Id: Log.java,v 1.26 1999/12/21 12:02:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -26,19 +26,19 @@ public class Log
     * <p />
     * The same applies for TIME, TRACE and DUMP
     */
-   public final static boolean CALLS = false;  // trace method calls
+   public final static boolean CALLS = true;  // trace method calls
    /**
     * Performance logging output true/false
     */
-   public final static boolean TIME  = false;  // trace performance
+   public final static boolean TIME  = true;  // trace performance
    /**
     * Fine grained code logging output true/false
     */
-   public final static boolean TRACE = false;  // trace application flow
+   public final static boolean TRACE = true;  // trace application flow
    /**
     * Dump internal xmlBlaster state in xml format, true/false
     */
-   public final static boolean DUMP  = false;  // dump internal state
+   public final static boolean DUMP  = true;  // dump internal state
 
    /**
     * Logging levels
@@ -313,6 +313,7 @@ public class Log
     */
    public final static void displayStatistics()
    {
+      Log.info(ME, Memory.getStatistic());
       if (withXtermEscapeColor) {
          if (numErrorInvocations>0)
             Log.info(ME, BLACK_RED + "There were " + numErrorInvocations + " ERRORS and " + numWarnInvocations + " WARNINGS" + ESC);
