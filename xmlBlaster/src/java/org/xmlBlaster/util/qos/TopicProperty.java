@@ -10,13 +10,15 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.qos.storage.TopicCacheProperty;
 import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
+import org.xmlBlaster.util.property.PropBoolean;
+import org.xmlBlaster.util.property.PropLong;
 
 
 /**
  * Data container handling properties of a message topic. 
  * <p />
- * QoS Informations sent from the client to the server via the publish() method and back via the update() method<br />
- * They are needed to control xmlBlaster and inform the client.
+ * QoS Informations sent from the client to the server via the publish() method<br />
+ * They are needed to control xmlBlaster topics.
  * <p />
  * <p>
  * This data holder is accessible through decorators, each of them allowing a specialized view on the data
@@ -50,20 +52,21 @@ public final class TopicProperty implements java.io.Serializable
 
    /** Is readonly allows only one initial message */
    public static boolean DEFAULT_readonly = false;
-   private boolean readonly = DEFAULT_readonly;
+   private PropBoolean readonly = new PropBoolean(DEFAULT_readonly);
 
    /** 
     * A topic is destroyed 60 sec after state=UNREFERENCED is reached
     * This is the configured destroyDelay in millis
     */
-   private long destroyDelay;
+   private PropLong destroyDelay = new PropLong(destroyDelay_DEFAULT);
+
+   private PropBoolean createDomEntry = new PropBoolean(true);
 
    /**
     * Constructs the specialized quality of service object for a publish() or update() call.
     */
    public TopicProperty(Global glob) {
       setGlobal(glob);
-      setDestroyDelay(destroyDelay_DEFAULT);
    }
 
    /*
@@ -86,28 +89,44 @@ public final class TopicProperty implements java.io.Serializable
     * @return readonly Once published the message can't be changed. 
     */
    public void setReadonly(boolean readonly) {
-      this.readonly = readonly;
+      this.readonly.setValue(readonly);
    }
 
    /**
     * @return true/false
     */
    public boolean isReadonly() {
-      return readonly;
+      return this.readonly.getValue();
    }
 
    /**
     * The life time of the message topic in state UNREFERENCED
     */
    public long getDestroyDelay() {
-      return this.destroyDelay;
+      return this.destroyDelay.getValue();
    }
 
    /**
     * The life time of the message topic in state UNREFERENCED
     */
    public void setDestroyDelay(long destroyDelay) {
-      this.destroyDelay = destroyDelay;
+      this.destroyDelay.setValue(destroyDelay);
+   }
+
+   /**
+    * @return true This is default and the topic is queryable with XPATH<br />
+    *    false: No DOM tree is created for the topic and the topic is onvisible to XPATH queries
+    */
+   public boolean createDomEntry() {
+      return this.createDomEntry.getValue();
+   }
+
+   /**
+    * @param true This is default and the topic is queryable with XPATH<br />
+    *    false: No DOM tree is created for the topic and the topic is onvisible to XPATH queries
+    */
+   public void setCreateDomEntry(boolean createDomEntry) {
+      this.createDomEntry.setValue(createDomEntry);
    }
 
    public boolean hasTopicCacheProperty() {
@@ -167,11 +186,14 @@ public final class TopicProperty implements java.io.Serializable
       String offset = Constants.OFFSET + extraOffset;
 
       sb.append(offset).append("<topic");
-      if (DEFAULT_readonly != this.readonly) {
-         sb.append(" readonly='").append(readonly).append("'");
+      if (this.readonly.isModified()) {
+         sb.append(" readonly='").append(isReadonly()).append("'");
       }
-      if (destroyDelay_DEFAULT_DEFAULT != this.destroyDelay) {
-         sb.append(" destroyDelay='").append(this.destroyDelay).append("'");
+      if (this.destroyDelay.isModified()) {
+         sb.append(" destroyDelay='").append(getDestroyDelay()).append("'");
+      }
+      if (this.createDomEntry.isModified()) {
+         sb.append(" createDomEntry='").append(createDomEntry()).append("'");
       }
       sb.append(">");
       //private String subscriptionId;
