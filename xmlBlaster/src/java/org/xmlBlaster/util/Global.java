@@ -76,7 +76,7 @@ public class Global implements Cloneable
    private ClassLoaderFactory classLoaderFactory = null;
 
    protected /*final*/ Map nativeCallbackDriverMap;
-   /** Store objecte in the scope of one client connection or server instance */
+   /** Store objects in the scope of one client connection or server instance */
    protected /*final*/ Map objectMap;
    protected Address bootstrapAddress = null;
    protected PluginLoader clientSecurityLoader = null;
