@@ -12,6 +12,14 @@ The C++ source code is compiled to a shared library
 
 Tested with mico 2.3.6 and 2.3.7 (cvs from 2002-04-01)
 and xerces 1.6 and 1.7 on Linux.
+Thread support by boost 1.27.0.
+
+NOTE (2002-04-25): 
+ Compiling with the new g++ 3.0.4 on Linux is fine, but
+ linking fails with unresolved mico externals.
+ The problem is not tracked down.
+ Better stay with g++ 2.9.x for the moment (if you
+ resolve the issue, please mail to our mailing list).
 
 
 HOW TO BUILD THE CLIENT CLASSES:
@@ -25,6 +33,21 @@ HOW TO BUILD THE CLIENT CLASSES:
      gmake
      gmake install
      Installs the necessary stuff in /opt/local/mico
+
+[ 
+  Currently NOT necessary (just that i dont forget it):
+  - (boost 1.27.0 compiled with jam for thread support)
+  export BOOST_ROOT=/home/xmlblast/boost-cvs
+  g++ thread.cpp -o thread -pthread -I$BOOST_ROOT libboost_thread.a
+  g++ monitor.cpp -o monitor -I$BOOST_ROOT $BOOST_ROOT/libs/thread/build/bin/libboost_thread.a/gcc/release/runtime-link-dynamic/threading-multi/libboost_thread.a
+  g++ thread.cpp -s -o thread -I$BOOST_ROOT -pthread
+      $BOOST_ROOT/libs/thread/build/bin/libboost_thread.a/gcc/release/runtime-link-dynamic/threading-multi/libboost_thread.a
+      $BOOST_ROOT/libs/thread/build/bin/libboost_thread.a/gcc/release/runtime-link-dynamic/threading-multi/libboost_thread.a
+      -lrt  -Wl,-rpath-link,. -Wl,-soname,thread.x
+
+  g++   -pthread -s  -o "../../../libs/thread/example/bin/tennis/gcc/release/runtime-link-dynamic/threading-multi/tennis.1.27.0"    "../../../libs/thread/example/bin/tennis/gcc/release/runtime-link-dynamic/threading-multi/tennis.o"  "../../../libs/thread/build/bin/libboost_thread.a/gcc/release/runtime-link-dynamic/threading-multi/libboost_thread.a"  "../../../libs/thread/build/bin/libboost_thread.a/gcc/release/runtime-link-dynamic/threading-multi/libboost_thread.a"  -lrt  -Wl,-rpath-link,. -Wl,-soname,tennis.1.27.0
+]
+
 - define the following environment variables if different than the default
   (the given value is the default setting).
 
@@ -34,6 +57,7 @@ HOW TO BUILD THE CLIENT CLASSES:
      CORBACPP_VER  = 2.3.7
      XMLCPP_HOME   = /opt/local/xerces-c-src1_7_0
      XMLCPP_VER    = 1_7_0
+     BOOST_ROOT    = /opt/local/boost
     
     XMLCPP_HOME=<directory-where-you-installed-xerces>
                 (for example XMLCPP_HOME=/opt/local/xerces)
