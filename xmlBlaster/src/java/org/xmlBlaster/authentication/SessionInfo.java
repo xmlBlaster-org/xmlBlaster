@@ -10,6 +10,7 @@ package org.xmlBlaster.authentication;
 import org.jutils.log.LogChannel;
 
 import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.qos.address.AddressBase;
@@ -76,6 +77,7 @@ public class SessionInfo implements I_Timeout, I_AdminSession
    private final MsgErrorHandler msgErrorHandler;
    /** manager for sending callback messages */
    private final DeliveryManager deliveryManager;
+   private boolean isShutdown = false;
 
    /**
     * All MsgUnit which shall be delivered to the current session of the client
@@ -171,7 +173,7 @@ public class SessionInfo implements I_Timeout, I_AdminSession
     * Check if a callback was configured (if client has passed a callback address on connect).
     */
    public final boolean hasCallback() {
-      return this.deliveryManager != null;
+      return this.deliveryManager != null && isShutdown == false;
    }
 
    public final I_MsgErrorHandler getMsgErrorHandler() {
@@ -200,8 +202,9 @@ public class SessionInfo implements I_Timeout, I_AdminSession
       if (log.TRACE) log.trace(ME, "finalize - garbage collected " + getSecretSessionId());
    }
 
-   public void shutdown() {
+   public synchronized void shutdown() {
       if (log.CALL) log.call(ME, "shutdown() of session");
+      isShutdown = true;
       if (timerKey != null) {
          this.expiryTimer.removeTimeoutListener(timerKey);
          timerKey = null;
@@ -209,7 +212,7 @@ public class SessionInfo implements I_Timeout, I_AdminSession
       boolean force = false;
       if (this.sessionQueue != null) {
          this.sessionQueue.shutdown(force);
-         this.sessionQueue = null;
+         //this.sessionQueue = null; Not set to null to support avoid synchronize(this.sessionQueue)
       }
       if (this.msgErrorHandler != null)
          this.msgErrorHandler.shutdown();
@@ -290,11 +293,11 @@ public class SessionInfo implements I_Timeout, I_AdminSession
     */
    public final void queueMessage(MsgQueueEntry entry) throws XmlBlasterException {
       if (!hasCallback())
-         throw new XmlBlasterException(ME, "No callback configured, can't send message " + entry.getKeyOid());
+         throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME, "No callback server is configured, can't callback client to send message " + entry.getKeyOid());
 
       try {
-         sessionQueue.put(entry, false);
-         deliveryManager.notifyAboutNewEntry();
+         this.sessionQueue.put(entry, false);
+         this.deliveryManager.notifyAboutNewEntry();
       }
       catch (Throwable e) {
          log.warn(ME, e.toString());
@@ -308,13 +311,11 @@ public class SessionInfo implements I_Timeout, I_AdminSession
 
    public final void updateConnectQos(ConnectQosServer newConnectQos) throws XmlBlasterException {
       CbQueueProperty cbQueueProperty = newConnectQos.getSessionCbQueueProperty();
-      if (this.deliveryManager != null) {
+      if (hasCallback()) {
          this.deliveryManager.updateProperty(cbQueueProperty);
          log.info(ME, "Successfully reconfigured callback address with new settings, other reconfigurations are not yet implemented");
-         deliveryManager.notifyAboutNewEntry();
+         this.deliveryManager.notifyAboutNewEntry();
       }
-      //NO: we keep always the original secret sessionId on reconnect
-      //securityCtx.changeSecretSessionId(newConnectQos.getSessionQos().getSecretSessionId());
    }
 
    /**
@@ -355,7 +356,7 @@ public class SessionInfo implements I_Timeout, I_AdminSession
     * @return null if no callback was configured
     */
    public I_Queue getSessionQueue() {
-      return sessionQueue;
+      return this.sessionQueue;
    }
 
    /**
@@ -408,7 +409,7 @@ public class SessionInfo implements I_Timeout, I_AdminSession
 
       sb.append(offset).append("<SessionInfo id='").append(getId()).append("'>");
       if (hasCallback())
-         sb.append(sessionQueue.toXml(extraOffset+Constants.INDENT));
+         sb.append(this.sessionQueue.toXml(extraOffset+Constants.INDENT));
       sb.append(offset).append("</SessionInfo>");
 
       return sb.toString();
@@ -432,12 +433,12 @@ public class SessionInfo implements I_Timeout, I_AdminSession
 
    public final long getCbQueueNumMsgs() {
       if (this.sessionQueue == null) return 0L;
-      return sessionQueue.getNumOfEntries();
+      return this.sessionQueue.getNumOfEntries();
    }
 
    public final long getCbQueueMaxMsgs() {
       if (this.sessionQueue == null) return 0L;
-      return sessionQueue.getMaxNumOfEntries();
+      return this.sessionQueue.getMaxNumOfEntries();
    }
 
    public final String getKillSession() throws XmlBlasterException {
