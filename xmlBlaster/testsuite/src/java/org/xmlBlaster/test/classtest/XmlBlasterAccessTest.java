@@ -109,6 +109,7 @@ public class XmlBlasterAccessTest extends TestCase {
          try {
             ConnectQos connectQos = new ConnectQos(glob);
             Address address = new Address(glob);
+            address.setBootstrapPort(8999); // a wrong port to avoid connection
             address.setRetries(0);       // switch off polling
             connectQos.setAddress(address);
             ConnectReturnQos connectReturnQos = xmlBlasterAccess.connect(connectQos, null);
