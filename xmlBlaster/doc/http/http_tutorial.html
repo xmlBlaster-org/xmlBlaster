@@ -14,13 +14,13 @@
    <meta name="Content-Language" content="en">
    <meta name="Author" content="Marcel Ruff">
    <title>xmlBlaster - The Revolution</title>
-   <link REL="stylesheet" type="text/css" href="/xmlBlaster.css">
+   <link REL="stylesheet" type="text/css" href="xmlBlaster.css">
 </head>
 
 <body>
 
    <p class=sideend>
-      Last updated $Date: 2000/02/21 11:30:25 $ $Author: ruff $
+      Last updated $Date: 2000/02/21 12:08:46 $ $Author: ruff $
    </p>
    <p class=sitetitel>The HTTP callback framework for xmlBlaster</p>
 
@@ -28,7 +28,7 @@
    <table cellspacing=12>
       <tr>
          <td>
-            NOTE: This framework is work in progress, but not much is missing for a production release.
+            NOTE: This framework is work in progress, it is not yet finished for a production release.
          </td>
       </tr>
       <tr>
@@ -38,7 +38,7 @@
             When distributing dynamic content over the internet, you usually choose an applet.
             The applet connects to the server over CORBA (or any other protocol) and may
             receive instant notification from the server.<br />
-            But applets produce some well known problems like download time, 
+            But applets produce some well known problems like higher download time,
             firewalls which won't allow TCP/IP connections etc.
             </p>
             <p>
@@ -63,7 +63,9 @@
             </p>
             <p>
             The messages are directly transferred to the browser, which has a
-            Javascript based XML parser and notifies the interested browser frames about the callback.
+            Javascript based XML parser and notifies the interested browser frames about the callback.<br />
+            The contentFrame and controlFrame in the picture are only an example,
+            you can provide as many own frames as you wish. Only the hidden callbackFrame is necessary.
             </p>
             <p>
             For Servlet and Javascript examples have a look into the following directory
@@ -71,6 +73,9 @@
             <pre>xmlBlaster/src/java/org/xmlBlaster/protocol/http</pre>
             You need to access xmlBlaster with cvs or through cvsweb for these enhancements.
             The 0.73 release doesn't contain this code yet.
+            </p>
+            <p>
+            Please remember, the code is at most alpha.
             </p>
          </td>
       </tr>
