@@ -1,0 +1,283 @@
+/*----------------------------------------------------------------------------
+Name:      xmlBlaster/demo/c/socket/Publisher.c
+Project:   xmlBlaster.org
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+Comment:   Demo to publish messages from command line
+Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
+Compile:   cd xmlBlaster; build.sh c
+           (Win: copy xmlBlaster\src\c\socket\pthreadVC.dll to your PATH)
+Invoke:    Publisher -help
+See:    http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
+-----------------------------------------------------------------------------*/
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <XmlBlasterAccessUnparsed.h>
+
+/**
+ * Demo client to publish messages. 
+ * Not all PublishQos functionality is implemented.
+ * Invoke: Publisher -logLevel TRACE
+ */
+int main(int argc, char** argv)
+{
+   int iarg, iPublish;
+   const char *callbackSessionId = "topSecret";
+   XmlBlasterException xmlBlasterException;
+   XmlBlasterAccessUnparsed *xa = 0;
+   bool disconnect = true;
+   bool erase = true;
+   const char *publishToken = 0;
+
+   printf("[client] XmlBlaster %s C SOCKET client, try option '-help' if you need"
+          " usage informations\n", getXmlBlasterVersion());
+
+   for (iarg=0; iarg < argc; iarg++) {
+      if (strcmp(argv[iarg], "-help") == 0 || strcmp(argv[iarg], "--help") == 0) {
+         char usage[XMLBLASTER_MAX_USAGE_LEN];
+         const char *pp =
+         "\n  -logLevel            ERROR | WARN | INFO | TRACE [WARN]"
+         "\n\nExample:"
+         "\n  Publisher -logLevel TRACE"
+         " -dispatch/connection/plugin/socket/hostname 192.168.2.9";
+         printf("Usage:\nXmlBlaster C SOCKET client %s\n%s%s\n",
+                  getXmlBlasterVersion(), xmlBlasterAccessUnparsedUsage(usage), pp);
+         exit(EXIT_FAILURE);
+      }
+   }
+
+   xa = getXmlBlasterAccessUnparsed(argc, (const char* const* )argv);
+   if (xa->initialize(xa, 0, &xmlBlasterException) == false) {
+      printf("[client] Connection to xmlBlaster failed,"
+             " please start the server or check your configuration\n");
+      freeXmlBlasterAccessUnparsed(xa);
+      exit(EXIT_FAILURE);
+   }
+
+   disconnect = xa->props->getBool(xa->props, "disconnect", disconnect);
+   erase = xa->props->getBool(xa->props, "erase", erase);
+
+   {  /* connect */
+      char *response = (char *)0;
+      const char * const sessionName = xa->props->getString(xa->props, "session.name", "Publisher");
+      const bool persistent = xa->props->getBool(xa->props, "persistentConnection", false);
+      char connectQos[4096];
+      char callbackQos[1024];
+      sprintf(callbackQos,
+               "<queue relating='callback' maxEntries='10000000' maxEntriesCache='10000000'>"
+               "  <callback type='SOCKET' sessionId='%.256s'>"
+               "    socket://%.120s:%d"
+               "  </callback>"
+               "</queue>",
+               callbackSessionId, xa->callbackP->hostCB, xa->callbackP->portCB);
+      sprintf(connectQos,
+               "<qos>"
+               " <securityService type='htpasswd' version='1.0'>"
+               "  <![CDATA["
+               "   <user>%.80s</user>"
+               "   <passwd>publisher</passwd>"
+               "  ]]>"
+               " </securityService>"
+               " <session name='%.80s' timeout='3600000' maxSessions='10' clearSessions='false' reconnectSameClientOnly='false'/>"
+               " %.20s"
+               "%.1024s"
+               "</qos>", sessionName, sessionName, persistent?"<persistent/>":"", callbackQos);
+
+      response = xa->connect(xa, connectQos, 0, &xmlBlasterException);
+      if (*xmlBlasterException.errorCode != 0) {
+         printf("[client] Caught exception during connect errorCode=%s, message=%s\n",
+                  xmlBlasterException.errorCode, xmlBlasterException.message);
+         freeXmlBlasterAccessUnparsed(xa);
+         exit(EXIT_FAILURE);
+      }
+      xmlBlasterFree(response);
+      printf("[client] Connected to xmlBlaster, do some tests ...\n");
+   }
+
+   { /* publish ... */
+      char *response = (char *)0;
+
+      char key[4098];
+      const char *oid = xa->props->getString(xa->props, "oid", "Hello");
+      const char *domain = xa->props->getString(xa->props, "domain", 0);
+
+      char qos[4098];
+      char topicQos[2048];
+      char destinationQos[2048];
+      bool oneway = xa->props->getBool(xa->props, "oneway", false);
+      /*long sleep = xa->props->getLong(xa->props, "sleep", 1000L);*/
+      int numPublish = xa->props->getInt(xa->props, "numPublish", 1);
+      const char *clientTags = xa->props->getString(xa->props, "clientTags", "<org.xmlBlaster><demo-%counter/></org.xmlBlaster>");
+      const char *content = xa->props->getString(xa->props, "content", "Hi-%counter");
+      int priority = xa->props->getInt(xa->props, "priority", 5);
+      bool persistentPublish = xa->props->getBool(xa->props, "persistent", true);
+      long lifeTime = xa->props->getLong(xa->props, "lifeTime", -1L);
+      bool forceUpdate = xa->props->getBool(xa->props, "forceUpdate", true);
+      bool forceDestroy = xa->props->getBool(xa->props, "forceDestroy", false);
+      bool readonly = xa->props->getBool(xa->props, "readonly", false);
+      long destroyDelay = xa->props->getLong(xa->props, "destroyDelay", -1L);
+      bool createDomEntry = xa->props->getBool(xa->props, "createDomEntry", true);
+      long historyMaxMsg = xa->props->getLong(xa->props, "queue/history/maxEntries", -1L);
+      bool forceQueuing = xa->props->getBool(xa->props, "forceQueuing", true);
+      bool subscribable = xa->props->getBool(xa->props, "subscribable", true);
+      const char *destination = xa->props->getString(xa->props, "destination", 0);
+      int contentSize = xa->props->getInt(xa->props, "contentSize", -1);
+      /*Map clientPropertyMap = xa->props->getInt(xa->props, "clientProperty", (Map)0); */
+
+      publishToken = (domain == 0) ? oid : domain;
+
+      sprintf(key, "<key oid='%.512s' domain='%.100s'>%.2000s</key>",
+                  oid, ((domain==0)?"":domain), clientTags);
+
+      sprintf(topicQos, 
+                   " <topic readonly='%.20s' destroyDelay='%ld' createDomEntry='%.20s'>"
+                   "  <persistence/>"
+                   "  <queue relating='history' type='CACHE' version='1.0' maxEntries='%ld' maxBytes='4000'/>"
+                   " </topic>",
+                   readonly?"true":"false",
+                   destroyDelay,
+                   createDomEntry?"true":"false",
+                   historyMaxMsg
+                   );
+
+      if (destination!=0)
+         sprintf(destinationQos, " <destination queryType='EXACT' forceQueuing='%.20s'>%.512s</destination>",
+                 forceQueuing?"true":"false", destination);
+      else
+         *destinationQos = 0;
+
+      for (iPublish=0; iPublish<numPublish; iPublish++) {
+         MsgUnit msgUnit;
+         char msg[20];
+
+         char *pp = strstr(key, "%counter");
+         if (pp) { /* Replace '%counter' token by current index */
+            char *k = malloc(strlen(key)+10);
+            strncpy(k, key, pp-key);
+            sprintf(k+(pp-key), "%d%s", iPublish, pp+strlen("%counter"));
+            msgUnit.key = k;
+         }
+         else
+            msgUnit.key = strcpyAlloc(key);
+         
+         if (iPublish == 1) *topicQos = 0;
+         sprintf(qos, "<qos>"
+                   " <priority>%d</priority>"
+                   " <subscribable>%.20s</subscribable>"
+                   " <expiration lifeTime='%ld'/>"
+                   " <persistent>%.20s</persistent>"
+                   " <forceUpdate>%.20s</forceUpdate>"
+                   " <forceDestroy>%.20s</forceDestroy>"
+                   " %.2048s"
+                   " <clientProperty name='%.100s'>%.512s</clientProperty>"
+                   " %.512s"
+                   "</qos>",
+                   priority,
+                   subscribable?"true":"false",
+                   lifeTime,
+                   persistentPublish?"true":"false",
+                   forceUpdate?"true":"false",
+                   forceDestroy?"true":"false",
+                   destinationQos,
+                   "", "", /* ClientProperty */
+                   topicQos
+                   );
+
+         printf("[client] Hit a key to publish '%s' #%d/%d ('b' to break) >> ", oid, iPublish, numPublish);
+         fgets(msg, 19, stdin);
+         if (*msg == 'b') 
+            break;
+
+         if (contentSize > 0) {
+            int i;
+            char *p = malloc(contentSize);
+            for (i=0; i<contentSize; i++) {
+               int ran = random() % 100;
+               p[i] = (char)(ran+28);
+            }
+            msgUnit.content = p;
+            msgUnit.contentLen = contentSize;
+         }
+         else {
+            char *pp = strstr(content, "%counter");
+            if (pp) { /* Replace '%counter' token by current index */
+               char *p = malloc(strlen(content)+10);
+               strncpy(p, content, pp-content);
+               sprintf(p+(pp-content), "%d%s", iPublish, pp+strlen("%counter"));
+               msgUnit.content = p;
+               msgUnit.contentLen = strlen(msgUnit.content);
+            }
+            else {
+               msgUnit.content = strcpyAlloc(content);
+               msgUnit.contentLen = strlen(msgUnit.content);
+            }
+         }
+         msgUnit.qos =strcpyAlloc(qos);
+         if (oneway) {
+            MsgUnitArr msgUnitArr;
+            msgUnitArr.len = 1;
+            msgUnitArr.msgUnitArr = &msgUnit;
+            xa->publishOneway(xa, &msgUnitArr, &xmlBlasterException);
+         }
+         else {
+            response = xa->publish(xa, &msgUnit, &xmlBlasterException);
+         }
+         freeMsgUnitData(&msgUnit);
+         if (*xmlBlasterException.errorCode != 0) {
+            printf("[client] Caught exception in publish errorCode=%s, message=%s\n",
+                     xmlBlasterException.errorCode, xmlBlasterException.message);
+            xa->disconnect(xa, 0, &xmlBlasterException);
+            freeXmlBlasterAccessUnparsed(xa);
+            exit(EXIT_FAILURE);
+         }
+         printf("[client] Publish success, returned status is '%s'\n", response);
+         xmlBlasterFree(response);
+      }
+   }
+
+   while (true) {
+      char msg[20];
+                  
+      printf("(Enter 'q' to exit) >> ");
+      fgets(msg, 19, stdin);
+      if (*msg == 'q') 
+         break;
+   }
+    
+   if (erase) {  /* erase ... */
+      QosArr *resp;
+      char key[256];
+      const char *qos = "<qos/>";
+      sprintf(key, "<key oid='%.200s'/>", publishToken); /* TODO: use subscriptionId */
+      printf("[client] Erase topic '%s' ...\n", publishToken);
+      resp = xa->erase(xa, key, qos, &xmlBlasterException);
+      if (resp) {
+         size_t i;
+         for (i=0; i<resp->len; i++) {
+            printf("[client] Erase success, returned status is '%s'\n", resp->qosArr[i]);
+         }
+         freeQosArr(resp);
+      }
+      else {
+         printf("[client] Caught exception in erase errorCode=%s, message=%s\n",
+                  xmlBlasterException.errorCode, xmlBlasterException.message);
+         xa->disconnect(xa, 0, &xmlBlasterException);
+         freeXmlBlasterAccessUnparsed(xa);
+         exit(EXIT_FAILURE);
+      }
+   }
+
+   if (disconnect) {
+      if (xa->disconnect(xa, 0, &xmlBlasterException) == false) {
+         printf("[client] Caught exception in disconnect, errorCode=%s, message=%s\n",
+                  xmlBlasterException.errorCode, xmlBlasterException.message);
+         freeXmlBlasterAccessUnparsed(xa);
+         exit(EXIT_FAILURE);
+      }
+   }
+
+   freeXmlBlasterAccessUnparsed(xa);
+   printf("[client] Good bye.\n");
+   return 0;
+}
+
