@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.16 1999/12/21 12:09:10 ruff Exp $
+Version:   $Id: Main.java,v 1.17 2000/01/15 15:25:40 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -45,6 +45,8 @@ public class Main
 
    public Main( String[] args )
    {
+      Log.setLogLevel(args);
+
       orb = org.omg.CORBA.ORB.init(args, null);
       try {
          org.omg.PortableServer.POA rootPOA =

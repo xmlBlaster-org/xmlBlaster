@@ -40,6 +40,10 @@ Overview of the xmlBlaster.org packages
 
       jaco org.xmlBlaster.Main
 
+	This example switches on some debugging on the console:
+
+		jaco org.xmlBlaster.Main +trace +dump +calls +time
+
    Optionally you can also start the server with
 
       jaco org.xmlBlaster.MainGUI
