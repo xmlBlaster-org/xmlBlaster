@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.97 2002/06/25 07:38:56 ruff Exp $
+Version:   $Id: Main.java,v 1.98 2002/06/25 17:51:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -443,6 +443,8 @@ public class Main implements I_RunlevelListener
       log.plain(ME, "   -admin.remoteconsole.port If port > 1000 a server is started which is available with telnet [2702].");
       log.plain(ME, "----------------------------------------------------------");
       log.plain(ME, "Example:");
+      log.plain(ME, "   java org.xmlBlaster.Main -cluster false");
+      log.plain(ME, "   java org.xmlBlaster.Main -cluster.node.id heron");
       log.plain(ME, "   java org.xmlBlaster.Main -port 3412");
       log.plain(ME, "   java org.xmlBlaster.Main -ior.file /tmp/XmlBlaster_Ref");
       log.plain(ME, "   java org.xmlBlaster.Main -trace true -dump true -call true -time true");
