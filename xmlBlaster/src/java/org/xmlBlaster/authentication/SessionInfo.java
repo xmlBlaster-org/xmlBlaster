@@ -302,7 +302,7 @@ public class SessionInfo implements I_Timeout, I_AdminSession
       }
       catch (Throwable e) {
          log.warn(ME, e.toString());
-         this.msgErrorHandler.handleError(new MsgErrorInfo(glob, entry, e));
+         this.msgErrorHandler.handleError(new MsgErrorInfo(glob, entry, null, e));
       }
    }
 

@@ -83,7 +83,7 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
       String message = xmlBlasterException.getMessage();
       MsgQueueEntry[] msgQueueEntries = msgErrorInfo.getMsgQueueEntries();
       DeliveryManager deliveryManager = sessionInfo.getDeliveryManager();
-      I_Queue msgQueue = (deliveryManager == null) ? null: deliveryManager.getQueue();
+      I_Queue msgQueue = msgErrorInfo.getQueue();  // is null if entry is not yet in queue
 
       if (log.CALL) log.call(ME, "Error handling started: " + msgErrorInfo.toString());
 
@@ -99,22 +99,20 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
          // 1. Generate dead letters from passed messages
          glob.getRequestBroker().deadMessage(msgQueueEntries, msgQueue, message);
 
-         // Remove the above published dead message from the queue
-         try {
-            if (log.TRACE) log.trace(ME, "Removing " + msgQueueEntries.length + " dead messages from queue");
-            long removed = 0L;
-            if (msgQueue != null) {
+         if (msgQueue != null) {
+            // Remove the above published dead message from the queue
+            try {
+               if (log.TRACE) log.trace(ME, "Removing " + msgQueueEntries.length + " dead messages from queue");
+               long removed = 0L;
                boolean tmp[] = msgQueue.removeRandom(msgQueueEntries);
                for (int i=0; i < tmp.length; i++) if (tmp[i]) removed++;
+               if (removed != msgQueueEntries.length) {
+                  log.warn(ME, "Expected to remove " + msgQueueEntries.length + " messages from queue but where only " + removed + ": " + message);
+               }
             }
-
-            if (removed != msgQueueEntries.length) {
-               log.warn(ME, "Expected to remove " + msgQueueEntries.length + " messages from queue but where only " + removed + ": " + message);
-               return;  // Seems to come from mime access plugin as the message where not in the queue
+            catch (XmlBlasterException e) {
+               log.warn(ME, "Can't remove " + msgQueueEntries.length + " messages from queue: " + e.getMessage() + ". Original cause was: " + message);
             }
-         }
-         catch (XmlBlasterException e) {
-            log.warn(ME, "Can't remove " + msgQueueEntries.length + " messages from queue: " + e.getMessage() + ". Original cause was: " + message);
          }
       }
 

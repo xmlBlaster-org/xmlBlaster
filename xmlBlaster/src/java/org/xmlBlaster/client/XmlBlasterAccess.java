@@ -512,7 +512,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
       catch (Throwable e) {
          if (log.TRACE) log.trace(ME, e.toString());
          XmlBlasterException xmlBlasterException = XmlBlasterException.convert(glob,null,null,e);
-         //msgErrorHandler.handleError(new MsgErrorInfo(glob, entry, xmlBlasterException));
+         //msgErrorHandler.handleError(new MsgErrorInfo(glob, entry, null, xmlBlasterException));
          throw xmlBlasterException; // internal errors or not in fail save mode: throw back to client
       }
    }
@@ -524,7 +524,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
       catch (Throwable e) {
          if (log.TRACE) log.trace(ME, e.toString());
          XmlBlasterException xmlBlasterException = XmlBlasterException.convert(glob,null,null,e);
-         // this.msgErrorHandler.handleError(new MsgErrorInfo(glob, entries, xmlBlasterException));
+         // this.msgErrorHandler.handleError(new MsgErrorInfo(glob, entries, null, xmlBlasterException));
          throw xmlBlasterException; // internal errors or not in fail save mode: throw back to client
       }
    }

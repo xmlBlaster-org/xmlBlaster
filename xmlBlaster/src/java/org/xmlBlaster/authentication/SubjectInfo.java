@@ -402,7 +402,7 @@ public final class SubjectInfo implements I_AdminSubject
 
                //XmlBlasterException ex = new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME,
                //    "Session '" + entry.getReceiver().getAbsoluteName() + "' is unknown, message '" + entry.getId() + "' is not delivered");
-               //getMsgErrorHandler().handleError(new MsgErrorInfo(glob, entry, ex);
+               //getMsgErrorHandler().handleError(new MsgErrorInfo(glob, entry, null, ex);
             }
          }
          catch(Throwable e) {

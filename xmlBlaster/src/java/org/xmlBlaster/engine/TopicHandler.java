@@ -1014,7 +1014,7 @@ public final class TopicHandler implements I_Timeout
                      MsgQueueEntry entry =
                           new MsgQueueUpdateEntry(glob, msgUnitWrapper, sub.getMsgQueue().getStorageId(),
                                       sub.getSessionInfo().getSessionName(), sub.getSubSourceSubscriptionId());
-                     publisherSessionInfo.getMsgErrorHandler().handleError(new MsgErrorInfo(glob, entry, e));
+                     publisherSessionInfo.getMsgErrorHandler().handleError(new MsgErrorInfo(glob, entry, null, e));
                      retCount++;
                      continue NEXT_MSG;
                   }
