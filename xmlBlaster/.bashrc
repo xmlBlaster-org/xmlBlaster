@@ -181,8 +181,8 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    if [ -d ${XMLBLASTER_HOME}/src/java ]; then
       CLASSPATH=${XMLBLASTER_HOME}/src/java:${CLASSPATH}
    fi
-   #if [ -d ${XMLBLASTER_HOME}/classes ]; then
-      CLASSPATH=${XMLBLASTER_HOME}/classes:${CLASSPATH}
+   #if [ -d ${XMLBLASTER_HOME}/build.tmp/classes ]; then
+      CLASSPATH=${XMLBLASTER_HOME}/build.tmp/classes:${CLASSPATH}
    #fi
    if [ -d ${XMLBLASTER_HOME}/demo ]; then
       CLASSPATH=${XMLBLASTER_HOME}/demo:${CLASSPATH}
