@@ -329,7 +329,8 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
       sb.append(offset).append("<qos>"); // <!-- SubscribeRetQos -->");
       if (queryQosData.getSubscriptionId() != null)
          sb.append(offset).append(" <subscribe id='").append(queryQosData.getSubscriptionId()).append("'/>");
-      sb.append(offset).append(" <erase forceDestroy='").append(queryQosData.getForceDestroy()).append("'/>");
+      if (queryQosData.getForceDestroy())
+         sb.append(offset).append(" <erase forceDestroy='").append(queryQosData.getForceDestroy()).append("'/>");
       if (!queryQosData.getWantMeta()) sb.append(offset).append(" <meta>false</meta>");
       if (!queryQosData.getWantContent()) sb.append(offset).append(" <content>false</content>");
       if (!queryQosData.getMultiSubscribe()) sb.append(offset).append(" <multiSubscribe>false</multiSubscribe>");
