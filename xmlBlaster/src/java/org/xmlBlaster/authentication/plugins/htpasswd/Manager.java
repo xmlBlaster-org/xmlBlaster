@@ -45,7 +45,7 @@ public class Manager implements I_Manager {
       if (Log.TRACE) Log.trace(ME+".init()", "Leaving init");
    }
 
-   final Global getGlobal() {
+   public final Global getGlobal() {
       return this.glob;
    }
 
