@@ -3,7 +3,7 @@ Name:      SimpleChat.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo of a simple chat client for xmlBlaster as java application
-Version:   $Id: SimpleChat.java,v 1.17 2001/08/20 23:24:16 ruff Exp $
+Version:   $Id: SimpleChat.java,v 1.18 2001/08/20 23:50:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.chat;
 
@@ -29,6 +29,7 @@ import java.awt.event.*;
 import java.awt.*;
 import java.util.Enumeration;
 import java.util.Vector;
+import java.util.StringTokenizer;
 
 
 /**
@@ -82,6 +83,13 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
       this.args = args;
       initUI();
       pack();
+      try {
+         logFileName = Args.getArg(args, "-logFile", System.getProperty("user.home") + System.getProperty("file.separator") + "xmlBlasterChat.log");
+         Log.info(ME, "Logging messages to " + logFileName);
+      } catch (JUtilsException e) {
+         Log.error(ME, e.toString());
+      }
+      readOldMessagesFromFile();
    }
 
 
@@ -97,6 +105,9 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
       connectButton.setActionCommand("connect");
       connectButton.addActionListener(this);
       fPanel.add("North",connectButton);
+
+      Label label = new Label("LOGGING");
+      fPanel.add("West",label);
 
       // Button for sending message (Publish )
       actionButton = new Button("Send");
@@ -174,16 +185,11 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
    /** find xmlBlaster server, login and subscribe  */
    public void initBlaster(){
       try {
-         try {
-            // check if parameter -name <userName> is given at startup of client
+         try { // check if parameter -name <userName> is given at startup of client
             ME = Args.getArg(args, "-name", ME);
-            logFileName = Args.getArg(args, "-logFile", System.getProperty("user.home") + System.getProperty("file.separator") + "xmlBlasterChat.log");
-            Log.info(ME, "Logging messages to " + logFileName);
          } catch (JUtilsException e) {
             throw new XmlBlasterException(e);
          }
-
-         readOldMessagesFromFile();
 
          xmlBlasterConnection = new XmlBlasterConnection(args);
          xmlBlasterConnection.login(ME, passwd, null, this);
@@ -200,10 +206,11 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
    {
       // Read old messages from log file ...
       try {
-         java.util.Vector v = FileUtil.readFileNoComments(logFileName, "#", "\n");
-         for (Enumeration e = v.elements() ; e.hasMoreElements() ;) {
-            output.append(((String)e.nextElement())+System.getProperty("line.separator"));
-            output.repaint();
+         String data = FileUtil.readAsciiFile(logFileName);
+         StringTokenizer st = new StringTokenizer(data, "\n");
+         while (st.hasMoreTokens()) {
+            String tmp = st.nextToken();
+            output.append(tmp+System.getProperty("line.separator"));
          }
       } catch (JUtilsException e) {
          Log.warn(ME, "Can't read old logs from " + logFileName + ": " + e.toString());
