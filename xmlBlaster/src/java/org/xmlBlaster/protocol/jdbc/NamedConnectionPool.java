@@ -262,7 +262,7 @@ public class NamedConnectionPool
           Please note that the current request thread will block for maxResourceExhaustRetries*resourceExhaustSleepGap millis. */
       private long resourceExhaustSleepGap;
       private Timestamp timeoutHandle;
-      private Object timeoutMonitor = new Object();
+      private final Object timeoutMonitor = new Object();
 
       private final Object meetingPoint = new Object();
 
