@@ -196,6 +196,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
     * @see org.xmlBlaster.engine.RequestBroker
     */
    public final void publishOneway(String sessionId, MsgUnitRaw[] msgUnitArr) {
+      if (log.CALL) log.call(ME, "Entering publishOneway()");
       try {
          publishArr(sessionId, msgUnitArr);
       }
