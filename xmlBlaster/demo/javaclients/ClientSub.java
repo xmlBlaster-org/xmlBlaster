@@ -3,7 +3,7 @@ Name:      ClientSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSub.java,v 1.1 1999/12/12 18:59:13 ruff Exp $
+Version:   $Id: ClientSub.java,v 1.2 1999/12/13 12:42:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -23,6 +23,11 @@ import org.xmlBlaster.clientIdl.*;
  * <p>
  * This client may be invoked multiple time on the same xmlBlaster server,
  * as it cleans up everything after his test are done.
+ * <p>
+ * This demo implements an own BlasterCallback implementation, see class SubCallback
+ * in this file.<br />
+ * You may use this as an example for your own callback implementations.<br />
+ * Note that you could use the DefaultCallback implementation in CorbaConnection.java as well.
  * <p>
  * Invoke examples:
  *    ${JacORB_HOME}/bin/jaco javaclients.ClientSub
