@@ -317,8 +317,8 @@ public class CorbaConnection implements I_XmlBlasterConnection
             Log.warn(ME, "Manipulated IOR because of missing 'IOR:'");
          }
          authServer = AuthServerHelper.narrow(orb.string_to_object(authServerIOR));
-         Log.info(ME, "Accessing xmlBlaster AuthServer IOR using builtin http connection, host " +
-                      glob.getBootstrapAddress().getHostname() + " and port " + glob.getBootstrapAddress().getPort());
+         Log.info(ME, "Accessing xmlBlaster AuthServer IOR using builtin http connection to " +
+                      glob.getBootstrapAddress().getHostname() + ":" + glob.getBootstrapAddress().getPort());
          return authServer;
       }
       catch(XmlBlasterException e) {
