@@ -103,7 +103,7 @@
          </tr>
 
          <tr>
-            <td>DispatchPlugin.defaultPlugin</td>
+            <td>DispatchPlugin/defaultPlugin</td>
             <td>"MyPlugin,1" or "Another,1.0" or "undef"</td>
             <td>Specifiy the plugin to use as a default.<br />
                 Default is <i>undef</i> that is no default plugin is loaded which is usually the correct setting:<br />
@@ -123,7 +123,7 @@
    <see type="REQ">util.property.env</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 10 30</date>
-   <revision>$Revision: 1.4 $</revision>
+   <revision>$Revision: 1.5 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

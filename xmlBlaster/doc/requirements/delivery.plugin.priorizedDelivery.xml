@@ -200,7 +200,7 @@ For coding examples please look into the testsuite, links are provided below.
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>DispatchPlugin.defaultPlugin</td>
+            <td>DispatchPlugin/defaultPlugin</td>
             <td>Priority,1</td>
             <td>Activates the plugin 1 as default for all connections if not 
             the client overwrites this default.<br />
@@ -225,14 +225,14 @@ For coding examples please look into the testsuite, links are provided below.
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>PriorizedDeliveryPlugin.config</td>
+            <td>PriorizedDeliveryPlugin/config</td>
             <td><pre>&lt;msgDispatch ...<br />...</pre></td>
             <td>The XML default configuration string for the plugin
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>PriorizedDeliveryPlugin.config[Priority,2]</td>
+            <td>PriorizedDeliveryPlugin/config[Priority,2]</td>
             <td><pre>&lt;msgDispatch ...<br />...</pre></td>
             <td>A specific XML configuration string for the plugin 'Priority,2'
             </td>
@@ -248,7 +248,7 @@ For coding examples please look into the testsuite, links are provided below.
    <see type="REQ">delivery.control.plugin</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 11 08</date>
-   <revision>$Revision: 1.4 $</revision>
+   <revision>$Revision: 1.5 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

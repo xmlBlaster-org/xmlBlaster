@@ -466,7 +466,7 @@ java javaclients.HelloWorldSubscribe -session.name joeSubscriber/5 -oid Hello -d
          </tr>
          
          <tr>
-            <td>queue/client/maxEntries</td>
+            <td>queue/clientSide/maxEntries</td>
             <td>1000</td>
             <td>The maximum allowed number of messages in the client side queue<br />
                 0 switches recording of invocations (tail back messages) off.<br />
@@ -515,7 +515,7 @@ java javaclients.HelloWorldSubscribe -session.name joeSubscriber/5 -oid Hello -d
    <author>xmlBlaster@marcelruff.info</author>
    <hacker>xmlBlaster@marcelruff.info</hacker>
    <date>2000 02 23</date>
-   <revision>$Revision: 1.6 $</revision>
+   <revision>$Revision: 1.7 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
