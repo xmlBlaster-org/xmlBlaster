@@ -6,7 +6,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.util.def;
 
 import java.util.Hashtable;
-import java.util.Iterator;
 
 /**
  * This class holds all method names to access xmlBlaster. 

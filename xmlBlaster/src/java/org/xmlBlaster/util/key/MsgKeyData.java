@@ -6,9 +6,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.util.key;
 
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.XmlBlasterException;
-import java.util.Map;
-import java.util.TreeMap;
+
+import java.util.Hashtable;
 import java.util.Iterator;
 
 /**
@@ -150,12 +149,12 @@ public final class MsgKeyData extends KeyData implements java.io.Serializable, C
     * <p>
     * @see <a href="http://jakarta.apache.org/commons/jxpath/">Apache JXPath</a>
     */
-   public Map toJXPath() {
-      TreeMap map = new TreeMap();
-      map.put("/key/@oid", getOid());
-      map.put("/key/@contentMime", getContentMime());
-      map.put("/key/@contentMimeExtended", getContentMimeExtended());
-      map.put("/key/child::node()", getClientTags());
+   public Hashtable toJXPath() {
+      Hashtable map = new Hashtable();
+      if (getOid() != null) map.put("/key/@oid", getOid());
+      if (getContentMime() != null) map.put("/key/@contentMime", getContentMime());
+      if (getContentMimeExtended() != null) map.put("/key/@contentMimeExtended", getContentMimeExtended());
+      if (getClientTags() != null) map.put("/key/child::node()", getClientTags());
       return map;
    }
 
@@ -172,7 +171,7 @@ public final class MsgKeyData extends KeyData implements java.io.Serializable, C
       }
       {
          MsgKeyData md = new MsgKeyData(new Global(args));
-         Map map = md.toJXPath();
+         Hashtable map = md.toJXPath();
          Iterator it = map.keySet().iterator();
          while (it.hasNext()) {
             String key = (String)it.next();

@@ -16,9 +16,9 @@ import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.def.MethodName;
 
 import java.util.ArrayList;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.Hashtable;
 import java.util.Iterator;
+import java.util.Map;
 
 
 
@@ -656,7 +656,7 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
     * Currently only an UpdateQos dump is supported
     * @see <a href="http://jakarta.apache.org/commons/jxpath/">Apache JXPath</a>
     */
-   public Map toJXPath() {
+   public Hashtable toJXPath() {
       /* Problems with current java objects / JXPath mapping:
         1. <persistent />:  "/qos/persistent/text()"  -> returns nothing instead of true
         2.  getState() returns the <state id=''> instead of a state object with state.getId(), state.getInfo()
@@ -664,17 +664,17 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
         4. Priority is returned as '4' or as 'LOW': With java this is handled by PriorityEnum.java
       */
 
-      TreeMap map = new TreeMap();
+      Hashtable map = new Hashtable();
       map.put("/qos/rcvTimestamp/@nanos", ""+getRcvTimestamp());
       map.put("/qos/rcvTimestamp/text()", ""+getRcvTime());
-      map.put("/qos/methodName/text()", getMethod());
+      if (getMethod() != null) map.put("/qos/methodName/text()", getMethod().toString());
       map.put("/qos/persistent/text()", ""+isPersistent());
 
       Map pMap = getClientProperties();
       Iterator it = pMap.keySet().iterator();
       while (it.hasNext()) {
          String key = (String)it.next();
-         map.put("/qos/clientProperty[@name='"+key+"']/text()", pMap.get(key));
+         map.put("/qos/clientProperty[@name='"+key+"']/text()", pMap.get(key)); 
          map.put("/qos/clientProperty[@name='"+key+"']/@type", pMap.get(key));
       }
 
@@ -685,12 +685,12 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
             map.put("/qos/route/node[@id='"+routes[i].getId()+"']/@timestamp", ""+routes[i].getTimestamp());
             map.put("/qos/route/node[@id='"+routes[i].getId()+"']/@dirtyRead", ""+routes[i].getDirtyRead());
          }
-         map.put("/qos/state/@id", getState());
-         map.put("/qos/state/@info", getStateInfo());
+         if (getState() != null) map.put("/qos/state/@id", getState());
+         if (getStateInfo() != null) map.put("/qos/state/@info", getStateInfo());
       }
 
       if (isUpdate()) {
-         map.put("/qos/subscribe/@id", getSubscriptionId());
+         if (getSubscriptionId() != null) map.put("/qos/subscribe/@id", getSubscriptionId());
          map.put("/qos/queue/@index", ""+getQueueIndex());
          map.put("/qos/queue/@size", ""+getQueueSize());
          map.put("/qos/redeliver/text()", ""+getRedeliver());
