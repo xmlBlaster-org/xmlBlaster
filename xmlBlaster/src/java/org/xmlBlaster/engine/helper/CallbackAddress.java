@@ -3,11 +3,10 @@ Name:      CallbackAddress.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback address string and protocol string
-Version:   $Id: CallbackAddress.java,v 1.19 2002/06/25 17:46:11 ruff Exp $
+Version:   $Id: CallbackAddress.java,v 1.20 2002/07/21 13:12:08 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
-import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Global;
 import org.xml.sax.Attributes;
 
@@ -162,7 +161,7 @@ public class CallbackAddress extends AddressBase
             a.setDelay(7890L);
             a.setOneway(true);
             a.setSessionId("0x4546hwi89");
-            Log.info(ME, a.toXml());
+            System.out.println(a.toXml());
          }
          {
             String nodeId = "heron";
@@ -180,13 +179,13 @@ public class CallbackAddress extends AddressBase
 
             Global glob = new Global(args);
             CallbackAddress a = new CallbackAddress(glob, "RMI", nodeId);
-            Log.info(ME, a.toXml());
-            //Log.info(ME, glob.getProperty().toXml());
+            System.out.println(a.toXml());
+            //System.out.println(glob.getProperty().toXml());
          }
       }
       catch(Throwable e) {
          e.printStackTrace();
-         Log.error("TestFailed", e.toString());
+         System.out.println("TestFailed"+e.toString());
       }
    }
 }
