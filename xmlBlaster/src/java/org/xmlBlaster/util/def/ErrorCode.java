@@ -72,6 +72,13 @@ public final class ErrorCode implements java.io.Serializable
          }
       );
 
+   public static final ErrorCode INTERNAL_ILLEGALSTATE = new ErrorCode("internal.illegalState",
+         "The state of an object is not allowed.",
+         new ResourceInfo[] {
+            new ResourceInfo(ResourceInfo.REQ, "interface.connect", "interface.connect"),
+         }
+      );
+
    public static final ErrorCode INTERNAL_DISCONNECT = new ErrorCode("internal.disconnect",
          "An internal error occurred when processing a disconnect() request.",
          new ResourceInfo[] {
