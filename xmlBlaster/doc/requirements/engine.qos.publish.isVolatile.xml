@@ -5,24 +5,24 @@
    <topic>XmlBlaster allows to mark messages as volatile</topic>
    <description>
       <p>
-      Using the QOS flag <b>&lt;isVolatile/&gt;</b> allows to mark a published message
-      as volatile. A volatile published message lives only until it is processed in the
+      Using the QOS flag <b>&lt;expiration lifeTime='0' forceDestroy='false'/&gt;</b> 
+      allows to mark a published message as volatile.
+      A volatile published message lives only until it is processed in the
       server and is erased immediately thereafter.
       </p>
       <p>
-      A message <b>not marked volatile</b> will stay in memory until xmlBlaster shuts down or
-      until it is erased explicitly (this is the default case).
-      <br />
-      If a message with the same <i>oid</i> is published it overwrites the previous one.
+      With a lifetime of zero seconds xmlBlaster checks when the message is published all subscribers
+      which match. It is not visible thereafter. Such a message may reside in the
+      callback queue of some subscribers for hours until the client retrieves it.
+      This behavior is controlled by <i>forceDestroy='false'</i> (false is the default
+      so the attribute can be omitted).
       </p>
    </description>
    
    <example lang="any">
       <![CDATA[
 <qos>
-   <isVolatile>false</isVolatile>
-   <!-- Message remains transient in memory until shutdown -->
-   <!-- Default is transient -->
+   <expiration lifeTime='0'/>
 </qos>
       ]]>
    </example>
@@ -50,7 +50,7 @@ con.publish(new MsgUnit("<key oid='HelloWorld2'/>",
    <author>pra@mint.se</author>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2001 02 22</date>
-   <revision>$Revision: 1.10 $</revision>
+   <revision>$Revision: 1.11 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
