@@ -2,33 +2,87 @@
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
 <requirement id='engine.persistence.xmldb' type='NEW' prio='MEDIUM' status="INWORK">
-   <topic>XmlBlaster provides a XML:DB-API based persistence layer to store messages marked wit &lt;isDurable/></topic>
+   <topic>XmlBlaster provides a XML:DB-API based persistence layer to store messages marked with &lt;isDurable/></topic>
    <description>
+      <p>
       To store messages and to restore them again after a new
       startup of the xmlBlaster server there is a lightweight interface,
       called I_PersitenceDriver, available.
+      </p>
 
-      XMLDB Plugin is a implementation of the interface I_PersitenceDriver.
+      <p>
+      XMLDB Plugin is an implementation of the interface I_PersitenceDriver.
       This plugin stores messages in a <a href="http://www.xmldb.org">XMLDB</a> database,
       one message to one entry (plus a key and a qos entry per message).
+      </p>
 
-      To avoid corrupt contet data the message is enclosed into <![CDATA[]]>.
+      <p>
+      To avoid corrupt contet data the message is enclosed into &lt;![CDATA[]]&gt;.
+      </p>
 
+      <p>
       This plugin can be activated by setting the properties:
-      i.e. Persistence.Driver.Type=xmldb
-      Note that you need to declare the Type (Persistence.Driver.Type) and the Path
-      (Persistence.Driver.Version) of the persistence driver as well.
+      <i>i.e. Persistence.Driver.Type=xmldb</i>.
+      Note that you need to declare the version (<i>Persistence.Driver.Version</i>) and the path
+      (<i>Persistence.Driver.Path</i>) of the persistence driver as well.
       See the xindice proxy for details.
+      </p>
 
+      <p>
       Only messages which are marked as &lt;isDurable&gt; are stored using this persistent
       driver.
+      </p>
    </description>
+   <configuration where="server">
+     <table border="1">
+        <tr>
+            <td>Property</td>
+            <td>Default / Example</td>
+            <td>Description</td>
+            <td>Implemented</td>
+        </tr>
+
+        <tr>
+            <td>Persistence.Driver.Type</td>
+            <td>filestore<br/>Example: xmldb</td>
+            <td>Gives the type of the persistence driver.</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+        </tr>
+
+        <tr>
+            <td>Persistence.Driver.Version</td>
+            <td>1.0<br/>Example: xindice</td>
+            <td>Gives the version of the persistence driver type.</td>
+            <td><img src="no.gif" border="0" alt="no" /></td>
+        </tr>
+
+        <tr>
+            <td>Persistence.Path</td>
+            <td>${user.home}${file.separator}tmp<br/>Example: xmldb:xindice:///db/xmlBlaster</td>
+            <td>Gives the path of storage depending on the desired persistence driver type and version.</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+        </tr>
+     </table>
+   </configuration>
+
+   <todo type='HTML'>
+   	<p>
+      Find the CORBA Bug!
+    </p>
+   	<p>
+      Problem is: currently we're using two different ORB's in the same VM.
+      We try to address this problem by delegating the Plugins to different ClassLoaders.
+    </p>
+   </todo>
+
    <see type="REQ">engine.qos.publish.isDurable</see>
-   <see>org.xmlBlaster.engine.persistence.I_PersistenceDriver</see>
-   <see>org.xmlBlaster.engine.persistence.xmldb.XMLDBPlugin</see>
+   <see type="REQ">engine.persistence</see>
+   <see type="API">org.xmlBlaster.engine.persistence.I_PersistenceDriver</see>
+   <see type="API">org.xmlBlaster.engine.persistence.xmldb.XMLDBPlugin</see>
+   <see type="INTERNET">http://www.xmldb.org</see>
    <author>goetzger@gmx.net</author>
    <date>2002 07 12</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="INWORK">
       <name>-</name>
       <comment>-</comment>
