@@ -9,7 +9,7 @@ package org.xmlBlaster.engine.admin;
 import org.xmlBlaster.util.XmlBlasterException;
 
 /**
- * Declares all available methods of an xmlBlaster server instance for administration. 
+ * Declares available methods of an xmlBlaster server instance for administration. 
  * <p />
  * SNMP or telnet tools can access only the here declared properties.<br />
  * This interface is implemented by RequestBroker.java, delivering the meat.

@@ -7,7 +7,7 @@ Comment:   Interface to access information about a client instance
 package org.xmlBlaster.engine.admin;
 
 /**
- * Declares all available methods of a session for administration. 
+ * Declares available methods of a session for administration. 
  * <p />
  * SNMP or telnet tools can access only the here declared properties.<br />
  * This interface is implemented by SessionInfo.java, delivering the meat.
