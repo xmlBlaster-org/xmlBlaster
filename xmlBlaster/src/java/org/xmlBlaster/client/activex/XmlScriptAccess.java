@@ -467,7 +467,6 @@ public class XmlScriptAccess extends SimpleBeanInfo implements I_Callback {
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Callback update arrived: " + updateKey.getOid());
-      UpdateMsgUnit msgUnit = new UpdateMsgUnit(cbSessionId, updateKey, content, updateQos);
       return notifyUpdateEvent(cbSessionId, updateKey, content, updateQos);
    }
 
