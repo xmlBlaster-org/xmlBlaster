@@ -81,6 +81,11 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
       MsgQueueEntry[] msgQueueEntries = msgErrorInfo.getMsgQueueEntries();
       DeliveryManager deliveryManager = sessionInfo.getDeliveryManager();
 
+      if (deliveryManager == null) {
+         log.error(ME, "PANIC: DeliveryManager is still null, error handling failed and message is lost" + msgErrorInfo.toXml());
+         return;
+      }
+
       if (log.CALL) log.call(ME, "Error handling started: " + msgErrorInfo.toString());
 
       // 1. Generate dead letters from passed messages
