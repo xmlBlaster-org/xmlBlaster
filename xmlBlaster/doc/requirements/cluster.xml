@@ -74,6 +74,18 @@
       <p>
       <img src="cluster.availability.gif" border="0" title="XmlBlaster cluster example" alt="Example for a typical xmlBlaster cluster" />
       </p>
+      Autonomous failure recovery without distinct cluster manager (as single point of contact).
+      <ul>
+      <li>Master failure:<br />
+      This is the example in the above picture.
+      </li>
+      <li>Slave failure:<br />
+      frodo dies, bilbo needs to rearrange.
+      Bilbo needs to know the current cluster situation.
+      </li>
+      <li>Client reconnect:<br />
+      </li>
+      </ul>
       </li>
       <li><h4>Logical separation based on message domains:</h4><br />
       One xmlBlaster instance can be the master for selective messages (e.g. for
@@ -277,7 +289,7 @@
          <tr><td>content</td><td><pre>
    // This is a master for domainless messages, for football and rugby
    &lt;clusternode id='heron'>
-      &lt;master>
+      &lt;master stratum='0'>
          &lt;key domain=''/>           &lt;!-- default setting -->
          &lt;key domain='football'/>
          &lt;key domain='rugby'/>
@@ -298,8 +310,12 @@
          <tr><td>content</td><td><pre>
    // This is a slave for everything
    &lt;clusternode id='frodo'>
-      &lt;master>
+      &lt;master stratum='0'>
          &lt;key domain='NO_DEFAULT'/> &lt;!-- forward empty domains -->
+      &lt;/master>
+
+      // refid points to node one startum closer to master
+      &lt;master stratum='1' refid='heron' />
       &lt;/master>
    &lt;/clusternode>
          </pre></td>
@@ -369,7 +385,7 @@
    <author>ruff@swand.lake.de</author>
    <author>Heinrich.Goetzger@exploding-systems.de</author>
    <date>2000 04 10</date>
-   <revision>$Revision: 1.11 $</revision>
+   <revision>$Revision: 1.12 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
