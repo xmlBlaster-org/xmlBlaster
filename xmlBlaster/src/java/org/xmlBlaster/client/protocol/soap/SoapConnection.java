@@ -469,9 +469,8 @@ public class SoapConnection implements I_XmlBlasterConnection
    /**
     * Delete messages.
     * <p />
-    * @see org.xmlBlaster.engine.RequestBroker
     */
-   public final String[] erase (XmlKey xmlKey, EraseQosServer eraseQoS)
+   public final String[] erase (XmlKey xmlKey, EraseQos eraseQoS)
       throws XmlBlasterException
    {
       String xmlKey_literal = xmlKey.toXml();
@@ -524,7 +523,7 @@ public class SoapConnection implements I_XmlBlasterConnection
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public final MsgUnitRaw[] get (XmlKey xmlKey, GetQosServer getQoS)
+   public final MsgUnitRaw[] get (XmlKey xmlKey, GetQos getQoS)
       throws XmlBlasterException {
       String xmlKey_literal = xmlKey.toXml();
       String getQoS_literal = getQoS.toXml();
