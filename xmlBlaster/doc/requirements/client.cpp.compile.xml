@@ -194,6 +194,37 @@ thread.impl   = OMNITHREAD
 # to your PATH environment
 #------------------------------------------------------------------------------
 </pre>
+
+   <h3>Debugging with Purify</h3>
+   <p>
+   If you want to check the C++ client library on your platform with Purify you
+   can try this approach (the example is for Solaris using the CC compiler):
+   </p>
+   <p>First we rename the CC command to CC.ORIG and replace the CC command by
+    a shell script which inserts purify:
+   </p>
+<pre>
+#!/bin/sh
+
+#
+# Purify cannot produce shared objects.
+# build.sh -DCPP_LINK=static -verbose cpp > build.log
+#
+
+PATH=$PATH:/opt/rational/releases/PurifyPlusFamily.2003.06.00/sun4_solaris2/bin
+export PATH
+
+PUREOPTIONS=-cache-dir=/tmp/cache
+export PUREOPTIONS
+
+purify CC.ORIG $*
+</pre>
+   <p>
+   Now we are ready to compile the code with purify:
+   </p>
+<pre>
+build.sh -DCPP_LINK=static -DPURIFY=PURIFY -verbose cpp > build.log
+</pre>
    </configuration>
 
    <see type="REQ">client.cpp</see>
@@ -202,6 +233,6 @@ thread.impl   = OMNITHREAD
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
    <date>2003 01 07</date>
-   <revision>$Revision: 1.12 $</revision>
+   <revision>$Revision: 1.13 $</revision>
 </requirement>
 
