@@ -38,7 +38,7 @@ typedef struct {
 #define EXCEPTIONSTRUCT_ERRORCODE_LEN 56
 #define EXCEPTIONSTRUCT_MESSAGE_LEN 1024
 typedef struct ExceptionStruct {    /* This name is need for C++ forward declaration 'struct ExceptionStruct; */
-   int remote; /* true if exception is from remote (changed from bool to int to be C/C++ alignment compatible) */
+   int remote; /**< true if exception is from remote (changed from bool to int to be C/C++ alignment compatible) */
    char errorCode[EXCEPTIONSTRUCT_ERRORCODE_LEN];
    char message[EXCEPTIONSTRUCT_MESSAGE_LEN];
    /* ExceptionStruct *embedded;  who allocates/frees it? */
@@ -49,13 +49,13 @@ Dll_Export extern const char *getExceptionStr(char *out, int outSize, const Exce
 
 typedef enum XMLBLASTER_LOG_LEVEL_ENUM {
    /*LOG_NOLOG=0,  don't use */
-   LOG_ERROR=1,  /* supported, use for programming errors */
-   LOG_WARN=2,   /* supported, use for user errors and wrong configurations */
-   LOG_INFO=3,   /* supported, use for success information only */
+   LOG_ERROR=1,  /**< supported, use for programming errors */
+   LOG_WARN=2,   /**< supported, use for user errors and wrong configurations */
+   LOG_INFO=3,   /**< supported, use for success information only */
    /*LOG_CALL=4,  don't use */
    /*LOG_TIME=5,  don't use */
-   LOG_TRACE=6,  /* supported, use for debugging purposes */
-   LOG_DUMP=7    /* supported, use for debugging purposes */
+   LOG_TRACE=6,  /**< supported, use for debugging purposes */
+   LOG_DUMP=7    /**< supported, use for debugging purposes */
    /*LOG_PLAIN=8  don't use */
 } XMLBLASTER_LOG_LEVEL;
 typedef void  ( * XmlBlasterLogging)(void *logUserP, XMLBLASTER_LOG_LEVEL currLevel, XMLBLASTER_LOG_LEVEL level, const char *location, const char *fmt, ...);

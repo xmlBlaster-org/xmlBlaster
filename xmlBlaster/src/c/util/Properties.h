@@ -32,21 +32,22 @@ typedef int64_t ( * XmlBlasterPropertiesGetInt64)(Properties *xb, const char * k
  * All client access to Properties goes over this struct and its function pointers. 
  */
 struct PropertiesStruct {
-   int argc;
-   char **argv;
-   const char *execName;
+   int argc;             /**< Number of #argv */
+   char **argv;          /**< Pointer on the memory of the passed arguments */
+   const char *execName; /**< The executable name */
    /**
     * Access command line settings of for "myExec -logLevel TRACE".
     * If the key is not found the environment is checked, if this
     * does not contain the key the defaultValue is returned.
+    * @param xb The 'this' pointer
     * @param key e.g. "logLevel"
     * @param defaultValue e.g. "WARN"
     */
-   XmlBlasterPropertiesGetString getString;
-   XmlBlasterPropertiesGetBool getBool;
-   XmlBlasterPropertiesGetInt getInt;
-   XmlBlasterPropertiesGetLong getLong;
-   XmlBlasterPropertiesGetInt64 getInt64;
+   XmlBlasterPropertiesGetString getString; /**< Access a property as a string */
+   XmlBlasterPropertiesGetBool getBool;     /**< Access a property converted to bool */
+   XmlBlasterPropertiesGetInt getInt;       /**< Access a property converted to int */
+   XmlBlasterPropertiesGetLong getLong;     /**< Access a property converted to long */
+   XmlBlasterPropertiesGetInt64 getInt64;   /**< Access a property converted to a 64 bit long */
 };
 
 /**

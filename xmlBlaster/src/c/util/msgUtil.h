@@ -40,14 +40,16 @@ extern "C" {
  */
 typedef BlobHolder XmlBlasterBlob;
 
-/** Holds a message
-    All member pointers are allocated with malloc(), you need to free() them */
+/**
+ * Holds a message
+ * All member pointers are allocated with malloc(), you need to free() them
+ */
 typedef struct MsgUnit {
-   const char *key;               /* XML formatted ASCII string of message key */
-   size_t contentLen;       /* Number of bytes in content */
-   const char *content;           /* Raw data (not 0 terminated) */
-   const char *qos;               /* XML formatted ASCII string of Quality of Service */
-   char *responseQos;       /* Used to transport the response QoS string back to caller */
+   const char *key;         /**< XML formatted ASCII string of the message topic */
+   size_t contentLen;       /**< Number of bytes in content */
+   const char *content;     /**< Raw data (not 0 terminated) */
+   const char *qos;         /**< XML formatted ASCII string of Quality of Service */
+   char *responseQos;       /**< Used to transport the response QoS string back to caller */
 } MsgUnit;
 /* Note: We use the above 'const' to simplify assignment from C++ like 'msgUnit.key = std::string.c_str() */
 

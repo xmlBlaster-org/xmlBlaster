@@ -203,13 +203,6 @@ Dll_Export BlobHolder encodeMsgUnitArr(MsgUnitArr *msgUnitArr, bool debug)
    return blob;
 }
 
-/**
- * Creates a raw blob to push over a socket as described in protocol.socket
- * @param rawMsgLen is returned
- * @param rawMsg is returned
- * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
- * @return The raw message, the caller needs to free() it.
- */
 char *encodeSocketMessage(
               enum XMLBLASTER_MSG_TYPE_ENUM msgType,
               const char * const requestId, 

@@ -28,24 +28,29 @@ extern "C" {
 
 #define  MAX_MSG_LEN 1000000000
 
-/* Settings for MSG_FLAG_POS_TYPE */
+/**
+ * Settings for MSG_FLAG_POS_TYPE
+ */
 typedef enum XMLBLASTER_MSG_TYPE_ENUM {
    MSG_TYPE_INVOKE = 73,
    MSG_TYPE_RESPONSE = 82,
    MSG_TYPE_EXCEPTION = 69
 } XMLBLASTER_MSG_TYPE;
 
+/**
+ * Helper struct to hold all necessary informations
+ */
 typedef struct SocketDataHolder {
    size_t msgLen;
    bool checksum;
    bool compressed;
-   char type;  /* XMLBLASTER_MSG_TYPE */
+   char type;  /**< XMLBLASTER_MSG_TYPE */
    char version;
    char requestId[MAX_REQUESTID_LEN];
    char methodName[MAX_METHODNAME_LEN];
    char secretSessionId[MAX_SESSIONID_LEN];
    size_t dataLenUncompressed;
-   XmlBlasterBlob blob; /* blob.data is allocated with malloc, you need to free() it yourself, is compressed if marked as such */
+   XmlBlasterBlob blob; /**< blob.data is allocated with malloc, you need to free() it yourself, is compressed if marked as such */
 } SocketDataHolder;
 
 #define MSG_LEN_FIELD_LEN 10
@@ -69,10 +74,17 @@ extern void closeSocket(int fd);
 extern ssize_t writen(int fd, char *ptr, size_t nbytes);
 extern ssize_t readn(int fd, char *ptr, size_t nbytes);
 
+/**
+ * Creates a raw blob to push over a socket as described in the protocol.socket requirement. 
+ * @param data is returned
+ * @param dataLen is returned
+ * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
+ * @return The raw message, the caller needs to free() it.
+ */
 extern char *encodeSocketMessage(
               enum XMLBLASTER_MSG_TYPE_ENUM msgType,
-              const char * const requestId, 
-              const char * const methodName,
+              const char * const requestId,    /**< The unique request ID for each invocation */
+              const char * const methodName,   
               const char * const secretSessionId,
               const char *data,
               size_t dataLen,

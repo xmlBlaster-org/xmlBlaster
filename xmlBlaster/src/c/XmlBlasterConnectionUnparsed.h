@@ -46,7 +46,7 @@ typedef MsgRequestInfo *( * XmlBlasterConnectionUnparsedPreSendEvent)(MsgRequest
 typedef MsgRequestInfo *( * XmlBlasterConnectionUnparsedPostSendEvent)(MsgRequestInfo *msgRequestInfo, XmlBlasterException *exception);
 
 /**
- * All client access to xmlBlaster goes over this struct and its function pointers. 
+ * All synchrnous client access to xmlBlaster goes over this struct and its function pointers. 
  */
 struct Dll_Export XmlBlasterConnectionUnparsedStruct {
    int argc;
@@ -57,8 +57,8 @@ struct Dll_Export XmlBlasterConnectionUnparsedStruct {
    long requestId;
    char secretSessionId[MAX_SECRETSESSIONID_LEN];
    bool isInitialized;
-   XmlBlasterConnectionUnparsedInitConnection initConnection; /* Used internally or by multi threaded embedding only as this is called by connect() automatically */
-   XmlBlasterConnectionUnparsedInitQueue initQueue; /** Call to initialize persistent queue support on lost connection */
+   XmlBlasterConnectionUnparsedInitConnection initConnection; /**< Used internally or by multi threaded embedding only as this is called by connect() automatically */
+   XmlBlasterConnectionUnparsedInitQueue initQueue; /**< Call to initialize persistent queue support on lost connection */
    XmlBlasterConnectionUnparsedConnect connect;   
    XmlBlasterConnectionUnparsedDisconnect disconnect;   
    XmlBlasterConnectionUnparsedPublish publish;
@@ -70,21 +70,22 @@ struct Dll_Export XmlBlasterConnectionUnparsedStruct {
    XmlBlasterConnectionUnparsedGet get;
    XmlBlasterConnectionUnparsedPing ping;
    XmlBlasterConnectionUnparsedIsConnected isConnected;
-   XmlBlasterConnectionUnparsedPreSendEvent preSendEvent; /* If a callback function pointer is registered it will be called just before sending a message */
+   XmlBlasterConnectionUnparsedPreSendEvent preSendEvent; /**< If a callback function pointer is registered it will be called just before sending a message */
    void *preSendEvent_userP;
-   XmlBlasterConnectionUnparsedPostSendEvent postSendEvent; /* If a callback function pointer is registered it will be called just after sending a message */
+   XmlBlasterConnectionUnparsedPostSendEvent postSendEvent; /**< If a callback function pointer is registered it will be called just after sending a message */
    void *postSendEvent_userP;
    I_Queue *queueP;
    XMLBLASTER_LOG_LEVEL logLevel;
    XmlBlasterLogging log;
-   void *logUserP;               /* For outside users to pass a user object back to the logging implementation */
+   void *logUserP;               /**< For outside users to pass a user object back to the logging implementation */
    bool useUdpForOneway;
 };
 
 
 /**
  * Get an instance of this to get xmlBlaster access. 
- * NOTE: Every call creates a new and independent client access instance to xmlBlaster
+ *
+ * Every call creates a new and independent client access instance to xmlBlaster
  */
 Dll_Export extern XmlBlasterConnectionUnparsed *getXmlBlasterConnectionUnparsed(int argc, const char* const* argv);
 

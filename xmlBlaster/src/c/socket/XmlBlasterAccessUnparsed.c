@@ -57,18 +57,6 @@ static bool checkArgs(XmlBlasterAccessUnparsed *xa, const char *methodName, bool
 static void interceptUpdate(MsgUnitArr *msgUnitArr, void *userData, XmlBlasterException *xmlBlasterException, void/*SocketDataHolder*/ *socketDataHolder);
 static bool mutexUnlock(MsgRequestInfo *msgRequestInfoP, XmlBlasterException *exception);
 
-/**
- * Create an instance for access xmlBlaster. 
- * This is usually the first call of a client. 
- * <br />
- * NOTE: Our properties point on the passed argv memory, so you should
- * not free the original argv memory before you free XmlBlasterAccessUnparsed.
- * @param argc The number of argv properties
- * @param argv The command line properties, see <code>Properties *createProperties(int argc, const char* const* argv)</code>
- *             for a specification
- * @return NULL if bootstrapping failed. If not NULL you need to free() it when you are done
- * usually by calling freeXmlBlasterAccessUnparsed().
- */
 Dll_Export XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed(int argc, const char* const* argv) {
    XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)calloc(1, sizeof(XmlBlasterAccessUnparsed));
    if (xa == 0) return xa;
@@ -173,13 +161,6 @@ Dll_Export void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xa)
    free(xa);
 }
 
-/**
- * Creates client side connection object and the callback server and does the low level IP connection. 
- * This method is automatically called by connect() so you usually only
- * call it explicitly if you are interested in the callback server settings.
- * @param clientUpdateFp The clients callback handler function. If NULL our default handler is used
- * @return true on success
- */
 static bool initialize(XmlBlasterAccessUnparsed *xa, UpdateFp clientUpdateFp, XmlBlasterException *exception)
 {
    int threadRet = 0;
@@ -267,10 +248,9 @@ static bool isConnected(XmlBlasterAccessUnparsed *xa)
 }
 
 /**
- * Callback from XmlBlasterConnectionUnparsed just before a message is sent,
+ * Callback from #XmlBlasterConnectionUnparsed just before a message is sent,
  * the msgRequestInfo contains the requestId used. 
  * This is the clients calling thread.
- * @param userP May not be NULL, is of type XmlBlasterAccessUnparsed *
  * @param msgRequestInfo Contains some informations about the request, may not be NULL
  * @param exception May not be NULL
  * @return The same (or a manipulated/encrypted) msgRequestInfo, if NULL the exception is filled. 
@@ -472,10 +452,6 @@ static bool mutexUnlock(MsgRequestInfo *msgRequestInfoP, XmlBlasterException *ex
    return true;
 }
 
-/**
- * @param usage Please pass a string with at least XMLBLASTER_MAX_USAGE_LEN chars allocated (or on stack)
- * @return Your usage pointer filled with informations
- */
 Dll_Export const char *xmlBlasterAccessUnparsedUsage(char *usage)
 {
    /* take care not to exceed XMLBLASTER_MAX_USAGE_LEN */
@@ -488,28 +464,6 @@ Dll_Export const char *xmlBlasterAccessUnparsedUsage(char *usage)
    return usage;
 }
 
-/**
- * Connect to the server. 
- * @param qos The QoS to connect, typically
- * <pre>
- *&lt;qos>
- * &lt;securityService type='htpasswd' version='1.0'>
- *   &lt;user>fritz&lt;/user>
- *   &lt;passwd>secret&lt;/passwd>
- * &lt;/securityService>
- *&lt;queue relating='callback' maxEntries='100' maxEntriesCache='100'>
- *  &lt;callback type='SOCKET' sessionId='%s'>
- *    socket://myServer.myCompany.com:6645
- *  &lt;/callback>
- *&lt;/queue>
- *&lt;/qos>
- * </pre>
- * @param clientUpdateFp The clients callback function pointer, if NULL our default handler is used
- * @param The exception struct, exception->errorCode is filled on exception
- * @return The ConnectReturnQos raw xml string, you need to free() it
- * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.publish.html
- * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
- */
 static char *xmlBlasterConnect(XmlBlasterAccessUnparsed *xa, const char * const qos,
                                UpdateFp clientUpdateFp, XmlBlasterException *exception)
 {
@@ -587,14 +541,6 @@ static char *xmlBlasterConnect(XmlBlasterAccessUnparsed *xa, const char * const 
    return response;
 }
 
-/**
- * Disconnect from server. 
- * @param qos The QoS to disconnect
- * @param The exception struct, exception->errorCode is filled on exception
- * @return false on exception
- * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.publish.html
- * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
- */
 static bool xmlBlasterDisconnect(XmlBlasterAccessUnparsed *xa, const char * const qos, XmlBlasterException *exception)
 {
    bool p;
@@ -692,7 +638,7 @@ static QosArr *xmlBlasterErase(XmlBlasterAccessUnparsed *xa, const char * const 
  * @param qos The QoS or 0
  * @param exception *errorCode!=0 on failure
  * @return The ping return QoS raw xml string, you need to free() it
- *         or 0 on failure (in which case *exception.errorCode!='\0')
+ *         or 0 on failure (in which case *exception.errorCode!=0)
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
  */
 static char *xmlBlasterPing(XmlBlasterAccessUnparsed *xa, const char * const qos, XmlBlasterException *exception)

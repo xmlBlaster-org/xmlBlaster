@@ -31,26 +31,26 @@ extern "C" {
  * It is passed by the client code to create a queue.
  */
 typedef struct {
-   char dbName[QUEUE_DBNAME_MAX];      /** The database name, for SQLite it is the file name on HD, "xmlBlaster.db" */
-   char queueName[QUEUE_ID_MAX];       /** The name of the queue, "connection_client_joe" */
-   char tablePrefix[QUEUE_PREFIX_MAX]; /** The table prefix to use, "XB_" */
-   int32_t maxNumOfEntries;            /** The max. accepted entries, 10000 */
-   int64_t maxNumOfBytes;              /** The max. capacity of the queue in bytes, 10000000LL */
-   XmlBlasterLogging logFp;            /** Your logging implementation or NULL if no logging callbacks are desired */
-   XMLBLASTER_LOG_LEVEL logLevel;      /** Set to LOG_TRACE to receive any logging */
-   void *userObject;                   /** A pointer of your choice, is passed back when calling logFp in queueP->userObject */
+   char dbName[QUEUE_DBNAME_MAX];      /**< The database name, for SQLite it is the file name on HD, "xmlBlaster.db" */
+   char queueName[QUEUE_ID_MAX];       /**< The name of the queue, "connection_client_joe" */
+   char tablePrefix[QUEUE_PREFIX_MAX]; /**< The table prefix to use, "XB_" */
+   int32_t maxNumOfEntries;            /**< The max. accepted entries, 10000 */
+   int64_t maxNumOfBytes;              /**< The max. capacity of the queue in bytes, 10000000LL */
+   XmlBlasterLogging logFp;            /**< Your logging implementation or NULL if no logging callbacks are desired */
+   XMLBLASTER_LOG_LEVEL logLevel;      /**< Set to LOG_TRACE to receive any logging */
+   void *userObject;                   /**< A pointer of your choice, is passed back when calling logFp in queueP->userObject */
 } QueueProperties;
 
 /**
  * A struct holding the necessary queue entry informations used by I_Queue. 
  */
 typedef struct {
-   int64_t uniqueId;        /** The unique key, used for sorting, usually a time stamp [nano sec]. Is assumed to be ascending over time. */
-   int16_t priority;        /** The priority of the queue entry, has higher sorting order than than the time stamp */
-   bool isPersistent;       /** Mark an entry to be persistent, needed for cache implementations, 'T' is true, 'F' is false. 'F' in persistent queue is a swapped transient entry */
-   int64_t sizeInBytes;     /** The size of this entry which is given by the client and used to sum up queue->numOfBytes, if 0 we use the size of the blob */
-   char embeddedType[QUEUE_ENTRY_EMBEDDEDTYPE_LEN]; /** A string describing this entry, for example the format of the blob. */
-   BlobHolder embeddedBlob; /** blob.data is allocated with malloc, you need to free() it yourself, is compressed if marked as such */
+   int64_t uniqueId;        /**< The unique key, used for sorting, usually a time stamp [nano sec]. Is assumed to be ascending over time. */
+   int16_t priority;        /**< The priority of the queue entry, has higher sorting order than than the time stamp */
+   bool isPersistent;       /**< Mark an entry to be persistent, needed for cache implementations, 'T' is true, 'F' is false. 'F' in persistent queue is a swapped transient entry */
+   int64_t sizeInBytes;     /**< The size of this entry which is given by the client and used to sum up queue->numOfBytes, if 0 we use the size of the blob */
+   char embeddedType[QUEUE_ENTRY_EMBEDDEDTYPE_LEN]; /**< A string describing this entry, for example the format of the blob. */
+   BlobHolder embeddedBlob; /**< blob.data is allocated with malloc, you need to free() it yourself, is compressed if marked as such */
 } QueueEntry;
 
 /**
@@ -102,7 +102,7 @@ struct I_QueueStruct {
     * and puts a reference to it into the queue. This means that you can not destroy the entry before the
     * reference to it has been processed. 
     * @param queueP The 'this' pointer (similar to the hidden C++ 'this' pointer)
-    * @param queueEntry The data to put into the queue
+    * @param queueEntry The data of type #QueueEntry to put into the queue
     *        Please initialize it with <code>memset(&queueEntry, 0, sizeof(QueueEntry));</code> before setting
     *        your values so we can add new fields without breaking your code
     * @param exception Check *exception.errorCode!=0 for errors:
@@ -232,8 +232,10 @@ struct I_QueueStruct {
 
 /**
  * Get an instance of a persistent queue and initialize it. 
- * NOTE: Every call creates a new and independent instance which shall
+ *
+ * Every call creates a new and independent instance which shall
  * be destroyed by a call to freeQueue() when you are done
+ *
  * @param queueProperties
  *        Configuration properties of the queue, always do a first
  *        <code>memset(&queueProperties, 0, sizeof(QueueProperties));</code>

@@ -29,6 +29,7 @@ static int64_t getInt64(Properties *props, const char *key, int64_t defaultValue
  * @param argv The command line arguments, argv[0] is expected to be the
  *             name of the process, argv[1] should start with '-' and 
  *             argv[2] is the value of the argv[1] key ...
+ *             argv can be NULL if argc == 0
  */
 Properties *createProperties(int argc, const char* const* argv) {
    int iarg;

@@ -55,17 +55,16 @@ typedef int (* InitCallbackServer)(CallbackServerUnparsed *cb);
 typedef bool (* IsListening)(CallbackServerUnparsed *cb);
 
 /**
- * Here we asynchronous receive the callback from xmlBlaster
- * msg = char *key, char *content, int contentLen, char *qos
+ * Here we asynchronously receive the callback from xmlBlaster. 
  *
- * NOTE: After this call the memory of msgUnitArr is freed immediately by callbackServer.c
+ * NOTE: After this call the memory of #MsgUnitArr is freed immediately by #CallbackServerUnparsed
  *       So you need to take a copy of all message members if needed out of the scope of this function.
  *
- * @param msgUnitArr The messages from the server, use mgsUnit->responseQos to transport the return value
+ * @param msgUnitArr The messages from the server, use MgsUnit#responseQos to transport the return value
  * @param userData An optional pointer from the client with client specific data which is delivered back
- * @param xmlBlasterException This points on a valid struct, so you only need to fill errorCode with strcpy
+ * @param xmlBlasterException This points on a valid #XmlBlasterException struct, so you only need to fill errorCode with strcpy()
  *        and the returned pointer is ignored and the exception is thrown to xmlBlaster.
- * @param socketDataHolder Struct containing socket specific informations, please handle as readonly
+ * @param socketDataHolder #SocketDataHolder containing socket specific informations, please handle as readonly
  * @return Return true if everything is OK
  *         Return false if you want to throw an exception, please fill xmlBlasterException in such a case.
  *         If false and *xmlBlasterException.errorCode==0 we don't send a return message (useful for update dispatcher thread to do it later)
@@ -97,11 +96,12 @@ typedef void  ( * CallbackServerUnparsedLogging)(void *logUserP, XMLBLASTER_LOG_
 
 /**
  * This structure holds a complete callback server instance. 
- * The function pointers like <i>isListening()</i> allow you to
+ *
+ * The function pointers like #isListening() allow you to
  * invoke methods on this structure.
  * <br />
- * The function pointer <i>update</i> holds the clients callback function
- * which is invoked when messages arrive. See the description of UpdateCbFp.
+ * The function pointer #update() holds the clients callback function
+ * which is invoked when messages arrive. See the description of #UpdateCbFp.
  */
 struct CallbackServerUnparsedStruct {
    Properties *props;
@@ -110,10 +110,10 @@ struct CallbackServerUnparsedStruct {
    int socketUdp;
    char * hostCB;
    int portCB;
-   bool reusingConnectionSocket; /* is false if we tunnel callback through the client connection socket */
+   bool reusingConnectionSocket; /**< is false if we tunnel callback through the client connection socket */
    XMLBLASTER_LOG_LEVEL logLevel;
    CallbackServerUnparsedLogging log;
-   void *logUserP;               /* For outside users to pass a user object back to their logging implementation */
+   void *logUserP;               /**< For outside users to pass a user object back to their logging implementation */
    /*
     * Is created by the client and used to validate callback messages in update. 
     * This is sent on connect in ConnectQos.
@@ -122,9 +122,9 @@ struct CallbackServerUnparsedStruct {
    */
    InitCallbackServer runCallbackServer;
    IsListening isListening;
-   ShutdownCallbackServerRaw shutdown; /* For internal use (multi thread) only */
+   ShutdownCallbackServerRaw shutdown; /**< For internal use (multi thread) only */
    UpdateCbFp updateCb;
-   void *updateCbUserData; /* A optional pointer from the client code which is returned to the update() function call */
+   void *updateCbUserData; /**< A optional pointer from the client code which is returned to the update() function call */
    UseThisSocket useThisSocket;
    ResponseListener responseListener[MAX_RESPONSE_LISTENER_SIZE];
    AddResponseListener addResponseListener;
@@ -138,7 +138,9 @@ struct CallbackServerUnparsedStruct {
 
 };
 
-/* Auxiliary struct for passing parameters to listening threads */
+/**
+ * Auxiliary struct for passing parameters to listening threads
+ */
 typedef struct ListenLoopArgsStruct {
    CallbackServerUnparsed* cb;
    bool udp;
@@ -146,14 +148,14 @@ typedef struct ListenLoopArgsStruct {
 
 /**
  * Get a new instance of a callback server struct. 
- * This is usually the first call of a client, you need to call runCallbackServer()
+ * This is usually the first call of a client, you need to call #runCallbackServer()
  * on the returned pointer to establish a listener.
  * @param argc Number of command line arguments
  * @param argv The command line arguments
- * @param update The function pointer on your update() function which handles the received messages
- *               Please read the documentation of UpdateCbFp above.
+ * @param updateCb The function pointer on your update() function which handles the received messages
+ *               Please read the documentation of #UpdateCbFp above.
  * @param userData An optional pointer from the client with client specific data
- *               which is delivered back with the update() function
+ *               which is delivered back with the #updateCb function
  * @return NULL if allocation or bootstrapping failed. If not NULL you need to free() it when you are done
  * usually by calling freeXmlBlasterConnectionUnparsed().
  */
