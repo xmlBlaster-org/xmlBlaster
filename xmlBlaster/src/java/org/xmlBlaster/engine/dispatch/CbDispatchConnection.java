@@ -167,7 +167,9 @@ public final class CbDispatchConnection extends DispatchConnection
             catch (Throwable e) {
                log.warn(ME, "Can't parse returned value '" + rawReturnVal[i] + "', setting to default: " + e.toString());
                //e.printStackTrace();
-               msgArr_[i].setReturnObj(new UpdateReturnQosServer(glob, "<qos/>"));
+               UpdateReturnQosServer updateRetQos = new UpdateReturnQosServer(glob, "<qos/>");
+               updateRetQos.setException(e);
+               msgArr_[i].setReturnObj(updateRetQos);
             }
          }
          if (log.TRACE) log.trace(ME, "Imported/decrypted " + rawReturnVal.length + " message return values.");

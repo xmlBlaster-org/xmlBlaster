@@ -11,13 +11,9 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.Timestamp;
-import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.I_Timeout;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
-
-import java.io.IOException;
-
 
 /**
  * Holding all necessary infos to establish a remote connection
@@ -207,7 +203,7 @@ abstract public class DispatchConnection implements I_Timeout
          }
       }
 
-      Thread.currentThread().dumpStack();
+      Thread.dumpStack();
       throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "This exception is never reached" + toXml(""));
    }
 

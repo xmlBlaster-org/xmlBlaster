@@ -274,7 +274,7 @@ abstract public class DispatchConnectionsHandler
       else {
          this.state = tmp;
          log.error(ME, "Internal error in updateState(oldState="+oldState+","+this.state+") " + toXml(""));
-         Thread.currentThread().dumpStack();
+         Thread.dumpStack();
       }
    }
 

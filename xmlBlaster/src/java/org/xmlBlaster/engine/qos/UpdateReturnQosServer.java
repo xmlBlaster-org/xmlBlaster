@@ -78,4 +78,19 @@ public final class UpdateReturnQosServer
    public final String toString() {
       return toXml(null);
    }
+
+   /**
+    * Setter for the exception 
+    */
+   public void setException(Throwable ex) {
+      this.statusQosData.setException(ex);
+   }
+   
+   public Throwable getException() {
+      return this.statusQosData.getException();
+   }
+   
+
+
 }
+
