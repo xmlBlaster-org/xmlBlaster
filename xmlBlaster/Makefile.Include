@@ -30,7 +30,7 @@ SRC_JAVA_DIR=$(SRC_JAVA_TOP_DIR)/$(THIS_PACKAGE_DIR)
 
 
 #------------------------------------------------------------------------------
-IDL2JAVA=/usr/local/JacORB/bin/idl
+IDL2JAVA=/usr/local/JacORB/bin/idl -p org.xmlBlaster
 #IDL2JAVA=/usr/local/vbroker/bin/idl2java
 
 #JAVAC_FLAGS=
