@@ -3,11 +3,11 @@ Name:      ClientPersistence.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   subscribes to durable messages
-Version:   $Id: ClientPersistence.java,v 1.7 2002/05/11 09:36:54 ruff Exp $
+Version:   $Id: ClientPersistence.java,v 1.8 2002/07/24 12:12:33 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.jutils.init.Args;
 import org.jutils.io.FileUtil;
 
@@ -39,6 +39,7 @@ import org.xmlBlaster.util.ServerThread;
 public class ClientPersistence implements I_Callback
 {
    private final static String ME = "ClientPersistence";
+   private final LogChannel log;
 
    private final String senderName = "Tanja";
    private String publishOid = "amIdurable";
@@ -49,7 +50,8 @@ public class ClientPersistence implements I_Callback
    /**
     * Constructs the ClientPersistence object.
     */
-   public ClientPersistence() {
+   public ClientPersistence(Global glob) {
+      log = glob.getLog(null);
    }
 
 
@@ -68,7 +70,7 @@ public class ClientPersistence implements I_Callback
          senderConnection.login(ME, passwd, qos, this);
       }
       catch (Exception e) {
-          Log.error(ME, e.toString());
+          log.error(ME, e.toString());
           e.printStackTrace();
       }
 
@@ -78,9 +80,9 @@ public class ClientPersistence implements I_Callback
       try {
          senderConnection.subscribe(xmlKeyPub, "<qos></qos>");
       } catch(XmlBlasterException e2) {
-         Log.warn(ME, "XmlBlasterException: " + e2.reason);
+         log.warn(ME, "XmlBlasterException: " + e2.reason);
       }
-      Log.trace(ME, "Subscribed to '" + publishOid + "' ...");
+      log.trace(ME, "Subscribed to '" + publishOid + "' ...");
    }
 
 
@@ -90,7 +92,7 @@ public class ClientPersistence implements I_Callback
     * cleaning up .... logout
     */
    protected void tearDown() {
-      senderConnection.logout();
+      senderConnection.disconnect(null);
    }
 
 
@@ -101,14 +103,14 @@ public class ClientPersistence implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      //Log.info(ME, "Receiving update of a message ...");
-      Log.info(ME, "Receiving update of message '" + publishOid +"'");
+      //log.info(ME, "Receiving update of a message ...");
+      log.info(ME, "Receiving update of message '" + publishOid +"'");
 
       numReceived += 1;
 
-      Log.plain("UpdateKey", updateKey.toXml());
-      Log.plain("content", (new String(content)).toString());
-      Log.plain("UpdateQos", updateQos.toXml());
+      log.plain("UpdateKey", updateKey.toXml());
+      log.plain("content", (new String(content)).toString());
+      log.plain("UpdateQos", updateQos.toXml());
       return "";
    }
 
@@ -120,7 +122,7 @@ public class ClientPersistence implements I_Callback
     * @param timeout in milliseconds
     * @param numWait how many messages to wait
     */
-   private static void waitOnUpdate(final long timeout, final int numWait)
+   private void waitOnUpdate(final long timeout, final int numWait)
    {
       long pollingInterval = 50L;  // check every 0.05 seconds
       if (timeout < 50)  pollingInterval = timeout / 10L;
@@ -133,7 +135,7 @@ public class ClientPersistence implements I_Callback
          {}
          sum += pollingInterval;
          if (sum > timeout) {
-            Log.warn(ME, "Timeout of " + timeout + " occurred");
+            log.warn(ME, "Timeout of " + timeout + " occurred");
             break;
          }
       }
@@ -147,17 +149,16 @@ public class ClientPersistence implements I_Callback
     * instead of the JacORB ORB, which won't work.
     * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <pre>   jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.ClientPersistence</pre>
+    * <pre>   java -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.ClientPersistence</pre>
     */
    public static void main(String args[])
    {
       Global glob = new Global();
-      if (glob.init(args) != 0) Log.panic(ME, "");
-      ClientPersistence Sub = new ClientPersistence();
-      Sub.setUp();
-      Sub.tearDown();
-      Sub.waitOnUpdate(10000000L, 10);
-      Log.exit(ClientPersistence.ME, "Good bye");
+      if (glob.init(args) != 0) System.exit(1);
+      ClientPersistence cl = new ClientPersistence(glob);
+      cl.setUp();
+      cl.tearDown();
+      cl.waitOnUpdate(10000000L, 10);
    }
 }
 
