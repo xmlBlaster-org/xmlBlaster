@@ -3,7 +3,7 @@ Name:      HelloWorld.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Applet test for xmlBlaster
-Version:   $Id: HelloWorld.java,v 1.2 2000/01/17 19:57:13 ruff Exp $
+Version:   $Id: HelloWorld.java,v 1.3 2000/01/17 20:38:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.HelloWorldApplet;
 
@@ -60,7 +60,7 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
     * Constructs the HelloWorld object.
     */
    public void init()
-   {  
+   {
       initUI();
 
       /*
@@ -145,9 +145,7 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
 
 
    /**
-    * Tears down the fixture.
-    * <p />
-    * cleaning up .... erase() the previous message OID and logout
+    * Cleaning up .... erase() the previous message OID and logout
     */
    protected void tearDown()
    {
@@ -220,7 +218,7 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
 
 
    /**
-    * event-handler
+    * GUI event handler
     */
    public void actionPerformed(ActionEvent ev)
    {
@@ -244,7 +242,7 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
 
 
    /**
-    * WindowListener Events
+    * WindowListener events for applet
     */
    public void windowOpened(WindowEvent e) { Log.info(ME, "Event windowOpened"); }
    public void windowClosing(WindowEvent e) { Log.info(ME, "Event windowClosing"); tearDown(); }
@@ -279,7 +277,7 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
             }
          }
       );
-      
+
       frame.add("Center", helloWorld);
       frame.setSize(350, 250);
       frame.validate();
