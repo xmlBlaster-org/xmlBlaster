@@ -8,7 +8,7 @@ package org.xmlBlaster.authentication.plugins.htpasswd;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 
 import java.io.* ;
 import java.util.Hashtable ;
@@ -31,18 +31,24 @@ import java.util.Vector;
  *        exactly equals the specifications at connection to the xmlBlaster
  *   </li>it is possible that the password file just contains a * instead
  *        of (username,password) tuples -> any username and password combination is authenticated
+ *        Same if Security.Server.Plugin.htpasswd.secretfile=NONE
  *   </li>
  *  </ol>
- *
+ * <p />
+ * NOTE: Currently the htpasswd file is reread every time a client logs in (see Session.java new HtPasswd())
  * @author <a href="mailto:cyrille@ktaland.com">Cyrille Giquello</a> 16/11/01 09:06
  */
 public class HtPasswd {
 
    private static final String ME = "HtAccess";
 
+   protected LogChannel log;
+
    protected int useFullUsername = 1;
    protected String htpasswdFilename = null ;
    protected Hashtable htpasswd = null ;
+
+   private static boolean first = true;
 
    /**
     * Check password
@@ -52,7 +58,7 @@ public class HtPasswd {
     */
 
    public HtPasswd(Global glob) throws XmlBlasterException {
-
+      log = glob.getLog("auth");
       htpasswdFilename = glob.getProperty().get("Security.Server.Plugin.htpasswd.secretfile", (String) null );
       boolean help = glob.getProperty().get("Security.Server.Plugin.htpasswd.allowPartialUsername", true);
       if ( help ) {
@@ -60,10 +66,19 @@ public class HtPasswd {
       }
       else {
           useFullUsername = 2;
+          log.info(ME, "Login names are searched with 'startswith' mode in '" + htpasswdFilename + "'.");
+      }
+      if (htpasswdFilename != null && htpasswdFilename.equals("NONE")) {
+          useFullUsername = 3;
+          if (first) {
+             log.warn(ME, "Security risk, no access control: The passwd file is switched off with 'Security.Server.Plugin.htpasswd.secretfile=NONE'");
+             first = false;
+          }
+          return;
       }
 
 
-      Log.trace( ME, "contructor()" );
+      if (log.TRACE) log.trace( ME, "contructor(" + htpasswdFilename + ")" );
 
       if( readHtpasswordFile( htpasswdFilename ) ){
       }
@@ -99,11 +114,13 @@ public class HtPasswd {
     */
    public boolean checkPassword( String userName, String userPassword )
                 throws XmlBlasterException {
-      Vector pws = new Vector();
+
+      //if (log.TRACE) log.trace(ME, "Checking userName=" + userName + " passwd=" + userPassword);
       if ( useFullUsername == 3 ) {
         return true;
       }
-      else if( htpasswd != null ){
+      if( htpasswd != null ){
+         Vector pws = new Vector();
          if( userName!=null && userPassword!=null ){
 
             //find user in Hashtable htpasswd
@@ -134,7 +151,7 @@ public class HtPasswd {
    boolean readHtpasswordFile( String htpasswdFilename )
         throws XmlBlasterException {
 
-      Log.trace( ME, "readHtpasswordFile : "+htpasswdFilename );
+      if (log.CALL) log.call( ME, "readHtpasswordFile : "+htpasswdFilename );
       File            htpasswdFile ;
 
       if( htpasswdFilename == null)
@@ -172,6 +189,10 @@ public class HtPasswd {
                      readUser = false ;
                   }else if ( ((char)st.ttype) == '*') { //This is the third case I mentioned above -> the password-file just contains a '*' -> all connection requests are authenticated
                     useFullUsername = 3;
+                    if (first) {
+                      log.warn(ME, "Security risk, no access control: '" + htpasswdFile + "' contains '*'");
+                      first = false;
+                    }
                     end = true;                                  
                   }else{
                      if( readUser ){
