@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='admin' type='NEW' prio='MEDIUM' status="INWORK">
+<requirement id='admin' type='NEW' prio='MEDIUM' status="CLOSED">
    <topic>Remote administration of xmlBlaster</topic>
    <description>
      <p>
@@ -97,6 +97,12 @@
    <configuration where="server">
    </configuration>
 
+   <todo type='HTML'>
+      <p>
+      See the admin sub requirements to find out what is implemented.
+      </p>
+   </todo>
+
    <see type="REQ">admin.commands</see>
    <see type="REQ">admin.snmp</see>
    <see type="REQ">admin.telnet</see>
@@ -105,7 +111,7 @@
 
    <author>ruff@swand.lake.de</author>
    <date>2002 05 26</date>
-   <revision>$Revision: 1.5 $</revision>
+   <revision>$Revision: 1.6 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
