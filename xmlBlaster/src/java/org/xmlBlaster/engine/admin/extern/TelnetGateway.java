@@ -106,7 +106,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
    }
 
    private void stopTimer() {
-      if (timerKey != null) {
+      if (timerKey != null && this.expiryTimer != null) {
          this.expiryTimer.removeTimeoutListener(timerKey);
          timerKey = null;
       }
@@ -114,6 +114,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
 
    protected void finalize() {
       stopTimer();
+      expiryTimer.shutdown();
       disconnect();
    }
 
@@ -416,7 +417,11 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
 
    public void shutdown() {
       isLogin = false;
-      stopTimer();
+      if (this.expiryTimer != null) {
+         stopTimer();
+         this.expiryTimer.shutdown();
+         this.expiryTimer = null;
+      }
       disconnect();
       if (rs != null) {
          rs.disable();
