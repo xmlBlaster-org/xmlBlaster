@@ -2,7 +2,7 @@ Start applet as application:
 ============================
 
    jaco org.xmlBlaster.MainGUI
-    
+
    jaco javaclients.HelloWorldApplet.HelloWorld
 
 
@@ -27,12 +27,12 @@ Start applet in netscape:
    cd org
    ln -s $XMLBLASTER_HOME/classes/org/xmlBlaster xmlBlaster
 
- 
+
  2) Start xmlBlaster server:
 
    jaco org.xmlBlaster.MainGUI
- 
- 
+
+
  3) Start applet:
 
     Leads to security exception. Reason not yet analyzed.
@@ -99,3 +99,115 @@ Avg Ping = 22.212 msecs
 Sum = 1000
 
 
+
+
+=============================================================================
+Subject: 
+                  [jacorb-developer] Returning the favor
+           Date: 
+                  Fri, 09 Jun 2000 15:14:55 -0600
+          From: 
+                  Jason Wheeler <jwheeler@accucode.com>
+ Organization: 
+                  AccuCode Inc
+             To: 
+                  jacorb-developer@lists.spline.inf.fu-berlin.de
+
+
+
+
+Group,
+
+I've posted quite a few questions here,  and have always received a
+quick response.  I first would like to say thank.  I would also like to
+return the favor.  I have worked through quite allot of issues and
+though I would post what I've found in hopes that it would be of value.
+
+1.   Running JacORB 1.1 clients in IE 5 (works with beta 15)
+
+Add:
+
+        "-Xbootclasspath/p:c:\jacorb\lib\jacorb.jar" to the plug-in parameters
+(change path to match yours)
+                
+This prepends the JacORB classes to the vm.  Even though the 1.1 works
+with Sun's orb running as an application it fails as an applet.  I
+didn't supply the "-Dorg.omg.CORBA.ORBClass=jacorb.orb.ORB
+-Dorg.omg.CORBA.ORBSingletonClass=jacorb.orb.ORBSingleton" parameter
+although you probably could.  You could also change the path in the
+parameter to an HTTP address if you wanted to DL the jacorb.jar from a
+web server (I haven't tried this) instead of locally as list above.
+
+My code is using quite a few CallBack Objects.  This proved to be quite
+a challenge to overcome the security restriction on applets( especially
+IE 5).
+
+
+
+
+2.   Using CallBack patterns in applets under IE 5
+
+Add this to applet's init():
+
+     "java.lang.RuntimePermission rtPerm = new
+java.lang.RuntimePermission("modifyThread");
+     "java.net.SocketPermission sktPerm = new
+java.net.SocketPermission(*.*.*.*:1024-,
+"accept,connect,listen,resolve")"
+
+Create a policy file (plain text)
+
+        grant codeBase "http://your.URL/*"{
+                permission java.security.AllPermission;
+        };
+Put the policy class in the applet dir on the web server.
+
+Add
+        "-Djava.security.manager
+-Djava.security.policy=http://your.URL/yourpolicyfilename.policy" to the
+plug-in.
+
+
+The code added to the applet's init() simple tells the Security Manger
+to allow the permission listed.  The policy file you create is DL'ed
+from web server (by means of the plug-in parameter) and appended to VM's
+security policy.  If you don't want to make all the changes you can
+still try this by doing the following:
+
+On the client machine.
+
+        open the java.policy file under {java.home}\security\
+
+Add before "Grant {"
+
+        grant codeBase "http://your.URL/*"{
+        permission java.security.AllPermission;
+        };
+
+Add after "Grant {"
+
+        "permission java.net.SocketPermission "*.*.*.*:1024-,
+"accept,connect,listen,resolve";
+        "permission java.lang.RuntimePermission "modifyThread";
+
+That's it!
+
+I modified the "permission java.net.SocketPermission "localhost:1024-,
+"listen";
+
+to:
+        "permission java.net.SocketPermission "*.*.*.*:1024-,
+"accept,connect,listen,resolve";
+
+I don't know if this is required!
+
+I hope this helps
+
+
+-- 
+Jason Wheeler
+Systems Engineer
+AccuCode Inc
+(801) 798-2544 Office
+(801) 798-2580 Fax
+jwheeler@accucode.com 
