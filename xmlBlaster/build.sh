@@ -17,6 +17,7 @@ for i in ${ALL_ENV} ; do
 done
 #echo ${MY_DEF}
 
+# -Dbuild.compiler=jikes  or  modern  or classic
 
 $JAVA_HOME/bin/java -Dant.home=$XMLBLASTER_HOME ${MY_DEF} -classpath $CLASSPATH org.apache.tools.ant.Main $@
 
