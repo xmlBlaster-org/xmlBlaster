@@ -3,7 +3,7 @@ Name:      ClientInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: ClientInfo.java,v 1.41 2000/10/24 09:44:45 ruff Exp $
+Version:   $Id: ClientInfo.java,v 1.42 2000/10/29 20:22:42 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -35,7 +35,7 @@ import java.util.*;
  * It also contains a message queue, where messages are stored
  * until they are delivered at the next login of this client.
  *
- * @version $Revision: 1.41 $
+ * @version $Revision: 1.42 $
  * @author $Author: ruff $
  */
 public class ClientInfo
@@ -360,6 +360,11 @@ public class ClientInfo
             msgUnitWrapper = null;
          }
          messageQueue = null;
+      }
+
+      // TODO: !!! must be called delayed, otherwise the logout() call from the client is aborted with a CORBA exception
+      for (int ii=0; ii<callbackDrivers.length; ii++) {
+         callbackDrivers[ii].shutdown();
       }
 
       this.authInfo = null;
