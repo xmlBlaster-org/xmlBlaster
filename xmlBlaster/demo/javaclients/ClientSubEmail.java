@@ -3,7 +3,7 @@ Name:      ClientSubEmail.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSubEmail.java,v 1.1 2001/11/26 09:16:18 ruff Exp $
+Version:   $Id: ClientSubEmail.java,v 1.2 2001/11/26 09:26:05 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -35,6 +35,16 @@ import org.xmlBlaster.engine.helper.CallbackAddress;
  *
  *    java javaclients.ClientSubEmail -help
  * </pre>
+ * Activate the email callback driver in xmlBlaster.properies first,
+ * for example:
+ * <pre>
+ *    Protocol.CallbackDrivers=IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver,\
+ *                             EMAIL:org.xmlBlaster.protocol.email.CallbackEmailDriver
+ * 
+ *    EmailDriver.smtpHost=192.1.1.1
+ *    EmailDriver.from=xmlblast@localhost
+ * </pre>
+ * @see org.xmlBlaster.protocol.email.CallbackEmailDriver
  */
 public class ClientSubEmail implements I_Callback
 {
