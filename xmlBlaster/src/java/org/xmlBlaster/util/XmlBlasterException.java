@@ -276,10 +276,13 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
    }
 
    /**
+    * Get the original message text, it is prefixed by the current subversion revision number. 
+    * For example: "#12702M Can't find class MyPlugin"
     * @return The original message text, never null
     */
    public final String getRawMessage() {
-      return (super.getMessage()==null) ? "" : super.getMessage();
+      String revision = "#" + glob.getRevisionNumber();
+      return (super.getMessage()==null) ? revision : revision + " " + super.getMessage();
    }
 
    /**
@@ -385,6 +388,7 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
    private String createVersionInfo() {
       StringBuffer buf = new StringBuffer(512);
       buf.append("version=").append(this.glob.getVersion()).append(",");
+      buf.append("revision=").append(this.glob.getRevisionNumber()).append(",");
       buf.append("os.name=").append(System.getProperty("os.name", "unknown").trim()).append(",");
       buf.append("os.version=").append(System.getProperty("os.version", "unknown").trim()).append(",");
       buf.append("java.vm.vendor=").append(System.getProperty("java.vm.vendor", "unknown").trim()).append(",");
