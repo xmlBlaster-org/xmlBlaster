@@ -120,7 +120,7 @@ public:
       }
    }
 
-   string update(const string& sessionId, UpdateKey& updateKey, void *content, long contentSize, UpdateQos& updateQos)
+   string update(const string&, UpdateKey&, void*, long, UpdateQos&)
    {
       Lock lock(updateMutex_);
       log_.info(ME, "update invoked");

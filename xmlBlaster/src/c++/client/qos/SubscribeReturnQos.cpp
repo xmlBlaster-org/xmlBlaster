@@ -41,8 +41,9 @@ namespace org { namespace xmlBlaster { namespace client { namespace qos {
    {
    }
 
-   SubscribeReturnQos SubscribeReturnQos::operator =(const SubscribeReturnQos& data)
+   SubscribeReturnQos SubscribeReturnQos::operator =(const SubscribeReturnQos& other)
    {
+      if (this != &other) data_ = other.data_;
       return *this;
    }
 

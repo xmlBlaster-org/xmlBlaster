@@ -3,7 +3,7 @@ Name:      Global.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The global object (a stack for all pseudo static stuff).
-Version:   $Id: Global.h,v 1.12 2003/01/21 22:43:17 laghi Exp $
+Version:   $Id: Global.h,v 1.13 2003/02/12 15:02:26 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_GLOBAL_H
@@ -53,7 +53,7 @@ private:
     */
    Global();
    Global(const Global &global);
-   Global& operator =(const Global &global);
+   Global& operator =(const Global &);
    ~Global();
 
    void copy()

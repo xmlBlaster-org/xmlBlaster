@@ -15,7 +15,7 @@ Comment:   Manager to retrieve the correct callback protocol implementation
  */
 
 #include <client/protocol/CbServerPluginManager.h>
-#include <client/protocol/corba/CorbaDriver.h>
+#include <client/protocol/corba/CorbaDriverFactory.h>
 #include <util/Global.h>
 
 using namespace org::xmlBlaster::util;
@@ -65,7 +65,7 @@ I_CallbackServer& CbServerPluginManager::getPlugin(const string& instanceName, c
       }
       return *((*iter).second);
 */
-      return corba::CorbaDriver::getInstance(global_, instanceName);
+      return corba::CorbaDriverFactory::getFactory(global_).getDriverInstance(instanceName);
    }
    string embeddedMsg = string("plugin: '") + type +
                         string("' and version: '") + version +
@@ -88,7 +88,7 @@ void CbServerPluginManager::releasePlugin(const string& instanceName, const stri
    if (log_.trace())
       log_.trace(ME, string("releasePlugin: type: '") + type + string("', version: '") + version + "' for instance '" + instanceName + "'");
    if (type == "IOR") {
-      corba::CorbaDriver::killInstance(instanceName);
+      corba::CorbaDriverFactory::getFactory(global_).killDriverInstance(instanceName);
       return;
    }
    string embeddedMsg = string("plugin: '") + type +

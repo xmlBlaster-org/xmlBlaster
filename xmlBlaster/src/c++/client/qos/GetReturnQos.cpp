@@ -12,7 +12,6 @@ using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::cluster;
 
 using namespace std;
-
 namespace org { namespace xmlBlaster { namespace client { namespace qos {
 
 GetReturnQos::GetReturnQos(Global& global, const MsgQosData data)
@@ -25,7 +24,7 @@ GetReturnQos::GetReturnQos(const GetReturnQos& data)
 {
 }
 
-GetReturnQos& GetReturnQos::operator=(const GetReturnQos& data)
+GetReturnQos& GetReturnQos::operator=(const GetReturnQos&)
 {
    return *this;
 }

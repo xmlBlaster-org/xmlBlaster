@@ -3,7 +3,7 @@ Name:      Global.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Global.cpp,v 1.18 2003/01/21 22:43:17 laghi Exp $
+Version:   $Id: Global.cpp,v 1.19 2003/02/12 15:02:26 laghi Exp $
 ------------------------------------------------------------------------------*/
 #include <client/protocol/CbServerPluginManager.h>
 #include <util/dispatch/DeliveryManager.h>
@@ -32,7 +32,7 @@ Global::Global(const Global& global) : ME("Global"), logMap_(global.logMap_)
    argc_ = global.argc_;
 }
 */
-Global& Global::operator =(const Global &global)
+Global& Global::operator =(const Global &)
 {
    copy();
    return *this;
@@ -51,7 +51,7 @@ Global::~Global()
    }
 }
 
-Global& Global::getInstance(const char* instanceName)
+Global& Global::getInstance(const char*)
 {
    static Global global;
    return global;

@@ -83,7 +83,7 @@ SaxHandlerBase::parse(const string &xmlData)
   catch (SAXException &err) {
     char *help = XMLString::transcode(err.getMessage());
     string msg = string(help);
-    delete help;
+    XMLString::release(&help);
     throw XmlBlasterException(USER_ILLEGALARGUMENT, me() + "::parse", string("sax parser exception: ") + msg);
   }
 
@@ -121,7 +121,7 @@ SaxHandlerBase::characters(const XMLCh* const ch, const unsigned int start,
   character_.assign(string(chHelper), start, length);
   if (log_.trace())
      log_.trace(me(), string("characters, character:'") + character_ + string("'"));
-  delete chHelper;
+  XMLString::release(&chHelper);
 }
 
 
@@ -173,9 +173,9 @@ SaxHandlerBase::notationDecl(const XMLCh* const name, const XMLCh* const publicI
    txt += string(nameHelper) + ", publicId=" + publicIdHelper 
       + ", systemId=" + systemIdHelper + ")";
    if (log_.trace()) log_.trace(me(), txt);
-   delete nameHelper;
-   delete publicIdHelper;
-   delete systemIdHelper;
+   XMLString::release(&nameHelper);
+   XMLString::release(&publicIdHelper);
+   XMLString::release(&systemIdHelper);
 }
       
 
@@ -209,7 +209,7 @@ SaxHandlerBase::getLocationString(const SAXParseException &ex)
   string str;
   char*  systemIdHelper = XMLString::transcode(ex.getSystemId()); 
   string systemId       = systemIdHelper;
-  delete systemIdHelper;
+  XMLString::release(&systemIdHelper);
   if (systemId != "") {
     int index = systemId.find_last_of('/');
     if (index != -1) systemId = systemId.substr(index + 1);
@@ -235,8 +235,8 @@ SaxHandlerBase::caseCompare(const XMLCh *name1, const char *name2)
   XMLCh* name2Helper = XMLString::transcode(name2);
   XMLString::upperCase(name2Helper);
   bool ret = (XMLString::compareIString(name1Helper, name2Helper) == 0);
-  delete name1Helper;
-  delete name2Helper;
+  XMLString::release(&name1Helper);
+  XMLString::release(&name2Helper);
   return ret;
 }
 
@@ -262,9 +262,9 @@ SaxHandlerBase::getStartElementAsString(const XMLCh* const name, AttributeList& 
    }
    catch (...) { // to avoid memory leaks
    }
-   delete nameCh;
-   delete keyCh;
-   delete valueCh;
+   XMLString::release(&nameCh);
+   XMLString::release(&keyCh);
+   XMLString::release(&valueCh);
    ret += ">";
    return ret;
 }
@@ -285,8 +285,8 @@ SaxHandlerBase::getStringValue(const XMLCh* const value)
       ret.assign(help2);
    }
    catch (...) {}
-   delete help1;
-   delete help2;
+   XMLString::release(&help1);
+   XMLString::release(&help2);
    return ret;
 }
 
@@ -315,8 +315,8 @@ bool SaxHandlerBase::getStringAttr(const AttributeList& list, const XMLCh* const
       else value.assign(help1);
    }
    catch (...) {}
-   delete help1;
-   delete help2;
+   XMLString::release(&help1);
+   XMLString::release(&help2);
    return ret;
 }
 
@@ -405,8 +405,8 @@ SaxHandlerBase::getIntValue(const XMLCh* const value)
        ret = atoi(help2);
     }
     catch (...) {}
-    delete help1;
-    delete help2;
+    XMLString::release(&help1);
+    XMLString::release(&help2);
     return ret;
 }
 
@@ -425,8 +425,8 @@ SaxHandlerBase::getLongValue(const XMLCh* const value)
       ret = atol(help2);
    }
    catch (...) {}
-   delete help1;
-   delete help2;
+   XMLString::release(&help1);
+   XMLString::release(&help2);
    return ret;
 }
 
@@ -447,8 +447,8 @@ SaxHandlerBase::getTimestampValue(const XMLCh* const value)
       ret = lexical_cast<Timestamp>(help2);
    }
    catch (...) {}
-   delete help1;
-   delete help2;
+   XMLString::release(&help1);
+   XMLString::release(&help2);
    return ret;
 }
 
@@ -466,8 +466,8 @@ bool SaxHandlerBase::getBoolValue(const XMLCh* const value)
       ret = ( (string("true")== help2) || (string("TRUE")==help2) );
    }
    catch (...) {}
-   delete help1;
-   delete help2;
+   XMLString::release(&help1);
+   XMLString::release(&help2);
    return ret;
 }
 

@@ -16,7 +16,7 @@ Comment:   Manager to retrieve the correct callback protocol implementation
 
 #include <util/dispatch/DeliveryManager.h>
 //  #include <util/dispatch/ConnectionsHandler.h>
-#include <client/protocol/corba/CorbaDriver.h>
+#include <client/protocol/corba/CorbaDriverFactory.h>
 #include <util/Global.h>
 
 using namespace org::xmlBlaster::util;
@@ -44,7 +44,7 @@ void DeliveryManager::releasePlugin(const string& instanceName, const string& ty
    if (log_.trace())
       log_.trace(ME, string("releasePlugin: type: '") + type + string("', version: '") + version + "' for instance '" + instanceName + "'");
    if (type == "IOR") {
-      corba::CorbaDriver::killInstance(instanceName);
+      corba::CorbaDriverFactory::getFactory(global_).killDriverInstance(instanceName);
       return;
    }
    string embeddedMsg = string("plugin: '") + type +
@@ -67,7 +67,7 @@ I_XmlBlasterConnection& DeliveryManager::getPlugin(const string& instanceName, c
       log_.trace(ME, string("getPlugin: type: '") + type + string("', version: '") + version + "' for instance '" + instanceName + "'");
    
    if (type == "IOR") {
-      return corba::CorbaDriver::getInstance(global_, instanceName);
+      return corba::CorbaDriverFactory::getFactory(global_).getDriverInstance(instanceName);
    }
 
    // add here other protocols ....

@@ -86,8 +86,8 @@ bool Destination::caseCompare(const char *name1, const char *name2)
    XMLCh* name2Helper = XMLString::transcode(name2);
    XMLString::upperCase(name2Helper);
    bool ret = (XMLString::compareIString(name1Helper, name2Helper) == 0);
-   delete name1Helper;
-   delete name2Helper;
+   XMLString::release(&name1Helper);
+   XMLString::release(&name2Helper);
    return ret;
 }
 

@@ -59,19 +59,19 @@ MsgQosFactory::MsgQosFactory(Global& global)
 
 MsgQosFactory::~MsgQosFactory() 
 {
-   delete LIFE_TIME;
-   delete FORCE_DESTROY;
-   delete REMAINING_LIFE;
-   delete READ_ONLY;
-   delete DESTROY_DELAY;
-   delete CREATE_DOM_ENTRY;
-   delete NANOS;
-   delete ID;
-   delete STRATUM;
-   delete TIMESTAMP;
-   delete DIRTY_READ;
-   delete INDEX;
-   delete SIZE;
+   XMLString::release(&LIFE_TIME);
+   XMLString::release(&FORCE_DESTROY);
+   XMLString::release(&REMAINING_LIFE);
+   XMLString::release(&READ_ONLY);
+   XMLString::release(&DESTROY_DELAY);
+   XMLString::release(&CREATE_DOM_ENTRY);
+   XMLString::release(&NANOS);
+   XMLString::release(&ID);
+   XMLString::release(&STRATUM);
+   XMLString::release(&TIMESTAMP);
+   XMLString::release(&DIRTY_READ);
+   XMLString::release(&INDEX);
+   XMLString::release(&SIZE);
 }                
 
 MsgQosData MsgQosFactory::readObject(const string& xmlQos)

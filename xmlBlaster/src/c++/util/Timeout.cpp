@@ -49,7 +49,7 @@ Timeout::Timeout(Global& global)
 }
 
 Timeout::Timeout(Global& global, const string &name)
-   : Thread(), ME("Timeout"), threadName_("Timeout-Thread"),
+   : Thread(), ME("Timeout"), threadName_(string("Timeout-Thread") + name),
      timeoutMap_(), isRunning_(false), isReady_(false), isActive_(true),
      isDebug_(false), timestampFactory_(TimestampFactory::getInstance()),
      global_(global), log_(global.getLog("util")),
@@ -59,14 +59,16 @@ Timeout::Timeout(Global& global, const string &name)
    log_.call(ME, " alternative constructor");
 }
 
-Timeout::~Timeout() {
+Timeout::~Timeout() 
+{
    log_.call(ME, " destructor");
    shutdown();
    while (isActive_) { } // wait for the thread to finish
 }
 
 
-void Timeout::start() {
+void Timeout::start() 
+{
    log_.call(ME, " start");
    isRunning_ = true;
    log_.trace(ME, " before creating the running thread");
@@ -74,12 +76,14 @@ void Timeout::start() {
    log_.trace(ME, " start: running thread created");
 }
 
-void Timeout::join() {
+void Timeout::join() 
+{
    Thread::join();
    log_.trace(ME, " start: running thread joined (i.e. thread started)");
 }
 
-Timestamp Timeout::addTimeoutListener(I_Timeout *listener, long delay, void *userData) {
+Timestamp Timeout::addTimeoutListener(I_Timeout *listener, long delay, void *userData) 
+{
    log_.call(ME, " addTimeoutListener");
    Timestamp key = 0;
    if (delay < 1) std::cerr << ME <<": addTimeoutListener with delay = " << delay << std::endl;
@@ -100,7 +104,8 @@ Timestamp Timeout::addTimeoutListener(I_Timeout *listener, long delay, void *use
    return key;
 }
 
-Timestamp Timeout::refreshTimeoutListener(Timestamp key, long delay) {
+Timestamp Timeout::refreshTimeoutListener(Timestamp key, long delay) 
+{
    log_.call(ME, " refreshTimeoutListener");
    if (key < 0) {
       // throw an exception here ...
@@ -119,26 +124,30 @@ Timestamp Timeout::refreshTimeoutListener(Timestamp key, long delay) {
    return addTimeoutListener(callback, delay, userData);
 }
 
-Timestamp Timeout::addOrRefreshTimeoutListener(I_Timeout *listener, long delay, void *userData, Timestamp key) {
+Timestamp Timeout::addOrRefreshTimeoutListener(I_Timeout *listener, long delay, void*, Timestamp key) 
+{
    log_.call(ME, " addOrRefreshTimeoutListener");
    Lock lock(invocationMutex_);
    if (key < 0) return addTimeoutListener(listener, delay, NULL);
    return refreshTimeoutListener(key, delay);
 }
 
-void Timeout::removeTimeoutListener(Timestamp key) {
+void Timeout::removeTimeoutListener(Timestamp key) 
+{
    log_.call(ME, " removeTimeoutListener");
    Lock lock(invocationMutex_);
    timeoutMap_.erase(key);
 }
 
-bool Timeout::isExpired(Timestamp key) {
+bool Timeout::isExpired(Timestamp key) 
+{
    log_.call(ME, " isExpired");
    Lock lock(invocationMutex_);
    return (timeoutMap_.find(key) == timeoutMap_.end());
 }
 
-long Timeout::spanToTimeout(Timestamp key) {
+long Timeout::spanToTimeout(Timestamp key) 
+{
    log_.call(ME, " spanToTimeout");
    Lock lock(invocationMutex_);
    TimeoutMap::iterator iter = timeoutMap_.find(key);
@@ -147,19 +156,22 @@ long Timeout::spanToTimeout(Timestamp key) {
    return getTimeout(key) - (long)(currentTimestamp / Constants::MILLION);
 }
 
-long Timeout::getTimeout(Timestamp key) {
+long Timeout::getTimeout(Timestamp key) 
+{
    log_.call(ME, " getTimeout");
    if (key < 0) return -1;
    return (long)(key / Constants::MILLION);
 }
 
-void Timeout::removeAll() {
+void Timeout::removeAll() 
+{
    log_.call(ME, " removeAll");
    Lock lock(invocationMutex_);
    timeoutMap_.clear();
 }
 
-void Timeout::shutdown() {
+void Timeout::shutdown() 
+{
    log_.call(ME, " shutdown");
    isRunning_ = false;
    removeAll();
@@ -196,9 +208,9 @@ void Timeout::run()
             delay = nextWakeup - timestampFactory_.getTimestamp();
 
             log_.trace(ME, "run, delay       : " + lexical_cast<string>(nextWakeup) + " ns");
-				if ( delay < 0 ) {
-					delay = 0;
-				}
+                                if ( delay < 0 ) {
+                                        delay = 0;
+                                }
 
             if (delay <= 0) {
                tmpContainer = (*iter).second;
@@ -214,7 +226,7 @@ void Timeout::run()
           (container->first)->timeout(container->second);
           container = NULL;
       }
-		Timestamp milliDelay = delay / Constants::MILLION;
+                Timestamp milliDelay = delay / Constants::MILLION;
       if (milliDelay > 0) {
          log_.trace(ME, "sleeping ... " + lexical_cast<string>(milliDelay) + " milliseconds");
          isReady_ = true;

@@ -72,7 +72,7 @@ CorbaDriverFactory::CorbaDriverFactory(const CorbaDriverFactory& factory)
    throw new XmlBlasterException(INTERNAL_NOTIMPLEMENTED, ME, "private copy constructor");
 }
 
-CorbaDriverFactory& CorbaDriverFactory::operator =(const CorbaDriverFactory& factory)
+CorbaDriverFactory& CorbaDriverFactory::operator =(const CorbaDriverFactory&)
 {
    throw new XmlBlasterException(INTERNAL_NOTIMPLEMENTED, ME, "private assignement operator");
 }

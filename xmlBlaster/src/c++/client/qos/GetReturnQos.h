@@ -56,7 +56,7 @@ public:
 
    GetReturnQos(const GetReturnQos& data);
 
-   GetReturnQos& operator=(const GetReturnQos& data);
+   GetReturnQos& operator=(const GetReturnQos&);
 
    /**
     * @return true/false

@@ -211,7 +211,7 @@ public:
 
 
    // this should actually be in another interface but since it is an only method we put it here.
-   virtual MsgQueueEntry& send(I_ConnectionsHandler& connectionsHandler); // = 0;
+   virtual MsgQueueEntry& send(I_ConnectionsHandler&); // = 0;
 
    virtual string toXml(const string& indent="") const; // = 0;
 

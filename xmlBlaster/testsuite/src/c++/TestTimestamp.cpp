@@ -30,8 +30,10 @@ public:
    TestTimestamp(string name) : ME(name) {
    }
 
-
    void setUp(int args=0, char *argc[]=0) {
+      for (int i=0; i < args; i++) {
+         cout << ME << " setUp invoked with argument " << argc[i] << endl;
+      }
    }
 
    /**

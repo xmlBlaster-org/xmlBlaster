@@ -27,9 +27,14 @@ private:
    string ME;
    Timeout *timeoutObject;
    Global& global_;
+   Log&    log_;
    int     count_;
 public:
-   TestTimeout(Global& global, string name) : ME(name), global_(global) {
+   TestTimeout(Global& global, string name) 
+      : ME(name), 
+        global_(global),
+        log_(global.getLog("test")) 
+   {
       count_ = 0;
    }
 
@@ -39,42 +44,47 @@ public:
    }
 
    void timeout(void *userData) {
-      cout << "this is the timeout for the test" << endl;
+      log_.info(ME, "this is the timeout for the test");
       if (userData == NULL) return;
       Timeout *to = static_cast<Timeout*>(userData);
       if (count_ < 10) {
          to->addTimeoutListener(this, 1000, to);
-         cout << "next timeout will occur in about 1 s" << endl;
+         log_.info(ME, "next timeout will occur in about 1 s");
          count_++;
       }
    }
 
    void testTimeout() 
    {
-      cout << ME << " testTimeout(): the timeout will now be started" << endl;
+      log_.info(ME, "testTimeout(): the timeout will now be started");
       timeoutObject->start();
-      cout << ME << " testTimeout(): the timeout will now be triggered" << endl;
+      log_.info(ME, "testTimeout(): the timeout will now be triggered");
       timeoutObject->addTimeoutListener(this, 2000, timeoutObject);
-      cout << ME << " testTimeout: timeout triggered. Waiting to be fired (should happen in 2 seconds" << endl;
+      log_.info(ME, "testTimeout: timeout triggered. Waiting to be fired (should happen in 2 seconds");
 
       // waiting some time ... (you can't use join because the timeout thread
       // never stops ...
-      std::cout << ME << " main thread is sleeping now" << std::endl;
+      log_.info(ME, "main thread is sleeping now");
       Thread::sleepSecs(12);
-      std::cout << ME << " after waiting to complete" << std::endl;
+      log_.info(ME, "after waiting to complete");
    }
 
    void setUp(int args=0, char *argc[]=0) {
-      cout << ME << " setUp(): creating the timeout object" << endl;
+      if (log_.trace()) {
+         for (int i=0; i < args; i++) {
+            log_.trace(ME, string(" setUp invoked with argument ") + string(argc[i]));
+         }
+      }
+      log_.info(ME, "setUp(): creating the timeout object");
       timeoutObject = new Timeout(global_);
-      cout << ME << " setUp(): timeout object created" << endl;
+      log_.info(ME, "setUp(): timeout object created");
    }
 
    void tearDown() {
-      cout << ME << " tearDown(): will delete now" << endl;
+      log_.info(ME, "tearDown(): will delete now");
       timeoutObject->shutdown();
       // delete TimestampFactory::getInstance();
-      cout << ME << " tearDown(): has deleted now" << endl;
+      log_.info(ME, "tearDown(): has deleted now");
    }
 };
    

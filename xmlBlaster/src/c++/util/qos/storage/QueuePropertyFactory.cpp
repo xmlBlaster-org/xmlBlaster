@@ -3,7 +3,7 @@ Name:      QueuePropertyFactory.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Factory which creates objects holding queue properties
-Version:   $Id: QueuePropertyFactory.cpp,v 1.5 2003/02/07 11:41:42 laghi Exp $
+Version:   $Id: QueuePropertyFactory.cpp,v 1.6 2003/02/12 15:02:26 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 #include <util/qos/storage/QueuePropertyFactory.h>
@@ -30,7 +30,7 @@ QueuePropertyFactory::~QueuePropertyFactory()
 {
    if (address_   != NULL) delete address_;
    if (cbAddress_ != NULL) delete cbAddress_;
-   delete RELATING;
+   XMLString::release(&RELATING);
 }
 
 /*
@@ -55,7 +55,7 @@ void QueuePropertyFactory::startElement(const XMLCh* const name, AttributeList& 
    if (log_.call()) {
       char* help = XMLString::transcode(name);
       log_.call(ME, string("startElement: ") + help);
-      delete help;
+      XMLString::release(&help);
    }
    // in case it is inside or entrering an 'address' or 'callbackAddress'
    if (SaxHandlerBase::caseCompare(name, "address")) {
@@ -154,7 +154,7 @@ void QueuePropertyFactory::startElement(const XMLCh* const name, AttributeList& 
             char* help = XMLString::transcode(attrs.getName(i));
             log_.warn(ME, string("Ignoring unknown attribute '") + string(help) +
                 string("' in connect QoS <queue>"));
-            delete help;
+            XMLString::release(&help);
          }
       }
    }
