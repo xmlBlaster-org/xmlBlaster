@@ -3,7 +3,7 @@ Name:      SocketCallbackImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using plain socket
-Version:   $Id: SocketCallbackImpl.java,v 1.22 2002/09/09 13:37:22 ruff Exp $
+Version:   $Id: SocketCallbackImpl.java,v 1.23 2002/09/10 18:57:21 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -102,7 +102,7 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
       while(running) {
 
          try {
-            receiver.parse(iStream);
+            receiver.parse(iStream); // This method blocks until a message arrives
             if (SOCKET_DEBUG>1) log.info(ME, "Receiving message >" + Parser.toLiteral(receiver.createRawMsg()) + "<");
             receive(receiver);
          }
