@@ -153,18 +153,18 @@ public class HelloWorldSubscribe implements I_Callback
 
          SubscribeKey sk = null;
          String qStr = null;
-         if (domain.length() > 0) {
-            sk = new SubscribeKey(glob, "", Constants.DOMAIN);
-            sk.setDomain(domain);
-            qStr = domain;
-         }
-         else if (oid.length() > 0) {
+         if (oid.length() > 0) {
             sk = new SubscribeKey(glob, oid);
             qStr = oid;
          }
          else if (xpath.length() > 0) {
             sk = new SubscribeKey(glob, xpath, Constants.XPATH);
             qStr = xpath;
+         }
+         if (domain.length() > 0) {  // cluster routing information
+            if (sk == null) sk = new SubscribeKey(glob, "", Constants.DOMAIN); // usually never
+            sk.setDomain(domain);
+            qStr = domain;
          }
          SubscribeQos sq = new SubscribeQos(glob);
          sq.setWantInitialUpdate(initialUpdate);
@@ -192,7 +192,7 @@ public class HelloWorldSubscribe implements I_Callback
          SubscribeReturnQos srq = con.subscribe(sk, sq);
 
          log.info(ME, "Subscribed on topic '" + ((oid.length() > 0) ? oid : xpath) +
-                      "', got subscription id='" + srq.getSubscriptionId() + "'");
+                      "', got subscription id='" + srq.getSubscriptionId() + "'\n" + srq.toXml());
          if (log.DUMP) log.dump("", "Subscribed: " + sk.toXml() + sq.toXml() + srq.toXml());
          log.info(ME, "Waiting on update ...");
 
@@ -207,7 +207,11 @@ public class HelloWorldSubscribe implements I_Callback
             }
 
             UnSubscribeKey uk = new UnSubscribeKey(glob, srq.getSubscriptionId());
+            if (domain.length() > 0)  // cluster routing information
+               uk.setDomain(domain);
             UnSubscribeQos uq = new UnSubscribeQos(glob);
+            log.info(ME, "UnSubscribeKey=\n" + uk.toXml());
+            log.info(ME, "UnSubscribeQos=\n" + uq.toXml());
             UnSubscribeReturnQos[] urqArr = con.unSubscribe(uk, uq);
             log.info(ME, "UnSubscribe on " + urqArr.length + " subscriptions done");
          }
