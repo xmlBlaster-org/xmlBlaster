@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='engine.qos.login.OfflineQueue' type='NEW' prio='MEDIUM' status="OPEN">
+<requirement id='engine.qos.login.OfflineQueuing' type='NEW' prio='MEDIUM' status="OPEN">
    <topic>XmlBlaster allows messages for not currently logged in clients to be queued</topic>
    <description>
    This feature directs xmlBlaster to queue subscribed or PtP messages until the client returns.
@@ -30,7 +30,7 @@
    <see type="REQ">engine.qos.subscribe.OfflineQueuing</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 04 28</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
