@@ -148,6 +148,10 @@ Else add it manually.
                 classpath="${classpath}"
                 debug="${debug}"/>
 
+    <rmic classname="org.xmlBlaster.client.protocol.rmi.RmiCallbackServer" base="${build.dest}" />
+    <rmic classname="org.xmlBlaster.protocol.rmi.AuthServerImpl" base="${build.dest}" />
+    <rmic classname="org.xmlBlaster.protocol.rmi.XmlBlasterImpl" base="${build.dest}" />
+
     <jar jarfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}" includes="org/**,xmlBlaster.policy"/>
 
     <copyfile src="${build.dir}/${name}.jar" dest="${lib.dir}/${name}.jar"/>
@@ -156,8 +160,8 @@ Else add it manually.
   <!-- =================================================================== -->
   <!-- Compiles the xmlBlaster demo source directory                       -->
   <!-- =================================================================== -->
-  <target name="demo" depends="xmlBlaster">
-    <copydir src="${demo.dir}" dest="${build.src}/demo" excludes="README, Makefile"/>
+  <target name="demo" depends="xmlBlaster">   <!-- XmlRpcHttpClient.java !!! away again when it compiles -->
+    <copydir src="${demo.dir}" dest="${build.src}/demo" excludes="README, Makefile, **/XmlRpcHttpClient.java"/>
     <javac
                 srcdir="${build.src}/demo"
                 destdir="${build.dest}"
