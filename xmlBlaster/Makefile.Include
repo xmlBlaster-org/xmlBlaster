@@ -75,6 +75,17 @@ JAR= jar
 #------------------------------------------------------------------------------
 
 
+#------------------------------------------------------------------------------
+# These settings are passed to jaco/java environment when invoked using our Makefiles
+# If you set them in your environment as well, the Makefile settings are stronger
+
+BlasterSystemProperties=-Xfuture
+#BlasterSystemProperties=-Xfuture -Xrunhprof -Xcheck:jni
+
+# These settings are passed to xmlBlaster server when invoked using our Makefiles
+BlasterServerMemory=-Xms10m -Xmx80m
+#------------------------------------------------------------------------------
+
 help:
 	@echo "xmlBlaster generation utility"
 	@echo "--> Usage: "
