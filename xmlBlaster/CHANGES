@@ -1,14 +1,23 @@
 Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
+Changes in current subversion repository (svn)
+==============================================
+
+ o #13070 Added compilation property 'build -Dneed.JDK.14=true ...' to activate
+   code snippets which are not JDK 1.3 compatible.
+
+
 Changes for 1.RC4 [2004-12-19] #13059
 =====================================
 
  o Fixed release zip to run with JDK 1.3 without recompilation
 
  o #13057 Added SSL property 'findStoreInXmlBlasterSearchPath' to support keyStore/trustStore lookup in CLASSPATH
-   Client side only, JDK 1.4 or above only
-   The feature is currently commented out to have JDK 1.3 compatibility, see SocketUrl.java:367
+   Implemented for Java client side only.
+   The feature is currently not activated to have JDK 1.3 compatibility, 
+   please recompile xmlBlaster with 'build -Dneed.JDK.14=true clean all' to have it, see
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html#SSL2
 
  o C client library:
    - #13048 Added XMLBLASTER_ prefix to LOG_INFO, LOG_WARN ... to avoid

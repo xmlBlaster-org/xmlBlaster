@@ -462,7 +462,7 @@ java -jar lib/xmlBlaster.jar -plugin/socket/SSL true -plugin/socket/keyStore tes
       and a client to test it:
       </p>
       <tt>
-java HelloWorld3 -protocol SOCKET -plugin/socket/SSL true -plugin/socket/keyStore testStore.joe -plugin/socket/keyStorePassword testtest
+java HelloWorld3 -protocol SOCKET -plugin/socket/SSL true -plugin/socket/keyStore testStore.joe -plugin/socket/keyStorePassword testtest  -plugin/socket/findStoreInXmlBlasterSearchPath true
       </tt>
       <p>
       These are the benefits of the above connection:
@@ -472,6 +472,11 @@ java HelloWorld3 -protocol SOCKET -plugin/socket/SSL true -plugin/socket/keyStor
           <li>Authentication. <b>Here SSL provides peer authentication. The xmlBlaster server is authenticated, and clients need to authenticate themselves.</b></li>
           <li>Confidentiality (Privacy Protection). In most modes, SSL encrypts data being sent between client and server. This protects the confidentiality of data, so that passive wiretappers won't see sensitive data such as financial information or personal information of many kinds.</li>
       </ul>
+      <p>
+      Note: With the setting <tt>-plugin/socket/findStoreInXmlBlasterSearchPath true</tt> it is
+      for example possible to put the <tt>testStore.joe</tt> in the xmlBlaster.jar file and
+      it is found over the CLASSPATH.
+      </p>
       <p>
       Note: To simplify the server setup you should add all server settings to
       the <tt>xmlBlasterPlugins.xml</tt> file as described in the next example.
@@ -890,8 +895,9 @@ java javaclients.HelloWorldPublish -numPublish 10 -contentSize 1000
             <td>The default lookup of the keyStore and trustStore files is directly on the harddisk with the name given.
             Switching to <tt>true</tt> enables the xmlBlaster lookup strategy as described in requirement
             <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/util.property.html" target="others">util.property</a>.<br />
-            <b>Note:</b>As this feature is only available for JDK 1.4 and above the code is commented out in
-            SocketUrl.java, you need to remove the comment and compile xmlBlaster with JDK above 1.3 to have this feature.<br />
+            <b>Note:</b>As this feature is only available for JDK 1.4 and above.
+            The xmlBlaster relase has not enabled it since it need to support JDK 1.3, please recompile xmlBlaster
+            with <tt>build -Dneed.JDK.14=true clean all</tt> to have this feature.<br />
             <b>Note:</b>This flag is currently only available on java client side (for example for WebStart clients 
             containing the keyStore/trustStore in a jar file and accessing it via the CLASSPATH).
             </td>
