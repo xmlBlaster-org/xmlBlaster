@@ -68,7 +68,7 @@ final public class Authenticate implements I_RunlevelListener
    /**
     * For listeners who want to be informed about login/logout
     */
-   final private Set clientListenerSet = Collections.synchronizedSet(new HashSet());
+   final private Set clientListenerSet = new HashSet();
 
    /** The singleton handle for this xmlBlaster server */
    private final I_XmlBlaster xmlBlasterImpl;
@@ -754,45 +754,39 @@ final public class Authenticate implements I_RunlevelListener
       }
    }
 
+   /**
+    * Returns a current snapshot of all ClientListeners
+    */
+   private final I_ClientListener[] getClientListenerArr() {
+      synchronized(this.clientListenerSet) {
+         return (I_ClientListener[])this.clientListenerSet.toArray((new I_ClientListener[this.clientListenerSet.size()]));
+      }
+   }
 
    private void firePreRemovedClientEvent(SessionInfo sessionInfo) throws XmlBlasterException {
-      synchronized (clientListenerSet) {
-         if (clientListenerSet.size() == 0) return;
-
-         ClientEvent event = new ClientEvent(sessionInfo);
-         Iterator iterator = clientListenerSet.iterator();
-         while (iterator.hasNext()) {
-            I_ClientListener cli = (I_ClientListener)iterator.next();
-            cli.sessionPreRemoved(event);
-         }
-         event = null;
-      }
+      I_ClientListener[] clientListenerArr = getClientListenerArr();
+      if (clientListenerArr.length == 0) return;
+      ClientEvent event = new ClientEvent(sessionInfo);
+      for (int ii=0; ii<clientListenerArr.length; ii++)
+         clientListenerArr[ii].sessionPreRemoved(event);
+      event = null;
    }
 
    /**
     * Used to fire an event if a client does a login / logout
     */
-   private void fireClientEvent(SessionInfo sessionInfo, boolean login) throws XmlBlasterException
-   {
-      synchronized (clientListenerSet) {
-         if (clientListenerSet.size() == 0)
-            return;
-
-         ClientEvent event = new ClientEvent(sessionInfo);
-         Iterator iterator = clientListenerSet.iterator();
-
-         while (iterator.hasNext()) {
-            I_ClientListener cli = (I_ClientListener)iterator.next();
-            if (login)
-               cli.sessionAdded(event);
-            else
-               cli.sessionRemoved(event);
-         }
-
-         event = null;
+   private void fireClientEvent(SessionInfo sessionInfo, boolean login) throws XmlBlasterException {
+      I_ClientListener[] clientListenerArr = getClientListenerArr();
+      if (clientListenerArr.length == 0) return;
+      ClientEvent event = new ClientEvent(sessionInfo);
+      for (int ii=0; ii<clientListenerArr.length; ii++) {
+         if (login)
+            clientListenerArr[ii].sessionAdded(event);
+         else
+            clientListenerArr[ii].sessionRemoved(event);
       }
+      event = null;
    }
-
 
    /**
     * Use this method to check a clients authentication.
