@@ -1976,7 +1976,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
          this.RETRY_INTERVAL = retryInterval;
          this.RETRIES = retries;
          long logEveryMillis = 60000; // every minute a log
-         if (retryInterval > logEveryMillis)  // millisec
+         if (retryInterval < 1 || retryInterval > logEveryMillis)  // millisec
             logInterval = 1;
          else
             logInterval = (int)(logEveryMillis / retryInterval);
