@@ -30,12 +30,16 @@ Changes cvs
    Fixed memory leak on InterruptedIOException (very seldom case)
 
  o C client library:
+   - Added a 'D' to .so/.sl/.dll shared library name for debugging version, for example "xmlBlasterClientCD.dll"
+     You can switch off debugging with "c.debug=false" in build.properties => "xmlBlasterClientC.dll"
    - Changed CallbackServer again to close socket on server EOF to avoid clients thread blocking
-	- Fixed handling of remote xmlBlaster server exceptions in C client library
+   - Fixed handling of remote xmlBlaster server exceptions in C client library
    - We support now a debugging so/dll compilation with an added 'D' parallel to the optimized lib
    - Fixed callback ping return for SOCKET protocol
 
  o C++ client library:
+   - Added a 'D' to .so/.sl/.dll shared library name for debugging version, for example "xmlBlasterClientD.dll"
+     You can switch off debugging with "cpp.debug=false" in build.properties => "xmlBlasterClient.dll"
    - Fixed initial queueing of connect request if xmlBlaster server is not available
    - We support now a debugging so/dll compilation with an added 'D' parallel to the optimized lib
    - Changed to initialize callback address in ConnectQos only if a callback server is created
