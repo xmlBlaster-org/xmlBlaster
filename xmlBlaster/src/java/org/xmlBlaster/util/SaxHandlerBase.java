@@ -3,7 +3,7 @@ Name:      SaxHandlerBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Default handling of Sax callbacks
-Version:   $Id: SaxHandlerBase.java,v 1.9 2001/02/12 00:05:22 ruff Exp $
+Version:   $Id: SaxHandlerBase.java,v 1.10 2001/02/14 00:38:05 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -82,7 +82,7 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler
          SAXParserFactory spf = SAXParserFactory.newInstance();
          boolean validate = XmlBlasterProperty.get("javax.xml.parsers.validation", false);
          spf.setValidating(validate);
-         if (Log.TRACE) Log.trace(ME, "XML-Validation 'javax.xml.parsers.validation' set to " + validate);
+         //if (Log.TRACE) Log.trace(ME, "XML-Validation 'javax.xml.parsers.validation' set to " + validate);
 
          SAXParser sp = spf.newSAXParser();
          XMLReader parser = sp.getXMLReader();
@@ -141,7 +141,7 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler
    /** End document. */
    public void endDocument()
    {
-      //Log.warn(ME, "Entering endDocument() ..."); 
+      //Log.warn(ME, "Entering endDocument() ...");
    }
 
    public void endElement(java.lang.String namespaceURI, java.lang.String localName, java.lang.String qName)
@@ -151,7 +151,7 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler
 
    public void endPrefixMapping(java.lang.String prefix)
    {
-      Log.warn(ME, "Entering endPrefixMapping() ..."); 
+      Log.warn(ME, "Entering endPrefixMapping() ...");
    }
 
    /** Ignorable whitespace. */
@@ -171,7 +171,7 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler
 
    public void skippedEntity(java.lang.String name)
    {
-      Log.warn(ME, "Entering skippedEntity() ..."); 
+      Log.warn(ME, "Entering skippedEntity() ...");
    }
 
    /** Start document. */
@@ -179,8 +179,8 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler
    {
    }
 
-   /** 
-    * Receive notification of the beginning of an element. 
+   /**
+    * Receive notification of the beginning of an element.
     * The Parser will invoke this method at the beginning of every element in the XML document;
     * there will be a corresponding endElement event for every startElement event (even when the element is empty).
     * All of the element's content will be reported, in order, before the corresponding endElement event.
@@ -192,7 +192,7 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler
 
    public void startPrefixMapping(java.lang.String prefix, java.lang.String uri)
    {
-      Log.warn(ME, "Entering startPrefixMapping() ..."); 
+      Log.warn(ME, "Entering startPrefixMapping() ...");
    }
 
 
