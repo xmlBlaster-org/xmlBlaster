@@ -257,11 +257,14 @@ public class PublishTest extends TestCase {
          e.printStackTrace();
          fail("PublishToBilbo-Exception: " + e.toString());
       }
+      /* is done in tearDown
       finally {
          if (bilboCon != null) {
             bilboCon.disconnect(null);
+            bilboCon = null;
          }
       }
+      */
 
       System.err.println("***PublishTest: testPublish [SUCCESS]");
    }
