@@ -3,7 +3,7 @@ Name:      PublishQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: PublishQos.java,v 1.4 2002/04/26 21:31:52 ruff Exp $
+Version:   $Id: PublishQos.java,v 1.5 2002/05/01 07:54:38 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -63,6 +63,9 @@ import java.io.*;
  *        Gesa
  *     &lt;/sender>
  *     &lt;priority>7&lt;/priority>
+ *     &lt;route>
+ *        &lt;node id='bilbo' stratum='2' timestamp='34460239640'/>
+ *     &lt;/route>
  *  &lt;/qos>
  * </pre>
  * Note that receiveTimestamp is in nanoseconds, whereas all other time values are milliseconds
@@ -312,6 +315,22 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       }
    }
 
+   /**
+    * Check if the message has already been at the given node (circulating message). 
+    * @return How often the message has travelled the node already
+    */
+   public final int count(NodeId nodeId)
+   {
+      int count = 0;
+      if (routeNodeVec == null)
+         return count;
+      for (int ii=0; ii<routeNodeVec.size(); ii++) {
+         RouteInfo ri = (RouteInfo)routeNodeVec.elementAt(ii);
+         if (ri.getNodeId().equals(nodeId))
+            count++;
+      }
+      return count;
+   }
 
    /**
     * Message priority.
