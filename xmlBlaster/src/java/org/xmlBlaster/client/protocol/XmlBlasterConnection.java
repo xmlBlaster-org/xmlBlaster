@@ -256,6 +256,13 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       return this.serverNodeId;
    }
 
+   /**
+    * Allows to set the node name for nicer logging. 
+    */
+   public void setServerNodeId(String nodeId) {
+      this.serverNodeId = nodeId;
+   }
+
    public final Global getGlobal() {
       return this.glob;
    }
@@ -674,7 +681,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
       // You should call initFailSave(I_ConnectionProblems) first
       if (this.clientProblemCallback != null && address.getDelay() < 1) {
-         address.setDelay(5 * 5000L);
+         address.setDelay(4 * 1000L);
          Log.warn(ME, "You have called initFailSave() but -delay is 0, setting ping delay to " + address.getDelay() + " millis");
       }
       if (this.clientProblemCallback == null && address.getDelay() > 0) {
