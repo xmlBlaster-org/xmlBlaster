@@ -63,8 +63,7 @@ void SessionName::initialize(const string& absoluteName, const string& defaultUs
       return;
    }
 
-   string subjectId = global_.getProperty().getStringProperty("USER", "guest");
-   subjectId_ = global_.getProperty().getStringProperty("user", subjectId);
+   subjectId_ = global_.getProperty().getStringProperty("user.name", "guest");
 }
 
 
