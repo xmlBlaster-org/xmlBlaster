@@ -1,5 +1,17 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
+ o Fixed dead messages "__sys__deadMessage" to contain the complete key and qos
+   of its embedded message.
+   The clientProperty keys are "__key", "__qos", "__oid" and "__rcvTimestamp".
+   The latter two are added for convenience reasons only.
+
+ o Extended ClientProperties to transfer blob data, introduced base64
+   encoding if illegal characters are transferred
+   see http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.clientProperty.html
+
+ o Added protection for publisher thread to never do cleanup of callbacks
+   (avoid dead locks)
+
  o manifest.xmlBlaster: Added missing jhotdraw.jar, demo.jar and testsuite.jar
 
  o C-Client: changed include in pthread.h for simpler compilation
@@ -33,7 +45,6 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
  o Fixed hsqldb.jar to compile/run with JDK 1.3 and 1.2 again.
 
->>>>>>> 1.302
  o Fixed dead message loop if a dead message subscriber subribed
    on other messages as well and than crashed.
 
