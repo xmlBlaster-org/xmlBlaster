@@ -6,6 +6,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.util;
 
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.enum.Constants;
 import org.jutils.text.StringHelper;
 import org.xmlBlaster.util.cluster.NodeId;
 
@@ -27,7 +28,7 @@ public final class SessionName implements java.io.Serializable
    private String absoluteName;
    private NodeId nodeId;
    private String relativeName;
-   private final String subjectId;
+   private final String subjectId; // == loginName
    private long pubSessionId;
 
    /**
@@ -222,6 +223,11 @@ public final class SessionName implements java.io.Serializable
       return this.pubSessionId != 0L;
    }
 
+   //public void mutateToSubject() {
+   //   this.pubSessionId = 0L;
+   //   this.relativeName = null;
+   //}
+
    /** @return true it publicSessionId is given by xmlBlaster server (if < 0) */
    public boolean isPubSessionIdInternal() {
       return this.pubSessionId < 0L;
@@ -241,6 +247,37 @@ public final class SessionName implements java.io.Serializable
 
    public boolean equalsAbsolute(SessionName sessionName) {
       return getAbsoluteName().equals(sessionName.getAbsoluteName());
+   }
+
+   /**
+    * Dump state of this object into a XML ASCII string.
+    * <br>
+    * @return internal state of SessionName as a XML ASCII string
+    */
+   public final String toXml() {
+      return toXml((String)null);
+   }
+
+   /**
+    * Dump state of this object into a XML ASCII string.
+    * <br>
+    * @param extraOffset indenting of tags for nice output
+    * @return internal state of SessionName as a XML ASCII string
+    */
+   public final String toXml(String extraOffset) {
+      StringBuffer sb = new StringBuffer(256);
+      if (extraOffset == null) extraOffset = "";
+      String offset = Constants.OFFSET + extraOffset;
+
+      sb.append(offset).append("<SessionName id='").append(getAbsoluteName());
+      sb.append("' isSession='").append(isSession()).append("'>");
+      sb.append(offset).append(" <nodeId>").append(getNodeIdStr()).append("</nodeId>");
+      sb.append(offset).append(" <relativeName>").append(getRelativeName()).append("</relativeName>");
+      sb.append(offset).append(" <loginName>").append(getLoginName()).append("</loginName>");
+      sb.append(offset).append(" <pubSessionId>").append(getPublicSessionId()).append("</pubSessionId>");
+      sb.append(offset).append("</SessionName>");
+
+      return sb.toString();
    }
 
    /**
