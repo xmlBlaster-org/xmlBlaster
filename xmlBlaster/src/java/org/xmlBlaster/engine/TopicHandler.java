@@ -376,6 +376,18 @@ public final class TopicHandler implements I_Timeout
       if (changed || msgQosData.isForceUpdate()) // if the content changed of the publisher forces updates ...
          invokeCallback(publisherSessionInfo, cacheEntry, Constants.STATE_OK);
 
+      // if it was a volatile message we need to check unreferenced state
+      if (!cacheEntry.isAlive()) {
+         if (!hasCacheEntries() && !hasSubscribers()) {
+            try {
+               toUnreferenced();
+            }
+            catch (XmlBlasterException e) {
+               log.error(ME, "Internal problem with removeSubscriber: " + e.getMessage() + ": " + toXml());
+            }
+         }
+      }
+
       return publishReturnQos;
    }
 
@@ -1262,6 +1274,10 @@ public final class TopicHandler implements I_Timeout
 
       sb.append(offset).append("<TopicHandler id='").append(getId()).append("' state='").append(getStateStr()).append("'>");
       sb.append(offset).append(" <uniqueKey>").append(getUniqueKey()).append("</uniqueKey>");
+   
+      if (this.topicProperty != null)
+         sb.append(this.topicProperty.toXml(extraOffset+Constants.INDENT));
+   
       if (this.msgUnitCache != null) {
          sb.append(this.msgUnitCache.toXml(extraOffset+Constants.INDENT));
       }
