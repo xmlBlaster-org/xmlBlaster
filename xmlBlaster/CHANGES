@@ -2,6 +2,11 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.842 [xx]
 ================================
+ o Bugfix for duplicate table names in postgres.
+
+ o Bugfix in persistent layer for Oracle, blobs where limited to 2000 bytes,
+   now they correctly process up to 2 GByte messages.
+
  o Finished C++ client library fow Windows/Unix with CORBA (TAO and MICO)
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.cpp.html
 
