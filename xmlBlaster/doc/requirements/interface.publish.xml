@@ -14,7 +14,7 @@
       <pre>
    string publish(in MessageUnit msgUnit) raises(XmlBlasterException);
       </pre>
-         
+
       <table border="1">
          <tr>
          <th>Parameter</th><th>Type</th><th>Description</th>
@@ -80,7 +80,7 @@
    </p>
    <p>
      The topic name <i>MyMessageOid</i> is returned, this is helpful
-     if you have not set an oid on publish and the oid is generated 
+     if you have not set an oid on publish and the oid is generated
      uniquely by xmlBlaster.
    </p>
    <p>
@@ -120,13 +120,13 @@ string time = TimestampFactory::getTimeAsString(Timestamp timestamp); // C++
 &lt;qos>
    &lt;!-- 5 is NORM priority, 0 is slowest, 9 is highest -->
    &lt;priority>5&lt;/priority>
-   
+
    &lt;!-- The message is automatically destroyed after 60000 milliseconds -->
    &lt;expiration lifeTime='60000'/>
-   
+
    &lt;!-- The message is saved to harddisk to be recoverable after a server crash -->
    &lt;persistent/>
-   
+
    &lt;!-- Administration: configure the topic on first publish (optional) -->
    &lt;topic readonly='false' destroyDelay='30000' createDomEntry='true'>
       &lt;persistence relating='msgUnitStore' maxMsg='1000' maxBytes='4000'/>
@@ -152,18 +152,18 @@ string time = TimestampFactory::getTimeAsString(Timestamp timestamp); // C++
       Here is a full QoS of a published message in <b>PtP</b> (point to point) mode:
       </p>
 <pre>
-&lt;qos> &lt;
+&lt;qos>
    &lt;!-- 5 is NORM priority, 0 is slowest, 9 (or MAX) is highest -->
    &lt;priority>MAX&lt;/priority>
-   
+
    &lt;!-- false to make PtP message invisible for subscribes -->
    &lt;subscribeable>false&lt;/subscribeable>
-   
+
    &lt;expiration lifeTime='129595811'/>
-   
+
    &lt;persistent/>  &lt;!-- message is recovered on server crash -->
 
-   &lt;forceUpdate>false&lt;forceUpdate>
+   &lt;forceUpdate>false&lt;/forceUpdate>
                      &lt;!-- messages with identical content as the predecessor
                              are not updated -->
 
@@ -172,7 +172,7 @@ string time = TimestampFactory::getTimeAsString(Timestamp timestamp); // C++
       Tim
    &lt;/destination>
 
-   &lt;!-- The login session '-2' of 'Ben' logged in at cluster node 'heron' --> 
+   &lt;!-- The login session '-2' of 'Ben' logged in at cluster node 'heron' -->
    &lt;destination>
       /node/heron/client/Ben/-2
    &lt;/destination>
@@ -223,10 +223,10 @@ string time = TimestampFactory::getTimeAsString(Timestamp timestamp); // C++
 &lt;qos>
    &lt;!-- 9 is highest -->
    &lt;priority>9&lt;/priority>
-   
+
    &lt;!-- Don't do any PtP or Pub/Sub actions, just configure the topic -->
    &lt;administrative/>
-   
+
    &lt;!-- Configure the topic on first publish -->
    &lt;topic readonly='false' destroyDelay='60000' createDomEntry='true'>
       &lt;persistence relating='msgUnitStore' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000'
@@ -301,7 +301,7 @@ string time = TimestampFactory::getTimeAsString(Timestamp timestamp); // C++
       </p>
       <pre>
 use Frontier::Client;
-    
+
 #$server_url = 'http://MyHost:8080/';
 $server_url =  @ARGV[0];
 print "\nTrying to connect to xmlBlaster server on $server_url ...\n";
@@ -377,10 +377,10 @@ print "\nLogout done, bye.\n";
    <see type="REQ">engine.qos.publish.destination.offline</see>
 
    <see type="REQ">cluster.PtP</see>
- 
+
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 01</date>
-   <revision>$Revision: 1.21 $</revision>
+   <revision>$Revision: 1.22 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the publish method invocation</comment>
