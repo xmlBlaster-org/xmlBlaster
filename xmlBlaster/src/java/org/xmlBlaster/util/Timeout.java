@@ -430,16 +430,6 @@ public class Timeout extends Thread
 
    /** Test a weak reference */
    static void testWeakReference() {
-      final class WeakObj implements I_Timeout {
-         public void timeout(Object userData) {
-            System.err.println("ERROR: Timeout invoked, weak object was not garbage collected.");
-            System.exit(1);
-         }
-         public void finalize() {
-            System.out.println("WeakObj is garbage collected");
-         }
-      }
-
       Timeout timeout = new Timeout("TestTimer", true);
       System.out.println("Timer created and ready.");
 
@@ -459,6 +449,16 @@ public class Timeout extends Thread
    }
 }
 
+   /** Test a weak reference */
+   final class WeakObj implements I_Timeout {
+      public void timeout(Object userData) {
+         System.err.println("ERROR: Timeout invoked, weak object was not garbage collected.");
+         System.exit(1);
+      }
+      public void finalize() {
+         System.out.println("WeakObj is garbage collected");
+      }
+   }
 
 
    /**
