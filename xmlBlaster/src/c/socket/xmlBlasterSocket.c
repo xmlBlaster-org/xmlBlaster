@@ -199,7 +199,6 @@ char *encodeSocketMessage(
 bool parseSocketData(int xmlBlasterSocket, SocketDataHolder *socketDataHolder, XmlBlasterException *exception, bool debug) 
 {
    char msgLenPtr[MSG_LEN_FIELD_LEN+1];
-   char ptr[MSG_LEN_FIELD_LEN+1];
    char *rawMsg = 0;
    char tmpPtr[256];
    ssize_t numRead;
@@ -208,8 +207,6 @@ bool parseSocketData(int xmlBlasterSocket, SocketDataHolder *socketDataHolder, X
 
    /* initialize */
    memset(msgLenPtr, 0, MSG_LEN_FIELD_LEN+1);
-   memset(ptr, 0, MSG_LEN_FIELD_LEN+1);
-   memset(tmpPtr, 0, MSG_LEN_FIELD_LEN+1);
    memset(socketDataHolder, 0, sizeof(SocketDataHolder));
    memset(exception, 0, sizeof(XmlBlasterException));
    exception->remote = false;
@@ -225,10 +222,9 @@ bool parseSocketData(int xmlBlasterSocket, SocketDataHolder *socketDataHolder, X
       if (debug) { printf(exception->message); printf("\n"); }
       return true;
    }
-   strncpy(ptr, msgLenPtr, MSG_LEN_FIELD_LEN);
-   *(ptr + MSG_LEN_FIELD_LEN) = 0; 
-   trim(ptr);
-   if (sscanf(ptr, "%lu", &msgLenL) != 1) {
+   *(msgLenPtr + MSG_LEN_FIELD_LEN) = 0; 
+   trim(msgLenPtr);
+   if (sscanf(msgLenPtr, "%lu", &msgLenL) != 1) {
       strncpy0(exception->errorCode, "user.connect", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       sprintf(exception->message,
               "[xmlBlasterSocket] ERROR Received numRead=%ld header bytes with invalid message length='%s'",
