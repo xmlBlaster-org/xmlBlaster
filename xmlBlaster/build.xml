@@ -249,7 +249,7 @@ TODO
    </compiler>
 
    <!-- Compile C++ -->
-   <compiler id="g++" name="g++" if="use-gcc">
+   <compiler id="g++" name="g++" exceptions="true" multithreaded="true" if="use-gcc"> <!-- unless="" -->
       <compilerarg value="-Wall" />
       <compilerarg value="-pedantic" />
       <compilerarg value="-Wno-long-long" />  <!-- with -pedantic: to supress warning: ISO C++ does not support `long long' -->
@@ -270,6 +270,8 @@ TODO
       <compilerarg value="-rdynamic" />       <!-- To show symbols of a backtrace (see XmlBlasterException.cpp, msgUtil.c) -->
       <compilerarg value="-export-dynamic" /> <!-- To show symbols of a backtrace (see XmlBlasterException.cpp, msgUtil.c) -->
       <compilerarg value="${gcc.enableStackTrace}" /> <!-- To show symbols of a backtrace (see XmlBlasterException.cpp, msgUtil.c) -->
+      <compilerarg value="-x" if="XMLBLASTER_C_COMPILE_AS_CPP" /> <!-- Compile lib as C++ -->
+      <compilerarg value="c++" if="XMLBLASTER_C_COMPILE_AS_CPP" /> <!-- (follow up of above -x, to avoid quotes) Compile lib as C++ -->
    </compiler>
 
    <!-- Compile Intel C++ -->
@@ -1688,6 +1690,7 @@ TODO
          </case>
          <case value="windows">
             <property name="LOG4CPLUS_OS_EXCLUDES" value="**/*unix*,**/*mac*" />
+            <property name="use-msvc" value="true" />
          </case>
          <case value="mac">
             <property name="LOG4CPLUS_OS_EXCLUDES" value="**/nteventlogappender.cxx,**/*win*,**/*unix*" />
@@ -1703,7 +1706,13 @@ TODO
                <case value="true">
                </case>
                <default>                                   <!-- (Linux: The .so compiled fine without this but exe linking used wrong CC compiler (from sun) -->
-                  <property name="use-gcc" value="true" /> <!-- TODO: build.properties has no chance to change this (e.g. for KAI compiler) -->
+                  <switch value="${use-g++}" caseinsensitive="true">
+                    <case value="true">
+                    </case>
+                    <default>                                   <!-- (Linux: The .so compiled fine without this but exe linking used wrong CC compiler (from sun) -->
+                      <property name="use-gcc" value="true" /> <!-- TODO: build.properties has no chance to change this (e.g. for KAI compiler) -->
+                    </default>
+                  </switch>
                </default>
             </switch>
          </case>                                     <!-- Probably we need to set it all the time in build.properties -->
@@ -1714,6 +1723,7 @@ TODO
          </default>
       </switch>
       <echo message=" use-gcc       = ${use-gcc}"/>  <!-- Linux/UNIX default -->
+      <echo message=" use-g++       = ${use-g++}"/>  <!-- Linux/UNIX default -->
       <echo message=" use-icc       = ${use-icc}"/>  <!-- Intel C/C++ compiler -->
       <echo message=" use-CC        = ${use-CC}"/>   <!-- SunOS C++, set in your build.properties -->
       <echo message=" use-msvc      = ${use-msvc}"/> <!-- LittleWeak default -->
@@ -2090,7 +2100,7 @@ TODO
          <compiler refid="bcc"/>  <!-- Borland -->
          <compiler refid="CC"/>   <!-- SunOS C++ 5.3 -->
          <fileset dir="${build.src.cpp.dir}/generated" includes="**/*.cpp"/>
-         <fileset dir="${build.src.cpp.dir}/util" includes="**/*.cpp"/>
+         <fileset dir="${build.src.cpp.dir}/util" includes="**/*.cpp" excludes="**/SQLiteQueuePlugin.*"/>
          <fileset dir="${build.src.cpp.dir}/client" includes="**/*.cpp"
                   excludes="${COMPILE_SOCKET_EXCLUDES},${COMPILE_CORBA_EXCLUDES}" />
          <fileset dir="${build.src.cpp.dir}/authentication" includes="**/*.cpp" />
@@ -2098,6 +2108,7 @@ TODO
          <fileset dir="${build.src.cpp.dir}/omnithread" includes="*.cpp" if="OMNITHREAD" />
          <fileset dir="${build.src.cpp.dir}/log4cplus" includes="**/*.cxx"
                   excludes="${COMPILE_LOG4CPLUS_EXCLUDES},${LOG4CPLUS_OS_EXCLUDES}" />
+         <fileset dir="${build.src.cpp.dir}/util/queue" includes="SQLiteQueuePlugin.*" if="XMLBLASTER_PERSISTENT_QUEUE"/>
 
          <includepath location="${build.src.cpp.dir}" />
 
@@ -2158,6 +2169,8 @@ TODO
          </defineset>
 
          <linker name="gcc"  if="use-gcc" />
+
+         <linker name="g++"  if="use-g++" />
 
          <linker name="icc"  if="use-icc" />
 
@@ -2229,7 +2242,7 @@ TODO
        cl.exe %CFLAGS%  /IE:\xerces-c-src1_6_0\src /IE:\xerces-c-src1_6_0\include /FoE:\xmlBlaster\build\obj\CorbaConnection.obj E:\xmlBlaster\src\c++\client\CorbaConnection.cpp
    -->
    <target name="cpp-test" depends="prepare-cpp" description="Create C++ test clients">
-      <foreach list="TestClientProperty,TestGet,TestSub,TestStringTrim,TestConnectQos,TestEmbeddedServer,TestFailsafe,TestQueue,TestConnect,TestSubXPath,TestRam,TestTimeout,TestTimestamp,TestCorbaDriver,TestThread,TestKeys"
+      <foreach list="TestQueue,TestClientProperty,TestGet,TestSub,TestStringTrim,TestConnectQos,TestEmbeddedServer,TestFailsafe,TestConnect,TestSubXPath,TestRam,TestTimeout,TestTimestamp,TestCorbaDriver,TestThread,TestKeys"
                target="compileCppExe" param="exeName" delimiter="," inheritAll="true">
          <param name="compileCppSourcePath" value="${testsuite.dir}/src/c++" />
       </foreach>
@@ -2480,6 +2493,7 @@ TODO
           objdir="${c.obj.dir}"
           multithreaded="true">
          <compiler refid="gcc"/>
+         <compiler refid="g++"/>
          <compiler refid="icc"/>
          <compiler refid="msvc"/> <!-- MS VC++ 7 -->
          <compiler refid="bcc"/>  <!-- Borland -->
@@ -2502,10 +2516,19 @@ TODO
            <define name="_REENTRANT" value="1" if="sun" />
            <define name="PthreadDraftVersion" value="10" if="sun" />
            <define name="XMLBLASTER_C_COMPILE_AS_CPP" value="1" if="sun" /> <!-- Compile lib as C++ until somebody adds a 'cc' task to our build.xml -->
+           <define name="XMLBLASTER_C_COMPILE_AS_CPP" value="1" if="XMLBLASTER_C_COMPILE_AS_CPP" /> <!-- Compile lib as C++ until somebody adds a 'cc' task to our build.xml -->
            <define name="XMLBLASTER_PERSISTENT_QUEUE" value="1" if="XMLBLASTER_PERSISTENT_QUEUE" /> <!-- Add command line define -->
          </defineset>
 
-         <linker name="gcc"  if="use-gcc">
+         <linker name="gcc"  if="use-gcc" unless="XMLBLASTER_C_COMPILE_AS_CPP">
+           <libset dir="${lib.dir.absolute}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE"/>
+         </linker>
+
+         <linker name="g++"  if="XMLBLASTER_C_COMPILE_AS_CPP">
+           <libset dir="${lib.dir.absolute}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE"/>
+         </linker>
+
+         <linker name="g++"  if="use-g++">
            <libset dir="${lib.dir.absolute}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE"/>
          </linker>
 
@@ -2586,6 +2609,7 @@ TODO
            <define name="UsePthread" value="1" if="sun" />
            <define name="_REENTRANT" value="1" if="sun" />
            <define name="XMLBLASTER_C_COMPILE_AS_CPP" value="1" if="sun" /> <!-- Compile lib as C++ until somebody adds a 'cc' task to our build.xml -->
+           <define name="XMLBLASTER_C_COMPILE_AS_CPP" value="1" if="XMLBLASTER_C_COMPILE_AS_CPP" /> <!-- Compile lib as C++ until somebody adds a 'cc' task to our build.xml -->
            <define name="XMLBLASTER_PERSISTENT_QUEUE" value="1" if="XMLBLASTER_PERSISTENT_QUEUE" /> <!-- Add command line define -->
          </defineset>
 
