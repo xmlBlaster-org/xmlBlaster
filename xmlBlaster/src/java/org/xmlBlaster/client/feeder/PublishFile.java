@@ -3,13 +3,14 @@ Name:      PublishFile.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a client to publish files to xmlBlaster
-Version:   $Id: PublishFile.java,v 1.18 2002/04/30 16:41:36 ruff Exp $
+Version:   $Id: PublishFile.java,v 1.19 2002/04/30 20:44:05 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.feeder;
 
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.PublishKeyWrapper;
 import org.xmlBlaster.client.PublishQosWrapper;
+import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.engine.helper.MessageUnit;
@@ -41,6 +42,7 @@ public class PublishFile
 {
    private static final String ME = "PublishFile";
    private XmlBlasterConnection senderConnection;
+   private Global glob;
    private String loginName;
    private String passwd;
 
@@ -60,30 +62,27 @@ public class PublishFile
     */
    public PublishFile(String[] args) throws JUtilsException
    {
-      try {
-         if (XmlBlasterProperty.init(args)) {
-            usage();
-            Log.exit(ME, "Bye");
-         }
-      } catch(org.jutils.JUtilsException e) {
-         Log.panic(ME, e.toString());
+      glob = new Global();
+      if (glob.init(args) != 0) {
+         usage();
+         Log.exit(ME, "Bye");
       }
 
-      loginName = Args.getArg(args, "-name", ME);
-      passwd = Args.getArg(args, "-passwd", "secret");
+      loginName = glob.getProperty().get("name", ME);
+      passwd = glob.getProperty().get("passwd", "secret");
 
-      String contentMime = Args.getArg(args, "-m", (String)null);
-      String contentMimeExtended = Args.getArg(args, "-me", "1.0"); // optional
+      String contentMime = glob.getProperty().get("m", (String)null);
+      String contentMimeExtended = glob.getProperty().get("me", "1.0"); // optional
 
       // if passing the stuff in files:
-      String contentFile = Args.getArg(args, "-c", (String)null);
-      String keyFile = Args.getArg(args, "-k", (String)null);
-      String qosFile = Args.getArg(args, "-q", (String)null);
+      String contentFile = glob.getProperty().get("c", (String)null);
+      String keyFile = glob.getProperty().get("k", (String)null);
+      String qosFile = glob.getProperty().get("q", (String)null);
 
       // if passing the text directly on the command line:
-      String xmlKeyGiven = Args.getArg(args, "-xmlKey", (String)null);
-      String xmlQosGiven = Args.getArg(args, "-xmlQos", (String)null);
-      String contentGiven = Args.getArg(args, "-content", (String)null);
+      String xmlKeyGiven = glob.getProperty().get("xmlKey", (String)null);
+      String xmlQosGiven = glob.getProperty().get("xmlQos", (String)null);
+      String contentGiven = glob.getProperty().get("content", (String)null);
 
       String body = null;
       String exte = null;
@@ -179,7 +178,7 @@ public class PublishFile
    protected void setUp()
    {
       try {
-         senderConnection = new XmlBlasterConnection(); // Find orb
+         senderConnection = new XmlBlasterConnection(glob); // Find orb
          senderConnection.login(loginName, passwd, null); // Login to xmlBlaster
       }
       catch (Exception e) {
