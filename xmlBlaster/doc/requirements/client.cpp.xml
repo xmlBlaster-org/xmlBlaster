@@ -457,6 +457,19 @@ int main(int args, char ** argv)
        <td>Edit <a href="http://www.xmlBlaster.org/xmlBlaster/build.properties">build.properties</a> and use <a href="http://www.xmlBlaster.org/xmlBlaster/build.xml">xmlBlaster/build.xml</a> to compile<br /><i>build -Duse-icc=true cpp</i></td>
        </tr>
 
+       <tr>
+       <td>18</td>
+       <td>IBM s390 with Linux 2.4.19</td>
+       <td><a href="http://www.gnu.org/software/gcc/gcc.html">g++</a> 3.2.2</td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.9</a></td>
+       <td><a href="http://omniorb.sourceforge.net" target="others">omnithread</a></td>
+       <td><a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.socket.html" target="others">SOCKET</a></td>
+       <td><a href="http://xml.apache.org" target="others">XERCES C++ 2.5</a></td>
+       <td>2004-04-02</td>
+       <td><a href="mailto:laghi@swissinfo.org">Michele</a></td>
+       <td>Edit <a href="http://www.xmlBlaster.org/xmlBlaster/build.properties">build.properties</a> and use <a href="http://www.xmlBlaster.org/xmlBlaster/build.xml">xmlBlaster/build.xml</a> to compile<br /><i>build cpp</i></td>
+       </tr>
+
       </table>
       <p>
        For compilation options please use
@@ -522,6 +535,6 @@ cvs log Global.cpp
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
    <date>2003 01 15</date>
-   <revision>$Revision: 1.28 $</revision>
+   <revision>$Revision: 1.29 $</revision>
 </requirement>
 
