@@ -3,7 +3,7 @@ Name:      Property.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, see xmlBlaster.property
-Version:   $Id: Property.java,v 1.14 2000/05/26 20:46:38 ruff Exp $
+Version:   $Id: Property.java,v 1.15 2000/06/06 12:26:24 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -190,6 +190,7 @@ public class Property
       if (fileName == null) {
          // Log.error(ME, "Couldn't find file xmlBlaster.properties");
          Log.warning(ME, "Please copy xmlBlaster.properties to your home directory, there is a template in the xmlBlaster distribution. We continue with default settings!");
+         addArgs2Props(xmlBlasterProperties, args);
          return xmlBlasterProperties;
       }
       File file = new File(fileName);
@@ -272,7 +273,7 @@ public class Property
 
 
    /**
-    * Look for properties file. 
+    * Look for properties file.
     * <p />
     * 1) In user.home - $HOME<br />
     * 2) In $XMLBLASTER_HOME<br />
