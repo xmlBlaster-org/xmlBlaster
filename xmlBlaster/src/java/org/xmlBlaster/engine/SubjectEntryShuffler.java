@@ -48,7 +48,9 @@ public class SubjectEntryShuffler implements Runnable {
    public void shuffle(SubjectInfo info) {
       if (this.log.CALL) this.log.call(ME, "shuffle SubjectInfo '" + info.getId() + "'");
       try {
+         
          this.channel.put(info);
+         if (this.log.CALL) this.log.call(ME, "shuffle SubjectInfo '" + info.getId() + "' put has returned");
       }
       catch (InterruptedException ex) {
          this.log.error(ME, "shuffle InterruptedException occured " + ex.getMessage());

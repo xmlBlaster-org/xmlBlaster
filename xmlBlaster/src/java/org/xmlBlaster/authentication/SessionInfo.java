@@ -428,8 +428,8 @@ public class SessionInfo implements I_Timeout, I_QueueSizeListener
             lastNumEntries = numEntries; // to avoid recursion
             this.sessionQueue.removeQueueSizeListener(this);
             
+            //subjectInfo.forwardToSessionQueue();
             this.glob.getSubjectInfoShuffler().shuffle(subjectInfo);
-            
             this.sessionQueue.addQueueSizeListener(this);
          }
       }

@@ -1110,30 +1110,31 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
    /**
     * Clears everything and removes the queue (i.e. frees the associated table)
     */
-   synchronized public long clear() {
+   public long clear() {
       long ret = 0;
-      if (this.notifiedAboutAddOrRemove) this.transientQueue.setNotifiedAboutAddOrRemove(true);
-      try {
-      // Activate reference decrement temporary ... entry.removed()
-         ret = this.transientQueue.clear();
-      }
-      catch (Throwable ex) {
-         this.log.error(ME, "clear: exception when processing transient queue. Reason: " + ex.toString());
-         ex.printStackTrace();
-      }
-
-      if (this.notifiedAboutAddOrRemove) this.transientQueue.setNotifiedAboutAddOrRemove(false);
-
-      if (isPersistenceAvailable()) {
+      synchronized(this) {
+         if (this.notifiedAboutAddOrRemove) this.transientQueue.setNotifiedAboutAddOrRemove(true);
          try {
-            ret += this.persistentQueue.clear();
+         // Activate reference decrement temporary ... entry.removed()
+            ret = this.transientQueue.clear();
          }
          catch (Throwable ex) {
-            this.log.error(ME, "clear: exception when processing persistent queue. Reason: " + ex.toString());
+            this.log.error(ME, "clear: exception when processing transient queue. Reason: " + ex.toString());
             ex.printStackTrace();
          }
-      }
 
+         if (this.notifiedAboutAddOrRemove) this.transientQueue.setNotifiedAboutAddOrRemove(false);
+
+         if (isPersistenceAvailable()) {
+            try {
+               ret += this.persistentQueue.clear();
+            }
+            catch (Throwable ex) {
+               this.log.error(ME, "clear: exception when processing persistent queue. Reason: " + ex.toString());
+               ex.printStackTrace();
+            }
+         }
+      }
       if (this.queueSizeListener != null) invokeQueueSizeListener();                  
       return ret;
    }
