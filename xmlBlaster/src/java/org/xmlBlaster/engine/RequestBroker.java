@@ -828,6 +828,10 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
       try {
          if (log.CALL) log.call(ME, "Entering get(oid='" + xmlKey.getOid() + "', queryType='" + xmlKey.getQueryType() + "', query='" + xmlKey.getQueryString() + "') ...");
 
+         if ("__refresh".equals(xmlKey.getOid())) {
+            return new MsgUnit[0]; // get() with oid="__refresh" do only refresh the login session
+         }
+
          if (xmlKey.isAdministrative()) {
             if (!glob.supportAdministrative())
                throw new XmlBlasterException(glob, ErrorCode.RESOURCE_ADMIN_UNAVAILABLE, ME, "Sorry administrative get() is not available, try to configure xmlBlaster.");
