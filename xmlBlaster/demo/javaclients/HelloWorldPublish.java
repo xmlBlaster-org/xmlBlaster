@@ -83,6 +83,7 @@ public class HelloWorldPublish
          long sleep = glob.getProperty().get("sleep", 1000L);
          int numPublish = glob.getProperty().get("numPublish", 1);
          String oid = glob.getProperty().get("oid", "Hello");
+         String clientTags = glob.getProperty().get("clientTags", "<org.xmlBlaster><demo/></org.xmlBlaster>");
          byte[] content = glob.getProperty().get("content", "Hi").getBytes();
          PriorityEnum priority = PriorityEnum.toPriorityEnum(glob.getProperty().get("priority", PriorityEnum.NORM_PRIORITY.getInt()));
          boolean persistent = glob.getProperty().get("persistent", true);
@@ -111,6 +112,7 @@ public class HelloWorldPublish
          log.info(ME, " Pub/Sub settings");
          log.info(ME, "   -numPublish     " + numPublish);
          log.info(ME, "   -oid            " + oid);
+         log.info(ME, "   -clientTags     " + clientTags);
          if (contentSize >= 0) {
             log.info(ME, "   -content        [generated]");
             log.info(ME, "   -contentSize    " + contentSize);
@@ -158,7 +160,7 @@ public class HelloWorldPublish
             }
 
             PublishKey pk = new PublishKey(glob, oid, "text/xml", "1.0");
-            pk.setClientTags("<org.xmlBlaster><demo/></org.xmlBlaster>");
+            pk.setClientTags(clientTags);
             PublishQos pq = new PublishQos(glob);
             pq.setPriority(priority);
             pq.setPersistent(persistent);
