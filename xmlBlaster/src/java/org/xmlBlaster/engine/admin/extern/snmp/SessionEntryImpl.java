@@ -3,7 +3,7 @@
  * is intended to be edited by the application programmer and
  * to be used within a Java AgentX sub-agent environment.
  *
- * $Id: SessionEntryImpl.java,v 1.2 2002/07/05 14:21:10 udo Exp $
+ * $Id: SessionEntryImpl.java,v 1.3 2002/07/08 13:33:03 udo Exp $
  */
 package org.xmlBlaster.engine.admin.extern.snmp;
 
@@ -27,6 +27,8 @@ import jax.AgentXEntry;
 public class SessionEntryImpl extends SessionEntry
 {
 
+    public SessionEntryImplPeer sessionEntryImplPeer;
+
     /**
      * SessionEntryImpl
      * - initializes mib variables.
@@ -35,20 +37,16 @@ public class SessionEntryImpl extends SessionEntry
     public SessionEntryImpl(long nodeIndex,
                         long clientIndex,
                         long sessionIndex,
-                        String sessionNameVal,
-                        long cbQueueMaxMsgsVal,
-                        long cbQueueThresholdVal,
-                        int clearCbQueueVal,
-                        int closeSessionVal)
+                        SessionEntryImplPeer sessionEntryImplPeer)
     {
         super(nodeIndex, clientIndex, sessionIndex);
 
-        sessionName = sessionNameVal.getBytes();
-        cbQueueMaxMsgs = cbQueueMaxMsgsVal;
-        cbQueueThreshold = cbQueueThresholdVal;
-	clearCbQueue = clearCbQueueVal;
-	closeSession = closeSessionVal;
-        // sessionEntryImplPeer = new SessionEntryImplPeer();
+        sessionName = sessionEntryImplPeer.get_sessionName().getBytes();
+        cbQueueMaxMsgs = sessionEntryImplPeer.get_cbQueueMaxMsgs();
+        cbQueueThreshold = sessionEntryImplPeer.get_cbQueueThreshold();
+	clearCbQueue = sessionEntryImplPeer.get_clearCbQueue();
+	closeSession = sessionEntryImplPeer.get_closeSession();
+        this.sessionEntryImplPeer = sessionEntryImplPeer;
     }
 
     /**

@@ -40,7 +40,7 @@ public class NodeEntryImplPeer
 
     /**
      * get_nodeName
-     * - forwards the call to nodeEntryImplPeer.get_nodeName().
+     * - gets nodeName from xmlBlaster application.
      * 
      * @return String nodeName: name of an xmlBlaster node.
      */
@@ -51,7 +51,7 @@ public class NodeEntryImplPeer
 
     /**
      * get_nodeUptime
-     * - forwards the call to nodeEntryImplPeer.get_nodeUptime().
+     * - gets nodeUptime from xmlBlaster application.
      * 
      * @return long nodeUptime: uptime of an xmlBlaster node.
      */
@@ -62,7 +62,7 @@ public class NodeEntryImplPeer
 
     /**
      * get_totalMem
-     * - forwards the call to nodeEntryImplPeer.get_totalMem().
+     * - gets totalMem from xmlBlaster application.
      * 
      * @return long totalMem: total memory of the java virtual machine,
      *              where the xmlBlaster runs.
@@ -74,7 +74,7 @@ public class NodeEntryImplPeer
 
     /**
      * get_usedMem
-     * - forwards the call to nodeEntryImplPeer.get_usedMem().
+     * - gets usedMem from xmlBlaster application.
      * 
      * @return long usedMem: used memory of the java virtual machine,
      *              where the xmlBlaster runs.
@@ -86,7 +86,7 @@ public class NodeEntryImplPeer
 
     /**
      * get_freeMem
-     * - forwards the call to nodeEntryImplPeer.get_freeMem().
+     * - gets freeMem from xmlBlaster application.
      * 
      * @return long freeMem: free memory of the java virtual machine,
      *              where the xmlBlaster runs.
@@ -98,7 +98,7 @@ public class NodeEntryImplPeer
 
     /**
      * get_hostname
-     * - forwards the call to nodeEntryImplPeer.get_hostname().
+     * - gets hostname from xmlBlaster application.
      * 
      * @return String hostname: name of the host, where the xmlBlaster runs.
      */
@@ -109,7 +109,7 @@ public class NodeEntryImplPeer
 
     /**
      * get_port
-     * - forwards the call to nodeEntryImplPeer.get_port().
+     * - gets port from xmlblaster application.
      * 
      * @return long port: port, on which the xmlBlaster runs.
      */
@@ -120,7 +120,7 @@ public class NodeEntryImplPeer
 
     /**
      * get_numClients
-     * - forwards the call to nodeEntryImplPeer.get_numClients().
+     * - gets numClients from xmlBlaster application.
      * 
      * @return long numClients: actual number of clients in the clientTable.
      */
@@ -131,7 +131,7 @@ public class NodeEntryImplPeer
 
     /**
      * get_maxClients
-     * - forwards the call to nodeEntryImplPeer.get_maxClients().
+     * - gets maxClients from xmlBlaster application.
      * 
      * @return long maxClients: maximum number of clients in the clientTable.
      */
@@ -142,7 +142,7 @@ public class NodeEntryImplPeer
 
     /**
      * get_clientThreshold
-     * - forwards the call to nodeEntryImplPeer.get_clientThreshold().
+     * - gets clientThreshold from xmlBlaster application.
      * 
      * @return long clientThreshold: threshold (%) number of clients in the clientTable.
      */
@@ -153,7 +153,7 @@ public class NodeEntryImplPeer
 
     /**
      * get_errorLogfile
-     * - forwards the call to nodeEntryImplPeer.get_errorLogfile().
+     * - gets errorLogfile from xmlBlaster application.
      * 
      * @return String errorLogfile: name of the error logfile.
      */
@@ -164,7 +164,7 @@ public class NodeEntryImplPeer
 
     /**
      * get_logLevel
-     * - forwards the call to nodeEntryImplPeer.get_logLevel().
+     * - gets logLevel from xmlBlaster application.
      * 
      * @return int logLevel: various degrees of log levels.
      *             0 = errors
@@ -178,7 +178,7 @@ public class NodeEntryImplPeer
 
     /**
      * get_runLevel
-     * - forwards the call to nodeEntryImplPeer.get_runLevel().
+     * - gets runLevel from xmlBlaster application.
      * 
      * @return int runLevel: various degrees of log levels.
      *             0 = halted

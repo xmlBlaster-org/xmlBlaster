@@ -3,7 +3,7 @@
  * is intended to be edited by the application programmer and
  * to be used within a Java AgentX sub-agent environment.
  *
- * $Id: ClientEntryImpl.java,v 1.1 2002/07/05 06:56:00 ruff Exp $
+ * $Id: ClientEntryImpl.java,v 1.2 2002/07/08 13:33:03 udo Exp $
  */
 package org.xmlBlaster.engine.admin.extern.snmp;
 
@@ -27,6 +27,8 @@ import jax.AgentXEntry;
 public class ClientEntryImpl extends ClientEntry
 {
 
+    public ClientEntryImplPeer clientEntryImplPeer;
+
     /**
      * ClientEntryImpl
      * - initializes mib variables.
@@ -34,25 +36,18 @@ public class ClientEntryImpl extends ClientEntry
      */
     public ClientEntryImpl(long nodeIndex,
                        long clientIndex,
-                       String clientNameVal,
-                       int peerTypeVal,
-                       int connectionStateVal,
-                       long clientQueueMaxMsgsVal,
-                       long clientQueueThresholdVal,
-                       int clearClientQueueVal,
-                       long maxSessionsVal,
-                       long sessionThresholdVal)
+                       ClientEntryImplPeer clientEntryImplPeer)
     {
         super(nodeIndex, clientIndex);
-        clientName = clientNameVal.getBytes();
-        peerType = peerTypeVal;
-        connectionState = connectionStateVal;
-        clientQueueMaxMsgs = clientQueueMaxMsgsVal;
-        clientQueueThreshold = clientQueueThresholdVal;
-        clearClientQueue = clearClientQueueVal;
-        maxSessions = maxSessionsVal;
-        sessionThreshold = sessionThresholdVal;
-        // clientEntryImplPeer = new ClientEntryImplPeer();
+        clientName = clientEntryImplPeer.get_clientName().getBytes();
+        peerType = clientEntryImplPeer.get_peerType();
+        connectionState = clientEntryImplPeer.get_connectionState();
+        clientQueueMaxMsgs = clientEntryImplPeer.get_clientQueueMaxMsgs();
+        clientQueueThreshold = clientEntryImplPeer.get_clientQueueThreshold();
+        clearClientQueue = clientEntryImplPeer.get_clearClientQueue();
+        maxSessions = clientEntryImplPeer.get_maxSessions();
+        sessionThreshold = clientEntryImplPeer.get_sessionThreshold();
+        this.clientEntryImplPeer = clientEntryImplPeer;
     }
 
     /**
