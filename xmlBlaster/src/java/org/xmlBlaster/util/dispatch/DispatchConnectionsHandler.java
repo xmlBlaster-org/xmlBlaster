@@ -94,7 +94,9 @@ abstract public class DispatchConnectionsHandler
     * Overwrite existing connections with new configuration
     */
    public final void initialize(AddressBase[] cbAddr) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "Initialize old connections=" + conList.size() +
+      int oldConSize = conList.size();
+      DispatchConnection reconfiguredCon = null;
+      if (log.CALL) log.call(ME, "Initialize old connections=" + oldConSize +
                                  " new connections=" + ((cbAddr==null)?0:cbAddr.length));
       synchronized (conList) {
          
@@ -134,6 +136,7 @@ abstract public class DispatchConnectionsHandler
                   found = true;
                   tmpCon.setAddress(cbAddr[ii]);
                   conList.add(tmpCon); // reuse
+                  reconfiguredCon = tmpCon;
                   break;
                }
             }
@@ -174,6 +177,10 @@ abstract public class DispatchConnectionsHandler
 
       updateState(null);  // Redundant??
       if (log.TRACE) log.trace(ME, "Reached state = " + state.toString());
+
+      if (reconfiguredCon != null && /*reconfiguredCon.*/isPolling() && oldConSize > 0) {
+         this.glob.getPingTimer().addTimeoutListener(reconfiguredCon, 0L, "poll");  // force a reconnect try
+      }
    }
 
    /**
@@ -188,6 +195,17 @@ abstract public class DispatchConnectionsHandler
       synchronized (conList) {
          for (int ii=0; ii<conList.size(); ii++) {
             if (((DispatchConnection)conList.get(ii)).isAlive())
+               return ((DispatchConnection)conList.get(ii));
+         }
+      }
+      return null;
+   }
+
+   /** @return a currently polling callback connection or null */
+   public final DispatchConnection getPollingDispatchConnection() {
+      synchronized (conList) {
+         for (int ii=0; ii<conList.size(); ii++) {
+            if (((DispatchConnection)conList.get(ii)).isPolling())
                return ((DispatchConnection)conList.get(ii));
          }
       }
