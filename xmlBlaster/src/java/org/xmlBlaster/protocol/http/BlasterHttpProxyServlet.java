@@ -3,7 +3,7 @@ Name:      BlasterHttpProxyServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxyServlet.java,v 1.12 2000/04/14 07:07:58 kkrafft2 Exp $
+Version:   $Id: BlasterHttpProxyServlet.java,v 1.13 2000/05/03 17:11:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -31,17 +31,17 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
  * If you use Apache/Jserv, look into /var/log/httpd/jserv.log
  * <p />
  * Invoke for testing:<br />
- *    http://localhost/servlet/CallbackServletDriver?ActionType=login&loginName=martin&passwd=secret
+ *    http://localhost/servlet/BlasterHttpProxyServlet?ActionType=login&loginName=martin&passwd=secret
  * <p />
  * TODO:
  *   HTTP 1.1 specifies rfc2616 that the connection stays open as the
  *   default case. How must this code be changed?
  * @author Marcel Ruff ruff@swand.lake.de
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  */
 public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlaster.util.LogListener
 {
-   private final String ME                                                      = "BlasterHttpProxyServlet";
+   private final String ME = "BlasterHttpProxyServlet";
 
    /**
     * This method is invoked only once when the servlet is startet.
@@ -52,11 +52,12 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
       super.init(conf);
       // Redirect xmlBlaster logs to servlet log file (see method log() below)
       Log.setDefaultLogLevel();
-      //Log.addLogLevel("DUMP");
-      //Log.addLogLevel("TRACE");
-      //Log.addLogLevel("CALLS");
+      // Log.addLogLevel("DUMP");  // Use this to see all messages!
+      // Log.addLogLevel("TRACE");
+      // Log.addLogLevel("CALLS");
       Log.addLogLevel("TIME");
-      //Log.addLogListener(this);
+      // Log.addLogListener(this);
+
       Log.trace(ME, "Initialize ...");
    }
 
@@ -70,16 +71,16 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
    public void doGet(HttpServletRequest req, HttpServletResponse res)
                                  throws ServletException, IOException
    {
-      Log.trace(ME, "Entering doGet() ...");
+      // Log.trace(ME, "Entering doGet() ...");
       res.setContentType("text/html");
       StringBuffer retStr = new StringBuffer("");
       String errorText="";
 
       HttpSession session = req.getSession(true);
       String sessionId = session.getId();
+      if (Log.TRACE) Log.trace(ME, "Entering doGet() for sessionId=" + sessionId);
 
       HttpPushHandler pushHandler = new HttpPushHandler(req, res);
-
 /*
       if(!req.isRequestedSessionIdFromCookie()) { // && isCookieEnabled() ?????
          pushHandler.push("alert('Sorry, your browser does not support cookies, you will not get updates from xmlBlaster."+sessionId+"');\n",false);
@@ -93,37 +94,47 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
 */
 
       try {
-         String actionType = Util.getParameter(req, "ActionType", "NONE");
+         String actionType = Util.getParameter(req, "ActionType", "");
 
          //------------------ Login -------------------------------------------------
          if (actionType.equals("login")) {
-            Log.trace(ME, "Login action ...");
 
             String loginName = Util.getParameter(req, "loginName", null);    // "Joe";
             if (loginName == null || loginName.length() < 1)
-               throw new Exception("Missing login name");
+               throw new XmlBlasterException(ME, "Missing login name");
             String passwd = Util.getParameter(req, "passwd", null);  // "secret";
             if (passwd == null || passwd.length() < 1)
-               throw new Exception("Missing passwd");
+               throw new XmlBlasterException(ME, "Missing passwd");
+
+            /*
+            // The caller may pass an url to invoke after successfull login
+            // The sessionId from the login must be delivered back to the browser,
+            // otherwise another sessionId is generated on following browser calls
+            // to other servlets.
+            String callUrl = Util.getParameter(req, "callUrl", null);
+            */
+
+            Log.info(ME, "Login action for user " + loginName);
 
             // Find proxyConnection !!Attention, other browser can use an existing
-            //                        xmlBlaster connection. This is an security problem.
+            //                        xmlBlaster connection. This is a security problem.
             ProxyConnection proxyConnection = BlasterHttpProxy.getProxyConnection( loginName, passwd );
-            //pushHandler.message("Successful login.");
             pushHandler.startPing();
 
+            Log.info(ME, "Waiting forever 1, permanent HTTP connection. loginName=" + loginName + " sessionId=" + sessionId);
             proxyConnection.addHttpPushHandler( sessionId, pushHandler );
 
             // Don't fall out of doGet() to keep the HTTP connection open
-            Log.trace(ME, "Waiting forever, permanent HTTP connection ...");
+            Log.info(ME, "Waiting forever, permanent HTTP connection. loginName=" + loginName + " sessionId=" + sessionId);
 
+            pushHandler.ping("loginSucceeded");
 
             while (!pushHandler.closed()) {
                try {
                   Thread.currentThread().sleep(10000L);
                }
                catch (InterruptedException i) {
-                  Log.error(ME,"Error in Thread handling, don't what to do:"+i.toString());
+                  Log.error(ME,"Error in Thread handling, don't know what to do: "+i.toString());
                }
             }
 
@@ -133,7 +144,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
             proxyConnection.removeHttpPushHandler( sessionId, pushHandler );
 
 
-            Log.trace(ME, "Permamenent HTTP connection lost, leaving BlasterHttpProxyServlet.doGet() ....");
+            Log.trace(ME, "Permamenent HTTP connection lost, leaving BlasterHttpProxyServlet.doGet(sessionId=" + sessionId + ") ....");
          }
 
          //------------------ Test --------------------------------------------------
@@ -152,14 +163,18 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
                }
                HttpPushHandler cbPushHandler = proxyConnection.getHttpPushHandler(sessionId);
                cbPushHandler.setReady( true );
-               pushHandler.push("// - www.doubleSlash.de",false);
+               // !!! pushHandler.push("// empty response for your ActionType='browserReady'",false);
                return;
             }
             catch (XmlBlasterException e) {
                Log.error(ME, "Caught XmlBlaster Exception: " + e.reason);
                return;
             }
-        }
+         }
+         else {
+            String text = "Unknown ActionType '" + actionType + "', request for permanent http connection ignored";
+            throw new XmlBlasterException(ME, text);
+         }
 
 
       } catch (XmlBlasterException e) {
@@ -311,8 +326,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
    /**
     * Display a popup alert message containing the error text
     *
-    * @param der Fehlertext
-    * @see azu.js mit Javascript für Popup
+    * @param text The error text
     */
    public final String alert(String text)
    {
