@@ -29,6 +29,8 @@ import java.util.Stack;
  I can not make it static in the event that more than one
  XmlBlasterConnector is used whithin one vm wich points to
  different XmlBlaster servers!
+
+ This pool is not used any more.
  *
  *
  * Created: Mon Jan 29 22:15:35 2001

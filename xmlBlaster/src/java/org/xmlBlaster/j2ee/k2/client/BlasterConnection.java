@@ -26,11 +26,9 @@ import org.xmlBlaster.client.EraseRetQos;
 /**
  * K2 Connection interface for xmlBlaster. 
 
- Only a subset of XmlBlasterConnection. Be aware that this is a connection 
- interface whose underlying physical pipe typically is pooled.
+ <p>Only a subset of XmlBlasterConnection. Be aware that this is a connection 
+ interface whose underlying physical pipe typically is pooled.</p>
  *
- *
- * Created: Sat Jan 27 20:22:32 2001
  */
 
 public interface BlasterConnection  {

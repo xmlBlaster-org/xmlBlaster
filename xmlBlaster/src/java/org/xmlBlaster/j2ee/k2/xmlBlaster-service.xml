@@ -1,0 +1,60 @@
+<server>
+  <!--new configuration for new ConnectionManager-->
+
+  <mbean code="org.jboss.resource.connectionmanager.NoTxConnectionManager" name="jboss.jca:service=NoTxCM,name=XmlBlasterDS">
+    <!--make the rar deploy!-->
+    <depends>jboss.jca:service=RARDeployer</depends>
+
+    <depends optional-attribute-name="ManagedConnectionFactoryName">
+      <mbean code="org.jboss.resource.connectionmanager.RARDeployment" name="jboss.jca:service=NoTxDS,name=XmlBlasterDS">
+        <!--hack till better deployment system-->
+        <depends optional-attribute-name="OldRarDeployment">jboss.jca:service=RARDeployment,name=xmlBlaster Adapter</depends>
+
+        <!--real attributes-->
+        <attribute name="ManagedConnectionFactoryProperties">
+          <properties>
+             <config-property name="PropertyFileName" type="java.lang.String">blasterk2.properties</config-property>
+            <config-property name="ClientProtocol" type="java.lang.String">IOR</config-property>
+            <config-property name="IorHost" type="java.lang.String">80.72.2.80</config-property>
+            <config-property name="IorPort" type="java.lang.String">3412</config-property>
+            <config-property name="UserName" type="java.lang.String">pra</config-property>
+            <config-property name="Password" type="java.lang.String">test</config-property>
+            <config-property name="SessionTimeout" type="java.lang.String">0</config-property>
+            <config-property name="MaxSessions" type="java.lang.String">50</config-property>
+            <config-property name="SecurityPlugin" type="java.lang.String">htpasswd,1.0</config-property>
+          </properties>
+        </attribute>
+        <attribute name="JndiName">XmlBlasterDS</attribute>
+      </mbean>
+    </depends>
+
+    <depends optional-attribute-name="ManagedConnectionPool">
+      <mbean code="org.jboss.resource.connectionmanager.JBossManagedConnectionPool" name="jboss.jca:service=NoTxPool,name=XmlBlasterDS">
+        <attribute name="MinSize">0</attribute>
+        <attribute name="MaxSize">50</attribute>
+        <attribute name="BlockingTimeoutMillis">5000</attribute>
+        <attribute name="IdleTimeoutMinutes">15</attribute>
+        <!--criteria indicates if Subject (from security domain) or app supplied
+            parameters (such as from getConnection(user, pw)) are used to distinguish
+            connections in the pool. Choices are 
+            ByContainerAndApplication (use both), 
+            ByContainer (use Subject),
+            ByApplication (use app supplied params only),
+            ByNothing (all connections are equivalent, usually if adapter supports
+              reauthentication)-->
+        <attribute name="Criteria">ByNothing</attribute>
+      </mbean>
+    </depends>
+    <depends optional-attribute-name="CachedConnectionManager">jboss.jca:service=CachedConnectionManager</depends>
+
+<!--
+    <depends optional-attribute-name="AuthenticationInfo">
+
+    </depends>
+
+    <attribute name="SecurityDomainJndiName">UserDSRealm</attribute>
+-->
+    <depends optional-attribute-name="JaasSecurityManagerService">jboss.security:service=JaasSecurityManager</depends>
+
+  </mbean>
+</server>

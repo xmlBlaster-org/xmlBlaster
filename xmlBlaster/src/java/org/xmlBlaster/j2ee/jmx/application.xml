@@ -1,0 +1,7 @@
+<!DOCTYPE application PUBLIC
+   "-//Sun Microsystems, Inc.//DTD J2EE Application 1.3//EN"
+   "http://java.sun.com/dtd/application_1_3.dtd">
+<!-- We load XmlBlaster.sar in an ear to get scoped classloading-->
+<application>
+   <display-name>XmlBlaster sar</display-name>
+</application>

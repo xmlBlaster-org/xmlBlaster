@@ -19,14 +19,18 @@ package org.xmlBlaster.j2ee.k2;
 
 import java.util.Set;
 import java.util.Iterator;
-
+import java.util.Properties;
 import java.io.PrintWriter;
-
+import java.io.InputStream;
+import java.io.IOException;
 import javax.security.auth.Subject;
 
 import javax.resource.ResourceException;
 
 import org.xmlBlaster.util.Global;
+import org.jutils.init.Property;
+import org.jutils.init.Property.FileInfo;
+import org.jutils.JUtilsException;
 
 import javax.resource.spi.ManagedConnectionFactory;
 import javax.resource.spi.ManagedConnection;
@@ -38,334 +42,468 @@ import javax.resource.spi.IllegalStateException;
 import javax.resource.spi.security.PasswordCredential;
 
 /**
- * Factory for a specific XmlBlaster instance. This impl will NOT
-   work if the appserver instantiates more that one copy of this
-   for one physical XmlBlaster server.
-
-   This is because a user will get mapped to so called "pseudouser" to
-   be able to hande more that one active physical connection to the
-   xmlBlaster server for every logical user.
-   TODO: Change this to use session logins
+ * Factory for a specific XmlBlaster instance. 
  *
- *
- * Created: Fri Jan 26 14:57:16 2001
+ * <p>Set the configuration up in ra.xml. <b>OBS</b> At least in JBoss this is not possible, you have to configure all properties in the *-service.xml file.</p>
  *
  * @author Peter Antman
  */
 
 public class BlasterManagedConnectionFactory implements ManagedConnectionFactory {
-    // Hm, don't know how to set the uniq id of this instance, 
-    // Check if we have any special thing we need to set in xmlBlaster
-    // that make different instance not look like each other
-    public String myName ="Blaster";
-    private final Global glob;
+   // Id from my global instance.
+   public String myName ="Blaster";
+   private final Global glob;
 
-    private PrintWriter logWriter = null;
+   private String propFile = null;
+   private PrintWriter logWriter = null;
 
-    private PseudoUserPool userPool = new PseudoUserPool();
-
-    private BlasterLogger logger;
+   private BlasterLogger logger;
     
-    public BlasterManagedConnectionFactory() throws ResourceException{
-        this.glob = Global.instance(); // TODO: Pass arguments or glob handle from outside
-        this.myName = this.myName + "[" + glob.getId() + "]";
-        // Start logger, will be turned of by default
-        logger = new BlasterLogger(glob);
-    }
-    
-    /**
-     * Create a "non managed" connection factory. No appserver involved
-     */
-    public Object createConnectionFactory() throws ResourceException {
-        return new BlasterConnectionFactoryImpl(this, null);
-    }
+   public BlasterManagedConnectionFactory() throws ResourceException{
+      Global g = Global.instance(); // TODO: Pass arguments or glob handle from outside
+      this.glob = g.getClone(null);
+      this.myName = this.myName + "[" + glob.getId() + "]";
+      // Start logger, will be turned of by default
+      logger = new BlasterLogger(glob);
+   }
+   
+   /**
+    * Create a "non managed" connection factory. No appserver involved
+    */
+   public Object createConnectionFactory() throws ResourceException {
+      loadPropertyFile();
+      return new BlasterConnectionFactoryImpl(this, null);
+   }
+   
+   /**
+    * Create a ConnectionFactory with appserver hook
+    */ 
+   public Object createConnectionFactory(ConnectionManager cxManager)
+      throws ResourceException {
+      loadPropertyFile();
+      return new BlasterConnectionFactoryImpl(this, cxManager);
+   }
+   
+   /**
+    * Create a new connection to manage in pool
+    */
+   public ManagedConnection createManagedConnection(Subject subject, 
+                                                    ConnectionRequestInfo info) throws ResourceException {
+      BlasterCred bc = BlasterCred.getBlasterCred(this,subject, info);
+      // OK we got autentication stuff
+      BlasterManagedConnection mc = new BlasterManagedConnection
+         (this, bc.name, bc.pwd);
+      // Set default logwriter according to spec
+      mc.setLogWriter(logWriter);
+      return mc;
 
-    /**
-     * Create a ConnectionFactory with appserver hook
-     */ 
-    public Object createConnectionFactory(ConnectionManager cxManager)
-        throws ResourceException {
-        
-        return new BlasterConnectionFactoryImpl(this, cxManager);
-    }
-    
-    /**
-     * Create a new connection to manage in pool
-     */
-    public ManagedConnection createManagedConnection(Subject subject, 
-                                                     ConnectionRequestInfo info) throws ResourceException {
-        BlasterCred bc = BlasterCred.getBlasterCred(this,subject, info);
-        // OK we got autentication stuff
-        BlasterManagedConnection mc = new BlasterManagedConnection
-            (this, bc.name, bc.pwd);
-        // Set default logwriter according to spec
-        mc.setLogWriter(logWriter);
-        return mc;
+   }
 
-    }
+   /**
+    * Match a set of connections from the pool
+    */
+   public ManagedConnection
+      matchManagedConnections(Set connectionSet,
+                              Subject subject,
+                              ConnectionRequestInfo info) 
+      throws ResourceException {
+      // Get cred
+      BlasterCred bc = BlasterCred.getBlasterCred(this,subject, info);
 
-    /**
-     * Match a set of connections from the pool
-     */
-    public ManagedConnection
-            matchManagedConnections(Set connectionSet,
-                                    Subject subject,
-                                    ConnectionRequestInfo info) 
-        throws ResourceException {
-        
-        // Get cred
-        BlasterCred bc = BlasterCred.getBlasterCred(this,subject, info);
-
-        // Traverse the pooled connections and look for a match, return
-        // first found
-        Iterator connections = connectionSet.iterator();
-        while (connections.hasNext()) {
-            Object obj = connections.next();
+      // Traverse the pooled connections and look for a match, return
+      // first found
+      Iterator connections = connectionSet.iterator();
+      while (connections.hasNext()) {
+         Object obj = connections.next();
             
-            // We only care for connections of our own type
-            if (obj instanceof BlasterManagedConnection) {
-                // This is one from the pool
-                BlasterManagedConnection mc = (BlasterManagedConnection) obj;
+         // We only care for connections of our own type
+         if (obj instanceof BlasterManagedConnection) {
+            // This is one from the pool
+            BlasterManagedConnection mc = (BlasterManagedConnection) obj;
                 
-                // Check if we even created this on
-                ManagedConnectionFactory mcf =
-                    mc.getManagedConnectionFactory();
+            // Check if we even created this on
+            ManagedConnectionFactory mcf =
+               mc.getManagedConnectionFactory();
                 
-                // Only admit a connection if it has the same username as our
-                // asked for creds
-                if (mc.getUserName().equals(bc.name) &&
-                    mcf.equals(this)) {
-                    return mc;
-                }
+            // Only admit a connection if it has the same username as our
+            // asked for creds
+            if (mc.getUserName().equals(bc.name) &&
+                mcf.equals(this)) {
+               return mc;
             }
-        }
-        return null;
-    }
+         }
+      }
+      return null;
+   }
 
-    /**
-     * 
-     */
-    public void setLogWriter(PrintWriter out)
-        throws ResourceException {
-        this.logWriter = out;
-        logger.setLogWriter(out);
-    }
-    /**
-     * 
-     */
-    public PrintWriter getLogWriter() throws ResourceException {
-            return logWriter;    
-    }
+   /**
+    * 
+    */
+   public void setLogWriter(PrintWriter out)
+      throws ResourceException {
+      this.logWriter = out;
+      logger.setLogWriter(out);
+   }
+   /**
+    * 
+    */
+   public PrintWriter getLogWriter() throws ResourceException {
+      return logWriter;    
+   }
 
-    public boolean equals(Object obj) {
-        if (obj == null) return false;
-        if (obj instanceof BlasterManagedConnectionFactory) {
-            String you = ((BlasterManagedConnectionFactory) obj).
-                myName;
-            String me = this.myName;
-            return (you == null) ? (me == null) : (you.equals(me));
-        } else {
-            return false;
-        }
-    }
+   public boolean equals(Object obj) {
+      if (obj == null) return false;
+      if (obj instanceof BlasterManagedConnectionFactory) {
+         String you = ((BlasterManagedConnectionFactory) obj).
+            myName;
+         String me = this.myName;
+         return (you == null) ? (me == null) : (you.equals(me));
+      } else {
+         return false;
+      }
+   }
 
-    public int hashCode() {
-        if (myName == null) {
-            return (new String("")).hashCode();
-        } else {
-            return myName.hashCode();
-        }
-    }
+   public int hashCode() {
+      if (myName == null) {
+         return (new String("")).hashCode();
+      } else {
+         return myName.hashCode();
+      }
+   }
 
-    //---- Configuration API----
-    /*
-      Confguration is static global in XmlBlaster. There is no way
-      to get around this in the highlevel api, therefor we might as
-      well use that here to.
-     */
+   //---- Configuration API----
+   /*
+     Confguration is static global in XmlBlaster. There is no way
+     to get around this in the highlevel api, therefor we might as
+     well use that here to.
+   */
 
-    /**
-     * The driver to use: IOR | RMI
+   /**
+    * Set a default user name.
+    */
+   public void setUserName(String arg)throws IllegalStateException {
+      try {
+         glob.getProperty().set("j2ee.k2.username", arg);
+      }catch(org.jutils.JUtilsException ex) {
+         IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
+         x.setLinkedException(ex);
+         throw x;
+      }
+   }
+
+   public String getUserName() {
+      return glob.getProperty().get("j2ee.k2.username", (String)null);
+   }
+
+   /**
+    * Set a default password name.
+    */
+   public void setPassword(String arg)throws IllegalStateException {
+      try {
+         glob.getProperty().set("j2ee.k2.password", arg);
+      }catch(org.jutils.JUtilsException ex) {
+         IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
+         x.setLinkedException(ex);
+         throw x;
+      }
+   }
+
+   public String getPassword() {
+      return glob.getProperty().get("j2ee.k2.password", (String)null);
+   }
+   /**
+    * The driver to use: IOR | RMI
      
-     * Have to verify the others to. Don't forget to configure the server.
-     */
-    public void setClientProtocol(String arg) throws IllegalStateException {
-        try {
-            glob.getProperty().set("client.protocol", arg);
-        }catch(org.jutils.JUtilsException ex) {
-            IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
-            x.setLinkedException(ex);
-            throw x;
-        }
-    }
+    * Have to verify the others to. Don't forget to configure the server.
+    */
+   public void setClientProtocol(String arg) throws IllegalStateException {
+      try {
+         glob.getProperty().set("client.protocol", arg);
+      }catch(org.jutils.JUtilsException ex) {
+         IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
+         x.setLinkedException(ex);
+         throw x;
+      }
+   }
     
-    /**
-     * Null if not
-     */
-    public String getClientProtocol() {
-        return glob.getProperty().get("client.protocol", (String)null);
-    }
+   /**
+    * Null if not
+    */
+   public String getClientProtocol() {
+      return glob.getProperty().get("client.protocol", (String)null);
+   }
 
-    /**
-       Set the rmi hostname. Only when driver RMI.
-     */
-    public void setRmiHostname(String arg) throws IllegalStateException {
-        try {
-            glob.getProperty().set("rmi.hostname", arg);
-        }catch(org.jutils.JUtilsException ex) {
-            IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
-            x.setLinkedException(ex);
-            throw x;
-        }
-    }
+   /**
+      Set the rmi hostname. Only when driver RMI.
+   */
+   public void setRmiHostname(String arg) throws IllegalStateException {
+      try {
+         glob.getProperty().set("rmi.hostname", arg);
+      }catch(org.jutils.JUtilsException ex) {
+         IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
+         x.setLinkedException(ex);
+         throw x;
+      }
+   }
     
-    /**
-     * Null if not
-     */
-    public String getRmiHostname() {
-        return glob.getProperty().get("rmi.hostname", (String)null);
-    }
+   /**
+    * Null if not
+    */
+   public String getRmiHostname() {
+      return glob.getProperty().get("rmi.hostname", (String)null);
+   }
 
-    /**
-       Set the rmi registry port. Only when driver RMI.
-     */
-    public void setRmiRegistryPort(String arg) throws IllegalStateException {
-        try {
-            glob.getProperty().set("rmi.registryPort", arg);
-        }catch(org.jutils.JUtilsException ex) {
-            IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
-            x.setLinkedException(ex);
-            throw x;
-        }
-    }
+   /**
+      Set the rmi registry port. Only when driver RMI.
+   */
+   public void setRmiRegistryPort(String arg) throws IllegalStateException {
+      try {
+         glob.getProperty().set("rmi.registryPort", arg);
+      }catch(org.jutils.JUtilsException ex) {
+         IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
+         x.setLinkedException(ex);
+         throw x;
+      }
+   }
     
-    /**
-     * Null if not
-     */
-    public String getRmiRegistryPort() {
-        return glob.getProperty().get("rmi.registryPort", (String)null);
-    }
+   /**
+    * Null if not
+    */
+   public String getRmiRegistryPort() {
+      return glob.getProperty().get("rmi.registryPort", (String)null);
+   }
 
 
-    /**
-       Set the rmi registry port. Only when driver RMI.
-     */
-    public void setRmiAuthserverUrl(String arg) throws IllegalStateException {
-        try {
-            glob.getProperty().set("rmi.AuthServer.url", arg);
-        }catch(org.jutils.JUtilsException ex) {
-            IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
-            x.setLinkedException(ex);
-            throw x;
-        }
-    }
+   /**
+      Set the rmi registry port. Only when driver RMI.
+   */
+   public void setRmiAuthserverUrl(String arg) throws IllegalStateException {
+      try {
+         glob.getProperty().set("rmi.AuthServer.url", arg);
+      }catch(org.jutils.JUtilsException ex) {
+         IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
+         x.setLinkedException(ex);
+         throw x;
+      }
+   }
     
-    /**
-     * Null if not
-     */
-    public String getRmiAuthserverUrl() {
-        return glob.getProperty().get("rmi.AuthServer.url", (String)null);
-    }
+   /**
+    * Null if not
+    */
+   public String getRmiAuthserverUrl() {
+      return glob.getProperty().get("rmi.AuthServer.url", (String)null);
+   }
 
-    /**
-       Set the ior string. Only when driver IOR
-     */
-    public void setIor(String arg) throws IllegalStateException {
-        try {
-            glob.getProperty().set("ior", arg);
-        }catch(org.jutils.JUtilsException ex) {
-            IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
-            x.setLinkedException(ex);
-            throw x;
-        }
-    }
+   /**
+      Set the ior string. Only when driver IOR
+   */
+   public void setIor(String arg) throws IllegalStateException {
+      try {
+         glob.getProperty().set("ior", arg);
+      }catch(org.jutils.JUtilsException ex) {
+         IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
+         x.setLinkedException(ex);
+         throw x;
+      }
+   }
     
-    /**
-     * Null if not
-     */
-    public String getIor() {
-        return glob.getProperty().get("ior", (String)null);
-    }
+   /**
+    * Null if not
+    */
+   public String getIor() {
+      return glob.getProperty().get("ior", (String)null);
+   }
 
-     /**
-       Set the ior string through a file. Only when driver IOR
-     */
-    public void setIorFile(String arg) throws IllegalStateException {
-        try {
-            glob.getProperty().set("ior.file", arg);
-        }catch(org.jutils.JUtilsException ex) {
-            IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
-            x.setLinkedException(ex);
-            throw x;
-        }
-    }
+   /**
+      Set the ior string through a file. Only when driver IOR
+   */
+   public void setIorFile(String arg) throws IllegalStateException {
+      try {
+         glob.getProperty().set("ior.file", arg);
+      }catch(org.jutils.JUtilsException ex) {
+         IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
+         x.setLinkedException(ex);
+         throw x;
+      }
+   }
 
-     /**
-       Set the hostName or IP where xmlBlaster is running. Only when driver IOR
-     */
-    public void setIorHost(String arg) throws IllegalStateException {
-        try {
-            glob.getProperty().set("hostname", arg);
-        }catch(org.jutils.JUtilsException ex) {
-            IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
-            x.setLinkedException(ex);
-            throw x;
-        }
-    }
+   /**
+      Set the hostName or IP where xmlBlaster is running. Only when driver IOR
+   */
+   public void setIorHost(String arg) throws IllegalStateException {
+      try {
+         glob.getProperty().set("hostname", arg);
+      }catch(org.jutils.JUtilsException ex) {
+         IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
+         x.setLinkedException(ex);
+         throw x;
+      }
+   }
     
-    /**
-     * Null if not
-     */
-    public String getIorHost() {
-        return glob.getProperty().get("hostname", (String)null);
-    }
+   /**
+    * Null if not
+    */
+   public String getIorHost() {
+      return glob.getProperty().get("hostname", (String)null);
+   }
 
-    /**
-       Set port where the internal xmlBlaster-http server publishes its Ior. Only when driver IOR
-     */
-    public void setIorPort(String arg) throws IllegalStateException {
-        try {
-            glob.getProperty().set("port", arg);
-        }catch(org.jutils.JUtilsException ex) {
-            IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
-            x.setLinkedException(ex);
-            throw x;
-        }
-    }
+   /**
+      Set port where the internal xmlBlaster-http server publishes its Ior. Only when driver IOR
+   */
+   public void setIorPort(String arg) throws IllegalStateException {
+      try {
+         glob.getProperty().set("port", arg);
+      }catch(org.jutils.JUtilsException ex) {
+         IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
+         x.setLinkedException(ex);
+         throw x;
+      }
+   }
     
-    /**
-     * Null if not
-     */
-    public String getIorPort() {
-        return glob.getProperty().get("port", (String)null);
-    }
+   /**
+    * Null if not
+    */
+   public String getIorPort() {
+      return glob.getProperty().get("port", (String)null);
+   }
     
-    /**
-     * Null if not
-     */
-    public String getIorFile() {
-        return glob.getProperty().get("ior.file", (String)null);
-    }
-    
-    /**
-       <p>
-       Decides if logging should be done at al. Cant set log levels for now.
-       </p>
-       <p>
-       If ConnectionManager does not set a printWriter and the loggin is on,
-       logging will be done to the console.
-       </p>
+   /**
+    * Null if not
+    */
+   public String getIorFile() {
+      return glob.getProperty().get("ior.file", (String)null);
+   }
+   /**
+    * Set the security plugin to use, see {@link org.xmlBlaster.authentication.plugins}.
+    */
+   public void setSecurityPlugin(String arg) throws IllegalStateException{
+      try {
+         glob.getProperty().set("Security.Client.DefaultPlugin", arg);
+      }catch(org.jutils.JUtilsException ex) {
+         IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
+         x.setLinkedException(ex);
+         throw x;
+      }
+   }
+
+   /**
+    * Null if not.
+    */
+   public String getSecurityPlugin() {
+      return glob.getProperty().get("Security.Client.DefaultPlugin", (String)null);
+   }
+   
+   /**
+    * Set the session login timeout.
+    */
+   public void setSessionTimeout(String arg) throws IllegalStateException{
+      try {
+         glob.getProperty().set("session.timeout", arg);
+      }catch(org.jutils.JUtilsException ex) {
+         IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
+         x.setLinkedException(ex);
+         throw x;
+      }
+   }
+
+   /**
+    * Null if not.
+    */
+   public String getSessionTimeout() {
+      return glob.getProperty().get("session.timeout", (String)null);
+   }
+   
+   /**
+    * Set the maximum number of sessions a user is allowed to have opened. This must be coordinated with the JCA pooling settings.
+    */
+   public void setMaxSessions(String arg) throws IllegalStateException{
+      try {
+         glob.getProperty().set("session.maxSessions", arg);
+      }catch(org.jutils.JUtilsException ex) {
+         IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
+         x.setLinkedException(ex);
+         throw x;
+      }
+   }
+   
+   /**
+    * Null if not.
+    */
+   public String getMaxSession() {
+      return glob.getProperty().get("session.maxSessions", (String)null);
+   }
+   
+
+   /**
+    * Set the name of a propertyfile to read settings from.
+    *
+    * <p>if this option is set, all properties psecifyed in it will <i>overwrite</i> any properties sett on this ra, since the file will be loaded last.</p>
+    * <p>The context classloader will be searched first, then normal XmlBlaster search algoritm will be used.
+    */
+   public void setPropertyFileName(String fileName) {
+      propFile = fileName;
+   }
+
+   public String getPropertyFileName() {
+      return propFile;
+   }
+
+   /**
+      <p>
+      Decides if logging should be done at al. Cant set log levels for now.
+      </p>
+      <p>
+      If ConnectionManager does not set a printWriter and the loggin is on,
+      logging will be done to the console.
+      </p>
 
      
-     */
-    public void setLogging(String loggingOn) {
-        logger.setLogging(new Boolean(loggingOn).booleanValue());
-    }
+   */
+   public void setLogging(String loggingOn) {
+      logger.setLogging(new Boolean(loggingOn).booleanValue());
+   }
 
-    //--- Api betwen mcf and mc
-    PseudoUserPool getUserPool() {
-        return userPool;
-    }
+
+   private void loadPropertyFile() throws IllegalStateException{
+      //Only of not null
+      if (propFile== null ) 
+         return;
+      try {
+
+         
+         Property p = glob.getProperty();
+         InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(propFile);
+         if ( is == null) {
+            // Use xmlBlaster way of searching
+            FileInfo i = p.findPath(propFile);
+            is = i != null ?i.getInputStream(): null;
+         } // end of if ()
+         
+         if ( is != null) {
+            Properties prop = new Properties();
+            prop.load(is);
+            String[] args = Property.propsToArgs(prop);
+            p.addArgs2Props( args != null ? args : new String[0] ); 
+         } // end of if ()
+         
+      } catch (IOException e) {
+         IllegalStateException x = x = new IllegalStateException("Could not load properties from file " + propFile + " :"+e);
+         x.setLinkedException(e);
+         throw x;
+         
+      } catch (JUtilsException e) {
+         IllegalStateException x = x = new IllegalStateException("Could not load properties into Property: " + e);
+         x.setLinkedException(e);
+         throw x;
+      } // end of try-catch
+      
+   }
+
+   //--- Api betwen mcf and mc
+
+   Global getConfig() {
+      return glob;
+   }
 } // BlasterManagedConnectionFactory
 
 

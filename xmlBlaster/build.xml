@@ -127,7 +127,7 @@ TODO
    <property name="cp.core" value="lib/concurrent.jar:lib/remotecons.jar:lib/servlet.jar:lib/junit.jar:${JAVA_HOME}/lib/tools.jar:lib/xmlrpc.jar:lib/a2Blaster.jar:lib/jutils.jar:lib/gnu-regexp.jar"/>
    <property name="cp.other" value="lib/mail.jar:lib/activation.jar:lib/batik/batik.jar:lib/batik/js.jar:lib/jax.jar"/>
    <property name="cp.db" value="lib/Xindice/xalan-2.0.1.jar:lib/Xindice/xindice.jar:lib/Xindice/xmldb.jar"/>
-   <property name="cp.test" value="${testsuite.java.dir}"/>
+   <property name="cp.test" value="${testsuite.java.dir}:lib/testsuite.jar"/>
 
    <property name="soap.dir" value="./src/java/org/xmlBlaster/protocol/soap"/>
    <property name="soapdeploy.dir" value="./demo/soap"/>
@@ -239,6 +239,7 @@ TODO
       <echo message="   delete      --> cleans up the class directory and all created distribution jar files"/>
       <echo message="   deploy_war  --> create and deploys a web archive (e.g. for tomcat) to show persistent http callbacks"/>
       <echo message="                   demonstrates persistent http callbacks"/>
+      <echo message="   jboss-sar   --> create embedded XmlBlaster for JBoss"/>
       <echo message="   k2          --> create the J2EE connector"/>
       <echo message="   jms-adapter --> create the J2EE connector example bean"/>
       <echo message=""/>
@@ -462,11 +463,42 @@ TODO
       <jar destfile="${build.dir}/testsuite.jar" basedir="${build.dest}" includes="org/xmlBlaster/test/**"/>
       <copy file="${build.dir}/testsuite.jar" tofile="${lib.dir}/testsuite.jar"/>
    </target>
- 
+   <!-- =================================================================== -->
+   <!-- Builds the JBoss embeddable XmlBlaster MBean                        -->
+   <!-- =================================================================== -->
+   <target name="jboss-sar" depends="xmlBlaster">
+      <mkdir dir="${build.dir}/sar"/>
+      <copy file="./config/xmlBlaster-jmx.properties.template" tofile="${build.dir}/sar/xmlBlaster.properties" filtering="true"/>
+     <jar destfile="${build.dir}/xmlBlaster.sar">
+       <zipfileset dir="${src.java.dir}/org/xmlBlaster/j2ee/jmx/"
+		   includes="jboss-service.xml"
+		   prefix="META-INF"/>
+       <fileset dir="${build.dir}"
+                includes="xmlBlaster.jar"
+	/>
+        <fileset dir="${lib.dir}"
+                includes="activation.jar,idl.jar,jacorb.jar,omquery.jar,xtdash.jar,remotecons.jar,jax.jar,concurrent.jar,jaxp.jar,parser.jar, xmlrpc.jar,gnu-regexp.jar,tinySQL.jar"
+	/>
+       <fileset dir="${build.dir}/sar"
+                includes="xmlBlaster.properties"
+	/>
+     </jar>
+
+     <ear destfile="${build.dir}/xmlBlaster-sar.ear" appxml="${src.java.dir}/org/xmlBlaster/j2ee/jmx/application.xml">
+         <zipfileset dir="${src.java.dir}/org/xmlBlaster/j2ee/jmx/"
+		   includes="jboss-app.xml"
+		   prefix="META-INF"/>
+         <fileset dir="${build.dir}/"
+                includes="xmlBlaster.sar"
+	/>
+     </ear>
+     <copy file="${build.dir}/xmlBlaster-sar.ear" tofile="${lib.dir}/xmlBlaster-sar.ear"/>
+     <delete dir="${build.dir}/sar"/>
+   </target>
    <!-- =================================================================== -->
    <!-- Builds the J2EE XmlBlaster resource adapter, with example bean      -->
    <!-- =================================================================== -->
-   <target name="k2" depends="xmlBlaster" description="Build J2EE xmlBlaster resource adapter">
+   <target name="k2" depends="xmlBlaster">
       <!-- Pack rar archive -->
       <!-- create tmp dir to build it up -->
       <mkdir dir="${build.dir}/ra"/>
@@ -474,13 +506,13 @@ TODO
       <copy file="${build.dir}/xmlBlaster.jar"  toFile="${build.dir}/ra/xmlBlaster.jar"/>
       <copy file="${lib.dir}/jacorb.jar"  toFile="${build.dir}/ra/jacorb.jar"/>
       <copy file="${src.java.dir}/org/xmlBlaster/j2ee/k2/ra.xml" toFile="${build.dir}/ra/META-INF/ra.xml"/>
-
+<!-- Ad propertyfile to build by uncommenting this
+       <copy file="${src.java.dir}/org/xmlBlaster/j2ee/k2/blasterk2.properties" toFile="${build.dir}/ra/blasterk2.properties"/>
+-->
       <jar destfile="${build.dir}/xmlBlasterK2.rar" basedir="${build.dir}/ra" includes="**"/>
       <copy file="${build.dir}/xmlBlasterK2.rar" tofile="${lib.dir}/xmlBlasterK2.rar"/>
-      <!-- I know it is deprecated, but how else to remove dirs -->
-      <deltree dir="${build.dir}/ra"/>
+      <delete dir="${build.dir}/ra"/>
    </target>
- 
    <!-- =================================================================== -->
    <!-- Builds the J2EE XmlBlaster resource adapter example bean      -->
    <!-- =================================================================== -->
@@ -509,8 +541,7 @@ TODO
       </jar>
 
       <copy overwrite="yes" file="${build.dir}/JmsAdapter.jar" tofile="${lib.dir}/JmsAdapter.jar"/>
-      <!-- I know it is deprecated, but how else to remove dirs -->
-      <deltree dir="${build.dir}/jms"/>
+      <delete dir="${build.dir}/jms"/>
    </target>
  
    <!-- =================================================================== -->
@@ -1274,7 +1305,7 @@ TODO
     <target name="clean" depends="cpp-clean" description="Remove generated Java and C++ files">
        <delete dir="${build.dir}"/>
        <delete includeEmptyDirs="true" failonerror="false">
-          <fileset dir="${lib.dir}" includes="${name}.jar,demo.jar,testsuite.jar,${name}-${version}.jar,xmlBlasterK2.rar,JmsAdapter.jar"/>
+          <fileset dir="${lib.dir}" includes="${name}.jar,demo.jar,testsuite.jar,${name}-${version}.jar,xmlBlasterK2.rar,JmsAdapter.jar,xmlBlaster-ear.sar"/>
           <!-- fileset dir="${req.dir}" includes="*.class"/ -->
        </delete>
     </target>

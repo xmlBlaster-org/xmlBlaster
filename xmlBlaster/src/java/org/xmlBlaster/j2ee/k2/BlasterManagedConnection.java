@@ -18,6 +18,10 @@
 package org.xmlBlaster.j2ee.k2;
 
 import java.util.Vector;
+import java.util.Iterator;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.Collections;
 import java.io.PrintWriter;
 
 import javax.security.auth.Subject;
@@ -39,15 +43,24 @@ import javax.resource.spi.ConnectionEvent;
 
 
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.DisconnectQos;
+import org.xmlBlaster.util.ConnectQos;
+import org.xmlBlaster.util.ConnectReturnQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.protocol.ConnectionException;
-
+import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.j2ee.k2.client.BlasterConnection;
 
 /**
-   The way I have interpreted the spec it is possible for one ManagedConection
- to hold one physical connection and no more.
+   ManagedConnection for xmlBlaster.
+   
 
+   <p>The way I have interpreted the spec it is possible for one ManagedConection
+ to hold one physical connection and no more.</p>
+
+ <p>We now support connection sharing.</p>
+
+ <p>This is the old note about it:
  This might not be totaly spec compliant, since it does not support
  connection sharing. However, according to a mail on the Connector list
  from the lead spec writer, one way to be spec compliant without support
@@ -55,51 +68,26 @@ import org.xmlBlaster.j2ee.k2.client.BlasterConnection;
  there already is one active. This will also happen in asociatConnection.
  This is the way it is done here.
  
- Here are some old notes:
- 
-   Nop, this was wrong. The spec says (a) that an mc may represent *one*
-   physical connection to the resource, but (b) that an mc must be able
-   to creat many connections without invalidating the one that it already
-   have created. But that if one inactive is use, it may throw an exception.
+ Comment: this is NOT the way it is implemented int JBoss, therefore we
+ need to suppport connection sharing!</p>
 
-   I thing wed better not allow for reauthentication!!!
-
-   I thinkt we should use this stragey:
-
-   If the appserver is stupid enought to call an acticated mc several times,
-   it will not get a real physical connection the backend, but one and the
-   same he left to other. WE WILL HAVE TO FIX SYNCHRONIZATION!
-
-   So here is latest deal. 
-   - An mc have one pysical connection: XmlBlasterConnetion
-   - It may have one or more application wrappers around that connection, wich
-   must be synchronized somehow
-   - As long as we have a closed connection in standby we leav that out,
-   but we do not ever keep more that one in stand by. A connection will go
-   into standby if when close() is called on it and the standby entry is 
-   empty (do have have to use Slot here?)
  *
- * It is also up to the impl if it is able to reautenticate.
- *
- * A special twist with xmlBlaster is that to be able to have many
- * connection for one user, one have to use a trick: to actually use
- * several users. Here each logical user will be mapped to user_n.
- *
- *
- * Created: Fri Jan 26 21:03:54 2001
+ * <p>This mc now supports the session based login.</p>
  */
 
 public class BlasterManagedConnection implements ManagedConnection {
-    BlasterManagedConnectionFactory mcf;
-    String user;
-    String pwd;
-    String pseudoUser;
-    XmlBlasterConnection physicalPipe;
-    PrintWriter logWriter;
-    BlasterConnectionImpl handle = null;
-    boolean isDestroyed = false;
-    boolean closed = false;
+   BlasterManagedConnectionFactory mcf;
+   String user;
+   String pwd;
+   XmlBlasterConnection physicalPipe;
+   PrintWriter logWriter;
+   boolean isDestroyed = false;
+   boolean closed = false;
+   String me = null;
     Vector listeners = new Vector();
+   /** Holds all current  BlasterConnectionImpl handles. */
+   private Set handles = Collections.synchronizedSet(new HashSet());
+   
 
     public BlasterManagedConnection(BlasterManagedConnectionFactory mcf,
                                     String user, 
@@ -107,7 +95,6 @@ public class BlasterManagedConnection implements ManagedConnection {
         this.mcf = mcf;
         this.user = user;
         this.pwd = pwd;
-        
         try {
             /*
               Some params:
@@ -145,21 +132,29 @@ public class BlasterManagedConnection implements ManagedConnection {
             
         // Set up physical pipe
             // physicalPipe = new XmlBlasterConnection(orbEnv);
-            physicalPipe = new XmlBlasterConnection();
+            physicalPipe = new XmlBlasterConnection(mcf.getConfig() );
             System.out.println("Physical pipe: " + physicalPipe + " set up");
+            doLogin();
         }catch(XmlBlasterException ex) {
             throw new CommException("Could not create connection: " + ex);
         }
         
     }
 
+   public String toString() {
+      return me;
+   }
+
     //---- ManagedConnection ----
     /**
-     Get the physical connection handler.
- 
-     This bummer will be called in two situations. 
-     1. When a new mc has bean created and a connection is needed
-     2. When an mc has been fetched from the pool (returned in match*)
+     *Get the physical connection handler.
+     *
+     * <p>This bummer will be called in two situations. 
+     * <p>1. When a new mc has bean created and a connection is needed
+     * <p>2. When an mc has been fetched from the pool (returned in match*)
+
+     * <p>It may also be called multiple time without a cleanup, to support
+     *    connection sharing.
      */
     public Object getConnection(Subject subject, 
                                 ConnectionRequestInfo info) 
@@ -178,41 +173,46 @@ public class BlasterManagedConnection implements ManagedConnection {
         // If we are here we may set the user if its null
         if (user == null)
             user = cred.name;
-
-        // Check if we have or might produce a valid handle
-        if (handle != null && !closed){
-            // We already have a handle, but it is active
-            throw new IllegalStateException("Connection sharing not supported");
-        }else if (handle == null) {
-            // Create a new one
-            handle = new BlasterConnectionImpl(this);
-            // login to physical connection
-            doLogin();
-            closed = false;
-        } else if (handle != null && closed) {
-            // Reactivate
-            handle.open();
-        } else {
-            // Here we shoudl never be
-            throw new IllegalStateException("Hoops, how did we end up here. Physcial pipe is probabky null");
+        
+        if (isDestroyed) {
+           throw new IllegalStateException("ManagedConnection already destroyd");
         }
-        return handle;
+
+              
+      // Create a handle
+      BlasterConnectionImpl handle = new BlasterConnectionImpl(this);
+      handles.add(handle);
+      return handle;
+      
     }
-    
+   /**
+    * Destroy all handles.
+    *
+    * @throws ResourceException    Failed to close one or more handles.
+    */
+   private void destroyHandles() throws ResourceException {
+      Iterator iter = handles.iterator();
+      
+      while (iter.hasNext()) {
+         ((BlasterConnectionImpl)iter.next()).destroy();
+      }
+
+      // clear the handles map
+      handles.clear();
+   }
     /**
      * Destroy the physical connection
      */
     public void destroy() throws ResourceException {
         if (isDestroyed) return;
         isDestroyed = true;
-        //
-        // Destroy handle
-        handle.destroy();
 
-        // Clean the used pseudouser
-        releasePseudoUser();
+        // destory handles
+        destroyHandles();
+   
         // Try logout first
-        physicalPipe.logout();
+        //physicalPipe.logout();
+        physicalPipe.disconnect(new DisconnectQos());
         physicalPipe = null;// Is this good?
     }
     
@@ -234,8 +234,8 @@ public class BlasterManagedConnection implements ManagedConnection {
             throw new IllegalStateException("ManagedConnection already destroyd");
         // 
         closed = true;
-        handle.cleanup();
-        
+        // destory handles      
+        destroyHandles();
     }
 
 
@@ -243,23 +243,21 @@ public class BlasterManagedConnection implements ManagedConnection {
      * Move a handler from one mc to this one
      */ 
     
-    public void associateConnection(Object connection)
-        throws ResourceException {
-
-        if(!isDestroyed &&
-           handle == null &&
-           connection instanceof BlasterConnectionImpl) {
-            BlasterConnectionImpl h = (BlasterConnectionImpl) connection;
-            h.setBlasterManagedConnection(this);
-            handle = h;
-        }else {
-            throw new IllegalStateException("ManagedConnection in an illegal state");
-        }
-
-    }
-
-
-    public void addConnectionEventListener(ConnectionEventListener listener) {
+   public void associateConnection(Object obj)
+      throws ResourceException {
+      if (!(obj instanceof BlasterConnectionImpl))
+         throw new IllegalStateException("Cant call associateConnection with a handle that is not of type BlasterConnectionImp: " + obj.getClass().getName());
+      
+      if (isDestroyed)
+         throw new IllegalStateException("ManagedConnection in an illegal state, is destroyed");
+      
+      BlasterConnectionImpl h = (BlasterConnectionImpl)obj;
+      h.setBlasterManagedConnection(this);
+      handles.add(h);
+   }
+   
+   
+   public void addConnectionEventListener(ConnectionEventListener listener) {
         listeners.addElement(listener);
     }
 
@@ -294,8 +292,9 @@ public class BlasterManagedConnection implements ManagedConnection {
 
     //---- Api between mc and handle
     void removeHandle(BlasterConnectionImpl handle) {
-        handle = null;
-        closed = true;
+       handles.remove(handle);
+       //handle = null;
+       //closed = true;
     }
 
 
@@ -341,8 +340,9 @@ public class BlasterManagedConnection implements ManagedConnection {
     }
     
     void handleClose(BlasterConnection impl) {
-        closed = true;
+       closed = true;
         ConnectionEvent ev = new ConnectionEvent(this, ConnectionEvent.CONNECTION_CLOSED);
+        ev.setConnectionHandle(impl);
         Vector list = (Vector) listeners.clone();
         int size = list.size();
         for (int i=0; i<size; i++) {
@@ -377,34 +377,22 @@ public class BlasterManagedConnection implements ManagedConnection {
 
     // --- internal helper methods ----
 
-    private void doLogin() throws CommException {
-        // Every time we login we map a user to a pseudo-user
-            pseudoUser = getPseudoUser();
-            try {
-                System.out.println("Physical pipe: " + physicalPipe);
-                physicalPipe.login(
-                                   // This is a pseudouser, user-n
-                                   pseudoUser,
-                                   pwd,
-                                   // No callback allowed for now, use message
-                                   // driven beans
-                                   null);
-            }catch(XmlBlasterException ex) {
-                throw new CommException("Could not login : " +ex);
-            }
-            
-    }
-
-    private String getPseudoUser() {
-        if (pseudoUser == null) 
-            pseudoUser = mcf.getUserPool().popPseudoUser(user);
-        return pseudoUser;
-    
-    }
-
-    private void releasePseudoUser() {
-        mcf.getUserPool().push(user,pseudoUser);
-    }
+   private void doLogin() throws CommException {
+      try {
+         ConnectQos qos = new ConnectQos(mcf.getConfig(), user,pwd); 
+         qos.setPtpAllowed(false);
+         
+         System.out.println("Physical pipe: " + physicalPipe+"/CQos:"+qos);
+         
+         ConnectReturnQos ret = physicalPipe.connect(qos,null);
+         me = "BlasterManagedConnection/"+user+"/"+ret.getSessionId();
+         
+      }catch(XmlBlasterException ex) {
+         throw new CommException("Could not login : " +ex);
+      }
+      
+   }
+   
 } // BlasterManagedConnection
 
 

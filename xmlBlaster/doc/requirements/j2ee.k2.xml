@@ -1,0 +1,46 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='j2ee.k2' type='NEW' prio='LOW' status="CLOSED">
+   <topic>
+      Java Connector Architecture compaible resource adapter.
+   </topic>
+   <description>
+     <p>This is a JCA 1.0 resource adapter for XmlBlaster client connections. It should potetentially be possible to use in any JCA 1.0 compatible J2EE server, but has only been tested with JBoss. Current supported version of JBoss is 3.0.</p>
+    <p>The resource adapter makes it possible to use XmlBlaster as a managed resource from Enterprise Java Beans. Since no beans except Message Driven Beans support asynchronous invocations the adapter does not support subscribing to messages. It only supports sending and synchronous gets.</p>
+
+    <p>The adapter is distributed in the archive xmlBlasterK2.rar. This is the archive you should deploy in your J2EE server. You may edit the ra.xml inside it if you want to configure it, or use the vendor specific way of doing it. </p>
+
+    <h3>JBoss</h3>
+    <p>To install it in JBoss 3.0 you should copy xmlBlasterK2.rar into the deployment directory. You also have to create a *-service.xml file. There is an example of this in the source distribution, see further down.</p>
+   </description>
+   <example lang="XML" type="HTML">
+    <p>To use the resource adapter from a bean you need to configure it in the deployment descriptors. In ejb-jar.xml you need to add something like this:</p>
+    <pre>
+        &lt;resource-ref&gt;
+               &lt;res-ref-name&gt;xmlBlaster&lt;/res-ref-name&gt;
+               &lt;res-type&gt;org.xmlBlaster.j2ee.k2.client.BlasterConnectionFactory&lt;/res-type&gt;
+               &lt;res-auth&gt;Container&lt;/res-auth&gt;
+        &lt;/resource-ref&gt;
+</pre>
+<p>You also have to configure your vendor specific deployment descriptor. Here is how it may look in jboss-jar.xml:</p>
+    <pre>    &lt;resource-managers&gt;
+        &lt;resource-manager&gt;
+          &lt;res-name&gt;xmlBlaster&lt;/res-name&gt;
+          &lt;res-jndi-name&gt;java:/XmlBlasterDS&lt;/res-jndi-name&gt;
+    &lt;/resource-manager&gt;
+    &lt;/resource-managers&gt;
+</pre>
+<p>And</p>
+<pre>          
+         &lt;resource-ref&gt;
+           &lt;res-ref-name&gt;xmlBlaster&lt;/res-ref-name&gt;
+           &lt;resource-name&gt;xmlBlaster&lt;/resource-name&gt;
+         &lt;/resource-ref&gt;
+</pre>
+   </example>
+   <see type="LOCAL">../../demo/javaclients/j2ee/k2</see>
+   <author>pra@tim.se</author>
+   <date>2002 09 16</date>
+   <revision>$Revision: 1.1 $</revision>
+</requirement>

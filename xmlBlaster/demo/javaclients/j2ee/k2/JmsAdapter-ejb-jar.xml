@@ -10,16 +10,19 @@
 	<ejb-name>JmsAdapter</ejb-name>
 	<ejb-class>javaclients.j2ee.k2.JmsAdapter</ejb-class>
 
-        <jms-message-selector></jms-message-selector>
+        <message-selector></message-selector>
 
          <transaction-type>Container</transaction-type>
         <resource-ref>
                <res-ref-name>xmlBlaster</res-ref-name>
                <res-type>org.xmlBlaster.j2ee.k2.client.BlasterConnectionFactory</res-type>
                <res-auth>Container</res-auth>
+<!--
+               <res-sharing-scope>Unshareable</res-sharing-scope>
+-->
         </resource-ref>
         <message-driven-destination>
-            <jms-destination-type>javax.jms.Topic</jms-destination-type>
+            <destination-type>javax.jms.Topic</destination-type>
             <subscription-durability>NonDurable</subscription-durability>
         </message-driven-destination>
       </message-driven>

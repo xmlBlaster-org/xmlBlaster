@@ -14,7 +14,12 @@
         <connectionfactory-impl-class>org.xmlBlaster.j2ee.k2.BlasterConnectionFactoryImp</connectionfactory-impl-class>
         <connection-interface>org.xmlBlaster.j2ee.k2.client.BlasterConnection</connection-interface>
         <connection-impl-class>org.xmlBlaster.j2ee.k2.BlasterConnectionImpl</connection-impl-class>
-        <transaction-support>no_transaction</transaction-support>
+        <transaction-support>NoTransaction</transaction-support>
+        <config-property>
+            <config-property-name>PropertyFileName</config-property-name>
+            <config-property-type>java.lang.String</config-property-type>
+            <config-property-value></config-property-value>
+        </config-property>
         <config-property>
             <config-property-name>ClientProtocol</config-property-name>
             <config-property-type>java.lang.String</config-property-type>
@@ -23,7 +28,27 @@
        <config-property>
             <config-property-name>IorHost</config-property-name>
             <config-property-type>java.lang.String</config-property-type>
-            <config-property-value>151.177.109.74</config-property-value>
+            <config-property-value>80.72.2.80</config-property-value>
+        </config-property>
+       <config-property>
+            <config-property-name>IorPort</config-property-name>
+            <config-property-type>java.lang.String</config-property-type>
+            <config-property-value>3412</config-property-value>
+        </config-property>
+         <config-property>
+            <config-property-name>SessionTimeout</config-property-name>
+            <config-property-type>java.lang.String</config-property-type>
+            <config-property-value>38000</config-property-value>
+        </config-property>
+        <config-property>
+            <config-property-name>MaxSessions</config-property-name>
+            <config-property-type>java.lang.String</config-property-type>
+            <config-property-value>50</config-property-value>
+        </config-property>
+        <config-property>
+            <config-property-name>SecurityPlugin</config-property-name>
+            <config-property-type>java.lang.String</config-property-type>
+            <config-property-value>htpasswd,1.0</config-property-value>
         </config-property>
          <config-property>
             <config-property-name>Logging</config-property-name>
@@ -31,7 +56,7 @@
             <config-property-value>true</config-property-value>
         </config-property>
         <auth-mechanism>
-            <auth-mech-type>basic-password</auth-mech-type>
+            <auth-mech-type>BasicPassword</auth-mech-type>
             <credential-interface>javax.resource.security.PasswordCredential</credential-interface>
         </auth-mechanism>
         <reauthentication-support>false</reauthentication-support>

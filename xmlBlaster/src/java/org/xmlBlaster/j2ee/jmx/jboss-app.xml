@@ -1,0 +1,6 @@
+<jboss-app>
+   <loader-repository>xmlBlaster:loader=xmlBlaster-sar.ear</loader-repository>
+   <module>
+      <service>xmlBlaster.sar</service>
+   </module>
+</jboss-app>

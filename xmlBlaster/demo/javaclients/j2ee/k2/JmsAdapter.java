@@ -104,6 +104,7 @@ public class JmsAdapter implements MessageDrivenBean, MessageListener{
             
         }finally {   
             try {
+               System.err.println("Jms closing con: " + con);
                 if (con != null)
                     con.close ();
             }
