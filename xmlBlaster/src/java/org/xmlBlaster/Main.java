@@ -316,7 +316,7 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
             }
             else if (line.toLowerCase().equals("q")) {
                shutdown();
-               if (!glob.isEmbedded())
+               if (glob == null || !glob.isEmbedded())
                   System.exit(0);
             }
             else // if (keyChar == '?' || Character.isLetter(keyChar) || Character.isDigit(keyChar))
