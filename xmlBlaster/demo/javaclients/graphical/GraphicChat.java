@@ -5,6 +5,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 
 package javaclients.graphical;
+import CH.ifa.draw.util.StorageFormatManager;
+import CH.ifa.draw.contrib.SVGStorageFormat;
 
 import javax.swing.JToolBar;
 import CH.ifa.draw.framework.*;
@@ -50,6 +52,22 @@ public class GraphicChat extends /*NetApp*/ JavaDrawApp {
 
       tool = new ConnectionTool(this, new LineConnection());
       palette.add(createToolButton(IMAGES + "CONN", "Connection Tool", tool));
+   }
+
+
+   /**
+    * Factory method to create a StorageFormatManager for supported storage formats.
+    * Different applications might want to use different storage formats and can return
+    * their own format manager by overriding this method.
+    * 
+    * TODO: Read storage formats from a config file.
+    */
+   public StorageFormatManager createStorageFormatManager() {
+      StorageFormatManager storageFormatManager = new StorageFormatManager();
+      SVGStorageFormat format = new SVGStorageFormat();
+      storageFormatManager.addStorageFormat(format);
+      storageFormatManager.setDefaultStorageFormat(format);
+      return storageFormatManager;
    }
 
    //-- main -----------------------------------------------------------
