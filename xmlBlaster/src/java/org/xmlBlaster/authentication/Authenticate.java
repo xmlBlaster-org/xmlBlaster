@@ -2,9 +2,9 @@
 Name:      Authenticate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org (LGPL)
-Comment:   Handling the Client data
-           $Revision: 1.2 $
-           $Date: 1999/11/14 21:53:18 $
+Comment:   Login for clients
+           $Revision: 1.3 $
+           $Date: 1999/11/15 09:35:48 $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -21,7 +21,10 @@ import java.util.*;
 import org.omg.PortableServer.*;
 
 /**
- * Authenticate
+ * Authenticate. 
+ *
+ * Authenticate a client via login<br>
+ * The login method serves as a factory for a xmlBlaster.Server Reference
  */
 public class Authenticate
 {
@@ -37,7 +40,10 @@ public class Authenticate
 
    private org.omg.CORBA.ORB orb;
 
-   private ServerPOATie xmlBlasterServant;  // extends org.omg.PortableServer.Servant
+   // USING TIE:
+   // private ServerPOATie xmlBlasterServant;  // extends org.omg.PortableServer.Servant
+   // NOT TIE
+   private ServerImpl xmlBlasterServant;  // extends org.omg.PortableServer.Servant
 
 
    /**
@@ -56,22 +62,17 @@ public class Authenticate
 
 
    /**
-    * Singleton access method
-    */
-   public static Authenticate getInstance()
-   {
-      synchronized (Authenticate.class)
-      {
-         if (authenticate == null) {
-            Log.panic("Authenticate", "Wrong constructor for instantiation");
-         }
-      }
-      return authenticate;
-   }
-
-
-   /**
     * private Constructor for Singleton Pattern
+    *
+    * Authenticate creates a single instance of the xmlBlaster.Server.
+    * Clients need first to do a login, from where they get
+    * an IOR which serves them, one thread for each request.<p>
+    *
+    * Every client has its own IOR, but in reality this IOR is mapped
+    * to a single servant.<p>
+    * This allows:<br>
+    * - Identification of the client thru its unique IOR<br>
+    * - Only a few threads are enough to serve many clients
     */
    private Authenticate(AuthServerImpl authServerImpl)
    {
@@ -101,15 +102,15 @@ public class Authenticate
          xmlBlasterPOA = parent.create_POA(myPOA_name, parent.the_POAManager(), policies);
          for (int i=0; i<policies.length; i++) policies[i].destroy();
 
-         // This servant handles all requests:
-         // USING TIE:
-         xmlBlasterServant = new ServerPOATie(new ServerImpl(orb, this));
-         // NOT TIE:
-         // xmlBlasterServant = new ServerImpl(orb);
+         // This single servant handles all requests (with the policies from above)
 
-         //xmlBlasterPOA.set_servant(xmlBlasterServant);
-         //org.omg.CORBA.Object o = xmlBlasterPOA.servant_to_reference(xmlBlasterServant);
+         // USING TIE:
+         // xmlBlasterServant = new ServerPOATie(new ServerImpl(orb, this));
+         // NOT TIE:
+         xmlBlasterServant = new ServerImpl(orb, this);
+
          byte[] default_oid = xmlBlasterPOA.activate_object(xmlBlasterServant);
+         Log.info(ME, "Default Active Object Map ID=" + default_oid);
       }
       catch ( Exception e ) {
          e.printStackTrace();
@@ -122,8 +123,13 @@ public class Authenticate
 
    /**
     * Authentication of a client
+    *
     * @param cb The Callback interface of the client
-    * @return a unique sessionId for the client, to be used in following calls
+    * @return The IOR of the xmlBlaster.Server interface, use:
+    *         <code>org.omg.CORBA.Object oo = orb.string_to_object(sessionId);
+    *               xmlServer = ServerHelper.narrow(oo);
+    *         </code><br>
+    *         to access the server in the client.
     */
    public String login(String loginName, String passwd,
                        BlasterCallback callback,
@@ -156,6 +162,7 @@ public class Authenticate
 
    /**
     * Logout of a client
+    *
     * @param the unique sessionId for the client
     */
    public void logout(String sessionId) throws XmlBlasterException
@@ -172,6 +179,12 @@ public class Authenticate
    }
 
 
+   /**
+    * Use this method to check a clients authentication
+    *
+    * @return ClientInfo - if the client is OK
+    * @exception Access denied
+    */
    public ClientInfo check(String sessionId) throws XmlBlasterException
    {
       synchronized(clientInfoMap) {

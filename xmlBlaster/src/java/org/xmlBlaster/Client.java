@@ -34,6 +34,7 @@ public class Client
             authServer = AuthServerHelper.narrow(nc.resolve(name));
          }
 
+         //---------- Building a Callback server ----------------------
          // Getting the default POA implementation "RootPOA"
          org.omg.PortableServer.POA poa = 
             org.omg.PortableServer.POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
@@ -43,15 +44,10 @@ public class Client
          // callbackTie._orb( orb ); // necessary?
          BlasterCallback callback = BlasterCallbackHelper.narrow(poa.servant_to_reference( callbackTie ));
 
-         /*
-         try {
-            Log.info("You are " + orb.default_principal().name(java.net.InetAddress.getLocalHost().toString().getBytes()));
-         } catch (Exception e) {
-         }
-         */
 
          String qos = orb.object_to_string(callback);
 
+         //----------- Login to the server -----------------------
          String sessionId = "";
          try {
             String loginName = "Karl";
@@ -61,12 +57,10 @@ public class Client
             Log.warning(ME, "XmlBlasterException: " + e.reason);
          }
 
-         Log.info(ME, "Got xmlBlaster IOR= " + sessionId);
-         
+         //------------ Use the returned IOR as Server Reference ------
+         Log.info(ME, "Got xmlBlaster server IOR");
+
          org.omg.CORBA.Object oo = orb.string_to_object(sessionId);
-
-         Log.info(ME, "Got xmlBlaster = " + oo.getClass().getName() + " : " + oo.toString());
-
          xmlServer = ServerHelper.narrow(oo);
 
          String xmlKey = "KEY_FOR_SMILEY";

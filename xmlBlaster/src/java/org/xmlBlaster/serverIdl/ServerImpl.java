@@ -4,7 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org (LGPL)
 Comment:   Implementing the CORBA xmlBlaster-server interface
            $Revision $
-           $Date: 1999/11/14 21:55:20 $
+           $Date: 1999/11/15 09:35:48 $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.serverIdl;
 
@@ -18,10 +18,11 @@ import java.util.*;
 
 
 /**
-   Implements the xmlBlaster server CORBA Interface
-*/
-//public class ServerImpl extends ServerPOA {            // inheritance approach
-public class ServerImpl implements ServerOperations {    // tie approach
+ * Implements the xmlBlaster server CORBA Interface
+ * @see xmlBlaster.idl
+ */
+public class ServerImpl extends ServerPOA {            // inheritance approach
+//public class ServerImpl implements ServerOperations {    // TIE approach
 
    private final String ME = "ServerImpl";
    private org.omg.CORBA.ORB orb;
@@ -41,22 +42,7 @@ public class ServerImpl implements ServerOperations {    // tie approach
 
 
    /**
-    * Construct a transient object.
-    */
-   public ServerImpl()
-   {
-      super();
-      /*
-      if (Log.CALLS) Log.trace(ME, "Entering constructor without ORB argument");
-      this.requestBroker = RequestBroker.getInstance(this);
-      this.authenticate = Authenticate.getInstance();
-      */
-      Log.panic(ME, "Wrong constructor");
-   }
-
-
-   /**
-    * @see xmlBlaster.idl
+    * Subscribe to messages
     */
    public void subscribe(String sessionId, String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
@@ -66,7 +52,27 @@ public class ServerImpl implements ServerOperations {    // tie approach
          try {
             org.omg.PortableServer.Current poa_current = org.omg.PortableServer.CurrentHelper.narrow(
                                                          orb.resolve_initial_references("POACurrent"));
-            Log.warning(ME, "subscribe for oid: " + poa_current.get_object_id());
+            byte[] active_oid = poa_current.get_object_id();
+            Log.warning(ME, "subscribe for poa oid: " + active_oid);
+            org.omg.PortableServer.POA xmlBlasterPOA = poa_current.get_POA();
+            org.omg.PortableServer.Servant servant = xmlBlasterPOA.id_to_servant(active_oid);
+            org.omg.CORBA.Object servantObj = xmlBlasterPOA.id_to_reference(active_oid);
+            String IOR = orb.object_to_string(servantObj);
+            Log.warning(ME, "subscribe for IOR: " + IOR);
+
+
+            //org.omg.PortableServer.Servant servant = poa_current.getServant();
+            //byte[] oid = xmlBlasterPOA.servant_to_id(servant);
+            //Log.warning(ME, "subscribe for servant oid: " + oid);
+
+            // NOT TIE:
+            /* is wrong:
+            byte[] this_oid = xmlBlasterPOA.reference_to_id(_this());
+            Log.warning(ME, "subscribe for _this() oid: " + this_oid);
+            */
+
+            Log.warning(ME, "subscribe for servant _object_id() oid: " + _object_id()); // == poa_current.get_object_id()
+
          } catch (Exception e) {
             Log.error(ME, "subscribe for oid");
          }
