@@ -169,7 +169,12 @@ public class Destination implements java.io.Serializable
          sb.append(" queryType='").append(queryType).append("'");
       if (forceQueuing != DEFAULT_forceQueuing)
          sb.append(" forceQueuing='").append(forceQueuing).append("'");
-      sb.append(">").append(destination).append("</destination>");
+
+      // Set the real used destination to support PtP routing
+      if (destination.isNodeIdExplicitlyGiven())
+         sb.append(">").append(destination.getAbsoluteName()).append("</destination>");
+      else
+         sb.append(">").append(destination.getRelativeName()).append("</destination>");
 
       return sb.toString();
    }
