@@ -3,7 +3,7 @@ Name:      TestSubNoInitial.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubNoInitial.java,v 1.4 2002/12/18 13:16:20 ruff Exp $
+Version:   $Id: TestSubNoInitial.java,v 1.5 2002/12/29 23:22:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -212,6 +212,9 @@ public class TestSubNoInitial extends TestCase implements I_Callback
       log.info(ME, "Receiving update of message oid=" + updateKey.getOid() + " subId=" + updateQos.getSubscriptionId() + " ...");
 
       numReceived += 1;
+
+      if (updateQos.isErased())
+         return "";
 
       assertInUpdate = "Wrong cbSessionId, expected:" + this.cbSessionId + " but was:" + cbSessionId_;
       assertEquals("Wrong cbSessionId", this.cbSessionId, cbSessionId_);
