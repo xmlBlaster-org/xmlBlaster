@@ -3,7 +3,7 @@ Name:      XmlBlasterProperty.java
 Project:   jutils.org
 Copyright: jutils.org, see jutils-LICENSE file
 Comment:   Properties for jutils, see jutils.property
-Version:   $Id: XmlBlasterProperty.java,v 1.6 2000/07/24 07:08:00 ruff Exp $
+Version:   $Id: XmlBlasterProperty.java,v 1.7 2000/07/24 07:40:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -60,7 +60,7 @@ public class XmlBlasterProperty
     * @param defaultVal The default value to return if key is not found
     * @return The String array for the given key, the elements are trimmed (no leading/following white spaces)
     */
-   public final String[] get(String key, String[] defaultVal)
+   public final static String[] get(String key, String[] defaultVal)
    {
       return getProps().get(key, defaultVal, ",");
    }
