@@ -463,7 +463,7 @@ public class MessageUnitHandler
     * Returns a Vector with SubscriptionInfo instances of this session
     * (a session may subscribe the same message multiple times)
     */
-   final Vector findSubscriber(SessionInfo sessionInfo) {
+   public final Vector findSubscriber(SessionInfo sessionInfo) {
       Vector vec = null;
       synchronized(subscriberMap) {
          Iterator iterator = subscriberMap.values().iterator();
