@@ -266,7 +266,7 @@ public abstract class Executor implements ExecutorBase
          }
          else if (MethodName.UPDATE_ONEWAY == receiver.getMethodName()) {
             if (this.cbClient == null) {
-               throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CALLBACKSERVER_CREATION, ME, "The SOCKET callback driver is not created, can't process the remote invocation");
+               throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CALLBACKSERVER_CREATION, ME, "The SOCKET callback driver is not created, can't process the remote invocation. Try configuration ' -protocol SOCKET'");
             }
             MsgUnitRaw[] arr = receiver.getMessageArr();
             if (arr == null || arr.length < 1) {
@@ -277,7 +277,7 @@ public abstract class Executor implements ExecutorBase
          }
          else if (MethodName.UPDATE == receiver.getMethodName()) {
             if (this.cbClient == null) {
-               throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CALLBACKSERVER_CREATION, ME, "The SOCKET callback driver is not created, can't process the remote invocation");
+               throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CALLBACKSERVER_CREATION, ME, "The SOCKET callback driver is not created, can't process the remote invocation. Try configuration ' -protocol SOCKET'");
             }
             MsgUnitRaw[] arr = receiver.getMessageArr();
             if (arr == null || arr.length < 1)
