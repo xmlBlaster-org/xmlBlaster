@@ -15,8 +15,16 @@ For XML editing with a Java GUI you can use Xeena:
 http://www.alphaworks.ibm.com/tech/xeena
 
 
+Simply type
+
+     build.sh whitepaper
+
+to create an PDF and HTML variant.
+
+
 Generate HTML output:
 =====================
+
    I added our css into /opt/docbook/html/docbook.xsl (how to include it into the xml file?)
       <link REL="stylesheet" type="text/css" href="xmlBlaster.css"/>
 
