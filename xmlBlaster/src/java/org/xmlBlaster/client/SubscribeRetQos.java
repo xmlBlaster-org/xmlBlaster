@@ -109,13 +109,16 @@ public final class SubscribeRetQos implements I_RetQos
    }
 
    /**
-    * Get the key oid of the subscribeed message
+    * Get the identifier (unique handle) for this subscription. 
     */
    public final String getSubscriptionId() {
       return this.subId;
    }
 
-   public final void setSubscribeId(String subId) {
+   /**
+    * Set the identifier (unique handle) for this subscription. 
+    */
+   public final void setSubscriptionId(String subId) {
       this.subId = subId;
    }
 
