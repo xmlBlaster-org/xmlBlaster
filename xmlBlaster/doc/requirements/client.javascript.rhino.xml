@@ -9,7 +9,7 @@
       communicate with xmlBlaster.
    </topic>
    <description>
-      You can use the java XmlBlasterConnection class as you where programming in java. 
+      You can use the java I_XmlBlasterAccess class as you where programming in java. 
       There is an implementation of the I_Callback Interface called  
       <code>org.xmlBlaster.client.JavascriptCallback</code> which can be instantiated and 
       passed when logging in. Whenever a message corresponds to a subscription, the update 
@@ -58,7 +58,7 @@ importPackage(Packages.org.xmlBlaster.util);
    var y0  = 0; // the y coordinate ...
    var doc;     // this svg document 
    var currentElement; // the element which has been selected.
-   var xmlBlaster; // the xmlBlasterConnection object used to communicate with xmlBlaster
+   var xmlBlaster; // the xmlBlasterAccess object used to communicate with xmlBlaster
 
 
    
@@ -144,12 +144,13 @@ importPackage(Packages.org.xmlBlaster.util);
       var key = new String("<?xml version='1.0'?><key oid='' queryType='XPATH'>//chess</key>");
 
       args = new Array(2);
-      // you can set here the command line to pass to XmlBlasterConnection
+      // you can set here the command line to pass to I_XmlBlasterAccess
       args[0] = new String("-hostname");
       args[1] = new String("localhost");
-      xmlBlaster = new XmlBlasterConnection(args);
+      xmlBlaster = new XmlBlasterAccess(args);
 
-      xmlBlaster.login(getUser(), "secret", new ConnectQos(), new JavascriptCallback(this));
+      ConnectQos connectQos = new ConnectQos(glob, getUser(), "secret")
+      xmlBlaster.connect(connectQos, new JavascriptCallback(this));
       xmlBlaster.subscribe(key, "<qos></qos>");
    }
     
@@ -198,7 +199,7 @@ importPackage(Packages.org.xmlBlaster.util);
    <author>laghi@swissinfo.org</author>
    <effort>1</effort>
    <date>2001 04 06</date>
-   <revision>$Revision: 1.5 $</revision>
+   <revision>$Revision: 1.6 $</revision>
    <testcase status="INWORK">
       <name>-</name>
       <comment>Should even be tested with mozilla</comment>

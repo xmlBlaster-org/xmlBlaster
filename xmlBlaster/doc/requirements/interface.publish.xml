@@ -362,7 +362,7 @@ print "\nLogout done, bye.\n";
    <see type="API">org.xmlBlaster.util.MsgUnit</see>
    <see type="API">org.xmlBlaster.client.qos.PublishQos</see>
    <see type="API">org.xmlBlaster.client.qos.PublishReturnQos</see>
-   <see type="API">org.xmlBlaster.client.protocol.XmlBlasterConnection</see>
+   <see type="API">org.xmlBlaster.client.I_XmlBlasterAccess</see>
    <see type="API">org.xmlBlaster.protocol.xmlrpc.XmlBlasterImpl</see>
 
    <see type="REQ">interface</see>

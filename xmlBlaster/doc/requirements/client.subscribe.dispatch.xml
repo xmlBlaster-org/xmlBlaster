@@ -3,13 +3,13 @@
 
 <requirement id='client.subscribe.dispatch' type='NEW' prio='LOW' status="CLOSED">
    <topic>
-      XmlBlasterConnection is a helper class for Java clients which supports
+      I_XmlBlasterAccess is the Java client side interface to xmlBlaster which supports
       a subscribe variant, allowing to dispatch callback messages to dedicated
       update methods.
    </topic>
    <description>
      <p>
-      In XmlBlasterConnection.java there is a subscribe() variant with an
+      In I_XmlBlasterAccess.java there is a subscribe() variant with an
       I_Callback argument.
       This way you can specify for every subscription another callback handling
       method.
@@ -26,7 +26,7 @@
       ...
 
       // login:
-      XmlBlasterConnection con = new XmlBlasterConnection(args);
+      I_XmlBlasterAccess con = glob.getXmlBlasterAccess();
       con.connect(connectQos, this);
 
       ...
@@ -41,11 +41,11 @@
          });
       ]]>
    </example>
-   <see>org.xmlBlaster.client.protocol.XmlBlasterConnection</see>
+   <see>org.xmlBlaster.client.I_XmlBlasterAccess</see>
    <author>xmlBlaster@marcelruff.info</author>
    <hacker>xmlBlaster@marcelruff.info</hacker>
    <date>2001 08 30</date>
-   <revision>$Revision: 1.5 $</revision>
+   <revision>$Revision: 1.6 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

@@ -265,12 +265,12 @@
    <see type="API">org.xmlBlaster.engine.xml2java.XmlKey</see>
    <see type="API">org.xmlBlaster.client.qos.SubscribeQos</see>
    <see type="API">org.xmlBlaster.client.qos.SubscribeReturnQos</see>
-   <see type="API">org.xmlBlaster.client.protocol.XmlBlasterConnection</see>
+   <see type="API">org.xmlBlaster.client.I_XmlBlasterAccess</see>
    <see type="API">org.xmlBlaster.protocol.xmlrpc.XmlBlasterImpl</see>
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 01</date>
-   <revision>$Revision: 1.16 $</revision>
+   <revision>$Revision: 1.17 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the subscribe method invocation</comment>

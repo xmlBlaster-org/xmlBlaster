@@ -106,11 +106,11 @@
    <see type="API">org.xmlBlaster.client.UnSubscribeQos</see>
    <see type="API">org.xmlBlaster.protocol.xmlrpc.XmlBlasterImpl</see>
    <see type="API">org.xmlBlaster.protocol.rmi.XmlBlasterImpl</see>
-   <see type="API">org.xmlBlaster.client.protocol.XmlBlasterConnection</see>
+   <see type="API">org.xmlBlaster.client.I_XmlBlasterAccess</see>
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 28</date>
-   <revision>$Revision: 1.5 $</revision>
+   <revision>$Revision: 1.6 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the unSubscribe method invocation</comment>

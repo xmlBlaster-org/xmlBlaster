@@ -3,7 +3,7 @@
 
 <requirement id='client.failsafe' type='NEW' prio='HIGH' status="CLOSED">
    <topic>
-      XmlBlasterConnection is a helper class for Java clients which supports
+      I_XmlBlasterAccess is the Java client side interface to xmlBlaster which supports
       polling for xmlBlaster and record/playback of messages during lost connections.
    </topic>
    <description>
@@ -186,7 +186,7 @@
 
       <p>
       Note: The protocol used (CORBA, RMI, XML-RPC etc.) is transparently hidden.
-      See XmlBlasterConnection.java for a usage description and TestFailSave.java (testsuite)
+      See I_XmlBlasterAccess.java for a usage description and TestFailSave.java (testsuite)
       for a code example how to use it.
       </p>
 
@@ -316,39 +316,38 @@
 // Example with default fail save settings,
 // you can change these on command line or in a property file.
 // See configuration section below
-try {
-   con = new XmlBlasterConnection(glob);
 
-   con.initFailSave(new I_ConnectionProblems() {
-         
-         public void reConnected() {
-            log.info(ME, "I_ConnectionProblems: We were lucky, reconnected to " + glob.getId());
-            //initClient();    // initialize subscription etc. again
-            try {
-               con.flushQueue();    // send all tailback messages
-               // con.resetQueue(); // or discard them (it is our choice)
-            } catch (XmlBlasterException e) {
-               log.error(ME, "Exception during reconnection recovery: " + e.reason);
-            }
-         }
+import org.xmlBlaster.client.I_ConnectionStateListener;
+import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
+import org.xmlBlaster.client.I_ConnectionHandler;
+...
 
-         public void lostConnection() {
-            log.warn(ME, "I_ConnectionProblems: Lost connection to " + glob.getId());
-         }
-      });
-
-   ConnectQos qos = new ConnectQos(glob);
-
-   ConnectReturnQos conRetQos = con.connect(qos, new I_Callback() {
-      public String update(String cbSessionId, UpdateKey updateKey, byte[] content,
-                                                               UpdateQos updateQos) {
-         log.info(ME, "Reveiving asynchronous message '" + updateKey.getOid() + "'");
-         return "";
+con.registerConnectionListener(new I_ConnectionStateListener() {
+      
+      public void reachedAlive(ConnectionStateEnum oldState,
+                               I_ConnectionHandler connectionHandler) {
+         conRetQos = connectionHandler.getConnectReturnQos();
+         log.info(ME, "I_ConnectionStateListener: We were lucky, connected to " +
+                      glob.getId() + " as " + conRetQos.getSessionName());
+         // we can access the queue via connectionHandler and for example erase the entries ...
       }
-   });  // Login to xmlBlaster, default handler for updates
+      public void reachedPolling(ConnectionStateEnum oldState,
+                                 I_ConnectionHandler connectionHandler) {
+         log.warn(ME, "I_ConnectionStateListener: No connection to " +
+                      glob.getId() + ", we are polling ...");
+      }
+      public void reachedDead(ConnectionStateEnum oldState,
+                              I_ConnectionHandler connectionHandler) {
+         log.warn(ME, "I_ConnectionStateListener: Connection to " +
+                      glob.getId() + " is DEAD");
+      }
+   });
 
-   log.info(ME, "Connected to xmlBlaster.");
-   ...
+ConnectReturnQos conRetQos = con.connect(qos, this);
+
+log.info(ME, "Connected to xmlBlaster.");
+...
       ]]>
    </example>
 
@@ -359,7 +358,7 @@ import org.xmlBlaster.util.qos.address.Address;
 // Example with hard coded fail save settings
 // Here the callback methods are not shown
 try {
-   con = new XmlBlasterConnection(glob); // Find orb
+   con = glob.getXmlBlasterAccess(); // Find orb
 
    ConnectQos connectQos = new ConnectQos(glob, loginName, passwd);
 
@@ -369,7 +368,7 @@ try {
    addressProp.setRetries(-1);       // -1 == forever
    addressProp.setPingInterval(0L);  // switched off
    addressProp.setMaxEntries(1000);      // queue up to 1000 messages
-   con.initFailSave(this);
+   con.registerConnectionListener(this);
 
    connectQos.setAddress(addressProp);
 
@@ -511,11 +510,11 @@ java javaclients.HelloWorldSubscribe -session.name joeSubscriber/5 -oid Hello -d
    <see type="REQ">cluster</see>
    <see type="REQ">util.recorder</see>
    <see type="REQ">util.recorder.persistence</see>
-   <see type="API">org.xmlBlaster.client.protocol.XmlBlasterConnection</see>
+   <see type="API">org.xmlBlaster.client.I_XmlBlasterAccess</see>
    <author>xmlBlaster@marcelruff.info</author>
    <hacker>xmlBlaster@marcelruff.info</hacker>
    <date>2000 02 23</date>
-   <revision>$Revision: 1.7 $</revision>
+   <revision>$Revision: 1.8 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

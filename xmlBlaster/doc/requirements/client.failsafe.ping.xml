@@ -7,42 +7,64 @@
    </topic>
    <description>
       The xmlBlaster interface has a ping method. This allows checking the CORBA/RMI/XmlRpc connection.
-      The Java XmlBlasterConnection class uses this ping (if in fail save mode) and
+      The Java I_XmlBlasterAccess class uses this ping (if in fail save mode) and
       starts login polling if the ping fails.
-      Use method XmlBlasterConnection.initFailSave() to activate the ping feature
+      Use method I_XmlBlasterAccess.registerConnectionListener() to activate the ping feature
       and set the ping interval.
       Note that this is a pure client behavior, and for the moment the only reference implementation
       is in Java.
    </description>
    <example lang="Java">
       <![CDATA[
-      try {
-         xmlBlasterConnection = new XmlBlasterConnection(); // Hides Corba stuff
+import org.xmlBlaster.client.I_ConnectionStateListener;
+import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
+import org.xmlBlaster.client.I_ConnectionHandler;
+...
 
-         // Setup fail save handling ...
-         long retryInterval = 4000L;
-         int retries = -1;
-         int maxMessages = 1000;
-         long pingInterval = 1000L;  // ping xmlBlaster server every second
-                                     // 0 switches pinging off
-         xmlBlasterConnection.initFailSave(this, retryInterval, retries, maxMessages, pingInterval);
+Address address = new Address(glob);
+address.setDelay(4000L);      // retry connecting every 4 sec
+address.setRetries(-1);       // -1 == forever
+address.setPingInterval(0L);  // switched off
+qos.setAddress(address);
 
-         // and do the login ...
-         String loginName = "Ben";
-         String passwd = "secret";
-         String qos = "<qos></qos>";
-         xmlBlasterConnection.login(loginName, passwd, qos, this); // Login to xmlBlaster
+CallbackAddress cbAddress = new CallbackAddress(glob);
+cbAddress.setDelay(4000L);      // retry connecting every 4 sec
+cbAddress.setRetries(-1);       // -1 == forever
+cbAddress.setPingInterval(4000L); // ping every 4 seconds
+qos.addCallbackAddress(cbAddress);
+
+con.registerConnectionListener(new I_ConnectionStateListener() {
+      
+      public void reachedAlive(ConnectionStateEnum oldState,
+                               I_ConnectionHandler connectionHandler) {
+         conRetQos = connectionHandler.getConnectReturnQos();
+         log.info(ME, "I_ConnectionStateListener: We were lucky, connected to " +
+                      glob.getId() + " as " + conRetQos.getSessionName());
+         // we can access the queue via connectionHandler and for example erase the entries ...
       }
-      catch (XmlBlasterException e) {
-          System.out.println("Login failed, ID=" + e.id + " REASON=" + e.reason);
+      public void reachedPolling(ConnectionStateEnum oldState,
+                                 I_ConnectionHandler connectionHandler) {
+         log.warn(ME, "I_ConnectionStateListener: No connection to " +
+                      glob.getId() + ", we are polling ...");
       }
+      public void reachedDead(ConnectionStateEnum oldState,
+                              I_ConnectionHandler connectionHandler) {
+         log.warn(ME, "I_ConnectionStateListener: Connection to " +
+                      glob.getId() + " is DEAD");
+      }
+   });
+
+ConnectReturnQos conRetQos = con.connect(qos, this);
+
+...
       ]]>
    </example>
-   <see>org.xmlBlaster.client.protocol.XmlBlasterConnection</see>
+   <see>org.xmlBlaster.client.I_XmlBlasterAccess</see>
    <author>xmlBlaster@marcelruff.info</author>
    <hacker>xmlBlaster@marcelruff.info</hacker>
    <date>2000 02 29</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

@@ -41,14 +41,14 @@
    </description>
    <example lang="Java">
       <![CDATA[
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 ...
 
 try {
-   con = new XmlBlasterConnection(glob);
+   con = glob.getXmlBlasterAccess();
    ConnectQos qos = new ConnectQos(glob);
    con.connect(qos, this);
 
@@ -74,11 +74,11 @@ catch (Exception e) {
 ...
       ]]>
    </example>
-   <see>org.xmlBlaster.client.protocol.XmlBlasterConnection</see>
+   <see>org.xmlBlaster.client.I_XmlBlasterAccess</see>
    <author>xmlBlaster@marcelruff.info</author>
    <hacker>xmlBlaster@marcelruff.info</hacker>
    <date>2003 03 12</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
