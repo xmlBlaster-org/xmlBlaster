@@ -86,11 +86,10 @@ public final class CommandManager implements I_RunlevelListener
          org.xmlBlaster.engine.admin.extern.TelnetGateway telnetGateway = new org.xmlBlaster.engine.admin.extern.TelnetGateway();
    
          if (telnetGateway.initialize(glob, this) == true)
-            externMap.put(telnetGateway.getName(), telnetGateway);
+            this.externMap.put(telnetGateway.getName(), telnetGateway);
       }
       catch(XmlBlasterException e) {
-         e.printStackTrace();
-         log.error(ME, e.toString());
+         log.error(ME, e.getMessage());
       }
       catch(Throwable e) {
          e.printStackTrace();
@@ -102,10 +101,10 @@ public final class CommandManager implements I_RunlevelListener
          org.xmlBlaster.engine.admin.extern.SnmpGateway snmpGateway = new org.xmlBlaster.engine.admin.extern.SnmpGateway();
 
          if (snmpGateway.initialize(glob, this) == true)
-            externMap.put(snmpGateway.getName(), snmpGateway);
+            this.externMap.put(snmpGateway.getName(), snmpGateway);
       }
       catch(XmlBlasterException e) {
-         log.error(ME, e.toString());
+         log.error(ME, e.getMessage());
       }
       catch(Throwable e) {
          e.printStackTrace();
@@ -117,12 +116,12 @@ public final class CommandManager implements I_RunlevelListener
          org.xmlBlaster.engine.admin.extern.MomClientGateway momClientGateway = new org.xmlBlaster.engine.admin.extern.MomClientGateway();
 
          if (momClientGateway.initialize(glob, this) == true) {
-            externMap.put(momClientGateway.getName(), momClientGateway);
+            this.externMap.put(momClientGateway.getName(), momClientGateway);
             glob.registerMomClientGateway(momClientGateway);
          }
       }
       catch(XmlBlasterException e) {
-         log.error(ME, e.toString());
+         log.error(ME, e.getMessage());
       }
       catch(Throwable e) {
          e.printStackTrace();
@@ -138,7 +137,7 @@ public final class CommandManager implements I_RunlevelListener
          Thread.currentThread().dumpStack();
          throw new IllegalArgumentException(ME + ": Please pass a valid key and handler");
       }
-      handlerMap.put(key, handler);
+      this.handlerMap.put(key, handler);
       if (log.TRACE) log.trace(ME, "Registered '" + key + "' for handler=" + handler.getClass());
    } 
 
@@ -157,7 +156,7 @@ public final class CommandManager implements I_RunlevelListener
          if (w.getThirdLevel().startsWith("?")) {
             key = "DEFAULT";  // One handler needs to register itself with "DEFAULT"
          }
-         Object obj = handlerMap.get(key);
+         Object obj = this.handlerMap.get(key);
          if (obj == null) {
             throw new XmlBlasterException(ME, "Sorry can't process your command '" + cmd + "', '" + w.getThirdLevel() + "' has no registered handler (key=" + key + ")");
          }
@@ -192,7 +191,7 @@ public final class CommandManager implements I_RunlevelListener
          if (w.getThirdLevel().startsWith("?")) {
             key = "DEFAULT";  // One handler needs to register itself with "DEFAULT"
          }
-         Object obj = handlerMap.get(key);
+         Object obj = this.handlerMap.get(key);
          if (obj == null) {
             throw new XmlBlasterException(ME, "Sorry can't process your command '" + cmd + "', the third level '" + w.getThirdLevel() + "' has no registered handler (key=" + key + ")");
          }
@@ -221,27 +220,20 @@ public final class CommandManager implements I_RunlevelListener
    }
 
    public void shutdown(boolean force) {
-      if (externMap != null && externMap.size() > 0) {
-         Iterator it = externMap.values().iterator();
-         while (it.hasNext()) {
-            I_ExternGateway gw = (I_ExternGateway)it.next();
-            gw.shutdown();
+      if (this.externMap != null && this.externMap.size() > 0) {
+         I_ExternGateway[] arr = (I_ExternGateway [])this.externMap.values().toArray(new I_ExternGateway[this.externMap.size()]);
+         for (int ii=0; ii<arr.length; ii++) {
+            arr[ii].shutdown();
          }
          externMap.clear();
       }
 
-      if (handlerMap != null && handlerMap.size() > 0) {
-         while (true) {
-            Iterator it = handlerMap.keySet().iterator();
-            if (!it.hasNext())
-               break;
-            String key = (String)it.next();
-            I_CommandHandler cmd = (I_CommandHandler)handlerMap.get(key);
-            cmd.shutdown();         // The shutdown should deregister so this iterator is invalid
-            handlerMap.remove(key); // To be shure we kill again
-            // If a handler has registered multiple times, it should be able to handle multiple shutdowns
+      if (this.handlerMap != null && this.handlerMap.size() > 0) {
+         I_CommandHandler[] arr = (I_CommandHandler [])this.handlerMap.values().toArray(new I_CommandHandler[this.handlerMap.size()]);
+         for (int ii=0; ii<arr.length; ii++) {
+            arr[ii].shutdown();  // If a handler has registered multiple times, it should be able to handle multiple shutdowns
          }
-         handlerMap.clear();
+         this.handlerMap.clear();
       }
    }
 
@@ -260,7 +252,8 @@ public final class CommandManager implements I_RunlevelListener
     * Enforced by I_RunlevelListener
     */
    public void runlevelChange(int from, int to, boolean force) throws org.xmlBlaster.util.XmlBlasterException {
-      //if (log.CALL) log.call(ME, "Changing from run level=" + from + " to level=" + to + " with force=" + force);
+      //log.error(ME, "DEBUG ONLY: Changing from run level=" + from + " to level=" + to + " with force=" + force);
+      if (log.CALL) log.call(ME, "Changing from run level=" + from + " to level=" + to + " with force=" + force);
       if (to == from)
          return;
 
