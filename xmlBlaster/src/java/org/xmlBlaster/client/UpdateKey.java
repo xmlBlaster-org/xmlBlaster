@@ -3,7 +3,7 @@ Name:      UpdateKey.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with DOM
-Version:   $Id: UpdateKey.java,v 1.23 2002/06/03 15:32:27 ruff Exp $
+Version:   $Id: UpdateKey.java,v 1.24 2002/06/25 17:54:59 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -41,6 +41,7 @@ import org.xml.sax.helpers.*;
  * See xmlBlaster/src/dtd/UpdateKey.xml
  * <p />
  * See http://www.w3.org/TR/xpath
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.update.html" target="others">the interface.update requirement</a>
  */
 public class UpdateKey extends SaxHandlerBase
 {
@@ -106,6 +107,13 @@ public class UpdateKey extends SaxHandlerBase
       return getUniqueKey().equals(Constants.OID_DEAD_LETTER);
    }
 
+   public final boolean isInternal() {
+      return getUniqueKey().startsWith("__");
+   }
+
+   public final boolean isNotInternal() {
+      return !getUniqueKey().startsWith("__");
+   }
 
    /**
     * Find out which mime type (syntax) the content of the message has.
@@ -267,9 +275,7 @@ public class UpdateKey extends SaxHandlerBase
       sb.append(" contentMime='").append(getContentMime()).append("'");
       sb.append(" contentMimeExtended='").append(getContentMimeExtended()).append("'");
       sb.append(" domain='").append(getDomain()).append("'");
-      sb.append(">\n");
-
-      sb.append(offset + "</key>\n");
+      sb.append("/>");
       return sb.toString();
    }
 }
