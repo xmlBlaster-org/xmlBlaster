@@ -27,6 +27,8 @@ namespace util {
 
    /**
     * Enforced by I_LogFactory, initialize the logging environment
+    * If your code does logging initialization already you can switch this initialization off
+    * by adding a property "xmlBlaster/logging/initialize=false" to propMap.
     */
    void Log4cplusFactory::initialize(const PropMap& propMap)
    {
@@ -39,86 +41,99 @@ namespace util {
          }
       }
 
-      // Find the configuration file name
-      const char *envName = "xmlBlaster/logging/configFileName";
-      string configFileName = "log4cplus.properties"; // local directory
-      PropMap::const_iterator pos = propMap.find(envName);
-      if (pos != propMap.end()) {
-         configFileName = (*pos).second;
-      }
-      else {
-         const char* envValue = getenv(envName);
-         if (envValue != 0) {
-            configFileName = envValue;
+      bool initialize = true;
+      PropMap::const_iterator pos = propMap.find("xmlBlaster/logging/initialize");
+      if (pos != propMap.end())
+         if ("false" == pos->second)
+            initialize = false;
+
+
+      if (initialize) {
+         // Find the configuration file name
+         const char *envName = "xmlBlaster/logging/configFileName";
+         string configFileName = "log4cplus.properties"; // local directory
+         PropMap::const_iterator pos = propMap.find(envName);
+         if (pos != propMap.end()) {
+            configFileName = (*pos).second;
          }
          else {
-            std::ifstream file;
-            file.open(configFileName.c_str());  // local directory?
-            if(!file) {
-               PropMap::const_iterator pos = propMap.find("user.home");
-               if (pos != propMap.end()) {
-                  string tmp = (*pos).second + FILE_SEP + configFileName;
-                  std::ifstream file2;
-                  file2.open(tmp.c_str());
-                  if(!file2) {
-                  }
-                  else {
-                     configFileName = tmp;
+            const char* envValue = getenv(envName);
+            if (envValue != 0) {
+               configFileName = envValue;
+            }
+            else {
+               std::ifstream file;
+               file.open(configFileName.c_str());  // local directory?
+               if(!file) {
+                  PropMap::const_iterator pos = propMap.find("user.home");
+                  if (pos != propMap.end()) {
+                     string tmp = (*pos).second + FILE_SEP + configFileName;
+                     std::ifstream file2;
+                     file2.open(tmp.c_str());
+                     if(!file2) {
+                     }
+                     else {
+                        configFileName = tmp;
+                     }
                   }
                }
             }
          }
-      }
 
-      bool inheritEnvironment = true;
+         bool inheritEnvironment = true;
 
-      std::ifstream file;
-      file.open(configFileName.c_str());
-      if(!file) {
-         // No configuration file
-         if (inheritEnvironment) {
-            // We pass all xmlBlaster.properties + command line settings to log4cplus
-            log4cplus::helpers::Properties props;
-            PropMap::const_iterator iter = propMap.begin();
-            while (iter != propMap.end()) {
-                 props.setProperty((*iter).first, (*iter).second);
-               iter++;
+         std::ifstream file;
+         file.open(configFileName.c_str());
+         if(!file) {
+            // No configuration file
+            if (inheritEnvironment) {
+               // We pass all xmlBlaster.properties + command line settings to log4cplus
+               log4cplus::helpers::Properties props;
+               PropMap::const_iterator iter = propMap.begin();
+               while (iter != propMap.end()) {
+                    props.setProperty((*iter).first, (*iter).second);
+                  iter++;
+               }
+               PropertyConfigurator tmp(props, Logger::getDefaultHierarchy());
+               tmp.configure();
             }
-            PropertyConfigurator tmp(props, Logger::getDefaultHierarchy());
-            tmp.configure();
+            else {
+               BasicConfigurator config;
+               config.configure();
+            }
+            Logger logger = Logger::getInstance("org.xmlBlaster");
+            LOG4CPLUS_WARN(logger, "Couldn't find file logging configuration file \"-xmlBlaster/logging/configFileName " + configFileName + "\", you can use the example in xmlBlaster" +
+                                    FILE_SEP + "config" + FILE_SEP + configFileName);
+            LOG4CPLUS_INFO(logger, "We continue with default logging configuration.");
          }
          else {
-            BasicConfigurator config;
-            config.configure();
+            // Scan configuration file
+            if (inheritEnvironment) {
+               // Log4Cplus can replace env variables in its config file
+               // there for we pass all settings from xmlBlaster.properties to log4cplus
+               log4cplus::helpers::Properties props(configFileName);
+               PropMap::const_iterator iter = propMap.begin();
+               while (iter != propMap.end()) {
+                    props.setProperty((*iter).first, (*iter).second);
+                  iter++;
+               }
+               PropertyConfigurator tmp(props, Logger::getDefaultHierarchy());
+               tmp.configure();
+            }
+            else {
+               PropertyConfigurator::doConfigure(configFileName);
+            }
+
+            Logger logger = Logger::getInstance("org.xmlBlaster");
+            LOG4CPLUS_INFO(logger, "Configured log4cplus with configuration file xmlBlaster/logging/configFileName=" + configFileName);
          }
-         Logger logger = Logger::getInstance("client");
-         LOG4CPLUS_WARN(logger, "Couldn't find file logging configuration file \"-xmlBlaster/logging/configFileName " + configFileName + "\", you can use the example in xmlBlaster" +
-                                 FILE_SEP + "config" + FILE_SEP + configFileName);
-         LOG4CPLUS_INFO(logger, "We continue with default logging configuration.");
       }
       else {
-         // Scan configuration file
-         if (inheritEnvironment) {
-            // Log4Cplus can replace env variables in its config file
-            // there for we pass all settings from xmlBlaster.properties to log4cplus
-            log4cplus::helpers::Properties props(configFileName);
-            PropMap::const_iterator iter = propMap.begin();
-            while (iter != propMap.end()) {
-                 props.setProperty((*iter).first, (*iter).second);
-               iter++;
-            }
-            PropertyConfigurator tmp(props, Logger::getDefaultHierarchy());
-            tmp.configure();
-         }
-         else {
-            PropertyConfigurator::doConfigure(configFileName);
-         }
-
-         Logger logger = Logger::getInstance("client");
-         LOG4CPLUS_INFO(logger, "Configured log4cplus with configuration file xmlBlaster/logging/configFileName=" + configFileName);
+         Logger logger = Logger::getInstance("org.xmlBlaster");
+         LOG4CPLUS_INFO(logger, "Log4cplus is configured already (xmlBlaster/logging/initialize=false), no reconfiguration done.");
       }
 
-      //Logger logger = Logger::getInstance("client");
+      //Logger logger = Logger::getInstance("org.xmlBlaster");
       //LOG4CPLUS_WARN(logger, "LOG4CPLUS: Hello, World!");
    }
 
