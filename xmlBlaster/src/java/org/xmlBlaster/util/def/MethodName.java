@@ -39,7 +39,7 @@ public final class MethodName implements java.io.Serializable
    public static final MethodName GET = new MethodName("get", ARG_KEYQOS, RETURN_MSGARR);
    public static final MethodName ERASE = new MethodName("erase", ARG_KEYQOS, RETURN_STRINGARR);
    public static final MethodName PUBLISH = new MethodName("publish", ARG_MSGARR, RETURN_STRINGARR);
-   //public static final MethodName PUBLISH_ARR = new MethodName("publishArr", ARG_MSGARR, RETURN_STRINGARR);
+   public static final MethodName PUBLISH_ARR = new MethodName("publishArr", ARG_MSGARR, RETURN_STRINGARR);
    public static final MethodName PUBLISH_ONEWAY = new MethodName("publishOneway", ARG_MSGARR, RETURN_VOID);
    public static final MethodName SUBSCRIBE = new MethodName("subscribe", ARG_KEYQOS, RETURN_STRING);
    public static final MethodName UNSUBSCRIBE = new MethodName("unSubscribe", ARG_KEYQOS, RETURN_STRINGARR);
