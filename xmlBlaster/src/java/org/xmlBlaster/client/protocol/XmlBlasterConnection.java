@@ -958,8 +958,10 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       if (log.CALL) log.call(ME, "loginRaw(firstConnect=" + firstConnect + ") ...");
       try {
          if (firstConnect) {
+            this.driver.connectLowlevel(connectQos.getAddress());
             if (log.TRACE) log.trace(ME, "loginRaw: connectQos=" + connectQos.toXml());
-            this.connectReturnQos = driver.connect(connectQos);
+            String tmp = this.driver.connect(connectQos.toXml());
+            this.connectReturnQos = new ConnectReturnQos(glob, tmp);
             firstConnect = false;
             if (log.DUMP) log.dump(ME, "connectReturnQos=" + connectReturnQos.toXml());
             initFailSave();
@@ -967,8 +969,10 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
                log.info(ME, "Connected to " + getServerNodeId() + " as " + this.connectReturnQos.getSessionName());
             }
          }
-         else
-            this.connectReturnQos = driver.loginRaw();
+         else {
+            String tmp = this.driver.connect(connectQos.toXml());
+            this.connectReturnQos = new ConnectReturnQos(glob, tmp);
+         }
          numLogins++;
 
          if (this.connectReturnQos != null) {
@@ -1105,11 +1109,13 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     */
    public String getLoginName()
    {
+      /*
       if (driver != null) {
          String nm = driver.getLoginName();
          if (nm != null && nm.length() > 0)
             return nm;
       }
+      */
 
       //try {
          if (connectQos != null) {
@@ -1215,7 +1221,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
       boolean ret = false;
       try {
-         ret = driver.disconnect(qos);
+         ret = driver.disconnect(qos.toXml());
          log.info(ME, "Successful disconnect from " + getServerNodeId());
       } catch(Throwable e) {
          e.printStackTrace();

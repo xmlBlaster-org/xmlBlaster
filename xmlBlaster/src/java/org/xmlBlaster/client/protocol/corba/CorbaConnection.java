@@ -11,12 +11,11 @@ import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
-import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.util.JdkCompatible;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.qos.address.Address;
 
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
@@ -93,19 +92,15 @@ public class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
    // So we use a static orb and poa and recycle it.
    // The drawback is that a running client can't change the
    // orb behavior
-   static protected org.omg.CORBA.ORB orb = null;
+   static protected org.omg.CORBA.ORB orb;
 
-   protected NamingContextExt nameService = null;
-   protected AuthServer authServer = null;
-   protected Server xmlBlaster = null;
-   protected String loginName = ""; //null;
-   private   String passwd = null; //null;
-   protected ConnectQos connectQos = null;
-   protected ConnectReturnQos connectReturnQos = null;
+   protected NamingContextExt nameService;
+   protected AuthServer authServer;
+   protected Server xmlBlaster;
+   protected Address clientAddress;
+   private String sessionId;
+   private boolean verbose = true;
 
-   private   String               sessionId = null;
-
-   private boolean firstAttempt = true;
 
    /**
     * Called by plugin loader which calls init(Global, PluginInfo) thereafter. 
@@ -206,7 +201,7 @@ public class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
     * Reset
     */
    public void resetConnection() {
-      authServer   = null;
+      this.authServer   = null;
       xmlBlaster   = null;
    }
 
@@ -249,7 +244,7 @@ public class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
     * @exception XmlBlasterException id="NoNameService"
     *                    CORBA error handling if no naming service is found
     */
-   NamingContextExt getNamingService(boolean verbose) throws XmlBlasterException
+   NamingContextExt getNamingService() throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "getNamingService() ...");
       if (nameService != null)
@@ -271,7 +266,7 @@ public class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
                        " - try to specify '-ior.file <fileName>' if server is running on same host (not using any naming service)\n" +
                        " - try to specify '-hostname <hostName> -port " + Constants.XMLBLASTER_PORT + "' to locate xmlBlaster (not using any naming service)\n" +
                        " - or contact the server administrator to start a naming service";
-         if (verbose)
+         if (this.verbose)
             log.warn(ME + ".NoNameService", text);
          throw new XmlBlasterException("NoNameService", text);
       }
@@ -291,7 +286,7 @@ public class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
                              // but it is not sure that the naming service is really running
       }
       catch (Throwable e) {
-         if (verbose) log.warn(ME + ".NoNameService", "Can't access naming service");
+         if (this.verbose) log.warn(ME + ".NoNameService", "Can't access naming service");
          throw new XmlBlasterException("NoNameService", e.toString());
       }
    }
@@ -316,329 +311,255 @@ public class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
     * @exception XmlBlasterException id="NoAuthService"
     *
     */
-   public AuthServer getAuthenticationService(boolean verbose) throws XmlBlasterException {
+   public AuthServer getAuthenticationService(Address address) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "getAuthenticationService() ...");
-      if (authServer != null) {
-         return authServer;
+      if (this.authServer != null) {
+         return this.authServer;
       }
 
-
-      // 1) check if argument -IOR at program startup is given
-      String authServerIOR = glob.getProperty().get("ior", (String)null);  // -ior IOR string is directly given
-      if (authServerIOR != null) {
-         authServer = AuthServerHelper.narrow(orb.string_to_object(authServerIOR));
-         if (verbose) log.info(ME, "Accessing xmlBlaster using your given IOR string");
-         return authServer;
-      }
-      if (log.TRACE) log.trace(ME, "No -ior ...");
-
-      String authServerIORFile = glob.getProperty().get("ior.file", (String)null);  // -ior.file IOR string is given through a file
-      if (authServerIORFile != null) {
-         try {
-            authServerIOR = FileUtil.readAsciiFile(authServerIORFile);
-         } catch (JUtilsException e) {
-            throw new XmlBlasterException(e);
-         }
-         authServer = AuthServerHelper.narrow(orb.string_to_object(authServerIOR));
-         log.info(ME, "Accessing xmlBlaster using your given IOR file " + authServerIORFile);
-         return authServer;
-      }
-      if (log.TRACE) log.trace(ME, "No -ior.file ...");
-
-
-      // 2) check if argument -hostname <hostName or IP> -port <number> at program startup is given
-      // To avoid the name service, one can access the AuthServer IOR directly
-      // using a http connection.
       try {
-         authServerIOR = glob.accessFromInternalHttpServer(connectQos.getAddress(), "AuthenticationService.ior", verbose);
-         if (System.getProperty("java.version").startsWith("1") &&  !authServerIOR.startsWith("IOR:")) {
-            authServerIOR = "IOR:000" + authServerIOR; // hack for JDK 1.1.x, where the IOR: is cut away from ByteReader ??? !!!
-            log.warn(ME, "Manipulated IOR because of missing 'IOR:'");
+         // 1) check if argument -IOR at program startup is given
+         String authServerIOR = glob.getProperty().get("ior", (String)null);  // -ior IOR string is directly given
+         if (authServerIOR != null) {
+            this.authServer = AuthServerHelper.narrow(orb.string_to_object(authServerIOR));
+            if (this.verbose) log.info(ME, "Accessing xmlBlaster using your given IOR string");
+            return this.authServer;
          }
-         authServer = AuthServerHelper.narrow(orb.string_to_object(authServerIOR));
-         log.info(ME, "Accessing xmlBlaster AuthServer IOR using builtin http connection to " +
-                      connectQos.getAddress().getHostname() + ":" + connectQos.getAddress().getPort());
-         return authServer;
-      }
-      catch(XmlBlasterException e) {
-         ;
-      }
-      catch(Throwable e) {
-         if (verbose)  {
-            log.error(ME, "XmlBlaster not found with internal HTTP download");
-            e.printStackTrace();
-         }
-      }
-      if (log.TRACE) log.trace(ME, "No -hostname / port for " + connectQos.getAddress() + " ...");
+         if (log.TRACE) log.trace(ME, "No -ior ...");
 
-      String contextId = glob.getProperty().get("NameService.context.id", "xmlBlaster");
-      if (contextId == null) contextId = "";
-      String contextKind = glob.getProperty().get("NameService.context.kind", "MOM");
-      if (contextKind == null) contextKind = "";
-      String clusterId = glob.getProperty().get("NameService.node.id", glob.getStrippedId());
-      if (clusterId == null) clusterId = "";
-      String clusterKind = glob.getProperty().get("NameService.node.kind", "MOM");
-      if (clusterKind == null) clusterKind = "";
-
-      String text = "Can't access xmlBlaster Authentication Service, is the server running and ready?\n" +
-                  " - try to specify '-ior.file <fileName>' if server is running on same host\n" +
-                  " - try to specify '-hostname <hostName> -port " + Constants.XMLBLASTER_PORT + "' to locate xmlBlaster\n" +
-                  " - or start a naming service '" + contextId + "." + contextKind + "/" +
-                           clusterId + "." + clusterKind + "'";
-
-      // 3) asking Name Service CORBA compliant
-      boolean useNameService = glob.getProperty().get("ns", true);  // -ns default is to ask the naming service
-      if (useNameService) {
-
-         if (verbose) log.info(ME, "Trying to find a CORBA naming service ...");
-         try {
-            
-            // NameService entry is e.g. "xmlBlaster.MOM/heron.MOM"
-            // where "xmlBlaster.MOM" is a context node and
-            // "heron.MOM" is a subnode for each running server (containing the AuthServer POA reference)
-
-            NamingContextExt namingContextExt = getNamingService(verbose);
-            NameComponent [] nameXmlBlaster = new NameComponent[] { new NameComponent(contextId, contextKind) };
-            if (log.TRACE) log.trace(ME, "Query NameServer ORBInitRef.NameService=" + System.getProperty("ORBInitRef.NameService") +
-                          " to find the xmlBlaster root context " + CorbaDriver.getString(nameXmlBlaster));
-            org.omg.CORBA.Object obj = namingContextExt.resolve(nameXmlBlaster);
-            NamingContext relativeContext = org.omg.CosNaming.NamingContextExtHelper.narrow(obj);
-
-            if (relativeContext == null) {
-               throw new Exception("Can't resolve CORBA NameService");
-            }
-
-            NameComponent [] nameNode = new NameComponent[] { new NameComponent(clusterId, clusterKind) };
-
-            AuthServer authServerFirst = null;
-            String tmpId = "";           // for logging only
-            String tmpServerName = "";   // for logging only
-            String firstServerName = ""; // for logging only
-            int countServerFound = 0;    // for logging only
-            String serverNameList = "";  // for logging only
+         String authServerIORFile = glob.getProperty().get("ior.file", (String)null);  // -ior.file IOR string is given through a file
+         if (authServerIORFile != null) {
             try {
-               authServer = AuthServerHelper.narrow(relativeContext.resolve(nameNode));
+               authServerIOR = FileUtil.readAsciiFile(authServerIORFile);
+            } catch (JUtilsException e) {
+               throw new XmlBlasterException(e);
             }
-            catch (Exception ex) {
-               if (log.TRACE) log.trace(ME, "Query NameServer to find a suitable xmlBlaster server for " + CorbaDriver.getString(nameXmlBlaster) + "/" + CorbaDriver.getString(nameNode));
-               BindingListHolder bl = new BindingListHolder();
-               BindingIteratorHolder bi = new BindingIteratorHolder();
-               relativeContext.list(0, bl, bi);
-               //for (int i=0; i<bl.value.length; i++) { // bl.value.length should be 0
-               //   String id = bl.value[i].binding_name[0].id;
-               //   String kind = bl.value[i].binding_name[0].kind;
+            this.authServer = AuthServerHelper.narrow(orb.string_to_object(authServerIOR));
+            log.info(ME, "Accessing xmlBlaster using your given IOR file " + authServerIORFile);
+            return this.authServer;
+         }
+         if (log.TRACE) log.trace(ME, "No -ior.file ...");
 
-               // process the remaining bindings if an iterator exists:
-               if (authServer == null && bi.value != null) {
-                  BindingHolder bh = new BindingHolder();
-                  int i = 0;
-                  while ( bi.value.next_one(bh) ) {
-                     String id = bh.value.binding_name[0].id;
-                     String kind = bh.value.binding_name[0].kind;
-                     NameComponent [] nameNodeTmp = new NameComponent[] { new NameComponent(id, kind) };
 
-                     tmpId = id;
-                     countServerFound++;
-                     tmpServerName = CorbaDriver.getString(nameXmlBlaster)+"/"+CorbaDriver.getString(nameNodeTmp);
-                     if (i>0) serverNameList += ", ";
-                     i++;
-                     serverNameList += tmpServerName;
-
-                     if (clusterId.equals(id) && clusterKind.equals(kind)) {
-                        try {
-                           if (log.TRACE) log.trace(ME, "Trying to resolve NameService entry '"+CorbaDriver.getString(nameNodeTmp)+"'");
-                           authServer = AuthServerHelper.narrow(relativeContext.resolve(nameNodeTmp));
-                           break; // found a matching server
-                        }
-                        catch (Exception exc) {
-                           log.warn(ME, "Connecting to NameService entry '"+tmpServerName+"' failed: " + exc.toString());
-                        }
-                     }
-
-                     if (authServerFirst == null) {
-                        if (log.TRACE) log.trace(ME, "Remember the first server");
-                        try {
-                           firstServerName = tmpServerName;
-                           if (log.TRACE) log.trace(ME, "Remember the first reachable xmlBlaster server from NameService entry '"+firstServerName+"'");
-                           authServerFirst = AuthServerHelper.narrow(relativeContext.resolve(nameNodeTmp));
-                        }
-                        catch (Exception exc) {
-                           log.warn(ME, "Connecting to NameService entry '"+tmpServerName+"' failed: " + exc.toString());
-                        }
-                     }
-                  }
-               }
+         // 2) check if argument -hostname <hostName or IP> -port <number> at program startup is given
+         // To avoid the name service, one can access the AuthServer IOR directly
+         // using a http connection.
+         try {
+            authServerIOR = glob.accessFromInternalHttpServer(address, "AuthenticationService.ior", this.verbose);
+            if (System.getProperty("java.version").startsWith("1") &&  !authServerIOR.startsWith("IOR:")) {
+               authServerIOR = "IOR:000" + authServerIOR; // hack for JDK 1.1.x, where the IOR: is cut away from ByteReader ??? !!!
+               log.warn(ME, "Manipulated IOR because of missing 'IOR:'");
             }
-
-            if (authServer == null) {
-               if (authServerFirst != null) {
-                  if (countServerFound > 1) {
-                     String str = "Can't choose one of " + countServerFound +
-                                  " avalailable server in CORBA NameService: " + serverNameList +
-                                  ". Please choose one with e.g. -NameService.node.id " + tmpId;
-                     log.error(ME, str);
-                     throw new Exception(str);
-                  }
-                  log.info(ME, "Choosing only available server '" + firstServerName + "' in CORBA NameService ORBInitRef.NameService=" +
-                               System.getProperty("ORBInitRef.NameService"));
-                  return authServerFirst;
-               }
-               else {
-                  throw new Exception("No xmlBlaster server found in NameService");
-               }
-            }
-
-            log.info(ME, "Accessing xmlBlaster using a naming service '" + nameXmlBlaster[0].id + "." + nameXmlBlaster[0].kind + "/" +
-                           nameNode[0].id + "." + nameNode[0].kind + "' on " + System.getProperty("ORBInitRef.NameService"));
-            return authServer;
+            this.authServer = AuthServerHelper.narrow(orb.string_to_object(authServerIOR));
+            log.info(ME, "Accessing xmlBlaster AuthServer IOR using builtin http connection to " +
+                         address.getHostname() + ":" + address.getPort());
+            return this.authServer;
+         }
+         catch(XmlBlasterException e) {
+            ;
          }
          catch(Throwable e) {
-            throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, text, e);
+            if (this.verbose)  {
+               log.error(ME, "XmlBlaster not found with internal HTTP download");
+               e.printStackTrace();
+            }
          }
+         if (log.TRACE) log.trace(ME, "No -hostname / port for " + address.getAddress() + " ...");
+
+         String contextId = glob.getProperty().get("NameService.context.id", "xmlBlaster");
+         if (contextId == null) contextId = "";
+         String contextKind = glob.getProperty().get("NameService.context.kind", "MOM");
+         if (contextKind == null) contextKind = "";
+         String clusterId = glob.getProperty().get("NameService.node.id", glob.getStrippedId());
+         if (clusterId == null) clusterId = "";
+         String clusterKind = glob.getProperty().get("NameService.node.kind", "MOM");
+         if (clusterKind == null) clusterKind = "";
+
+         String text = "Can't access xmlBlaster Authentication Service, is the server running and ready?\n" +
+                     " - try to specify '-ior.file <fileName>' if server is running on same host\n" +
+                     " - try to specify '-hostname <hostName> -port " + Constants.XMLBLASTER_PORT + "' to locate xmlBlaster\n" +
+                     " - or start a naming service '" + contextId + "." + contextKind + "/" +
+                              clusterId + "." + clusterKind + "'";
+
+         // 3) asking Name Service CORBA compliant
+         boolean useNameService = glob.getProperty().get("ns", true);  // -ns default is to ask the naming service
+         if (useNameService) {
+
+            if (this.verbose) log.info(ME, "Trying to find a CORBA naming service ...");
+            try {
+               
+               // NameService entry is e.g. "xmlBlaster.MOM/heron.MOM"
+               // where "xmlBlaster.MOM" is a context node and
+               // "heron.MOM" is a subnode for each running server (containing the AuthServer POA reference)
+
+               NamingContextExt namingContextExt = getNamingService();
+               NameComponent [] nameXmlBlaster = new NameComponent[] { new NameComponent(contextId, contextKind) };
+               if (log.TRACE) log.trace(ME, "Query NameServer ORBInitRef.NameService=" + System.getProperty("ORBInitRef.NameService") +
+                             " to find the xmlBlaster root context " + CorbaDriver.getString(nameXmlBlaster));
+               org.omg.CORBA.Object obj = namingContextExt.resolve(nameXmlBlaster);
+               NamingContext relativeContext = org.omg.CosNaming.NamingContextExtHelper.narrow(obj);
+
+               if (relativeContext == null) {
+                  throw new Exception("Can't resolve CORBA NameService");
+               }
+
+               NameComponent [] nameNode = new NameComponent[] { new NameComponent(clusterId, clusterKind) };
+
+               AuthServer authServerFirst = null;
+               String tmpId = "";           // for logging only
+               String tmpServerName = "";   // for logging only
+               String firstServerName = ""; // for logging only
+               int countServerFound = 0;    // for logging only
+               String serverNameList = "";  // for logging only
+               try {
+                  this.authServer = AuthServerHelper.narrow(relativeContext.resolve(nameNode));
+               }
+               catch (Exception ex) {
+                  if (log.TRACE) log.trace(ME, "Query NameServer to find a suitable xmlBlaster server for " + CorbaDriver.getString(nameXmlBlaster) + "/" + CorbaDriver.getString(nameNode));
+                  BindingListHolder bl = new BindingListHolder();
+                  BindingIteratorHolder bi = new BindingIteratorHolder();
+                  relativeContext.list(0, bl, bi);
+                  //for (int i=0; i<bl.value.length; i++) { // bl.value.length should be 0
+                  //   String id = bl.value[i].binding_name[0].id;
+                  //   String kind = bl.value[i].binding_name[0].kind;
+
+                  // process the remaining bindings if an iterator exists:
+                  if (this.authServer == null && bi.value != null) {
+                     BindingHolder bh = new BindingHolder();
+                     int i = 0;
+                     while ( bi.value.next_one(bh) ) {
+                        String id = bh.value.binding_name[0].id;
+                        String kind = bh.value.binding_name[0].kind;
+                        NameComponent [] nameNodeTmp = new NameComponent[] { new NameComponent(id, kind) };
+
+                        tmpId = id;
+                        countServerFound++;
+                        tmpServerName = CorbaDriver.getString(nameXmlBlaster)+"/"+CorbaDriver.getString(nameNodeTmp);
+                        if (i>0) serverNameList += ", ";
+                        i++;
+                        serverNameList += tmpServerName;
+
+                        if (clusterId.equals(id) && clusterKind.equals(kind)) {
+                           try {
+                              if (log.TRACE) log.trace(ME, "Trying to resolve NameService entry '"+CorbaDriver.getString(nameNodeTmp)+"'");
+                              this.authServer = AuthServerHelper.narrow(relativeContext.resolve(nameNodeTmp));
+                              break; // found a matching server
+                           }
+                           catch (Exception exc) {
+                              log.warn(ME, "Connecting to NameService entry '"+tmpServerName+"' failed: " + exc.toString());
+                           }
+                        }
+
+                        if (authServerFirst == null) {
+                           if (log.TRACE) log.trace(ME, "Remember the first server");
+                           try {
+                              firstServerName = tmpServerName;
+                              if (log.TRACE) log.trace(ME, "Remember the first reachable xmlBlaster server from NameService entry '"+firstServerName+"'");
+                              authServerFirst = AuthServerHelper.narrow(relativeContext.resolve(nameNodeTmp));
+                           }
+                           catch (Exception exc) {
+                              log.warn(ME, "Connecting to NameService entry '"+tmpServerName+"' failed: " + exc.toString());
+                           }
+                        }
+                     }
+                  }
+               }
+
+               if (this.authServer == null) {
+                  if (authServerFirst != null) {
+                     if (countServerFound > 1) {
+                        String str = "Can't choose one of " + countServerFound +
+                                     " avalailable server in CORBA NameService: " + serverNameList +
+                                     ". Please choose one with e.g. -NameService.node.id " + tmpId;
+                        log.error(ME, str);
+                        throw new Exception(str);
+                     }
+                     log.info(ME, "Choosing only available server '" + firstServerName + "' in CORBA NameService ORBInitRef.NameService=" +
+                                  System.getProperty("ORBInitRef.NameService"));
+                     return authServerFirst;
+                  }
+                  else {
+                     throw new Exception("No xmlBlaster server found in NameService");
+                  }
+               }
+
+               log.info(ME, "Accessing xmlBlaster using a naming service '" + nameXmlBlaster[0].id + "." + nameXmlBlaster[0].kind + "/" +
+                              nameNode[0].id + "." + nameNode[0].kind + "' on " + System.getProperty("ORBInitRef.NameService"));
+               return this.authServer;
+            }
+            catch(Throwable e) {
+               throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, text, e);
+            }
+         }
+         if (log.TRACE) log.trace(ME, "No -ns ...");
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, text);
       }
-      if (log.TRACE) log.trace(ME, "No -ns ...");
-
-      throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, text);
+      finally {
+         this.verbose = false;
+      }
    }
-
 
    /**
     * Login to the server. 
     * <p />
-    * WARNING: <strong>The qos gets added a <pre>&lt;callback type='IOR'></pre> tag,
-    *          so don't use it for a second login, otherwise a second callback is inserted !</strong>
-    *
-    * @param loginName The login name for xmlBlaster
-    * @param passwd    The login password for xmlBlaster
-    * @param qos       The Quality of Service for this client (the callback tag will be added automatically if client!=null)
-    *                  The authentication tags should be set already if security manager is switched on
-    * @exception       XmlBlasterException if login fails
+    * @param connectQos The encrypted connect QoS 
+    * @exception XmlBlasterException if login fails
     */
-   public void login(String loginName, String passwd, ConnectQos qos) throws XmlBlasterException {
-      this.ME = "CorbaConnection-" + loginName;
-      if (log.CALL) log.call(ME, "login() ...");
-      if (xmlBlaster != null) {
-         log.warn(ME, "You are already logged in.");
-         return;
-      }
-
-      this.loginName=loginName;
-      this.passwd=passwd;
-
-      if (qos == null)
-         this.connectQos = new ConnectQos(glob);
-      else
-         this.connectQos = qos;
-
-      loginRaw(true);
-   }
-
-   /**
-    * Login to the server. 
-    * <p />
-    * WARNING: <strong>The qos gets added a <pre>&lt;callback type='IOR'></pre> tag,
-    *          so don't use it for a second login, otherwise a second callback is inserted !</strong>
-    *
-    * @param loginName The login name for xmlBlaster
-    * @param passwd    The login password for xmlBlaster
-    * @param qos       The Quality of Service for this client (the callback tag will be added automatically if client!=null)
-    *                  The authentication tags should be set already if security manager is switched on
-    * @exception       XmlBlasterException if login fails
-    */
-   public ConnectReturnQos connect(ConnectQos qos) throws XmlBlasterException {
-      if (qos == null)
+   public String connect(String connectQos) throws XmlBlasterException {
+      if (connectQos == null)
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Please pass a valid QoS for connect()");
 
-      this.ME = "CorbaConnection-" + qos.getUserId();
+      this.ME = "CorbaConnection";
       if (log.CALL) log.call(ME, "connect() ...");
       if (xmlBlaster != null) {
          log.warn(ME, "You are already logged in.");
-         return this.connectReturnQos;
+         return "";
       }
 
-      this.connectQos = qos;
-      this.loginName=qos.getUserId();
-      this.passwd=null; // not necessary here
-
-      boolean verbose = this.firstAttempt;
-      this.firstAttempt = false;
-
-      return loginRaw(verbose);
-   }
-
-
-   /**
-    * Is invoked when we poll for the server, for example after we have lost the connection. 
-    * @see I_XmlBlasterConnection#loginRaw
-    */
-   public ConnectReturnQos loginRaw() throws XmlBlasterException {
-      return loginRaw(false);
-   }
-
-
-   /**
-    * Login to the server.
-    * <p />
-    * For internal use only.
-    * The qos needs to be set up correctly if you wish a callback
-    * @param verbose false: suppress log output
-    * @return The returned QoS or null
-    * @exception       XmlBlasterException if login fails
-    */
-   private ConnectReturnQos loginRaw(boolean verbose) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "loginRaw(" + loginName + ") ...");
+      getAuthenticationService(this.clientAddress);
 
       try {
-         AuthServer authServer = getAuthenticationService(verbose);
-         if (passwd != null) {
-            log.warn(ME, "No security Plugin. Switched back to the old login scheme!");
-            xmlBlaster = authServer.login(loginName, passwd, connectQos.toXml());
-         }
-         else {
-            if (log.TRACE) log.trace(ME, "Got authServer handle, trying connect ...");
-            if (log.DUMP) log.dump(ME, "Got authServer handle, trying connect:" + connectQos.toXml());
-
-            String qos = connectQos.toXml();
-            if (connectQos.getSecurityInterceptor() != null) {
-               qos = connectQos.getSecurityInterceptor().exportMessage(qos);
-               if (log.TRACE) log.trace(ME, "Exported/encrypted connect request.");
-            }
-
-            String rawReturnVal = authServer.connect(qos);
-
-            if (connectQos.getSecurityInterceptor() != null) {
-               rawReturnVal = connectQos.getSecurityInterceptor().importMessage(rawReturnVal);
-            }
-            this.connectReturnQos = new ConnectReturnQos(glob, rawReturnVal);
-            sessionId = this.connectReturnQos.getSecretSessionId();
-            String xmlBlasterIOR = connectReturnQos.getServerRef().getAddress();
-
-            xmlBlaster = ServerHelper.narrow(orb.string_to_object(xmlBlasterIOR));
-         }
-         if (log.TRACE) log.trace(ME, "Success, login for " + loginName);
-         return this.connectReturnQos;
+         AuthServer remoteAuthServer = getAuthenticationService(this.clientAddress);
+         if (log.TRACE) log.trace(ME, "Got authServer handle, trying connect ...");
+         return remoteAuthServer.connect(connectQos);
       }
       catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
          XmlBlasterException xmlBlasterException = CorbaDriver.convert(glob, e);
          //xmlBlasterException.changeErrorCode(ErrorCode.COMMUNICATION_NOCONNECTION);
-         if (log.DUMP) log.dump(ME, "Login failed for " + loginName + ": " + xmlBlasterException.getMessage() + " connectQos=" + connectQos.toXml());
          throw xmlBlasterException; // Wrong credentials 
       }
       catch(Throwable e) {
          XmlBlasterException xmlBlasterException = XmlBlasterException.convert(glob, ME, "Login failed", e);
          xmlBlasterException.changeErrorCode(ErrorCode.COMMUNICATION_NOCONNECTION);
-         if (log.DUMP) log.dump(ME, "Login failed for " + loginName + ": " + xmlBlasterException.getMessage() + " connectQos=" + connectQos.toXml());
          throw xmlBlasterException;
       }
    }
 
-
    /**
-    * Access the login name.
-    * @return your login name or null if you are not logged in
+    * @see I_XmlBlasterConnection#connectLowlevel(Address)
     */
-   public String getLoginName() {
-      return loginName;
+   public void connectLowlevel(Address address) throws XmlBlasterException {
+      if (log.CALL) log.call(ME, "connectLowlevel() ...");
+      this.clientAddress = address;
+      getAuthenticationService(this.clientAddress);
+      if (log.TRACE) log.trace(ME, "Success, connectLowlevel()");
+   }
+
+    /**
+    * @see I_XmlBlasterConnection#setConnectReturnQos(ConnectReturnQos)
+    */
+   public void setConnectReturnQos(ConnectReturnQos connectReturnQos) throws XmlBlasterException {
+      try {
+         this.sessionId = connectReturnQos.getSecretSessionId();
+         String xmlBlasterIOR = connectReturnQos.getServerRef().getAddress();
+         this.xmlBlaster = ServerHelper.narrow(orb.string_to_object(xmlBlasterIOR));
+         this.ME = "CorbaConnection-"+connectReturnQos.getSessionName().toString();
+      }
+      catch(Throwable e) {
+         XmlBlasterException xmlBlasterException = XmlBlasterException.convert(glob, ME, "Login failed", e);
+         xmlBlasterException.changeErrorCode(ErrorCode.COMMUNICATION_NOCONNECTION);
+         throw xmlBlasterException;
+      }
    }
 
    /**
@@ -647,7 +568,7 @@ public class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
     * @return true successfully logged out
     *         false failure on logout
     */
-   public boolean disconnect(DisconnectQos qos) {
+   public boolean disconnect(String qos) {
       if (log.CALL) log.call(ME, "disconnect() ...");
 
       if (xmlBlaster == null) {
@@ -664,12 +585,12 @@ public class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
       }
 
       try {
-         if (authServer != null) {
-            if(sessionId==null) {
-               authServer.logout(xmlBlaster);
+         if (this.authServer != null) {
+            if(this.sessionId==null) {
+               this.authServer.logout(xmlBlaster);
             }
             else {
-               authServer.disconnect(sessionId, (qos==null)?"":qos.toXml()); // secPlgn.exportMessage(""));
+               this.authServer.disconnect(this.sessionId, (qos==null)?"":qos); // secPlgn.exportMessage(""));
             }
          }
          shutdown();
@@ -851,10 +772,14 @@ public class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
    }
 
    /**
-    * Check server.
+    * Ping the server.
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public String ping(String qos) throws XmlBlasterException {
+      if (this.xmlBlaster == null && this.authServer != null) {
+         return this.authServer.ping(qos); // low level ping without having connect() to xmlBlaster
+      }
+
       try {
          return getXmlBlaster().ping(qos);
       } catch(Throwable e) {

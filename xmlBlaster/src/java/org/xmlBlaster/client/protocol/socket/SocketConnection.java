@@ -14,15 +14,13 @@ import java.io.OutputStream;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
-import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.enum.MethodName;
 
 import org.xmlBlaster.util.MsgUnitRaw;
-import org.xmlBlaster.util.qos.address.CallbackAddress;
+import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.engine.qos.GetQosServer;
 import org.xmlBlaster.engine.qos.EraseQosServer;
@@ -63,9 +61,9 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    /** our client side host */
    private String localHostname = "localhost";
    /** xmlBlaster server host */
-   private java.net.InetAddress inetAddr = null;
+   private java.net.InetAddress inetAddr;
    /** our client side host */
-   private java.net.InetAddress localInetAddr = null;
+   private java.net.InetAddress localInetAddr;
    /** The socket connection to/from one client */
    protected Socket sock;
    /** Reading from socket */
@@ -74,14 +72,11 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    protected OutputStream oStream;
    /** SocketCallbackImpl listens on socket to receive callbacks */
    protected SocketCallbackImpl cbReceiver;
-   private String passwd = null;
-   protected ConnectQos loginQos = null;
-   protected ConnectReturnQos connectReturnQos = null;
    /** The unique client sessionId */
-   protected String sessionId = null;
-   /** The client login name */
-   protected String loginName = "";
-   private I_CallbackExtended cbClient = null;
+   protected String sessionId;
+   protected String loginName = "dummyLoginName";
+   protected Address clientAddress;
+   private I_CallbackExtended cbClient;
 
    /**
     * Called by plugin loader which calls init(Global, PluginInfo) thereafter. 
@@ -101,6 +96,12 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     */
    public SocketConnection(Global glob, java.applet.Applet ap) throws XmlBlasterException {
       init(glob, null);
+   }
+
+   /**
+    */
+   public String getLoginName() {
+      return this.loginName;
    }
 
    /** Enforced by I_Plugin */
@@ -123,8 +124,6 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       if (log.CALL) log.call(ME, "Entering init()");
       // Put this instance in the NameService, will be looked up by SocketCallbackImpl
       this.glob.addObjectEntry("org.xmlBlaster.client.protocol.socket.SocketConnection", this);
-      initSocketClient(); // Establish a raw socket connection
-      log.info(ME, "Created '" + getProtocol() + "' protocol plugin to connect to xmlBlaster server");
    }
 
    /**
@@ -146,20 +145,23 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
 
    /**
     * Connects to xmlBlaster with one socket connection. 
+    * @see I_XmlBlasterConnection#connectLowlevel(Address)
     */
-   private void initSocketClient() throws XmlBlasterException
-   {
+   public void connectLowlevel(Address address) throws XmlBlasterException {
       if (isConnected())
          return;
+ 
+      // TODO: USE address for configurtation
+      this.clientAddress = address;
       
-      if (log.CALL) log.call(ME, "Entering initSocketClient(), connection with raw socket to server ...");
+      if (log.CALL) log.call(ME, "Entering connectLowlevel(), connection with raw socket to server ...");
 
       try {
          port = glob.getProperty().get("socket.port", DEFAULT_SERVER_PORT);
          if (port < 1) {
             String str = "Option socket.port set to " + port + ", socket client not started";
             log.info(ME, str);
-            throw new XmlBlasterException(ME, str);
+            throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_ADDRESS, ME, str);
          }
 
          hostname = glob.getProperty().get("socket.hostname", (String)null);
@@ -175,7 +177,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          try {
             inetAddr = java.net.InetAddress.getByName(hostname);
          } catch(java.net.UnknownHostException e) {
-            throw new XmlBlasterException("InitSocketFailed", "The host [" + hostname + "] is invalid, try '-socket.hostname <ip>': " + e.toString());
+            throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_ADDRESS, ME, "The host [" + hostname + "] is invalid, try '-socket.hostname <ip>': " + e.toString());
          }
 
 
@@ -193,7 +195,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          try {
             localInetAddr = java.net.InetAddress.getByName(localHostname);
          } catch(java.net.UnknownHostException e) {
-            throw new XmlBlasterException("InitSocketFailed", "The host [" + localHostname + "] is invalid, try '-socket.localHostname <ip>': " + e.toString());
+            throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_ADDRESS, ME, "The host [" + localHostname + "] is invalid, try '-socket.localHostname <ip>': " + e.toString());
          }
 
          if (localPort > -1) {
@@ -213,21 +215,32 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
 
          // start the socket sender and callback thread here
          if (this.cbReceiver != null) { // only the first time, not on reconnect
-            this.cbReceiver.initialize(glob, loginName, this.cbClient);
+            this.cbReceiver.initialize(glob, getLoginName(), this.cbClient);
          }
       }
+      catch (XmlBlasterException e) {
+         throw e;
+      }
       catch (java.net.UnknownHostException e) {
-         String str = "XmlBlaster server is unknown, '-socket.hostname=<ip>': " + e.toString();
+         String str = "XmlBlaster server host is unknown, '-socket.hostname=<ip>': " + e.toString();
          if (log.TRACE) log.trace(ME+".constructor", str);
          //e.printStackTrace(); 
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, 
                                        "XmlBlaster server is unknown, '-socket.hostname=<ip>'", e);
       }
+      catch (java.io.IOException e) {
+         String str = "Connection to xmlBlaster server failed: " + e.toString();
+         if (log.TRACE) log.trace(ME+".constructor", str);
+         //e.printStackTrace(); 
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, str);
+      }
       catch (Throwable e) {
          if (!(e instanceof IOException) && !(e instanceof java.net.ConnectException)) e.printStackTrace();
          String str = "Socket client connection to " + hostname + " on port " + port + " failed, try options '-socket.hostname <ip> -socket.port <port>' and check if the xmlBlaster server has loaded the socket driver in xmlBlaster.properties";
-         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, str, e);
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, str, e);
       }
+
+      log.info(ME, "Created '" + getProtocol() + "' protocol plugin and connect to xmlBlaster server");
    }
 
 
@@ -259,66 +272,31 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       return "" + sock.getLocalAddress().getHostAddress() + ":" + sock.getLocalPort();
    }
 
-
    /**
-    * Does a login.
-    * <p />
-    * The callback is delivered like this in the qos argument:
-    * <pre>
-    *    &lt;qos>
-    *       &lt;callback type='SOCKET'>
-    *          http://localhost:8081
-    *       &lt;/callback>
-    *    &lt;/qos>
-    * </pre>
-    * @param loginName The login name for xmlBlaster
-    * @param passwd    The login password for xmlBlaster
-    * @param qos       The Quality of Service for this client (the callback tag will be added automatically if client!=null)
-    * @exception       XmlBlasterException if login fails
-    * @deprecated Use #connect(ConnectQos qos) instead
+    * @see I_XmlBlasterConnection#setConnectReturnQos(ConnectReturnQos)
     */
-   public void login(String loginName, String passwd, ConnectQos qos) throws XmlBlasterException
-   {
-      if (qos == null)
-         this.loginQos = new ConnectQos(glob);
-      else
-         this.loginQos = qos;
-      this.loginQos.setUserId(loginName);
-      //this.loginQos.setCredential(passwd);
-      connect(this.loginQos);
+   public void setConnectReturnQos(ConnectReturnQos connectReturnQos) {
+      this.sessionId = connectReturnQos.getSecretSessionId();
+      this.loginName = connectReturnQos.getSessionName().getLoginName();
+      this.ME = "SocketConnection-"+loginName;
    }
 
-
-   public ConnectReturnQos connect(ConnectQos qos) throws XmlBlasterException
-   {
-      if (qos == null)
+   /**
+    * Login to the server. 
+    * <p />
+    * @param connectQos The encrypted connect QoS 
+    * @exception XmlBlasterException if login fails
+    */
+   public String connect(String connectQos) throws XmlBlasterException {
+      if (connectQos == null)
          throw new XmlBlasterException(ME+".connect()", "Please specify a valid QoS");
-
-      this.ME = "SocketConnection-" + qos.getUserId();
-      if (log.CALL) log.call(ME, "Entering login: name=" + qos.getUserId());
+      if (log.CALL) log.call(ME, "Entering connect");
       if (isLoggedIn()) {
          log.warn(ME, "You are already logged in, no relogin possible.");
-         return this.connectReturnQos;
+         return "";
       }
 
-      this.loginQos = qos;
-      this.loginName = qos.getUserId();
-      this.passwd = null;
-
-      return loginRaw();
-   }
-
-
-   /**
-    * Login to the server.
-    * <p />
-    * For internal use only.
-    * The qos needs to be set up correctly if you wish a callback
-    * @exception       XmlBlasterException if login fails
-    */
-   public ConnectReturnQos loginRaw() throws XmlBlasterException
-   {
-      initSocketClient();
+      connectLowlevel(this.clientAddress);
 
       if (getCbReceiver() == null) {
          // SocketCallbackImpl.java must be instantiated first
@@ -331,57 +309,34 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       }
 
       try {
-
-         if (passwd == null) { // connect() the new schema
-            Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.CONNECT, sessionId); // sessionId is usually null on login, on reconnect != null
-            parser.addQos(loginQos.toXml());
-            String resp = (String)getCbReceiver().execute(parser, WAIT_ON_RESPONSE);
-            this.connectReturnQos = new ConnectReturnQos(glob, resp);
-            this.sessionId = this.connectReturnQos.getSecretSessionId();
-         }
-         else {
-            throw new XmlBlasterException(ME, "login() is not supported, please use connect()");
-         }
-         if (log.DUMP) log.dump(ME+".ConnectQos", loginQos.toXml());
-         if (log.DUMP && this.connectReturnQos!=null) log.dump(ME+".ConnectReturnQos", connectReturnQos.toXml());
-         return this.connectReturnQos;
+         Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.CONNECT, sessionId); // sessionId is usually null on login, on reconnect != null
+         parser.addQos(connectQos);
+         return (String)getCbReceiver().execute(parser, WAIT_ON_RESPONSE);
       }
       catch (XmlBlasterException e) {
          throw e;
       }
       catch (Throwable e) {
          if (!(e instanceof IOException) && !(e instanceof java.net.ConnectException)) e.printStackTrace();
-         if (log.TRACE) log.trace(ME+".loginRaw", e.toString());
+         if (log.TRACE) log.trace(ME+".connect", e.toString());
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "login failed", e);
       }
-   }
-
-
-   /**
-    * Access the login name.
-    * @return your login name or null if you are not logged in
-    */
-   public String getLoginName()
-   {
-      return this.loginName;
    }
 
    /**
     * Returns the protocol type. 
     * @return "SOCKET"
     */
-   public final String getProtocol()
-   {
+   public final String getProtocol() {
       return "SOCKET";
    }
 
-   /**
+    /**
     * Does a logout and removes the callback server.
     * <p />
     * @param sessionId The client sessionId
     */       
-   public boolean disconnect(DisconnectQos qos) throws XmlBlasterException
-   {
+   public boolean disconnect(String qos) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering logout/disconnect: id=" + sessionId);
 
       if (!isLoggedIn()) {
@@ -391,7 +346,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
 
       try {
          Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.DISCONNECT, sessionId);
-         parser.addQos((qos==null)?"":qos.toXml());
+         parser.addQos((qos==null)?"":qos);
          // We close first the callback thread, this could be a bit early ?
          getCbReceiver().running = false; // To avoid error messages as xmlBlaster closes the connection during disconnect()
          getCbReceiver().execute(parser, ONEWAY);
@@ -660,6 +615,19 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     */
    public String ping(String qos) throws XmlBlasterException
    {
+      if (getCbReceiver() == null) {
+         return ""; // fake a return for ping on startup
+         /*
+         // SocketCallbackImpl.java must be instantiated first
+         //throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME,
+         //      "Sorry, SOCKET callback handler is not available but is necessary if client connection is of type 'SOCKET', please do not mix 'SOCKET' with other protocols in the same client connection.");
+         log.info(ME, "Creating default callback server type=" + getType());
+         I_CallbackServer server = glob.getCbServerPluginManager().getPlugin(getType(), getVersion());
+         server.initialize(this.glob, getLoginName(), null);
+         // NOTE: This happens only if the client has no callback configured, we create a faked one here (as the SOCKET plugin needs it)
+         */
+      }
+
       try {
          Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.PING, null); // sessionId not necessary
          parser.addQos(""); // ("<qos><state id='OK'/></qos>");

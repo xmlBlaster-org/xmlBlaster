@@ -9,10 +9,9 @@ package org.xmlBlaster.client.protocol;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnitRaw;
-import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
-import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.util.plugin.I_Plugin;
+import org.xmlBlaster.util.qos.address.Address;
 
 
 /**
@@ -27,14 +26,27 @@ import org.xmlBlaster.util.plugin.I_Plugin;
  * with your own lowlevel RMI or CORBA coding as well.
  * <p />
  * If you are interested in a fail save client connection, consider
- * using XmlBlasterConnection.java which implements some nice features.
+ * using XmlBlasterAccess.java which implements some nice features.
+ * <p>
+ * The plugins which implement this interface do NOT need to be thread safe.
+ * </p>
  *
- * @see org.xmlBlaster.client.protocol.XmlBlasterConnection
+ * @see org.xmlBlaster.client.XmlBlasterAccess
  *
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  */
 public interface I_XmlBlasterConnection extends I_Plugin
 {
+   /**
+    * Intialize the driver and verify if the remote side is reachable on the low-level protocol layer. 
+    * Calling this method multiple times will do noting if a low level connection is available.
+    * @param  address Contains the remote address,
+    *         e.g. the host and port where the remote server listens
+    * @exception XmlBlasterException ErrorCode.COMMUNICATION* if the server is not reachable.<br />
+    *            Other errors if for example a malformed address is passed
+    */
+   public void connectLowlevel(Address address) throws XmlBlasterException;
+
    /**
     * connect() is a login or authentication as well, the authentication schema
     * is transported in the qos.
@@ -43,17 +55,23 @@ public interface I_XmlBlasterConnection extends I_Plugin
     *
     * You can still use login() for simple name/password based authentication.
     *
-    * @param qos The authentication and other informations
+    * @param qos The authentication and other informations (ConnectQos encrypted)
     * @param client A handle to your callback if desired or null
-    * @return ConnectReturnQos
+    * @return ConnectReturnQos string
     */
-   public ConnectReturnQos connect(ConnectQos qos) throws XmlBlasterException;
+   public String connect(String connectQos) throws XmlBlasterException;
+
+   /**
+    * Pass the driver the decrypted and parsed ConnectReturnQos directly after a connect. 
+    * Some driver take the secretSessionId from it or a returned remote address
+    */
+   public void setConnectReturnQos(ConnectReturnQos connectReturnQos) throws XmlBlasterException;
 
    /**
     * Logout from xmlBlaster. 
-    * @param qos The QoS or null
+    * @param disconnectQos The QoS or null
     */
-   public boolean disconnect(DisconnectQos qos) throws XmlBlasterException;
+   public boolean disconnect(String disconnectQos) throws XmlBlasterException;
 
    // Could make sense to the SOCKET driver, returns new SocketCallbackImpl
    //public I_CallbackServer getCbServerInstance() throws XmlBlasterException;
@@ -63,15 +81,11 @@ public interface I_XmlBlasterConnection extends I_Plugin
     */
    public String getProtocol();
 
-   /**
-    * Try to login to xmlBlaster. 
-    */
-   public void login(String loginName, String passwd, ConnectQos qos) throws XmlBlasterException;
-
-   /**
+   /*
     * Is invoked when we poll for the server, for example after we have lost the connection. 
+    * @return ConnectReturnQos string
     */
-   public ConnectReturnQos loginRaw() throws XmlBlasterException;
+//   public String loginRaw() throws XmlBlasterException;
 
    /*
     * @deprecated Use disconnect() instead
@@ -82,8 +96,6 @@ public interface I_XmlBlasterConnection extends I_Plugin
 
    /** Reset the driver on problems */
    public void resetConnection();
-
-   public String getLoginName();
 
    public boolean isLoggedIn();
 

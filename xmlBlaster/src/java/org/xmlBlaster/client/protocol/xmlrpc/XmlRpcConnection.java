@@ -12,9 +12,7 @@ import org.jutils.text.StringHelper;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
-import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.util.protocol.ProtoConverter;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
@@ -26,6 +24,7 @@ import org.xmlBlaster.engine.qos.EraseQosServer;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
+import org.xmlBlaster.util.qos.address.Address;
 
 import java.applet.Applet;
 
@@ -52,11 +51,8 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    private String url = "http://localhost:" + DEFAULT_SERVER_PORT;
    private XmlRpcClient xmlRpcClient; // xml-rpc client to send method calls.
    private String sessionId;
-   protected String loginName;
-   private String passwd;
-   protected ConnectQos connectQos;
    protected ConnectReturnQos connectReturnQos;
-   private boolean firstAttempt = true;
+   protected Address clientAddress;
 
    /**
     * Called by plugin loader which calls init(Global, PluginInfo) thereafter. 
@@ -106,10 +102,18 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
       return "XML-RPC";
    }
 
-   private void initXmlRpcClient() throws XmlBlasterException
-   {
+   /**
+    * @see I_XmlBlasterConnection#connectLowlevel(Address)
+    */
+   public void connectLowlevel(Address address) throws XmlBlasterException {
+      if (this.xmlRpcClient != null) {
+         return;
+      }
+
+      this.clientAddress = address;
+
       try {
-         String hostname = connectQos.getAddress().getHostname();
+         String hostname = address.getHostname();
          hostname = glob.getProperty().get("xmlrpc.hostname", hostname);
 
          // default xmlBlaster XML-RPC publishing port is 8080
@@ -124,7 +128,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
       }
       catch (java.net.MalformedURLException e) {
          log.error(ME+".constructor", "Malformed URL: " + e.toString());
-         throw new XmlBlasterException("Malformed URL", e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION_ADDRESS, "Malformed URL for XmlRpc connection", e.toString());
       }
       catch (IOException e1) {
          log.error(ME+".constructor", "IO Exception: " + e1.toString());
@@ -132,15 +136,13 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
       }
    }
 
-   public void resetConnection()
-   {
+   public void resetConnection() {
       log.trace(ME, "XmlRpcCLient is initialized, no connection available");
       this.xmlRpcClient = null;
       this.sessionId = null;
    }
 
-   private XmlRpcClient getXmlRpcClient() throws XmlBlasterException
-   {
+   private XmlRpcClient getXmlRpcClient() throws XmlBlasterException {
       if (this.xmlRpcClient == null) {
          if (log.TRACE) log.trace(ME, "No XML-RPC connection available.");
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME,
@@ -149,121 +151,44 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
       return this.xmlRpcClient;
    }
 
-
    /**
-    * Does a login.
+    * Login to the server. 
     * <p />
-    * The callback is delivered like this in the qos argument:
-    * <pre>
-    *    &lt;qos>
-    *       &lt;callback type='XML-RPC'>
-    *          http://localhost:8081
-    *       &lt;/callback>
-    *    &lt;/qos>
-    * </pre>
-    * @param loginName The login name for xmlBlaster
-    * @param passwd    The login password for xmlBlaster
-    * @param qos       The Quality of Service for this client
-    * @exception       XmlBlasterException if login fails
+    * @param connectQos The encrypted connect QoS 
+    * @exception XmlBlasterException if login fails
     */
-   public void login(String loginName, String passwd, ConnectQos qos) throws XmlBlasterException
-   {
-      this.ME = "XmlRpcConnection-" + loginName;
-      if (log.CALL) log.call(ME, "Entering login: name=" + loginName);
-      if (isLoggedIn()) {
-         log.warn(ME, "You are already logged in, no relogin possible.");
-         return;
-      }
-
-      this.loginName = loginName;
-      this.passwd = passwd;
-      if (qos == null)
-         this.connectQos = new ConnectQos(glob);
-      else
-         this.connectQos = qos;
-
-      loginRaw(true);
-   }
-
-
-   public ConnectReturnQos connect(ConnectQos qos) throws XmlBlasterException
-   {
-      if (qos == null)
+   public String connect(String connectQos) throws XmlBlasterException {
+      if (connectQos == null)
          throw new XmlBlasterException(ME+".connect()", "Please specify a valid QoS");
 
-      this.ME = "XmlRpcConnection-" + qos.getUserId();
-      if (log.CALL) log.call(ME, "Entering login: name=" + qos.getUserId());
+      if (log.CALL) log.call(ME, "Entering login");
       if (isLoggedIn()) {
          log.warn(ME, "You are already logged in, no relogin possible.");
-         return this.connectReturnQos;
+         return "";
       }
 
-      this.connectQos = qos;
-      this.loginName = qos.getUserId();
-      this.passwd = null;
-
-      boolean verbose = this.firstAttempt;
-      this.firstAttempt = false;
-
-      return loginRaw(verbose);
-   }
-
-   /**
-    * @see I_XmlBlasterConnection#loginRaw
-    */
-   public ConnectReturnQos loginRaw() throws XmlBlasterException {
-      return loginRaw(false);
-   }
-
-   /**
-    * Login to the server.
-    * <p />
-    * For internal use only.
-    * @exception       XmlBlasterException if login fails
-    */
-   private ConnectReturnQos loginRaw(boolean verbose) throws XmlBlasterException {
       try {
-         initXmlRpcClient();
+         connectLowlevel(this.clientAddress);
          // prepare the argument vector for the xml-rpc method call
 
-         String qosOrig = connectQos.toXml();
+         String qosOrig = connectQos;
          String qosStripped = StringHelper.replaceAll(qosOrig, "<![CDATA[", "");
-         qosStripped = StringHelper.replaceAll(qosStripped, "]]>", "");
-         if (!qosStripped.equals(qosOrig)) {
+         connectQos = StringHelper.replaceAll(qosStripped, "]]>", "");
+         if (!connectQos.equals(qosOrig)) {
             log.trace(ME, "Stripped CDATA tags surrounding security credentials, XML-RPC does not like it (Helma does not escape ']]>'). " +
                            "This shouldn't be a problem as long as your credentials doesn't contain '<'");
          }
 
          Vector args = new Vector();
-         if (passwd == null) // The new schema
-         {
-            if (log.TRACE) log.trace(ME, "Executing authenticate.connect() via XmlRpc with security plugin" + qosStripped);
-            args.addElement(qosStripped);
-            this.sessionId = null;
-            String tmp = (String)getXmlRpcClient().execute("authenticate.connect", args);
-            this.connectReturnQos = new ConnectReturnQos(glob, tmp);
-            this.sessionId = connectReturnQos.getSecretSessionId();
-         }
-         else
-         {
-            if (log.TRACE) log.trace(ME, "Executing authenticate.login() via XmlRpc for loginName " + loginName);
-
-            args.addElement(loginName);
-            args.addElement(passwd);
-            args.addElement(qosStripped);
-            this.sessionId = null;
-            args.addElement(""/*sessionId*/); // Let xmlBlaster generate the sessionId
-            this.sessionId = (String)getXmlRpcClient().execute("authenticate.login", args);
-         }
-         if (log.DUMP) log.dump(ME, connectQos.toXml());
-         return this.connectReturnQos;
+         if (log.TRACE) log.trace(ME, "Executing authenticate.connect() via XmlRpc");
+         args.addElement(connectQos);
+         return (String)getXmlRpcClient().execute("authenticate.connect", args);
       }
       catch (ClassCastException e) {
          log.error(ME+".login", "return value not a valid String: " + e.toString());
          throw new XmlBlasterException(ME+".LoginFailed", "return value not a valid String, Class Cast Exception: " + e.toString());
       }
       catch (IOException e) {
-         this.sessionId = null;
          log.warn(ME+".login", "Login to xmlBlaster failed: " + e.toString());
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "Login failed", e);
       }
@@ -272,25 +197,21 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
       }
    }
 
-
    /**
-    * Access the login name.
-    * @return your login name or null if you are not logged in
+    * @see I_XmlBlasterConnection#setConnectReturnQos(ConnectReturnQos)
     */
-   public String getLoginName()
-   {
-      return this.loginName;
+   public void setConnectReturnQos(ConnectReturnQos connectReturnQos) {
+      this.sessionId = connectReturnQos.getSecretSessionId();
+      this.ME = "XmlRpcConnection-"+connectReturnQos.getSessionName().toString();
    }
-
 
    /**
     * Does a logout. 
     * <p />
     * @param sessionId The client sessionId
     */
-   public boolean disconnect(DisconnectQos qos)
-   {
-      if (log.CALL) log.call(ME, "Entering logout: id=" + sessionId);
+   public boolean disconnect(String disconnectQos) {
+      if (log.CALL) log.call(ME, "Entering logout");
 
       if (!isLoggedIn()) {
          log.warn(ME, "You are not logged in, no logout possible.");
@@ -301,7 +222,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
             // prepare the argument vector for the xml-rpc method call
             Vector args = new Vector();
             args.addElement(sessionId);
-            args.addElement((qos==null)?" ":qos.toXml()); // qos
+            args.addElement((disconnectQos==null)?" ":disconnectQos);
             this.xmlRpcClient.execute("authenticate.disconnect", args);
          }
 
@@ -361,7 +282,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
       try {
          // prepare the argument vector for the xml-rpc method call
          Vector args = new Vector();
-         args.addElement(sessionId);
+         args.addElement(this.sessionId);
          args.addElement(xmlKey_literal);
          args.addElement(qos_literal);
          return (String)getXmlRpcClient().execute("xmlBlaster.subscribe", args);
