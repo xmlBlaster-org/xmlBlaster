@@ -20,16 +20,24 @@ BLACK_LTGREEN="\033[40;46m"
 BLACK_RED="\033[30;41m"
 ESC="\033[0m"
 
+OS="`uname -s`"
+
+if [ ${OS} = "Linux" ]; then
+	ECHO="echo -e"
+else
+	ECHO="echo"
+fi
+
 
 #-------- Checking xmlBlaster --------
 if [ "x${XMLBLASTER_HOME}" = "x" ] ; then
-   echo -e "$BLACK_RED   Please set the environment variable XMLBLASTER_HOME          $ESC"
-   echo -e "$BLACK_RED      Example: 'export XMLBLASTER_HOME=/home/paul/xmlBlaster'   $ESC"
+   ${ECHO} "$BLACK_RED   Please set the environment variable XMLBLASTER_HOME          $ESC"
+   ${ECHO} "$BLACK_RED      Example: 'export XMLBLASTER_HOME=/home/paul/xmlBlaster'   $ESC"
    return
 fi
 
 if [ ! -d ${XMLBLASTER_HOME} ] ; then
-   echo -e "$BLACK_RED   The directory XMLBLASTER_HOME=$XMLBLASTER_HOME doesn't exist   $ESC"
+   ${ECHO} "$BLACK_RED   The directory XMLBLASTER_HOME=$XMLBLASTER_HOME doesn't exist   $ESC"
 fi
 
 export XMLBLASTER_HOME
@@ -38,8 +46,8 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    
    # OK, know we know where xmlBlaster is installed ...
 
-   echo -e "$BLACK_LTGREEN   Welcome to xmlBlaster.org   $ESC"
-   echo -e "$BLACK_LTGREEN      Using XMLBLASTER_HOME=${XMLBLASTER_HOME}  $ESC"
+   ${ECHO} "$BLACK_LTGREEN   Welcome to xmlBlaster.org   $ESC"
+   ${ECHO} "$BLACK_LTGREEN      Using XMLBLASTER_HOME=${XMLBLASTER_HOME}  $ESC"
 
    CLASSPATH=${XMLBLASTER_HOME}/lib/xml.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/xtdash.jar:${CLASSPATH}
@@ -67,10 +75,10 @@ if [ -d ${XMLBLASTER_HOME} ]; then
 
    if [ ! -f ${HOME}/xmlBlaster.properties ]; then
       cp ${XMLBLASTER_HOME}/xmlBlaster.properties.template ${HOME}/xmlBlaster.properties
-      echo -e "$BLACK_RED   Please edit and customize ${HOME}/xmlBlaster.properties   $ESC"
+      ${ECHO} "$BLACK_RED   Please edit and customize ${HOME}/xmlBlaster.properties   $ESC"
    fi
 else
-   echo -e "$BLACK_RED  Sorry, xmlBlaster.org not loaded, set your environment manually   $ESC"
+   ${ECHO} "$BLACK_RED  Sorry, xmlBlaster.org not loaded, set your environment manually   $ESC"
    return 1
 fi
 
@@ -110,24 +118,24 @@ if [ -d ${JacORB_HOME} ] ; then
    # To compile JacORB yourself:
    CLASSPATH=${CLASSPATH}:${JacORB_HOME}/classes
    export CLASSPATH
-   echo -e "$BLACK_LTGREEN      Using JacORB_HOME=${JacORB_HOME}  $ESC"
+   ${ECHO} "$BLACK_LTGREEN      Using JacORB_HOME=${JacORB_HOME}  $ESC"
 
    if [ ! -f ${HOME}/.jacorb_properties ]; then
       cp ${JacORB_HOME}/jacorb_properties.template ${HOME}/.jacorb_properties
-      echo -e "$BLACK_RED   Please edit and customize ${HOME}/.jacorb_properties   $ESC"
+      ${ECHO} "$BLACK_RED   Please edit and customize ${HOME}/.jacorb_properties   $ESC"
    fi
 else
-   echo -e "$BLACK_RED   The directory JacORB_HOME=$JacORB_HOME doesn't exist   $ESC"
+   ${ECHO} "$BLACK_RED   The directory JacORB_HOME=$JacORB_HOME doesn't exist   $ESC"
 fi
 
 
 
 #-------- Checking MICO --------
 if [ ! -d ${MICO_HOME} ] ; then
-   echo -e "      If you want to use the C++ MICO client, set the MICO_HOME environment variable   "
-   echo -e "         Example: 'export MICO_HOME=/usr/local/mico'"
+   ${ECHO} "      If you want to use the C++ MICO client, set the MICO_HOME environment variable   "
+   ${ECHO} "         Example: 'export MICO_HOME=/usr/local/mico'"
 else
-   echo -e "$BLACK_LTGREEN      Using MICO_HOME=${MICO_HOME}  $ESC"
+   ${ECHO} "$BLACK_LTGREEN      Using MICO_HOME=${MICO_HOME}  $ESC"
 fi
 
 
@@ -135,26 +143,26 @@ fi
 #-------- Checking JDK version -
 if [ "x${JDK_HOME}" != "x" ] ; then
    if [ -d ${JDK_HOME} ] ; then
-		if [ -f ${JDK_HOME}/lib/classes.zip ]; then
-			# JDK 1.1.x
-			export JDK_1_1=true
-		   CLASSPATH=${XMLBLASTER_HOME}/lib/collections.jar:${CLASSPATH}
-		else
-			# JDK 1.2
-	      CLASSPATH=${CLASSPATH}:${JDK_HOME}/jre/lib/rt.jar
-   	   export CLASSPATH
-		fi
+      if [ -f ${JDK_HOME}/lib/classes.zip ]; then
+         # JDK 1.1.x
+         export JDK_1_1=true
+         CLASSPATH=${XMLBLASTER_HOME}/lib/collections.jar:${CLASSPATH}
+      else
+         # JDK 1.2
+         CLASSPATH=${CLASSPATH}:${JDK_HOME}/jre/lib/rt.jar
+         export CLASSPATH
+      fi
       PATH=${PATH}:${JDK_HOME}/bin
       export PATH
    else
-      echo -e "$BLACK_RED   The directory JDK_HOME=$JDK_HOME doesn't exist   $ESC"
+      ${ECHO} "$BLACK_RED   The directory JDK_HOME=$JDK_HOME doesn't exist   $ESC"
    fi
 else
-   echo -e "$BLACK_LTGREEN      NOTE: You need JDK 1.2 to compile xmlBlaster            $ESC"
-   echo -e "$BLACK_LTGREEN            and your CLASSPATH setting needs at least         $ESC"
-   echo -e "$BLACK_LTGREEN               export CLASSPATH=JDK_HOME/jre/lib/rt.jar       $ESC"
-   echo -e "$BLACK_LTGREEN            Or set JDK_HOME, and we will do the rest for you  $ESC"
-   echo -e "$BLACK_LTGREEN               Example: 'export JDK_HOME=/usr/local/jdk'       $ESC"
+   ${ECHO} "$BLACK_LTGREEN      NOTE: You need JDK 1.2 to compile xmlBlaster            $ESC"
+   ${ECHO} "$BLACK_LTGREEN            and your CLASSPATH setting needs at least         $ESC"
+   ${ECHO} "$BLACK_LTGREEN               export CLASSPATH=JDK_HOME/jre/lib/rt.jar       $ESC"
+   ${ECHO} "$BLACK_LTGREEN            Or set JDK_HOME, and we will do the rest for you  $ESC"
+   ${ECHO} "$BLACK_LTGREEN               Example: 'export JDK_HOME=/usr/local/jdk'       $ESC"
 fi
 
 
@@ -165,9 +173,9 @@ if [ "x${JIKES_HOME}" != "x" ] ; then
    if [ -d ${JIKES_HOME} ] ; then
       PATH=${PATH}:${JIKES_HOME}
       export PATH
-      echo -e "$BLACK_LTGREEN      Using JIKES_HOME=${JIKES_HOME}  $ESC"
+      ${ECHO} "$BLACK_LTGREEN      Using JIKES_HOME=${JIKES_HOME}  $ESC"
    else
-      echo -e "$BLACK_RED   The directory JIKES_HOME=$JIKES_HOME doesn't exist   $ESC"
+      ${ECHO} "$BLACK_RED   The directory JIKES_HOME=$JIKES_HOME doesn't exist   $ESC"
    fi
 fi
 

@@ -26,8 +26,7 @@
       export JDK_HOME=/usr/local/jdk
       export PATH=${JDK_HOME}/bin:$PATH
       export XMLBLASTER_HOME=${HOME}/xmlBlaster 
-
-      source  ${XMLBLASTER_HOME}/.bashrc
+      . ${XMLBLASTER_HOME}/.bashrc
 
     This is the recommended way, since you will automatically
     source all enhancements of new xmlBlaster releases.
