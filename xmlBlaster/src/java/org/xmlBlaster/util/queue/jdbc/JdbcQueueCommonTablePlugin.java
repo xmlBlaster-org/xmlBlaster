@@ -1230,9 +1230,15 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     * @see I_Map#change(I_Entry, I_ChangeCallback)
     */
    public I_MapEntry change(I_MapEntry entry, I_ChangeCallback callback) throws XmlBlasterException {
-      this.log.warn(ME, "change not implemented yet ..........");
-      synchronized(this) {
-         return callback.changeEntry(entry);
+      synchronized(this) { // is this the correct synchronization ??
+         long oldSizeInBytes = entry.getSizeInBytes(); // must be here since newEntry could reference same obj.
+         I_MapEntry newEntry = entry;
+         if (callback != null) newEntry = callback.changeEntry(entry);
+         if (oldSizeInBytes != newEntry.getSizeInBytes()) {
+            throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".change", "the size of the entry '" + entry.getUniqueId() + "' has changed from '" + oldSizeInBytes + "' to '" + newEntry.getSizeInBytes() +"'. This is not allowed");
+         } 
+         this.manager.modifyEntry(getStorageId().getStrippedId(), this.glob.getStrippedId(), newEntry);
+         return newEntry;
       }
    }
 

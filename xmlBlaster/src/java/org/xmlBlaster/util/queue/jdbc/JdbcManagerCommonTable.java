@@ -551,7 +551,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    }
 
    /**
-    * Adds a node to the DB.
+    * Adds a queue to the DB. If the node to which the queue belongs does not exist one is created.
     * @return boolean false if the node already existed, true otherwise.
     */
    public final boolean addQueue(String queueName, String nodeId, long numOfBytes, long numOfEntries) throws SQLException, XmlBlasterException {
@@ -621,6 +621,98 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       finally {
          if (query != null) query.close();
       }
+   }
+
+
+   /**
+    *
+    * modifies a row in the specified queue table
+    * @param queueName The name of the queue on which to perform the operation
+    * @param entry the object to be stored.
+    *
+    * @return true on success
+    *
+    * @throws XmlBlasterException if an error occured when trying to get a connection or an SQLException
+    *         occured.
+    */
+   public final boolean modifyEntry(String queueName, String nodeId, I_Entry entry)
+      throws XmlBlasterException {
+      if (this.log.CALL) this.log.call(getLogId(queueName, nodeId, "addSingleEntry"), "Entering");
+
+      if (!this.isConnected) {
+         if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "addSingleEntry"), "For entry '" + entry.getUniqueId() + "' currently not possible. No connection to the DB");
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".addSingleEntry", " the connection to the DB is unavailable already before trying to add an entry"); 
+      }
+
+      Connection conn = this.pool.getConnection();
+      PreparedStatement preStatement = null;
+      Statement exStatement = null;
+      boolean ret = false;
+
+      long dataId = entry.getUniqueId();
+      int prio = entry.getPriority();
+      byte[] blob = this.factory.toBlob(entry);
+      String typeName = entry.getEmbeddedType();
+      boolean persistent = entry.isPersistent();
+      long sizeInBytes = entry.getSizeInBytes();
+      
+      if (this.log.DUMP)
+         this.log.dump(ME, "modification dataId: " + dataId + ", prio: " + prio + ", typeName: " + typeName + ", byteSize in bytes: " + sizeInBytes);
+
+      try {
+         String req = "UPDATE " + this.entriesTableName + " SET prio = ? , flag = ? , durable = ? , byteSize = ? , blob = ? WHERE  dataId = ? AND nodeId = ? AND queueName = ?";
+
+         if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "modifyEntry"), req);
+         preStatement = conn.prepareStatement(req);
+         preStatement.setQueryTimeout(this.pool.getQueryTimeout());
+         preStatement.setInt(1, prio);
+         preStatement.setString(2, typeName);
+         if (persistent == true) preStatement.setString(3, "T");
+         else preStatement.setString(3, "F");
+         preStatement.setLong(4, sizeInBytes);
+         preStatement.setBytes(5, blob);
+         preStatement.setLong(6, dataId);
+         preStatement.setString(7, nodeId);
+         preStatement.setString(8, queueName);
+
+         if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "modifyEntry"), preStatement.toString());
+
+         int num = preStatement.executeUpdate();
+         if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "modifyEntry"), "Modified " + num + " entries, entryId='" + entry.getUniqueId() + "'");
+         ret = true;
+      }
+      catch (SQLException ex) {
+         
+         if (this.log.TRACE) this.log.trace(ME, "modifyEntry: sql exception, the sql state: '" + ex.getSQLState() );
+         if (this.log.TRACE) this.log.trace(ME, "modifyEntry: sql exception, the error code: '" + ex.getErrorCode() );
+         try {
+            preStatement.close();
+            conn.clearWarnings();
+         }
+         catch (Throwable ex1) {
+            this.log.error(ME, "modifyEntry: Exception when closing the statement: " + ex1.toString());
+         }
+//         if (!conn.getAutoCommit()) conn.rollback(); // DANGER !!!!!!! NOT SAFE YET 
+         this.log.warn(getLogId(queueName, nodeId, "modifyEntry"), "Could not insert entry '" +
+                  entry.getClass().getName() + "'-'" +  entry.getLogId() + "-" + entry.getUniqueId() + "': " + ex.toString());
+         if (handleSQLException(conn, getLogId(queueName, nodeId, "modifyEntry"), ex)) {
+            throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".modifyEntry", "", ex); 
+         }
+         else {
+            throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".modifyEntry", "", ex); 
+         }
+      }
+      finally {
+         try {
+            if (exStatement != null) exStatement.close();
+            if (preStatement != null) preStatement.close();
+         }
+         catch (Throwable ex) {
+            this.log.warn(ME, "modifyEntry: throwable when closing the connection: " + ex.toString());
+         }
+         if (conn != null) this.pool.releaseConnection(conn);
+      }
+      return ret;
    }
 
 

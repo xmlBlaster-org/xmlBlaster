@@ -343,7 +343,8 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
    public I_MapEntry change(I_MapEntry entry, I_ChangeCallback callback) throws XmlBlasterException {
       synchronized(this.storage) {
          long oldSizeInBytes = entry.getSizeInBytes(); // must be here since newEntry could reference same obj.
-         I_MapEntry newEntry = callback.changeEntry(entry);
+         I_MapEntry newEntry = entry; 
+         if (callback != null) newEntry = callback.changeEntry(entry);
          if (oldSizeInBytes != newEntry.getSizeInBytes()) {
             throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".change", "the size of the entry '" + entry.getUniqueId() + "' has changed from '" + oldSizeInBytes + "' to '" + newEntry.getSizeInBytes() +"'. This is not allowed");
          } 

@@ -748,20 +748,22 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
     * @see I_Map#change(I_Entry, I_ChangeCallback)
     */
    public I_MapEntry change(I_MapEntry entry, I_ChangeCallback callback) throws XmlBlasterException {
-      this.log.warn(ME, "change not implemented yet ..........");
-      synchronized(this) {
+      synchronized(this) { // is this the correct synchronization ??
          long oldSizeInBytes = entry.getSizeInBytes(); // must be here since newEntry could reference same obj.
-         I_MapEntry newEntry = callback.changeEntry(entry);
+         I_MapEntry newEntry = entry;
+         if (callback != null) newEntry = callback.changeEntry(entry);
          if (oldSizeInBytes != newEntry.getSizeInBytes()) {
             throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".change", "the size of the entry '" + entry.getUniqueId() + "' has changed from '" + oldSizeInBytes + "' to '" + newEntry.getSizeInBytes() +"'. This is not allowed");
          } 
-         
-         if (entry != newEntry) { // then they are not the same reference ...
-            int tmp = remove(entry);
-            if (tmp < 1) throw new XmlBlasterException(this.glob,  ErrorCode.INTERNAL_UNKNOWN, ME + ".change", "the size of the entry '" + entry.getUniqueId() + "' has not been found on this map");
-            put(newEntry);
+
+         I_MapEntry retEntry = this.transientStore.change(newEntry, null);
+         // TODO: In case we changed from persistent to transient it should be removed from the 
+         // persistence. In case it changed from transient to persistent it should be stored on the
+         // persistence too.
+         if (newEntry.isPersistent() && this.persistentStore != null && this.isConnected) {
+            retEntry = this.persistentStore.change(newEntry, null);
          }
-         return newEntry;
+         return retEntry;
       }
    }
 

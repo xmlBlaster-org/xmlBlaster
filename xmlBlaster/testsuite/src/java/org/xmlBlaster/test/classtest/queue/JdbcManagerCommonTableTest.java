@@ -101,18 +101,16 @@ public class JdbcManagerCommonTableTest extends TestCase {
          String queueName = storageId.getStrippedId();
 
          try {
+            // this implicilty creates a node called "Fritz" too
             this.manager.addQueue(queueName, "Fritz", 1000, 3000);
          }
          catch (SQLException ex) {
-//            this.log.info(me, "exception here is OK since you did not assign a node before assigning a queue");
+            assertTrue(me + " an exception here should not occur since addQueue adds also a node if it does not exist", false);
          }
  
          ret = this.manager.addNode("Fritz");
-         if (this.log.TRACE) this.log.trace(me, " re-adding the first node should give 'true'");
-         assertEquals(me + " re-adding the first node should give 'true'", true, ret);
- 
-         ret = this.manager.addQueue(queueName, "Fritz", 1000, 3000);
-         assertEquals(me + " adding the first time a queue", true, ret);
+         if (this.log.TRACE) this.log.trace(me, " re-adding the first node should give 'false'");
+         assertEquals(me + " re-adding the first node should give 'false' since it has been implicitly added with addQueue ", false, ret);
  
          ret = this.manager.addQueue(queueName, "Fritz", 1000, 3000);
          assertEquals(me + " adding the second time a queue should give false", ret, false);
@@ -126,8 +124,8 @@ public class JdbcManagerCommonTableTest extends TestCase {
          ret = this.manager.removeQueue(queueName, "Fritz");
          assertEquals(me + " removing a queue after removing the node should give 'false' since already deleted", false, ret);
  
-         DummyEntry entry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, storageId, true);
-         long size = entry.getSizeInBytes();
+         long size = 100; // entry.getSizeInBytes();
+         DummyEntry entry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, storageId, size, true);
 
          try {
             this.manager.addEntry(queueName, "Fritz", entry);
@@ -156,13 +154,35 @@ public class JdbcManagerCommonTableTest extends TestCase {
          assertEquals(me + " adding an entry the second time should give back 'false'", false, ret);
  
          // add some more entries
-         entry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, storageId, true); 
+         entry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, storageId, size, true); 
          this.manager.addEntry(queueName, "Fritz", entry);
          totalSize += size;
 
-         entry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, storageId, false); 
+         entry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, storageId, size, false); 
          this.manager.addEntry(queueName, "Fritz", entry);
          totalSize += size;
+
+         // check here a modification of an entry:
+         long oldNumOfEntries = this.manager.getNumOfEntries(queueName, "Fritz");
+         long oldNumOfBytes = this.manager.getNumOfBytes(queueName, "Fritz");
+
+         entry.setPersistent(true);
+         this.manager.modifyEntry(queueName, "Fritz", entry);
+         long[] dataIds = new long[1];
+         dataIds[0] = entry.getUniqueId();
+         ArrayList tmp = this.manager.getEntries(storageId, "Fritz", dataIds);
+         assertEquals(me + " modified entry is not correct ", true, ((DummyEntry)(tmp.get(0))).isPersistent());
+
+         entry.setPersistent(false);
+         this.manager.modifyEntry(queueName, "Fritz", entry);
+         dataIds = new long[1];
+         dataIds[0] = entry.getUniqueId();
+         tmp = this.manager.getEntries(storageId, "Fritz", dataIds);
+         assertEquals(me + " modified entry is not correct ", false, ((DummyEntry)(tmp.get(0))).isPersistent());
+
+         // did the modification change the number or the size of the entries ?
+         assertEquals(me + " modification did change the number of entries", oldNumOfEntries, this.manager.getNumOfEntries(queueName, "Fritz"));
+         assertEquals(me + " modification did change the number of bytes", oldNumOfBytes, this.manager.getNumOfBytes(queueName, "Fritz"));
 
          long numOfBytes = this.manager.getNumOfBytes(queueName, "Fritz");
          assertEquals(me + " num of bytes in queue 'queue1'", totalSize, numOfBytes);
@@ -177,15 +197,15 @@ public class JdbcManagerCommonTableTest extends TestCase {
          assertEquals(me + " getAndDeleteLowest check", 2, retHolder.countEntries);
 
          long entriesToDelete[] = new long[2];
-         entry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, storageId, true);
+         entry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, storageId, size, true);
          entriesToDelete[0] = entry.getUniqueId();
          this.manager.addEntry(queueName, "Fritz", entry);
-         entry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, storageId, true);
+         entry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, storageId, size, true);
          this.manager.addEntry(queueName, "Fritz", entry);
-         entry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, storageId, true);
+         entry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, storageId, size, true);
          entriesToDelete[1] = entry.getUniqueId();
          this.manager.addEntry(queueName, "Fritz", entry);
-         entry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, storageId, true);
+         entry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, storageId, size, true);
          this.manager.addEntry(queueName, "Fritz", entry);
 
          int numOfDel = this.manager.deleteEntries(queueName, "Fritz", entriesToDelete);
@@ -199,7 +219,7 @@ public class JdbcManagerCommonTableTest extends TestCase {
 
 
          long[] entriesToGet = new long[2];
-         entry = new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, storageId, true);
+         entry = new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, storageId, size, true);
          entriesToGet[0] = entry.getUniqueId();
          this.manager.addEntry(queueName, "Fritz", entry);
 
@@ -209,7 +229,7 @@ public class JdbcManagerCommonTableTest extends TestCase {
          arrayList = this.manager.getEntries(storageId, "Fritz", -1, -1);
          assertEquals(me + " getEntries check", 2, arrayList.size());
 
-         entry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, storageId, true);
+         entry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, storageId, size, true);
          entriesToGet[1] = entry.getUniqueId();
 
          this.manager.addEntry(queueName, "Fritz", entry);

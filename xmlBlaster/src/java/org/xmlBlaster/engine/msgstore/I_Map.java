@@ -169,7 +169,8 @@ public interface I_Map extends I_StorageProblemNotifier
     *        you should invoke change(long, callback). That method makes a lookup within the same 
     *        synchronization point.
     * @param callback the object on which the callback method 'changeEntry' is invoked. The modification
-    *        of the object is done in that method.
+    *        of the object is done in that method. If you pass null, then the changeEntry is not invoked
+    *        and the processing continues with entry.
     * @return I_MapEntry the modified entry.
     * @throws XmlBlasterException if something goes wrong when making the change (for example if the
     *         entry is not in the map) or if the callback throws an exception.
@@ -182,7 +183,8 @@ public interface I_Map extends I_StorageProblemNotifier
     * @param uniqueId the uniqueId of the entry to change. This is the old entry, i.e. the entry on 
     *        which the modification has to take place.
     * @param callback the object on which the callback method 'changeEntry' is invoked. The modification
-    *        of the object is done in that method.
+    *        of the object is done in that method. If you pass null, then the changeEntry is not invoked
+    *        and the processing continues with entry.
     * @return I_Entry the modified entry.
     * @throws XmlBlasterException if something goes wrong when making the change (for example if the
     *         entry is not in the map) or if the callback throws an exception.

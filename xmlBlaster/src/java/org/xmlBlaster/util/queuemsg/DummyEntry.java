@@ -89,4 +89,10 @@ public class DummyEntry extends MsgQueueEntry {
          return super.getSizeInBytes() + 34;
       else return this.sizeOfMsg;
    }
+
+   
+   public final void setPersistent(boolean persistent) {
+      this.persistent = persistent;
+   }
+
 }
