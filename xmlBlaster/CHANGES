@@ -4,6 +4,9 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for 1.0x (patches for 1.0 stable)
 =====================================================
 
+ o #13187 Redirect xmlBlaster logging to JDK 1.4 java.util.logging framework
+   http://www.xmlBlaster.org/xmlBlaster/doc/requirements/util.log.plugin.html#JDK14
+
  o #13180 cpptasks.jar - Updated cpp tasks (C/C++ compilation) to CVS version from 2005-02-03
 
  o #13178 JavascriptCallback.java - Escape quotation marks in XML content as suggested by Paul Wujek Xp2 Telecom Inc.
