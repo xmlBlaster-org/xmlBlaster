@@ -4,9 +4,11 @@ The "#99999" numbers are Subversion revision numbers.
 Changes in current subversion repository (svn)
 ==============================================
 
- o jutils-logging Fixed synchronization gap when making log-backup files
+ o #13038 jutils-logging Fixed synchronization gap when making log-backup files
 
- o Fixed xmlBlasterPlugins.xml SAX parse to
+ o #13035 FilePoller final release
+
+ o #13033 Fixed xmlBlasterPlugins.xml SAX parse to
    - allow sub-tags as attribute value
    - support inner CDATA sections in attribute markup
 
