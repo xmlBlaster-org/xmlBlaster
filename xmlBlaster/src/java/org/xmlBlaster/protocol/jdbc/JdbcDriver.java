@@ -3,7 +3,7 @@ Name:      JdbcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   JdbcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: JdbcDriver.java,v 1.11 2001/08/19 23:07:54 ruff Exp $
+Version:   $Id: JdbcDriver.java,v 1.12 2001/09/04 11:51:50 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
@@ -11,12 +11,15 @@ import org.xmlBlaster.util.Log;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
+import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Driver;
-import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.CallbackAddress;
+import org.xmlBlaster.engine.xml2java.LoginReturnQoS;
 import org.xmlBlaster.client.LoginQosWrapper;
+import org.xmlBlaster.client.LogoutQosWrapper;
+import org.xmlBlaster.authentication.ClientQoS;
 
 import java.util.StringTokenizer;
 
@@ -43,7 +46,7 @@ public class JdbcDriver implements I_Driver, I_Publish
 {
    private static final String ME = "JdbcDriver";
    /** The singleton handle for this xmlBlaster server */
-   private Authenticate authenticate = null;
+   private I_Authenticate authenticate = null;
    /** The singleton handle for this xmlBlaster server */
    private I_XmlBlaster xmlBlasterImpl = null;
    /** The authentication session identifier */
@@ -80,7 +83,7 @@ public class JdbcDriver implements I_Driver, I_Publish
     * Enforced by interface I_Driver.
     * @param args The command line parameters
     */
-   public void init(String args[], Authenticate authenticate, I_XmlBlaster xmlBlasterImpl) throws XmlBlasterException
+   public void init(String args[], I_Authenticate authenticate, I_XmlBlaster xmlBlasterImpl) throws XmlBlasterException
    {
       JdbcDriver.instance = this;
       this.authenticate = authenticate;
@@ -109,7 +112,7 @@ public class JdbcDriver implements I_Driver, I_Publish
     */
    public void shutdown()
    {
-      try { authenticate.logout(sessionId); } catch(XmlBlasterException e) { }
+      try { authenticate.disconnect(sessionId, (new LogoutQosWrapper()).toXml()); } catch(XmlBlasterException e) { }
       namedPool.destroy();
       Log.info(ME, "JDBC service stopped, resources released.");
    }
@@ -143,17 +146,17 @@ public class JdbcDriver implements I_Driver, I_Publish
     */
    private String login(String loginName, String password, String qos_literal) throws XmlBlasterException
    {
-      String sessionId = null;
       if (loginName==null || password==null || qos_literal==null) {
          Log.error(ME+"InvalidArguments", "login failed: please use no null arguments for login()");
          throw new XmlBlasterException("LoginFailed.InvalidArguments", "login failed: please use no null arguments for login()");
       }
 
-      String tmpSessionId = authenticate.login(loginName, password, qos_literal, sessionId);
-      if (tmpSessionId == null || (sessionId != null && sessionId.length() > 2 && !tmpSessionId.equals(sessionId))) {
-         Log.warn(ME+".AccessDenied", "Login for " + loginName + " failed.");
-         throw new XmlBlasterException("LoginFailed.AccessDenied", "Sorry, access denied");
-      }
+      ClientQoS loginQos = new ClientQoS(qos_literal);
+      loginQos.setSecurityPluginData("simple", "1.0", loginName, password);
+
+      LoginReturnQoS qos = authenticate.connect(loginQos);
+      String tmpSessionId = qos.getSessionId();
+      
       if (Log.TRACE) Log.trace(ME, "login for '" + loginName + "' successful.");
       return tmpSessionId;
    }

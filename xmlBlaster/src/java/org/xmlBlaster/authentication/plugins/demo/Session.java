@@ -46,7 +46,7 @@ public class Session implements I_Session {
    public String init(String xmlQoS_literal) throws XmlBlasterException {
       authenticated = false;
       InitQos xmlQoS = new InitQos(xmlQoS_literal);
-      subject = determineSubject(xmlQoS.getName(), xmlQoS.getPasswd()); // throws XmlBlasterException if authentication fails
+      subject = determineSubject(xmlQoS.getUserId(), xmlQoS.getCredential()); // throws XmlBlasterException if authentication fails
       authenticated = true;
 
       return null; // no extra information

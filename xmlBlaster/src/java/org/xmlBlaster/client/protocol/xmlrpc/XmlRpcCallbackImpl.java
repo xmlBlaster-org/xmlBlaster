@@ -3,7 +3,7 @@ Name:      XmlRpcCallbackImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: XmlRpcCallbackImpl.java,v 1.1 2000/10/24 12:02:09 ruff Exp $
+Version:   $Id: XmlRpcCallbackImpl.java,v 1.2 2001/09/04 11:51:50 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.xmlrpc;
@@ -29,7 +29,7 @@ import helma.xmlrpc.WebServer;
  * <p />                                          
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
-class XmlRpcCallbackImpl extends AbstractCallbackExtended
+class XmlRpcCallbackImpl
 {
    private final String ME = "XmlRpcCallbackImpl";
    private XmlRpcCallbackServer server = null;
@@ -38,7 +38,7 @@ class XmlRpcCallbackImpl extends AbstractCallbackExtended
     * Construct a persistently named object.
     * @param client    Your implementation of I_CallbackExtended, or null if you don't want any updates.
     */
-   public XmlRpcCallbackImpl(XmlRpcCallbackServer server) throws XmlBlasterException
+   XmlRpcCallbackImpl(XmlRpcCallbackServer server) throws XmlBlasterException
    {
       this.server = server;
    }
@@ -47,12 +47,10 @@ class XmlRpcCallbackImpl extends AbstractCallbackExtended
    /**
     * The update method.
     * <p />
-    * Gets invoked from xmlBlaster callback via client WebServer,
-    * which calls one of the update methods defined in AbstractCallbackExtended
-    * which delegates it to this update() method.
+    * Gets invoked from xmlBlaster callback
     */
-   public void update(String loginName, UpdateKey updateKey, byte[] content,
-                       UpdateQoS updateQoS) throws XmlBlasterException
+   public void update(String loginName, String updateKey, byte[] content,
+                      String updateQoS) throws XmlBlasterException
    {
       if (Log.CALL) Log.call(ME, "Entering update() loginName=" + loginName);
       server.update(loginName, updateKey, content, updateQoS);

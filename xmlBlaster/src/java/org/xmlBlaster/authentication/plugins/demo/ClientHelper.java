@@ -8,31 +8,26 @@ import org.xmlBlaster.authentication.plugins.I_InitQos;
 //import org.jutils.JUtilsException;
 
 /**
- * Title:
- * Description:
- * Copyright:    Copyright (c) 2001
- * Company:
- * @author
- * @version 1.0
+ * Class for java clients, decrypting messages which
+ * came from the corresponding security plugin. 
+ * <p />
+ * If for example the server security plugin crypts
+ * messages with rot13, we need to decrypt it on the
+ * client side with the same algorithm. This is done here.
  */
-
 public class ClientHelper implements I_ClientHelper {
    public static final String ME = "ClientHelper";
-   private             byte aDemoCryptoKey = 10;
-
-   private InitQos  initQoSWrapper = new InitQos("gui","1.0");
 
    public ClientHelper() {
    }
 
-   /**
+   /*
     * Called by the PluginLoader.
     * <p/>
     * @param String[] Arguments from xmlBlaster.properties:
     *                 There must be either 0 arguments or 2 arguments.
     *                 The first arguments has to be a valid user name (userId),
     *                 the second must contain the password.
-    */
    public void init(String[] param) throws XmlBlasterException
    {
       Log.trace(ME+".init()", "-------START--------\n");
@@ -54,14 +49,15 @@ public class ClientHelper implements I_ClientHelper {
       }
       Log.trace(ME+".init()", "-------END--------\n");
    }
+    */
 
    /**
-    * The client application can use this method to get I_InitQos,
+    * The client application can use this method to get a new I_InitQos instance,
     * and use it to set userId/password etc.
     */
    public I_InitQos getInitQoSWrapper()
    {
-      return initQoSWrapper;
+      return new InitQos(); // "demo" "1.0"
    }
 
    public void setSessionData(String sessionData)
@@ -102,7 +98,7 @@ public class ClientHelper implements I_ClientHelper {
       return new String(crypt(xmlMsg.getBytes()));
    }
 
-   private byte[] importMessage(byte[] byteArr) throws XmlBlasterException
+   public byte[] importMessage(byte[] byteArr) throws XmlBlasterException
    {
       return crypt(byteArr);
    }
@@ -132,7 +128,7 @@ public class ClientHelper implements I_ClientHelper {
       return new String(crypt(xmlMsg.getBytes()));
     }
 
-   private byte[] exportMessage(byte[] byteArr) throws XmlBlasterException
+   public byte[] exportMessage(byte[] byteArr) throws XmlBlasterException
    {
       return crypt(byteArr);
    }

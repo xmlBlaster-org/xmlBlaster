@@ -20,27 +20,27 @@ import org.xmlBlaster.authentication.plugins.I_InitQos;
 public class InitQos implements I_InitQos {
    private String mechanism = "gui";
    private String version = "1.0";
-   private String name = "";
+   private String user = "";
    private String passwd = "";
 
    public InitQos()
    {
    }
 
-   public InitQos(String mechanism, String version)
+   public InitQos(String loginName, String password)
    {
-      this.mechanism = mechanism;
-      this.version = version;
+      this.user = loginName;
+      this.passwd = password;
    }
 
    public void setUserId(String userId)
    {
-      this.name = userId;
+      this.user = userId;
    }
 
    public String getUserId()
    {
-      return name;
+      return user;
    }
 
    public String getPluginType()
@@ -71,12 +71,12 @@ public class InitQos implements I_InitQos {
       offset += extraOffset;
 
       if(passwd==null) passwd="";
-      if(name==null) name="";
+      if(user==null) user="";
 
       sb.append(offset+"<securityService type=\""+mechanism+"\" version=\""+version+"\">");
       // The XmlRpc driver does not like it.
       sb.append(offset+"   <![CDATA[");
-      sb.append(offset+"      <user>"+name+"</user>");
+      sb.append(offset+"      <user>"+user+"</user>");
       sb.append(offset+"      <passwd>"+passwd+"</passwd>");
       sb.append(offset+"   ]]>");
       sb.append(offset+"</securityService>");

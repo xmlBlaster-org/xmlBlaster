@@ -3,13 +3,14 @@ Name:      Authenticate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login for clients
-Version:   $Id: Authenticate.java,v 1.39 2001/09/01 09:09:05 ruff Exp $
+Version:   $Id: Authenticate.java,v 1.40 2001/09/04 11:51:50 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
 import org.xmlBlaster.authentication.plugins.I_Manager;
 import org.xmlBlaster.authentication.plugins.I_Session;
 import org.xmlBlaster.authentication.plugins.I_Subject;
+import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.authentication.plugins.PluginManager;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -25,7 +26,7 @@ import java.util.*;
  * <p>
  * The login method serves as a factory for a xmlBlaster.Server Reference
  */
-final public class Authenticate
+final public class Authenticate implements I_Authenticate
 {
    final private static String ME = "Authenticate";
 
@@ -176,8 +177,9 @@ final public class Authenticate
     *
     * @param xmlQoS_literal The login/init QoS, see ClientQoS.java and LoginQosWrapper.java
     */
-   public final LoginReturnQoS connect(String xmlQoS_literal) throws XmlBlasterException {
-      return connect(xmlQoS_literal, null);
+   public final LoginReturnQoS connect(ClientQoS xmlQos) throws XmlBlasterException
+   {
+      return connect(xmlQos, null);
    }
 
    /**
@@ -192,10 +194,10 @@ final public class Authenticate
     * <p />
     * TODO: Totally rewrite this connect() method to allow multiple sessions
     *
-    * @param xmlQoS_literal The login/init QoS, see ClientQoS.java and LoginQosWrapper.java
+    * @param xmlQoS The login/init QoS, see ClientQoS.java and LoginQosWrapper.java
     * @param sessionId      The caller (here CORBA-POA protocol driver) may insist to you its own sessionId
     */
-   public final LoginReturnQoS connect(String xmlQoS_literal, String sessionId) throws XmlBlasterException
+   public final LoginReturnQoS connect(ClientQoS clientQos, String sessionId) throws XmlBlasterException
    {
       if (Log.CALL) Log.call(ME, "-------START-connect()---------");
       if (Log.DUMP) Log.dump(ME, toXml().toString());
@@ -204,24 +206,23 @@ final public class Authenticate
       I_Session sessionSecurityCtx = null;
       I_Manager               securityMgr = null;
       String clientSecurityCtxInfo = null;
-      ClientQoS             xmlQoS = new ClientQoS(xmlQoS_literal);
       ClientInfo        clientInfo = null;
       AuthenticationInfo  authInfo = null;
       if (sessionId == null)
-         sessionId = xmlQoS.getSessionId();
+         sessionId = clientQos.getSessionId();
       if (sessionId == null || sessionId.length() < 2) {
          sessionId = createSessionId("null" /*subjectSecurityCtx.getName()*/);
          if (Log.TRACE) Log.trace(ME+".connect()", "Empty sessionId - generated sessionId=" + sessionId);
-         xmlQoS.setSessionId(sessionId);
+         clientQos.setSessionId(sessionId);
       }
       // we don't overwrite the given qos-sessionId with the given sessionId-parameter
 
       // --- try to get a suitable SecurityManager ----------------------------
-      securityMgr = plgnLdr.getManager(xmlQoS.getSecurityPluginType(),
-                                               xmlQoS.getSecurityPluginVersion()); // throws XmlBlasterExceptions
+      securityMgr = plgnLdr.getManager(clientQos.getSecurityPluginType(),
+                                               clientQos.getSecurityPluginVersion()); // throws XmlBlasterExceptions
 
       sessionSecurityCtx = securityMgr.reserveSession(sessionId);
-      clientSecurityCtxInfo = sessionSecurityCtx.init(xmlQoS.getSecurityPluginData()); // throws XmlBlasterExceptions
+      clientSecurityCtxInfo = sessionSecurityCtx.init(clientQos.getSecurityPluginData()); // throws XmlBlasterExceptions
       subjectSecurityCtx = sessionSecurityCtx.getSubject();
 
       clientInfo = getClientInfoByName(subjectSecurityCtx.getName());
@@ -248,7 +249,7 @@ final public class Authenticate
          sessionId = createSessionId(subjectSecurityCtx.getName());
       }
 
-      authInfo = new AuthenticationInfo(sessionId, subjectSecurityCtx.getName(), "", xmlQoS);
+      authInfo = new AuthenticationInfo(sessionId, subjectSecurityCtx.getName(), "", clientQos);
 
       try {
          // Tell plugin the new sessionId on relogins...
@@ -287,7 +288,8 @@ final public class Authenticate
    }
 
 
-   public final void disconnect(String sessionId, String qos_literal) throws XmlBlasterException{
+   public final void disconnect(String sessionId, String qos_literal) throws XmlBlasterException
+   {
       if (Log.CALL) Log.call(ME, "-------START-disconnect()---------" + toXml().toString());
       if (Log.DUMP) Log.dump(ME, toXml().toString());
 

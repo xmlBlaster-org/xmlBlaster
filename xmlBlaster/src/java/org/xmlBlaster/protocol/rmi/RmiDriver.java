@@ -3,7 +3,7 @@ Name:      RmiDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   RmiDriver class to invoke the xmlBlaster server using RMI.
-Version:   $Id: RmiDriver.java,v 1.16 2001/02/14 00:41:02 ruff Exp $
+Version:   $Id: RmiDriver.java,v 1.17 2001/09/04 11:51:50 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
@@ -12,9 +12,9 @@ import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterSecurityManager;
+import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Driver;
-import org.xmlBlaster.authentication.Authenticate;
 
 import java.rmi.RemoteException;
 import java.rmi.RMISecurityManager;
@@ -88,7 +88,7 @@ public class RmiDriver implements I_Driver
    /** XmlBlaster RMI registry listen port is 1099, to access for bootstrapping */
    public static final int DEFAULT_REGISTRY_PORT = 1099;
    /** The singleton handle for this xmlBlaster server */
-   private Authenticate authenticate = null;
+   private I_Authenticate authenticate = null;
    /** The singleton handle for this xmlBlaster server */
    private I_XmlBlaster xmlBlasterImpl = null;
    /** The RMI implementation, which delegates to authenticate */
@@ -112,7 +112,7 @@ public class RmiDriver implements I_Driver
     * Start xmlBlaster RMI access.
     * @param args The command line parameters
     */
-   public void init(String args[], Authenticate authenticate, I_XmlBlaster xmlBlasterImpl) throws XmlBlasterException
+   public void init(String args[], I_Authenticate authenticate, I_XmlBlaster xmlBlasterImpl) throws XmlBlasterException
    {
       this.authenticate = authenticate;
       this.xmlBlasterImpl = xmlBlasterImpl;

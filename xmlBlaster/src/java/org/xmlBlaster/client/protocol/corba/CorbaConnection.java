@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.23 2001/09/01 09:27:07 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.24 2001/09/04 11:51:50 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -66,7 +66,7 @@ import java.io.IOException;
  * first time the ORB is created.<br />
  * This will be fixed as soon as possible.
  *
- * @version $Revision: 1.23 $
+ * @version $Revision: 1.24 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class CorbaConnection implements I_XmlBlasterConnection
@@ -504,7 +504,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
          AuthServer authServer = getAuthenticationService();
          if (passwd != null) {
             Log.warn(ME, "No security Plugin. Switched back to the old login scheme!");
-            xmlBlaster = authServer.login(loginName, passwd, loginQos.toXml(LoginQosWrapper.EXCLUDE_SECURITY));
+            xmlBlaster = authServer.login(loginName, passwd, loginQos.toXml());
          }
          else {
             String retQos = authServer.connect(loginQos.toXml());

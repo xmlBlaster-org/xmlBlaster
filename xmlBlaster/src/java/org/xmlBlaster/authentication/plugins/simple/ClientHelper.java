@@ -5,8 +5,7 @@ import org.xmlBlaster.util.Log;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.authentication.plugins.I_ClientHelper;
 import org.xmlBlaster.authentication.plugins.I_InitQos;
-// Reuse the GUI InitQos for now:
-import org.xmlBlaster.authentication.plugins.demo.InitQos;
+import org.xmlBlaster.authentication.plugins.simple.InitQos;
 
 /**
  * Helper only for Java clients. 
@@ -23,21 +22,17 @@ import org.xmlBlaster.authentication.plugins.demo.InitQos;
  */
 public class ClientHelper implements I_ClientHelper {
    public static final String ME = "ClientHelper";
-   private             byte aDemoCryptoKey = 10;
-
-   private InitQos  initQoSWrapper = new InitQos("simple","1.0");
 
    public ClientHelper() {
    }
 
-   /**
+   /*
     * Called by the PluginLoader.
     * <p/>
     * @param String[] Arguments from xmlBlaster.properties:
     *                 There must be either 0 arguments or 2 arguments.
     *                 The first arguments has to be a valid user name (userId),
     *                 the second must contain the password.
-    */
    public void init(String[] param) throws XmlBlasterException
    {
       if (Log.CALL) Log.call(ME+".init()", "-------START--------\n");
@@ -59,14 +54,15 @@ public class ClientHelper implements I_ClientHelper {
       }
       if (Log.CALL) Log.call(ME+".init()", "-------END--------\n");
    }
+    */
 
    /**
-    * The client application can use this method to get I_InitQos,
+    * The client application can use this method to get a new I_InitQos instance,
     * and use it to set userId/password etc.
     */
    public I_InitQos getInitQoSWrapper()
    {
-      return initQoSWrapper;
+      return new InitQos(); // "simple" "1.0"
    }
 
    public void setSessionData(String sessionData)
@@ -103,6 +99,11 @@ public class ClientHelper implements I_ClientHelper {
       return xmlMsg;
    }
 
+   public byte[] importMessage(byte[] xmlMsg) throws XmlBlasterException
+   {
+      return xmlMsg;
+   }
+
    /**
     * encrypt, sign, seal ... an outgoing message
     * <p/>
@@ -118,6 +119,11 @@ public class ClientHelper implements I_ClientHelper {
    }
 
    public String exportMessage(String xmlMsg) throws XmlBlasterException
+   {
+      return xmlMsg;
+   }
+
+   public byte[] exportMessage(byte[] xmlMsg) throws XmlBlasterException
    {
       return xmlMsg;
    }

@@ -3,7 +3,7 @@ Name:      ClientQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling login QoS (quality of service), knows how to parse with SAX
-Version:   $Id: ClientQoS.java,v 1.16 2001/09/01 08:27:49 ruff Exp $
+Version:   $Id: ClientQoS.java,v 1.17 2001/09/04 11:51:50 ruff Exp $
 Author:    ruff@swand.lake.de
 -----------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
@@ -12,6 +12,8 @@ import org.xmlBlaster.util.Log;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
+import org.xmlBlaster.authentication.plugins.I_ClientHelper;
+import org.xmlBlaster.authentication.plugins.I_InitQos;
 import org.xml.sax.Attributes;
 import java.util.Vector;
 import java.io.Serializable;
@@ -95,12 +97,13 @@ public class ClientQoS extends org.xmlBlaster.util.XmlQoSBase implements Seriali
     * @param String The version of the used plugin
     * @param String The content.
     */
+    /*
    public void setSecurityPlugin(String type, String version, String content) {
       this.securityPluginType=type;
       this.securityPluginVersion=version;
       this.securityPluginData=content;
    }
-
+      */
 
    /**
     * Return the type of the referenced SecurityPlugin.
@@ -130,6 +133,24 @@ public class ClientQoS extends org.xmlBlaster.util.XmlQoSBase implements Seriali
    public String getSecurityPluginData() {
       return securityPluginData;
    }
+
+   /**
+    * Allows to set or overwrite the parsed security plugin. 
+    * <p />
+    * &lt;securityService type='simple' version='1.0'>...&lt;/securityService>
+    */
+   public void setSecurityPluginData(String mechanism, String version, String loginName, String password) throws XmlBlasterException
+   {
+      securityPluginType = mechanism;
+      securityPluginVersion = version;
+      org.xmlBlaster.client.PluginLoader loader = org.xmlBlaster.client.PluginLoader.getInstance();
+      I_ClientHelper plugin = loader.getClientPlugin(mechanism, version);
+      I_InitQos connectQos = plugin.getInitQoSWrapper();
+      connectQos.setUserId(loginName);
+      connectQos.setCredential(password);
+      securityPluginData = connectQos.toXml("   ");
+   }
+
 
    public void setSessionId(String id) {
       if(id.equals("")) id = null;
@@ -281,7 +302,7 @@ public class ClientQoS extends org.xmlBlaster.util.XmlQoSBase implements Seriali
          if (!existsTypeAttr) Log.error(ME, "Missing 'type' attribute in login-qos <securityService>");
          if (!existsVersionAttr) Log.error(ME, "Missing 'version' attribute in login-qos <securityService>");
          character.setLength(0);
-
+         character.append("<![CDATA[");
          return;
       }
 
@@ -313,6 +334,17 @@ public class ClientQoS extends org.xmlBlaster.util.XmlQoSBase implements Seriali
          return;
       }
 
+      if (inSecurityService) {
+         //Collect everything in character buffer
+         character.append("<"+name);
+         if (attrs != null) {
+            int len = attrs.getLength();
+            for (int i = 0; i < len; i++) {
+                character.append(" "+attrs.getQName(i)+"=\""+attrs.getValue(i)+"\"");
+            }
+         }
+         character.append(">");
+      }
    }
 
 
@@ -359,13 +391,21 @@ public class ClientQoS extends org.xmlBlaster.util.XmlQoSBase implements Seriali
          }
          else
             Log.error(ME, "Internal problem, ignoring <PtP> element");
-            character.setLength(0);
+         character.setLength(0);
          return;
       }
 
       if (name.equalsIgnoreCase("securityService")) {
         inSecurityService = false;
-        securityPluginData = "<securityService type=\""+getSecurityPluginType()+"\" version=\""+getSecurityPluginVersion()+"\">"+character.toString().trim()+"</securityService>";
+        character.append("]]>\n");
+        String tmp = character.toString().trim();
+        // This works only if in USE_CDATA section:
+        securityPluginData = "<securityService type=\""+getSecurityPluginType()+"\" version=\""+getSecurityPluginVersion()+"\">\n"+
+                             //"   <![CDATA[\n"+
+                            tmp+
+                             //"   ]]>\n"+
+                             "</securityService>";
+         // Without a CDATA we should delegate parsing to the appropriate plugin InitQos
       }
 
       if (name.equalsIgnoreCase("session")) {
@@ -377,6 +417,10 @@ public class ClientQoS extends org.xmlBlaster.util.XmlQoSBase implements Seriali
             inSessionId = false;
             setSessionId(character.toString().trim());
          }
+      }
+
+      if (inSecurityService) {
+         character.append("</"+name+">");
       }
 
    }
@@ -403,16 +447,18 @@ public class ClientQoS extends org.xmlBlaster.util.XmlQoSBase implements Seriali
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
 
-      sb.append(offset + "<qos>");
+      sb.append(offset).append("<qos>");
+      if(securityPluginType!=null) {
+         sb.append(offset).append(getSecurityPluginData());
+      }
+      sb.append(offset).append("   <session ").append("timeout='").append(sessionTimeout).append("' maxSessions='").append(maxSessions).append("'>");
+      if(sessionId!=null) {
+         sb.append(offset).append("      <sessionId>").append(getSessionId()).append("</sessionId>");
+      }
+      sb.append(offset).append("   </session>");
       CallbackAddress[] addr = getCallbackAddresses();
       for (int ii=0; ii<addr.length; ii++)
          sb.append(addr[ii].toXml(extraOffset + "   "));
-      if(sessionId!=null) {
-         sb.append(offset +"   <sessionId>" + getSessionId() + "</sessionId>");
-      }
-      if(securityPluginType!=null) {
-         sb.append(offset + getSecurityPluginData());
-      }
       sb.append(offset + "</qos>");
 
       return sb.toString();
@@ -426,6 +472,12 @@ public class ClientQoS extends org.xmlBlaster.util.XmlQoSBase implements Seriali
          XmlBlasterProperty.init(args);
          String xml =
             "<qos>\n" +
+            "   <securityService type=\"gui\" version=\"3.0\">\n" +
+            "      <![CDATA[\n" +
+            "         <user>aUser</user>\n" +
+            "         <passwd>theUsersPwd</passwd>\n" +
+            "      ]]>\n" +
+            "   </securityService>\n" +
             "   <session timeout='3600000' maxSessions='20'>" +
             "      <sessionId>anId</sessionId>" +
             "   </session>" +
@@ -444,15 +496,13 @@ public class ClientQoS extends org.xmlBlaster.util.XmlQoSBase implements Seriali
             "      http:/www.mars.universe:8080/RPC2\n" +
             "   </callback>\n" +
             "   <offlineQueuing timeout='3600' />\n" +
-            "   <securityService type=\"simple\" version=\"1.0\">\n" +
-            "      <![CDATA[\n" +
-            "         <user>aUser</user>\n" +
-            "         <passwd>theUsersPwd</passwd>\n" +
-            "      ]]>\n" +
-            "   </securityService>\n" +
             "</qos>\n";
 
          ClientQoS qos = new ClientQoS(xml);
+         System.out.println("=========================\n");
+         System.out.println(qos.toXml());
+         qos.setSecurityPluginData("simple", "1.0", "joe", "secret");
+         System.out.println("=========================\n");
          System.out.println(qos.toXml());
       }
       catch(Throwable e) {

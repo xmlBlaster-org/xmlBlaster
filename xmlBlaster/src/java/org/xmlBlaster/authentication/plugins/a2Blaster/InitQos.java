@@ -9,32 +9,12 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SaxHandlerBase;
 
 /**
- *
- *
  * @author  $Author: ruff $ ($Name:  $)
- * @version $Revision: 1.2 $ (State: $State) (Date: $Date: 2001/08/30 17:14:49 $)
- * Last Changes:
- *    ($Log: InitQos.java,v $
- *    (Revision 1.2  2001/08/30 17:14:49  ruff
- *    (Renamed security stuff
- *    (
- *    (Revision 1.1.2.1  2001/08/22 11:18:42  ruff
- *    (changed naming schema
- *    (
- *    (Revision 1.2  2001/08/19 23:07:53  ruff
- *    (Merged the new security-plugin framework
- *    (
- *    (Revision 1.1.2.2  2001/08/19 12:21:02  kleinertz
- *    (*** empty log message ***
- *    (
- *    (Revision 1.1.2.1  2001/08/19 10:48:53  kleinertz
- *    (wkl: a2Blaster-plugin added
- *    ()
+ * @version $Revision: 1.3 $ (State: $State) (Date: $Date: 2001/09/04 11:51:50 $)
  */
-
 public class InitQos extends SaxHandlerBase {
 
-   private static                    String ME = "InitQos";
+   private static String ME = "InitQos";
 
    // helper flags for SAX parsing
    private        boolean    inSecurityService = false;
@@ -42,8 +22,8 @@ public class InitQos extends SaxHandlerBase {
    private        boolean             inPasswd = false;
    private        boolean inA2BlasterSessionId = false;
 
-   private        String               version = null;
-   private        String                  type = null;
+   private        String                  type = "a2Blaster";
+   private        String               version = "1.0";
    private        String                  user = null;
    private        String                passwd = null;
    private        String    a2BlasterSessionId = null;
@@ -53,6 +33,12 @@ public class InitQos extends SaxHandlerBase {
       if (Log.DUMP) Log.dump(ME, "Creating securityPlugin-QoS(" + xmlQoS_literal + ")");
       init(xmlQoS_literal);
       if (Log.DUMP) Log.dump(ME, "Parsed securityPlugin-QoS to\n" + toXml());
+   }
+
+   public InitQos(String loginName, String password)
+   {
+      this.user = loginName;
+      this.passwd = password;
    }
 
    /**
@@ -78,7 +64,7 @@ public class InitQos extends SaxHandlerBase {
     * <p/>
     * @return String Name or <code>null</code>
     */
-   public String getName() {
+   public String getUserId() {
       return user;
    }
 
@@ -87,7 +73,7 @@ public class InitQos extends SaxHandlerBase {
     * <p/>
     * @return String Password or <code>null</code>
     */
-   public String getPasswd() {
+   public String getCredential() {
       return passwd;
    }
 
@@ -191,8 +177,10 @@ public class InitQos extends SaxHandlerBase {
       StringBuffer sb = new StringBuffer();
 
       sb.append("<securityService type=\"" + getType() + "\" version=\"" + getVersion() + "\">\n");
+      sb.append("   <![CDATA[");
       sb.append("   <user>" + user + "</user>\n");
       sb.append("   <passwd>" + passwd + "</passwd>\n");
+      sb.append("   ]]>");
       sb.append("   <sessionId>" + a2BlasterSessionId + "</sessionId>");
       sb.append("</securityService>");
 
@@ -200,15 +188,17 @@ public class InitQos extends SaxHandlerBase {
    }
 
 
-   /** For testing: java org.xmlBlaster.authentication.A2BlasterQoS */
+   /** For testing: java org.xmlBlaster.authentication.plugins.a2Blaster.InitQos */
    public static void main(String[] args)
    {
       try {
          XmlBlasterProperty.init(args);
          String xml =
-            "<securityService type=\"oldxmlBlaster-scheme\" version=\"1.0\">\n" +
-            "   <passwd>root</passwd>\n" +
-            "   <user>secrete</user>\n" +
+            "<securityService type=\"a2Blaster\" version=\"1.0\">\n" +
+            "   <![CDATA[\n" +
+            "   <user>root</user>\n" +
+            "   <passwd>secret</passwd>\n" +
+            "   ]]>\n" +
             "</securityService>";
 
          InitQos qos = new InitQos(xml);

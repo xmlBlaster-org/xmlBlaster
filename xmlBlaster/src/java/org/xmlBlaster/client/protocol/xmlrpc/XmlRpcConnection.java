@@ -3,7 +3,7 @@ Name:      XmlRpcConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native xmlBlaster Proxy. Can be called by the client in the same VM
-Version:   $Id: XmlRpcConnection.java,v 1.12 2001/09/01 09:27:07 ruff Exp $
+Version:   $Id: XmlRpcConnection.java,v 1.13 2001/09/04 11:51:50 ruff Exp $
 Author:    michele.laghi@attglobal.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.xmlrpc;
@@ -12,6 +12,7 @@ import java.io.IOException;
 import java.util.Vector;
 
 import org.xmlBlaster.util.Log;
+import org.jutils.text.StringHelper;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
@@ -199,22 +200,32 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
       try {
          initXmlRpcClient();
          // prepare the argument vector for the xml-rpc method call
+
+         String qosOrig = loginQos.toXml();
+         String qosStripped = StringHelper.replaceAll(qosOrig, "<![CDATA[", "");
+         qosStripped = StringHelper.replaceAll(qosStripped, "]]>", "");
+         if (!qosStripped.equals(qosOrig)) {
+            Log.trace(ME, "Stripped CDATA tags surrounding security credentials, XML-RPC does not like it (Helma does not escape ']]>'). " +
+                           "This shouldn't be a problem as long as your credentials doesn't contain '<'");
+         }
+
          Vector args = new Vector();
          if (passwd == null) // The new schema
          {
-            if (Log.TRACE) Log.trace(ME, "Executing authenticate.init() via XmlRpc with security plugin" + loginQos.toXml());
-            args.addElement(loginQos.toXml());
+            if (Log.TRACE) Log.trace(ME, "Executing authenticate.connect() via XmlRpc with security plugin" + loginQos.toXml());
+            args.addElement(qosStripped);
             sessionId = null;
-            String qos = (String)getXmlRpcClient().execute("authenticate.init", args);
-            this.loginReturnQoS = new LoginReturnQoS(qos);
+            String retQos = (String)getXmlRpcClient().execute("authenticate.connect", args);
+            this.loginReturnQoS = new LoginReturnQoS(retQos);
             this.sessionId = loginReturnQoS.getSessionId();
          }
          else
          {
-            if (Log.TRACE) Log.trace(ME, "Executing authenticate.init() via XmlRpc for loginName " + loginName);
+            if (Log.TRACE) Log.trace(ME, "Executing authenticate.login() via XmlRpc for loginName " + loginName);
+
             args.addElement(loginName);
             args.addElement(passwd);
-            args.addElement(loginQos.toXml());
+            args.addElement(qosStripped);
             sessionId = ""; // Let xmlBlaster generate the sessionId
             args.addElement(sessionId);
             this.sessionId = (String)getXmlRpcClient().execute("authenticate.login", args);

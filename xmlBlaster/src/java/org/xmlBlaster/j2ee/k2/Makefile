@@ -32,6 +32,7 @@ java: $(LOCAL_FILES)
 clean: clean_SUB_DIRS
 	@echo "Removing all in $(CLASS_DIR) ..."
 	$(RM) $(CLASS_DIR)/*.*
+	$(RM) $(CLASS_DIR)/client/*.*
 
 #doc:
 #	$(JAVADOC) -d $(THIS_JAVADOC_DIR) $(SRC_JAVA_DIR)/*.java

@@ -3,7 +3,7 @@ Name:      RmiConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: RmiConnection.java,v 1.13 2001/09/01 09:27:07 ruff Exp $
+Version:   $Id: RmiConnection.java,v 1.14 2001/09/04 11:51:50 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.rmi;
@@ -51,7 +51,7 @@ import java.applet.Applet;
  * <p />
  * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http
  *
- * @version $Revision: 1.13 $
+ * @version $Revision: 1.14 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class RmiConnection implements I_XmlBlasterConnection
@@ -215,16 +215,16 @@ public class RmiConnection implements I_XmlBlasterConnection
       if (qos == null)
          throw new XmlBlasterException(ME+".connect()", "Please specify a valid QoS");
 
-      this.ME = "RmiConnection-" + qos.getUserId();
+      this.loginQos = qos;
+      this.loginName = qos.getUserId();
+      this.passwd = null;
+
+      this.ME = "RmiConnection-" + loginName;
       if (Log.CALL) Log.call(ME, "connect() ...");
       if (blasterServer != null) {
          Log.warn(ME, "You are already logged in.");
          return;
       }
-
-      this.loginQos = qos;
-      this.loginName = loginName;
-      this.passwd = null;
 
       if (client != null) {
          try {

@@ -9,8 +9,11 @@ package org.xmlBlaster.protocol.xmlrpc;
 import org.xmlBlaster.util.Log;
 import org.jutils.time.StopWatch;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.authentication.Authenticate;
+import org.xmlBlaster.protocol.I_Authenticate;
+import org.xmlBlaster.authentication.ClientQoS;
 import org.xmlBlaster.engine.xml2java.LoginReturnQoS;
+import org.xmlBlaster.engine.xml2java.LoginReturnQoS;
+import org.xmlBlaster.client.LogoutQosWrapper;
 
 
 /**
@@ -23,17 +26,17 @@ import org.xmlBlaster.engine.xml2java.LoginReturnQoS;
 public class AuthenticateImpl
 {
    private final String ME = "XmlRpc.AuthenticateImpl";
-   private Authenticate authenticateNative;
+   private I_Authenticate authenticate;
 
 
    /**
     * Constructor.
     */
-   public AuthenticateImpl(Authenticate authenticateNative)
+   public AuthenticateImpl(I_Authenticate authenticate)
       throws XmlBlasterException
    {
       if (Log.CALL) Log.call(ME, "Entering constructor ...");
-      this.authenticateNative = authenticateNative;
+      this.authenticate = authenticate;
    }
 
 
@@ -42,16 +45,25 @@ public class AuthenticateImpl
     * @see org.xmlBlaster.authentication.Authenticate.login()
     */
    public String login(String loginName, String passwd,
-                       String xmlQoS_literal, String sessionId)
+                       String qos_literal, String sessionId)
                           throws XmlBlasterException
    {
       if (Log.CALL) Log.call(ME, "Entering login() ...");
-      if (Log.DUMP) Log.dump(ME, xmlQoS_literal);
+      if (Log.DUMP) Log.dump(ME, qos_literal);
+ 
+      if (loginName==null || passwd==null || qos_literal==null) {
+         Log.error(ME+"InvalidArguments", "login failed: please use no null arguments for login()");
+         throw new XmlBlasterException("LoginFailed.InvalidArguments", "login failed: please use no null arguments for login()");
+      }
 
       StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
-      String ret = authenticateNative.login(loginName, passwd, xmlQoS_literal, sessionId);
+
+      ClientQoS loginQos = new ClientQoS(qos_literal);
+      loginQos.setSecurityPluginData("simple", "1.0", loginName, passwd);
+
+      LoginReturnQoS returnQos = authenticate.connect(loginQos);
       if (Log.TIME) Log.time(ME, "Elapsed time in login()" + stop.nice());
-      return ret;
+      return returnQos.getSessionId();
    }
 
 
@@ -64,13 +76,9 @@ public class AuthenticateImpl
     */
    public String logout(String sessionId) throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "Entering logout() ...");
-      StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
-      authenticateNative.logout(sessionId);
-      if (Log.TIME) Log.time(ME, "Elapsed time in logout()" + stop.nice());
+      authenticate.disconnect(sessionId, (new LogoutQosWrapper()).toXml());
       return "";
    }
-
 
    /**
     * Login to xmlBlaster.
@@ -82,12 +90,12 @@ public class AuthenticateImpl
    public String connect(String qos_literal) throws XmlBlasterException
    {
       String returnValue = null;
-      String sessionId = null;
       if (Log.CALL) Log.call(ME, "Entering connect(qos=" + qos_literal + ")");
 
       StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
       try {
-         LoginReturnQoS qos = authenticateNative.connect(qos_literal, sessionId);
+         ClientQoS loginQos = new ClientQoS(qos_literal);
+         LoginReturnQoS qos = authenticate.connect(loginQos);
          returnValue = qos.toXml();
          if (Log.TIME) Log.time(ME, "Elapsed time in connect()" + stop.nice());
       }
@@ -101,7 +109,7 @@ public class AuthenticateImpl
    public void disconnect(final String sessionId, String qos_literal) throws XmlBlasterException
    {
       if (Log.CALL) Log.call(ME, "Entering logout()");
-      authenticateNative.disconnect(sessionId, qos_literal);
+      authenticate.disconnect(sessionId, qos_literal);
       if (Log.CALL) Log.call(ME, "Exiting logout()");
    }
 
@@ -118,7 +126,7 @@ public class AuthenticateImpl
    /*
    public String toXml(String extraOffset) throws XmlBlasterException
    {
-      return authenticateNative.toXml(extraOffset);
+      return authenticate.toXml(extraOffset);
    }
    */
 }

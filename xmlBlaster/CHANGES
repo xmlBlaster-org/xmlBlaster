@@ -2,6 +2,14 @@ Release notes for xmlBlaster    (http://www.xmlBlaster.org)
 
 Changes for 0.xx [xx, xx 2001]
 ==============================
+ - Ported to JacORB 1.3.30
+   NOTE: You need to copy the new
+      config/jacorb.properties.template
+     to
+      $HOME/jacorb.properties
+     If you use orb.properties, please install the new
+      config/orb.properties
+
  - Extended Java client helper class XmlBlasterConnection
    to allow dispatching callback messages.
    Every subcription may specify its dedicated callback handle.
@@ -43,6 +51,9 @@ Changes for 0.xx [xx, xx 2001]
    by "__sys__UserList"
    Feature added by "Gilles Lavaux" <gilles.lavaux@esrin.esa.it>
 
+ - KNOWN BUGS:
+   * The "simple" security plugin is needed for the JDBC driver to login.
+     This will be changed in a future release.
 
 Changes for 0.79b [March, 11 2001]
 ==================================

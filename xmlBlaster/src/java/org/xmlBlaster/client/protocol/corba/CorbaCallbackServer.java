@@ -3,7 +3,7 @@ Name:      CorbaCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaCallbackServer.java,v 1.8 2001/08/30 17:14:49 ruff Exp $
+Version:   $Id: CorbaCallbackServer.java,v 1.9 2001/09/04 11:51:50 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -174,16 +174,7 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
       try {
          // convert Corba to internal MessageUnit and call update() ...
          MessageUnit[] localMsgUnitArr = CorbaDriver.convert(msgUnitArr);
-         if(secPlgn!=null) {
-            MessageUnit[] mu = new MessageUnit[localMsgUnitArr.length];
-            for (int i=0; i<localMsgUnitArr.length; i++) {
-               mu[i] = secPlgn.importMessage(localMsgUnitArr[i]);
-            }
-            boss.update(loginName, mu);
-         }
-         else {
-            boss.update(loginName, localMsgUnitArr);
-         }
+         boss.update(loginName, localMsgUnitArr);
       }
       catch(XmlBlasterException e) {  // TODO: remove CORBA "oneway" and send Exception back to xmlBlaster.
          Log.error(ME, "Delivering message to client failed, message is lost.");

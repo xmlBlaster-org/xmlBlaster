@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.19 2001/08/31 16:38:35 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.20 2001/09/04 11:51:50 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -12,11 +12,11 @@ import org.jutils.io.FileUtil;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.engine.*;
+import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.protocol.corba.authenticateIdl.AuthServerPOATie;
 import org.xmlBlaster.protocol.corba.AuthServerImpl;
-import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.authentication.HttpIORServer;
 import java.io.PrintWriter;
 import java.io.FileOutputStream;
@@ -41,7 +41,7 @@ public class CorbaDriver implements I_Driver
    /** The singleton handle for this xmlBlaster server */
    private AuthServerImpl authServer = null;
    /** The singleton handle for this xmlBlaster server */
-   private Authenticate authenticate = null;
+   private I_Authenticate authenticate = null;
    /** The singleton handle for this xmlBlaster server */
    private I_XmlBlaster xmlBlasterImpl = null;
    private org.omg.PortableServer.POA rootPOA = null;
@@ -59,7 +59,7 @@ public class CorbaDriver implements I_Driver
     * Start xmlBlaster CORBA access.
     * @param args The command line parameters
     */
-   public void init(String args[], Authenticate authenticate, I_XmlBlaster xmlBlasterImpl) throws XmlBlasterException
+   public void init(String args[], I_Authenticate authenticate, I_XmlBlaster xmlBlasterImpl) throws XmlBlasterException
    {
       this.authenticate = authenticate;
       this.xmlBlasterImpl = xmlBlasterImpl;

@@ -7,6 +7,8 @@ import org.xml.sax.helpers.*;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SaxHandlerBase;
+import org.xmlBlaster.authentication.plugins.I_InitQos;
+import org.jutils.text.StringHelper;
 
 /**
  * Parse the default security handling with loginName and password
@@ -18,22 +20,30 @@ import org.xmlBlaster.util.SaxHandlerBase;
  *  &lt;/securityService>
  * </pre>
  */
-public class InitQos extends SaxHandlerBase {
-
-   private static String ME = "InitQos";
+public final class InitQos extends SaxHandlerBase implements I_InitQos
+{
+   private static String ME = "InitQos-simple";
 
    // helper flags for SAX parsing
    private boolean inSecurityService = false;
    private boolean inUser = false;
    private boolean inPasswd = false;
 
-   private String version = null;
-   private String type = null;
+   private String type = "simple";
+   private String version = "1.0";
    private String user = null;
    private String passwd = null;
 
+   public InitQos()
+   {
+   }
 
    public InitQos(String xmlQoS_literal) throws XmlBlasterException {
+
+      // Strip CDATA tags that we are able to parse it:
+      xmlQoS_literal = StringHelper.replaceAll(xmlQoS_literal, "<![CDATA[", "");
+      xmlQoS_literal = StringHelper.replaceAll(xmlQoS_literal, "]]>", "");
+
       if (Log.DUMP) Log.dump(ME, "Creating securityPlugin-QoS(" + xmlQoS_literal + ")");
       init(xmlQoS_literal);
       if (Log.DUMP) Log.dump(ME, "Parsed securityPlugin-QoS to\n" + toXml());
@@ -43,24 +53,40 @@ public class InitQos extends SaxHandlerBase {
    {
       this.user = loginName;
       this.passwd = password;
-      this.type = "simple";
-      this.version = "1.0";
    }
 
-   public String getVersion() {
+   public String getPluginVersion() {
       return version;
    }
 
-   public String getType() {
+   public String getPluginType() {
       return type;
    }
 
-   public String getName() {
+   public void setUserId(String userId)
+   {
+      this.user = userId;
+   }
+
+   public String getUserId()
+   {
       return user;
    }
 
-   public String getPasswd() {
-      return passwd;
+   /**
+    * @param cred The password
+    */
+   public void setCredential(String cred)
+   {
+      this.passwd = cred;
+   }
+
+   /**
+    * @return null (no password is delivered)
+    */
+   public String getCredential()
+   {
+      return null;
    }
 
    /**
@@ -137,37 +163,53 @@ public class InitQos extends SaxHandlerBase {
       }
    }
 
+   public final String toXml()
+   {
+      return toXml((String)null);
+   }
+
    /**
     * Dump state of this object into a XML ASCII string.
     * <br>
     * @param extraOffset indenting of tags for nice output
     * @return The xml representation
     */
-   public final String toXml()
+   public final String toXml(String extraOffset)
    {
-      StringBuffer sb = new StringBuffer();
+      StringBuffer sb = new StringBuffer(160);
+      String offset = "\n   ";
+      if (extraOffset == null) extraOffset = "";
+      offset += extraOffset;
 
-      sb.append("<securityService type=\"" + getType() + "\" version=\"" + getVersion() + "\">\n");
-      sb.append("   <user>" + user + "</user>\n");
-      sb.append("   <passwd>" + passwd + "</passwd>\n");
-      sb.append("</securityService>");
+      sb.append(offset).append("<securityService type=\"").append(getPluginType()).append("\" version=\"").append(getPluginVersion()).append("\">");
+      sb.append(offset).append("   <![CDATA[");
+      sb.append(offset).append("   <user>").append(user).append("</user>");
+      sb.append(offset).append("   <passwd>").append(passwd).append("</passwd>");
+      sb.append(offset).append("   ]]>");
+      sb.append(offset).append("</securityService>");
 
       return sb.toString();
    }
 
 
-   /** For testing: java org.xmlBlaster.authentication.ClientQoS */
+   /** For testing: java org.xmlBlaster.authentication.plugins.simple.InitQos */
    public static void main(String[] args)
    {
       try {
          XmlBlasterProperty.init(args);
          String xml =
             "<securityService type=\"simple\" version=\"1.0\">\n" +
+            "   <![CDATA[\n" +
             "   <passwd>theUsersPwd</passwd>\n" +
             "   <user>aUser</user>\n" +
+            "   ]]>\n" +
             "</securityService>";
 
+         System.out.println("Original:\n" + xml);
          InitQos qos = new InitQos(xml);
+         System.out.println("Result:\n" + qos.toXml());
+         qos.setUserId("AnotherUser");
+         qos.setCredential("AnotherPassword");
          System.out.println(qos.toXml());
       }
       catch(Throwable e) {

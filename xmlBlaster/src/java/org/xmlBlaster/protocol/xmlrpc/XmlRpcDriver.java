@@ -3,7 +3,7 @@ Name:      XmlRpcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   XmlRpcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: XmlRpcDriver.java,v 1.18 2001/08/23 11:34:09 ruff Exp $
+Version:   $Id: XmlRpcDriver.java,v 1.19 2001/09/04 11:51:50 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
@@ -11,9 +11,9 @@ import org.xmlBlaster.util.Log;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
+import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Driver;
-import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.client.LoginQosWrapper;
@@ -52,7 +52,7 @@ public class XmlRpcDriver implements I_Driver
 {
    private static final String ME = "XmlRpcDriver";
    /** The singleton handle for this xmlBlaster server */
-   private Authenticate authenticate = null;
+   private I_Authenticate authenticate = null;
    /** The singleton handle for this xmlBlaster server */
    private I_XmlBlaster xmlBlasterImpl = null;
    /** The port for the xml-rpc web server */
@@ -80,7 +80,7 @@ public class XmlRpcDriver implements I_Driver
     * Enforced by interface I_Driver.
     * @param args The command line parameters
     */
-   public void init(String args[], Authenticate authenticate, I_XmlBlaster xmlBlasterImpl)
+   public void init(String args[], I_Authenticate authenticate, I_XmlBlaster xmlBlasterImpl)
       throws XmlBlasterException
    {
       if (Log.CALL) Log.call(ME, "Entering init()");

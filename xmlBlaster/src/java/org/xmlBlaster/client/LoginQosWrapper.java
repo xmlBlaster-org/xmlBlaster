@@ -3,7 +3,7 @@ Name:      LoginQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: LoginQosWrapper.java,v 1.12 2001/09/01 09:40:56 ruff Exp $
+Version:   $Id: LoginQosWrapper.java,v 1.13 2001/09/04 11:51:50 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -25,6 +25,12 @@ import java.util.Vector;
  * A typical <b>login</b> qos could look like this:<br />
  * <pre>
  *     &lt;qos>
+ *        &lt;securityService type="simple" version="1.0">
+ *          &lt;![CDATA[
+ *          &lt;user>michele&lt;/user>
+ *          &lt;passwd>secret&lt;/passwd>
+ *          ]]>
+ *        &lt;/securityService>
  *        &lt;session timeout='3600000' maxSessions='20'>
  *        &lt;/session>
  *        &lt;noPtP />
@@ -32,12 +38,6 @@ import java.util.Vector;
  *           IOR:10000010033200000099000010....
  *           &lt;burstMode collectTime='400' />
  *        &lt;/callback>
- *        &lt;securityService type="simple" version="1.0">
- *          &lt;![CDATA[
- *          &lt;user>michele&lt;/user>
- *          &lt;passwd>secret&lt;/passwd>
- *          ]]>
- *        &lt;/securityService>
  *     &lt;/qos>
  * </pre>
  * NOTE: As a user of the Java client helper classes (client.protocol.XmlBlasterConnection)
@@ -51,9 +51,6 @@ import java.util.Vector;
 public class LoginQosWrapper extends QosWrapper
 {
    private String ME = "LoginQosWrapper";
-
-   public static final int EXCLUDE_SECURITY = 1;
-   public static final int DEFAULT = 0;
 
    // <callback type="IOR>IOR:000122200..."</callback>
    protected Vector addressVec = new Vector();
@@ -70,6 +67,7 @@ public class LoginQosWrapper extends QosWrapper
 
    private PluginLoader pMgr;
    private I_ClientHelper plugin;
+   private I_InitQos securityQos;
 
    /**
     * Default constructor for clients without asynchronous callbacks
@@ -77,6 +75,19 @@ public class LoginQosWrapper extends QosWrapper
     */
    public LoginQosWrapper()
    {
+   }
+
+   /**
+    * Constructor for simple access with login name and password. 
+    * @param mechanism may be null to use the default security plugin
+    *                  as specified in xmlBlaster.properties
+    * @param version may be null to use the default
+    */
+   public LoginQosWrapper(String mechanism, String version, String loginName, String password) throws XmlBlasterException
+   {
+      securityQos = getPlugin(mechanism,version).getInitQoSWrapper();
+      securityQos.setUserId(loginName);
+      securityQos.setCredential(password);
    }
 
    /**
@@ -88,6 +99,24 @@ public class LoginQosWrapper extends QosWrapper
    {
       getPlugin(mechanism, version);
    }
+
+
+   /**
+    * Allows to specify how you want to identify yourself. 
+    * <p />
+    * Usage to login to xmlBlaster:
+    * <pre>
+    *    import org.xmlBlaster.authentication.plugins.simple.InitQos;
+    *    ...
+    *    LoginQosWrapper qos = new LoginQosWrapper(new InitQos("joe", "secret"));
+    *    xmlBlasterConnection.connect(qos);
+    * </pre>
+    */
+   public LoginQosWrapper(I_InitQos securityQos)
+   {
+      this.securityQos = securityQos;
+   }
+
 
    /**
     * @param mechanism If null, the current plugin is used
@@ -130,6 +159,24 @@ public class LoginQosWrapper extends QosWrapper
    public LoginQosWrapper(boolean noPtP)
    {
       this.noPtP = noPtP;
+   }
+
+
+   /**
+    * Allows to specify how you want to identify yourself. 
+    * <p />
+    * Usage to login to xmlBlaster:
+    * <pre>
+    *    import org.xmlBlaster.authentication.plugins.simple.InitQos;
+    *    ...
+    *    LoginQosWrapper qos = new LoginQosWrapper();
+    *    qos.setCredential(new InitQos("joe", "secret"));
+    *    xmlBlasterConnection.connect(qos);
+    * </pre>
+    */
+   public void setSecurityQos(I_InitQos securityQos)
+   {
+      this.securityQos = securityQos;
    }
 
 
@@ -177,30 +224,30 @@ public class LoginQosWrapper extends QosWrapper
       addressVec.addElement(callback);
    }
 
-   public I_InitQos getSecurityInitQoSWrapper() throws XmlBlasterException
+   public I_InitQos getSecurityQos() throws XmlBlasterException
    {
-      return getPlugin(null,null).getInitQoSWrapper();
+      return this.securityQos;
    }
 
    public String getSecurityPluginType() throws XmlBlasterException
    {
-      I_InitQos securityInitQos = getSecurityInitQoSWrapper();
-      if (securityInitQos != null)
-         return securityInitQos.getPluginType();
+      I_InitQos securityQos = getSecurityQos();
+      if (securityQos != null)
+         return securityQos.getPluginType();
       return null;
    }
 
    public String getSecurityPluginVersion() throws XmlBlasterException
    {
-      I_InitQos securityInitQos = getSecurityInitQoSWrapper();
-      if (securityInitQos != null)
-         return securityInitQos.getPluginVersion();
+      I_InitQos securityQos = getSecurityQos();
+      if (securityQos != null)
+         return securityQos.getPluginVersion();
       return null;
    }
 
    public String getUserId() throws XmlBlasterException
    {
-      I_InitQos i=getSecurityInitQoSWrapper();
+      I_InitQos i=getSecurityQos();
       if (i==null)
          return "NoLoginName";
       else
@@ -225,17 +272,7 @@ public class LoginQosWrapper extends QosWrapper
     */
    public final String toXml()
    {
-      return toXml(LoginQosWrapper.DEFAULT);
-   }
-
-   public final String toXml(int opt)
-   {
-      return toXml((String)null, opt);
-   }
-
-   public final String toXml(String extraOffset)
-   {
-      return toXml((String)null, EXCLUDE_SECURITY);
+      return toXml((String)null);
    }
 
    /**
@@ -244,13 +281,11 @@ public class LoginQosWrapper extends QosWrapper
     * @param extraOffset indenting of tags for nice output
     * @return internal state of the RequestBroker as a XML ASCII string
     */
-   public final String toXml(String extraOffset, int opt)
+   public final String toXml(String extraOffset)
    {
-      I_InitQos secInitQoSWrapper = null;
-
-      if(plugin!=null) {
+      if(plugin!=null && securityQos==null) {
          try {
-            secInitQoSWrapper = getPlugin(null,null).getInitQoSWrapper();
+            securityQos = getPlugin(null,null).getInitQoSWrapper();
          } catch(XmlBlasterException e) {
             Log.warn(ME+".toXml", e.toString());
          }
@@ -261,6 +296,10 @@ public class LoginQosWrapper extends QosWrapper
       offset += extraOffset;
 
       sb.append("<qos>\n");
+
+      // For example DefaultClientInitQoSWrapper with <securityService ...
+      if(securityQos!=null) sb.append(securityQos.toXml(offset)); // includes the qos of the ClientSecurityHelper
+
       if (noPtP)
          sb.append(offset + "   <noPtP />");
 
@@ -274,10 +313,6 @@ public class LoginQosWrapper extends QosWrapper
          CallbackAddress ad = (CallbackAddress)addressVec.elementAt(ii);
          sb.append(ad.toXml("   ")).append("\n");
       }
-      if(opt!=EXCLUDE_SECURITY) {
-         // For example DefaultClientInitQoSWrapper with <securityService ...
-         if(secInitQoSWrapper!=null) sb.append(secInitQoSWrapper.toXml(offset)); // includes the qos of the ClientSecurityHelper
-      }
       sb.append("</qos>");
 
       return sb.toString();
@@ -289,6 +324,8 @@ public class LoginQosWrapper extends QosWrapper
       try {
          org.xmlBlaster.util.XmlBlasterProperty.init(args);
          LoginQosWrapper qos = new LoginQosWrapper(new CallbackAddress("IOR"));
+         I_InitQos securityQos = new org.xmlBlaster.authentication.plugins.simple.InitQos("joe", "secret");
+         qos.setSecurityQos(securityQos);
          System.out.println(qos.toXml());
       }
       catch(Throwable e) {

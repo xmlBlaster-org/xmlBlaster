@@ -15,17 +15,17 @@ import java.util.StringTokenizer;
  *
  * Either the client application chooses an appropriate plugin, or the
  * <pre>xmlBlaster.properties</pre> file states, which plugin has to be used,
- * by using the <code>Security.Client.ForcePlugin</code>-Option.
+ * by using the <code>Security.Client.DefaultPlugin</code>-Option.
  *
  * Syntax:
- *   <code>Security.Client.ForcePlugin=</code><i>PluginType<\i>,<i>PluginVersion</i>
+ *   <code>Security.Client.DefaultPlugin=</code><i>PluginType</i>,<i>PluginVersion</i>
  *
  * Hint:
  *   Type and version must be the type and version of a valid and declared plugin.
  *
  * Example:
  *   <code>
- *     Security.Client.ForcePlugin=gui,1.0
+ *     Security.Client.DefaultPlugin=gui,1.0
  *     Security.Client.Plugin[gui][1.0]=org.xmlBlaster.authentication.ClientSecurityHelper
  *   </code>
  *
@@ -96,6 +96,7 @@ public class PluginLoader {
     */
    public synchronized I_ClientHelper getClientPlugin(String mechanism, String version) throws XmlBlasterException
    {
+      if (Log.CALL) Log.call(ME+".getClientPlugin", "type=" + mechanism + " version=" + version);
       if((pluginMechanism!=null) && (pluginMechanism.equals(mechanism))) {
         if (((pluginVersion==null) && (version==null)) ||
             ((version!=null) && (version.equals(pluginVersion)))) {
@@ -129,7 +130,7 @@ public class PluginLoader {
          if (Log.TRACE) Log.trace(ME, "Trying Class.forName('"+param[0]+"') ...");
          Class cl = java.lang.Class.forName(param[0]);
          clntPlugin = (I_ClientHelper)cl.newInstance();
-         Log.info(ME, "Found I_ClientHelper '"+param[0]+"'");
+         if (Log.TRACE) Log.trace(ME, "Found I_ClientHelper '"+param[0]+"'");
       }
       catch (IllegalAccessException e) {
          Log.error(ME, "The plugin class '"+param[0]+"' is not accessible\n -> check the plugin name and/or the CLASSPATH");
@@ -146,15 +147,18 @@ public class PluginLoader {
 
       System.arraycopy(param,1,p,0,param.length-1);
 
+      /*
       if (clntPlugin!=null) {
          try {
             clntPlugin.init(p);
-            Log.info(ME, "Plugin '"+param[0]+"' successfully initialized!");
+            Log.info(ME, "Plugin '"+param[0]+"' successfully initialized");
          }
          catch(Exception e) {
             throw new XmlBlasterException(ME+".noInit", "Couldn't initialize plugin '"+param[0]+"'. Reaseon: "+e.toString());
          }
       }
+      */
+      Log.info(ME, "Plugin '"+param[0]+"' successfully initialized");
 
       return clntPlugin;
    }
@@ -176,7 +180,7 @@ public class PluginLoader {
       Vector v   = new Vector();
 
       if((mechanism==null) || (mechanism.equals(""))) { // if the client application doesn't select the mechanism and version, we must check the configuartion
-         tmp = XmlBlasterProperty.get("Security.Client.ForcePlugin", (String)null);
+         tmp = XmlBlasterProperty.get("Security.Client.DefaultPlugin", "simple,1.0");//(String)null);
          if (tmp!=null) {
             int i = tmp.indexOf(',');
             if (i==-1) {  // version is optional
@@ -194,7 +198,12 @@ public class PluginLoader {
       if(version==null) version="";
 
       String s = XmlBlasterProperty.get("Security.Client.Plugin["+mechanism+"]["+version+"]", (String)null);
-      if(s==null) throw new XmlBlasterException(ME+".Unknown Plugin", "Unknown Plugin '" + mechanism + "' with version '" + version + "'.");
+      if(s==null) {
+         if (mechanism.equals("simple")) // xmlBlaster should run without xmlBlaster.properties
+            s = "org.xmlBlaster.authentication.plugins.simple.ClientHelper";
+         else
+            throw new XmlBlasterException(ME+".Unknown Plugin", "Unknown Plugin '" + mechanism + "' with version '" + version + "'.");
+      }
 
       StringTokenizer st = new StringTokenizer(s,",");
       while(st.hasMoreTokens()) {

@@ -3,14 +3,13 @@ Name:      XmlRpcCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: XmlRpcCallbackServer.java,v 1.7 2000/12/26 14:56:39 ruff Exp $
+Version:   $Id: XmlRpcCallbackServer.java,v 1.8 2001/09/04 11:51:50 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.xmlrpc;
 
 
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
-import org.xmlBlaster.client.protocol.AbstractCallbackExtended;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -30,7 +29,7 @@ import helma.xmlrpc.WebServer;
  * but if you need other handling of callbacks, take a copy
  * of this Callback implementation and add your own code.
  * <p />
- * The xmlBlaster callback client call one of the update methods defined in AbstractCallbackExtended
+ * The xmlBlaster callback client call the update() from XmlRpcCallbackImpl
  * which delegates it to this update() method.
  * <p />
  * <pre>
@@ -48,7 +47,7 @@ import helma.xmlrpc.WebServer;
  * @author michele.laghi@attglobal.net
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
-class XmlRpcCallbackServer extends AbstractCallbackExtended
+class XmlRpcCallbackServer
 {
    private String ME = "XmlRpcCallbackServer";
    private final I_CallbackExtended boss;
@@ -128,10 +127,10 @@ class XmlRpcCallbackServer extends AbstractCallbackExtended
             webServer.addHandler("$default", new XmlRpcCallbackImpl(this)); // register update() method
             callbackServerUrl = "http://" + hostname + ":" + callbackPort + "/";
             this.ME = "XmlRpcCallbackServer-" + callbackServerUrl;
-            Log.info(ME, "Created XmlRpc callback web server");
+            Log.info(ME, "Created XmlRpc callback http server");
          }
          else
-            Log.info(ME, "XmlRpc callback web server not created, because of -xmlrpc.portCB is 0");
+            Log.info(ME, "XmlRpc callback http server not created, because of -xmlrpc.portCB is 0");
       } catch (Exception e) {
          e.printStackTrace();
          throw new XmlBlasterException("InitXmlRpcFailed", "Could not initialize XML-RPC registry: " + e.toString());
@@ -165,12 +164,10 @@ class XmlRpcCallbackServer extends AbstractCallbackExtended
    /**
     * The update method.
     * <p />
-    * Gets invoked from xmlBlaster callback via client WebServer,
-    * which calls one of the update methods defined in AbstractCallbackExtended
-    * which delegates it to this update() method.
+    * Gets invoked from XmlRpcCallbackImpl.java (which was called by xmlBlaster)
     */
-   public void update(String loginName, UpdateKey updateKey, byte[] content,
-                       UpdateQoS updateQoS) throws XmlBlasterException
+   public void update(String loginName, String updateKey, byte[] content,
+                       String updateQoS) throws XmlBlasterException
    {
       if (Log.CALL) Log.call(ME, "Entering update(): loginName: " + loginName);
       boss.update(loginName, updateKey, content, updateQoS);

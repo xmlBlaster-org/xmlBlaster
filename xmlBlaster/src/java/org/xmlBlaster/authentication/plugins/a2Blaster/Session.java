@@ -12,9 +12,13 @@ import org.a2Blaster.client.api.CorbaConnection;
 /**
  *
  * @author  $Author: ruff $ ($Name:  $)
- * @version $Revision: 1.2 $ (State: $State) (Date: $Date: 2001/08/30 17:14:49 $)
+ * @version $Revision: 1.3 $ (State: $State) (Date: $Date: 2001/09/04 11:51:50 $)
  * Last Changes:
  *    ($Log: Session.java,v $
+ *    (Revision 1.3  2001/09/04 11:51:50  ruff
+ *    (Integrated Security Framework.
+ *    (Now most stuff is working
+ *    (
  *    (Revision 1.2  2001/08/30 17:14:49  ruff
  *    (Renamed security stuff
  *    (
@@ -112,13 +116,13 @@ public class Session implements I_Session, I_Subject {
       String result = null;
       authenticated = false;
       InitQos xmlQoS = new InitQos(xmlQoS_literal);
-      name = xmlQoS.getName();
+      name = xmlQoS.getUserId();
 
       // Ok, we have to decide, if we have to log on the a2Blaster, or if the
       // Client has done it, and we only use this session.
       a2BlasterSessionId = xmlQoS.getA2BlasterSessionId();
       if (a2BlasterSessionId == null) { // we've to do the job
-         a2BlasterSessionId = authenticate(xmlQoS.getPasswd()); // throws XmlBlasterException if authentication fails
+         a2BlasterSessionId = authenticate(xmlQoS.getCredential()); // throws XmlBlasterException if authentication fails
       }
 
       result ="   <securityPlugin type=\""+Manager.TYPE+"\" version=\""+Manager.VERSION+"\">\n"+

@@ -144,6 +144,14 @@
    <!-- QoS with login -->
    <client>
       <qos>
+         <securityService type="simple" version="1.0">
+           <![CDATA[
+             <user>michele</user>
+             <passwd>secret</passwd>
+           ]]>
+         </securityService>
+         <session timeout='3600000' maxSessions='20'>
+         </session>
          <!-- compress / burstMode / noPtP are allowed in all callback types -->
          <callback type='IOR'> <!-- Use CORBA to callback messages -->
             IOR:00011200070009990000....

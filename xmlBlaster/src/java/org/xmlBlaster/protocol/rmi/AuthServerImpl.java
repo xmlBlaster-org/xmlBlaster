@@ -3,17 +3,19 @@ Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Authentication access for RMI clients.
-Version:   $Id: AuthServerImpl.java,v 1.9 2001/09/01 09:18:25 ruff Exp $
+Version:   $Id: AuthServerImpl.java,v 1.10 2001/09/04 11:51:50 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.jutils.time.StopWatch;
 
-import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_Driver;
-import org.xmlBlaster.authentication.Authenticate;
+import org.xmlBlaster.authentication.ClientQoS;
 import org.xmlBlaster.engine.xml2java.LoginReturnQoS;
+import org.xmlBlaster.client.LogoutQosWrapper;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -26,7 +28,7 @@ import java.rmi.server.UnicastRemoteObject;
 public class AuthServerImpl extends UnicastRemoteObject implements org.xmlBlaster.protocol.rmi.I_AuthServer
 {
    private String ME = "AuthServerImpl";
-   private Authenticate authenticate;
+   private I_Authenticate authenticate;
 
 
    /**
@@ -36,7 +38,7 @@ public class AuthServerImpl extends UnicastRemoteObject implements org.xmlBlaste
     * @parma authenticate The authentication service
     * @param blasterNative The interface to access xmlBlaster
     */
-   public AuthServerImpl(Authenticate authenticate, org.xmlBlaster.protocol.I_XmlBlaster blasterNative) throws RemoteException
+   public AuthServerImpl(I_Authenticate authenticate, org.xmlBlaster.protocol.I_XmlBlaster blasterNative) throws RemoteException
    {
       if (Log.CALL) Log.call(ME, "Entering constructor ...");
       this.authenticate = authenticate;
@@ -47,31 +49,30 @@ public class AuthServerImpl extends UnicastRemoteObject implements org.xmlBlaste
     * Does a login, returns a handle to xmlBlaster interface.
     * <p />
     * @param loginName The unique login name
-    * @param password
+    * @param passwd
     * @return sessionId The unique ID for this client
     * @exception XmlBlasterException If user is unknown
     * @deprecated
     */
-   public String login(String loginName, String password, String qos_literal)
+   public String login(String loginName, String passwd, String qos_literal)
                         throws RemoteException, XmlBlasterException
    {
-      String sessionId = null; // pass this in future with qos?
       if (Log.CALL) Log.call(ME, "Entering login(loginName=" + loginName/* + ", qos=" + qos_literal */ + ")");
 
-      if (loginName==null || password==null || qos_literal==null) {
+      if (loginName==null || passwd==null || qos_literal==null) {
          Log.error(ME+"InvalidArguments", "login failed: please use no null arguments for login()");
          throw new XmlBlasterException("LoginFailed.InvalidArguments", "login failed: please use no null arguments for login()");
       }
 
       StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
       try {
-         String tmpSessionId = authenticate.login(loginName, password, qos_literal, sessionId);
-         if (tmpSessionId == null || (sessionId != null && sessionId.length() > 2 && !tmpSessionId.equals(sessionId))) {
-            Log.warn(ME+".AccessDenied", "Login for " + loginName + " failed.");
-            throw new XmlBlasterException("LoginFailed.AccessDenied", "Sorry, access denied");
-         }
+         // Extend qos to contain security credentials ...
+         ClientQoS loginQos = new ClientQoS(qos_literal);
+         loginQos.setSecurityPluginData("simple", "1.0", loginName, passwd);
+
+         LoginReturnQoS returnQos = authenticate.connect(loginQos);
          if (Log.TIME) Log.time(ME, "Elapsed time in login()" + stop.nice());
-         return tmpSessionId;
+         return returnQos.getSessionId();
       }
       catch (org.xmlBlaster.util.XmlBlasterException e) {
          throw new XmlBlasterException(e.id, e.reason); // transform native exception to Corba exception
@@ -92,12 +93,12 @@ public class AuthServerImpl extends UnicastRemoteObject implements org.xmlBlaste
                         throws RemoteException, XmlBlasterException
    {
       String returnValue = null;
-      String sessionId = null;
+      ClientQoS loginQos = new ClientQoS(qos_literal);
       if (Log.CALL) Log.call(ME, "Entering connect(qos=" + qos_literal + ")");
 
       StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
       try {
-         LoginReturnQoS qos = authenticate.connect(qos_literal, sessionId);
+         LoginReturnQoS qos = authenticate.connect(loginQos);
          returnValue = qos.toXml();
          if (Log.TIME) Log.time(ME, "Elapsed time in connect()" + stop.nice());
       }
@@ -111,9 +112,9 @@ public class AuthServerImpl extends UnicastRemoteObject implements org.xmlBlaste
    public void disconnect(final String sessionId, String qos_literal)
                         throws RemoteException, XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "Entering logout()");
+      if (Log.CALL) Log.call(ME, "Entering disconnect()");
       authenticate.disconnect(sessionId, qos_literal);
-      if (Log.CALL) Log.call(ME, "Exiting logout()");
+      if (Log.CALL) Log.call(ME, "Exiting disconnect()");
    }
 
    /**
@@ -127,7 +128,7 @@ public class AuthServerImpl extends UnicastRemoteObject implements org.xmlBlaste
                         throws RemoteException, XmlBlasterException
    {
       if (Log.CALL) Log.call(ME, "Entering logout()");
-      authenticate.logout(sessionId);
+      disconnect(sessionId, (new LogoutQosWrapper()).toXml());
    }
 
 

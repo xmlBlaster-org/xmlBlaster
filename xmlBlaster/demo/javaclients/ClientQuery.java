@@ -3,7 +3,7 @@ Name:      ClientGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientQuery.java,v 1.15 2000/10/22 16:55:14 ruff Exp $
+Version:   $Id: ClientQuery.java,v 1.16 2001/09/04 11:51:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -53,7 +53,7 @@ public class ClientQuery
          else
             usage("Please enter a query string");
 
-         XmlBlasterConnection con = new XmlBlasterConnection(args, "IOR");
+         XmlBlasterConnection con = new XmlBlasterConnection(args);
          con.login(loginName, passwd, null);
 
 
