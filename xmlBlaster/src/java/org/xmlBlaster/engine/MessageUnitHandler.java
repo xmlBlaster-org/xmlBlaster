@@ -3,7 +3,7 @@ Name:      MessageUnitHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling exactly one message content
-Version:   $Id: MessageUnitHandler.java,v 1.19 1999/12/08 12:16:17 ruff Exp $
+Version:   $Id: MessageUnitHandler.java,v 1.20 1999/12/09 16:12:27 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -186,20 +186,21 @@ public class MessageUnitHandler
     * @param xmlKey      The XmlKey object, derived from messageUnit.xmlKey string
     * @param messageUnit The CORBA MessageUnit struct
     * @param publishQoS  Quality of Service, flags to control the publishing
+    * @param publisherName The source of the data (unique login name)
     *
     * @return changed? true:  if content has changed
     *                  false: if content didn't change
     */
-   public boolean setContent(XmlKey xmlKey, MessageUnit messageUnit, PublishQoS publishQoS) throws XmlBlasterException
+   public boolean setContent(XmlKey xmlKey, MessageUnit messageUnit, PublishQoS publishQoS, String publisherName) throws XmlBlasterException
    {
       if (Log.CALLS) Log.trace(ME, "Updating xmlKey " + uniqueKey);
 
       if (messageUnitWrapper == null) {  // storing the key from the first publish() invocation
-         messageUnitWrapper = new MessageUnitWrapper(xmlKey, messageUnit, publishQoS);
+         messageUnitWrapper = new MessageUnitWrapper(xmlKey, messageUnit, publishQoS, publisherName);
          return true;
       }
 
-      return messageUnitWrapper.setContent(messageUnit.content);
+      return messageUnitWrapper.setContent(messageUnit.content, publisherName);
    }
 
 

@@ -3,12 +3,16 @@ Name:      ClientSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSub.java,v 1.4 1999/12/08 12:16:18 ruff Exp $
+Version:   $Id: ClientSub.java,v 1.5 1999/12/09 16:12:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
-import org.xmlBlaster.util.*;
 import org.xmlBlaster.client.CorbaConnection;
+import org.xmlBlaster.client.UpdateKey;
+import org.xmlBlaster.client.UpdateQoS;
+import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Args;
+import org.xmlBlaster.util.StopWatch;
 import org.xmlBlaster.serverIdl.*;
 import org.xmlBlaster.clientIdl.*;
 
@@ -26,7 +30,11 @@ public class ClientSub
 {
    private Server xmlBlaster = null;
    private static String ME = "Tim";
+   private int numReceived = 0;         // error checking
 
+
+   /**
+    */
    public ClientSub(String args[])
    {
       StopWatch stop = new StopWatch();
@@ -39,14 +47,9 @@ public class ClientSub
          CorbaConnection corbaConnection = new CorbaConnection(args);
 
          //---------- Building a Callback server ----------------------
-         // Getting the default POA implementation "RootPOA"
-         org.omg.PortableServer.POA poa =
-            org.omg.PortableServer.POAHelper.narrow(corbaConnection.getOrb().resolve_initial_references("RootPOA"));
-
-         // Intialize my Callback interface:
-         BlasterCallbackPOATie callbackTie = new BlasterCallbackPOATie(new SubCallback(ME));
-         BlasterCallback callback = BlasterCallbackHelper.narrow(poa.servant_to_reference( callbackTie ));
-
+         org.omg.PortableServer.POA poa = org.omg.PortableServer.POAHelper.narrow(corbaConnection.getOrb().resolve_initial_references("RootPOA"));
+         BlasterCallbackPOATie callbackTie = new BlasterCallbackPOATie(new SubCallback(ME, this));
+         BlasterCallback callback = BlasterCallbackHelper.narrow(poa.servant_to_reference(callbackTie));
 
          //----------- Login to xmlBlaster -----------------------
          String qos = "<qos></qos>";
@@ -64,16 +67,20 @@ public class ClientSub
             stop.restart();
             try {
                xmlBlaster.subscribe(xmlKey, qos);
+               Log.trace(ME, "Subscribe done, there should be no Callback" + stop.nice());
             } catch(XmlBlasterException e) {
                Log.warning(ME, "XmlBlasterException: " + e.reason);
             }
-            Log.trace(ME, "Subscribe done, there should be no Callback" + stop.nice());
          }
 
+         Util.delay(1000); // Wait some time ...
+         if (numReceived == 0)
+            Log.info(ME, "Success, no Callback for a simple subscribe without a publish");
+         else
+            Log.error(ME, "Got Callback, but didn't expect one after a simple subscribe without a publish");
+         numReceived = 0;
 
-         Util.delay(2000); // Wait some time ...
-
-
+         
          //----------- Construct a message and publish it ---------
          {
             String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
@@ -89,21 +96,56 @@ public class ClientSub
             stop.restart();
             try {
                String publishOid = xmlBlaster.publish(messageUnit, "<qos></qos>");
-               Log.info(ME, "   Returned oid=" + publishOid);
+               Log.info(ME, "Publishing done, returned oid=" + publishOid + stop.nice());
             } catch(XmlBlasterException e) {
                Log.warning(ME, "XmlBlasterException: " + e.reason);
             }
-            Log.trace(ME, "Publishing done, there should be a callback now" + stop.nice());
          }
 
+         Util.delay(1000); // Wait some time ...
+         if (numReceived == 1)
+            Log.info(ME, "Success, got Callback after publishing");
+         else
+            Log.error(ME, numReceived + " callbacks arrived, did expect one after a simple subscribe with a publish");
+         numReceived = 0;
 
-         Util.ask("logout()");
          corbaConnection.logout(xmlBlaster);
       }
       catch (Exception e) {
           e.printStackTrace();
       }
-      //orb.run();
+   }
+
+
+   /**
+    * The SubCallback.update calls this method, to allow some error checking
+    */
+   public void update(MessageUnit[] messageUnitArr, String[] qos_literal_Arr)
+   {
+      if (messageUnitArr.length != 0)
+         numReceived += messageUnitArr.length;
+      else
+         numReceived = -1;       // error
+
+
+      for (int ii=0; ii<messageUnitArr.length; ii++) {
+         MessageUnit messageUnit = messageUnitArr[ii];
+         UpdateKey updateKey = null;
+         UpdateQoS updateQoS = null;
+         byte[] content = messageUnit.content;
+         try {
+            updateKey = new UpdateKey(messageUnit.xmlKey);
+            updateQoS = new UpdateQoS(qos_literal_Arr[ii]);
+         } catch (XmlBlasterException e) {
+            Log.error(ME, e.reason);
+         }
+
+         // Now we know all about the received message, dump it or do some checks
+         //Log.plain("UpdateKey", updateKey.printOn().toString());    !!!
+         Log.plain("content", (new String(content)).toString());
+         Log.plain("UpdateQoS", updateQoS.printOn().toString());
+
+      }
    }
 
 
@@ -117,28 +159,21 @@ public class ClientSub
 
 
 /**
- * Example for a callback implementation. 
+ * Example for a callback implementation.
  */
 class SubCallback implements BlasterCallbackOperations
 {
-   final String ME;
+   private final String ME;
+   private final ClientSub boss;
 
    /**
     * Construct a persistently named object.
     */
-   public SubCallback(java.lang.String name) {
+   public SubCallback(java.lang.String name, ClientSub boss)
+   {
       this.ME = "SubCallback-" + name;
+      this.boss = boss;
       if (Log.CALLS) Log.trace(ME, "Entering constructor with argument");
-   }
-
-
-   /**
-    * Construct a transient object.
-    */
-   public SubCallback() {
-      super();
-      this.ME = "SubCallback";
-      if (Log.CALLS) Log.trace(ME, "Entering constructor without argument");
    }
 
 
@@ -148,19 +183,7 @@ class SubCallback implements BlasterCallbackOperations
     */
    public void update(MessageUnit[] messageUnitArr, String[] qos_literal_Arr)
    {
-      for (int ii=0; ii<messageUnitArr.length; ii++) {
-         MessageUnit messageUnit = messageUnitArr[ii];
-         XmlKeyBase xmlKey = null;
-         try {
-            xmlKey = new XmlKeyBase(messageUnit.xmlKey);
-         } catch (XmlBlasterException e) {
-            Log.error(ME, e.reason);
-         }
-         Log.info(ME, "================== BlasterCallback update START =============");
-         Log.info(ME, "Callback invoked for " + xmlKey.toString() + " content length = " + messageUnit.content.length);
-         Log.info(ME, new String(messageUnit.content));
-         Log.info(ME, "================== BlasterCallback update END ===============");
-      }
+      boss.update(messageUnitArr, qos_literal_Arr); // Call my boss, so she can check for errors
    }
 } // SubCallback
 

@@ -3,7 +3,7 @@ Name:      XmlKeyBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKeyBase.java,v 1.17 1999/12/09 13:28:37 ruff Exp $
+Version:   $Id: XmlKeyBase.java,v 1.18 1999/12/09 16:12:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -150,7 +150,7 @@ public class XmlKeyBase
 
 
    /**
-    * Access the literal ASCII xmlKey. 
+    * Access the literal ASCII xmlKey.
     * @return the literal ASCII xmlKey
     */
    public String toString()
@@ -160,7 +160,7 @@ public class XmlKeyBase
 
 
    /**
-    * Access the literal ASCII xmlKey. 
+    * Access the literal ASCII xmlKey.
     * @return the literal ASCII xmlKey
     */
    public String literal()
@@ -170,7 +170,7 @@ public class XmlKeyBase
 
 
    /**
-    * Synonym for getKeyOid(). 
+    * Synonym for getKeyOid().
     *
     * @return oid
     */
@@ -193,7 +193,7 @@ public class XmlKeyBase
 
 
    /**
-    * Find out which mime type (syntax) of the XmlKey_literal String. 
+    * Find out which mime type (syntax) of the XmlKey_literal String.
     * @return "text/xml" only XML is supported
     */
    public String getMimeType() throws XmlBlasterException
@@ -209,7 +209,7 @@ public class XmlKeyBase
 
 
    /**
-    * Accessing the unique oid of <key oid="...">. 
+    * Accessing the unique oid of <key oid="...">.
     *
     * @return oid
     */
@@ -221,7 +221,7 @@ public class XmlKeyBase
 
 
    /**
-    * Fills the DOM tree, and assures that a valid <key oid="..."> is used. 
+    * Fills the DOM tree, and assures that a valid <key oid="..."> is used.
     */
    public org.w3c.dom.Node getRootNode() throws XmlBlasterException
    {
@@ -231,7 +231,7 @@ public class XmlKeyBase
 
 
    /**
-    * Fills the DOM tree, and assures that a valid <key oid="..."> is used. 
+    * Fills the DOM tree, and assures that a valid <key oid="..."> is used.
     */
    public org.w3c.dom.Document getXmlDoc() throws XmlBlasterException
    {
@@ -241,7 +241,7 @@ public class XmlKeyBase
 
 
    /**
-    * The mode how a subscribe() or get() is formulated. 
+    * The mode how a subscribe() or get() is formulated.
     * @return EXACT_QUERY or XPATH_QUERY
     */
    public final int getQueryType() throws XmlBlasterException
@@ -373,7 +373,7 @@ public class XmlKeyBase
 
 
    /**
-    * Generates a unique key. 
+    * Generates a unique key.
     * <p />
     * TODO: include IP adress and PID for global uniqueness
     */
@@ -395,7 +395,7 @@ public class XmlKeyBase
 
 
    /**
-    * Little helper method, which is synchronized. 
+    * Little helper method, which is synchronized.
     */
    synchronized private void generateKeyOidCounter(StringBuffer oid)
    {
@@ -405,36 +405,40 @@ public class XmlKeyBase
 
 
    /**
-    * Dump state of this object into XML. 
+    * Dump state of this object into XML.
     * <br>
     * @return XML state of MessageUnitHandler
     */
-   public final StringBuffer printOn() throws XmlBlasterException
+   public final StringBuffer printOn()
    {
       return printOn((String)null);
    }
 
 
    /**
-    * Dump state of this object into XML. 
+    * Dump state of this object into XML.
     * <br>
     * @param extraOffset indenting of tags
     * @return XML state of MessageUnitHandler
     */
-   public final StringBuffer printOn(String extraOffset) throws XmlBlasterException
+   public final StringBuffer printOn(String extraOffset)
    {
       StringBuffer sb = new StringBuffer();
       String offset = "\n   ";
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
 
-      sb.append(offset + "<XmlKeyBase oid='" + getUniqueKey() + "'>");
-      sb.append(offset + "   <queryString>" + queryString + "</queryString>");
-      sb.append(offset + "   <keyType>" + keyType + "</keyType>");
-      sb.append(offset + "   <isGeneratedOid>" + isGeneratedOid + "</isGeneratedOid>");
-      sb.append(offset + "   <isPublish>" + isPublish + "</isPublish>");
-      sb.append(xmlToDom.printOn(extraOffset + "   ").toString());
-      sb.append(offset + "</XmlKeyBase>\n");
+      try {
+         sb.append(offset + "<XmlKeyBase oid='" + getUniqueKey() + "'>");
+         sb.append(offset + "   <queryString>" + queryString + "</queryString>");
+         sb.append(offset + "   <keyType>" + keyType + "</keyType>");
+         sb.append(offset + "   <isGeneratedOid>" + isGeneratedOid + "</isGeneratedOid>");
+         sb.append(offset + "   <isPublish>" + isPublish + "</isPublish>");
+         sb.append(xmlToDom.printOn(extraOffset + "   ").toString());
+         sb.append(offset + "</XmlKeyBase>\n");
+      } catch (XmlBlasterException e) {
+         Log.warning(ME, "Caught exception in printOn()");
+      }
       return sb;
    }
 }

@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.4 1999/12/09 13:28:36 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.5 1999/12/09 16:12:27 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -31,7 +31,7 @@ import java.util.Properties;
  * If you have a servlet development kit installed (http://java.sun.com/products/servlet/index.html)
  * you may remove the comments from all servlets based code.
  *
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  * @author $Author: ruff $
  */
 public class CorbaConnection
@@ -294,7 +294,7 @@ public class CorbaConnection
       if (iorHost != null && iorPort > 0) {
          authServerIOR = getAuthenticationServiceIOR(iorHost, iorPort);
          authServer = AuthServerHelper.narrow(orb.string_to_object(authServerIOR));
-         Log.info(ME, "Accessing xmlBlaster using host " + iorHost + " and port " + iorPort);
+         Log.info(ME, "Accessing xmlBlaster AuthServer IOR using builtin http connection, host " + iorHost + " and port " + iorPort);
          return authServer;
       }
 

@@ -3,7 +3,7 @@ Name:      MessageUnitWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping the CORBA MessageUnit to allow some nicer usage
-Version:   $Id: MessageUnitWrapper.java,v 1.4 1999/12/09 00:11:05 ruff Exp $
+Version:   $Id: MessageUnitWrapper.java,v 1.5 1999/12/09 16:12:27 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -29,6 +29,7 @@ public class MessageUnitWrapper
    private MessageUnit messageUnit;  // The CORBA MessageUnit (raw struct)
    private XmlKey xmlKey;            // the meta data describing this message
    private PublishQoS publishQoS;    // the flags from the publisher
+   private String publisherName;     // the unique loginName of the publisher
    private String uniqueKey;         // Attribute oid of key tag: <key oid="..."> </key>
 
 
@@ -38,8 +39,9 @@ public class MessageUnitWrapper
     * @param xmlKey Since it is parsed in the calling method, we don't need to do it again from messageUnit.xmlKey_literal
     * @param messageUnit the CORBA MessageUnit data container
     * @param publishQoS the quality of service
+    * @param publisherName the unique loginName of the publisher
     */
-   public MessageUnitWrapper(XmlKey xmlKey, MessageUnit messageUnit, PublishQoS publishQoS) throws XmlBlasterException
+   public MessageUnitWrapper(XmlKey xmlKey, MessageUnit messageUnit, PublishQoS publishQoS, String publisherName) throws XmlBlasterException
    {
       if (xmlKey == null || messageUnit == null || publishQoS == null) {
          Log.error(ME, "Invalid constructor parameter");
@@ -49,6 +51,10 @@ public class MessageUnitWrapper
       this.xmlKey = xmlKey;
       this.uniqueKey = this.xmlKey.getUniqueKey();
       this.publishQoS = publishQoS;
+      this.publisherName = publisherName;
+
+      if (publisherName == null)
+         publisherName = "";
 
       if (this.messageUnit.content == null)
          this.messageUnit.content = new byte[0];
@@ -67,16 +73,22 @@ public class MessageUnitWrapper
 
 
    /**
-    * setting update of a changed content
+    * Setting update of a changed content. 
+    * <p />
+    * @param content The new data blob
+    * @param publisherName The source of the data (unique login name)
     * @return changed? true:  if content has changed
     *                  false: if content didn't change
     */
-   public final boolean setContent(byte[] content)
+   public final boolean setContent(byte[] content, String publisherName)
    {
       if (Log.CALLS) Log.trace(ME, "Updating xmlKey " + uniqueKey);
 
       if (content == null)
          content = new byte[0];
+
+      if (publisherName != null)
+         this.publisherName = publisherName;
 
       boolean changed = false;
       if (this.messageUnit.content.length != content.length) {
@@ -115,6 +127,16 @@ public class MessageUnitWrapper
    public final PublishQoS getPublishQoS()
    {
       return publishQoS;
+   }
+
+
+   /**
+    * Access the unique login name of the (last) publisher
+    * @return loginName of the data source which last updated this message
+    */
+   public String getPublisherName()
+   {
+      return publisherName;
    }
 
 
@@ -162,7 +184,7 @@ public class MessageUnitWrapper
     */
    public MessageUnitWrapper cloneContent() throws XmlBlasterException
    {
-      MessageUnitWrapper newWrapper = new MessageUnitWrapper(xmlKey, messageUnit, publishQoS);
+      MessageUnitWrapper newWrapper = new MessageUnitWrapper(xmlKey, messageUnit, publishQoS, publisherName);
 
       byte[] oldContent = this.messageUnit.content;
       byte[] newContent = new byte[oldContent.length];

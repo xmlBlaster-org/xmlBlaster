@@ -15,7 +15,8 @@ SRC_JAVA_DIR = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster/client
 #------------------------------------------------------------------------------
 LOCAL_FILES = \
 			$(CLASS_DIR)/CorbaConnection.class \
-			$(CLASS_DIR)/UpdateQoS.class
+			$(CLASS_DIR)/UpdateQoS.class \
+			$(CLASS_DIR)/UpdateKey.class
 #------------------------------------------------------------------------------
 
 

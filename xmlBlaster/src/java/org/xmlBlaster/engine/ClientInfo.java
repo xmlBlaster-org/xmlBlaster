@@ -3,7 +3,7 @@ Name:      ClientInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: ClientInfo.java,v 1.15 1999/12/08 12:16:17 ruff Exp $
+Version:   $Id: ClientInfo.java,v 1.16 1999/12/09 16:12:27 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -25,7 +25,7 @@ import org.xmlBlaster.clientIdl.BlasterCallback;
  * It also contains a message queue, where messages are stored
  * until they are delivered at the next login of this client.
  *
- * @version $Revision: 1.15 $
+ * @version $Revision: 1.16 $
  * @author $Author: ruff $
  */
 public class ClientInfo
@@ -80,12 +80,12 @@ public class ClientInfo
 
 
    /**
-    * This sends the update to the client, or stores it in the client queue. 
+    * This sends the update to the client, or stores it in the client queue.
     */
    public final void sendUpdate(MessageUnitWrapper messageUnitWrapper) throws XmlBlasterException
    {
       if (isLoggedIn()) {
-         getCallbackDriver().sendUpdate(this, messageUnitWrapper);
+         getCallbackDriver().sendUpdate(this, messageUnitWrapper, getUpdateQoS(messageUnitWrapper));
       }
       else {
          messageQueue.push(messageUnitWrapper);
@@ -105,7 +105,7 @@ public class ClientInfo
 
 
    /**
-    * Get notification that the client did a login. 
+    * Get notification that the client did a login.
     * <p />
     * This instance may exist before a login was done, for example
     * when some messages where directly addressed to this client.<br />
@@ -141,14 +141,34 @@ public class ClientInfo
             MessageUnitWrapper messageUnitWrapper = messageQueue.pull();
             if (messageUnitWrapper == null)
                break;
-            getCallbackDriver().sendUpdate(this, messageUnitWrapper);
+
+            getCallbackDriver().sendUpdate(this, messageUnitWrapper, getUpdateQoS(messageUnitWrapper));
          }
       }
    }
 
 
    /**
-    * Get notification that the client did a logout. 
+    * The QoS for the update callback, containing the <sender> name. 
+    * @param messageUnitWrapper The wrapper containing all message infos
+    * @return the QoS (quality of service) for the update callback<br />
+    *   Example:<br />
+    *   <pre>
+    *      &lt;qos>
+    *         &lt;sender>
+    *            Tim
+    *         &lt;/sender>
+    *      &lt;/qos>
+    *   </pre>
+    */
+   private String getUpdateQoS(MessageUnitWrapper messageUnitWrapper)
+   {
+      return "\n<qos>\n   <sender>\n      " + messageUnitWrapper.getPublisherName() + "\n   </sender>\n</qos>";
+   }
+
+
+   /**
+    * Get notification that the client did a logout.
     */
    public final void notifyAboutLogout() throws XmlBlasterException
    {
