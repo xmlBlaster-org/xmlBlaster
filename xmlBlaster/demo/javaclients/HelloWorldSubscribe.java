@@ -279,8 +279,8 @@ public class HelloWorldSubscribe implements I_Callback
          System.out.println(new String(content));
       }
       else {
-         String str = new String(content);
-         System.out.println(str.substring(0,maxContentLength-5) + " ...");
+         String str = new String(content, 0,maxContentLength-5);
+         System.out.println(str + " ...");
       }
       System.out.println("</content>");
       System.out.println(updateQos.toXml());
