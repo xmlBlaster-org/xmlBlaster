@@ -1,19 +1,21 @@
-Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
+Release notes for xmlBlaster (http://www.xmlBlaster.org)
 The "#99999" numbers are Subversion revision numbers.
 
-Changes in current subversion repository (svn)
-==============================================
+Changes for 1.RC4 [2004-12-19] #13059
+=====================================
 
- o Added SSL property 'findStoreInXmlBlasterSearchPath' to support keyStore/trustStore lookup in CLASSPATH
+ o Fixed release zip to run with JDK 1.3 without recompilation
+
+ o #13057 Added SSL property 'findStoreInXmlBlasterSearchPath' to support keyStore/trustStore lookup in CLASSPATH
    Client side only, JDK 1.4 or above only
-   The feature is currently commented out because of JDK 1.3 compatibility, see SocketUrl.java:367
+   The feature is currently commented out to have JDK 1.3 compatibility, see SocketUrl.java:367
 
  o C client library:
    - #13048 Added XMLBLASTER_ prefix to LOG_INFO, LOG_WARN ... to avoid
      namespace clash with syslog.h; Thanks to David Kerry
 
  o C++ client library:
-   - #13045 Bugfix for SAX parsing of ClientProperties: encoding of received message was ignored
+   - #13045 BUGFIX for SAX parsing of ClientProperties: encoding of received message was ignored
 
  o #13043 SOCKET SSL communication: Added property 'needClientAuth' to support
    authentication of connecting clients as well, see
@@ -39,7 +41,7 @@ Changes for 1.RC3 [2004-12-08] #12997
 
  o #12995 Changed subscription ID to be unique over time
 
- o #12988 Bugfix in script: CDATA in content are not passed through anymore and duplication of 
+ o #12988 BUGFIX in script: CDATA in content are not passed through anymore and duplication of 
    content does not happen anymore 
 
  o C client library:
@@ -205,7 +207,7 @@ Changes for 1.RC1 [2004-10-28] #12758
  o Java client library:
    Changed ClientErrorHandler to not remove client side queue entries on certain exceptions
 
- o Bugfix in PtP cluster forwarding:
+ o BUGFIX in PtP cluster forwarding:
    In some cases the destination QoS got lost
 
  o SOCKET SSL
@@ -318,7 +320,7 @@ Changes for 0.91 [2004-08-30]
    - Added missing return values for remote calls, added publishArr()
 
  o C client library:
-   - Bugfix in messageUnitToXmlLimited() for msg content smaller 5 bytes
+   - BUGFIX in messageUnitToXmlLimited() for msg content smaller 5 bytes
    - Added support for UDP based publishOneway() and updateOneway()
      Contributed by Michal Masa <xmasam@sgi.felk.cvut.cz>
    - Added PTHREAD_CREATE_DETACHED to cleanup resources
@@ -345,7 +347,7 @@ Changes for 0.91 [2004-08-30]
      same connection.
    - Fixed bug in lexical_cast for string to string on solaris
    - QueueFactory and ParserFactory are now stateless (no global nor log)
-   - Bugfix in C++ client properties: empty spaces are allowed inside strings.
+   - BUGFIX in C++ client properties: empty spaces are allowed inside strings.
    - CorbaDriverFactory and SocketDriverFactory in C++ client keep now
      driver instances with Global* as key instead of instanceName. 
    - Added individual callbacks for subscriptions
@@ -407,7 +409,7 @@ Changes for 0.91 [2004-08-30]
 
  o Fixed XML dump of properties (jutils.jar)
 
- o Bugfix for sending ERASE events in UNREFERENCED topics with XPath subscription
+ o BUGFIX for sending ERASE events in UNREFERENCED topics with XPath subscription
    Topics delivered by XPATH subscriptions don't send erase notifications
    when they disappear as they match again if the appear again
 
@@ -444,11 +446,11 @@ Changes for 0.903 [2004-05-13]
  o Fixed telnet access bug which was introduced in 0.902
 
  o C client library
-   - Bugfix: hostname copy from command line
+   - BUGFIX: hostname copy from command line
    - Added property dump
 
  o C++ client library
-   - Bugfix: Client side Address was hold twice (in ConnectQos and in ClientQueueProperty)
+   - BUGFIX: Client side Address was hold twice (in ConnectQos and in ClientQueueProperty)
      and was not dumped with toXml()
 
 Changes for 0.902 [2004-05-11]
@@ -470,11 +472,11 @@ Changes for 0.902 [2004-05-11]
  o C++ client library
    - Introduced abstract queue interface (I_Queue) and queue factory
      to be able to add arbitrary queue implementations as plugins.
-   - Bugfix for default logging: loglevel settings inherited from I_Log
-   - Bugfix reading of xmlBlaster.properties: Line extensions are now recognized
+   - BUGFIX for default logging: loglevel settings inherited from I_Log
+   - BUGFIX reading of xmlBlaster.properties: Line extensions are now recognized
    - Extended Property class to preset ${user.home}, ${user.name},
      ${file.separator} and ${path.separator} to support replacement in xmlBlaster.properties
-   - Bugfix of failsafe mode when a publish noticed connection loss before ping thread
+   - BUGFIX of failsafe mode when a publish noticed connection loss before ping thread
    - Changed to activate failsafe mode even without a connectionProblem listener
      if -dispatch/connection/delay is > 0
 
@@ -505,14 +507,14 @@ Changes for 0.901 [2004-04-27]
  o Fixed release generation to remove build.tmp and
    keep the 'build' script.
 
- o Bugfix in PersistentCachePlugin (I_Map, msgUnitStore)
+ o BUGFIX in PersistentCachePlugin (I_Map, msgUnitStore)
    - swapping with ascending messages sizes could fail
      (Thanks to Dimitri.Devriendt@ses-astra.com)
    - synchronized setProperties()
      (Thanks to Dimitri.Devriendt@ses-astra.com)
    - numOfBytes calculation was buggy if swapping
 
- o Bugfix in JDBC service module to handle NULL db entries
+ o BUGFIX in JDBC service module to handle NULL db entries
    Thanks to zzwzyz@hotmail.com
 
  o Added two new requirements:
@@ -569,7 +571,7 @@ Changes for 0.901 [2004-04-27]
                -1L takes all entries available in the callback RAM queue
                possibly limited by maxEntries
 
- o Bugfix: C SOCKET client library, fixed uninitialized memory read in memmove call
+ o BUGFIX: C SOCKET client library, fixed uninitialized memory read in memmove call
  
  o changed the JdbcConnectionPool to be handled by Doug Lea's classes
  
@@ -580,7 +582,7 @@ Changes for 0.901 [2004-04-27]
    Compile:  build deploy_war   (and start tomcat + xmlBlaster server)
    Load:     http://localhost:8080/xmlBlaster/XmlScript.html (in mozilla, konqueror, appletviewer, explorer)
 
- o Bugfix for JXPath generation of ClientProperty in QoS (impact on tiny applet example only)
+ o BUGFIX for JXPath generation of ClientProperty in QoS (impact on tiny applet example only)
 
  o Updated utils.jar to CVS version from  2004-03-19, contains Property bug fix for ArrayOutOfBoundsException
 
@@ -623,7 +625,7 @@ Changes for 0.9 [2004-02-23]
 
  o Added I_QueueSizeListener to listen to changes in size of a queue
 
- o Bugfix: Reconfiguration of client reconnect (same pubSessionId)
+ o BUGFIX: Reconfiguration of client reconnect (same pubSessionId)
    supports now queue properties and sync/async reconfiguration
    (with or without a client side callback server)
 
@@ -686,10 +688,10 @@ Changes for 0.9 [2004-02-23]
    - Added Global::getCompiler()
    - Fixed LifeTimeManager to have destruction sequence reversed to creation sequence
    - Added map to LifeTimeManager to support registered object lookup by key
-   - Bugfix for lexical_cast<double> and lexical_cast<long double>
+   - BUGFIX for lexical_cast<double> and lexical_cast<long double>
      which rounded to only 6 digits
    - Added Base64 support for ClientProperty
-   - Bugfix: SAX parsers are now thread safe
+   - BUGFIX: SAX parsers are now thread safe
    - Renamed msgQosData.getForceDestroy() to isForceDestroy()
    - Other minor changes
 
