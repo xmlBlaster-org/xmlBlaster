@@ -395,14 +395,14 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
             // DispatchManager handles this
          }
          else {
-            log.error(ME, "Callback failed: " + ex.toString());
-            ex.printStackTrace();
+            //log.error(ME, "Callback failed: " + ex.toString());
+            //ex.printStackTrace();
             internalError(ex);
          }
       }
       else {
-         log.error(ME, "Callback failed: " + throwable.toString());
-         throwable.printStackTrace();
+         //log.error(ME, "Callback failed: " + throwable.toString());
+         //throwable.printStackTrace();
          internalError(new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION_DEAD, ME, "", throwable));
       }
    }
