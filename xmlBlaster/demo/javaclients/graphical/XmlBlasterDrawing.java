@@ -101,6 +101,7 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
       }
       catch (XmlBlasterException ex) {
          this.log.error(ME, "initConnection. Exception : " + ex.getMessage());
+         ex.printStackTrace();
       }
    }
 
