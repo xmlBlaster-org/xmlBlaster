@@ -1,6 +1,6 @@
 """
-__version__ = '$Revision: 1.5 $'
-__date__    = '$Date: 2003/05/21 20:21:32 $'
+__version__ = '$Revision: 1.6 $'
+__date__    = '$Date: 2004/08/12 18:26:46 $'
 __author__  = 'spex66@gmx.net'
 __license__ = 'pyBlaster is under LGPL, see http://www.xmlBlaster.org/license.html'
 
@@ -199,21 +199,37 @@ class XmlBlasterClient:
         """
         
         print "==> ::PUBLISH:: <=="
-        self.proxy.xmlBlaster.publish(self.sessionId, xmlKey, content, qos)
+        return self.proxy.xmlBlaster.publish(self.sessionId, xmlKey, content, qos)
     
-    def publishOneway(self, xmlKey, content, qos):
+    def publishOneway(self, msgUnitArr):
         """
-        Publish messages.
+        Publish an array of messages.
 
         The oneway variant may be used for better performance,
         it is not returning a value (no application level ACK)
         and there are no exceptions supported over the connection to the client.
 
-        @see org.xmlBlaster.engine.RequestBroker
         @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">The interface.publish requirement</a>
         """
         print "==> ::PUBLISHONEWAY:: <=="
-        self.proxy.xmlBlaster.publishOneway(self.sessionId, xmlKey, content, qos)
+        """
+            Hack: I don't think the oneway is supported by XmlRpc because http requests always
+            return something, for now we fake it using a publishArr() and ignore the returned
+            value (Marcel 2004-08-12)
+        """
+        #self.proxy.xmlBlaster.publishOneway(self.sessionId, msgUnitArr)
+        ignoreReturn = self.proxy.xmlBlaster.publishArr(self.sessionId, msgUnitArr)
+
+    def publishArr(self, msgUnitArr):
+        """
+        Publish an array of messages.
+
+        This variant may be used for better performance.
+
+        @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">The interface.publish requirement</a>
+        """
+        print "==> ::PUBLISHARR:: <=="
+        return self.proxy.xmlBlaster.publishArr(self.sessionId, msgUnitArr)
     
     def subscribe(self, xmlKey, qos):
         """
@@ -226,7 +242,7 @@ class XmlBlasterClient:
         """
 
         print "==> ::SUBSCRIBE:: <=="
-        self.proxy.xmlBlaster.subscribe(self.sessionId, xmlKey, qos)
+        return self.proxy.xmlBlaster.subscribe(self.sessionId, xmlKey, qos)
         
     def unSubscribe(self, xmlKey, qos):
         """
@@ -239,7 +255,7 @@ class XmlBlasterClient:
         @see org.xmlBlaster.engine.RequestBroker
         """
         print "==> ::unSubscribe :: <=="
-        self.proxy.xmlBlaster.unSubscribe (self.sessionId, xmlKey, qos)
+        return self.proxy.xmlBlaster.unSubscribe (self.sessionId, xmlKey, qos)
             
     def get(self, xmlKey, qos):
         """
@@ -259,7 +275,7 @@ class XmlBlasterClient:
         """    
         
         print "==> ::ERASE:: <=="
-        self.proxy.xmlBlaster.erase(self.sessionId, xmlKey, qos)
+        return self.proxy.xmlBlaster.erase(self.sessionId, xmlKey, qos)
         
     def printMessages(self, messages):
         print "   Received ", len(messages), " messages:"
@@ -500,7 +516,8 @@ if __name__ == '__main__':
     
 
     print """    _.publish("<key oid='1'><first/></key>", 'First Type Message', "<qos></qos>")"""
-    xb.publish("<key oid='1'><first/></key>", 'First Type Message', "<qos></qos>")
+    publishRetQos = xb.publish("<key oid='1'><first/></key>", 'First Type Message', "<qos></qos>")
+    #print publishRetQos
 
     print """    _.publish("<key oid='2'><second/></key>", 'Second Type Message', "<qos></qos>")"""
     xb.publish("<key oid='2'><second/></key>", 'Second Type Message', "<qos></qos>")
@@ -514,6 +531,10 @@ if __name__ == '__main__':
     print """    _.publish("<key oid='5'><third/></key>", 'Third Type Message', "<qos></qos>")"""
     xb.publish("<key oid='5'><third/></key>", 'Third Type Message', "<qos></qos>")
     
+    #print """    _.publishArr([["<key oid='6'><first/></key>", '', "<qos/>"]]) ..."""
+    #publishArrRetQos = xb.publishArr([["<key oid='6'><first/></key>", '', "<qos/>"]])
+    #print publishArrRetQos
+
     print """\n\nNow it's on you, the python-prompt is yours! Yes it's an python prompt !-)
     
     _    <-- is the running instance
