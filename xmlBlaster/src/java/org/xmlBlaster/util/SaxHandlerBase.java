@@ -3,7 +3,7 @@ Name:      SaxHandlerBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Default handling of Sax callbacks
-Version:   $Id: SaxHandlerBase.java,v 1.10 2001/02/14 00:38:05 ruff Exp $
+Version:   $Id: SaxHandlerBase.java,v 1.11 2002/04/21 10:34:41 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -95,14 +95,18 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler
          if (Log.TRACE) Log.trace(ME, "StopParseException: Parsing execution stopped half the way");
          return;
       }
-      catch (Exception e) {
+      catch (Throwable e) {
+         String location = locator.toString();
+         if (e instanceof org.xml.sax.SAXParseException)
+            location = getLocationString((SAXParseException)e);
+
          if (e.getMessage().indexOf("org.xmlBlaster.util.StopParseException") > -1) { // org.xml.sax.SAXParseException
-            if (Log.TRACE) Log.trace(ME, "Parsing execution stopped half the way");
+            if (Log.TRACE) Log.trace(ME, location + ": Parsing execution stopped half the way");
             return;
          }
-         Log.error(ME, "Error while SAX parsing: " + e.toString() + "\n" + xmlData);
+         Log.error(ME, "Error while SAX parsing: " + location + ": " + e.toString() + "\n" + xmlData);
          e.printStackTrace();
-         throw new XmlBlasterException(ME, "Error while SAX parsing: " + e.toString() + "\n" + xmlData);
+         throw new XmlBlasterException(ME, "Error while SAX parsing: " + location + ": " + e.toString() + "\n" + xmlData);
       }
    }
 
