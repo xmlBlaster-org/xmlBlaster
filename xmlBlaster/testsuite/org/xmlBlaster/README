@@ -23,28 +23,28 @@ Start the test suite manually:
 
    Start xmlBlaster server:
 
-      jaco org.xmlBlaster.Main
+      java org.xmlBlaster.Main
 
    Start the test suite with GUI support:
 
-      jaco -Djava.compiler= test.ui.TestRunner testsuite.org.xmlBlaster.TestAll
+      java -Djava.compiler= test.ui.TestRunner testsuite.org.xmlBlaster.TestAll
 
    For command line output invoke:
 
-      jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestAll
+      java -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestAll
 
    Start one test without testsuite (and with debugging output on console):
 
-      jaco -Djava.compiler= testsuite.org.xmlBlaster.TestUnSub -trace true -dump true -calls true -time true
+      java -Djava.compiler= testsuite.org.xmlBlaster.TestUnSub -trace true -dump true -calls true -time true
 
 
    Test RMI:
 
-      jaco -Djava.compiler= -Dclient.protocol=RMI test.ui.TestRunner testsuite.org.xmlBlaster.TestAll
+      java -Djava.compiler= -Dclient.protocol=RMI test.ui.TestRunner testsuite.org.xmlBlaster.TestAll
 
    Test XML-RPC:
 
-      jaco -Djava.compiler= -Dclient.protocol=XML-RPC test.ui.TestRunner testsuite.org.xmlBlaster.TestAll
+      java -Djava.compiler= -Dclient.protocol=XML-RPC test.ui.TestRunner testsuite.org.xmlBlaster.TestAll
 
 
 Note that Junit is extended by some methods in TestCase.java

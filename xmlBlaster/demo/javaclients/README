@@ -12,29 +12,29 @@ publishing of messages.
 
    Start xmlBlaster server:
 
-      jaco org.xmlBlaster.Main
+      java org.xmlBlaster.Main
 
 
    Start one of the clients, for example:
 
-      jaco javaclients.ClientSub
+      java javaclients.ClientSub
 
 
    To get some more logging infos try:
 
-      jaco javaclients.ClientSub -trace true
+      java javaclients.ClientSub -trace true
 
 
    This displays the usage:
 
-     jaco javaclients.ClientSub -?
+     java javaclients.ClientSub -?
 
 
    Query xmlBlaster:
 
-      jaco javaclients.ClientQuery -queryXpath "/xmlBlaster/key"
+      java javaclients.ClientQuery -queryXpath "/xmlBlaster/key"
 
-      jaco javaclients.ClientQuery -queryXpath "//AGENT/DRIVER"
+      java javaclients.ClientQuery -queryXpath "//AGENT/DRIVER"
 
 
 Running a client with CORBA protocol (default):
@@ -43,11 +43,11 @@ Running a client with CORBA protocol (default):
 
 Running a client with RMI protocol:
 
-      jaco javaclients.ClientSub -client.protocol RMI
+      java javaclients.ClientSub -client.protocol RMI
 
 Running a client with XML-RPC protocol:
 
-      jaco javaclients.ClientSub -client.protocol XML-RPC
+      java javaclients.ClientSub -client.protocol XML-RPC
 
 Running a client which forces the GUI based authentication/authorization plugin:
 
