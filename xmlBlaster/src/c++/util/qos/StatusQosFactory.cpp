@@ -3,7 +3,7 @@ Name:      StatusQosSaxFactory.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
-
+#include <util/MethodName.h>
 #include <util/qos/StatusQosFactory.h>
 #include <util/Global.h>
 

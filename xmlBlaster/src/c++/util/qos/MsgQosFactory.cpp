@@ -4,6 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 #include <util/qos/MsgQosFactory.h>
+#include <util/MethodName.h>
 #include <util/Global.h>
 #include <util/StringTrim.h>
 #include <util/lexical_cast.h>
