@@ -27,7 +27,7 @@ import java.net.URL;
   LoggableDevicePlugin[console][1.0]=org.xmlBlaster.util.log.ConsoleLogDeviceFactory
  </pre>
  *
- * <p>The loading logic of the logging plugins are defined in {@link org.xmlBlaster.Global}, but is described here. To actually use a logger plugin one has to specify the logDevices to actually use. These are specifyed by giving a comma separated list of plugin names in the propery <b>logDevice</b>. A logDevice may specifyed globaly, or for a particular logging domain, given by LogChannel.getChannelKey().So for example, given the following plugins:</p>
+ * <p>The loading logic of the logging plugins are defined in {@link org.xmlBlaster.util.Global}, but is described here. To actually use a logger plugin one has to specify the logDevices to actually use. These are specifyed by giving a comma separated list of plugin names in the propery <b>logDevice</b>. A logDevice may specifyed globaly, or for a particular logging domain, given by LogChannel.getChannelKey().So for example, given the following plugins:</p>
 <pre>
 LoggableDevicePlugin[console][1.0]=org.xmlBlaster.util.log.ConsoleLogDeviceFactory
 LoggableDevicePlugin[file][1.0]=org.xmlBlaster.util.log.FileLogDeviceFactory,logFile=mylogfile
@@ -43,7 +43,7 @@ logDevice[cb]=console,file
  *
  *
  * @author Peter Antman
- * @version $Revision: 1.2 $ $Date: 2002/11/26 12:39:54 $
+ * @version $Revision: 1.3 $ $Date: 2002/12/18 15:19:51 $
  */
 
 public class LogDevicePluginManager implements I_PluginManager {

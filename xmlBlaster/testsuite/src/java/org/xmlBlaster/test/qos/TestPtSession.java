@@ -55,7 +55,6 @@ import junit.framework.*;
  *    java junit.textui.TestRunner -noloading org.xmlBlaster.test.qos.TestPtSession
  *    java junit.swingui.TestRunner -noloading org.xmlBlaster.test.qos.TestPtSession
  * </pre>
- * @see org.xmlBlaster.util.qos.plugins.prio.PtSession
  */
 public class TestPtSession extends TestCase
 {

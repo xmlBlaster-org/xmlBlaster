@@ -36,7 +36,7 @@ import junit.framework.*;
  * Invoke: java -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.classtest.msgstore.MsgUnitWrapperTest
  * </p>
  * @see org.xmlBlaster.engine.MsgUnitWrapper
- * @see org.xmlBlaster.engine.msgstore.ServerEntryFactory
+ * @see org.xmlBlaster.engine.queuemsg.ServerEntryFactory
  */
 public class MsgUnitWrapperTest extends TestCase {
    private String ME = "MsgUnitWrapperTest";

@@ -30,10 +30,9 @@ import junit.framework.*;
  * <p>
  * Invoke: java -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.classtest.msgstore.I_MapTest
  * </p>
- * @see org.xmlBlaster.util.queuemsg.MsgMapEntry#compare(MsgMapEntry)
  * @see org.xmlBlaster.engine.msgstore.I_Map
  * @see org.xmlBlaster.engine.msgstore.ram.MapPlugin
- * @see org.xmlBlaster.util.queue.jdbc.JdbcMapPlugin
+ * @see org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin
  */
 public class I_MapTest extends TestCase {
    private String ME = "I_MapTest";
