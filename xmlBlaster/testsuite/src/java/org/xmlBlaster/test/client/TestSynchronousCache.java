@@ -61,7 +61,7 @@ public class TestSynchronousCache extends TestCase {
    private MsgInterceptor updateInterceptor;
 
    private EmbeddedXmlBlaster serverThread;
-   private int serverPort = 9576;
+   private int serverPort = 34576;
    private boolean startEmbedded = true;
    private SynchronousCache synchronousCache;
    private String[] publishOidArr = new String[] { "oid-0", "oid-1", "xx-oid-2" };
