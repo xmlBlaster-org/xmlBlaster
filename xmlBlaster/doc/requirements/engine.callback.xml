@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='engine.callback' type='NEW' prio='HIGH' status="INWORK">
+<requirement id='engine.callback' type='NEW' prio='HIGH' status="CLOSED">
    <topic>XmlBlaster has a sophisticated client callback framework</topic>
    <description>
       <p>
@@ -22,13 +22,14 @@
       </li>
       <li>Zero or once delivery (transient message)<br />
       A message is usually delivered exactly once. Under certain failure circumstances
-      a message can't be delivered:
+      a message can't be delivered or is even redelivered:
       <ol>
          <li>If xmlBlaster is shutdown or crashes, transient messages are lost.</li>
          <li>If the client can't be reached or the client does not acknowledge the
          message, xmlBlaster will redeliver the message. Such messages are marked with
          a QoS tag &lt;redeliver>12&lt;/redeliver> whereby 12 is the current attempt. xmlBlaster retries
-         until the queue span of life expires and in this case the lost messages are published as <i>dead letters</i>.
+         until the message or queue span of life expires and in this case the lost messages
+         are published as <i>dead letters</i>.
          Redelivering can be switched off, resulting in immediate <i>dead letters</i> and
          garbage collection of resources.
          </li>
@@ -49,7 +50,7 @@
       50 milli seconds). This increases latency of message delivery for 50 msec
       but allows a much higher message throughput. The overall performance increases.
       </li>
-      <li>Protect against misbehaving clients<br />
+      <li>Protect against misbehaving clients [TODO]<br />
       Every callback is controlled by a timer, to avoid leakage of threads
       and memory resources in the server when clients misconduct.
       </li>
@@ -57,7 +58,10 @@
       Clients shall acknowledge messages if they are capable to do so.
       For dumb clients or connectionless protocols like email, the xmlBlaster
       plugin driver can simulate the ACK. Callbacks are only as reliable
-      as the protocol and client allows.
+      as the protocol and client allows.<br />
+      ACK/NAK handling is achieved through return values of method invocation.
+      Oneway invocations have no ACK/NAK support on application level, but the underlying
+      TCP ACK/NAK makes them reliable enough for many use cases.
       </li>
       <li>Automatic disconnect detection<br />
       Failed callback connections are caught by xmlBlaster and handled as described
@@ -69,55 +73,66 @@
       callback and send unauthorized messages. Therefore the first argument in update()
       sends a sessionId, which must be passed to xmlBlaster initially on callback construction.
       </li>
-      <li>Message compression<br />
+      <li>Message compression [TODO]<br />
       Messages can be compressed with the zip format. The zip applies for the content of
       the message only. Zipping happens before sending a message to a callback server which
       requested this service.
       Zipping is applied only to contents bigger a configurable value, typically contents
       bigger 1.2 kBytes.
       </li>
+      <li>Pinging of callback server [TODO]<br />
+      The callback server is pinged on demand. Pinging with method ping() is similar
+      implemented as the update() invocation on the client callback server.
+      </li>
+      <li>Error handling<br />
+      We distinguish recovery procedures for callback connection problems
+      and for blocking clients and for clients sending NAK.
+      <p>
+      There are different error conditions when invoking update() or ping():
+      </p>
+      <ol>
+         <li>Receiver is not reachable or throws an exception<br />
+         Depending on configuration we try to redeliver. When we give up
+         a dead letter is published.
+         </li>
+         <li>Receiver blocks [TODO]<br />
+         Currently we can't detect this, the callback worker thread is blocked
+         and lost.
+         </li>
+         <li>Receiver sends error in return string<br />
+         The return value is ignored, the message counts as delivered.
+         In future this information may be used for transaction processing.
+         </li>
+      </ol>
+      <p>
+      A possible approache for a lost PtP messages is to send a NAK to the
+      sender of the message [TODO - needs to be specified]
+      </p>
+      </li>
+      <li>Oneway invocations [TODO]<br />
+      Oneway invocations are method invocations without a return value.
+      The increase performance but loose ACK/NAK on application level:
+      <pre><code>
+      updateOneway(...);   // not blocking invocation<br />
+      String update(...);  // blocking method invocation
+      </code></pre>
+      The publish() and update() methods support oneway variants called publishOneway()
+      and updateOneway().
+      </li>
+      
       <li><br />
       </li>
       </ul>
+
       <p>
       Open issues
       </p>
       <ul>
-      <li>Oneway updates<br />
-      Oneway updates are callbacks without a return value, e.g.<br />
-      <pre><code>
-      oneway void update(...);  // not blocking invocation<br />
-      String update(...);       // blocking method invocation
-      </code></pre>
-      It is not yet decided if we need this feature.
-      </li>
       <li>Blocking publisher<br />
       XmlBlaster blocks a publish() invocation of a client until it has
       securely accepted the message.
       Is it necessary to support a blocking until e.g. a PtP message is delivered
       to its destinations (like a blocking RPC call)?
-      </li>
-      <li>Connection errors versus client failures<br />
-      <p>
-      Do we need to distinguish recovery procedures for callback connection problems
-      and for blocking clients or for clients sending NAK?
-      </p>
-      <p>
-      There are different error conditions when invoking update():
-      </p>
-      <ol>
-         <li>receiver is not reachable</li>
-         <li>receiver throws exception</li>
-         <li>receiver sends error in return string</li>
-         <li>receiver blocks, xmlBlaster handles it</li>
-      </ol>
-      <p>
-      Possible approaches:
-      </p>
-      <ol>
-        <li>PtP: xmlBlaster sends NAK to sender message</li>
-        <li>Pub/Sub: xmlBlaster publishes dead letter</li>
-      </ol>
       </li>
       <li>Transactional context<br />
       Transaction support (probably based on Jini) and failure recovery needs to be specified.
@@ -153,6 +168,70 @@
          </callback>
       ]]>
    </example>
+   <configuration where="server">
+      <table border="1">
+         <tr>
+            <td>Property</td>
+            <td>Default</td>
+            <td>Description</td>
+            <td>Implemented</td>
+         </tr>
+         <tr>
+            <td>cb.collectTime</td>
+            <td>0</td>
+            <td>BurstMode: The time to collect messages for update</td>
+            <td>yes</td>
+         </tr>
+         <tr>
+            <td>cb.pingInterval</td>
+            <td>60000 (one minute)</td>
+            <td>Ping interval: pinging every given milliseconds</td>
+            <td>yes</td>
+         </tr>
+         <tr>
+            <td>cb.retries</td>
+            <td>0</td>
+            <td>How often to retry if callback fails: defaults to don't retry, on failure we give up</td>
+            <td>yes</td>
+         </tr>
+         <tr>
+            <td>cb.delay</td>
+            <td>60000 (one minute)</td>
+            <td>Delay between callback retires in milliseconds</td>
+            <td>yes</td>
+         </tr>
+         <tr>
+            <td>cb.useForSubjectQueue</td>
+            <td>true</td>
+            <td>Shall this session callback be used for subjectQueue messages as well?</td>
+            <td>yes</td>
+         </tr>
+         <tr>
+            <td>cb.compress.type</td>
+            <td>""</td>
+            <td>Compress messages if set to "gzip" or "zip"</td>
+            <td>no</td>
+         </tr>
+         <tr>
+            <td>cb.compress.minSize</td>
+            <td>0</td>
+            <td>Messages bigger this size in bytes are compressed</td>
+            <td>no</td>
+         </tr>
+         <tr>
+            <td>cb.ptpAllowed</td>
+            <td>true</td>
+            <td>PtP messages wanted? Defaults to true, false prevents spamming</td>
+            <td>yes</td>
+         </tr>
+         <tr>
+            <td>cb.sessionId</td>
+            <td>unknown</td>
+            <td>The identifier sent to the callback client, the client can decide if he trusts this invocation</td>
+            <td>yes</td>
+         </tr>
+      </table>
+   </configuration>
    <see type="API">org.xmlBlaster.engine.queue.MsgQueue</see>
    <see type="API">org.xmlBlaster.engine.callback.CbWorker</see>
    <see type="API">org.xmlBlaster.engine.helper.CallbackAddress</see>
@@ -160,13 +239,16 @@
    <see type="API">org.xmlBlaster.engine.util.ConnectQos</see>
    <see type="REQ">engine.queue</see>
    <see type="REQ">engine.qos.login.callback</see>
+   <see type="REQ">util.property</see>
+   <see type="REQ">util.property.args</see>
+   <see type="REQ">util.property.env</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 02 04</date>
-   <revision>$Revision: 1.8 $</revision>
-   <testcase status="OPEN">
+   <revision>$Revision: 1.9 $</revision>
+   <testcase status="INWORK">
       <name>-</name>
       <comment>-</comment>
-      <test tool="SUITE">testsuite.</test>
+      <test tool="SUITE">testsuite.org.xmlBlaster.TestCallback</test>
    </testcase>
 </requirement>
 
