@@ -79,9 +79,10 @@ only the SNMP subagent module jax.jar is GPL only!
    Download http://java.sun.com/beans/infobus/#DOWNLOAD_COLLECTIONS
 
 
-6) jacorb.jar and idl.jar 1.3.30
-================================
-   This is the JacORB 1.3.30 CORBA library, on which xmlBlaster is based.
+6) jacorb.jar and idl.jar 1.4.1
+===============================
+   This is the JacORB 1.4.1 CORBA library, on which xmlBlasters
+	CORBA plugin is based.
    It us under LGPL.
 
    Download http://www.jacorb.org

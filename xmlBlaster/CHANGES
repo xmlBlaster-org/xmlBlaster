@@ -40,9 +40,11 @@ BUGS:
 Changes for 0.79dev [xxx, xx 200x]
 ==================================
 
+  - Updated to JacORB_1_4_1
+
   - Some minor, incompatible changes to the C++ xmlBlaster client lib
     * There is now a CORBA independend util::MessageUnit
-    * CorbaConnection.cpp has now CORBA independend variants
+    * CorbaConnection.cpp has now CORBA independend method variants
       which are based on STL
     * Fixed memory leaks (in the client C++ libs) 
 
