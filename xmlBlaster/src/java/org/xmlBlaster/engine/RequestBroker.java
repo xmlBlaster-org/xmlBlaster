@@ -538,7 +538,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
                   retArr[ii] = entry.getKeyOid();
                   continue;
                }
-               origMsgUnit.getQosData().setClientProperty("__isErrorHandled", true); // Mark the original to avoid looping if failed client is the dead message listener
+               origMsgUnit.getQosData().addClientProperty("__isErrorHandled", true); // Mark the original to avoid looping if failed client is the dead message listener
                log.warn(ME, "Generating dead message '" + entry.getLogId() + "'" +
                             " from publisher=" + entry.getSender() +
                             " because delivery with queue '" +            // entry.getReceiver() is recognized in queueId
@@ -547,6 +547,8 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
                PublishKey publishKey = new PublishKey(glob, Constants.OID_DEAD_LETTER);
                publishKey.setClientTags("<oid>"+entry.getKeyOid()+"</oid>");
                // null: use the content from origMsgUnit:
+               pubQos.addClientProperty(Constants.CLIENTPROPERTY_DEADMSGKEY, origMsgUnit.getKey()); //"__key"
+               pubQos.addClientProperty(Constants.CLIENTPROPERTY_DEADMSGQOS, origMsgUnit.getQos()); //"__qos"
                MsgUnit msgUnit = new MsgUnit(origMsgUnit, publishKey.getData(), null, pubQos.getData());
                retArr[ii] = publish(unsecureSessionInfo, msgUnit);
             }
