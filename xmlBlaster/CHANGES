@@ -1,5 +1,9 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
+ o Bugfix: Reconfiguration of client reconnect (same pubSessionId)
+   supports now queue properties and sync/async reconfiguration
+   (with or without a client side callback server)
+
  o Extended forceQueing=true support for PtP messages sent to a
    specific session which does not yet exist.
    This will automatically establish a callback session queue for
