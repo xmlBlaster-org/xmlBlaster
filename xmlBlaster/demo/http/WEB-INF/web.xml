@@ -13,20 +13,6 @@
     <description>Persistent HTTP connection demo servlet with dynamic HTML</description>
     <servlet-class>http.dhtml.systemInfo.SystemInfo</servlet-class>
   </servlet>
-  <servlet-mapping>
-    <servlet-name>SystemInfo</servlet-name>
-    <url-pattern>/dhtml/systemInfo</url-pattern>
-  </servlet-mapping>
-
-  <mime-mapping>
-    <extension>svg</extension>
-    <mime-type>image/svg+xml</mime-type>
-  </mime-mapping>
-
-  <mime-mapping>
-    <extension>svgz</extension>
-    <mime-type>image/svg+xml</mime-type>
-  </mime-mapping>
 
   <!-- Core servlets to support persistent http -->
   <servlet>
@@ -59,13 +45,6 @@
       <description>dumps messages</description>
     </init-param>
   </servlet>
-  <servlet-mapping>
-    <servlet-name>BlasterHttpProxyServlet</servlet-name>
-    <url-pattern>/BlasterHttpProxyServlet</url-pattern>
-  </servlet-mapping>
-  <session-config>
-    <session-timeout>300000</session-timeout>
-  </session-config>
 
 
   <!-- Simple servlet to test your browser push back capabilities -->
@@ -74,9 +53,32 @@
     <description>Testing Persistent HTTP connection with your browser</description>
     <servlet-class>org.xmlBlaster.protocol.http.BrowserTest</servlet-class>
   </servlet>
+
+
+  <servlet-mapping>
+    <servlet-name>SystemInfo</servlet-name>
+    <url-pattern>/dhtml/systemInfo</url-pattern>
+  </servlet-mapping>
+  <servlet-mapping>
+    <servlet-name>BlasterHttpProxyServlet</servlet-name>
+    <url-pattern>/BlasterHttpProxyServlet</url-pattern>
+  </servlet-mapping>
   <servlet-mapping>
     <servlet-name>BrowserTest</servlet-name>
     <url-pattern>/BrowserTest</url-pattern>
   </servlet-mapping>
+
+  <session-config>
+    <session-timeout>300000</session-timeout>
+  </session-config>
+
+  <mime-mapping>
+    <extension>svg</extension>
+    <mime-type>image/svg+xml</mime-type>
+  </mime-mapping>
+  <mime-mapping>
+    <extension>svgz</extension>
+    <mime-type>image/svg+xml</mime-type>
+  </mime-mapping>
 </web-app>
 
