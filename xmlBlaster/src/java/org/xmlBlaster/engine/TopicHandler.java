@@ -594,7 +594,7 @@ public final class TopicHandler implements I_Timeout
       // NOTE: cluster forwarded PtP destinations are removed already from this list:
       Destination[] destinationArr = publishQos.getDestinationArr(); // !!! add XPath client query here !!!
       PublishReturnQos publishReturnQos = null;
-      Authenticate authenticate = glob.getAuthenticate();
+      Authenticate authenticate = this.requestBroker.getAuthenticate();
 
       //-----    Send message to every destination client
       for (int ii = 0; ii<destinationArr.length; ii++) {
