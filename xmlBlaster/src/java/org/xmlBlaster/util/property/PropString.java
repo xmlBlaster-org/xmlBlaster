@@ -42,10 +42,10 @@ public final class PropString extends PropEntry implements java.io.Serializable,
    }
 
    /**
-    * @return The value in String form
+    * @return The value in String form, null is supported
     */
    public final String getValueString() {
-      return ""+this.value;
+      return this.value;
    }
 
    public void setValue(String value) {
