@@ -460,6 +460,15 @@ UPDATE TEST_POLL SET COLOR='yellow', TS=CURRENT_TIMESTAMP WHERE CAR='BMW';
        </tr>
 
        <tr>
+         <td>dbPool.class</td>
+         <td>String</td>
+         <td>yes</td>
+         <td>org.xmlBlaster.contrib.db.DbPool</td>
+         <td>
+         Configures your implementation of interface <tt>I_DbPool</tt>.
+         </td>
+       </tr>
+       <tr>
          <td>converter.class</td>
          <td>String</td>
          <td>yes</td>
@@ -732,6 +741,16 @@ UPDATE TEST_POLL SET COLOR='yellow', TS=CURRENT_TIMESTAMP WHERE CAR='BMW';
          <td>UTF-8</td>
          <td>
          The charset used.
+         </td>
+       </tr>
+
+       <tr>
+         <td>xmlBlaster/jdk14loggingCapture</td>
+         <td>boolean</td>
+         <td>no</td>
+         <td>true</td>
+         <td>
+         Redirects JDK 1.4 logging output of this plugin into xmlBlasters jutils logging framework.
          </td>
        </tr>
      </table>   
