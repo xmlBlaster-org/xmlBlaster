@@ -2239,6 +2239,9 @@ TODO
             <!-- xmlBlasterClient.so -->
             <libset dir="${lib.dir}" libs="xmlBlasterClient" />
 
+            <!-- xmlBlasterClientC.so -->
+            <libset dir="${lib.dir}" libs="xmlBlasterClientC" if="COMPILE_SOCKET_DEFINE" />
+
             <linkerarg value="-i"/>
             <linkerarg value="-lpthread"/>
             <!-- linkerarg value="-L${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/lib" if="ORBIX" / -->
