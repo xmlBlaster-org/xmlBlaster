@@ -621,7 +621,7 @@ public final class TopicHandler implements I_Timeout
          boolean forceQueing = destination.forceQueuing();
          boolean wantsPtP = true; // TODO if destination never has looged in spam would be possible!  
 
-         synchronized (authenticate) {
+         synchronized (authenticate.getSessionInfoMap()) {
             SubjectInfo destinationClient = authenticate.getSubjectInfoByName(destination.getDestination());
             boolean subjectExists = destinationClient != null;
             // boolean cbQueueOverflow = false;

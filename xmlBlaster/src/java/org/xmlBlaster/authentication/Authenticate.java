@@ -95,6 +95,16 @@ final public class Authenticate implements I_RunlevelListener
       xmlBlasterImpl = new XmlBlasterImpl(this);
    }
 
+   /**
+    * Just to testing sync
+    * @return
+    */
+   public Map getSessionInfoMap() {
+      return this.sessionInfoMap;
+   }
+
+
+
    public Global getGlobal()
    {
       return this.glob;
@@ -177,7 +187,7 @@ final public class Authenticate implements I_RunlevelListener
     * @param connectQos  The login/connect QoS, see ConnectQosServer.java
     * @param secretSessionId   The caller (here CORBA-POA protocol driver) may insist to you its own secretSessionId
     */
-   public synchronized final ConnectReturnQosServer connect(ConnectQosServer connectQos, String secretSessionId) throws XmlBlasterException
+   public /*synchronized*/ final ConnectReturnQosServer connect(ConnectQosServer connectQos, String secretSessionId) throws XmlBlasterException
    {
       // [1] Try reconnecting with secret sessionId
       try {
@@ -397,7 +407,7 @@ final public class Authenticate implements I_RunlevelListener
    }
 
 
-   public final synchronized void disconnect(String secretSessionId, String qos_literal) throws XmlBlasterException {
+   public final /*synchronized*/ void disconnect(String secretSessionId, String qos_literal) throws XmlBlasterException {
       try {
          if (log.CALL) log.call(ME, "Entering disconnect()");
          //Thread.currentThread().dumpStack();
