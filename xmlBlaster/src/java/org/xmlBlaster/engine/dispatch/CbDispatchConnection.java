@@ -16,6 +16,7 @@ import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.engine.qos.UpdateReturnQosServer;
 import org.xmlBlaster.util.qos.MsgQosData;
+import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.util.dispatch.DispatchConnection;
@@ -134,15 +135,18 @@ public final class CbDispatchConnection extends DispatchConnection
             if (msgQosData.getNumRouteNodes() == 1) {
                msgQosData.clearRoutes();
             }
-            mu = new MsgUnit(mu, null, null, msgQosData);
 
             // Convert oid to original again for erased events fired by TopicHandler.java notifySubscribersAboutErase()
             if (mu.getKeyOid().equals(Constants.EVENT_OID_ERASEDTOPIC)) {
+               mu = new MsgUnit(mu, (MsgKeyData)entry.getMsgKeyData().clone(), null, msgQosData);
                String oid = mu.getQosData().getClientProperty("__oid", (String)null);
                if (oid != null) {
                   mu.getKeyData().setOid(oid);
                   mu.getQosData().getClientProperties().clear();
                }
+            }
+            else {
+               mu = new MsgUnit(mu, null, null, msgQosData);
             }
             
             msgUnitRawArr[i] = new MsgUnitRaw(mu, mu.getKeyData().toXml(), mu.getContent(), mu.getQosData().toXml());
