@@ -3,7 +3,7 @@ Name:      TestSubXPath.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubXPath.java,v 1.1 2000/05/25 13:42:00 ruff Exp $
+Version:   $Id: TestSubXPath.java,v 1.2 2000/05/25 13:43:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -22,7 +22,7 @@ import test.framework.*;
 /**
  * This client tests the method subscribe() with a later publish() with XPath query.
  * <br />
- * The subscribe() should be recognized for this later arriving publish()
+ * The subscribe() on message 3 should be recognized for this later arriving publish()
  * <p>
  * This client may be invoked multiple time on the same xmlBlaster server,
  * as it cleans up everything after his tests are done.
@@ -105,7 +105,7 @@ public class TestSubXPath extends TestCase implements I_Callback
 
 
    /**
-    * TEST: Subscribe to messages with XPATH.
+    * TEST: Subscribe to message number 3 with XPATH.
     * <p />
     */
    public void testSubscribeXPath()
@@ -131,7 +131,7 @@ public class TestSubXPath extends TestCase implements I_Callback
 
 
    /**
-    * TEST: Construct a message and publish it.
+    * TEST: Construct 5 messages and publish them. 
     * <p />
     * The returned publishOid is checked
     */
@@ -164,8 +164,8 @@ public class TestSubXPath extends TestCase implements I_Callback
 
 
    /**
-    * TEST: Construct a message and publish it,<br />
-    * the previous XPath subscription should match and send an update.
+    * TEST: Construct 5 messages and publish them,<br />
+    * the previous XPath subscription should match message #3 and send an update.
     */
    public void testPublishAfterSubscribeXPath()
    {
