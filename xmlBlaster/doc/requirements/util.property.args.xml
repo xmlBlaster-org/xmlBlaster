@@ -13,7 +13,7 @@
       <![CDATA[
       The "Persistence.Path" is set in xmlBlaster.properties and may be overwritten on command line:
 
-         "jaco org.xmlBlaster.Main -Persistence.Path /tmp"
+         "java org.xmlBlaster.Main -Persistence.Path /tmp"
 
       You need to activate this feature in your code like follows:
 
@@ -24,7 +24,7 @@
    <see type="API">org.jutils.init.Property</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 03 14</date>
-   <revision>$Revision: 1.10 $</revision>
+   <revision>$Revision: 1.11 $</revision>
 
    <testcase status="CLOSED">
       <name>ruff@swand.lake.de</name>
