@@ -1506,7 +1506,13 @@ public class Global implements Cloneable
     * and simply map it to the old encode(String)
     */
    public static String decode(String s, String enc) {
-      return java.net.URLDecoder.decode(s);
+      try {
+         return java.net.URLDecoder.decode(s);
+      }
+      catch (Exception e) {
+         System.out.println("PANIC in decode(" + s + "): " + e.toString());
+         return s;
+      }
    }
 
    /**
