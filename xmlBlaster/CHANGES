@@ -38,6 +38,12 @@ Changes cvs
    - Fixed callback ping return for SOCKET protocol
 
  o C++ client library:
+   - Incompatible API change: 
+      o 'class Destination' constructor expects now the new SessionName instead of SessionQos
+      o updateQos.getSender()->getAbsoluteName() instead of '.' as SessionNameRef is reference counted
+      o Removed namespace from header: Clients now may need to add
+         using namespace org::xmlBlaster::util::qos;
+   - BUGFIX: Corrected sender name in PublishQos after reconnect and flushing queue
    - Added a 'D' to .so/.sl/.dll shared library name for debugging version, for example "xmlBlasterClientD.dll"
      You can switch off debugging with "cpp.debug=false" in build.properties => "xmlBlasterClient.dll"
    - Fixed initial queueing of connect request if xmlBlaster server is not available
