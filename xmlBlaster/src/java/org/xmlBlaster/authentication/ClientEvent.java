@@ -3,11 +3,11 @@ Name:      ClientEvent.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Transports SessionInfo or SubjectInfo
-Version:   $Id: ClientEvent.java,v 1.5 2002/03/13 16:41:07 ruff Exp $
+Version:   $Id: ClientEvent.java,v 1.6 2004/02/04 20:47:51 laghi Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
-import org.xmlBlaster.authentication.SessionInfo;
+import org.xmlBlaster.engine.qos.ConnectQosServer;
 
 
 /**
@@ -16,18 +16,32 @@ import org.xmlBlaster.authentication.SessionInfo;
  *
  * @author Marcel Ruff
  */
-public class ClientEvent extends java.util.EventObject
-{
+public class ClientEvent extends java.util.EventObject {
+   
+   ConnectQosServer connectQos;
+   
    /**
     * Constructs a ClientEvent object.
     *
     * @param the client which does the login or logout
     */
-   public ClientEvent(SessionInfo sessionInfo)
-   {
+   public ClientEvent(SessionInfo sessionInfo, ConnectQosServer connectQos          ) {
        super(sessionInfo);
+       this.connectQos = connectQos;
    }
 
+   public ClientEvent(SessionInfo sessionInfo) {
+      this(sessionInfo, null);
+   }
+
+   /**
+    * Returns the connectQos or null of the event.
+    * @return the connectQos (could be null if not passed in the constructor)
+    */
+   public ConnectQosServer getConnectQos() {                
+       return this.connectQos;
+   }
+   
    /**
     * Returns the originator of the event.
     *
@@ -37,14 +51,12 @@ public class ClientEvent extends java.util.EventObject
        return (SessionInfo)source;
    }
 
-
    /**
     * Constructs a ClientEvent object.
     *
     * @param the client which does the login or logout
     */
-   public ClientEvent(SubjectInfo subjectInfo)
-   {
+   public ClientEvent(SubjectInfo subjectInfo) {
        super(subjectInfo);
    }
 

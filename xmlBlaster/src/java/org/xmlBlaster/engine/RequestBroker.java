@@ -1900,10 +1900,9 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
       if (log.TRACE) log.trace(ME, "Client session '" + sessionInfo.getId() + "' removed");
    }
 
-   public void sessionWillBeRemoved(ClientEvent e) throws XmlBlasterException {
+   public void sessionPreRemoved(ClientEvent e) throws XmlBlasterException {
    }
-
-
+    
    /**
     * Event invoked on new created SubjectInfo.
     */

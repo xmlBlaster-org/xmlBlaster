@@ -679,26 +679,9 @@ final public class Authenticate implements I_RunlevelListener
          Iterator iterator = clientListenerSet.iterator();
          while (iterator.hasNext()) {
             I_ClientListener cli = (I_ClientListener)iterator.next();
-            cli.sessionWillBeRemoved(event);
+            cli.sessionPreRemoved(event);
          }
          event = null;
-      }
-   }
-
-   /**
-    * Used to fire an event if a client does a change of the ConnectQosServer
-    * (normally used to update the secretSessionId)
-    */
-   public void fireClientUpdateQosEvent(SessionInfo sessionInfo, ConnectQosServer qos) throws XmlBlasterException
-   {
-      synchronized (clientListenerSet) {
-         if (clientListenerSet.size() == 0) return;
-
-         Iterator iterator = clientListenerSet.iterator();
-         while (iterator.hasNext()) {
-            I_ClientListener cli = (I_ClientListener)iterator.next();
-            // cli.clientQosUpdated(sessionInfo, qos);
-         }
       }
    }
 

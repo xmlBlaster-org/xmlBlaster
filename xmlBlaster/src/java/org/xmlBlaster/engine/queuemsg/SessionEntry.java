@@ -44,7 +44,7 @@ public class SessionEntry implements I_MapEntry {
     * @param qos
     * @param uniqueId
     */
-   public SessionEntry(String qos) {
+   public SessionEntry(String qos, String sessionId) {
       this(qos, -1L, 0L);
    }
 

@@ -259,8 +259,8 @@ public class ServerEntryFactory implements I_EntryFactory
             }
             String keyLiteral = (String)obj[0];
             String qosLiteral = (String)obj[1];
-            String sessionId = (String)obj[2];
-            SubscribeEntry subscribeEntry = new SubscribeEntry(keyLiteral, qosLiteral, sessionId, timestamp, sizeInBytes);
+            String sessionName = (String)obj[2];
+            SubscribeEntry subscribeEntry = new SubscribeEntry(keyLiteral, qosLiteral, sessionName, timestamp, sizeInBytes);
             return subscribeEntry;
          }
          catch (Exception ex) {

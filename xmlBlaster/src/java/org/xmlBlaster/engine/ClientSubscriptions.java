@@ -305,7 +305,7 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
    }
 
 
-   public void sessionWillBeRemoved(ClientEvent e) throws XmlBlasterException {
+   public void sessionPreRemoved(ClientEvent e) throws XmlBlasterException {
    }
 
    /**
@@ -339,7 +339,6 @@ public class ClientSubscriptions implements I_ClientListener, I_SubscriptionList
    {
       log.warn(ME, "Ignoring SubjectInfo added event for client " + e.getSubjectInfo().toString());
    }
-
 
    /**
     * Event invoked on deleted SubjectInfo. 

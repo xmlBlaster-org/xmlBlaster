@@ -188,24 +188,42 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
    }
 
 
+   public void testPersitentSession() {
+      testPersitentSession(true);
+      testPersitentSession(false);
+   }
+
    /**
     * TEST: <br />
     */
-   public void testPersitentSession() {
+   public void testPersitentSession(boolean doStop) {
       //doSubscribe(); -> see reachedAlive()
       log.info(ME, "Going to publish " + numPublish + " messages, xmlBlaster will be down for message 3 and 4");
       doSubscribe();
       for (int i=0; i<numPublish; i++) {
          try {
             if (i == numStop) { // 3
-               log.info(ME, "Stopping xmlBlaster, but continue with publishing ...");
-               EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
-               this.serverThread = null;
+               if (doStop) {
+                  log.info(ME, "Stopping xmlBlaster, but continue with publishing ...");
+                  EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
+                  this.serverThread = null;
+               }
+               else {
+                  log.info(ME, "changing run level but continue with publishing ...");
+                  this.serverThread.changeRunlevel("1", true);
+               }
             }
             if (i == numStart) {
-               log.info(ME, "Starting xmlBlaster again, expecting the previous published two messages ...");
-               serverThread = EmbeddedXmlBlaster.startXmlBlaster(serverPort);
-               log.info(ME, "xmlBlaster started, waiting on tail back messsages");
+               if (doStop) {
+                  log.info(ME, "Starting xmlBlaster again, expecting the previous published two messages ...");
+                  serverThread = EmbeddedXmlBlaster.startXmlBlaster(serverPort);
+                  log.info(ME, "xmlBlaster started, waiting on tail back messsages");
+               }
+               else {
+                  log.info(ME, "changing runlevel again to runlevel 9. Expecting the previous published two messages ...");
+                  this.serverThread.changeRunlevel("9", true);
+                  log.info(ME, "xmlBlaster runlevel 9 reached, waiting on tail back messsages");
+               }
                
                // Message-4 We need to wait until the client reconnected (reconnect interval)
                // Message-5
