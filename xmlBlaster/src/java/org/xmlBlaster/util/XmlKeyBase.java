@@ -110,7 +110,7 @@ public class XmlKeyBase
 
    /** The domain attribute, can be used to classify the message for simple clustering */
    public static final String DEFAULT_domain = "";
-   protected String domain = null;
+   protected String domain = null; // set first to null to force parsing
 
    /** IP address to generate unique oid */
    private static String ip_addr = null; // jacorb.util.Environment.getProperty("OAIAddr");
@@ -300,7 +300,7 @@ public class XmlKeyBase
    /**
     * Access the domain for this message, can be used for a simple grouping of
     * messages to their master node with xmlBlaster clusters. 
-    * @return The domain, any choosen string in your problem domain, e.g. "RUGBY" or "RADAR_TRACK"
+    * @return The domain, any chosen string in your problem domain, e.g. "RUGBY" or "RADAR_TRACK"
     *         defaults to "" where the local xmlBlaster instance is the master of the message.
     * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/cluster.html">The cluster requirement</a>
     */
@@ -314,6 +314,17 @@ public class XmlKeyBase
       }
       loadDomTree();
       return domain;
+   }
+
+   /**
+    * @return true if no domain is given (null or empty string). 
+    */
+   public boolean isDefaultDomain() throws XmlBlasterException
+   {
+      String domain = getDomain();
+      if (domain == null || domain.equals(DEFAULT_domain))
+         return true;
+      return false;
    }
 
    /**
