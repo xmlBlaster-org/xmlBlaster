@@ -9,10 +9,9 @@ package org.xmlBlaster.engine.admin.extern;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
-import org.xmlBlaster.engine.MessageUnitWrapper;
+import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.admin.CommandManager;
 import org.xmlBlaster.engine.admin.I_ExternGateway;
-import org.xmlBlaster.authentication.SessionInfo;
 
 //!!!  import SNMP subagent specific classes here !!!
 
@@ -83,7 +82,20 @@ public final class SnmpGateway implements I_ExternGateway // , SnmpInterface ?
 
          if (log.TRACE) log.trace(ME, "Invoking SNMP cmd=" + cmd + " as query=" + query);
 
-         return manager.get(query);
+         MessageUnit[] msgs = manager.get(query);
+         if (msgs.length == 0)
+            return "NOT FOUND";
+         else {
+            String retValue = "";
+            for (int ii=0; ii<msgs.length; ii++) {
+               MessageUnit msg = msgs[ii];
+               if (msg.getQos().startsWith("text/plain")) {
+                  retValue = msg.getContentStr() + ", "; // How to handle multi return with SNMP ???
+                  // msg.getXmlKey() and msg.getContentStr() contain the data
+               }
+            }
+            return retValue;
+         }
       }
       catch (XmlBlasterException e) {
          if (log.TRACE) log.trace(ME+".SNMP", e.toString());

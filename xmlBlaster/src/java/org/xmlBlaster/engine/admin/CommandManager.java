@@ -10,8 +10,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.RunlevelManager;
-import org.xmlBlaster.engine.MessageUnitWrapper;
-import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.I_RunlevelListener;
 import org.xmlBlaster.authentication.SessionInfo;
 
@@ -123,9 +122,9 @@ public final class CommandManager implements I_RunlevelListener
    } 
 
    /**
-    * @return The found data or an empty string if not found. 
+    * @return The found data or an array of size 0 if not found. 
     */
-   public synchronized final String get(String cmd) throws XmlBlasterException {
+   public synchronized final MessageUnit[] get(String cmd) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "get(" + cmd + ")");
       if (cmd == null || cmd.length() < 1)
          throw new IllegalArgumentException("Please pass a command which is not null");
@@ -140,8 +139,39 @@ public final class CommandManager implements I_RunlevelListener
             throw new XmlBlasterException(ME, "Sorry can't process your command '" + cmd + "', the third level '" + w.getThirdLevel() + "' has no registered handler (key=" + key + ")");
          }
          I_CommandHandler handler = (I_CommandHandler)obj;
-         String ret = handler.get(w);
-         return (ret==null) ? "<qos><state id='NOT_FOUND' info='" + w.getCommand() + " has no results.'/></qos>" : ret;
+         MessageUnit[] ret = handler.get(w);
+         if (ret == null) ret = new MessageUnit[0];
+         return ret;
+         //return (ret==null) ? "<qos><state id='NOT_FOUND' info='" + w.getCommand() + " has no results.'/></qos>" : ret;
+      }
+      catch (XmlBlasterException e) {
+         throw e;
+      }
+      catch (Throwable e) {
+         e.printStackTrace();
+         throw new XmlBlasterException(ME+".InternalError", e.toString());
+      }
+   }
+
+   /**
+    * @return The return status or null if not set. 
+    */
+   public synchronized final String set(String cmd) throws XmlBlasterException {
+      if (log.CALL) log.call(ME, "set(" + cmd + ")");
+      if (cmd == null || cmd.length() < 1)
+         throw new IllegalArgumentException("Please pass a command which is not null");
+      try {
+         CommandWrapper w = new CommandWrapper(glob, cmd);
+         String key = w.getThirdLevel();
+         if (w.getThirdLevel().startsWith("?")) {
+            key = "DEFAULT";  // One handler needs to register itself with "DEFAULT"
+         }
+         Object obj = handlerMap.get(key);
+         if (obj == null) {
+            throw new XmlBlasterException(ME, "Sorry can't process your command '" + cmd + "', the third level '" + w.getThirdLevel() + "' has no registered handler (key=" + key + ")");
+         }
+         I_CommandHandler handler = (I_CommandHandler)obj;
+         return handler.set(w);
       }
       catch (XmlBlasterException e) {
          throw e;

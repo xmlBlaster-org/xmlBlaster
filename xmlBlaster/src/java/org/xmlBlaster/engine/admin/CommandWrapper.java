@@ -180,6 +180,17 @@ public final class CommandWrapper
    }
 
    /**
+    * @return The original command, with added absolute path if the original was relative
+    *         and stripped "=bla" at the end.
+    */
+   public final String getCommandStripAssign() throws XmlBlasterException {
+      int equalsIndex = cmd.lastIndexOf("=");
+      if (equalsIndex < 1 || cmd.length() <= (equalsIndex+1))
+         throw new XmlBlasterException(ME, "Invalid command '" + cmd + "', can't find assignment '='");
+      return cmd.substring(0,equalsIndex).trim();
+   }
+
+   /**
     * Dump state of this object into a XML ASCII string.
     */
    public final String toXml() {

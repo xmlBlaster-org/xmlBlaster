@@ -7,9 +7,11 @@ Comment:   Implementation for administrative property access
 package org.xmlBlaster.engine.admin.intern;
 
 import org.jutils.log.LogChannel;
+import org.jutils.JUtilsException;
 import org.xmlBlaster.util.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.admin.I_CommandHandler;
 import org.xmlBlaster.engine.admin.CommandManager;
 import org.xmlBlaster.engine.admin.CommandWrapper;
@@ -98,24 +100,93 @@ final public class PropertyHandler implements I_CommandHandler, I_Plugin {
     * @return "key=value" or null if not found, e.g. "/node/heron/sysprop/?user.home=/home/joe"
     * @see org.xmlBlaster.engine.admin.I_CommandHandler#get(CommandWrapper)
     */
-   public synchronized String get(CommandWrapper cmd) throws XmlBlasterException {
+   public synchronized MessageUnit[] get(CommandWrapper cmd) throws XmlBlasterException {
       if (cmd == null)
          throw new XmlBlasterException(ME, "Please pass a command which is not null");
       if (cmd.getTail() == null)
-         throw new XmlBlasterException(ME, "Please pass a command which has a valid property added, '" + cmd + "' is too short, aborted request.");
+         throw new XmlBlasterException(ME, "Please pass a command which has a valid property added, '" + cmd.getCommand() + "' is too short, aborted request.");
 
       String cmdString = cmd.getTail().trim();
       if (cmdString.startsWith("?"))
          cmdString = cmdString.substring(1);
 
-      String ret = glob.getProperty().get(cmdString, (String)null);
+      String ret = null;
+
+      if (isLogLevelRequest(cmdString)) {
+         ret = ""+glob.getLogLevel(cmdString);
+         if (log.TRACE) log.trace(ME, "Checking log level '" + cmdString + "', is " + ret);
+      }
+      else
+         ret = glob.getProperty().get(cmdString, (String)null);
+
       log.info(ME, "Found for cmd " + cmdString + "=" + ret);
       if (ret == null)
-         return null;
-      else
-         return cmd.getCommand() + "=" + ret;
+         return new MessageUnit[0];
+      else {
+         MessageUnit[] msgs = new MessageUnit[1];
+         msgs[0] = new MessageUnit(cmd.getCommand(), ret.getBytes(), "text/plain");
+         return msgs;
+      }
    }
 
+   /**
+    * @return The new value set, it can be different to the passed value for example if ${} replacement occured
+    */
+   public String set(CommandWrapper cmd) throws XmlBlasterException {
+      if (cmd == null)
+         throw new XmlBlasterException(ME, "Please pass a command which is not null");
+      if (cmd.getTail() == null)
+         throw new XmlBlasterException(ME, "Please pass a command which has a valid property added, '" + cmd.getCommand() + "' is too short, aborted request.");
+
+      String cmdString = cmd.getTail().trim();
+      if (cmdString.startsWith("?"))
+         cmdString = cmdString.substring(1);
+
+      int equalsIndex = cmdString.lastIndexOf("=");
+      if (equalsIndex < 1 || cmdString.length() <= (equalsIndex+1))
+         throw new XmlBlasterException(ME, "Invalid command '" + cmd.getCommand() + "', don't know what to set with your request");
+
+      String key = cmdString.substring(0,equalsIndex).trim();
+      String value = cmdString.substring(equalsIndex+1);
+         
+      if (isLogLevelRequest(key)) {
+         boolean bool = glob.changeLogLevel(key, value.trim());
+         log.info(ME, "Changed log level '" + key + "' to " + bool);
+         return ""+bool;
+      }
+      else {
+         try {
+            String ret = glob.getProperty().set(key, value);
+            log.info(ME, "Changed property '" + key + "' to " + ret);
+            return ret;
+         }
+         catch (JUtilsException e) {
+            throw new XmlBlasterException(e.id, e.reason);
+         }
+      }
+   }
+
+   private boolean isLogLevelRequest(String cmdString) {
+      if (cmdString == null) return false;
+      cmdString = cmdString.toUpperCase();
+      if (cmdString.startsWith("ERROR"))
+         return true;
+      else if (cmdString.startsWith("WARN"))
+         return true;
+      else if (cmdString.startsWith("INFO"))
+         return true;
+      else if (cmdString.startsWith("CALL"))
+         return true;
+      else if (cmdString.startsWith("TIME"))
+         return true;
+      else if (cmdString.startsWith("TRACE"))
+         return true;
+      else if (cmdString.startsWith("DUMP"))
+         return true;
+      else if (cmdString.startsWith("PLAIN"))
+         return true;
+      return false;
+   }
 
    public String help() {
       return "Administration of properties from system, xmlBlaster.properties and command line";

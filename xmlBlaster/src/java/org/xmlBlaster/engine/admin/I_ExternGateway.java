@@ -6,12 +6,9 @@ Comment:   Interface to hide extern gateway implementations
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.admin;
 
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
-import org.xmlBlaster.engine.cluster.ClusterManager;
-
-import java.util.Set;
+import org.xmlBlaster.engine.helper.MessageUnit;
 
 /**
  * Interface to allow different external gateway implementations. 

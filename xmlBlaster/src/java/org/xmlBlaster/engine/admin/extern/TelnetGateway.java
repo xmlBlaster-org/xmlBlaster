@@ -9,8 +9,9 @@ package org.xmlBlaster.engine.admin.extern;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
-import org.xmlBlaster.engine.MessageUnitWrapper;
+import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.admin.CommandManager;
+import org.xmlBlaster.engine.admin.CommandWrapper;
 import org.xmlBlaster.engine.admin.I_ExternGateway;
 import org.xmlBlaster.authentication.SessionInfo;
 
@@ -37,6 +38,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway
    private CommandManager manager;
    private int port;
    private RemoteServer rs = null;
+   private final String CRLF = "\r\n";
 
    /**
     * Creates the remote console server. 
@@ -118,24 +120,38 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway
          if (log.TRACE) log.trace(ME, "Invoking cmdType=" + cmdType + " query=" + query + " from '" + cmd + "'");
 
          if (cmdType.trim().equalsIgnoreCase("GET")) {
-            return manager.get(query) + "\r\n";
+            MessageUnit[] msgs = manager.get(query);
+            if (msgs.length == 0) return "NO ENTRY FOUND: " + cmd + CRLF;
+            StringBuffer sb = new StringBuffer(msgs.length * 40);
+            for (int ii=0; ii<msgs.length; ii++) {
+               MessageUnit msg = msgs[ii];
+               if (msg.getQos().startsWith("text/plain"))
+                  sb.append(msg.getXmlKey()).append("=").append(msg.getContentStr()).append(CRLF);
+            }
+            return sb.toString() + CRLF;
+         }
+         else if (cmdType.trim().equalsIgnoreCase("SET")) {
+            String ret = manager.set(query);
+            CommandWrapper w = new CommandWrapper(glob, cmd); // To have the nicer query (not performing, should be passed from CommandManager back as well?)
+            if (ret == null) return "NO ENTRY SET: " + cmd + CRLF;
+            return w.getCommandStripAssign() + "=" + ret + CRLF;
          }
          else if (cmdType.trim().equalsIgnoreCase("HELP")) {
             return help(query);
          }
          else {
             return null;
-            //return getErrorText("Ignoring unknown command '" + cmdType + "' of '" + cmd + "'\r\n");
+            //return getErrorText("Ignoring unknown command '" + cmdType + "' of '" + cmd + "'" + CRLF);
          }
       }
       catch (XmlBlasterException e) {
          if (log.TRACE) log.trace(ME+".telnet", e.toString());
-         return e.toString();
+         return CRLF + e.toString() + CRLF + CRLF;
       }
    }
 
    private final String getErrorText(String error) {
-      String text = "ERROR-XmlBlaster telnet server: " + error + "\r\nTry a 'get sysprop/?user.home' or just 'help'\r\n\r\nCMD>";
+      String text = "ERROR-XmlBlaster telnet server: " + error + CRLF + "Try a 'get sysprop/?user.home' or 'set sysprop/?trace[core]=true' or just 'help'" + CRLF + CRLF + "CMD> ";
       log.info(ME, error);
       return text;
    }
@@ -144,7 +160,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway
     * Enforced by "remotecons.CommandHandlerIfc"
     */
    public String help() {
-      return "\r\nXmlBlaster telnet administration, see http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.telnet.html\r\n";
+      return CRLF + "XmlBlaster telnet administration, see http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.telnet.html" + CRLF;
    }
    /**
     * Enforced by "remotecons.CommandHandlerIfc"

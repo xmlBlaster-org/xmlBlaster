@@ -10,6 +10,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.admin.I_CommandHandler;
 import org.xmlBlaster.engine.admin.CommandManager;
 import org.xmlBlaster.engine.admin.CommandWrapper;
@@ -108,7 +109,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
     * @return "key=value" or null if not found, e.g. "/node/heron/sysprop/?user.home=/home/joe"
     * @see org.xmlBlaster.engine.admin.I_CommandHandler#get(CommandWrapper)
     */
-   public synchronized String get(CommandWrapper cmd) throws XmlBlasterException {
+   public synchronized MessageUnit[] get(CommandWrapper cmd) throws XmlBlasterException {
       if (cmd == null)
          throw new XmlBlasterException(ME, "Please pass a command which is not null");
 
@@ -120,7 +121,9 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
          // for example "/node/heron/?freeMem"
          String ret = ""+getInvoke(client.substring(1), glob.getRequestBroker(), I_AdminNode.class);
          log.info(ME, "Retrieved " + cmd.getCommand() + "=" + ret);
-         return cmd.getCommand() + "=" + ret;
+         MessageUnit[] msgs = new MessageUnit[1];
+         msgs[0] = new MessageUnit(cmd.getCommand(), ret.getBytes(), "text/plain");
+         return msgs;
       }
 
       String loginName = cmd.getUserNameLevel();
@@ -139,7 +142,9 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
          // for example "/node/heron/joe/?uptime"
          String ret = ""+getInvoke(pubSessionId.substring(1), subjectInfo, I_AdminSubject.class);
          log.info(ME, "Retrieved " + cmd.getCommand() + "=" + ret);
-         return cmd.getCommand() + "=" + ret;
+         MessageUnit[] msgs = new MessageUnit[1];
+         msgs[0] = new MessageUnit(cmd.getCommand(), ret.getBytes(), "text/plain");
+         return msgs;
       }
 
       String sessionAttr = cmd.getSessionAttrLevel();
@@ -153,24 +158,17 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
             throw new XmlBlasterException(ME, "The public session ID '" + pubSessionId + "' in '" + cmd.getCommand() + "' is unknown.");
          String ret = ""+getInvoke(sessionAttr.substring(1), sessionInfo, I_AdminSession.class);
          log.info(ME, "Retrieved " + cmd.getCommand() + "=" + ret);
-         return cmd.getCommand() + "=" + ret;
+         MessageUnit[] msgs = new MessageUnit[1];
+         msgs[0] = new MessageUnit(cmd.getCommand(), ret.getBytes(), "text/plain");
+         return msgs;
       }
 
       log.info(ME, cmd.getCommand() + " not implemented");
-      return null;
+      return new MessageUnit[0];
+   }
 
-      /*
-      String cmdString = cmd.getTail().trim();
-      if (cmdString.startsWith("?"))
-         cmdString = cmdString.substring(1);
-
-      String ret = glob.getCore().get(cmdString, (String)null);
-      log.info(ME, "Found for cmd " + cmdString + "=" + ret);
-      if (ret == null)
-         return null;
-      else
-         return cmd.getCommand() + "=" + ret;
-      */
+   public String set(CommandWrapper cmd) throws XmlBlasterException {
+      throw new XmlBlasterException(ME, "Sorry, set access on core is not implemented");
    }
 
    /**

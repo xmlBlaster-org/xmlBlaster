@@ -6,12 +6,9 @@ Comment:   Interface to hide command handling code
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.admin;
 
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
-import org.xmlBlaster.engine.cluster.ClusterManager;
-
-import java.util.Set;
+import org.xmlBlaster.engine.helper.MessageUnit;
 
 /**
  * Interface to allow different command processing implementations. 
@@ -34,11 +31,26 @@ public interface I_CommandHandler {
     * Your plugin should process the command. 
     * <p />
     * @param cmd The command to process
-    * @return Always string, binary data must be encoded (for XML base64), the key=value of the property
-    *         or null if not found
+    * @return An array of MessageUnit object:
+    *       <ul>
+    *         <li>Internal message are delivered as is, please don't manipulate them</li>
+    *         <li>System properties and internal state queries are marked with msgUnit.getQos() == "text/plain"
+    *             and the key contains the plain key and the content the plain value. The MessageUnit
+    *             is just misused to carry the key/value data.
+    *         </li>
+    *       </ul>
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.commands.html">command requirement</a>
     */
-   public String get(CommandWrapper cmd) throws XmlBlasterException;
+   public MessageUnit[] get(CommandWrapper cmd) throws XmlBlasterException;
+
+   /**
+    * Your plugin should process the set command. 
+    * <p />
+    * @param cmd The command to process, e.g. ?trace=true
+    * @return null if not set
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.commands.html">command requirement</a>
+    */
+   public String set(CommandWrapper cmd) throws XmlBlasterException;
 
    public String help();
 
