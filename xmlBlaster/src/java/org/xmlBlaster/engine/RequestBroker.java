@@ -221,6 +221,10 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
       return this.accessPluginManager;
    }
 
+   public final PublishPluginManager getPublishPluginManager() {
+      return this.publishPluginManager;
+   }
+
    /**
     * The cluster may access an internal session to publish its received messages. 
     * AWARE: The clusterManager is responsible for the security as it call directly
@@ -458,7 +462,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
       try {
          if (log.CALL) log.call(ME, "Entering subscribe(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "') from client '" + sessionInfo.getLoginName() + "' ...");
 
-         if (xmlKey.isInternalStateQuery()) {
+         if (xmlKey.isInternalMsg()) {
             updateInternalStateInfo(unsecureSessionInfo); // TODO!!! only login/logout events, but mem not subscribeable
          }
 
@@ -552,7 +556,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
          if (log.CALL) log.call(ME, "Entering get(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "') ...");
 
          // Note: Internal messages are currently not checkable with the mime access filter
-         if (xmlKey.isInternalStateQuery())
+         if (xmlKey.isInternalMsg())
             updateInternalStateInfo(unsecureSessionInfo);
 
          if (xmlKey.getKeyOid().equals(Constants.JDBC_OID/*"__sys__jdbc"*/)) { // Query RDBMS !!! hack, we need a general service interface
@@ -1045,58 +1049,68 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
             boolean contentChanged = true;
             {
                if (log.TRACE) log.trace(ME, "Handle the new arrived Pub/Sub message ...");
-               boolean messageExisted = false; // to shorten the synchronize block
+               boolean messageExisted = true; // to shorten the synchronize block
 
                synchronized(messageContainerMap) {
                   Object obj = messageContainerMap.get(xmlKey.getUniqueKey());
+                  MessageUnitWrapper msgUnitWrapper = null;
                   if (obj == null) {
-                     MessageUnitWrapper msgUnitWrapper = new MessageUnitWrapper(this, xmlKey, msgUnit, publishQos);
-
-                     if (useCluster) { // cluster support - forward message to master
-                        if (!isClusterUpdate) { // updates from other nodes are arriving here in publish as well
-                           try {
-                              PublishRetQos ret = glob.getClusterManager().forwardPublish(sessionInfo, msgUnitWrapper);
-                              //Thread.currentThread().dumpStack();
-                              if (ret != null) return ret.toXml();
-                           }
-                           catch (XmlBlasterException e) {
-                              if (e.id.equals("ClusterManager.PluginFailed")) {
-                                 useCluster = false;
-                              }
-                              else {
-                                 e.printStackTrace();
-                                 throw e;
-                              }
-                           }
-                        }
-                     }
-                     
-                     msgUnitHandler = new MessageUnitHandler(this, xmlKey, msgUnitWrapper);
-                     messageContainerMap.put(xmlKey.getUniqueKey(), msgUnitHandler);
+                     messageExisted = false;
+                     msgUnitWrapper = new MessageUnitWrapper(this, xmlKey, msgUnit, publishQos);
                   }
                   else {
                      msgUnitHandler = (MessageUnitHandler)obj;
+                  }
 
-                     if (useCluster) { // cluster support - forward message to master
-                        if (!isClusterUpdate) {
-                           MessageUnitWrapper msgUnitWrapper = new MessageUnitWrapper(this, xmlKey, msgUnit, publishQos);
-                           try {
-                              PublishRetQos ret = glob.getClusterManager().forwardPublish(sessionInfo, msgUnitWrapper);
-                              //Thread.currentThread().dumpStack();
-                              if (ret != null) return ret.toXml();
+
+                  // Check if a publish filter is installed and if so invoke it ...
+                  if (getPublishPluginManager().hasPlugins() && !isClusterUpdate) {
+                     Map mimePlugins = getPublishPluginManager().findMimePlugins(xmlKey.getContentMime(),xmlKey.getContentMimeExtended());
+                     if (mimePlugins != null) {
+                        Iterator iterator = mimePlugins.values().iterator();
+                        if (msgUnitWrapper == null)
+                           msgUnitWrapper = new MessageUnitWrapper(this, xmlKey, msgUnit, publishQos);
+                        // note that msgUnitWrapper.getMessageUnitHandler() is not allowed (is null)
+                        while (iterator.hasNext()) {
+                           I_PublishFilter plugin = (I_PublishFilter)iterator.next();
+                           String ret = plugin.intercept(sessionInfo.getSubjectInfo(), msgUnitWrapper);
+                           if (ret == null || ret.length() == 0 || ret.equals(Constants.STATE_OK))
+                              break;
+                           else
+                              return "<qos><state id='" + ret + "'/></qos>";  // Message is rejected by PublishPlugin
+                        }
+                     }
+                  }
+
+
+                  // cluster support - forward message to master ...
+                  if (useCluster) {
+                     if (!isClusterUpdate) { // updates from other nodes are arriving here in publish as well
+                        if (msgUnitWrapper == null)
+                           msgUnitWrapper = new MessageUnitWrapper(this, xmlKey, msgUnit, publishQos);
+                        // note that msgUnitWrapper.getMessageUnitHandler() is not allowed (is null)
+                        try {
+                           PublishRetQos ret = glob.getClusterManager().forwardPublish(sessionInfo, msgUnitWrapper);
+                           //Thread.currentThread().dumpStack();
+                           if (ret != null) return ret.toXml();
+                        }
+                        catch (XmlBlasterException e) {
+                           if (e.id.equals("ClusterManager.PluginFailed")) {
+                              useCluster = false;
                            }
-                           catch (XmlBlasterException e) {
-                              if (e.id.equals("ClusterManager.PluginFailed")) {
-                                 useCluster = false;
-                              }
-                              else
-                                 throw e;
+                           else {
+                              e.printStackTrace();
+                              throw e;
                            }
                         }
                      }
-
-                     messageExisted = true;
                   }
+                     
+                  if (msgUnitHandler == null)
+                     msgUnitHandler = new MessageUnitHandler(this, xmlKey, msgUnitWrapper);
+
+                  if (!messageExisted)
+                     messageContainerMap.put(xmlKey.getUniqueKey(), msgUnitHandler);
                }
 
                boolean isYetUnpublished = !msgUnitHandler.isPublishedWithData(); // remember here as it may be changed in setContent()
@@ -1135,6 +1149,26 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
             if (log.DUMP) log.dump(ME, publishQos.toXml());
 
             MessageUnitWrapper msgUnitWrapper = new MessageUnitWrapper(this, xmlKey, msgUnit, publishQos);
+
+            // Check if a publish filter is installed and if so invoke it ...
+            if (getPublishPluginManager().hasPlugins() && !isClusterUpdate) {
+               Map mimePlugins = getPublishPluginManager().findMimePlugins(xmlKey.getContentMime(),xmlKey.getContentMimeExtended());
+               if (mimePlugins != null) {
+                  Iterator iterator = mimePlugins.values().iterator();
+                  if (msgUnitWrapper == null)
+                     msgUnitWrapper = new MessageUnitWrapper(this, xmlKey, msgUnit, publishQos);
+                  // note that msgUnitWrapper.getMessageUnitHandler() is not allowed (is null)
+                  while (iterator.hasNext()) {
+                     I_PublishFilter plugin = (I_PublishFilter)iterator.next();
+                     String ret = plugin.intercept(sessionInfo.getSubjectInfo(), msgUnitWrapper);
+                     if (ret == null || ret.length() == 0 || ret.equals(Constants.STATE_OK))
+                        break;
+                     else
+                        return "<qos><state id='" + ret + "'/></qos>";  // Message is rejected by PublishPlugin
+                  }
+               }
+            }
+
             Vector destinationVec = publishQos.getDestinations(); // !!! add XPath client query here !!!
 
             //-----    Send message to every destination client
