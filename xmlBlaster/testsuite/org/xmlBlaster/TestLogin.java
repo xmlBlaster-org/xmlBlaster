@@ -3,7 +3,7 @@ Name:      TestLogin.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestLogin.java,v 1.4 2000/01/15 15:22:17 ruff Exp $
+Version:   $Id: TestLogin.java,v 1.5 2000/01/30 18:42:29 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -57,8 +57,9 @@ public class TestLogin extends TestCase implements I_Callback
    /**
     * Constructs the TestLogin object.
     * <p />
-    * @param testName  The name used in the test suite
-    * @param loginName The name to login to the xmlBlaster
+    * @param testName   The name used in the test suite
+    * @param loginName  The name to login to the xmlBlaster
+    * @param secondName The name to login to the xmlBlaster again
     */
    public TestLogin(String testName, String senderName, String secondName)
    {
@@ -164,14 +165,18 @@ public class TestLogin extends TestCase implements I_Callback
     * TEST: Construct a message and publish it.
     * <p />
     * The returned publishOid is checked
+    * @param ptp Use the Point to Point style
     */
-   public void testPublish()
+   public void testPublish(boolean ptp)
    {
       if (Log.TRACE) Log.trace(ME, "Publishing a message ...");
 
       numReceived = 0;
+      String qos = "<qos></qos>";
+      if (ptp)
+         qos = "<qos>\n<destination>\n" + secondName + "\n</destination>\n</qos>";
       try {
-         publishOid = xmlBlaster.publish(messageUnit, "<qos></qos>");
+         publishOid = xmlBlaster.publish(messageUnit, qos);
          assertEquals("oid is different", oid, publishOid);
       } catch(XmlBlasterException e) {
          Log.warning(ME+"-testPublish", "XmlBlasterException: " + e.reason);
@@ -192,12 +197,17 @@ public class TestLogin extends TestCase implements I_Callback
       // test ordinary login
       numReceived = 0;
       testSubscribeXPath();
-      testPublish();
+      testPublish(false);
       waitOnUpdate(1000L, 1);              // message arrived?
 
       // login again, without logout
       setUp();
-      testPublish();
+      testPublish(true);                   // sending directly PtP to 'receiver'
+      waitOnUpdate(1000L, 1);              // message arrived?
+
+      // login again, without logout
+      setUp();
+      testPublish(false);
       try { Thread.currentThread().sleep(1000L); } catch (Exception e) { } // wait a second
       assertEquals("Didn't expect an update", 0, numReceived);
       numReceived = 0;
@@ -310,6 +320,7 @@ public class TestLogin extends TestCase implements I_Callback
     */
    public static void main(String args[])
    {
+      Log.setLogLevel(args);
       TestLogin testSub = new TestLogin("TestLogin", "Tim", "Joe");
       testSub.setUp();
       testSub.testLoginLogout();
