@@ -83,7 +83,7 @@
          </tr>
 
          <tr>
-            <td>recorder.detroyOld</td>
+            <td>recorder.destroyOld</td>
             <td>false</td>
             <td>If a file based plugin is configured you can configure to destroy
                 old messages on client restart.
@@ -113,7 +113,7 @@
    <see type="API">org.xmlBlaster.client.protocol.XmlBlasterConnection</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 02 24</date>
-   <revision>$Revision: 1.10 $</revision>
+   <revision>$Revision: 1.11 $</revision>
    <testcase status="CLOSED">
       <name>ruff@swand.lake.de</name>
       <comment>

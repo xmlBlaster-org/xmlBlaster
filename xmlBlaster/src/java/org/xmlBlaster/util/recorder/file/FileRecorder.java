@@ -97,9 +97,9 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
       try {
          this.rb = new FileIO(glob, fileName, new MsgDataHandler(glob), maxEntries, useSync);
          if (rb.getNumUnread() > 0) {
-            boolean destroyOld = glob.getProperty().get("recorder.detroyOld", false);
+            boolean destroyOld = glob.getProperty().get("recorder.destroyOld", false);
             if (destroyOld) {
-               log.warn(ME, "Destroyed " + rb.getNumUnread() + " unprocessed tail back messages in '" + fileName + "' as requested with option 'recorder.detroyOld=true'.");
+               log.warn(ME, "Destroyed " + rb.getNumUnread() + " unprocessed tail back messages in '" + fileName + "' as requested with option 'recorder.destroyOld=true'.");
                rb.destroy();
                rb.initialize();
             }
