@@ -22,7 +22,7 @@ public class XBTextMessage extends XBMessage implements TextMessage {
 
    private final static String ME = "XBTextMessage";
 
-   XBTextMessage(Global global, MsgKeyData key, byte[] content, MsgQosData qos) {
+   public XBTextMessage(Global global, MsgKeyData key, byte[] content, MsgQosData qos) {
       super(global, key, content, qos, XBMessage.TEXT);
    }
    
@@ -31,6 +31,7 @@ public class XBTextMessage extends XBMessage implements TextMessage {
    }
 
    public void setText(String text) throws JMSException {
-      this.content = text.getBytes();
+      if (text == null) this.content = null;
+      else this.content = text.getBytes();
    }
 }

@@ -21,7 +21,6 @@ import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
 import org.xmlBlaster.util.qos.storage.MsgUnitStoreProperty;
 
 import java.util.ArrayList;
-import java.util.Map;
 
 import org.xml.sax.*;
 
@@ -137,7 +136,8 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
    private boolean sendRemainingLife = true;
 
    private String clientPropertyKey;
-
+   private String clientPropertyType;
+   
    /**
     * Can be used as singleton. 
     */
@@ -556,6 +556,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
 
       if (name.equalsIgnoreCase("clientProperty")) {
          this.clientPropertyKey = attrs.getValue("name");
+         this.clientPropertyType = attrs.getValue("type");
          character.setLength(0);
          return;
       }
@@ -742,9 +743,11 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       }
       if (name.equalsIgnoreCase("clientProperty")) {
          String tmp = character.toString().trim();
-         if (tmp.length() > 0 || this.clientPropertyKey != null)
-            this.msgQosData.setClientProperty(this.clientPropertyKey, tmp);
-         this.clientPropertyKey = null;   
+         if (tmp.length() > 0 || this.clientPropertyKey != null) {
+            this.msgQosData.setClientProperty(this.clientPropertyKey, MsgQosData.getPropertyObject(this.clientPropertyType, tmp));
+         }
+         this.clientPropertyKey = null;
+         this.clientPropertyType = null;   
          return;
       }
 
@@ -883,14 +886,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          sb.append(msgQosData.getTopicProperty().toXml(extraOffset+Constants.INDENT));
       }
 
-      Map map = msgQosData.getClientProperties();
-      if (map != null && map.size() > 0) {
-         Object[] keys = map.keySet().toArray();
-         for (int i=0; i < keys.length; i++) {
-            sb.append(offset).append(" <clientProperty name='").append((String)keys[i]).append("'>").append(map.get(keys[i])).append("</clientProperty>");
-         }
-      }
-
+      sb.append(msgQosData.writePropertiesXml(offset + " "));
       sb.append(offset).append("</qos>");
 
       if (sb.length() < 16)

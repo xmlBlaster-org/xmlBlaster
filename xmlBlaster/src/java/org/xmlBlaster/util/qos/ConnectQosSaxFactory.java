@@ -6,8 +6,6 @@ Comment:   Parsing connect QoS
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos;
 
-import java.util.Map;
-
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.qos.address.Address;
@@ -121,6 +119,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
    private ClientQueueProperty tmpProp;
    private Address tmpAddr;
    private String clientPropertyKey;
+   private String clientPropertyType;
    protected String tmpSecurityPluginType;
    protected String tmpSecurityPluginVersion;
 
@@ -335,6 +334,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
 
       if (name.equalsIgnoreCase("clientProperty")) {
          this.clientPropertyKey = attrs.getValue("name");
+         this.clientPropertyType = attrs.getValue("type");
          character.setLength(0);
          return;
       }
@@ -425,9 +425,11 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
 
       if (name.equalsIgnoreCase("clientProperty")) {
          String tmp = character.toString().trim();
-         if (tmp.length() > 0 || this.clientPropertyKey != null)
-            this.connectQosData.setClientProperty(this.clientPropertyKey, tmp);
-         this.clientPropertyKey = null;   
+         if (tmp.length() > 0 || this.clientPropertyKey != null) {
+            this.connectQosData.setClientProperty(this.clientPropertyKey, ConnectQosData.getPropertyObject(this.clientPropertyType, tmp));
+         }
+         this.clientPropertyKey = null;
+         this.clientPropertyType = null;   
          return;
       }
 
@@ -544,14 +546,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
          }
       }
 
-      Map map = data.getClientProperties();
-      if (map != null && map.size() > 0) {
-         Object[] keys = map.keySet().toArray();
-         for (int i=0; i < keys.length; i++) {
-            sb.append(offset).append(" <clientProperty name='").append((String)keys[i]).append("'>").append(map.get(keys[i])).append("</clientProperty>");
-         }
-      }
-
+      sb.append(data.writePropertiesXml(offset + " "));
       sb.append(offset).append("</qos>");
 
       return sb.toString();

@@ -362,11 +362,127 @@ public abstract class QosData implements java.io.Serializable, Cloneable
    }
    
    /**
+    * Sets the client property to the given value
+    * @param key
+    * @param value
+    */   
+   public final void setClientProperty(Object key, boolean value) {
+      this.clientProperties.put(key, new Boolean(value));
+   }
+   
+   /**
+    * Sets the client property to the given value
+    * @param key
+    * @param value
+    */   
+   public final void setClientProperty(Object key, byte value) {
+      this.clientProperties.put(key, new Byte(value));
+   }
+   
+   /**
+    * Sets the client property to the given value
+    * @param key
+    * @param value
+    */   
+   public final void setClientProperty(Object key, double value) {
+      this.clientProperties.put(key, new Double(value));
+   }
+   
+   /**
+    * Sets the client property to the given value
+    * @param key
+    * @param value
+    */   
+   public final void setClientProperty(Object key, float value) {
+      this.clientProperties.put(key, new Float(value));
+   }
+   
+   /**
+    * Sets the client property to the given value
+    * @param key
+    * @param value
+    */   
+   public final void setClientProperty(Object key, int value) {
+      this.clientProperties.put(key, new Integer(value));
+   }
+   
+   /**
+    * Sets the client property to the given value
+    * @param key
+    * @param value
+    */   
+   public final void setClientProperty(Object key, long value) {
+      this.clientProperties.put(key, new Long(value));
+   }
+   
+   /**
+    * Sets the client property to the given value
+    * @param key
+    * @param value
+    */   
+   public final void setClientProperty(Object key, short value) {
+      this.clientProperties.put(key, new Short(value));
+   }
+   
+   /**
     * @return a map containing all client properties. The return is 
     * unordered.
     */
    public final Map getClientProperties() {
       return this.clientProperties;
+   }
+
+   /**
+    * Returns the type of the object as a string
+    * @param val
+    * @return
+    */
+   public final static String getPropertyType(Object val) {
+      if (val instanceof String) return null; // default
+      if (val instanceof Boolean) return "boolean";
+      if (val instanceof Byte) return "byte";
+      if (val instanceof Double) return "double";
+      if (val instanceof Float) return "float";
+      if (val instanceof Integer) return "int";
+      if (val instanceof Long) return "long";
+      if (val instanceof Short) return "short";
+      return null; 
+   }
+
+   /**
+    * 
+    * @param type the type of the object
+    * @param val the object itself
+    * @return null if the type is unrecognized, a String object if the
+    * type is null (implicitly String) or the correct type if a mapping has been found.
+    */
+   public final static Object getPropertyObject(String type, String val) {
+      if (type == null) return val;
+      if ("boolean".equalsIgnoreCase(type)) return new Boolean(val);
+      if ("byte".equalsIgnoreCase(type)) return new Byte(val);
+      if ("double".equalsIgnoreCase(type)) return new Double(val);
+      if ("float".equalsIgnoreCase(type)) return new Float(val);
+      if ("int".equalsIgnoreCase(type)) return new Integer(val);
+      if ("short".equalsIgnoreCase(type)) return new Short(val);
+      if ("long".equalsIgnoreCase(type)) return new Long(val);
+      return null; 
+   }
+
+   
+   public final String writePropertiesXml(String offset) {
+      if (this.clientProperties.size() > 0) {
+         Object[] keys = this.clientProperties.keySet().toArray();
+         StringBuffer sb = new StringBuffer();
+         for (int i=0; i < keys.length; i++) {
+            Object value = this.clientProperties.get(keys[i]);
+            String type = getPropertyType(value);
+            sb.append(offset).append(" <clientProperty name='").append((String)keys[i]);
+            if (type != null) sb.append("' type='").append(type);
+            sb.append("'>").append(value).append("'></clientProperty>");
+         }
+         return sb.toString();
+      }
+      return "";
    }
    
 }

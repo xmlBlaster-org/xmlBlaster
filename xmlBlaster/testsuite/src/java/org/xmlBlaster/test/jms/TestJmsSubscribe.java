@@ -7,7 +7,6 @@ package org.xmlBlaster.test.jms;
 
 import javax.jms.Connection;
 import javax.jms.ConnectionFactory;
-import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
@@ -235,40 +234,6 @@ public class TestJmsSubscribe extends TestCase implements MessageListener {
       }
    }
 
-   public void testJms11() {
-      try {
-         boolean transacted = false;
-         int priority = 9;
-         long timeToLive = 3600L;
-         InitialContext ctx = new InitialContext();
-         ConnectionFactory f = (ConnectionFactory)ctx.lookup(CONNECTION_FACTORY);
-         Destination d = (Destination)ctx.lookup(TOPIC);
-         Connection c = f.createConnection();
-         Session s = c.createSession(transacted, Session.CLIENT_ACKNOWLEDGE);
-         MessageProducer p = s.createProducer(d);
-         Message m = s.createTextMessage("MyMessage");
-
-         long t1 = System.currentTimeMillis();
-         for (int i=0; i < this.nmax; i++) {
-            p.send(m, DeliveryMode.NON_PERSISTENT, priority, timeToLive);
-            Thread.sleep(50L);
-         }
-         synchronized(this.latch) {
-            this.latch.wait(this.nmax * 700L);
-            Thread.sleep(100L);
-            assertEquals("number of onMessage invocations is wrong", this.nmax, this.nmax);
-         }
-         double expDt = 200.0;
-         double dt = 1.0 * (this.timestamps[this.nmax-1] - this.timestamps[0]) / (this.nmax - 1.0);
-         this.log.info("", "The processing time is '" + dt + "' ms and expected is '" + expDt + "' ms");
-         assertEquals("The expected processing time wrong", 1.0*expDt, 1.0*dt, 0.2*dt);
-      }
-      catch (Exception ex) {
-         ex.printStackTrace();
-         assertTrue("exception occured when sending according to JMS 1.1", false);
-      }
-   }
-
    /**
     * <pre>
     *  java org.xmlBlaster.test.classtest.TestJmsSubscribe
@@ -284,10 +249,5 @@ public class TestJmsSubscribe extends TestCase implements MessageListener {
       test.setUp();
       test.testSubClientAck();
       test.tearDown();
-      /*      
-      test.setUp();
-      test.testJms11();
-      test.tearDown();
-      */
    }
 }

@@ -12,6 +12,7 @@ import javax.jms.DeliveryMode;
 import javax.jms.Destination;
 import javax.jms.JMSException;
 import javax.jms.Message;
+import javax.jms.MessageNotWriteableException;
 import javax.jms.Queue;
 import javax.jms.Topic;
 
@@ -32,7 +33,6 @@ import org.xmlBlaster.util.qos.MsgQosData;
  * 
  */
 public class XBMessage implements Message { 
-// TextMessage, ObjectMessage {
 
    public final static int TEXT   = 0;
    public final static int BYTES  = 1;
@@ -40,7 +40,6 @@ public class XBMessage implements Message {
    public final static int MAP    = 3;
    public final static int STREAM = 4;
    public final static int DEFAULT_TYPE = XBMessage.STREAM;
-   
    
    private final static String ME = "XBMessage";
    protected Global global;
@@ -51,8 +50,11 @@ public class XBMessage implements Message {
    protected int type;
    protected boolean deliveryModeSet, prioritySet, timeToLiveSet, destinationSet;
    protected boolean acknowledged;
+   protected boolean readOnly;
+   protected boolean writeOnly;
+   private boolean propertyReadOnly;
    
-   XBMessage(Global global, MsgKeyData key, byte[] content, MsgQosData qos, int type) {
+   public XBMessage(Global global, MsgKeyData key, byte[] content, MsgQosData qos, int type) {
       this.global = global;
       this.log = this.global.getLog("jms");
       this.qos = qos;
@@ -62,6 +64,11 @@ public class XBMessage implements Message {
       if (this.key == null) this.key = new MsgKeyData(this.global);
       this.type = type;
       this.qos.setClientProperty("jmsMessageType", "" + this.type);
+      if (this.content == null) this.writeOnly = true;
+      else {
+         this.readOnly = true;
+         this.propertyReadOnly = true;
+      } 
    }
 
    boolean isAcknowledged() {
@@ -72,16 +79,31 @@ public class XBMessage implements Message {
       this.acknowledged = acknowledged;
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.Message#acknowledge()
-    */
    synchronized public void acknowledge() throws JMSException {
       this.acknowledged = true;
       this.notify();
    }
 
+   /**
+    * Checks if the properties are readonly. If yes, then an exception is 
+    * thrown 
+    * Also checks if the key is null or empty in which case it throws
+    * an IllegalArgumentException is thrown
+    * @param methodName
+    * @param key
+    * @throws MessageNotWriteableException
+    */
+   final protected void checkPropertiesReadOnly(String methodName, String key) throws MessageNotWriteableException {
+      if (this.propertyReadOnly)
+         throw new MessageNotWriteableException(ME + "." + methodName + " for '" + key + "' message properties are in readonly modus", ErrorCode.USER_CLIENTCODE.getErrorCode()); 
+      if (key == null || key.trim().length() < 1)
+         throw new IllegalArgumentException(ME + "." + methodName + ": Empty or null key values are not allowed"); 
+   }
+
    public void clearBody() throws JMSException {
       this.content = null;
+      this.readOnly = false;
+      this.writeOnly = true;
    }
 
    public void clearProperties() throws JMSException {
@@ -90,59 +112,45 @@ public class XBMessage implements Message {
       this.prioritySet = false;
       this.timeToLiveSet = false;
       this.qos.setClientProperty("jmsMessageType", "" + this.type);
+      this.propertyReadOnly = false;
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.Message#getBooleanProperty(java.lang.String)
-    */
    public boolean getBooleanProperty(String key) throws JMSException {
-      try {
-         return Boolean.getBoolean(getStringProperty(key));
-      }
-      catch (Exception ex) {
-         if (ex instanceof JMSException) throw (JMSException)ex;
-         throw new JMSException(ME + ".getStringProperty('" + key + "')", ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
-      }
+      Object obj = getObjectProperty(key);
+      if (obj instanceof String) return Boolean.getBoolean((String)obj);
+      if (obj instanceof Boolean) return ((Boolean)obj).booleanValue();
+      throw new JMSException(ME + ".getBooleanProperty('" + key + "') is illegal since of type '" + obj.getClass().getName() + "'", ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
    }
 
    public byte getByteProperty(String key) throws JMSException {
-      try {
-         return Byte.parseByte(getStringProperty(key));
-      }
-      catch (Exception ex) {
-         if (ex instanceof JMSException) throw (JMSException)ex;
-         throw new JMSException(ME + ".getStringProperty('" + key + "')", ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
-      }
+      Object obj = getObjectProperty(key);
+      if (obj instanceof String) return Byte.parseByte((String)obj);
+      if (obj instanceof Byte) return ((Byte)obj).byteValue();
+      throw new JMSException(ME + ".getByteProperty('" + key + "') is illegal since of type '" + obj.getClass().getName() + "'", ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
    }
 
    public double getDoubleProperty(String key) throws JMSException {
-      try {
-         return Double.parseDouble(getStringProperty(key));
-      }
-      catch (Exception ex) {
-         if (ex instanceof JMSException) throw (JMSException)ex;
-         throw new JMSException(ME + ".getStringProperty('" + key + "')", ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
-      }
+      Object obj = getObjectProperty(key);
+      if (obj instanceof String) return Double.parseDouble((String)obj);
+      if (obj instanceof Float) return ((Float)obj).doubleValue();
+      if (obj instanceof Double) return ((Double)obj).doubleValue();
+      throw new JMSException(ME + ".getDoubleProperty('" + key + "') is illegal since of type '" + obj.getClass().getName() + "'", ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
    }
 
    public float getFloatProperty(String key) throws JMSException {
-      try {
-         return Float.parseFloat(getStringProperty(key));
-      }
-      catch (Exception ex) {
-         if (ex instanceof JMSException) throw (JMSException)ex;
-         throw new JMSException(ME + ".getStringProperty('" + key + "')", ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
-      }
+      Object obj = getObjectProperty(key);
+      if (obj instanceof String) return Float.parseFloat((String)obj);
+      if (obj instanceof Float) return ((Float)obj).floatValue();
+      throw new JMSException(ME + ".getDoubleProperty('" + key + "') is illegal since of type '" + obj.getClass().getName() + "'", ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
    }
 
    public int getIntProperty(String key) throws JMSException {
-      try {
-         return Integer.parseInt(getStringProperty(key));
-      }
-      catch (Exception ex) {
-         if (ex instanceof JMSException) throw (JMSException)ex;
-         throw new JMSException(ME + ".getStringProperty('" + key + "')", ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
-      }
+      Object obj = getObjectProperty(key);
+      if (obj instanceof String) return Integer.parseInt((String)obj);
+      if (obj instanceof Byte) return ((Byte)obj).intValue();
+      if (obj instanceof Short) return ((Short)obj).intValue();
+      if (obj instanceof Integer) return ((Integer)obj).intValue();
+      throw new JMSException(ME + ".getIntegerProperty('" + key + "') is illegal since of type '" + obj.getClass().getName() + "'", ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
    }
 
    public String getJMSCorrelationID() throws JMSException {
@@ -188,50 +196,45 @@ public class XBMessage implements Message {
       return this.qos.getRcvTimestamp().getMillis();
    }
 
+   /**
+    * The JMSType for xmlBlaster is the mime type
+    */
    public String getJMSType() throws JMSException {
       // return (String)qos.getClientProperties().get("jmsType");
       return this.key.getContentMime();
    }
 
    public long getLongProperty(String key) throws JMSException {
-      try {
-         return Long.parseLong(getStringProperty(key));
-      }
-      catch (Exception ex) {
-         if (ex instanceof JMSException) throw (JMSException)ex;
-         throw new JMSException(ME + ".getStringProperty('" + key + "')", ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
-      }
+      Object obj = getObjectProperty(key);
+      if (obj instanceof String) return Long.parseLong((String)obj);
+      if (obj instanceof Byte) return ((Byte)obj).longValue();
+      if (obj instanceof Short) return ((Short)obj).longValue();
+      if (obj instanceof Integer) return ((Integer)obj).longValue();
+      if (obj instanceof Long) return ((Long)obj).longValue();
+      throw new JMSException(ME + ".getLongProperty('" + key + "') is illegal since of type '" + obj.getClass().getName() + "'", ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.Message#getObjectProperty(java.lang.String)
-    */
-   public Object getObjectProperty(String arg0) throws JMSException {
-      // TODO Auto-generated method stub
-      return null;
+   public Object getObjectProperty(String key) throws JMSException {
+      return this.qos.getClientProperties().get(key);
    }
 
    public Enumeration getPropertyNames() throws JMSException {
       return Collections.enumeration(this.qos.getClientProperties().entrySet());
    }
 
+   /**
+    * Can handle String, Byte, and Short properties
+    */
    public short getShortProperty(String key) throws JMSException {
-      try {
-         return Short.parseShort(getStringProperty(key));
-      }
-      catch (Exception ex) {
-         if (ex instanceof JMSException) throw (JMSException)ex;
-         throw new JMSException(ME + ".getStringProperty('" + key + "')", ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
-      }
+      Object obj = getObjectProperty(key);
+      if (obj instanceof String) return Short.parseShort((String)obj);
+      if (obj instanceof Byte) return ((Byte)obj).shortValue();
+      if (obj instanceof Short) return ((Short)obj).shortValue();
+      throw new JMSException(ME + ".getShortProperty('" + key + "') is illegal since of type '" + obj.getClass().getName() + "'", ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
    }
 
    public String getStringProperty(String key) throws JMSException {
-      try {
-         return (String)this.qos.getClientProperties().get(key);
-      }
-      catch (Exception ex) {
-         throw new JMSException(ME + ".getStringProperty('" + key + "')", ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());
-      }
+      return this.qos.getClientProperties().get(key).toString();
    }
 
    public boolean propertyExists(String key) throws JMSException {
@@ -240,24 +243,29 @@ public class XBMessage implements Message {
 
    public void setBooleanProperty(String key, boolean value)
       throws JMSException {
-      this.qos.setClientProperty(key, "" + value);   
+      checkPropertiesReadOnly("setBooleanProperty", key);
+      this.qos.setClientProperty(key, value);   
    }
 
    public void setByteProperty(String key, byte value) throws JMSException {
-      this.qos.setClientProperty(key, "" + value);   
+      checkPropertiesReadOnly("setByteProperty", key);
+      this.qos.setClientProperty(key, value);   
    }
 
    public void setDoubleProperty(String key, double value)
       throws JMSException {
-         this.qos.setClientProperty(key, "" + value);   
+      checkPropertiesReadOnly("setDoubleProperty", key);
+      this.qos.setClientProperty(key, value);   
    }
 
    public void setFloatProperty(String key, float value) throws JMSException {
-      this.qos.setClientProperty(key, "" + value);   
+      checkPropertiesReadOnly("setFloatProperty", key);
+      this.qos.setClientProperty(key, value);   
    }
 
    public void setIntProperty(String key, int value) throws JMSException {
-      this.qos.setClientProperty(key, "" + value);   
+      checkPropertiesReadOnly("setIntProperty", key);
+      this.qos.setClientProperty(key, value);   
    }
 
    public void setJMSCorrelationID(String correlationId) throws JMSException {
@@ -367,20 +375,26 @@ public class XBMessage implements Message {
    }
 
    public void setLongProperty(String key, long value) throws JMSException {
-      this.qos.setClientProperty(key, "" + value);   
+      checkPropertiesReadOnly("setLongProperty", key);
+      this.qos.setClientProperty(key, value);   
    }
 
-   /* (non-Javadoc)
-    * @see javax.jms.Message#setObjectProperty(java.lang.String, java.lang.Object)
-    */
-   public void setObjectProperty(String arg0, Object arg1)
+   public void setObjectProperty(String key, Object value)
       throws JMSException {
-      // TODO Auto-generated method stub
-      throw new JMSException(ME + ".setObjectProperty not implemented yet");       
+      if (value instanceof String) setStringProperty(key, (String)value);
+      if (value instanceof Boolean) setBooleanProperty(key, ((Boolean)value).booleanValue());
+      if (value instanceof Byte) setByteProperty(key, ((Byte)value).byteValue());
+      if (value instanceof Short) setShortProperty(key, ((Short)value).shortValue());
+      if (value instanceof Integer) setIntProperty(key, ((Integer)value).intValue());
+      if (value instanceof Long) setLongProperty(key, ((Long)value).longValue());
+      if (value instanceof Float) setFloatProperty(key, ((Float)value).floatValue());
+      if (value instanceof Double) setDoubleProperty(key, ((Double)value).doubleValue());
+      throw new javax.jms.MessageFormatException(ME + ".setObjectProperty: prop '" + key + "' is of type '" + value.getClass().getName() + "' which is not allowed here", ErrorCode.USER_ILLEGALARGUMENT.getErrorCode());       
    }
 
    public void setShortProperty(String key, short value) throws JMSException {
-      this.qos.setClientProperty(key, "" + value);   
+      checkPropertiesReadOnly("setShortProperty", key);
+      this.qos.setClientProperty(key, value);   
    }
 
    public void setStringProperty(String key, String value)

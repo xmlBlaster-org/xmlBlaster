@@ -34,9 +34,6 @@ public class XBBytesMessage extends XBMessage implements BytesMessage {
    private DataOutputStream os;
    private ByteArrayOutputStream baos;
    
-   private boolean readOnly;
-   private boolean writeOnly;
-      
    /**
     * If the content is empty it will be considered a message for a producer, i.e. a message to
     * be filled and sent. If the content is not null, then it is assumed to be a message for a
