@@ -16,6 +16,7 @@ CLASSPATH=lib/remotecons.jar:$CLASSPATH
 CLASSPATH=lib/omquery.jar:lib/xtdash.jar:lib/servlet.jar:lib/junit.jar:$CLASSPATH
 CLASSPATH=$JAVA_HOME/lib/tools.jar:lib/xmlrpc.jar:lib/a2Blaster.jar:lib/jutils.jar:$CLASSPATH
 CLASSPATH=lib/mail.jar:lib/activation.jar:lib/cpptasks.jar:$CLASSPATH
+CLASSPATH=lib/gnu-regexp.jar:$CLASSPATH
 
 CLASSPATH=lib/batik/batik.jar:$CLASSPATH
 CLASSPATH=lib/batik/js.jar:$CLASSPATH
