@@ -63,12 +63,14 @@ public class HelloWorldSubscribe implements I_Callback
    private final Global glob;
    private final LogChannel log;
    private int updateCounter = 0;
+   private boolean interactiveUpdate;
 
    public HelloWorldSubscribe(Global glob) {
       this.glob = glob;
       this.log = glob.getLog("HelloWorldSubscribe");
       try {
          boolean interactive = glob.getProperty().get("interactive", true);
+         this.interactiveUpdate = glob.getProperty().get("interactiveUpdate", false);
          String oid = glob.getProperty().get("oid", "");
          String xpath = glob.getProperty().get("xpath", "");
          boolean multiSubscribe = glob.getProperty().get("multiSubscribe", true);
@@ -97,6 +99,7 @@ public class HelloWorldSubscribe implements I_Callback
 
          log.info(ME, "Used settings are:");
          log.info(ME, "   -interactive       " + interactive);
+         log.info(ME, "   -interactiveUpdate " + interactiveUpdate);
          log.info(ME, "   -oid               " + oid);
          log.info(ME, "   -xpath             " + xpath);
          log.info(ME, "   -multiSubscribe    " + multiSubscribe);
@@ -152,6 +155,10 @@ public class HelloWorldSubscribe implements I_Callback
          if (log.DUMP) log.dump("", "Subscribed: " + sk.toXml() + sq.toXml() + srq.toXml());
          log.info(ME, "Waiting on update ...");
 
+         if (interactiveUpdate) {
+            try { Thread.currentThread().sleep(1000000000); } catch( InterruptedException i) {}
+         }
+
          if (unSubscribe) {
             if (interactive) {
                log.info(ME, "Hit a key to unSubscribe");
@@ -202,6 +209,12 @@ public class HelloWorldSubscribe implements I_Callback
       System.out.println("</xmlBlaster>");
       System.out.println("============= END #" + updateCounter + " '" + updateKey.getOid() + "' =========================");
       System.out.println("");
+
+      if (interactiveUpdate) {
+         log.info(ME, "Hit a key to return from update() (we are blocking the server callback) ...");
+         try { System.in.read(); } catch(java.io.IOException e) {}
+         log.info(ME, "Returning update() - control goes back to server");
+      }
       return Constants.RET_OK; // "<qos><state id='OK'/></qos>";
    }
 
