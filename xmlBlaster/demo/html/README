@@ -13,8 +13,8 @@ Howto run the html examples with persistent http connection:
     
 
 3. Use the Makefile or do it manually:
-	cp -r  ../../src/java/org/xmlBlaster/protocol/http/javascript  javascript
-	cp -r  ../../src/java/org/xmlBlaster/protocol/http/persistentWindow  persistentWindow
+   cp -r  ../../src/java/org/xmlBlaster/protocol/http/javascript  javascript
+   cp -r  ../../src/java/org/xmlBlaster/protocol/http/persistentWindow  persistentWindow
 
 
 4. Start xmlBlaster
@@ -23,8 +23,8 @@ Howto run the html examples with persistent http connection:
 
 
 5. Start a publisher, so that we have some dynamic data:
-	
-	java html.systemInfo.SystemInfoPublisher
+   
+   java html.systemInfo.SystemInfoPublisher
 
 
 6. Start you browser
@@ -38,7 +38,7 @@ Start it in the background on Linux:
    java org.xmlBlaster.Main -Xms12M -Xmx32M -logFile /tmp/xmlBlaster.log  -useKeyboard false  > /tmp/xmlBlaster.log 2>&1 &
 
    #jserv > /tmp/jserv.log 2>&1 &
-	CLASSPATH=$CLASSPATH:/usr/lib/apache/ApacheJServ.jar
+   CLASSPATH=$CLASSPATH:/usr/lib/apache/ApacheJServ.jar
    java -Xms12M -Xmx32M org.apache.jserv.JServ /etc/httpd/conf/jserv/jserv.properties > /tmp/jserv.log 2>&1 & 
 
    java html.systemInfo.SystemInfoPublisher -info false > /tmp/SystemInfoPublisher.log 2>&1 &
