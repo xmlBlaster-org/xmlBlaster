@@ -3,7 +3,7 @@ Name:      UpdateKey.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with DOM
-Version:   $Id: UpdateKey.java,v 1.24 2002/06/25 17:54:59 ruff Exp $
+Version:   $Id: UpdateKey.java,v 1.25 2002/07/06 17:59:16 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -250,11 +250,11 @@ public class UpdateKey extends SaxHandlerBase
    /**
     * Dump state of this object into XML.
     * <br>
-    * @return XML state of MessageUnitHandler
+    * @return The unparsed and literal XML string as delivered from xmlBlaster
     */
    public final String toXml()
    {
-      return toXml((String)null);
+      return super.toXml();
    }
 
 
@@ -263,9 +263,12 @@ public class UpdateKey extends SaxHandlerBase
     * <br>
     * @param extraOffset indenting of tags
     * @return XML state of UpdateKey
+    * @deprecated Use toXml() instead
     */
    public final String toXml(String extraOffset)
    {
+      return super.toXml();
+      /*
       StringBuffer sb = new StringBuffer();
       String offset = "\n   ";
       if (extraOffset == null) extraOffset = "";
@@ -277,5 +280,6 @@ public class UpdateKey extends SaxHandlerBase
       sb.append(" domain='").append(getDomain()).append("'");
       sb.append("/>");
       return sb.toString();
+      */
    }
 }
