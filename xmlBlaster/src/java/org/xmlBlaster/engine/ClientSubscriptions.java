@@ -122,6 +122,92 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
    }
 
    /**
+    * If you have the unique id of a subscription, you may access the
+    * SubscriptionInfo object here.
+    * <p />
+    * You can access XPATH or EXACT subscription objects through this method
+    * @param subscriptionInfoUniqueKey
+    * @return corresponding subscriptionInfo object<br />
+    *         or null if not found
+    */
+   public SubscriptionInfo getSubscription(String subscriptionInfoUniqueKey) {
+      synchronized(this.clientSubscriptionMap) {
+         Iterator iterator = this.clientSubscriptionMap.values().iterator();
+         while (iterator.hasNext()) {
+            Map subMap = (Map)iterator.next();
+            synchronized(subMap) {
+               /*
+               {
+                  Iterator i = subMap.keySet().iterator();
+                  while (i.hasNext()) {
+                     String key = (String)i.next();
+                     SubscriptionInfo sub = (SubscriptionInfo)subMap.get(key);
+                     try {
+                        log.info(ME, "Checking key="+key+" value='" + sub.getSubscriptionId() + "'");
+                     }
+                     catch (XmlBlasterException e) {
+                     }
+                  }
+               }
+               */
+               Object obj = subMap.get(subscriptionInfoUniqueKey); 
+               if (obj != null) {
+                  return (SubscriptionInfo)obj;
+               }
+            }
+         }
+      }
+
+      if (log.TRACE) log.trace(ME, "subscriptionId=" + subscriptionInfoUniqueKey + " not found");
+      return null;
+   }
+
+   /**
+    * @return The number of all subscriptions in this cluster node.
+    */
+   public int getNumSubscriptions() {
+      int num = 0;
+      synchronized(this.clientSubscriptionMap) {
+         Iterator iterator = this.clientSubscriptionMap.values().iterator();
+         while (iterator.hasNext()) {
+            Map subMap = (Map)iterator.next();
+            synchronized(subMap) {
+               num += subMap.size();
+            }
+         }
+      }
+      return num;
+   }
+
+   /**
+    * @return All subscriptionId in a comma separated string
+    */
+   public String getSubscriptionList() {
+      StringBuffer sb = new StringBuffer(getNumSubscriptions()*20);
+      synchronized(this.clientSubscriptionMap) {
+         Iterator iterator = this.clientSubscriptionMap.values().iterator();
+         while (iterator.hasNext()) {
+            Map subMap = (Map)iterator.next();
+            synchronized(subMap) {
+               Iterator iterator2 = subMap.values().iterator();
+               while (iterator2.hasNext()) {
+                  SubscriptionInfo sub = (SubscriptionInfo)iterator2.next();
+                  if (sb.length() > 0)
+                     sb.append(",");
+                  try {
+                     sb.append(sub.getSubscriptionId());
+                  }
+                  catch (XmlBlasterException e) {
+                     log.error(ME, "Ignoring unexpected exception in getSubscriptionList(): " + e.getMessage());
+                  }
+               }
+            }
+         }
+      }
+      return sb.toString();
+   }
+
+   /**
     * Access all subscriptions of a client
     * @return never null
     */
