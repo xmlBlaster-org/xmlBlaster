@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.7 1999/12/12 15:22:01 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.8 1999/12/13 12:18:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -12,6 +12,7 @@ import org.xmlBlaster.util.FileUtil;
 import org.xmlBlaster.util.Args;
 import org.xmlBlaster.serverIdl.XmlBlasterException;
 import org.xmlBlaster.serverIdl.Server;
+import org.xmlBlaster.serverIdl.MessageUnit;
 import org.xmlBlaster.authenticateIdl.AuthServer;
 import org.xmlBlaster.authenticateIdl.AuthServerHelper;
 import org.xmlBlaster.clientIdl.*;
@@ -33,7 +34,7 @@ import java.util.Properties;
  * <p />
  * Invoke: jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestSub
  *
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  * @author $Author: ruff $
  */
 public class CorbaConnection
@@ -45,6 +46,8 @@ public class CorbaConnection
    private AuthServer authServer = null;
    private Server xmlBlaster = null;
    private BlasterCallback callback = null;
+   private String loginName = null;
+   private String qos = null;
 
 
    /**
@@ -325,9 +328,12 @@ public class CorbaConnection
 
 
    /**
-    * Login to the server.
+    * Login to the server, providing you own BlasterCallback implementation. 
     * <p />
-    * @exception XmlBlasterException if login fails
+    * @param loginName The login name for xmlBlaster
+    * @param passwd    The login password for xmlBlaster
+    * @param qos       The Quality of Service for this client
+    * @exception       XmlBlasterException if login fails
     */
    public Server login(String loginName, String passwd, BlasterCallback callback, String qos) throws XmlBlasterException
    {
@@ -339,14 +345,53 @@ public class CorbaConnection
       }
 
       this.callback = callback;
+      this.loginName = loginName;
+      this.qos = qos;
 
       try {
          xmlBlaster = getAuthenticationService().login(loginName, passwd, callback, qos);
+         if (Log.TRACE) Log.trace(ME, "Success, login for " + loginName);
       } catch(XmlBlasterException e) {
          Log.error(ME, "Login failed");
          throw e;
       }
       return xmlBlaster;
+   }
+
+
+   /**
+    * Login to the server, using the default BlasterCallback implementation. 
+    * <p />
+    * You need to implement the I_Callback interface, which informs you about arrived
+    * messages with its update() method
+    * <p />
+    * If you do multiple logins with the same I_Callback implementation, the loginName
+    * which is delivered with the update() method may be used to dispatch the message
+    * to the correct client.
+    * <p />
+    * @param loginName The login name for xmlBlaster
+    * @param passwd    The login password for xmlBlaster
+    * @param qos       The Quality of Service for this client
+    * @param client    Your implementation of I_Callback
+    * @exception       XmlBlasterException if login fails
+    */
+   public Server login(String loginName, String passwd, String qos, I_Callback client) throws XmlBlasterException
+   {
+      BlasterCallback callback = createCallbackServer(new DefaultCallback(loginName, client));
+
+      if (Log.TRACE) Log.trace(ME, "Success, exported BlasterCallback Server interface for " + loginName);
+
+      return login(loginName, passwd, callback, qos);
+   }
+
+
+   /**
+    * Access the login name.
+    * @return your login name or null if you are not logged in
+    */
+   public String getLoginName()
+   {
+      return loginName;
    }
 
 
@@ -438,3 +483,80 @@ public class CorbaConnection
       }
    }
 }
+
+
+/**
+ * Example for a callback implementation. 
+ * <p />
+ * You can use this default callback handling with your clients,
+ * but if you need other handling of callbacks, take a copy
+ * of this Callback implementation and add your own code.
+ */
+class DefaultCallback implements BlasterCallbackOperations
+{
+   private final String ME;
+   private final I_Callback boss;
+   private final String loginName;
+
+   /**
+    * Construct a persistently named object.
+    */
+   public DefaultCallback(String name, I_Callback boss)
+   {
+      this.ME = "DefaultCallback-" + name;
+      this.boss = boss;
+      this.loginName = name;
+      if (Log.CALLS) Log.trace(ME, "Entering constructor with argument");
+   }
+
+
+   /**
+    * This is the callback method invoked from the server
+    * informing the client in an asynchronous mode about new messages. 
+    * <p />
+    * You don't need to use this little method, but it nicely converts
+    * the raw CORBA BlasterCallback.update() with raw Strings and arrays
+    * in corresponding objects and calls for every received message
+    * the I_Callback.update().
+    * <p />
+    * So you should implement in your client the I_Callback interface -
+    * suppling the update() method.
+    *
+    * @param loginName        The name to whom the callback belongs
+    * @param messageUnit      Contains a MessageUnit structs (your message)
+    * @param qos              Quality of Service of the MessageUnit
+    */
+   public void update(MessageUnit[] messageUnitArr, String[] qos_literal_Arr)
+   {
+      if (Log.CALLS) Log.calls(ME, "Receiving update of " + messageUnitArr.length + " message ...");
+
+      if (messageUnitArr.length == 0) {
+         Log.warning(ME, "Entering update() with 0 messages");
+         return;
+      }
+
+      for (int ii=0; ii<messageUnitArr.length; ii++) {
+         MessageUnit messageUnit = messageUnitArr[ii];
+         UpdateKey updateKey = null;
+         UpdateQoS updateQoS = null;
+         String keyOid = null;
+         byte[] content = messageUnit.content;
+         try {
+            updateKey = new UpdateKey(messageUnit.xmlKey);
+            keyOid = updateKey.getUniqueKey();
+            updateQoS = new UpdateQoS(qos_literal_Arr[ii]);
+         } catch (XmlBlasterException e) {
+            Log.error(ME, e.reason);
+         }
+
+         // Now we know all about the received message, dump it or do some checks
+         if (Log.DUMP) Log.dump("UpdateKey", updateKey.printOn().toString());
+         if (Log.DUMP) Log.dump("content", (new String(content)).toString());
+         if (Log.DUMP) Log.dump("UpdateQoS", updateQoS.printOn().toString());
+         if (Log.TRACE) Log.trace(ME, "Received message [" + keyOid + "] from publisher " + updateQoS.getSender());
+
+         boss.update(loginName, keyOid, updateKey, content, updateQoS); // Call my boss
+      }
+   }
+} // DefaultCallback
+
