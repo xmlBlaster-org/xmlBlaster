@@ -103,7 +103,7 @@ CallbackServerUnparsed.h, here is a complete example:
    {
       CallbackServerUnparsed *cb = getCallbackServerUnparsed(argc, argv, myUpdate);
       printf("[main] Created CallbackServerUnparsed instance, creating listener on socket://%s:%d...\n", cb->hostCB, cb->portCB);
-      cb->initCallbackServer(cb); // blocks on socket listener
+      cb->runCallbackServer(cb); // blocks on socket listener
 
       // This code is reached only on socket EOF
       cb->shutdown(cb);

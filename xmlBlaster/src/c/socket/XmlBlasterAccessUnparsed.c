@@ -156,7 +156,7 @@ static bool initialize(XmlBlasterAccessUnparsed *xa, UpdateFp updateFp)
    xa->connectionP->postSendEvent_userP = xa;
 
    /* thread blocks on socket listener */
-   threadRet = pthread_create(&xa->callbackThreadId, 0, (cbFp)xa->callbackP->initCallbackServer, xa->callbackP);
+   threadRet = pthread_create(&xa->callbackThreadId, 0, (cbFp)xa->callbackP->runCallbackServer, xa->callbackP);
    if (threadRet != 0) {
       printf("[XmlBlasterAccessUnparsed] ERROR: Creating thread failed with error number %d", threadRet);
       freeCallbackServerUnparsed(xa->callbackP);
@@ -428,12 +428,16 @@ bool myUpdate(MsgUnitArr *msgUnitArr, XmlBlasterException *xmlBlasterException)
 }
 
 /**
- * Invoke: XmlBlasterAccessUnparsedMain -debug true
+ * Invoke: XmlBlasterAccessUnparsedMain -debug true  -numTests 10
  */
 int main(int argc, char** argv)
 {
    int ii;
    int numTests = 1;
+   for (ii=0; ii < argc-1; ii++)
+      if (strcmp(argv[ii], "-numTests") == 0)
+         sscanf(argv[++ii], "%d", &numTests);
+
    for (ii=0; ii<numTests; ii++) {
       int iarg;
       char *response = (char *)0;
@@ -448,7 +452,11 @@ int main(int argc, char** argv)
       XmlBlasterAccessUnparsed *xa = 0;
       bool debug = false;
 
+# ifdef PTHREAD_THREADS_MAX
+   printf("[client] Try option '-help' if you need usage informations, max %d threads per process are supported on this OS\n", PTHREAD_THREADS_MAX);
+# else
       printf("[client] Try option '-help' if you need usage informations\n");
+# endif
 
       for (iarg=0; iarg < argc; iarg++) {
          if (strcmp(argv[iarg], "-help") == 0 || strcmp(argv[iarg], "--help") == 0) {
@@ -503,7 +511,6 @@ int main(int argc, char** argv)
          free(response);
          printf("[client] Connected to xmlBlaster, do some tests ...\n");
       }
-
 
       response = xa->ping(xa, 0);
       if (response == (char *)0) {
@@ -624,6 +631,9 @@ int main(int argc, char** argv)
       }
 
       freeXmlBlasterAccessUnparsed(xa);
+      if (numTests > 1) {
+         printf("[client] Successfully finished test #%d from %d\n\n", ii, numTests);
+      }
    }
    printf("[client] Good bye.\n");
    exit(0);

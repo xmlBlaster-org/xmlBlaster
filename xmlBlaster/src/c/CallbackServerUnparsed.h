@@ -93,7 +93,7 @@ struct CallbackServerUnparsedStruct {
     * (Is different from the xmlBlaster secret session ID)
    char secretSessionId[MAX_SECRETSESSIONID_LEN];
    */
-   InitCallbackServer initCallbackServer;
+   InitCallbackServer runCallbackServer;
    IsListening isListening;
    ShutdownCallbackServerRaw shutdown; /* For internal use (multi thread) only */
    UpdateFp update;
@@ -105,7 +105,7 @@ struct CallbackServerUnparsedStruct {
 
 /**
  * Get a new instance of a callback server struct. 
- * This is usually the first call of a client, you need to call initCallbackServer()
+ * This is usually the first call of a client, you need to call runCallbackServer()
  * on the returned pointer to establish a listener.
  * @param argc Number of command line arguments
  * @param argv The command line arguments
