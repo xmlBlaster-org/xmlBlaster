@@ -166,7 +166,7 @@ namespace util {
       bool getTypedProperty(const string& name, long& value, bool env=true);
       bool getTypedProperty(const string& name, bool& value, bool env=true);
       bool getTypedProperty(const string& name, Timestamp& value, bool env=true);
-	
+        
        bool setProperty(const string &name, const string &value,
                        bool overwrite=true);
  

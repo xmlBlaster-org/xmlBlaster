@@ -895,7 +895,9 @@ void CorbaConnection::copyFromCorba(util::MessageUnit &msgUnitUtil, serverIdl::M
 
 void CorbaConnection::usage() 
 {
-  util::Log log;
+  Global& glob = Global::getInstance();
+  glob.initialize();
+  Log& log = glob.getLog("client");
   string me="";
   log.plain(me, "");
   log.plain(me, "Client connection options:");

@@ -173,7 +173,7 @@ MessageUnit::getContentVec() const
  * @param extraOffset indenting of tags for nice output
  * @return The MessageUnit as a XML ASCII string
  */
-string MessageUnit::toXml(const string &extraOffset) 
+string MessageUnit::toXml(const string &extraOffset) const
 {
    string ret    = "\n   ";
    string offset = extraOffset;

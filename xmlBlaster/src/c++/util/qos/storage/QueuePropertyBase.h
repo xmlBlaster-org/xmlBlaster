@@ -3,7 +3,7 @@ Name:      QueuePropertyBase.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.h,v 1.4 2003/01/08 15:58:04 ruff Exp $
+Version:   $Id: QueuePropertyBase.h,v 1.5 2003/01/08 16:03:39 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -188,6 +188,8 @@ public:
     * e.g. -queue.maxMsg and -queue.maxMsg[heron] will be searched
     */
    QueuePropertyBase(Global& global, const string& nodeId);
+
+   QueuePropertyBase(Global& global, Log& log, const string& nodeId);
 
    QueuePropertyBase(const QueuePropertyBase& prop);
 

@@ -3,7 +3,7 @@ Name:      TestSub.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.cpp,v 1.9 2003/01/07 21:02:25 ruff Exp $
+Version:   $Id: TestSub.cpp,v 1.10 2003/01/08 16:03:39 laghi Exp $
 -----------------------------------------------------------------------------*/
 
 #include <client/XmlBlasterAccess.h>
@@ -110,7 +110,7 @@ private:
          string passwd = "secret";
          SecurityQos secQos(global_, senderName_, passwd);
          ConnectQos connQos(global_);
-         connQos.setSecurityQos(secQos);
+//         connQos.setSecurityQos(secQos);
          returnQos_ = senderConnection_->connect(connQos, this);
          // Login to xmlBlaster
       }
@@ -242,16 +242,17 @@ private:
    void testPublishSTLMethods(TestType testType) {
       if (log_.TRACE) log_.trace(me(), "Publishing a message (the STL way) ...");
       numReceived_ = 0;
-      string xmlKey = string("<?xml version='1.0' encoding='ISO-8859-1' ?>\n")+
-         "<key oid='" + publishOid_ + "' contentMime='" + contentMime_ +
-         "' contentMimeExtended='" + contentMimeExtended_ + "'>\n" +
+      string clientTags = string("") +
          "   <TestSub-AGENT id='192.168.124.10' subId='1' type='generic'>" +
          "      <TestSub-DRIVER id='FileProof' pollingFreq='10'>" +
          "      </TestSub-DRIVER>"+
-         "   </TestSub-AGENT>" +
-         "</key>";
+         "   </TestSub-AGENT>";
+
       PublishKey key(global_);
-      key.setClientTags(xmlKey);
+      key.setClientTags(clientTags);
+      key.setContentMime(contentMime_);
+      key.setContentMimeExtended(contentMimeExtended_);
+      key.setOid(publishOid_);
       PublishQos pubQos(global_);
       MessageUnit msgUnit(key, senderContent_, pubQos);
       try {
@@ -263,12 +264,7 @@ private:
          }
          else if (testType == TEST_PUBLISH) {
             string tmp = senderConnection_->publish(msgUnit).getKeyOid();
-            if (tmp.find(publishOid_) == string::npos) {
-               log_.error(me(), "Wrong publishOid: " + tmp);
-               assert(0);
-            }
-            log_.info(me(), string("Success: Publishing with ACK done (the STL way), returned oid=") +
-                      publishOid_);
+            log_.info(me(), string("the publish oid ='") + tmp + "'");
          }
          else {
             vector<MessageUnit> msgVec;
@@ -418,8 +414,7 @@ private:
     */
 private:
    void waitOnUpdate(long timeout) {
-      Timestamp delay = 1000000ll * timeout;
-//      TimestampFactory::getInstance().sleep(delay);
+      Timestamp delay = timeout;
       Thread::sleep(delay);
 /*
       util::StopWatch stopWatch(timeout);

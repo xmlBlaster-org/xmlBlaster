@@ -8,12 +8,7 @@ Comment:   Handling the Client data
 #ifndef _UTIL_LOG_H
 #define _UTIL_LOG_H
 
-#ifdef _WINDOWS
-// suppresses winzigweich warnings
-#pragma warning(disable:4786)
-#endif
-
-#include <util/XmlBCfg.h>
+#include <util/xmlBlasterDef.h>
 #include <iostream>
 #include <time.h>
 #include <stdlib.h>
@@ -30,9 +25,7 @@ Comment:   Handling the Client data
 
 using namespace std;
 
-namespace org { namespace xmlBlaster {
-namespace util {
-   
+namespace org { namespace xmlBlaster { namespace util {
    
    class Dll_Export Log {
       
@@ -88,17 +81,16 @@ namespace util {
       static const char* const BLACK_PINK   ;
       static const char* const BLACK_LTGREEN;
 
-      static Property *properties_;
-      static int      logLevel_;
+      Property&     properties_;
+      int           logLevel_;
 
       /**
        * Counter for occurred warnings/errors
        */
-      static int    numWarnInvocations;
-      static int    numErrorInvocations;
-      static int    numOfImplementations_;
-      static string currentLogFormat;
-      static bool   logFormatPropertyRead;
+      int    numWarnInvocations;
+      int    numErrorInvocations;
+      string currentLogFormat;
+      bool   logFormatPropertyRead;
 
       string   ME;
       string   name_;
@@ -154,13 +146,13 @@ namespace util {
       
             
      public:
-      static bool CALL;
-      static bool TIME;
-      static bool TRACE;
-      static bool DUMP;
+      bool CALL;
+      bool TIME;
+      bool TRACE;
+      bool DUMP;
       
       
-      Log(int args=0, const char * const argc[]=0, const string& name="default");
+      Log(Property& properties, int args=0, const char * const argc[]=0, const string& name="default");
 
 
       ~Log();
@@ -342,7 +334,7 @@ namespace util {
 
 
       Property& getProperties() {
-         return *properties_;
+         return properties_;
       }
 
    }; // end of class Log

@@ -3,7 +3,7 @@ Name:      CbQueueProperty.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: CbQueueProperty.cpp,v 1.2 2003/01/05 23:11:07 ruff Exp $
+Version:   $Id: CbQueueProperty.cpp,v 1.3 2003/01/08 16:03:39 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -59,10 +59,9 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos { namespac
    CbQueueProperty::CbQueueProperty(Global& global,
                                     const string& relating,
                                     const string& nodeId)
-                                  : QueuePropertyBase(global, nodeId)
+                                  : QueuePropertyBase(global, global.getLog("dispatch"), nodeId)
    {
       ME = "CbQueueProperty";
-      log_  = global_.getLog("dispatch");
       initialize();
       setRelating(relating);
    }

@@ -3,7 +3,7 @@ Name:      Log.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.cpp,v 1.12 2003/01/07 20:41:36 laghi Exp $
+Version:   $Id: Log.cpp,v 1.13 2003/01/08 16:03:38 laghi Exp $
 ----------------------------------------------------------------------------*/
 
 #include <util/Log.h>
@@ -36,55 +36,44 @@ const char* const Log::BLACK_LTGREEN= "\033[40;46m";
    /**
     * Initializes logging and Properties
     */
-   Log::Log(int args, const char * const argc[], const string& name) 
-      : name_(name)
+   Log::Log(Property& properties, int args, const char * const argc[], const string& name) 
+      : properties_(properties), name_(name)
    {
-      bool isNewProperty = ((numOfImplementations_ == 0)||((args != 0) && (argc != 0))) ? true :false;
-      if (isNewProperty) {
-         ME = "Log";
-         CALL = true;
-         TIME = true;
-         TRACE = true;
-         DUMP = true;
-         currentLogFormat = "{0} {1} {2}: {3}";
-         logFormatPropertyRead  = false;
-         logLevel_ = L_PANIC | L_ERROR | L_WARN | L_INFO;
-#             ifdef _TERM_WITH_COLORS_
-            timeE   = string(LTGREEN_BLACK) + "TIME " + ESC;
-            callE   = string(BLACK_LTGREEN) + "CALL " + ESC;
-            traceE  = string(WHITE_BLACK  ) + "TRACE" + ESC;
-            plainE  = string(WHITE_BLACK  ) + "     " + ESC;
-            infoE   = string(GREEN_BLACK  ) + "INFO " + ESC;
-            warnE   = string(YELLOW_BLACK ) + "WARN " + ESC;
-            errorE  = string(RED_BLACK    ) + "ERROR" + ESC;
-            panicE  = string(BLACK_RED    ) + "PANIC" + ESC;
-            exitE   = string(GREEN_BLACK  ) + "EXIT " + ESC;
-#        else
-            timeX   = "TIME ";
-            callX   = "CALL ";
-            traceX  = "TRACE";
-            plainX  = "     ";
-            infoX   = "INFO ";
-            warnX   = "WARN ";
-            errorX  = "ERROR";
-            panicX  = "PANIC";
-            exitX   = "EXIT ";
-#        endif // _TERM_WITH_COLORS_
-
-         if (numOfImplementations_ > 0) delete properties_;
-         //std::cout << "Log: initialize properties" << std::endl;
-         properties_ = new Property(args, argc);
-      }
-      numOfImplementations_++;
+      ME    = "Log";
+      CALL  = true;
+      TIME  = true;
+      TRACE = true;
+      DUMP  = true;
+      numWarnInvocations     = 0;
+      numErrorInvocations    = 0;
+      currentLogFormat       = "{0} {1} {2}: {3}";
+      logFormatPropertyRead  = false;
+      logLevel_ = L_PANIC | L_ERROR | L_WARN | L_INFO;
+#          ifdef _TERM_WITH_COLORS_
+         timeE   = string(LTGREEN_BLACK) + "TIME " + ESC;
+         callE   = string(BLACK_LTGREEN) + "CALL " + ESC;
+         traceE  = string(WHITE_BLACK  ) + "TRACE" + ESC;
+         plainE  = string(WHITE_BLACK  ) + "     " + ESC;
+         infoE   = string(GREEN_BLACK  ) + "INFO " + ESC;
+         warnE   = string(YELLOW_BLACK ) + "WARN " + ESC;
+         errorE  = string(RED_BLACK    ) + "ERROR" + ESC;
+         panicE  = string(BLACK_RED    ) + "PANIC" + ESC;
+         exitE   = string(GREEN_BLACK  ) + "EXIT " + ESC;
+#     else
+         timeX   = "TIME ";
+         callX   = "CALL ";
+         traceX  = "TRACE";
+         plainX  = "     ";
+         infoX   = "INFO ";
+         warnX   = "WARN ";
+         errorX  = "ERROR";
+         panicX  = "PANIC";
+         exitX   = "EXIT ";
+#     endif // _TERM_WITH_COLORS_
    }
 
 
    Log::~Log() {
-      numOfImplementations_--;
-      if (numOfImplementations_ == 0) {
-         if (properties_) delete properties_;
-         properties_ = 0;
-      }
    }
 
    void Log::setDefaultLogLevel() {
@@ -99,8 +88,8 @@ const char* const Log::BLACK_LTGREEN= "\033[40;46m";
    }
 
    void Log::setLogLevel(int argc, const char * const args[]) {
-      if ((properties_->findArgument(argc, args, "-?") > 0) ||
-          (properties_->findArgument(argc, args, "-h") > 0)) {
+      if ((properties_.findArgument(argc, args, "-?") > 0) ||
+          (properties_.findArgument(argc, args, "-h") > 0)) {
          usage();
          return;
       }
@@ -315,14 +304,14 @@ const char* const Log::BLACK_LTGREEN= "\033[40;46m";
 
    void Log::initSpecificTrace(const string& trace, const string& traceId)
    {
-      if (properties_->propertyExists(trace + "[" + name_ + "]")) {
-         if (properties_->getBoolProperty(trace + "[" + name_ + "]", false))
+      if (properties_.propertyExists(trace + "[" + name_ + "]")) {
+         if (properties_.getBoolProperty(trace + "[" + name_ + "]", false))
             addLogLevel(traceId);
          else removeLogLevel(traceId);
          return;
       }
-      if (properties_->propertyExists(trace)) {
-         if (properties_->getBoolProperty(trace, false))
+      if (properties_.propertyExists(trace)) {
+         if (properties_.getBoolProperty(trace, false))
             addLogLevel(traceId);
          else removeLogLevel(traceId);
       }
@@ -340,19 +329,19 @@ const char* const Log::BLACK_LTGREEN= "\033[40;46m";
       initSpecificTrace("trace", "TRACE");
       initSpecificTrace("dump", "DUMP");
 
-      if (properties_->getBoolProperty("+call", false))
+      if (properties_.getBoolProperty("+call", false))
          addLogLevel("CALL");
-      if (properties_->getBoolProperty("+time", false))
+      if (properties_.getBoolProperty("+time", false))
          addLogLevel("TIME");
-      if (properties_->getBoolProperty("+trace", false))
+      if (properties_.getBoolProperty("+trace", false))
          addLogLevel("TRACE");
-      if (properties_->getBoolProperty("+dump", false))
+      if (properties_.getBoolProperty("+dump", false))
          addLogLevel("DUMP");
 
       // format: {0}:{1}:{2}:{3}    <timestamp>:<levelStr>:<instance>:<text>
-      currentLogFormat = properties_->getStringProperty("LogFormat",
+      currentLogFormat = properties_.getStringProperty("LogFormat",
                                                        currentLogFormat);
-      string tmp = properties_->getStringProperty("LogFormat.Date","MEDIUM");
+      string tmp = properties_.getStringProperty("LogFormat.Date","MEDIUM");
 //       if (tmp == "SHORT") lookAndFeelDate = java.text.DateFormat.SHORT;
 //       else if (tmp.equals("MEDIUM"))
 //          lookAndFeelDate = java.text.DateFormat.MEDIUM;
@@ -370,8 +359,8 @@ const char* const Log::BLACK_LTGREEN= "\033[40;46m";
 //       else if (tmp.equals("FULL"))
 //          lookAndFeelTime = java.text.DateFormat.FULL;
 
-      string la = properties_->getStringProperty("LogFormat.Language","");
-      string co = properties_->getStringProperty("LogFormat.Country", "");
+      string la = properties_.getStringProperty("LogFormat.Language","");
+      string co = properties_.getStringProperty("LogFormat.Country", "");
 //       if (la != null && co != null) country = new Locale(la, co);
 
 //       String fileName = properties_.getProperty("logFile", (String)null);
@@ -391,19 +380,6 @@ const char* const Log::BLACK_LTGREEN= "\033[40;46m";
       ret.assign(timeStr, 0, pos);
       return ret;
    }
-
-   Property *Log::properties_        = 0;
-   int    Log::numWarnInvocations    = 0;
-   int    Log::numErrorInvocations   = 0;
-   int    Log::numOfImplementations_ = 0;
-   int    Log::logLevel_             = 0;
-   string Log::currentLogFormat      = "";
-   bool   Log::logFormatPropertyRead = false;
-   bool   Log::CALL = false;
-   bool   Log::TIME  = false;
-   bool   Log::TRACE = false;
-   bool   Log::DUMP  = false;
-
 
 }}} // end of namespace
 

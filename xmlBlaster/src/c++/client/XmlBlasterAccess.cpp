@@ -6,7 +6,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 #include <client/XmlBlasterAccess.h>
 #include <util/Global.h>
+#include <boost/lexical_cast.hpp>
 
+using boost::lexical_cast;
 using org::xmlBlaster::util::MessageUnit;
 using org::xmlBlaster::util::dispatch::DeliveryManager;
 
@@ -110,6 +112,13 @@ XmlBlasterAccess::initSecuritySettings(const string& secMechanism, const string&
 bool
 XmlBlasterAccess::disconnect(const DisconnectQos& qos, bool flush, bool shutdown, bool shutdownCb)
 {
+   if (log_.CALL) {
+      log_.call(ME, string("disconnect called with flush='") + Global::getBoolAsString(flush) + 
+   		              "' shutdown='" + Global::getBoolAsString(shutdown) + 
+                    "' shutdownCb='" + Global::getBoolAsString(shutdownCb) + "'");
+   }
+
+   if (log_.DUMP) log_.dump(ME, string("disconnect: the qos is:\n") + qos.toXml());
    if (connection_ == NULL) return false;
    bool ret  = connection_->disconnect(qos);
    return ret;
@@ -163,37 +172,73 @@ XmlBlasterAccess::queueMessage(const vector<MsgQueueEntry*>& entries)
 
 SubscribeReturnQos XmlBlasterAccess::subscribe(const SubscribeKey& key, const SubscribeQos& qos)
 {
+   if (log_.CALL) log_.call(ME, "subscribe");
+   if (log_.DUMP) {
+      log_.dump(ME, string("subscribe. The key:\n") + key.toXml());
+      log_.dump(ME, string("subscribe. The Qos:\n") + qos.toXml());
+   }
    return connection_->subscribe(key, qos);
 }
 
 vector<MessageUnit> XmlBlasterAccess::get(const GetKey& key, const GetQos& qos)
 {
+   if (log_.CALL) log_.call(ME, "get");
+   if (log_.DUMP) {
+      log_.dump(ME, string("get. The key:\n") + key.toXml());
+      log_.dump(ME, string("get. The Qos:\n") + qos.toXml());
+   }
    return connection_->get(key, qos);
 }
 
 vector<UnSubscribeReturnQos> 
 XmlBlasterAccess::unSubscribe(const UnSubscribeKey& key, const UnSubscribeQos& qos)
 {
+   if (log_.CALL) log_.call(ME, "unSubscribe");
+   if (log_.DUMP) {
+      log_.dump(ME, string("unSubscribe. The key:\n") + key.toXml());
+      log_.dump(ME, string("unSubscribe. The Qos:\n") + qos.toXml());
+   }
    return connection_->unSubscribe(key, qos);
 }
 
 PublishReturnQos XmlBlasterAccess::publish(const MessageUnit& msgUnit)
 {
+   if (log_.CALL) log_.call(ME, "publish");
+   if (log_.DUMP) {
+      log_.dump(ME, string("publish. The msgUnit:\n") + msgUnit.toXml());
+   }
    return connection_->publish(msgUnit);
 }
 
 void XmlBlasterAccess::publishOneway(const vector<MessageUnit>& msgUnitArr)
 {
+   if (log_.CALL) log_.call(ME, "publishOneway");
+   if (log_.DUMP) {
+      for (int i=0; i < msgUnitArr.size(); i++) {
+   	     log_.dump(ME, string("publishOneway. The msgUnit[") + lexical_cast<string>(i) + "]:\n" + msgUnitArr[i].toXml());
+      }
+   }
    return connection_->publishOneway(msgUnitArr);
 }
 
 vector<PublishReturnQos> XmlBlasterAccess::publishArr(vector<MessageUnit> msgUnitArr)
 {
+   if (log_.CALL) log_.call(ME, "publishArr");
+   if (log_.DUMP) {
+      for (int i=0; i < msgUnitArr.size(); i++) {
+   	     log_.dump(ME, string("publishArr. The msgUnit[") + lexical_cast<string>(i) + "]:\n" + msgUnitArr[i].toXml());
+      }
+   }
    return connection_->publishArr(msgUnitArr);
 }
 
 vector<EraseReturnQos> XmlBlasterAccess::erase(const EraseKey& key, const EraseQos& qos)
 {
+   if (log_.CALL) log_.call(ME, "erase");
+   if (log_.DUMP) {
+      log_.dump(ME, string("erase. The key:\n") + key.toXml());
+      log_.dump(ME, string("erase. The Qos:\n") + qos.toXml());
+   }
    return connection_->erase(key, qos);
 }
 
@@ -201,9 +246,13 @@ string
 XmlBlasterAccess::update(const string &sessionId, UpdateKey &updateKey, void *content, long contentSize, UpdateQos &updateQos)
 {
    if (log_.CALL) log_.call(ME, "::update");
+   if (log_.TRACE) log_.trace(ME, string("update. The sessionId is '") + sessionId + "'");
+   if (log_.DUMP) {
+      log_.dump(ME, string("update. The key:\n") + updateKey.toXml());
+      log_.dump(ME, string("update. The Qos:\n") + updateQos.toXml());
+   }
    if (updateClient_)
       return updateClient_->update(sessionId, updateKey, content, contentSize, updateQos);
-   std::cout << "UPDATE INVOCATION" << std::endl;
    return "<qos><state id='OK'/></qos>";
 }
 
