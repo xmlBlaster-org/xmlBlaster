@@ -159,7 +159,6 @@ TODO
 
    <compiler id="base-msvc" name="msvc" if="use-msvc">
       <defineset><define name="_WINDOWS" value="1" /></defineset>
-      <!-- defineset define="DLL_EXPORT"/ -->
       <!-- <compilerarg value="/GX" /> -->
       <compilerarg value="/Gm" if="is-debug"/>      
       <compilerarg value="/Zi" if="is-debug"/>      
@@ -1414,10 +1413,11 @@ TODO
            <define name="${corba.product}" value="1" />   <!-- "TAO" or "MICO" etc., see client/protocol/corba/CompatibleCorba.h -->
            <define name="WIN32" value="1" if="windows" />        
            <define name="_WINDOWS" value="1" if="windows" />
-           <define name="_MBCS" value="1" if="windows" />
-           <define name="_USRDLL" value="1" if="windows" />
-           <define name="DLL_BUILD" value="1" if="windows" />
-           <!-- undefine name="UNWANTEDDEF" / -->
+           <define name="DLL_BUILD" value="1" if="windows" />     <!-- Needed in XmlBCfg.h, sets DLL_Export -->
+           <define name="_MBCS" value="1" if="windows" />         <!-- TCHAR == char -->
+           <!--define name="_USRDLL" value="1" if="windows" /-->  <!-- Regular DLLs that statically link to MFC only -->
+           <!--define name="_WINDLL" value="1" if="windows" /-->  <!-- Regular DLLs that statically link to MFC only -->
+           <!-- undefine name="UNWANTEDDEF" / -->                 <!-- example only -->
          </defineset>
 
          <linker name="gcc"  if="use-gcc" />
