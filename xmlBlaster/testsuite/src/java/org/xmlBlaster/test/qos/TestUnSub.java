@@ -3,20 +3,26 @@ Name:      TestUnSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestUnSub.java,v 1.4 2002/12/18 13:16:20 ruff Exp $
+Version:   $Id: TestUnSub.java,v 1.5 2003/01/18 17:18:04 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
-import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.client.key.SubscribeKey;
+import org.xmlBlaster.client.key.UnSubscribeKey;
+import org.xmlBlaster.client.qos.SubscribeQos;
+import org.xmlBlaster.client.qos.SubscribeReturnQos;
+import org.xmlBlaster.client.qos.UnSubscribeQos;
+import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 
 import junit.framework.*;
 
@@ -96,13 +102,15 @@ public class TestUnSub extends TestCase implements I_Callback
     */
    protected void tearDown()
    {
-      String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
-                      "<key oid='" + publishOid + "' queryType='EXACT'>\n" +
-                      "</key>";
-      try {
-         EraseReturnQos[] arr = senderConnection.erase(xmlKey, "<qos/>");
-         assertEquals("Erase", 1, arr.length);
-      } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.getMessage()); }
+      if (publishOid.length() > 0) { // not for testSubscribeUnSubscribeEmpty
+         String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
+                           "<key oid='" + publishOid + "' queryType='EXACT'>\n" +
+                           "</key>";
+         try {
+            EraseReturnQos[] arr = senderConnection.erase(xmlKey, "<qos/>");
+            assertEquals("Erase", 1, arr.length);
+         } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.getMessage()); }
+      }
 
       senderConnection.disconnect(null);
    }
@@ -113,7 +121,7 @@ public class TestUnSub extends TestCase implements I_Callback
     * <p />
     * The returned subscribeOid is checked
     */
-   public void testSubscribeXPath()
+   public void subscribeXPath()
    {
       if (log.TRACE) log.trace(ME, "Subscribing using XPath syntax ...");
 
@@ -140,7 +148,7 @@ public class TestUnSub extends TestCase implements I_Callback
     * TEST: UnSubscribe to messages with XPATH.
     * <p />
     */
-   public void testUnSubscribeXPath()
+   public void unSubscribeXPath()
    {
       if (log.TRACE) log.trace(ME, "UnSubscribing using XPath syntax ...");
 
@@ -163,7 +171,7 @@ public class TestUnSub extends TestCase implements I_Callback
     * TEST: UnSubscribe to messages with EXACT oid (which was returned from our XPATH subscription).
     * <p />
     */
-   public void testUnSubscribeExact()
+   public void unSubscribeExact()
    {
       if (log.TRACE) log.trace(ME, "UnSubscribing using EXACT syntax ...");
 
@@ -186,7 +194,7 @@ public class TestUnSub extends TestCase implements I_Callback
     * <p />
     * The returned publishOid is checked
     */
-   public void testPublish()
+   public void doPublish()
    {
       if (log.TRACE) log.trace(ME, "Publishing a message ...");
 
@@ -214,6 +222,77 @@ public class TestUnSub extends TestCase implements I_Callback
       assertTrue("returned publishOid: " + publishReturnQos.toXml(), 0 != publishOid.length());
    }
 
+   /**
+    * TEST: subscribe and unSubscribe on an empty topic (without a publish)
+    * The unSubscribe is done with an oid instead of a subId
+    */
+   public void testSubscribeUnSubscribeOid()
+   {
+      log.info(ME, "Starting testSubscribeUnSubscribeOid()");
+      publishOid = "";
+
+      String oid = "SomeDummySubscribe";
+      SubscribeReturnQos subRet = null;
+      try {
+         SubscribeKey sk = new SubscribeKey(glob, oid);
+         SubscribeQos sq = new SubscribeQos(glob);
+         subRet = senderConnection.subscribe(sk.toXml(), sq.toXml());
+         log.info(ME, "testSubscribeUnSubscribeOid() subscribed to " + subRet.getSubscriptionId());
+      }
+      catch (XmlBlasterException e) {
+         log.error(ME, "testSubscribeUnSubscribeOid() subscribe failed: " + e.getMessage());
+         fail("testSubscribeUnSubscribeOid() subscribe failed: " + e.getMessage());
+      }
+
+      try {
+         // !! Here we unsubscribe with the oid instead of using the subId !!
+         UnSubscribeKey uk = new UnSubscribeKey(glob, oid);
+         UnSubscribeQos uq = new UnSubscribeQos(glob);
+         UnSubscribeReturnQos[] urq = senderConnection.unSubscribe(uk.toXml(), uq.toXml());
+         log.info(ME, "testSubscribeUnSubscribeOid() unSubscribed");
+         assertEquals("Return wrong", 1, urq.length);
+         assertEquals("SubId wrong", subRet.getSubscriptionId(), urq[0].getSubscriptionId());
+      }
+      catch (XmlBlasterException e) {
+         log.error(ME, "testSubscribeUnSubscribeOid() unSubscribe failed: " + e.getMessage());
+         fail("testSubscribeUnSubscribeOid() unSubscribe failed: " + e.getMessage());
+      }
+   }
+
+   /**
+    * TEST: subscribe and unSubscribe on an empty topic (without a publish)
+    */
+   public void testSubscribeUnSubscribeEmpty()
+   {
+      log.info(ME, "Starting testSubscribeUnSubscribeEmpty()");
+      publishOid = "";
+
+      SubscribeReturnQos subRet = null;
+      try {
+         SubscribeKey sk = new SubscribeKey(glob, "SomeDummySubscribe");
+         SubscribeQos sq = new SubscribeQos(glob);
+         subRet = senderConnection.subscribe(sk.toXml(), sq.toXml());
+         log.info(ME, "testSubscribeUnSubscribeEmpty() subscribed to " + subRet.getSubscriptionId());
+      }
+      catch (XmlBlasterException e) {
+         log.error(ME, "testSubscribeUnSubscribeEmpty() subscribe failed: " + e.getMessage());
+         fail("testSubscribeUnSubscribeEmpty() subscribe failed: " + e.getMessage());
+      }
+
+      try {
+         UnSubscribeKey uk = new UnSubscribeKey(glob, subRet.getSubscriptionId());
+         UnSubscribeQos uq = new UnSubscribeQos(glob);
+         UnSubscribeReturnQos[] urq = senderConnection.unSubscribe(uk.toXml(), uq.toXml());
+         log.info(ME, "testSubscribeUnSubscribeEmpty() unSubscribed");
+         assertEquals("Return wrong", 1, urq.length);
+         assertEquals("SubId wrong", subRet.getSubscriptionId(), urq[0].getSubscriptionId());
+      }
+      catch (XmlBlasterException e) {
+         log.error(ME, "testSubscribeUnSubscribeEmpty() unSubscribe failed: " + e.getMessage());
+         fail("testSubscribeUnSubscribeEmpty() unSubscribe failed: " + e.getMessage());
+      }
+   }
+
 
    /**
     * TEST: Publish a message, subscribe on it with XPATH and
@@ -223,11 +302,11 @@ public class TestUnSub extends TestCase implements I_Callback
    {
       log.info(ME, "Starting testSubscribeUnSubscribeExact()");
       numReceived = 0;
-      testPublish();           // Feed some data
-      testSubscribeXPath();    // Subscribe to it
+      doPublish();           // Feed some data
+      subscribeXPath();    // Subscribe to it
       waitOnUpdate(2000L);
       assertEquals("numReceived after publishing", 1, numReceived); // message arrived?
-      testUnSubscribeExact();  // cancel XPATH subscription with XPATH-subscription-oid
+      unSubscribeExact();  // cancel XPATH subscription with XPATH-subscription-oid
    }
 
 
@@ -239,11 +318,11 @@ public class TestUnSub extends TestCase implements I_Callback
    {
       log.info(ME, "Starting testSubscribeUnSubscribeXPath()");
       numReceived = 0;
-      testPublish();           // Feed some data
-      testSubscribeXPath();    // Subscribe to it
+      doPublish();           // Feed some data
+      subscribeXPath();    // Subscribe to it
       waitOnUpdate(2000L);
       assertEquals("numReceived after publishing", 1, numReceived); // message arrived?
-      testUnSubscribeXPath();  // cancel with XPATH syntax
+      unSubscribeXPath();  // cancel with XPATH syntax
    }
 
 
@@ -258,7 +337,7 @@ public class TestUnSub extends TestCase implements I_Callback
 
       numReceived += 1;
 
-      assertEquals("Wrong sender", senderName, updateQos.getSender().getLoginName());
+      //assertEquals("Wrong sender, used="+senderName+" updated="+updateQos.getSender().getRelativeName(), senderName, updateQos.getSender().getRelativeName());
       assertEquals("Wrong oid of message returned", publishOid, updateKey.getOid());
       assertEquals("Message content is corrupted", new String(senderContent), new String(content));
       assertEquals("Message contentMime is corrupted", contentMime, updateKey.getContentMime());
@@ -301,8 +380,10 @@ public class TestUnSub extends TestCase implements I_Callback
    public static Test suite()
    {
        TestSuite suite= new TestSuite();
-       String loginName = "Tim";
+       String loginName = "TestUnSub/5";
        Global glob = new Global();
+       suite.addTest(new TestUnSub(glob, "testSubscribeUnSubscribeEmpty", loginName));
+       suite.addTest(new TestUnSub(glob, "testSubscribeUnSubscribeOid", loginName));
        suite.addTest(new TestUnSub(glob, "testSubscribeUnSubscribeExact", loginName));
        suite.addTest(new TestUnSub(glob, "testSubscribeUnSubscribeXPath", loginName));
        return suite;
@@ -316,7 +397,15 @@ public class TestUnSub extends TestCase implements I_Callback
     */
    public static void main(String args[])
    {
-      TestUnSub testSub = new TestUnSub(new Global(args), "TestUnSub", "Tim");
+      TestUnSub testSub = new TestUnSub(new Global(args), "TestUnSub", "TestUnSub/5");
+
+      testSub.setUp();
+      testSub.testSubscribeUnSubscribeOid();
+      testSub.tearDown();
+
+      testSub.setUp();
+      testSub.testSubscribeUnSubscribeEmpty();
+      testSub.tearDown();
 
       testSub.setUp();
       testSub.testSubscribeUnSubscribeXPath();
