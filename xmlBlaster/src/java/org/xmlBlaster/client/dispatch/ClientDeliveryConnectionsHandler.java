@@ -25,7 +25,7 @@ import org.xmlBlaster.client.qos.PublishReturnQos;
  * Holding all necessary infos to establish a remote
  * connection and invoke publish(), subscribe(), connect() etc.
  * @see DeliveryConnectionsHandler
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public final class ClientDeliveryConnectionsHandler extends DeliveryConnectionsHandler
 {
@@ -37,7 +37,7 @@ public final class ClientDeliveryConnectionsHandler extends DeliveryConnectionsH
     */
    public ClientDeliveryConnectionsHandler(Global glob, DeliveryManager deliveryManager, AddressBase[] addrArr) throws XmlBlasterException {
       super(glob, deliveryManager, addrArr);
-      this.ME = "ClientDeliveryConnectionsHandler-" + deliveryManager.getQueue().getQueueId();
+      this.ME = "ClientDeliveryConnectionsHandler-" + deliveryManager.getQueue().getStorageId();
    }
 
    /**

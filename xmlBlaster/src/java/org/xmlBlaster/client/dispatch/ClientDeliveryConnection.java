@@ -21,7 +21,8 @@ import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
 import org.xmlBlaster.client.protocol.ProtocolPluginManager;
 import org.xmlBlaster.engine.helper.Address;
 import org.xmlBlaster.engine.helper.AddressBase;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.authentication.plugins.I_MsgSecurityInterceptor;
 
 import java.io.IOException;
@@ -31,7 +32,7 @@ import java.io.IOException;
  * Holding all necessary infos to establish callback
  * connections and invoke their update().
  * @see DeliveryConnection
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public final class ClientDeliveryConnection extends DeliveryConnection
 {
@@ -46,7 +47,7 @@ public final class ClientDeliveryConnection extends DeliveryConnection
     */
    public ClientDeliveryConnection(Global glob, ClientDeliveryConnectionsHandler connectionsHandler, AddressBase address) throws XmlBlasterException {
       super(glob, connectionsHandler, address);
-      this.ME = "ClientDeliveryConnection-" + connectionsHandler.getDeliveryManager().getQueue().getQueueId();
+      this.ME = "ClientDeliveryConnection-" + connectionsHandler.getDeliveryManager().getQueue().getStorageId();
       this.securityInterceptor = connectionsHandler.getDeliveryManager().getMsgSecurityInterceptor();
    }
 
@@ -103,24 +104,27 @@ public final class ClientDeliveryConnection extends DeliveryConnection
    private Object publish(MsgQueueEntry[] msgArr_) throws XmlBlasterException {
 
       // Convert to PublishEntry
-      MessageUnit[] msgArr = new MessageUnit[msgArr_.length];
+      MsgUnit[] msgArr = new MsgUnit[msgArr_.length];
 
       // The update QoS is completed ...
       for (int i=0; i<msgArr.length; i++) {
          MsgQueuePublishEntry publishEntry = (MsgQueuePublishEntry)msgArr_[i];
-         msgArr[i] = publishEntry.getMessageUnit();
+         msgArr[i] = publishEntry.getMsgUnit();
       }
 
+      MsgUnitRaw[] msgUnitRawArr = new MsgUnitRaw[msgArr.length];
       // We export/encrypt the message (call the interceptor)
       if (securityInterceptor != null) {
          for (int i=0; i<msgArr.length; i++) {
-            MessageUnit msgUnitCrypt = securityInterceptor.exportMessage(msgArr[i]);
-            msgArr[i] = msgUnitCrypt;
+            msgUnitRawArr[i] = securityInterceptor.exportMessage(msgArr[i].getMsgUnitRaw());
          }
          if (log.TRACE) log.trace(ME, "Exported/encrypted " + msgArr.length + " messages.");
       }
       else {
          log.warn(ME+".accessDenied", "No session security context, sending " + msgArr.length + " messages without encryption");
+         for (int i=0; i<msgArr.length; i++) {
+            msgUnitRawArr[i] = msgArr[i].getMsgUnitRaw();
+         }
       }
 
       String[] rawReturnVal = null;
@@ -130,7 +134,7 @@ public final class ClientDeliveryConnection extends DeliveryConnection
       //}
       //else {
          if (log.TRACE) log.trace(ME, "Before update " + msgArr.length + " acknowledged messages ...");
-         rawReturnVal = this.driver.publishArr(msgArr);
+         rawReturnVal = this.driver.publishArr(msgUnitRawArr);
          if (log.TRACE) log.trace(ME, "Success, sent " + msgArr.length + " acknowledged messages, return value #1 is '" + rawReturnVal[0] + "'");
       //}
 
