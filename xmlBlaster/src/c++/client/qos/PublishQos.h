@@ -100,8 +100,24 @@ public:
     * Send message to subscriber even if the content is the same as the previous?
     * <br />
     * Default is that xmlBlaster does send messages to subscribed clients, even the content didn't change.
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.publish.forceUpdate.html">The engine.qos.publish.forceUpdate requirement</a>
     */
    void setForceUpdate(bool force);
+
+   /**
+    * Control message life cycle on message expiry. 
+    * @param forceDestroy true Force message destroy on message expire<br />
+    *        false On message expiry messages which are already in callback queues are delivered.
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.publish.isVolatile.html">The engine.qos.publish.isVolatile requirement</a>
+    */
+   void setForceDestroy(bool forceDestroy);
+
+   /**
+    * As a default setting you can subscribe on all messages (PtP or PubSub). 
+    * @param isSubscribable true if Publish/Subscribe style is used<br />
+    *         false Only possible for PtP messages to keep PtP secret (you can't subscribe them)
+    */
+   void setSubscribable(bool isSubcribeable);
 
    /**
     * Mark a message to be readonly.

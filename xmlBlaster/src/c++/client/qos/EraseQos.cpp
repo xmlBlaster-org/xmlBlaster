@@ -47,6 +47,11 @@ EraseQos& EraseQos::operator =(const EraseQos& qos)
    return *this;
 }
 
+void EraseQos::setForceDestroy(bool forceDestroy)
+{
+   data_.setForceDestroy(forceDestroy);
+}
+
 /*
  * NOT IMPLEMENTED
  * @param notify true - notify subscribers that message is erased (default is true)

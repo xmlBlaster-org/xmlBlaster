@@ -63,6 +63,21 @@ namespace org { namespace xmlBlaster { namespace client { namespace qos {
    }
 
    /**
+    * Control message life cycle on message expiry. 
+    * @param forceDestroy true Force message destroy on message expire<br />
+    *        false On message expiry messages which are already in callback queues are delivered.
+    */
+   void PublishQos::setForceDestroy(bool forceDestroy)
+   {
+      msgQosData_.setForceDestroy(forceDestroy);
+   }
+
+   void PublishQos::setSubscribable(bool isSubcribeable)
+   {
+      msgQosData_.setSubscribable(isSubcribeable);
+   }
+
+   /**
     * Mark a message to be readonly.
     * <br />
     * Only the first publish() will be accepted, followers are denied.

@@ -2,7 +2,7 @@ INTRODUCTION:
 =============
 
 This is the implementation of the xmlBlaster client classes in c++.
-They are helper classes for simple CORBA access to xmlBlaster.
+They are helper classes for simple CORBA or SOCKET based access to xmlBlaster.
 
 The C++ source code is compiled to a shared library
 
@@ -16,6 +16,14 @@ Please read:
   http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.cpp.html
   
   http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.cpp.compile.html
+
+  http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.cpp.socket.html
+
+
+Protocol:
+
+  You can choose to use the CORBA plugin or the SOCKET plugin
+  or compile both simultanously to access the Java xmlBlaster server.
 
 
 HOW TO RUN THE TESTSUITE:

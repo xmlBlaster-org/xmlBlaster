@@ -38,6 +38,7 @@ private:
    PriorityEnum priority;
    bool persistent;
    long lifeTime;
+   bool forceUpdate;
    bool forceDestroy;
    bool readonly;
    long destroyDelay;
@@ -88,7 +89,7 @@ public:
          EraseKey key(global_);
          key.setOid(oid);
          EraseQos eq(global_);
-         //eq.setForceDestroy(eraseForceDestroy);
+         eq.setForceDestroy(eraseForceDestroy);
          connection_.erase(key, eq);
       }
    }
@@ -106,6 +107,7 @@ void PublishDemo::initEnvironment()
    priority = int2Priority(global_.getProperty().get("priority", NORM_PRIORITY));
    persistent = global_.getProperty().get("persistent", true);
    lifeTime = global_.getProperty().get("lifeTime", -1L);
+   forceUpdate = global_.getProperty().get("forceUpdate", false);
    forceDestroy = global_.getProperty().get("forceDestroy", false);
    readonly = global_.getProperty().get("readonly", false);
    destroyDelay = global_.getProperty().get("destroyDelay", 60000L);
@@ -154,6 +156,7 @@ void PublishDemo::initEnvironment()
    log_.info(ME, "   -priority       " + lexical_cast<string>(priority));
    log_.info(ME, "   -persistent     " + lexical_cast<string>(persistent));
    log_.info(ME, "   -lifeTime       " + lexical_cast<string>(lifeTime)); // org.jutils.time.TimeHelper.millisToNice(lifeTime));
+   log_.info(ME, "   -forceUpdate    " + lexical_cast<string>(forceUpdate));
    log_.info(ME, "   -forceDestroy   " + lexical_cast<string>(forceDestroy));
    if (clientPropertyMap.size() > 0) {
       QosData::ClientPropertyMap::const_iterator mi;
@@ -220,8 +223,9 @@ void PublishDemo::publish()
       pq.setPriority(priority);
       pq.setPersistent(persistent);
       pq.setLifeTime(lifeTime);
-      //pq.setForceDestroy(forceDestroy);
-      //pq.setSubscribable(subscribable);
+      pq.setForceUpdate(forceUpdate);
+      pq.setForceDestroy(forceDestroy);
+      pq.setSubscribable(subscribable);
       if (clientPropertyMap.size() > 0) {
          pq.setClientProperties(clientPropertyMap);
          //This is the correct way for a typed property:
@@ -231,7 +235,7 @@ void PublishDemo::publish()
       if (i == 0) {
          TopicProperty topicProperty(global_);
          topicProperty.setDestroyDelay(destroyDelay);
-         //topicProperty.setCreateDomEntry(createDomEntry);
+         topicProperty.setCreateDomEntry(createDomEntry);
          topicProperty.setReadonly(readonly);
          if (historyMaxMsg >= 0L) {
             HistoryQueueProperty prop(global_, "");
