@@ -75,6 +75,7 @@
    </description>
 
    <example lang="XML" type="RAW">
+
 An xml representation is
 
 XmlBlasterException.toXml():
@@ -105,7 +106,8 @@ XmlBlasterException.toXml():
  &lt;/exception>
    </example>
 
-   <example lang="any" type="RAW">
+   <example lang="JAVA" type="RAW">
+
 // Example showing how to convert an Exception (as a server developer)
 
 try {
@@ -124,7 +126,8 @@ catch (CorbaException ex) {
 }
    </example>
 
-   <example lang="any" type="RAW">
+   <example lang="JAVA" type="RAW">
+
 // Example showing usage by a client
 
 try {
@@ -149,14 +152,14 @@ catch (XmlBlasterException ex) {
    <todo type='HTML'>
    </todo>
    
-   <see type="REQ">admin.commands</see>
+   <!-- see type="REQ">admin.commands</see -->
    
    <author>ruff@swand.lake.de</author>
    <author>laghi@swissinfo.org</author>
    
    <date>2002 09 24</date>
    
-   <revision>$Revision: 1.6 $</revision>
+   <revision>$Revision: 1.7 $</revision>
 
    <testcase status="OPEN">
       <name>-</name>
