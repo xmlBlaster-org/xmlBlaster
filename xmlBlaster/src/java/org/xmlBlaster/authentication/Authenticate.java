@@ -500,6 +500,32 @@ final public class Authenticate implements I_Authenticate
       }
    }
 
+   public int getNumSubjects() {
+      return loginNameSubjectInfoMap.size();
+   }
+
+   public int getMaxSubjects() {
+      return Integer.MAX_VALUE; // TODO: allow to limit max number of different clients (or login sessions?)
+   }
+
+   /**
+    * Access a list of login names e.g. "joe,jack,averell,william"
+    * @return An empty string if no clients available
+    */
+   public String getSubjectList() {
+      int numSubjects = getNumSubjects();
+      if (numSubjects < 1)
+         return "";
+      StringBuffer sb = new StringBuffer(numSubjects * 30);
+      Iterator iterator = loginNameSubjectInfoMap.values().iterator();
+      while (iterator.hasNext()) {
+         if (sb.length() > 0)
+            sb.append(",");
+         SubjectInfo subjectInfo = (SubjectInfo)iterator.next();
+         sb.append(subjectInfo.getLoginName());
+      }
+      return sb.toString();
+   }
 
    /**
     * Dump state of this object into a XML ASCII string.
