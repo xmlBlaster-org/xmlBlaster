@@ -3,7 +3,7 @@ Name:      HttpPushHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: HttpPushHandler.java,v 1.24 2000/05/13 22:45:20 www Exp $
+Version:   $Id: HttpPushHandler.java,v 1.25 2000/05/14 11:12:36 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -523,13 +523,14 @@ public class HttpPushHandler
       private final long PING_INTERVAL;
       private boolean pingRunning = true;
       /** We wait for a browser response (pong) after out ping */
-      private boolean waitForPong = false;
+      private int waitForPong = 0;
       private long counter = 0L;
 
       /** Response from the browser on our ping */
       public void pong()
       {
-         waitForPong = false;
+         waitForPong--;
+         if (waitForPong < 0) waitForPong=0;
       }
 
       public void stopThread()
@@ -558,8 +559,8 @@ public class HttpPushHandler
             catch (InterruptedException i) { }
 
             try {
-               //if (false) {
-               if (waitForPong) {  //// Switched off !!!!!
+               //if (false) {  //// Switched off !!!!!
+               if (waitForPong > 2) {  // Allow two pongs delay over slow connections
                // This ping doesn't work over the internet??????
                   Log.warning(ME, "Browser seems to have disappeared, no response for my ping. Closing connection.");
                   pushHandler.cleanup();
@@ -568,7 +569,7 @@ public class HttpPushHandler
                else {
                   if (Log.TRACE) Log.trace(ME,"pinging the Browser ...");
                   pushHandler.ping("refresh-" + counter);
-                  waitForPong = true;
+                  waitForPong++;
                }
             } catch(Exception e) {
                //error handling: browser closed connection.
