@@ -3,7 +3,7 @@ Name:      TestFailSave.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSave.java,v 1.7 2000/02/25 18:56:23 ruff Exp $
+Version:   $Id: TestFailSave.java,v 1.8 2000/02/28 18:40:30 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -42,7 +42,8 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
    private String receiverName;         // sender/receiver is here the same client
 
    private int numReceived = 0;         // error checking
-   private int numPublish = 6;
+   private int numPublish = 8;
+   private int numStop = 3;
    private final String contentMime = "text/xml";
    private final String contentMimeExtended = "1.0";
 
@@ -68,8 +69,9 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
    protected void setUp()
    {
       startServer();
-
       try {
+         numReceived = 0;
+
          String[] args = new String[2];
          args[0] = "-iorPort";
          args[1] = "" + serverPort;
@@ -86,8 +88,11 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
          String qos = "<qos></qos>";
          corbaConnection.login(senderName, passwd, qos, this); // Login to xmlBlaster
       }
+      catch (XmlBlasterException e) {
+          Log.warning(ME, "setUp() - login failed");
+      }
       catch (Exception e) {
-          Log.error(ME, e.toString());
+          Log.error(ME, "setUp() - login failed: " + e.toString());
           e.printStackTrace();
       }
    }
@@ -108,7 +113,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
       try {
          strArr = corbaConnection.erase(xmlKey, qos);
       } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
-      if (strArr.length != numPublish) Log.error(ME, "Erased " + strArr.length + " messages:");
+      assertEquals("Wrong number of message erased", strArr.length, (numPublish - numStop));
 
       Util.delay(1000L);    // Wait some time
 
@@ -129,7 +134,6 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
                       "   //TestFailSave-AGENT" +
                       "</key>";
       String qos = "<qos></qos>";
-      numReceived = 0;
       subscribeOid = null;
       try {
          subscribeOid = corbaConnection.subscribe(xmlKey, qos);
@@ -139,7 +143,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
          assert("subscribe - XmlBlasterException: " + e.reason, false);
       }
       assert("returned null subscribeOid", subscribeOid != null);
-      assertNotEquals("returned subscribeOid is empty", 0, subscribeOid.length());
+      // NOT FOR FAIL SAVE: assertNotEquals("returned subscribeOid is empty", 0, subscribeOid.length());
    }
 
 
@@ -151,7 +155,8 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
    {
       if (Log.TRACE) Log.trace(ME, "Publishing a message ...");
 
-      String xmlKey = "<key oid='Message" + "-" + counter + "' contentMime='" + contentMime + "'>\n" +
+      String oid = "Message" + "-" + counter;
+      String xmlKey = "<key oid='" + oid + "' contentMime='" + contentMime + "'>\n" +
                       "   <TestFailSave-AGENT id='192.168.124.10' subId='1' type='generic'>" +
                       "   </TestFailSave-AGENT>" +
                       "</key>";
@@ -160,7 +165,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
       PublishQosWrapper qosWrapper = new PublishQosWrapper(); // == "<qos></qos>"
 
       corbaConnection.publish(msgUnit, qosWrapper.toXml());
-      Log.info(ME, "Success: Publishing done");
+      Log.info(ME, "Success: Publishing of " + oid + " done");
    }
 
 
@@ -172,9 +177,13 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
       testSubscribe();
       for (int ii=0; ii<numPublish; ii++) {
          try {
-            testPublish(ii);
-            waitOnUpdate(5000L);
-            assertEquals("numReceived after publishing", ii+1, numReceived); // message arrived?
+            if (ii == numStop) // 3
+               stopServer();
+            if (ii == 5)
+               startServer();
+            testPublish(ii+1);
+            waitOnUpdate(2000L);
+            //assertEquals("numReceived after publishing", ii+1, numReceived); // message arrived?
          }
          catch(XmlBlasterException e) {
             if (e.id.equals("TryingReconnect"))
@@ -236,13 +245,16 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
     */
    public void update(String loginName, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
    {
-      if (Log.CALLS) Log.calls(ME, "Receiving update of a message ...");
+      Log.info(ME, "Receiving update of message oid=" + updateKey.getUniqueKey() + " ...");
 
       numReceived += 1;
 
       assertEquals("Wrong receveiver", receiverName, loginName);
       assertEquals("Wrong sender", senderName, updateQoS.getSender());
       assertEquals("Message contentMime is corrupted", contentMime, updateKey.getContentMime());
+
+      String oid = "Message" + "-" + numReceived;
+      assertEquals("Message oid is wrong", oid, updateKey.getUniqueKey());
 
       messageArrived = true;
    }
@@ -266,7 +278,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
          {}
          sum += pollingInterval;
          if (sum > timeout) {
-            Log.warning(ME, "Timeout of " + timeout + " occurred");
+            Log.info(ME, "Timeout of " + timeout + " occurred");
             break;
          }
       }
@@ -291,6 +303,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
       serverThread = new ServerThread(serverPort);
       serverThread.start();
       Util.delay(3000L);    // Wait some time
+      Log.info(ME, "Server is up again!");
    }
 
 
@@ -298,6 +311,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
    {
       serverThread.stopServer = true;
       Util.delay(500L);    // Wait some time
+      Log.info(ME, "Server is down!");
    }
 
 
@@ -310,6 +324,8 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
       private final String ME = "ServerThread";
       int port = 7609; // this is the default port, which is probably blocked by another xmlBlaster server
       boolean stopServer = false;
+      org.xmlBlaster.Main xmlBlasterMain = null;
+
 
       ServerThread(int port) { this.port = port; }
 
@@ -320,10 +336,11 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
          args[1] = "" + port;
          args[2] = "-doBlocking";
          args[3] = "false";
-         new org.xmlBlaster.Main(args);
+         xmlBlasterMain = new org.xmlBlaster.Main(args);
          while(!stopServer) {
-            try { Thread.currentThread().sleep(500L); } catch( InterruptedException i) {}
+            try { Thread.currentThread().sleep(100L); } catch( InterruptedException i) {}
          }
+         xmlBlasterMain.shutdown(false);
          stopServer = false;
          Log.info(ME, "Stopping the xmlBlaster server instance ...");
       }
