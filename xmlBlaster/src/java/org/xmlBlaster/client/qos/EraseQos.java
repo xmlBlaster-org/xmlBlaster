@@ -56,14 +56,16 @@ public final class EraseQos
       return this.queryQosData;
    }
 
-   /**
+   /*
     * Notify the subscribers on erase. 
     * <p/>
     * Defaults to true. 
-    */
+    * NOTE: This is not supported, currently only the subscriber decides if
+    * he wants notification.
    public void notifySubscribers(boolean notify) {
       this.queryQosData.setWantNotify(notify);
    }
+   */
 
    /**
     * Defaults to false: If a topic is still referenced by callback messages
