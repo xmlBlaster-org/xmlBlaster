@@ -8,7 +8,7 @@ Current cvs
     PublishDemo -protocol SOCKET -numPublish 5 -oneway true -plugin/socket/useUdpForOneway true
     SubscribeDemo -protocol SOCKET -updateOneway true -plugin/socket/useUdpForOneway true
 
- o C++ client: Fixed publishOnewa()
+ o C++ client: Fixed publishOneway()
 
  o C++ client: Added <updateOneway/> support to SubscribeQos
 
