@@ -13,6 +13,10 @@
       If the SQL statement was a 'SELECT' the result set is delivered xml encoded.
       </p>
       <p>
+      In the example section below we provide examples how to access Oracle and how
+      to access dBase files from any xmlBlaster client.
+      </p>
+      <p>
       You need to setup the xmlBlaster JDBC driver in xmlBlaster.properties to use the RDBMS service.<br />
       First the xmlBlaster driver has to be activated (which is default):
       </p>
@@ -27,17 +31,17 @@ Protocol.CallbackDrivers=IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver,\
       Second, you have to activate the JDBC driver of your databases:
       </p>
       <table border="1"><tr><td><pre>
-JdbcDriver.drivers=oracle.jdbc.driver.OracleDriver,\
+JdbcDriver.drivers=sun.jdbc.odbc.JdbcOdbcDriver,\
+                   ORG.as220.tinySQL.dbfFileDriver,\
+                   oracle.jdbc.driver.OracleDriver,\
                    org.gjt.mm.mysql.Driver,\
                    postgresql.Driver
       </pre></td></tr></table>
       <p>
       JdbcDriver.drivers is a comma delimited list of database drivers.
       Use as many as you like.
-      The appropriate driver class files(jar) must be in your classpath.
-      (If you are using jdk 1.2, having the jar file in jre/lib/ext will not do you any good.
-      It must be in the CLASSPATH.  This is due to the bootstrapping of java)<br />
-      Now you can start up the server: <code>java org.xmlBlaster.Main</code>
+      The appropriate driver class files(jar) must be in your classpath.<br />
+      Note that Sun's JDBC-ODBC bridge and tinySQL (a dBase driver) are activated as default.
       </p>
       <p>
       To test it we have provided a command line based demo client XmlDBClient
@@ -153,11 +157,11 @@ java javaclients.jdbc.XmlDBClient -url "jdbc:dbfFile:." -user joe -type update \
             no socket based JDBC driver).
         </li>
         <li>
-            The given url "jdbc:dbfFile:." looks for or adds dBase files in the given directory ".", that is
-            there where xmlBlaster was started. In the above example you will find a dBase file
-            cars.DBF in the directory where you started xmlBlaster.<br />
+            The given url <i>"jdbc:dbfFile:."</i> looks for or adds dBase files in the given directory ".", that is
+            there where xmlBlaster was started. In the above example there will be created a dBase file
+            <i>cars.DBF</i> in the directory where you started xmlBlaster.<br />
             You can pass any path on your local harddisk like
-            "jdbc:dbfFile:/home/marcel/test" or "jdbc:dbfFile:C:\testBlaster\db"<br />
+            <i>"jdbc:dbfFile:/home/marcel/test"</i> or <i>"jdbc:dbfFile:C:\testBlaster\db"</i><br />
             If you have a dBase file <i>C:\testBlaster\db\myData.DBF</i> you access it like
             <i>"jdbc:dbfFile:C:\testBlaster\db"</i> and <i>select * from myData</i>
         </li>
@@ -166,7 +170,7 @@ java javaclients.jdbc.XmlDBClient -url "jdbc:dbfFile:." -user joe -type update \
             programming language like C/C++, Java, PHP, perl  etc.
         </li>
         <li>
-            The last query returns the cars entered formatted with XML.
+            The query in the above example returns the cars entered formatted with XML.
         </li>
       </ol>
       <table border="1"><tr><td><pre>
@@ -247,7 +251,7 @@ java javaclients.jdbc.XmlDBClient \
          &lt;column>NAME&lt;/column>
          &lt;column>AGE&lt;/column>
        &lt;/columnnames>
-       &lt;rownum>2&lt;/rownum>
+       &lt;rownum>3&lt;/rownum>
      &lt;/desc>
      &lt;results>
        &lt;row>
@@ -266,6 +270,14 @@ java javaclients.jdbc.XmlDBClient \
            8
          &lt;/AGE>
        &lt;/row>
+       &lt;row>
+         &lt;NAME>
+           Gesa
+         &lt;/NAME>
+         &lt;AGE>
+           10
+         &lt;/AGE>
+       &lt;/row>
      &lt;/results>
    &lt;/dbadapterresults>
       </pre></td></tr></table>
@@ -276,7 +288,7 @@ java javaclients.jdbc.XmlDBClient \
 
    <example lang="any" type="HTML">
      <p>
-        As default Sun's <b>JDBC-ODBC bridge</b> is activate so you can
+        As default Sun's <b>JDBC-ODBC bridge</b> is activated so you can
         instantly access any ODBC database over xmlBlaster.
      </p>
    </example>
@@ -295,7 +307,7 @@ java javaclients.jdbc.XmlDBClient \
    <hacker>jmbirchfield@proteus-technologies.com</hacker>
    <effort></effort>
    <date>2000 05 06</date>
-   <revision>$Revision: 1.8 $</revision>
+   <revision>$Revision: 1.9 $</revision>
    <testcase status="INWORK">
       <name>-</name>
       <comment>It is not simple to provide a fully automated testsuite, as the RDBMS must be provided separately</comment>
