@@ -3,7 +3,7 @@ Name:      BlasterHttpProxyServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxyServlet.java,v 1.9 2000/03/28 07:52:03 kkrafft2 Exp $
+Version:   $Id: BlasterHttpProxyServlet.java,v 1.10 2000/03/29 16:33:35 kkrafft2 Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -37,7 +37,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
  *   HTTP 1.1 specifies rfc2616 that the connection stays open as the
  *   default case. How must this code be changed?
  * @author Marcel Ruff ruff@swand.lake.de
- * @version $Revision: 1.9 $
+ * @version $Revision: 1.10 $
  */
 public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlaster.util.LogListener
 {
@@ -57,7 +57,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
       //Log.addLogLevel("CALLS");
       Log.addLogLevel("TIME");
       //Log.addLogListener(this);
-      Log.info(ME, "Initialize ...");
+      Log.trace(ME, "Initialize ...");
    }
 
 
@@ -70,7 +70,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
    public void doGet(HttpServletRequest req, HttpServletResponse res)
                                  throws ServletException, IOException
    {
-      Log.info(ME, "Entering doGet() ...");
+      Log.trace(ME, "Entering doGet() ...");
       res.setContentType("text/html");
       StringBuffer retStr = new StringBuffer("");
       String errorText="";
@@ -85,7 +85,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
 
          //------------------ Login -------------------------------------------------
          if (actionType.equals("login")) {
-            Log.info(ME, "Login action ...");
+            Log.trace(ME, "Login action ...");
 
             String loginName = Util.getParameter(req, "loginName", null);    // "Joe";
             if (loginName == null || loginName.length() < 1)
@@ -98,12 +98,12 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
             //                        xmlBlaster connection. This is an security problem.
             ProxyConnection proxyConnection = BlasterHttpProxy.getProxyConnection( loginName, passwd );
             //pushHandler.message("Successful login.");
-            pushHandler.ping();
+            pushHandler.startPing();
 
             proxyConnection.addHttpPushHandler( sessionId, pushHandler );
 
             // Don't fall out of doGet() to keep the HTTP connection open
-            Log.info(ME, "Waiting forever, permanent HTTP connection ...");
+            Log.trace(ME, "Waiting forever, permanent HTTP connection ...");
 
 
             while (!pushHandler.closed()) {
@@ -121,7 +121,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
             proxyConnection.removeHttpPushHandler( sessionId, pushHandler );
 
 
-            Log.info(ME, "Permamenent HTTP connection lost, leaving BlasterHttpProxyServlet.doGet() ....");
+            Log.trace(ME, "Permamenent HTTP connection lost, leaving BlasterHttpProxyServlet.doGet() ....");
          }
 
          //------------------ Test --------------------------------------------------
@@ -140,14 +140,14 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
                }
                HttpPushHandler cbPushHandler = proxyConnection.getHttpPushHandler(sessionId);
                cbPushHandler.setReady( true );
-               pushHandler.push("// - doubleSlash",false);
+               pushHandler.push("// - www.doubleSlash.de",false);
                return;
             }
             catch (XmlBlasterException e) {
                Log.error(ME, "Caught XmlBlaster Exception: " + e.reason);
                return;
             }
-      	}
+        }
 
 
       } catch (XmlBlasterException e) {
@@ -159,7 +159,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
          pushHandler.push("if (parent.error != null) parent.error('"+e.toString()+"');\n",false);
          e.printStackTrace();
       } finally {
-         Log.info(ME, "Entering finally of permanent connection");
+         Log.trace(ME, "Entering finally of permanent connection");
          pushHandler.cleanup();
       }
    }
@@ -195,7 +195,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
       //HttpSession session = req.getSession();
       HttpSession session = req.getSession(true);
       String sessionId = req.getRequestedSessionId();
-      Log.info(ME, "Entering BlasterHttpProxy.doPost() servlet for sessionId=" + sessionId);
+      Log.trace(ME, "Entering BlasterHttpProxy.doPost() servlet for sessionId=" + sessionId);
       ProxyConnection proxyConnection = null;
       Server xmlBlaster = null;
       HttpPushHandler pushHandler = null;
@@ -218,11 +218,11 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
          String actionType = Util.getParameter(req, "ActionType", "NONE");
 
          if (actionType.equals("logout")) {
-            Log.info(ME, "Logout ActionType arrived ...");
+            Log.trace(ME, "Logout ActionType arrived ...");
          }
 
          else if (actionType.equals("subscribe")) {
-            Log.info(ME, "subscribe arrived ...");
+            Log.trace(ME, "subscribe arrived ...");
             String xmlKey =
                       "<key oid='' queryType='XPATH'>\n" +
                       "   //key" +
@@ -230,14 +230,14 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
             String qos = "<qos></qos>";
             try {
                String subscribeOid = xmlBlaster.subscribe(xmlKey, qos);
-               Log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
+               Log.trace(ME, "Success: Subscribe on " + subscribeOid + " done");
             } catch(XmlBlasterException e) {
                Log.warning(ME, "XmlBlasterException: " + e.reason);
             }
          }
 
          else if (actionType.equals("unSubscribe")) {
-            Log.info(ME, "unSubscribe arrived ...");
+            Log.trace(ME, "unSubscribe arrived ...");
          }
 
          else if (actionType.equals("get")) {
@@ -245,7 +245,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
          }
 
          else if (actionType.equals("publish")) {
-            Log.info(ME, "publish arrived ...");
+            Log.trace(ME, "publish arrived ...");
             String xmlKey =
                       "<key oid='HelloWorld' contentMime='text/plain' contentMimeExtended='-'>\n" +
                       "</key>";
@@ -254,14 +254,14 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
             MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes());
             try {
                String publishOid = xmlBlaster.publish(msgUnit, qos);
-               Log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
+               Log.trace(ME, "Success: Publishing done, returned oid=" + publishOid);
             } catch(XmlBlasterException e) {
                Log.warning(ME, "XmlBlasterException: " + e.reason);
             }
          }
 
          else if (actionType.equals("erase")) {
-            Log.info(ME, "erase arrived ...");
+            Log.trace(ME, "erase arrived ...");
          }
 
          else {

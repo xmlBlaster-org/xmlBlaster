@@ -3,7 +3,7 @@ Name:      HttpPushHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: HttpPushHandler.java,v 1.12 2000/03/28 07:52:03 kkrafft2 Exp $
+Version:   $Id: HttpPushHandler.java,v 1.13 2000/03/29 16:33:35 kkrafft2 Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -32,11 +32,11 @@ import org.xmlBlaster.util.*;
 public class HttpPushHandler
 {
 
-   private final String ME 							= "HttpPushHandler";
+   private final String ME                      = "HttpPushHandler";
    private final long PING_INTERVAL             = 40000L;
    private final HttpServletRequest req;
    private final HttpServletResponse res;
-   private boolean closed 								= false;
+   private boolean closed                                                               = false;
    private ServletOutputStream outMulti;
    private PrintWriter outPlain;
    /** The header of the HTML page */
@@ -45,11 +45,9 @@ public class HttpPushHandler
    private String tail;
    private String readyStr;
    /** handlesMultipart is true for netscape browser */
-   private boolean handlesMultipart 				= false;
-   private boolean ready            				= false;
-
-   private HttpPingThread pingThread 				= null;
-
+   private boolean handlesMultipart             = false;
+   private boolean ready                        = false;
+   private HttpPingThread pingThread            = null;
    private Vector pushQueue                     = null;
 
 
@@ -85,9 +83,8 @@ public class HttpPushHandler
       pushQueue = new Vector();
       ready = true;
 
-      Log.info(ME,"Creating PingThread ...");
+      Log.trace(ME,"Creating PingThread ...");
       pingThread = new HttpPingThread( this, PING_INTERVAL );
-      pingThread.start();
    }
 
 
@@ -104,7 +101,7 @@ public class HttpPushHandler
       else
          this.outPlain =  res.getWriter();
 
-      Log.info(ME, "Initialize ...");
+      Log.trace(ME, "Initialize ...");
 
       if (this.head == null) {
          // this.head = "<!DOCTYPE HTML PUBLIC \"-//IETF//DTD HTML//EN\">" +
@@ -156,8 +153,12 @@ public class HttpPushHandler
       catch(Exception e) {
          Log.error(ME,"Error occurred while de-initializing the push handler :"+e.toString());
       }
+   }
 
-
+   public void startPing() throws ServletException, IOException
+   {
+      pingThread.start();
+      ping();
    }
 
 
@@ -266,21 +267,22 @@ public class HttpPushHandler
                StringBuffer buf = new StringBuffer(head);
 
                for( int i = 0; i < pushQueue.size(); i++ )
-               	buf.append((String)pushQueue.elementAt(i));
+                buf.append((String)pushQueue.elementAt(i));
 
                if( confirm ) {
                   buf.append(readyStr);
-         			ready = false; 
+                  ready = false;
                }
 
                buf.append(tail);
                if (Log.DUMP) Log.dump(ME, "Sending to callbackFrame:\n" + buf.toString());
 
                outMulti.println(buf.toString());
-               
+
                outMulti.println();
                outMulti.println("--End");
                outMulti.flush();
+               Log.trace(ME,"Push content queue successfully sent.");
                pushQueue.clear();
             }
          }
@@ -301,7 +303,7 @@ public class HttpPushHandler
                outPlain.println(head);
 
                for( int i = 0; i < pushQueue.size(); i++ )
-               	outPlain.println((String)pushQueue.elementAt(i));
+                outPlain.println((String)pushQueue.elementAt(i));
 
                if( confirm ) {
                   outPlain.println(readyStr);
@@ -334,11 +336,11 @@ public class HttpPushHandler
          String codedQos               = URLEncoder.encode( updateQos );
 
 
-         Log.info(ME,"**********Update:"+updateKey.substring(0,40));
+         Log.trace(ME,"**********Update:"+updateKey.substring(0,40));
          /*
          Log.plain(ME,"Key:"+updateKey);
          Log.plain(ME,"\nContent:"+content);
-         Log.info(ME,"************* End of Update *************************");
+         Log.trace(ME,"************* End of Update *************************");
          */
          String pushStr = "if (parent.update != null) parent.update('"+codedKey+"','"+codedContent+"','"+codedQos+"');\n";
          push(pushStr);
@@ -393,11 +395,14 @@ public class HttpPushHandler
          if (Log.CALLS) Log.calls(ME, "Entering constructor HTTP ping interval=" + pingInterval + " millis");
       }
       public void run() {
-         Log.info(ME, "Pinging browser ...");
+         Log.trace(ME, "Pinging browser ...");
          while (pingRunning) {
+            
             try {
                Thread.currentThread().sleep(PING_INTERVAL);
-            } catch (InterruptedException i) { }
+            } 
+            catch (InterruptedException i) { }
+            
             try {
                if(Log.TRACE) Log.trace(ME,"pinging the Browser ...");
                pushHandler.ping();
