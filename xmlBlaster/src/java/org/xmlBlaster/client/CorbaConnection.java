@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.37 2000/03/02 11:22:25 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.38 2000/03/03 17:55:52 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
@@ -45,9 +45,6 @@ import java.util.Properties;
  * One drawback is, that the return values of your requests are lost, since you were none blocking
  * continuing during the connection was lost.
  * <p />
- * When your client starts up, and login to xmlBlaster fails, the login will block
- * until the polling resolves xmlBlaster.
- * <p />
  * You can have a look at xmlBlaster/testsuite/org/xmlBlaster/TestFailSave.java to find out how it works
  * <p />
  * You should set jacorb.retries=0  in $HOME/.jacorb_properties if you use the fail save mode
@@ -57,7 +54,7 @@ import java.util.Properties;
  * If the ping fails, the login polling is automatically activated.
  * <p />
  * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http
- * @version $Revision: 1.37 $
+ * @version $Revision: 1.38 $
  * @author $Author: ruff $
  */
 public class CorbaConnection implements ServerOperations
@@ -101,7 +98,6 @@ public class CorbaConnection implements ServerOperations
    /** Remember the number of successful logins */
    private long numLogins = 0L;
 
-   // !!! remove these again:
    private MessageUnitContainer[] dummyMArr = new MessageUnitContainer[0];
    private String[] dummySArr = new String[0];
    private String dummyS = "";
@@ -287,11 +283,12 @@ public class CorbaConnection implements ServerOperations
                        " - try to specify '-iorFile <fileName>' if server is running on same host (not using any naming service)\n" +
                        " - try to specify '-iorHost <hostName> -iorPort 7609' to locate xmlBlaster (not using any naming service)\n" +
                        " - or contact your system administrator to start a naming service";
-         Log.error(ME + ".NoNameService", text);
+         Log.warning(ME + ".NoNameService", text);
          throw new XmlBlasterException(ME + ".NoNameService", text);
       }
       if (nameServiceObj == null) {
-         Log.error(ME + ".NoNameService", "Can't access naming service (null), is there any running?");
+         if (!isReconnectPolling)
+            Log.warning(ME + ".NoNameService", "Can't access naming service (null), is there any running?");
          throw new XmlBlasterException(ME + ".NoNameService", "Can't access naming service (null), is there any running?");
       }
       if (Log.TRACE) Log.trace(ME, "Successfully accessed initial orb references for naming service (IOR)");
@@ -307,7 +304,7 @@ public class CorbaConnection implements ServerOperations
                              // but it is not sure that the naming service is really running
       }
       catch (Exception e) {
-         Log.error(ME + ".NoNameService", "Can't access naming service");
+         Log.warning(ME + ".NoNameService", "Can't access naming service");
          throw new XmlBlasterException(ME + ".NoNameService", e.toString());
       }
    }
@@ -335,7 +332,6 @@ public class CorbaConnection implements ServerOperations
    {
       if (Log.CALLS) Log.calls(ME, "getAuthenticationService() ...");
       if (authServer != null) {
-         // !!! check connection and do polling if not connected
          return authServer;
       }
 
@@ -384,9 +380,9 @@ public class CorbaConnection implements ServerOperations
       // 3) asking Name Service CORBA compliant
       boolean useNameService = Args.getArg(args, "-ns", true);  // default is to ask the naming service
       if (useNameService) {
-         NamingContext nc = getNamingService();
 
          try {
+            NamingContext nc = getNamingService();
             NameComponent [] name = new NameComponent[1];
             name[0] = new NameComponent();
             name[0].id = "xmlBlaster-Authenticate";
@@ -468,17 +464,15 @@ public class CorbaConnection implements ServerOperations
          numLogins++;
          if (Log.TRACE) Log.trace(ME, "Success, login for " + loginName);
       } catch(XmlBlasterException e) {
-         if (Log.TRACE) Log.trace(ME, "Login failed for " + loginName);
+         if (Log.TRACE) Log.trace(ME, "Login failed for " + loginName + ", numLogins=" + numLogins);
+         if (numLogins == 0)
+            startPinging();
          throw e;
       }
       if (isReconnectPolling && numLogins > 0)
          clientCallback.reConnected();
 
-      if (pingInterval > 0L && pingThread == null) {
-         pingThread = new PingThread(this, pingInterval);
-         pingThread.start();
-      }
-
+      startPinging();
    }
 
 
@@ -524,11 +518,11 @@ public class CorbaConnection implements ServerOperations
             authServer = null;
             xmlBlaster = null;
             clientCallback.lostConnection(); // notify client
-            doLoginPolling(false);
+            doLoginPolling();
             throw new XmlBlasterException("TryingReconnect", "Trying to find xmlBlaster again ..."); // Client may hope on reconnect
          }
          if (numLogins == 0L) {
-            doLoginPolling(true); // in blocking mode
+            doLoginPolling();
          }
       }
       else {
@@ -541,15 +535,23 @@ public class CorbaConnection implements ServerOperations
    /**
     * If we lost the connection to xmlBlaster, poll here to reconnect
     */
-   private void doLoginPolling(boolean blocking)
+   private void doLoginPolling()
    {
       Log.info(ME, "Going to poll for xmlBlaster and queue your messages ...");
-
       LoginThread lt = new LoginThread(this, retryInterval, retries);
       lt.start();
+   }
 
-      if (blocking)
-         try { lt.join(); } catch(InterruptedException e) {}
+
+   /**
+    * Start a never ending ping thread
+    */
+   private void startPinging()
+   {
+      if (pingInterval > 0L && pingThread == null) {
+         pingThread = new PingThread(this, pingInterval);
+         pingThread.start();
+      }
    }
 
 
