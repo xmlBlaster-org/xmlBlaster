@@ -144,6 +144,13 @@ build.bat c   (on Windows)
 build.sh -Dc.debug=false -verbose c
      </pre>
      <p>
+     You can force using the <a href="http://www.intel.com/software/products/compilers/clin/" target="others">INTEL C++ compiler</a>
+     by setting <i>use-icc</i> to true:
+     </p>
+     <pre>
+build.sh -Duse-icc=true c
+     </pre>
+     <p>
      To run the testsuite invoke
      </p>
      <pre>
@@ -594,20 +601,20 @@ Solaris:
    </pre>
 
    <p>
-   We include the header <i>XmlBlasterAccessUnparsed.h</i> on line 14 for full blown access.
+   We include the header <i>XmlBlasterAccessUnparsed.h</i> on line 15 for full blown access.
    This header contains a struct with function pointers on all functions necessary to communicate
    with xmlBlaster. The implementation is multi threaded to receive asynchronous callback messages
-   in the function <i>myUpdate()</i> on line 20.
+   in the function <i>myUpdate()</i> on line 21.
    </p>
    <p>
-   On line 77 we create a client connection instance (one instance of the above struct),
+   On line 81 we create a client connection instance (one instance of the above struct),
    which allows us to connect to xmlBaster and work with the server.
    If we need multiple connections we just call <i>getXmlBlasterAccessUnparsed(argc, argv)</i>
    multiple times which returns totally independent connection handlers which
    may be used from different threads if desired.
    </p>
    <p>
-   Have a look at line 78, at the method invocation <i>xa->initialize(xa, myUpdate)</i>.
+   Have a look at line 82, at the method invocation <i>xa->initialize(xa, myUpdate)</i>.
    We register our function <i>myUpdate()</i> to receive the callbacks from xmlBlaster.
    If a callback message arrives a second thread will deliver it to our function <i>myUpdate()</i>.<br />
    The argument <code>userData</code> can be casted to
@@ -616,7 +623,7 @@ Solaris:
    which want to transport client specific data in <code>xa->userData</code> to the <code>update()</code> method
    </p>
    <p>
-   On line 88 up to 104 we specify a ConnectQos with XML syntax and use this to connect
+   On line 92 up to 108 we specify a ConnectQos with XML syntax and use this to connect
    to xmlBlaster. The XML markup is specified in the <i>interface.connect</i> requirement (see links below).
    Note the &lt;callback> section, here we pass the callback server address
    which is in our case the local host name and the generated local port of
@@ -629,6 +636,14 @@ Solaris:
    messages in synchronous mode and clean up at the end.
    Take care to free() resources on the way and to check the exception struct after every invocation
    to avoid memory leaks.
+   </p>
+   <p>
+   On line 117 we use the method <code>xmlBlasterFree(p)</code> which does directly a <code>free(p)</code>
+   and nothing more.
+   On UNIX you may safely call <code>free(p)</code> directly but on Windows you'll get problems if you
+   link more then one Windows runtime libraries to your executable, every of those will have its own
+   malloc/free implementation and allocating memory in the DLL and freeing this memory in your client code
+   may crash the application.
    </p>
    <p>
    Note: If the client wishes to store some client specific data in the <i>XmlBlasterAccessUnparsed</i> instance
@@ -821,7 +836,7 @@ Solaris:
     </pre>
     <p>
     In this example we want to do logging ourself and define the method
-    <i>myLogger()</i> to do so (line 116).
+    <i>myLogger()</i> to do so (line 118).
     </p>
     <p>
     The important line (55) is <i>xa->log = myLogger</i> where
@@ -897,6 +912,19 @@ Solaris:
        <td>SOCKET <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html" target="others">protocol.socket requirement</a></td>
        <td><a href="http://expat.sourceforge.net/" target="others">Expat</a> is not yet integrated</td>
        <td>2003-06-03</td>
+       <td><a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/src/c/README">README</a></td>
+       </tr>
+
+       <tr>
+       <td>5</td>
+       <td>Linux 2.4.20</td>
+       <td><a href="http://www.intel.com/software/products/compilers/clin/" target="others">Intel(R) C++ Compiler for 32-bit applications, Version 7.1</a></td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.848+</a></td>
+       <td><a href="http://sources.redhat.com/pthreads-win32" target="others">pthreads-win32</a></td>
+       <td>SOCKET <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html" target="others">protocol.socket requirement</a></td>
+       <td><a href="http://expat.sourceforge.net/" target="others">Expat</a> is not yet integrated</td>
+       <td>2003-06-26</td>
        <td><a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
        <td><a href="http://www.xmlBlaster.org/xmlBlaster/src/c/README">README</a></td>
        </tr>
@@ -1032,7 +1060,7 @@ Solaris:
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2003 05 29</date>
-   <revision>$Revision: 1.26 $</revision>
+   <revision>$Revision: 1.27 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
