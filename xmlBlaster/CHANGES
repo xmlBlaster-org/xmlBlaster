@@ -27,10 +27,6 @@ TODO:
   - Port to use Piccolo SAX parser ?
   - http://www.thoughtcrime.org/profiler.html
 * Embeed RDBMS http://axion.tigris.org/features.html
-* RMI-SOAP gateway: http://www.sys-con.com/java/articleprint.cfm?id=1479
-  Or embeed SOAP: http://www.soapanywhere.org/saw/index.jsp
-     (uses mixture of LGPL and APACHE)
-* Use http://xdoclet.sourceforge.net/ for our xmlBlaster.war (web archive)
 
 BUGS:
 
@@ -39,6 +35,20 @@ BUGS:
 
 Changes for 0.79dev [xxx, xx 200x]
 ==================================
+  - INCOMPATIBLE mime access plugin interface change
+    This is of importance only if you use your own mime based plugins.
+    The I_AccessFilter interface method 'match()' changed from
+      match(SubjectInfo publisher, SubjectInfo receiver, ...
+    to
+      match(SessionInfo publisher, SessionInfo receiver, ...
+
+  - INCOMPATIBLE plugin interface change!
+    This is of importance only if you use your own plugins.
+    The I_Plugin interface method changed from
+      public void init(org.xmlBlaster.util.Global glob, String[] options)
+    to
+      public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo)
+
   - INCOMPATIBLE property change!
     To load protocol plugins this form is not supported anymore:
       Protocol.Drivers=IOR:org.xmlBlaster.protocol.corba.CorbaDriver
