@@ -61,7 +61,8 @@ public class SubjectEntryShuffler implements Runnable {
          if (this.log.CALL) this.log.call(ME, "shuffle SubjectInfo '" + info.getId() + "' put has returned");
       }
       catch (InterruptedException ex) {
-         this.log.error(ME, "shuffle InterruptedException occured " + ex.getMessage());
+         // Is OK on shutdown
+         this.log.warn(ME, "shuffle InterruptedException occured " + ex.getMessage());
          ex.printStackTrace();
       }
       catch (Throwable ex) {
