@@ -27,7 +27,7 @@
          <attribute id='maxWaitingThreads'>300</attribute>
       </plugin>
 
-      <subject id='joe'>
+      <client id='joe'>
          <state>ALIVE</state>
          <session id='-3'>
             <uptime>10050</uptime>
@@ -57,7 +57,7 @@
             <subscriptionList>__subId:3,__subId:XPATH2</subscriptionList>
             
             <!-- The settings used on the client side -->
-            <dispatch id='client'
+            <dispatch id='clientSide'
                       pingInterval='2000' retries='-1' delay='5000'
                       oneway='false'>
                <plugin refid='queue:CACHE'>
@@ -73,7 +73,7 @@
                      </qos>
                   </entry>
                </plugin>
-               <plugin id='protocol:XML-RPC:client'
+               <plugin id='protocol:XML-RPC:clientSide'
                           className='org.xmlBlaster.client.protocol.xmlrpc.XmlRpcConnection'>
                   <attribute id='hostname'>server.mycomp.com</attribute>
                   <attribute id='port'>6901</attribute>
@@ -90,13 +90,13 @@
 <!--
 java HelloWorld3
 
-   -/node/heron/subject/HelloWorld3/session/3/dispatch/client/queue:CACHE/attribute/maxEntries 200
-   -dispatch/client/queue:CACHE/maxEntries 200
-   -dispatch/client/queue//maxEntries 200
-   -queue/client/maxEntries 200
+   -/node/heron/client/HelloWorld3/session/3/dispatch/clientSide/queue:CACHE/attribute/maxEntries 200
+   -dispatch/clientSide/queue:CACHE/maxEntries 200
+   -dispatch/clientSide/queue//maxEntries 200
+   -queue/clientSide/maxEntries 200
    -queue//maxEntries 200
 
-   -dispatch/client/pingInterval 10000
+   -dispatch/clientSide/pingInterval 10000
 
    -dispatch/callback/address/callback/  http://x.y.com:8089
    -dispatch/callback/address//  http://x.y.com:8089
@@ -189,7 +189,7 @@ Old style:
    <author>Michele.Laghi@swisscom.com</author>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.4 $</revision>
+   <revision>$Revision: 1.5 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
