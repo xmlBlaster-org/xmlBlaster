@@ -5,6 +5,12 @@
 This is a first, tiny quick hack of a C based SOCKET client.
 It should compile on Linux, Windows (PocketPC, WinCE) and other UNIX OS.
 
+Please read 
+
+  http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.socket.html
+
+for more details.
+
 Features:
 
   o Support on many OS (Win, Win-CE, UNIX, Linux) and easy portable
@@ -21,10 +27,13 @@ Features:
     See example: CallbackServerUnparsed.c
 
   o Supports sync and async communications with pthreads
-    Tested on Linux and Solaris
+    Tested on Linux, Solaris and Windows XP
     See example: XmlBlasterAccessUnparsed.c
+
     Posix threads DLL for Win, PocketPC, WinCE:
        http://sources.redhat.com/pthreads-win32
+       (the lib is provided in our distribution, see:
+        xmlBlaster/src/c/socket/pthreadVC.lib)
 
   o Reports exception nicely back to the client
 
@@ -46,7 +55,9 @@ Linux:    gcc -Wall -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c msgUtil.c soc
           g++ -Wall -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c msgUtil.c socket/*.c -lpthread
 
 Windows:  cl -D_WINDOWS -I. HelloWorld.c msgUtil.c socket\XmlBlasterConnectionUnparsed.c socket\xmlBlasterSocket.c ws2_32.lib
-          cl /MT /W4 /Wp64 /GZ /Ge /GS  /FeHelloWorld.exe /VxmlBlaster-0.848 -D_WINDOWS -I. HelloWorld.c msgUtil.c socket\XmlBlasterConnectionUnparsed.c socket\xmlBlasterSocket.c ws2_32.lib
+     or:  cl /MT /W4 /Wp64 /GZ /Ge /GS  /FeHelloWorld.exe /VxmlBlaster-0.848 -D_WINDOWS -I. HelloWorld.c msgUtil.c socket\XmlBlasterConnectionUnparsed.c socket\xmlBlasterSocket.c ws2_32.lib
+
+Solaris:  cc -Xc -g -I. -o HelloWorld HelloWorld.c msgUtil.c socket/XmlBlasterConnectionUnparsed.c socket/xmlBlasterSocket.c -lsocket -lnsl
 
 
 Note: Solaris CC has '__sun' defined.
@@ -109,7 +120,7 @@ o Clean up the code
  - make a lib from it
  - add callback support with pthreads
    on UNIX: DONE
-   on WIN:  OPEN: http://sources.redhat.com/pthreads-win32 on Windows
+   on WIN:  CONE: http://sources.redhat.com/pthreads-win32 on Windows
 
 o Make layers of functionality
  - raw communication: DONE
