@@ -380,8 +380,9 @@ public class MD5ChangeDetector implements I_ChangeDetector
             if (rowCount == 0) {
                touchSet.add(groupColValue); // Add the CREATE table name: ${ICAO_ID} itself
                if (!this.tableExists) {
+                  command = "CREATE";
                   if (this.queryMeatStatement != null) { // delegate processing of message meat ...
-                      ChangeEvent changeEvent = new ChangeEvent(groupColName, groupColValue, null, "CREATE");
+                      ChangeEvent changeEvent = new ChangeEvent(groupColName, groupColValue, null, command);
                       String stmt = org.xmlBlaster.contrib.dbwatcher.DbWatcher.replaceVariable(this.queryMeatStatement, groupColValue);
                       count = changeListener.publishMessagesFromStmt(stmt, true, changeEvent, conn);
                   }
@@ -389,24 +390,26 @@ public class MD5ChangeDetector implements I_ChangeDetector
                      if (dataConverter != null && bout == null) {
                         bout = new ByteArrayOutputStream();
                         out = new BufferedOutputStream(bout);
-                        dataConverter.setOutputStream(out, "CREATE", groupColValue);
+                        dataConverter.setOutputStream(out, command, groupColValue);
                         dataConverter.done();
                         resultXml = bout.toString();
                         bout = null;
                      }
                      changeListener.hasChanged(
                            new ChangeEvent(groupColName, groupColValue,
-                                             resultXml, "CREATE"));
+                                             resultXml, command));
                   }
                   this.tableExists = true;
                }
+            }
+            if (first) {
+               command = (md5Map.get(newGroupColValue) != null) ? "UPDATE" : "INSERT";
             }
 
             rowCount++;
             if (dataConverter != null && bout == null) {
                bout = new ByteArrayOutputStream();
                out = new BufferedOutputStream(bout);
-               command = (md5Map.get(newGroupColValue) != null) ? "UPDATE" : "INSERT";
                dataConverter.setOutputStream(out, command, newGroupColValue);
             }
 
@@ -434,15 +437,14 @@ public class MD5ChangeDetector implements I_ChangeDetector
                      count++;
                   }
                }
-               md5Map.put(groupColValue, newMD5);
                buf.setLength(0);
+               command = (md5Map.get(newGroupColValue) != null) ? "UPDATE" : "INSERT";
                if (dataConverter != null) {
                   bout = new ByteArrayOutputStream();
                   out = new BufferedOutputStream(bout);
-                  command = (md5Map.get(newGroupColValue) != null) ?
-                           "UPDATE" : "INSERT";
                   dataConverter.setOutputStream(out, command, newGroupColValue);
                }
+               md5Map.put(groupColValue, newMD5);
             }
             groupColValue = newGroupColValue;
 
