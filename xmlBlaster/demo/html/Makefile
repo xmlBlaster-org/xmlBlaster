@@ -28,6 +28,10 @@ all: all_SUB_DIRS precond java
 
 precond:
 	$(MKDIR_RECURSIVE) $(CLASS_DIR)
+	$(RM) javascript 
+	$(SYMBOLIC_LINK) ../../src/java/org/xmlBlaster/protocol/http/javascript javascript
+	$(RM) persistentWindow
+	$(SYMBOLIC_LINK) ../../src/java/org/xmlBlaster/protocol/http/persistentWindow persistentWindow
 
 java: $(LOCAL_FILES)
 	@echo -e "\033[1mDONE ............ \033[32;40mAll of $(SRC_JAVA_DIR)\033[0m";
