@@ -56,7 +56,8 @@ public final class ClientErrorHandler implements I_MsgErrorHandler
                        entries[i].getLogId() + "' is lost: " + msgErrorInfo.getXmlBlasterException().getMessage());
       }
       Thread.currentThread().dumpStack();
-      xmlBlasterAccess.getQueue().clear();
+      if (xmlBlasterAccess.getQueue() != null)
+         xmlBlasterAccess.getQueue().clear();
    }
 
    /**
