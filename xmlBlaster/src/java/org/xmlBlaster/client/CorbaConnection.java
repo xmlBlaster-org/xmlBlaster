@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.31 2000/02/25 18:47:11 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.32 2000/02/28 18:39:15 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
@@ -44,6 +44,9 @@ import java.util.Properties;
  * One drawback is, that the return values of your requests are lost, since you were none blocking
  * continuing during the connection was lost.
  * <br />
+ * When your client starts up, and login to xmlBlaster fails, the login will block
+ * until the polling resolves xmlBlaster.
+ * <br />
  * You can have a look at xmlBlaster/testsuite/org/xmlBlaster/TestFailSave.java to find out how it works
  * <br />
  * You should set jacorb.retries=0  in $HOME/.jacorb_properties if you use the fail save mode
@@ -51,7 +54,7 @@ import java.util.Properties;
  * Invoke: jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestSub
  * <p />
  * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http
- * @version $Revision: 1.31 $
+ * @version $Revision: 1.32 $
  * @author $Author: ruff $
  */
 public class CorbaConnection implements ServerOperations
@@ -322,6 +325,8 @@ public class CorbaConnection implements ServerOperations
          Log.info(ME, "Accessing xmlBlaster using your given IOR string");
          return authServer;
       }
+      if (Log.TRACE) Log.trace(ME, "No -ior ...");
+
       String authServerIORFile = Args.getArg(args, "-iorFile", (String)null);  // IOR string is given through a file
       if (authServerIORFile != null) {
          authServerIOR = FileUtil.readAsciiFile(authServerIORFile);
@@ -329,6 +334,7 @@ public class CorbaConnection implements ServerOperations
          Log.info(ME, "Accessing xmlBlaster using your given IOR file " + authServerIORFile);
          return authServer;
       }
+      if (Log.TRACE) Log.trace(ME, "No -iorFile ...");
 
 
       // 2) check if argument -iorHost <hostName or IP> -iorPort <number> at program startup is given
@@ -346,7 +352,12 @@ public class CorbaConnection implements ServerOperations
                Log.warning(ME, "XmlBlaster not found on host " + iorHost + " and port " + iorPort + ". Trying to find a naming service ...");
          }
       }
+      if (Log.TRACE) Log.trace(ME, "No -iorHost / iorPort ...");
 
+      String text = "Can't access xmlBlaster Authentication Service, is the server running and ready?\n" +
+                  " - try to specify '-iorFile <fileName>' if server is running on same host\n" +
+                  " - try to specify '-iorHost <hostName> -iorPort 7609' to locate xmlBlaster\n" +
+                  " - or contact your system administrator to start a naming service";
 
       // 3) asking Name Service CORBA compliant
       boolean useNameService = Args.getArg(args, "-ns", true);  // default is to ask the naming service
@@ -363,27 +374,18 @@ public class CorbaConnection implements ServerOperations
             return authServer;
          }
          catch(Exception e) {
-            if (!isReconnectPolling) {
-               Log.error(ME, "Can't access xmlBlaster Authentication Service, is the server running and ready?\n" + e.toString());
+            if (isInFailSaveMode()) {
+               if (!isReconnectPolling)  Log.warning(ME + ".NoAuthService", text);
             }
-            if (!isInFailSaveMode()) {
-               String text = "Can't access xmlBlaster Authentication Service, is the server running and ready?\n" +
-                          " - try to specify '-iorFile <fileName>' if server is running on same host\n" +
-                          " - try to specify '-iorHost <hostName> -iorPort 7609' to locate xmlBlaster\n" +
-                          " - or contact your system administrator to start a naming service";
-
+            else {
+               Log.error(ME + ".NoAuthService", text);
                throw new XmlBlasterException(ME + ".NoAuthService", text);
             }
          }
       }
+      if (Log.TRACE) Log.trace(ME, "No -ns ...");
 
-      //if (!isInFailSaveMode()) {
-         String text = "Can't access xmlBlaster Authentication Service, is the server running and ready?\n" +
-                        " - try to specify '-iorFile <fileName>' if server is running on same host\n" +
-                        " - try to specify '-iorHost <hostName> -iorPort 7609' to locate xmlBlaster\n" +
-                        " - or contact your system administrator to start a naming service";
-         throw new XmlBlasterException(ME + ".NoAuthService", text);
-      //}
+      throw new XmlBlasterException(ME + ".NoAuthService", text);
    }
 
 
@@ -498,8 +500,7 @@ public class CorbaConnection implements ServerOperations
             throw new XmlBlasterException("TryingReconnect", "Trying to find xmlBlaster again ..."); // Client may hope on reconnect
          }
          if (numLogins == 0L) {
-            doLoginPolling(true);
-            throw new XmlBlasterException("TryingConnect", "Trying to find xmlBlaster ...");
+            doLoginPolling(true); // in blocking mode
          }
       }
       else {
@@ -630,7 +631,7 @@ public class CorbaConnection implements ServerOperations
       String ior = bos.toString();
       if (!ior.startsWith("IOR:"))
          ior = "IOR:000" + ior; // hack for JDK 1.1.x, where the IOR: is cut away from ByteReader ??? !!!
-      // Log.trace(ME, "Sending IOR='" + ior + "'");
+      Log.trace(ME, "Retrieved IOR='" + ior + "'");
       return ior;
    }
 
