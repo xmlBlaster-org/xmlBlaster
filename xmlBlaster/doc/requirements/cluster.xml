@@ -74,7 +74,12 @@
       <p>
       <img src="cluster.availability.gif" border="0" title="XmlBlaster cluster example" alt="Example for a typical xmlBlaster cluster" />
       </p>
+      <p>
       Autonomous failure recovery without distinct cluster manager (as single point of contact).
+      </p>
+      <p>
+      We have three different failure situations to cover:
+      </p>
       <ul>
       <li>Master failure:<br />
       This is the example in the above picture.
@@ -84,6 +89,8 @@
       Bilbo needs to know the current cluster situation.
       </li>
       <li>Client reconnect:<br />
+      Client looses connection to its xmlBlaster instance and
+      needs to find another one.
       </li>
       </ul>
       </li>
@@ -262,10 +269,13 @@
    &lt;/key>
          </pre></td></tr>
          <tr><td>content</td><td><pre>
-   &lt;clusternode id='heron'>
+   <!-- In future we could distinguish normal clients, slave clients
+        and address based maxConnections -->
+
+   &lt;clusternode id='heron' maxConnections='800'>
       &lt;address type='IOR'>IOR:00044550005...&lt;/address>
-      &lt;address type='XML-RPC'>http:/www.mars.universe:8080/RPC2&lt;/address>
-      &lt;callback type='XML-RPC'>http:/www.mars.universe:8081/RPC2&lt;/callback>
+      &lt;address type='XML-RPC' maxConnections='20'>http://www.mars.universe:8080/RPC2&lt;/address>
+      &lt;callback type='XML-RPC'>http://www.mars.universe:8081/RPC2&lt;/callback>
       &lt;backupnode>
          &lt;clusternode id='avalon'/>  &lt;!-- first failover node -->
          &lt;clusternode id='golan'/>   &lt;!-- second backup node -->
@@ -279,7 +289,7 @@
       <p>
       <table border="1">
          <tr><td>2</td><td>Determine the master: Mapping of messages to cluster node IDs</td><td>Comments</td></tr>
-         <tr><td>key</td><td><pre>
+         <tr><td>2a) key</td><td><pre>
    &lt;key oid='__sys__cluster.node.domainmapping:heron'>
       &lt;__sys__cluster.node.domainmapping/>
    &lt;/key>
@@ -300,7 +310,7 @@
          Messages without a domain specified are treated locally as well.</td>
          </tr>
 
-         <tr><td>key</td><td><pre>
+         <tr><td>2b) key</td><td><pre>
    &lt;key oid='__sys__cluster.node.domainmapping:frodo'>
       &lt;__sys__cluster.node.domainmapping/>
    &lt;/key>
@@ -313,17 +323,39 @@
       &lt;master stratum='0'>
          &lt;key domain='NO_DEFAULT'/> &lt;!-- forward empty domains -->
       &lt;/master>
-
-      // refid points to node one startum closer to master
-      &lt;master stratum='1' refid='heron' />
-      &lt;/master>
-   &lt;/clusternode>
          </pre></td>
          <td>Messages without a domain specified are normally treated
          by its local xmlBlaster node. Here this is switched off</td>
          </tr>
 
-         <tr><td>key</td><td><pre>
+         <tr><td>2c) key</td><td><pre>
+   &lt;key oid='__sys__cluster.node.domainmapping:bilbo'>
+      &lt;__sys__cluster.node.domainmapping/>
+   &lt;/key>
+         </pre></td>
+         <td> </td>
+         </tr>
+         <tr><td>content</td><td><pre>
+   // Bilbo is master of RECIPIES and local clients,
+   // but slave for everything else
+   &lt;clusternode id='0'>
+      &lt;master stratum='0'>
+         &lt;key domain=''/>
+         &lt;key domain='RECIPIES'/>
+      &lt;/master>
+
+      // refid points to a node one stratum closer to master
+      &lt;master stratum='2' refid='frodo' />
+      &lt;/master>
+   &lt;/clusternode>
+         </pre></td>
+         <td>Bilbo is slave of a slave for heron messages.
+         Therefore it is stratum = 2 (two steps from the master).
+         It only knows bilbo, its direct parent node.
+         </td>
+         </tr>
+
+         <tr><td>2d) key</td><td><pre>
    &lt;key oid='__sys__cluster.node.domainmapping:heron'>
       &lt;__sys__cluster.node.domainmapping/>
    &lt;/key>
@@ -344,6 +376,27 @@
          <td>Approach without domains. Every message is filtered
          with the given rules. If one of the rules matches, we are the master
          of this message</td>
+         </tr>
+
+         <tr><td>2e) key</td><td><pre>
+   &lt;key oid='__sys__cluster.node.domainmapping:heron'>
+      &lt;__sys__cluster.node.domainmapping/>
+   &lt;/key>
+         </pre></td>
+         <td> </td>
+         </tr>
+         <tr><td>content</td><td><pre>
+   // The master is determined with a customer plugin (no explicit domain)
+   &lt;clusternode id='heron'>
+      &lt;master>
+         Java plugin (implements I_MapMsgToMasterId)
+      &lt;/master>
+   &lt;/clusternode>
+         </pre></td>
+         <td>Approach without domains. Every message is filtered by
+         a user supplied plugin. The plugin looks into the
+         message key or content or qos and decides who is the master.
+         </td>
          </tr>
       </table>
       </p>
@@ -385,7 +438,7 @@
    <author>ruff@swand.lake.de</author>
    <author>Heinrich.Goetzger@exploding-systems.de</author>
    <date>2000 04 10</date>
-   <revision>$Revision: 1.12 $</revision>
+   <revision>$Revision: 1.13 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
