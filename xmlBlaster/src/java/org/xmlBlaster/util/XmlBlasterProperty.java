@@ -3,7 +3,7 @@ Name:      XmlBlasterProperty.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, using org.jutils
-Version:   $Id: XmlBlasterProperty.java,v 1.14 2002/04/25 07:44:25 ruff Exp $
+Version:   $Id: XmlBlasterProperty.java,v 1.15 2002/04/25 08:04:44 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -155,7 +155,7 @@ public class XmlBlasterProperty
     */
    public final Map get(String key, Map defaultVal)
    {
-      return getProps().get(key, (Map)defaultVal);
+      return getProps().get(key, defaultVal);
    }
 
    /**
