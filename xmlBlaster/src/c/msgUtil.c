@@ -159,8 +159,13 @@ char *messageUnitToXml(MsgUnit *msg)
          free(contentStr);
          return 0;
       }
+#     ifdef _WINDOWS
+      sprintf(xml, "%s\n<content><![CDATA[%s]]></content>\n%s",
+                         msg->key, contentStr, msg->qos);
+#     else
       snprintf(xml, len, "%s\n<content><![CDATA[%s]]></content>\n%s",
                          msg->key, contentStr, msg->qos);
+#     endif
       free(contentStr);
       return xml;
    }
@@ -605,17 +610,23 @@ void xmlBlasterDefaultLogging(XMLBLASTER_LOG_LEVEL currLevel,
    for (;;) {
       /* Try to print in the allocated space. */
       va_start(ap, fmt);
-      n = vsnprintf (p, size, fmt, ap);
+#     ifdef _WINDOWS
+         n = vsprintf (p, fmt, ap);
+#     else
+         n = vsnprintf (p, size, fmt, ap);
+#     endif
       va_end(ap);
       /* If that worked, print the string to console. */
       if (n > -1 && n < size) {
          time_t t1;
          char timeStr[128];
          (void) time(&t1);
-#        ifdef __sun
-         ctime_r(&t1, (char *)timeStr, 126);
+#        if defined(_WINDOWS)
+            strcpy(timeStr, ctime(&t1));
+#        elif defined(__sun)
+            ctime_r(&t1, (char *)timeStr, 126);
 #        else
-         ctime_r(&t1, (char *)timeStr);
+            ctime_r(&t1, (char *)timeStr);
 #        endif
          *(timeStr + strlen(timeStr) - 1) = '\0'; /* strip \n */
          printf("[%s %s %s] %s", timeStr, LOG_TEXT[level], location, p);

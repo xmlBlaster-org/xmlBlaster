@@ -8,7 +8,7 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #define XMLBLASTER_MSGUTIL_H
 
 #ifndef __cplusplus
-#  ifndef __sun
+#  if !defined(__sun) && !defined(_WINDOWS)
 #    include <stdbool.h>
 #  endif
 #  ifndef __bool_true_false_are_defined
