@@ -29,11 +29,12 @@ useTopicStore=false
 # Client side
 queue/connection/defaultPlugin=RAM,1.0
 
-# NOTE: You need to install a Postgres or Oracle database to have persistency
+# NOTE: You need to install a Postgres, Oracle or MS-SQL-Server database to have persistency
 #   See
 #    xmlBlaster/src/java/org/xmlBlaster/util/queue/jdbc/README
 #    http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.postgres.html
 #    http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.oracle.html
+#    http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.sqlserver.html
 
 #==============================================================================
 
