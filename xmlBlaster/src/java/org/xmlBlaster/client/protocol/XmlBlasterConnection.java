@@ -55,8 +55,8 @@ import java.applet.Applet;
  * <p />
  * As soon as the connection can be established again, you are informed by I_ConnectionProblems.reConnect()
  * you may send some initial messages (as on startup of your client) and invoke
- * corbaConnection.flushQueue() to send all messages collected during disruption in the correct order or
- * corbaConnection.resetQueue() to discard the queued messages to xmlBlaster.
+ * xmlBlasterConnection.flushQueue() to send all messages collected during disruption in the correct order or
+ * xmlBlasterConnection.resetQueue() to discard the queued messages to xmlBlaster.
  * <p />
  * One drawback is, that the return values of your requests are lost, since you were none blocking
  * continuing during the connection was lost.
@@ -167,7 +167,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     *    String[] args = new String[2];
     *    args[0] = "-iorPort";
     *    args[1] = "" + serverPort;
-    *    corbaConnection = new XmlBlasterConnection(args); // Find orb
+    *    xmlBlasterConnection = new XmlBlasterConnection(args); // Find orb
     * </pre>
     */
    public XmlBlasterConnection(String[] args) throws XmlBlasterException
