@@ -1,5 +1,5 @@
 all:
-	idl2perl -o . -imp ${XMLBLASTER_HOME}/src/idl/xmlBlaster.idl
+	idl2perl -o . -imp ${XMLBLASTER_HOME}/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl
 
 
 clean:

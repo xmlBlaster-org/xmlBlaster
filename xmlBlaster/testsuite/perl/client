@@ -50,10 +50,10 @@ print "publish() of xmlKey=\n$xmlKey";
 
 my $content = "Hello xmlBlaster, i'm a Perl client";
 
-#$message = new serverIdl::MessageUnit xmlKey => $xmlKey, content => $content;
-$message = {xmlKey => $xmlKey, content => $content};
+#$message = new serverIdl::MessageUnit xmlKey => $xmlKey, content => $content, qos => $qos;
 my $qos = "";
-my $publishOid = $xmlBlaster->publish($message, $qos);
+$message = {xmlKey => $xmlKey, content => $content, qos => $qos};
+my $publishOid = $xmlBlaster->publish($message);
 
 print "Successful published message with new oid=$publishOid\n\n";
 
@@ -63,7 +63,7 @@ print "Subscribing using the exact oid=$publishOid ...\n";
 $xmlKey =  "<?xml version='1.0' encoding='ISO-8859-1' ?>\n";
 $xmlKey .= "<key oid='" . $publishOid . "'>\n";
 $xmlKey .= "</key>";
-$qualityOfService = "";
+$qualityOfService = "<qos></qos>";
 
 $xmlBlaster->subscribe($xmlKey, $qualityOfService);
 print "Subscribed to '$publishOid' ...\n\n";
