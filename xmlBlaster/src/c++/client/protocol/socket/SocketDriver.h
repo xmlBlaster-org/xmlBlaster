@@ -88,8 +88,8 @@ namespace org {
       //               ::XmlBlasterException *exception);
 
       // methods inherited from org::xmlBlaster::client::protocol::I_XmlBlasterConnection
-      org::xmlBlaster::util::qos::ConnectReturnQos connect(const org::xmlBlaster::util::qos::ConnectQos& qos)
-            throw (org::xmlBlaster::util::XmlBlasterException);
+      org::xmlBlaster::util::qos::ConnectReturnQos connect(const org::xmlBlaster::util::qos::ConnectQos& qos);
+            //throw (org::xmlBlaster::util::XmlBlasterException);
       bool disconnect(const org::xmlBlaster::util::qos::DisconnectQos& qos);
       std::string getProtocol();
       bool shutdown();

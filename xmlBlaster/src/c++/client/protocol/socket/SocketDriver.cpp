@@ -242,7 +242,7 @@ bool SocketDriver::shutdownCb()
    return true;
 }
 
-ConnectReturnQos SocketDriver::connect(const ConnectQos& qos) throw (XmlBlasterException)
+ConnectReturnQos SocketDriver::connect(const ConnectQos& qos) //throw (XmlBlasterException) // Visual C++ emits a warning with this throw clause
 {
    ::XmlBlasterException socketException;
    Lock lock(mutex_);
