@@ -1,7 +1,23 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
+The "#99999" numbers are Subversion revision numbers
 
 Changes svn
 ===========
+ o #12665 Java client library: fail safe mode
+   Remember public and secret sessionId on client side for reconnect attempts
+   (For future enhancement of pubSessionId<0 and persistent sessions)
+
+ o #12664 Java client library: BUGFIX get() and async mode
+   Catching get() requests in async mode and throw an exception
+
+ o #12663 Java client library: BUGFIX switch to sync mode
+   Added dispatchManager.trySyncMode(true) to force immediate sync mode
+   after polling even for empty client queue
+
+ o #12662 Java client library: FEATURE refreshSession
+   Added ConnectQos.refreshSession tag for automated client side session refresh
+   Example: connectQos.setRefreshSession(true)
+
  o Changed from cvs to subversion on 2004-10-17, see
    http://subversion.tigris.org/
 
