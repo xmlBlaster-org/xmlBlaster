@@ -3,7 +3,7 @@ Name:      CallbackAddress.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback address string and protocol string
-Version:   $Id: CallbackAddress.java,v 1.16 2002/05/17 13:19:41 ruff Exp $
+Version:   $Id: CallbackAddress.java,v 1.17 2002/05/30 16:30:04 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -120,20 +120,6 @@ public class CallbackAddress extends AddressBase
     */
    public void useForSubjectQueue(boolean useForSubjectQueue) {
       this.useForSubjectQueue = useForSubjectQueue;
-   }
-
-   /**
-    * @return true if we may send PtP messages
-    */
-   public boolean isPtpAllowed() {
-      return this.ptpAllowed;
-   }
-
-   /**
-    * @param Set if we accept point to point messages
-    */
-   public void setPtpAllowed(boolean ptpAllowed) {
-      this.ptpAllowed = ptpAllowed;
    }
 
    /** @return The literal address as given by getAddress() */
