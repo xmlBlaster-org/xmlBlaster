@@ -3,7 +3,7 @@ Name:      TestCallbackConfig.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestCallbackConfig.java,v 1.1 2002/03/17 13:15:21 ruff Exp $
+Version:   $Id: TestCallbackConfig.java,v 1.2 2002/03/18 00:31:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -134,11 +134,12 @@ public class TestCallbackConfig extends TestCase implements I_Callback
     * delivering us a new asynchronous message. 
     * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQoS)
     */
-   public void update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
+   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
    {
       Log.info(ME, "Receiving update of a message " + updateKey.getUniqueKey());
       numReceived++;
       assertEquals("Invalid cbSessionId", this.cbSessionId, cbSessionId);
+      return "";
    }
 
 

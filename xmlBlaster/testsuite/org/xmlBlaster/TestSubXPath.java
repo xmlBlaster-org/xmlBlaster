@@ -3,7 +3,7 @@ Name:      TestSubXPath.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubXPath.java,v 1.10 2002/03/17 13:15:21 ruff Exp $
+Version:   $Id: TestSubXPath.java,v 1.11 2002/03/18 00:31:23 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -185,7 +185,7 @@ public class TestSubXPath extends TestCase implements I_Callback
     * delivering us a new asynchronous message. 
     * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQoS)
     */
-   public void update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
+   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
    {
       Log.info(ME, "Receiving update of message oid=" + updateKey.getUniqueKey() + "...");
 
@@ -198,6 +198,7 @@ public class TestSubXPath extends TestCase implements I_Callback
       assertEquals("engine.qos.update.subscriptionId: Wrong subscriptionId", subscribeOid, updateQoS.getSubscriptionId());
 
       messageArrived = true;
+      return "";
    }
 
    /**

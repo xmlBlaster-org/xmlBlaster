@@ -3,7 +3,7 @@ Name:      TestInvocationRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing the InvocationRecorder
-Version:   $Id: TestInvocationRecorder.java,v 1.13 2001/09/05 12:48:47 ruff Exp $
+Version:   $Id: TestInvocationRecorder.java,v 1.14 2002/03/18 00:31:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -220,12 +220,20 @@ public class TestInvocationRecorder extends TestCase implements I_InvocationReco
     * <p />
     * @param MessageUnit Container for the Message
     */
-   public void update(String clientName, org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr)
+   public String[] update(String cbSessionId, org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr)
    {
-      if (Log.CALL) Log.call(ME, "update(" + clientName + ") ...");
+      if (Log.CALL) Log.call(ME, "update(" + cbSessionId + ") ...");
       numUpdate++;
+      String[] retArr = new String[msgUnitArr.length];
+      for (int ii=0; ii<retArr.length; ii++) retArr[ii] = "";
+      return retArr;
    }
 
+   public void updateOneway(String cbSessionId, org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr)
+   {
+      if (Log.CALL) Log.call(ME, "update(" + cbSessionId + ") ...");
+      numUpdate++;
+   }
 
    /**
     * Method is used by TestRunner to load these tests

@@ -3,7 +3,7 @@ Name:      TestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.java,v 1.29 2002/03/17 13:15:21 ruff Exp $
+Version:   $Id: TestSub.java,v 1.30 2002/03/18 00:31:23 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -192,13 +192,13 @@ public class TestSub extends TestCase implements I_Callback
     * delivering us a new asynchronous message. 
     * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQoS)
     */
-   public void update(String sessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
+   public String update(String cbSessionId_, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
    {
       Log.info(ME, "Receiving update of message oid=" + updateKey.getUniqueKey() + "...");
 
       numReceived += 1;
 
-      assertEquals("Wrong cbSessionId", this.cbSessionId, sessionId);
+      assertEquals("Wrong cbSessionId", this.cbSessionId, cbSessionId_);
       assertEquals("Wrong sender", senderName, updateQoS.getSender());
       assertEquals("engine.qos.update.subscriptionId: Wrong subscriptionId", subscribeOid, updateQoS.getSubscriptionId());
       assertEquals("Wrong oid of message returned", publishOid, updateKey.getUniqueKey());
@@ -212,6 +212,7 @@ public class TestSub extends TestCase implements I_Callback
              (sentTimestamp.getMillis()+1000) > updateQoS.getRcvTimestamp().getMillis());
 
       messageArrived = true;
+      return "";
    }
 
 

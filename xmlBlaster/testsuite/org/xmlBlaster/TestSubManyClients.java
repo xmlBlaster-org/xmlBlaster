@@ -3,7 +3,7 @@ Name:      TestSubManyClients.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubManyClients.java,v 1.6 2001/09/05 12:48:47 ruff Exp $
+Version:   $Id: TestSubManyClients.java,v 1.7 2002/03/18 00:31:23 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -360,20 +360,12 @@ public class TestSubManyClients extends TestCase implements I_Callback
       Log.info(ME, "Time " + (long)(numClients/timeToPublish) + " publish/sec");
    }
 
-
    /**
-    * This is the callback method (I_Callback) invoked from XmlBlasterConnection
-    * informing the client in an asynchronous mode about a new message.
-    * <p />
-    * The raw CORBA-BlasterCallback.update() is unpacked and for each arrived message
-    * this update is called.
-    *
-    * @param loginName The name to whom the callback belongs
-    * @param updateKey The arrived key
-    * @param content   The arrived message content
-    * @param qos       Quality of Service of the MessageUnit
+    * This is the callback method invoked from xmlBlaster
+    * delivering us a new asynchronous message. 
+    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQoS)
     */
-   public void update(String loginName, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
+   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
    {
       //Log.info(ME, "Client " + loginName + " receiving update of message oid=" + updateKey.getUniqueKey() + "...");
       numReceived++;
@@ -385,8 +377,8 @@ public class TestSubManyClients extends TestCase implements I_Callback
             avg = (long)(1000.0 * numReceived / elapsed);
          Log.info(ME, numReceived + " messages updated, average messages/second = " + avg + stopWatch.nice());
       }
+      return "";
    }
-
 
    /**
     * Method is used by TestRunner to load these tests

@@ -3,7 +3,7 @@ Name:      ClientSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSub.java,v 1.27 2002/03/17 13:30:37 ruff Exp $
+Version:   $Id: ClientSub.java,v 1.28 2002/03/18 00:30:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -193,7 +193,7 @@ public class ClientSub implements I_Callback
     *
     * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQoS)
     */
-   public void update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
+   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
    {
       elapsed = System.currentTimeMillis() - startTime;
       numReceived++;
@@ -201,6 +201,7 @@ public class ClientSub implements I_Callback
       Log.plain("UpdateKey", updateKey.toXml());
       Log.plain("content", (new String(content)).toString());
       Log.plain("UpdateQoS", updateQoS.toXml());
+      return "";
    }
 
 

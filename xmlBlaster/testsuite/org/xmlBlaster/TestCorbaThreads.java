@@ -3,7 +3,7 @@ Name:      TestCorbaThreads.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestCorbaThreads.java,v 1.10 2002/03/17 07:30:43 ruff Exp $
+Version:   $Id: TestCorbaThreads.java,v 1.11 2002/03/18 00:31:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -151,15 +151,28 @@ public class TestCorbaThreads extends TestCase implements I_CallbackExtended
    /**
     * These update() methods are enforced by I_CallbackExtended. 
     */
-   public void update(String loginName, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
+   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
+   {
+      if (Log.CALL) Log.call(ME, "Receiving update of a message ...");
+      return "";
+   }
+   public String update(String cbSessionId, String updateKeyLiteral, byte[] content, String updateQoSLiteral)
+   {
+      if (Log.CALL) Log.call(ME, "Receiving update of a message ...");
+      return "";
+   }
+   public String[] update(String cbSessionId, org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr)
+   {
+      if (Log.CALL) Log.call(ME, "Receiving update of a message ...");
+      String[] retArr = new String[msgUnitArr.length];
+      for (int ii=0; ii<retArr.length; ii++) retArr[ii] = "";
+      return retArr;
+   }
+   public void updateOneway(String cbSessionId, String updateKeyLiteral, byte[] content, String updateQoSLiteral)
    {
       if (Log.CALL) Log.call(ME, "Receiving update of a message ...");
    }
-   public void update(String loginName, String updateKeyLiteral, byte[] content, String updateQoSLiteral)
-   {
-      if (Log.CALL) Log.call(ME, "Receiving update of a message ...");
-   }
-   public void update(String loginName, org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr)
+   public void updateOneway(String cbSessionId, org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr)
    {
       if (Log.CALL) Log.call(ME, "Receiving update of a message ...");
    }

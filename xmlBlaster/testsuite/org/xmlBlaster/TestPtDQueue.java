@@ -3,7 +3,7 @@ Name:      TestPtDQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtDQueue.java,v 1.21 2002/03/17 13:15:21 ruff Exp $
+Version:   $Id: TestPtDQueue.java,v 1.22 2002/03/18 00:31:23 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -180,20 +180,12 @@ public class TestPtDQueue extends TestCase implements I_Callback
       }
    }
 
-
    /**
-    * This is the callback method (I_Callback) invoked from XmlBlasterConnection
-    * informing the client in an asynchronous mode about a new message.
-    * <p />
-    * The raw CORBA-BlasterCallback.update() is unpacked and for each arrived message
-    * this update is called.
-    *
-    * @param loginName The name to whom the callback belongs
-    * @param updateKey The arrived key
-    * @param content   The arrived message content
-    * @param qos       Quality of Service of the MessageUnit
+    * This is the callback method invoked from xmlBlaster
+    * delivering us a new asynchronous message. 
+    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQoS)
     */
-   public void update(String loginName, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
+   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
    {
       if (Log.CALL) Log.call(ME, "Receiving update of a message ...");
 
@@ -204,8 +196,8 @@ public class TestPtDQueue extends TestCase implements I_Callback
       assertEquals("Message content is corrupted", new String(senderContent), new String(content));
 
       messageArrived = true;
+      return "";
    }
-
 
    /**
     * Little helper, waits until the variable 'messageArrive' is set

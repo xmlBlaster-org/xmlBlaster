@@ -65,16 +65,17 @@ public class XmlDBClient implements I_Callback
       logout();
    }
 
-
    /**
-    * CallBack of xmlBlaster
+    * This is the callback method invoked from xmlBlaster
+    * delivering us a new asynchronous message. 
+    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQoS)
     */
-   public void update(String cust, UpdateKey key, byte[] content, UpdateQoS updateQos)
+   public String update(String cbSessionId, UpdateKey key, byte[] content, UpdateQoS updateQos)
     {
       results = new String(content);
       done = true;
+      return "";
    }
-
 
    /**
     * Find xmlBlaster server and login.

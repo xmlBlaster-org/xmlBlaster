@@ -3,7 +3,7 @@ Name:      TestFailSavePing.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSavePing.java,v 1.14 2001/09/05 12:48:47 ruff Exp $
+Version:   $Id: TestFailSavePing.java,v 1.15 2002/03/18 00:31:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -76,14 +76,11 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
     */
    protected void setUp()
    {
-      serverThread = ServerThread.startXmlBlaster(serverPort);
+      serverThread = ServerThread.startXmlBlaster(Util.getOtherServerPorts(serverPort));
       try {
          numReceived = 0;
 
-         String[] args = new String[2];
-         args[0] = "-iorPort";
-         args[1] = "" + serverPort;
-         corbaConnection = new XmlBlasterConnection(args); // Find orb
+         corbaConnection = new XmlBlasterConnection(Util.getOtherServerPorts(serverPort)); // Find server
 
          // Setup fail save handling ...
          long retryInterval = 4000L; // Property.getProperty("Failsave.retryInterval", 4000L);
@@ -131,14 +128,7 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
       ServerThread.stopXmlBlaster(serverThread);
 
       // reset to default server port (necessary if other tests follow in the same JVM).
-      String[] args = new String[2];
-      args[0] = "-iorPort";
-      args[1] = "" + org.xmlBlaster.protocol.corba.CorbaDriver.DEFAULT_HTTP_PORT;
-      try {
-         XmlBlasterProperty.addArgs2Props(args);
-      } catch(org.jutils.JUtilsException e) {
-         assert(e.toString(), false);
-      }
+      Util.resetPorts();
    }
 
 
@@ -250,20 +240,12 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
       Log.warn(ME, "I_ConnectionProblems: Lost connection to xmlBlaster");
    }
 
-
    /**
-    * This is the callback method (I_Callback) invoked from XmlBlasterConnection
-    * informing the client in an asynchronous mode about a new message.
-    * <p />
-    * The raw CORBA-BlasterCallback.update() is unpacked and for each arrived message
-    * this update is called.
-    *
-    * @param loginName The name to whom the callback belongs
-    * @param updateKey The arrived key
-    * @param content   The arrived message content
-    * @param qos       Quality of Service of the MessageUnit
+    * This is the callback method invoked from xmlBlaster
+    * delivering us a new asynchronous message. 
+    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQoS)
     */
-   public void update(String loginName, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
+   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
    {
       Log.info(ME, "Receiving update of message oid=" + updateKey.getUniqueKey() + " ...");
 
@@ -276,6 +258,7 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
       assertEquals("Message oid is wrong", oid, updateKey.getUniqueKey());
 
       messageArrived = true;
+      return "";
    }
 
 

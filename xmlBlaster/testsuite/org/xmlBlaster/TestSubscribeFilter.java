@@ -3,7 +3,7 @@ Name:      TestSubscribeFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestSubscribeFilter.java,v 1.3 2002/03/17 07:31:51 ruff Exp $
+Version:   $Id: TestSubscribeFilter.java,v 1.4 2002/03/18 00:31:23 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -76,11 +76,17 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
    protected void setUp()
    {
       // We register here the demo plugin with xmlBlaster server, supplying an argument to the plugin
-      String[] args = new String[4];
-      args[0] = "-iorPort";
+      String[] args = new String[10];
+      args[0] = "-iorPort";        // For all protocol we may use set an alternate server port
       args[1] = "" + serverPort;
-      args[2] = "-MimeSubscribePlugin[ContentLenFilter][1.0]";
-      args[3] = "org.xmlBlaster.engine.mime.demo.ContentLenFilter,DEFAULT_MAX_LEN=200,THROW_EXCEPTION_FOR_LEN=3";
+      args[2] = "-socket.port";
+      args[3] = "" + (serverPort-1);
+      args[4] = "-rmi.registryPort";
+      args[5] = "" + (serverPort-2);
+      args[6] = "-xmlrpc.port";
+      args[7] = "" + (serverPort-3);
+      args[8] = "-MimeSubscribePlugin[ContentLenFilter][1.0]";
+      args[9] = "org.xmlBlaster.engine.mime.demo.ContentLenFilter,DEFAULT_MAX_LEN=200,THROW_EXCEPTION_FOR_LEN=3";
       serverThread = ServerThread.startXmlBlaster(args);
       try { Thread.currentThread().sleep(2000L); } catch( InterruptedException i) {}
       Log.info(ME, "XmlBlaster is ready for testing subscribe MIME filter");
@@ -130,14 +136,7 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
       ServerThread.stopXmlBlaster(serverThread);
 
       // reset to default server port (necessary if other tests follow in the same JVM).
-      String[] args = new String[2];
-      args[0] = "-iorPort";
-      args[1] = "" + org.xmlBlaster.protocol.corba.CorbaDriver.DEFAULT_HTTP_PORT;
-      try {
-         XmlBlasterProperty.addArgs2Props(args);
-      } catch(org.jutils.JUtilsException e) {
-         assert(e.toString(), false);
-      }
+      Util.resetPorts();
    }
 
    /**
@@ -175,23 +174,16 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
       Log.info(ME, "Success in testFilter()");
    }
 
-
    /**
-    * This is the callback method (I_Callback) invoked from XmlBlasterConnection
-    * informing the client in an asynchronous mode about a new message.
-    * <p />
-    * The raw CORBA-BlasterCallback.update() is unpacked and for each arrived message
-    * this update is called.
-    *
-    * @param loginName The name to whom the callback belongs
-    * @param updateKey The arrived key
-    * @param content   The arrived message content
-    * @param qos       Quality of Service of the MessageUnit
+    * This is the callback method invoked from xmlBlaster
+    * delivering us a new asynchronous message. 
+    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQoS)
     */
-   public void update(String loginName, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
+   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
    {
       Log.info(ME, "Receiving update of a message " + updateKey.getUniqueKey());
       numReceived++;
+      return "";
    }
 
    /**

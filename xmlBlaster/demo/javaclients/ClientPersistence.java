@@ -3,7 +3,7 @@ Name:      ClientPersistence.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   subscribes to durable messages
-Version:   $Id: ClientPersistence.java,v 1.2 2002/02/08 00:48:11 goetzger Exp $
+Version:   $Id: ClientPersistence.java,v 1.3 2002/03/18 00:30:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -95,18 +95,11 @@ public class ClientPersistence implements I_Callback
 
 
    /**
-    * This is the callback method (I_Callback) invoked from XmlBlasterConnection
-    * informing the client in an asynchronous mode about a new message.
-    * <p />
-    * The raw CORBA-BlasterCallback.update() is unpacked and for each arrived message
-    * this update is called.
-    *
-    * @param loginName The name to whom the callback belongs
-    * @param updateKey The arrived key
-    * @param content   The arrived message content
-    * @param qos       Quality of Service of the MessageUnit
+    * This is the callback method invoked from xmlBlaster
+    * delivering us a new asynchronous message. 
+    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQoS)
     */
-   public void update(String loginName, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
+   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
    {
       //Log.info(ME, "Receiving update of a message ...");
       Log.info(ME, "Receiving update of message '" + publishOid +"'");
@@ -116,6 +109,7 @@ public class ClientPersistence implements I_Callback
       Log.plain("UpdateKey", updateKey.toXml());
       Log.plain("content", (new String(content)).toString());
       Log.plain("UpdateQoS", updateQoS.toXml());
+      return "";
    }
 
 

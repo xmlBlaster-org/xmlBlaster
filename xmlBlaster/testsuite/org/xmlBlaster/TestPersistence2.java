@@ -82,17 +82,12 @@ public class TestPersistence2 extends TestCase implements I_Callback
     */
    protected void setUp()
    {
-      serverThread = ServerThread.startXmlBlaster(serverPort);
+      serverThread = ServerThread.startXmlBlaster(Util.getOtherServerPorts(serverPort));
+      try { Thread.currentThread().sleep(4000L); } catch( InterruptedException i) {}
       Log.info(ME, "XmlBlaster is ready for testing on port " + serverPort);
 
       try {
-
-         String[] args = new String[2];
-         args[0] = "-iorPort";
-         args[1] = "" + serverPort;
-         senderConnection = new XmlBlasterConnection(args); // Find orb
-
-         //senderConnection = new XmlBlasterConnection();
+         senderConnection = new XmlBlasterConnection(Util.getOtherServerPorts(serverPort)); // Find orb
          ConnectQos qos = new ConnectQos(); // == "<qos></qos>";
          senderConnection.login( senderName, senderPasswd, qos, this);
       }
@@ -117,7 +112,7 @@ public class TestPersistence2 extends TestCase implements I_Callback
 
       String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'>\n</key>";
       String qos = "<qos></qos>";
-      String[] strArr = null;
+      String[] strArr = new String[0];
       try {
          strArr = senderConnection.erase(xmlKey, qos);
       } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
@@ -129,15 +124,7 @@ public class TestPersistence2 extends TestCase implements I_Callback
       Util.delay(500L);    // Wait some time
       ServerThread.stopXmlBlaster(serverThread);
       // reset to default server port (necessary if other tests follow in the same JVM).
-      String[] args = new String[2];
-      args[0] = "-iorPort";
-      args[1] = "" + org.xmlBlaster.protocol.corba.CorbaDriver.DEFAULT_HTTP_PORT;
-      try {
-         XmlBlasterProperty.addArgs2Props(args);
-      } catch(org.jutils.JUtilsException e) {
-         assert(e.toString(), false);
-      }
-
+      Util.resetPorts();
    }
 
 
@@ -198,7 +185,7 @@ public class TestPersistence2 extends TestCase implements I_Callback
     * <p />
     */
    public void RestartTestServer() {
-      long    delay4Server = 2000L ;
+      long    delay4Server = 4000L ;
       Log.info( ME, "Restarting Test Server" );
 
       try {
@@ -207,7 +194,7 @@ public class TestPersistence2 extends TestCase implements I_Callback
          serverThread = null ;
          Util.delay( delay4Server );    // Wait some time
 
-         serverThread = ServerThread.startXmlBlaster(serverPort);
+         serverThread = ServerThread.startXmlBlaster(Util.getOtherServerPorts(serverPort));
          Util.delay( delay4Server );    // Wait some time
          ConnectQos conectqos = new ConnectQos(); // == "<qos></qos>";
          senderConnection.login(senderName, senderPasswd, conectqos, this);
@@ -258,20 +245,12 @@ public class TestPersistence2 extends TestCase implements I_Callback
       }
    }
 
-
    /**
-    * This is the callback method (I_Callback) invoked from XmlBlasterConnection
-    * informing the client in an asynchronous mode about a new message.
-    * <p />
-    * The raw CORBA-BlasterCallback.update() is unpacked and for each arrived message
-    * this update is called.
-    *
-    * @param loginName The name to whom the callback belongs
-    * @param updateKey The arrived key
-    * @param content   The arrived message content
-    * @param qos       Quality of Service of the MessageUnit
+    * This is the callback method invoked from xmlBlaster
+    * delivering us a new asynchronous message. 
+    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQoS)
     */
-   public void update(String loginName, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
+   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
    {
       if (Log.CALL) Log.call(ME, "Receiving update of a message ...");
 
@@ -280,8 +259,8 @@ public class TestPersistence2 extends TestCase implements I_Callback
       assertEquals("Wrong sender", senderName, updateQoS.getSender());
       assertEquals("Wrong oid of message returned", publishOid, updateKey.getUniqueKey());
       assertEquals("Message content is corrupted", new String(senderContent), new String(content));
+      return "";
    }
-
 
    /**
     * Little helper, waits until the wanted number of messages are arrived

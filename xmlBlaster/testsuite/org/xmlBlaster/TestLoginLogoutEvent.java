@@ -3,7 +3,7 @@ Name:      TestLoginLogoutEvent.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout event test for xmlBlaster
-Version:   $Id: TestLoginLogoutEvent.java,v 1.12 2002/02/26 10:49:23 ruff Exp $
+Version:   $Id: TestLoginLogoutEvent.java,v 1.13 2002/03/18 00:31:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -190,29 +190,21 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
       waitOnUpdate(2000L, 1);    // expecting a logout event message
    }
 
-
    /**
-    * This is the callback method (I_Callback) invoked from XmlBlasterConnection
-    * informing the client in an asynchronous mode about a new message.
-    * <p />
-    * The raw CORBA-BlasterCallback.update() is unpacked and for each arrived message
-    * this update is called.
-    *
-    * @param loginName The name to whom the callback belongs
-    * @param updateKey The arrived key
-    * @param content   The arrived message content
-    * @param qos       Quality of Service of the MessageUnit
+    * This is the callback method invoked from xmlBlaster
+    * delivering us a new asynchronous message. 
+    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQoS)
     */
-   public void update(String loginName, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
+   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
    {
       numReceived++;
       String name = new String(content);
-      Log.info(ME, loginName + " - Receiving update of a message " + updateKey.getUniqueKey() + ", event for client " + name);
+      Log.info(ME, cbSessionId + " - Receiving update of a message " + updateKey.getUniqueKey() + ", event for client " + name);
 
       if (expectedName != null)
          assertEquals("Wrong login name returned", expectedName, name);
+      return "";
    }
-
 
    /**
     * Little helper, waits until the wanted number of messages are arrived

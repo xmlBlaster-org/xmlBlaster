@@ -3,7 +3,7 @@ Name:      HelloWorld.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Applet test for xmlBlaster
-Version:   $Id: HelloWorld.java,v 1.13 2001/08/31 15:30:43 ruff Exp $
+Version:   $Id: HelloWorld.java,v 1.14 2002/03/18 00:30:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.HelloWorldApplet;
 
@@ -201,26 +201,18 @@ public class HelloWorld extends Applet implements I_Callback, ActionListener, or
       Log.info(ME, "Success: Published message");
    }
 
-
    /**
-    * This is the callback method (I_Callback) invoked from XmlBlasterConnection
-    * informing the client in an asynchronous mode about a new message.
-    * <p />
-    * The raw CORBA-BlasterCallback.update() is unpacked and for each arrived message
-    * this update is called.
-    *
-    * @param loginName The name to whom the callback belongs
-    * @param updateKey The arrived key
-    * @param content   The arrived message content
-    * @param qos       Quality of Service of the MessageUnit
+    * This is the callback method invoked from xmlBlaster
+    * delivering us a new asynchronous message. 
+    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQoS)
     */
-   public void update(String loginName, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
+   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
    {
       Log.info(ME, "Success: Update of message");
       String msgContent = new String(content);
       output.append(msgContent +"\n");
+      return "";
    }
-
 
    /**
     * GUI event handler

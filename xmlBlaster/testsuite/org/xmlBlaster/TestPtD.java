@@ -3,7 +3,7 @@ Name:      TestPtD.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtD.java,v 1.22 2002/03/17 13:15:21 ruff Exp $
+Version:   $Id: TestPtD.java,v 1.23 2002/03/18 00:31:23 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -189,7 +189,7 @@ public class TestPtD extends TestCase implements I_Callback
     * delivering us a new asynchronous message. 
     * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQoS)
     */
-   public void update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
+   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
    {
       if (Log.CALL) Log.call(ME, "Receiving update of a message ...");
 
@@ -201,6 +201,7 @@ public class TestPtD extends TestCase implements I_Callback
       assertEquals("Wrong sender", senderName, updateQoS.getSender());
       assertEquals("Wrong oid of message returned", publishOid, updateKey.getUniqueKey());
       assertEquals("Message content is corrupted", new String(senderContent), new String(content));
+      return "";
    }
 
 

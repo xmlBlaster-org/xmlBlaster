@@ -3,7 +3,7 @@ Name:      ClientSubEmail.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSubEmail.java,v 1.5 2001/12/03 13:04:24 ruff Exp $
+Version:   $Id: ClientSubEmail.java,v 1.6 2002/03/18 00:30:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -172,26 +172,20 @@ public class ClientSubEmail implements I_Callback
       }
    }
 
-
    /**
-    * This is the callback method (I_Callback) invoked from XmlBlasterConnection
-    * informing the client in an asynchronous mode about a new message.
-    * <p />
-    *
-    * @param loginName The name to whom the callback belongs
-    * @param updateKey The arrived key
-    * @param content   The arrived message content
-    * @param qos       Quality of Service of the MessageUnit
+    * This is the callback method invoked from xmlBlaster
+    * delivering us a new asynchronous message. 
+    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQoS)
     */
-   public void update(String loginName, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
+   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
    {
       numReceived++;
       Log.info(ME, "Received asynchronous callback-update " + numReceived + " from xmlBlaster from publisher " + updateQoS.getSender() + ":");
       Log.plain("UpdateKey", updateKey.toXml());
       Log.plain("content", (new String(content)).toString());
       Log.plain("UpdateQoS", updateQoS.toXml());
+      return "";
    }
-
 
    /**
     * Initialize command line argument handling (this is optional)

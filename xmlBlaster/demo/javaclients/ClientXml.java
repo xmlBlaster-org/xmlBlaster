@@ -3,7 +3,7 @@ Name:      ClientXml.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientXml.java,v 1.16 2000/10/22 16:55:14 ruff Exp $
+Version:   $Id: ClientXml.java,v 1.17 2002/03/18 00:30:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -165,24 +165,16 @@ public class ClientXml implements I_Callback
       // blasterConnection.getOrb().run(); // Usually your client won't exit after this, uncomment the run() method
    }
 
-
    /**
-    * This is the callback method (update() from I_Callback) invoked from class XmlBlasterConnection
-    * informing the client in an asynchronous mode about a new message.
-    * <p />
-    * The raw CORBA-BlasterCallback.update() is unpacked and for each arrived message
-    * this update is called.
-    *
-    * @param loginName The name to whom the callback belongs
-    * @param updateKey The arrived key
-    * @param content   The arrived message content
-    * @param qos       Quality of Service of the MessageUnit
+    * This is the callback method invoked from xmlBlaster
+    * delivering us a new asynchronous message. 
+    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQoS)
     */
-   public void update(String loginName, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
+   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
    {
       Log.info(ME, "Receiving update of message [" + updateKey.getUniqueKey() + "]");
+      return "";
    }
-
 
    public static void main(String args[])
    {
