@@ -104,7 +104,7 @@ public class HtPasswd {
        {  salt = encoded.substring(0,2);
           userEncoded = jcrypt.crypt(salt,userPassword);
           if (log.TRACE) log.trace(ME, "Comparing '" + userEncoded + "' with passwd entry '" + encoded + "'");
-          if ( userEncoded.equals(encoded) ) 
+          if ( userEncoded.trim().equals(encoded.trim()) ) 
             return true;     
        }
      }
