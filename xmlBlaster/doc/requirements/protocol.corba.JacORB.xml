@@ -1,0 +1,128 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='protocol.corba.JacORB' type='NEW' prio='HIGH' status="CLOSED">
+   <topic>xmlBlaster supports a CORBA protocol plugin based on JacORB</topic>
+   <description>
+      <p>
+      You can access XmlBlaster with CORBA aware clients. The xmlBlaster server
+      has a protocol plugin based on JacORB. The delivered Java client library
+      has support for JacORB to connect to the server. This protocol is activated
+      by default.
+      </p>
+      <p>
+      JacORB is configured with the <b>jacorb.properties</b> file. You find
+      a template in <i>xmlBlaster/config/jacorb.properties.template</i> .
+      The <i>xmlBlaster/lib/xmlBlaster.jar</i> file contains a copy of this
+      template file which is loaded by JacORB via the CLASSPATH and configures
+      JacORB accordingly.
+      </p>
+      <p>
+      If you remove <i>jacorb.properties</i> form <i>xmlBlaster.jar</i> you can
+      put a <i>jacorb.properties</i> file into your home directory which you
+      can use to easily configure JacORB behavior. Note that if there is a file
+      in <i>xmlBlaster.jar</i> this has precedence.
+      </p>
+      <p>
+      Setting a JacORB property on command line as System.property has precedence
+      over any jacorb.properties setting (e.g. <i>java -DORBInitRef.NameService=file:///tmp/ns.ior ...</i>).
+      </p>
+   </description>
+
+   <example lang="JAVA" type="HTML">
+   <p>
+     Example how to switch on CORBA debugging, here we set the JacORB specific
+     verbosity to 3 and switch on logging for our CORBA plugin implementation:
+   </p>
+<pre>
+java -Djacorb.verbosity=3 -jar lib/xmlBlaster.jar -call[corba] true -trace[corba] true
+</pre>
+   </example>
+
+   <configuration>
+      <p>
+      These parameters allow to configure JacORB, please consult the JacORB
+      documentation and the requirement <i>protocol.corba.NameService</i> for further settings.
+      </p>
+      <p>
+      They can be set on command line, in the xmlBlaster.properties file or
+      dynamically via messages.
+      </p>
+      <table border="1">
+         <tr>
+            <th>Property</th>
+            <th>Default / Example</th>
+            <th>Description</th>
+            <th>Implemented</th>
+         </tr>
+
+         <tr>
+            <td>hostname</td>
+            <td>localhost</td>
+            <td>The host where a client tries to download the CORBA IOR.
+            XmlBlaster servers have the feature to pass their CORBA plugin IOR
+            with a builtin http server.</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>port</td>
+            <td>3412</td>
+            <td>The port where the internal xmlBlaster http server listens.
+            This is a IANA registered port, uniquely dedicated for xmlBlaster.</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>ior.hostname</td>
+            <td>localhost</td>
+            <td>Allows to set the corba server IP address for multi-homed hosts.
+                Usually you don't need to specify this as the CORBA library
+                chooses a hostname and delivers it in its IOR.<br />
+                This overwrites the JacORB specific <i>java -DOAIAddr=[ip]</i> setting.</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         
+         <tr>
+            <td>ior.port</td>
+            <td>[random]</td>
+            <td>Allows to set the corba server port number.
+                Usually you don't need to specify this as the CORBA library
+                chooses a port and delivers it in its IOR.<br />
+                This overwrites the JacORB specific <i>java -DOAPort=[no]</i> setting.</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>ior.file</td>
+            <td>-</td>
+            <td>Specify a file where to dump the IOR of the AuthServer (for client access).</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>java -Djacorb.verbosity=1</td>
+            <td>1</td>
+            <td>Debugging output for JacORB, try a value of e.g. 3.</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+      </table>
+   </configuration>
+
+   <see type="REQ">protocol</see>
+   <see type="REQ">protocol.corba.NameService</see>
+   <see type="REQ">protocol.corba.orbacus</see>
+   <see type="INTERNET">http://www.jacorb.org</see>
+   <see type="CODE">org.xmlBlaster.protocol.corba.CorbaDriver</see>
+   <see type="CODE">org.xmlBlaster.client.protocol.corba.CorbaConnection</see>
+
+   <author>xmlBlaster@marcelruff.info</author>
+   <date>2003 02 27</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="CLOSED">
+      <name>-</name>
+      <comment>Tests a setup as described in this requirement</comment>
+      <test tool="SUITE">org.xmlBlaster.test.qos.TestCorbaThreads</test>
+   </testcase>
+</requirement>
+
