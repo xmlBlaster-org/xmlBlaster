@@ -3,7 +3,7 @@ Name:      NamedConnectionPool.java
 Project:   xmlBlaster.org
 Copyright: jutils.org, see jutils-LICENSE file
 Comment:   Basic handling of a pool of limited resources
-Version:   $Id: NamedConnectionPool.java,v 1.2 2000/07/07 11:31:14 ruff Exp $
+Version:   $Id: NamedConnectionPool.java,v 1.3 2000/07/08 12:40:16 ruff Exp $
            $Source: /opt/cvsroot/xmlBlaster/src/java/org/xmlBlaster/protocol/jdbc/NamedConnectionPool.java,v $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
@@ -41,6 +41,8 @@ public class NamedConnectionPool
 {
    private static final String ME = "NamedConnectionPool";
    private Hashtable namedPools = new Hashtable();
+
+   private final Object meetingPoint = new Object();
 
    public NamedConnectionPool()
    {
@@ -82,19 +84,21 @@ public class NamedConnectionPool
    Connection reserve(String dbUrl, String dbUser, String dbPasswd, long eraseUnusedPoolTimeout,
                       int maxInstances, long busyToIdle, long idleToErase) throws XmlBlasterException
    {
-      if (Log.TRACE) Log.trace(ME, "Entering reserve '" + dbUrl + "', '" + dbUser + "'");
-      try {
-         UnnamedConnectionPool pool = getPool(dbUrl, dbUser);
-         if (pool == null) {
-            synchronized (this) {
-               if (pool == null) {
-                  if (dbPasswd == null) throw new XmlBlasterException(ME+".MissingPasswd", "Please give a password for '" + dbUser + "' when creating a JDBC pool");
-                  pool = new UnnamedConnectionPool(this, dbUrl, dbUser, dbPasswd, eraseUnusedPoolTimeout, maxInstances, busyToIdle, idleToErase);
-                  namedPools.put(getKey(dbUrl, dbUser), pool);
-               }
+      UnnamedConnectionPool pool = getPool(dbUrl, dbUser);
+      if (pool == null) {
+         synchronized(meetingPoint) {
+            pool = getPool(dbUrl, dbUser);
+            if (pool == null) {
+               if (dbPasswd == null) throw new XmlBlasterException(ME+".MissingPasswd", "Please give a password for '" + dbUser + "' when creating a JDBC pool");
+               pool = new UnnamedConnectionPool(this, dbUrl, dbUser, dbPasswd, eraseUnusedPoolTimeout, maxInstances, busyToIdle, idleToErase);
+               namedPools.put(getKey(dbUrl, dbUser), pool);
             }
          }
-         return pool.reserve();
+      }
+      try {
+         Connection con = pool.reserve();
+         if (Log.TRACE) Log.trace(ME, "reserve(" + dbUrl + ", " + dbUser + ") con=" + con);
+         return con;
       }
       catch(Exception e) {
          Log.error(ME, "System Exception in connect(" + dbUrl + ", " + dbUser + "): " + e.toString());
@@ -107,7 +111,7 @@ public class NamedConnectionPool
     */
    void release(String dbUrl, String dbUser, Connection con) throws XmlBlasterException
    {
-      if (Log.TRACE) Log.trace(ME, "Entering release '" + dbUrl + "', '" + dbUser + "'");
+      if (Log.TRACE) Log.trace(ME, "release(" + dbUrl + ", " + dbUser + ") con=" + con);
       UnnamedConnectionPool pool = getPool(dbUrl, dbUser);
       if (pool != null)
          pool.release(con);
@@ -189,6 +193,8 @@ public class NamedConnectionPool
       private long eraseUnusedPoolTimeout;
       private Long timeoutHandle = new Long(0L); // initialize for synchronized
 
+      private final Object meetingPoint = new Object();
+
       /**
        * @param boss           My manager
        * @param eraseUnusedPoolTimeout This pool is erased after given millis without activity of the owning user<br />
@@ -241,7 +247,9 @@ public class NamedConnectionPool
       public Object toCreate(String instanceId) throws JUtilsException {
          if (Log.TRACE) Log.trace(ME, "Entering toCreate() ...");
          try {
-            return DriverManager.getConnection (dbUrl, dbUser, dbPasswd);
+            synchronized(boss) { // Oracle has problems with multi threaded connection access ...
+               return DriverManager.getConnection (dbUrl, dbUser, dbPasswd);
+            }
          }
          catch(Exception e) {
             Log.error(ME, "System Exception in connect(" + dbUrl + ", " + dbUser + "): " + e.toString());
@@ -258,7 +266,9 @@ public class NamedConnectionPool
          if (Log.TRACE) Log.trace(ME, "Entering toErase() ...");
          Connection con = (Connection)resource;
          try {
-            con.close();
+            synchronized(boss) { // Oracle has problems with multi threaded connection access ...
+              con.close();
+            }
             if (Log.TRACE) Log.trace(ME, "JDBC connection closed for '" + dbUrl + "', '" + dbUser + "'");
          }
          catch (Exception e) {
@@ -273,17 +283,19 @@ public class NamedConnectionPool
          if (poolManager == null) { throw new XmlBlasterException(ME+".Destroyed", "Pool is destroyed"); }
          if (Log.TRACE) Log.trace(ME, "Entering reserve '" + dbUrl + "', '" + dbUser + "'");
          try {
+            synchronized(meetingPoint) {
                if (eraseUnusedPoolTimeout > 10L) {
                   synchronized(timeoutHandle) {
                      timeoutHandle = Timeout.getInstance().refreshTimeoutListener(timeoutHandle, eraseUnusedPoolTimeout);
                   }
                }
-               ResourceWrapper rw = (ResourceWrapper)poolManager.reserve(PoolManager.USE_HASH_CODE);
+               ResourceWrapper rw = (ResourceWrapper)poolManager.reserve(PoolManager.USE_OBJECT_REF);
                Connection con = (Connection)rw.getResource();
                return con;
+            }
          }
          catch (JUtilsException e) {
-            Log.error(ME, "Caught exception in reserve(): " + e.toString());
+            Log.error(ME, "Caught exception in reserve(): " + e.toString() + "\n" + toXml());
             throw new XmlBlasterException(e);
          }
       }
@@ -293,9 +305,11 @@ public class NamedConnectionPool
        */
       void release(Connection con) throws XmlBlasterException {
          if (poolManager == null) { throw new XmlBlasterException(ME+".Destroyed", "Pool is destroyed"); }
-         if (Log.TRACE) Log.trace(ME, "Entering release '" + dbUrl + "', '" + dbUser + "' hashCode=" + con.hashCode());
+         if (Log.TRACE) Log.trace(ME, "Entering release '" + dbUrl + "', '" + dbUser + "' conId=" + con);
          try {
-            poolManager.release(""+con.hashCode());
+            synchronized(meetingPoint) {
+               poolManager.release(""+con);
+            }
          }
          catch (JUtilsException e) {
             Log.error(ME, "Caught exception in release(): " + e.toString());
@@ -309,24 +323,28 @@ public class NamedConnectionPool
       public void timeout(java.lang.Object o)
       {
          if (Log.TRACE) Log.trace(ME, "Entering pool destroy timeout for '" + dbUrl + "', '" + dbUser + "' ...");
-         if (poolManager.getNumBusy() != 0) {
-            Log.warning(ME, "Can't destroy pool from '" + dbUrl + "', '" + dbUser + "', he seems to be busy working on his database.");
-            synchronized(timeoutHandle) {
-               timeoutHandle = Timeout.getInstance().addTimeoutListener(this, eraseUnusedPoolTimeout, "dummy");
+         synchronized(meetingPoint) {
+            if (poolManager.getNumBusy() != 0) {
+               Log.warning(ME, "Can't destroy pool from '" + dbUrl + "', '" + dbUser + "', he seems to be busy working on his database.");
+               synchronized(timeoutHandle) {
+                  timeoutHandle = Timeout.getInstance().addTimeoutListener(this, eraseUnusedPoolTimeout, "dummy");
+               }
+               return;
             }
-            return;
-         }
-         try {
-            boss.destroy(dbUrl, dbUser);
-         } catch(XmlBlasterException e) {
-            Log.error(ME, "timeout: " + e.toString());
+            try {
+               boss.destroy(dbUrl, dbUser);
+            } catch(XmlBlasterException e) {
+               Log.error(ME, "timeout: " + e.toString());
+            }
          }
       }
 
       /** Destroy the complete unnamed pool */
       void destroy() {
          if (poolManager != null) {
-            poolManager.destroy();
+            synchronized(meetingPoint) {
+               poolManager.destroy();
+            }
             poolManager = null;
          }
          NamedConnectionPool boss = null;
@@ -359,6 +377,7 @@ public class NamedConnectionPool
     * Invoke: java org.xmlBlaster.protocol.jdbc.NamedConnectionPool -trace true
     */
    public static void main(String[] args) {
+      NamedConnectionPool namedPool = null;
       try {
          Log.setLogLevel(args); // initialize log level
 
@@ -376,30 +395,30 @@ public class NamedConnectionPool
          java.sql.DriverManager.registerDriver(dr);
          Log.info(ME, "Jdbc driver '" + dbDriver + "' loaded.");
 
-         NamedConnectionPool namedPool = new NamedConnectionPool();
+         namedPool = new NamedConnectionPool();
 
          final long timeToDeath = 10*1000L;
 
          class Test extends Thread {
-            String ME = "TestThread";
-            NamedConnectionPool namedPool = null;
+            private String ME = "TestThread";
+            private NamedConnectionPool np;
             private String user;
             private String pw;
-            Test(String name, NamedConnectionPool namedPool, String user, String pw) {
-               this.namedPool = namedPool;
+            Test(String name, NamedConnectionPool namedP, String user, String pw) {
+               super(name);
+               this.np = namedP;
                this.ME = name;
                this.user = user;
                this.pw = pw;
             }
             public void run() {
                try {
-                  for (int ii=0; ii<5; ii++) {
-                     Log.plain("run=" + ii + "\n");
+                  for (int ii=0; ii<500; ii++) {
+                     Log.info(ME, " query run=" + ii + "\n");
                      org.jutils.time.StopWatch watch = new org.jutils.time.StopWatch();
-                     Connection con = null;
-                     con = namedPool.reserve(dbUrl, user, pw, timeToDeath, 10, 0L, 40*1000L);
-                     int hashBefore = con.hashCode();
-                     Log.info(ME, "Reserved connection hash=" + hashBefore + watch.toString() + "\n" + namedPool.toXml());
+                     Connection con = np.reserve(dbUrl, user, pw, timeToDeath, 100, 60*1000L, 40*1000L);
+                     Log.info(ME, "Reserved connection id=" + con + watch.toString());
+                     //Log.info(ME, np.toXml());
                      java.sql.Statement stmt = null;
                      java.sql.ResultSet rs = null;
                      try {
@@ -408,37 +427,52 @@ public class NamedConnectionPool
                      } finally {
                         if (rs!=null) rs.close();
                         if (stmt!=null) stmt.close();
-                        if (hashBefore != con.hashCode())
-                           Log.panic(ME, "Hash mismatch");
                         watch = new org.jutils.time.StopWatch();
-                        if (con!=null) namedPool.release(dbUrl, dbUser, con);
-                        Log.info(ME, "Query successful done, connection released" + watch.toString() + "\n" + namedPool.toXml());
+                        if (con!=null) np.release(dbUrl, user, con);
+                        Log.info(ME, "Query successful done, connection released" + watch.toString());
+                        //Log.info(ME, np.toXml());
                      }
                   }
+                  Log.info(ME, "Going to sleep " + (timeToDeath+1000L) + " msec");
                   try { Thread.currentThread().sleep(timeToDeath+1000L); } catch( InterruptedException i) {}
-                  Log.info(ME, "After sleeping " + (timeToDeath+1000L) + " sec, erased connection\n" + namedPool.toXml());
-                  //if (namedPool.poolManager.getNumBusy() != 0 || namedPool.poolManager.getNumIdle() != 0)
-                  //   Log.panic(ME, "TEST FAILED: Wrong number of busy/idle resources");
+                  Log.info(ME, "After sleeping " + (timeToDeath+1000L) + " msec, erased connection\n" + np.toXml());
                }
                catch(Throwable e) {
-                  Log.panic(ME, "TEST FAILED");
+                  e.printStackTrace();
+                  np.destroy();
+                  Log.panic(ME, "TEST FAILED" + e.toString());
                }
             }
          }
 
-         for (int ii=0; ii<6; ii++) {
+         java.util.Vector vec = new java.util.Vector();
+         for (int ii=0; ii<8; ii++) {
             String name = "TestThread-"+ii;
-            if ((ii % 2) == 0) {
+            if (true) { //(ii % 2) == 0) {
                Test p = new Test(name, namedPool, dbUser, dbPasswd);
+               p.setDaemon(true);
                p.start();
+               vec.addElement(p);
             }
             else {
                Test p = new Test(name, namedPool, dbUser2, dbPasswd2);
+               p.setDaemon(true);
                p.start();
+               vec.addElement(p);
             }
             Log.info(ME, "Started " + name + " ...");
          }
+
+         for (int ii=0; ii<vec.size(); ii++) {
+            Test p = (Test)vec.elementAt(ii);
+            p.join();
+         }
+         
+         Log.info(ME, "All done, destroying ...");
+
+         namedPool.destroy();
       } catch (Throwable e) {
+         namedPool.destroy();
          Log.panic(ME, "ERROR: Test failed " + e.toString());
       }
    }
