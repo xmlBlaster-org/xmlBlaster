@@ -3,7 +3,7 @@ Name:      JdbcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   JdbcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: JdbcDriver.java,v 1.29 2002/06/19 12:36:12 ruff Exp $
+Version:   $Id: JdbcDriver.java,v 1.30 2002/06/25 17:40:48 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
@@ -169,9 +169,9 @@ public class JdbcDriver implements I_Driver, I_Publish
    {
       String text = "\n";
       text += "JdbcDriver options:\n";
-      text += "   -JdbcDriver.password     The internal xmlBlaster-password for the JDBC driver.\n";
-      text += "   -JdbcDriver.drivers      List of all jdbc drivers to initalize, e.g.\n";
-      text += "                            oracle.jdbc.driver.OracleDriver,org.gjt.mm.mysql.Driver,postgresql.Driver.\n";
+      text += "   -JdbcDriver.password  The internal xmlBlaster-password for the JDBC driver.\n";
+      text += "   -JdbcDriver.drivers   List of all jdbc drivers to initalize, e.g.\n";
+      text += "                         oracle.jdbc.driver.OracleDriver,org.gjt.mm.mysql.Driver,postgresql.Driver.\n";
       text += "\n";
       return text;
    }
