@@ -4,12 +4,15 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for 1.0x (patches for 1.0 stable)
 =====================================================
 
+ o #13110 Added DbWatcher framework to poll for changes on databases
+   and report them as XML formatted messages, see
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/contrib.dbwatcher.html
+
  o #13094 Added XmlBlasterJdk14LoggingHandler.java which redirects JDK 1.4
    logging to our framework.
    This may be useful for native plugins which already use JDK 1.4 logging.
    Switch redirection off with '-xmlBlaster/jdk14loggingCapture false'
-
- o Now at least JDK 1.4 is needed
+   The code is load by reflection to still support JDK 1.3 runtimes.
 
 
 Changes for 1.0 [2004-12-23] #13076 "Xmas release"
