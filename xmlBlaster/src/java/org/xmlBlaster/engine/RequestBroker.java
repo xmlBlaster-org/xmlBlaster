@@ -471,6 +471,18 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
     *      &lt;oid>aMessage&lt;/oid>
     *   &lt;key>
     * </pre>
+    * <p>
+    * The usual sources to send dead letters are:
+    * </p>
+    * <ol>
+    *   <li>A publish of a message fails, the message is lost but you can handle it
+    *       if you subscribe to dead messages
+    *   </li>
+    *   <li>A subscribe fails because a mime plugin throws an exception
+    *   </li>
+    *   <li>A callback fails
+    *   </li>
+    * </ol>
     * @param entries The message to send as dead letters
     * @param queue The belonging queue or null
     * @param reason A human readable text describing the problem
@@ -870,31 +882,31 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
 
          KeyData[] keyDataArr = queryMatchingKeys(sessionInfo, xmlKey, getQos.getData());
          ArrayList msgUnitList = new ArrayList(keyDataArr.length);
-	 
-	 // Always forward the get request to the master
-	 // even if there are no matching keys
+         
+         // Always forward the get request to the master
+         // even if there are no matching keys
          if (useCluster) { // cluster support - forward erase to master
            try {
-	       MsgUnit tmp[] = glob.getClusterManager().forwardGet(sessionInfo, xmlKey, getQos);
-	       if (tmp != null && tmp.length > 0) {
-		   log.info(ME, "get() access of " + tmp.length + " messages from cluster master");
-		   for (int jj=0; jj<tmp.length; jj++) {
-		       msgUnitList.add(tmp[jj]);
-		       // We currently don' cache the message here in the slave !!!
-		       // We could do it with the xmlBlasterConnection.initCache(int size)
-		   }
-	       }
-	   }
-	   catch (XmlBlasterException e) {
-	       if (e.getErrorCode() == ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED) {
-		   useCluster = false;
-	       }
-	       else {
-		   e.printStackTrace();
-		   throw e;
-	       }
-	   }
-	 }
+               MsgUnit tmp[] = glob.getClusterManager().forwardGet(sessionInfo, xmlKey, getQos);
+               if (tmp != null && tmp.length > 0) {
+                   log.info(ME, "get() access of " + tmp.length + " messages from cluster master");
+                   for (int jj=0; jj<tmp.length; jj++) {
+                       msgUnitList.add(tmp[jj]);
+                       // We currently don' cache the message here in the slave !!!
+                       // We could do it with the xmlBlasterConnection.initCache(int size)
+                   }
+               }
+           }
+           catch (XmlBlasterException e) {
+               if (e.getErrorCode() == ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED) {
+                   useCluster = false;
+               }
+               else {
+                   e.printStackTrace();
+                   throw e;
+               }
+           }
+         }
 
          NEXT_MSG: for (int ii=0; ii<keyDataArr.length; ii++) {
             KeyData xmlKeyExact = keyDataArr[ii];
