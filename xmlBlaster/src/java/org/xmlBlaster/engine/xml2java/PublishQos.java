@@ -3,7 +3,7 @@ Name:      PublishQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: PublishQos.java,v 1.8 2002/05/11 09:36:30 ruff Exp $
+Version:   $Id: PublishQos.java,v 1.9 2002/05/16 15:33:48 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -12,6 +12,7 @@ import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.RcvTimestamp;
+import org.xmlBlaster.client.UpdateQos;
 
 import org.xmlBlaster.engine.helper.Destination;
 import org.xmlBlaster.engine.helper.Constants;
@@ -188,6 +189,22 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       if (fromPersistenceStore && !rcvTimestampFound) {
          Log.error(ME, "Message from persistent store is missing rcvTimestamp");
       }
+   }
+
+
+   /**
+    * Constructs the specialized quality of service object for a publish() call.
+    * @param the XML based ASCII string
+    */
+   public PublishQos(Global glob, UpdateQos qos) throws XmlBlasterException
+   {
+      this.glob = glob;
+      setSender(qos.getSender());
+      // !!! setState(qos.getState());
+      this.rcvTimestamp = qos.getRcvTimestamp();
+      setPriority(qos.getPriority());
+      setRemainingLife(getMaxRemainingLife());
+      size = 0;
    }
 
 
