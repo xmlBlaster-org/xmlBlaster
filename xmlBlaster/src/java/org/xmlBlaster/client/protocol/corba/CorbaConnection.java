@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.12 2000/11/05 23:30:23 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.13 2000/11/06 21:22:32 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -64,7 +64,7 @@ import java.io.IOException;
  * first time the ORB is created.<br />
  * This will be fixed as soon as possible.
  *
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class CorbaConnection implements I_XmlBlasterConnection
@@ -522,9 +522,9 @@ public class CorbaConnection implements I_XmlBlasterConnection
          byte[] bytes = new byte[4096];
          java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
          int numbytes;
-         if (nsis.available() <= 0) {
-            Log.warn(ME, "XmlBlaster on host " + iorHost + " and port " + iorPort + " returns empty IOR, trying again after sleeping 100 milli ...");
-            org.jutils.runtime.Sleeper.sleep(100); // hack: on heavy logins, sometimes available() returns 0, but after sleeping it is OK !!!
+         for (int ii=0; ii<20 && (nsis.available() <= 0); ii++) {
+            if (Log.TRACE) Log.trace(ME, "XmlBlaster on host " + iorHost + " and port " + iorPort + " returns empty IOR, trying again after sleeping 10 milli ...");
+            org.jutils.runtime.Sleeper.sleep(10); // On heavy logins, sometimes available() returns 0, but after sleeping it is OK
          }
          while (nsis.available() > 0 && (numbytes = nsis.read(bytes)) > 0) {
             bos.write(bytes, 0, (numbytes > 4096) ? 4096 : numbytes);
