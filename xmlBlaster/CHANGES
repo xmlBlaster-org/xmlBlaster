@@ -14,6 +14,10 @@ Changes for 0.80 [???, ? 2000]
    causing a subscequent login to auto logout another client.
 
  - FileDriver is switched on as default (persistent store).
+   You need to replace your xmlBlaster.properties
+   with the new xmlBlaster.properties.template or set
+   Persistence.LazyRecovery=true
+   
 
 Changes for 0.79 [Nov, 3 2000]
 ==============================
