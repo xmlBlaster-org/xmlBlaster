@@ -152,7 +152,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
    }
 
    /**
-    * For this query subscription remember all resulted subscriptions
+    * For this query subscription remember all resulted child subscriptions
     */
    public final void addSubscription(SubscriptionInfo subs)
    {
@@ -161,7 +161,26 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
    }
 
    /**
+    * For this query subscription remember all resulted subscriptions
+    */
+   public final void removeChildSubscription(SubscriptionInfo subs)
+   {
+      if (childrenVec == null) return;
+
+      boolean found = childrenVec.remove(subs);
+      
+      if (!found) {
+         log.error(ME, "Failed to remove XPATH children subscription " + uniqueKey);
+         Thread.currentThread().dumpStack();
+         return;
+      }
+
+      if (log.TRACE) log.trace(ME, "Removed XPATH " + uniqueKey + " children subscription "); // + subs.getUniqueKey());
+   }
+
+   /**
     * For this query subscription return all resulted subscriptions
+    * @return null if not a query subscription with children
     */
    public final Vector getChildrenSubscriptions()
    {
@@ -195,11 +214,11 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
    {
       if (log.TRACE) log.trace(ME, "Entering erase()");
       // msgQueue = null; not my business
-      xmlKey = null;
       xmlQoSBase = null;
       subscribeQos = null;
       unSubscribeQos = null;
-      uniqueKey = null;
+      // Keep xmlKey for further processing
+      // Keep uniqueKey for further processing
    }
 
    /**
@@ -312,6 +331,22 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
    }
 
    /**
+    * The oid of the message we belong to
+    */
+   public final String getKeyOid()
+   {
+      if (xmlKey != null) {
+         try {
+            return xmlKey.getUniqueKey();
+         }
+         catch (XmlBlasterException e) {
+            return null;
+         }
+      }
+      return null;
+   }
+
+   /**
     * Access on SubscribeQoS object
     * @return SubscribeQoS object
     */
@@ -328,7 +363,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
     */
    public final String getUniqueKey() throws XmlBlasterException
    {
-      if (uniqueKey == null) {
+      if (this.uniqueKey == null) {
          if (querySub != null) {
             StringBuffer buf = new StringBuffer(126);
             synchronized (SubscriptionInfo.class) {
@@ -337,9 +372,12 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
                buf.append(querySub.getUniqueKey()).append(":").append(uniqueCounter);
             }
             this.uniqueKey = buf.toString();
+            if (log.TRACE) log.trace(ME, "Generated child subscription ID=" + this.uniqueKey);
          }
-         else
+         else {
             this.uniqueKey = SubscriptionInfo.generateUniqueKey(msgQueue, xmlKey, xmlQoSBase).toString();
+            if (log.TRACE) log.trace(ME, "Generated subscription ID=" + this.uniqueKey);
+         }
       }
       return this.uniqueKey;
    }
@@ -354,6 +392,16 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
          return querySub.getUniqueKey();
       }
       return getUniqueKey();
+   }
+
+   /**
+    * Cleanup subscription. 
+    */
+   public final void shutdown() throws XmlBlasterException
+   {
+      if (querySub != null) {
+         querySub.removeChildSubscription(this);
+      }
    }
 
    /**
@@ -422,6 +470,12 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
          sb.append(offset + "   <UnSubscribeQos></UnSubscribeQos>");
       sb.append(offset + "   <msgUnitHandler id='" + (myHandler==null ? "null" : myHandler.getUniqueKey()) + "'/>");
       sb.append(offset + "   <creationTime>" + TimeHelper.getDateTimeDump(creationTime) + "</creationTime>");
+      if (childrenVec != null) {
+         for (int ii=0; ii<childrenVec.size(); ii++) {
+            SubscriptionInfo child = (SubscriptionInfo)childrenVec.elementAt(ii);
+            sb.append(offset).append("   <child>").append(child.getUniqueKey()).append("</child>");
+         }
+      }
       sb.append(offset + "</SubscriptionInfo>\n");
       return sb.toString();
    }
