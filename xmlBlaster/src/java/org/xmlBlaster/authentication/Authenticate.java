@@ -222,7 +222,13 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
       try {
          // Check if user is known, otherwise create an entry ...
          I_Subject subjectCtx = sessionCtx.getSubject();
-         SessionName subjectName = new SessionName(glob, subjectCtx.getName());
+         SessionName subjectName = null;
+         try {
+            subjectName = new SessionName(glob, subjectCtx.getName());
+         }
+         catch (IllegalArgumentException e) {
+            throw new XmlBlasterException(glob, ErrorCode.USER_SECURITY_AUTHENTICATION_ILLEGALARGUMENT, ME, "Please check your login name '" + subjectCtx.getName() + "': " + e.toString());
+         }
          subjectInfo = getSubjectInfoByName(subjectName);
          if (subjectInfo == null) {
             subjectInfo = new SubjectInfo(getGlobal(), subjectCtx, connectQos.getSubjectCbQueueProperty());
@@ -289,13 +295,23 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
          String id = (sessionInfo != null) ? sessionInfo.getId() : ((subjectInfo != null) ? subjectInfo.getId() : "");
          log.warn(ME, "Connection for " + id + " failed: " + e.getMessage());
          //e.printStackTrace(); Sometimes nice, often not - what to do?
-         disconnect(secretSessionId, (String)null); // cleanup
+         try {
+            disconnect(secretSessionId, (String)null); // cleanup
+         }
+         catch (Throwable th) {
+            log.warn(ME, "Ignoring problems during cleanup of exception '" + e.getMessage() + "':" + th.getMessage());
+         }
          throw e;
       }
       catch (Throwable e) {
          e.printStackTrace();
          log.error(ME, "Internal error: Connect failed: " + e.getMessage());
-         disconnect(secretSessionId, (String)null); // cleanup
+         try {
+            disconnect(secretSessionId, (String)null); // cleanup
+         }
+         catch (Throwable th) {
+            log.warn(ME, "Ignoring problems during cleanup of exception '" + e.getMessage() + "':" + th.getMessage());
+         }
          throw XmlBlasterException.convert(glob, ME, ErrorCode.INTERNAL_CONNECTIONFAILURE.toString(), e);
       }
    }
@@ -559,7 +575,7 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
 
       if (obj == null) {
          log.warn(ME+".AccessDenied", "SessionId '" + secretSessionId + "' is invalid, no access to xmlBlaster.");
-         throw new XmlBlasterException("AccessDenied", "Your secretSessionId is invalid, no access to " + glob.getId() + ".");
+         throw new XmlBlasterException(glob, ErrorCode.USER_SECURITY_AUTHENTICATION_ACCESSDENIED, ME, "Your secretSessionId is invalid, no access to " + glob.getId() + ".");
       }
       SessionInfo sessionInfo = (SessionInfo)obj;
 
