@@ -18,7 +18,7 @@ Changes for 0.xx [xx, xx 2001]
 
  - Added Authentication and Authorization framework by Wolfgang Kleinertz
 
-   xmlBlaster.idl has changed, new methods init() and disconnect()
+   xmlBlaster.idl has changed, new methods connect() and disconnect()
    as counterpart to login() and logout()
 
    Please copy the modified config/xmlBlaster.properties.template
@@ -29,6 +29,9 @@ Changes for 0.xx [xx, xx 2001]
       Security.Client.Plugin[gui][1.0]=org.xmlBlaster.authentication.plugins.gui.ClientSecurityHelper
    and start for example "java javaclients.ClientSub" to see xmlBlaster
    with GUI based manual authentication/authorization.
+
+   To study raw CORBA access with the new security plugin see
+      xmlBlaster/demo/javaclients/corba/ClientRawSecurity.java
 
  - Changed XML-RPC 'void' method return values to return
    an 'empty string', since 'void' is not supported in the
