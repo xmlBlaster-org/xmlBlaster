@@ -112,7 +112,7 @@ public class TestPtSession extends TestCase
          log.info(ME, "XmlBlaster is ready for testing the session PtP messages");
       }
       else
-         log.warn(ME, "You need to start an external xmlBlaster server for this test");
+         log.warn(ME, "You need to start an external xmlBlaster server for this test or use option -startEmbedded true");
 
       this.conHolderArr = new ConHolder[numCons];
 
