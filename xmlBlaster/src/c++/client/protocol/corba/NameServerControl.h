@@ -317,7 +317,8 @@ namespace client { namespace protocol { namespace corba {
 
 /**
  * Used to resolve a given name. Returns a reference to the object if an 
- * object with the given name exists. Otherwise returns zero. 
+ * object with the given name exists. Otherwise returns zero.
+ * The caller is responsible to free the pointer. 
  */
          CORBA::Object_ptr resolve(const string &name) {
 
@@ -332,9 +333,8 @@ namespace client { namespace protocol { namespace corba {
                   CORBA::string_dup(nameVector[i].second.c_str());
             }
             
-            CORBA::Object_var ret; //  = 0;
             try {
-               ret = namingContext_->resolve(objectName);
+               return namingContext_->resolve(objectName);
             }
             catch(const CosNaming::NamingContext::NotFound& /*ex*/) {
 //             throw NSControlException(6,"resolve: name not found exception");
@@ -357,7 +357,6 @@ namespace client { namespace protocol { namespace corba {
                throw serverIdl::XmlBlasterException("communication.noConnection", "client", txt.c_str(), "en",
                       msg.c_str(), "", "", "", "", "", "");
             }
-            return CORBA::Object::_duplicate(ret);
          }
          
 
@@ -365,7 +364,7 @@ namespace client { namespace protocol { namespace corba {
  * Returns the naming service reference
  */
          CosNaming::NamingContext_ptr getNamingService() {
-            return CosNaming::NamingContext::_duplicate(namingContext_);
+            return CosNaming::NamingContext::_duplicate(static_cast<CosNaming::NamingContext_ptr>(namingContext_));
          }
 
 
