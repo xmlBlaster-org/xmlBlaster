@@ -3,7 +3,7 @@ Name:      SubscribeMessage.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code to subscribe from command line for a message
-Version:   $Id: SubscribeMessage.java,v 1.23 2003/01/07 17:01:46 ruff Exp $
+Version:   $Id: SubscribeMessage.java,v 1.24 2003/01/17 12:54:06 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.reader;
 
@@ -32,7 +32,7 @@ import org.xmlBlaster.util.enum.Constants;
  * for example for debugging reasons.
  * Invoke examples:<br />
  * <pre>
- *    java org.xmlBlaster.client.reader.SubscribeMessage  -loginName  Tim  -passwd  secret  -oid  __cmd:?totalMem
+ *    java org.xmlBlaster.client.reader.SubscribeMessage  -session.name Tim  -passwd  secret  -oid  __cmd:?totalMem
  * </pre>
  * For other supported options type
  * <pre>
@@ -45,8 +45,6 @@ public class SubscribeMessage implements I_Callback
    private final Global glob;
    private final LogChannel log;
    private XmlBlasterConnection xmlBlasterConnection;
-   private String loginName;
-   private String passwd;
    private String subscriptionHandle;
 
    /**
@@ -60,8 +58,6 @@ public class SubscribeMessage implements I_Callback
    {
       this.glob = glob;
       this.log = glob.getLog("client");
-      loginName = glob.getProperty().get("loginName", ME);
-      passwd = glob.getProperty().get("passwd", "secret");
 
       String oidString = glob.getProperty().get("oid", (String)null);
       String xpathString = glob.getProperty().get("xpath", (String)null);
@@ -94,12 +90,10 @@ public class SubscribeMessage implements I_Callback
    /**
     * Open the connection, and subscribe to the message
     */
-   public SubscribeMessage(Global glob, String loginName, String passwd, String xmlKey, String queryType)
+   public SubscribeMessage(Global glob, String xmlKey, String queryType)
    {
       this.glob = glob;
       this.log = glob.getLog("client");
-      this.loginName = loginName;
-      this.passwd = passwd;
       setUp();  // login
       subscriptionHandle = subscribe(xmlKey, queryType);
    }
@@ -114,7 +108,7 @@ public class SubscribeMessage implements I_Callback
    {
       try {
          xmlBlasterConnection = new XmlBlasterConnection(glob);
-         ConnectQos qos = new ConnectQos(glob, loginName, passwd);
+         ConnectQos qos = new ConnectQos(glob);
          xmlBlasterConnection.connect(qos, this); // Login to xmlBlaster
       }
       catch (Exception e) {
@@ -175,12 +169,12 @@ public class SubscribeMessage implements I_Callback
       System.out.println("============= START " + updateKey.getOid() + " =======================");
       log.info(ME, "Receiving update of a message ...");
       System.out.println("<xmlBlaster>");
-      System.out.println(updateKey.toString());
+      System.out.println(updateKey.toXml());
       System.out.println("");
       System.out.println("<content>");
       System.out.println(new String(content));
       System.out.println("</content>");
-      System.out.println(updateQos.toString());
+      System.out.println(updateQos.toXml());
       System.out.println("</xmlBlaster>");
       System.out.println("============= END " + updateKey.getOid() + " =========================");
       System.out.println("");
@@ -193,6 +187,7 @@ public class SubscribeMessage implements I_Callback
     */
    private static void usage()
    {
+      XmlBlasterConnection.usage();
       System.out.println("----------------------------------------------------------");
       System.out.println("java org.xmlBlaster.client.reader.SubscribeMessage <options>");
       System.out.println("----------------------------------------------------------");
