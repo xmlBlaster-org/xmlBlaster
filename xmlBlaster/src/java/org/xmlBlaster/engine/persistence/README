@@ -1,0 +1,6 @@
+DEPRECATED 2003-06-16 marcel:
+  The persistence frameworks used now is
+  http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.html
+
+The FileDriver will be removed as soon it is ported to the queue 
+persistence framework.
