@@ -3,6 +3,9 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes for 0.xxx [xxxxxxxxxx]
 ==============================
 
+ o Moved getJdbcQueueManagerCommonTable from util.Global to JdbcQueueCommonTablePlugin so that the 
+   manager is not referenced outside the plugin it serves. (Still TODO move wipeOutDB from Global)
+
  o Property loading cleanup in Global.java 
    Thanks to Peter Antman for the discussion
 

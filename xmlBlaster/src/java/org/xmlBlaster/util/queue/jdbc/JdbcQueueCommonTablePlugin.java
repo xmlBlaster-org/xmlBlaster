@@ -27,6 +27,7 @@ import org.xmlBlaster.util.queue.I_StorageProblemNotifier;
 import org.xmlBlaster.util.queue.I_StorageProblemListener;
 
 import java.sql.ResultSet;
+import java.sql.SQLException;
 // import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -127,6 +128,72 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
    }
 */
 
+
+   /**
+    * Returns a JdbcManagerCommonTable for a specific queue. It strips the queueId to
+    * find out to which manager it belongs. If such a manager does not exist
+    * yet, it is created and initialized.
+    * A queueId must be of the kind: cb:some/id/or/someother
+    * where the important requirement here is that it contains a ':' character.
+    * text on the left side of the separator (in this case 'cb') tells which
+    * kind of queue it is: for example a callback queue (cb) or a client queue.
+    */
+   protected JdbcManagerCommonTable getJdbcQueueManagerCommonTable(PluginInfo pluginInfo)
+      throws XmlBlasterException {
+      String location = ME + "/type '" + pluginInfo.getType() + "' version '" + pluginInfo.getVersion() + "'";
+      String managerName = pluginInfo.toString(); //  + "-" + pluginInfo.getTypeVersion();
+      Object obj = this.glob.getObjectEntry(managerName);              
+      JdbcManagerCommonTable manager = null;
+      if (obj == null) {
+         synchronized (JdbcManagerCommonTable.class) {
+            obj = this.glob.getObjectEntry(managerName); // could have been initialized meanwhile              
+            if ( obj == null) {
+               JdbcConnectionPool pool = new JdbcConnectionPool();
+               try {
+                  pool.initialize(this.glob, pluginInfo.getParameters());
+                  manager = new JdbcManagerCommonTable(pool, this.glob.getEntryFactory(managerName));
+                  pool.registerStorageProblemListener(manager);
+                  manager.setUp();
+                  if (log.TRACE) log.trace(ME, "Created JdbcManagerCommonTable instance for storage plugin configuration '" + managerName + "'");
+               }
+               catch (ClassNotFoundException ex) {
+                  this.log.error(location, "getJdbcCommonTableQueueManager class not found: " + ex.getMessage());
+                  throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, location, "getJdbcCommonTableQueueManager class not found", ex);
+               }
+               catch (SQLException ex) {
+                  if (this.log.TRACE) this.log.trace(location, "getJdbcCommonTableQueueManager SQL exception: " + ex.getMessage());
+                  throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, location, "getJdbcCommonTableQueueManager SQL exception", ex);
+               }
+               catch (Throwable ex) {
+                  if (this.log.TRACE) this.log.trace(location, "getJdbcCommonTableQueueManager internal exception: " + ex.toString());
+                  throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, location, "getJdbcCommonTableQueueManager throwable", ex);
+               }
+
+               this.glob.addObjectEntry(managerName, manager);
+            }
+         }
+      }
+      else manager = (JdbcManagerCommonTable)obj;
+
+      try {
+         if (!manager.getPool().isInitialized()) {
+            manager.getPool().initialize(this.glob, pluginInfo.getParameters());
+            if (log.TRACE) log.trace(ME, "Initialized JdbcManager pool for storage class '" + managerName + "'");
+         }
+      }
+      catch (ClassNotFoundException ex) {
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, location, "getJdbcQueueManager: class not found when initializing the connection pool", ex);
+      }
+      catch (SQLException ex) {
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, location, "getJdbcQueueManager: sql exception when initializing the connection pool", ex);
+      }
+      catch (Throwable ex) {
+         if (this.log.TRACE) this.log.trace(location, "getJdbcCommonTableQueueManager internal exception: " + ex.toString());
+         throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, location, "getJdbcQueueManager: throwable when initializing the connection pool", ex);
+      }
+      return manager;
+   }
+
    /**
     * Is called after the instance is created.
     * @param uniqueQueueId A unique name, allowing to create a unique name for a persistent store (e.g. file name)
@@ -144,8 +211,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
          this.storageId = uniqueQueueId;
          if (this.log.CALL) this.log.call(ME, "initialize '" + this.storageId + "'");
 
-         this.manager = this.glob.getJdbcQueueManagerCommonTable(this.pluginInfo);
-//         this.manager.setUp(); this is not necessary since already done in Global
+         this.manager = getJdbcQueueManagerCommonTable(this.pluginInfo);
 
          String nodeId = this.glob.getStrippedId();
          this.manager.addNode(nodeId);

@@ -6,6 +6,7 @@ Author:    Michele Laghi
 ------------------------------------------------------------------------------*/
 #include <client/XmlBlasterAccess.h>
 #include <util/XmlBlasterException.h>
+#include <util/ErrorCode.h>
 #include <util/Global.h>
 #include <util/Log.h>
 #include <util/PlatformUtils.hpp>
@@ -156,6 +157,7 @@ public:
    {
       log_.info(ME, "update: key: " + updateKey.toXml());
       log_.info(ME, "update: qos: " + updateQos.toXml());
+      // if (true) throw XmlBlasterException(USER_UPDATE_ERROR, "HelloWorld2", "");
       return "";
    }
 
