@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.86 2002/05/15 16:55:39 ruff Exp $
+Version:   $Id: Main.java,v 1.87 2002/05/16 15:39:25 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -135,6 +135,8 @@ public class Main
          runLevel = STANDBY;
 
          loadDrivers();
+
+         glob.getRequestBroker().postInit();
 
          if (glob.getNodeId() == null) {
             if (uniqueNodeIdName != null)
