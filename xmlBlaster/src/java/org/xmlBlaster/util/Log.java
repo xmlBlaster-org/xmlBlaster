@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.java,v 1.34 2000/01/23 16:35:00 ruff Exp $
+Version:   $Id: Log.java,v 1.35 2000/01/30 18:24:46 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -180,10 +180,19 @@ public class Log
     */
    public static final void setLogLevel(String[] args)
    {
+      if (Args.getArg(args, "-?") == true || Args.getArg(args, "-h") == true) {
+         usage();
+         return;
+      }
+
       if (Args.getArg(args, "+calls")) Log.addLogLevel("CALLS");
       if (Args.getArg(args, "+time"))  Log.addLogLevel("TIME");
       if (Args.getArg(args, "+trace")) Log.addLogLevel("TRACE");
       if (Args.getArg(args, "+dump"))  Log.addLogLevel("DUMP");
+
+      String fileName = Args.getArg(args, "-logFile", (String)null);
+      if (fileName != null)
+         Log.logToFile(fileName);
    }
 
 
@@ -295,9 +304,23 @@ public class Log
    {
       logListener = listener;
       if (listener == null)
-         setEscape();
+         setEscape();  // show nice colors for different log levels (UNIX-xterm only)
       else
          withXtermEscapeColor = false;
+   }
+
+
+   /**
+    * Log to file instead of to console.
+    * <p />
+    * The inner class LogFile is used to log to file,
+    * and may be used as a demo implementation of the LogListener interface
+    * Use the variable "Log.maxFileLines" in xmlBlaster.properties to adjust the file size.
+    * @parameter The log file name (inclusive path)
+    */
+   public static final void logToFile(String fileName)
+   {
+      Log.addLogListener(new LogFile(fileName));
    }
 
 
@@ -339,7 +362,7 @@ public class Log
          logListener.log(strBuf.toString());
       }
       else {
-         System.err.println(strBuf);
+         System.out.println(strBuf);
       }
    }
 
@@ -531,6 +554,7 @@ public class Log
       Log.plain(ME, "   +dump               Dump internal state.");
       Log.plain(ME, "   +calls              Show important method entries");
       Log.plain(ME, "   +time               Display some performance data.");
+      Log.plain(ME, "   -logFile <fileName> Log to given file instead to console.");
       Log.plain(ME, "");
    }
 
@@ -561,6 +585,71 @@ public class Log
       Log.panic(me, "Unrecoverable Error - good bye");
    }
 
-}
+} // end of class Log
 
+
+
+
+/**
+   * Write log messages to file. 
+   * <br />
+   * Class which uses the LogListener interface to log to a file.<br />
+   * You can specify to use this file logger instead of the default
+   * logging to console on the command line, e.g.:<br />
+   * <pre>
+   *    jaco org.xmlBlaster.Main -logFile /tmp/xmlBlaster.log
+   * </pre>
+   * This is also a nice example, how to implement an own logging output channel
+   */
+class LogFile implements LogListener
+{
+   private String fileName = "xmlBlaster.log";
+   private int maxLogFileLines = 50000;   // lines per file
+   private int numLogLines = 0;
+   private java.io.File logFile = null;
+   private boolean first = true;
+
+   public LogFile(String fileName)
+   {
+      if (fileName != null && fileName.length() > 1) this.fileName = fileName;
+      maxLogFileLines = Integer.parseInt(Property.getProperty("Log.maxFileLines", "" + maxLogFileLines));   // in lines per file
+      Log.info("LogFile", "Logging output is sent to " + fileName);
+      newFile();
+   }
+
+   /**
+      * Event fired by Log.java through interface LogListener.
+      * <p />
+      * Log output into a file<br />
+      * If the number of lines is too big, save file with extension .bak
+      * and start a new one
+      */
+   public void log(String str)
+   {
+      if (numLogLines > maxLogFileLines) newFile();
+      numLogLines++;
+      try {
+         FileUtil.appendToFile(fileName, str + "\n");
+      } catch (Exception e) {
+         if (first) { first = false; System.out.println("ERROR in LogFile: Can't write to file " + fileName); }
+         System.out.println(str);
+      }
+   }
+
+   /**
+      * Create the new logfile, save an existing with ".bak" extension.
+      */
+   private void newFile()
+   {
+      String bakFile = fileName + "bak";
+      java.io.File nf;
+      nf = new java.io.File(bakFile);
+      if (nf.exists())
+         nf.delete();
+      if (logFile != null)
+         logFile.renameTo(nf);
+      logFile = new java.io.File(fileName);
+      if (logFile.exists()) logFile.delete();
+   }
+} // end of class LogFile
 
