@@ -1237,6 +1237,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     */
    public boolean isLoggedIn()
    {
+      if (driver == null) return false;
       return driver.isLoggedIn();
    }
 
@@ -1352,6 +1353,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    public final SubscribeRetQos subscribe(String xmlKey, String qos, I_Callback cb) throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "subscribe(with callback) ...");
+      if (driver==null) throw new XmlBlasterException(ME, "Sorry no connection to " + getServerNodeId() + ", subscribe() failed.");
       if (updateClient == null) {
          String text = "No callback server is incarnated. " +
                        " Please use XmlBlasterConnection - constructor with default I_Callback given.";
@@ -1413,6 +1415,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       if (log.CALL) log.call(ME, "unSubscribe() ...");
       if (qos==null) qos = "";
       if (xmlKey==null) throw new IllegalArgumentException("Please provide a valid XmlKey for unSubscribe()");
+      if (driver==null) throw new XmlBlasterException(ME, "Sorry no connection to " + getServerNodeId() + ", unSubscribe() failed.");
       try {
          if (secPlgn!=null) { // with security Plugin
             driver.unSubscribe(secPlgn.exportMessage(xmlKey), secPlgn.exportMessage(qos));
@@ -1451,6 +1454,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    public final PublishRetQos publish(MessageUnit msgUnit) throws XmlBlasterException
    {
       if (log.TRACE) log.trace(ME, "Publishing ...");
+      if (driver==null) throw new XmlBlasterException(ME, "Sorry no connection to " + getServerNodeId() + ", publish() failed.");
       try {
          if (secPlgn!=null) {
             MessageUnit mu = secPlgn.exportMessage(msgUnit);
@@ -1551,6 +1555,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    public PublishRetQos[] publishArr(MessageUnit [] msgUnitArr) throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "publishArr() ...");
+      if (driver==null) throw new XmlBlasterException(ME, "Sorry no connection to " + getServerNodeId() + ", publishArr() failed.");
       try {
          String[] arr;
          if (secPlgn!=null) { // security plugin allows e.g. crypting of messages ...
@@ -1623,6 +1628,10 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    private void publishOneway(MessageUnit [] msgUnitArr, boolean flushBurstMode)
    {
       if (log.CALL) log.call(ME, "publishOneway() ...");
+      if (driver==null) {
+         log.error(ME, "Sorry no connection to " + getServerNodeId() + ", publishOneway() failed.");
+         return;
+      }
       try {
          if (this.publishOnewayCollectTime > 0L && !flushBurstMode) {
             synchronized(this.publishOnewayTimer) {
@@ -1664,6 +1673,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       if (log.CALL) log.call(ME, "erase() ...");
       if (qos==null) qos = "";
       if (xmlKey==null) throw new IllegalArgumentException("Please provide a valid XmlKey for erase()");
+      if (driver==null) throw new XmlBlasterException(ME, "Sorry no connection to " + getServerNodeId() + ", erase() failed.");
       try {
          String[] arr;
          if (secPlgn!=null) {
@@ -1722,6 +1732,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       if (log.CALL) log.call(ME, "get() ...");
       if (qos==null) qos = "";
       if (xmlKey==null) throw new IllegalArgumentException("Please provide a valid XmlKey for get()");
+      if (driver==null) throw new XmlBlasterException(ME, "Sorry no connection to " + getServerNodeId() + ", get() failed.");
       try {
          //Is cache installed?
          if (cache != null) {
