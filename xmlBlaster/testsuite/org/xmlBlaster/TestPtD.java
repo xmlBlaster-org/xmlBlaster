@@ -3,7 +3,7 @@ Name:      TestPtD.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtD.java,v 1.5 1999/12/14 10:31:29 ruff Exp $
+Version:   $Id: TestPtD.java,v 1.6 1999/12/14 10:59:07 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -20,10 +20,14 @@ import test.framework.*;
 
 
 /**
- * This client tests the PtP (or PtD = point to destination) style, Manuel sends to Ulrike a love letter. 
+ * This client tests the PtP (or PtD = point to destination) style. 
  * <p>
- * Note that the two clients (client logins) are simulated in this class.<br />
- * Manuel is the 'sender' and Ulrike the 'receiver'
+ * Note that the three clients (client logins) are simulated in this class.<br />
+ * Tests performed:<br />
+ * <ul>
+ *    <li>Manuel is the 'sender' and Ulrike the 'receiver' of a love letter</li>
+ *    <li>Manuel sends a message to two destinations</li>
+ * </ul>
  * <p>
  * Invoke examples:<br />
  * <code>
@@ -45,9 +49,12 @@ public class TestPtD extends TestCase implements I_Callback
    private final String receiverName = "Ulrike";
    private CorbaConnection receiverConnection = null;
    private Server receiverXmlBlaster = null;
-   private int numReceived = 0;
 
-   private boolean messageArrived = false;
+   private final String receiver2Name = "KGB";
+   private CorbaConnection receiver2Connection = null;
+   private Server receiver2XmlBlaster = null;
+
+   private int numReceived = 0;
 
 
    /**
@@ -68,6 +75,7 @@ public class TestPtD extends TestCase implements I_Callback
     * Creates a CORBA connection and does a login.<br />
     * - One connection for the sender client<br />
     * - One connection for the receiver client
+    * - One connection for the receiver2 client
     */
    protected void setUp()
    {
@@ -76,6 +84,9 @@ public class TestPtD extends TestCase implements I_Callback
 
          receiverConnection = new CorbaConnection();
          receiverXmlBlaster = receiverConnection.login(receiverName, passwd, "<qos></qos>", this);
+
+         receiver2Connection = new CorbaConnection();
+         receiver2XmlBlaster = receiver2Connection.login(receiver2Name, passwd, "<qos></qos>", this);
 
          senderConnection = new CorbaConnection();
          senderXmlBlaster = senderConnection.login(senderName, passwd, "<qos></qos>", this);
@@ -94,13 +105,15 @@ public class TestPtD extends TestCase implements I_Callback
     */
    protected void tearDown()
    {
+      Util.delay(200L);   // Wait 200 milli seconds, until all updates are processed ...
       receiverConnection.logout(receiverXmlBlaster);
+      receiver2Connection.logout(receiver2XmlBlaster);
       senderConnection.logout(senderXmlBlaster);
    }
 
 
    /**
-    * TEST: Subscribe to messages with XPATH.
+    * TEST: Send a message to one destination
     * <p />
     * The returned subscribeOid is checked
     */
@@ -128,8 +141,45 @@ public class TestPtD extends TestCase implements I_Callback
          assert("publish - XmlBlasterException: " + e.reason, false);
       }
 
-      waitOnUpdate(5000L);
+      waitOnUpdate(5000L, 1);
       assertEquals("numReceived after sending", 1, numReceived); // message arrived?
+      numReceived = 0;
+   }
+
+
+   /**
+    * TEST: Send a message to two destinations
+    * <p />
+    */
+   public void testPtManyDestinations()
+   {
+      if (Log.TRACE) Log.trace(ME, "Testing point to many destinations ...");
+
+      // Construct a love message and send it to Ulrike
+      String xmlKey = "<key oid='' contentMime='text/plain'>\n" +
+                      "</key>";
+
+      String qos = "<qos>" +
+                   "   <destination queryType='EXACT'>" +
+                           receiverName +
+                   "   </destination>" +
+                   "   <destination queryType='EXACT'>" +
+                           receiver2Name +
+                   "   </destination>" +
+                   "</qos>";
+
+      senderContent = "Hi " + receiver2Name + ", i know you are listening, " + senderName;
+      MessageUnit messageUnit = new MessageUnit(xmlKey, senderContent.getBytes());
+      try {
+         publishOid = senderXmlBlaster.publish(messageUnit, qos);
+         Log.info(ME, "Sending done, returned oid=" + publishOid);
+      } catch(XmlBlasterException e) {
+         Log.error(ME, "publish() XmlBlasterException: " + e.reason);
+         assert("publish - XmlBlasterException: " + e.reason, false);
+      }
+
+      waitOnUpdate(5000L, 2);
+      assertEquals("numReceived after sending", 2, numReceived); // message arrived at receiver and receiver2 ?
       numReceived = 0;
    }
 
@@ -153,26 +203,27 @@ public class TestPtD extends TestCase implements I_Callback
 
       numReceived += 1;
 
-      assertEquals("Wrong receveiver", receiverName, loginName);
+      if (!receiverName.equals(loginName) && !receiver2Name.equals(loginName))
+         assert("Wrong receveiver " + receiverName, false);
       assertEquals("Wrong sender", senderName, updateQoS.getSender());
       assertEquals("Wrong oid of message returned", publishOid, keyOid);
       assertEquals("Message content is corrupted", new String(senderContent), new String(content));
-
-      messageArrived = true;
    }
 
 
    /**
-    * Little helper, waits until the variable 'messageArrive' is set
-    * to true, or returns when the given timeout occurs.
+    * Little helper, waits until the wanted number of messages are arrived
+    * or returns when the given timeout occurs. 
+    * <p />
     * @param timeout in milliseconds
+    * @param numWait how many messages to wait
     */
-   private void waitOnUpdate(final long timeout)
+   private void waitOnUpdate(final long timeout, final int numWait)
    {
       long pollingInterval = 50L;  // check every 0.05 seconds
       if (timeout < 50)  pollingInterval = timeout / 10L;
       long sum = 0L;
-      while (!messageArrived) {
+      while (numReceived < numWait) {
          try {
             Thread.currentThread().sleep(pollingInterval);
          }
@@ -184,7 +235,6 @@ public class TestPtD extends TestCase implements I_Callback
             break;
          }
       }
-      messageArrived = false;
    }
 
 
@@ -195,6 +245,7 @@ public class TestPtD extends TestCase implements I_Callback
    {
        TestSuite suite= new TestSuite();
        suite.addTest(new TestPtD("testPtOneDestination"));
+       suite.addTest(new TestPtD("testPtManyDestinations"));
        return suite;
    }
 

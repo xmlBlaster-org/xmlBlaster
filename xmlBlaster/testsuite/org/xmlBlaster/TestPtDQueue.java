@@ -3,7 +3,7 @@ Name:      TestPtDQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtDQueue.java,v 1.1 1999/12/14 10:31:29 ruff Exp $
+Version:   $Id: TestPtDQueue.java,v 1.2 1999/12/14 10:59:07 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -20,7 +20,7 @@ import test.framework.*;
 
 
 /**
- * This client tests the PtP (or PtD = point to destination) style, Manuel sends to Ulrike a message. 
+ * This client tests the PtP (or PtD = point to destination) style, Manuel sends to Ulrike a message.
  * <p>
  * Note that the two clients (client logins) are simulated in this class.<br />
  * Manuel is the 'sender' and Ulrike the 'receiver'<br />
@@ -93,6 +93,7 @@ public class TestPtDQueue extends TestCase implements I_Callback
     */
    protected void tearDown()
    {
+      Util.delay(200L);   // Wait 200 milli seconds, until all updates are processed ...
       receiverConnection.logout(receiverXmlBlaster);
       senderConnection.logout(senderXmlBlaster);
    }
