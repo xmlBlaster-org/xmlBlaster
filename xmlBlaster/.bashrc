@@ -201,6 +201,9 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    PATH=${PATH}:${XMLBLASTER_HOME}/bin:${XMLBLASTER_HOME}/testsuite/src/c/bin:${XMLBLASTER_HOME}/testsuite/src/c++/bin:${XMLBLASTER_HOME}/demo/c/socket/bin:${XMLBLASTER_HOME}/demo/c++/bin
    export PATH
 
+   LD_LIBRARY_PATH=$LD_LIBRARY_PATH:${XMLBLASTER_HOME}/lib
+   export LD_LIBRARY_PATH
+
    alias cdj='cd $JUTILS_HOME/src/java/org/jutils'
    alias cdx='cd $XMLBLASTER_HOME'
    alias cdxs='cd $XMLBLASTER_HOME/src'
