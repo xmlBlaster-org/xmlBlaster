@@ -3,8 +3,6 @@ Name:      XmlBlasterImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native Interface to xmlBlaster
-Version:   $Id: XmlBlasterImpl.java,v 1.21 2002/12/18 11:22:10 ruff Exp $
-Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -42,6 +40,7 @@ import org.xmlBlaster.authentication.plugins.I_Subject;
  *
  * @see org.xmlBlaster.engine.RequestBroker
  * @see org.xmlBlaster.protocol.I_XmlBlaster
+ * @author xmlBlaster@marcelruff.info
  */
 public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
 {
@@ -95,10 +94,11 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          return sessionInfo.getSecuritySession().exportMessage(ret);
       }
       catch (XmlBlasterException e) {
+         if (e.isInternal()) log.error(ME, "subscribe() failed: " + e.getMessage());
          throw e;
       }
       catch (Throwable e) {
-         log.error(ME, "Internal problem: " + e.toString());
+         log.error(ME, "Internal problem: " + e.getMessage());
          e.printStackTrace();
          throw XmlBlasterException.convert(glob, ME, ErrorCode.INTERNAL_SUBSCRIBE.toString(), e);
       }
@@ -137,10 +137,11 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
 
       }
       catch (XmlBlasterException e) {
+         if (e.isInternal()) log.error(ME, "unSubscribe() failed: " + e.getMessage());
          throw e;
       }
       catch (Throwable e) {
-         log.error(ME, "Internal problem: " + e.toString());
+         log.error(ME, "Internal problem: " + e.getMessage());
          e.printStackTrace();
          throw XmlBlasterException.convert(glob, ME, ErrorCode.INTERNAL_UNSUBSCRIBE.toString(), e);
       }
@@ -165,10 +166,11 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          return sessionInfo.getSecuritySession().exportMessage(ret);
       }
       catch (XmlBlasterException e) {
+         if (e.isInternal()) log.error(ME, "publish() failed: " + e.getMessage());
          throw e;
       }
       catch (Throwable e) {
-         log.error(ME, "Internal problem: " + e.toString());
+         log.error(ME, "Internal problem: " + e.getMessage());
          e.printStackTrace();
          throw XmlBlasterException.convert(glob, ME, ErrorCode.INTERNAL_PUBLISH.toString(), e);
       }
@@ -207,10 +209,11 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          return returnArr;
       }
       catch (XmlBlasterException e) {
+         if (e.isInternal()) log.error(ME, "publishArr() failed: " + e.getMessage());
          throw e;
       }
       catch (Throwable e) {
-         log.error(ME, "Internal problem: " + e.toString());
+         log.error(ME, "Internal problem: " + e.getMessage());
          e.printStackTrace();
          throw XmlBlasterException.convert(glob, ME, ErrorCode.INTERNAL_PUBLISH.toString(), e);
       }
@@ -226,7 +229,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          publishArr(sessionId, msgUnitArr);
       }
       catch (Throwable e) {
-         log.error(ME, "Caught exception on publish which can't be delivered to client because of 'oneway' mode: " + e.toString());
+         log.error(ME, "Caught exception on publish which can't be delivered to client because of 'oneway' mode: " + e.getMessage());
       }
    }
 
@@ -261,10 +264,11 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          return retArr;
       }
       catch (XmlBlasterException e) {
+         if (e.isInternal()) log.error(ME, "erase() failed: " + e.getMessage());
          throw e;
       }
       catch (Throwable e) {
-         log.error(ME, "Internal problem: " + e.toString());
+         log.error(ME, "Internal problem: " + e.getMessage());
          e.printStackTrace();
          throw XmlBlasterException.convert(glob, ME, ErrorCode.INTERNAL_ERASE.toString(), e);
       }
@@ -303,10 +307,11 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          return msgUnitRawArr;
       }
       catch (XmlBlasterException e) {
+         if (e.isInternal()) log.error(ME, "get() failed: " + e.getMessage());
          throw e;
       }
       catch (Throwable e) {
-         log.error(ME, "Internal problem: " + e.toString());
+         log.error(ME, "Internal problem: " + e.getMessage());
          e.printStackTrace();
          throw XmlBlasterException.convert(glob, ME, ErrorCode.INTERNAL_GET.toString(), e);
       }
