@@ -38,7 +38,7 @@ typedef struct {
 #define EXCEPTIONSTRUCT_ERRORCODE_LEN 56
 #define EXCEPTIONSTRUCT_MESSAGE_LEN 1024
 typedef struct ExceptionStruct {    /* This name is need for C++ forward declaration 'struct ExceptionStruct; */
-   bool remote; /* true if exception is from remote */
+   int remote; /* true if exception is from remote (changed from bool to int to be C/C++ alignment compatible) */
    char errorCode[EXCEPTIONSTRUCT_ERRORCODE_LEN];
    char message[EXCEPTIONSTRUCT_MESSAGE_LEN];
    /* ExceptionStruct *embedded;  who allocates/frees it? */
