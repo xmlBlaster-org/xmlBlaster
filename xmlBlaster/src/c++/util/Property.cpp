@@ -266,27 +266,22 @@ Property::getStringProperty(const string &name, const string &def,
 bool Property::setProperty_(const string &name, const string &value,
                       bool overwrite) 
 {
-   pair<const string, string> valuePair(name, value);
    MapType::iterator iter = properties_.find(name);
    if (iter != properties_.end()) {
-      if (overwrite) (*iter).second = name;
+      if (overwrite) (*iter).second = value;
       else return false;
    }
-   else properties_.insert(valuePair);
+   else {
+      pair<const string, string> valuePair(name, value);
+      properties_.insert(valuePair);
+   }
    return true;                                                                                                                                         
 }
 
 bool Property::setProperty(const string &name, const string &value,
                       bool overwrite) 
 {
-   pair<const string, string> valuePair(name, value);
-   MapType::iterator iter = properties_.find(name);
-   if (iter != properties_.end()) {
-      if (overwrite) (*iter).second = name;
-      else return false;
-   }
-   else properties_.insert(valuePair);
-   return true;                                                                                                                                         
+   return setProperty_(name, value, overwrite);
 }
 
 
