@@ -149,9 +149,13 @@ public class TestSynchronousCache extends TestCase {
       log.info(ME, "Erasing topic '" + publishOid + "'");
       try {
          EraseQos eq = new EraseQos(glob);
-         //eq.setForceDestroy(forceDestroy);
+         // !!!! NOTE: if force destroy is true the erase event may not
+         // come through and the cache is not cleared !!! How to relove?
+         eq.setForceDestroy(false);
          EraseKey ek = new EraseKey(glob, publishOid);
          EraseReturnQos[] er = con.erase(ek, eq);
+         // Wait 200 milli seconds, until erase event is processed and cache is cleared ...
+         try { Thread.currentThread().sleep(200L); } catch( InterruptedException i) {}
          return er;
       } catch(XmlBlasterException e) {
          fail("Erase XmlBlasterException: " + e.getMessage());
@@ -193,6 +197,7 @@ public class TestSynchronousCache extends TestCase {
          try {
             publishMsg(publishOidArr[0], contentArr[0]);
             publishMsg(publishOidArr[2], contentArr[2]);
+            try { Thread.currentThread().sleep(200L); } catch( InterruptedException i) {}   // Wait 200 milli seconds, until all updates are processed ...
 
             GetKey gk = new GetKey(glob, publishOidArr[0]);
             GetQos gq = new GetQos(glob);
@@ -239,6 +244,7 @@ public class TestSynchronousCache extends TestCase {
             // Now publish again an check if cache is updated
             String contentNew = contentArr[0]+"-NEW";
             publishReturnQos = publishMsg(publishOidArr[0], contentNew);
+            try { Thread.currentThread().sleep(200L); } catch( InterruptedException i) {}   // Wait 200 milli seconds, until all updates are processed ...
             for (int i=0; i<5; i++) {
                MsgUnit[] msgs = con.getCached(gk, gq);
                GetReturnQos grq = new GetReturnQos(glob, msgs[0].getQos());
@@ -267,6 +273,7 @@ public class TestSynchronousCache extends TestCase {
             PublishReturnQos publishReturnQos0 = publishMsg(publishOidArr[0], contentArr[0]);
             PublishReturnQos publishReturnQos1 = publishMsg(publishOidArr[1], contentArr[1]);
             publishMsg(publishOidArr[2], contentArr[2]);
+            try { Thread.currentThread().sleep(200L); } catch( InterruptedException i) {}   // Wait 200 milli seconds, until all updates are processed ...
 
             // This should match [0] and [1] msg:
             GetKey gk = new GetKey(glob, "//key[starts-with(@oid,'oid-')]", Constants.XPATH);
