@@ -16,6 +16,10 @@ TODO:
 * Test: C++, Perl, HTTP, different protocol drivers ...
 
 DONE:
+  - Added client side burst mode for publishOneway
+    in java client helper classes.
+    see -client.publishOneway.collectTime 500
+
   - CORBA changes in xmlBlaster.idl
 
     The xmlBlaster server:
