@@ -17,14 +17,14 @@ import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.client.qos.EraseReturnQos;
-import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_ConnectionStateListener;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.MsgUnit;
 
 import org.xmlBlaster.test.Util;
+import org.xmlBlaster.test.Msg;
+import org.xmlBlaster.test.MsgInterceptor;
 import junit.framework.*;
 
 
@@ -45,34 +45,32 @@ import junit.framework.*;
  *   java junit.swingui.TestRunner -noloading org.xmlBlaster.test.qos.TestFailSavePing
  * </pre>
  */
-public class TestFailSavePing extends TestCase implements I_Callback, I_ConnectionStateListener
+public class TestFailSavePing extends TestCase implements I_ConnectionStateListener
 {
    private static String ME = "TestFailSavePing";
-   private final Global glob;
-   private final LogChannel log;
-   private boolean messageArrived = false;
+   private Global glob;
+   private LogChannel log;
 
    private int serverPort = 7604;
    private EmbeddedXmlBlaster serverThread;
 
+   private MsgInterceptor updateInterceptor;
    private I_XmlBlasterAccess con;
    private String senderName;
+   private MsgUnit[] msgUnitArr;
+   private int counter;
 
-   private int numReceived = 0;         // error checking
    private final String contentMime = "text/plain";
 
    /**
     * Constructs the TestFailSavePing object.
     * <p />
     * @param testName  The name used in the test suite
-    * @param loginName The name to login to the xmlBlaster
     */
-   public TestFailSavePing(Global glob, String testName, String loginName)
+   public TestFailSavePing(Global glob, String testName)
    {
       super(testName);
       this.glob = glob;
-      this.log = this.glob.getLog("test");
-      this.senderName = loginName;
    }
 
 
@@ -83,28 +81,33 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
     */
    protected void setUp()
    {
-      glob.init(Util.getOtherServerPorts(serverPort));
+      this.glob = (this.glob == null) ? new Global() : this.glob;
+      this.log = this.glob.getLog("test");
+      this.senderName = "TestFailSavePing-joe/97";
 
-      serverThread = EmbeddedXmlBlaster.startXmlBlaster(Util.getOtherServerPorts(serverPort));
+      this.glob.init(Util.getOtherServerPorts(serverPort));
+
+      //this.serverThread = EmbeddedXmlBlaster.startXmlBlaster(Util.getOtherServerPorts(serverPort));
       try {
-         numReceived = 0;
 
-         con = glob.getXmlBlasterAccess(); // Find server
+         con = this.glob.getXmlBlasterAccess(); // Find server
 
          String passwd = "secret";
-         ConnectQos connectQos = new ConnectQos(glob, senderName, passwd);
+         ConnectQos connectQos = new ConnectQos(this.glob, senderName, passwd);
 
          // Setup fail save handling ...
-         Address addressProp = new Address(glob);
-         addressProp.setDelay(4000L);         // retry connecting every 4 sec
+         Address addressProp = new Address(this.glob);
+         addressProp.setDelay(1000L);         // retry connecting every 1 sec
          addressProp.setRetries(-1);          // -1 == forever
          addressProp.setPingInterval(1000L);  // ping every second
          con.registerConnectionListener(this);
 
          connectQos.setAddress(addressProp);
          
+         this.updateInterceptor = new MsgInterceptor(this.glob, log, null); // Collect received msgs
+
          // and do the login ...
-         con.connect(connectQos, this); // Login to xmlBlaster
+         con.connect(connectQos, this.updateInterceptor); // Login to xmlBlaster
       }
       catch (XmlBlasterException e) {
           log.warn(ME, "setUp() - login failed");
@@ -123,37 +126,30 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
    protected void tearDown()
    {
       log.info(ME, "Entering tearDown(), test is finished");
-      String xmlKey = "<key oid='' queryType='XPATH'>\n" +
-                      "   //TestFailSavePing-AGENT" +
-                      "</key>";
-      String qos = "<qos></qos>";
-      try {
-         EraseReturnQos[] arr = con.erase(xmlKey, qos);
-         assertEquals("Wrong number of message erased", 1, arr.length);
-      } catch(XmlBlasterException e) { assertTrue("tearDown - XmlBlasterException: " + e.getMessage(), false); }
-
-      try { Thread.currentThread().sleep(500L); } catch( InterruptedException i) {}    // Wait some time
       con.disconnect(null);
-
-      try { Thread.currentThread().sleep(200L); } catch( InterruptedException i) {}    // Wait some time
-      EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
+      con = null;
 
       // reset to default server port (necessary if other tests follow in the same JVM).
-      Util.resetPorts();
+      Util.resetPorts(this.glob);
+      Global.instance().shutdown();
+      this.glob = null;
+      this.log = null;
+      this.serverThread = null;
+      this.updateInterceptor = null;
+      this.msgUnitArr = null;
    }
-
 
    /**
     * TEST: Subscribe to messages with XPATH.
     */
-   public void testSubscribe()
+   public void doSubscribe()
    {
       if (log.TRACE) log.trace(ME, "Subscribing using EXACT oid syntax ...");
 
       String xmlKey = "<key oid='' queryType='XPATH'>\n" +
                       "   //TestFailSavePing-AGENT" +
                       "</key>";
-      String qos = "<qos></qos>";
+      String qos = "<qos><initialUpdate>false</initialUpdate></qos>";
       try {
          String subscribeOid = con.subscribe(xmlKey, qos).getSubscriptionId();
          log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
@@ -164,14 +160,14 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
       }
    }
 
-
    /**
     * TEST: Construct a message and publish it.
     * <p />
     */
-   public void testPublish(int counter) throws XmlBlasterException
+   public void doPublish() throws XmlBlasterException
    {
-      if (log.TRACE) log.trace(ME, "Publishing a message ...");
+      counter++;
+      if (log.TRACE) log.trace(ME, "Publishing a message " + counter + " ...");
 
       String oid = "Message" + "-" + counter;
       String xmlKey = "<key oid='" + oid + "' contentMime='" + contentMime + "'>\n" +
@@ -181,34 +177,32 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
       String content = "" + counter;
       PublishQos qosWrapper = new PublishQos(glob); // == "<qos></qos>"
       MsgUnit msgUnit = new MsgUnit(xmlKey, content.getBytes(), qosWrapper.toXml());
-
+      msgUnitArr = new MsgUnit[] { msgUnit };
       con.publish(msgUnit);
       log.info(ME, "Success: Publishing of " + oid + " done");
    }
-
 
    /**
     * TEST: <br />
     */
    public void testFailSave()
    {
-      testSubscribe();
-      try { Thread.currentThread().sleep(2000L); } catch( InterruptedException i) {}
-      EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
-      try { Thread.currentThread().sleep(3000L); } catch( InterruptedException i) {}    // Wait some time, ping should activate login polling
+      for (int i=0; i<3; i++) {
+         this.serverThread = EmbeddedXmlBlaster.startXmlBlaster(serverPort);
+         // Wait some time, to allow the login poller to reconnect
+         try { Thread.currentThread().sleep(2000L); } catch( InterruptedException ie) {}
 
-      serverThread = EmbeddedXmlBlaster.startXmlBlaster(serverPort);
-      try { Thread.currentThread().sleep(3000L); } catch( InterruptedException i) {}    // Wait some time, to allow the ping to reconnect
+         // reachedAlive published a msg on reconnect, check it here:
+         assertEquals("", 1, this.updateInterceptor.waitOnUpdate(2000L, 1));
+         this.updateInterceptor.compareToReceived(msgUnitArr, null);
+         this.updateInterceptor.clear();
 
-      numReceived = 0;
-
-      EmbeddedXmlBlaster.stopXmlBlaster(serverThread);
-      try { Thread.currentThread().sleep(5000L); } catch( InterruptedException i) {}    // Wait some time, ping should activate login polling
-
-      serverThread = EmbeddedXmlBlaster.startXmlBlaster(serverPort);
-      try { Thread.currentThread().sleep(5000L); } catch( InterruptedException i) {}    // Wait some time, to allow the ping to reconnect
+         EmbeddedXmlBlaster.stopXmlBlaster(this.serverThread);
+         this.serverThread = null;
+         // Wait some time, ping should activate login polling
+         try { Thread.currentThread().sleep(2000L); } catch( InterruptedException ie) {}
+      }
    }
-
 
    /**
     * This is the callback method invoked from I_XmlBlasterAccess
@@ -218,11 +212,9 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
     */
    public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
       log.info(ME, "I_ConnectionStateListener: We were lucky, reconnected to xmlBlaster");
-      testSubscribe();    // initialize subscription again
+      doSubscribe();    // initialize subscription
       try {
-         testPublish(1);
-         waitOnUpdate(2000L);
-         assertEquals("numReceived is wrong", 1, numReceived);
+         doPublish();
       }
       catch(XmlBlasterException e) {
          if (e.getErrorCode() == ErrorCode.COMMUNICATION_NOCONNECTION_POLLING)
@@ -232,17 +224,8 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
          else
             assertTrue("Publishing problems: " + e.getMessage(), false);
       }
-
-      connection.getQueue().clear(); // discard messages (dummy)
    }
 
-
-   /**
-    * This is the callback method invoked from I_XmlBlasterAccess
-    * informing the client in an asynchronous mode if the connection was lost.
-    * <p />
-    * This method is enforced through interface I_ConnectionStateListener
-    */
    public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
       log.warn(ME, "I_ConnectionStateListener: Lost connection to xmlBlaster");
    }
@@ -252,64 +235,14 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
    }
 
    /**
-    * This is the callback method invoked from xmlBlaster
-    * delivering us a new asynchronous message. 
-    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
-    */
-   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
-   {
-      log.info(ME, "Receiving update of message oid=" + updateKey.getOid() + " ...");
-
-      numReceived += 1;
-
-      assertEquals("Wrong sender", senderName, updateQos.getSender().getLoginName());
-      assertEquals("Message contentMime is corrupted", contentMime, updateKey.getContentMime());
-
-      String oid = "Message-1";
-      assertEquals("Message oid is wrong", oid, updateKey.getOid());
-
-      messageArrived = true;
-      return "";
-   }
-
-
-   /**
-    * Little helper, waits until the variable 'messageArrive' is set
-    * to true, or returns when the given timeout occurs.
-    * @param timeout in milliseconds
-    */
-   private void waitOnUpdate(final long timeout)
-   {
-      long pollingInterval = 50L;  // check every 0.05 seconds
-      if (timeout < 50)  pollingInterval = timeout / 10L;
-      long sum = 0L;
-      while (!messageArrived) {
-         try {
-            Thread.currentThread().sleep(pollingInterval);
-         }
-         catch( InterruptedException i)
-         {}
-         sum += pollingInterval;
-         if (sum > timeout) {
-            log.info(ME, "Timeout of " + timeout + " occurred");
-            break;
-         }
-      }
-      messageArrived = false;
-   }
-
-
-   /**
     * Method is used by TestRunner to load these tests
     */
    public static Test suite()
    {
        TestSuite suite= new TestSuite();
-       String loginName = "Tim";
-       suite.addTest(new TestFailSavePing(new Global(), "testFailSave", loginName));
+       suite.addTest(new TestFailSavePing(null, "testFailSave"));
        return suite;
    }
-
 
    /**
     * Invoke: java org.xmlBlaster.test.qos.TestFailSavePing
@@ -323,7 +256,7 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
          System.err.println(ME + ": Init failed");
          System.exit(1);
       }
-      TestFailSavePing testSub = new TestFailSavePing(glob, "TestFailSavePing", "Tim");
+      TestFailSavePing testSub = new TestFailSavePing(glob, "TestFailSavePing");
       testSub.setUp();
       testSub.testFailSave();
       testSub.tearDown();
