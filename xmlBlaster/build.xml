@@ -1329,7 +1329,7 @@ TODO
    </target>
 
    <!-- =================================================================== -->
-   <!-- Compile xmlBlaster.idl for MICO to create C++ CORBA stubs           -->
+   <!-- Compile xmlBlaster.idl for TAO to create C++ CORBA stubs            -->
    <!-- =================================================================== -->
    <target name="cpp-corba-idl-TAO" description="Compiles xmlBlaster.idl for CORBA C++ clients">
       <!-- C++ compilation needs some OS dependend settings (sorry, but we currently only have UNIX & WINDOWS to test) -->
@@ -1353,14 +1353,40 @@ TODO
          </then>
          <else>
             <echo message="Generating ${idl.dir}/xmlBlaster.idl stubs and skeletons for os=${os.family}" />
-            <!-- A typical MICO idl CORBA compile:
-              /opt/mico/bin/idl - -poa - -c++-suffix cpp /home/xmlblast/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl
-            -->
             <exec dir="${src.cpp.dir}/generated" executable="${idl.cmd}" failonerror="true" resultproperty="idl.returnvalue">
                <arg line="-Ge 0 -Wb,pre_include=${xmlBlaster.home}/${src.cpp.dir}/util/XmlBCfg.h -Wb,export_macro=Dll_Export"/>
                <arg line="${xmlBlaster.home}/${idl.dir}/xmlBlaster.idl"/>
             </exec>
-            <!-- exec dir="${src}" executable="${CORBACPP_HOME}/bin/idl" os="Windows 2000" output="dir.txt" -->
+            <echo message="IDL compilation returned ${idl.returnvalue}"/>
+         </else>
+      </if>
+   </target>
+
+   <!-- =================================================================== -->
+   <!-- Compile xmlBlaster.idl for OMNIORB to create C++ CORBA stubs        -->
+   <!-- =================================================================== -->
+   <target name="cpp-corba-idl-OMNIORB" depends="prepare" description="Compiles xmlBlaster.idl for omniOrb CORBA C++ clients">
+      <switch value="${os.family}" caseinsensitive="true">
+         <case value="unix">
+            <property name="idl.cmd" value="${CORBACPP_HOME}/bin/omniidl" />
+         </case>
+         <default>
+            <property name="idl.cmd" value="${CORBACPP_HOME}/bin/x86_win32/omniidl.exe" />
+         </default>
+      </switch>
+      <uptodate property="idlBuild.done" targetfile="${src.cpp.dir}/generated/xmlBlaster.hh" value="true">
+         <srcfiles dir= "${idl.dir}" includes="xmlBlaster.idl"/>
+      </uptodate>
+      <if><equals arg1="${idlBuild.done}" arg2="true" />
+         <then>
+            <echo message="IDL stubs and skeletons are up to date" />
+         </then>
+         <else>
+            <echo message="Generating ${idl.dir}/xmlBlaster.idl stubs and skeletons for os=${os.family}" />
+            <exec dir="${src.cpp.dir}/generated" executable="${idl.cmd}" failonerror="true" resultproperty="idl.returnvalue">
+               <arg line="-bcxx -Wbh=.h"/>
+               <arg line="${xmlBlaster.home}/${idl.dir}/xmlBlaster.idl"/>
+            </exec>
             <echo message="IDL compilation returned ${idl.returnvalue}"/>
          </else>
       </if>
@@ -1374,6 +1400,7 @@ TODO
 
       <echo message="calling ant target cpp-corba-idl-${corba.product} ..." />
       <antcall target="cpp-corba-idl-${corba.product}"/>  <!-- Call e.g. "cpp-corba-idl-MICO" for MICO -->
+
 
       <!-- Build a shared library xmlBlasterClient.so, xmlBlasterClient.sl or xmlBlasterClient.dll -->
       <!-- A typical compile:
@@ -1399,8 +1426,8 @@ TODO
          <fileset dir="${src.cpp.dir}/util" includes="**/*.cpp" />
          <fileset dir="${src.cpp.dir}/client" includes="**/*.cpp" />
          <fileset dir="${src.cpp.dir}/authentication" includes="**/*.cpp" />
-         <fileset dir="${THREAD_SRC}" includes="*.cpp"/>
-         <sysincludepath location="${THREAD_INC}" />
+         <fileset dir="${THREAD_SRC}" includes="*.cpp"/> <!-- BOOST or OMNITHREAD -->
+         <sysincludepath location="${THREAD_INC}" />     <!-- omnithread.h -->
          <includepath location="${src.cpp.dir}" />
          <!-- sysincludepath location="${STL_HOME}/stlport" /-->
          <sysincludepath location="${CORBACPP_HOME}" /> <!-- TAO -->
@@ -1415,6 +1442,14 @@ TODO
 
          <defineset> <!-- See compiler id="base-msvc" at top of file -->
            <define name="${corba.product}" value="1" />   <!-- "TAO" or "MICO" etc., see client/protocol/corba/CompatibleCorba.h -->
+
+           <define name="__WIN32__" if="windows"/>                   <!-- omnithread, OMNIORB -->
+           <define name="_WIN32_WINNT" value="0x0400" if="windows"/> <!-- omnithread, OMNIORB -->
+           <define name="__x86__" if="windows"/>                     <!-- omnithread, OMNIORB -->  <!-- ${sun.cpu.endian}="little" -->
+           <define name="__NT__" if="windows"/>                      <!-- omnithread, OMNIORB -->
+           <define name="__OSVERSION__" value="4" if="windows"/>     <!-- omnithread, OMNIORB -->
+           <define name="_OMNITHREAD_DLL" value="1" if="windows"/>   <!-- omnithread, OMNIORB -->
+           
            <define name="WIN32" value="1" if="windows" />        
            <define name="_WINDOWS" value="1" if="windows" />
            <define name="DLL_BUILD" value="1" if="windows" />     <!-- Needed in XmlBCfg.h, sets DLL_Export -->
@@ -1551,7 +1586,7 @@ TODO
 
          <linker name="msvc" if="use-msvc"> <!-- linker does not support nested switch -->
             <!-- TAO -->
-            <fileset dir="${CORBACPP_HOME}/../ace" includes="ACEd.lib" if="TAO,windows" />
+            <fileset dir="${CORBACPP_HOME}/../ace" includes="aced.lib" if="TAO,windows" />
             <fileset dir="${CORBACPP_HOME}/tao" includes="TAOd.lib" if="TAO,windows" />       
             <fileset dir="${CORBACPP_HOME}/tao/PortableServer" includes="TAO_PortableServerd.lib" if="TAO,windows" />
             <fileset dir="${CORBACPP_HOME}/orbsvcs/orbsvcs" includes="TAO_CosNamingd.lib" if="TAO,windows" />
@@ -1588,7 +1623,7 @@ TODO
 
     <target name="cpp-delete" depends="cpp-clean" description="Remove all generated C++ files/libs/executables">
        <delete includeEmptyDirs="true" failonerror="false">
-          <fileset dir="${src.cpp.dir}/generated" includes="*.o, *.cc, *.cpp, *.h, *.i"/>
+          <fileset dir="${src.cpp.dir}/generated" includes="*.o, *.cc, *.cpp, *.h, *.hh, *.i"/>
           <fileset dir="${lib.dir}" includes="*xmlBlasterClient.so,*xmlBlasterClient.sl,*xmlBlasterClient.dll,xmlBlasterClient.rsp,xmlBlasterClient.exp,xmlBlasterClient.pdb,history.xml"/>
           <fileset dir="${testsuite.dir}/src/c++/bin" includes="*"/>
           <fileset dir="${demo.dir}/c++/bin" includes="*"/>
