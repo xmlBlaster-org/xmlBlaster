@@ -1,10 +1,12 @@
 To run this demo do the following:
 
 
-- Make sure to have the following set in your xmlBlaster.properties file:
+- Make sure to have the following set in your $HOME/xmlBlaster.properties file:
 
-  Protocol.Drivers=......, XML-RPC:org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver, ....
-  Protocol.CallbackDrivers=..., XML-RPC:org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver, ....
+    Protocol.Drivers=......, XML-RPC:org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver, ....
+    Protocol.CallbackDrivers=..., XML-RPC:org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver, ....
+
+  This loads XmlRpc support into xmlBlaster.
 
 
 - Start xmlBlaster:
@@ -18,12 +20,16 @@ To run this demo do the following:
 
 - Start the xml-rpc client from this directory
 
- java -Dsax.driver=com.sun.xml.parser.Parser javaclients.xmlrpc.XmlRpcHttpClient < demo.xml
+  java javaclients.xmlrpc.XmlRpcHttpClient < demo.xml
+
+NOTE: The client sends the data from demo.xml
+      and performs some other tests.
 
 
-Note: There is a helper class in src/java/org/xmlBlaster/client/protocol/xmlrpc
-called XmlBlasterProxy.java which clients can use. It wraps the 'low level'
-xml-rpc invokation.
+NOTE: There is a helper class in src/java/org/xmlBlaster/client/protocol/xmlrpc
+      called XmlBlasterProxy.java which clients can use.
+      It wraps the 'low level' xml-rpc invocation
+      (using  -Dsax.driver=com.sun.xml.parser.Parser).
 
 
 enjoy it !
