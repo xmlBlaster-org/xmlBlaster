@@ -10,6 +10,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.enum.PriorityEnum;
 import org.xmlBlaster.util.qos.MsgQosData;
+import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.qos.TopicProperty;
 import org.xmlBlaster.util.property.PropEntry;
@@ -250,8 +251,16 @@ public final class PublishQos
     * @param key
     * @param value
     */
-   public void setClientProperty(String key, String value) {
-      this.msgQosData.setClientProperty(key, value);
+   public void addClientProperty(String key, Object value) {
+      this.msgQosData.addClientProperty(key, value);
+   }
+
+   /**
+    * Read back a property. 
+    * @return The client property or null if not found
+    */
+   public ClientProperty getClientProperty(String key) {
+      return this.msgQosData.getClientProperty(key);
    }
 
    /**

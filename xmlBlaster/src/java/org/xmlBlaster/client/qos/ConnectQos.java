@@ -10,6 +10,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.util.qos.SessionQos;
+import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.AddressBase;
@@ -351,8 +352,16 @@ public final class ConnectQos
     * @param key
     * @param value
     */
-   public void setClientProperty(String key, String value) {
-      this.connectQosData.setClientProperty(key, value);
+   public void addClientProperty(String key, Object value) {
+      this.connectQosData.addClientProperty(key, value);
+   }
+
+   /**
+    * Read back a property. 
+    * @return The client property or null if not found
+    */
+   public ClientProperty getClientProperty(String key) {
+      return this.connectQosData.getClientProperty(key);
    }
 
    /**

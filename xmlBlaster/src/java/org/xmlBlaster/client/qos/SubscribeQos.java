@@ -7,6 +7,7 @@ package org.xmlBlaster.client.qos;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.qos.QueryQosData;
+import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.engine.mime.Query;
 import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.util.qos.HistoryQos;
@@ -162,8 +163,16 @@ public final class SubscribeQos
     * @param key
     * @param value
     */
-   public void setClientProperty(String key, String value) {
-      this.queryQosData.setClientProperty(key, value);
+   public void addClientProperty(String key, Object value) {
+      this.queryQosData.addClientProperty(key, value);
+   }
+
+   /**
+    * Read back a property. 
+    * @return The client property or null if not found
+    */
+   public ClientProperty getClientProperty(String key) {
+      return this.queryQosData.getClientProperty(key);
    }
 
    /**

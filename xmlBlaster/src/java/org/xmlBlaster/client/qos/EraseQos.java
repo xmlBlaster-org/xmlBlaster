@@ -8,6 +8,7 @@ package org.xmlBlaster.client.qos;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.enum.MethodName;
+import org.xmlBlaster.util.qos.ClientProperty;
 
 /**
  * This class encapsulates the QoS of an erase() request. 
@@ -81,8 +82,16 @@ public final class EraseQos
     * @param key
     * @param value
     */
-   public void setClientProperty(String key, String value) {
-      this.queryQosData.setClientProperty(key, value);
+   public void addClientProperty(String key, Object value) {
+      this.queryQosData.addClientProperty(key, value);
+   }
+
+   /**
+    * Read back a property. 
+    * @return The client property or null if not found
+    */
+   public ClientProperty getClientProperty(String key) {
+      return this.queryQosData.getClientProperty(key);
    }
 
    /**

@@ -3,12 +3,13 @@ Name:      DisconnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: DisconnectQos.java,v 1.5 2003/09/18 13:48:14 laghi Exp $
+Version:   $Id: DisconnectQos.java,v 1.6 2003/12/07 11:57:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.qos;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.qos.DisconnectQosData;
+import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.authentication.plugins.I_MsgSecurityInterceptor;
 import org.xmlBlaster.util.property.PropBoolean;
 
@@ -46,7 +47,7 @@ public class DisconnectQos
 
    /**
     * Constructor for internal use. 
-    * @param queryQosData The struct holding the data
+    * @param disconnectQosData The struct holding the data
     */
    public DisconnectQos(Global glob, DisconnectQosData disconnectQosData) {
       this.glob = (glob==null) ? Global.instance() : glob;
@@ -101,8 +102,16 @@ public class DisconnectQos
     * @param key
     * @param value
     */
-   public void setClientProperty(String key, String value) {
-      this.disconnectQosData.setClientProperty(key, value);
+   public void addClientProperty(String key, Object value) {
+      this.disconnectQosData.addClientProperty(key, value);
+   }
+
+   /**
+    * Read back a property. 
+    * @return The client property or null if not found
+    */
+   public ClientProperty getClientProperty(String key) {
+      return this.disconnectQosData.getClientProperty(key);
    }
 
    /**

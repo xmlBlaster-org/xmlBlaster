@@ -7,6 +7,7 @@ package org.xmlBlaster.client.qos;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.qos.QueryQosData;
+import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.enum.MethodName;
 
 /**
@@ -71,8 +72,16 @@ public final class UnSubscribeQos
     * @param key
     * @param value
     */
-   public void setClientProperty(String key, String value) {
-      this.queryQosData.setClientProperty(key, value);
+   public void addClientProperty(String key, Object value) {
+      this.queryQosData.addClientProperty(key, value);
+   }
+
+   /**
+    * Read back a property. 
+    * @return The client property or null if not found
+    */
+   public ClientProperty getClientProperty(String key) {
+      return this.queryQosData.getClientProperty(key);
    }
 
    /**

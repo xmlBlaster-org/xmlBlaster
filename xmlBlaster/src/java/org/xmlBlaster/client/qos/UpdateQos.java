@@ -13,7 +13,9 @@ import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.cluster.RouteInfo;
 import org.xmlBlaster.util.enum.PriorityEnum;
 import org.xmlBlaster.util.qos.MsgQosData;
+import org.xmlBlaster.util.qos.ClientProperty;
 import org.xmlBlaster.util.enum.MethodName;
+import java.util.Map;
 
 /**
  * QoS (quality of service) informations sent from server to client<br />
@@ -37,6 +39,8 @@ import org.xmlBlaster.util.enum.MethodName;
  *     &lt;route>
  *        &lt;node id='heron'/>
  *     &lt;/route>
+ *     &lt;clientProperty name='transactionId' type='int'>120001&lt;/clientProperty>
+ *     &lt;clientProperty name='transactionId' type='String' encoding='base64'>OKFKAL==&lt;/clientProperty>
  *  &lt;/qos>
  * </pre>
  * The receive timestamp can be delivered in human readable form as well
@@ -256,6 +260,104 @@ public final class UpdateQos
       return this.msgQosData.getRouteNodes();
    }
 
+   /**
+    * Access all client properties. 
+    * @return a map The return is unordered and the map values are of type ClientProperty. 
+    * @see org.xmlBlaster.util.qos.ClientProperty
+    */
+   public final Map getClientProperties() {
+      return this.msgQosData.getClientProperties();
+   }
+
+   /**
+    * Read back a property. 
+    * @return The client property or null if not found
+    */
+   public ClientProperty getClientProperty(String key) {
+      return this.msgQosData.getClientProperty(key);
+   }
+
+   /**
+    * Access the String client property. 
+    * @param name The property key
+    * @param defaultValue The value to return if the property is not known
+    */
+   public final String getClientProperty(String name, String defaultValue) {
+      return this.msgQosData.getClientProperty(name, defaultValue);
+   }
+   
+   /**
+    * Access the integer client property. 
+    * @param name The property key
+    * @param defaultValue The value to return if the property is not known
+    */
+   public final int getClientProperty(String name, int defaultValue) {
+      return this.msgQosData.getClientProperty(name, defaultValue);
+   }
+   
+   /**
+    * Access the boolean client property. 
+    * @param name The property key
+    * @param defaultValue The value to return if the property is not known
+    */
+   public final boolean getClientProperty(String name, boolean defaultValue) {
+      return this.msgQosData.getClientProperty(name, defaultValue);
+   }
+   
+   /**
+    * Access the double client property. 
+    * @param name The property key
+    * @param defaultValue The value to return if the property is not known
+    */
+   public final double getClientProperty(String name, double defaultValue) {
+      return this.msgQosData.getClientProperty(name, defaultValue);
+   }
+   
+   /**
+    * Access the float client property. 
+    * @param name The property key
+    * @param defaultValue The value to return if the property is not known
+    */
+   public final float getClientProperty(String name, float defaultValue) {
+      return this.msgQosData.getClientProperty(name, defaultValue);
+   }
+   
+   /**
+    * Access the byte client property. 
+    * @param name The property key
+    * @param defaultValue The value to return if the property is not known
+    */
+   public final byte getClientProperty(String name, byte defaultValue) {
+      return this.msgQosData.getClientProperty(name, defaultValue);
+   }
+   
+   /**
+    * Access the byte[] client property. 
+    * @param name The property key
+    * @param defaultValue The value to return if the property is not known
+    */
+   public final byte[] getClientProperty(String name, byte[] defaultValue) {
+      return this.msgQosData.getClientProperty(name, defaultValue);
+   }
+   
+   /**
+    * Access the long client property. 
+    * @param name The property key
+    * @param defaultValue The value to return if the property is not known
+    */
+   public final long getClientProperty(String name, long defaultValue) {
+      return this.msgQosData.getClientProperty(name, defaultValue);
+   }
+   
+   /**
+    * Access the short client property. 
+    * @param name The property key
+    * @param defaultValue The value to return if the property is not known
+    */
+   public final short getClientProperty(String name, short defaultValue) {
+      return this.msgQosData.getClientProperty(name, defaultValue);
+   }
+   
    /**
     * Dump state of this object into a XML ASCII string.
     * <br>
