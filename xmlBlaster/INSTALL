@@ -110,9 +110,22 @@ You have three options to start the xmlBlaster-Server.
 -------------------------------------------------------------------------
 In the directory ${XMLBLASTER_HOME}/testsuite/org/xmlBlaster you will find
 a number of Java based test clients to automatically test xmlBlaster.
+   
+The xmlBlaster test suite is based on the	 JUNIT 1.0 testsuite
+from Kent Beck and Erich Gamma, see
+   http://members.pingnet.ch/gamma/junit.htm
+
+There is a GUI based and a command line based variant of the testsuite available.
+
+To invoke the testsuite simply type:
+
+   make test
+
+Please read the
+   ${XMLBLASTER_HOME}/testsuite/org/xmlBlaster/README
+file for more informations.
 
 You may also use the provided test clients to study the usage of xmlBlaster.
-
 
 
                          Compile 
@@ -126,13 +139,13 @@ of all make options.
 
 Usage :
 
-    make all       --> makes everything new
-    make clean     --> deletes all classes
-    make distclean --> deletes all classes/doc/jar
-    make javadoc   --> call 'make javadoc' in xmlBlaster root dir
-    make demo      --> makes everything new and starts a demo
-    make test      --> makes everything new and starts a test scenario
-    make jar       --> makes jar files of all packages into directory $(JAR_DIR)
+   make all       --> makes everything new
+   make clean     --> deletes all classes
+   make distclean --> deletes all classes/doc/jar
+   make javadoc   --> call 'make javadoc' in xmlBlaster root dir
+   make demo      --> makes everything new and starts a demo
+   make test      --> makes everything new and starts a test scenario
+   make jar       --> makes jar files of all packages into directory $(JAR_DIR)
 
 
 
