@@ -3,7 +3,7 @@ Name:      PoolManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Basic handling of a pool of limited resources
-Version:   $Id: PoolManager.java,v 1.1 2000/05/27 14:19:45 ruff Exp $
+Version:   $Id: PoolManager.java,v 1.2 2000/05/30 14:44:10 ruff Exp $
            $Source: /opt/cvsroot/xmlBlaster/src/java/org/xmlBlaster/util/Attic/PoolManager.java,v $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
@@ -21,8 +21,8 @@ import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
  * Implementation:<br />
  * There are two list in this class
  * <ul>
- *    <li>busy: Hold resources which are currently busy</li>
- *    <li>idle: Hold resources which in the free pool and waiting to be reused</li>
+ *    <li>busy: Holds resources which are currently busy</li>
+ *    <li>idle: Holds resources in the free pool, waiting to be reused</li>
  * </ul>
  * If you ask for a new resource, this will move into the busy list<br />
  * Is a resource released or a specified timeout occurred, it is moved into the idle list.
@@ -48,7 +48,7 @@ import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
  * @author ruff@swand.lake.de
  * @see org.xmlBlaster.util.ResourceWrapper
  */
-public class PoolManager extends Thread
+public class PoolManager implements I_Timeout
 {
    private boolean isInitialized = false;
    /** Nice, unique name for logging output */
@@ -65,8 +65,6 @@ public class PoolManager extends Thread
    protected long defaultTimeout = 0;
    /** Unique counter to generate IDs */
    private long counter = 1;
-   /** Sleep interval for recycle thread */
-   private final int SLEEP_PERIOD = 10000;
 
 
    /**
@@ -78,11 +76,10 @@ public class PoolManager extends Thread
     */
    public PoolManager(String resourceId, int maxInstances, long defaultTimeout)
    {
-      super(resourceId + "Pool-Thread");
       this.resourceId = resourceId;  // e.g. "SessionId"
       this.ME = resourceId + "Pool"; // e.g. "SessionIdPool"
-      this.maxInstances(maxInstances);
-      this.defaultTimeout(defaultTimeout);
+      this.setMaxInstances(maxInstances);
+      this.setDefaultTimeout(defaultTimeout);
       this.busy = new java.util.Hashtable(maxInstances);
       this.idle = new java.util.Vector(maxInstances);
       if (defaultTimeout > 0)
@@ -96,7 +93,7 @@ public class PoolManager extends Thread
     * Set the maximum pool size.
     * @param maxInstances How many resources are allowed
     */
-   public void maxInstances(int maxInstances)
+   public void setMaxInstances(int maxInstances)
    {
       this.maxInstances = maxInstances;
       if (Log.TRACE) Log.trace(ME, "Max. number of resource instances set to " + maxInstances);
@@ -108,7 +105,7 @@ public class PoolManager extends Thread
     * @param defaultTimeout  Max. life span in seconds<br />
     *        You may overwrite this value for each resource instance
     */
-   public void defaultTimeout(long defaultTimeout)
+   public void setDefaultTimeout(long defaultTimeout)
    {
       this.defaultTimeout = defaultTimeout;
       if (Log.TRACE) Log.trace(ME, "Set default life span to " + TimeHelper.millisToNice(this.defaultTimeout*1000));
@@ -159,9 +156,9 @@ public class PoolManager extends Thread
         throw new XmlBlasterException("ResourceExhaust", text);
      }
      else  {
-        if (Log.TRACE) Log.trace(ME, "Creatuing new ResourceWrapper instance ...");
+        if (Log.TRACE) Log.trace(ME, "Creating new ResourceWrapper instance ...");
         instanceId = createId(instanceId);
-        rw = new ResourceWrapper(instanceId, null, milliTimeout);
+        rw = new ResourceWrapper(this, instanceId, null, milliTimeout);
         if (instanceId != null && instanceId.length() > 0) {
            busy.put(instanceId, rw);
            Log.info(ME, "Granted access to new resource '" + rw.getInstanceId() + "'");
@@ -242,7 +239,7 @@ public class PoolManager extends Thread
       else  { // recycling ...
          busy.remove(rw.getInstanceId());
          notifyAboutRelease(rw);
-         rw.resetInstanceId();
+         rw.cleanup();
          idle.addElement(rw);
       }
    }
@@ -350,25 +347,6 @@ public class PoolManager extends Thread
 
 
    /**
-    * Start the resource garbage collector thread.
-    */
-   public void run()
-   {
-      setPriority(Thread.MIN_PRIORITY);
-      Log.info(ME, "Starting resource garbage collector thread.");
-      while (true) {
-         try {
-            sleep(SLEEP_PERIOD); // 10 sec sleep
-         } catch (InterruptedException e) {
-            Log.error(ME, "PoolManagerThread sleep, got woken up by other thread: " + e.toString());
-            continue;
-         }
-         recycleResources();
-      }
-   }
-
-
-   /**
     * Dump the current state of this pool.
     */
    public void dumpState(String instanceId)
@@ -383,24 +361,23 @@ public class PoolManager extends Thread
 
 
    /**
-    * Recycle resource after timeout.
+    * Recycle resource after timeout. 
+    * <p />
+    * This method is a callback through interface I_Timeout.
+    * @parameter userData The ResourceWrapper object or receycle
     */
-   synchronized private void recycleResources()
+   public void timeout(Object userData)
    {
-      // Log.traceAll(ME, "Entering PoolManagerThread.recycleResources() ...");
-      for (java.util.Enumeration e = busy.elements(); e.hasMoreElements() ;) {
-         ResourceWrapper rw = (ResourceWrapper)(e.nextElement());
-         if (rw.isExpired()) {
-            Log.warning(ME, "Resource '" + rw.getInstanceId() + "' is receycled, was not in use since " + TimeHelper.millisToNice(rw.getTimeout()));
-            swap(rw, false);
-            dumpState(rw.getInstanceId());
-         }
-      }
+      if (Log.CALLS) Log.calls(ME, "Entering timeout() ...");
+      ResourceWrapper rw = (ResourceWrapper)userData;
+      Log.warning(ME, "Resource '" + rw.getInstanceId() + "' is receycled, was not in use since " + TimeHelper.millisToNice(rw.getTimeout()));
+      swap(rw, false);
+      dumpState(rw.getInstanceId());
    }
 
 
    /**
-    * Callback when resource is release (recycle automatically, or explicitly released).
+    * Callback when resource is recycled automatically, or explicitly released. 
     * <p />
     * Your derived class may use this notification
     * @param rw The recyced ResourceWrapper
