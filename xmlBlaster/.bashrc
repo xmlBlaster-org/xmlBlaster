@@ -22,7 +22,7 @@
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash
 # Thanks to Heinrich Goetzger
-# $Revision: 1.53 $
+# $Revision: 1.54 $
 #-----------------------------------------------------------
 
 
@@ -185,9 +185,15 @@ if [ ${JIKES_HOME:=""} != "" ] ; then
    if [ -d ${JIKES_HOME} ] ; then
       PATH=${PATH}:${JIKES_HOME}
       export PATH
-      JIKESPATH=${CLASSPATH}
-      export JIKESPATH
+		if [ ${JDK_1_1:=""} != "" ] ; then
+	      JIKESPATH=${CLASSPATH}
+   	   export JIKESPATH
+		else
+         JIKESPATH=${CLASSPATH}:${JDK_HOME}/jre/lib/rt.jar:${JDK_HOME}/jre/lib/i18n.jar
+         export JIKESPATH
+		fi
       ${ECHO} "$BLACK_LTGREEN      Using JIKES_HOME=${JIKES_HOME}  $ESC"
+      ${ECHO} "$BLACK_LTGREEN         Enhance \$JIKESPATH if you enhance your CLASSPATH$ESC"
    else
       ${ECHO} "$BLACK_RED   The directory JIKES_HOME=$JIKES_HOME doesn't exist   $ESC"
    fi
