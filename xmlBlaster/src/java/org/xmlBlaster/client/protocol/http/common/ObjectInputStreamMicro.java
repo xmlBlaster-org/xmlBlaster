@@ -68,7 +68,11 @@ public class ObjectInputStreamMicro implements I_ObjectStream {
       else if (code == VECTOR) {
          return readVector();
       }
-      else throw new IOException("object of type with code='" + code + "' is not supported");
+      else {
+         StringBuffer buf = new StringBuffer();
+         buf.append("object of type with code='").append(code).append("' is not supported");
+         throw new IOException(buf.toString());
+      }
    }
 
    /**
@@ -84,7 +88,7 @@ public class ObjectInputStreamMicro implements I_ObjectStream {
       
       int pos = 0, i = pos;
       while (buffer[i] != 0) i++;
-      String oid = (i == 0 ? null : new String(buffer, 0, i));
+      String oid = ((i == 0) ? (String)null : new String(buffer, 0, i));
       pos = ++i;
 
       while (buffer[i] != 0) i++;

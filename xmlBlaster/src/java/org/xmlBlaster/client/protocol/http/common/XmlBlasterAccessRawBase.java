@@ -43,7 +43,7 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
       this.xmlBlasterServletUrl = (String)this.properties.get("xmlBlaster/servletUrl"); //param from html page
       if (this.properties.get("xmlBlaster/logLevels") != null)
          logLevels = (String)this.properties.get("xmlBlaster/logLevels");
-      log("DEBUG", "constructor - " + this.xmlBlasterServletUrl);
+      log("DEBUG", new StringBuffer("constructor - ").append(this.xmlBlasterServletUrl).toString());
    }
 
    /**
@@ -87,7 +87,7 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
       if (this.logListener != null) {
          this.logListener.log(location, level, text);
       }
-      if (logLevels.indexOf(level) != -1) System.out.println(location + " [" + level + "]: " + text);
+      if (logLevels.indexOf(level) != -1) System.out.println(new StringBuffer(location).append(" [").append(level).append("]: ").append(text).toString());
    }
 
    /** 
@@ -100,7 +100,7 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
 
    public void isConnected(boolean isConnected) {
       this.isConnected = isConnected;
-      log("INFO", "isConnected(" + isConnected + ")");
+      log("INFO", new StringBuffer("isConnected(").append(isConnected).append(")").toString());
    }
 
    public boolean isConnected() {
@@ -143,7 +143,7 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
          String loginName = (String)this.properties.get("xmlBlaster/loginName");
          String passwd = (String)this.properties.get("xmlBlaster/passwd");
          if (loginName != null && passwd != null) {
-            log("INFO", "Using loginName = " + loginName + " as configured in your HTML page to connect to xmlBlaster");
+            log("INFO", new StringBuffer("Using loginName = ").append(loginName).append(" as configured in your HTML page to connect to xmlBlaster").toString());
             this.persistentHttpConnection = new PersistentRequest(this, this.xmlBlasterServletUrl, loginName, passwd);
          }
          else
@@ -161,17 +161,17 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
     * @see I_XmlBlasterAccessRaw#connect(String, I_CallbackRaw)
     */
    public String sendXmlScript(String xmlRequest) throws Exception {
-      log("DEBUG", "xmlScript(xmlRequest="+xmlRequest+")");
+      log("DEBUG", new StringBuffer("xmlScript(xmlRequest=").append(xmlRequest).append(")").toString());
       return (String)postRequest("xmlScript", xmlRequest, null, null, !ONEWAY);
    }
 
    public Hashtable subscribe(java.lang.String xmlKey, java.lang.String qos) throws Exception {
-      log("DEBUG", "subscribe(key="+xmlKey+")");
+      log("DEBUG", new StringBuffer("subscribe(key=").append(xmlKey).append(")").toString());
       return (Hashtable)postRequest("subscribe", xmlKey, qos, null, !ONEWAY);
    }
 
    public Msg[] get(java.lang.String xmlKey, java.lang.String qos) throws Exception {
-      log("DEBUG", "get(key="+xmlKey+")");
+      log("DEBUG", new StringBuffer("get(key=").append(xmlKey).append(")").toString());
       //String keyEnc = encode(xmlKey, "UTF-8");
       //String qosEnc = encode(qos, "UTF-8");
       Vector list = (Vector)postRequest("get", xmlKey, qos, null, !ONEWAY);
@@ -187,17 +187,17 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
    }
 
    public Hashtable[] unSubscribe(java.lang.String xmlKey, java.lang.String qos) throws Exception {
-      log("DEBUG", "unSubscribe(key="+xmlKey+")");
+      log("DEBUG", new StringBuffer("unSubscribe(key=").append(xmlKey).append(")").toString());
       return (Hashtable[])postRequest("unSubscribe", xmlKey, qos, null, !ONEWAY);
    }
 
    public Hashtable publish(String xmlKey, byte[] content, String qos) throws Exception {
-      log("DEBUG", "publish(key="+xmlKey+")");
+      log("DEBUG", new StringBuffer("publish(key=").append(xmlKey).append(")").toString());
       return (Hashtable)postRequest("publish", xmlKey, qos, content, !ONEWAY);
    }
 
    public Hashtable[] erase(java.lang.String xmlKey, java.lang.String qos) throws Exception {
-      log("DEBUG", "erase(key="+xmlKey+")");
+      log("DEBUG", new StringBuffer("erase(key=").append(xmlKey).append(")").toString());
       return (Hashtable[])postRequest("erase", xmlKey, qos, null, !ONEWAY);
    }
 
@@ -208,7 +208,7 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
          log("INFO", "Successfully disconnected from xmlBlaster");
       }
       catch (Exception e) {
-         log("WARN", "Ignoring unexpected exception during disconnect: " + e.toString());
+         log("WARN", new StringBuffer("Ignoring unexpected exception during disconnect: ").append(e.toString()).toString());
       }
    }
    
@@ -226,7 +226,7 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
       conn.setRequestProperty("BinaryProtocol", "true");
       int length = ObjectOutputStreamMicro.getMessageLength(null, key, qos, content);
       // this is needed since J2ME does not set Content-Length (don't know why)
-      conn.setRequestProperty("Data-Length", "" + length);
+      conn.setRequestProperty("Data-Length", String.valueOf(length));
       ObjectOutputStreamMicro.writeMessage(conn.getOutputStream(), null, key, qos, content);
       //conn.getOutputStream().close();
    }
@@ -355,7 +355,7 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
    */
    
    Object postRequest(String actionType, String key, String qos, byte[] content, boolean oneway) throws Exception {
-      String request = "ActionType=" + actionType;
+      String request = new StringBuffer("ActionType=").append(actionType).toString();
       try {
          boolean doPost = true;
          String url = this.xmlBlasterServletUrl;
@@ -363,7 +363,7 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
          I_Connection conn = createConnection(url);      
          // conn.setUseCaches(false);
          writeCookie(conn);
-         log("DEBUG", "doPost=" + doPost + ", sending '" + url + "' with request '" + request + "' ...");
+         log("DEBUG", new StringBuffer("doPost=").append(doPost).append(", sending '").append(url).append("' with request '").append(request).append("' ...").toString());
          if(doPost){  // for HTTP-POST, e.g. for  publish(), subscribe()
             conn.setDoOutput(true);
             conn.setPostMethod();
@@ -386,12 +386,12 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
          Object returnObject = null;
          StringBuffer ret = new StringBuffer(1024);
          while ((line = dataInput.readLine()) != null){
-            log("DEBUG", "Return value for '" + request + "' = '" + line + "'");
+            log("DEBUG", new StringBuffer("Return value for '").append(request).append("' = '").append(line).append("'").toString());
             if (line == null || line.length() < 1)
                continue;
             if (true) { // doPost) {  // All POST is returned Base64 encoded, all GET as ordinary string
                byte[] serial = decodeBase64(line.getBytes());
-               log("DEBUG", "Parsing now: <" + new String(serial) + ">");
+               //log("DEBUG", "Parsing now: <" + new String(serial) + ">");
 
                ByteArrayInputStream bais = new ByteArrayInputStream(serial);
                ObjectInputStreamMicro ois = new ObjectInputStreamMicro(bais);
@@ -425,7 +425,7 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
                }
                else if (EXCEPTION_NAME.equals(method)) {
                   String err = (String)ois.readObject();
-                  log("INFO", "Caught XmlBlasterException: " + err);
+                  log("INFO", new StringBuffer("Caught XmlBlasterException: ").append(err).toString());
                   throw new Exception(err);
                }
                else if (CREATE_SESSIONID_NAME.equals(method)) {
@@ -435,7 +435,7 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
                   returnObject = (String)ois.readObject();
                }
                else {
-                  log("ERROR", "Unknown method=" + method);
+                  log("ERROR", new StringBuffer("Unknown method=").append(method).toString());
                   returnObject = line;
                }
             }
@@ -446,11 +446,11 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
       }
       catch (java.lang.ClassNotFoundException e) {
          e.printStackTrace();
-         log("ERROR", "request(" + request + ") failed: " + e.toString());
+         log("ERROR", new StringBuffer("request(").append(request).append(") failed: ").append(e.toString()).toString());
       }
       catch (IOException e) {
          e.printStackTrace();
-         log("ERROR", "request(" + request + ") failed: " + e.toString());
+         log("ERROR", new StringBuffer("request(").append(request).append(") failed: ").append(e.toString()).toString());
       }
       return "";
    }
@@ -460,11 +460,11 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
     */
    public String update(String cbSessionId, Hashtable updateKey, byte[] content, Hashtable updateQos) throws Exception {
       if (this.callback == null) {
-         String text = "Receiving unexpected update message '" + updateKey.get("/key/@oid") + "', no callback handle available";
-         log("WARN", "XmlBlasterAccessRaw: " + text);
+         String text = new StringBuffer("Receiving unexpected update message '").append(updateKey.get("/key/@oid")).append("', no callback handle available").toString();
+         log("WARN", text);
          throw new Exception(text);
       }
-      log("DEBUG", "Receiving update message '" + updateKey.get("/key/@oid") + "' state=" + updateQos.get("/qos/state/@id"));
+      log("DEBUG", new StringBuffer("Receiving update message '").append(updateKey.get("/key/@oid")).append("' state=").append(updateQos.get("/qos/state/@id")).toString());
       return this.callback.update(cbSessionId, updateKey, content, updateQos);
    }
 
@@ -498,7 +498,7 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
          if (pos < 0) continue;
          String key = prop.substring(0, pos);
          String val = prop.substring(pos+1);
-         log("DEBUG", " extractCookies: " + "(key='" + key + "', val='" + val + "')");
+         log("DEBUG", new StringBuffer(" extractCookies: ").append("(key='").append(key).append("', val='").append(val).append("')").toString());
          ret.put(key, val);
       }
       return ret;
@@ -510,8 +510,8 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
     */
    public void readCookie(I_Connection conn) {
       //conn.setRequestProperty("cookie", "JSESSIONID=" + this.sessionId);
-      log("DEBUG", " readCookie: Cookie         : " + conn.getHeaderField("Cookie"));
-      log("DEBUG", " readCookie: Set-Cookie     : " + conn.getHeaderField("Set-Cookie"));
+      log("DEBUG", new StringBuffer(" readCookie: Cookie         : ").append(conn.getHeaderField("Cookie")).toString());
+      log("DEBUG", new StringBuffer(" readCookie: Set-Cookie     : ").append(conn.getHeaderField("Set-Cookie")).toString());
 
       String setCookie = conn.getHeaderField("Set-Cookie"); 
       if (setCookie != null) this.cookie = extractCookies(setCookie);
@@ -519,11 +519,11 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
 
    public void writeCookie(I_Connection conn) {
       //conn.setRequestProperty("cookie", "JSESSIONID=" + this.sessionId);
-      log("DEBUG", "writeCookie: original cookie: " + this.cookie);
+      log("DEBUG", new StringBuffer("writeCookie: original cookie: ").append(this.cookie).toString());
       if (this.cookie == null) {
          conn.setRequestProperty("cookie", "");
       }
-      else conn.setRequestProperty("cookie", "JSESSIONID=" + (String)this.cookie.get("JSESSIONID"));
+      else conn.setRequestProperty("cookie", new StringBuffer("JSESSIONID=").append((String)this.cookie.get("JSESSIONID")).toString());
       conn.setRequestProperty("Cache-Control", "no-cache");
       conn.setRequestProperty("Pragma", "no-cache");
       conn.setRequestProperty("Connection", "keep-alive");

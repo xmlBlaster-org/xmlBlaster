@@ -31,14 +31,14 @@ public class PersistentRequest extends Thread {
    */
    PersistentRequest(XmlBlasterAccessRawBase xmlBlasterAccess, String xmlBlasterServletUrl, String loginName, String passwd) {
       this(xmlBlasterAccess, xmlBlasterServletUrl,
-         "<qos>" +
-            "<securityService type='htpasswd' version='1.0'>" +
-            "<![CDATA[" +
-            "<user>" + loginName + "</user>" +
-            "<passwd>" + passwd + "</passwd>" +
-            "]]>" +
-            "</securityService>" +
-         "</qos>"
+         new StringBuffer().append("<qos>").
+             append("<securityService type='htpasswd' version='1.0'>").
+             append("<![CDATA[").
+             append("<user>").append(loginName).append("</user>").
+             append("<passwd>").append(passwd).append("</passwd>").
+             append("]]>").
+             append("</securityService>").
+             append("</qos>").toString()
       );
    }
 
@@ -105,14 +105,14 @@ public class PersistentRequest extends Thread {
 
 
          // DataOutputStream dataOutput = new DataOutputStream(conn.getOutputStream());
-         log("DEBUG", "POST, sending '" + url + "' ...");
+         log("DEBUG", new StringBuffer().append("POST, sending '").append(url).append("' ...").toString());
 
          //dataOutput.writeBytes("ActionType="+MethodName.CONNECT.toString()+"\n");
          //dataOutput.writeBytes("xmlBlaster.connectQos=" + XmlBlasterAccessRaw.encode(this.connectQos) + "\n");
 
          // dataOutput.close();
 
-         log("DEBUG", "Creating now a persistent connection to '" + url + "'");
+         //log("DEBUG", new StringBuffer().append("Creating now a persistent connection to '").append(url).append("'").toString());
 
          conn.connect();
          
@@ -120,14 +120,14 @@ public class PersistentRequest extends Thread {
          BufferedInputStreamMicro dataInput = new BufferedInputStreamMicro(conn.getInputStream());
          String line;
          while ((line = dataInput.readLine()) != null) {
-            log("DEBUG", "Receiving Base64: <" + line + "> with length " + line.length());
+            log("DEBUG", new StringBuffer().append("Receiving Base64: <").append(line).append("> with length ").append(line.length()).toString());
             if (line == null || line.length() < 1)
                continue;
             if (line.indexOf("--End") != -1) { // base64 may not contain "--"
                continue;
             }
             byte[] serial = this.xmlBlasterAccess.decodeBase64(line.getBytes());
-            log("DEBUG", "Parsing now: <" + new String(serial) + "> with length " + serial.length);
+            log("DEBUG", new StringBuffer().append("Parsing now: <").append(serial).append("> with length ").append(serial.length).toString());
 
             // don't know why but sometimes a special character resulting in a converted empty string
             if (serial.length < 1) continue;
@@ -136,11 +136,11 @@ public class PersistentRequest extends Thread {
             ObjectInputStreamMicro ois = new ObjectInputStreamMicro(in);
 
             String method = (String)ois.readObject(); // e.g. "update"
-            log("DEBUG", "Received method '" + method + "'");
+            //log("DEBUG", "Received method '" + method + "'");
 
             if (I_XmlBlasterAccessRaw.PING_NAME.equals(method)) { // "ping"
                String qos = (String)ois.readObject();
-               log("DEBUG", "Received ping '" + qos + "'");
+               //log("DEBUG", "Received ping '" + qos + "'");
                if (qos.indexOf("loginSucceeded") != -1) {
                   this.connectReturnQos = "<qos/>";
                   this.xmlBlasterAccess.isConnected(true);
@@ -160,21 +160,21 @@ public class PersistentRequest extends Thread {
                Hashtable keyMap = (Hashtable)ois.readObject();
                String contentBase64 = (String)ois.readObject();
                byte[] content = this.xmlBlasterAccess.decodeBase64(contentBase64.getBytes());
-               log("DEBUG", "Received update keyOid='" + keyMap.get("/key/@oid") + "' stateId=" + qosMap.get("/qos/state/@id"));
+               log("DEBUG", new StringBuffer().append("Received update keyOid='").append(keyMap.get("/key/@oid")).append("' stateId=").append(qosMap.get("/qos/state/@id")).toString());
                this.xmlBlasterAccess.update(cbSessionId, keyMap, content, qosMap);
             }
             else if ("exception".equals(method)) { // "exception"
                String err = (String)ois.readObject();
-               log("ERROR", "Received exception: " + err);
+               log("ERROR", new StringBuffer().append("Received exception: ").append(err).toString());
             }
             else {
-               log("ERROR", "Ignoring response for methodName=" + method);
+               log("ERROR", new StringBuffer().append("Ignoring response for methodName=").append(method).toString());
             }
          }
       }
       catch (Exception e) {
          e.printStackTrace();
-         log("ERROR", "Can't handle exception: " + e.toString());
+         log("ERROR", new StringBuffer().append("Can't handle exception: ").append(e.toString()).toString());
       }
       finally {
          this.xmlBlasterAccess.isConnected(false);   

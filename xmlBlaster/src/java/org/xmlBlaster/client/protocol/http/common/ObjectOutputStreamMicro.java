@@ -80,7 +80,10 @@ public class ObjectOutputStreamMicro implements I_ObjectStream {
          this.out.writeInt(VECTOR);
          writeVector((Vector)obj);
       }
-      else throw new IOException("object of type '" + obj.getClass().getName() + "' is not supported");
+      else {
+         StringBuffer buf = new StringBuffer();
+         throw new IOException(buf.append("object of type '").append(obj.getClass().getName()).append("' is not supported").toString());
+      }
    }
 
    /**
