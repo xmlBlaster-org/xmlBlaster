@@ -131,16 +131,22 @@ public class TestJdbcAccess extends TestCase
    public void testQueries()
    {
       log.info(ME, "######## Start testQueries()");
-      wrap.initUpdate(true, "CREATE TABLE cars (name CHAR(25), id NUMERIC(4,0))");
+      String request = "CREATE TABLE cars (name CHAR(25), id NUMERIC(4,0))";
+      log.info(ME, "*** REQUEST=" + request);
+      wrap.initUpdate(true, request);
       String result = invokeSyncQuery(wrap, 1, null);
    
       String[] brands = { "Fiat", "Audi", "BMW", "Porsche", "Mercedes", "Renault", "Citroen" };
       for (int ii=0; ii<brands.length; ii++) {
-         wrap.initUpdate(true, "INSERT INTO cars (name, id) VALUES('" + brands[ii] + "', " + (ii+1) + ")");
+         request = "INSERT INTO cars (name, id) VALUES('" + brands[ii] + "', " + (ii+1) + ")";
+         log.info(ME, "*** REQUEST=" + request);
+         wrap.initUpdate(true, request);
          result = invokeSyncQuery(wrap, 1, null);
       }
 
-      wrap.initQuery(100, true, "SELECT * from cars");
+      request = "SELECT * from cars";
+      log.info(ME, "*** REQUEST=" + request);
+      wrap.initQuery(100, true, request);
       result = invokeSyncQuery(wrap, 1, "BMW");
       log.info(ME, "Successful retrieved cars, dump ommitted to not disturb JUNIT test report generation");
       log.trace(ME, "Retrieved cars:\n" + result);
