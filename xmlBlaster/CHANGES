@@ -4,6 +4,9 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for 1.0.1 [2005-02-08] #13220 "Xmas release patched"
 ============================================================
 
+ o #13230 Removed bug on persistent subscriptions. Recovered persistent subscriptions where
+   not removed when unsubscribing or disconnecting.
+
  o #13215 Passing AddressServer from each protocol plugin into the core to be able
    to do protocol specific decisions.
    Used for example with the AvailabilityChecker to allow LOCAL access for small runlevels
