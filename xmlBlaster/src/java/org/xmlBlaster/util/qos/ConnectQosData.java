@@ -475,7 +475,7 @@ public final class ConnectQosData // implements java.io.Serializable, Cloneable
     * @param callback  An object containing the protocol (e.g. EMAIL) and the address (e.g. hugo@welfare.org)
     */
    public void addCallbackAddress(CallbackAddress callback) {
-      CbQueueProperty prop = new CbQueueProperty(glob, null, this.nodeId.toString()); // Use default queue properties for this callback address
+      CbQueueProperty prop = new CbQueueProperty(glob, Constants.RELATING_SESSION, this.nodeId.toString()); // Use default queue properties for this callback address
       prop.setCallbackAddress(callback);
       addCbQueueProperty(prop);
       //queuePropertyArr = null; // reset to be recalculated on demand
@@ -495,13 +495,15 @@ public final class ConnectQosData // implements java.io.Serializable, Cloneable
             Thread.currentThread().dumpStack();
          }
          this.sessionCbQueueProperty = prop;
-         this.cbQueuePropertyVec.addElement(prop);
       }
       else if (prop.isSubjectRelated()) {
          if (this.subjectCbQueueProperty != null) log.warn(ME, "addCbQueueProperty() overwrites previous subject queue setting");
          this.subjectCbQueueProperty = prop;
-         this.cbQueuePropertyVec.addElement(prop);
       }
+      else {
+         log.error(ME, "Added callback address but relating='' is null");
+      }
+      this.cbQueuePropertyVec.addElement(prop);
    }
 
    /**
