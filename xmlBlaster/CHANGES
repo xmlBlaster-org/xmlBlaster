@@ -8,8 +8,9 @@ Changes for xxx [2005-xx-xx] (current subversion)
    ClusterNode.getConnectionState() did not reliable tell the truth
    Thanks to Michael Lum
 
- o #13308 C++ client library
-   Added client side persistence code for subscribe()
+ o #13308 and #13313 and #13314 C++ client library
+   Added client side persistence code for subscribe() (deserialize is not finished)
+   Added client side queueing for subscribe(), currently RAM based only
    Moved priority handling to QosData.cpp
 
  o #13300 Added dispatcherActive property to ConnectQos to support
