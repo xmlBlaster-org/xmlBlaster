@@ -23,6 +23,7 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #endif
 
 #ifdef _WINDOWS
+#  include <sys/timeb.h>
 #  include <Winsock2.h>       /* Sleep() */
 #  if XB_USE_PTHREADS
 #    include <pthreads/pthread.h> /* Our pthreads.h: For logging output of thread ID, for Windows and WinCE downloaded from http://sources.redhat.com/pthreads-win32 */
@@ -209,14 +210,11 @@ Dll_Export int64_t getTimestamp() {
 Dll_Export bool getAbsoluteTime(long relativeTimeFromNow, struct timespec *abstime)
 {
 # ifdef _WINDOWS
-   time_t t1;
-   struct tm *now;
-   
-   (void) time(&t1);
-   now = localtime(&t1);
+   struct _timeb tm;
+   (void) _ftime(&tm);
 
-   abstime->tv_sec = t1;
-   abstime->tv_nsec = 0; /* TODO !!! How to get the more precise current time on Win? */
+   abstime->tv_sec = tm.time;
+   abstime->tv_nsec = tm.millitm * 1000 * 1000; /* TODO !!! How to get the more precise current time on Win? */
 
    if (relativeTimeFromNow > 0) {
       abstime->tv_sec += relativeTimeFromNow / 1000;
