@@ -2090,7 +2090,7 @@ TODO
          <fileset dir="${build.src.cpp.dir}/omnithread" includes="*.cpp" if="OMNITHREAD" />
          <fileset dir="${build.src.cpp.dir}/log4cplus" includes="**/*.cxx"
                   excludes="${COMPILE_LOG4CPLUS_EXCLUDES},${LOG4CPLUS_OS_EXCLUDES}" />
-         <fileset dir="${build.src.cpp.dir}/util/queue" includes="SQLiteQueuePlugin.*" if="XMLBLASTER_PERSISTENT_QUEUE"/>
+         <fileset dir="${build.src.cpp.dir}/util/queue" includes="SQLiteQueuePlugin.cpp" if="XMLBLASTER_PERSISTENT_QUEUE"/>
 
          <includepath location="${build.src.cpp.dir}" />
 
