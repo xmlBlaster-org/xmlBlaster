@@ -24,6 +24,12 @@ BUGS:
 
 
 DONE:
+ - Added support for dirty reads in clusters
+   http://www.xmlBlaster.org/xmlBlaster/doc/requirements/cluster.dirtyRead.html
+
+ - Added support for filtering published messages
+   http://www.xmlBlaster.org/xmlBlaster/doc/requirements/mime.plugin.publishfilter.html
+
  - HtPassWd is now extended to accept partial usernames. e.g. if the passwordsfile contains
     "Username", HtPassWd also accepts "User". Additionally if the passwordfile just contains
     "*" any username and password is accepted.
