@@ -4,6 +4,12 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for 1.0x (patches for 1.0 stable)
 =====================================================
 
+ o #13136 Bugfix SOCKET callback driver
+   Bugfix for isAlive() detection, had impact on failsave reconnect behavior
+   from xmlBlaster server callback to client. Happened only when both remained alive
+   on temporary network interruption (or if callback address was same) and
+   only if at least one partner is running on Windows.
+
  o #13127 added update with open transaction to DbPool
 
  o #13125 added autocommit and rollback to DbPool
