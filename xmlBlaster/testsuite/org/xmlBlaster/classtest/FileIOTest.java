@@ -62,7 +62,7 @@ public class FileIOTest extends TestCase {
       if (sync) num = 100;
 
       try {
-         FileIO fileIO = new FileIO(fileName, userDataHandler, num, sync);
+         FileIO fileIO = new FileIO(glob, fileName, userDataHandler, num, sync);
          File f = new File(fileName);
          long emptyLength = f.length();
 
@@ -121,7 +121,7 @@ public class FileIOTest extends TestCase {
 
       try {
          {
-            FileIO fileIO = new FileIO(fileName, userDataHandler, num-numOverflow, false);
+            FileIO fileIO = new FileIO(glob, fileName, userDataHandler, num-numOverflow, false);
             fileIO.setModeDiscardOldest();
 
             System.out.println("Write " + num + " data objects (DISCARD_OLDEST) ...");
@@ -132,7 +132,7 @@ public class FileIOTest extends TestCase {
             assertEquals("NumLost", numOverflow, fileIO.getNumLost());
          }
          {
-            FileIO fileIO = new FileIO(fileName, userDataHandler, num-numOverflow, false);
+            FileIO fileIO = new FileIO(glob, fileName, userDataHandler, num-numOverflow, false);
             fileIO.setModeDiscard();
 
             System.out.println("Write " + num + " data objects (DISCARD) ...");
@@ -143,7 +143,7 @@ public class FileIOTest extends TestCase {
             assertEquals("NumLost", numOverflow, fileIO.getNumLost());
          }
          {
-            FileIO fileIO = new FileIO(fileName, userDataHandler, num-numOverflow, false);
+            FileIO fileIO = new FileIO(glob, fileName, userDataHandler, num-numOverflow, false);
             fileIO.setModeException();
 
             System.out.println("Write " + num + " data objects (EXCEPTION) ...");
@@ -179,7 +179,7 @@ public class FileIOTest extends TestCase {
       long num = 20;
 
       try {
-         FileIO fileIO = new FileIO(fileName, userDataHandler, num, false);
+         FileIO fileIO = new FileIO(glob, fileName, userDataHandler, num, false);
          fileIO.writeNext("AFirstValue");
          fileIO.writeNext("ASecondValue");
          assertEquals("Data corrupted", "AFirstValue", (String)fileIO.readNext(true));
@@ -203,7 +203,7 @@ public class FileIOTest extends TestCase {
       long numKill = 5;
 
       try {
-         FileIO fileIO = new FileIO(fileName, userDataHandler, num, false);
+         FileIO fileIO = new FileIO(glob, fileName, userDataHandler, num, false);
          for (int ii=0; ii<num; ii++) {
             if (ii == numKill) {
                File ff = new File(fileName);
@@ -254,7 +254,7 @@ public class FileIOTest extends TestCase {
       long numKill = 5;
 
       try {
-         FileIO fileIO = new FileIO(fileName, userDataHandler, num, false);
+         FileIO fileIO = new FileIO(glob, fileName, userDataHandler, num, false);
          for (int ii=0; ii<num; ii++) {
             fileIO.writeNext("World-" + ii);
          }
@@ -309,7 +309,7 @@ public class FileIOTest extends TestCase {
 
       try {
          {
-            FileIO fileIO = new FileIO(fileName, userDataHandler, num, false);
+            FileIO fileIO = new FileIO(glob, fileName, userDataHandler, num, false);
 
             for (int ii=0; ii<num; ii++)
                fileIO.writeNext("World-" + ii);
@@ -327,7 +327,7 @@ public class FileIOTest extends TestCase {
          // Simulates restart of software ...
 
          {
-            FileIO fileIO = new FileIO(fileName, userDataHandler, num, false);
+            FileIO fileIO = new FileIO(glob, fileName, userDataHandler, num, false);
 
             int count = 0;
             while (true) {
