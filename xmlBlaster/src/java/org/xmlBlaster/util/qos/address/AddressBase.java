@@ -313,7 +313,7 @@ public abstract class AddressBase
 
    /**
     * Returns the completed key which was found and chosen. 
-    * @return For "responseTimeout" it could be "dispatch/callback/plugin/socket/responseTimeout"
+    * @return For "responseTimeout" it could be "dispatch/connection/plugin/socket/responseTimeout"
     */
    public String getEnvLookupKey(String key) {
       PropString tmp = new PropString("");
