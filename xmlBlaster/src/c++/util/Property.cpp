@@ -59,9 +59,9 @@ void Property::initializeDefaultProperties()
       else {
          // Windows: _WINDOWS
          // USERNAME=joe
-		 char *puser = getenv("USERNAME");
+         char *puser = getenv("USERNAME");
          if (puser) {
-			string value = puser;
+            string value = puser;
             setProperty("user.name", value, true);
          }
          else {
