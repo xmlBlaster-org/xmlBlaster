@@ -119,7 +119,7 @@ thread.impl   = OMNITHREAD
 #------------------------------------------------------------------------------
 
 #------------------------------------------------------------------------------
-# C++ Windows example with ACE+TAO 1.3 and xerces 2.2 using VC++ 7
+# C++ Windows example with ACE+TAO 1.3 and xerces 2.2 using VC++ 7 and boost
 #use-msvc      = 1
 #XMLCPP_HOME   = C:/Dev/xerces-c2_2_0-win32
 #XMLCPP_VER    = _2
@@ -127,6 +127,7 @@ thread.impl   = OMNITHREAD
 #CORBACPP_HOME = C:/Dev/ACE_wrappers/TAO
 #idl.cmd       = C:/Dev/ACE_wrappers/bin/tao_idl.exe
 #CORBACPP_VER  = 
+#thread.impl   = BOOST
 #------------------------------------------------------------------------------
 
 #------------------------------------------------------------------------------
@@ -149,9 +150,15 @@ thread.impl   = OMNITHREAD
 #   but the build.xml compile script currently only supports MICO or TAO
 #   Extend src/c++/client/protocol/corba/CompatibleCorba.h for another ORB
 #
-# XMLCPP_VER    = "" or _2D  (you need xerces 2.2 or above)
+# XMLCPP_VER    = 1_ or _2D     (Windows)
+# XMLCPP_VER    = 1_7_0         (UNIX: and xerces < 2)
+# XMLCPP_VER    =               (UNIX: empty for xerces >= 2, e.g. for 2.2)
 #   Windows e.g.  xerces-c_2.lib or xerces-c_2D.lib
-#   Linux e.g.    libxerces-c.so.22.0
+#   Linux and Xerces < 2.0 e.g.     ibxerces-c1_7_0.so
+#   Linux and Xerces >= 2.0 e.g.    libxerces-c.so.22.0
+#
+# thread.impl   = OMNITHREAD | BOOST
+#   The default is to link with the omniORB multi threading library.
 #------------------------------------------------------------------------------
 
 #------------------------------------------------------------------------------
@@ -167,6 +174,6 @@ thread.impl   = OMNITHREAD
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
    <date>2003 01 07</date>
-   <revision>$Revision: 1.8 $</revision>
+   <revision>$Revision: 1.9 $</revision>
 </requirement>
 
