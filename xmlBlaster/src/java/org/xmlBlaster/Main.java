@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.69 2001/09/05 13:20:12 ruff Exp $
+Version:   $Id: Main.java,v 1.70 2001/12/04 09:43:44 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -54,11 +54,15 @@ import java.lang.reflect.Method;
  * <p />
  * Examples how to start the xmlBlaster server:
  * <p />
- * <code>   ${JacORB_HOME}/bin/jaco org.xmlBlaster.Main -iorPort 8080</code>
+ * <code>   java org.xmlBlaster.Main -iorPort 8088</code>
  * <p />
- * <code>   ${JacORB_HOME}/bin/jaco org.xmlBlaster.Main -iorFile /tmp/XmlBlaster_Ref</code>
+ * <code>   java org.xmlBlaster.Main -iorFile /tmp/XmlBlaster_Ref</code>
  * <p />
- * <code>   jaco org.xmlBlaster.Main -trace true -dump true -call true -time true</code>
+ * <code>   java org.xmlBlaster.Main -trace true -dump true -call true -time true</code>
+ * <p />
+ * <code>   java org.xmlBlaster.Main -xmlrpc.hostname 102.24.64.60 -xmlrpc.port 8081</code>
+ * <p />
+ * <code>   java org.xmlBlaster.Main -?</code>
  *
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
@@ -437,7 +441,7 @@ public class Main
    private void usage()
    {
       Log.plain(ME, "-----------------------" + version + "-------------------------------");
-      Log.plain(ME, "jaco org.xmlBlaster.Main <options>");
+      Log.plain(ME, "java org.xmlBlaster.Main <options>");
       Log.plain(ME, "----------------------------------------------------------");
       Log.plain(ME, "   -h                  Show the complete usage.");
       for (int ii=0; ii<protocols.size(); ii++) {
@@ -450,9 +454,11 @@ public class Main
       Log.plain(ME, "   -doBlocking  false  Switch off blocking, the main method is by default never returning.");
       Log.plain(ME, "----------------------------------------------------------");
       Log.plain(ME, "Example:");
-      Log.plain(ME, "   jaco org.xmlBlaster.Main -iorPort 8080");
-      Log.plain(ME, "   jaco org.xmlBlaster.Main -iorFile /tmp/XmlBlaster_Ref");
-      Log.plain(ME, "   jaco org.xmlBlaster.Main -trace true -dump true -call true -time true");
+      Log.plain(ME, "   java org.xmlBlaster.Main -iorPort 8088");
+      Log.plain(ME, "   java org.xmlBlaster.Main -iorFile /tmp/XmlBlaster_Ref");
+      Log.plain(ME, "   java org.xmlBlaster.Main -trace true -dump true -call true -time true");
+      Log.plain(ME, "   java org.xmlBlaster.Main -xmlrpc.hostname 102.24.64.60 -xmlrpc.port 8081");
+      Log.plain(ME, "   java org.xmlBlaster.Main -?");
       Log.plain(ME, "");
    }
 
