@@ -308,14 +308,23 @@ instructions.
 As a default xmlBlaster start automatically RMI support.
 If you want to know more here you go:
 
-1. Check if the driver is loaded in xmlBlaster.properties, this example starts
-   the CORBA and the RMI server (RMI driver is active by default):
+1. Check if the driver is loaded in xmlBlasterPlugins.xml and xmlBlaster.properties,
+   this example starts the CORBA and the RMI server (RMI driver is active by default):
 
-   ProtocolPlugin[IOR][1.0]=org.xmlBlaster.protocol.corba.CorbaDriver
-   ProtocolPlugin[RMI][1.0]=org.xmlBlaster.protocol.rmi.RmiDriver
+   $HOME/xmlBlasterPlugins.xml
+      <plugin id='IOR' className='org.xmlBlaster.protocol.corba.CorbaDriver'>
+         <action do='LOAD' onStartupRunlevel='3' sequence='2'
+                 onFail='resource.configuration.pluginFailed'/>
+         <action do='STOP' onShutdownRunlevel='2' sequence='4'/>   
+      </plugin>
+      <plugin id='RMI' className='org.xmlBlaster.protocol.rmi.RmiDriver'>
+         <action do='LOAD' onStartupRunlevel='3' sequence='4' />
+         <action do='STOP' onShutdownRunlevel='2' sequence='2'/>   
+      </plugin>
 
-   CbProtocolPlugin[IOR][1.0]=org.xmlBlaster.protocol.corba.CallbackCorbaDriver
-   CbProtocolPlugin[RMI][1.0]=org.xmlBlaster.protocol.rmi.CallbackRmiDriver
+   $HOME/xmlBlaster.properties
+      CbProtocolPlugin[IOR][1.0]=org.xmlBlaster.protocol.corba.CallbackCorbaDriver
+      CbProtocolPlugin[RMI][1.0]=org.xmlBlaster.protocol.rmi.CallbackRmiDriver
 
 2. Adjust the security policy file if you like to (it is currently totaly relaxed):
 
@@ -385,6 +394,24 @@ You may also use the provided test clients to study the usage of xmlBlaster.
 
 
 
+                           C++ - Client
+-------------------------------------------------------------------------
+See xmlBlaster/src/c++/README
+-------------------------------------------------------------------------
+
+
+                           C - Client
+-------------------------------------------------------------------------
+See xmlBlaster/src/c/README
+-------------------------------------------------------------------------
+
+
+                           Python - Client
+-------------------------------------------------------------------------
+See xmlBlaster/src/python/README
+-------------------------------------------------------------------------
+
+
                             Perl - XmlRpc client
 -------------------------------------------------------------------------
 See xmlBlaster/demo/perl/xmlrpc/README
@@ -412,18 +439,6 @@ a) Using Tcl clients with TclMico http://www.mico.org/
 b) Using tcljava (TclBlend/JACL) with an ordinary Java client
    This allows scripting of Java with Tcl, and embedding the
    Tcl interpreter (called jacl) into Java code.
--------------------------------------------------------------------------
-
-
-                           Python - Client
--------------------------------------------------------------------------
-Python clients with Fnorb-1.01 http://www.dstc.edu.au/Products/Fnorb/
-   fnorb-1.01.tar.gz
-   cd src
-   make -f Makefile.pre.in boot 
-   FNORB_HOME=/Where/You/Put/Fnorb 
-   export PATH=$PATH:$FNORB_HOME/Fnorb/script 
-   export PYTHONPATH=$PYTHONPATH:$FNORB_HOME 
 -------------------------------------------------------------------------
 
 
