@@ -356,6 +356,8 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
          else { /* connect(...) == -1 */
             char errnoStr[MAX_ERRNO_LEN];
             char *p = strerror(errno);
+            /*char p[256];  No thread safe strerror_r() on Windows
+            strerror_r(errno, p, 255);*/
             SNPRINTF(errnoStr, MAX_ERRNO_LEN, "errno=%d %s", errno, p); /* default if strerror_r fails */
 #           ifdef _LINUX
             strerror_r(errno, errnoStr, MAX_ERRNO_LEN-1); /* glibc > 2. returns a char*, but should return an int */
