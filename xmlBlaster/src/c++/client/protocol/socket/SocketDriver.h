@@ -15,10 +15,13 @@ Comment:   The client driver for the socket protocol
 #include <client/protocol/I_CallbackServer.h>
 #include <client/protocol/I_XmlBlasterConnection.h>
 #include <util/XmlBlasterException.h>
-//#include <client/xmlBlasterClient.h>
 #include <util/qos/StatusQosFactory.h>
 #include <util/qos/MsgQosFactory.h>
-#include <XmlBlasterAccessUnparsed.h> // The C SOCKET client library
+/* Don't include this in this header to avoid dependency: */
+//#include <XmlBlasterAccessUnparsed.h> // The C SOCKET client library
+
+struct XmlBlasterAccessUnparsed;
+struct XmlBlasterException;
 
 namespace org {
  namespace xmlBlaster {
@@ -33,15 +36,15 @@ namespace org {
    friend class SocketDriverFactory; // To be able to create a SocketDriver instance
 
    private:
-      org::xmlBlaster::util::thread::Mutex&           mutex_;
-      std::string           instanceName_;
-      ::XmlBlasterAccessUnparsed* connection_;
-      const std::string     ME;
-      org::xmlBlaster::util::Global&          global_;
-      org::xmlBlaster::util::Log&             log_;
+      org::xmlBlaster::util::thread::Mutex& mutex_;
+      std::string instanceName_;
+      struct ::XmlBlasterAccessUnparsed* connection_;
+      const std::string ME;
+      org::xmlBlaster::util::Global& global_;
+      org::xmlBlaster::util::Log& log_;
       org::xmlBlaster::util::qos::StatusQosFactory statusQosFactory_;
-      std::string           secretSessionId_;
-      std::string           loginName_;
+      std::string secretSessionId_;
+      std::string loginName_;
 
       /**
        * frees the resources used. It only frees the resource specified with
@@ -107,8 +110,8 @@ namespace org {
       static std::string usage();
       // Exception conversion ....
       static org::xmlBlaster::util::XmlBlasterException
-        convertFromSocketException(const ::XmlBlasterException & ex);
-      static ::XmlBlasterException
+        convertFromSocketException(const struct ::XmlBlasterException & ex);
+      static struct ::XmlBlasterException
         convertToSocketException(org::xmlBlaster::util::XmlBlasterException& ex);
    };
 

@@ -9,6 +9,7 @@ Comment:   The client driver for the socket protocol
 #include <util/Global.h>
 #include <util/lexical_cast.h>
 #include <client/protocol/socket/SocketDriverFactory.h>
+#include <client/protocol/socket/SocketDriver.h>
 
 namespace org {
  namespace xmlBlaster {
