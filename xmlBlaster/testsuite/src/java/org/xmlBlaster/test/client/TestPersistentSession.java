@@ -350,7 +350,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
       }
 
       TestPersistentSession testSub = new TestPersistentSession(glob, "TestPersistentSession/1");
-
+/*
       testSub.setUp();
       testSub.testXPathInitialStop();
       testSub.tearDown();
@@ -358,7 +358,7 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
       testSub.setUp();
       testSub.testXPathNoInitialStop();
       testSub.tearDown();
-
+*/
       testSub.setUp();
       testSub.testXPathInitialRunlevelChange();
       testSub.tearDown();

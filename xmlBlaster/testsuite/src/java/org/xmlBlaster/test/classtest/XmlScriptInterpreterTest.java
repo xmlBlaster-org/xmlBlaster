@@ -8,6 +8,7 @@ package org.xmlBlaster.test.classtest;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.InputStreamReader;
 import java.util.HashMap;
 
 import org.custommonkey.xmlunit.XMLTestCase;
@@ -184,7 +185,7 @@ public class XmlScriptInterpreterTest extends XMLTestCase {
                    "</xmlBlaster>\n";
 
       ByteArrayInputStream in = new ByteArrayInputStream(tmp.getBytes());
-      this.interpreter.parse(in);
+      this.interpreter.parse(new InputStreamReader(in));
       String qos = this.accessor.getQos();
 
       assertXpathExists("/qos/securityService[@type='htpasswd']", qos);
@@ -218,7 +219,7 @@ public class XmlScriptInterpreterTest extends XMLTestCase {
                    "</xmlBlaster>\n";
       
       ByteArrayInputStream in = new ByteArrayInputStream(cmd.getBytes());
-      this.interpreter.parse(in);
+      this.interpreter.parse(new InputStreamReader(in));
       String qos = this.accessor.getQos();
       String key = this.accessor.getKey();
 
@@ -240,7 +241,7 @@ public class XmlScriptInterpreterTest extends XMLTestCase {
       ByteArrayInputStream in = new ByteArrayInputStream(cmd.getBytes());
 
       this.out.reset();
-      this.interpreter.parse(in);
+      this.interpreter.parse(new InputStreamReader(in));
       String qos = this.accessor.getQos();
       String key = this.accessor.getKey();
       String content = new String(this.accessor.getContent()).trim();
@@ -265,7 +266,7 @@ public class XmlScriptInterpreterTest extends XMLTestCase {
                    qosRef + "</message></publishArr></xmlBlaster>\n";
       
       ByteArrayInputStream in = new ByteArrayInputStream(cmd.getBytes());
-      this.interpreter.parse(in);
+      this.interpreter.parse(new InputStreamReader(in));
       String qos = this.accessor.getQos();
       String key = this.accessor.getKey();
       String content = new String(this.accessor.getContent()).trim();
@@ -283,7 +284,7 @@ public class XmlScriptInterpreterTest extends XMLTestCase {
       String cmd = "<xmlBlaster><disconnect>" + qosRef + "</disconnect></xmlBlaster>";
       
       ByteArrayInputStream in = new ByteArrayInputStream(cmd.getBytes());
-      this.interpreter.parse(in);
+      this.interpreter.parse(new InputStreamReader(in));
       String qos = this.accessor.getQos();
       this.log.info(ME, "testDisconnect: qos: '" + qos + "' '" + qosRef + "'");
       assertXMLEqual(qosRef, qos);
@@ -298,7 +299,7 @@ public class XmlScriptInterpreterTest extends XMLTestCase {
                    "</xmlBlaster>\n";
       
       ByteArrayInputStream in = new ByteArrayInputStream(cmd.getBytes());
-      this.interpreter.parse(in);
+      this.interpreter.parse(new InputStreamReader(in));
       String qos = this.accessor.getQos();
       String key = this.accessor.getKey();
 
@@ -318,7 +319,7 @@ public class XmlScriptInterpreterTest extends XMLTestCase {
                    "</xmlBlaster>\n";
       
       ByteArrayInputStream in = new ByteArrayInputStream(cmd.getBytes());
-      this.interpreter.parse(in);
+      this.interpreter.parse(new InputStreamReader(in));
       String qos = this.accessor.getQos();
       String key = this.accessor.getKey();
 
@@ -338,7 +339,7 @@ public class XmlScriptInterpreterTest extends XMLTestCase {
                    "</xmlBlaster>\n";
       
       ByteArrayInputStream in = new ByteArrayInputStream(cmd.getBytes());
-      this.interpreter.parse(in);
+      this.interpreter.parse(new InputStreamReader(in));
       String qos = this.accessor.getQos();
       String key = this.accessor.getKey();
 

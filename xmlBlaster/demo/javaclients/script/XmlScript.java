@@ -3,14 +3,15 @@ Name:      XmlScript.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: XmlScript.java,v 1.1 2004/01/29 18:16:20 laghi Exp $
+Version:   $Id: XmlScript.java,v 1.2 2004/02/10 08:13:55 laghi Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.script;
 
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.InputStream;
+import java.io.FileReader;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.io.Reader;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
@@ -35,7 +36,7 @@ public class XmlScript {
    private final Global glob;
    private final LogChannel log;
    private XmlScriptInterpreter interpreter;
-   private InputStream inStream;
+   private Reader reader;
    private OutputStream outStream;
    private OutputStream updStream;
 
@@ -43,9 +44,9 @@ public class XmlScript {
       this.glob = glob;
       this.log = glob.getLog("demo");
       try {
-         if (inFile == null) this.inStream = System.in;
+         if (inFile == null) this.reader = new InputStreamReader(System.in);
          else {
-            this.inStream = new FileInputStream(inFile);
+            this.reader = new FileReader(inFile);
          }
          if (outFile == null) this.outStream = System.out;
          else {
@@ -56,7 +57,7 @@ public class XmlScript {
             this.updStream = new FileOutputStream(updFile);
          }
          this.interpreter = new XmlScriptInterpreter(this.glob, this.glob.getXmlBlasterAccess(), this.outStream, this.updStream, null);
-         this.interpreter.parse(this.inStream);
+         this.interpreter.parse(this.reader);
       }
       catch (Exception e) {
          log.error(ME, "Client failed: " + e.toString());

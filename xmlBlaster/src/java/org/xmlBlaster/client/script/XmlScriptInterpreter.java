@@ -15,11 +15,11 @@ import org.xml.sax.InputSource;
 
 import org.jutils.log.LogChannel;
 
-import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.Reader;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.HashMap;
@@ -207,7 +207,7 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
     * @param in the input stream from which to read the xml input.
     * @throws XmlBlasterException
     */
-   public synchronized void parse(InputStream in) throws XmlBlasterException {
+   public synchronized void parse(Reader in) throws XmlBlasterException {
       this.inQos = 0;
       this.inKey = 0;
       this.inContent = 0;
@@ -598,7 +598,7 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
          glob.init(tmp);
          FileOutputStream out = new FileOutputStream(args[1]);
          XmlScriptInterpreter interpreter = new XmlScriptInterpreter(glob, out);
-         InputStream in = new FileInputStream(args[0]);
+         FileReader in = new FileReader(args[0]);
          interpreter.parse(in);
       }
       catch (Exception ex) {

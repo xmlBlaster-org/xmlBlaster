@@ -1,5 +1,8 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
  
+ o XmlScriptInterpreter now uses a Reader (InputStream was starting
+   processing AFTER reading whole stream).
+  
  o added persistent session+subscription support in c++
 
  o Global.detachJdbcManagerCommonTable() removed (was obsolete)
