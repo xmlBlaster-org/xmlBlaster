@@ -122,8 +122,12 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
             }
             SessionName sessionName = new SessionName(this.global, entry.getSessionName());
             String sessionId = (String)sessionIds.get(sessionName.getAbsoluteName());
-            if (sessionId == null)
-               throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_NULLPOINTER, ME + ".recoverSubscriptions", "The secret sessionId was not found for session='" + sessionName.getAbsoluteName() + "'");
+            if (sessionId == null) {
+               log.error(ME, "The secret sessionId was not found for session='" + sessionName.getAbsoluteName() + "', removing persistent subscription " + entry.getLogId());
+               this.subscribeStore.remove(entry);
+               continue;
+               //throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_NULLPOINTER, ME + ".recoverSubscriptions", "The secret sessionId was not found for session='" + sessionName.getAbsoluteName() + "'");
+            }
             // TODO remove the setting of client properties and invoke directly requestBroker.subscribe with subscribeQosServer.inhibitInitialUpdates(true);
             // also get the sessionInfo object from authenticate => eliminate sessionIds      
             this.global.getAuthenticate().getXmlBlaster().subscribe(sessionId, entry.getKey(), qosData.toXml());
