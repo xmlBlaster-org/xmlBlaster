@@ -223,7 +223,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
    /**
     * @see I_Map#setProperties(Object)
     */
-   public void setProperties(Object userData) throws XmlBlasterException {
+   public synchronized void setProperties(Object userData) throws XmlBlasterException {
       if (userData == null) return;
       if (log.CALL) log.call(ME, "Entering setProperties()");
       QueuePropertyBase newProp;
@@ -299,9 +299,8 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
             }
          }
 
-         if (!spaceLeft(mapEntry, this.transientStore)) {
-            getTransientSpace(mapEntry);
-         }
+         assureTransientSpace(mapEntry);
+         
          numTransientPut = this.transientStore.put(mapEntry);
       } // sync(this)
 
@@ -317,46 +316,55 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
    /**
     * Swap an entry away to hard disk. 
     * Call this method from synchronized code only.
+    * @param mapEntry The new entry which needs space for itself. 
     */
-   private I_MapEntry getTransientSpace(I_MapEntry mapEntry) throws XmlBlasterException {
-      I_MapEntry oldest = this.transientStore.removeOldest();
-      if (oldest == null) {
-         if (log.TRACE) log.trace(ME + ".getTransientSpace", "The RAM queue is full, new entry '" + mapEntry.getUniqueId() + "' seems to be the first and only one, so we accept it");
-         return null;
-      }
-      if (log.CALL) log.call(ME+".getTransientSpace", "Swapping '" + oldest.getLogId() + "' to HD ...");
-      try {
-         if (!oldest.isPersistent()) { // if entry is marked as persistent it is already in persistentStore (see code above)
-            // swap away the oldest cache entry to harddisk ...
-            if (this.log.TRACE) this.log.trace(ME+"-getTransientSpace("+mapEntry.getLogId()+")", "Swapping '" + oldest.getLogId() + "'. Exceeding size state: " + toXml(""));
-            if (this.persistentStore == null)
-               throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME,
-                     "getTransientSpace: no persistent queue configured, needed for swapping, entry " + mapEntry.getLogId() + " is not handled");
-            if (!this.isConnected)
-               throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME,
-                     "getTransientSpace: The DB is currently disconnected, entry " + mapEntry.getLogId() + " is not handled");
+   private void assureTransientSpace(I_MapEntry mapEntry) throws XmlBlasterException {
 
-            if (spaceLeft(oldest, this.persistentStore)) {
-               try {
-                  this.persistentStore.put(oldest);
+      while (!spaceLeft(mapEntry, this.transientStore)) {
+
+         /* Protect against infinite looping */
+         if (this.transientStore == null || this.property == null ||
+             this.transientStore.getNumOfEntries() < 1)
+            break;
+
+         I_MapEntry oldest = this.transientStore.removeOldest();
+         if (oldest == null) {
+            if (log.TRACE) log.trace(ME + ".assureTransientSpace", "The RAM queue is full, new entry '" + mapEntry.getUniqueId() + "' seems to be the first and only one, so we accept it");
+            break;
+         }
+         if (log.CALL) log.call(ME+".assureTransientSpace", "Swapping '" + oldest.getLogId() + "' to HD ...");
+         try {
+            if (!oldest.isPersistent()) { // if entry is marked as persistent it is already in persistentStore (see code above)
+               // swap away the oldest cache entry to harddisk ...
+               if (this.log.TRACE) this.log.trace(ME+"-assureTransientSpace("+mapEntry.getLogId()+")", "Swapping '" + oldest.getLogId() + " size=" + oldest.getSizeInBytes() + "'. Exceeding size state after removing from transient before entering persistent: " + toXml(""));
+               if (this.persistentStore == null)
+                  throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME,
+                        "assureTransientSpace: no persistent queue configured, needed for swapping, entry " + mapEntry.getLogId() + " is not handled");
+               if (!this.isConnected)
+                  throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME,
+                        "assureTransientSpace: The DB is currently disconnected, entry " + mapEntry.getLogId() + " is not handled");
+
+               if (spaceLeft(oldest, this.persistentStore)) {
+                  try {
+                     this.persistentStore.put(oldest);
+                  }
+                  catch (XmlBlasterException ex) {
+                     this.log.error(ME, "assureTransientSpace: an error occured when writing to the persistent queue, transient entry " +  oldest.getLogId() + 
+                           " is not swapped, new entry '" + mapEntry.getLogId() + "' is rejected. Is the DB up and running ? " + ex.getMessage() + " state: " + toXml(""));
+                     throw ex;
+                  }
                }
-               catch (XmlBlasterException ex) {
-                  this.log.error(ME, "getTransientSpace: an error occured when writing to the persistent queue, transient entry " +  oldest.getLogId() + 
-                        " is not swapped, new entry '" + mapEntry.getLogId() + "' is rejected. Is the DB up and running ? " + ex.getMessage() + " state: " + toXml(""));
-                  throw ex;
-               }
+               else
+                  throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_BYTES, ME,
+                              "assureTransientSpace: maximum size in bytes for the persistent queue exceeded when swapping, entry " + mapEntry.getLogId() + " not handled . State: " + toXml(""));
             }
-            else
-               throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_BYTES, ME,
-                           "getTransientSpace: maximum size in bytes for the persistent queue exceeded when swapping, entry " + mapEntry.getLogId() + " not handled . State: " + toXml(""));
+            oldest.isSwapped(true);
+         }
+         catch(XmlBlasterException ex2) {
+            this.transientStore.put(oldest); // undo on error
+            throw ex2;  // swapping failed, we won't accept the new entry
          }
       }
-      catch(XmlBlasterException ex2) {
-         this.transientStore.put(oldest); // undo on error
-         throw ex2;  // swapping failed, we won't accept the new entry
-      }
-      oldest.isSwapped(true);
-      return oldest;
    }
 
    /**
@@ -439,12 +447,11 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
             this.persistentStore.remove(mapEntry);
          }
 
-         if (!spaceLeft(mapEntry, this.transientStore)) {
-            getTransientSpace(mapEntry);
-         }
+         assureTransientSpace(mapEntry);
+         
          this.transientStore.put(mapEntry);
          mapEntry.isSwapped(false);
-      }
+      } // synchronized(this)
       return mapEntry;
    }
 
@@ -554,11 +561,10 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
     * @see I_Map#getNumOfPersistentEntries()
     */
    public long getNumOfPersistentEntries() {
-      long ret = 0L;
       if (this.persistentStore != null && this.isConnected) {
-         ret = this.persistentStore.getNumOfPersistentEntries();
+         final long ret = this.persistentStore.getNumOfPersistentEntries();
          if (ret < 0L) return this.transientStore.getNumOfEntries();
-         return this.persistentStore.getNumOfPersistentEntries();
+         return ret;
       }
       return this.transientStore.getNumOfPersistentEntries();
    }
@@ -567,7 +573,6 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
     * @see I_Map#getMaxNumOfEntries()
     */
    public long getMaxNumOfEntries() {
-      long ret = 0L;
       if (this.persistentStore != null && this.isConnected)
          return this.persistentStore.getMaxNumOfEntries();
       return this.transientStore.getMaxNumOfEntries();
@@ -577,11 +582,11 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
     * @see I_Map#getNumOfBytes()
     */
    public long getNumOfBytes() {
-      long ret = 0L;
       if (this.persistentStore != null && this.isConnected) {
-         ret = this.persistentStore.getNumOfBytes();
+         long ret = this.persistentStore.getNumOfBytes();
          if (ret < 0L) return this.transientStore.getNumOfBytes();
          ret += this.transientStore.getNumOfBytes() - this.transientStore.getNumOfPersistentBytes();
+         return ret;
       }
       return this.transientStore.getNumOfBytes();
    }
@@ -590,11 +595,10 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
     * @see I_Map#getNumOfPersistentBytes()
     */
    public long getNumOfPersistentBytes() {
-      long ret = 0L;
       if (this.persistentStore != null && this.isConnected) {
-         ret = this.persistentStore.getNumOfPersistentBytes();
+         final long ret = this.persistentStore.getNumOfPersistentBytes();
          if (ret < 0L) return this.transientStore.getNumOfPersistentBytes();
-         return this.persistentStore.getNumOfPersistentBytes();
+         return ret;
       }
       return this.transientStore.getNumOfPersistentBytes();
    }
@@ -603,7 +607,6 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
     * @see I_Map#getMaxNumOfBytes()
     */
    public long getMaxNumOfBytes() {
-      long ret = 0L;
       if (this.persistentStore != null && this.isConnected)
          return this.persistentStore.getMaxNumOfBytes();
       return this.transientStore.getMaxNumOfBytes();
