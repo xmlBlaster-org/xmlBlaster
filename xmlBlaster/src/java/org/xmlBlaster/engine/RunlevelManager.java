@@ -87,7 +87,7 @@ public final class RunlevelManager
    }
 
    /**
-    * Adds the specified runlevel listener to receive subscribe/unSubscribe events.
+    * Adds the specified runlevel listener to receive runlevel change events. 
     */
    public void addRunlevelListener(I_RunlevelListener l) {
       if (l == null) {
