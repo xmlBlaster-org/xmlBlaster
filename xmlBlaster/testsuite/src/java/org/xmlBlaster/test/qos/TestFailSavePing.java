@@ -123,8 +123,7 @@ public class TestFailSavePing extends TestCase implements I_ConnectionStateListe
     * <p />
     * cleaning up .... erase() the previous message OID and logout
     */
-   protected void tearDown()
-   {
+   protected void tearDown() {
       log.info(ME, "Entering tearDown(), test is finished");
       con.disconnect(null);
       con = null;
@@ -142,8 +141,7 @@ public class TestFailSavePing extends TestCase implements I_ConnectionStateListe
    /**
     * TEST: Subscribe to messages with XPATH.
     */
-   public void doSubscribe()
-   {
+   public void doSubscribe() {
       if (log.TRACE) log.trace(ME, "Subscribing using EXACT oid syntax ...");
 
       String xmlKey = "<key oid='' queryType='XPATH'>\n" +
