@@ -285,6 +285,19 @@ int main(int args, char ** argv)
        <td><a href="mailto:laghi@swissinfo.org">Michele</a>, <a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
        <td>Edit <a href="http://www.xmlBlaster.org/xmlBlaster/build.properties">build.properties</a> and use <a href="http://www.xmlBlaster.org/xmlBlaster/build.xml">xmlBlaster/build.xml</a> to compile</td>
        </tr>
+
+       <tr>
+       <td>5</td>
+       <td>SunOS 5.8</td>
+       <td>Sun WorkShop 6 update 2 C++ 5.3 compiler</td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.842</a></td>
+       <td><a href="http://omniorb.sourceforge.net" target="others">omnithread</a></td>
+       <td>CORBA: <a href="http://www.iona.com/" target="others">Orbix 2000 2.0</a></td>
+       <td><a href="http://xml.apache.org" target="others">XERCES C++ 1.6</a></td>
+       <td>2003-02-19</td>
+       <td>Guy Donadio</td>
+       <td>Edit <a href="http://www.xmlBlaster.org/xmlBlaster/build.properties">build.properties</a> and use <a href="http://www.xmlBlaster.org/xmlBlaster/build.xml">xmlBlaster/build.xml</a> to compile</td>
+       </tr>
       </table>
       <p>
        For compilation options please use
@@ -327,6 +340,6 @@ Particularly interesting it would be the INTEL compiler on Linux and Windows and
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
    <date>2003 01 15</date>
-   <revision>$Revision: 1.8 $</revision>
+   <revision>$Revision: 1.9 $</revision>
 </requirement>
 
