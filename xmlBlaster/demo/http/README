@@ -40,9 +40,10 @@ Howto run the html examples with persistent http connection:
 Start it in the background on Linux:
 ====================================
 
-   java org.xmlBlaster.Main -Xms12M -Xmx32M -logFile /tmp/xmlBlaster.log  -useKeyboard false  > /tmp/xmlBlaster.log 2>&1 &
+   java org.xmlBlaster.Main -Xms12M -Xmx32M -logFile /tmp/xmlBlaster.log  -xmlrpc.port 8081 -useKeyboard false  > /tmp/xmlBlaster.log 2>&1 &
 
    # start tomcat with xmlBlaster.war
+   startup.sh   > /tmp/tomcat.log 2>&1 &
 
    java html.systemInfo.SystemInfoPublisher -info false > /tmp/SystemInfoPublisher.log 2>&1 &
 
