@@ -69,7 +69,7 @@ public class HelloWorld3 implements I_Callback
          PublishKey pk = new PublishKey(glob, "HelloWorld3", "text/xml", "1.0");
          pk.setClientTags("<org.xmlBlaster><demo/></org.xmlBlaster>");
          PublishQos pq = new PublishQos(glob);
-         pq.addClientProperty("myAge", new Integer(84));
+         pq.addClientProperty("myAge", 84);
          MsgUnit msgUnit = new MsgUnit(pk, "Hi", pq);
          con.publish(msgUnit);
 
