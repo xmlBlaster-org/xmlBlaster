@@ -21,10 +21,12 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #endif
 
 #ifdef _WINDOWS
-#  include <Winsock2.h> /* gethostbyname() */
+#  include <Winsock2.h>       /* gethostbyname() */
+#  define _INLINE_FUNC        /* C99 allows to declare functions as 'inline', not supported on WIN cl */
 #else
-#  include <netdb.h>  /* gethostbyname_re() */
-#  include <errno.h>  /* gethostbyname_re() */
+#  include <netdb.h>          /* gethostbyname_re() */
+#  include <errno.h>          /* gethostbyname_re() */
+#  define _INLINE_FUNC inline /* C99 allows to declare functions as 'inline' */
 #endif
 
 static const char *LOG_TEXT[] = { "NOLOG", "ERROR", "WARN", "INFO", "CALL", "TIME", "TRACE", "DUMP", "PLAIN" };
@@ -708,7 +710,11 @@ XMLBLASTER_LOG_LEVEL parseLogLevel(const char *logLevelStr)
       return LOG_WARN;
    }
    for (i=0; i<len; i++) {
+#     ifdef _WINDOWS
+      if (!strcmp(LOG_TEXT[i], logLevelStr)) {
+#     else
       if (!strcasecmp(LOG_TEXT[i], logLevelStr)) {
+#     endif
          return (XMLBLASTER_LOG_LEVEL)i;
       }
    }
@@ -731,7 +737,7 @@ const char *getLogLevelStr(XMLBLASTER_LOG_LEVEL logLevel)
  * @param level The level of this log entry
  * @return true If logging is desired
  */
-inline bool doLog(XMLBLASTER_LOG_LEVEL currLevel, XMLBLASTER_LOG_LEVEL level)
+_INLINE_FUNC bool doLog(XMLBLASTER_LOG_LEVEL currLevel, XMLBLASTER_LOG_LEVEL level)
 {
    return (currLevel <= level) ? true : false;
 }
