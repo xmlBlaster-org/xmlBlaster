@@ -3,7 +3,7 @@ Name:      ClientInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: ClientInfo.java,v 1.23 2000/02/20 17:38:51 ruff Exp $
+Version:   $Id: ClientInfo.java,v 1.24 2000/02/21 10:15:56 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -12,7 +12,6 @@ import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.protocol.corba.CallbackCorbaDriver;
 import org.xmlBlaster.protocol.email.CallbackEmailDriver;
-import org.xmlBlaster.protocol.http.CallbackHttpDriver;
 import org.xmlBlaster.authentication.AuthenticationInfo;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Destination;
@@ -27,12 +26,12 @@ import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
  * is instantiated here.<br />
  * Note that only CORBA is supported in this version.<br />
  * To add a new driver protocol, you only need to implement the empty
- * CallbackEmailDriver.java or CallbackHttpDriver.java or any other protocol.
+ * CallbackEmailDriver.java or any other protocol.
  * <p />
  * It also contains a message queue, where messages are stored
  * until they are delivered at the next login of this client.
  *
- * @version $Revision: 1.23 $
+ * @version $Revision: 1.24 $
  * @author $Author: ruff $
  */
 public class ClientInfo
@@ -163,8 +162,6 @@ public class ClientInfo
          myCallbackDriver = CallbackCorbaDriver.getInstance();
       else if (authInfo.useEmailCB())
          myCallbackDriver = CallbackEmailDriver.getInstance();
-      else if (authInfo.useHttpCB())
-         myCallbackDriver = CallbackHttpDriver.getInstance();
       else {
          Log.error(ME, "No callback protocol specified");
          return;
@@ -341,8 +338,6 @@ public class ClientInfo
          sb.append(offset + "   <CallbackCorbaDriver />");
       else if (myCallbackDriver instanceof CallbackEmailDriver)
          sb.append(offset + "   <CallbackEmailDriver />");
-      else if (myCallbackDriver instanceof CallbackHttpDriver)
-         sb.append(offset + "   <CallbackHttpDriver />");
       sb.append(offset + "</ClientInfo>\n");
 
       return sb;

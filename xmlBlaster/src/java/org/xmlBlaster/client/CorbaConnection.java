@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.23 2000/02/20 17:38:50 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.24 2000/02/21 10:15:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -19,7 +19,6 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
 
 import org.omg.CosNaming.*;
 import java.applet.Applet;
-// import javax.servlet.*;
 import java.util.Properties;
 
 
@@ -33,8 +32,10 @@ import java.util.Properties;
  * you may remove the comments from all servlets based code.
  * <p />
  * Invoke: jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestSub
+ * <p />
+ * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http 
  *
- * @version $Revision: 1.23 $
+ * @version $Revision: 1.24 $
  * @author $Author: ruff $
  */
 public class CorbaConnection
@@ -134,79 +135,6 @@ public class CorbaConnection
 
       orb = org.omg.CORBA.ORB.init(ap, props);
    }
-
-
-   /**
-    * CORBA client access to xmlBlaster for <strong>servlets</strong>.
-    * <p />
-    * Use these environment settings for VisiBroker
-    * <br />
-    * <ul>
-    *    <li>ORBservices</li>
-    *    <li>SVCnameroot</li>
-    *    <li>ORBagentAddr</li>
-    *    <li>ORBagentPort</li>
-    * </ul>
-    * <br />
-    * Usually you set these variables in the configuration file of your servlet engine (jrun, jserv etc.)
-    * <p />
-    * If you have a servlet development kit installed (http://java.sun.com/products/servlet/index.html)
-    * you may remove the comments from this servlet based code.
-    *
-    * @param conf   Servlet Handle
-    */
-/*
-   public CorbaConnection(ServletConfig conf)
-   {
-      // Setting the system properties
-      Properties props = System.getProperties();
-      java.util.Enumeration e = props.propertyNames();
-
-      // These may be overwritten in /usr/local/apache/etc/servlet.properties
-      // servlets.default.initArgs=DefaultTemplDir=/usr/local/apache/share/templates/,ORBagentAddr=192.168.1.1,ORBagentPort=14000,ORBservices=CosNaming,SVCnameroot=xmlBlaster-Authenticate
-
-      if (conf.getInitParameter("ORBservices") != null) {
-         props.put( "ORBservices", conf.getInitParameter("ORBservices"));
-         if (Log.TRACE) Log.trace(ME, "  Found system parameter ORBservices=" + conf.getInitParameter("ORBservices"));
-      }
-      else
-         props.put( "ORBservices", "CosNaming" );
-
-      if (conf.getInitParameter("SVCnameroot") != null) {
-         props.put( "SVCnameroot", conf.getInitParameter("SVCnameroot"));
-         if (Log.TRACE) Log.trace(ME, "  Found system parameter SVCnameroot=" + conf.getInitParameter("SVCnameroot"));
-      }
-      else
-         props.put( "SVCnameroot", "xmlBlaster-Authenticate" );
-
-      if (conf.getInitParameter("ORBagentAddr") != null) {
-         props.put( "ORBagentAddr", conf.getInitParameter("ORBagentAddr"));
-         if (Log.TRACE) Log.trace(ME, "  Found system parameter ORBagentAddr=" + conf.getInitParameter("ORBagentAddr"));
-      }
-      else
-         props.put( "ORBagentAddr", "192.168.200.8" );
-
-      if (conf.getInitParameter("ORBagentPort") != null) {
-         props.put( "ORBagentPort", conf.getInitParameter("ORBagentPort"));
-         if (Log.TRACE) Log.trace(ME, "  Found system parameter ORBagentPort=" + conf.getInitParameter("ORBagentPort"));
-      }
-      else
-         props.put( "ORBagentPort", "14000" );
-
-      System.setProperties( props );
-
-      if (Log.TRACE) {
-         Log.trace(ME, "Known servlet system properties:");
-         props = System.getProperties();
-         e = props.propertyNames();
-         while (e.hasMoreElements())
-            Log.trace(ME, "    " + e.nextElement());
-      }
-
-      String agrs[] = null;
-      orb = org.omg.CORBA.ORB.init(args, null);
-   }
-*/
 
 
    /**
