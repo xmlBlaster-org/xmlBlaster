@@ -141,16 +141,43 @@ LogFormat.Time=MEDIUM
 
 #------------------- Global setting for the persistence -----------------------
 # FileDrivers are for the xmlBlaster persistence: 
-#   org.xmlBlaster.engine.persistence.filestore.FileDriver (Filestore)
-#   org.xmlBlaster.engine.persistence.mudb.MuDbDriver      (MessageUnit database)
+#   org.xmlBlaster.engine.persistence.filestore.FileDriver        (Filestore)
+#   org.xmlBlaster.engine.persistence.xmldb.xindice.XindiceDriver (dbXML/Xindice)
+#   org.xmlBlaster.engine.persistence.mudb.MuDbDriver             (MessageUnit database)
 #
 # Lazy recover (not at server startup but on demand) is not yet supported.
-Persistence.Driver=org.xmlBlaster.engine.persistence.filestore.FileDriver
-Persistence.Path=${user.home}${file.separator}tmp
 Persistence.LazyRecovery=true
+# Persitence Driver
+Persistence.Driver=org.xmlBlaster.engine.persistence.filestore.FileDriver
+# Persistence.Driver=org.xmlBlaster.engine.persistence.xmldb.xindice.XindiceDriver
 
+#-------------------  dbXML database ------------------------------------------
+# see $XMLBLASTER_HOME/README or list-archive on http://www.xmlBlaster.org for
+# more details
+# This persistence layer needs Xindice(dbXML) from http://www.dbXML.org installed and running
+#
+# developed with release 1.04b
+#
+# Collection needs to be created manually by:
+# dbxmladmin ac -c /db -n xmlBlaster
+# see http://www.dbXML.org for more details
+#
+#	Setting up your desired CollectionPath
+#	default is xmldb:dbxml:///db
+Persistence.Path=xmldb:dbxml:///db
+#	Setting up your desired CollectionName
+#	default is xmlBlaster
+Persistence.Collection=xmlBlaster
+#
+#	Sets the Driver of the dbXML Database Implementation
+#       default is org.dbxml.client.xmldb.DatabaseImpl
+#	!! Leave it, as long as you don't know what you're doing !!
+Persistence.dbXmlDriver=org.dbxml.client.xmldb.DatabaseImpl
+
+#
 #-------------------  Filestore database --------------------------------------
-# at the moment 'nothing'.
+# Path where to store the the messages
+Persistence.Path=${user.home}${file.separator}tmp
 #-------------------  MessageUnit database ------------------------------------
 #
 #   Setup your Cachesize in byte default is 2MB
