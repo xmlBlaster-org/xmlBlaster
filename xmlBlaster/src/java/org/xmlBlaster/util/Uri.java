@@ -63,7 +63,6 @@ public class Uri
       try {
          url = new URL(uriStr);
       } catch(MalformedURLException e) {
-         log.error(ME, "'" + uriStr + "' is not valid: " + e.toString());
          throw new XmlBlasterException(ME, "'" + uriStr + "' is not valid: " + e.toString());
       }
    }
@@ -96,7 +95,7 @@ public class Uri
 
    public String toXml() {
       String offset = "\n";
-      StringBuffer sb = new StringBuffer(256);
+      StringBuffer sb = new StringBuffer(512);
       sb.append(offset).append("<uri id='").append(uriStr).append("'>");
       sb.append(offset).append("  <userInfo>").append(url.getUserInfo()).append("</userInfo>");
       //sb.append(offset).append("  <password>").append(password).append("</password>");
