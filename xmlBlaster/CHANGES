@@ -2,6 +2,11 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes cvs
 ===========
+ o Added administrative access to a subscription dump for a client.
+   Try something like
+     java javaclients.HelloWorldSubscribe -session.name joe/1 -xpath //key
+     java javaclients.HelloWorldGet -oid '__cmd:client/joe/1/?subscriptionDump'
+
  o BUGFIX: Plugins with no package names did throw NPE
 
  o Plugin configuration of protocol plugins
