@@ -39,7 +39,7 @@ public class DirtyReadTest extends TestCase {
 
    private int updateCounterFrodo = 0;
    private String oid = "PublishToBilbo-DirtyRead";
-   private String domain = "RUGBY_NEWS"; // heron is master for RUGBY_NEWS
+   private String domain = "RUGBY_NEWS"; // heron is master for RUGBY_NEWS and has dirtyRead allowed
    private String contentStr = "Lets have another game.";
 
    private String assertInUpdate = null;
@@ -79,7 +79,8 @@ public class DirtyReadTest extends TestCase {
     * We start all nodes as described in requirement
     * <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/cluster.html" target="others">cluster</a>
     * publish a message to bilbo which should be routed to heron.
-    * Than we try to access the message at heron
+    * Than we try to access the message at heron and check if heron has not
+    * updated one to frodo because of dirtyRead configured in heron.properties
     */ 
    public void testDirtyRead() {
       System.err.println("***DirtyReadTest: Publish a message to a cluster slave ...");
@@ -105,7 +106,7 @@ public class DirtyReadTest extends TestCase {
          assertTrue(assertInUpdate, assertInUpdate == null);
 
 
-         System.err.println("->Subscribe from frodo ...");
+         System.err.println("->Subscribe '" + oid + "' from frodo ...");
          sk = new SubscribeKeyWrapper(oid);
          sk.setDomain(domain);
          sq = new SubscribeQosWrapper();
@@ -122,7 +123,7 @@ public class DirtyReadTest extends TestCase {
          assertInUpdate = null;
 
 
-         System.err.println("->Check publish, frodo should not get it ...");
+         System.err.println("->Check publish '" + oid + "', frodo should get it ...");
          pk = new PublishKeyWrapper(oid, "text/plain", "1.0", domain);
          pq = new PublishQosWrapper();
          msgUnit = new MessageUnit(pk.toXml(), contentStr.getBytes(), pq.toXml());
@@ -134,7 +135,32 @@ public class DirtyReadTest extends TestCase {
          try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait some time
          assertEquals("frodo has not received message", 1, updateCounterFrodo);
 
-         // TODO: !!! Query heron if he did not send any update message
+         System.err.println("Query heron if he did not send any update message ...");
+         System.err.println("->Connect to heron ...");
+         heronCon = serverHelper.connect(serverHelper.getHeronGlob(), null);
+
+
+         System.err.println("->Find out the public session Id of slave frodo at heron ...");
+         String cmd = "__cmd:client/" + serverHelper.getFrodoGlob().getId() + "/?sessionList";
+         MessageUnit[] msgs = heronCon.get("<key oid='" + cmd + "'/>", null);
+         assertEquals("Command failed", 1, msgs.length);
+         String pubSessionId = msgs[0].getContentStr();
+
+
+         // command = "__cmd:client/frodo/2/?numUpdates" : (the cluster slave loggs in usually with its glob.getId()
+         cmd = "__cmd:client/" + serverHelper.getFrodoGlob().getId() + "/" + pubSessionId + "/?numUpdates";
+         System.err.println("->Query numUpdates with '" + cmd + "' ...");
+         msgs = heronCon.get("<key oid='" + cmd + "'/>", null);
+
+         assertEquals("Command failed", 1, msgs.length);
+         assertEquals("frodo has received updates from heron but should not because of dirty read",
+                      "0", msgs[0].getContentStr());
+         log.info(ME, "Success, the update was a dirty read as heron did not send it!");
+
+
+         System.err.println("Check if heron has got the message ...");
+         msgs = heronCon.get("<key oid='" + oid + "'/>", null);
+         assertEquals("The master never got the message", 1, msgs.length);
       }
       catch (XmlBlasterException e) {
          e.printStackTrace();
