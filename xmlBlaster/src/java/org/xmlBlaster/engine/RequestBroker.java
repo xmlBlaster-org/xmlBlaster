@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.33 1999/12/02 16:50:18 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.34 1999/12/02 17:05:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -27,7 +27,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.33 $
+ * @version $Revision: 1.34 $
  * @author $Author: ruff $
  */
 public class RequestBroker implements ClientListener, MessageEraseListener
@@ -340,7 +340,26 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
       // this gap is not 100% thread save
 
+
       //----- 2. check all known query subscriptions if the new message fits as well
+      checkExistingSubscriptions(clientInfo, xmlKey, messageUnitHandler, xmlQoS);
+
+
+      //----- 3. now we can send updates to all interested clients:
+      messageUnitHandler.invokeCallback();
+
+      return retVal;
+   }
+
+
+   /**
+    * This helper method check for a published message which didn't exist before if
+    * there are any XPath subscriptions pending which match
+    */
+   private final void checkExistingSubscriptions(ClientInfo clientInfo, XmlKey xmlKey,
+                                  MessageUnitHandler messageUnitHandler, XmlQoS xmlQoS)
+                                  throws XmlBlasterException
+   {
       if (messageUnitHandler.isNewCreated()) {
          messageUnitHandler.setNewCreatedFalse();
 
@@ -384,11 +403,6 @@ public class RequestBroker implements ClientListener, MessageEraseListener
             }
          }
       }
-
-      //----- 3. now we can send updates to all interested clients:
-      messageUnitHandler.invokeCallback();
-
-      return retVal;
    }
 
 
