@@ -93,7 +93,7 @@ public class PersistentRequest extends Thread {
          I_Connection conn = this.xmlBlasterAccess.createConnection(url);  // This works fine but is more a GET variant
          this.xmlBlasterAccess.writeCookie(conn);
          conn.setDoInput(true);
-         conn.setDoOutput(true);
+         conn.setPostMethod();
          conn.setUseCaches(false);
          
          // HTTP POST the connect() request ...

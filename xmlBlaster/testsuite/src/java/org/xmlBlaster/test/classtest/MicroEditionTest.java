@@ -351,6 +351,35 @@ public class MicroEditionTest extends TestCase {
       }
    }
 
+   public void testMessageIO() {
+      try {
+         ByteArrayOutputStream baos = new ByteArrayOutputStream();
+         ObjectOutputStreamMicro oosm = new ObjectOutputStreamMicro(baos);
+         
+         String key = "<key oid='100'></key>";
+         String qos = "<qos><persistent/></qos>";
+         byte[] content = "This is the content".getBytes();
+         
+         int length = oosm.writeMessage(key, qos, content);
+         assertEquals("wrong length returned", key.length() + qos.length() + content.length + 2, length);
+
+         ByteArrayInputStream bais = new ByteArrayInputStream(baos.toByteArray());
+         ObjectInputStreamMicro oism = new ObjectInputStreamMicro(bais);
+
+         Object[] obj = oism.readMessage(length);
+         
+         assertEquals("wrong content for the key", key, (String)obj[0]);
+         assertEquals("wrong content for the qos", qos, (String)obj[1]);
+         assertEquals("wrong content for the content", new String(content), new String((byte[])obj[2]));
+         
+         this.log.info(ME, "testMessageIO successfully completed");
+      }
+      catch (Exception ex) {
+         ex.printStackTrace();         
+         assertTrue("exception occured: " + ex.getMessage(), false);
+      }
+   }
+
    /**
     * <pre>
     *  java org.xmlBlaster.test.classtest.MicroEditionTest
@@ -378,6 +407,10 @@ public class MicroEditionTest extends TestCase {
 
       test.setUp();
       test.testReadLineDelayed();
+      test.tearDown();
+
+      test.setUp();
+      test.testMessageIO();
       test.tearDown();
    }
 }

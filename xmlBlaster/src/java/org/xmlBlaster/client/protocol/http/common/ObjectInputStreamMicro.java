@@ -71,4 +71,33 @@ public class ObjectInputStreamMicro implements I_ObjectStream {
       else throw new IOException("object of type with code='" + code + "' is not supported");
    }
 
+   public Object[] readMessage(int length) throws IOException {
+      if (length < 3) return new Object[] { "", "", new byte[0] };
+      Object[] ret = new Object[3];
+      byte[] response = new byte[length];
+      int offset = 0;
+      while (offset < length-1) {
+         int size = in.available();
+         size = in.read(response, offset, size);
+         offset += size;
+      }
+      
+      int pos = 0, i = pos;
+      while (response[i] != 0) i++;
+      ret[0] = new String(response, 0, i);
+      pos = ++i;
+
+      while (response[i] != 0) i++;
+      ret[1] = new String(response, pos, i-pos);
+      pos = ++i;
+
+      byte[] tmp = new byte[response.length-pos];
+      while (i < response.length) {
+         tmp[i-pos] = response[i];
+         i++;
+      }
+      ret[2] = tmp;
+      return ret;
+   }
+
 }

@@ -6,6 +6,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 package org.xmlBlaster.client.protocol.http.common;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.DataOutputStream;
 import java.io.OutputStream;
@@ -81,5 +82,18 @@ public class ObjectOutputStreamMicro implements I_ObjectStream {
       }
       else throw new IOException("object of type '" + obj.getClass().getName() + "' is not supported");
    }
+
+   public int writeMessage(String key, String qos, byte[] content) throws IOException {
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      if (key != null) baos.write(key.getBytes());
+      baos.write(0);
+      if (qos != null) baos.write(qos.getBytes());
+      baos.write(0);
+      if (content != null) baos.write(content);
+      byte[] buf = baos.toByteArray();
+      if (buf.length > 2) this.out.write(buf);
+      return buf.length;
+   }
+
    
 }

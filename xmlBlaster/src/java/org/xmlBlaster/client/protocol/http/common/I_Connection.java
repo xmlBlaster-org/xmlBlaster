@@ -19,7 +19,7 @@ public interface I_Connection {
    public OutputStream getOutputStream() throws IOException;
    public String getHeaderField(String key);
    public void setRequestProperty(String key, String val);
-   public void setDoOutput(boolean doOutput);
+   public void setPostMethod();
    public void setDoInput(boolean doInput);
    public void setUseCaches(boolean useCaches);
    public void connect() throws IOException;

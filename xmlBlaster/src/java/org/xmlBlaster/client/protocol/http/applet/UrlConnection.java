@@ -9,10 +9,12 @@ package org.xmlBlaster.client.protocol.http.applet;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.ProtocolException;
 import java.net.URL;
-import java.net.URLConnection;
 
 import org.xmlBlaster.client.protocol.http.common.I_Connection;
+
 
 /**
  * UrlConnection
@@ -20,11 +22,11 @@ import org.xmlBlaster.client.protocol.http.common.I_Connection;
  */
 public class UrlConnection implements I_Connection {
 
-   private URLConnection conn;
+   private HttpURLConnection conn;
    
    public UrlConnection(String urlString) throws Exception {
       URL url = new URL(urlString);
-      this.conn = url.openConnection();
+      this.conn = (HttpURLConnection)url.openConnection();
    }
 
    public InputStream getInputStream() throws IOException {
@@ -43,8 +45,13 @@ public class UrlConnection implements I_Connection {
       this.conn.setRequestProperty(key, val);
    }
 
-   public void setDoOutput(boolean doOutput) {
-      this.conn.setDoOutput(doOutput);
+   public void setPostMethod() {
+      try {
+         this.conn.setRequestMethod("POST");
+      }
+      catch (ProtocolException ex) {
+         ex.printStackTrace();
+      }
    }
 
    public void setDoInput(boolean doInput) {

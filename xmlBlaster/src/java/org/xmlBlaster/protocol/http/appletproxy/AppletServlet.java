@@ -17,6 +17,7 @@ import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.protocol.http.common.I_XmlBlasterAccessRaw;
+import org.xmlBlaster.client.protocol.http.common.ObjectInputStreamMicro;
 import org.xmlBlaster.client.protocol.http.common.ObjectOutputStreamMicro;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
@@ -272,6 +273,16 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
 
    private final String decode(String in, String encoding) {
       return new String(Base64.decodeBase64(in.getBytes()));
+   }
+
+
+   private Object[] getMessage(HttpServletRequest req) throws IOException {
+      String dataLength = getParameter(req, "DataLength", "0");
+      int length = Integer.parseInt(dataLength);
+      if (length < 3) return null;
+      
+      ObjectInputStreamMicro oism = new ObjectInputStreamMicro(req.getInputStream());
+      return oism.readMessage(length);
    }
 
    /**

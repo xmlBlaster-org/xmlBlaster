@@ -1,7 +1,6 @@
 package org.xmlBlaster.client.protocol.http.common;
 
 import java.io.ByteArrayInputStream;
-import java.io.DataOutputStream;
 import java.io.IOException;
 import java.util.Hashtable;
 import java.util.Vector;
@@ -200,6 +199,24 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
          log("WARN", "Ignoring unexpected exception during disconnect: " + e.toString());
       }
    }
+   
+   /**
+    * The format:
+    * qos + '\0' + key + '\0' + content: length = qos + key + content + 2
+    * @param conn
+    * @param actionType
+    * @param key
+    * @param qos
+    * @param content
+    */
+   private void writeRequest(I_Connection conn, String actionType, String key, String qos, byte[] content) throws IOException {
+      
+      ObjectOutputStreamMicro oosm = new ObjectOutputStreamMicro(conn.getOutputStream());
+      int length = oosm.writeMessage(key, qos, content); 
+      conn.setRequestProperty("ActionType", actionType);
+      conn.setRequestProperty("DataLength", "" + length);            
+   }
+
 
    /**
     * Send a http request to the servlet. 
@@ -208,7 +225,6 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
     * @param oneway true for requests returning void
     * @return The returned value for the given request, "" on error or for oneway messages
     */
-   //Object postRequestX(String request, boolean oneway) throws Exception {
    Object postRequest(String actionType, String key, String qos, byte[] content, boolean oneway) throws Exception {
       String request = "ActionType=" + actionType;
       try {
@@ -227,10 +243,8 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
          writeCookie(conn);
          log("DEBUG", "doPost=" + doPost + ", sending '" + url + "' with request '" + request + "' ...");
          if(doPost){  // for HTTP-POST, e.g. for  publish(), subscribe()
-            conn.setDoOutput(true);
-            DataOutputStream dataOutput = new DataOutputStream(conn.getOutputStream());
-            dataOutput.write(request.getBytes(), 0, request.length());
-            dataOutput.close();
+            conn.setPostMethod();
+            writeRequest(conn, actionType, key, qos, content);
          }
          readCookie(conn);
 

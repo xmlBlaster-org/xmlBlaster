@@ -54,9 +54,9 @@ public class UrlConnectionMicro implements I_Connection {
       }
    }
    
-   public void setDoOutput(boolean doOutput) {
+   public void setPostMethod() {
       try {
-         if (doOutput) this.conn.setRequestMethod(HttpConnection.POST);
+         this.conn.setRequestMethod(HttpConnection.POST);
       }
       catch (IOException ex) {
          ex.printStackTrace();
