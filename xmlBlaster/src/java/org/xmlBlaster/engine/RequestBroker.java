@@ -380,7 +380,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
             String version = topicStoreProperty.getVersion();
             // e.g. "topicStore:/node/heron" is the unique name of the data store:
             StorageId topicStoreId = new StorageId("topicStore", glob.getStrippedId());
-            this.topicStore = glob.getTopicStorePluginManager().getPlugin(type, version, topicStoreId, topicStoreProperty);
+            this.topicStore = glob.getStoragePluginManager().getPlugin(type, version, topicStoreId, topicStoreProperty);
             //this.topicStore = new org.xmlBlaster.engine.msgstore.ram.MapPlugin();
             log.info(ME, "Activated storage '" + this.topicStore.getStorageId() + "' for persistent topics, found " + this.topicStore.getNumOfEntries() + " topics to recover.");
 
