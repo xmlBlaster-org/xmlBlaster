@@ -3,7 +3,7 @@ Name:      SaxHandlerBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Default handling of Sax callbacks
-Version:   $Id: SaxHandlerBase.java,v 1.1 1999/12/16 09:29:23 ruff Exp $
+Version:   $Id: SaxHandlerBase.java,v 1.2 1999/12/16 11:29:10 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -14,7 +14,7 @@ import org.xml.sax.helpers.*;
 
 
 /**
- * Default xmlBlaster handling of Sax callbacks and errors. 
+ * Default xmlBlaster handling of Sax callbacks and errors.
  * <p />
  * You may use this as a base class for your SAX handling.
  */
@@ -34,7 +34,7 @@ public class SaxHandlerBase extends HandlerBase
 
 
    /**
-    * Constructs an new object. 
+    * Constructs an new object.
     * You need to call the init() method to parse the XML string.
     */
    public SaxHandlerBase()
@@ -73,7 +73,15 @@ public class SaxHandlerBase extends HandlerBase
          parser.setDTDHandler(this);
          parser.parse(new InputSource(new StringReader(xmlData)));
       }
+      catch (StopParseException e) { // Doesn't work, with SUN parser (Exception is wrapped into org.xml.sax.SAXParseException)
+         if (Log.TRACE) Log.trace(ME, "StopParseException: Parsing execution stopped half the way");
+         return;
+      }
       catch (Exception e) {
+         if (e.getMessage().indexOf("org.xmlBlaster.util.StopParseException") > -1) { // org.xml.sax.SAXParseException
+            if (Log.TRACE) Log.trace(ME, "Parsing execution stopped half the way");
+            return;
+         }
          Log.error(ME, "Error while SAX parsing: " + e.toString() + "\n" + xmlData);
          e.printStackTrace();
          throw new XmlBlasterException(ME, "Error while SAX parsing: " + e.toString() + "\n" + xmlData);
