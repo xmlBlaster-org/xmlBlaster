@@ -8,26 +8,10 @@ package org.xmlBlaster.util.qos;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.qos.address.Address;
-import org.xmlBlaster.util.qos.address.AddressBase;
-import org.xmlBlaster.util.qos.address.CallbackAddress;
-import org.xmlBlaster.util.enum.Constants;
-import org.xmlBlaster.util.qos.storage.QueueProperty;
-import org.xmlBlaster.util.qos.storage.CbQueueProperty;
-import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.client.PluginLoader;
-import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
-import org.xmlBlaster.authentication.plugins.I_SecurityQos;
-import org.xmlBlaster.util.cluster.NodeId;
-import org.xmlBlaster.util.StopParseException;
-import org.xmlBlaster.util.SessionName;
 
 import org.xml.sax.Attributes;
 
-import java.util.Vector;
-import java.util.ArrayList;
-import java.io.Serializable;
 
 
 /**

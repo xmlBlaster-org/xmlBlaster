@@ -16,7 +16,6 @@ import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.xmlBlaster.util.qos.address.Address;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
-import org.xmlBlaster.util.qos.storage.QueueProperty;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 
 
