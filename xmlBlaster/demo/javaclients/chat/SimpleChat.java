@@ -3,7 +3,7 @@ Name:      SimpleChat.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo of a simple chat client for xmlBlaster as java application
-Version:   $Id: SimpleChat.java,v 1.31 2002/09/26 08:26:06 laghi Exp $
+Version:   $Id: SimpleChat.java,v 1.32 2002/09/30 10:03:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.chat;
 
@@ -65,6 +65,8 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
    private TextField input;
    private Label label;
 
+   private java.lang.reflect.Method speakMethod = null;
+	private Object                   speaker     = null;
 
    public SimpleChat(Global glob){
       super(glob.getProperty().get("loginName", "SimpleChat - <NoName>"));
@@ -85,6 +87,19 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
       pack();
       logFileName = glob.getProperty().get("logFile", System.getProperty("user.home") + System.getProperty("file.separator") + "xmlBlasterChat.log");
       log.info(ME, "Logging messages to " + logFileName);
+
+		//prepare the speach synthetizer ...
+      try {
+	      Class speech = Class.forName("com.eclettic.speech.DefaultInputSpeaker");
+   	   java.lang.reflect.Constructor constr = speech.getConstructor(null);
+      	this.speaker = constr.newInstance(null);
+	      Class[] argClasses = new Class[1];
+   	   argClasses[0] = String.class;
+      	this.speakMethod = speech.getMethod("speak", argClasses);
+		}
+      catch (Exception ex) {
+      }
+
       label.setText(logFileName);
       readOldMessagesFromFile();
    }
@@ -245,12 +260,24 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      if (this.withSound)
-        java.awt.Toolkit.getDefaultToolkit().beep();
-
-      toFront();
-
       String msgContent = new String(content);
+
+      if (this.withSound) {
+      	java.awt.Toolkit.getDefaultToolkit().beep();
+
+        	if ((this.speakMethod != null) && (this.speaker !=null)) {
+         	try {
+	         	Object[] args = new Object[1];
+   	      	args[0] = msgContent;
+					this.speakMethod.invoke(this.speaker, args);
+         	}
+         	catch (Exception ex){
+         	}
+        	}
+			toFront();
+		}
+
+
       DateFormat df = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
       String text = df.format(new java.util.Date());
       text += "[" + updateQos.getSender() +"]: ";
