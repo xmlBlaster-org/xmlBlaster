@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, using org.jutils
-Version:   $Id: Global.java,v 1.35 2002/06/23 08:38:11 ruff Exp $
+Version:   $Id: Global.java,v 1.36 2002/06/23 10:44:19 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -721,11 +721,29 @@ public class Global implements Cloneable
    }
 
    /**
-    * Returns a local IP or hostname as a default setting. 
+    * Returns a local IP or hostname to use. 
+    * <p />
+    * The precedence of finding the callback hostname is as
+    * described in getCbHostname() but if the given param is found
+    * as a property this has precedence.
+    * @return The bootstrap callback hostname, is never null
+    */
+   public String getCbHostname(String param) {
+      return getProperty().get(param, getCbHostname());
+   }
+
+   /**
+    * Returns a local IP or hostname as a default setting to use for callback servers. 
     * <p />
     * It is determined by doing a short connect to the xmlBlaster HTTP server
     * an reading the used local hostname.
-    * @return The default IP or null
+    * The precedence of finding the callback hostname is:
+    * <ol>
+    *  <li>Evaluate the -hostnameCB property</li>
+    *  <li>Try to determine it by a temporary connection to the xmlBlaster bootstrap server and reading the used local IP</li>
+    *  <li>Use default IP of this host</li>
+    * </ol>
+    * @return The default IP, is never null
     */
    public String getCbHostname() {
       if (this.cbHostname == null) {
@@ -739,7 +757,9 @@ public class Global implements Cloneable
          }
          catch (java.io.IOException e) {
             log.trace(ME, "Can't find default cb hostname: " + e.toString());
+            this.cbHostname = getLocalIP();
          }
+         this.cbHostname = getProperty().get("hostnameCB", this.cbHostname);
       }
       return this.cbHostname;
    }
