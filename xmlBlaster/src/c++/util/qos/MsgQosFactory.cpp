@@ -250,7 +250,7 @@ void MsgQosFactory::startElement(const string &name, const AttributeMap& attrs)
       string type;
       iter = attrs.find("type");
       if (iter != attrs.end()) type = (*iter).second;
-      clientProperty_ = new ClientProperty(name, "", type, encoding);
+      clientProperty_ = new ClientProperty(true, name, type, encoding);
    }
       
 }

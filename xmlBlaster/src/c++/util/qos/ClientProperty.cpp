@@ -20,6 +20,18 @@ using namespace std;
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
+ClientProperty::ClientProperty(bool dummy,
+                  const std::string& name,
+                  const std::string& type,
+                  const std::string& encoding
+                  )
+   : name_(name),
+     value_(""),
+     encoding_(encoding),
+     type_(type)
+{
+}
+
 ClientProperty::ClientProperty(const std::string& name,
                      const char *value,
                      const std::string& type)

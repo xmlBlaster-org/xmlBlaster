@@ -71,6 +71,17 @@ public:
                   );
 
    /**
+    * Constructor called by SAX parser. 
+    * Nothing is interpreted, all values are set as given
+    * @param dummy To distinguish the constructor from the others
+    */
+   ClientProperty(bool dummy,
+                  const std::string& name,
+                  const std::string& type,
+                  const std::string& encoding
+                  );
+
+   /**
     * Specialized ctor for literal data. 
     * @param name  The unique property key in US-ASCII encoding (7-bit)
     * @param value Your pointer to data
