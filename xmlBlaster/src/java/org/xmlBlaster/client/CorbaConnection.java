@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.40 2000/03/13 16:17:02 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.41 2000/03/13 16:51:30 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
@@ -54,12 +54,12 @@ import java.util.Properties;
  * If the ping fails, the login polling is automatically activated.
  * <p />
  * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http
- * @version $Revision: 1.40 $
+ * @version $Revision: 1.41 $
  * @author $Author: ruff $
  */
 public class CorbaConnection implements ServerOperations
 {
-   private final String ME = "CorbaConnection";
+   private static final String ME = "CorbaConnection";
    protected String[] args = null;
    protected org.omg.CORBA.ORB orb = null;
    protected NamingContext nameService = null;
@@ -369,7 +369,7 @@ public class CorbaConnection implements ServerOperations
 
       // 2) check if argument -iorHost <hostName or IP> -iorPort <number> at program startup is given
       String iorHost = Property.getProperty("iorHost", "localhost");
-      int iorPort = Property.getProperty("iorPort", 7609);
+      int iorPort = Property.getProperty("iorPort", org.xmlBlaster.Main.DEFAULT_HTTP_PORT); // 7609
       if (iorHost != null && iorPort > 0) {
          try {
             authServerIOR = getAuthenticationServiceIOR(iorHost, iorPort);
@@ -972,6 +972,24 @@ public class CorbaConnection implements ServerOperations
       }
    } // class PingThread
 
+
+   /**
+    * Command line usage. 
+    * <p />
+    * These variables may be set in xmlBlaster.properties as well.
+    * Don't use the "-" prefix there.
+    */
+   public static void usage()
+   {
+      Log.plain(ME, "");
+      Log.plain(ME, "Client connection options:");
+      Log.plain(ME, "   -ior                The IOR string.");
+      Log.plain(ME, "   -iorHost            The host where to find xmlBlaster [localhost]");
+      Log.plain(ME, "   -iorPort            The port where xmlBlaster publishes its IOR [7609]");
+      Log.plain(ME, "   -iorFile <fileName> A file with the xmlBlaster IOR.");
+      Log.plain(ME, "   -ns <true/false>    Try to access xmlBlaster through a naming service [true]");
+      Log.plain(ME, "");
+   }
 } // class CorbaConnection
 
 
