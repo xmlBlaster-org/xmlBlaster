@@ -3,7 +3,7 @@ Name:      XmlBlasterProperty.java
 Project:   jutils.org
 Copyright: jutils.org, see jutils-LICENSE file
 Comment:   Properties for jutils, see jutils.property
-Version:   $Id: XmlBlasterProperty.java,v 1.7 2000/07/24 07:40:49 ruff Exp $
+Version:   $Id: XmlBlasterProperty.java,v 1.8 2000/07/27 19:17:59 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -149,12 +149,12 @@ public class XmlBlasterProperty
          synchronized (XmlBlasterProperty.class) {
             if (property == null) {
                try {
-                  property = new Property("xmlBlaster.properties", true, null, true);  // initialize without args!
+                  property = new Property("xmlBlaster.properties", true, (String[])null, true);  // initialize without args!
                }
                catch (JUtilsException e) {
                   System.err.println(ME + ": Error in xmlBlaster.properties: " + e.toString());
                   try {
-                     property = new Property(null, true, null, true);  // initialize without args and properties file!
+                     property = new Property(null, true, (String[])null, true);  // initialize without args and properties file!
                   }
                   catch (JUtilsException e2) {
                      System.err.println(ME + ": " + e2.toString());
