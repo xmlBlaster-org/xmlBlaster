@@ -908,9 +908,18 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
                      MessageUnitWrapper msgUnitWrapper = new MessageUnitWrapper(this, xmlKey, msgUnit, publishQos);
 
                      if (useCluster) { // cluster support - forward message to master
-                        String ret = getGlobal().getClusterManager().forwardPublish(sessionInfo, msgUnitWrapper);
-                        //Thread.currentThread().dumpStack();
-                        if (ret != null) return ret;
+                        try {
+                           String ret = getGlobal().getClusterManager().forwardPublish(sessionInfo, msgUnitWrapper);
+                           //Thread.currentThread().dumpStack();
+                           if (ret != null) return ret;
+                        }
+                        catch (XmlBlasterException e) {
+                           if (e.id.equals("ClusterManager.PluginFailed")) {
+                              useCluster = false;
+                           }
+                           else
+                              throw e;
+                        }
                      }
                      
                      msgUnitHandler = new MessageUnitHandler(this, xmlKey, msgUnitWrapper);
@@ -921,9 +930,18 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
 
                      if (useCluster) { // cluster support - forward message to master
                         MessageUnitWrapper msgUnitWrapper = new MessageUnitWrapper(this, xmlKey, msgUnit, publishQos);
-                        String ret = getGlobal().getClusterManager().forwardPublish(sessionInfo, msgUnitWrapper);
-                        //Thread.currentThread().dumpStack();
-                        if (ret != null) return ret;
+                        try {
+                           String ret = getGlobal().getClusterManager().forwardPublish(sessionInfo, msgUnitWrapper);
+                           //Thread.currentThread().dumpStack();
+                           if (ret != null) return ret;
+                        }
+                        catch (XmlBlasterException e) {
+                           if (e.id.equals("ClusterManager.PluginFailed")) {
+                              useCluster = false;
+                           }
+                           else
+                              throw e;
+                        }
                      }
 
                      messageExisted = true;
