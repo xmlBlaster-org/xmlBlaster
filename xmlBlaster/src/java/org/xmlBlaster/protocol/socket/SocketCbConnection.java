@@ -29,6 +29,9 @@ import org.xmlBlaster.protocol.socket.Parser;
 /**
  * This instance establishes exactly one connection to a listening client side callback server. 
  * <p />
+ * NOTE: First step for a different SOCKET connection on callback
+ * NOTE: This code is currently NOT in use (as we reuse the same SOCKET with CallbackSocketDriver.java)
+ * <p />
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html">The protocol.socket requirement</a>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  */
@@ -89,7 +92,19 @@ public class SocketCbConnection extends Executor
       if (log.CALL) log.call(ME, "Entering connectLowlevel(), connection with seperate raw socket to client " +
                                     this.socketUrl.getUrl() + " ...");
       try {
-         this.sock = new Socket(this.socketUrl.getInetAddress(), this.socketUrl.getPort());
+         // SSL support
+         boolean ssl = this.clientAddress.getEnv("SSL", false).getValue();
+         if (log.TRACE) log.trace(ME, clientAddress.getEnvLookupKey("SSL") + "=" + ssl);
+          
+         // TODO: use clientAddress.getCompressType() !!!
+         
+         if (ssl) {
+            this.socketUrl.createSocketSSL(null, this.clientAddress);
+         }
+         else {
+             this.sock = new Socket(this.socketUrl.getInetAddress(), this.socketUrl.getPort());
+         }
+         
          //this.localPort = this.sock.getLocalPort();
          //this.localHostname = this.sock.getLocalAddress().getHostAddress();
          log.info(ME, "Created SOCKET client connected to '" + this.socketUrl.getUrl() + "', callback address is " + getLocalAddress());
