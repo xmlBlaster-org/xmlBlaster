@@ -59,3 +59,38 @@ To further Test the driver:
    java helma.xmlrpc.XmlRpcClient http://localhost:8080 xmlBlaster.subscribe "mySessionId" "<key oid='cpuinfo'></key>" "<qos></qos>"
 
 and the proxy receives the updates.
+
+
+SSL Support (from the mailing list):
+====================================
+
+Hello all,
+
+We have been successful here in using SSL with Helma's XmlRpcClient with the
+following few steps:
+
+1. Add the following flag:
+-Djava.protocol.handler.pkgs=com.sun.net.ssl.internal.www.protocol
+to the main JVM invocation command for the application.
+2. Add the line:
+Security.addProvider(new com.sun.net.ssl.internal.ssl.Provider());
+to be executed once in the init of the app.
+3. Add the JSSE extension from
+http://java.sun.com/products/jsse/install.html to our JVM.
+4. Modify the URL we POST to use https instead of http, of course :-)
+
+With XmlRpcClientLite, the modification are more complex and involve
+changing the XmlRpcClientLite 
+constructor to use a Secure Socket, i.e.:
+...
+SSLSocketFactory factory = (SSLSocketFactory)SSLSocketFactory.getDefault();
+SSLSocket sslSocket = (SSLSocket)factory.createSocket(hostname, port);
+sslSocket.startHandshake();
+...
+Maybe Hannes will add SSL support to XmlRpcClientLite in the future.
+I have source code that works, if anyone is interested.
+
+Hope that helped,
+
+Amir Eliaz
+eliaz@idcide.com
