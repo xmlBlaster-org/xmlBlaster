@@ -18,7 +18,8 @@ LOCAL_FILES = \
 			$(CLASS_DIR)/I_Authenticate.class \
 			$(CLASS_DIR)/I_CallbackDriver.class \
 			$(CLASS_DIR)/I_Driver.class \
-			$(CLASS_DIR)/I_XmlBlaster.class
+			$(CLASS_DIR)/I_XmlBlaster.class \
+			$(CLASS_DIR)/ProtocolManager.class
 #------------------------------------------------------------------------------
 
 
