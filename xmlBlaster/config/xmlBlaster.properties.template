@@ -180,8 +180,8 @@ JdbcStorage[Oracle]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin,\
 
 # Settings for the persistence plugins (StoragePlugin and QueuePlugin)
 # for Microsoft SQL server:
-JdbcStorage[MicrosoftSQLServer]=org.inforMessaging.util.queue.jdbc.JdbcQueueCommonTablePlugin,\
-                  url=jdbc:microsoft:sqlserver://192.168.80.3:1433;SelectMethod=cursor;DatabaseName=zzw,\
+JdbcStorage[MicrosoftSQLServer]=org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin,\
+                  url=jdbc:microsoft:sqlserver://localhost:1433;SelectMethod=cursor;DatabaseName=zzw,\
                   user=sa,\
                   password=,\
                   connectionPoolSize=5,\
