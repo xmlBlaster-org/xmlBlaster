@@ -3,7 +3,7 @@ Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: AuthServerImpl.java,v 1.8 1999/11/20 22:42:04 ruff Exp $
+Version:   $Id: AuthServerImpl.java,v 1.9 1999/11/30 09:29:31 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authenticateIdl;
 
@@ -16,7 +16,7 @@ import org.xmlBlaster.engine.XmlQoS;
 
 
 /**
- * Implements the xmlBlaster server CORBA Interface. 
+ * Implements the xmlBlaster server CORBA Interface.
  * <br>
  * All real work is directly delegated to org.xmlBlaster.authentication.Authenticate
  */

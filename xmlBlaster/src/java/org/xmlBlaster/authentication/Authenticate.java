@@ -3,7 +3,7 @@ Name:      Authenticate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login for clients
-Version:   $Id: Authenticate.java,v 1.13 1999/11/22 16:12:21 ruff Exp $
+Version:   $Id: Authenticate.java,v 1.14 1999/11/30 09:29:31 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -24,7 +24,7 @@ import jacorb.poa.util.POAUtil;
 
 
 /**
- * Authenticate. 
+ * Authenticate.
  *
  * Authenticate a client via login<br>
  * The login method serves as a factory for a xmlBlaster.Server Reference
@@ -152,7 +152,23 @@ public class Authenticate
    /**
     * Authentication of a client
     *
-    * @param cb The Callback interface of the client
+    * @param xmlQoS_literal
+    *     <pre>
+    *        <client>
+    *           <compress type='gzip'>
+    *              1000
+    *           </compress>
+    *           <queue>
+    *              <size>
+    *                 1000
+    *              </size>
+    *              <timeout>
+    *                 3600
+    *              </timeout>
+    *           </queue>
+    *        </client>
+    *     </pre>
+    * @param callback The Callback interface of the client
     * @return The xmlBlaster.Server interface
     */
    public org.xmlBlaster.serverIdl.Server login(String loginName, String passwd,
@@ -178,7 +194,7 @@ public class Authenticate
       }
 
       XmlQoSClient xmlQoS = new XmlQoSClient(xmlQoS_literal);
-      ClientInfo clientInfo = new ClientInfo(uniqueClientKey, loginName, passwd, callback, callbackIOR, xmlQoS);
+      ClientInfo clientInfo = new ClientInfo(new AuthenticationInfo(uniqueClientKey, loginName, passwd, callback, callbackIOR, xmlQoS));
       synchronized(clientInfoMap) {
          clientInfoMap.put(uniqueClientKey, clientInfo);
       }
@@ -250,7 +266,11 @@ public class Authenticate
 
 
    /**
-    * Use this method to check a clients authentication
+    * Use this method to check a clients authentication. 
+    * <p>
+    * This method can only be called from a invoked xmlBlaster-server
+    * method (like subscribe()), because only there the
+    * unique POA 'active object identifier' is available to identify the caller.
     *
     * @return ClientInfo - if the client is OK
     * @exception Access denied
@@ -260,7 +280,7 @@ public class Authenticate
       byte[] active_oid;
       String uniqueClientKey;
       StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
-      try { 
+      try {
          // who is it?
          // find out by asking the xmlBlasterPOA
 

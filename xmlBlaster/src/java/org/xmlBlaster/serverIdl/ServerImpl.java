@@ -3,7 +3,7 @@ Name:      ServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: ServerImpl.java,v 1.22 1999/11/23 16:46:20 ruff Exp $
+Version:   $Id: ServerImpl.java,v 1.23 1999/11/30 09:29:32 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.serverIdl;
 
@@ -179,5 +179,46 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
       return messageUnitArr;
    }
 
+
+   /**
+    * Setting attributes for a client. 
+    * <p>
+    *
+    * @param clientName  The client which shall be administered
+    * @param xmlAttr     the attributes of the client in xml syntax like group/role infos<br>
+    *                    They are later queryable with XPath syntax<p>
+    *     <pre>
+    *        &lt;client name='tim'>
+    *           &lt;group>
+    *              Marketing
+    *           &lt;/group>
+    *           &lt;role>
+    *              Managing director
+    *           &lt;/role>
+    *        &lt;/client>
+    *     </pre>
+    * @param qos         Quality of Service, flags for additional informations to control administration
+    */
+   public void setClientAttributes(String clientName, String xmlAttr_literal,
+                            String qos_literal) throws XmlBlasterException
+   {
+      if (Log.CALLS) Log.calls(ME, "Entering setClientAttributes(clientName=" + clientName/* + ", qos=" + qos_literal + ")"*/);
+
+      if (clientName==null || xmlAttr_literal==null || qos_literal==null) {
+         Log.error(ME+"InvalidArguments", "setClientAttributes failed: please use no null arguments for setClientAttributes()");
+         throw new XmlBlasterException(ME+"InvalidArguments", "setClientAttributes failed: please use no null arguments for setClientAttributes()");
+      }
+
+      StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
+
+      ClientInfo clientInfoAdmin = authenticate.check();
+
+      // !!! TODO
+      Log.warning(ME, "Checking administrator privileges is not yet implemented, admin access for " + clientInfoAdmin.toString() + " accepted");
+
+      requestBroker.setClientAttributes(clientName, xmlAttr_literal, qos_literal);
+
+      if (Log.TIME) Log.time(ME, "Elapsed time in setClientAttributes()" + stop.nice());
+   }
 }
 

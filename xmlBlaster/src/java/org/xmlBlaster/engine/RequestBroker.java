@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.26 1999/11/29 18:39:21 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.27 1999/11/30 09:29:32 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -182,6 +182,33 @@ public class RequestBroker implements ClientListener, MessageEraseListener, I_Me
 
 
    /**
+    * Setting attributes for a client. 
+    * <p>
+    *
+    * @param clientName  The client which shall be administered
+    * @param xmlAttr     the attributes of the client in xml syntax like group/role infos<br>
+    *                    They are later queryable with XPath syntax<p>
+    *     <pre>
+    *        &lt;client name='tim'>
+    *           &lt;group>
+    *              Marketing
+    *           &lt;/group>
+    *           &lt;role>
+    *              Managing director
+    *           &lt;/role>
+    *        &lt;/client>
+    *     </pre>
+    * @param qos         Quality of Service, flags for additional informations to control administration
+    */
+   public void setClientAttributes(String clientName, String xmlAttr_literal,
+                            String qos_literal) throws XmlBlasterException
+   {
+      // !!! TODO
+      Log.warning(ME, "setting client attributes is not yet supported: " + xmlAttr_literal);
+   }
+
+
+   /**
     * Invoked by a client, to subscribe to one/many MessageUnit
     */
    public void subscribe(ClientInfo clientInfo, XmlKey xmlKey, XmlQoS subscribeQoS) throws XmlBlasterException
@@ -352,7 +379,8 @@ public class RequestBroker implements ClientListener, MessageEraseListener, I_Me
 
 
    /**
-    * Low level subscribe, is called when the <key oid="..."> to subscribe is exactly known
+    * Low level subscribe, is called when the <key oid='...' queryType='EXACT'> to subscribe is exactly known. 
+    * <p>
     * @param uniqueKey from XmlKey - oid
     * @param subs
     */
