@@ -159,7 +159,7 @@ public class FileIO
          numFileDeleteLost = getNumUnread();
          initialize();
          throw new XmlBlasterException("FileRecorder.FileLost",
-            fileName + " was lost, " + getNumUnread() + " messages are lost, no message retrieved");
+            fileName + " has disappeared, " + numFileDeleteLost + " messages are lost.");
       }
 
       long pos = getCurrReadPos();
