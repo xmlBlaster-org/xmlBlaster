@@ -753,8 +753,10 @@ public final class TopicHandler implements I_Timeout
    /**
     * A client subscribed to this message, multiple subscriptions from
     * the same client are OK.
+    * @param calleeIsXPathMatchCheck true The calling thread is internally to check if a Query matches a new published topic
+    *        false The callee is a subscribe() thread from a client
     */
-   public void addSubscriber(SubscriptionInfo sub) throws XmlBlasterException {
+   public void addSubscriber(SubscriptionInfo sub, boolean calleeIsXPathMatchCheck) throws XmlBlasterException {
       if (sub.getSubscribeCounter() > 1)
          return;
 
@@ -777,7 +779,7 @@ public final class TopicHandler implements I_Timeout
 
       QueryQosData queryQos = sub.getQueryQosData();
 
-      if (queryQos.getWantInitialUpdate() == true) {
+      if (queryQos.getWantInitialUpdate() == true || calleeIsXPathMatchCheck) { // wantInitial==false is only checked if this is a subcribe() thread of a client
          MsgUnitWrapper[] wrappers = null;
          if (this.tmpVolatileMsgUnitWrapper != null)
             wrappers = new MsgUnitWrapper[] { this.tmpVolatileMsgUnitWrapper };

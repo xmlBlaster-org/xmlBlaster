@@ -750,7 +750,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
                   subs = new SubscriptionInfo(glob, sessionInfo, xmlKeyExact, subscribeQos.getData());
             }
 
-            subscribeToOid(subs);                // fires event for subscription
+            subscribeToOid(subs, false);                // fires event for subscription
 
             if (returnOid.equals("")) returnOid = subs.getSubscriptionId();
          }
@@ -1158,10 +1158,11 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
     * Low level subscribe, is called when the <key oid='...' queryType='EXACT'> to subscribe is exactly known.
     * <p>
     * If the message is yet unknown, an empty is created to hold the subscription.
-    * @param uniqueKey from XmlKey - oid
     * @param subs
+    * @param calleeIsXPathMatchCheck true The calling thread is internally to check if a Query matches a new published topic
+    *        false The callee is a subscribe() thread from a client
     */
-   private void subscribeToOid(SubscriptionInfo subs) throws XmlBlasterException {
+   private void subscribeToOid(SubscriptionInfo subs, boolean calleeIsXPathMatchCheck) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering subscribeToOid(subId="+subs.getSubscriptionId()+", oid="+subs.getKeyData().getOid()+", queryType="+subs.getKeyData().getQueryType()+") ...");
       String uniqueKey = subs.getKeyData().getOid();
       TopicHandler topicHandler = null;
@@ -1182,7 +1183,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
       fireSubscribeEvent(subs);  // inform all listeners about this new subscription
 
       // Now the MsgUnit exists and all subcription handling is done, subscribe to it -> fires update to client
-      topicHandler.addSubscriber(subs);
+      topicHandler.addSubscriber(subs, calleeIsXPathMatchCheck);
    }
 
 
@@ -1593,7 +1594,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
          // now after closing the synchronized block, me may fire the events
          // doing it inside the synchronized could cause a deadlock
          for (int ii=0; ii<matchingSubsVec.size(); ii++) {
-            subscribeToOid((SubscriptionInfo)matchingSubsVec.elementAt(ii));    // fires event for subscription
+            subscribeToOid((SubscriptionInfo)matchingSubsVec.elementAt(ii), true);    // fires event for subscription
          }
 
          // we don't need this DOM tree anymore ...
