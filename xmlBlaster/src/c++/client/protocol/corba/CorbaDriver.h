@@ -115,7 +115,7 @@ namespace org {
 
       void publishOneway(const std::vector<org::xmlBlaster::util::MessageUnit> &msgUnitArr);
 
-      std::vector<org::xmlBlaster::client::qos::PublishReturnQos> publishArr(std::vector<org::xmlBlaster::util::MessageUnit> msgUnitArr);
+      std::vector<org::xmlBlaster::client::qos::PublishReturnQos> publishArr(const std::vector<org::xmlBlaster::util::MessageUnit> &msgUnitArr);
 
       std::vector<org::xmlBlaster::client::qos::EraseReturnQos> erase(const org::xmlBlaster::client::key::EraseKey& key, const org::xmlBlaster::client::qos::EraseQos& qos);
 

@@ -60,7 +60,7 @@ namespace org {
       std::string                          callbackIOR_;
       org::xmlBlaster::util::Global&       global_;
       /* mutable */ org::xmlBlaster::util::Log&     log_;
-      org::xmlBlaster::util::key::MsgKeyFactory                   msgKeyFactory_;
+      org::xmlBlaster::util::key::MsgKeyFactory msgKeyFactory_;
       org::xmlBlaster::util::qos::MsgQosFactory msgQosFactory_;
 
    public:

@@ -62,12 +62,12 @@ CorbaDriverFactory::CorbaDriverFactory(const CorbaDriverFactory& factory)
   orb_(factory.orb_),
   isOwnOrb_(factory.isOwnOrb_)
 {
-   throw new XmlBlasterException(INTERNAL_NOTIMPLEMENTED, ME, "private copy constructor");
+   throw XmlBlasterException(INTERNAL_NOTIMPLEMENTED, ME, "private copy constructor");
 }
 
 CorbaDriverFactory& CorbaDriverFactory::operator =(const CorbaDriverFactory&)
 {
-   throw new XmlBlasterException(INTERNAL_NOTIMPLEMENTED, ME, "private assignement operator");
+   throw XmlBlasterException(INTERNAL_NOTIMPLEMENTED, ME, "private assignement operator");
 }
 
 CorbaDriverFactory::~CorbaDriverFactory()
@@ -112,7 +112,7 @@ CorbaDriverFactory& CorbaDriverFactory::getFactory(Global& global, CORBA::ORB_pt
    if(factory_ == NULL)
    {
      factory_ = new CorbaDriverFactory(global, orb);
-     org::xmlBlaster::util::Object_Lifetime_Manager::instance()->manage_object(factory_);  // if not pre-allocated.
+     org::xmlBlaster::util::Object_Lifetime_Manager::instance()->manage_object("XB_CorbaDriverFactory", factory_);  // if not pre-allocated.
    }
    return *factory_;
 }

@@ -92,8 +92,8 @@ serverIdl::XmlTypeArr* DefaultCallback::update(const char* sessionId,
             if (boss_) {
                int size = 0;
                size = msgUnit.content.length();
-               void *content = NULL;
-               if (size > 0) content = (void*)&msgUnit.content[0];
+               const unsigned char *content = NULL;
+               if (size > 0) content = (const unsigned char*)&msgUnit.content[0];
                if (log_.trace()) log_.trace(me(), "going to invoke client specific update");
                oneRes = boss_->update(sessionId, *updateKey, content, size, *updateQos); 
                // Call my boss
@@ -155,7 +155,7 @@ void DefaultCallback::updateOneway(const char* sessionId,
 
          if (boss_) {
             boss_->update(sessionId, *updateKey,
-                           (void*)&msgUnit.content[0], 
+                           (const unsigned char*)&msgUnit.content[0], 
                            msgUnit.content.length(), *updateQos); 
          }
          else

@@ -46,76 +46,90 @@ void CorbaDriver::freeResources(bool deleteConnection, bool deleteCallback)
    catch(const CosNaming::NamingContext::CannotProceed &ex) {         \
       freeResources(deleteConnection, deleteCallback);                \
       throw XmlBlasterException(COMMUNICATION_NOCONNECTION,           \
-                       "unknown node", ME + string(methodName), "en", \
-                       "client-c++", "", "", to_string(ex));          \
+             "unknown node", ME + string(methodName), "en",           \
+             global_.getVersion() + " " + global_.getBuildTimestamp(),\
+             "", "", to_string(ex));                                  \
    }                                                                  \
    catch(const CosNaming::NamingContext::InvalidName &ex) {           \
       freeResources(deleteConnection, deleteCallback);                \
       throw XmlBlasterException(COMMUNICATION_NOCONNECTION,           \
                        "unknown node", ME + string(methodName), "en", \
-                       "client-c++", "", "", to_string(ex));          \
+             global_.getVersion() + " " + global_.getBuildTimestamp(),\
+                       "", "", to_string(ex));                        \
    }                                                                  \
    catch(const CosNaming::NamingContext::AlreadyBound &ex) {          \
       freeResources(deleteConnection, deleteCallback);                \
       throw XmlBlasterException(COMMUNICATION_NOCONNECTION,           \
-                       "unknown node", ME + string(methodName), "en", \
-                       "client-c++", "", "", to_string(ex));          \
+             "unknown node", ME + string(methodName), "en",           \
+             global_.getVersion() + " " + global_.getBuildTimestamp(),\
+             "", "", to_string(ex));                                  \
    }                                                                  \
    catch(const CosNaming::NamingContext::NotEmpty &ex) {              \
       freeResources(deleteConnection, deleteCallback);                \
       throw XmlBlasterException(COMMUNICATION_NOCONNECTION,           \
-                       "unknown node", ME + string(methodName), "en", \
-                       "client-c++", "", "", to_string(ex));          \
+             "unknown node", ME + string(methodName), "en",           \
+             global_.getVersion() + " " + global_.getBuildTimestamp(),\
+             "", "", to_string(ex));                                  \
    }                                                                  \
    catch(const CosNaming::NamingContext::NotFound &ex) {              \
       freeResources(deleteConnection, deleteCallback);                \
       throw XmlBlasterException(COMMUNICATION_NOCONNECTION,           \
-                       "unknown node", ME + string(methodName), "en", \
-                       "client-c++", "", "", to_string(ex));          \
+             "unknown node", ME + string(methodName), "en",           \
+             global_.getVersion() + " " + global_.getBuildTimestamp(),\
+             "", "", to_string(ex));                                  \
    }                                                                  \
    catch(const CORBA::Exception &ex) {                                \
       freeResources(deleteConnection, deleteCallback);                \
       throw XmlBlasterException(COMMUNICATION_NOCONNECTION,           \
-                       "unknown node", ME + string(methodName), "en", \
-                       "client-c++", "", "", to_string(ex));          \
+             "unknown node", ME + string(methodName), "en",           \
+             global_.getVersion() + " " + global_.getBuildTimestamp(),\
+             "", "", to_string(ex));                                  \
    }                                                                  \
-   catch(XmlBlasterException &ex) {                                   \
+   catch(const XmlBlasterException &ex) {                             \
+      freeResources(deleteConnection, deleteCallback);                \
+      throw ex;                                                       \
+   }                                                                  \
+   catch(const XmlBlasterException *ex) {                             \
       freeResources(deleteConnection, deleteCallback);                \
       throw ex;                                                       \
    }                                                                  \
    catch(const exception &ex) {                                       \
       freeResources(deleteConnection, deleteCallback);                \
       throw XmlBlasterException(INTERNAL_UNKNOWN,                     \
-                       "unknown node", ME + string(methodName), "en", \
-                       "client-c++", "", "",                          \
-                       string("type='exception', msg='")              \
-                        + ex.what() + "'");                           \
+             "unknown node", ME + string(methodName), "en",           \
+             global_.getVersion() + " " + global_.getBuildTimestamp(),\
+             "", "",                                                  \
+             string("type='exception', msg='") + ex.what() + "'");    \
    }                                                                  \
    catch(const string &ex) {                                          \
       freeResources(deleteConnection, deleteCallback);                \
       throw XmlBlasterException(INTERNAL_UNKNOWN,                     \
-                       "unknown node", ME + string(methodName), "en", \
-                       "client-c++", "", "",                          \
-                       string("type='string', msg='") + ex + "'");    \
+             "unknown node", ME + string(methodName), "en",           \
+             global_.getVersion() + " " + global_.getBuildTimestamp(),\
+             "", "",                                                  \
+             string("type='string', msg='") + ex + "'");              \
    }                                                                  \
    catch(const char *ex) {                                            \
       freeResources(deleteConnection, deleteCallback);                \
       throw XmlBlasterException(INTERNAL_UNKNOWN,                     \
-                       "unknown node", ME + string(methodName), "en", \
-                       "client-c++", "", "",                          \
-                       string("type='char*', msg='") + ex + "'");     \
+             "unknown node", ME + string(methodName), "en",           \
+             global_.getVersion() + " " + global_.getBuildTimestamp(),\
+             "", "",                                                  \
+             string("type='char*', msg='") + ex + "'");               \
    }                                                                  \
    catch(int ex) {                                                    \
       freeResources(deleteConnection, deleteCallback);                \
       throw XmlBlasterException(INTERNAL_UNKNOWN,                     \
-                       "unknown node", ME + string(methodName), "en", \
-                       "client-c++", "", "",                          \
+             "unknown node", ME + string(methodName), "en",           \
+             global_.getVersion() + " " + global_.getBuildTimestamp(),\
+             "", "",                                                  \
        string("type='int', msg='") + lexical_cast<std::string>(ex) + "'"); \
    }                                                                  \
    catch (...) {                                                      \
       freeResources(deleteConnection, deleteCallback);                \
       throw XmlBlasterException(INTERNAL_UNKNOWN,                     \
-                       "unknown node", ME + string(methodName), "en");\
+           "unknown node", ME + string(methodName), "en",             \
+           global_.getVersion() + " " + global_.getBuildTimestamp()); \
    }
 
 /*
@@ -181,6 +195,7 @@ CorbaDriver::CorbaDriver(Global& global, Mutex& mutex, const string instanceName
 
 CorbaDriver::~CorbaDriver()
 {
+   if (log_.call()) log_.call(ME, "~CorbaDriver()");
    try {
 //      delete defaultCallback_; // Is a memory leak, but we need to track down the valgrind issue first
       delete connection_;
@@ -206,7 +221,7 @@ void CorbaDriver::initialize(const string& name, I_Callback &client)
 
 string CorbaDriver::getCbProtocol()
 {
-    return "IOR";
+    return Constants::IOR; // "IOR";
 }                             
 
 string CorbaDriver::getCbAddress()
@@ -241,7 +256,7 @@ bool CorbaDriver::disconnect(const DisconnectQos& qos)
 
 string CorbaDriver::getProtocol()
 {
-   return "IOR";
+   return Constants::IOR; // "IOR";
 }
 
 /*
@@ -341,7 +356,7 @@ void CorbaDriver::publishOneway(const vector<MessageUnit> &msgUnitArr)
    _COMM_CATCH("::publishOneway", false, false)
 }
 
-vector<PublishReturnQos> CorbaDriver::publishArr(vector<MessageUnit> msgUnitArr)
+vector<PublishReturnQos> CorbaDriver::publishArr(const vector<MessageUnit> &msgUnitArr)
 {
    Lock lock(mutex_, orbIsThreadSafe_);
    _COMM_TRY

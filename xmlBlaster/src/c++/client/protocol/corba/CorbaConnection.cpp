@@ -425,7 +425,7 @@ ConnectReturnQos CorbaConnection::connect(const ConnectQos& connectQos)
       if (log_.trace()) log_.trace(me(),"Success, connect for "+loginName_);
       return connectReturnQos_;
    }
-   catch(XmlBlasterException &e) {
+   catch(const XmlBlasterException &e) {
       string msg = "Connect failed for ";
       msg +=  loginName_; //  + ", numLogins=" + numLogins_;
       if (log_.trace()) log_.trace(me(), msg);
