@@ -127,6 +127,10 @@ string time = TimestampFactory::getTimeAsString(Timestamp timestamp); // C++
    &lt;!-- The message is saved to harddisk to be recoverable after a server crash -->
    &lt;persistent/>
 
+   &lt;clientProperty name='transactionId'>0x23345&lt;/clientProperty>
+   &lt;clientProperty name='myName'>jack&lt;/clientProperty>
+   &lt;clientProperty name='myAge' type='int'>12&lt;/clientProperty>
+
    &lt;!-- Administration: configure the topic on first publish (optional) -->
    &lt;topic readonly='false' destroyDelay='30000' createDomEntry='true'>
       &lt;persistence relating='msgUnitStore' maxEntries='1000' maxBytes='4000'/>
