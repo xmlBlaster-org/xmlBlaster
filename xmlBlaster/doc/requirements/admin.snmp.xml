@@ -1,0 +1,94 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='admin.snmp' type='NEW' prio='LOW' status="INWORK">
+   <topic>You can administer XmlBlaster using an snmp MIB with xmlBlasters SNMP subagent</topic>
+   <description>
+    <p>
+    There is support to monitor and control xmlBlaster with <a href="http://www.snmplink.org/" target="others">snmp</a>.
+    </p>
+   </description>
+
+   <example lang="Java" type="HTML">
+    Start xmlBlaster
+    <pre>
+  java org.xmlBlaster.Main -admin.snmp true
+    </pre>
+  ...
+    and try a
+    <pre>
+  snmpwalk myHost ...
+    </pre>
+   </example>
+
+   <configuration where="server">
+      <p>
+      Here is the xmlBlaster MIB:
+      </p>
+      <table border="1">
+         <tr>
+            <td>MIB entry</td>
+            <td>Read or Write</td>
+            <td>Description</td>
+            <td>Implemented</td>
+         </tr>
+
+         <tr>
+            <td>momTable</td>
+            <td>R</td>
+            <td>Table of all MoMs</td>
+            <td>no</td>
+         </tr>
+
+         <tr>
+            <td>momLoggingLevel</td>
+            <td>R/W</td>
+            <td>Configure the logging level</td>
+            <td>no</td>
+         </tr>
+
+         <tr>
+            <td>momClientIsMoM</td>
+            <td>R</td>
+            <td>Is the client another xmlBlaster cluster node?</td>
+            <td>no</td>
+         </tr>
+
+      </table>
+   </configuration>
+
+   <todo type='HTML'>
+   <ol>
+      <li>
+      Write the subagent.
+      </li>
+      <li>
+      Specify the MIB.
+      </li>
+      <li>
+      Add test cases.
+      </li>
+   </ol>
+   </todo>
+   
+   <see type="INTERNET">http://www.snmplink.org/</see>
+   <see type="INTERNET">http://www.et.put.poznan.pl/snmp/main/mainmenu.html</see>
+   <see type="INTERNET">http://snmp.cs.utwente.nl</see>
+   <see type="INTERNET">http://wttools.sourceforge.net/remotecons/package.html</see>
+   
+   <see type="API">org.xmlBlaster.Main</see>
+   
+   <author>udo.thalmann@avitech.de</author>
+   <author>Gregor.Novak@avitech.de</author>
+   
+   <date>2002 06 11</date>
+   
+   <revision>$Revision: 1.1 $</revision>
+
+   <testcase status="OPEN">
+      <name>-</name>
+      <comment></comment>
+      <test tool="SUITE"></test>
+   </testcase>
+</requirement>
+
