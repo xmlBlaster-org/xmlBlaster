@@ -3,7 +3,7 @@ Name:      ContentLenFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface hiding the real callback protocol
-Version:   $Id: ContentLenFilter.java,v 1.7 2002/03/28 15:19:44 ruff Exp $
+Version:   $Id: ContentLenFilter.java,v 1.8 2002/04/05 18:51:46 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime.demo;
@@ -56,8 +56,15 @@ public class ContentLenFilter implements I_Plugin, I_AccessFilter
 
    /**
     * This method is called by the PluginManager.
+    * <p />
+    * This xmlBlaster.properties entry example
     * <pre>
     *   MimeAccessPlugin[ContentLenFilter][1.0]=org.xmlBlaster.engine.mime.demo.ContentLenFilter,DEFAULT_MAX_LEN=200
+    * </pre>
+    * passes 
+    * <pre>
+    *   options[0]="DEFAULT_MAX_LEN"
+    *   options[1]="200"
     * </pre>
     * <p/>
     * @param String[] Some arguments from xmlBlaster.properties.
