@@ -66,8 +66,21 @@ XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed(int argc, char** argv) {
    xa->isConnected = isConnected;
    xa->debug = false;
    memset(&xa->responseBlob, 0, sizeof(XmlBlasterBlob));
+#  ifdef _WINDOWS
    xa->responseMutex = PTHREAD_MUTEX_INITIALIZER;
    xa->responseCond = PTHREAD_COND_INITIALIZER;
+#  else
+   /* On Linux gcc: "parse error before '{' token" when initializing directly,
+      so we do a hack here: */
+   {
+      pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
+      xa->responseMutex = mutex;
+   }
+   {
+      pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
+      xa->responseCond = cond;
+   }
+#  endif
 
    for (iarg=0; iarg < argc-1; iarg++) {
       if (strcmp(argv[iarg], "-debug") == 0)
@@ -386,7 +399,7 @@ bool myUpdate(MsgUnitArr *msgUnitArr, XmlBlasterException *xmlBlasterException)
    bool testException = false;
    for (i=0; i<msgUnitArr->len; i++) {
       char *xml = messageUnitToXml(&msgUnitArr->msgUnitArr[i]);
-      printf("client.update(): Asynchronous message update arrived:%s\n", xml);
+      printf("[client] CALLBACK update(): Asynchronous message update arrived:%s\n", xml);
       free(xml);
       msgUnitArr->msgUnitArr[i].responseQos = strcpyAlloc("<qos><state id='OK'/></qos>"); /* Return QoS: Everything is OK */
    }
