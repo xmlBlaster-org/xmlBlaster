@@ -641,19 +641,16 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
          CallbackAddress addr = null;
          if (cbAddr != null) {
-            Log.info(ME, "1111");
             addr = cbAddr;
             addr.setType(this.cbServer.getCbProtocol());     // "IOR" "RMI" etc.
             addr.setAddress(this.cbServer.getCbAddress());   // "IOR:0000035656757..." or "rmi:..."
          }
          else if (prop.getCurrentCallbackAddress() != null) { // add the callback data to the user supplied callback attributes
-            Log.info(ME, "22222");
             addr = prop.getCurrentCallbackAddress();
             addr.setType(this.cbServer.getCbProtocol());     // "IOR" "RMI" etc.
             addr.setAddress(this.cbServer.getCbAddress());   // "IOR:0000035656757..." or "rmi:..."
          }
          else {
-            Log.info(ME, "333");
             addr = new CallbackAddress(this.cbServer.getCbProtocol()); // "IOR" "RMI" etc.
             addr.setAddress(this.cbServer.getCbAddress());   // "IOR:0000035656757..." or "rmi:..."
 
