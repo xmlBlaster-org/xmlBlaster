@@ -7,6 +7,8 @@ Comment:   Testing the ClientProperty Features
 #include "TestSuite.h"
 #include <iostream>
 #include <util/qos/ClientProperty.h>
+#include <util/qos/QosData.h>
+#include <util/qos/MsgQosData.h>
 
 using namespace std;
 using namespace org::xmlBlaster::util;
@@ -38,6 +40,49 @@ public:
 
    virtual ~TestClientProperty()
    {
+   }
+
+   void testQosData()
+   {
+      log_.info(ME, "testQosData(): Starting tests ...");
+      {
+         MsgQosData msgQosData(global_);
+         msgQosData.addClientProperty("key1", "value1", Constants::TYPE_STRING, Constants::ENCODING_BASE64);
+
+         string res = msgQosData.getClientProperty("key1", string("dummy"));
+         assertEquals(log_, ME, "value1", res, "bla");
+      
+         const QosData::ClientPropertyMap& map = msgQosData.getClientProperties();
+         const QosData::ClientPropertyMap::const_iterator it = map.find("key1");
+         if (it==map.end())
+            log_.error(ME, "NO key1 found");
+         const ClientProperty cp = (*it).second;
+         log_.info(ME, cp.toXml(""));
+         assertEquals(log_, ME, "key1", cp.getName(), "key1");
+         assertEquals(log_, ME, "value1", cp.getStringValue(), "");
+         assertEquals(log_, ME, Constants::TYPE_STRING, cp.getType(), "type");
+         assertEquals(log_, ME, true, cp.isBase64(), "isBase64");
+         log_.info(ME, cp.toXml(""));
+      }
+      {
+         MsgQosData msgQosData(global_);
+         msgQosData.addClientProperty("key2", string("value2"));
+
+         string res = msgQosData.getClientProperty("key2", string("dummy"));
+         assertEquals(log_, ME, "value2", res, "bla");
+      
+         const QosData::ClientPropertyMap& map = msgQosData.getClientProperties();
+         const QosData::ClientPropertyMap::const_iterator it = map.find("key2");
+         if (it==map.end())
+            log_.error(ME, "NO key2 found");
+         const ClientProperty cp = (*it).second;
+         log_.info(ME, cp.toXml(""));
+         assertEquals(log_, ME, "key2", cp.getName(), "key2");
+         assertEquals(log_, ME, "value2", cp.getStringValue(), "");
+         assertEquals(log_, ME, ""/*Constants::TYPE_STRING*/, cp.getType(), "type");
+         assertEquals(log_, ME, false, cp.isBase64(), "isBase64");
+         log_.info(ME, cp.toXml(""));
+      }
    }
 
    void testClientProperty() 
@@ -287,6 +332,7 @@ int main(int args, char *argv[])
    TestClientProperty testObj(glob, "TestClientProperty");
 
    testObj.setUp();
+   testObj.testQosData();
    testObj.testClientProperty();
    testObj.tearDown();
    return 0;
