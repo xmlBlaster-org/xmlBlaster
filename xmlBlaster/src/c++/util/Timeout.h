@@ -100,6 +100,9 @@ class Dll_Export Timeout : public Thread
    /** On creation wait until thread started */
    bool isReady_; //  = false;
 
+   /** To protect thread gap **/
+   bool mapHasNewEntry_;
+
    /** is set to false once the thread is finished (for cleanup) */
    bool isActive_;
    /** Switch on debugging output */

@@ -38,7 +38,8 @@ namespace org { namespace xmlBlaster { namespace util {
 
 Timeout::Timeout(Global& global)
    : Thread(), ME("Timeout"), threadName_("Timeout-Thread"),
-     timeoutMap_(), isRunning_(false), isReady_(false), isActive_(true),
+     timeoutMap_(), isRunning_(false), isReady_(false),
+     mapHasNewEntry_(false), isActive_(true),
      isDebug_(false), timestampFactory_(TimestampFactory::getInstance()),
      global_(global), log_(global.getLog("util")),
      invocationMutex_(), waitForTimeoutMutex_(), waitForTimeoutCondition_()
@@ -53,7 +54,8 @@ Timeout::Timeout(Global& global)
 
 Timeout::Timeout(Global& global, const string &name)
    : Thread(), ME("Timeout"), threadName_(name),
-     timeoutMap_(), isRunning_(false), isReady_(false), isActive_(true),
+     timeoutMap_(), isRunning_(false), isReady_(false),
+     mapHasNewEntry_(false), isActive_(true),
      isDebug_(false), timestampFactory_(TimestampFactory::getInstance()),
      global_(global), log_(global.getLog("util")),
      invocationMutex_(), waitForTimeoutMutex_(), waitForTimeoutCondition_()
@@ -99,16 +101,19 @@ Timestamp Timeout::addTimeoutListener(I_Timeout *listener, long delay, void *use
    Timestamp key = 0;
    if (delay < 1) std::cerr << ME <<": addTimeoutListener with delay = " << delay << std::endl;
 
-   Lock lock(invocationMutex_);
-   while (true) {
-      key = timestampFactory_.getTimestamp() + Constants::MILLION * delay;
-      TimeoutMap::iterator iter = timeoutMap_.find(key);
-      if (iter == timeoutMap_.end()) {
-         log_.trace(ME, "addTimeoutListener, adding key: " + lexical_cast<string>(key));
-         Container cont(listener, userData);
-         TimeoutMap::value_type el(key, cont);
-         timeoutMap_.insert(el);
-         break;
+   {
+      Lock lock(invocationMutex_);
+      while (true) {
+         key = timestampFactory_.getTimestamp() + Constants::MILLION * delay;
+         TimeoutMap::iterator iter = timeoutMap_.find(key);
+         if (iter == timeoutMap_.end()) {
+            log_.trace(ME, "addTimeoutListener, adding key: " + lexical_cast<string>(key));
+            Container cont(listener, userData);
+            TimeoutMap::value_type el(key, cont);
+            timeoutMap_.insert(el);
+            mapHasNewEntry_ = true;
+            break;
+         }
       }
    }
 
@@ -123,26 +128,30 @@ Timestamp Timeout::refreshTimeoutListener(Timestamp key, long delay)
 {
    log_.call(ME, " refreshTimeoutListener");
    if (key < 0) {
+      cerr << "In Timeout.cpp refreshTimeoutListener() is key < 0" << endl;
       // throw an exception here ...
    }
-   Lock lock(invocationMutex_);
-   TimeoutMap::iterator iter = timeoutMap_.find(key);
-   if (iter == timeoutMap_.end()) {
-       // throw the exception here ...
-      // throw new XmlBlasterException(ME, "The timeout handle '" + key + "' is unknown, no timeout refresh done");
-      std::cerr << ME << "The timeout handle '" << key <<"' is unknown, no timeout refresh done" << std::endl;
-      return -1; // temporarly. Change this once exception is thrown
+   I_Timeout *callback = 0;
+   void *userData = 0;
+   {
+      Lock lock(invocationMutex_);
+      TimeoutMap::iterator iter = timeoutMap_.find(key);
+      if (iter == timeoutMap_.end()) {
+          // throw the exception here ...
+         // throw new XmlBlasterException(ME, "The timeout handle '" + key + "' is unknown, no timeout refresh done");
+         std::cerr << ME << "The timeout handle '" << key <<"' is unknown, no timeout refresh done" << std::endl;
+         return -1; // temporarly. Change this once exception is thrown
+      }
+      timeoutMap_.erase(key);
+      callback = (*iter).second.first;
+      userData = (*iter).second.second;
    }
-   timeoutMap_.erase(key);
-   I_Timeout *callback = (*iter).second.first;
-   void *userData = (*iter).second.second;
    return addTimeoutListener(callback, delay, userData);
 }
 
 Timestamp Timeout::addOrRefreshTimeoutListener(I_Timeout *listener, long delay, void*, Timestamp key) 
 {
    log_.call(ME, " addOrRefreshTimeoutListener");
-   Lock lock(invocationMutex_);
    if (key < 0) return addTimeoutListener(listener, delay, NULL);
    return refreshTimeoutListener(key, delay);
 }
@@ -215,7 +224,6 @@ void Timeout::run()
       log_.trace(ME, " run(): is running");
       Timestamp delay = 100000 * Constants::MILLION; // sleep veeery long
 
-      size_t oldSize = 0;
       {
          Lock lock(invocationMutex_);
 
@@ -240,7 +248,7 @@ void Timeout::run()
                   std::cout << ME << " Timeout occurred, calling listener with real time error of " << delay << " nanos" << std::endl;
             }
          }
-         oldSize = timeoutMap_.size();
+         mapHasNewEntry_ = false;
       }
       // must be outside the sync
       if (container != NULL) {
@@ -252,7 +260,7 @@ void Timeout::run()
          log_.trace(ME, "sleeping ... " + lexical_cast<string>(milliDelay) + " milliseconds");
 
          Lock waitForTimeoutLock(waitForTimeoutMutex_);
-         if (getTimeoutMapSize() == oldSize) {
+         if (!mapHasNewEntry_) {
             isReady_ = true;
             waitForTimeoutCondition_.wait(waitForTimeoutLock, (long)milliDelay);
             log_.trace(ME, "waking up ... ");
