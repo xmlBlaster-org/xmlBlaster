@@ -46,6 +46,10 @@ BUGS:
 
 Changes for 0.79dev [xxx, xx 200x]
 ==================================
+  - The protocol specification changed to allow SOCKET messages without a MessageUnit
+    Bugfix to distinguish between empty get() return and empty QoS as
+    update return
+
   - Renamed ServerThread.java -> EmbeddedXmlBlaster.java
 
   - Bugfix for fail save mode of SOCKET protocol
