@@ -119,6 +119,8 @@
       for those messages.
       Published messages reach all master nodes.
       Subscribed messages are retrieved using a load balance algorithm.
+      <br />
+      See <a href="http://www.ddj.com/documents/s=921/ddj9804i/9804i.htm" TARGET="others"> How to determine CPU load from Jaa with JNI</a>
       <p>
       <img src="cluster.loadbalance.gif" border="0" title="XmlBlaster cluster example" alt="Example for a typical xmlBlaster cluster" />
       </p>
@@ -543,20 +545,6 @@
          </tr>
 
          <tr>
-            <td>cluster.domainMapper.type</td>
-            <td>DomainToMaster</td>
-            <td>Specifies which domain to master mapping plugin to use (see xmlBlaster.properties)</td>
-            <td>yes</td>
-         </tr>
-         
-         <tr>
-            <td>cluster.domainMapper.version</td>
-            <td>1.0</td>
-            <td>The plugin version to use</td>
-            <td>yes</td>
-         </tr>
-         
-         <tr>
             <td>cluster.loadBalancer.type</td>
             <td>RoundRobin</td>
             <td>Specifies which load balance plugin to use (see xmlBlaster.properties)</td>
@@ -638,7 +626,7 @@
    <author>Heinrich.Goetzger@exploding-systems.de</author>
    <author>Michele.Laghi@swisscom.com</author>
    <date>2000 04 10</date>
-   <revision>$Revision: 1.20 $</revision>
+   <revision>$Revision: 1.21 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
