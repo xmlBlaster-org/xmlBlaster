@@ -1,5 +1,8 @@
 import xmlrpclib
 
+#  Start with: python hello.py
+
+
 # Create an object to represent our server.
 server_url = 'http://swand.lake.de:8080/';
 server = xmlrpclib.Server(server_url);
@@ -13,6 +16,6 @@ print "login success with sessionId=", sessionId;
 message = server.xmlBlaster.get( "mySessionId", "<key oid=\"__sys__Login\"></key>", "<qos></qos>");
 print "get result=", message;
 
-# Asynchronous access
+# Asynchronous access - not yet implemented
 #server.xmlBlaster.subscribe( "mySessionId", "<key oid=\"__sys__Login\"></key>", "<qos></qos>");
 
