@@ -55,13 +55,13 @@
       <!-- dump internal state (similar to this markup) -->
       <dump>heronDump.xml</dump>
 
-      <plugin id='protocol:SOCKET:admin' 
+      <plugin id='SOCKET-admin' 
               className='org.xmlBlaster.protocol.socket.SocketDriver'>
          <port>69000</port>
       </plugin>
 
       <!-- A typical plugin which is loaded by client request -->
-      <plugin id='dispatch:priority'
+      <plugin id='dispatchPriority'
               className='org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin'
               jar='/tmp/my.jar'>
          <attribute id='config'>
@@ -79,23 +79,23 @@
          </attribute>
       </plugin>
 
-      <!-- /node/heron/plugin/protocol:SOCKET:users/attribute/port=6901 -->
-      <!-- /node/heron/plugin/protocol:SOCKET:users/action/LOAD/onStartupRunlevel=3 -->
-      <!-- /node/heron/plugin/protocol:SOCKET:users/action/LOAD/sequence=5 -->
-      <plugin id='protocol:SOCKET:users' className='org.xmlBlaster.protocol.socket.SocketDriver'>
+      <!-- /node/heron/plugin/SOCKET/attribute/port=6901 -->
+      <!-- /node/heron/plugin/SOCKET/action/LOAD/onStartupRunlevel=3 -->
+      <!-- /node/heron/plugin/SOCKET/action/LOAD/sequence=5 -->
+      <plugin id='SOCKET' className='org.xmlBlaster.protocol.socket.SocketDriver'>
          <attribute id='port'>6901</attribute>
          <action do='LOAD' onStartupRunlevel='3' sequence='5'/>  <!-- 0 first -->
          <action do='STOP' onShutdownRunlevel='2' sequence='4'/> <!-- 0 first -->
       </plugin>
 
-      <plugin id='queue:CACHE' className='org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin'>
-         <attribute id='transientQueue'>queue:RAM</attribute>
-         <attribute id='persistentQueue'>queue:JDBC</attribute>
+      <plugin id='queueCACHE' className='org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin'>
+         <attribute id='transientQueue'>queueRAM</attribute>
+         <attribute id='persistentQueue'>queueJDBC</attribute>
       </plugin>
 
-      <plugin id='queue:RAM' className='org.xmlBlaster.util.queue.ram.RamQueuePlugin'/>
+      <plugin id='queueRAM' className='org.xmlBlaster.util.queue.ram.RamQueuePlugin'/>
 
-      <plugin id='queue:JDBC' className='org.xmlBlaster.util.queue.jdbc.JDBCQueueCommonTablePlugin'>
+      <plugin id='queueJDBC' className='org.xmlBlaster.util.queue.jdbc.JDBCQueueCommonTablePlugin'>
          <attribute id='url'>jdbc:oracle:thin:@localhost:1521:noty</attribute>
          <attribute id='user'>joe</attribute>
          <attribute id='password'>secret</attribute>
@@ -104,14 +104,14 @@
       </plugin>
 
 
-      <plugin id='storage:CACHE' className='org.xmlBlaster.engine.msgstore.cache.PersistenceCachePlugin'>
+      <plugin id='storageCACHE' className='org.xmlBlaster.engine.msgstore.cache.PersistenceCachePlugin'>
          <attribute id='transientQueue'>storage:RAM</attribute>
          <attribute id='persistentQueue'>storage:JDBC</attribute>
       </plugin>
 
-      <plugin id='storage:RAM' className='org.xmlBlaster.engine.msgstore.ram.MapPlugin'/>
+      <plugin id='storageRAM' className='org.xmlBlaster.engine.msgstore.ram.MapPlugin'/>
 
-      <plugin id='storage:JDBC' className='org.xmlBlaster.engine.msgstore.cache.PersistenceCachePlugin'>
+      <plugin id='storageJDBC' className='org.xmlBlaster.engine.msgstore.cache.PersistenceCachePlugin'>
          <attribute id='url'>jdbc:oracle:thin:@localhost:1521:noty</attribute>
          <attribute id='user'>joe</attribute>
          <attribute id='password'>secret</attribute>
@@ -130,7 +130,7 @@
          <killClient/>
 
          <queue id='subject'> <!-- PtP queue -->
-            <plugin refid='queue:CACHE'/>
+            <plugin refid='queueCACHE'/>
             <numEntries>247</numEntries>
             <numBytes>467900</numBytes>
             <maxEntries>1000</maxEntries>
@@ -153,12 +153,12 @@
             <dispatch id='callback' sessionId='4e56890ghdFzj0'
                   pingInterval='10000' retries='-1' delay='10000'
                   oneway='false'>
-               <plugin refid='dispatch:priority'/>
+               <plugin refid='dispatchPriority'/>
                <burstMode collectTime='400' />
                <compress type='gzip' minSize='3000'/>
                <ptp>true</ptp>
                <queue id='callback'>
-                  <plugin refid='queue:CACHE'/>
+                  <plugin refid='queueCACHE'/>
                   <numEntries>7</numEntries>
                   <numBytes>90023</numBytes>
                   <maxEntries>1000</maxEntries>
@@ -176,7 +176,7 @@
                   </entry>
                </queue>
                <address>
-                  <plugin refid='protocol:SOCKET:users'/>
+                  <plugin refid='SOCKET'/>
                   myHost.com:3098
                </address>
             </dispatch>
@@ -696,7 +696,7 @@ UserInfo: joe:mypasswd
    <author>Michele.Laghi@swisscom.com</author>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.49 $</revision>
+   <revision>$Revision: 1.50 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
