@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      PluginClassLoaderFactory.java
+Name:      ClassLoaderFactory.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
@@ -19,7 +19,7 @@ import java.net.URL;
 import java.net.URLClassLoader;
 import java.net.MalformedURLException;
 
-public class PluginClassLoaderFactory {
+public class ClassLoaderFactory {
    public final String ME;
    private final Global glob;
    private final LogChannel log;
@@ -29,12 +29,12 @@ public class PluginClassLoaderFactory {
    /**
     * We are a singleton in respect to a Global instance.
     */
-   public PluginClassLoaderFactory (Global glob) {
+   public ClassLoaderFactory (Global glob) {
      ++instanceCounter;
-     this.ME = "PluginClassLoaderFactory-" + instanceCounter;
+     this.ME = "ClassLoaderFactory-" + instanceCounter;
      this.glob = glob;
      this.log = glob.getLog("classloader");
-     if (log.CALL) log.call(ME, "PluginClassLoaderFactory constructor #" + instanceCounter);
+     if (log.CALL) log.call(ME, "ClassLoaderFactory constructor #" + instanceCounter);
    }
 
    /**
@@ -75,7 +75,7 @@ public class PluginClassLoaderFactory {
                classPath.add(resourceJar);
                continue;
             }
-                                    // 4. check JVM classpath 
+                                    // 4. check JVM classpath
             URL[] urls = ((URLClassLoader)this.getClass().getClassLoader()).getURLs();
             for (int j=0; j<urls.length; j++) {
                if (urls[j].getFile().equalsIgnoreCase(jar)) {
@@ -99,6 +99,26 @@ public class PluginClassLoaderFactory {
       return new PluginClassLoader(glob, stringToUrl(classPath), pluginInfo );
    }
 
+
+   /**
+    * Creates and returns a new URL class loader based on the callers class loader and the
+    * callers related additional classes which may exist in a specified path.
+    */
+   public XmlBlasterClassLoader getXmlBlasterClassLoader() throws XmlBlasterException {
+      if (log.CALL) log.call(ME, "Entering getXmlBlasterClassLoader ...");
+
+      LoaderInfo loaderInfo = getLoaderInfo(this, "org.xmlBlaster.Main");
+      if (log.TRACE) log.trace(ME, loaderInfo.toString());
+
+      ArrayList classPath = new ArrayList();
+      if (loaderInfo.jarPath != null)
+         classPath.add(loaderInfo.jarPath); // Attach to end e.g. xmlBlaster.jar
+      else
+         classPath.add(loaderInfo.rootPath); // Attach to end e.g. xmlBlaster/classes
+
+      if (log.TRACE) log.trace(ME, "Build new classpath with " + classPath.size() + " entries");
+      return new XmlBlasterClassLoader(glob, stringToUrl(classPath) );
+   }
    /**
     * Retrievs the base path for the object related classpath.
     * Taking the base path from the line in the environment classpath
@@ -154,7 +174,7 @@ public class PluginClassLoaderFactory {
    }
 
    /*
-    * Change String class names to URL objects. 
+    * Change String class names to URL objects.
     * @param stringUrls The array containing the array of URL for the specified class' class loader.
     * @return an array of URL containig the stringUrls array
     * @exception XmlBlasterException if the array of URLs can not be formed.
@@ -163,7 +183,7 @@ public class PluginClassLoaderFactory {
       if (stringUrls == null)
          return new URL[0];
       URL[] url = new URL[stringUrls.size()];
-      
+
       try {
          for(int ii=0; ii < stringUrls.size(); ii++) {
             url[ii] = new URL( "file", null, (String)stringUrls.get(ii) );

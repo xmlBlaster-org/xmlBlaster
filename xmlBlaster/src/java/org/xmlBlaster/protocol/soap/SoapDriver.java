@@ -3,14 +3,14 @@ Name:      SoapDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   SoapDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: SoapDriver.java,v 1.6 2002/08/26 11:04:26 ruff Exp $
+Version:   $Id: SoapDriver.java,v 1.7 2002/09/02 08:29:18 kkrafft2 Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.soap;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.classloader.PluginClassLoaderFactory;
+import org.xmlBlaster.util.classloader.ClassLoaderFactory;
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Driver;
@@ -192,7 +192,7 @@ public class SoapDriver implements I_Driver
       else {
          // Examine the CLASSPATH where we are loaded from and guess
          // that the home path is in ../demo/soap
-         String rootPath = PluginClassLoaderFactory.getLoaderInfo(caller, "org.xmlBlaster.protocol.soap.SoapDriver").rootPath;
+         String rootPath = ClassLoaderFactory.getLoaderInfo(caller, "org.xmlBlaster.protocol.soap.SoapDriver").rootPath;
          String homePath = ".";
          if (rootPath != null) homePath = rootPath + "..";
          String sawHome = homePath + File.separator + "demo" + File.separator + "soap";

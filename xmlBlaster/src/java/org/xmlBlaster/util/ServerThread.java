@@ -3,18 +3,20 @@ Name:      ServerThread.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to create/start/stop a xmlBlaster server in a thread
-Version:   $Id: ServerThread.java,v 1.11 2002/08/03 10:12:48 ruff Exp $
+Version:   $Id: ServerThread.java,v 1.12 2002/09/02 08:26:15 kkrafft2 Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.classloader.ClassLoaderFactory;
+import org.xmlBlaster.util.classloader.XmlBlasterClassLoader;
 
 import org.xmlBlaster.client.*;
 
 
 /**
- * Helper to create/start/stop a xmlBlaster server instance in a thread. 
+ * Helper to create/start/stop a xmlBlaster server instance in a thread.
  * <p />
  * TODO: change to use util.Global (or engine.Global as xmlBlaster.Main needs it).
  */
@@ -99,7 +101,10 @@ public class ServerThread extends Thread
       ServerThread serverThread = new ServerThread(glob);
       serverThread.start();
       while(!serverThread.isReady()) {
-         try { Thread.currentThread().sleep(200L); } catch( InterruptedException i) {}
+         try { Thread.currentThread().sleep(200L); }
+         catch( InterruptedException i) {
+            glob.getLog(glob.getId()).info(ME, "Server has been interrupted.");
+         }
       }
       glob.getLog(glob.getId()).info(ME, "Server is up and ready.");
       return serverThread;
@@ -146,7 +151,10 @@ public class ServerThread extends Thread
                break;
             if (xmlBlasterMain.isHalted())
                break;
-            try { Thread.currentThread().sleep(100L); } catch( InterruptedException i) {}
+            try { Thread.currentThread().sleep(100L); }
+            catch( InterruptedException i) {
+               log.info(ME, "Server has been interrupted");
+            }
          }
          log.info(ME, "Server is down!");
       }
@@ -158,10 +166,25 @@ public class ServerThread extends Thread
     * Start the server
     */
    public void run() {
+
+
+      try {
+         ClassLoaderFactory factory = glob.getClassLoaderFactory();
+         XmlBlasterClassLoader cl = factory.getXmlBlasterClassLoader();
+         xmlBlasterMain = (org.xmlBlaster.Main)cl.loadClass("org.xmlBlaster.Main").newInstance();
+         log.info(ME, "Successfully loaded org.xmlBlaster.Main instance with spcific classloader");
+      } catch(Throwable e) {
+         log.error(ME, "Problems loading org.xmlBlaster.Main: " + e.toString());
+      }
+
+
       log.info(ME, "Starting a xmlBlaster server instance for testing ...");
       xmlBlasterMain = new org.xmlBlaster.Main(glob);
       while(!stopServer) {
-         try { Thread.currentThread().sleep(200L); } catch( InterruptedException i) {}
+         try { Thread.currentThread().sleep(200L); }
+         catch( InterruptedException i) {
+            log.info(ME, "Server has been interrupted.");
+         }
       }
       log.info(ME, "Stopping the xmlBlaster server instance ...");
       xmlBlasterMain.shutdown();

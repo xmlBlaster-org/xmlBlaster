@@ -11,7 +11,7 @@ import org.xmlBlaster.authentication.plugins.I_Session;
 import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.classloader.PluginClassLoaderFactory;
+import org.xmlBlaster.util.classloader.ClassLoaderFactory;
 import org.xmlBlaster.util.classloader.PluginClassLoader;
 
 import java.util.Hashtable;
@@ -123,7 +123,7 @@ abstract public class PluginManagerBase {
       I_Plugin plugin = null;
       String pluginName = pluginInfo.getClassName();
       try {
-         PluginClassLoaderFactory factory = glob.getPluginClassLoaderFactory();
+         ClassLoaderFactory factory = glob.getClassLoaderFactory();
          if (factory != null) {
             if (log.TRACE) log.trace(ME, "useXmlBlasterClassloader=true: Trying Class.forName('" + pluginName + "') ...");
 

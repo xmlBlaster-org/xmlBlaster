@@ -18,7 +18,7 @@ import org.xmlBlaster.engine.helper.Address;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.client.PluginLoader;
 import org.xmlBlaster.util.recorder.RecorderPluginManager;
-import org.xmlBlaster.util.classloader.PluginClassLoaderFactory;
+import org.xmlBlaster.util.classloader.ClassLoaderFactory;
 import org.xmlBlaster.authentication.HttpIORServer;
 
 import java.util.Properties;
@@ -37,7 +37,7 @@ import java.net.Socket;
 
 
 /**
- * Global variables to avoid singleton. 
+ * Global variables to avoid singleton.
  *
  * @see classtest.GlobalTest
  */
@@ -73,7 +73,7 @@ public class Global implements Cloneable
    protected org.xmlBlaster.util.Log log;
 
    /** The xmlBlaster class loader factory */
-   private PluginClassLoaderFactory classLoaderFactory = null;
+   private ClassLoaderFactory classLoaderFactory = null;
 
    protected /*final*/ Map nativeCallbackDriverMap;
    /** Store objecte in the scope of one client connection or server instance */
@@ -88,7 +88,7 @@ public class Global implements Cloneable
    protected LogChannel logDefault = null;
 
    /**
-    * Constructs an initial Global object. 
+    * Constructs an initial Global object.
     */
    public Global()
    {
@@ -112,7 +112,7 @@ public class Global implements Cloneable
 
    /**
     * Constructs an initial Global object which is initialized
-    * by your properties array (usually the command line args). 
+    * by your properties array (usually the command line args).
     */
    public Global(Properties props) {
      this(Property.propsToArgs(props));
@@ -120,7 +120,7 @@ public class Global implements Cloneable
 
    /**
     * Constructs an initial Global object which is initialized
-    * by your args array (usually the command line args). 
+    * by your args array (usually the command line args).
     */
    public Global(String[] args)
    {
@@ -143,7 +143,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * If you have a util.Global and need a shallow copy. 
+    * If you have a util.Global and need a shallow copy.
     */
    public Global(org.xmlBlaster.util.Global utilGlob) {
       shallowCopy(utilGlob);
@@ -212,7 +212,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * Initialize logging with environment variables. 
+    * Initialize logging with environment variables.
     * <pre>
     *   -logFile  output.txt
     *   -logFile[cluster] cluster-output.txt
@@ -245,7 +245,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * Add a new logging output channel. 
+    * Add a new logging output channel.
     * <pre>
     *   glob.addLogChannel(new LogChannel("cluster", glob.getProperty()));
     *   ...
@@ -276,7 +276,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * If the log channel for the given key is not known, a new channel is created. 
+    * If the log channel for the given key is not known, a new channel is created.
     * @param if null, the default log channel is returned
     * @see #addLogChannel(LogChannel)
     */
@@ -293,7 +293,7 @@ public class Global implements Cloneable
    }
 
    /**
-   * Changes the given loglevel to given state. 
+   * Changes the given loglevel to given state.
    * <p />
    * See org.jutils.init.Property#toBool(boolean) at www.jutils.org
    *
@@ -314,7 +314,7 @@ public class Global implements Cloneable
    }
 
    /**
-   * Changes the given loglevel to given state. 
+   * Changes the given loglevel to given state.
    *
    * @param logLevel e.g. "trace" or "trace[core]"
    */
@@ -368,7 +368,7 @@ public class Global implements Cloneable
    }
 
    /**
-   * Get the current loglevel. 
+   * Get the current loglevel.
    *
    * @param @param logLevel e.g. "trace" or "trace[core]"
    * @return true is given log level is set, false otherwise.
@@ -401,7 +401,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * Access the logging class. 
+    * Access the logging class.
     * @deprecated Use getLog(String) instead, e.g. <code>LogChannel log = glob.getLog(null);</code>
     */
    public final org.xmlBlaster.util.Log getLog() {
@@ -460,7 +460,7 @@ public class Global implements Cloneable
 
       try {
          property.addArgs2Props(this.args);
-         
+
          initId();
 
          logDefault.initialize(property);
@@ -479,7 +479,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * Allows you to query if user wants help. 
+    * Allows you to query if user wants help.
     * @return true If '-help' or '-?' was passed to us
     */
    public final boolean wantsHelp() {
@@ -502,7 +502,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * Access the id (as a String) currently used on server side. 
+    * Access the id (as a String) currently used on server side.
     * @return ""
     */
    public String getId() {
@@ -511,7 +511,7 @@ public class Global implements Cloneable
 
    /**
     * Same as getId() but all slashes '/' are stripped
-    * so you can use it for cluster node id (see requirement admin.command). 
+    * so you can use it for cluster node id (see requirement admin.command).
     * @return ""
     */
    public String getAdminId() {
@@ -531,7 +531,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * Currently set by enging.Global, used server side only. 
+    * Currently set by enging.Global, used server side only.
     * @param a unique id
     */
    public void setId(String id) {
@@ -553,7 +553,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * Global access to the default 'global' instance. 
+    * Global access to the default 'global' instance.
     * If you have parameters (e.g. from the main() mehtod) you should
     * initialize Global first before using instance():
     * <pre>
@@ -563,7 +563,7 @@ public class Global implements Cloneable
     *    }
     *
     *    //later you can get this initialized instance with:
-    *    Global glob = Global.instance();   
+    *    Global glob = Global.instance();
     *    ...
     * </pre>
     */
@@ -578,7 +578,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * Get a cloned instance. 
+    * Get a cloned instance.
     * Note that instance() will return the original instance
     * even if called on the cloned object (it's a static variable).
     */
@@ -590,7 +590,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * Get a clone, it is a mixture between shallow and deep copy. 
+    * Get a clone, it is a mixture between shallow and deep copy.
     * <p />
     * All immutable elements are a shallow clone.<br />
     * The properties and log channels are copied with a deep copy
@@ -602,7 +602,7 @@ public class Global implements Cloneable
          Global g = (Global)super.clone();
          g.errorText = null;
          g.property = (Property)this.property.clone();
-         //g.logDefault = 
+         //g.logDefault =
          g.logChannels = (Hashtable)this.logChannels.clone();
          g.nativeCallbackDriverMap = Collections.synchronizedMap(new HashMap()); // (HashMap)((HashMap)this.nativeCallbackDriverMap).clone();
          g.objectMap = Collections.synchronizedMap(new HashMap());
@@ -620,14 +620,14 @@ public class Global implements Cloneable
    }
 
    /**
-    * Access the environment properties. 
+    * Access the environment properties.
     */
    public final Property getProperty() {
       return property;
    }
 
    /**
-    * The command line arguments. 
+    * The command line arguments.
     * @return the arguments, is never null
     */
    public final String[] getArgs()
@@ -636,7 +636,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * The key is the protocol and the address to access the callback instance. 
+    * The key is the protocol and the address to access the callback instance.
     *
     * @param key  e.g. "SOCKET192.168.2.2:7604" from 'cbAddr.getType() + cbAddr.getAddress()'
     * @return The instance of the protocol callback driver or null if not known
@@ -648,7 +648,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * The key is the protocol and the address to access the callback instance. 
+    * The key is the protocol and the address to access the callback instance.
     *
     * @param key  e.g. "SOCKET192.168.2.2:7604" from 'cbAddr.getType() + cbAddr.getAddress()'
     * @param The instance of the protocol callback driver
@@ -660,7 +660,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * The key is the protocol and the address to access the callback instance. 
+    * The key is the protocol and the address to access the callback instance.
     *
     * @param key  e.g. "SOCKET192.168.2.2:7604" from 'cbAddr.getType() + cbAddr.getAddress()'
     * @param The instance of the protocol callback driver
@@ -672,7 +672,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * Get an object in the scope of an XmlBlasterConnection or of one cluster node. 
+    * Get an object in the scope of an XmlBlasterConnection or of one cluster node.
     * <p />
     * This is helpful if you have more than one XmlBlasterConnection or cluster nodes
     * running in the same JVM
@@ -686,7 +686,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * Add an object in the scope of an XmlBlasterConnection or of one cluster node. 
+    * Add an object in the scope of an XmlBlasterConnection or of one cluster node.
     * <p />
     * This is helpful if you have more than one XmlBlasterConnection or cluster nodes
     * running in the same JVM
@@ -700,7 +700,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * Remove an object from the scope of an XmlBlasterConnection or of one cluster node. 
+    * Remove an object from the scope of an XmlBlasterConnection or of one cluster node.
     * <p />
     * This is helpful if you have more than one XmlBlasterConnection or cluster nodes
     * running in the same JVM
@@ -720,7 +720,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * Returns the address of the xmlBlaster internal http server. 
+    * Returns the address of the xmlBlaster internal http server.
     * <p />
     * Is configurable with
     * <pre>
@@ -753,7 +753,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * Returns a local IP or hostname to use. 
+    * Returns a local IP or hostname to use.
     * <p />
     * The precedence of finding the callback hostname is as
     * described in getCbHostname() but if the given param is found
@@ -765,7 +765,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * Returns a local IP or hostname as a default setting to use for callback servers. 
+    * Returns a local IP or hostname as a default setting to use for callback servers.
     * <p />
     * It is determined by doing a short connect to the xmlBlaster HTTP server
     * an reading the used local hostname.
@@ -798,7 +798,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * Access the xmlBlaster internal HTTP server and download the requested path. 
+    * Access the xmlBlaster internal HTTP server and download the requested path.
     * <p />
     * Currently we only use it for CORBA IOR download. To avoid the name service,
     * one can access the AuthServer IOR directly
@@ -856,7 +856,7 @@ public class Global implements Cloneable
    }
 
    /**
-    * The IP address where we are running. 
+    * The IP address where we are running.
     * <p />
     * You can specify the local IP address with e.g. -hostname 192.168.10.1
     * on command line, useful for multi-homed hosts.
@@ -893,7 +893,7 @@ public class Global implements Cloneable
 
    /**
     * Needed by java client helper classes to load
-    * the tail back queuing mechanism (invocation recorder). 
+    * the tail back queuing mechanism (invocation recorder).
     */
    public RecorderPluginManager getRecorderPluginManager() {
       synchronized (RecorderPluginManager.class) {
@@ -904,17 +904,17 @@ public class Global implements Cloneable
    }
 
    /**
-    * Access the xmlBlaster Classloader. 
-    * Every Global instance may have an own factory instance. 
+    * Access the xmlBlaster Classloader.
+    * Every Global instance may have an own factory instance.
     * @return null if switched off with "useXmlBlasterClassloader=false"
     */
-   public PluginClassLoaderFactory getPluginClassLoaderFactory() {
+   public ClassLoaderFactory getClassLoaderFactory() {
       boolean useXmlBlasterClassloader = getProperty().get("useXmlBlasterClassloader", true);
       if (useXmlBlasterClassloader == false) return null;
 
-      synchronized (PluginClassLoaderFactory.class) {
+      synchronized (ClassLoaderFactory.class) {
          if (classLoaderFactory == null)
-            classLoaderFactory = new PluginClassLoaderFactory(this);
+            classLoaderFactory = new ClassLoaderFactory(this);
       }
       return classLoaderFactory;
    }
