@@ -3,7 +3,7 @@ Name:      RmiDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   RmiDriver class to invoke the xmlBlaster server using RMI.
-Version:   $Id: RmiDriver.java,v 1.24 2002/06/15 16:01:58 ruff Exp $
+Version:   $Id: RmiDriver.java,v 1.25 2002/06/15 16:51:04 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
@@ -100,6 +100,7 @@ public class RmiDriver implements I_Driver
    private XmlBlasterImpl xmlBlasterRmiServer = null;
    /** The name for the RMI registry */
    private String xmlBlasterBindName = null;
+   private boolean isActive = false;
 
 
    /** Get a human readable name of this driver */
@@ -199,6 +200,8 @@ public class RmiDriver implements I_Driver
 
       bindToRegistry();
 
+      isActive = true;
+
       log.info(ME, "Started successfully RMI driver.");
    }
 
@@ -224,6 +227,9 @@ public class RmiDriver implements I_Driver
       } catch (Exception e) {
          log.warn(ME, "Can't shutdown xmlBlaster server: " + e.toString());
       }
+
+      isActive = false;
+
       log.info(ME, "RMI deactivated, no client access possible.");
    }
 
@@ -234,10 +240,12 @@ public class RmiDriver implements I_Driver
    {
       if (log.TRACE) log.trace(ME, "Shutting down RMI driver ...");
 
-      try {
-         deActivate();
-      } catch (XmlBlasterException e) {
-         log.error(ME, e.toString());
+      if (isActive) {
+         try {
+            deActivate();
+         } catch (XmlBlasterException e) {
+            log.error(ME, e.toString());
+         }
       }
 
       authBindName = null;
