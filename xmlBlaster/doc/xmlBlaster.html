@@ -10,9 +10,9 @@
       <meta name="page-type" content="Homepage" />
       <meta name="Audience" content="Software" />
       <meta name="ROBOTS" content="INDEX, FOLLOW" />
-      <meta name="Date" CONTENT="01.12.1999" />
-      <meta name="revisit-after" CONTENT="14 days" />
-      <meta name="Content-Language" CONTENT="en" />
+      <meta name="Date" content="1999.12.02" />
+      <meta name="revisit-after" content="14 days" />
+      <meta name="Content-Language" content="en" />
       <meta name="Author" content="Manuel Kron" />
       <meta name="Author" content="Marcel Ruff" />
       <title>xmlBlaster - The Revolution</title>
@@ -32,6 +32,39 @@
       This is the publish/subscribe middleware server you have needed many times
       before, now available for free to glue together your distributed client/server application.
          
+         <p />
+         <h4>What can i use it for?</h4>
+	 Use it as a middleware for your application where you need asynchronous instant communication, for example:
+         <ul>
+            <li>A logging server.<br />
+	        All distributed processes (client, servers, applets, servlets, scripts) report their state and errors to xmlBlaster.<br />
+		A system administrator for examples subscribes to all errors and can control the system.<br />
+		A nice GUI subscribes to all state messages and shows users the state of their system.<br />
+	    </li>
+            <li>An air traffic control system.<br />
+	        All measurement devices like air pressure, wind speed or runway state devices publish their<br />
+		data to the xmlBlaster.<br />
+		The air traffic controller sitting in his tower subscribes to the interested informations to control
+		his airport activities.<br />
+	    </li>
+            <li>An instant reliable email system.<br />
+	        Sometimes a team needs instant email delivery, and fine grained broadcast possibilities.<br />
+		An example are the air traffic controllers in the previous example.
+	    </li>
+            <li>A chat system.<br />
+	        All messages are sent to xmlBlaster which distributes it to subscribed members.<br />
+	    </li>
+            <li>A news ticker.<br />
+	        New generated news content is published to the xmlBlaster and then distributed to all paying customers.<br />
+	    </li>
+            <li>A job control system.<br />
+	        Running agents on distributed hosts report their states to xmlBlaster and may be controlled by<br />
+		sending tasks to selected agents.<br />
+	    </li>
+            <li>And much more ...<br />
+	    </li>
+         </ul>
+
          <p />
          <h4>Features:</h4>
          <ul>
@@ -78,7 +111,7 @@
          <br />
          <i><a href="mailto:Manuel.Kron@gmx.net">manuel.kron@gmx.net</a></i>
          <br />
-         Last updated November 29, 1999
+         Last updated December 2, 1999
       </center>
 
    </body>
