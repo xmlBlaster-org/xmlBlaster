@@ -21,7 +21,8 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 #ifdef  OMNIORB
 #define CLIENT_INCLUDE(NAME)      BUILD_INCLUDE(NAME, .h)
 #define SERVER_INCLUDE(NAME)      BUILD_INCLUDE(NAME, .h)
-#define CORBA_HEADER              <omniORB3/CORBA.h>
+#define CORBA_HEADER              <omniORB4/CORBA.h>
+//#define CORBA_HEADER              <omniORB3/CORBA.h>
 #define COSCONTAINEMENT           <not_implemented.h>
 #define COSOBJECTIDENTITY         <not_implemented.h>
 #define COSREFERENCE              <not_implemented.h>
@@ -32,7 +33,8 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 #define COSTIME                   <not_implemented.h>
 #define COSGRAPHEXTENTSION        <not_implemented.h>
 #define COSTRADING                <not_implemented.h>
-#define COSNAMING                 <omniORB3/naming.hh>
+#define COSNAMING                 <omniORB4/naming.hh>
+//#define COSNAMING                 <omniORB3/naming.hh>
 #define COSPROPERTY               <not_implemented.h>
 #define COSTRADINGREPOS           <not_implemented.h>
 #define COSTYPEDEVENTCHANNELADMIN <not_implemented.h>
