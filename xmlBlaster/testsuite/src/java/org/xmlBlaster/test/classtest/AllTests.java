@@ -26,9 +26,6 @@ public class AllTests {
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.TimestampTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.TimeoutTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.InvocationRecorderTest.class));
-      suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.PublishRetQosTest.class));
-      suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.EraseRetQosTest.class));
-      suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.SubscribeRetQosTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.ConnectQosTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.DisconnectQosTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.TestPoolManager.class));
