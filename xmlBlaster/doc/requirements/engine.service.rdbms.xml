@@ -31,8 +31,8 @@
       Use as many as you like.
       The appropriate driver class files(jar) must be in your classpath.
       (If you are using jdk 1.2, having the jar file in jre/lib/ext will not do you any good.
-      It must be in the CLASSPATH.  This is due to the bootstrapping of jaco)<br />
-      Now you can start up the server: <code>jaco org.xmlBlaster.Main</code>
+      It must be in the CLASSPATH.  This is due to the bootstrapping of java)<br />
+      Now you can start up the server: <code>java org.xmlBlaster.Main</code>
       </p>
       <p>
       To test it we have provided a command line based demo client XmlDBClient
@@ -46,7 +46,7 @@
       To invoke the client, try something similar to the following:
       </p>
       <pre>
-      jaco javaclients.jdbc.XmlDBClient \
+      java javaclients.jdbc.XmlDBClient \
         -url "jdbc:postgresql://24.3.47.214/postgres" \
         -user postgres \
         -pass secret \
@@ -57,7 +57,7 @@
       </pre>
       or to invoke an update:
       <pre>
-      jaco javaclients.jdbc.XmlDBClient \
+      java javaclients.jdbc.XmlDBClient \
         -url "jdbc:oracle:thin:@localhost:1521:MARCEL" \
         -user marcel \
         -pass secret \
@@ -100,19 +100,19 @@
 We demonstrate RDBMS access with a simple command line example,
 creating, inserting and querying a table 'person' with Oracle:
 
-   jaco javaclients.jdbc.XmlDBClient \
+   java javaclients.jdbc.XmlDBClient \
         -url "jdbc:oracle:thin:@localhost:1521:MARCEL" -user mrf -pass mrf -type update \
         -query "CREATE TABLE person (name VARCHAR(32), age NUMBER)"
 
-   jaco javaclients.jdbc.XmlDBClient \
+   java javaclients.jdbc.XmlDBClient \
         -url "jdbc:oracle:thin:@localhost:1521:MARCEL" -user mrf -pass mrf -type update \
         -query "INSERT INTO person VALUES( 'Ben', '6' )"
 
-   jaco javaclients.jdbc.XmlDBClient \
+   java javaclients.jdbc.XmlDBClient \
         -url "jdbc:oracle:thin:@localhost:1521:MARCEL" -user mrf -pass mrf -type update \
         -query "INSERT INTO person VALUES( 'Tim', '8' )"
 
-   jaco javaclients.jdbc.XmlDBClient \
+   java javaclients.jdbc.XmlDBClient \
         -url "jdbc:oracle:thin:@localhost:1521:MARCEL" -user mrf -pass mrf \
         -query "SELECT * FROM person"
 
@@ -165,7 +165,7 @@ Note that the result values are encapsulated by CDATA sections (not shown here).
    <hacker>jmbirchfield@proteus-technologies.com</hacker>
    <effort></effort>
    <date>2000 05 06</date>
-   <revision>$Revision: 1.4 $</revision>
+   <revision>$Revision: 1.5 $</revision>
    <testcase status="INWORK">
       <name>-</name>
       <comment>It is not simple to provide a fully automated testsuite, as the RDBMS must be provided separately</comment>
