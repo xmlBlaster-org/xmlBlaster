@@ -1,77 +1,77 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='client.filesystem' type='NEW' prio='HIGH' status="INWORK">
+<requirement id='client.filepoller' type='NEW' prio='HIGH' status="INWORK">
    <topic>
       You can publish messages by putting files on a certain location in the file system.
    </topic>
    <description>
       <ul>
          <li>The Poller is running as a native xmlBlaster plugin</li>
-	 <li>Every registered Poller is listening on exactly one directory</li>
-	 <li>The polling interval is expressed in ms and is configurable</li>
-	 <li>All files in a directory are published on a configurable topic.</li>
-	 <li>It is possible to specify a filter for the file name, then only the files matching the filter
-	     will be processed by the current plugin
-	 </li>
-	 <li>It is possible to have several plugins polling for the same directory provided they both have
-	     a filter specified. Filters must be choosed in such a way to avoid that the same file will 
-	     match more than one filter. If the user does not ensure that, unpredicted behavior will result. 
-	 </li>
+         <li>Every registered Poller is listening on exactly one directory</li>
+         <li>The polling interval is expressed in ms and is configurable</li>
+         <li>All files in a directory are published on a configurable topic.</li>
+         <li>It is possible to specify a filter for the file name, then only the files matching the filter
+             will be processed by the current plugin
+         </li>
+         <li>It is possible to have several plugins polling for the same directory provided they both have
+             a filter specified. Filters must be choosed in such a way to avoid that the same file will 
+             match more than one filter. If the user does not ensure that, unpredicted behavior will result. 
+         </li>
 
-	 <li>After a successful publish of the content of a file, the file is removed from the file system.
-	      or, if a 'sent' directory is specified, files will be moved to that destination.
-	 </li>
-	 <li>It is possible to configure a maximum file size. Files bigger than the specified size are not
-	     published. If a 'discarded' directory is specified in the properties, then the file will be 
-	     moved to that directory, otherwise it will be deleted.
-	 </li>
-	 <li>
-	    Detection of 'file ready for publishing': There are two mechanisms:
-	    <ul>
-	       <li>
-	          locking: If 'lockExtention' is specified in the plugin configuration, then this mechanism
-		  will be activated. To be used correctly before putting a file into the directory on which
-		  the poller is listening, you have to put a file with the same name but ending with what
-		  has been specified in 'lockExtention'. Suppose <i>lockExtention='.lck'</i> and you want to 
-		  publish the content of a file called <i>someFile.gif</i>. Then you first must put a file
-		  called <i>someFile.gif.lck</i> on the directory, thereafter you can put <i>someFile.gif</i>
-		  and when you want to make it publish just remove <i>someFile.gif.lck</i>. At that point the
-		  poller will publish the file.
-	       </li>
-	       <li>
-	          If 'lockExtention' is not specified, the <i>optimistic</i> approach is choosed. Note that 
-		  while simple to be used, there is no guarantee that the published messages really are 
-		  completed. The process is the following: 
-		  Somebody starts putting a file on the filesystem. This operation could take some time. Meanwhile
-		  the poller detects a new file in the directory. If the file is valid (i.e. not exceeding the 
-		  maximum file size), the size and the timestamp did not change since the last 
-		  'delaySinceLastFileChange' milliseconds (if nothing specified here, a default is taken),
-		  then the file will be published.
-	       </li>
-	    </ul>
-	 </li>
+         <li>After a successful publish of the content of a file, the file is removed from the file system.
+              or, if a 'sent' directory is specified, files will be moved to that destination.
+         </li>
+         <li>It is possible to configure a maximum file size. Files bigger than the specified size are not
+             published. If a 'discarded' directory is specified in the properties, then the file will be 
+             moved to that directory, otherwise it will be deleted.
+         </li>
+         <li>
+            Detection of 'file ready for publishing': There are two mechanisms:
+            <ul>
+               <li>
+                  locking: If 'lockExtention' is specified in the plugin configuration, then this mechanism
+                  will be activated. To be used correctly before putting a file into the directory on which
+                  the poller is listening, you have to put a file with the same name but ending with what
+                  has been specified in 'lockExtention'. Suppose <i>lockExtention='.lck'</i> and you want to 
+                  publish the content of a file called <i>someFile.gif</i>. Then you first must put a file
+                  called <i>someFile.gif.lck</i> on the directory, thereafter you can put <i>someFile.gif</i>
+                  and when you want to make it publish just remove <i>someFile.gif.lck</i>. At that point the
+                  poller will publish the file.
+               </li>
+               <li>
+                  If 'lockExtention' is not specified, the <i>optimistic</i> approach is choosed. Note that 
+                  while simple to be used, there is no guarantee that the published messages really are 
+                  completed. The process is the following: 
+                  Somebody starts putting a file on the filesystem. This operation could take some time. Meanwhile
+                  the poller detects a new file in the directory. If the file is valid (i.e. not exceeding the 
+                  maximum file size), the size and the timestamp did not change since the last 
+                  'delaySinceLastFileChange' milliseconds (if nothing specified here, a default is taken),
+                  then the file will be published.
+               </li>
+            </ul>
+         </li>
 
-	 <li>If permissions to read the directory are missing or xmlBlaster has no read rights on a 
-	     specific file, or if an IO exception occurs when reading a file or trying to delete or move
-	     a file, an error is reported (logged) and the plugin does temporarly stop working.
-	     (to ensure correct sequence). The plugin continues however to poll and when the rights are 
-	     manually fixed, it continues working again.
-	 </li>
-	 <li>
-	   To be able to track the message origin, filename, filesize and file timestamp are sent in the
-	   client properties as:
-	   <ul>
-	      <li><i>_fileName</i></li> (the relative file name as a String)
-	      <li><i>_fileDate</i></li> (the timestamp of the file in ms as a long)
-	   </ul>
-	 </li>
+         <li>If permissions to read the directory are missing or xmlBlaster has no read rights on a 
+             specific file, or if an IO exception occurs when reading a file or trying to delete or move
+             a file, an error is reported (logged) and the plugin does temporarly stop working.
+             (to ensure correct sequence). The plugin continues however to poll and when the rights are 
+             manually fixed, it continues working again.
+         </li>
+         <li>
+           To be able to track the message origin, filename, filesize and file timestamp are sent in the
+           client properties as:
+           <ul>
+              <li><i>_fileName</i></li> (the relative file name as a String)
+              <li><i>_fileDate</i></li> (the timestamp of the file in ms as a long)
+           </ul>
+         </li>
        </ul>
    </description>
    <configuration where="server">
       <p>
          The plugin is configured in the xmlBlasterPlugins.xml configuration file. Here an example where
-	 all properties are used:
+         all properties are used:
 <pre>
 <![CDATA[
   <xmlBlaster>
@@ -86,13 +86,13 @@
         <attribute id='maximumFileSize'>-1L</attribute>
         <attribute id='delaySinceLastFileChange'>10000L</attribute>
         <attribute id='pollInterval'>2000L</attribute>
-	<attribute id='loginName'></attribute>
-	<attribute id='password'></attribute>
+        <attribute id='loginName'></attribute>
+        <attribute id='password'></attribute>
 
-	<attribute id='sent'></attribute>
-	<attribute id='discarded'></attribute>
-	<attribute id='fileFilter'></attribute>
-	<attribute id='lockExtention'>.lck</attribute>
+        <attribute id='sent'></attribute>
+        <attribute id='discarded'></attribute>
+        <attribute id='fileFilter'></attribute>
+        <attribute id='lockExtention'>.lck</attribute>
 
 
         <action do='LOAD' onStartupRunlevel='9' sequence='6' onFail='resource.configuration.pluginFailed'/>
