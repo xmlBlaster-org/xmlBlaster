@@ -12,7 +12,7 @@ SRC_JAVA_DIR = $(XMLBLASTER_HOME)/demo/javaclients
 #------------------------------------------------------------------------------
 
 #------------------------------------------------------------------------------
-SUB_DIRS = corba chat jdbc HelloWorldApplet rmi xmlrpc j2ee/k2 svg/rhino email cluster
+SUB_DIRS = corba chat jdbc HelloWorldApplet rmi xmlrpc j2ee/k2 svg/batik svg/rhino email cluster
 #------------------------------------------------------------------------------
 
 
