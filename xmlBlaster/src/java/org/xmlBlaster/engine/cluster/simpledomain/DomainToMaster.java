@@ -20,7 +20,9 @@ import org.xmlBlaster.engine.cluster.NodeId;
  * Finds the master of a message depending
  * on the <i>domain</i> attribute of the message key tag.
  * <p />
- * This is a simple demo implementation for clustering.
+ * This is a simple demo implementation for clustering, the plugin
+ * can be loaded depending on the mime type of a message, we
+ * register it here for all messages, see getMessages().
  * <p />
  * @author ruff@swand.lake.de 
  * @since 0.79e
@@ -49,17 +51,18 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
     * </pre>
     * passes 
     * <pre>
-    *   options[0]="DEFAULT_MAX_LEN"
-    *   options[1]="200"
+    *   options[0]="DEFAULT_DOMAIN"
+    *   options[1]="dummy"
     * </pre>
     * <p/>
+    * @param Global   An xmlBlaster instance global object holding logging and property informations
     * @param String[] Some arguments from xmlBlaster.properties.
     */
-   public void init(String[] options) throws XmlBlasterException {
+   public void init(org.xmlBlaster.util.Global glob, String[] options) throws XmlBlasterException {
       if (options != null) {
          for (int ii=0; ii<options.length-1; ii++) {
-            if (options[ii].equalsIgnoreCase("DUMMY")) {
-               //DUMMY = (new Long(options[++ii])).longValue();  // ...
+            if (options[ii].equalsIgnoreCase("DEFAULT_DOMAIN")) {
+               // ... do something
             }
          }
       }
@@ -100,7 +103,7 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
    }
 
    /**
-    * Get a human readable name of this filter implementation
+    * Get a human readable name of this implementation
     * @return "SimpleDomainToMasterMapper"
     */
    public String getName() {
@@ -108,8 +111,8 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
    }
 
    public NodeId getMasterId(MessageUnitWrapper msgWrapper) throws XmlBlasterException {
-      Log.error(ME, "getMasterId() not implemented");
+      // !!!!!! TODO Log.error(ME, "getMasterId() not implemented");
       // here is the implementation of cluster logic ...
-      return new NodeId();
+      return glob.getNodeId(); // Currently we use the local node !!!!
    }
 }

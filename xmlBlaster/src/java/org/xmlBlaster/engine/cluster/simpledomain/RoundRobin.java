@@ -50,9 +50,10 @@ final public class RoundRobin implements I_LoadBalancer, I_Plugin {
     *   options[1]="200"
     * </pre>
     * <p/>
+    * @param Global   An xmlBlaster instance global object holding logging and property informations
     * @param String[] Some arguments from xmlBlaster.properties.
     */
-   public void init(String[] options) throws XmlBlasterException {
+   public void init(org.xmlBlaster.util.Global glob, String[] options) throws XmlBlasterException {
       if (options != null) {
          for (int ii=0; ii<options.length-1; ii++) {
             if (options[ii].equalsIgnoreCase("DUMMY")) {

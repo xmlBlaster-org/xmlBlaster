@@ -18,7 +18,9 @@ import org.xmlBlaster.engine.MessageUnitWrapper;
 public interface I_MapMsgToMasterId
 {
    /**
-    * This is called after instantiation of the plugin 
+    * This is called after instantiation of the plugin. 
+    * We pass the engine.Global handle which has more knowledge then
+    * the util.Global passed by I_Plugin (we could have downcasted though).
     * @param glob The Global handle of this xmlBlaster server instance.
     */
    public void initialize(Global glob);

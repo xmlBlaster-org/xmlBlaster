@@ -7,6 +7,8 @@ Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.cluster;
 
+import org.xmlBlaster.util.Log;
+
 /**
  * Holds the unique name of an xmlBlaster server instance (= cluster node)
  * @author ruff@swand.lake.de 
@@ -15,11 +17,21 @@ package org.xmlBlaster.engine.cluster;
  */
 public final class NodeId
 {
+   private static final String ME = "NodeId";
+
+   public NodeId(String id) {
+      setId(id);
+   }
+
    public String getId() {
       return id;
    }
 
    public void setId(String id) {
+      if (id == null || id.length() < 1) {
+         Log.error(ME, "Cluster node has no name");
+         id = "NoNameNode";
+      }
       this.id = id;
    }
 

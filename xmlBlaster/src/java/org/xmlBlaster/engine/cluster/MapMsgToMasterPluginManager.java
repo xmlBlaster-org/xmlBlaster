@@ -3,7 +3,7 @@ Name:      MapMsgToMasterPluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for persistence
-Version:   $Id: MapMsgToMasterPluginManager.java,v 1.2 2002/04/16 20:42:03 ruff Exp $
+Version:   $Id: MapMsgToMasterPluginManager.java,v 1.3 2002/04/19 11:03:05 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.cluster;
@@ -38,8 +38,8 @@ public class MapMsgToMasterPluginManager extends PluginManagerBase {
 
    private final Map mapMsgToMasterIdMap = Collections.synchronizedMap(new HashMap());
 
-   public MapMsgToMasterPluginManager(Global glob)
-   {
+   public MapMsgToMasterPluginManager(Global glob) {
+      super(glob);
       this.glob = glob;
       this.log = this.glob.getLog();
    }
@@ -52,7 +52,7 @@ public class MapMsgToMasterPluginManager extends PluginManagerBase {
     * @return The MapMsgToMasterId for this type and version or null if none is specified
     */
    private final I_MapMsgToMasterId getPlugin(String type, String version) throws XmlBlasterException {
-      if (Log.CALL) Log.call(ME+".getPlugin()", "Loading " + getPluginPropertyName(type, version));
+      if (log.CALL) log.call(ME+".getPlugin()", "Loading " + getPluginPropertyName(type, version));
       I_MapMsgToMasterId plugin = null;
       String[] pluginNameAndParam = null;
 
@@ -94,18 +94,12 @@ public class MapMsgToMasterPluginManager extends PluginManagerBase {
     */
    protected final String[] choosePlugin(String type, String version) throws XmlBlasterException
    {
-      /*if (type == null || type.equals("simple")) {
-         if (XmlBlasterProperty.get("Security.Server.allowSimpleDriver", true) == false){
-            throw new XmlBlasterException(ME+".NoAccess","It's not allowed to use the standard security manager!");
-         }
-      }*/
-
       return super.choosePlugin(type, version);
    }
 
 
    /**
-    * Loads a persistence plugin. 
+    * Loads the plugin. 
     * <p/>
     * @param String[] The first element of this array contains the class name
     *                 e.g. org.xmlBlaster.engine.mime.demo.DemoFilter<br />
@@ -115,7 +109,9 @@ public class MapMsgToMasterPluginManager extends PluginManagerBase {
     */
    protected final I_MapMsgToMasterId loadPlugin(String[] pluginNameAndParam) throws XmlBlasterException
    {
-      return (I_MapMsgToMasterId)super.instantiatePlugin(pluginNameAndParam);
+      I_MapMsgToMasterId i = (I_MapMsgToMasterId)super.instantiatePlugin(pluginNameAndParam);
+      i.initialize(glob);
+      return i;
    }
 
    /**
@@ -140,7 +136,7 @@ public class MapMsgToMasterPluginManager extends PluginManagerBase {
          return addMapMsgToMasterIdPlugin(type, version); // try to load it
 
       } catch (Exception e) {
-         Log.error(ME, "Problems accessing cluster domain mapping " + getPluginPropertyName(type, version) + " mime=" + mime + " mimeExtended=" + mimeExtended + ": " + e.toString());
+         log.error(ME, "Problems accessing cluster domain mapping " + getPluginPropertyName(type, version) + " mime=" + mime + " mimeExtended=" + mimeExtended + ": " + e.toString());
          e.printStackTrace();
          return (I_MapMsgToMasterId)null;
       }
@@ -156,14 +152,14 @@ public class MapMsgToMasterPluginManager extends PluginManagerBase {
       key.append(type).append(version);
       Object obj = mapMsgToMasterIdMap.get(key.toString());
       if (obj != null) {
-         Log.info(ME, "Plugin '" + key.toString() + "' is loaded already");
+         log.info(ME, "Plugin '" + key.toString() + "' is loaded already");
          return (I_MapMsgToMasterId)obj;
       }
 
       try {
          I_MapMsgToMasterId plugin = getPlugin(type, version);
          if (plugin == null) {
-            Log.error(ME, "Problems accessing plugin " + getPluginPropertyName(type, version) + ", please check your configuration");
+            log.error(ME, "Problems accessing plugin " + getPluginPropertyName(type, version) + ", please check your configuration");
             return null;
          }
 
@@ -175,7 +171,7 @@ public class MapMsgToMasterPluginManager extends PluginManagerBase {
          // check plugin code:
          if (mimeExtended == null || mimeExtended.length != mime.length) {
             if (mimeExtended.length != mime.length)
-               Log.error(ME, getPluginPropertyName(type, version) + ": Number of mimeExtended does not match mime, ignoring mimeExtended.");
+               log.error(ME, getPluginPropertyName(type, version) + ": Number of mimeExtended does not match mime, ignoring mimeExtended.");
             mimeExtended = new String[mime.length];
             for (int ii=0; ii < mime.length; ii++)
                mimeExtended[ii] = org.xmlBlaster.util.XmlKeyBase.DEFAULT_contentMimeExtended;
@@ -184,13 +180,13 @@ public class MapMsgToMasterPluginManager extends PluginManagerBase {
          for (int ii = 0; ii < mime.length; ii++) {
             key.append(type).append(version).append(mime[ii]).append(mimeExtended[ii]);
             mapMsgToMasterIdMap.put(key.toString(), plugin);
-            Log.info(ME, "Loaded '" + key.toString() + "'");
+            log.info(ME, "Loaded '" + key.toString() + "'");
             key.setLength(0);
          }
 
          return plugin;
       } catch (Throwable e) {
-         Log.error(ME, "Problems accessing cluster domain mapping plugin manager, can't instantiate " + getPluginPropertyName(type, version) + ": " + e.toString());
+         log.error(ME, "Problems accessing cluster domain mapping plugin manager, can't instantiate " + getPluginPropertyName(type, version) + ": " + e.toString());
          e.printStackTrace();
       }
       return null;

@@ -15,12 +15,41 @@ import java.util.Map;
 /**
  * This class holds the informations about an xmlBlaster server instance (=cluster node). 
  */
-public class NodeInfo {
-   public NodeId getId(){
+public final class NodeInfo
+{
+   private NodeId id;
+   private Address address = new Address();
+   private Address[] addresses = new Address[0];
+   private Address[] cbAddresses = new Address[0];
+   private boolean nameService = false;
+   private NodeId[] backupIds = new NodeId[0];
+   private NodeStateInfo state = new NodeStateInfo();
+   private XmlBlasterConnection xmlBlasterConnection = null;
+
+   /**
+    * @link aggregation
+    * @associates <{%Dst%}>
+    */
+   private Map masterMap;
+   private boolean available;
+
+   public NodeInfo(NodeId nodeId) {
+      setNodeId(nodeId);
+   }
+
+   /**
+    *
+    * @return The unique name of this xmlBlaster instance
+    */
+   public String getId(){
+     return id.getId();
+   }
+
+   public NodeId getNodeId(){
      return id;
    }
 
-   public void setId(NodeId id){
+   public void setNodeId(NodeId id){
       this.id = id;
    }
 
@@ -103,19 +132,4 @@ public class NodeInfo {
       this.available = available;
    }
 
-   private NodeId id;
-   private Address address;
-   private Address[] addresses;
-   private Address[] cbAddresses;
-   private boolean nameService;
-   private NodeId[] backupIds;
-   private NodeStateInfo state;
-   private XmlBlasterConnection xmlBlasterConnection;
-
-   /**
-    *@link aggregation
-    *      @associates <{%Dst%}>
-    */
-   private Map masterMap;
-   private boolean available;
 }
