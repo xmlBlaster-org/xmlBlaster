@@ -3,7 +3,7 @@ Name:      TestSubLostClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubLostClient.java,v 1.4 2002/03/18 00:31:23 ruff Exp $
+Version:   $Id: TestSubLostClient.java,v 1.5 2002/04/16 20:50:16 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -186,7 +186,13 @@ public class TestSubLostClient extends TestCase implements I_Callback
       Log.info(ME, numClients + " subscriber clients are ready.");
       Log.info(ME, "Time " + (long)(numClients/timeForLogins) + " logins/sec");
 
-      manyClients[0].connection.shutdown(); // Kill the shutdown server, without doing a logout
+      try {
+         manyClients[0].connection.shutdownCb(); // Kill the callback server, without doing a logout
+      }
+      catch (Throwable e) {
+         e.printStackTrace();
+         assert("Problems with connection,shutdownCb()", false);
+      }
       Log.info(ME, "Killed callback server of first client.");
    }
 
@@ -263,13 +269,10 @@ public class TestSubLostClient extends TestCase implements I_Callback
 
 
    /**
-    * Invoke: jaco testsuite.org.xmlBlaster.TestSubLostClient
+    * Invoke: java testsuite.org.xmlBlaster.TestSubLostClient
     * <p />
-    * Note you need 'jaco' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
-    * instead of the JacORB ORB, which won't work.
-    * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <pre>   jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestSubLostClient</pre>
+    * <pre>   java -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestSubLostClient</pre>
     */
    public static void main(String args[])
    {
