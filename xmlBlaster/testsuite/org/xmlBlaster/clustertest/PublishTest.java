@@ -195,7 +195,7 @@ public class PublishTest extends TestCase {
     * Than we try to access the message at heron
     */ 
    public void testPublish() {
-      System.out.println("***PublishTest: Publish a message to a cluster slave ...");
+      System.err.println("***PublishTest: Publish a message to a cluster slave ...");
       try {
          bilboCon = connect(bilboGlob, new I_Callback() {  // Login to xmlBlaster, register for updates
                public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
@@ -223,14 +223,14 @@ public class PublishTest extends TestCase {
                }
             });
 
-         // Check if the message has reached the master node heron ...
+         System.err.println("->Check if the message has reached the master node heron ...");
          GetKeyWrapper gk = new GetKeyWrapper(oid);
          MessageUnit[] msgs = heronCon.get(gk.toXml(), null);
          assertTrue("Invalid msgs returned", msgs != null);
          assertEquals("Invalid number of messages returned", 1, msgs.length);
          log.info(ME+":"+heronGlob.getId(), "SUCCESS: Got message:" + msgs[0].getXmlKey());
 
-         // Check if the message is available at the slave node bilbo ...
+         System.err.println("->Check if the message is available at the slave node bilbo ...");
          gk = new GetKeyWrapper(oid);
          gk.setDomain(domain);
          msgs = bilboCon.get(gk.toXml(), null);
@@ -238,7 +238,7 @@ public class PublishTest extends TestCase {
          assertEquals("Invalid number of messages returned", 1, msgs.length);
          log.info(ME+":"+bilboGlob.getId(), "SUCCESS: Got message:" + msgs[0].getXmlKey());
 
-         // Trying to erase the message at the slave node ...
+         System.err.println("->Trying to erase the message at the slave node ...");
          EraseKeyWrapper ek = new EraseKeyWrapper(oid);
          ek.setDomain(domain);
          EraseQosWrapper eq = new EraseQosWrapper();
@@ -251,9 +251,9 @@ public class PublishTest extends TestCase {
          assertEquals("Invalid number of messages returned", 0, msgs.length);
          log.info(ME+":"+heronGlob.getId(), "SUCCESS: Got no message after erase");
 
-         System.out.println("***PublishTest: Publish a message to a cluster slave - frodo is offline ...");
+         System.err.println("***PublishTest: Publish a message to a cluster slave - frodo is offline ...");
 
-         // Subscribe from heron, the message is currently erased ...
+         System.err.println("->Subscribe from heron, the message is currently erased ...");
          SubscribeKeyWrapper sk = new SubscribeKeyWrapper(oid);
          sk.setDomain(domain);
          SubscribeQosWrapper sq = new SubscribeQosWrapper();
@@ -268,7 +268,7 @@ public class PublishTest extends TestCase {
 
          stopFrodo();
 
-         // Check: heron is not available ...
+         System.err.println("->Check: heron is not available ...");
          gk = new GetKeyWrapper(oid);
          msgs = heronCon.get(gk.toXml(), null);
          assertTrue("Invalid msgs returned", msgs != null);
@@ -290,7 +290,7 @@ public class PublishTest extends TestCase {
 
          startFrodo();
 
-         // Connect to frodo ...
+         System.err.println("->Connect to frodo ...");
          frodoCon = connect(frodoGlob, new I_Callback() {
                public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                   fail(frodoGlob.getId() + ": Receive unexpected message '" + updateKey.getOid() + "'");
@@ -298,7 +298,7 @@ public class PublishTest extends TestCase {
                }
             });
 
-         // Subscribe from frodo, is he able to organize it?
+         System.err.println("->Subscribe from frodo, is he able to organize it?");
          sk = new SubscribeKeyWrapper(oid);
          sk.setDomain(domain);
          sq = new SubscribeQosWrapper();
@@ -322,7 +322,7 @@ public class PublishTest extends TestCase {
          }
       }
 
-      System.out.println("***PublishTest: testPublish [SUCCESS]");
+      System.err.println("***PublishTest: testPublish [SUCCESS]");
    }
 
    /**
@@ -330,7 +330,7 @@ public class PublishTest extends TestCase {
     */
     /*
    public void testDummy() {
-      System.out.println("***PublishTest: testDummy [SUCCESS]");
+      System.err.println("***PublishTest: testDummy [SUCCESS]");
    }
      */
 }
