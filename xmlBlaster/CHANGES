@@ -4,6 +4,11 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes for 0.x [200x-xx-xx]
 ============================
 
+ o Added a demo applet with XML script access to xmlBlaster.
+   Location: xmlBlaster/demo/http/applet/XmlScript.java
+   Compile:  build deploy_war   (and start tomcat + xmlBlaster server)
+   Load:     http://localhost:8080/xmlBlaster/XmlScript.html (in mozilla, konqueor, appletviewer, explorer)
+
  o Bugfix for JXPath generation of ClientProperty in QoS (impact on tiny applet example only)
 
  o Updated utils.jar to CVS version from  2004-03-19, contains Property bug fix for ArrayOutOfBoundsException
