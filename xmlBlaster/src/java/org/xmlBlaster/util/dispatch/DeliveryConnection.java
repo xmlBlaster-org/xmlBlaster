@@ -348,7 +348,7 @@ abstract public class DeliveryConnection implements I_Timeout
          if (toReconnected && (isPolling() || isUndef())) {
             this.state = ConnectionStateEnum.ALIVE;
             retryCounter = 0; // success
-            log.info(ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString() + ": Success, " + myId + " reconnected.");
+            log.info(ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString() + ": Success, " + myId + " connected.");
             if (this.address.getPingInterval() > 0L) // respan ping timer
                timerKey = pingTimer.addTimeoutListener(this, this.address.getPingInterval(), null);
             connectionsHandler.toAlive(this);
