@@ -1692,7 +1692,7 @@ TODO
    <!-- Please use JDK 1.5 or higher for this                               -->
    <!-- build -DJRE_HOME=C:\PROGRA~1\Java\j2re1.5.0 -DJVM.target=1.4 activex -->
    <!-- =================================================================== -->
-   <target name="activex" depends="dist-client,activex-deploy" description="Creates a ActiveX Bridge (for use with C# and VisualBasic.Net)"/>
+   <target name="activex" depends="dist-client-fast,activex-deploy" description="Creates a ActiveX Bridge (for use with C# and VisualBasic.Net)"/>
    <target name="activex-deploy" depends="" description="Creates a ActiveX Bridge (for use with C# and VisualBasic.Net)">
       <property name="JAVA_HOME" value="${env.JAVA_HOME}" />
       <property name="JRE_HOME" value="${env.JRE_HOME}" />
@@ -2338,7 +2338,7 @@ TODO
        cl.exe %CFLAGS%  /IE:\xerces-c-src1_6_0\src /IE:\xerces-c-src1_6_0\include /FoE:\xmlBlaster\build\obj\CorbaConnection.obj E:\xmlBlaster\src\c++\client\CorbaConnection.cpp
    -->
    <target name="cpp-test" depends="prepare-cpp" description="Create C++ test clients">
-      <foreach list="TestQueue,TestProperty,TestClientProperty,TestGet,TestSub,TestStringTrim,TestConnectQos,TestEmbeddedServer,TestFailsafe,TestConnect,TestSubXPath,TestRam,TestTimeout,TestTimestamp,TestCorbaDriver,TestThread,TestKeys"
+      <foreach list="TestQueue,TestProperty,TestClientProperty,TestLeaveServer,TestGet,TestSub,TestStringTrim,TestConnectQos,TestEmbeddedServer,TestFailsafe,TestConnect,TestSubXPath,TestRam,TestTimeout,TestTimestamp,TestCorbaDriver,TestThread,TestKeys"
                target="compileCppExe" param="exeName" delimiter="," inheritAll="true">
          <param name="compileCppSourcePath" value="${testsuite.dir}/src/c++" />
       </foreach>
