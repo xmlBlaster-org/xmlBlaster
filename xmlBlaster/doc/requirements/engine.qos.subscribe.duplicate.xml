@@ -1,0 +1,76 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='engine.qos.subscribe.duplicate' type='NEW' prio='LOW' status="CLOSED">
+   <topic>
+      On connection a client can specify to not receive duplicate messages even when
+      he has subscribed multiple times.
+   </topic>
+   <description>
+     <p>
+     If you set on connect 
+     </p>
+     <pre>
+&lt;qos> <!-- Connect QoS -->
+   ...
+   &lt;duplicateUpdates>false&lt;/duplicateUpdates>
+&lt;/qos>
+     </pre>
+     <p>
+      and later subscribe multiple times on the same message oid
+      xmlBlaster will update the message to you once only.<br />
+      Subscribing multiple times can be by purpose or by coincidence for example
+      with different XPath subscriptions matching the same message oid.
+     </p>
+     <p>
+      Note that the second/third ... subscription will not return an initial update
+      any more.
+     </p>
+     <p>
+      The returned subscription ID is identical for identical subscribes.
+      Note that you have to call unSubscribe() as often as you have subscribed
+      before to get really rid of updates.
+     </p>
+   </description>
+   <example lang="Java">
+      <![CDATA[
+...
+
+// login:
+try {
+   con = new XmlBlasterConnection(glob);
+
+   ConnectQos qos = new ConnectQos(glob);
+
+   qos.setDuplicateUpdates(false);  // Suppress duplicate updates
+
+   con.connect(qos, this);
+
+   String subId1 = con.subscribe("<key oid='radar-track'/>, null);
+
+   String subId2 = con.subscribe("<key oid='radar-track'/>, null);
+
+   // subId1 and subId2 are identical
+
+   con.unSubscribe("<key oid='" + subId1 + "'/>", null);
+
+   con.unSubscribe("<key oid='" + subId2 + "'/>", null);
+}
+catch (Exception e) {
+      log.error(ME, "Login failed: " + e.toString());
+}
+...
+      ]]>
+   </example>
+   <see>org.xmlBlaster.client.protocol.XmlBlasterConnection</see>
+   <author>ruff@swand.lake.de</author>
+   <hacker>ruff@swand.lake.de</hacker>
+   <date>2001 08 30</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="CLOSED">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">testsuite.org.xmlBlaster.TestSubNoDup</test>
+   </testcase>
+</requirement>
+
