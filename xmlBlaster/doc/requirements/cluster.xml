@@ -459,9 +459,9 @@
    &lt;qos>
       &lt;sender>joe&lt;/sender>
       &lt;route>
-         &lt;node id='bilbo' stratum='2'/>
-         &lt;node id='frodo' stratum='1'/>
-         &lt;node id='heron' stratum='0'/>
+         &lt;node id='bilbo' stratum='2' timestamp='34460239640'/>
+         &lt;node id='frodo' stratum='1' timestamp='34460239661'/>
+         &lt;node id='heron' stratum='0' timestamp='34460239590'/>
       &lt;/route>
    &lt;/qos>
          </pre></td>
@@ -476,7 +476,7 @@
    <author>ruff@swand.lake.de</author>
    <author>Heinrich.Goetzger@exploding-systems.de</author>
    <date>2000 04 10</date>
-   <revision>$Revision: 1.15 $</revision>
+   <revision>$Revision: 1.16 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
