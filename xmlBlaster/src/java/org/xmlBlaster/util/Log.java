@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.java,v 1.33 2000/01/19 21:03:48 ruff Exp $
+Version:   $Id: Log.java,v 1.34 2000/01/23 16:35:00 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -481,6 +481,7 @@ public class Log
          log((withXtermEscapeColor) ? timeE : timeX, instance, text);
    }
 
+
    /**
     * Display some statistic on exit
     */
@@ -500,6 +501,21 @@ public class Log
             Log.info(ME, "There were " + numErrorInvocations + " ERRORS and " + numWarnInvocations + " WARNINGS");
          else
             Log.info(ME, "No errors/warnings were reported");
+      }
+   }
+
+
+   /**
+    * Display the current stack
+    */
+   public static final void printStack()
+   {
+      try {
+         throw new Exception("");
+      }
+      catch (Exception e) {
+         Log.info(ME, "Current stack trace:");
+         e.printStackTrace();
       }
    }
 
@@ -525,6 +541,8 @@ public class Log
     */
    public static void main(String args[]) throws Exception
    {
+      Log.printStack();
+
       String me = "Log-Tester";
       System.out.println("LOGLEVEL : " + getLogLevel() + ": " + bitToLogLevel(getLogLevel()));
       setLogLevel(L_ERROR | L_WARN | L_INFO);
