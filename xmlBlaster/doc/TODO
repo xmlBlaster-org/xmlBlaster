@@ -1,4 +1,4 @@
-- Performance: 
+- Performance:
   * Normalizing the DOM tree
   * Profiling http://www.optimizeit.com/ or
               http://www.klg.com/ - JProbe (no Linux!?)
@@ -11,7 +11,7 @@
   this is important if the client didn't logout properly.
   There is no standard way to get a callback from CORBA on socket EOF.
 
-- XML Schema support 
+- XML Schema support
   Necessary to use XPATH DTD-ID:
   An element node may have a unique identifier (ID).
   This is the value of the attribute that is declared in the Schema/DTD as type ID
@@ -30,7 +30,7 @@
   Our ACL should be XML based, so its possible to
   query who may do what through XPath on Client meta informations which
   are XML based, simple approach:
-  
+
   [User]  [Action]  [Data]
   Martin  read      marketing-paper
   Joe     write     homepage-layout
@@ -45,14 +45,14 @@
 
   Perhaps there should be 2 update variants,
   one blocking (no keyword oneway) and one none-blocking (with keyword oneway).
-  
+
   In the blocking mode, xmlBlaster would need a timeout
   or an extra thread per update client, so that not
   one client can block the whole update sequence.
 
 - Transaction support, based on:
-  Java(tm) Transaction Service (JTS) 1.0 Specification.    
-  JTS specifies the implementation of a Transaction Manager which 
+  Java(tm) Transaction Service (JTS) 1.0 Specification.
+  JTS specifies the implementation of a Transaction Manager which
   supports the Java(tm) Transaction API (JTA) 1.0 Specification.
   http://java.sun.com/products/jts/
 
@@ -67,7 +67,7 @@
     * OZONE Database see http://www.ozone-db.org/ozone_main.html
   - Content
     How should we store the data blobs?
-  - Test FileDriver with ReiserFS 
+  - Test FileDriver with ReiserFS
       The FileDriver is not suitable for production purposes.
       If you really want to use this driver for more than some hundred different messages
       we recommend to use it with the ReiserFS.<br />
@@ -104,8 +104,14 @@ proprietary Protocol plugins (not CORBA)
 ----------------------------------------
 - Protocol plugins (www.webdav.com)
 - state less protocols (email, http, webDav)
-  For HTTP and XML see: http://www.xmlrpc.com/spec
-- http protocol Java servlet (including a Java web server): http://www.mortbay.com/software/iX.html
+  For HTTP and XML see XML-RPC:
+     http://www.xmlrpc.com/spec
+  and SOAP:
+     http://www.soap-wrc.com
+     http://www.alphaWorks.ibm.com/tech/soap4j
+     http://msdn.microsoft.com/xml/general/toolkit_intro.asp
+- http protocol Java servlet (including a Java web server):
+     http://www.mortbay.com/software/iX.html
 
 xmlBlaster homepage
 -------------------
