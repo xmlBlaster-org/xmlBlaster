@@ -72,8 +72,10 @@ int isConnected()
 
 void shutdownConnection()
 {
-   if (isConnected())
+   if (isConnected()) {
       shutdown(socketToXmlBlaster, 2);
+      socketToXmlBlaster = -1;
+   }
 }
 
 /**
