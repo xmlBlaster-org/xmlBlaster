@@ -549,6 +549,7 @@ TODO
             <exclude name="**/*.py"/>
             <exclude name="**/XmlRpcHttpClient.java"/>
             <exclude name="queryXML/**"/>
+            <exclude name="**/j2me/**"/>
          </fileset>
       </copy>
 
