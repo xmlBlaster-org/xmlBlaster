@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling global data
-Version:   $Id: Global.java,v 1.17 2002/06/17 15:16:43 ruff Exp $
+Version:   $Id: Global.java,v 1.18 2002/06/17 17:05:08 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -14,8 +14,10 @@ import org.xmlBlaster.engine.callback.CbWorkerPool;
 import org.xmlBlaster.engine.RequestBroker;
 import org.xmlBlaster.engine.cluster.NodeId;
 import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.engine.cluster.ClusterManager;
 import org.xmlBlaster.engine.admin.CommandManager;
+import org.xmlBlaster.engine.admin.extern.MomClientGateway;
 import org.xmlBlaster.protocol.ProtocolManager;
 import org.xmlBlaster.authentication.Authenticate;
 
@@ -55,6 +57,7 @@ public final class Global extends org.xmlBlaster.util.Global
    private CommandManager commandManager;
    private boolean useAdminManager = true;
    private boolean firstUseAdminManager = true; // to allow caching
+   private MomClientGateway momClientGateway = null;
 
    /**
     * One instance of this represents one xmlBlaster server.
@@ -330,6 +333,30 @@ public final class Global extends org.xmlBlaster.util.Global
          }
       }
       return this.commandManager;
+   }
+
+   /**
+    * Access handler to forward messages beginning with "__cmd:" (administrative messages)
+    * @return null if no available. Is guaranteed to be not null if isAdministrationCommand(XmlKey)
+    *         returned true.
+    */
+   public final MomClientGateway getMomClientGateway() {
+      return this.momClientGateway;
+   }
+
+   /**
+    * Invoked by CommandManager to register message command handler
+    */
+   public final void registerMomClientGateway(MomClientGateway momClientGateway) {
+      this.momClientGateway = momClientGateway;
+   }
+
+   /**
+    * @return true if MomClientGateway is registered and key oid starts with "__cmd:" (case sensitiv)
+    */
+   public final boolean isAdministrationCommand(XmlKey xmlKey) throws XmlBlasterException {
+      if (this.momClientGateway == null) return false;
+      return xmlKey.getUniqueKey().startsWith("__cmd:");
    }
 
    public void setAuthenticate(Authenticate auth) {
