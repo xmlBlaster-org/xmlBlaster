@@ -220,62 +220,69 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
   { return rb.getNumUnread();
   }
 
-  /**
+   /**
    * This method reads out stored requests from the file where 
    * they were buffered. Depending on the "request-method" 
    * the appropriate client operation will be invoked.
    */ 
-  public void pullback(long startDate, long endDate, double motionFactor) throws XmlBlasterException
-  {
-    log.info(ME, "Invoking pullback(startDate=" + startDate + ", endDate=" + endDate + ", motionFactor=" + motionFactor + ")");
+   public void pullback(long startDate, long endDate, double motionFactor) throws XmlBlasterException
+   {
+      log.info(ME, "Invoking pullback(startDate=" + startDate + ", endDate=" + endDate + ", motionFactor=" + motionFactor + ") numUnread=" + getNumUnread());
 
-    RequestContainer cont = null;
-    while(rb.getNumUnread() > 0) 
-    { // find the start node ...
-      try
-      { cont = (RequestContainer)rb.readNext(autoCommit);
+      RequestContainer cont = null;
+      long startOfPullback = System.currentTimeMillis();
+      long numAtBeginning = getNumUnread();
+
+      while(rb.getNumUnread() > 0) { // find the start node ...
+         try {
+           cont = (RequestContainer)rb.readNext(autoCommit);
+         }
+         catch(IOException ex){}
+         if (cont == null)
+            break;
+         if (startDate == 0L || cont.timestamp >= startDate)
+            break;
       }
-      catch(IOException ex){}
-      if (cont == null)
-        break;
-      if (startDate == 0L || cont.timestamp >= startDate)
-        break;
-    }
  
-    if (cont == null) 
-    { log.warn(ME + ".NoInvoc", "Sorry, no invocations found, queue is empty or your start date is to late");
-      return;
-    }
-
-    long startTime = cont.timestamp;
-    long playbackStart = System.currentTimeMillis();
-
-    while(cont != null) 
-    {
-      if (endDate != 0 && cont.timestamp > endDate) // break if the end date is reached
-        break;
-
-      if (motionFactor == 0.)
-        callback(cont);
-      else 
-      {
-        long actualElapsed = (long)((System.currentTimeMillis() - playbackStart) * motionFactor);
-        long originalElapsed = cont.timestamp - startTime;
-        if (originalElapsed > actualElapsed) 
-        { try 
-          { Thread.currentThread().sleep(originalElapsed - actualElapsed);                } 
-          catch(InterruptedException e) 
-          { log.warn(ME, "Thread sleep got interrupted, this invocation is not in sync");
-          }
-        }
-        callback(cont);
+      if (cont == null) {
+         log.warn(ME + ".NoInvoc", "Sorry, no invocations found, queue is empty or your start date is to late");
+         return;
       }
-      try
-      { cont = (RequestContainer)rb.readNext(autoCommit);
+
+      long startTime = cont.timestamp;
+      long playbackStart = System.currentTimeMillis();
+
+      while(cont != null) {
+         if (endDate != 0 && cont.timestamp > endDate) // break if the end date is reached
+            break;
+
+         if (motionFactor == 0.)
+            callback(cont);
+         else {
+            long actualElapsed = (long)((System.currentTimeMillis() - playbackStart) * motionFactor);
+            long originalElapsed = cont.timestamp - startTime;
+            if (originalElapsed > actualElapsed) 
+            { try 
+               { Thread.currentThread().sleep(originalElapsed - actualElapsed);                } 
+               catch(InterruptedException e) 
+               { log.warn(ME, "Thread sleep got interrupted, this invocation is not in sync");
+               }
+            }
+            callback(cont);
+         }
+         try {
+            cont = (RequestContainer)rb.readNext(autoCommit);
+         }
+         catch(IOException ex){}
       }
-      catch(IOException ex){}
-    }
-  }
+
+      long elaps = System.currentTimeMillis()-startOfPullback;
+      log.info(ME, "Pullback of messages done - elapsed " +
+            org.jutils.time.TimeHelper.millisToNice(elaps) +
+            " average rate was " + (numAtBeginning*1000L/elaps) + 
+            " msg/sec, numUnread=" + getNumUnread());
+      // we are done, everything played back
+   }
 
    /**
     * Playback the stored messages, the are removed from the recorder after the callback. 
@@ -287,9 +294,12 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
     */
    public void pullback(float msgPerSec) throws XmlBlasterException {
 
-      log.info(ME, "Invoking pullback(msgPerSec=" + msgPerSec + ")");
+      log.info(ME, "Invoking pullback(msgPerSec=" + msgPerSec + ") numUnread=" + getNumUnread());
 
       RequestContainer cont = null;
+
+      long startOfPullback = System.currentTimeMillis();
+      long numAtBeginning = getNumUnread();
 
       while(true) {
          // woke up after sleeping, sending the next bulk ...
@@ -308,8 +318,14 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
                try {
                   cont = (RequestContainer)rb.readNext(autoCommit);
 
-                  if (cont == null)
+                  if (cont == null) {
+                     long elaps = System.currentTimeMillis()-startOfPullback;
+                     log.info(ME, "Pullback of messages done - elapsed " +
+                         org.jutils.time.TimeHelper.millisToNice(elaps) +
+                         " average rate was " + (numAtBeginning*1000L/elaps) + 
+                         " msg/sec, numUnread=" + getNumUnread());
                      return;    // we are done, everything played back
+                  }
 
                   // How many messages are sent in a bulk?
                   localCount = (cont.msgUnitArr != null) ? cont.msgUnitArr.length : 1;
