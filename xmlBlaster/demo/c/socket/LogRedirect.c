@@ -132,6 +132,7 @@ static void myLogger(void *logUserP,
    char *p = 0;
    va_list ap;
    /*XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)logUserP;*/
+   if (logUserP) {}  // To avoid "logUserP was never referenced" compiler warning
 
    if (level > currLevel) { /* LOG_ERROR, LOG_WARN, LOG_INFO, LOG_TRACE */
       return;
