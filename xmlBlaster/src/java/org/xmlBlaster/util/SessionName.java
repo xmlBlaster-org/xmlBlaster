@@ -209,6 +209,20 @@ public final class SessionName implements java.io.Serializable
       return this.subjectId;
    }
 
+   public final boolean isInternalLoginName() {
+      // assumes that plugins use "_" and core use "__" (same start as plugins!)
+      return this.subjectId.startsWith(Constants.INTERNAL_LOGINNAME_PREFIX_FOR_PLUGINS);
+   }
+
+   public final boolean isPluginInternalLoginName() {
+      return this.subjectId.startsWith(Constants.INTERNAL_LOGINNAME_PREFIX_FOR_PLUGINS) &&
+             !isCoreInternalLoginName();
+   }
+
+   public final boolean isCoreInternalLoginName() {
+      return this.subjectId.startsWith(Constants.INTERNAL_LOGINNAME_PREFIX_FOR_CORE);
+   }
+
    /**
     * @return The public session identifier e.g. "2" or 0 if in subject context
     */
