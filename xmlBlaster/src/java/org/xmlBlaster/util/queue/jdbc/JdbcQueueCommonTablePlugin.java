@@ -83,7 +83,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
          this.numOfEntries = getNumOfEntries_();
       }
       catch (XmlBlasterException ex) {
-         this.log.error(ME, "resetCounters exception occured: " + ex.getMessage());
+         if (log.TRACE) this.log.trace(ME, "resetCounters exception occured: " + ex.getMessage());
       }
    }
 
@@ -964,7 +964,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
                throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME, txt + toXml(""));
             }
          }
-         else if (this.log.TRACE) this.log.warn(ME, "getNumOfBytes_ old (cached) value: '" + oldValue + "' new (real) value: '" + this.numOfBytes + "'");
+         else if (this.log.TRACE) this.log.trace(ME, "getNumOfBytes_ old (cached) value: '" + oldValue + "' new (real) value: '" + this.numOfBytes + "'");
          return this.numOfBytes;
       }
    }
@@ -984,7 +984,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
          return getNumOfBytes_();
       }
       catch (XmlBlasterException ex) {
-         this.log.error(ME, "getNumOfBytes, exception: " + ex.getMessage());
+         this.log.trace(ME, "getNumOfBytes, exception: " + ex.getMessage());
          return this.numOfBytes;
       }
    }
