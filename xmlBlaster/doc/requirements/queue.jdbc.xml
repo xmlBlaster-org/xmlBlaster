@@ -32,7 +32,9 @@
     </description>
 
     <example lang="Java" type="HTML">
+      <p>
        These are example QoS of subscribe() invocations:
+      </p>
        <pre>    
 &lt;qos>
    &lt;queue maxMsg='10000' maxBytes='1000000000' onOverflow='deadMessage'/>
@@ -142,7 +144,7 @@
 <!--   <see type="REQ">cluster</see> -->
    <author>laghi@swissinfo.org</author>
    <date>2002 11 16</date>
-   <revision>$Revision: 1.9 $</revision>
+   <revision>$Revision: 1.10 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
