@@ -17,8 +17,10 @@ import org.xmlBlaster.engine.admin.I_CommandHandler;
 import org.xmlBlaster.engine.admin.CommandManager;
 import org.xmlBlaster.engine.admin.CommandWrapper;
 import org.xmlBlaster.engine.admin.I_AdminNode;
+import org.xmlBlaster.engine.admin.I_AdminSubscription;
 import org.xmlBlaster.engine.admin.I_AdminSubject;
 import org.xmlBlaster.engine.admin.I_AdminSession;
+import org.xmlBlaster.engine.SubscriptionInfo;
 import org.xmlBlaster.authentication.SubjectInfo;
 import org.xmlBlaster.authentication.SessionInfo;
 
@@ -51,6 +53,7 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
       this.ME = "CoreHandler" + this.glob.getLogPrefixDashed();
       this.commandManager.register("DEFAULT", this);
       this.commandManager.register("client", this);
+      this.commandManager.register("subscription", this);
       log.info(ME, "Core administration plugin is initialized");
    }
 
@@ -92,13 +95,13 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
       if (cmd == null)
          throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which is not null");
 
-      String client = cmd.getThirdLevel();
-      if (client == null || client.length() < 2)
+      String registerKey = cmd.getThirdLevel();
+      if (registerKey == null || registerKey.length() < 2)
          throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which has a valid property added, '" + cmd.getCommand() + "' is invalid, aborted request.");
 
-      if (client.startsWith("?")) {
+      if (registerKey.startsWith("?")) {
          // for example "/node/heron/?freeMem"
-         String ret = ""+getInvoke(client.substring(1), glob.getRequestBroker(), I_AdminNode.class);
+         String ret = ""+getInvoke(registerKey.substring(1), glob.getRequestBroker(), I_AdminNode.class);
          log.info(ME, "Retrieved " + cmd.getCommand());
          if (log.DUMP) log.dump(ME, "Retrieved " + cmd.getCommand() + "=" + ret);
          MsgUnitRaw[] msgs = new MsgUnitRaw[1];
@@ -106,41 +109,65 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
          return msgs;
       }
 
-      String loginName = cmd.getUserNameLevel();
-      if (loginName == null || loginName.length() < 1 || loginName.startsWith("?"))
-         throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which has a valid client name in '" + cmd.getCommand() + "' with '" + loginName + "' is invalid");
+      if (registerKey.equals("client") || registerKey.equals("DEFAULT")) {
+         String loginName = cmd.getUserNameLevel();
+         if (loginName == null || loginName.length() < 1 || loginName.startsWith("?"))
+            throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which has a valid client name in '" + cmd.getCommand() + "' with '" + loginName + "' is invalid");
 
-      SubjectInfo subjectInfo = glob.getAuthenticate().getSubjectInfoByName(new SessionName(glob, loginName));
-      if (subjectInfo == null)
-         throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which has a valid client name in '" + cmd.getCommand() + "' client '" + loginName + "' is unknown");
+         SubjectInfo subjectInfo = glob.getAuthenticate().getSubjectInfoByName(new SessionName(glob, loginName));
+         if (subjectInfo == null)
+            throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which has a valid client name in '" + cmd.getCommand() + "' client '" + loginName + "' is unknown");
 
-      String pubSessionId = cmd.getSessionIdLevel();
-      if (pubSessionId == null || pubSessionId.length() < 1)
-         throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which has a valid public session ID in '" + cmd.getCommand() + "'.");
+         String pubSessionId = cmd.getSessionIdLevel();
+         if (pubSessionId == null || pubSessionId.length() < 1)
+            throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which has a valid public session ID in '" + cmd.getCommand() + "'.");
 
-      if (pubSessionId.startsWith("?")) {
-         // for example "/node/heron/joe/?uptime"
-         String ret = ""+getInvoke(pubSessionId.substring(1), subjectInfo, I_AdminSubject.class);
-         log.info(ME, "Retrieved " + cmd.getCommand() + "=" + ret);
-         MsgUnitRaw[] msgs = new MsgUnitRaw[1];
-         msgs[0] = new MsgUnitRaw(cmd.getCommand(), ret.getBytes(), "text/plain");
-         return msgs;
+         if (pubSessionId.startsWith("?")) {
+            // for example "/node/heron/joe/?uptime"
+            String ret = ""+getInvoke(pubSessionId.substring(1), subjectInfo, I_AdminSubject.class);
+            log.info(ME, "Retrieved " + cmd.getCommand() + "=" + ret);
+            MsgUnitRaw[] msgs = new MsgUnitRaw[1];
+            msgs[0] = new MsgUnitRaw(cmd.getCommand(), ret.getBytes(), "text/plain");
+            return msgs;
+         }
+
+         String sessionAttr = cmd.getSessionAttrLevel();
+         if (sessionAttr == null || sessionAttr.length() < 1 || sessionAttr.startsWith("?")==false)
+            throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which has a valid session attribute in '" + cmd.getCommand() + "'.");
+
+         if (sessionAttr.startsWith("?")) {
+            // for example "client/joe/ses17/?cb.queue.maxMsg"
+            SessionInfo sessionInfo = subjectInfo.getSessionByPublicId(Long.parseLong(pubSessionId));
+            if (sessionInfo == null)
+               throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "The public session ID '" + pubSessionId + "' in '" + cmd.getCommand() + "' is unknown.");
+            String ret = ""+getInvoke(sessionAttr.substring(1), sessionInfo, I_AdminSession.class);
+            log.info(ME, "Retrieved " + cmd.getCommand() + "=" + ret);
+            MsgUnitRaw[] msgs = new MsgUnitRaw[1];
+            msgs[0] = new MsgUnitRaw(cmd.getCommand(), ret.getBytes(), "text/plain");
+            return msgs;
+         }
       }
+      else if (registerKey.equals("subscription")) {
+         String subscriptionId = cmd.getUserNameLevel();
+         if (subscriptionId == null || subscriptionId.length() < 1 || subscriptionId.startsWith("?"))
+            throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which has a valid subscriptionId in '" + cmd.getCommand() + "' with '" + subscriptionId + "' is invalid");
 
-      String sessionAttr = cmd.getSessionAttrLevel();
-      if (sessionAttr == null || sessionAttr.length() < 1 || sessionAttr.startsWith("?")==false)
-         throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which has a valid session attribute in '" + cmd.getCommand() + "'.");
+         SubscriptionInfo subscriptionInfo = glob.getRequestBroker().getClientSubscriptions().getSubscription(subscriptionId);
+         if (subscriptionInfo == null)
+            throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which has a valid subscriptionId in '" + cmd.getCommand() + "' subscriptionId '" + subscriptionId + "' is unknown");
 
-      if (sessionAttr.startsWith("?")) {
-         // for example "client/joe/ses17/?cb.queue.maxMsg"
-         SessionInfo sessionInfo = subjectInfo.getSessionByPublicId(Long.parseLong(pubSessionId));
-         if (sessionInfo == null)
-            throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "The public session ID '" + pubSessionId + "' in '" + cmd.getCommand() + "' is unknown.");
-         String ret = ""+getInvoke(sessionAttr.substring(1), sessionInfo, I_AdminSession.class);
-         log.info(ME, "Retrieved " + cmd.getCommand() + "=" + ret);
-         MsgUnitRaw[] msgs = new MsgUnitRaw[1];
-         msgs[0] = new MsgUnitRaw(cmd.getCommand(), ret.getBytes(), "text/plain");
-         return msgs;
+         String methodName = cmd.getFifthLevel();
+         if (methodName == null || methodName.length() < 1)
+            throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which has a valid method name in '" + cmd.getCommand() + "'.");
+
+         if (methodName.startsWith("?")) {
+            // for example "/node/heron/subscription/__subId:3/?topicId"
+            String ret = ""+getInvoke(methodName.substring(1), subscriptionInfo, I_AdminSubscription.class);
+            log.info(ME, "Retrieved " + cmd.getCommand() + "=" + ret);
+            MsgUnitRaw[] msgs = new MsgUnitRaw[1];
+            msgs[0] = new MsgUnitRaw(cmd.getCommand(), ret.getBytes(), "text/plain");
+            return msgs;
+         }
       }
 
       log.info(ME, cmd.getCommand() + " not implemented");
