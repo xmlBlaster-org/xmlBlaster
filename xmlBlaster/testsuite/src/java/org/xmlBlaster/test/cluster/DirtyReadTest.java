@@ -99,7 +99,7 @@ public class DirtyReadTest extends TestCase {
     */ 
    public void runIt(String domain) {
       boolean isDirtyReadTest = domain.equals("RUGBY_NEWS");
-
+      ME = "DirtyReadTest domain=" + domain + ": ";
       System.err.println("***DirtyReadTest: Publish a message to a cluster slave isDirtyReadTest=" + isDirtyReadTest + " ...");
 
       final String oid = isDirtyReadTest ? "PublishToBilbo-DirtyRead" : "PublishToBilbo-NODirtyRead";
@@ -114,7 +114,7 @@ public class DirtyReadTest extends TestCase {
       MsgUnit msgUnit;
 
       try {
-         System.err.println("->Connect to frodo ...");
+         System.err.println(ME+"->Connect to frodo ...");
          frodoCon = serverHelper.connect(serverHelper.getFrodoGlob(), new I_Callback() {
                public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                   assertInUpdate = serverHelper.getFrodoGlob().getId() + ": Receive unexpected message '" + updateKey.getOid() + "'";
@@ -125,7 +125,7 @@ public class DirtyReadTest extends TestCase {
          assertTrue(assertInUpdate, assertInUpdate == null);
 
 
-         System.err.println("->Subscribe '" + oid + "' from frodo ...");
+         System.err.println(ME+"->Subscribe '" + oid + "' from frodo ...");
          sk = new SubscribeKey(glob, oid);
          sk.setDomain(domain);
          sq = new SubscribeQos(glob);
@@ -142,7 +142,7 @@ public class DirtyReadTest extends TestCase {
          assertInUpdate = null;
 
 
-         System.err.println("->Check publish '" + oid + "', frodo should get it ...");
+         System.err.println(ME+"->Check publish '" + oid + "', frodo should get it ...");
          pk = new PublishKey(glob, oid, "text/plain", "1.0", domain);
          pq = new PublishQos(glob);
          msgUnit = new MsgUnit(glob, pk, contentStr.getBytes(), pq);
@@ -151,7 +151,7 @@ public class DirtyReadTest extends TestCase {
                                     "' to xmlBlaster node with IP=" + serverHelper.getFrodoGlob().getProperty().get("port",0) +
                                     ", the returned QoS is: " + prq.getKeyOid());
 
-         try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Wait some time
+         try { Thread.currentThread().sleep(2000); } catch( InterruptedException i) {} // Wait some time
          assertEquals("frodo has not received message", 1, updateCounterFrodo);
 
          System.err.println("Query heron if he did not send any update message ...");
@@ -159,7 +159,7 @@ public class DirtyReadTest extends TestCase {
          heronCon = serverHelper.connect(serverHelper.getHeronGlob(), null);
 
 
-         System.err.println("->Find out the public session Id of slave frodo at heron ...");
+         System.err.println(ME+"->Find out the public session Id of slave frodo at heron ...");
          String cmd = "__cmd:client/" + serverHelper.getFrodoGlob().getId() + "/?sessionList";
          MsgUnit[] msgs = heronCon.get("<key oid='" + cmd + "'/>", null);
          assertEquals("Command failed", 1, msgs.length);
@@ -183,7 +183,7 @@ public class DirtyReadTest extends TestCase {
             log.info(ME, "Success, the update was NO dirty read as heron did send it!");
          }
 
-         System.err.println("Check if heron has got the message ...");
+         System.err.println(ME+"Check if heron has got the message ...");
          msgs = heronCon.get("<key oid='" + oid + "'/>", null);
          assertEquals("The master never got the message", 1, msgs.length);
       }
