@@ -18,7 +18,7 @@ namespace clientIdl {
       /*
        * implement the update method, which was promised in "xmlBlaster.idl"
        */
-      void update(const serverIdl::MessageUnitArr& messageUnitArr, const serverIdl::XmlTypeArr& qosArr)
+      void update(const serverIdl::MessageUnitArr& messageUnitArr)
       {
          cout << "******* Callback invoked *******" << endl;
       }
@@ -83,8 +83,9 @@ int main(int argc, char* argv[])
       message.xmlKey = xmlKey.c_str();
       string content = "Hello xmlBlaster, i'm a C++ client";
       //??? message.content(MICO_ULong(content.size()), MICO_ULong(content.size()), (CORBA::Octet*)content.c_str());
+      message.qos = "<qos></qos>";
 
-      string publishOid = xmlBlaster->publish(message, "");
+      string publishOid = xmlBlaster->publish(message);
       cout << "Successful published message with new oid=" << publishOid << endl;
 
 

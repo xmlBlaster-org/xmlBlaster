@@ -23,12 +23,12 @@ Using BOA (clientBOA.cc):
 
 3) Start the xmlBlaster server
 
-	 jaco org.xmlBlaster.Main -iorFile /tmp/ior.dat
+         jaco org.xmlBlaster.Main -iorFile /tmp/ior.dat
 
 
 4) And connect with the C++ client
 
-	 ./clientBOA `cat /tmp/ior.dat`
+         ./clientBOA `cat /tmp/ior.dat`
 
 
 
@@ -40,14 +40,19 @@ You need to have a running web server and set the DocumentRoot to e.g.
 
 3) Start the naming service (with a running web server)
 
-	jaco jacorb.naming.NameServer ${DocumentRoot}/NS_Ref
+   jaco jacorb.naming.NameServer ${DocumentRoot}/NS_Ref
 
 
 4) Start the xmlBlaster server (The web server URL is in jacorb.properties)
 
-	jaco org.xmlBlaster.Main
+   jaco org.xmlBlaster.Main
 
 
 5) And connect with the C++ client
 
-	./clientPOA -ORBNamingIOR `cat ${DocumentRoot}/NS_Ref`
+   ./clientPOA -ORBNamingIOR `cat ${DocumentRoot}/NS_Ref`
+
+
+On problems edit $HOME/jacorb.properties and set
+   jacorb.verbosity=1
+

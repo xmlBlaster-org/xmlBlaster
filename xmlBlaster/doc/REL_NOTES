@@ -2,6 +2,9 @@
 
 Changes for 0.78 [???     2000]
 ==============================
+  - Moved xmlBlaster/src/idl/xmlBlaster.idl to directory
+    xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl
+
   - Changed package names:
     org.xmlBlaster.engine.persistence.I_PersistenceDriver -> org.xmlBlaster.engine.I_PersistenceDriver
     org.xmlBlaster.engine.persistence.FileDriver          -> org.xmlBlaster.engine.FileDriver

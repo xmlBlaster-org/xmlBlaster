@@ -107,7 +107,7 @@ endif
 	echo '# Module dependencies' > .depend
 	$(MKDEPEND) $(CXXFLAGS) *.c *.cc >> .depend
 
-XMLBLASTER_IDL  = ${XMLBLASTER_HOME}/src/idl/xmlBlaster.idl
+XMLBLASTER_IDL  = ${XMLBLASTER_HOME}/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl
 
 INSTALL_DIR     = redlich/Hello-1
 INSTALL_SRCS    = Makefile client.cc ${XMLBLASTER_IDL}

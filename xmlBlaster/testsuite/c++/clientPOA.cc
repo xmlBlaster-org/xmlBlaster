@@ -37,9 +37,7 @@ public:
   BlasterCallback_impl()  {}
   ~BlasterCallback_impl() {}
 
-  void update(const serverIdl::MessageUnitArr& messageUnitArr,
-              const serverIdl::XmlTypeArr& qosArr) {
-
+  void update(const serverIdl::MessageUnitArr& messageUnitArr) {
     int nmax = messageUnitArr.length();
     cout << endl;
     cout << "Callback invoked: there are " << nmax << " messages" << endl;
@@ -163,8 +161,9 @@ int main(int argc, char* argv[]) {
     char content[100] = "ti che ta tacat i tac tacum i tac!";
     message.content   = ContentType(sizeof(content),sizeof(content),
                                     (CORBA::Octet*)content);
+    message.qos = "<qos></qos>";
 
-    string publishOid = xmlBlaster->publish(message, "");
+    string publishOid = xmlBlaster->publish(message);
 
     cout << "Successfully published message with new oid=";
     cout << publishOid << endl;

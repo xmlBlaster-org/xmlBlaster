@@ -19,10 +19,10 @@ jacorb.outbuf_size=2048
 # URL where IORs are stored (used in orb.resolve_initial_service())
 # DO EDIT these!
 
-jacorb.NameServerURL=http://localhost/~user/NS_Ref
-jacorb.TradingServiceURL=http://localhost/~user/TS_Ref
-jacorb.ImplementationRepositoryURL=http://localhost/~user/ImR_Ref
-jacorb.ProxyServerURL=http://localhost/~user/Appligator_Ref
+jacorb.NameServerURL=http://localhost/NS_Ref
+jacorb.TradingServiceURL=http://localhost/TS_Ref
+jacorb.ImplementationRepositoryURL=http://localhost/ImR_Ref
+jacorb.ProxyServerURL=http://localhost/Appligator_Ref
 
 # client-side caching of object references can turned off,
 # but it should not normally as it prevents connection multiplexing
