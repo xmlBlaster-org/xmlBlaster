@@ -153,7 +153,8 @@ public class QueueThreadingTest extends TestCase {
    public void tearDown() {
       for (int i=0; i < this.queues.length; i++) {
          try {
-            this.queues[i].destroy();
+            this.queues[i].clear();
+            this.queues[i].shutdown();
          }
          catch (Exception ex) {
             this.log.warn(ME, "error when tearing down " + ex.getMessage() + " this normally happens when invoquing multiple times cleanUp " + ex.getMessage());

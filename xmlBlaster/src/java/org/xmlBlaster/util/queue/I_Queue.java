@@ -158,7 +158,7 @@ public interface I_Queue extends I_StorageProblemNotifier
     * @return I_QueueEntry the least element with respect to the given ordering
     * @throws XmlBlasterException in case the underlying implementation gets an exception while retrieving the element.
     */
-   I_QueueEntry take() throws XmlBlasterException;
+//   I_QueueEntry take() throws XmlBlasterException;
 
    /**
     * Takes given number of entries out of the queue. The ordering is first priority and secondly
@@ -171,7 +171,7 @@ public interface I_Queue extends I_StorageProblemNotifier
     * @return list with I_QueueEntry, the least elements with respect to the given ordering, or size()==0
     * @throws XmlBlasterException in case the underlying implementation gets an exception while retrieving the element.
     */
-   ArrayList take(int numOfEntries, long numOfBytes) throws XmlBlasterException;
+//   ArrayList take(int numOfEntries, long numOfBytes) throws XmlBlasterException;
 
    /**
     * Takes given number of entries out of the queue. The ordering is first priority and secondly timestamp.
@@ -440,7 +440,7 @@ public interface I_Queue extends I_StorageProblemNotifier
     * destroys all the resources associated to this queue. This means that all
     * temporary and persistent resources are removed.
     */
-   public void destroy() throws XmlBlasterException;
+//   public void destroy() throws XmlBlasterException;
 
    /**
     * performs what has to be done when the Queue Plugin shuts down.

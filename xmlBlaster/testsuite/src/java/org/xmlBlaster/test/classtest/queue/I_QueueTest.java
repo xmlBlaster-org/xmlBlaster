@@ -1382,7 +1382,8 @@ public class I_QueueTest extends TestCase {
    public void tearDown() {
 
       try {
-         this.queue.destroy();
+         this.queue.clear();
+         this.queue.shutdown();
       }
       catch (Exception ex) {
          this.log.error(ME, "error when tearing down " + ex.getMessage());

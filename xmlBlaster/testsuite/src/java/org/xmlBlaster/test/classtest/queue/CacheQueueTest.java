@@ -135,7 +135,10 @@ public class CacheQueueTest extends TestCase {
 
    public void tearDown() {
       try {
-         for (int i=0; i < 3; i++) this.queues[i].destroy();
+         for (int i=0; i < 3; i++) {
+            this.queues[i].clear();
+            this.queues[i].shutdown();
+         }
       }
       catch (Exception ex) {
          this.log.warn(ME, "error when tearing down " + ex.getMessage() + " this normally happens when invoquing multiple times cleanUp");
@@ -241,7 +244,9 @@ public class CacheQueueTest extends TestCase {
                StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "CacheQueueTest/jdbc" + maxNumOfBytes[is] + "/ram" + maxNumOfBytesCache[ic]);
 
 //               this.queue = new CacheQueueInterceptorPlugin();
-               refQueue.destroy();
+               refQueue.clear();
+               refQueue.shutdown();
+
                refQueue.initialize(queueId, prop);
 
                for (int it=0; it < numOfTransientEntries.length; it++) {
@@ -390,7 +395,8 @@ public class CacheQueueTest extends TestCase {
       prop.setMaxBytes(maxNumOfBytes);
       prop.setMaxBytesCache(maxNumOfBytesCache);
       StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "CacheQueueTest/jdbc" + maxNumOfBytes + "/ram" + maxNumOfBytesCache);
-      this.queue.destroy();
+      this.queue.clear();
+      this.queue.shutdown();
       this.queue.initialize(queueId, prop);
 
       if (!this.queue.isShutdown()) this.queue.shutdown();

@@ -135,7 +135,8 @@ public class QueueExtendedTest extends TestCase {
       if (queues != null) {
          for (int i=0; i < queues.length; i++) {
             try {
-               this.queues[i].destroy();
+               this.queues[i].clear();
+               this.queues[i].shutdown();
             }
             catch (Exception ex) {
                this.log.warn(ME, "error when tearing down " + ex.getMessage() + " this normally happens when invoquing multiple times cleanUp " + ex.getMessage());

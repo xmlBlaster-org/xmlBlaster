@@ -107,8 +107,8 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
          }
          String reason = queueName + " queue overflow, " + queue.getNumOfEntries() +
                          " entries are in queue, try increasing '" + 
-                         this.property.getPropName(maxEntries) + "' on client login. Occured at " + extraTxt;
-         this.log.warn(ME, reason + this.toXml(""));
+                         this.property.getPropName(maxEntries) + "' on client login.";
+         this.log.trace(ME, reason + this.toXml(""));
          if (ifFullThrowException)
             throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, reason);
       }
@@ -140,10 +140,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
    synchronized public void storageAvailable(int oldStatus) {
       if (oldStatus == I_StorageProblemListener.UNDEF) return;
       if (this.log.CALL) this.log.call(ME, "storageAvailable");
-     /* remove all obsolete messages from the persitence. Obsolete are the
-      * entries which are lower (lower priority and older) than the lowest
-      * entry in the transient storage.
-      */
+     /* remove all obsolete messages from the persitence. */
 
       if (this.persistentQueue == null) return; // should never happen
 
@@ -169,16 +166,29 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
             isInclusive = false;
             this.persistentQueue.clear(); 
          }
-         else this.persistentQueue.removeWithLimitEntry(limitEntry, isInclusive);
+
+
+         // remove all old msg which are higher than the reference entry all more important msg were sent already         
+         else this.persistentQueue.removeWithLimitEntry(limitEntry, isInclusive); 
 
          limitEntry = this.persistentQueue.peek();
-         list = this.transientQueue.peekWithLimitEntry(limitEntry);
-         this.persistentQueue.put((I_QueueEntry[])list.toArray(new I_QueueEntry[list.size()]), false);
-
+         if (limitEntry != null) {
+            list = this.transientQueue.peekWithLimitEntry(limitEntry);
+            if (list.size() > 0) {
+               // TAKE AWAY ALL TRANSIENTS !!!!!!
+      	       ArrayList list2 = new ArrayList();
+               for (int i=0; i < list.size(); i++) {
+                  I_Entry entry = (I_Entry)list.get(i);
+                  if (entry.isPersistent()) list2.add(entry);
+               }
+               if (list2.size() > 0) 
+                  this.persistentQueue.put((I_QueueEntry[])list2.toArray(new I_QueueEntry[list2.size()]), false);
+           }
+         }
          this.isConnected = true;
       }
       catch (XmlBlasterException ex) {
-         this.log.error(ME, "exception occured when reconnecting. " + ex.toString());
+         this.log.error(ME, "exception occured when reconnecting. " + ex.getMessage());
       }
       finally {
          try {
@@ -249,7 +259,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
 
          // do the queue specific stuff like delete all volatile entries in
          // the persistent queue
-         if (this.persistentQueue != null) {
+         if (isPersistenceAvailable()) {
             try {
                this.persistentQueue.removeTransient();
             }
@@ -315,11 +325,11 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
       return this.property;
    }
 
-   synchronized public void setNotifiedAboutAddOrRemove(boolean notify) {
+   public void setNotifiedAboutAddOrRemove(boolean notify) {
       this.notifiedAboutAddOrRemove = notify;
    }
 
-   synchronized public boolean isNotifiedAboutAddOrRemove() {
+   public boolean isNotifiedAboutAddOrRemove() {
       return this.notifiedAboutAddOrRemove;
    }
 
@@ -401,7 +411,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
       if ((this.putListener != null) && (!ignorePutInterceptor)) {
          // Is an interceptor registered (and not bypassed) ?
          if (this.putListener.putPre(queueEntries) == false)
-            return;
+            return; // supress adding entries to queue (bypasses the queue)
       }
 
       synchronized (this) {
@@ -410,7 +420,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
         
          long sizeOfEntries = 0L;
          // separate persistent from transient messages and store the persistents in persistence
-         if (this.persistentQueue != null && this.isConnected) {
+         if (isPersistenceAvailable()) {
             ArrayList persistentsFromEntries = new ArrayList();
             long sizeOfPersistents = 0L;
             long numOfPersistents = 0L;
@@ -430,64 +440,68 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
                   this.persistentQueue.put((I_QueueEntry[])persistentsFromEntries.toArray(new I_QueueEntry[persistentsFromEntries.size()]), ignorePutInterceptor);
                }
                catch (XmlBlasterException ex) {
-                  this.log.error(ME, "put: an error occured when writing to the persistent queue: " + persistentsFromEntries.size() + " persistent entries will temporarly be handled as transient. Is the DB up and running ? " + ex.toString() + "state "  + this.toXml(""));
+                  this.log.error(ME, "put: an error occured when writing to the persistent queue: " + persistentsFromEntries.size() + " persistent entries will temporarly be handled as transient. Is the DB up and running ? " + ex.getMessage() + "state "  + this.toXml(""));
                   // should an exception be rethrown here ? No because it should be possible to work even if no persistence available
+               }
+               catch (Throwable ex) {
+                  this.log.error(ME, "put: an error occured when writing to the persistent queue: " + persistentsFromEntries.size() + " persistent entries will temporarly be handled as transient. Is the DB up and running ? " + ex.toString() + "state "  + this.toXml(""));
+                  ex.printStackTrace();
                }
             }
          }
         
-         // check if swapping before putting data into ram queue allows to avoid
-         // synchronizing in case it is not swapping (better performance) IS THIS STILL NEEDED ??? (no synch)
-         if (checkSpaceAvailable(this.transientQueue, sizeOfEntries, false, "") > -1L && 
-             checkEntriesAvailable(this.transientQueue, queueEntries.length, false, "") > -1L) {
-            this.transientQueue.put(queueEntries, ignorePutInterceptor);
-         }
-        
-         else {
-            // put all messages on transient queue
-            this.transientQueue.put(queueEntries, ignorePutInterceptor);
-        
+         // put all messages on transient queue
+         this.transientQueue.put(queueEntries, ignorePutInterceptor);
+
+         if (isPersistenceAvailable()) { // if no persistence available let RAM overflow one time
+
             // handle swapping (if any)
             long exceedingSize = -checkSpaceAvailable(this.transientQueue, 0L, false, "");
             long exceedingEntries = -checkEntriesAvailable(this.transientQueue, 0L, false, "");
-            if (exceedingSize >= 0L || exceedingEntries >= 0L) {
+            if ( (exceedingSize >= 0L && this.persistentQueue.getMaxNumOfBytes() > this.transientQueue.getMaxNumOfBytes()) || 
+                 (exceedingEntries >= 0L && this.persistentQueue.getMaxNumOfEntries() > this.transientQueue.getMaxNumOfEntries())) {
                if (this.log.TRACE) this.log.trace(ME, "put: swapping. Exceeding size (in bytes): " + exceedingSize + " exceeding entries: " + exceedingEntries + " state: " + toXml(""));
-         
-               if (this.persistentQueue != null && this.isConnected) { // if no persistence available let RAM overflow one time
-                  ArrayList transients = null;
-                  try {
-                     ArrayList swaps = this.transientQueue.peekLowest((int)exceedingEntries, exceedingSize, null, true);
-                     if (this.log.TRACE) {
-                        this.log.trace(ME, "put: swapping: moving '" + swaps.size() + "' entries from transient queue to persistent queue: exceedingEntries='" + exceedingEntries + "' and exceedingSize='" + exceedingSize + "'");
-                     }
-                     // get the transients
-                     transients = new ArrayList();
-                     long sizeOfTransients = 0L;
-                     for (int i=0; i < swaps.size(); i++) {
-                        I_QueueEntry entry = (I_QueueEntry)swaps.get(i);
-                        if (!entry.isPersistent()) {
-                           transients.add(entry);
-                           sizeOfTransients += entry.getSizeInBytes();
-                        }
-                     }
-                     if (transients.size() > 0)
-                        this.persistentQueue.put((I_QueueEntry[])transients.toArray(new I_QueueEntry[transients.size()]), ignorePutInterceptor);
-                     this.transientQueue.takeLowest((int)exceedingEntries, exceedingSize, null, true);
+            
+               ArrayList transients = null;
+               try {
+                  ArrayList swaps = this.transientQueue.peekLowest((int)exceedingEntries, exceedingSize, null, true);
+                  if (this.log.TRACE) {
+                     this.log.trace(ME, "put: swapping: moving '" + swaps.size() + "' entries from transient queue to persistent queue: exceedingEntries='" + exceedingEntries + "' and exceedingSize='" + exceedingSize + "'");
                   }
-                  catch (XmlBlasterException ex) {
-                     this.log.error(ME, "put: an error occured when swapping: " +  transients.size() + ". Is the DB up and running ? " + ex.getMessage() + " state: " + toXml(""));
+                  // get the transients
+                  transients = new ArrayList();
+                  for (int i=0; i < swaps.size(); i++) {
+                     I_QueueEntry entry = (I_QueueEntry)swaps.get(i);
+                     if (!entry.isPersistent()) {
+                        transients.add(entry);
+                     }
                   }
+                  if (transients.size() > 0)
+                     this.persistentQueue.put((I_QueueEntry[])transients.toArray(new I_QueueEntry[transients.size()]), ignorePutInterceptor);
+                  this.transientQueue.takeLowest((int)exceedingEntries, exceedingSize, null, true);
                }
-            } 
-         }
+               catch (XmlBlasterException ex) {
+                  this.log.error(ME, "put: an error occured when swapping: " +  transients.size() + ". Is the DB up and running ? " + ex.getMessage() + " state: " + toXml(""));
+               }
+               catch (Throwable ex) {
+                  this.log.error(ME, "put: an error occured when swapping: " +  transients.size() + ". Is the DB up and running ? " + ex.toString());
+                  ex.printStackTrace();
+               }
+            }
+         } 
       } // end of synchronized here ...
 
       // these must be outside the synchronized ...
       if (this.notifiedAboutAddOrRemove) {
          for(int i=0; i<queueEntries.length; i++)
-            queueEntries[i].added(this.queueId);
+            try {
+               queueEntries[i].added(this.queueId);
+            }
+            catch (Throwable ex) {
+               this.log.error(ME, "put: an error occured when notifying : " + ex.toString());
+               ex.printStackTrace();
+            }
       }
-
       if ((this.putListener != null) && (!ignorePutInterceptor)) {
          this.putListener.putPost(queueEntries);
       }
@@ -502,43 +516,12 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
    }
 
    /**
-    * @see I_Queue#take()
-    */
-   public I_QueueEntry take() throws XmlBlasterException
-   {
-      return (I_QueueEntry)take(1,-1L).get(0);
-   }
-
-   /**
     * @see I_Queue#takeWithPriority(int,long,int,int)
     */
    public ArrayList takeWithPriority(int numOfEntries, long numOfBytes, int minPriority, int maxPriority)
       throws XmlBlasterException {
       throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "takeWithPriority not implemented");
       // if (this.notifiedAboutAddOrRemove) {}
-   }
-
-
-   /**
-    * @see I_Queue#take(int, long)
-    */
-   public ArrayList take(int numOfEntries, long numOfBytes) throws XmlBlasterException {
-      this.log.call(ME, "take ");
-      boolean[] ret = null;
-      I_QueueEntry[] entries = null;
-      ArrayList list = null;
-      synchronized(this) {
-         list = peek(numOfEntries, numOfBytes);
-         entries = (I_QueueEntry[])list.toArray(new I_QueueEntry[list.size()]);
-         ret = removeRandomNoNotify(entries);
-      }
-
-      if (this.notifiedAboutAddOrRemove) {
-         for(int i=0; i<ret.length; i++)
-            if (ret[i]) entries[i].removed(this.queueId);
-      }
-
-      return list;
    }
 
 
@@ -573,14 +556,15 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
    public ArrayList takeLowest(int numOfEntries, long numOfBytes, I_QueueEntry limitEntry, boolean leaveOne)
       throws XmlBlasterException {
       ArrayList list = null;
-      boolean handlePersistents = isPersistenceAvailable() && hasUncachedEntries();
       boolean doNotify = false;
       try {
          synchronized(this) {
+            boolean handlePersistents = isPersistenceAvailable() && hasUncachedEntries();
             if ( handlePersistents ) { 
                // swapping
                try {
                   list = this.persistentQueue.takeLowest(numOfEntries, numOfBytes, limitEntry, leaveOne);
+                  doNotify = true;
                }
                catch (Throwable ex) {
                   handlePersistents = false;
@@ -588,7 +572,6 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
                }
            
                if (handlePersistents) {
-                  doNotify = true;
                   if (list.size() > 1) {
                      throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME,
                               "takeLowest for more than one entry is not implemented");
@@ -598,7 +581,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
                   boolean[] hlp = this.transientQueue.removeRandom((I_Entry[])list.toArray(new I_Entry[list.size()]));
                   for (int i=0; i < hlp.length; i++) if (hlp[i]) num++;
                   if (num > 0L) {
-                     log.error(ME, "Didn't expect message " + ((I_Entry)list.get(0)).getLogId() + " in transient store");
+                     log.error(ME, "Didn't expect message " + ((I_Entry)list.get(0)).getLogId() + " in transient store " + this.toXml(""));
                   }
                }
             }
@@ -606,7 +589,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
             if ( !handlePersistents) {
                list = this.transientQueue.takeLowest(numOfEntries, numOfBytes, limitEntry, leaveOne);
                doNotify = true;
-               if (this.persistentQueue!=null && list.size() > 0 && this.persistentQueue.getNumOfEntries() > 0) {
+               if (isPersistenceAvailable() && list.size() > 0 && this.persistentQueue.getNumOfEntries() > 0) {
                   boolean durableFound = false;
                   for(int i=0; i<list.size(); i++) {
                      if (((I_Entry)list.get(i)).isPersistent()) {
@@ -616,7 +599,6 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
                   }
                   if (durableFound) {
                      this.persistentQueue.removeRandom((I_Entry[])list.toArray(new I_Entry[list.size()]));
-                     doNotify = true;
                   }
                }
             }
@@ -675,8 +657,19 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
     */
    synchronized public long removeWithLimitEntry(I_QueueEntry limitEntry, boolean inclusive) throws XmlBlasterException {
       long ret = this.transientQueue.removeWithLimitEntry(limitEntry, inclusive);
-      if (this.persistentQueue != null && this.isConnected) 
-         ret = this.persistentQueue.removeWithLimitEntry(limitEntry, inclusive);
+
+      if (isPersistenceAvailable()) {
+         try {
+            ret = this.persistentQueue.removeWithLimitEntry(limitEntry, inclusive);
+         }
+         catch (XmlBlasterException ex) {
+            this.log.error(ME, "removeWithLimitEntry: exception occured when removing from persistence. reason: " + ex.getMessage());
+         }
+         catch (Throwable ex) {
+            this.log.error(ME, "removeWithLimitEntry: exception occured when removing from persistence. reason: " + ex.toString());
+            ex.printStackTrace();
+         }
+      }
       return ret;
    }
 
@@ -769,37 +762,40 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
       else return 0;
    }
 
-
-
+   /**
+    * The given ret array will be updated with the result of the removing from the persistent
+    * queue.
+    */
    private final boolean[] removePossibleSwappedEntries(boolean[] ret, I_Entry[] queueEntries) {
       if (this.log.CALL) this.log.call(ME, "removePossibleSwappedEntries");
 
       // prepare the entries array
-      int count = 0;
-      for (int i=0; i < ret.length; i++) if (!ret[i]) count++;
-      if (count == 0) return ret;
+      if (!isPersistenceAvailable()) return ret;
+      int numUnremoved = 0;
+      for (int i=0; i < ret.length; i++) if (!ret[i]) numUnremoved++;
+      if (numUnremoved == 0) return ret;
+      if (!hasTransientsSwapped()) return ret;
 
-      if (this.log.TRACE) this.log.trace(ME, "removePossibleSwappedEntries, there were entries '" + count + "' to delete on persistence");
+      if (this.log.TRACE) this.log.trace(ME, "removePossibleSwappedEntries, there were entries '" + numUnremoved + "' to delete on persistence");
       if (queueEntries == null || queueEntries.length < 1) return ret;
-      if (this.persistentQueue == null || !this.isConnected) return ret;
       
-      I_Entry[] entries = new I_Entry[count];
-      count = 0;
+      I_Entry[] unremovedEntries = new I_Entry[numUnremoved];
+      int count = 0;
       for (int i=0; i < ret.length; i++) {
          if (!ret[i]) {
-            entries[count] = queueEntries[i];
+            unremovedEntries[count] = queueEntries[i];
             count++;
          }
       }
 
       try {
-         boolean[] ret1 = this.persistentQueue.removeRandom(entries);
+         boolean[] ret1 = this.persistentQueue.removeRandom(unremovedEntries);
          count = 0;
          for (int i=0; i < ret.length; i++) {
             if (!ret[i]) {
                ret[i] = ret1[count];
                count++;
-               if (this.log.DUMP) this.log.dump(ME, "removePossibleSwappedEntries entry '" + entries[count].getUniqueId() + "' has been deleted ? : " + ret1[count]);
+               if (this.log.DUMP) this.log.dump(ME, "removePossibleSwappedEntries entry '" + unremovedEntries[count].getUniqueId() + "' has been deleted ? : " + ret1[count]);
             }
          }
       }
@@ -820,19 +816,17 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
 
       synchronized (this) {
          try {
-            if (this.persistentQueue != null) {
+         if (isPersistenceAvailable()) {
                ArrayList persistents = new ArrayList();
                for (int i=0; i < queueEntries.length; i++) {
                   if (queueEntries[i].isPersistent()) persistents.add(queueEntries[i]);
                }
                if (this.log.TRACE) this.log.trace(ME, "removeRandom: remove " + persistents.size() + " persistent entries from persistent storage");
-               if (this.persistentQueue != null && this.isConnected) {
-                  try {
-                     this.persistentQueue.removeRandom((I_Entry[])persistents.toArray(new I_Entry[persistents.size()]));
-                  }
-                  catch (XmlBlasterException ex) {
-                     this.log.error(ME, "could not remove " + persistents.size() + " entries from the persistent queue. Probably due to failed connection to the DB exception: " +  ex.getMessage());
-                  }
+               try {
+                  this.persistentQueue.removeRandom((I_Entry[])persistents.toArray(new I_Entry[persistents.size()]));
+               }
+               catch (XmlBlasterException ex) {
+                  this.log.error(ME, "could not remove " + persistents.size() + " entries from the persistent queue. Probably due to failed connection to the DB exception: " +  ex.getMessage());
                }
             }
            
@@ -866,7 +860,15 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
       boolean[] ret = removeRandomNoNotify(queueEntries);
       if (this.notifiedAboutAddOrRemove) {
          for(int i=0; i<ret.length; i++)
-            if (ret[i]) queueEntries[i].removed(this.queueId);
+            if (ret[i]) {
+              try {
+                 queueEntries[i].removed(this.queueId);
+              }
+              catch (Throwable ex) {
+                 this.log.error(ME, "removeRandom: exception when notifying about removal: " + ex.toString());
+                 ex.printStackTrace();
+              }
+            }
       }
       return ret;
    }
@@ -876,22 +878,22 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
     * Loads from the persistence so much data as it fits into the transient
     * queue.
     */
-   private final int loadFromPersistence() throws XmlBlasterException {
-      if (this.persistentQueue == null || !this.isConnected) return 0;
+   synchronized private final int loadFromPersistence() throws XmlBlasterException {
+      if (!isPersistenceAvailable()) return 0;
 
       // load further entries from persistence into transient queue
-      if (this.persistentQueue.getNumOfEntries() > this.transientQueue.getNumOfEntries()) {
+      if(hasUncachedEntries()) {
          //or should it only fill a certain amount (percent) of the queue size ?
          long freeEntries = this.transientQueue.getMaxNumOfEntries() - this.transientQueue.getNumOfEntries();
          long freeBytes = this.transientQueue.getMaxNumOfBytes() - this.transientQueue.getNumOfBytes();
 
-         if (freeEntries < 0L || freeBytes < 0L) {
+         if (freeEntries <= 0L || freeBytes <= 0L) {
             this.log.warn(ME, "loadFromPersistence: the transient queue is already full." +
                           " numOfBytes=" + this.transientQueue.getNumOfBytes() +
                           " maxNumOfBytes=" + this.transientQueue.getMaxNumOfBytes() +
                           " numOfEntries=" + this.transientQueue.getNumOfEntries() +
                           " maxNumOfEntries=" + this.transientQueue.getMaxNumOfBytes());
-            if (this.log.DUMP) this.log.dump(ME, "loadFromPersitence: the real current size in bytes of transient queue is: " + ((RamQueuePlugin)this.transientQueue).getSynchronizedNumOfBytes());
+            if (this.log.DUMP) this.log.dump(ME, "loadFromPersistence: the real current size in bytes of transient queue is: " + ((RamQueuePlugin)this.transientQueue).getSynchronizedNumOfBytes());
             return 0;
          }
          if (this.log.TRACE) this.log.trace(ME, "removeRandom: swapping: reloading from persistence for a length of " + freeBytes);
@@ -928,14 +930,14 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
          }
          try {
             if (transients.size() > 0)
-               this.persistentQueue.removeRandom((I_Entry[])list.toArray(new I_Entry[list.size()]));
+               this.persistentQueue.removeRandom((I_Entry[])transients.toArray(new I_Entry[transients.size()]));
          }
          catch (XmlBlasterException ex) {
             this.log.error(ME, "loadFromPeristence: Memory leak: problems removing " + transients.size() + " swapped transient entries form persistent store: " + ex.getMessage());
             return list.size();
          }
 
-         return list.size();
+         return transients.size();
       }
 
       return 0;
@@ -958,7 +960,17 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
 
       }
       if (this.notifiedAboutAddOrRemove) {
-         for(int i=0; i<tmp.length; i++) if (tmp[i]) ((I_Entry)list.get(i)).removed(this.queueId);
+         for(int i=0; i<tmp.length; i++) {
+            if (tmp[i]) {
+               try {
+                  ((I_Entry)list.get(i)).removed(this.queueId);
+               }
+               catch (Throwable ex) {
+                  this.log.error(ME, "removeWithPriority exception occured when notifying about removal. Reason: " + ex.toString());
+                  ex.printStackTrace();  
+               }
+            }
+         }
       }
       long ret = 0L;
       for (int i=0; i < tmp.length; i++) if (tmp[i]) ret++;
@@ -981,7 +993,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
     */
    synchronized public long getNumOfEntries() {
       long ret = 0L;
-      if (this.persistentQueue != null && this.isConnected) {
+      if (isPersistenceAvailable()) {
          ret = this.persistentQueue.getNumOfEntries();
          if (ret < 0L) return this.transientQueue.getNumOfEntries();
          ret += this.transientQueue.getNumOfEntries() - this.transientQueue.getNumOfPersistentEntries();
@@ -999,7 +1011,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
     */
    synchronized public long getNumOfPersistentEntries() {
       long ret = 0L;
-      if (this.persistentQueue != null && this.isConnected) {
+      if (isPersistenceAvailable()) {
          ret = this.persistentQueue.getNumOfPersistentEntries();
          if (ret < 0L) return this.transientQueue.getNumOfEntries();
          return this.persistentQueue.getNumOfPersistentEntries();
@@ -1012,7 +1024,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
     */
    public long getMaxNumOfEntries() {
       long ret = 0L;
-      if (this.persistentQueue != null && this.isConnected)
+      if (isPersistenceAvailable())
          return this.persistentQueue.getMaxNumOfEntries();
       return this.transientQueue.getMaxNumOfEntries();
    }
@@ -1022,7 +1034,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
     */
    synchronized public long getNumOfBytes() {
       long ret = 0L;
-      if (this.persistentQueue != null && this.isConnected) {
+      if (isPersistenceAvailable()) {
          ret = this.persistentQueue.getNumOfBytes();
          if (ret < 0L) return this.transientQueue.getNumOfBytes();
          ret += this.transientQueue.getNumOfBytes() - this.transientQueue.getNumOfPersistentBytes();
@@ -1036,7 +1048,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
     */
    synchronized public long getNumOfPersistentBytes() {
       long ret = 0L;
-      if (this.persistentQueue != null && this.isConnected) {
+      if (isPersistenceAvailable()) {
          ret = this.persistentQueue.getNumOfPersistentBytes();
          // if a persistent queue return -1L it means it was not able to get the correct size
          if (ret < 0L) return this.transientQueue.getNumOfPersistentBytes();
@@ -1051,7 +1063,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
     */
    synchronized public long getMaxNumOfBytes() {
       long ret = 0L;
-      if (this.persistentQueue != null && this.isConnected)
+      if (isPersistenceAvailable())
          return this.persistentQueue.getMaxNumOfBytes();
       return this.transientQueue.getMaxNumOfBytes();
    }
@@ -1073,27 +1085,29 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
    /**
     * Clears everything and removes the queue (i.e. frees the associated table)
     */
-   public long clear() {
+   synchronized public long clear() {
       long ret = 0;
       if (this.notifiedAboutAddOrRemove) this.transientQueue.setNotifiedAboutAddOrRemove(true);
-      synchronized(this) {
-         // Activate reference decrement temporary ... entry.removed()
+      try {
+      // Activate reference decrement temporary ... entry.removed()
          ret = this.transientQueue.clear();
       }
+      catch (Throwable ex) {
+         this.log.error(ME, "clear: exception when processing transient queue. Reason: " + ex.toString());
+         ex.printStackTrace();
+      }
+
       if (this.notifiedAboutAddOrRemove) this.transientQueue.setNotifiedAboutAddOrRemove(false);
 
-      if (this.persistentQueue != null && this.isConnected)
-         ret += this.persistentQueue.clear();
-
-      /*
-      try {
-         // to be notified about reconnections / disconnections
-         this.glob.getJdbcQueueManager(this.queueId).unregisterListener(this);
+      if (isPersistenceAvailable()) {
+         try {
+            ret += this.persistentQueue.clear();
+         }
+         catch (Throwable ex) {
+            this.log.error(ME, "clear: exception when processing persistent queue. Reason: " + ex.toString());
+            ex.printStackTrace();
+         }
       }
-      catch (Exception ex) {
-         this.log.error(ME, "could not unregister listener. Cause: " + ex.getMessage());
-      }
-      */
 
       return ret;
    }
@@ -1113,9 +1127,21 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
    synchronized public void shutdown() {
       if (log.CALL) log.call(ME, "shutdown()");
       this.isDown = true;
-      this.transientQueue.shutdown();
-      if (this.persistentQueue != null && this.isConnected)
-         this.persistentQueue.shutdown();
+      try {
+         this.transientQueue.shutdown();
+      }
+      catch (Throwable ex) {
+         this.log.error(ME, "shutdown: exception when processing transient queue. Reason: " + ex.toString());
+         ex.printStackTrace();
+      }
+
+      try {
+         if (this.persistentQueue != null) this.persistentQueue.shutdown();
+      }
+      catch (Throwable ex) {
+         this.log.error(ME, "shutdown: exception when processing transient queue. Reason: " + ex.toString());
+         ex.printStackTrace();
+      }
       try {
 //         this.glob.getJdbcQueueManager(this.queueId).unregisterListener(this);
          this.persistentQueue.unRegisterStorageProblemListener(this);
@@ -1183,26 +1209,6 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
     * @return the pluginInfo object.
     */
    public PluginInfo getInfo() { return this.pluginInfo; }
-
-   /**
-    * destroys all the resources associated to this queue. Even the persistent
-    * data is destroyed.
-    */
-   synchronized public void destroy() throws XmlBlasterException {
-      XmlBlasterException e = null;
-      this.isDown = true;
-//      this.glob.getJdbcQueueManager(this.queueId).unregisterListener(this);
-      if (this.persistentQueue != null) this.persistentQueue.unRegisterStorageProblemListener(this);
-      try {
-         if (this.persistentQueue != null && this.isConnected)
-            this.persistentQueue.destroy();
-      }
-      catch (XmlBlasterException ex) {
-         e = ex;
-      }
-      this.transientQueue.destroy();
-      if (e != null) throw e;
-   }
 
    /**
     * @see org.xmlBlaster.util.queue.I_StorageProblemNotifier#registerStorageProblemListener(I_StorageProblemListener)

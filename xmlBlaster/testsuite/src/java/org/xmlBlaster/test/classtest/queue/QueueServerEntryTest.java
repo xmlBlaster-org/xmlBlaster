@@ -115,7 +115,8 @@ public class QueueServerEntryTest extends TestCase {
 
    public void tearDown() {
       try {
-         this.queue.destroy();
+         this.queue.clear();
+         this.queue.shutdown();
       }
       catch (Exception ex) {
          this.log.warn(ME, "error when tearing down " + ex.getMessage() + " this normally happens when invoquing multiple times cleanUp " + ex.getMessage());
