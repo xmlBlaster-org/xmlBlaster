@@ -10,6 +10,8 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.property.PropString;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.client.qos.PublishQos;
 import org.xmlBlaster.client.I_Callback;
@@ -134,9 +136,18 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
                       "   //TestFailSave-AGENT" +
                       "</key>";
       String qos = "<qos></qos>";
+      try { Thread.currentThread().sleep(500L); } catch( InterruptedException i) {}    // Wait some time
       try {
          EraseReturnQos[] arr = con.erase(xmlKey, qos);
-         assertEquals("Wrong number of message erased", arr.length, (numPublish - numStop));
+
+         PropString defaultPlugin = new PropString("CACHE,1.0");
+         String propName = defaultPlugin.setFromEnv(this.glob, glob.getStrippedId(), null, "persistence", Constants.RELATING_TOPICSTORE, "defaultPlugin");
+         log.info(ME, "Lookup of propName=" + propName + " defaultValue=" + defaultPlugin.getValue());
+         
+         if (defaultPlugin.getValue().startsWith("RAM"))
+            assertEquals("Wrong number of message erased", (numPublish - numStop), arr.length);
+         else
+            assertEquals("Wrong number of message erased", numPublish, arr.length);
          assertTrue(assertInUpdate, assertInUpdate == null);
       } catch(XmlBlasterException e) { log.error(ME, "XmlBlasterException: " + e.getMessage()); }
 
