@@ -41,7 +41,7 @@ public class TestLogin extends TestCase implements I_Callback
    private final LogChannel log;
 
    private String publishOid = "";
-   private String oid = "TestLogin";
+   private String firstOid = "TestLogin";
    private XmlBlasterConnection callbackConnection;
    private String senderName;
    private String senderContent;
@@ -83,6 +83,7 @@ public class TestLogin extends TestCase implements I_Callback
     */
    protected void setUp()
    {
+      log.info(ME, "######## Entering setup");
       try {
          String passwd = "secret";
 
@@ -94,19 +95,20 @@ public class TestLogin extends TestCase implements I_Callback
          qos = new ConnectQos(glob, secondName, passwd);
          secondConnection.connect(qos, this);
 
-         // a sample message unit
-         String xmlKey = "<key oid='" + oid + "' contentMime='" + contentMime + "' contentMimeExtended='" + contentMimeExtended + "'>\n" +
-                         "   <TestLogin-AGENT>" +
-                         "   </TestLogin-AGENT>" +
-                         "</key>";
-         senderContent = "Some content";
-         msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
       }
       catch (Exception e) {
           log.error(ME, e.toString());
           e.printStackTrace();
+          fail(ME + ".setup failed: " + e.toString());
       }
 
+      // a sample message unit
+      String xmlKey = "<key oid='" + firstOid + "' contentMime='" + contentMime + "' contentMimeExtended='" + contentMimeExtended + "'>\n" +
+                        "   <TestLogin-AGENT>" +
+                        "   </TestLogin-AGENT>" +
+                        "</key>";
+      senderContent = "Some content";
+      msgUnit = new MessageUnit(xmlKey, senderContent.getBytes(), "<qos></qos>");
    }
 
 
@@ -118,12 +120,16 @@ public class TestLogin extends TestCase implements I_Callback
    protected void tearDown()
    {
       {
-         String xmlKey = "<key oid='" + oid + "' queryType='EXACT'>\n</key>";
+         String xmlKey = "<key oid='" + firstOid + "' queryType='EXACT'>\n</key>";
          String qos = "<qos></qos>";
          try {
             EraseRetQos[] arr = callbackConnection.erase(xmlKey, qos);
             if (arr != null && arr.length != 1) log.error(ME, "Erased " + arr.length + " messages:");
-         } catch(XmlBlasterException e) { log.error(ME+"-tearDown()", "XmlBlasterException in erase(): " + e.reason); }
+            assertEquals("Wrong number of messages erased", 1, arr.length);
+         } catch(XmlBlasterException e) {
+            log.error(ME+"-tearDown()", "XmlBlasterException in erase(): " + e.reason);
+            fail(ME+"-tearDown() XmlBlasterException in erase(): " + e.reason);
+         }
       }
 
       {
@@ -131,8 +137,14 @@ public class TestLogin extends TestCase implements I_Callback
          String qos = "<qos></qos>";
          try {
             EraseRetQos[] arr = callbackConnection.erase(xmlKey, qos);
-            if (arr.length != 1) log.error(ME, "Erased " + arr.length + " messages:");
-         } catch(XmlBlasterException e) { log.error(ME+"-tearDown()", "XmlBlasterException in erase(): " + e.reason); }
+            if (arr.length != 1) {
+               log.error(ME, "Erased " + arr.length + " messages:");
+               assertEquals("Wrong number of messages erased", 1, arr.length);
+            }
+         } catch(XmlBlasterException e) { 
+            log.error(ME+"-tearDown()", "XmlBlasterException in erase(): " + e.reason);
+            fail(ME+"-tearDown() XmlBlasterException in erase(): " + e.reason);
+         }
       }
 
       DisconnectQos qos = new DisconnectQos();
@@ -147,7 +159,7 @@ public class TestLogin extends TestCase implements I_Callback
     * <p />
     * The returned subscribeOid is checked
     */
-   public void testSubscribeXPath()
+   public void toSubscribeXPath()
    {
       if (log.TRACE) log.trace(ME, "Subscribing using XPath syntax ...");
 
@@ -162,7 +174,7 @@ public class TestLogin extends TestCase implements I_Callback
          assertTrue("returned subscribeOid is empty", 0 != subscribeOid.length());
          log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
       } catch(XmlBlasterException e) {
-         log.warn(ME+"-testSubscribeXPath", "XmlBlasterException: " + e.reason);
+         log.warn(ME+"-toSubscribeXPath", "XmlBlasterException: " + e.reason);
          assertTrue("subscribe - XmlBlasterException: " + e.reason, false);
       }
    }
@@ -174,7 +186,7 @@ public class TestLogin extends TestCase implements I_Callback
     * The returned publishOid is checked
     * @param ptp Use the Point to Point style
     */
-   public void testPublish(boolean ptp)
+   public void doPublish(boolean ptp)
    {
       if (log.TRACE) log.trace(ME, "Publishing a message ...");
 
@@ -185,9 +197,9 @@ public class TestLogin extends TestCase implements I_Callback
       try {
          publishOid = callbackConnection.publish(msgUnit).getOid();
          log.info(ME, "Success: Publish " + msgUnit.getXmlKey() + " done");
-         assertEquals("oid is different", oid, publishOid);
+         assertEquals("oid is different", firstOid, publishOid);
       } catch(XmlBlasterException e) {
-         log.warn(ME+"-testPublish", "XmlBlasterException: " + e.reason);
+         log.warn(ME+"-doPublish", "XmlBlasterException: " + e.reason);
          assertTrue("publish - XmlBlasterException: " + e.reason, false);
       }
 
@@ -204,24 +216,24 @@ public class TestLogin extends TestCase implements I_Callback
    {
       log.info(ME, "TEST 1: Subscribe and publish -> Expecting one update");
       numReceived = 0;
-      testSubscribeXPath();
-      testPublish(IS_PUBSUB);
+      toSubscribeXPath();
+      doPublish(IS_PUBSUB);
       waitOnUpdate(2000L, 1);              // message arrived?
 
       log.info(ME, "TEST 2: Login again without logout and publish PtP -> Expecting one update");
       setUp();
-      testPublish(IS_PTP);                 // sending directly PtP to 'receiver'
+      doPublish(IS_PTP);                 // sending directly PtP to 'receiver'
       waitOnUpdate(2000L, 2);              // 2 times logged in, 2 messages arrived?
 
       log.info(ME, "TEST 3: Login again without logout and publish Pub/Sub -> Expecting no update");
       setUp();
-      testPublish(IS_PUBSUB);
+      doPublish(IS_PUBSUB);
       waitOnUpdate(2000L, 1);              // 1 times subscribed (TEST 1), 1 messages arrived?
       numReceived = 0;
 
       log.info(ME, "TEST 4: Now subscribe -> Expecting one update");
       numReceived = 0;
-      testSubscribeXPath();
+      toSubscribeXPath();
       waitOnUpdate(2000L, 1);              // message arrived?
 
       log.info(ME, "TEST 5: Test publish from other user -> Expecting one update");
