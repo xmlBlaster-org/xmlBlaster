@@ -3,7 +3,7 @@ Name:      SimpleChat.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo of a simple chat client for xmlBlaster as java application
-Version:   $Id: SimpleChat.java,v 1.28 2002/09/13 23:17:39 ruff Exp $
+Version:   $Id: SimpleChat.java,v 1.29 2002/09/25 13:41:38 laghi Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.chat;
 
@@ -218,6 +218,8 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
+      java.awt.Toolkit.getDefaultToolkit().beep();
+
       String msgContent = new String(content);
       DateFormat df = DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT);
       String text = df.format(new java.util.Date());
