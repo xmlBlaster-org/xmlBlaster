@@ -19,6 +19,7 @@ LOCAL_FILES = \
 			$(CLASS_DIR)/TestPtD.class \
 			$(CLASS_DIR)/TestPtDQueue.class \
 			$(CLASS_DIR)/TestSub.class \
+			$(CLASS_DIR)/LoadTestSub.class \
 			$(CLASS_DIR)/TestAll.class
 #------------------------------------------------------------------------------
 

@@ -40,13 +40,12 @@ Overview of the xmlBlaster.org packages
 
       jaco org.xmlBlaster.Main
 
-   Don't forget to start the JacORB Name Service 'ns' before.
-
    Optionally you can also start the server with
 
       jaco org.xmlBlaster.MainGUI
 
-   which pops up a button to quit the server
+   which pops up a control panel with query interface and
+	performance/logging display
 
 
 6. Client.java may be used as a first test client:

@@ -38,16 +38,21 @@
       your environment manually (examples for csh or tcsh):
 
      setenv JDK_HOME /usr/local/jdk
-     setenv JacORB_HOME /usr/local/JacORB
+     setenv PATH ${JDK_HOME}/bin:$PATH
+
      setenv XMLBLASTER_HOME ${HOME}/xmlBlaster
 
-     setenv CLASSPATH ${CLASSPATH}:${XMLBLASTER_HOME}/classes
-     setenv CLASSPATH ${CLASSPATH}:${XMLBLASTER_HOME}/src/java
-     setenv CLASSPATH ${CLASSPATH}:${XMLBLASTER_HOME}/demo
-     setenv CLASSPATH ${CLASSPATH}:${XMLBLASTER_HOME}/lib/omquery.jar
-     setenv CLASSPATH ${CLASSPATH}:${XMLBLASTER_HOME}/lib/xtdash.jar
-     setenv CLASSPATH ${CLASSPATH}:${XMLBLASTER_HOME}/lib/xml.jar
-     setenv CLASSPATH ${CLASSPATH}:${XMLBLASTER_HOME}/lib/test.jar
+     setenv JacORB_HOME ${XMLBLASTER_HOME}
+     setenv JacORB_LIB ${JacORB_HOME}/lib
+
+     setenv CLASSPATH ${XMLBLASTER_HOME}/classes:${CLASSPATH}
+     setenv CLASSPATH ${XMLBLASTER_HOME}/src/java:${CLASSPATH}
+     setenv CLASSPATH ${XMLBLASTER_HOME}/demo:${CLASSPATH}
+     setenv CLASSPATH ${XMLBLASTER_HOME}/lib/omquery.jar:${CLASSPATH}
+     setenv CLASSPATH ${XMLBLASTER_HOME}/lib/xtdash.jar:${CLASSPATH}
+     setenv CLASSPATH ${XMLBLASTER_HOME}/lib/xml.jar:${CLASSPATH}
+     setenv CLASSPATH ${XMLBLASTER_HOME}/lib/test.jar:${CLASSPATH}
+     setenv CLASSPATH ${JacORB_LIB}/jacorb.jar:${CLASSPATH}:
 
     You can do this automatically from your startup shell script.
     After a new login you are ready to start the xmlBlaster (see below).

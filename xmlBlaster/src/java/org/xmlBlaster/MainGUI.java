@@ -3,7 +3,7 @@ Name:      MainGUI.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: MainGUI.java,v 1.12 1999/12/27 13:18:46 ruff Exp $
+Version:   $Id: MainGUI.java,v 1.13 1999/12/27 19:43:17 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -22,7 +22,7 @@ import jacorb.poa.gui.beans.FillLevelBar;
 
 
 /**
- * Start xmlBlaster with a GUI based control panel. 
+ * Start xmlBlaster with a GUI based control panel.
  * <p />
  * A control panel pops up, where you can<br />
  * <ul>
@@ -50,22 +50,29 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
 
    /** Approximate elapsed time since startup of this server. */
    private long elapsedTime = 0L;
+   /** Time when xmlBlaster was started */
+   private long startupTime = 0L;
+   /** Last time the performance was evaluated */
+   private long lastPollingTime = 0L;
 
    /** Performance monitor for number of published messages. */
    private FillLevelBar publishedMessagesBar = new FillLevelBar();
    private Label publishedLabel = new Label(); // display total count
+   private int peakPublishedMessages = 0;
    private long publishedMessages = 0L;
    private long lastPublishedMessages = 0L;
 
    /** Performance monitor for number of update messages (callbacks to clients). */
    private FillLevelBar sentMessagesBar = new FillLevelBar();
    private Label sentLabel = new Label();
+   private int peakSentMessages = 0;
    private long sentMessages = 0L;
    private long lastSentMessages = 0L;
 
    /** Performance monitor for number of synchronous accessed messages. */
    private FillLevelBar getMessagesBar = new FillLevelBar();
    private Label getLabel = new Label();
+   private int peakGetMessages = 0;
    private long getMessages = 0L;
    private long lastGetMessages = 0L;
 
@@ -87,6 +94,7 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
       setTitle("XmlBlaster Control Panel");
       init();
 
+      // Poll xmlBlaster internal states
       PollingThread poller = new PollingThread(this);
       poller.start();
    }
@@ -127,7 +135,12 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
     */
    void pollEvent(long sleepTime)
    {
-      elapsedTime += sleepTime;
+      long current = System.currentTimeMillis();
+      if (lastPollingTime > 0L) {
+         sleepTime = current - lastPollingTime; // correct sleepTime with the real sleeping time
+      }
+      lastPollingTime = current;
+      elapsedTime += current - startupTime;
 
       double sleepSeconds = sleepTime / 1000.0;
       double elapsedSeconds = elapsedTime / 1000.0;
@@ -137,9 +150,12 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
          int currentPublishedAvg = (int)((publishedMessages - lastPublishedMessages)/sleepSeconds);
          if ((publishedMessages - lastPublishedMessages) == 1) currentPublishedAvg = 1;
          int totalPublishedAvg = (int)(publishedMessages/elapsedSeconds);
-         // System.out.println("totally publishedMessages=" + publishedMessages + " current avg=" + currentPublishedAvg + " total avg=" + totalPublishedAvg);
          publishedMessagesBar.setCurrentValue(currentPublishedAvg);
-         publishedMessagesBar.setAvgValue(totalPublishedAvg);
+         if (currentPublishedAvg > peakPublishedMessages) {
+            peakPublishedMessages = currentPublishedAvg;
+            publishedMessagesBar.setAvgValue(peakPublishedMessages);
+         }
+         //publishedMessagesBar.setAvgValue(totalPublishedAvg);
          publishedLabel.setText("Total:  " + publishedMessages);
          lastPublishedMessages = publishedMessages;
       }
@@ -149,9 +165,12 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
          int currentSentAvg = (int)((sentMessages - lastSentMessages)/sleepSeconds);
          if ((sentMessages - lastSentMessages) == 1) currentSentAvg = 1;
          int totalSentAvg = (int)(sentMessages/elapsedSeconds);
-         // System.out.println("totally sentMessages=" + sentMessages + " current avg=" + currentSentAvg + " total avg=" + totalSentAvg);
          sentMessagesBar.setCurrentValue(currentSentAvg);
-         sentMessagesBar.setAvgValue(totalSentAvg);
+         if (currentSentAvg > peakSentMessages) {
+            peakSentMessages = currentSentAvg;
+            sentMessagesBar.setAvgValue(peakSentMessages);
+         }
+         // sentMessagesBar.setAvgValue(totalSentAvg);
          sentLabel.setText("Total:  " + sentMessages);
          lastSentMessages = sentMessages;
       }
@@ -163,7 +182,11 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
          int totalGetAvg = (int)(getMessages/elapsedSeconds);
          // System.out.println("totally getMessages=" + getMessages + " current avg=" + currentGetAvg + " total avg=" + totalGetAvg);
          getMessagesBar.setCurrentValue(currentGetAvg);
-         getMessagesBar.setAvgValue(totalGetAvg);
+         if (currentGetAvg > peakGetMessages) {
+            peakGetMessages = currentGetAvg;
+            getMessagesBar.setAvgValue(peakGetMessages);
+         }
+         // getMessagesBar.setAvgValue(totalGetAvg);
          getLabel.setText("Total:  " + getMessages);
          lastGetMessages = getMessages;
       }
@@ -255,6 +278,8 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
       add(logOutput, gbc);
 
       pack();
+
+      startupTime = System.currentTimeMillis();
    }
 
 
@@ -331,7 +356,8 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
       messageBar.setLocation(BAR_X, BAR_Y);
       messageBar.setBackground(java.awt.SystemColor.control);
       messageBar.setSize(BAR_WIDTH, BAR_HEIGHT);
-      messageBar.init(0, 5, 100, Color.yellow, Color.green, true, true);
+      messageBar.init(0, 5, 100, Color.green, Color.green, true, true);
+      // messageBar.init(0, 5, 100, Color.yellow, Color.green, true, true);
       panel.add(messageBar, messageBar.getName());
 
       totalCountLabel.setName(token + "Label");
@@ -437,7 +463,7 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
       public PollingThread(MainGUI mainGUI)
       {
          this.mainGUI = mainGUI;
-         setPriority(Thread.MIN_PRIORITY);
+         // !!! setPriority(Thread.MIN_PRIORITY);
       }
 
 
@@ -524,7 +550,7 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
 
 
    /**
-    * Scrolling with key arrow up/down your last XPath queries. 
+    * Scrolling with key arrow up/down your last XPath queries.
     * @param stmt The XPath stmt to display
     */
    private void displayHistory(String stmt)
@@ -564,7 +590,7 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
 
 
       /**
-       * Query xmlBlaster. 
+       * Query xmlBlaster.
        */
       MessageUnit[] get(String queryString)
       {
@@ -593,7 +619,7 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
 
 
    /**
-    * Implements a stack to hold the previous XPath queries. 
+    * Implements a stack to hold the previous XPath queries.
     */
    private class QueryHistory
    {
@@ -603,14 +629,14 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
 
 
      /**
-      * Constructs a history stack. 
+      * Constructs a history stack.
       */
      public QueryHistory()
      {
      }
 
      /**
-      * Add new statement into history. 
+      * Add new statement into history.
       */
      public void changedHistory(String stmt)
      {
@@ -624,7 +650,7 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
 
 
      /**
-      * Access previous XPath query. 
+      * Access previous XPath query.
       */
      String getPrev()
      {
@@ -635,7 +661,7 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
 
 
      /**
-      * Access next XPath query. 
+      * Access next XPath query.
       */
      String getNext()
      {
@@ -646,7 +672,7 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
 
 
      /**
-      * Access last (the newest), sets current to last. 
+      * Access last (the newest), sets current to last.
       */
      String getLast()
      {
