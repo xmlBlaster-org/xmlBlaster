@@ -6,7 +6,7 @@
 
 include $(XMLBLASTER_HOME)/Makefile.Include
 
-SUB_DIRS = requirements
+SUB_DIRS = requirements whitepaper
 
 all: all_SUB_DIRS
 
