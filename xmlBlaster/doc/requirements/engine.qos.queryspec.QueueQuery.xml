@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='engine.qos.queryspec.queueQuery' type='NEW' prio='HIGH' status='CLOSED'>
+<requirement id='engine.qos.queryspec.QueueQuery' type='NEW' prio='HIGH' status='CLOSED'>
    <topic>XmlBlaster has a plugin which is used to query arbitrary queues</topic>
    <description>
       <p>
