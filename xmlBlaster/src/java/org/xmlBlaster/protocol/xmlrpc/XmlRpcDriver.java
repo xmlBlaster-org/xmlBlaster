@@ -3,7 +3,7 @@ Name:      XmlRpcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   XmlRpcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: XmlRpcDriver.java,v 1.20 2001/09/05 12:48:47 ruff Exp $
+Version:   $Id: XmlRpcDriver.java,v 1.21 2001/12/04 09:31:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
@@ -96,14 +96,15 @@ public class XmlRpcDriver implements I_Driver
       if (XmlBlasterProperty.get("xmlrpc.debug", false) == true)
          XmlRpc.setDebug(true);
 
-      String hostname;
-      try  {
-         java.net.InetAddress addr = java.net.InetAddress.getLocalHost();
-         hostname = addr.getHostName();
-      } catch (Exception e) {
-         Log.info(ME, "Can't determine your hostname");
-         // Use the xmlBlaster-server xmlrpcRegistry as a fallback:
-         hostname = XmlBlasterProperty.get("xmlrpc.hostname", "localhost");
+      String hostname = XmlBlasterProperty.get("xmlrpc.hostname", (String)null);
+      if (hostname == null) {
+         try  {
+            java.net.InetAddress addr = java.net.InetAddress.getLocalHost();
+            hostname = addr.getHostName();
+         } catch (Exception e) {
+            Log.info(ME, "Can't determine your hostname");
+            hostname = "localhost";
+         }
       }
       java.net.InetAddress inetAddr = null;
       try {
