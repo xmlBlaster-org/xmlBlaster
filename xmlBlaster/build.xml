@@ -221,7 +221,7 @@ TODO
 
    <compiler id="msvc" name="msvc" extends="base-msvc">
       <!--  disable Microsoft Extensions   -->
-      <!-- <compilerarg value="/Za"/> -->
+      <compilerarg value="/GR"/> <!--enable C++ RTTI, used in TestQueue.cpp -->
       <compilerarg value="-D${thread.impl}" />  <!-- -DBOOST or  -DOMNITHREAD -->
    </compiler>
 
