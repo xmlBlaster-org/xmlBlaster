@@ -3,7 +3,7 @@ Name:      TestSub.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.cpp,v 1.9 2002/06/02 21:39:37 ruff Exp $
+Version:   $Id: TestSub.cpp,v 1.10 2002/06/03 10:19:59 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #include <boost/lexical_cast.hpp>
@@ -235,7 +235,7 @@ private:
          log_.error(me(), "Wrong Sender");
          assert(0);
       }
-      if (subscribeOid_ != updateQos.getSubscriptionId()) {
+      if (subscribeOid_.find(updateQos.getSubscriptionId()) == string::npos) {
          log_.error(me(), string("engine.qos.update.subscriptionId: ")
                     + "Wrong subscriptionId, expected=" + subscribeOid_ + " received=" + updateQos.getSubscriptionId());
          //assert(0);
