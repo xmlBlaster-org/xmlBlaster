@@ -23,6 +23,7 @@ import org.xmlBlaster.engine.cluster.NodeId;
 import org.xmlBlaster.engine.cluster.ClusterNode;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.engine.admin.I_AdminSubject;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -41,7 +42,7 @@ import java.util.Collections;
  *
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>
  */
-public class SubjectInfo
+public class SubjectInfo implements I_AdminSubject
 {
    private String ME = "SubjectInfo";
    private final Global glob;
@@ -61,6 +62,12 @@ public class SubjectInfo
 
    private NodeId nodeId = null;
    private boolean determineNodeId = true;
+
+   // Enforced by I_AdminSubject
+   /** Incarnation time of this object instance in millis */
+   private long uptime;
+   private long numUpdates = 0L;
+   private int maxSessions;
    
 
    /**
@@ -126,7 +133,13 @@ public class SubjectInfo
       }
       this.loginName = loginName;
       this.ME = "SubjectInfo-"+instanceCounter+":"+loginName;
+      this.uptime = System.currentTimeMillis();
       this.securityCtx = securityCtx;
+
+      this.maxSessions = glob.getProperty().get("session.maxSessions", ConnectQos.DEFAULT_maxSessions);
+      if (glob.getId() != null)
+         this.maxSessions = glob.getProperty().get("session.maxSessions["+glob.getId()+"]", this.maxSessions);
+
       if (prop == null) prop = new CbQueueProperty(glob, Constants.RELATING_SUBJECT, glob.getId());
       this.subjectQueue = new SubjectMsgQueue(this, "subject:"+loginName, prop, glob);
       if (log.TRACE) log.trace(ME, "Created new SubjectInfo " + loginName);
@@ -279,15 +292,6 @@ public class SubjectInfo
       return sessionMap.values();
    }
 
-   /**
-    * Access the number of sessions of this user. 
-    * @return The number of sessions of this user
-    */
-   public final int getNumSessions()
-   {
-      return this.sessionMap.size();
-   }
-
    public final SessionInfo getFirstSession()
    {
       return (SessionInfo)getSessions().iterator().next();
@@ -337,9 +341,12 @@ public class SubjectInfo
     */
    public final void checkNumberOfSessions(ConnectQos qos) throws XmlBlasterException
    {
-      if (sessionMap.size() >= qos.getMaxSessions()) {
-         log.warn(ME, "Max sessions = " + qos.getMaxSessions() + " for user " + getLoginName() + " exhausted, login denied.");
-         throw new XmlBlasterException(ME, "Max sessions = " + qos.getMaxSessions() + " exhausted, login denied.");
+      if (ConnectQos.DEFAULT_maxSessions != qos.getMaxSessions())
+         this.maxSessions = qos.getMaxSessions();
+
+      if (sessionMap.size() >= this.maxSessions) {
+         log.warn(ME, "Max sessions = " + this.maxSessions + " for user " + getLoginName() + " exhausted, login denied.");
+         throw new XmlBlasterException(ME, "Max sessions = " + this.maxSessions + " exhausted, login denied.");
       }
    }
 
@@ -470,6 +477,90 @@ public class SubjectInfo
       }
       sb.append(offset).append("</SubjectInfo>");
 
+      return sb.toString();
+   }
+
+   /**
+    * Add the update counter, this is not thread save
+    * for performance reasons, in very rare cases the counter
+    * could be wrong.
+    */
+   public final void addNumUpdates() {
+      this.numUpdates++;
+   }
+
+
+   /**
+    * Get the SessionInfo with its public session identifier e.g. "5"
+    * @return null if not found
+    */
+   public final SessionInfo getSessionByPublicId(String publicSessionId) {
+      Iterator iterator = sessionMap.values().iterator();
+      while (iterator.hasNext()) {
+         SessionInfo sessionInfo = (SessionInfo)iterator.next();
+         if (sessionInfo.getPublicSessionId().equals(publicSessionId))
+            return sessionInfo;
+      }
+      return null;
+   }
+
+
+   //=========== Enforced by I_AdminSubject ================
+   /**
+    * @return uptime in seconds
+    */
+   public final long getUptime() {
+      return (System.currentTimeMillis() - this.uptime)/1000L;
+   }
+
+   /**
+    * How many update where sent for this client, the sum of all session and
+    * subject queues of this clients. 
+    */ 
+   public final long getNumUpdates() {
+      return this.numUpdates;
+   }
+
+   public final int getCbQueueNumMsgs() {
+      return subjectQueue.size();
+   }
+
+   public final int getCbQueueMaxMsgs() {
+      return subjectQueue.capacity();
+   }
+ 
+   /**
+    * Access the number of sessions of this user. 
+    * @return The number of sessions of this user
+    */
+   public final int getNumSessions()
+   {
+      return this.sessionMap.size();
+   }
+
+   /**
+    * @return The max allowed simultaneous logins of this user
+    */
+   public final int getMaxSessions() {
+      return this.maxSessions;
+   }
+ 
+   /**
+    * Access a list of public session identifier e.g. "1,5,7,12"
+    * @return An empty string if no sessions available
+    */
+   public final String getSessionList() {
+      int numSessions = getNumSessions();
+      if (numSessions < 1)
+         return "";
+      StringBuffer sb = new StringBuffer(numSessions * 30);
+      Iterator iterator = sessionMap.values().iterator();
+      while (iterator.hasNext()) {
+         if (sb.length() > 0)
+            sb.append(",");
+         SessionInfo sessionInfo = (SessionInfo)iterator.next();
+         sb.append(sessionInfo.getPublicSessionId());
+      }
       return sb.toString();
    }
 }
