@@ -1,0 +1,5 @@
+This C-code is outdated, it was just to play a bit with raw sockets.
+We need to implement one day the secification
+  http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html
+
+Marcel
