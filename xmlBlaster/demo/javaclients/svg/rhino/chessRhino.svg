@@ -3,7 +3,7 @@
 "http://www.w3.org/TR/2001/REC-SVG-20010904/DTD/svg10.dtd">
 
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
-     width="600" height="600" viewBox="0 0 500 500"
+     width="600" height="600" viewBox="0 0 600 600"
      onload="doInit(evt)" onunload="shutdown(evt)" onmouseup="movePoint(evt)">
 
   <defs>
