@@ -17,18 +17,216 @@ This is an example to access xmlBlaster from a Perl client
 
 3) Start the xmlBlaster server
 
-	 ${JacORB_HOME}/bin/jaco org.xmlBlaster.Main /tmp/NS_Ref
+    ${JacORB_HOME}/bin/jaco org.xmlBlaster.Main /tmp/NS_Ref
 
 
 4) And connect with the Perl client
 
-	 ./client `cat /tmp/NS_Ref`
+    ./client `cat /tmp/NS_Ref`
 
 
 NOTE: Callbacks are not possible in the current COPE Perl library.
       So the publisher of a message can't be receiver of its own sent message
-		as well.
-		The COPE CORBA library will be extended in the near future to support
-		client callbacks.
-		For the time being, you need to implement a multi threaded perl client
-		to allow callbacks to oneself.
+      as well.
+      The COPE CORBA library will be extended in the near future to support
+      client callbacks.
+      For the time being, you need to implement a multi threaded perl client
+      to allow callbacks to oneself.
+
+      Perl multi threaded help: man perlthrtut
+
+
+A sample multithreaded callback:
+================================
+
+            Re: Howto realize a Callback to Perl (fwd)
+ Resent-Date: 
+            Thu, 2 Dec 1999 16:00:44 +0100
+ Resent-From: 
+            cope@lunatech.com
+       Date: 
+            Thu, 2 Dec 1999 17:00:40 +0200 (EET)
+       From: 
+            Pekka Ahmavuo <pekka@netland.fi>
+         To: 
+            cope@lunatech.com
+
+
+
+>From below you can find a simple example how callbacks can be
+implemented with threaded Perl and COPE. It is actually quite trivial
+as you can see.
+
+If you want to try it, compile first callback.idl. Then start
+server.pl. The client reads the server's ior from a file, so it should
+be started in the same directory with the server.
+
+
+Rick, 
+
+handling simultaneous CGI and CORBA request is a bit different
+problem. A least in my case the tricky part was to synchronize the
+CORBA and CGI-requests. I you think it might help you I can write an
+exmple of that too.
+
+> 
+> That sounds like something I've wanted for a long time.  Can you
+> share any code with us, or describe the gist of your changes?
+> It would be much appreciated.
+> 
+> -Rick Nicoletti
+> 
+> At 11:10 AM 12/02/1999 +0200, Pekka Ahmavuo wrote:
+> >I have used COPE witb threaded Perl 5.005_03 without problems. My
+> >server has to handle simultaneous CGI- and CORBA-requests and using
+> >threads was the only feasible solution I could figure out.
+> >
+
+--- callback.idl ----
+
+interface hello
+{
+  void Hello(in string msg);
+};
+
+interface callback
+{
+  void CallMe(in hello caller);
+};                                    
+
+--------------------------------------------
+-------- client.pl ------------------------
+#!/usr/bin/perl
+
+use strict;
+
+use COPE::CORBA::ORB;
+use Thread;
+use hello_impl;
+use callback;
+
+$| = 1;
+
+sub hello_thread
+{
+    my $boa = shift;
+    $boa->impl_is_ready();
+}
+
+my $orb    = CORBA::ORB_init();
+my $boa    = $orb->BOA_init();
+
+my $hello = new hello_impl;
+
+############################################
+# start the hello_impl in a separate thread
+my $t = new Thread (\&hello_thread, $boa);
+
+open (IOR, "ior.txt");
+my $ior = <IOR>;
+close (IOR);
+
+my $server = $orb->string_to_object($ior);
+$server = callback->_narrow($server);
+
+while (1)
+{
+    ##################################################
+    # call the callback-server and pass a reference to
+    # the hello object as a parameter
+    $server->CallMe($hello);
+    sleep(3);
+}
+
+# newer comes here
+$t->join();              
+
+------------------------------------------
+------------- server.pl ------------------
+
+#!/usr/bin/perl
+
+use strict;
+
+use COPE::CORBA::ORB;
+use Thread;
+use callback_impl;
+
+$| = 1;
+
+my $orb = CORBA::ORB_init();
+my $boa = $orb->BOA_init();
+
+my $callback = new callback_impl;
+
+my $ior  = $orb->object_to_string($callback);
+open (IOR, ">ior.txt");
+print IOR $ior;
+close (IOR);
+$boa->impl_is_ready();              
+
+----------------------------------------------
+---------- hello_impl.pm --------------------
+
+use hello_types;
+use hello_skel;
+
+# interface hello (IDL:hello:1.0)
+
+package hello_impl;
+use COPE::CORBA::Servant;
+@hello_impl::ISA=qw(CORBA::BOA::_Servant);
+sub _skelname($) { 'hello_skel' }
+
+sub new {
+    my($class,@args) = @_;
+    my $self = {@args};
+    bless $self, $class;
+    $CORBA::BOA::_The_Boa->activate_object($self);
+    return $self;
+}
+
+# operation Hello (IDL:hello/Hello:1.0)
+
+sub Hello ($$) {
+    my($self,$msg) = @_;
+
+    print "Got $msg!!!\n";
+}
+                           
+------------------------------------
+------- callback_impl.pm -----------
+
+use callback_types;
+use callback_skel;
+
+use hello;
+
+# interface callback (IDL:callback:1.0)
+
+package callback_impl;
+use COPE::CORBA::Servant;
+@callback_impl::ISA=qw(CORBA::BOA::_Servant);
+sub _skelname($) { 'callback_skel' }
+
+sub new {
+    my($class,@args) = @_;
+    my $self = {@args};
+    bless $self, $class;
+    $CORBA::BOA::_The_Boa->activate_object($self);
+    return $self;
+}
+
+# operation CallMe (IDL:callback/CallMe:1.0)
+
+sub CallMe ($$) {
+    my($self,$caller) = @_;
+    print "--> CallMe\n";
+    $caller->Hello("Greetings, earthling");
+    print "<-- CallMe\n";
+}
+
+
+1;              
+
+
