@@ -1,0 +1,48 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='engine.qos.publish.destination.PtP' type='NEW' prio='HIGH' status="CLOSED">
+   <topic>PtP (Point to Point) messages are routed using the qos-destination tag</topic>
+   <description>
+      If you specify a &lt;destination&gt; tag, the message will be delivered to
+      the given address. The address is the loginName of the receiver. You may use as
+      many destination addresses as you wish.
+   </description>
+   <example lang="Java">
+      <![CDATA[
+      // Construct a message and send it to 'Gesa', 'Tim' and 'Ben'
+      String xmlKey = "<key oid='' contentMime='text/plain'>\n" +
+                      "</key>";
+
+      String qos = "<qos>" +
+                   "   <destination queryType='EXACT'>" +
+                   "      Gesa" +
+                   "   </destination>" +
+                   "   <destination queryType='EXACT'>" +
+                   "      Tim" +
+                   "   </destination>" +
+                   "   <destination queryType='EXACT'>" +
+                   "      Ben" +
+                   "   </destination>" +
+                   "</qos>";
+
+      content = "Dinner is ready";
+      MessageUnit msgUnit = new MessageUnit(xmlKey, content.getBytes());
+      try {
+         xmlBlaster.publish(msgUnit, qos);
+      } catch(XmlBlasterException e) {
+         System.err.println("Failed to send message");
+      }
+      ]]>
+   </example>
+   <see>engine.qos.publish.destination.PtX</see>
+   <author>ruff@swand.lake.de</author>
+   <date>2000 01 17</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="CLOSED">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">testsuite.org.xmlBlaster.TestPtD</test>
+   </testcase>
+</requirement>
+
