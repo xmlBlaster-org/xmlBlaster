@@ -296,12 +296,12 @@ public interface I_Queue extends I_StorageProblemNotifier
     * Removes max num messages.
     * This method does not block.
     * @param numOfEntries Erase num entries or less if less entries are available, -1 erases everything
-    * @param numOfBytes so many entries are returned as not to exceed the amout specified. If the first
+    * @param numOfBytes so many entries are returned as not to exceed the amount specified. If the first
     *        entry is bigger than this amount, it is removed anyway.
     * @return Number of entries erased
     * @throws XmlBlasterException if the underlying implementation gets an exception.
     */
-   long remove(long num, long numOfEntries) throws XmlBlasterException;
+   long remove(long numOfEntries, long numOfBytes) throws XmlBlasterException;
 
    /**
     * Removes max numOfEntries messages (or less depending on the numOfBytes).
