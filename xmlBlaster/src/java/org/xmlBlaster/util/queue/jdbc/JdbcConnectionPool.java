@@ -294,7 +294,7 @@ public class JdbcConnectionPool implements I_Timeout {
          for (int i = 0; i < this.currentIndex; i++) disconnect(i);
          throw ex;
       }
-      this.log.info(ME, "Connections for group '" + prefix + "' to DB " + url + "successfully established");
+      this.log.info(ME, "Connections for group '" + prefix + "' to DB '" + url + "' successfully established.");
    }
 
 
