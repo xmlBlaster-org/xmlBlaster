@@ -303,6 +303,15 @@ public abstract class QueuePropertyBase implements Cloneable
    }
 
    /**
+    * The plugin type and version. 
+    * <br />
+    * @return e.g. "RAM,1.0" or null to configure current default plugin
+    */
+   public final String getTypeVersion() {
+      return getType() + "," + getVersion();
+   }
+
+   /**
     * Max number of messages for the cache of this queue.
     * <br />
     * @return number of messages
