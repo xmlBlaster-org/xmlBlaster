@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.64 2000/03/25 23:52:18 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.65 2000/04/29 23:19:41 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -29,7 +29,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.64 $
+ * @version $Revision: 1.65 $
  * @author ruff@swand.lake.de
  */
 public class RequestBroker implements ClientListener, MessageEraseListener
@@ -139,7 +139,8 @@ public class RequestBroker implements ClientListener, MessageEraseListener
     */
    private void loadPersistentMessages()
    {
-      this.persistenceDriver = getPersistenceDriver(); // Load persistence driver
+      persistenceDriver = getPersistenceDriver(); // Load persistence driver
+      if (persistenceDriver == null) return;
       try {
          boolean lazyRecovery = Property.getProperty("Persistence.LazyRecovery", false);
          if (!lazyRecovery)
@@ -166,7 +167,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
       if (persistenceDriver == null) {
          String driverClass = Property.getProperty("Persistence.Driver", (String)null);
          if (driverClass == null) {
-            Log.error(ME, "xmlBlaster will run memory based only, the 'Persistence.Driver' property is not set in xmlBlaster.properties");
+            Log.warning(ME, "xmlBlaster will run memory based only, the 'Persistence.Driver' property is not set in xmlBlaster.properties");
             usePersistence = false;
             return (I_PersistenceDriver)null;
          }
@@ -870,7 +871,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
-    * Event invoked on successful client login (interface ClientListener). 
+    * Event invoked on successful client login (interface ClientListener).
     * <p />
     * Publishes a login event for this client with key oid="__sys_Login"
     * <pre>
