@@ -84,7 +84,7 @@ public final class MsgKeyData extends KeyData implements java.io.Serializable, C
    }
 
    /**
-    * Set client specific meta inforamtions. 
+    * Set client specific meta informations. 
     * <p />
     * May be used to integrate your application tags, for example:
     * <p />
@@ -132,7 +132,7 @@ public final class MsgKeyData extends KeyData implements java.io.Serializable, C
    }
 
    /**
-    * Returns a shallow clone, you can change savely all basic or immutable types
+    * Returns a shallow clone, you can change safely all basic or immutable types
     * like boolean, String, int.
     */
    public Object clone() {
