@@ -12,7 +12,7 @@ sleep 10
 echo "STARTING qos TESTS ..."
 java junit.swingui.TestRunner -noloading org.xmlBlaster.test.qos.AllTests
 echo "STARTING distributor TESTS ..."
-java junit.swingui.TestRunner -noloading org.xmlBlaster.test.distributor.TestConsumableQueue
+java junit.swingui.TestRunner -noloading org.xmlBlaster.test.distributor.AllTests
 echo "STARTING client TESTS ..."
 java junit.swingui.TestRunner -noloading org.xmlBlaster.test.client.AllTests
 echo "STARTING authentication TESTS ..."
