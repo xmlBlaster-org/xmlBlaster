@@ -1,6 +1,18 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 
+Changes for 0.8x [xxx, xx 2002]
+===============================
+
+  - Michele added speech output to our chat demo
+
+  - Corrected batik.jar in manifest.xmlBlaster
+
+  - Peter Antman add XPath mime plugin which allows
+    message filtering of mime type XML (xml is in the content)
+    with XPath.
+
+
 Changes for 0.80 [Sep, 25 2002]
 ===============================
 
