@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.66 2001/02/12 00:07:04 ruff Exp $
+Version:   $Id: Main.java,v 1.67 2001/08/19 23:32:07 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -445,6 +445,9 @@ public class Main
          Log.plain(ME, driver.usage());
       }
       Log.usage();
+      Log.plain(ME, "Other stuff:");
+      Log.plain(ME, "   -useKeyboard false  Switch off keyboard input, to allow xmlBlaster running in background.");
+      Log.plain(ME, "   -doBlocking  false  Switch off blocking, the main method is by default never returning.");
       Log.plain(ME, "----------------------------------------------------------");
       Log.plain(ME, "Example:");
       Log.plain(ME, "   jaco org.xmlBlaster.Main -iorPort 8080");
