@@ -50,10 +50,11 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
 {
    private transient final String ME;
    private transient final Global glob;
-   private transient int referenceCounter;      // is swapped to persistence as well
+   private transient int historyReferenceCounter; // if is in historyQueue, is swapped to persistence as well
+   private transient int referenceCounter;        // total number of references, is swapped to persistence as well
    private transient final long uniqueId;
-   private transient final String uniqueIdStr;  // cache uniqueId as String
-   private transient final StorageId storageId; // the unique cache name
+   private transient final String uniqueIdStr;    // cache uniqueId as String
+   private transient final StorageId storageId;   // the unique cache name
    private transient I_Map ownerCache;
    private transient final String embeddedType;
 
@@ -84,11 +85,11 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
    }
 
    public MsgUnitWrapper(Global glob, MsgUnit msgUnit, StorageId storageId) throws XmlBlasterException {
-      this(glob, msgUnit, storageId, 0, (String)null);
+      this(glob, msgUnit, storageId, 0, 0, (String)null);
    }
 
-   public MsgUnitWrapper(Global glob, MsgUnit msgUnit, StorageId storageId, int referenceCounter) throws XmlBlasterException {
-      this(glob, msgUnit, storageId, referenceCounter, (String)null);
+   public MsgUnitWrapper(Global glob, MsgUnit msgUnit, StorageId storageId, int referenceCounter, int historyReferenceCounter) throws XmlBlasterException {
+      this(glob, msgUnit, storageId, referenceCounter, historyReferenceCounter, (String)null);
    }
 
    /**
@@ -97,7 +98,8 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
     *         ServerEntryFactory.ENTRY_TYPE_MSG_XML Dump strings as XML ASCII (which is smaller, faster, portable -> and therefor default)<br />
     *         ServerEntryFactory.ENTRY_TYPE_MSG_SERIAL Dump object with java.io.Serializable
     */
-   public MsgUnitWrapper(Global glob, MsgUnit msgUnit, StorageId storageId, int referenceCounter, String embeddedType) throws XmlBlasterException {
+   public MsgUnitWrapper(Global glob, MsgUnit msgUnit, StorageId storageId, int referenceCounter,
+                         int historyReferenceCounter, String embeddedType) throws XmlBlasterException {
       this.glob = glob;
       if (msgUnit == null) {
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, "MsgUnitWrapper", "Invalid constructor parameter msgUnit==null");
@@ -105,6 +107,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
       this.msgUnit = msgUnit;
       this.storageId = storageId;
       this.referenceCounter = referenceCounter;
+      this.historyReferenceCounter = historyReferenceCounter;
       this.embeddedType = (embeddedType == null) ? ServerEntryFactory.ENTRY_TYPE_MSG_XML : embeddedType;
       //this.uniqueId = getKeyOid()+getMsgQosData().getRcvTimestamp();
       if (getMsgQosData().getRcvTimestamp() == null) {
@@ -116,6 +119,9 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
       this.destroyTimer = this.glob.getMessageTimer();  // holds weak references only
       toAlive();
       //this.glob.getLog("core").info(ME, "Created message" + toXml());
+      if (this.historyReferenceCounter > this.referenceCounter) { // assert
+         this.glob.getLog("core").error(ME, "PANIC: historyReferenceCounter=" + this.historyReferenceCounter + " is bigger than referenceCounter=" + this.referenceCounter + toXml());
+      }
    }
 
    /*
@@ -124,12 +130,14 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
    }
    */
 
+   /*
    private I_Map getOwnerCache() throws XmlBlasterException {
       if (this.ownerCache == null) {
          this.ownerCache = getTopicHandler().getMsgUnitCache();
       }
       return this.ownerCache;
    }
+   */
 
    /**
     * @return The owning TopicHandler, never null
@@ -137,24 +145,43 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
    public TopicHandler getTopicHandler() throws XmlBlasterException {
       TopicHandler topicHandler = glob.getRequestBroker().getMessageHandlerFromOid(getKeyOid());
       if (topicHandler == null) {
-         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "getOwnerCache() - storage lookup of topic '" + getKeyOid() + "' failed");
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "getTopicHandler() - storage lookup of topic '" + getKeyOid() + "' failed");
       }
       return topicHandler;
    }
 
-   public void incrementReferenceCounter(int count) throws XmlBlasterException {
-      this.referenceCounter += count;
-      if (!isInternal()) glob.getLog("core").info(ME, "Reference count changed from " + (this.referenceCounter-count) + " to " + this.referenceCounter);
+   /**
+    * Invoked by ReferenceEntry.java to support reference counting
+    */
+   public void incrementReferenceCounter(int count, StorageId storageId) throws XmlBlasterException {
+      
+      //glob.getLog("core").error(ME, "DEBUG ONLY " + getSizeInBytes() + " \n" + toXml());
+
+      boolean isHistoryReference = (storageId != null && storageId.getPrefix().equals("history"));
+      synchronized (uniqueIdStr) { // use an arbitrary local attribute as monitor
+         if (isHistoryReference) {
+            this.historyReferenceCounter += count;
+         }
+         this.referenceCounter += count;
+      }
+      if (!isInternal()) glob.getLog("core").info(ME, "Reference count changed from " + (this.referenceCounter-count) + " to " + this.referenceCounter + ", new historyEntries=" + this.historyReferenceCounter);
       if (this.referenceCounter <= 0L) {
          toDestroyed();
       }
    }
 
    /**
-    * Is reset to 0 when loaded from persistent store
+    * @return The number or references on myself (history, callback queue and plugin queues)
     */
    public int getReferenceCounter() {
       return this.referenceCounter;
+   }
+
+   /**
+    * @return 1: Is referenced one time from history queue, else 0
+    */
+   public int getHistoryReferenceCounter() {
+      return this.historyReferenceCounter;
    }
 
    /** Returns a dummy only as sorting is not important in this context. */
@@ -241,11 +268,14 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
     */
    public Object getEmbeddedObject() {
       if (this.embeddedType.equals(ServerEntryFactory.ENTRY_TYPE_MSG_SERIAL)) {
-         Object[] obj = { this.msgUnit, new Integer(this.referenceCounter) };
+         Object[] obj = { this.msgUnit, new Integer(this.referenceCounter),
+                          new Integer(this.historyReferenceCounter) };
          return obj;
       }
       else {
-         Object[] obj = { this.msgUnit.getQosData().toXml(), this.msgUnit.getKeyData().toXml(), this.msgUnit.getContent(), new Integer(this.referenceCounter) };
+         Object[] obj = { this.msgUnit.getQosData().toXml(), this.msgUnit.getKeyData().toXml(),
+                          this.msgUnit.getContent(), new Integer(this.referenceCounter),
+                          new Integer(this.historyReferenceCounter) };
          return obj;
       }
    }
@@ -333,14 +363,23 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
       return this.state == EXPIRED;
    }
 
-   private void toExpired() {
+   private void toExpired() throws XmlBlasterException {
+      this.glob.getLog("core").info(ME, "Entering toExpired(oldState=" + getStateStr() + ")");
       synchronized (this) {
          if (this.timerKey != null) {
             this.destroyTimer.removeTimeoutListener(this.timerKey);
             this.timerKey = null;
          }
+         if (isExpired()) {
+            return;
+         }
          this.state = EXPIRED;
+         if (this.referenceCounter <= 0L) {
+            toDestroyed();
+            return;
+         }
       }
+      getTopicHandler().entryExpired(this);
    }
 
    /**
@@ -350,7 +389,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
    }
 
    private void toDestroyed() throws XmlBlasterException {
-      //this.glob.getLog("core").error(ME, "DEBUG ONLY Entering to destroyed" + toXml());
+      this.glob.getLog("core").info(ME, "Entering toDestroyed(oldState=" + getStateStr() + ")");
       synchronized (this) {
          if (this.timerKey != null) {
             this.destroyTimer.removeTimeoutListener(this.timerKey);
@@ -360,15 +399,15 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
             return;
          }
          this.state = DESTROYED;
-         getOwnerCache().remove(this);
-         getTopicHandler().destroyed(this);
       }
+      getTopicHandler().entryDestroyed(this);
    }
 
    /**
     * This timeout occurs after a configured expiration delay
     */
    public final void timeout(Object userData) {
+      this.glob.getLog("core").info(ME, "Expiration timeout occurred after " + getMsgQosData().getLifeTime() + " millis");
       synchronized (this) {
          if (this.timerKey != null) {
             this.destroyTimer.removeTimeoutListener(this.timerKey);
@@ -379,11 +418,16 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
                toDestroyed();
             }
             catch (XmlBlasterException e) {
-               this.glob.getLog("core").error(ME, "Unexpected exception which we can't handle: " + e.getMessage());
+               this.glob.getLog("core").error(ME, "Unexpected exception from toDestroyed() which we can't handle: " + e.getMessage());
             }
          }
          else {
-            toExpired();
+            try {
+               toExpired();
+            }
+            catch (XmlBlasterException e) {
+               this.glob.getLog("core").error(ME, "Unexpected exception from toExpired() which we can't handle: " + e.getMessage());
+            }
          }
       }
    }
