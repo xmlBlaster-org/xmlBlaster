@@ -3,7 +3,7 @@ Name:      SubscriptionInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles exactly one subscritpion (client reference and QoS of this subscrition
-Version:   $Id: SubscriptionInfo.java,v 1.14 1999/12/09 13:28:37 ruff Exp $
+Version:   $Id: SubscriptionInfo.java,v 1.15 1999/12/12 19:29:31 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -17,7 +17,7 @@ import org.xmlBlaster.clientIdl.BlasterCallback;
 
 /**
  * This is just a container to hold references on all interesting data
- * concerning a subscription of exactly one MessageUnit of exactly one Client. 
+ * concerning a subscription of exactly one MessageUnit of exactly one Client.
  * <p />
  */
 public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
@@ -47,7 +47,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
       this.xmlKey = xmlKey;
 
       // very bad hack, needs redesign (SubscribeQoS or UnSubscribeQoS are handled here)
-      if (qos.getClass().getName().equals("org.xmlBlaster.engine.SubscribeQoS"))
+      if (qos instanceof SubscribeQoS)
          this.subscribeQoS = (SubscribeQoS)qos;
       else
          this.unSubscribeQoS = (UnSubscribeQoS)qos;
@@ -57,7 +57,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
 
 
    /**
-    * Clean up everything, since i will be deleted now. 
+    * Clean up everything, since i will be deleted now.
     */
    private void erase()
    {
@@ -72,7 +72,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
 
 
    /**
-    * This must be called as soon as my MessageUnitHandler handles me. 
+    * This must be called as soon as my MessageUnitHandler handles me.
     * @param myHandler I'm handled (lifetime) by this handler
     */
    public void addMessageUnitHandler(MessageUnitHandler myHandler)
@@ -85,7 +85,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
 
 
    /**
-    * Time when this Subscription is invoked. 
+    * Time when this Subscription is invoked.
     * @return the creation time of this subscription (in millis)
     */
    public long getCreationTime()
@@ -95,7 +95,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
 
 
    /**
-    * Telling my container that i am not subscribing any more. 
+    * Telling my container that i am not subscribing any more.
     */
    public void removeSubscribe() throws XmlBlasterException
    {
@@ -159,7 +159,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
    }
 
    /**
-    * Accessing a unique id generated for this SubscriptionInfo. 
+    * Accessing a unique id generated for this SubscriptionInfo.
     * @return A unique key for this particular subscription
     */
    public String getUniqueKey() throws XmlBlasterException
@@ -173,7 +173,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
 
    /**
     * This static method may be used from external objects to get the unique key
-    * of a subscription, which is a function of f(clientInfo,xmlKey,xmlQoS). 
+    * of a subscription, which is a function of f(clientInfo,xmlKey,xmlQoS).
     * <p />
     * @return A unique key for this particular subscription, for example:<br>
     *         <code>Subscription-00 11 4D 4D 4D 4D 4C 0B 33 04 03 3F -null-null-943279576139-2-</code>
@@ -193,7 +193,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
 
 
    /**
-    * Dump state of this object into XML. 
+    * Dump state of this object into XML.
     * <br>
     * @return XML state of SubscriptionInfo
     */
@@ -204,7 +204,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
 
 
    /**
-    * Dump state of this object into XML. 
+    * Dump state of this object into XML.
     * <br>
     * @param extraOffset indenting of tags
     * @return XML state of SubscriptionInfo
