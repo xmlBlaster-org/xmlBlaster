@@ -125,6 +125,15 @@ public class Util
    }
 
 
+   /**
+    * Do some garbage collect attempts
+    */
+   public static void gc(int numGc) {
+      for (int ii=0; ii<numGc; ii++) {
+         System.gc();
+         try { Thread.currentThread().sleep(100L); } catch( InterruptedException i) {}
+      }
+   }
 }
 
 
