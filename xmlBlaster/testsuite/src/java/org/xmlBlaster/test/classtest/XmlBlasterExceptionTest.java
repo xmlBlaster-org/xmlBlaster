@@ -161,6 +161,61 @@ public class XmlBlasterExceptionTest extends TestCase {
       System.out.println("***XmlBlasterExceptionTest: testEmbeddedException [SUCCESS]");
    }
 
+   public void testIllegalFormat() {
+      System.out.println("***XmlBlasterExceptionTest: testIllegalFormat ...");
+      
+      String logFormat = "errorCode=[{0}] node=[{-100}] location=[{2}] message=[{4} : {99}]";
+      Global globTmp = glob.getClone(null);
+
+      try {
+         globTmp.getProperty().set("XmlBlasterException.logFormat", logFormat);
+         globTmp.getProperty().set("XmlBlasterException.logFormat.internal", logFormat);
+      }
+      catch (org.jutils.JUtilsException e) {
+         fail(e.toString());
+      }
+
+      IllegalArgumentException il = new IllegalArgumentException("SUPER");
+      XmlBlasterException ex = new XmlBlasterException(globTmp, ErrorCode.INTERNAL_UNKNOWN, "HERE", "OK", il);
+      ex.setLogFormatInternal(logFormat);
+      byte[] serial = ex.toByteArr();
+      XmlBlasterException back = XmlBlasterException.parseByteArr(globTmp, serial);
+
+      System.out.println(back.getStackTraceStr());
+      System.out.println(back.toXml());
+
+      assertEquals("", "HERE", back.getLocation());
+      assertEquals("", "java.lang.IllegalArgumentException: SUPER", back.getEmbeddedMessage());
+      assertEquals("", true, back.isInternal());
+      assertEquals("", false, back.isResource());
+      assertEquals("", false, back.isCommunication());
+      assertEquals("", false, back.isUser());
+      assertEquals("", false, back.isTransaction());
+
+      assertEquals("", ex.getErrorCode().toString(), back.getErrorCode().toString());
+      assertEquals("", ex.getErrorCodeStr(), back.getErrorCodeStr());
+      assertEquals("", ex.getNode(), back.getNode());
+      assertEquals("", ex.getLocation(), back.getLocation());
+      assertEquals("", ex.getLang(), back.getLang());
+      assertEquals("", ex.getRawMessage(), back.getRawMessage());
+      assertEquals("", ex.getMessage(), back.getMessage());
+      assertEquals("", ex.getVersionInfo(), back.getVersionInfo());
+      assertEquals("", ex.getTimestamp().getTimestamp(), back.getTimestamp().getTimestamp());
+      assertEquals("", il, ex.getEmbeddedException());
+      assertEquals("", null, back.getEmbeddedException());
+      assertEquals("", ex.getStackTraceStr(), back.getStackTraceStr());
+      assertEquals("", ex.getEmbeddedMessage(), back.getEmbeddedMessage());
+      assertEquals("", ex.getTransactionInfo(), back.getTransactionInfo());
+      assertEquals("", ex.isInternal(), back.isInternal());
+      assertEquals("", ex.isResource(), back.isResource());
+      assertEquals("", ex.isCommunication(), back.isCommunication());
+      assertEquals("", ex.isUser(), back.isUser());
+      assertEquals("", ex.isTransaction(), back.isTransaction());
+      assertEquals("", ex.toString(), back.toString());
+
+      System.out.println("***XmlBlasterExceptionTest: testIllegalFormat [SUCCESS]");
+   }
+
    /**
     * <pre>
     *  java org.xmlBlaster.test.classtest.XmlBlasterExceptionTest
@@ -173,6 +228,7 @@ public class XmlBlasterExceptionTest extends TestCase {
       testSub.testParse();
       testSub.testParseToString();
       testSub.testEmbeddedException();
+      testSub.testIllegalFormat();
       //testSub.tearDown();
    }
 }
