@@ -1498,7 +1498,8 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
       }
 
       if (queueName !=null) this.queues.remove(queueName);
-      if ((!force) && (this.queues.size()>0)) return this.queues.size();
+//      if ((!force) && (this.queues.size()>0)) return this.queues.size();
+      if (!force) return this.queues.size();
 
       if (!this.pool.isInitialized()) {
          this.log.trace(getLogId(queueName, null, "cleanUp"), "Already cleaned up, not doing anything");
