@@ -127,7 +127,7 @@ function logObject(level_, codePos_, text_)
    this.text = text_;
 }
 /**
- * Try to free resources. 
+ * Try to free resources.
  */
 function clearLogObject(obj)
 {
@@ -289,7 +289,8 @@ function displayLogs(caller)
 {
    if (caller == 'forceRefresh') {
       collectForDisplay = false;
-      window.clearTimeout(displayRefreshHandler);  // necessary?
+      if ((typeof displayRefreshHandler) != "undefined")
+         window.clearTimeout(displayRefreshHandler);
    }
    else if (caller == 'newEntry') {
       newLogsAvailable = true;
@@ -298,7 +299,8 @@ function displayLogs(caller)
    }
    else if (caller == 'fromTimer' && !newLogsAvailable) {
       collectForDisplay = false;
-      window.clearTimeout(displayRefreshHandler);  // necessary?
+      if ((typeof displayRefreshHandler) != "undefined")
+         window.clearTimeout(displayRefreshHandler);
       return;
    }
 
