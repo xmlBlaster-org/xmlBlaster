@@ -3,7 +3,7 @@ Name:      ConnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: ConnectQos.java,v 1.25 2002/06/13 01:00:27 ruff Exp $
+Version:   $Id: ConnectQos.java,v 1.26 2002/06/20 21:21:04 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -76,6 +76,13 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     * Allows to mark that we are an xmlBlaster cluster node.
     */
    protected boolean isClusterNode = false;
+
+   /**
+    * If duplicateUpdates=false we will send only one update, even if
+    * the same client subscribed multiple times on the same message.
+    * Defaults to true.
+    */
+   protected boolean duplicateUpdates = true;
 
    /** Default session span of life is one day, given in millis "-session.timeout 86400000" */
    protected long sessionTimeout = Constants.DAY_IN_MILLIS;
@@ -618,6 +625,20 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    }
 
    /**
+    * @param Set if we allow multiple updates for the same message if we have subscribed multiple times to it. 
+    */
+   public final void setDuplicateUpdates(boolean duplicateUpdates) {
+      this.duplicateUpdates = duplicateUpdates;
+   }
+
+   /**
+    * @return Are we a cluster?
+    */
+   public final boolean duplicateUpdates() {
+      return this.duplicateUpdates;
+   }
+
+   /**
     * Add an address to which we want to connect, with all the configured parameters. 
     * <p />
     * @param address  An object containing the protocol (e.g. EMAIL) the address (e.g. hugo@welfare.org) and the connection properties
@@ -851,6 +872,12 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          return;
       }
 
+      if (name.equalsIgnoreCase("duplicateUpdates")) {
+         setDuplicateUpdates(true);
+         character.setLength(0);
+         return;
+      }
+
       if (name.equalsIgnoreCase("sessionId")) {
          if (!inSession)
             return;
@@ -921,6 +948,13 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
             setIsClusterNode(new Boolean(tmp).booleanValue());
+         return;
+      }
+
+      if (name.equalsIgnoreCase("duplicateUpdates")) {
+         String tmp = character.toString().trim();
+         if (tmp.length() > 0)
+            setDuplicateUpdates(new Boolean(tmp).booleanValue());
          return;
       }
 
@@ -1016,6 +1050,9 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       if (isClusterNode())
          sb.append(offset).append("<isClusterNode>").append(isClusterNode()).append("</isClusterNode>");
 
+      if (duplicateUpdates() == false)
+         sb.append(offset).append("<duplicateUpdates>").append(duplicateUpdates()).append("</duplicateUpdates>");
+
       sb.append(offset).append("<session timeout='").append(sessionTimeout);
       sb.append("' maxSessions='").append(maxSessions);
       sb.append("' clearSessions='").append(clearSessions());
@@ -1090,6 +1127,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
             */
             "   <ptp>true</ptp>\n" +
             "   <isClusterNode>true</isClusterNode>\n" +
+            "   <duplicateUpdates>false</duplicateUpdates>\n" +
             "   <session timeout='3600000' maxSessions='20' clearSessions='false'>\n" +
             "      <sessionId>anId</sessionId>\n" +
             "   </session>\n" +
