@@ -194,7 +194,7 @@ public class HelloWorldPublish
             if (log.DUMP) log.dump("", "Returned: " + prq.toXml());
 
             log.info(ME, "#" + (i+1) + "/" + numPublish +
-                         ": Got status='" + prq.getState() + "' rcvTimestamp=" + prq.getRcvTimestamp().toString() +
+                         ": Got status='" + prq.getState() + "' rcvTimestamp=" + prq.getRcvTimestamp() +
                          " for published message '" + prq.getKeyOid() + "'");
          }
 
