@@ -3,7 +3,7 @@ Name:      MainGUI.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: MainGUI.java,v 1.44 2002/04/21 18:07:24 www Exp $
+Version:   $Id: MainGUI.java,v 1.45 2002/04/23 15:09:33 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -727,7 +727,7 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
       MessageUnit[] get(String queryString)
       {
          try {
-            XmlKey kk = new XmlKey("<key oid='' queryType='" + queryType + "'>" + queryString + "</key>");
+            XmlKey kk = new XmlKey(this.authenticate.getGlobal(), "<key oid='' queryType='" + queryType + "'>" + queryString + "</key>");
             stop.restart();
             MessageUnit[] msgArr = this.authenticate.getGlobal().getRequestBroker().get(unsecureSessionInfo, kk, new GetQoS(null));
             Log.info(ME, "Got " + msgArr.length + " messages for query '" + queryString + "'" + stop.nice());
