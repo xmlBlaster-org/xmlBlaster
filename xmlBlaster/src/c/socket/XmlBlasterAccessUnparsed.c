@@ -225,6 +225,9 @@ static bool initialize(XmlBlasterAccessUnparsed *xa, UpdateFp clientUpdateFp, Xm
       xa->connectionP->readFromSocket.userP = xa;
    }
    else {
+      if (strcmp(compressType, "")) {
+         xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, "Unsupported compression type 'plugin/socket/compress/type=%s', falling back to plain mode", compressType);
+      }
       xa->connectionP->writeToSocket.funcP = writenPlain;
       xa->connectionP->writeToSocket.userP = xa;
       xa->connectionP->readFromSocket.funcP = readnPlain;

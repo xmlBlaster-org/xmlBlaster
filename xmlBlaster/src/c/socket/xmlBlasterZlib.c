@@ -275,7 +275,7 @@ int xmlBlaster_endZlibReader(XmlBlasterZlibReadBuffers *zlibReadBufP) {
 
 /* If no zlib is available use dummies: */
 int xmlBlaster_initZlibWriter(XmlBlasterZlibWriteBuffers *zlibWriteBufP) { 
-   fprintf(stderr, "No support for zlib is compiled, try with -DXMLBLASTER_ZLIB=1");
+   fprintf(stderr, "No support for zlib is compiled, try with -DXMLBLASTER_ZLIB=1\n");
    assert(0);
 }
 ssize_t xmlBlaster_writenCompressed(XmlBlasterZlibWriteBuffers *zlibWriteBufP, const int fd, const char * const ptr, const size_t nbytes) { return 0; }

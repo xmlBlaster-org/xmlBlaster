@@ -203,6 +203,9 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
          }
       }
       else {
+         if (strcmp(compressType, "")) {
+            xb->log(xb->logUserP, xb->logLevel, LOG_WARN, __FILE__, "Unsupported compression type 'plugin/socket/compress/type=%s', falling back to plain mode.", compressType);
+         }
          if (!xb->writeToSocket.funcP) {  /* Accept setting from XmlBlasterAccessUnparsed */
             xb->writeToSocket.funcP = writenPlain;
             xb->readFromSocket.funcP = readnPlain;
