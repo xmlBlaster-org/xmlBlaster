@@ -3,13 +3,13 @@ Name:      TestGet.cc
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestGet.cc,v 1.3 2000/10/18 20:45:44 ruff Exp $
+Version:   $Id: TestGet.cc,v 1.4 2001/03/16 09:47:03 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #include <strstream.h>
 #include <string>
 #include <util/StopWatch.h>
-#include <client/XmlBlasterConnection.h>
+#include <client/CorbaConnection.h>
 #include <client/LoginQosWrapper.h>
 #include <client/PublishQosWrapper.h>
 
@@ -30,7 +30,7 @@ private:
    }
 
    util::Log       log_;
-   XmlBlasterConnection *corbaConnection_;
+   CorbaConnection *corbaConnection_;
    string publishOid_;
    string loginName_;
    string senderContent_;
@@ -69,7 +69,7 @@ public:
    void setUp(int args=0, char *argc[]=0) {
       try {
          cerr << "BEFORE CONSTRUCTOR" << endl;
-         corbaConnection_ = new XmlBlasterConnection(args, argc); // Find orb
+         corbaConnection_ = new CorbaConnection(args, argc); // Find orb
          string passwd = "secret";
          LoginQosWrapper qos = new LoginQosWrapper(); // == "<qos></qos>";
          cerr << "BEFORE LOGIN" << endl;

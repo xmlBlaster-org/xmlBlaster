@@ -3,7 +3,7 @@ Name:      TestLogin.cc
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestLogin.cc,v 1.4 2000/10/18 20:45:44 ruff Exp $
+Version:   $Id: TestLogin.cc,v 1.5 2001/03/16 09:47:03 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 /**
@@ -22,7 +22,7 @@ Version:   $Id: TestLogin.cc,v 1.4 2000/10/18 20:45:44 ruff Exp $
 
 #include <string>
 #include <util/Log.h>
-#include <client/XmlBlasterConnection.h>
+#include <client/CorbaConnection.h>
 #include <client/LoginQosWrapper.h>
 #include <util/PlatformUtils.hpp>
 //#include <unistd.h>
@@ -41,7 +41,7 @@ private:
    string oid_;
    string senderName_, secondName_;
    string senderContent_;
-   XmlBlasterConnection         *senderConnection_, *secondConnection_;
+   CorbaConnection         *senderConnection_, *secondConnection_;
    serverIdl::MessageUnit* msgUnit_;     // a message to play with
 
    int       numReceived_; // error checking
@@ -82,7 +82,7 @@ public:
 
 
    /**
-    * This is the callback method (I_Callback) invoked from XmlBlasterConnection
+    * This is the callback method (I_Callback) invoked from CorbaConnection
     * informing the client in an asynchronous mode about a new message.
     * <p />
     * The raw CORBA-BlasterCallback.update() is unpacked and for each arrived
@@ -109,7 +109,7 @@ public:
       try {
          if (!log_) log_   = new util::Log(args, argc);
          if (senderConnection_) delete senderConnection_;
-         senderConnection_ = new XmlBlasterConnection(args, argc); // Find orb
+         senderConnection_ = new CorbaConnection(args, argc); // Find orb
          string passwd     = "secret";
 
          LoginQosWrapper qosWrapper;
@@ -117,7 +117,7 @@ public:
 
          // Login to xmlBlaster
          if (secondConnection_) delete secondConnection_;
-         secondConnection_ = new XmlBlasterConnection(args, argc); // Find orb
+         secondConnection_ = new CorbaConnection(args, argc); // Find orb
          secondConnection_->login(secondName_, passwd, qosWrapper, this);
 
          // a sample message unit

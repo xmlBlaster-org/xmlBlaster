@@ -3,12 +3,12 @@ Name:      RamTest.cc
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: RamTest.cc,v 1.4 2000/10/18 20:45:43 ruff Exp $
+Version:   $Id: RamTest.cc,v 1.5 2001/03/16 09:47:03 ruff Exp $
 ---------------------------------------------------------------------------*/
 
 #include <string>
 #include <strstream.h>
-#include <client/XmlBlasterConnection.h>
+#include <client/CorbaConnection.h>
 #include <util/StopWatch.h>
 
 /**
@@ -41,7 +41,7 @@ private:
 
    const static int NUM_PUBLISH = 1000;
    util::StopWatch  stopWatch_;
-   XmlBlasterConnection* senderConnection_;
+   CorbaConnection* senderConnection_;
    string           publishOid_;
    string           senderName_;
    string           senderContent_;
@@ -71,7 +71,7 @@ public:
     */
    void setUp(int args=0, char *argc[]=0) {
       try {
-         senderConnection_ = new XmlBlasterConnection(args, argc); // Find orb
+         senderConnection_ = new CorbaConnection(args, argc); // Find orb
          string passwd = "secret";
          senderConnection_->login(senderName_, passwd, 0);
           // Login to xmlBlaster without Callback
