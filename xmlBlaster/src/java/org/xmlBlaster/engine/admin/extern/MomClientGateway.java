@@ -15,6 +15,7 @@ import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.key.KeyData;
 import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.util.qos.QueryQosData;
+import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.engine.qos.PublishQosServer;
 import org.xmlBlaster.engine.admin.CommandManager;
 import org.xmlBlaster.engine.admin.I_ExternGateway;
@@ -85,7 +86,7 @@ public final class MomClientGateway implements I_ExternGateway
       }
       */
 
-      MsgUnit[] msgs = commandManager.get(sessionInfo.getSecretSessionId(), keyData, qosData);
+      MsgUnit[] msgs = commandManager.get(sessionInfo.getAddressServer(), sessionInfo.getSecretSessionId(), keyData, qosData);
       /*
       for (int ii=0; ii<msgs.length; ii++) {
          MsgUnitRaw msg = msgs[ii];
@@ -125,7 +126,7 @@ public final class MomClientGateway implements I_ExternGateway
          query = query + "=" + msgUnit.getContentStr();     // "/node/heron/?numClients=99"
       }
 
-      SetReturn ret = commandManager.set(sessionInfo.getSecretSessionId(), query);
+      SetReturn ret = commandManager.set(sessionInfo.getAddressServer(), sessionInfo.getSecretSessionId(), query);
 
       if (ret == null)
          throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".setCommand", "Your command '" + ret.commandWrapper.getCommand() + "' failed, reason is unknown");

@@ -13,6 +13,7 @@ import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.util.qos.QueryQosData;
+import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.engine.admin.CommandManager;
 import org.xmlBlaster.engine.admin.I_ExternGateway;
 
@@ -175,7 +176,8 @@ public final class SnmpGateway implements I_ExternGateway // , SnmpInterface ?
          query.setOid("__cmd:" + cmd);
          if (log.TRACE) log.trace(ME, "Invoking SNMP cmd=" + cmd + " as query=" + query.toXml());
 
-         MsgUnit[] msgs = manager.get(sessionId, query, /*qosData*/ null);
+         AddressServer addressServer = null; // TODO !!!
+         MsgUnit[] msgs = manager.get(addressServer, sessionId, query, /*qosData*/ null);
          if (msgs.length == 0)
             return "NOT FOUND";
          else {

@@ -13,6 +13,7 @@ import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.engine.admin.I_CommandHandler;
 import org.xmlBlaster.engine.admin.CommandManager;
 import org.xmlBlaster.engine.admin.CommandWrapper;
@@ -81,7 +82,7 @@ final public class PropertyHandler implements I_CommandHandler, I_Plugin {
    /**
     * @see org.xmlBlaster.engine.admin.I_CommandHandler#get(String,CommandWrapper)
     */
-   public synchronized MsgUnit[] get(String sessionId, CommandWrapper cmd) throws XmlBlasterException {
+   public synchronized MsgUnit[] get(AddressServer addressServer, String sessionId, CommandWrapper cmd) throws XmlBlasterException {
       if (cmd == null)
          throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".get", "Please pass a command which is not null");
       if (cmd.getTail() == null)
@@ -113,7 +114,7 @@ final public class PropertyHandler implements I_CommandHandler, I_Plugin {
    /**
     * @return The new value set, it can be different to the passed value for example if ${} replacement occured
     */
-   public String set(String sessionId, CommandWrapper cmd) throws XmlBlasterException {
+   public String set(AddressServer addressServer, String sessionId, CommandWrapper cmd) throws XmlBlasterException {
       if (cmd == null)
          throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".set", "Please pass a command which is not null");
       if (cmd.getTail() == null)

@@ -11,6 +11,7 @@ package org.xmlBlaster.protocol.corba;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.engine.qos.AddressServer;
 import org.jutils.time.StopWatch;
 import org.xmlBlaster.protocol.corba.serverIdl.*;
 import org.xmlBlaster.protocol.I_XmlBlaster;
@@ -30,18 +31,20 @@ public class ServerImpl implements ServerOperations {    // TIE approach
    private final LogChannel log;
    private final org.omg.CORBA.ORB orb;
    private final I_XmlBlaster blaster;
+   private final AddressServer addressServer;
 
 
    /**
     * Construct a persistently named object.
     */
-   public ServerImpl(Global glob, org.omg.CORBA.ORB orb, I_XmlBlaster blaster) throws XmlBlasterException
+   public ServerImpl(Global glob, org.omg.CORBA.ORB orb, AddressServer addressServer, I_XmlBlaster blaster) throws XmlBlasterException
    {
       this.glob = glob;
       this.log = this.glob.getLog("corba");
       if (log.CALL) log.call(ME, "Entering constructor with ORB argument");
       this.orb = orb;
       this.blaster = blaster;
+      this.addressServer = addressServer;
    }
 
 
@@ -65,7 +68,7 @@ public class ServerImpl implements ServerOperations {    // TIE approach
          if (log.DUMP) log.dump(ME, "subscribe()\n" + xmlKey_literal + "\n" + qos_literal);
          StopWatch stop=null; if (log.TIME) stop = new StopWatch();
 
-         String oid = blaster.subscribe(getSecretSessionId(), xmlKey_literal, qos_literal);
+         String oid = blaster.subscribe(this.addressServer, getSecretSessionId(), xmlKey_literal, qos_literal);
 
          if (log.TIME) log.time(ME, "Elapsed time in subscribe()" + stop.nice());
 
@@ -87,7 +90,7 @@ public class ServerImpl implements ServerOperations {    // TIE approach
          if (log.DUMP) log.dump(ME, "unSubscribe()\n" + xmlKey_literal + "\n" + qos_literal);
          StopWatch stop=null; if (log.TIME) stop = new StopWatch();
 
-         String[] strArr = blaster.unSubscribe(getSecretSessionId(), xmlKey_literal, qos_literal);
+         String[] strArr = blaster.unSubscribe(this.addressServer, getSecretSessionId(), xmlKey_literal, qos_literal);
 
          if (log.TIME) log.time(ME, "Elapsed time in unSubscribe()" + stop.nice());
 
@@ -108,7 +111,7 @@ public class ServerImpl implements ServerOperations {    // TIE approach
          if (log.CALL) log.call(ME, "Entering publish() ...");
          if (log.DUMP) log.dump(ME, "publish()\n" + msgUnit.xmlKey + "\n" + msgUnit.qos);
 
-         String retVal = blaster.publish(getSecretSessionId(), CorbaDriver.convert(glob, msgUnit));
+         String retVal = blaster.publish(this.addressServer, getSecretSessionId(), CorbaDriver.convert(glob, msgUnit));
 
          return retVal;
       }
@@ -139,7 +142,7 @@ public class ServerImpl implements ServerOperations {    // TIE approach
 
          org.xmlBlaster.util.MsgUnitRaw[] internalUnitArr = CorbaDriver.convert(glob, msgUnitArr);   // convert Corba to internal ...
 
-         String[] strArr = blaster.publishArr(getSecretSessionId(), internalUnitArr);
+         String[] strArr = blaster.publishArr(this.addressServer, getSecretSessionId(), internalUnitArr);
 
          return strArr;
       }
@@ -162,7 +165,7 @@ public class ServerImpl implements ServerOperations {    // TIE approach
          if (log.CALL) log.call(ME, "Entering publishOneway(" + msgUnitArr.length + ") ...");
 
          org.xmlBlaster.util.MsgUnitRaw[] internalUnitArr = CorbaDriver.convert(glob, msgUnitArr);   // convert Corba to internal ...
-         blaster.publishOneway(getSecretSessionId(), internalUnitArr);
+         blaster.publishOneway(this.addressServer, getSecretSessionId(), internalUnitArr);
       }
       catch (Throwable e) {
          log.error(ME, "publishOneway() failed, exception is not sent to client: " + e.toString());
@@ -180,7 +183,7 @@ public class ServerImpl implements ServerOperations {    // TIE approach
          if (log.CALL) log.call(ME, "Entering erase() xmlKey=\n" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
          if (log.DUMP) log.dump(ME, "erase()\n" + xmlKey_literal + "\n" + qos_literal);
 
-         String [] retArr = blaster.erase(getSecretSessionId(), xmlKey_literal, qos_literal);
+         String [] retArr = blaster.erase(this.addressServer, getSecretSessionId(), xmlKey_literal, qos_literal);
 
          return retArr;
       }
@@ -201,7 +204,7 @@ public class ServerImpl implements ServerOperations {    // TIE approach
          if (log.DUMP) log.dump(ME, "get()\n" + xmlKey_literal + "\n" + qos_literal);
          StopWatch stop=null; if (log.TIME) stop = new StopWatch();
 
-         org.xmlBlaster.util.MsgUnitRaw[] msgUnitArr = blaster.get(getSecretSessionId(), xmlKey_literal, qos_literal);
+         org.xmlBlaster.util.MsgUnitRaw[] msgUnitArr = blaster.get(this.addressServer, getSecretSessionId(), xmlKey_literal, qos_literal);
 
          org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] corbaUnitArr = CorbaDriver.convert(msgUnitArr);  // convert internal to Corba ...
 
@@ -271,7 +274,7 @@ public class ServerImpl implements ServerOperations {    // TIE approach
    public String ping(String qos)
    {
       if (log.CALL) log.call(ME, "Entering ping("+qos+") ...");
-      return blaster.ping(qos);
+      return blaster.ping(this.addressServer, qos);
    }
 }
 

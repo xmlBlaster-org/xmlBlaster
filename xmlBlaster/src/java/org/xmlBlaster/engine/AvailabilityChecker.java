@@ -13,6 +13,7 @@ import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
 import org.xmlBlaster.engine.runlevel.RunlevelManager;
 import org.xmlBlaster.util.SessionName;
@@ -66,7 +67,7 @@ public final class AvailabilityChecker implements I_RunlevelListener
     * @throws XmlBlasterException: If the server is not in a run level to accept messages
     * it throws ErrorCode.COMMUNICATION_NOCONNECTION_SERVERDENY
     */
-   public void checkServerIsReady(SessionName sessionName, MsgUnit msgUnit, MethodName action) throws XmlBlasterException {
+   public void checkServerIsReady(SessionName sessionName, AddressServer addressServer, MsgUnit msgUnit, MethodName action) throws XmlBlasterException {
 
       if (this.runlevelManager.getCurrentRunlevel() > RunlevelManager.RUNLEVEL_CLEANUP) // 7 to 9
          return;
@@ -75,8 +76,18 @@ public final class AvailabilityChecker implements I_RunlevelListener
       if (isInternalUser)
          return;
 
-      if (!this.startup && action == MethodName.DISCONNECT && this.runlevelManager.getCurrentRunlevel() >= RunlevelManager.RUNLEVEL_STANDBY)
+      if (!this.startup && action == MethodName.DISCONNECT &&
+           this.runlevelManager.getCurrentRunlevel() >= RunlevelManager.RUNLEVEL_STANDBY)
          return; // to allow internal services to disconnect on shutdown
+
+      if (addressServer != null && "NATIVE".equals(addressServer.getType())) {
+         return; // For example the MainGUI and other internal services
+      }
+
+      if (addressServer != null && "LOCAL".equals(addressServer.getType()) &&
+           this.runlevelManager.getCurrentRunlevel() >= RunlevelManager.RUNLEVEL_STANDBY) {
+         return;
+      }
 
       if (this.startup && this.runlevelManager.getCurrentRunlevel() < RunlevelManager.RUNLEVEL_STANDBY) // 3
          return; // Accept internal calls and startup (for example from persistence recovery)

@@ -13,6 +13,7 @@ import java.util.Random;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.engine.qos.GetQosServer;
+import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.engine.qos.EraseQosServer;
 import org.xmlBlaster.engine.qos.SubscribeQosServer;
 import org.xmlBlaster.engine.qos.UnSubscribeQosServer;
@@ -77,7 +78,8 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public final String subscribe(String sessionId, String xmlKey_literal, String qos_literal) throws XmlBlasterException {
+   public final String subscribe(AddressServer addressServer, String sessionId,
+                                 String xmlKey_literal, String qos_literal) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering subscribe(" + sessionId + ", key, qos)");
 
       try {
@@ -85,7 +87,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          SessionInfo sessionInfo = authenticate.check(sessionId);
          
          // import and authorize message
-         MsgUnit msgUnit = importAndAuthorize(sessionInfo,
+         MsgUnit msgUnit = importAndAuthorize(sessionInfo, addressServer,
                                        new MsgUnitRaw(xmlKey_literal, null, qos_literal),
                                        MethodName.SUBSCRIBE);
 
@@ -107,7 +109,8 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public final String[] unSubscribe(String sessionId, String xmlKey_literal, String qos_literal) throws XmlBlasterException
+   public final String[] unSubscribe(AddressServer addressServer, String sessionId,
+                                     String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "Entering unSubscribe(" + sessionId + ", key, qos)");
 
@@ -116,7 +119,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          SessionInfo sessionInfo = authenticate.check(sessionId);
 
          // import and authorize message
-         MsgUnit msgUnit = importAndAuthorize(sessionInfo,
+         MsgUnit msgUnit = importAndAuthorize(sessionInfo, addressServer,
                                        new MsgUnitRaw(xmlKey_literal, null, qos_literal),
                                        MethodName.UNSUBSCRIBE);
          
@@ -142,7 +145,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public final String publish(String sessionId, MsgUnitRaw msgUnitRaw) throws XmlBlasterException
+   public final String publish(AddressServer addressServer, String sessionId, MsgUnitRaw msgUnitRaw) throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "Entering publish()");
 
@@ -150,7 +153,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          // authentication and authorization security checks
          SessionInfo sessionInfo = authenticate.check(sessionId);
 
-         MsgUnit msgUnit = importAndAuthorize(sessionInfo, msgUnitRaw, MethodName.PUBLISH);
+         MsgUnit msgUnit = importAndAuthorize(sessionInfo, addressServer, msgUnitRaw, MethodName.PUBLISH);
          
          String ret = requestBroker.publish(sessionInfo, msgUnit);
 
@@ -166,7 +169,8 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public final String[] publishArr(String sessionId, MsgUnitRaw[] msgUnitArr) throws XmlBlasterException {
+   public final String[] publishArr(AddressServer addressServer, String sessionId,
+                                    MsgUnitRaw[] msgUnitArr) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering publishArr()");
 
       try {
@@ -177,7 +181,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          // How to guarantee complete transaction?
          String[] returnArr = new String[msgUnitArr.length];
          for (int ii=0; ii<msgUnitArr.length; ii++) {
-            MsgUnit msgUnit = importAndAuthorize(sessionInfo, msgUnitArr[ii], MethodName.PUBLISH);
+            MsgUnit msgUnit = importAndAuthorize(sessionInfo, addressServer, msgUnitArr[ii], MethodName.PUBLISH);
             String ret = requestBroker.publish(sessionInfo, msgUnit);
             returnArr[ii] = sec.exportMessage(ret);
          }
@@ -194,10 +198,10 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public final void publishOneway(String sessionId, MsgUnitRaw[] msgUnitArr) {
+   public final void publishOneway(AddressServer addressServer, String sessionId, MsgUnitRaw[] msgUnitArr) {
       if (log.CALL) log.call(ME, "Entering publishOneway()");
       try {
-         publishArr(sessionId, msgUnitArr);
+         publishArr(addressServer, sessionId, msgUnitArr);
       }
       catch (Throwable e) {
          log.error(ME, "Caught exception on publish which can't be delivered to client because of 'oneway' mode: " + e.getMessage());
@@ -209,7 +213,8 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public final String[] erase(String sessionId, String xmlKey_literal, String qos_literal) throws XmlBlasterException {
+   public final String[] erase(AddressServer addressServer, String sessionId,
+                               String xmlKey_literal, String qos_literal) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering erase()");
 
       try {
@@ -217,7 +222,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          SessionInfo sessionInfo = authenticate.check(sessionId);
 
          // import (decrypt) and authorize message
-         MsgUnit msgUnit = importAndAuthorize(sessionInfo,
+         MsgUnit msgUnit = importAndAuthorize(sessionInfo, addressServer,
                                        new MsgUnitRaw(xmlKey_literal, null, qos_literal),
                                        MethodName.ERASE);
 
@@ -242,7 +247,8 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public final MsgUnitRaw[] get(String sessionId, String xmlKey_literal, String qos_literal) throws XmlBlasterException {
+   public final MsgUnitRaw[] get(AddressServer addressServer, String sessionId,
+                                 String xmlKey_literal, String qos_literal) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering get()");
 
       try {
@@ -250,7 +256,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          SessionInfo sessionInfo = authenticate.check(sessionId);
 
          // import (decrypt) and authorize message
-         MsgUnit msgUnit = importAndAuthorize(sessionInfo,
+         MsgUnit msgUnit = importAndAuthorize(sessionInfo, addressServer,
                                    new MsgUnitRaw(xmlKey_literal, null, qos_literal),
                                    MethodName.GET);
 
@@ -300,6 +306,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
     *   <li>Then we do the authorization</li>
     * </ul>
     * @param sessionInfo The sessionInfo (we are already authenticated)
+    * @param addressServer The server side protocol plugin information (like IP and port)
     * @param MsgUnit The message, probably encrypted
     * @param String actionKey (eg. PUBLISH, GET, ...)
     * @return The message decrypted (readable) of type MsgUnit (ready parsed)
@@ -307,7 +314,8 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
     *                                or the message format has errors.<br />
     *            Throws "NotAuthorized" if client may not do the action with this message
     */
-   private MsgUnit importAndAuthorize(SessionInfo sessionInfo, MsgUnitRaw msgUnitRaw, MethodName action) throws XmlBlasterException {
+   private MsgUnit importAndAuthorize(SessionInfo sessionInfo, AddressServer addressServer, 
+                       MsgUnitRaw msgUnitRaw, MethodName action) throws XmlBlasterException {
       I_Session sessionSecCtx = sessionInfo.getSecuritySession();
       if (sessionSecCtx==null) { // assert
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME+".accessDenied", "unknown session - internal error.");
@@ -325,7 +333,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
          qosData.isFromPersistenceRecovery(true);
       
       // Check if server is ready (throws XmlBlasterException otherwise)
-      this.availabilityChecker.checkServerIsReady(sessionInfo.getSessionName(), msgUnit, action);
+      this.availabilityChecker.checkServerIsReady(sessionInfo.getSessionName(), addressServer, msgUnit, action);
 
       // Protect against faked sender name
       if (sessionInfo.getConnectQos().isClusterNode()) {
@@ -371,7 +379,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
     * @return "<qos><state id='OK'/></qos>" if we are ready, otherwise the current run level string
     * @see org.xmlBlaster.engine.AvailabilityChecker#getStatus(String)
     */
-   public final String ping(String qos) {
+   public final String ping(AddressServer addressServer, String qos) {
       String ret = "<qos><state id='" + this.availabilityChecker.getStatus(qos) + "'/></qos>";
       if (log.CALL) log.call(ME, "Entering ping("+qos+"), returning " + ret + " ...");
       return ret;

@@ -13,6 +13,7 @@ import org.jutils.time.StopWatch;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnitRaw;
+import org.xmlBlaster.engine.qos.AddressServer;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -28,15 +29,18 @@ public class XmlBlasterImpl extends UnicastRemoteObject implements org.xmlBlaste
    private final String ME = "RMI.XmlBlasterImpl";
    private final LogChannel log;
    private org.xmlBlaster.protocol.I_XmlBlaster blasterNative;
+   private final AddressServer addressServer;
 
 
    /**
     */
-   public XmlBlasterImpl(Global glob, org.xmlBlaster.protocol.I_XmlBlaster blasterNative) throws RemoteException, XmlBlasterException
+   public XmlBlasterImpl(Global glob, AddressServer addressServer,
+                         org.xmlBlaster.protocol.I_XmlBlaster blasterNative) throws RemoteException, XmlBlasterException
    {
       this.log = glob.getLog("rmi");
       if (log.CALL) log.call(ME, "Entering constructor ...");
       this.blasterNative = blasterNative;
+      this.addressServer = addressServer;
    }
 
 
@@ -48,7 +52,7 @@ public class XmlBlasterImpl extends UnicastRemoteObject implements org.xmlBlaste
       if (log.CALL) log.call(ME, "Entering subscribe() xmlKey=\n" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
       StopWatch stop=null; if (log.TIME) stop = new StopWatch();
 
-      String oid = blasterNative.subscribe(sessionId, xmlKey_literal, qos_literal);
+      String oid = blasterNative.subscribe(this.addressServer, sessionId, xmlKey_literal, qos_literal);
 
       if (log.TIME) log.time(ME, "Elapsed time in subscribe()" + stop.nice());
 
@@ -64,7 +68,7 @@ public class XmlBlasterImpl extends UnicastRemoteObject implements org.xmlBlaste
       if (log.CALL) log.call(ME, "Entering unSubscribe() xmlKey=\n" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
       StopWatch stop=null; if (log.TIME) stop = new StopWatch();
 
-      String[] retArr = blasterNative.unSubscribe(sessionId, xmlKey_literal, qos_literal);
+      String[] retArr = blasterNative.unSubscribe(this.addressServer, sessionId, xmlKey_literal, qos_literal);
 
       if (log.TIME) log.time(ME, "Elapsed time in unSubscribe()" + stop.nice());
 
@@ -79,7 +83,7 @@ public class XmlBlasterImpl extends UnicastRemoteObject implements org.xmlBlaste
    {
       if (log.CALL) log.call(ME, "Entering publish() ...");
 
-      String retVal = blasterNative.publish(sessionId, msgUnit);
+      String retVal = blasterNative.publish(this.addressServer, sessionId, msgUnit);
 
       return retVal;
    }
@@ -95,7 +99,7 @@ public class XmlBlasterImpl extends UnicastRemoteObject implements org.xmlBlaste
          if (log.TRACE) log.trace(ME, "Entering xmlBlaster.publishArr(), nothing to do, zero msgUnits sent");
          return new String[0];
       }
-      return blasterNative.publishArr(sessionId, msgUnitArr);
+      return blasterNative.publishArr(this.addressServer, sessionId, msgUnitArr);
    }
 
 
@@ -111,7 +115,7 @@ public class XmlBlasterImpl extends UnicastRemoteObject implements org.xmlBlaste
          return;
       }
 
-      blasterNative.publishOneway(sessionId, msgUnitArr);
+      blasterNative.publishOneway(this.addressServer, sessionId, msgUnitArr);
    }
 
 
@@ -122,7 +126,7 @@ public class XmlBlasterImpl extends UnicastRemoteObject implements org.xmlBlaste
    {
       if (log.CALL) log.call(ME, "Entering erase() xmlKey=\n" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
 
-      String [] retArr = blasterNative.erase(sessionId, xmlKey_literal, qos_literal);
+      String [] retArr = blasterNative.erase(this.addressServer, sessionId, xmlKey_literal, qos_literal);
 
       return retArr;
    }
@@ -138,7 +142,7 @@ public class XmlBlasterImpl extends UnicastRemoteObject implements org.xmlBlaste
       if (log.CALL) log.call(ME, "Entering get() xmlKey=\n" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
       StopWatch stop=null; if (log.TIME) stop = new StopWatch();
 
-      MsgUnitRaw[] msgUnitArr = blasterNative.get(sessionId, xmlKey_literal, qos_literal);
+      MsgUnitRaw[] msgUnitArr = blasterNative.get(this.addressServer, sessionId, xmlKey_literal, qos_literal);
 
       if (log.TIME) log.time(ME, "Elapsed time in get()" + stop.nice());
 
@@ -151,7 +155,7 @@ public class XmlBlasterImpl extends UnicastRemoteObject implements org.xmlBlaste
      */
    public String ping(String qos) throws RemoteException
    {
-      return blasterNative.ping(qos);
+      return blasterNative.ping(this.addressServer, qos);
    }
 }
 

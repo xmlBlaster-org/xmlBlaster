@@ -12,6 +12,7 @@ import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.admin.CommandManager;
 import org.xmlBlaster.engine.admin.I_ExternGateway;
 import org.xmlBlaster.engine.admin.SetReturn;
+import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
 import org.xmlBlaster.util.MsgUnit;
@@ -46,22 +47,23 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
    private LogChannel log;
    private CommandManager commandManager;
    private int port;
-   private RemoteServer rs = null;
+   private RemoteServer rs;
    private final String CRLF = "\r\n";
    private static int instanceCounter = 0;
    private boolean isShutdown = true;
 
    private boolean isLogin = false;
-   private ConnectReturnQosServer connectRetQos = null;
+   private ConnectReturnQosServer connectRetQos;
    private String loginName = "";
-   private String sessionId = null;
+   private String sessionId;
 
    private Set telnetInstancesSet;
 
    private Timestamp timerKey;
    private long sessionTimeout = 3600000L; // autologout after 1 hour
 
-   private ConnectionServer connectionServer = null;
+   private ConnectionServer connectionServer;
+   private AddressServer addressServer;
 
    private String lastCommand = "";
 
@@ -156,7 +158,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
       if (isLogin) {
          if (connectRetQos != null) {
             try {
-               glob.getAuthenticate().disconnect(connectRetQos.getSecretSessionId(), null);
+               glob.getAuthenticate().disconnect(this.addressServer, connectRetQos.getSecretSessionId(), null);
             }
             catch (org.xmlBlaster.util.XmlBlasterException e) {
                log.warn(ME, e.getMessage());
@@ -323,7 +325,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
          if (cmdType.trim().equalsIgnoreCase("GET")) {
             QueryKeyData keyData = new QueryKeyData(this.glob);
             keyData.setOid("__cmd:" + query);
-            MsgUnit[] msgs = commandManager.get(sessionId, keyData, null);
+            MsgUnit[] msgs = commandManager.get(this.addressServer, sessionId, keyData, null);
             if (msgs.length == 0) return "NO ENTRY FOUND: " + cmd + CRLF;
             StringBuffer sb = new StringBuffer(msgs.length * 40);
             for (int ii=0; ii<msgs.length; ii++) {
@@ -336,7 +338,7 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
             return sb.toString() + CRLF;
          }
          else if (cmdType.trim().equalsIgnoreCase("SET")) {
-            SetReturn ret = commandManager.set(sessionId, query);
+            SetReturn ret = commandManager.set(this.addressServer, sessionId, query);
             if (ret == null) return "NO ENTRY SET: " + ret.commandWrapper.getCommand() + CRLF;
             return ret.commandWrapper.getCommandStripAssign() + "=" + ret.returnString + CRLF;
          }
@@ -421,7 +423,9 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway, 
       org.xmlBlaster.client.qos.ConnectQos clientConnectQos = new org.xmlBlaster.client.qos.ConnectQos(glob, loginName, passwd);
       clientConnectQos.setSessionTimeout(sessionTimeout);
       ConnectQosServer connectQos = new ConnectQosServer(glob, clientConnectQos.getData());
-      this.connectRetQos = glob.getAuthenticate().connect(connectQos);
+      this.addressServer = new AddressServer(glob, "NATIVE", glob.getId(), (java.util.Properties)null);
+      connectQos.setAddressServer(this.addressServer);
+      this.connectRetQos = glob.getAuthenticate().connect(this.addressServer, connectQos);
       this.loginName = loginName;
       this.sessionId = connectRetQos.getSecretSessionId();
       isLogin = true;

@@ -11,6 +11,7 @@ import org.xmlBlaster.util.Global;
 import org.jutils.time.StopWatch;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.I_Authenticate;
+import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
 import org.xmlBlaster.engine.qos.DisconnectQosServer;
@@ -31,18 +32,20 @@ public class AuthenticateImpl
    private final Global glob;
    private LogChannel log;
    private final I_Authenticate authenticate;
+   private final AddressServer addressServer;
 
 
    /**
     * Constructor.
     */
-   public AuthenticateImpl(Global glob, I_Authenticate authenticate)
+   public AuthenticateImpl(Global glob, XmlRpcDriver driver, I_Authenticate authenticate)
       throws XmlBlasterException
    {
       this.glob = glob;
       this.log = glob.getLog("xmlrpc");
       if (log.CALL) log.call(ME, "Entering constructor ...");
       this.authenticate = authenticate;
+      this.addressServer = driver.getAddressServer();
    }
 
 
@@ -67,6 +70,7 @@ public class AuthenticateImpl
       StopWatch stop=null; if (log.TIME) stop = new StopWatch();
 
       ConnectQosServer connectQos = new ConnectQosServer(glob, qos_literal);
+      connectQos.setAddressServer(this.addressServer);
       I_SecurityQos securityQos = connectQos.getSecurityQos();
 
 
@@ -79,7 +83,7 @@ public class AuthenticateImpl
       }
          
 
-      ConnectReturnQosServer returnQos = authenticate.connect(connectQos);
+      ConnectReturnQosServer returnQos = authenticate.connect(this.addressServer, connectQos);
       if (log.TIME) log.time(ME, "Elapsed time in login()" + stop.nice());
       return returnQos.getSecretSessionId();
    }
@@ -96,7 +100,7 @@ public class AuthenticateImpl
    public String logout(String sessionId) throws XmlBlasterException
    {
    if (log.CALL) log.call(ME, "Entering logout(sessionId=" + sessionId + ")");
-      authenticate.disconnect(sessionId, (new DisconnectQosServer(glob)).toXml());
+      authenticate.disconnect(this.addressServer, sessionId, (new DisconnectQosServer(glob)).toXml());
       return Constants.RET_OK; // "<qos><state id='OK'/></qos>";
    }
 
@@ -113,7 +117,7 @@ public class AuthenticateImpl
       if (log.CALL) log.call(ME, "Entering connect(qos=" + qos_literal + ")");
 
       StopWatch stop=null; if (log.TIME) stop = new StopWatch();
-      returnValue = authenticate.connect(qos_literal);
+      returnValue = authenticate.connect(this.addressServer, qos_literal);
 
       returnValueStripped = StringHelper.replaceAll(returnValue, "<![CDATA[", "");
       returnValueStripped = StringHelper.replaceAll(returnValueStripped, "]]>", "");
@@ -129,7 +133,7 @@ public class AuthenticateImpl
    public String disconnect(final String sessionId, String qos_literal) throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "Entering logout()");
-      authenticate.disconnect(sessionId, qos_literal);
+      authenticate.disconnect(this.addressServer, sessionId, qos_literal);
       if (log.CALL) log.call(ME, "Exiting logout()");
       return Constants.RET_OK;
    }
@@ -140,7 +144,7 @@ public class AuthenticateImpl
     */
    public String ping(String qos)
    {
-      return authenticate.ping(qos);
+      return authenticate.ping(this.addressServer, qos);
    }
 
    //   public String toXml() throws XmlBlasterException;

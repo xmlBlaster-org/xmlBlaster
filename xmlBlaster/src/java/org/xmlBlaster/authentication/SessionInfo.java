@@ -23,6 +23,7 @@ import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.I_Timeout;
+import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.DisconnectQosServer;
 import org.xmlBlaster.engine.query.plugins.QueueQueryPlugin;
@@ -73,6 +74,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    private I_Session securityCtx;
    private static long instanceCounter = 0L;
    private long instanceId = 0L;
+   /** The current connection address from the protocol plugin */
    private ConnectQosServer connectQos;
    private Timeout expiryTimer;
    private Timestamp timerKey;
@@ -186,6 +188,14 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    public boolean acceptWrongSenderAddress() {
       boolean may = glob.getProperty().get("xmlBlaster/acceptWrongSenderAddress", false); // TODO: Decide by authorizer
       return glob.getProperty().get("xmlBlaster/acceptWrongSenderAddress/"+getSessionName().getLoginName(), may);
+   }
+
+   /**
+    * The address information got from the protocol plugin. 
+    * @return Can be null
+    */
+   public AddressServer getAddressServer() {
+      return (this.connectQos == null) ? null : this.connectQos.getAddressServer();
    }
 
    /**
@@ -323,7 +333,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
          DisconnectQosServer qos = new DisconnectQosServer(glob);
          qos.deleteSubjectQueue(true);
          try {
-            glob.getAuthenticate().disconnect(getSecretSessionId(), qos.toXml());
+            glob.getAuthenticate().disconnect(getAddressServer(), getSecretSessionId(), qos.toXml());
          } catch (XmlBlasterException e) {
             log.error(ME, "Internal problem with disconnect: " + e.toString());
          }
@@ -603,7 +613,7 @@ public final class SessionInfo implements I_Timeout, I_QueueSizeListener
    }
 
    public final String getKillSession() throws XmlBlasterException {
-      glob.getAuthenticate().disconnect(securityCtx.getSecretSessionId(), "<qos/>");
+      glob.getAuthenticate().disconnect(getAddressServer(), securityCtx.getSecretSessionId(), "<qos/>");
       return getId() + " killed";
    }
 

@@ -14,6 +14,8 @@ import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
 import org.xmlBlaster.util.qos.address.Address;
+import org.xmlBlaster.engine.qos.AddressServer;
+import org.xmlBlaster.util.plugin.PluginInfo;
 
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
@@ -40,6 +42,8 @@ public class LocalConnection implements I_XmlBlasterConnection
    protected Address clientAddress;
    private I_Authenticate authenticate;
    private I_XmlBlaster xmlBlasterImpl;
+   private AddressServer addressServer;
+   private PluginInfo pluginInfo;
 
    /**
     * Called by plugin loader which calls init(Global, PluginInfo) thereafter. 
@@ -63,6 +67,7 @@ public class LocalConnection implements I_XmlBlasterConnection
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
     */
    public void init(org.xmlBlaster.util.Global glob_, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) throws XmlBlasterException {
+      this.pluginInfo = pluginInfo;
       this.glob = (glob_ == null) ? Global.instance() : glob_;
       this.log = this.glob.getLog("local");
       org.xmlBlaster.engine.Global engineGlob = (org.xmlBlaster.engine.Global)this.glob.getObjectEntry("ServerNodeScope");
@@ -84,6 +89,8 @@ public class LocalConnection implements I_XmlBlasterConnection
       catch (Throwable ex) {
          throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "init. Could'nt initialize the driver.", ex);
       }
+
+      this.addressServer = new AddressServer(this.glob, getProtocol(), this.glob.getId(), pluginInfo.getParameters());
       
       log.info(ME, "Created '" + getProtocol() + "' protocol plugin to connect to xmlBlaster server");
    }
@@ -93,7 +100,8 @@ public class LocalConnection implements I_XmlBlasterConnection
     */
    public final String getProtocol()
    {
-      return "LOCAL";
+      return "LOCAL"; // shall it be configurable??
+                      // (this.pluginInfo == null) ? "LOCAL" : this.pluginInfo.getType();
    }
 
    /**
@@ -123,7 +131,7 @@ public class LocalConnection implements I_XmlBlasterConnection
          log.warn(ME, "You are already logged in, no relogin possible.");
          return "";
       }
-      String retQos_literal = this.authenticate.connect(connectQos);
+      String retQos_literal = this.authenticate.connect(this.addressServer, connectQos);
 
       this.connectReturnQos = new ConnectReturnQos(this.glob, retQos_literal);
       this.sessionId = this.connectReturnQos.getSecretSessionId();
@@ -153,7 +161,7 @@ public class LocalConnection implements I_XmlBlasterConnection
       }
 
       try {
-         this.authenticate.disconnect(this.sessionId, disconnectQos);
+         this.authenticate.disconnect(this.addressServer, this.sessionId, disconnectQos);
       }
       catch(XmlBlasterException e) {
          log.error(ME, e.getMessage());
@@ -186,7 +194,7 @@ public class LocalConnection implements I_XmlBlasterConnection
     */
    public final String subscribe (String xmlKey_literal, String qos_literal) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering subscribe(id=" + this.sessionId + ")");
-      return this.xmlBlasterImpl.subscribe(this.sessionId, xmlKey_literal, qos_literal);
+      return this.xmlBlasterImpl.subscribe(this.addressServer, this.sessionId, xmlKey_literal, qos_literal);
    }
 
    /**
@@ -197,7 +205,7 @@ public class LocalConnection implements I_XmlBlasterConnection
    public final String[] unSubscribe (String xmlKey_literal,
                                  String qos_literal) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering unsubscribe(): id=" + this.sessionId);
-      return this.xmlBlasterImpl.unSubscribe(this.sessionId, xmlKey_literal, qos_literal);
+      return this.xmlBlasterImpl.unSubscribe(this.addressServer, this.sessionId, xmlKey_literal, qos_literal);
    }
 
    /**
@@ -205,7 +213,7 @@ public class LocalConnection implements I_XmlBlasterConnection
     */
    public final String publish(MsgUnitRaw msgUnit) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering publish(): id=" + this.sessionId);
-      return this.xmlBlasterImpl.publish(this.sessionId, msgUnit);
+      return this.xmlBlasterImpl.publish(this.addressServer, this.sessionId, msgUnit);
    }
 
    /**
@@ -220,7 +228,7 @@ public class LocalConnection implements I_XmlBlasterConnection
          throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME,
                                        "The argument of method publishArr() are invalid");
       }
-      return this.xmlBlasterImpl.publishArr(this.sessionId, msgUnitArr);
+      return this.xmlBlasterImpl.publishArr(this.addressServer, this.sessionId, msgUnitArr);
    }
 
    /**
@@ -237,7 +245,7 @@ public class LocalConnection implements I_XmlBlasterConnection
                                        "The argument of method publishOneway() are invalid");
       }
 
-      this.xmlBlasterImpl.publishOneway(this.sessionId, msgUnitArr);
+      this.xmlBlasterImpl.publishOneway(this.addressServer, this.sessionId, msgUnitArr);
    }
 
    /**
@@ -247,7 +255,7 @@ public class LocalConnection implements I_XmlBlasterConnection
     */
    public final String[] erase(String xmlKey_literal, String qos_literal) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering erase() id=" + this.sessionId);
-      return this.xmlBlasterImpl.erase(this.sessionId, xmlKey_literal, qos_literal);
+      return this.xmlBlasterImpl.erase(this.addressServer, this.sessionId, xmlKey_literal, qos_literal);
    }
 
    /**
@@ -258,7 +266,7 @@ public class LocalConnection implements I_XmlBlasterConnection
    public final MsgUnitRaw[] get(String xmlKey_literal,
                                   String qos_literal) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering get() xmlKey=" + xmlKey_literal.trim() + ") ...");
-      return this.xmlBlasterImpl.get(this.sessionId, xmlKey_literal, qos_literal);
+      return this.xmlBlasterImpl.get(this.addressServer, this.sessionId, xmlKey_literal, qos_literal);
    }
 
    /**

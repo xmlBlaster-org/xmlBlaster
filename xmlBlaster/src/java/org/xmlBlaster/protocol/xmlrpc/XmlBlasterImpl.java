@@ -13,6 +13,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.protocol.ProtoConverter;
+import org.xmlBlaster.engine.qos.AddressServer;
 
 
 /**
@@ -35,17 +36,19 @@ public class XmlBlasterImpl
    private final String ME = "XmlRpc.XmlBlasterImpl";
    private LogChannel log;
    private org.xmlBlaster.protocol.I_XmlBlaster blasterNative;
+   private final AddressServer addressServer;
 
 
    /**
     * Constructor.
     */
-   public XmlBlasterImpl(Global glob, org.xmlBlaster.protocol.I_XmlBlaster blasterNative)
+   public XmlBlasterImpl(Global glob, XmlRpcDriver driver, org.xmlBlaster.protocol.I_XmlBlaster blasterNative)
       throws XmlBlasterException
    {
       log = glob.getLog("xmlrpc");
       if (log.CALL) log.call(ME, "Entering constructor ...");
       this.blasterNative = blasterNative;
+      this.addressServer = driver.getAddressServer();
    }
 
 
@@ -60,7 +63,7 @@ public class XmlBlasterImpl
                                  + xmlKey_literal + ") ...");
       StopWatch stop=null; if (log.TIME) stop = new StopWatch();
 
-      String oid = blasterNative.subscribe(sessionId, xmlKey_literal, qos_literal);
+      String oid = blasterNative.subscribe(this.addressServer, sessionId, xmlKey_literal, qos_literal);
 
       if (log.TIME) log.time(ME, "Elapsed time in subscribe()" + stop.nice());
 
@@ -79,7 +82,7 @@ public class XmlBlasterImpl
       if (log.CALL) log.call(ME, "Entering unSubscribe() xmlKey=\n" + xmlKey_literal + ") ...");
       StopWatch stop=null; if (log.TIME) stop = new StopWatch();
 
-      String[] retArr = blasterNative.unSubscribe(sessionId, xmlKey_literal, qos_literal);
+      String[] retArr = blasterNative.unSubscribe(this.addressServer, sessionId, xmlKey_literal, qos_literal);
 
       if (log.TIME) log.time(ME, "Elapsed time in unSubscribe()" + stop.nice());
 
@@ -97,7 +100,7 @@ public class XmlBlasterImpl
    {
       if (log.CALL) log.call(ME, "Entering publish() ...");
       MsgUnitRaw msgUnit = new MsgUnitRaw(xmlKey_literal, content, publishQos_literal);
-      return blasterNative.publish(sessionId, msgUnit);
+      return blasterNative.publish(this.addressServer, sessionId, msgUnit);
    }
 
 
@@ -118,7 +121,7 @@ public class XmlBlasterImpl
 //      // convert the xml literal strings
 //      PublishQos publishQos = new PublishQos(publishQos_literal);
 
-      String retVal = blasterNative.publish(sessionId, msgUnit);
+      String retVal = blasterNative.publish(this.addressServer, sessionId, msgUnit);
       return retVal;
    }
 
@@ -137,7 +140,7 @@ public class XmlBlasterImpl
       //PublishQos publishQos = new PublishQos(msgUnit.getQos());
 
       // String retVal = blasterNative.publish(sessionId, xmlKey, msgUnit, publishQos);
-      String retVal = blasterNative.publish(sessionId, msgUnit);
+      String retVal = blasterNative.publish(this.addressServer, sessionId, msgUnit);
       return retVal;
    }
 
@@ -163,7 +166,7 @@ public class XmlBlasterImpl
 
       try {
          MsgUnitRaw[] msgUnitArr = ProtoConverter.vector2MsgUnitRawArray(msgUnitArrWrap);
-         String[] strArr = blasterNative.publishArr(sessionId, msgUnitArr);
+         String[] strArr = blasterNative.publishArr(this.addressServer, sessionId, msgUnitArr);
          return ProtoConverter.stringArray2Vector(strArr);
       }
       catch (ClassCastException e) {
@@ -188,7 +191,7 @@ public class XmlBlasterImpl
 
       try {
          MsgUnitRaw[] msgUnitArr = ProtoConverter.vector2MsgUnitRawArray(msgUnitArrWrap);
-         blasterNative.publishOneway(sessionId, msgUnitArr);
+         blasterNative.publishOneway(this.addressServer, sessionId, msgUnitArr);
       }
       catch (Throwable e) {
          log.error(ME, "Caught exception which can't be delivered to client because of 'oneway' mode: " + e.toString());
@@ -204,7 +207,7 @@ public class XmlBlasterImpl
    {
       if (log.CALL) log.call(ME, "Entering erase() xmlKey=\n" + xmlKey_literal + ") ...");
 
-      String[] retArr = blasterNative.erase(sessionId, xmlKey_literal, qos_literal);
+      String[] retArr = blasterNative.erase(this.addressServer, sessionId, xmlKey_literal, qos_literal);
 
       return ProtoConverter.stringArray2Vector(retArr);
    }
@@ -223,7 +226,7 @@ public class XmlBlasterImpl
       if (log.CALL) log.call(ME, "Entering get() xmlKey=\n" + xmlKey_literal + ") ...");
       StopWatch stop=null; if (log.TIME) stop = new StopWatch();
 
-      MsgUnitRaw[] msgUnitArr = blasterNative.get(sessionId, xmlKey_literal, qos_literal);
+      MsgUnitRaw[] msgUnitArr = blasterNative.get(this.addressServer, sessionId, xmlKey_literal, qos_literal);
 
       // convert the MsgUnitRaw array to a Vector array
       Vector msgUnitArrWrap = ProtoConverter.messageUnitArray2Vector(msgUnitArr);
@@ -240,7 +243,7 @@ public class XmlBlasterImpl
     */
    public String ping(String qos)
    {
-      return blasterNative.ping(qos);
+      return blasterNative.ping(this.addressServer, qos);
    }
 
    //   public String toXml() throws XmlBlasterException;

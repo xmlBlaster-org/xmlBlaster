@@ -22,6 +22,7 @@ import java.util.Properties;
 public class AddressServer extends AddressBase
 {
    private static final String ME = "AddressServer";
+   private Object remoteAddress;
 
    /**
     * @param type    The protocol type, e.g. "IOR", "EMAIL", "XMLRPC"
@@ -37,6 +38,22 @@ public class AddressServer extends AddressBase
          setPluginInfoParameters(pluginInfoParameters);
       else
          initialize();
+   }
+
+   /**
+    * Some protocol plugins may add this information. 
+    * For example the SOCKET plugin can deliver the remote clients
+    * IP and port here.
+    * @return For example getRemoteAddress().toString() = "socket://192.168.1.2:64794"
+    *         Can be null depending on the protocol plugin.<br />
+    *         For example the SOCKET protocol returns an "org.xmlBlaster.protocol.socket.SocketUrl" instance
+    */
+   public Object getRemoteAddress() {
+      return this.remoteAddress;
+   }
+
+   public void setRemoteAddress(Object remoteAddress) {
+      this.remoteAddress = remoteAddress;
    }
 
    /** DUMMY */

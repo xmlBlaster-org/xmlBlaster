@@ -94,7 +94,7 @@ public class HandleClient extends Executor implements Runnable
          sessionId = null;
          try { // check first if session is in shutdown process already (avoid recursive disconnect()):
             if (authenticate.sessionExists(sessionId))
-               authenticate.disconnect(tmp, "<qos/>");
+               authenticate.disconnect(driver.getAddressServer(), tmp, "<qos/>");
          }
          catch(Throwable e) {
             log.warn(ME, e.toString());
@@ -208,6 +208,7 @@ public class HandleClient extends Executor implements Runnable
          if (receive(receiver, udp) == false) {
             if (MethodName.CONNECT == receiver.getMethodName()) {
                ConnectQosServer conQos = new ConnectQosServer(driver.getGlobal(), receiver.getQos());
+               conQos.setAddressServer(this.driver.getAddressServer());
                setLoginName(conQos.getUserId());
                Thread.currentThread().setName("XmlBlaster." + this.driver.getType() + (this.driver.isSSL()?".SSL":"") + ".tcpListener-" + conQos.getUserId());
                this.ME = this.driver.getType() + "-HandleClient-" + this.loginName;
@@ -218,6 +219,9 @@ public class HandleClient extends Executor implements Runnable
                   cbKey = cbArr[ii].getType() + cbArr[ii].getRawAddress();
                   SocketUrl cbUrl = new SocketUrl(glob, cbArr[ii].getRawAddress());
                   SocketUrl remoteUrl = new SocketUrl(glob, super.sock.getInetAddress().getHostName(), super.sock.getPort());
+                  if (driver.getAddressServer() != null) {
+                     driver.getAddressServer().setRemoteAddress(remoteUrl);
+                  }
                   if (log.TRACE) log.trace(ME, "remoteUrl='" + remoteUrl.getUrl() + "' cbUrl='" + cbUrl.getUrl() + "'");
                   if (true) { // !!!!! TODO remoteUrl.equals(cbUrl)) {
                      if (log.TRACE) log.trace(ME, "Tunneling callback messages through same SOCKET to '" + remoteUrl.getUrl() + "'");
@@ -240,7 +244,7 @@ public class HandleClient extends Executor implements Runnable
                   }
                }
 
-               ConnectReturnQosServer retQos = authenticate.connect(conQos);
+               ConnectReturnQosServer retQos = authenticate.connect(driver.getAddressServer(), conQos);
                this.sessionId = retQos.getSecretSessionId();
                receiver.setSecretSessionId(retQos.getSecretSessionId()); // executeResponse needs it
                executeResponse(receiver, retQos.toXml(), SOCKET_TCP);
@@ -251,7 +255,7 @@ public class HandleClient extends Executor implements Runnable
                executeResponse(receiver, Constants.RET_OK, SOCKET_TCP);   // ACK the disconnect to the client and then proceed to the server core
                // Note: the disconnect will call over the CbInfo our shutdown as well
                // setting sessionId = null prevents that our shutdown calls disconnect() again.
-               authenticate.disconnect(receiver.getSecretSessionId(), receiver.getQos());
+               authenticate.disconnect(driver.getAddressServer(), receiver.getSecretSessionId(), receiver.getQos());
                shutdown();
             }
          }

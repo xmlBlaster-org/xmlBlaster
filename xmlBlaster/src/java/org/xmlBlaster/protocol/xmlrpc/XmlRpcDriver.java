@@ -57,6 +57,8 @@ public class XmlRpcDriver implements I_Driver
    private WebServer webServer;
    /** The URL which clients need to use to access this server */
    private XmlRpcUrl xmlRpcUrl;
+   /** Our configuration */
+   private AddressServer addressServer;
 
 
    /**
@@ -139,19 +141,27 @@ public class XmlRpcDriver implements I_Driver
       this.glob = glob;
       this.ME = "XmlRpcDriver" + this.glob.getLogPrefixDashed();
       this.log = glob.getLog("xmlrpc");
+      this.addressServer = addressServer;
       if (log.CALL) log.call(ME, "Entering init()");
       this.authenticate = authenticate;
       this.xmlBlasterImpl = xmlBlasterImpl;
 
-      this.xmlRpcUrl = new XmlRpcUrl(glob, addressServer); // e.g. "http://127.168.1.1:8080/"
+      this.xmlRpcUrl = new XmlRpcUrl(glob, this.addressServer); // e.g. "http://127.168.1.1:8080/"
       if (this.xmlRpcUrl.getPort() < 1) {
          log.info(ME, "Option plugin/xmlrpc/port set to " + this.xmlRpcUrl.getPort() + ", xmlRpc server not started");
          return;
       }
 
       // "-plugin/xmlrpc/debug true"
-      if (addressServer.getEnv("debug", false).getValue() == true)
+      if (this.addressServer.getEnv("debug", false).getValue() == true)
          XmlRpc.setDebug(true);
+   }
+
+   /**
+    * The server configuration of this plugin
+    */
+   public AddressServer getAddressServer() {
+      return this.addressServer;
    }
 
    /**
@@ -162,8 +172,8 @@ public class XmlRpcDriver implements I_Driver
       try {
          webServer = new WebServer(this.xmlRpcUrl.getPort(), this.xmlRpcUrl.getInetAddress());
          // publish the public methods to the XmlRpc web server:
-         webServer.addHandler("authenticate", new AuthenticateImpl(glob, authenticate));
-         webServer.addHandler("xmlBlaster", new XmlBlasterImpl(glob, xmlBlasterImpl));
+         webServer.addHandler("authenticate", new AuthenticateImpl(glob, this, authenticate));
+         webServer.addHandler("xmlBlaster", new XmlBlasterImpl(glob, this, xmlBlasterImpl));
          log.info(ME, "Started successfully XMLRPC driver, access url=" + this.xmlRpcUrl.getUrl());
       } catch (IOException e) {
          log.error(ME, "Error creating webServer on '" + this.xmlRpcUrl.getUrl() + "': " + e.toString());

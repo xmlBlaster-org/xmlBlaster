@@ -17,6 +17,7 @@ import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
+import org.xmlBlaster.engine.qos.AddressServer;
 
 import EDU.oswego.cs.dl.util.concurrent.Latch;
 
@@ -286,13 +287,13 @@ public abstract class Executor implements ExecutorBase
                log.error(ME, "Invocation of " + receiver.getMethodName() + "() failed, missing arguments");
                return true;
             }
-            xmlBlasterImpl.publishOneway(receiver.getSecretSessionId(), arr);
+            xmlBlasterImpl.publishOneway((AddressServer)this.addressConfig, receiver.getSecretSessionId(), arr);
          }
          else if (MethodName.PUBLISH == receiver.getMethodName()) {
             MsgUnitRaw[] arr = receiver.getMessageArr();
             if (arr == null || arr.length < 1)
                throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invocation of " + receiver.getMethodName() + "() failed, missing arguments");
-            String[] response = xmlBlasterImpl.publishArr(receiver.getSecretSessionId(), arr);
+            String[] response = xmlBlasterImpl.publishArr((AddressServer)this.addressConfig, receiver.getSecretSessionId(), arr);
             executeResponse(receiver, response, udp);
          }
          else if (MethodName.UPDATE_ONEWAY == receiver.getMethodName()) {
@@ -345,7 +346,7 @@ public abstract class Executor implements ExecutorBase
             MsgUnitRaw[] arr = receiver.getMessageArr();
             if (arr == null || arr.length != 1)
                throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invocation of " + receiver.getMethodName() + "() failed, wrong arguments");
-            MsgUnitRaw[] response = xmlBlasterImpl.get(receiver.getSecretSessionId(), arr[0].getKey(), arr[0].getQos());
+            MsgUnitRaw[] response = xmlBlasterImpl.get((AddressServer)this.addressConfig, receiver.getSecretSessionId(), arr[0].getKey(), arr[0].getQos());
             executeResponse(receiver, response, udp);
          }
          else if (MethodName.PING == receiver.getMethodName()) {
@@ -356,7 +357,7 @@ public abstract class Executor implements ExecutorBase
                return true;
             }
             if (xmlBlasterImpl != null) { // Server side: Forward ping to xmlBlaster core
-               String response = xmlBlasterImpl.ping(/*receiver.getSecretSessionId(),*/ (arr.length>0) ? arr[0].getQos() : "<qos/>");
+               String response = xmlBlasterImpl.ping((AddressServer)this.addressConfig, /*receiver.getSecretSessionId(),*/ (arr.length>0) ? arr[0].getQos() : "<qos/>");
                executeResponse(receiver, response, udp); // Constants.RET_OK="<qos><state id='OK'/></qos>" or current run level
             }
             else { // Client side: answer directly, not forwarded to client code
@@ -367,21 +368,21 @@ public abstract class Executor implements ExecutorBase
             MsgUnitRaw[] arr = receiver.getMessageArr();
             if (arr == null || arr.length != 1)
                throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invocation of " + receiver.getMethodName() + "() failed, wrong arguments");
-            String response = xmlBlasterImpl.subscribe(receiver.getSecretSessionId(), arr[0].getKey(), arr[0].getQos());
+            String response = xmlBlasterImpl.subscribe((AddressServer)this.addressConfig, receiver.getSecretSessionId(), arr[0].getKey(), arr[0].getQos());
             executeResponse(receiver, response, udp);
          }
          else if (MethodName.UNSUBSCRIBE == receiver.getMethodName()) {
             MsgUnitRaw[] arr = receiver.getMessageArr();
             if (arr == null || arr.length != 1)
                throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invocation of " + receiver.getMethodName() + "() failed, wrong arguments");
-            String[] response = xmlBlasterImpl.unSubscribe(receiver.getSecretSessionId(), arr[0].getKey(), arr[0].getQos());
+            String[] response = xmlBlasterImpl.unSubscribe((AddressServer)this.addressConfig, receiver.getSecretSessionId(), arr[0].getKey(), arr[0].getQos());
             executeResponse(receiver, response, udp);
          }
          else if (MethodName.ERASE == receiver.getMethodName()) {
             MsgUnitRaw[] arr = receiver.getMessageArr();
             if (arr == null || arr.length != 1)
                throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invocation of " + receiver.getMethodName() + "() failed, wrong arguments");
-            String[] response = xmlBlasterImpl.erase(receiver.getSecretSessionId(), arr[0].getKey(), arr[0].getQos());
+            String[] response = xmlBlasterImpl.erase((AddressServer)this.addressConfig, receiver.getSecretSessionId(), arr[0].getKey(), arr[0].getQos());
             executeResponse(receiver, response, udp);
          }
          else if (MethodName.CONNECT == receiver.getMethodName()) {

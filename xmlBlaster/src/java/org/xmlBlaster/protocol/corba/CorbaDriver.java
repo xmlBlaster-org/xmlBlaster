@@ -167,7 +167,7 @@ public class CorbaDriver implements I_Driver
          rootPOA = org.omg.PortableServer.POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
          rootPOA.the_POAManager().activate();
 
-         authServer = new AuthServerImpl(glob, orb, this.authenticate, this.xmlBlasterImpl);
+         authServer = new AuthServerImpl(glob, orb, this.addressServer, this.authenticate, this.xmlBlasterImpl);
 
          // USING TIE:
          org.omg.PortableServer.Servant authServant = new AuthServerPOATie(authServer);

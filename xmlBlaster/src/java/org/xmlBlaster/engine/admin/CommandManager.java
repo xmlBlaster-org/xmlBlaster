@@ -13,6 +13,7 @@ import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.engine.runlevel.RunlevelManager;
 import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
 import org.xmlBlaster.authentication.SessionInfo;
@@ -151,7 +152,7 @@ public final class CommandManager implements I_RunlevelListener
     *        wrapped inside the cmd, i.e. here it is inside the oid of the key).
     * @return The found data or an array of size 0 if not found. 
     */
-   public synchronized final MsgUnit[] get(String sessionId, QueryKeyData keyData, QueryQosData qosData) throws XmlBlasterException {
+   public synchronized final MsgUnit[] get(AddressServer addressServer, String sessionId, QueryKeyData keyData, QueryQosData qosData) throws XmlBlasterException {
       String oid = keyData.getOid();
       if (log.CALL) log.call(ME, "get(" + oid + ")");
       if (oid == null || oid.length() < 8) // "__cmd:" + 2 characters minimum
@@ -167,7 +168,7 @@ public final class CommandManager implements I_RunlevelListener
             throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Sorry can't process your command '" + oid + "', '" + w.getThirdLevel() + "' has no registered handler (key=" + key + ")");
          }
          I_CommandHandler handler = (I_CommandHandler)obj;
-         MsgUnit[] ret = handler.get(sessionId, w);
+         MsgUnit[] ret = handler.get(addressServer, sessionId, w);
          if (ret == null) ret = new MsgUnit[0];
          return ret;
          //return (ret==null) ? "<qos><state id='NOT_FOUND' info='" + w.getCommand() + " has no results.'/></qos>" : ret;
@@ -187,7 +188,7 @@ public final class CommandManager implements I_RunlevelListener
     * @return The SetReturn object:<br />
     *         setReturn.returnString contains the actually set value or is null if not set. 
     */
-   public synchronized final SetReturn set(String sessionId, String cmd) throws XmlBlasterException {
+   public synchronized final SetReturn set(AddressServer addressServer, String sessionId, String cmd) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "set(" + cmd + ")");
       if (cmd == null || cmd.length() < 1)
          throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Please pass a command which is not null");
@@ -202,7 +203,7 @@ public final class CommandManager implements I_RunlevelListener
             throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Sorry can't process your command '" + cmd + "', the third level '" + w.getThirdLevel() + "' has no registered handler (key=" + key + ")");
          }
          I_CommandHandler handler = (I_CommandHandler)obj;
-         return new SetReturn(w, handler.set(sessionId, w));
+         return new SetReturn(w, handler.set(addressServer, sessionId, w));
       }
       catch (XmlBlasterException e) {
          throw e;

@@ -10,6 +10,7 @@ import org.jutils.log.LogChannel;
 
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
+import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.DisconnectQosServer;
 import org.xmlBlaster.util.qos.ConnectQosData;
@@ -59,15 +60,15 @@ final public class AuthenticateProtector implements I_Authenticate
    }
 
    /** helper */
-   public final ConnectReturnQosServer connect(ConnectQosServer xmlQos) throws XmlBlasterException {
-      return connect(xmlQos, null);
+   public final ConnectReturnQosServer connect(AddressServer addressServer, ConnectQosServer xmlQos) throws XmlBlasterException {
+      return connect(addressServer, xmlQos, null);
    }
 
    /** helper */
-   public final ConnectReturnQosServer connect(ConnectQosServer xmlQos, String secretSessionId) throws XmlBlasterException {
+   public final ConnectReturnQosServer connect(AddressServer addressServer, ConnectQosServer xmlQos, String secretSessionId) throws XmlBlasterException {
 
       MsgUnit msgUnit = new MsgUnit(null, null, xmlQos.getData());
-      this.availabilityChecker.checkServerIsReady(xmlQos.getSessionName(), msgUnit, MethodName.CONNECT);
+      this.availabilityChecker.checkServerIsReady(xmlQos.getSessionName(), addressServer, msgUnit, MethodName.CONNECT);
 
       try {
          // serialize first to have a clone for security reasons (and to guarantee our Global)
@@ -81,21 +82,22 @@ final public class AuthenticateProtector implements I_Authenticate
    }
 
    /** helper */
-   public final String connect(String connectQos_literal) throws XmlBlasterException {
-      return connect(connectQos_literal, null);
+   public final String connect(AddressServer addressServer, String connectQos_literal) throws XmlBlasterException {
+      return connect(addressServer, connectQos_literal, null);
    }
 
-   public final String connect(String connectQos_literal, String secretSessionId) throws XmlBlasterException {
+   public final String connect(AddressServer addressServer, String connectQos_literal, String secretSessionId) throws XmlBlasterException {
 
       // Parse XML QoS
       MsgUnit msgUnit = new MsgUnit(glob, null, null, connectQos_literal, MethodName.CONNECT);
       ConnectQosServer qos = new ConnectQosServer(glob, (ConnectQosData)msgUnit.getQosData());
+      qos.setAddressServer(addressServer);
 
       // Currently we have misused used the clientProperty to transport this information
       if (qos.getData().getClientProperty(Constants.PERSISTENCE_ID) != null)
          qos.isFromPersistenceRecovery(true);
 
-      this.availabilityChecker.checkServerIsReady(qos.getSessionName(), msgUnit, MethodName.CONNECT);
+      this.availabilityChecker.checkServerIsReady(qos.getSessionName(), addressServer, msgUnit, MethodName.CONNECT);
 
       try {
          //System.out.println("GOT Protector: " + connectQos_literal);
@@ -108,11 +110,11 @@ final public class AuthenticateProtector implements I_Authenticate
       }
    }
 
-   public final void disconnect(String secretSessionId, String qos_literal) throws XmlBlasterException {
+   public final void disconnect(AddressServer addressServer, String secretSessionId, String qos_literal) throws XmlBlasterException {
 
       // Parse XML QoS
       MsgUnit msgUnit = new MsgUnit(glob, null, null, qos_literal, MethodName.DISCONNECT);
-      this.availabilityChecker.checkServerIsReady(null, msgUnit, MethodName.DISCONNECT);
+      this.availabilityChecker.checkServerIsReady(null, addressServer, msgUnit, MethodName.DISCONNECT);
 
       try {
          this.authenticate.disconnect(secretSessionId, qos_literal);
@@ -127,7 +129,7 @@ final public class AuthenticateProtector implements I_Authenticate
     * @return "<qos><state id='OK'/></qos>" if we are ready, otherwise the current run level string
     * @see org.xmlBlaster.engine.AvailabilityChecker#getStatus(String)
     */
-   public final String ping(String qos) {
+   public final String ping(AddressServer addressServer, String qos) {
       return "<qos><state id='" + this.availabilityChecker.getStatus(qos) + "'/></qos>";
    }
 

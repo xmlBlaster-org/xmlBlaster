@@ -16,6 +16,7 @@ import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.corba.authenticateIdl.*;
 import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
 import org.xmlBlaster.protocol.corba.serverIdl.ServerHelper;
+import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
 import org.xmlBlaster.util.def.ErrorCode;
@@ -52,6 +53,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
    // NOT TIE
    /** extends org.omg.PortableServer.Servant */
    //private ServerImpl xmlBlasterServant;
+   private AddressServer addressServer;
 
    /**
     * One instance implements a server.
@@ -70,12 +72,13 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
     * @param authenticate The authentication service
     * @param blaster The interface to access xmlBlaster
     */
-   public AuthServerImpl(Global glob, org.omg.CORBA.ORB orb, I_Authenticate authenticate, I_XmlBlaster blaster)
+   public AuthServerImpl(Global glob, org.omg.CORBA.ORB orb, AddressServer addressServer, I_Authenticate authenticate, I_XmlBlaster blaster)
    {
       this.glob = glob;
       this.log = glob.getLog("corba");
       this.orb = orb;
       this.authenticate = authenticate;
+      this.addressServer = addressServer;
       if (log.CALL) log.call(ME, "Entering constructor with ORB argument");
 
       try {
@@ -100,7 +103,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
          // This single servant handles all requests (with the policies from above)
 
          // USING TIE:
-         xmlBlasterServant = new ServerPOATie(new ServerImpl(glob, orb, blaster));
+         xmlBlasterServant = new ServerPOATie(new ServerImpl(glob, orb, this.addressServer, blaster));
          // NOT TIE:
          //xmlBlasterServant = new ServerImpl(glob, orb, blaster);
 
@@ -181,7 +184,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
    public String ping(String qos)
    {
       if (log.CALL) log.call(ME, "Entering ping("+qos+") ...");
-      return authenticate.ping(qos);
+      return authenticate.ping(this.addressServer, qos);
    }
 
    /**
@@ -221,7 +224,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
                                 ME, "connect failed: " + e.toString());
       }
 
-      String returnQosStr = authenticate.connect(qos_literal, sessionId);
+      String returnQosStr = authenticate.connect(this.addressServer, qos_literal, sessionId);
       returnQos = new ConnectReturnQosServer(glob, returnQosStr);
       if (returnQos.isReconnected()) {
          // How to detect outdated server IORs??
@@ -243,7 +246,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
    public void disconnect(String sessionId, String qos_literal) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering disconnect()");
       try {
-         authenticate.disconnect(sessionId, qos_literal); // throws XmlBlasterException (eg if not connected (init not called, timeout etc.) or someone else than the session owner called disconnect!)
+         authenticate.disconnect(this.addressServer, sessionId, qos_literal); // throws XmlBlasterException (eg if not connected (init not called, timeout etc.) or someone else than the session owner called disconnect!)
       }
       catch (org.xmlBlaster.util.XmlBlasterException e) {
          throw CorbaDriver.convert(e); // transform native exception to Corba exception

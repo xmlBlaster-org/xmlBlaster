@@ -10,6 +10,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.util.qos.SessionQos;
+import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.authentication.plugins.I_SecurityQos;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
 import org.xmlBlaster.util.qos.address.Address;
@@ -30,6 +31,8 @@ public final class ConnectQosServer
    private final ConnectQosData connectQosData;
    private boolean bypassCredentialCheck = false;
    private long persistenceUniqueId;
+   /** The address information got from the protocol plugin. */
+   private AddressServer addressServer;
 
    public ConnectQosServer(Global glob, ConnectQosData connectQosData) {
       this.glob = (glob==null) ? Global.instance() : glob;
@@ -57,6 +60,22 @@ public final class ConnectQosServer
 
    public ConnectQosData getData() {
       return this.connectQosData;
+   }
+
+   /**
+    * The address information got from the protocol plugin.
+    * @param addressServer The address information of the current protocol plugin
+    */
+   public void setAddressServer(AddressServer addressServer) {
+      this.addressServer = addressServer;
+   }
+
+   /**
+    * The address information got from the protocol plugin. 
+    * @return Can be null
+    */
+   public AddressServer getAddressServer() {
+      return this.addressServer;
    }
 
    /**

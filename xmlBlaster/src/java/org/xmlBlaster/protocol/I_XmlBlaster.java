@@ -8,6 +8,7 @@ package org.xmlBlaster.protocol;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnitRaw;
+import org.xmlBlaster.engine.qos.AddressServer;
 
 
 /**
@@ -30,7 +31,7 @@ public interface I_XmlBlaster
     * @see org.xmlBlaster.engine.RequestBroker
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html">The interface.subscribe requirement</a>
     */
-   public String subscribe(String sessionId, String xmlKey_literal, String subscribeQoS_literal) throws XmlBlasterException;
+   public String subscribe(AddressServer addressServer, String sessionId, String xmlKey_literal, String subscribeQoS_literal) throws XmlBlasterException;
 
    /**
     * Unsubscribe from messages.
@@ -41,7 +42,7 @@ public interface I_XmlBlaster
     * @param unSubscribeQoS_literal Depending on the security plugin this qos is encrypted
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public String[] unSubscribe(String sessionId, String xmlKey_literal, String unSubscribeQos_literal) throws XmlBlasterException;
+   public String[] unSubscribe(AddressServer addressServer, String sessionId, String xmlKey_literal, String unSubscribeQos_literal) throws XmlBlasterException;
 
    /**
     * Publish a message.
@@ -51,7 +52,7 @@ public interface I_XmlBlaster
     * @see org.xmlBlaster.engine.RequestBroker
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">The interface.publish requirement</a>
     */
-   public String publish(String sessionId, MsgUnitRaw msgUnit) throws XmlBlasterException;
+   public String publish(AddressServer addressServer, String sessionId, MsgUnitRaw msgUnit) throws XmlBlasterException;
 
    /**
     * Publish messages.
@@ -62,7 +63,7 @@ public interface I_XmlBlaster
     * @see org.xmlBlaster.engine.RequestBroker
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">The interface.publish requirement</a>
     */
-   public String[] publishArr(String sessionId, MsgUnitRaw[] msgUnitArr) throws XmlBlasterException;
+   public String[] publishArr(AddressServer addressServer, String sessionId, MsgUnitRaw[] msgUnitArr) throws XmlBlasterException;
 
    /**
     * Publish messages.
@@ -74,7 +75,7 @@ public interface I_XmlBlaster
     * @see org.xmlBlaster.engine.RequestBroker
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">The interface.publish requirement</a>
     */
-   public void publishOneway(String sessionId, MsgUnitRaw[] msgUnitArr);
+   public void publishOneway(AddressServer addressServer, String sessionId, MsgUnitRaw[] msgUnitArr);
 
    /**
     * Delete messages.
@@ -82,7 +83,7 @@ public interface I_XmlBlaster
     * @see org.xmlBlaster.engine.RequestBroker
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.erase.html">The interface.erase requirement</a>
     */
-   public String[] erase(String sessionId, String xmlKey_literal, String eraseQoS_literal) throws XmlBlasterException;
+   public String[] erase(AddressServer addressServer, String sessionId, String xmlKey_literal, String eraseQoS_literal) throws XmlBlasterException;
 
    /**
     * Synchronous access a message.
@@ -90,7 +91,7 @@ public interface I_XmlBlaster
     * @see org.xmlBlaster.engine.RequestBroker
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.get.html">The interface.get requirement</a>
     */
-   public MsgUnitRaw[] get(String sessionId, String xmlKey_literal, String getQoS_literal) throws XmlBlasterException;
+   public MsgUnitRaw[] get(AddressServer addressServer, String sessionId, String xmlKey_literal, String getQoS_literal) throws XmlBlasterException;
 
    /**
      * Ping to check if xmlBlaster is alive. 
@@ -105,7 +106,7 @@ public interface I_XmlBlaster
      * Other returned id's are "RUNLEVEL_CLEANUP", "RUNLEVEL_STANDBY", "RUNLEVEL_HALTED".
      * All none "OK" values tell that the server is not willing to process messages.
      */
-   public String ping(String qos);
+   public String ping(AddressServer addressServer, String qos);
 
    public String toXml() throws XmlBlasterException;
    public String toXml(String extraOffset) throws XmlBlasterException;

@@ -4,11 +4,19 @@ The "#99999" numbers are Subversion revision numbers.
 Changes for 1.0x (patches for 1.0 stable)
 =====================================================
 
+ o #13215 Passing AddressServer from each protocol plugin into the core to be able
+   to do protocol specific decisions.
+   Used for example with the AvailabilityChecker to allow LOCAL access for small runlevels
+   and for future use for the Authentication/Authorization plugins to do IP specific decisions.
+
+ o #13212-#13214 Added support to erase message instances but not the topic itself
+   See http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.erase.html
+
  o #13202 StartupTasks plugin added
-   http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.startupTasks.html
+   See http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.startupTasks.html
 
  o #13187 Redirect xmlBlaster logging to JDK 1.4 java.util.logging framework
-   http://www.xmlBlaster.org/xmlBlaster/doc/requirements/util.log.plugin.html#JDK14
+   See http://www.xmlBlaster.org/xmlBlaster/doc/requirements/util.log.plugin.html#JDK14
 
  o #13180 cpptasks.jar - Updated cpp tasks (C/C++ compilation) to CVS version from 2005-02-03
 
@@ -16,7 +24,7 @@ Changes for 1.0x (patches for 1.0 stable)
 
  o #13174 Extended DeadMessageDumper:
    Changed to create missing directory, now supports ${} replacement
-   http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.errorHandling.html
+   See http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.errorHandling.html
 
  o #13173 More detailed logging for mime XPathFilter plugin
  

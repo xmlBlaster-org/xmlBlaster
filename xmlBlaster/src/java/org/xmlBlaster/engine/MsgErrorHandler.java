@@ -161,7 +161,8 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
                   try {
                      DisconnectQos disconnectQos = new DisconnectQos(glob);
                      disconnectQos.deleteSubjectQueue(false);
-                     glob.getAuthenticate().disconnect(this.sessionInfo.getSecretSessionId(), disconnectQos.toXml());
+                     glob.getAuthenticate().disconnect(this.sessionInfo.getAddressServer(), 
+                                         this.sessionInfo.getSecretSessionId(), disconnectQos.toXml());
                   }
                   catch (Throwable e) {
                      log.error(ME, "PANIC: givingUpDelivery error handling failed, " +

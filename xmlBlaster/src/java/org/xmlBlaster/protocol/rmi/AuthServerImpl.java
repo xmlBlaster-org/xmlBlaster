@@ -14,6 +14,7 @@ import org.jutils.time.StopWatch;
 
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_Driver;
+import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
 import org.xmlBlaster.engine.qos.DisconnectQosServer;
@@ -32,6 +33,7 @@ public class AuthServerImpl extends UnicastRemoteObject implements org.xmlBlaste
    private final Global glob;
    private final LogChannel log;
    private final I_Authenticate authenticate;
+   private final AddressServer addressServer;
 
 
    /**
@@ -41,10 +43,13 @@ public class AuthServerImpl extends UnicastRemoteObject implements org.xmlBlaste
     * @param authenticate The authentication service
     * @param blasterNative The interface to access xmlBlaster
     */
-   public AuthServerImpl(Global glob, I_Authenticate authenticate, org.xmlBlaster.protocol.I_XmlBlaster blasterNative) throws RemoteException {
+   public AuthServerImpl(Global glob, AddressServer addressServer, 
+                        I_Authenticate authenticate,
+                        org.xmlBlaster.protocol.I_XmlBlaster blasterNative) throws RemoteException {
       this.glob = glob;
       this.log = glob.getLog("rmi");
       this.authenticate = authenticate;
+      this.addressServer = addressServer;
    }
 
    /*
@@ -98,7 +103,7 @@ public class AuthServerImpl extends UnicastRemoteObject implements org.xmlBlaste
       if (log.CALL) log.call(ME, "Entering connect(qos=" + qos_literal + ")");
 
       StopWatch stop=null; if (log.TIME) stop = new StopWatch();
-      ConnectReturnQosServer returnQos = authenticate.connect(connectQos);
+      ConnectReturnQosServer returnQos = authenticate.connect(this.addressServer, connectQos);
       returnValue = returnQos.toXml();
       if (log.TIME) log.time(ME, "Elapsed time in connect()" + stop.nice());
 
@@ -109,7 +114,7 @@ public class AuthServerImpl extends UnicastRemoteObject implements org.xmlBlaste
                         throws RemoteException, XmlBlasterException
    {
       if (log.CALL) log.call(ME, "Entering disconnect()");
-      authenticate.disconnect(sessionId, qos_literal);
+      authenticate.disconnect(this.addressServer, sessionId, qos_literal);
       if (log.CALL) log.call(ME, "Exiting disconnect()");
    }
 
@@ -132,6 +137,6 @@ public class AuthServerImpl extends UnicastRemoteObject implements org.xmlBlaste
     */
    public String ping(String qos) throws RemoteException
    {
-      return authenticate.ping(qos);
+      return authenticate.ping(this.addressServer, qos);
    }
 }

@@ -13,6 +13,7 @@ import org.xmlBlaster.authentication.ClientEvent;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.engine.msgstore.I_Map;
 import org.xmlBlaster.engine.msgstore.I_MapEntry;
+import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
 import org.xmlBlaster.engine.queuemsg.SessionEntry;
@@ -64,6 +65,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
    private ConnectQosSaxFactory connectQosFactory;
    private QueryQosSaxFactory queryQosFactory;
    private QueryKeySaxFactory queryKeyFactory;
+   private AddressServer addressServer;
    private Object sync = new Object();
    
    /**
@@ -81,16 +83,19 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
             SessionEntry entry = (SessionEntry)entries[i];
             ConnectQosData data = this.connectQosFactory.readObject(entry.getQos());
             
+            this.addressServer = new AddressServer(this.global, "NATIVE", this.global.getId(), (java.util.Properties)null);
+
             ConnectQosServer qos = new ConnectQosServer(this.global, data);
             qos.isFromPersistenceRecovery(true);
             qos.setPersistenceUniqueId(entry.getUniqueId());
+            qos.setAddressServer(this.addressServer);
 
             SessionName sessionName = data.getSessionName();
             String sessionId = data.getSessionQos().getSecretSessionId();
             sessionIds.put(sessionName.getAbsoluteName(), sessionId); 
             if (this.log.TRACE) this.log.trace(ME, "recoverSessions: store in map session='" + sessionName.getAbsoluteName() + "' has secret sessionId='" + sessionId + "' and persistenceUniqueId=" + entry.getUniqueId());
             // if (this.log.TRACE) this.log.trace(ME, "recoverSessions: session: '" + data.getSessionName() + "' secretSessionId='" + qos.getSessionQos().getSecretSessionId() + "' qos='" + qos.toXml() + "'");
-            ConnectReturnQosServer ret = this.global.getAuthenticate().connect(qos);
+            ConnectReturnQosServer ret = this.global.getAuthenticate().connect(this.addressServer, qos);
             if (this.log.DUMP) this.log.dump(ME, "recoverSessions: return of connect: returnConnectQos='" + ret.toXml() + "'");
          }
          else {
@@ -130,7 +135,7 @@ public class SessionPersistencePlugin implements I_SessionPersistencePlugin {
             }
             // TODO remove the setting of client properties and invoke directly requestBroker.subscribe with subscribeQosServer.inhibitInitialUpdates(true);
             // also get the sessionInfo object from authenticate => eliminate sessionIds      
-            this.global.getAuthenticate().getXmlBlaster().subscribe(sessionId, entry.getKey(), qosData.toXml());
+            this.global.getAuthenticate().getXmlBlaster().subscribe(this.addressServer, sessionId, entry.getKey(), qosData.toXml());
          }
          else {
             throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME + ".recoverSubscriptions: the entry in the storage should be of type 'SubscribeEntry'but is of type'" + entries[i].getClass().getName() + "'");

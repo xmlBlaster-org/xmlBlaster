@@ -11,6 +11,7 @@ import java.util.Vector;
 
 import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.protocol.I_XmlBlaster;
+import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
 import org.xmlBlaster.util.MsgUnitRaw;
@@ -94,8 +95,9 @@ public class EmailParserSAX extends SaxHandlerBase
    private Hashtable    attachementContents = null;
    private Vector       messageVector       = null;
    private boolean      doesDisconnect = false;
-   private StringBuffer response    = null;
-   private final Global       glob;
+   private StringBuffer response;
+   private final Global glob;
+   private final AddressServer addressServer;
 
    public EmailParserSAX(Global glob)
    {
@@ -111,6 +113,8 @@ public class EmailParserSAX extends SaxHandlerBase
       this.commandsToFire.add("disconnect");
 
       this.response = new StringBuffer("<xmlBlasterResponse>\n");
+
+      this.addressServer = new AddressServer(this.glob, "EMAIL", glob.getId(), (java.util.Properties)null);
    }
 
 
@@ -205,7 +209,7 @@ public class EmailParserSAX extends SaxHandlerBase
       try {
          if ("connect".equals(qName)) {
             ConnectQosServer connectQos = new ConnectQosServer(this.glob, this.character.toString());
-            ConnectReturnQosServer ret = this.authenticator.connect(connectQos);
+            ConnectReturnQosServer ret = this.authenticator.connect(this.addressServer, connectQos);
             this.currentSessionId = ret.getSecretSessionId();
             this.response.append("<connect>\n");
             this.response.append(ret.toXml());
@@ -215,13 +219,13 @@ public class EmailParserSAX extends SaxHandlerBase
 
          if ("disconnect".equals(qName)) {
             this.doesDisconnect = true;
-            this.authenticator.disconnect(this.sessionId, this.character.toString());
+            this.authenticator.disconnect(this.addressServer, this.sessionId, this.character.toString());
             return;
          }
 
          if ("publish".equals(qName)) {
             MsgUnitRaw msgUnit = buildMsgUnitRaw();
-            String ret = this.xmlBlaster.publish(this.sessionId, msgUnit);
+            String ret = this.xmlBlaster.publish(this.addressServer, this.sessionId, msgUnit);
             this.response.append("<publish>\n");
             this.response.append("  <messageId>");
             this.response.append(ret);
@@ -235,7 +239,7 @@ public class EmailParserSAX extends SaxHandlerBase
             MsgUnitRaw[] msgs = new MsgUnitRaw[size];
             for (int i=0; i < size; i++)
                msgs[i] = (MsgUnitRaw)this.messageVector.elementAt(i);
-            String[] ret = this.xmlBlaster.publishArr(this.sessionId, msgs);
+            String[] ret = this.xmlBlaster.publishArr(this.addressServer, this.sessionId, msgs);
             this.response.append("<publishArr>\n");
             for (int i=0; i < ret.length; i++) {
                this.response.append("  <messageId>");
@@ -247,7 +251,7 @@ public class EmailParserSAX extends SaxHandlerBase
          }
 
          if ("subscribe".equals(qName)) {
-            String ret = this.xmlBlaster.subscribe(this.sessionId.toString(),
+            String ret = this.xmlBlaster.subscribe(this.addressServer, this.sessionId.toString(),
                this.key.toString(), this.qos.toString());
             this.response.append("<subscribe>\n");
             this.response.append("  <subscribeId>");
@@ -258,13 +262,13 @@ public class EmailParserSAX extends SaxHandlerBase
          }
 
          if ("unSubscribe".equals(qName)) {
-            this.xmlBlaster.unSubscribe(this.sessionId.toString(),
+            this.xmlBlaster.unSubscribe(this.addressServer, this.sessionId.toString(),
                this.key.toString(), this.qos.toString());
             return;
          }
 
          if ("erase".equals(qName)) {
-            String[] ret = this.xmlBlaster.erase(this.sessionId.toString(),
+            String[] ret = this.xmlBlaster.erase(this.addressServer, this.sessionId.toString(),
                this.key.toString(), this.qos.toString());
             this.response.append("<erase>\n");
             for (int i=0; i < ret.length; i++) {
@@ -277,7 +281,7 @@ public class EmailParserSAX extends SaxHandlerBase
          }
 
          if ("get".equals(qName)) {
-            MsgUnitRaw[] ret = this.xmlBlaster.get(this.sessionId.toString(),
+            MsgUnitRaw[] ret = this.xmlBlaster.get(this.addressServer, this.sessionId.toString(),
                this.key.toString(), this.qos.toString());
             this.response.append("<get>\n");
             this.response.append("  <message>\n");

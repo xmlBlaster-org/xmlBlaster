@@ -43,21 +43,22 @@ import java.util.StringTokenizer;
 public class JdbcDriver implements I_Driver, I_Publish
 {
    private String ME = "JdbcDriver";
-   private Global glob = null;
-   private LogChannel log = null;
+   private Global glob;
+   private LogChannel log;
    /** The singleton handle for this xmlBlaster server */
-   private I_Authenticate authenticate = null;
+   private I_Authenticate authenticate;
    /** The singleton handle for this xmlBlaster server */
-   private I_XmlBlaster xmlBlasterImpl = null;
+   private I_XmlBlaster xmlBlasterImpl;
    /** The authentication session identifier */
-   private String sessionId = null;
+   private String sessionId;
    /** JDBC connection pooling, a pool for every user */
-   private NamedConnectionPool namedPool = null;
+   private NamedConnectionPool namedPool;
    /** key under which my callback is registered */
-   private String cbRegistrationKey = null;
+   private String cbRegistrationKey;
+   private AddressServer addressServer;
 
-   private String loginName = null;
-   private String passwd = null;
+   private String loginName;
+   private String passwd;
 
    /** Get a human readable name of this driver.
     * <p />
@@ -139,6 +140,7 @@ public class JdbcDriver implements I_Driver, I_Publish
       this.glob.addObjectEntry("JdbcDriver-"+glob.getId(), this);
       this.authenticate = authenticate;
       this.xmlBlasterImpl = xmlBlasterImpl;
+      this.addressServer = addressServer;
       this.namedPool = (NamedConnectionPool)this.glob.getObjectEntry("NamedConnectionPool-"+glob.getId());
       if (this.namedPool == null) {
          this.namedPool = new NamedConnectionPool(this.glob);
@@ -181,7 +183,7 @@ public class JdbcDriver implements I_Driver, I_Publish
       connectQos.loadClientPlugin("htpasswd", "1.0", loginName, passwd);
       connectQos.getSessionQos().setSessionTimeout(0L);
 
-      ConnectReturnQosServer returnQos = this.authenticate.connect(new ConnectQosServer(glob, connectQos.getData()));
+      ConnectReturnQosServer returnQos = this.authenticate.connect(this.addressServer, new ConnectQosServer(glob, connectQos.getData()));
       sessionId = returnQos.getSecretSessionId();
 
       log.info(ME, "Started successfully JDBC driver with loginName=" + loginName);
@@ -202,7 +204,7 @@ public class JdbcDriver implements I_Driver, I_Publish
     */
    public void shutdown() throws XmlBlasterException {
       if (sessionId != null) {
-         try { this.authenticate.disconnect(sessionId, (new DisconnectQosServer(glob)).toXml()); } catch(XmlBlasterException e) { }
+         try { this.authenticate.disconnect(this.addressServer, sessionId, (new DisconnectQosServer(glob)).toXml()); } catch(XmlBlasterException e) { }
       }
       namedPool.destroy();
       log.info(ME, "JDBC service stopped, resources released.");
@@ -242,7 +244,7 @@ public class JdbcDriver implements I_Driver, I_Publish
     */
    public String publish(MsgUnitRaw msgUnit) throws XmlBlasterException
    {
-      return xmlBlasterImpl.publish(sessionId, msgUnit);
+      return xmlBlasterImpl.publish(this.addressServer, sessionId, msgUnit);
    }
 
 

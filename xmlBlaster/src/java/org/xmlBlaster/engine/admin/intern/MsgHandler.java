@@ -15,6 +15,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.MsgUnitRaw;
+import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.engine.admin.I_CommandHandler;
 import org.xmlBlaster.engine.admin.CommandManager;
 import org.xmlBlaster.engine.admin.CommandWrapper;
@@ -80,7 +81,7 @@ final public class MsgHandler implements I_CommandHandler, I_Plugin {
    /**
     * @see org.xmlBlaster.engine.admin.I_CommandHandler#get(String,CommandWrapper)
     */
-   public synchronized MsgUnit[] get(String sessionId, CommandWrapper cmd) throws XmlBlasterException {
+   public synchronized MsgUnit[] get(AddressServer addressServer, String sessionId, CommandWrapper cmd) throws XmlBlasterException {
       if (cmd == null)
          throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".get", "Please pass a command which is not null");
 
@@ -109,7 +110,7 @@ final public class MsgHandler implements I_CommandHandler, I_Plugin {
       String xmlKey = "<key oid='" + oid + "'/>";
       // String qos = "<qos/>";
 
-      MsgUnitRaw[] msgUnitArrRaw = xmlBlaster.get(sessionId, xmlKey, cmd.getQueryQosData().toXml());
+      MsgUnitRaw[] msgUnitArrRaw = xmlBlaster.get(addressServer, sessionId, xmlKey, cmd.getQueryQosData().toXml());
       MsgUnit[] msgUnits = new MsgUnit[msgUnitArrRaw.length];
       MethodName method = cmd.getQueryQosData().getMethod();
       for (int i=0; i < msgUnits.length; i++) {
@@ -131,7 +132,7 @@ final public class MsgHandler implements I_CommandHandler, I_Plugin {
     * @param cmd "/node/heron/topic/HelloMsgOid/?content=World"
     * @return null if not set
     */
-   public String set(String sessionId, CommandWrapper cmd) throws XmlBlasterException {
+   public String set(AddressServer addressServer, String sessionId, CommandWrapper cmd) throws XmlBlasterException {
       if (cmd == null)
          throw new XmlBlasterException(this.glob, ErrorCode.USER_ILLEGALARGUMENT, ME + ".set", "Please pass a command which is not null");
 
@@ -160,7 +161,7 @@ final public class MsgHandler implements I_CommandHandler, I_Plugin {
       String qos = "<qos/>";
 
       // The returned array is a clone, we may manipulate it
-      MsgUnitRaw[] msgUnitArrRaw = xmlBlaster.get(sessionId, xmlKey, qos);
+      MsgUnitRaw[] msgUnitArrRaw = xmlBlaster.get(addressServer, sessionId, xmlKey, qos);
 
       if (msgUnitArrRaw.length < 1) {
          log.info(ME, cmd.getCommand() + " Message oid=" + oid + " not found");
@@ -183,7 +184,7 @@ final public class MsgHandler implements I_CommandHandler, I_Plugin {
          msgUnitArrRaw[ii] = new MsgUnitRaw(msgUnitArr[ii].getKey(), value.getBytes(), publishQos.toXml());
       }
       */
-      String[] retArr = xmlBlaster.publishArr(sessionId, msgUnitArrRaw);
+      String[] retArr = xmlBlaster.publishArr(addressServer, sessionId, msgUnitArrRaw);
 
       log.info(ME, cmd.getCommand() + " published " + msgUnitArrRaw.length + " messages");
       StringBuffer sb = new StringBuffer(retArr.length * 60);

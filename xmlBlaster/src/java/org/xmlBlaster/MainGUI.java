@@ -17,6 +17,7 @@ import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.RequestBroker;
+import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.engine.qos.GetQosServer;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.protocol.I_Authenticate;
@@ -711,9 +712,10 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
       private I_XmlBlaster xmlBlasterImpl;
       /** The session id on successful authentication */
       private String secretSessionId;
+      private AddressServer addressServer;
 
       /**
-       * Login to xmlBlaster and get a sessionId.
+       * Login to xmlBlaster and get a sessionId. 
        */
       public GuiQuery(I_Authenticate authenticate, I_XmlBlaster xmlBlasterImpl) throws XmlBlasterException
       {
@@ -724,7 +726,9 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
          ConnectQos connectQos = new ConnectQos(authenticate.getGlobal());
          connectQos.loadClientPlugin("htpasswd", "1.0", loginName, passwd);
          connectQos.getSessionQos().setSessionTimeout(0L);
-         String ret = authenticate.connect(connectQos.toXml(), null); // synchronous access only, no callback.
+         // TODO: Port to use "LOCAL" protocol to connect
+         this.addressServer = new AddressServer(authenticate.getGlobal(), "NATIVE", authenticate.getGlobal().getId(), (java.util.Properties)null);
+         String ret = authenticate.connect(addressServer, connectQos.toXml(), null); // synchronous access only, no callback.
          ConnectReturnQos retQos = new ConnectReturnQos(authenticate.getGlobal(), ret);
          this.secretSessionId = retQos.getSecretSessionId();
          log.info(ME, "login for '" + loginName + "' successful.");
@@ -738,7 +742,7 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
          try {
             GetKey getKey = new GetKey(this.authenticate.getGlobal(), queryString, queryType);
             stop.restart();
-            MsgUnitRaw[] msgArr = this.xmlBlasterImpl.get(this.secretSessionId, getKey.toXml(), "<qos/>");
+            MsgUnitRaw[] msgArr = this.xmlBlasterImpl.get(this.addressServer, this.secretSessionId, getKey.toXml(), "<qos/>");
             log.info(ME, "Got " + msgArr.length + " messages for query '" + queryString + "'" + stop.nice());
             return msgArr;
          } catch(XmlBlasterException e) {
@@ -749,7 +753,7 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
 
       /** Logout. */
       void logout() {
-         try { this.authenticate.disconnect(this.secretSessionId, null); } catch (XmlBlasterException e) { }
+         try { this.authenticate.disconnect(this.addressServer, this.secretSessionId, null); } catch (XmlBlasterException e) { }
       }
    }
 

@@ -10,6 +10,7 @@ package org.xmlBlaster.protocol;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.qos.AddressServer;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
 import org.xmlBlaster.util.SessionName;
@@ -34,36 +35,35 @@ public interface I_Authenticate
    public I_XmlBlaster getXmlBlaster();
 
    /**
-    * @param doQueueSession true if you want to queue this session, false otherwise.
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.connect.html">The interface.connect requirement</a>
     */
-   public ConnectReturnQosServer connect(ConnectQosServer qos) throws XmlBlasterException;
+   public ConnectReturnQosServer connect(AddressServer addressServer, ConnectQosServer qos) throws XmlBlasterException;
 
    /**
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.connect.html">The interface.connect requirement</a>
     */
-   public String connect(String qos) throws XmlBlasterException;
+   public String connect(AddressServer addressServer, String qos) throws XmlBlasterException;
 
    /*
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.connect.html">The interface.connect requirement</a>
     */
-   public ConnectReturnQosServer connect(ConnectQosServer qos, String sessionId) throws XmlBlasterException;
+   public ConnectReturnQosServer connect(AddressServer addressServer, ConnectQosServer qos, String sessionId) throws XmlBlasterException;
 
    /*
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.connect.html">The interface.connect requirement</a>
     */
-   public String connect(String qos, String sessionId) throws XmlBlasterException;
+   public String connect(AddressServer addressServer, String qos, String sessionId) throws XmlBlasterException;
 
    /**
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.disconnect.html">The interface.disconnect requirement</a>
     */
-   public void disconnect(String sessionId, String qos_literal) throws XmlBlasterException;
+   public void disconnect(AddressServer addressServer, String sessionId, String qos_literal) throws XmlBlasterException;
 
    /**
      * Ping to check if xmlBlaster is alive and willing to accept messages. 
      * @see org.xmlBlaster.protocol.I_XmlBlaster#ping(String)
      */
-   public String ping(String qos);
+   public String ping(AddressServer addressServer, String qos);
 
    /**
     * Administrative access. 

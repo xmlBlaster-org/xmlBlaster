@@ -103,6 +103,8 @@ public class RmiDriver implements I_Driver
    /** The name for the RMI registry */
    private String xmlBlasterBindName = null;
    private boolean isActive = false;
+   /** The protocol plugin configuration */
+   private AddressServer addressServer;
 
 
    /** Get a human readable name of this driver */
@@ -180,6 +182,7 @@ public class RmiDriver implements I_Driver
    {
       this.authenticate = authenticate;
       this.xmlBlasterImpl = xmlBlasterImpl;
+      this.addressServer = addressServer;
 
       XmlBlasterSecurityManager.createSecurityManager(glob);
 
@@ -228,8 +231,8 @@ public class RmiDriver implements I_Driver
    public synchronized void activate() throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering activate");
       try {
-         authRmiServer = new AuthServerImpl(glob, this.authenticate, xmlBlasterImpl);
-         xmlBlasterRmiServer = new XmlBlasterImpl(glob, xmlBlasterImpl);
+         authRmiServer = new AuthServerImpl(glob, this.addressServer, this.authenticate, xmlBlasterImpl);
+         xmlBlasterRmiServer = new XmlBlasterImpl(glob, this.addressServer, xmlBlasterImpl);
       }
       catch (RemoteException e) {
          log.error(ME, e.toString());
