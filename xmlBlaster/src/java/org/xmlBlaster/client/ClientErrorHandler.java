@@ -65,8 +65,9 @@ public final class ClientErrorHandler implements I_MsgErrorHandler
             shutdown = true;
          }
          else {
-            log.error(ME, "PANIC: handleError error handling NOT IMPLEMENTED, message '" + entries[i].getEmbeddedType() + "' '" +
-                       entries[i].getLogId() + "' is lost: " + msgErrorInfo.getXmlBlasterException().getMessage());
+            log.warn(ME, "Default error handling: Message '" + entries[i].getEmbeddedType() + "' '" +
+                       entries[i].getLogId() + "' is lost: " + msgErrorInfo.getXmlBlasterException().getMessage() +
+                       ". You can add your own client side error handler with I_XmlBlasterAccess.setClientErrorHandler() if desired.");
          }
       }
 
