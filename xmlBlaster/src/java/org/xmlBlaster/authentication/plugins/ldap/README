@@ -22,13 +22,17 @@ you can try this:
 
       java -jar lib/xmlBlaster.jar
 
+
 2. Start a client (all in one line), e.g.
 
       java javaclients.ClientSub -name tim -passwd tim -Security.Client.DefaultPlugin ldap,1.0
 
-In the log output of xmlBlaster server you should see something like:
+   In the log output of xmlBlaster server you should see something like:
 
       SecurityPluginManager] Plugin 'org.xmlBlaster.authentication.plugins.ldap.Manager' successfully initialized 
+
+   Congratulations, were authenticated by LDAP!
+
 
 3. Edit xmlBlaster.properties and add this line:
 
@@ -37,6 +41,7 @@ In the log output of xmlBlaster server you should see something like:
    Now LDAP is switched on as default, try again:
 
       java javaclients.ClientSub -name tim -passwd tim
+
 
 4. Now try an invalid password:
 
