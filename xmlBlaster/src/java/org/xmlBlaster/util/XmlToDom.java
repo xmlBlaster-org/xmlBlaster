@@ -3,7 +3,7 @@ Name:      XmlToDom.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper which parses a XML ASCII string into a DOM tree
-Version:   $Id: XmlToDom.java,v 1.3 1999/11/30 10:37:35 ruff Exp $
+Version:   $Id: XmlToDom.java,v 1.4 1999/12/01 16:04:46 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -128,7 +128,7 @@ public class XmlToDom
       //input.setSystemId("9999999999");
 
       // !!! TODO: add a singleton for XMLProcessor
-      com.jclark.xsl.dom.XMLProcessorImpl xmlProc = org.xmlBlaster.engine.MessagesDOM.getInstance().getXMLProcessorImpl();
+      com.jclark.xsl.dom.XMLProcessorImpl xmlProc = org.xmlBlaster.engine.BigXmlKeyDOM.getInstance().getXMLProcessorImpl();
 
       try {
          xmlDoc = xmlProc.load(input);

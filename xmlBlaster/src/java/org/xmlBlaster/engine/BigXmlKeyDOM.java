@@ -1,9 +1,9 @@
 /*------------------------------------------------------------------------------
-Name:      MessagesDOM.java
+Name:      BigXmlKeyDOM.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Building a huge DOM tree for all known MessageUnits
-Version:   $Id: MessagesDOM.java,v 1.1 1999/11/30 10:36:31 ruff Exp $
+Comment:   Building a huge DOM tree for all known MessageUnit xmlKey
+Version:   $Id: BigXmlKeyDOM.java,v 1.1 1999/12/01 16:04:45 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -21,14 +21,14 @@ import java.util.*;
 import java.io.*;
 
 /**
- * Building a huge DOM tree for all known MessageUnits. 
+ * Building a huge DOM tree for all known MessageUnit.xmlKeys
  * <p>
  */
-public class MessagesDOM implements ClientListener, MessageEraseListener, I_MergeDomNode
+public class BigXmlKeyDOM implements ClientListener, MessageEraseListener, I_MergeDomNode
 {
-   final private static String ME = "MessagesDOM";
+   final private static String ME = "BigXmlKeyDOM";
 
-   private static MessagesDOM messagesDOM = null;        // Singleton pattern
+   private static BigXmlKeyDOM bigXmlKeyDOM = null;        // Singleton pattern
 
    private RequestBroker requestBroker = null;
    private Authenticate authenticate = null;
@@ -42,37 +42,37 @@ public class MessagesDOM implements ClientListener, MessageEraseListener, I_Merg
 
 
    /**
-    * Access to MessagesDOM singleton
+    * Access to BigXmlKeyDOM singleton
     */
-   public static MessagesDOM getInstance(RequestBroker requestBroker, Authenticate authenticate) throws XmlBlasterException
+   public static BigXmlKeyDOM getInstance(RequestBroker requestBroker, Authenticate authenticate) throws XmlBlasterException
    {
-      synchronized (MessagesDOM.class) {
-         if (messagesDOM == null) {
-            messagesDOM = new MessagesDOM(requestBroker, authenticate);
+      synchronized (BigXmlKeyDOM.class) {
+         if (bigXmlKeyDOM == null) {
+            bigXmlKeyDOM = new BigXmlKeyDOM(requestBroker, authenticate);
          }
       }
-      return messagesDOM;
+      return bigXmlKeyDOM;
    }
 
 
    /**
-    * Access to MessagesDOM singleton
+    * Access to BigXmlKeyDOM singleton
     */
-   public static MessagesDOM getInstance()
+   public static BigXmlKeyDOM getInstance()
    {
-      synchronized (MessagesDOM.class) {
-         if (messagesDOM == null) {
+      synchronized (BigXmlKeyDOM.class) {
+         if (bigXmlKeyDOM == null) {
             Log.panic(ME, "Use other getInstance first");
          }
       }
-      return messagesDOM;
+      return bigXmlKeyDOM;
    }
 
 
    /**
     * private Constructor for Singleton Pattern
     */
-   private MessagesDOM(RequestBroker requestBroker, Authenticate authenticate) throws XmlBlasterException
+   private BigXmlKeyDOM(RequestBroker requestBroker, Authenticate authenticate) throws XmlBlasterException
    {
       this.requestBroker = requestBroker;
       this.authenticate = authenticate;
@@ -294,7 +294,7 @@ public class MessagesDOM implements ClientListener, MessageEraseListener, I_Merg
    /**
     * Dump state of this object into XML.
     * <br>
-    * @return XML state of MessagesDOM
+    * @return XML state of BigXmlKeyDOM
     */
    public final StringBuffer printOn() throws XmlBlasterException
    {
@@ -306,7 +306,7 @@ public class MessagesDOM implements ClientListener, MessageEraseListener, I_Merg
     * Dump state of this object into XML.
     * <br>
     * @param extraOffset indenting of tags
-    * @return XML state of MessagesDOM
+    * @return XML state of BigXmlKeyDOM
     */
    public final StringBuffer printOn(String extraOffset) throws XmlBlasterException
    {
@@ -315,7 +315,7 @@ public class MessagesDOM implements ClientListener, MessageEraseListener, I_Merg
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
 
-      sb.append(offset + "<MessagesDOM>");
+      sb.append(offset + "<BigXmlKeyDOM>");
       try {
          java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
          xmlKeyDoc.write(out);
@@ -324,7 +324,7 @@ public class MessagesDOM implements ClientListener, MessageEraseListener, I_Merg
             sb.append(offset + "   " + st.nextToken());
          }
       } catch (Exception e) { }
-      sb.append(offset + "</MessagesDOM>\n");
+      sb.append(offset + "</BigXmlKeyDOM>\n");
 
       return sb;
    }

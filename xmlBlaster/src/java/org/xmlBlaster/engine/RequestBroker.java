@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.28 1999/11/30 10:37:34 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.29 1999/12/01 16:04:46 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -53,7 +53,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
    /**
     * This is a handle on the big DOM tree with all MessageUnit keys
     */
-   private MessagesDOM messagesDOM = null;
+   private BigXmlKeyDOM bigXmlKeyDOM = null;
 
 
    /**
@@ -91,7 +91,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
    {
       this.clientSubscriptions = ClientSubscriptions.getInstance(this, authenticate);
 
-      this.messagesDOM = MessagesDOM.getInstance(this, authenticate);
+      this.bigXmlKeyDOM = BigXmlKeyDOM.getInstance(this, authenticate);
 
       authenticate.addClientListener(this);
       addMessageEraseListener(this);
@@ -173,7 +173,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
 
    /**
-    * This method does the query (queryType = "XPATH" | "EXACT"). 
+    * This method does the query (queryType = "XPATH" | "EXACT").
     *
     * @param clientName is only needed for nicer logging output
     * @return Array of matching XmlKey objects (may contain null elements)
@@ -186,7 +186,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
       String clientName = clientInfo.toString();
 
       if (xmlKey.getQueryType() == XmlKey.XPATH_QUERY) { // query: subscription without a given oid
-         xmlKeyVec = messagesDOM.parseKeyOid(clientInfo, xmlKey, qos);
+         xmlKeyVec = bigXmlKeyDOM.parseKeyOid(clientInfo, xmlKey, qos);
       }
 
       else if (xmlKey.getQueryType() == XmlKey.EXACT_QUERY) { // subscription with a given oid
@@ -333,7 +333,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
                if (queryXmlKey.getQueryType() == XmlKey.XPATH_QUERY) { // query: subscription without a given oid
 
-                  Vector matchVec = messagesDOM.parseKeyOid(clientInfo, queryXmlKey, xmlQoS);
+                  Vector matchVec = bigXmlKeyDOM.parseKeyOid(clientInfo, queryXmlKey, xmlQoS);
 
                   if (matchVec != null && matchVec.size() == 1 && matchVec.elementAt(0) != null) {
                      if (Log.TRACE) Log.trace(ME, "The new xmlKey=" + xmlKey.getUniqueKey() + " is matching the existing query subscription " + queryXmlKey.getUniqueKey());
@@ -423,7 +423,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
       }
       else {
          try {
-            xmlKey.mergeRootNode(messagesDOM);                    // merge the message DOM tree into the big xmlBlaster DOM tree
+            xmlKey.mergeRootNode(bigXmlKeyDOM);                    // merge the message DOM tree into the big xmlBlaster DOM tree
          } catch (XmlBlasterException e) {
             synchronized(messageContainerMap) {
                messageContainerMap.remove(xmlKey.getUniqueKey()); // it didn't exist before, so we have to clean up
@@ -618,7 +618,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
          MessageUnitHandler messageUnitHandler = (MessageUnitHandler)iterator.next();
          sb.append(messageUnitHandler.printOn(extraOffset + "   ").toString());
       }
-      sb.append(messagesDOM.printOn(extraOffset + "   ").toString());
+      sb.append(bigXmlKeyDOM.printOn(extraOffset + "   ").toString());
       sb.append(offset + "</RequestBroker>\n");
 
       return sb;
