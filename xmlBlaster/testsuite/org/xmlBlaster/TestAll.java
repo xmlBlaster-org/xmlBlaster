@@ -3,7 +3,7 @@ Name:      TestAll.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Start all tests
-Version:   $Id: TestAll.java,v 1.3 1999/12/12 15:22:19 ruff Exp $
+Version:   $Id: TestAll.java,v 1.4 1999/12/12 15:24:09 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -14,8 +14,11 @@ import test.framework.*;
 /**
  * This test client starts all known tests.
  * <p>
- * Invoke examples:
+ * Invoke examples:<br />
+ * <code>
  *    jaco test.textui.TestRunner testsuite.org.xmlBlaster.TestAll
+ *    jaco test.ui.TestRunner testsuite.org.xmlBlaster.TestAll
+ * </code>
  */
 public class TestAll
 {

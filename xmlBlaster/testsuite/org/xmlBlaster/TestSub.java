@@ -3,7 +3,7 @@ Name:      TestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.java,v 1.2 1999/12/12 14:59:53 ruff Exp $
+Version:   $Id: TestSub.java,v 1.3 1999/12/12 15:24:09 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -25,10 +25,11 @@ import test.framework.*;
  * This client may be invoked multiple time on the same xmlBlaster server,
  * as it cleans up everything after his test are done.
  * <p>
- * Invoke examples:
- *    ${JacORB_HOME}/bin/jaco testsuite.org.xmlBlaster.TestSub
- *
- *    ${JacORB_HOME}/bin/jaco testsuite.org.xmlBlaster.TestSub -name "Jeff"
+ * Invoke examples:<br />
+ * <code>
+ *    jaco test.textui.TestRunner testsuite.org.xmlBlaster.TestSub
+ *    jaco test.ui.TestRunner testsuite.org.xmlBlaster.TestSub
+ * </code>
  */
 public class TestSub extends TestCase
 {
@@ -54,7 +55,7 @@ public class TestSub extends TestCase
 
 
    /**
-    * Sets up the fixture. 
+    * Sets up the fixture.
     * <p />
     * Connect to xmlBlaster and login
     */
@@ -77,7 +78,7 @@ public class TestSub extends TestCase
 
 
    /**
-    * Tears down the fixture. 
+    * Tears down the fixture.
     * <p />
     * cleaning up .... erase() the previous message OID
     */
