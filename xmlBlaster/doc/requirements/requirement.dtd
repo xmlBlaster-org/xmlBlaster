@@ -5,7 +5,7 @@ Name:      requirement.dtd
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Validates xml requirements
-Version:   $Id: requirement.dtd,v 1.15 2002/03/13 06:17:40 ruff Exp $
+Version:   $Id: requirement.dtd,v 1.16 2002/03/17 13:03:21 ruff Exp $
 -->
 
 <!ELEMENT requirement (
@@ -56,7 +56,7 @@ Version:   $Id: requirement.dtd,v 1.15 2002/03/13 06:17:40 ruff Exp $
 <!ELEMENT testcase (
    name,
    comment,
-   test
+   test*
    )>
 
 <!ELEMENT name  (%text;)>

@@ -123,7 +123,7 @@
             <xsd:element ref="comment" minOccurs="0"/>
             <xsd:element ref="predecessor" minOccurs="0" maxOccurs="unbounded"/>
             <xsd:element ref="precondition" minOccurs="0"/>
-            <xsd:element ref="test" minOccurs="0"/>
+            <xsd:element ref="test" minOccurs="0" maxOccurs="unbounded"/>
             <xsd:element ref="postcondition" minOccurs="0"/>
          </xsd:sequence>
          <xsd:attribute name="status" use="default" value="OPEN">
