@@ -137,6 +137,7 @@ if [ ${JDK_HOME} ] ; then
    if [ -d ${JDK_HOME} ] ; then
 		if [ -f ${JDK_HOME}/lib/classes.zip ]; then
 			# JDK 1.1.x
+			export JDK_1_1=true
 		   CLASSPATH=${XMLBLASTER_HOME}/lib/collections.jar:${CLASSPATH}
 		else
 			# JDK 1.2

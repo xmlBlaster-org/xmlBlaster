@@ -34,28 +34,46 @@ SRC_JAVA_DIR=$(SRC_JAVA_TOP_DIR)/$(THIS_PACKAGE_DIR)
 IDL2JAVA=$(JacORB_HOME)/bin/idl -p org.xmlBlaster
 #IDL2JAVA=/DEVELOP/opt/java/JacORB1_0-beta13/bin/idl -p org.xmlBlaster
 #IDL2JAVA=/usr/local/vbroker/bin/idl2java
+#------------------------------------------------------------------------------
 
+#------------------------------------------------------------------------------
 #JAVAC_FLAGS=
 JAVAC_FLAGS= -deprecation -g
 
 ifdef JIKES_HOME
 JAVAC= jikes $(JAVAC_FLAGS) -d $(CLASS_TOP_DIR)
 else
+ifdef JDK_1_1
+JAVAC= javac $(JAVAC_FLAGS) -d $(CLASS_TOP_DIR)
+else
 JAVAC= javac $(JAVAC_FLAGS) -bootclasspath $(CLASSPATH) -sourcepath $(SRC_JAVA_TOP_DIR) -d $(CLASS_TOP_DIR)
 endif
+endif
 #JAVAC= javac $(JAVAC_FLAGS) -bootclasspath ${JacORB_HOME}/classes:${JacORB_HOME}/classes/jacorb.jar:${JDK_HOME}/jre/lib/rt.jar:$(CLASSPATH) -sourcepath $(SRC_JAVA_TOP_DIR) -d $(CLASS_TOP_DIR)
+#------------------------------------------------------------------------------
 
+
+#------------------------------------------------------------------------------
 #RMIC=  rmic -d $(CLASS_TOP_DIR) -classpath $(CLASSPATH):../../
 RMIC=  rmic -d $(CLASS_TOP_DIR)
+#------------------------------------------------------------------------------
 
+
+#------------------------------------------------------------------------------
 JAVA=  java
+#------------------------------------------------------------------------------
+
+
+#------------------------------------------------------------------------------
 #JAVADOC= javadoc -author -version -private -J-ms39m -J-mx40m
 #JAVADOC= javadoc -author -version -overview \
 #																	-group  "engine" "org.xmlBlaster.engine" \
 #																	-J-ms39m -J-mx40m
-
 JAVADOC= javadoc -J-ms39m -J-mx40m -author -version -private 
+#------------------------------------------------------------------------------
 
+
+#------------------------------------------------------------------------------
 MAKE=make
 
 MKDIR= mkdir -m 775
