@@ -7,20 +7,20 @@ classes          -- all java-class are generated here
 
 config           -- the configuration the xmlBlaster and ORB's
 
-demo             -- some examples.
+demo             -- some examples (Java,VisualBasic,Perl,C,C++,C#,Pyhton,Php).
 
 doc              -- the xmlBlaster documentation.
 
-lib              -- all lib, which are used by the xmlBlaster.
+lib              -- all libraries which are used by the xmlBlaster.
 
 src              -- the core source of the xmlBlaster.
 
-src/perl         -- the perl-modules for the xmlBlaster client         
+src/java         -- the core written in pure Java
 
-src/c++          -- the c++-classes for the xmlBlaster client
+src/python       -- the Python-modules for the xmlBlaster client         
 
-src/java         -- the core written in pure Java C-MOM-S
+src/c            -- the C files for the xmlBlaster client
 
-src/dtd          -- definitions of the MsgUnit/QoS/Key
+src/c++          -- the C++-classes for the xmlBlaster client
 
-testsuite        -- some test cases to check the xmlBlaster features
+testsuite        -- test cases to check the xmlBlaster features

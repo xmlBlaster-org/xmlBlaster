@@ -49,9 +49,7 @@ o Journaled Communication (History)
 
 o Allowing compound messages
 
-o Online demos
-
-o Choosing the port for the server/callback server (e.g. XmlRpl):
+o Choosing the port for the server/callback server (e.g. XmlRpc):
   Java has a feature whereby you can specify Port 0 when opening a
   ServerSocket which results in opening the Socket on "any available
   port".  This can be very convenient when the port does not need to be
@@ -84,8 +82,8 @@ o CacheQueueInterceptorPlugin.java:469
 o XMlBlasterAccess.leaveServer() should do a
   dispatchManager.shutdown
 
-o queue/history/maxEntriesCache=1 can't be recofnigured.
-  It must be deleted and new created to chanege
+o queue/history/maxEntriesCache=1 can't be reconfigured.
+  It must be deleted and new created to change
 
 o Add I_Map change() to testsuite
 
@@ -109,15 +107,11 @@ o Performance analysis with garbage collector http://wireless.java.sun.com/midp/
 TEST
 ----
 
-o Use XMLunit http://xmlunit.sourceforge.net/ in testsuite.
-
 o Add automatic testssuite for C++, Perl, PHP
 
 
 AUTHENTICATE / AUTHORIZATION
 ----------------------------
-
-o Add an AuthenticateException type
 
 o xmlBlaster.idl
     * rename AuthServer to AuthenticationService
