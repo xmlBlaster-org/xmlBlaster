@@ -241,7 +241,7 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
       }
 
       if (log.TRACE) log.trace(ME, "Node '" + nodeDomainInfo.getId() + "' is not master for message '" +
-                     msgUnit.getLogId() + "' with given rules=" + nodeDomainInfo.toXml());
+                     msgUnit.getKeyData().toXml() + "' with given rules=" + nodeDomainInfo.toXml());
       // Another rule can still choose this node as a master
 
       return null; // This clusternode is not the master
