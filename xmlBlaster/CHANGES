@@ -3,6 +3,11 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.8x [xxx, xx 2002]
 ===============================
+  - Bugfix in SOCKET protocol to ignore InterruptedException
+    from other code
+
+  - Bugfix for isVolatile message (synchronize problem)
+    Reported by Russell Chan and David Kerry
 
   - Michele added speech output to our chat demo
 
