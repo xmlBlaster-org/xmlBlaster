@@ -73,6 +73,7 @@ Dll_Export XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed(int argc, const
       return (XmlBlasterAccessUnparsed *)0;
    }
    xa->isInitialized = false;
+   xa->isShutdown = false;
    xa->userObject = 0; /* A client can use this pointer to point to any client specific information */
    xa->connect = xmlBlasterConnect;
    xa->initialize = initialize;
@@ -129,15 +130,16 @@ Dll_Export void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xa)
       return;
    }
 
-   freeProperties(xa->props);
+   xa->isShutdown = true; /* Inhibit access to xa */
 
-   if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, "freeXmlBlasterAccessUnparsed() conP=%x cbP=%x", xa->connectionP, xa->callbackP);
-   if (xa->connectionP != 0) {
-      freeXmlBlasterConnectionUnparsed(xa->connectionP);
-      xa->connectionP = 0;
-   }
    if (xa->callbackP != 0) {
       xa->callbackP->shutdown(xa->callbackP);
+   }
+   if (xa->connectionP != 0) {
+      xa->connectionP->shutdown(xa->connectionP);
+   }
+
+   if (xa->callbackP != 0) {
       if (!xa->callbackP->isShutdown) {
          retVal = pthread_join(xa->callbackThreadId, 0);
          if (retVal != 0) {
@@ -151,9 +153,9 @@ Dll_Export void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xa)
                                         "Pthread_join(id=%ld) COMMENTED OUT"); */
          xa->callbackThreadId = 0;
       }
-      freeCallbackServerUnparsed(xa->callbackP);
-      xa->callbackP = 0;
    }
+
+   if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, "freeXmlBlasterAccessUnparsed() conP=%x cbP=%x", xa->connectionP, xa->callbackP);
 
    {  /* Wait for any pending update() dispatcher threads to die */
       int i;
@@ -167,6 +169,18 @@ Dll_Export void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xa)
              "freeXmlBlasterAccessUnparsed(): Sleeping %d millis for update thread to join. %d/%d", interval, i, num);
       }
    }
+
+   if (xa->connectionP != 0) {
+      freeXmlBlasterConnectionUnparsed(xa->connectionP);
+      xa->connectionP = 0;
+   }
+
+   if (xa->callbackP != 0) {
+      freeCallbackServerUnparsed(xa->callbackP);
+      xa->callbackP = 0;
+   }
+
+   freeProperties(xa->props);
 
    rc = pthread_mutex_destroy(&xa->writenMutex); /* On Linux this does nothing, but returns an error code EBUSY if the mutex was locked */
    if (rc != 0) /* EBUSY */
@@ -302,7 +316,7 @@ static bool initialize(XmlBlasterAccessUnparsed *xa, UpdateFp clientUpdateFp, Xm
 
 static bool isConnected(XmlBlasterAccessUnparsed *xa)
 {
-   if (xa == 0 || xa->connectionP == 0) {
+   if (xa == 0 || xa->isShutdown || xa->connectionP == 0) {
       return false;
    }
    return xa->connectionP->isConnected(xa->connectionP);
@@ -764,7 +778,7 @@ static bool checkArgs(XmlBlasterAccessUnparsed *xa, const char *methodName,
       return false;
    }
 
-   if (checkIsConnected && !xa->isConnected(xa)) {
+   if (xa->isShutdown || checkIsConnected && !xa->isConnected(xa)) {
       char *stack = getStackTrace(10);
       strncpy0(exception->errorCode, "communication.noConnection", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,

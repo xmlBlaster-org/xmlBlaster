@@ -74,6 +74,7 @@ XmlBlasterConnectionUnparsed *getXmlBlasterConnectionUnparsed(int argc, const ch
    xb->get = xmlBlasterGet;
    xb->ping = xmlBlasterPing;
    xb->isConnected = isConnected;
+   xb->shutdown = xmlBlasterConnectionShutdown;
    xb->preSendEvent = 0;
    xb->preSendEvent_userP = 0;
    xb->postSendEvent = 0;
@@ -920,6 +921,7 @@ static char *xmlBlasterPublish(XmlBlasterConnectionUnparsed *xb, MsgUnit *msgUni
    char *response = 0;
 
    BlobHolder blob = encodeMsgUnit(msgUnit, xb->logLevel >= LOG_DUMP);
+   msgUnit->responseQos = 0; /* In case no initial memset(&msgUnit, 0, sizeof(MsgUnit)); was made */ 
 
    if (checkArgs(xb, "publish", true, exception) == false ) return 0;
 

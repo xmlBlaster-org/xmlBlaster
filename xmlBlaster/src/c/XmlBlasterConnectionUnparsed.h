@@ -71,6 +71,7 @@ struct Dll_Export XmlBlasterConnectionUnparsedStruct {
    XmlBlasterConnectionUnparsedGet get;
    XmlBlasterConnectionUnparsedPing ping;
    XmlBlasterConnectionUnparsedIsConnected isConnected;
+   XmlBlasterConnectionUnparsedShutdown shutdown;
    XmlBlasterConnectionUnparsedPreSendEvent preSendEvent; /**< If a callback function pointer is registered it will be called just before sending a message */
    void *preSendEvent_userP;
    XmlBlasterConnectionUnparsedPostSendEvent postSendEvent; /**< If a callback function pointer is registered it will be called just after sending a message */

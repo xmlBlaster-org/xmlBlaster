@@ -105,6 +105,7 @@ typedef void  ( * CallbackServerUnparsedLogging)(void *logUserP, XMLBLASTER_LOG_
  */
 struct CallbackServerUnparsedStruct {
    Properties *props;
+   bool stopListenLoop;
    int listenSocket;
    int acceptSocket;
    int socketUdp;

@@ -47,6 +47,7 @@ CallbackServerUnparsed *getCallbackServerUnparsed(int argc, const char* const* a
       freeCallbackServerUnparsed(cb);
       return (CallbackServerUnparsed *)0;
    }
+   cb->stopListenLoop = false;
    cb->listenSocket = -1; /* Can be reused from XmlBlasterConnectionUnparsed */
    cb->acceptSocket = -1; /* Can be reused from XmlBlasterConnectionUnparsed */
    cb->socketUdp = -1; /* Can be reused from XmlBlasterConnectionUnparsed */
@@ -108,6 +109,7 @@ bool useThisSocket(CallbackServerUnparsed *cb, int socketToUse, int socketToUseU
 void freeCallbackServerUnparsed(CallbackServerUnparsed *cb)
 {
    if (cb != 0) {
+      cb->stopListenLoop = true;
       freeProperties(cb->props);
       shutdownCallbackServer(cb);
       free(cb);
@@ -315,7 +317,9 @@ static void listenLoop(ListenLoopArgs* ls)
       /* Here we block until a message arrives, see parseSocketData() */
       if (cb->logLevel>=LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__,
          "Going to block on socket read until a new message arrives ...");
+      if (cb->stopListenLoop) break;
       success = readMessage(cb, &socketDataHolder, &xmlBlasterException, udp);
+      if (cb->stopListenLoop) break;
       cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__, "%s arrived, success=%s", udp ? "UDP" : "TCP", success ? "true" : "false -> EOF");
 
       rc = pthread_mutex_lock(&cb->listenMutex);
@@ -328,7 +332,7 @@ static void listenLoop(ListenLoopArgs* ls)
       if (rc != 0) /* EPERM */
          cb->log(cb->logUserP, cb->logLevel, LOG_ERROR, __FILE__, "pthread_mutex_unlock() returned %d.", rc);
 
-      if (!success)
+      if (cb->stopListenLoop || !success)
          break;
    }
    pthread_exit(NULL);
@@ -653,6 +657,10 @@ static void closeAcceptSocket(CallbackServerUnparsed *cb)
  */
 static void shutdownCallbackServer(CallbackServerUnparsed *cb)
 {
+   if (cb == 0) return;
+
+   cb->stopListenLoop = true;
+
    if (cb->hostCB != 0) {
       free(cb->hostCB);
       cb->hostCB = 0;

@@ -226,6 +226,7 @@ typedef struct Dll_Export XmlBlasterAccessUnparsed {
    XmlBlasterConnectionUnparsed *connectionP;
    CallbackServerUnparsed *callbackP;
    bool isInitialized;
+   bool isShutdown;
    /**
     * Here we asynchronously receive the callback from xmlBlaster. 
     *
