@@ -3,7 +3,7 @@ Name:      TestAll.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Start all tests
-Version:   $Id: TestAll.java,v 1.19 2000/03/09 18:36:36 ruff Exp $
+Version:   $Id: TestAll.java,v 1.20 2000/03/23 17:27:05 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -12,7 +12,7 @@ import test.framework.*;
 
 
 /**
- * This test client starts all known tests. 
+ * This test client starts all known tests.
  * <p />
  * The complete testsuite runs ~2 minutes.
  * <p />
@@ -36,6 +36,7 @@ public class TestAll
       suite.addTest(TestPtDQueue.suite());
       suite.addTest(TestPersistence.suite());
       suite.addTest(TestPub.suite());
+      suite.addTest(TestPubForce.suite());
       suite.addTest(TestInvocationRecorder.suite());
       suite.addTest(TestFailSave.suite());
       suite.addTest(TestFailSavePing.suite());
