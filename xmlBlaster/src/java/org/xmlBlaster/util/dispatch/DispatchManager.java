@@ -788,6 +788,8 @@ public final class DispatchManager implements I_Timeout, I_QueuePutListener
          if (this.isShutdown) return;
          this.isShutdown = true;
 
+         this.msgQueue.removePutListener(this);
+
          // remove all ConnectionStatusListeners
          this.connectionStatusListeners.clear();
 
