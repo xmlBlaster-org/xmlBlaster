@@ -162,7 +162,7 @@ public class MsgQosFactoryTest extends TestCase {
             "      <node id='frodo' stratum='1' timestamp='9408630538' dirtyRead='false'/>\n" +
             "      <node id='heron' stratum='0' timestamp='9408630564'/>\n" +
             "   </route>\n" +
-            "   <topic readonly='true' destroyDelay='120000'>\n" +
+            "   <topic readonly='true' destroyDelay='120000' createDomEntry='true'>\n" +
             "      <msgstore relating='topic' type='TO' version='3.0' maxMsg='4' maxBytes='40' onOverflow='deadMessage'/>\n" +
             "      <queue relating='history' type='HI' version='2.0' maxMsg='3' maxBytes='30' onOverflow='deadMessage'/>\n" +
             "   </topic>\n" +
@@ -213,6 +213,7 @@ public class MsgQosFactoryTest extends TestCase {
          TopicProperty topicProperty = qos.getTopicProperty();
          assertEquals("", true, topicProperty.isReadonly());
          assertEquals("", 120000, topicProperty.getDestroyDelay());
+         assertEquals("", true, topicProperty.createDomEntry());
 
          assertEquals("", true, topicProperty.hasTopicCacheProperty());
          TopicCacheProperty cache = topicProperty.getTopicCacheProperty();
