@@ -3,6 +3,10 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes for 0.xxx [xxxxxxxxxx]
 ==============================
 
+ o The SVG Javascript chess example is updated to this
+   new release with some bugfixes, see
+     http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.javascript.rhino.html
+
  o BUGFIX Java client library:
    In fail safe mode on client reconnect the subscribe
    specific callback redirect got lost and updates where
