@@ -441,7 +441,7 @@ set sysprop/?trace[corba]=true
          not to break this syntax with our query language:
       </p>
       <table border="1"><tr><td><pre> <!-- <pre class="BORDER" (netscape does not like it) -->
-http://joe:mypasswd@www.xmlBlaster.org:3412/myPath/?key.oid=MyMessage#myFragment
+http://joe:mypasswd@www.xmlBlaster.org:3412/myPath/?key.oid=MyMessage&key.contentMime='text/plain'#myFragment
 
 Protocol: http
 Host:     www.xmlBlaster.org
@@ -534,7 +534,7 @@ UserInfo: joe:mypasswd
    <author>Michele.Laghi@swisscom.com</author>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.30 $</revision>
+   <revision>$Revision: 1.31 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
