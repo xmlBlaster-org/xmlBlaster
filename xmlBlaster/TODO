@@ -78,9 +78,7 @@ TECHNOLOGY
     ----------------------------------------
     - Protocol plugins (www.webdav.com)
     - state less protocols (email, http, webDav)
-    For HTTP and XML see XML-RPC:
-      http://www.xmlrpc.com/spec
-    and SOAP:
+    SOAP:
       http://www.w3.org/TR/SOAP/
       http://www.soap-wrc.com
       http://www.alphaWorks.ibm.com/tech/soap4j
@@ -105,14 +103,6 @@ CLIENT
 (2) Automatic disconnect detection of a client e.g. [ Closing connection to 192.168.1.1:1424 ]
     this is important if the client didn't logout properly.
     There is no standard way to get a callback from CORBA on socket EOF.
-
-(3) Tcl/Tk
-
-(4) Phyton
-    Python language: http://www.python.org
-    Python CORBA:    http://www.dstc.edu.au/Fnorb (not free for commercial use!)
-    Python XML:      http://www.python.org/sigs/xml-sig/
-    Python XSL:      http://fourthought.com/4Suite/4XSLT  ftp://FourThought.com/pub/4Suite/4XSLT/
 
 
 AUTHENTICATE
@@ -144,17 +134,4 @@ HOMEPAGE
 
 (2) Documentation formatting from XML to PDF (XSL-FO):  Unicorn Formatting Objects (UFO)
     http://www.unicorn-enterprises.com/
-
-TESTSUITE:
-----------
-    Move to newer JUnit http://www.junit.org/
-
-
-BUILD ENVIRONMENT
------------------
-
-(1) drop xerces in lib/ant
-    The ant release we're using right now needs xerces, that's hy it is located in lib/ant.
-    xerces.jar is included in the CLASSPATH for the environment in build.sh and build.bat.
-    It will not be included in xmlBlaster.jar and in the CLASSPATH in manifest.xmlBlaster.
 
