@@ -258,7 +258,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionSt
    }
 
    public void reachedPolling(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
-      log.error(ME, "DEBUG ONLY: Changed from connection state " + oldState + " to " + ConnectionStateEnum.POLLING);
+      log.warn(ME, "DEBUG ONLY: Changed from connection state " + oldState + " to " + ConnectionStateEnum.POLLING);
    }
    public void reachedDead(ConnectionStateEnum oldState, I_ConnectionHandler connectionHandler) {
       log.error(ME, "DEBUG ONLY: Changed from connection state " + oldState + " to " + ConnectionStateEnum.DEAD);
