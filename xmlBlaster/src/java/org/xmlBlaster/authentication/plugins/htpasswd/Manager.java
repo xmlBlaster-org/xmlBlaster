@@ -28,7 +28,7 @@ public class Manager implements I_Manager {
 
    // this is the simplest, but not the best way to handle sessions
    // --> a pool would be a good idea at this point :)
-   private Hashtable sessions = new Hashtable();
+   protected Hashtable sessions = new Hashtable();
 
    public Manager() {
    }
