@@ -3,7 +3,7 @@ Name:      MsgQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: MsgQueue.java,v 1.7 2002/03/18 00:25:33 ruff Exp $
+Version:   $Id: MsgQueue.java,v 1.8 2002/03/19 21:32:47 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queue;
@@ -75,6 +75,7 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
    public void shutdown()
    {
       Log.info(ME, "Entering shutdown(" + super.size() + ")");
+      //Thread.currentThread().dumpStack();
       synchronized (this) {
          if (super.size() > 0) {
             Log.warn(ME, "Shutting down queue which contains " + super.size() + " messages");
@@ -88,11 +89,11 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
          timerKey = null;
       }
       this.log = null;
-      this.glob = null;
-      // this.name = null; We need it in finalize()
       this.cbWorkerPool = null;
       this.burstModeTimer = null;
-      this.property = null;
+      // this.name = null; We need it in finalize()
+      // this.glob = null;     We need glob for dead letter recovery
+      // this.property = null; We need the props for dead letter recovery
    }
 
    /**
@@ -293,7 +294,7 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
          throw new XmlBlasterException(ME, "Illegal null argument fir putMsgs()");
       }
       if (isShutdown) {
-         Log.error(ME, "The queue is shutdown, putMsgs() of " + msg.length + " messages failed");
+         Log.error(ME, "The queue is shutdown, putMsgs() of " + msg.length + " messages failed, starting error handling ...");
          Thread.currentThread().dumpStack();
          handleFailure(msg);
          return;
