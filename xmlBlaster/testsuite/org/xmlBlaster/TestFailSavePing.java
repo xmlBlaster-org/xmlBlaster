@@ -3,7 +3,7 @@ Name:      TestFailSavePing.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSavePing.java,v 1.19 2002/05/11 10:07:54 ruff Exp $
+Version:   $Id: TestFailSavePing.java,v 1.20 2002/05/16 15:43:27 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -214,7 +214,7 @@ public class TestFailSavePing extends TestCase implements I_Callback, I_Connecti
       Util.delay(5000L);    // Wait some time, ping should activate login polling
 
       serverThread = ServerThread.startXmlBlaster(serverPort);
-      Util.delay(3000L);    // Wait some time, to allow the ping to reconnect
+      Util.delay(5000L);    // Wait some time, to allow the ping to reconnect
    }
 
 
