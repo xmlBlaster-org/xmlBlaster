@@ -39,13 +39,11 @@ SessionQos ConnectQosData::getSessionQos() const
    return sessionQos_;
 }
 
-/*
 void ConnectQosData::setSessionId(const string& sessionId)
 {
    sessionId_ = sessionId;
    isDirty_ = true;
 }
-*/
 
 string ConnectQosData::getSessionId() const
 {
@@ -206,7 +204,7 @@ ConnectQosData ConnectQosFactory::readObject(const string& qos)
    serverRef_ = NULL;
    init(qos);
    ConnectQosData data;
-   data.setSessionId();
+   data.setSessionId(sessionId_);
    if (securityQos_ != NULL) data.setSecurityQos(*securityQos_);
    if (serverRef_ != NULL) data.setServerRef(*serverRef_);
    data.setLiteral(qos);

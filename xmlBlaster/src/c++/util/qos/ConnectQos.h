@@ -65,7 +65,7 @@ private:
 
 public:
    ConnectQosData();
-//   void setSessionId(const string& sessionId);
+   void setSessionId(const string& sessionId);
 
    void setSessionQos(const SessionQos& sessionQos);
    SessionQos getSessionQos() const;
