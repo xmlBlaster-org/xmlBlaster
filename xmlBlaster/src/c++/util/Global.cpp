@@ -139,27 +139,133 @@ Global::~Global()
    }
    catch (...) {
    }
+   try {
+      if (this != global_) {
+         global_->destroyInstance(this->getInstanceName());
+      }
+      else {
+         globalRefMap_.clear();
+         globalMap_.clear();
+      }
+   }
+   catch (...) {
+   }
 }
-
-/*
-Global& Global::getInstance(const string&)
-{
-   static Global global;
-   return global;
-}
-*/
 
 Global *Global::global_ = NULL;
+Global::GlobalRefMap Global::globalRefMap_;
+Global::GlobalMap Global::globalMap_;
+thread::Mutex Global::globalMutex_;
 
 //-----------------
 // Global.cpp modification
-Global& Global::getInstance(const string&)
+Global& Global::getInstance()
 {
    if(global_ == NULL) {
-     global_ = new Global();
-     Object_Lifetime_Manager::instance()->manage_object(Constants::XB_GLOBAL_KEY, global_);  // if not pre-allocated.
+      global_ = new Global();
+      Object_Lifetime_Manager::instance()->manage_object(Constants::XB_GLOBAL_KEY, global_);  // if not pre-allocated.
    }
    return *global_;
+}
+
+GlobalRef Global::createInstance(const string& name, const Property::MapType *propertyMapP, bool holdReferenceCount)
+{
+   if (name == "") {
+     throw XmlBlasterException(USER_ILLEGALARGUMENT,
+                  "UNKNOWN NODE",
+                  string("Global::createInstance"),
+                   "Please call createInstance with none empty name argument");
+   }
+   if (name == "default") {
+     throw XmlBlasterException(USER_ILLEGALARGUMENT,
+                  "UNKNOWN NODE",
+                  string("Global::createInstance"),
+                   "Please call getInstance to access the 'default' Global instance");
+   }
+
+   thread::Lock lock(globalMutex_);
+
+   {
+      GlobalRefMap::iterator iter = globalRefMap_.find(name);
+      if (iter != globalRefMap_.end()) {
+         GlobalRef gr = (*iter).second;
+         return gr;
+      }
+   }
+   {
+      GlobalMap::iterator iter = globalMap_.find(name);
+      if (iter != globalMap_.end()) {
+         Global* glP = (*iter).second;
+         return GlobalRef(glP);
+      }
+   }
+
+   if (holdReferenceCount) {
+      GlobalRef globRef = GlobalRef(new Global());
+      globRef->instanceName_ = name;
+      if (propertyMapP != NULL) {
+         globRef->initialize(*propertyMapP);
+      }
+      GlobalRefMap::value_type el(name, globRef);
+      globalRefMap_.insert(el);
+      return globRef;
+   }
+   else {
+      Global* glP = new Global();
+      glP->instanceName_ = name;
+      if (propertyMapP != NULL) {
+         glP->initialize(*propertyMapP);
+      }
+      GlobalMap::value_type el(name, glP);
+      globalMap_.insert(el);
+      return GlobalRef(glP);
+   }
+}
+
+const string& Global::getInstanceName()
+{
+   if (this->instanceName_ == "" && this == global_) {
+      this->instanceName_ = "default";
+   }
+   return this->instanceName_;
+}
+
+bool Global::containsInstance(const std::string &name)
+{
+   bool ret = globalRefMap_.count(name) != 0;
+   if (ret) {
+      return true;
+   }
+   return globalMap_.count(name) != 0;
+}
+
+bool Global::destroyInstance(const std::string &name)
+{
+   if (name == "") {
+      return false;
+   }
+   if (name == "default") {
+     throw XmlBlasterException(USER_ILLEGALARGUMENT,
+                  "UNKNOWN NODE",
+                  string("Global::destroyInstance"),
+                   "The 'default' Global instance is handled by the life time manager and can't be destroyed manually");
+   }
+   thread::Lock lock(globalMutex_);
+   {
+      bool ret = globalRefMap_.count(name) != 0;
+      if (ret) {
+         globalRefMap_.erase(name);
+         return ret;
+      }
+   }
+   {
+      bool ret = globalMap_.count(name) != 0;
+      if (ret) {
+         globalMap_.erase(name);
+         return ret;
+      }
+   }
+   return false;
 }
 
 Global& Global::initialize(int args, const char * const argv[])

@@ -15,6 +15,8 @@ Version:   $Id$
 #include <util/XmlBlasterException.h>
 #include <util/Property.h>
 #include <util/SessionName.h>
+#include <util/ReferenceCounterBase.h>
+#include <util/ReferenceHolder.h>
 
 #include <client/protocol/CbServerPluginManager.h>
 #include <util/dispatch/DispatchManager.h>
@@ -51,17 +53,22 @@ typedef struct ArgsStruct {
    char **argv;
 } ArgsStruct_T;
 
+class org::xmlBlaster::util::Global;
+typedef org::xmlBlaster::util::ReferenceHolder<org::xmlBlaster::util::Global> GlobalRef;
 
 /**
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
  */
-class Dll_Export Global {
+class Dll_Export Global : public ReferenceCounterBase {
 
 friend Global& getInstance(const std::string &instanceName);
 
 // required for managed objects
 template <class TYPE> friend class ManagedObject;
 friend class Object_Lifetime_Manager;
+
+typedef std::map<std::string, GlobalRef> GlobalRefMap;
+typedef std::map<std::string, Global*> GlobalMap;
 
 private:
    const std::string      ME;
@@ -75,10 +82,13 @@ private:
    Timeout*               pingTimer_;
    std::string            id_;
    std::string            immutableId_;
-   thread::Mutex          pingerMutex_;
-   // added for managed objects.
-   org::xmlBlaster::util::SessionNameRef sessionName_;
-   static Global*         global_; // becomes pointer
+   std::string            instanceName_; /**< The name of the global as registered with createInstance(name) */
+   thread::Mutex          pingerMutex_;  /**< mutex to protect the ping thread */
+   static thread::Mutex   globalMutex_;  /**< mutex for the global class */
+   org::xmlBlaster::util::SessionNameRef sessionName_;  /**< added for managed objects. */
+   static GlobalRefMap    globalRefMap_; /**< Map containing all further Global instances, see createInstance(), the Ref prevents the automatic destruction */
+   static GlobalMap       globalMap_;    /**< Map containing all further Global pointer instances, see createInstance() */
+   static Global*         global_;       /**< The first singleton instance */
 
    void copy();
 
@@ -133,9 +143,47 @@ public:
    void freeArgs(ArgsStruct_T &args);
 
    /**
-    * The method to call to get the singleton org::xmlBlaster::util::Timestamp object.
+    * This method delivers the singleton instance. 
+    * @return Always the same first Global instance
     */
-   static Global& getInstance(const std::string &instanceName="default");
+   static Global& getInstance();
+
+   /**
+    * Get or create another instance. 
+    * @param name The unique name of the Global instance, "default" can't be used,
+    *             it is reserved for the first singleton instance
+    * @param propertyMapP The optional configuration
+    * @param holdReferenceCount If true we increment the reference counter on this instance, only
+    *                           an explicit call to destroyInstance() will free the memory.
+    *                           If false (which is default) only the caller code increments the reference counter,
+    *                           on last instance the Global is deleted (the memory is freed) automatically,
+    *                           the Global destructor automatically calls destroyInstance() in this case.
+    * @return The named Global instance, if it does not exist it is created
+    * @throws XmlBlasterException On error
+    */
+   GlobalRef createInstance(const std::string& name, const Property::MapType *propertyMapP=NULL, bool holdReferenceCount=false);
+
+   /**
+    * Check if the Global instance is known. 
+    * @param name The unique name of the Global instance, "default" can't be used.
+    * @return true If the Global instance is known
+    */
+   bool containsInstance(const std::string& name);
+
+   /**
+    * Destroying a named instance. 
+    * @param name The unique name of the Global instance, the "default" instance can't be destroyed
+    *             with this method
+    * @return true if one instance was removed
+    * @throws XmlBlasterException On wrong arguments
+    */
+   bool destroyInstance(const std::string &instanceName);
+
+   /**
+    * Returns the name as registered with createInstance(). 
+    * @return "default" for the first singleton instance
+    */
+   const std::string& getInstanceName();
 
    /**
     * Allows you to query if user wants help.
@@ -157,11 +205,11 @@ public:
     */
    static std::string& getRevisionNumber();
 
-	/**
-	 * String containing getVersion() and getRevisionNumber()
-	 * @return For example "0.91 #12107M"
-	 */
-	static std::string& getReleaseId();
+   /**
+    * String containing getVersion() and getRevisionNumber()
+    * @return For example "0.91 #12107M"
+    */
+   static std::string& getReleaseId();
 
    /**
     * The timestamp field is automatically set by ant on compilation (see filter token in build.xml)
@@ -207,14 +255,14 @@ public:
 
    /**
     * If no log is found with that name, one is created. 
-	 * You should have initialized Global with your properties to
-	 * before your first call to getLog(), for example:
-	 * <pre>
-	 * std::map<std::string, std::string, std::less<std::string> > propertyMap;
-	 * ... // insert configuration key / values
+    * You should have initialized Global with your properties to
+    * before your first call to getLog(), for example:
+    * <pre>
+    * std::map<std::string, std::string, std::less<std::string> > propertyMap;
+    * ... // insert configuration key / values
     * Global& myGlobal = Global::getInstance().initialize(propertyMap);
-	 * I_Log& log = myGlobal.getLog("BlasterClient"));
-	 * ...
+    * I_Log& log = myGlobal.getLog("BlasterClient"));
+    * ...
     * </pre>
     */
    org::xmlBlaster::util::I_Log& getLog(const std::string &logName="org.xmlBlaster");
@@ -245,15 +293,15 @@ public:
      */
     static const std::string& getBoolAsString(bool val);
 
-	 /**
-	  * Set the clients session name, changes after login
-	  */
-	 void setSessionName(org::xmlBlaster::util::SessionNameRef sessionName);
+         /**
+          * Set the clients session name, changes after login
+          */
+         void setSessionName(org::xmlBlaster::util::SessionNameRef sessionName);
 
-	 /**
-	  * Get the clients session name, changes after login
-	  */
-	 org::xmlBlaster::util::SessionNameRef getSessionName() const;
+         /**
+          * Get the clients session name, changes after login
+          */
+         org::xmlBlaster::util::SessionNameRef getSessionName() const;
 
     /**
      * Access the unique local id (as a String), the absolute session name. 
@@ -302,11 +350,11 @@ public:
      */
     void setId(const std::string& id);
     
-	 /**
-	  * Set by XmlBlasterAccess/ConnectionHandler to relative session name
-	  * @param a unique id, for example "client/joe/2"
-	  */
-	 void setImmutableId(const std::string& id);
+         /**
+          * Set by XmlBlasterAccess/ConnectionHandler to relative session name
+          * @param a unique id, for example "client/joe/2"
+          */
+         void setImmutableId(const std::string& id);
 };
 
 }}}; // namespace
