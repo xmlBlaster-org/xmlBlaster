@@ -7,7 +7,7 @@ Comment:   Example how to receive asynchronous callback messages from xmlBlaster
            with C and XmlRpc (see README)
            See http://xmlrpc-c.sourceforge.net/
 
-Author:    ruff@swand.lake.de
+Author:    xmlBlaster@marcelruff.info
 
 Compile:   Read xmlrpc-c/doc/overview.txt
            SERVER_CFLAGS=`xmlrpc-c-config abyss-server --cflags`

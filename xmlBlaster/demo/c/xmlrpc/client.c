@@ -8,7 +8,7 @@ Comment:   Example how to access xmlBlaster with C and XmlRpc
            Usually you start first the callbackServer to receive
            asynchronous update from xmlBlaster as well (see README)
 
-Author:    ruff@swand.lake.de
+Author:    xmlBlaster@marcelruff.info
 
 Compile:   Read xmlrpc-c/doc/overview.txt
            CLIENT_CFLAGS=`xmlrpc-c-config libwww-client --cflags`
