@@ -9,40 +9,58 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.UpdateReturnQos;
+import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnit;
 
 import java.lang.InterruptedException;
+import java.util.Vector;
+
+import junit.framework.Assert;
 
 /**
  * Intercepts incoming message in update() and collects them in a Vector for nice handling. 
  */
-public class MsgInterceptor implements I_Callback 
+public class MsgInterceptor extends Assert implements I_Callback 
 {
-   private static String ME = "Testsuite.MsgInterceptor";
+   private String ME = "Testsuite.MsgInterceptor";
    private final Global glob;
    private final LogChannel log;
    private I_Callback testsuite = null;
-   private Msgs msgs = null;
+   //private Msgs msgs = null;
+   private int verbosity = 2;
 
    /**
     * @param testsuite If != null your update() variant will be called as well
     */
-   public MsgInterceptor(Global glob, LogChannel log, I_Callback testsuite) throws XmlBlasterException {
+   public MsgInterceptor(Global glob, LogChannel log, I_Callback testsuite) {
       this.glob = glob;
       this.log = log;
       this.testsuite = testsuite;
-      this.msgs = new Msgs();
+      //this.msgs = new Msgs();
+   }
+
+   public void setLogPrefix(String prefix) {
+      this.ME = "Testsuite.MsgInterceptor-" + prefix;
    }
 
    /**
-    * Contains all update() messages in a Vector, but not erase events.
+    * 0: no logging
+    * 1: simple logging
+    * 2: dump messages on arrival
     */
+   public void setVerbosity(int val) {
+      this.verbosity = val;
+   }
+
+   /*
+    * Contains all update() messages in a Vector, but not erase events.
    public Msgs getMsgs() {
       return this.msgs;
    }
+    */
 
    /**
     * This is the callback method (I_Callback) invoked from xmlBlaster
@@ -50,16 +68,21 @@ public class MsgInterceptor implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
       String contentStr = new String(content);
-      String cont = (contentStr.length() > 10) ? (contentStr.substring(0,10)+"...") : contentStr;
-      /*
-      log.info(ME, "Receiving update of a message oid=" + updateKey.getOid() +
+      
+      if (this.verbosity == 1) {
+         String cont = (contentStr.length() > 10) ? (contentStr.substring(0,10)+"...") : contentStr;
+         log.info(ME, "Receiving update of a message oid=" + updateKey.getOid() +
                    " priority=" + updateQos.getPriority() +
                    " state=" + updateQos.getState() +
                    " content=" + cont);
-      */
-      log.info(ME, "Receiving update of a message cbSessionId=" + cbSessionId + updateKey.toXml() + "\n" + new String(content) + updateQos.toXml());
+      }
+      else if (this.verbosity == 2) {
+         log.info(ME, "Receiving update #" + (count()+1) + " of a message cbSessionId=" + cbSessionId +
+                      updateKey.toXml() + "\n" + new String(content) + updateQos.toXml());
+      }
+
       if (!updateQos.isErased()) {
-         msgs.add(new Msg(cbSessionId, updateKey, content, updateQos));
+         add(new Msg(cbSessionId, updateKey, content, updateQos));
       }
       if (testsuite != null)
          return testsuite.update(cbSessionId, updateKey, content, updateQos);
@@ -96,7 +119,7 @@ public class MsgInterceptor implements I_Callback
       long sum = 0L;
       int countArrived = 0;
       while (true) {
-         countArrived = msgs.getMsgs(oid, state).length;
+         countArrived = getMsgs(oid, state).length;
          if (countArrived >= countExpected)
             return countArrived; // OK, no timeout
          try {
@@ -141,6 +164,101 @@ public class MsgInterceptor implements I_Callback
       }
       catch( InterruptedException i)
       {}
-      return msgs.getMsgs(oid, state).length;
+      return getMsgs(oid, state).length;
+   }
+
+
+   // Holding all messages
+   private Vector updateVec = new Vector();
+   
+   public void add(Msg msg) {
+      this.updateVec.addElement(msg);
+  }
+   
+   public void remove(Msg msg) {
+      this.updateVec.removeElement(msg);
+   }
+   
+   public void clear() { 
+      this.updateVec.clear();
+   }
+
+   /**
+    * Access the updated message filtered by the given oid and state. 
+    * @param oid if null the oid is not checked
+    * @param state if null the state is not checked
+    */
+   public Msg[] getMsgs(String oid, String state) {
+      Vector ret = new Vector();
+      for (int i=0; i<this.updateVec.size(); i++) {
+         Msg msg = (Msg)this.updateVec.elementAt(i);
+         if (
+             (oid == null || oid.equals(msg.getOid())) &&
+             (state == null || state.equals(msg.getState()))
+            )
+            ret.addElement(msg);
+      }
+      return (Msg[])ret.toArray(new Msg[ret.size()]);
+   }
+
+   public Msg[] getMsgs() {
+      return getMsgs(null, null);
+   }
+
+   /**
+    * Access the updated message filtered by the given oid and state. 
+    * @return null or the message
+    * @exception If more than one message is available
+    */
+   public Msg getMsg(String oid, String state) throws XmlBlasterException {
+      Msg[] msgs = getMsgs(oid, state);
+      if (msgs.length > 1)
+         throw new XmlBlasterException("Msgs", "update(oid=" + oid + ", state=" + state + ") " + msgs.length + " arrived instead of zero or one");
+      if (msgs.length == 0)
+         return null;
+      return msgs[0];
+   }
+
+   public int count() {
+      return this.updateVec.size();
+   }
+
+   /**
+    * Compares all messages given by parameter 'expectedArr' and compare
+    * them with the received ones. On failure a junit - assert() is thrown.
+    * <p>
+    * The correct sequence and the message data is checked.
+    * </p>
+    * @param expectedArr The published messages which we expect here as updates
+    * @param secretCbSessionId If not null it is checked as well
+    */
+   public void compareToReceived(MsgUnit[] expectedArr, String secretCbSessionId) {
+      assertEquals("We have received " + count() + " messages only", expectedArr.length, count());
+      
+      for(int i=0; i<expectedArr.length; i++) {
+         MsgUnit expected = expectedArr[i];
+         Msg msg = (Msg)this.updateVec.elementAt(i);
+         if (secretCbSessionId != null) {
+            assertEquals("The secretCbSessionId is wrong", secretCbSessionId, msg.getCbSessionId());
+         }
+         msg.compareMsg(expected);
+      }
+   }
+
+   /**
+    * Compares all messages given by parameter 'expectedArr' and compare
+    * them with the received ones. On failure a junit - assert() is thrown.
+    * <p>
+    * Especially the sequence and the rcvTimestamp is checked.
+    * </p>
+    * @param expectedArr The published messages which we expect here as updates
+    */
+   public void compareToReceived(PublishReturnQos[] expectedArr) {
+      assertEquals("We have received " + count() + " messages only", expectedArr.length, count());
+
+      for(int i=0; i<expectedArr.length; i++) {
+         Msg msg = (Msg)this.updateVec.elementAt(i);
+         msg.compareMsg(expectedArr[i]);
+      }
    }
 } // MsgInterceptor

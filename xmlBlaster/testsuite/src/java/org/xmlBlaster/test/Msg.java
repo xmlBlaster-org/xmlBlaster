@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      Msgs.java
+Name:      Msg.java
 Project:   org.xmlBlasterProject:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
@@ -7,11 +7,16 @@ package org.xmlBlaster.test;
 
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
+import org.xmlBlaster.client.qos.PublishReturnQos;
+import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.util.qos.MsgQosData;
+
+import junit.framework.Assert;
 
 /**
  * Helper for testsuite to store a received message with update()
  */
-public class Msg
+public class Msg extends Assert
 {
    private String cbSessionId;
    private UpdateKey updateKey;
@@ -63,4 +68,27 @@ public class Msg
    public String getState() {
       return (this.updateQos == null) ? null : this.updateQos.getState();
    }
+
+   /**
+    * Check if the given message (usually published) is the one we hold (usually updated).
+    * throws a junit assert on error
+    * @param msgUnit the expected message
+    */
+   public void compareMsg(MsgUnit msgUnit) {
+      MsgQosData qos = (MsgQosData)msgUnit.getQosData();
+      assertEquals("The keyOid is wrong", msgUnit.getKeyOid(), updateKey.getOid());
+      assertEquals("The persistence flag is lost", qos.isPersistent(), updateQos.isPersistent());
+      assertEquals("The message content length is corrupted", msgUnit.getContent().length, content.length);
+      assertTrue("The message content is corrupted, expected='"+
+                 msgUnit.getContentStr()+"' but was '"+new String(content)+"'", msgUnit.sameContent(content));
+   }   
+
+   /**
+    * Check if the given PublishReturnQos (from a publisher) is the one we hold (usually updated).
+    * throws a junit assert on error
+    * @param retQos the expected data
+    */
+   public void compareMsg(PublishReturnQos retQos) {
+      assertEquals("The receive timestamp is corrupted", retQos.getRcvTimestamp(), updateQos.getRcvTimestamp());
+   }   
 }
