@@ -4,26 +4,31 @@
 <requirement id='protocol.email' type='NEW' prio='LOW' status="INWORK">
    <topic>XmlBlaster has a protocol plugin to support access via EMAIL</topic>
    <description>
+     <p>
      It is possible for a client to send/receive messages to xmlBlaster via email. This way the
      user can publish messages or receive updates via a common email client. In such cases there is
      no need of a client (besides the email client).
-     <p/>
+     </p>
+     <p>
      There may be another usage of this protocol: in some cases it makes sense to write a client which
      uses the email protocol (transparently to the user) because the combination 
      harware, platform and implementation language does not offer a better communication alternative 
      or for example to bypass firewalls etc.
-     <p/>
+     </p>
+     <p>
      A further usage would be to send / receive messages from a cellular phone via sms.
-
+     </p>
      <p>
      Even if the email protocol in its nature has sessionless characteristics, we will create a session
      since this protocol may be used transparently by clients written following the protocol 
      abstraction paradigm. So before any publishing or subscription can be done, the user must 
      connect to get a session id.
+     </p>
      <p>
      To simplify the usage, it is permitted to send any number of commands in a single email. It is 
      even permitted to send messages (publish messages) where the content of the message is sent as
      an attachment. This is useful where the contents are binary data (for example pictures).
+     </p>
      <p>
      Every request to the xmlBlaster server must be valid xml and start with the element tag 
      'xmlBlaster'. If that is not the case, it will be threated in the exception handling. The 
@@ -40,9 +45,11 @@
            xmlBlaster). 
        </li>    
      </ul>
+     </p>
      <p>
      The element tag 'xmlBlaster' accepts an attribute <pre>sendAck='true | false (true)'</pre>
      </p>
+     <p>
      Commands which normally need a sessionId as a parameter have an alternative without sessionId
      for such cases where a 'connect' is done in the same email. This way you don't need to wait for
      the acknowledge telling you your session id and the result is a faster protocol and less 
@@ -52,7 +59,7 @@
      Before a publish or a subscribe can be done, connect must be invoked. This can be done on the
      same email (in which case you don't need to specify your sessionId for the further commands).
      </p>
-      <p>
+      <p/>
 
        <pre>
 
@@ -60,12 +67,12 @@
    &lt;connect>
       &lt;securityPlugin type='simple' version='1.0'>
          &lt;xmlBlaster:user>fritz&lt;/xmlBlaster:user>
-         &lt;passwd>&lt;![CDATA[secret    ]]>&lt;/passwd>
+         &lt;passwd>&lt;![CDATA[secret    ]]&gt;&lt;/passwd>
       &lt;/securityPlugin>
    &lt;/connect>
    &lt;publish>
       &lt;key>xxxx&lt;/key>
-      &lt;content xlink='sss.jpg'/>&lt;!-- this looks for the attachment sss.jpg -->
+      &lt;content xlink='sss.jpg'/>
       &lt;qos>&lt;/qos>
    &lt;/publish>
    &lt;subscribe/>
@@ -74,10 +81,10 @@
 
        </pre>
 
-     </p>
 
 </description>
-   <configuration where="server">
+   
+    <configuration where="server">
       <table border="1">
          <tr>
             <td>Property</td>
@@ -91,7 +98,7 @@
             <td>localhost</td>
             <td>Specify a hostname where the EMAIL server runs
             </td>
-            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="no.gif" border="0" alt="no" /></td>
          </tr>
 
          <tr>
@@ -99,23 +106,31 @@
             <td>xmlBlaster</td>
             <td>The EMAIL user account
                 </td>
-            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="no.gif" border="0" alt="no" /></td>
+         </tr>
+
+         <tr>
+            <td>email.type</td>
+            <td>xmlBlaster</td>
+            <td>The EMAIL type to use (either pop3 or imap)
+                </td>
+            <td><img src="no.gif" border="0" alt="no" /></td>
          </tr>
 
          <tr>
             <td>ProtocolPlugin[EMAIL][1.0]</td>
-            <td><pre>org.xmlBlaster.protocol.email.EmailDriver</td>
+            <td><pre>org.xmlBlaster.protocol.email.EmailDriver</pre></td>
             <td>You need to activate EMAIL support in your xmlBlaster.properties file
             </td>
-            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="no.gif" border="0" alt="no" /></td>
          </tr>
 
          <tr>
             <td>CbProtocolPlugin[EMAIL][1.0]</td>
-            <td><pre>org.xmlBlaster.protocol.email.CallbackEmailDriver</td>
+            <td><pre>org.xmlBlaster.protocol.email.CallbackEmailDriver</pre></td>
             <td>You need to activate EMAIL support in your xmlBlaster.properties file
             </td>
-            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="no.gif" border="0" alt="no" /></td>
          </tr>
       </table>
    </configuration>
@@ -128,10 +143,10 @@
    </ol>
    </todo>
    <see type="REQ">protocol</see>
-   <see type="API">org.xmlBlaster.protocol.email.EmailDriver</see>
+   <!-- <see type="API">org.xmlBlaster.protocol.email.EmailDriver</see> -->
    <author>laghi@swissinfo.org</author>
    <date>2002 09 23</date>
-   <revision>$Revision: 1.2 $</revision>
+   <revision>$Revision: 1.3 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
