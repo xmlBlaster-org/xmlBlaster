@@ -320,3 +320,11 @@ only the SNMP subagent module jax.jar is GPL only!
   Used to generate java parser for queries to ClientProperties in org.xmlBlaster.util.lexical
   http://www.cs.princeton.edu/~appel/modern/java/CUP/
 
+39) jzlib.jar
+=============
+   BSD license
+   JZlib is a re-implementation of zlib compression library in pure Java.
+   Compiled for JDK target 1.2
+   http://www.jcraft.com/jzlib/
+
+
