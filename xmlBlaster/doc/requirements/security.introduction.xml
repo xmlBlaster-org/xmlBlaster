@@ -122,6 +122,7 @@
    <p>(Session, Subject, Right, Role, Group, Security, Identity, Authentication, Authorization, Access Control (AC), Message Protection, ...)</p>
 </description>
 <see type='REQ'>security.development.serverPlugin.howto</see>
+<see type="REQ">security.htpasswd</see>
 <!-- see type='REQ'>security.development.clientPlugin.howto</see>
 <see type='REQ'>security.administration.howto</see -->
 </requirement>

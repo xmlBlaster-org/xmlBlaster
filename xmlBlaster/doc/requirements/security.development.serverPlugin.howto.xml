@@ -379,6 +379,8 @@
 </description>
 <example>
 </example>
+<see type="REQ">security.introduction</see>
+<see type="REQ">security.htpasswd</see>
 <see type="API">org.xmlBlaster.authentication.plugins.I_Manager</see>
 <see type="API">org.xmlBlaster.authentication.plugins.I_Session</see>
 <see type="API">org.xmlBlaster.authentication.plugins.I_Subject</see>
