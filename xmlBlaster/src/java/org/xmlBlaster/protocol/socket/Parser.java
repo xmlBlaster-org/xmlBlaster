@@ -3,14 +3,14 @@ Name:      Parser.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Parser class for raw socket messages
-Version:   $Id: Parser.java,v 1.6 2002/02/13 22:11:12 ruff Exp $
+Version:   $Id: Parser.java,v 1.7 2002/02/14 14:59:20 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
 import org.xmlBlaster.util.Log;
 
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.XmlBlasterImpl;
+import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
 import java.io.IOException;
@@ -48,8 +48,8 @@ import java.util.Vector;
  *  Testing qos/key
  *  |        70**I**17711*get*oxf6hZs**<qos></qos>*<key oid='ooo'></key>*0*|
  *
- *  Testing qos
- *  |        49**I**17711*get*oxf6hZs**<qos></qos>**0*|
+ *  Testing publish return with qos
+ *  |        48**R**17711*publish*oxf6hZs**<qos/>**0*|
  *
  *  Testing nothing
  *  |        38**I**17711*get*oxf6hZs****0*|
@@ -130,28 +130,43 @@ public class Parser extends Converter
    }
 
    /**
-    * Set a unique ID (unique for this client), it
+    * Use this when sending a message.
+    * <p>
+    * Get a unique ID (unique for this client), it
     * will be bounced back with the return value or with an
-    *   exception occurred during this request
+    * exception occurred during this request
+    * </p>
+    * @param praefix If desired you can specify a prefix for the request ID, e.g. "joe:"
+    * @return An ID (unique in this JVM scope), e.g. "joe:3400" or "3400" if praefix is null
     */
-   public String getRequestId() {
+   public String createRequestId(String praefix) {
       if (this.requestId == null || this.requestId.length() < 1) {
+         if (praefix == null) praefix = "";
          synchronized(Parser.class) {
             if (this.counter >= (Long.MAX_VALUE-1L)) this.counter = 0L;
             this.counter++;
-            this.requestId = ""+this.counter;
+            this.requestId = praefix+this.counter;
          }
       }
       return this.requestId;
    }
 
-   /** For example XmlBlasterImpl.PUBLISH */
+   /**
+    * Use this when receiving a message.
+    * @return The received request ID
+    */
+   public String getRequestId() {
+      if (requestId == null) Log.error(ME, "getRequestId returns null");
+      return this.requestId;
+   }
+
+   /** For example Constants.PUBLISH */
    public void setMethodName(String methodName) {
       this.methodName = methodName;
    }
 
    /**
-    * For example XmlBlasterImpl.PUBLISH
+    * For example Constants.PUBLISH
     * @return unchecked
     */
    public String getMethodName() {
@@ -171,11 +186,19 @@ public class Parser extends Converter
 
    /** Enable checksum? */
    public void setChecksum(boolean checksum) {
+      if (checksum == true) {
+         Log.warn(ME, "Checksum for raw socket message is not supported");
+         return;
+      }
       this.checksum = checksum;
    }
    
    /** Compress message? */
    public void setCompressed(boolean compressed) {
+      if (compressed == true) {
+         Log.warn(ME, "Compression for raw socket message is not supported");
+         return;
+      }
       this.compressed = compressed;
    }
 
@@ -234,8 +257,47 @@ public class Parser extends Converter
       msgVec.add(msg);
    }
 
+   /**
+    * Returns all messages in a Vector
+    */
    public Vector getMessages() {
       return msgVec;
+   }
+
+   /**
+    * Returns all messages as an array
+    */
+   public MessageUnit[] getMessageArr() {
+      if (msgVec == null) return new MessageUnit[0];
+      MessageUnit[] arr = new MessageUnit[msgVec.size()];
+      for (int ii=0; ii<msgVec.size(); ii++) {
+         arr[ii] = (MessageUnit)msgVec.elementAt(ii);
+      }
+      return arr;
+   }
+
+   /**
+    * Response is usually only a QoS
+    */
+   public String getQos() {
+      if (msgVec == null || msgVec.isEmpty()) {
+         Log.warn(ME, "getQos() is called without having a response");
+         return "<qos></qos>";
+      }
+      MessageUnit msg = (MessageUnit)msgVec.elementAt(0);
+      return msg.getQos();
+   }
+
+   /**
+    * Response is usually only a QoS
+    */
+   public XmlBlasterException getException() {
+      if (msgVec == null || msgVec.isEmpty()) {
+         Log.warn(ME, "getException() is called without having an exception");
+         return new XmlBlasterException(ME, "Invalid exception");
+      }
+      MessageUnit msg = (MessageUnit)msgVec.elementAt(0);
+      return new XmlBlasterException(msg.getQos(), msg.getXmlKey());
    }
 
    /**
@@ -255,7 +317,7 @@ public class Parser extends Converter
          msgLength = toLong(in);
 
          if (msgLength == 10) {
-            setMethodName(XmlBlasterImpl.PING);
+            setMethodName(Constants.PING);
             return; // The shortest ping ever
          }
 
@@ -336,15 +398,15 @@ public class Parser extends Converter
     * @return true if method is known
     */
    public static boolean checkMethodName(String method) {
-      if (XmlBlasterImpl.GET.equals(method) ||
-          XmlBlasterImpl.ERASE.equals(method) ||
-          XmlBlasterImpl.PUBLISH.equals(method) ||
-          XmlBlasterImpl.SUBSCRIBE.equals(method) ||
-          XmlBlasterImpl.UNSUBSCRIBE.equals(method) ||
-          XmlBlasterImpl.UPDATE.equals(method) ||
-          XmlBlasterImpl.PING.equals(method) ||
-          XmlBlasterImpl.CONNECT.equals(method) ||
-          XmlBlasterImpl.DISCONNECT.equals(method))
+      if (Constants.GET.equals(method) ||
+          Constants.ERASE.equals(method) ||
+          Constants.PUBLISH.equals(method) ||
+          Constants.SUBSCRIBE.equals(method) ||
+          Constants.UNSUBSCRIBE.equals(method) ||
+          Constants.UPDATE.equals(method) ||
+          Constants.PING.equals(method) ||
+          Constants.CONNECT.equals(method) ||
+          Constants.DISCONNECT.equals(method))
           return true;
       return false;
    }
@@ -398,7 +460,7 @@ public class Parser extends Converter
          out.write(NULL_BYTE); // byte5
          out.write((byte)49);  // '1'
 
-         out.write(getRequestId().getBytes());
+         out.write(createRequestId(null).getBytes());
          out.write(NULL_BYTE);
 
          out.write(getMethodName().getBytes());
@@ -498,7 +560,7 @@ public class Parser extends Converter
             Parser parser = new Parser();
             parser.setType(Parser.INVOKE_TYPE);
             parser.setRequestId("7711");
-            parser.setMethodName(XmlBlasterImpl.PUBLISH);
+            parser.setMethodName(Constants.PUBLISH);
             parser.setSessionId("oxf6hZs");
             parser.setChecksum(false);
             parser.setCompressed(false);
@@ -528,7 +590,7 @@ public class Parser extends Converter
             Parser parser = new Parser();
             parser.setType(Parser.INVOKE_TYPE);
             parser.setRequestId("7711");
-            parser.setMethodName(XmlBlasterImpl.PUBLISH);
+            parser.setMethodName(Constants.PUBLISH);
             parser.setSessionId("oxf6hZs");
             parser.setChecksum(false);
             parser.setCompressed(false);
@@ -560,7 +622,7 @@ public class Parser extends Converter
             Parser parser = new Parser();
             parser.setType(Parser.INVOKE_TYPE);
             parser.setRequestId("7711");
-            parser.setMethodName(XmlBlasterImpl.GET);
+            parser.setMethodName(Constants.GET);
             parser.setSessionId("oxf6hZs");
             parser.setChecksum(false);
             parser.setCompressed(false);
@@ -584,13 +646,13 @@ public class Parser extends Converter
          }
 
 
-         testName = "Testing qos";
+         testName = "Testing qos return";
          System.out.println("\n----------------------\n"+testName);
          {
             Parser parser = new Parser();
             parser.setType(Parser.RESPONSE_TYPE);
             parser.setRequestId("7711");
-            parser.setMethodName(XmlBlasterImpl.PUBLISH);
+            parser.setMethodName(Constants.PUBLISH);
             parser.setSessionId("oxf6hZs");
             parser.setChecksum(false);
             parser.setCompressed(false);
@@ -619,7 +681,7 @@ public class Parser extends Converter
             Parser parser = new Parser();
             parser.setType(Parser.INVOKE_TYPE);
             parser.setRequestId("7711");
-            parser.setMethodName(XmlBlasterImpl.GET);
+            parser.setMethodName(Constants.GET);
             parser.setSessionId("oxf6hZs");
             parser.setChecksum(false);
             parser.setCompressed(false);
@@ -669,7 +731,7 @@ public class Parser extends Converter
             Parser parser = new Parser();
             parser.setType(Parser.EXCEPTION_TYPE);
             parser.setRequestId("7711");
-            parser.setMethodName(XmlBlasterImpl.PUBLISH);
+            parser.setMethodName(Constants.PUBLISH);
             parser.setSessionId("oxf6hZs");
             parser.setChecksum(false);
             parser.setCompressed(false);
@@ -700,7 +762,7 @@ public class Parser extends Converter
             Parser parser = new Parser();
             parser.setType(Parser.RESPONSE_TYPE);
             parser.setRequestId("7711");
-            parser.setMethodName(XmlBlasterImpl.PUBLISH);
+            parser.setMethodName(Constants.GET);
             //parser.setSessionId("oxf6hZs");
             parser.setChecksum(false);
             parser.setCompressed(false);
@@ -730,7 +792,7 @@ public class Parser extends Converter
             Parser parser = new Parser();
             parser.setType(Parser.RESPONSE_TYPE);
             parser.setRequestId("7711");
-            parser.setMethodName(XmlBlasterImpl.GET);
+            parser.setMethodName(Constants.ERASE);
             //parser.setSessionId("");
             parser.setChecksum(false);
             parser.setCompressed(false);
