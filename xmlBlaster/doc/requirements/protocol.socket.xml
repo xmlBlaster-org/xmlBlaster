@@ -71,13 +71,14 @@ msgLen[10] flag[6] requestId methodName sessionId  lenUnzipped  userData  checkS
       </tr>
       <tr>
          <td>lenUnzipped</td>
-         <td>The length of the uncompressed user data, allows for example in C to simple allocate enough memory. This field is only appended if the flag is set to 'Z' (compressed).</td>
+         <td>The length of the uncompressed user data, allows for example in C to simple allocate enough memory.
+         This field has only a value if the flag is set to 'Z' (compressed), otherwise it is just the terminating '\0'.</td>
          <td>null terminated</td>
       </tr>
       <tr>
          <td>userData</td>
          <td>The arguments of the invoked message (see below)</td>
-         <td>any</td>
+         <td>any (0 is allowed as well)</td>
       </tr>
       <tr>
          <td>checkSum</td>
@@ -184,7 +185,7 @@ msgLen[10] flag[6] requestId methodName sessionId  lenUnzipped  userData  checkS
          <td>QoS{string}, key{string}</td>
          <td>[QoS{string}, key{string}, content{binary}]*</td>
          <td>yes</td>
-         <td>The returned QoS, key, content may be multiple items</td>
+         <td>The returned QoS, key, content may be zero to multiple items</td>
       </tr>
       <tr>
          <td>subscribe</td>
@@ -226,11 +227,11 @@ Example of a publish() return with qos
 
 Example of an empty get()
 
-   "        38**I**17711*get*oxf6hZs****0*"
+   "        34**I**17711*get*oxf6hZs**"
 
-Example of a ping():
+Example of a ping() (with an empty qos):
 
-   "        29**I**11*ping*****0*"
+   "        25**I**11*ping***"
 
 Example of an XmlBlasterException as a response on a publish()
 
@@ -368,7 +369,7 @@ java -jar lib/xmlBlaster.jar -socket.debug 2 -trace[socket] true
    <see type="API">org.xmlBlaster.protocol.socket.SocketDriver</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 02 12</date>
-   <revision>$Revision: 1.18 $</revision>
+   <revision>$Revision: 1.19 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
