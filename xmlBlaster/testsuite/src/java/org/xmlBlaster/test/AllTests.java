@@ -22,7 +22,7 @@ public class AllTests extends junit.framework.TestCase
     junit.framework.TestSuite suite = new junit.framework.TestSuite("Run all xmlBlaster tests");
     suite.addTest(org.xmlBlaster.test.classtest.AllTests.suite());
     suite.addTest(org.xmlBlaster.test.qos.AllTests.suite());
-    suite.addTest(org.xmlBlaster.test.msgexpiry.AllTests.suite());
+    suite.addTest(org.xmlBlaster.test.topic.AllTests.suite());
     suite.addTest(org.xmlBlaster.test.authentication.AllTests.suite());
     suite.addTest(org.xmlBlaster.test.mime.AllTests.suite());
     suite.addTest(org.xmlBlaster.test.dispatch.AllTests.suite());
