@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.49 2000/05/19 15:13:02 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.50 2000/05/24 14:15:32 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
@@ -54,7 +54,7 @@ import java.util.Properties;
  * If the ping fails, the login polling is automatically activated.
  * <p />
  * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http
- * @version $Revision: 1.49 $
+ * @version $Revision: 1.50 $
  * @author $Author: ruff $
  */
 public class CorbaConnection implements ServerOperations
@@ -62,7 +62,7 @@ public class CorbaConnection implements ServerOperations
    private static final String ME = "CorbaConnection";
    protected String[] args = null;
    protected org.omg.CORBA.ORB orb = null;
-   protected org.omg.PortableServer.POA rootPOA;
+   protected org.omg.PortableServer.POA rootPOA = null;
    protected NamingContext nameService = null;
    protected AuthServer authServer = null;
    protected Server xmlBlaster = null;
@@ -249,14 +249,16 @@ public class CorbaConnection implements ServerOperations
 
 
    /**
-    * Accessing the xmlBlaster handle.
+    * Accessing the xmlBlaster handle. 
+    * For internal use, throws an ordinary Exception if xmlBlaster==null
+    * We use this for similar handling as org.omg exceptions.
     * @return Server
-    * @exception if not logged in
     */
-   public Server getXmlBlaster() throws XmlBlasterException
+   private Server getXmlBlaster() throws Exception
    {
-      if (xmlBlaster == null)
-         throw new XmlBlasterException(ME + ".NotLoggedIn", "Sorry, no xmlBlaster handle available, please login first.");
+      if (xmlBlaster == null) {
+         throw new Exception("The xmlBlaster handle is null, no connection available");
+      }
       return xmlBlaster;
    }
 
@@ -266,7 +268,7 @@ public class CorbaConnection implements ServerOperations
     * <p />
     * The found name service is cached, for better performance in subsequent calls
     * @return NamingContext, reference on name service
-    * @exception XmlBlasterException
+    * @exception XmlBlasterException id="NoNameService"
     *                    CORBA error handling if no naming service is found
     */
    NamingContext getNamingService() throws XmlBlasterException
@@ -289,12 +291,12 @@ public class CorbaConnection implements ServerOperations
                        " - try to specify '-iorHost <hostName> -iorPort 7609' to locate xmlBlaster (not using any naming service)\n" +
                        " - or contact your system administrator to start a naming service";
          Log.warning(ME + ".NoNameService", text);
-         throw new XmlBlasterException(ME + ".NoNameService", text);
+         throw new XmlBlasterException("NoNameService", text);
       }
       if (nameServiceObj == null) {
          if (!isReconnectPolling)
             Log.warning(ME + ".NoNameService", "Can't access naming service (null), is there any running?");
-         throw new XmlBlasterException(ME + ".NoNameService", "Can't access naming service (null), is there any running?");
+         throw new XmlBlasterException("NoNameService", "Can't access naming service (null), is there any running?");
       }
       if (Log.TRACE) Log.trace(ME, "Successfully accessed initial orb references for naming service (IOR)");
 
@@ -302,7 +304,7 @@ public class CorbaConnection implements ServerOperations
          nameService = org.omg.CosNaming.NamingContextHelper.narrow(nameServiceObj);
          if (nameService == null) {
             Log.error(ME + ".NoNameService", "Can't access naming service (narrow problem)");
-            throw new XmlBlasterException(ME + ".NoNameService", "Can't access naming service (narrow problem)");
+            throw new XmlBlasterException("NoNameService", "Can't access naming service (narrow problem)");
          }
          if (Log.TRACE) Log.trace(ME, "Successfully narrowed handle for naming service");
          return nameService; // Note: the naming service IOR is successfully evaluated (from a IOR),
@@ -310,7 +312,7 @@ public class CorbaConnection implements ServerOperations
       }
       catch (Exception e) {
          Log.warning(ME + ".NoNameService", "Can't access naming service");
-         throw new XmlBlasterException(ME + ".NoNameService", e.toString());
+         throw new XmlBlasterException("NoNameService", e.toString());
       }
    }
 
@@ -331,6 +333,7 @@ public class CorbaConnection implements ServerOperations
     * </ul>
     * <p />
     * @return a handle on the AuthServer IDL interface
+    * @exception XmlBlasterException id="NoAuthService"
     *
     */
    AuthServer getAuthenticationService() throws XmlBlasterException
@@ -402,13 +405,13 @@ public class CorbaConnection implements ServerOperations
             }
             else {
                Log.error(ME + ".NoAuthService", text);
-               throw new XmlBlasterException(ME + ".NoAuthService", text);
+               throw new XmlBlasterException("NoAuthService", text);
             }
          }
       }
       if (Log.TRACE) Log.trace(ME, "No -ns ...");
 
-      throw new XmlBlasterException(ME + ".NoAuthService", text);
+      throw new XmlBlasterException("NoAuthService", text);
    }
 
 
@@ -537,6 +540,8 @@ public class CorbaConnection implements ServerOperations
 
    /**
     * If we lost the connection to xmlBlaster, handle it
+    * @exception XmlBlasterException id="NoConnect" if we give up to connect<br />
+    *            id="TryingReconnect" if we are in fail save mode and polling for a connection
     */
    private synchronized void handleConnectionException(Exception e) throws XmlBlasterException
    {
@@ -619,7 +624,7 @@ public class CorbaConnection implements ServerOperations
 
 
    /**
-    * Logout from the server. 
+    * Logout from the server.
     * The callback server is removed as well, releasing all CORBA threads.
     * @return true successfully logged out
     *         false failure on logout
@@ -634,12 +639,16 @@ public class CorbaConnection implements ServerOperations
          else
             Log.warning(ME, "Logout! Please note that there are " + recorder.size() + " unsent invokations/messages in the queue");
          shutdownCallbackServer();
+         orb.shutdown(true);
+         orb = null;
          return false;
       }
 
       try {
          authServer.logout(xmlBlaster);
          shutdownCallbackServer();
+         orb.shutdown(true);
+         orb = null;
          xmlBlaster = null;
          return true;
       } catch(XmlBlasterException e) {
@@ -650,6 +659,8 @@ public class CorbaConnection implements ServerOperations
       }
 
       shutdownCallbackServer();
+      orb.shutdown(true);
+      orb = null;
       xmlBlaster = null;
       return false;
    }
@@ -669,6 +680,7 @@ public class CorbaConnection implements ServerOperations
     *
     * @return the BlasterCallback server
     * @exception XmlBlasterException if the BlasterCallback server can't be created
+    *            id="CallbackCreationError"
     */
    public BlasterCallback createCallbackServer(BlasterCallbackOperations callbackImpl) throws XmlBlasterException
    {
@@ -679,7 +691,7 @@ public class CorbaConnection implements ServerOperations
          rootPOA = org.omg.PortableServer.POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
       } catch (Exception e) {
          Log.error(ME + ".CallbackCreationError", "Can't create a BlasterCallback server, RootPOA not found: " + e.toString());
-         throw new XmlBlasterException(ME + ".CallbackCreationError", e.toString());
+         throw new XmlBlasterException("CallbackCreationError", e.toString());
       }
 
       try {
@@ -690,13 +702,13 @@ public class CorbaConnection implements ServerOperations
          return callback;
       } catch (Exception e) {
          Log.error(ME + ".CallbackCreationError", "Can't create a BlasterCallback server, narrow failed: " + e.toString());
-         throw new XmlBlasterException(ME + ".CallbackCreationError", e.toString());
+         throw new XmlBlasterException("CallbackCreationError", e.toString());
       }
    }
 
 
    /**
-    * Shutdown the callback server. 
+    * Shutdown the callback server.
     */
    public void shutdownCallbackServer()
    {
@@ -705,10 +717,19 @@ public class CorbaConnection implements ServerOperations
          return;
       }
 
-      try { rootPOA.the_POAManager().deactivate(false, true); } catch(Exception e) { Log.warning(ME, "POA deactivate failed"); }
-      orb.shutdown(true);
-      rootPOA = null;
-      callback = null;
+      if (rootPOA != null && callback != null) {
+         try {
+            rootPOA.deactivate_object(rootPOA.reference_to_id(callback));
+         } catch(Exception e) { Log.warning(ME, "POA deactivate callback failed"); }
+         callback = null;
+      }
+
+      if (rootPOA != null) {
+         try {
+            rootPOA.the_POAManager().deactivate(true, true);
+         } catch(Exception e) { Log.warning(ME, "POA deactivate failed"); }
+         rootPOA = null;
+      }
       Log.info(ME, "The callback server is shutdown.");
    }
 
