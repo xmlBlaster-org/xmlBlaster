@@ -28,6 +28,7 @@ public class AllTests {
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.PublishQosTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.ConnectQosTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.DisconnectQosTest.class));
+      suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.CommandWrapperTest.class));
       return suite;
    }
 }
