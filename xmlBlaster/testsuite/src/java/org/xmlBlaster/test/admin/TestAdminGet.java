@@ -272,7 +272,7 @@ public class TestAdminGet extends TestCase implements I_Callback
          // HistoryQos historyQos = new HistoryQos(this.glob);
          // historyQos.setNumEntries(3);
          // getQos.setHistoryQos(historyQos);
-         QuerySpecQos querySpecQos = new QuerySpecQos(this.glob, "QueueQuery", "1.0", "maxEntries=3;maxSize=-1;consumable=false;waitingDelay=0");
+         QuerySpecQos querySpecQos = new QuerySpecQos(this.glob, "QueueQuery", "1.0", "maxEntries=3&maxSize=-1&consumable=false&waitingDelay=0");
          getQos.addQuerySpec(querySpecQos);
 
          getOid = "__cmd:client/" + this.sessionName + "/?cbQueueEntries";
