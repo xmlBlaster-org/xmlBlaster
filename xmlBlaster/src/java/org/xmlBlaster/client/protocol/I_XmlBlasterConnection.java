@@ -3,7 +3,7 @@ Name:      I_XmlBlasterConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native Interface to xmlBlaster
-Version:   $Id: I_XmlBlasterConnection.java,v 1.6 2001/09/05 12:21:26 ruff Exp $
+Version:   $Id: I_XmlBlasterConnection.java,v 1.7 2002/02/14 15:01:37 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol;
@@ -55,6 +55,9 @@ public interface I_XmlBlasterConnection
 
    public boolean shutdown();
 
+   /**
+    * Reset the driver on problems
+    */
    public void init();
 
    public String getLoginName();
