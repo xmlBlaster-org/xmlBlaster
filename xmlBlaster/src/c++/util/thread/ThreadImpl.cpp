@@ -47,6 +47,11 @@ class ConditionImpl : public boost::condition {
 
 // ----------------------------- ThreadRunner ----------------------------
 
+/**
+ * This helper class is used by boost only to map their operator() syntax to our java-like run() syntax.
+ * <p>Other threading implementations than boost could call run() directly without this helper class.</p>
+ * This way we ensure a usage of our thread library as it would be a java thread.
+ */
 ThreadRunner::ThreadRunner(Thread& owner) : owner_(owner) 
 {
 }
@@ -59,8 +64,14 @@ void ThreadRunner::operator()()
    catch (...) {
       std::cerr << "ThreadRunner: uncatched exception occurred in the run thread" << std::endl;
    }
-   delete owner_.thread_;
-   owner_.thread_ = NULL;
+//   owner_.thread_ = NULL;
+/*
+   Lock lock(shutdownMutex_);
+   if (owner_) {
+      delete owner_.thread_;
+      owner_.thread_ = NULL;
+   }
+*/
 }
 
 
@@ -70,22 +81,27 @@ Thread::Thread()
 {
     thread_ = NULL;
     runner_ = NULL;
+    isStarted_ = false;
 }
 
 Thread::~Thread() 
 {
+   // runner_.shutdown(); // set the owner to NULL
+/*
    delete thread_;
    thread_ = NULL;
    delete runner_;
    runner_ = NULL;
+*/
 }
 
-void Thread::start()
+bool Thread::start()
 {
-   if (thread_) return;
+   if (isStarted_) return false;
+   isStarted_ = true;
    if (!runner_) runner_ = new ThreadRunner(*this);
-   thread_ = new ThreadImpl(*runner_);
-
+   if (!thread_) thread_ = new ThreadImpl(*runner_);
+   return true;
 }
 
 void Thread::sleepNanos(Timestamp nanoSecondDelay)
@@ -113,7 +129,7 @@ void Thread::sleepSecs(long secs)
 
 void Thread::join() 
 {
-   thread_->join();
+   if (thread_) thread_->join();
 }
 
 
