@@ -182,7 +182,7 @@ final public class DomainToMaster implements I_Plugin, I_MapMsgToMasterId {
          if (ii==0) {
             // Try to find the DOM parsed XmlKey object:
             TopicHandler topicHandler = glob.getRequestBroker().getMessageHandlerFromOid(msgUnit.getKeyOid());
-            if (topicHandler != null) {
+            if (topicHandler != null && topicHandler.hasXmlKey()) {
                xmlKey = topicHandler.getXmlKey();
             }
             else {
