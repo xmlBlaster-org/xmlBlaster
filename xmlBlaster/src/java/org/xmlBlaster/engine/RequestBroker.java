@@ -1497,7 +1497,9 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
                   }
                }
                else {
-                  log.warn(ME, "Cluster manager is not ready, handling message locally");
+                  if (! publishQos.isFromPersistenceStore()) {
+                     log.warn(ME, "Cluster manager is not ready, handling message locally");
+                  }
                }
             }
          }
