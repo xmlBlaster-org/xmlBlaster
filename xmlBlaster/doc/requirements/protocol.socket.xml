@@ -13,9 +13,9 @@
       <p>
       Further this protocol can be used for simple access from other programming languages like <i>C</i>.
       </p>
-      <h3>
+      <h2>
       Protocol specification
-      </h3>
+      </h2>
    <p>
    Design decisions:
    </p>
@@ -140,7 +140,7 @@ msgLen[10] flag[6] requestId methodName secretSessionId lenUnzipped userData che
       <tr>
          <td>disconnect</td>
          <td>QoS{string}</td>
-         <td>""</td>
+         <td>QoS{string}</td>
          <td><img src="ok.gif" border="0" alt="yes" /></td>
          <td>The server sends the response (ACK) immediately from the SOCKET layer.
 	     It can't send it later because the socket is shutdown during server side disconnect</td>
@@ -230,7 +230,7 @@ msgLen[10] flag[6] requestId methodName secretSessionId lenUnzipped userData che
       </tr>
    </table>
    <br />
-      <h3>NOTE:</h3>
+      <h2>NOTE:</h2>
       <p>
       The raw SOCKET address transferred in the connect QoS markup is of the form
       </p>
@@ -295,9 +295,9 @@ The '"' is just to show the boundary, '"' is not part of the message.
    </example>
 
    <example lang="Java" type="HTML">
-      <h3>
+      <h2>
       Java command line examples
-      </h3>
+      </h2>
       <p>
       You can switch on nice debugging output with these options:
       </p>
@@ -341,9 +341,9 @@ ConnectQos qos = new ConnectQos(glob);
    </example>
 
    <example lang="Java" type="HTML">
-      <h3>
+      <h2 id="SSL1">
       Using SSL communication
-      </h3>
+      </h2>
       <p>
       To establish a SSL connection you need to set some configuration properties on command line
       or in xmlBlaster.properties.
@@ -360,16 +360,17 @@ ConnectQos qos = new ConnectQos(glob);
 keytool -genkey -keystore testStore -keyalg RSA
       </pre>
       <p>
-      Now you are ready to start the xmlBlaster server with enabled SSL:
+      Now you are ready to start the xmlBlaster server with enabled SSL (all in one line):
       </p>
       <pre>
-java -jar lib/xmlBlaster.jar -plugin/socket/SSL true -plugin/socket/keystore testStore -plugin/socket/keystorepass testtest
+java -jar lib/xmlBlaster.jar -plugin/socket/SSL true -plugin/socket/keystore testStore
+                                                     -plugin/socket/keystorepass testtest
       </pre>
       <p>
       and finally we start a client to test it:
       </p>
       <pre>
-java HelloWorld3 -protocol SOCKET -plugin/socket/SSL true -plugin/socket/keystore testStore -plugin/socket/keystorepass testtest
+java HelloWorld3 -protocol SOCKET -plugin/socket/SSL true -plugin/socket/keystore testStore
       </pre>
       <p>
       To check the encryption dump the TCP/IP packages for example with tcpdump:
@@ -378,7 +379,19 @@ java HelloWorld3 -protocol SOCKET -plugin/socket/SSL true -plugin/socket/keystor
 tcpdump -i lo -A -vvv dst port 7607
       </pre>
       <p>
-      If you want to establish a SSL SOCKET server besides a unsecure SOCKET server
+      If you encounter problems you can switch on SSL debugging with
+      </p>
+      <pre>
+java -Djavax.net.debug=all ...
+      </pre>
+   </example>
+
+   <example lang="Java" type="HTML">
+      <h2 id="SSL">
+      Configuring SSL <b>and</b> normal SOCKET communication
+      </h2>
+      <p>
+      If you want to establish a SSL SOCKET server besides a plain text SOCKET server
       you need to register two SOCKET protocol drivers each listening on a different port.
       Here is an example of such entries in <tt>xmlBlasterPlugins.xml</tt>:
       </p>
@@ -389,20 +402,55 @@ tcpdump -i lo -A -vvv dst port 7607
    &lt;action do='STOP' onShutdownRunlevel='2' sequence='5'/>   
 &lt;/plugin>
 
-&lt;plugin id='SOCKET_SSL' className='org.xmlBlaster.protocol.socket.SocketDriver'>
+&lt;plugin id='socket_ssl' className='org.xmlBlaster.protocol.socket.SocketDriver'>
    &lt;action do='LOAD' onStartupRunlevel='3' sequence='2' 
            onFail='resource.configuration.pluginFailed'/>
    &lt;action do='STOP' onShutdownRunlevel='2' sequence='5'/>   
-   &lt;attribute id='plugin/socket/SSL'>true&lt;/attribute>
-   &lt;attribute id='plugin/socket/keystore'>testStore&lt;/attribute>
-   &lt;attribute id='plugin/socket/keystorepass'>testtest&lt;/attribute>
+   &lt;attribute id='SSL'>true&lt;/attribute>
+   &lt;attribute id='keystore'>testStore&lt;/attribute>
+   &lt;attribute id='keystorepass'>testtest&lt;/attribute>
    &lt;attribute id='port'>7609&lt;/attribute>
+   &lt;attribute id='startUdpListener'>false&lt;/attribute>
 &lt;/plugin>
+      </pre>
+      <p>
+      Now the plain SOCKET is listening on default port 7607 and the SSL SOCKET
+      listens on port 7609.
+      <br />
+      Additionally we register the client side <i>socket_ssl</i> plugins in <tt>xmlBlaster.properties</tt>:
+      </p>
+      <pre>
+ClientProtocolPlugin[socket_ssl][1.0]=org.xmlBlaster.client.protocol.socket.SocketConnection
+
+ClientCbServerProtocolPlugin[socket_ssl][1.0]=\
+       org.xmlBlaster.client.protocol.socket.SocketCallbackImpl
+      </pre>
+
+      <p>
+      Starting the server is simple as all configuration is done in the above
+      <tt>xmlBlasterPlugins.xml</tt> file (please read the previous example on
+      how to initially generate a keystore):
+      </p>
+      <pre>
+java -jar lib/xmlBlaster.jar
+      </pre>
+      <p>
+      Here we start a client using the default plain text SOCKET connection:
+      </p>
+      <pre>
+java HelloWorld3 -protocol SOCKET
+      </pre>
+      <p>
+      Here we start a client using the secure SSL SOCKET connection:
+      </p>
+      <pre>
+java HelloWorld3 -protocol socket_ssl -plugin/socket_ssl/port 7609 -plugin/socket_ssl/SSL true
+                 -plugin/socket_ssl/keystore testStore
       </pre>
    </example>
 
    <configuration where="server">
-      <h3>Server side configuration</h3>
+      <h2>Server side configuration</h2>
       <table border="1">
          <tr>
             <th>Property</th>
@@ -442,6 +490,14 @@ tcpdump -i lo -A -vvv dst port 7607
             <td>8900</td>
             <td>The local port the socket is bound to.
                 Default is -1 and the operating system chooses an arbitrary port.
+                </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>plugin/socket/startUdpListener</td>
+            <td>true</td>
+            <td>Start a UDP datagram listener socket on server side
                 </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
@@ -561,7 +617,7 @@ tcpdump -i lo -A -vvv dst port 7607
       </table>
    </configuration>
    <configuration where="client">
-      <h3>Additional client side configuration</h3>
+      <h2>Additional client side configuration</h2>
       <p>The Java socket implementation on client side supports
          the same properties as the server (we reuse the same implementation).
          You need to add the "dispatch/callback/" or "dispatch/connection/" prefix
@@ -627,7 +683,7 @@ tcpdump -i lo -A -vvv dst port 7607
       java -Dfile.encoding=ISO8859_1 ... or System.setProperty("file.encoding","Cp850");
       </li>
    </ol>
-   <h3>Note on UDP datagram usage</h3>
+   <h2>Note on UDP datagram usage</h2>
    <p>Each network in the Internet is characterised by a Maximum Transmission Unit (MTU),
       which defines the largest datagram which can be sent on that network.
       Whilst the total length of a datagram can (in theory) be up to 64 KB,
@@ -642,9 +698,11 @@ tcpdump -i lo -A -vvv dst port 7607
    <see type="API">org.xmlBlaster.protocol.socket.SocketDriver</see>
    <see type="API">org.xmlBlaster.protocol.socket.SocketUrl</see>
    <see type="CODE" lang="C">socket/XmlBlasterAccessUnparsed.c</see>
+   <see type="INTERNET" label="SSL tutorial">http://java.sun.com/developer/JDCTechTips/2004/tt0914.html#2</see>
+   <see type="INTERNET" label="SSL reference guide">http://java.sun.com/j2se/1.4.2/docs/guide/security/jsse/JSSERefGuide.html</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 02 12</date>
-   <revision>$Revision: 1.44 $</revision>
+   <revision>$Revision: 1.45 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
