@@ -117,7 +117,15 @@ Else add it manually.
    <!-- =================================================================== -->
    <!-- Help on usage                                                       -->
    <!-- =================================================================== -->
-   <target name="usage">
+   <target name="usage" depends="prepare">
+      <switch value="${os.family}" caseinsensitive="false">
+         <case value="unix">
+            <property name="script" value="build.sh" />
+         </case>
+         <default>
+            <property name="script" value="build.bat" />
+         </default>
+      </switch>
       <echo message=""/>
       <echo message=""/>
       <echo message="xmlBlaster Build file"/>
@@ -140,9 +148,17 @@ Else add it manually.
       <echo message="   k2          --> create the J2EE connector"/>
       <echo message="   jms-adapter --> create the J2EE connector example bean"/>
       <echo message="   dist-client --> create for a typical client the necessary xmlBlasterClient.jar file"/>
+      <echo message="         -DADD_COLLECTION=true add java.util.collection classes for JDK 1.1 clients [false]"/>
+      <echo message="         -DADD_CORBA=false     does not add jacorb.jar, no CORBA support for clients [true]"/>
+      <echo message="         -DADD_XMLRPC=false    does not add xmlrpc.jar, no XML-RPC support for clients [true]"/>
       <echo message=""/>
       <echo message=" See the comments inside the build.xml file for more details."/>
       <echo message="-------------------------------------------------------------"/>
+      <echo message=""/>
+      <echo message="Examples:"/>
+      <echo message="   ${script} clean"/>
+      <echo message="   ${script} all"/>
+      <echo message="   ${script} -DADD_CORBA=false -DADD_COLLECTION=true dist-client"/>
       <echo message=""/>
       <echo message=""/>
    </target>
@@ -442,15 +458,38 @@ Else add it manually.
    <!-- =================================================================== -->
    <!-- Creates the distribution for java clients                           -->
    <!-- =================================================================== -->
-   <target name="dist-client" depends="all">
+   <target name="dist-client"> <!-- depends="all" -->
       <mkdir dir="${dist-client.dir}"/>
       <mkdir dir="${dist-client.dir}/lib"/>
       <mkdir dir="${dist-client.dir}/classes"/>
 
+      <property name="ADD_COLLECTION" value="false"/>
+      <property name="ADD_CORBA" value="true"/>
+      <property name="ADD_XMLRPC" value="true"/>
+
       <unjar src="${lib.dir}/${name}.jar" dest="${dist-client.dir}/classes" />
-      <unjar src="${lib.dir}/jacorb.jar" dest="${dist-client.dir}/classes" />
       <unjar src="${lib.dir}/jutils.jar" dest="${dist-client.dir}/classes" />
-      <unjar src="${lib.dir}/xmlrpc.jar" dest="${dist-client.dir}/classes" />
+      <switch value="${ADD_CORBA}">
+         <case value="true">
+            <echo message="Adding ${lib.dir}/jacorb.jar for CORBA support" />
+            <unjar src="${lib.dir}/jacorb.jar" dest="${dist-client.dir}/classes" />
+         </case>
+         <default></default>
+      </switch>
+      <switch value="${ADD_XMLRPC}">
+         <case value="true">
+            <echo message="Adding ${lib.dir}/xmlrpc.jar for XML-RPC support" />
+            <unjar src="${lib.dir}/xmlrpc.jar" dest="${dist-client.dir}/classes" />
+         </case>
+         <default></default>
+      </switch>
+      <switch value="${ADD_COLLECTION}">
+         <case value="true">
+            <echo message="Adding ${lib.dir}/collections.jar for JDK 1.1x support" />
+            <unjar src="${lib.dir}/collections.jar" dest="${dist-client.dir}/classes" />
+         </case>
+         <default></default>
+      </switch>
       
       <delete includeEmptyDirs="true"><fileset dir="${dist-client.dir}/classes" includes="**/META-INF/**"/></delete>
       <jar destfile="${dist-client.dir}/lib/xmlBlasterClient.jar" basedir="${dist-client.dir}/classes"/>
@@ -458,7 +497,7 @@ Else add it manually.
 
       <echo message="--------------------------------------------"/>
       <echo message="Created ${dist-client.dir}/lib/xmlBlasterClient.jar"/>
-      <echo message="It supports clients with XmlRpc, CORBA and RMI"/>
+      <echo message="It supports xmlBlaster java clients with the above noted protocols"/>
       <echo message="Note: The XML parser support is not included, we expect your XML library."/>
       <echo message="--------------------------------------------"/>
    </target>
