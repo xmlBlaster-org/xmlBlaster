@@ -130,7 +130,14 @@ serverIdl::XmlType connect(in serverIdl::XmlType qos)
     <p>
      If a client subscribes to the same topic multiple times it will
      receive multiple updates of the same message. Setting <i>duplicateUpdates</i>
-     to false will filter the callback to deliver the same message only once.
+     to false will suppress multiple subscribes on the same topic to deliver the same message only once.
+     Note that this setting does not support XPath subscriptions.<br />
+     This setting does reference counting, you need as many unSubscribe() calls as
+     you did subscribe() calls before.<br />
+     This configuration is <b>deprecated</b> and will probably be removed
+     in a future version as the subscribe QoS specific 'multiSubscribe' setting
+     has more functionality and is specific for each <tt>subscribe()</tt>, see
+     requirement <tt>engine.qos.subscribe.multiSubscribe</tt> for more details.
     </p>
    <h3>&lt;queue></h3>
     <p>
