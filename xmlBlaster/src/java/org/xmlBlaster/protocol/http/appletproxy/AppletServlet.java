@@ -373,6 +373,14 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
             qos = ""; 
          if (log.DUMP) log.dump(ME, "qos=\n'" + qos + "'");
 
+         // See http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.script.html
+         String xmlRequest = getParameter(req, "xmlRequest", (String)null);
+         if (log.TRACE) log.trace(ME, "encoded xmlRequest=" + xmlRequest);
+         if (xmlRequest != null) {
+            xmlRequest = this.decode(xmlRequest, ENCODING);
+            if (log.DUMP) log.dump(ME, "xmlRequest=\n'" + xmlRequest + "'");
+         }
+
          if (actionType.equals(I_XmlBlasterAccessRaw.SUBSCRIBE_NAME)) { // "subscribe"
             if (log.TRACE) log.trace(ME, "subscribe arrived ... oid=" + oid + ", key=" + key + ", qos=" + qos);
             
@@ -474,6 +482,18 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
             returnObject = (Hashtable[])arr.toArray(new Hashtable[arr.size()]);
          }
 
+         // TODO: not yet tested
+         else if (actionType.equals("xmlScript")) {
+            // Send xml encoded requests to the xmlBlaster server. 
+            // http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.script.html
+            java.io.Reader reader = new java.io.StringReader(xmlRequest);
+            java.io.OutputStream outStream = new java.io.ByteArrayOutputStream();
+            org.xmlBlaster.client.script.XmlScriptInterpreter interpreter = 
+                new org.xmlBlaster.client.script.XmlScriptInterpreter(glob, xmlBlaster, pushHandler, null, outStream);
+            interpreter.parse(reader);
+            returnObject = outStream.toString();
+         }
+
          else {
             String str = "Unknown or missing 'ActionType=" + actionType + "' please choose 'subscribe' 'unSubscribe' 'erase' etc.";
             log.warn(ME, str);
@@ -489,18 +509,6 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
          writeResponse(res, I_XmlBlasterAccessRaw.EXCEPTION_NAME, XmlBlasterException.convert(this.initialGlobal, ME, "", e).getMessage());
       }
    }
-
-
-
-
-
-
-
-
-
-
-
-
 
    /**
     * Setting the system properties.
