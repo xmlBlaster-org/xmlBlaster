@@ -190,10 +190,11 @@ public class QueueServerEntryTest extends TestCase {
          SessionName receiver = new SessionName(glob, "receiver1");
          String subscriptionId = "subid";
          int redeliverCounter = 2;
+         boolean updateOneway = true;
          org.xmlBlaster.engine.Global global = new org.xmlBlaster.engine.Global();
          MsgUnitWrapper msgWrapper = new MsgUnitWrapper(glob, msgUnit, queue.getStorageId());
          MsgQueueUpdateEntry entry = new MsgQueueUpdateEntry(global, msgWrapper, queue.getStorageId(),
-                                         receiver, subscriptionId);
+                                         receiver, subscriptionId, updateOneway);
          entry.incrRedeliverCounter();
          entry.incrRedeliverCounter();
 
@@ -209,6 +210,7 @@ public class QueueServerEntryTest extends TestCase {
          assertEquals("The state of the entry is different ", state, updateEntry.getState());
          assertEquals("The redeliverCounter of the entry is different ", redeliverCounter, updateEntry.getRedeliverCounter());
          assertEquals("The priority of the entry is different ", entry.getPriority(), updateEntry.getPriority());
+         assertEquals("The oneway of the entry is different ", updateOneway, updateEntry.updateOneway());
          assertEquals("The persistent of the entry is different ", entry.isPersistent(), updateEntry.isPersistent());
          assertEquals("The receiver of the entry is different ", entry.getReceiver().toString(), updateEntry.getReceiver().toString());
          assertEquals("The uniqueId of the entry is different ", entry.getUniqueId(), updateEntry.getUniqueId());
@@ -414,11 +416,11 @@ public class QueueServerEntryTest extends TestCase {
          testSub.setUp();
          testSub.testUpdateEntry();
          testSub.tearDown();
-
+         /*
          testSub.setUp();
          testSub.testHistoryEntry();
          testSub.tearDown();
-
+         */
          long usedTime = System.currentTimeMillis() - startTime;
          testSub.log.info(testSub.ME, "time used for tests: " + usedTime/1000 + " seconds");
       }
