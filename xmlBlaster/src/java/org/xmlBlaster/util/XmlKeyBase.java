@@ -3,7 +3,7 @@ Name:      XmlKeyBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKeyBase.java,v 1.11 1999/11/22 22:43:47 ruff Exp $
+Version:   $Id: XmlKeyBase.java,v 1.12 1999/11/22 23:05:03 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -24,44 +24,44 @@ import org.w3c.dom.Attr;
  * <p>
  * All XmlKey's have the same XML minimal structure:<p>
  * <pre>
- *    <key oid="12345">
- *       <!-- application specific tags -->
- *    </key>
+ *    &lt;key oid="12345">
+ *       &lt;!-- application specific tags -->
+ *    &lt;/key>
  * </pre>
  *
  * where oid is a unique key.
  * <p>
  * A typical <b>publish()</b> would look like:
  * <pre>
- *    <?xml version='1.0' encoding='ISO-8859-1' ?>
- *    <key oid=\"KEY_FOR_SMILEY\" contentMime='text/plain'>
- *    </key>
+ *    &lt;lt;?xml version='1.0' encoding='ISO-8859-1' ?>
+ *    &lt;lt;key oid=\"KEY_FOR_SMILEY\" contentMime='text/plain'>
+ *    &lt;lt;/key>
  * </pre>
  * <br>
  * or
  * <br>
  * <pre>
- *    <?xml version='1.0' encoding='ISO-8859-1' ?>
- *    <key oid='' contentMime='text/xml'>
- *       <AGENT id='192.168.124.10' subId='1' type='generic'>
- *          <DRIVER id='FileProof' pollingFreq='10'>
- *          </DRIVER>
- *       </AGENT>
- *    </key>
+ *    &lt;?xml version='1.0' encoding='ISO-8859-1' ?>
+ *    &lt;key oid='' contentMime='text/xml'>
+ *       &lt;AGENT id='192.168.124.10' subId='1' type='generic'>
+ *          &lt;DRIVER id='FileProof' pollingFreq='10'>
+ *          &lt;/DRIVER>
+ *       &lt;/AGENT>
+ *    &lt;/key>
  * </pre>
  * A typical <b>subscribe()</b> would look like:
  * <pre>
- *    <?xml version='1.0' encoding='ISO-8859-1' ?>
- *    <key oid=\"KEY_FOR_SMILEY\" queryType='EXACT'>
- *    </key>
+ *    &lt;?xml version='1.0' encoding='ISO-8859-1' ?>
+ *    &lt;key oid=\"KEY_FOR_SMILEY\" queryType='EXACT'>
+ *    &lt;/key>
  * </pre>
  * <br>
  * or
  * <pre>
- *    <?xml version='1.0' encoding='ISO-8859-1' ?>
- *    <key oid='' queryType='XPATH'>
+ *    &lt;?xml version='1.0' encoding='ISO-8859-1' ?>
+ *    &lt;key oid='' queryType='XPATH'>
  *       //DRIVER[@id='FileProof']
- *    </key>
+ *    &lt;/key>
  * </pre>
  *
  */
