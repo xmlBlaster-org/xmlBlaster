@@ -3,7 +3,7 @@ Name:      CbQueueProperty.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: CbQueueProperty.h,v 1.1 2002/12/08 19:38:13 laghi Exp $
+Version:   $Id: CbQueueProperty.h,v 1.2 2002/12/09 13:00:35 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -33,9 +33,6 @@ namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
 class CbQueueProperty : public QueuePropertyBase
 {
-private:
-   const string ME; // = "CbQueueProperty";
-
 protected:
 
    /**
@@ -77,6 +74,10 @@ protected:
     */
 public:
    CbQueueProperty(Global& global, const string& relating, const string& nodeId);
+
+   CbQueueProperty(const QueuePropertyBase& prop);
+
+   CbQueueProperty& operator =(const QueuePropertyBase& prop);
 
    /**
     * Show some important settings for logging

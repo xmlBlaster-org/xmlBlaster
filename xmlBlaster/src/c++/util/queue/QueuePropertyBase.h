@@ -3,7 +3,7 @@ Name:      QueuePropertyBase.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.h,v 1.2 2002/12/08 19:38:13 laghi Exp $
+Version:   $Id: QueuePropertyBase.h,v 1.3 2002/12/09 13:00:35 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -57,14 +57,12 @@ typedef vector<AddressBase*> AddressVector;
 
 class QueuePropertyBase
 {
-private:
-   const string ME; //  = "QueuePropertyBase";
-
+   friend class QueuePropertyFactory;
 protected:
+   string  ME; //  = "QueuePropertyBase";
    Global& global_;
    Log&    log_;
 
-protected:
    /** The queue plugin type "CACHE" "RAM" "JDBC" */
    string type_;
 
@@ -129,6 +127,31 @@ protected:
    string nodeId_; // = null;
 
 
+   void copy(const QueuePropertyBase& prop)
+   {
+      type_                = prop.type_;
+      version_             = prop.version_;
+      maxMsgDefault_       = prop.maxMsgDefault_;
+      maxMsgCacheDefault_  = prop.maxMsgCacheDefault_;
+      maxSizeDefault_      = prop.maxSizeDefault_;
+      maxSizeCacheDefault_ = prop.maxSizeCacheDefault_;
+      minExpires_          = prop.maxExpires_;
+      relating_            = prop.relating_;
+      expires_             = prop.expires_;
+      maxMsg_              = prop.maxMsg_;
+      maxSize_             = prop.maxSize_;
+      maxMsgCache_         = prop.maxMsgCache_;
+      storeSwapLevel_      = prop.storeSwapLevel_;
+      storeSwapSize_       = prop.storeSwapSize_;
+      reloadSwapLevel_     = prop.reloadSwapLevel_;
+      reloadSwapSize_      = prop.reloadSwapSize_;
+      maxSizeCache_        = prop.maxSizeCache_;
+      onOverflow_          = prop.onOverflow_;
+      onFailure_           = prop.onFailure_;
+      addressArr_          = prop.addressArr_;
+      nodeId_              = prop.nodeId_;
+   }
+
    /**
     * Configure property settings, add your own defaults in the derived class
     */
@@ -174,6 +197,10 @@ public:
     * e.g. -queue.maxMsg and -queue.maxMsg[heron] will be searched
     */
    QueuePropertyBase(Global& global, const string& nodeId);
+
+   QueuePropertyBase(const QueuePropertyBase& prop);
+
+   QueuePropertyBase& operator =(const QueuePropertyBase& prop);
 
    virtual ~QueuePropertyBase();
 

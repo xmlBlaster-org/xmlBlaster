@@ -33,9 +33,6 @@ namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
 class QueueProperty : public QueuePropertyBase
 {
-private:
-    const string ME;
-
 protected:
 
    /**
@@ -70,6 +67,10 @@ public:
     * e.g. -queue.maxMsg and -queue.maxMsg[heron] will be searched
     */
    QueueProperty(Global& global, const string& nodeId);
+
+   QueueProperty(const QueuePropertyBase& prop);
+
+   QueueProperty& operator =(const QueuePropertyBase& prop);
 
    /**
     * Show some important settings for logging

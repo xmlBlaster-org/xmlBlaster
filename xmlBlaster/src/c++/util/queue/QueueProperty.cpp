@@ -16,10 +16,22 @@ using namespace org::xmlBlaster::util::cfg;
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
    QueueProperty::QueueProperty(Global& global, const string& nodeId) :
-      QueuePropertyBase(global, nodeId), ME("QueueProperty")
+      QueuePropertyBase(global, nodeId)
    {
+      ME = "QueueProperty";
       relating_ = Constants::RELATING_CLIENT;
       initialize();
+   }
+
+   QueueProperty::QueueProperty(const QueuePropertyBase& prop)
+      : QueuePropertyBase(prop)
+   {
+   }
+
+   QueueProperty& QueueProperty::operator =(const QueuePropertyBase& prop)
+   {
+      copy(prop);
+      return *this;
    }
 
    /**
