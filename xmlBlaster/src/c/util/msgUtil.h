@@ -42,7 +42,7 @@ typedef BlobHolder XmlBlasterBlob;
 
 /** Holds a message
     All member pointers are allocated with malloc(), you need to free() them */
-typedef struct MsgUnitStruct {
+typedef struct MsgUnit {
    const char *key;               /* XML formatted ASCII string of message key */
    size_t contentLen;       /* Number of bytes in content */
    const char *content;           /* Raw data (not 0 terminated) */
@@ -105,7 +105,7 @@ Dll_Export extern struct hostent * gethostbyname_re (const char *host,struct hos
 
 #ifdef __cplusplus
 #ifndef XMLBLASTER_C_COMPILE_AS_CPP
-}
+} /* extern "C" */
 #endif
 #endif
 
