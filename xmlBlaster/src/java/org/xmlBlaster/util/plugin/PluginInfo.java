@@ -226,6 +226,42 @@ public class PluginInfo {
       return type + "," + version;
    }
 
+   /**
+    * Dumps the parameters passed to the plugin. So if you defined a property in
+    * the property file like this:
+<pre>
+QueuePlugin[CACHE][1.0]=org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin,\
+                        persistentQueue=JDBC,\
+                        transientQueue=RAM
+</pre>
+    * It will be returnes as a string:
+<pre>
+org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin,persistentQueue=JDBC,transientQueue=RAM
+</pre>
+    * This method can be used to partially change a plugin property like in the
+    * following example:
+<pre>
+  PluginInfo pluginInfo = new PluginInfo(glob, glob.getQueuePluginManager(), "JDBC", "1.0");
+  Properties p = pluginInfo.getParameters();
+  p.setProperty("tablePrefix", "test_");
+  glob.getProperty().set("QueuePlugin[JDBC][1.0]", pluginInfo.dumpPluginParameters());
+</pre>
+    */
+   public String dumpPluginParameters() {
+      String[] arr = this.getParameterArr();
+      StringBuffer buf = new StringBuffer();
+      buf.append(this.className);
+      if (arr.length > 0) buf.append(',');
+
+      char ch = ',';
+      for (int i=0; i< arr.length; i++) {
+         buf.append(arr[i]);
+         if (ch == ',') ch ='='; else ch = ',';
+         if (i !=arr.length-1) buf.append(ch);
+      }
+      return buf.toString();
+   }
+
    /** @return for example "ProtocolPlugin[IOR][1.0]" */
    public String toString() {
       return propertyKey;
