@@ -1,4 +1,4 @@
-#This file was created by <ruff> Fri Jan  7 20:28:52 2000
+#This file was created by <ruff> Mon Jan 10 23:04:02 2000
 #LyX 0.12 (C) 1995-1998 Matthias Ettrich and the LyX Team
 \lyxformat 2.15
 \textclass book
@@ -938,6 +938,110 @@ Publish
 \layout Section
 
 Java-Client
+\layout Standard
+
+One of the first steps is to login to xmlBlaster.
+\layout Standard
+
+The following code snippet does it:
+\layout LyX-Code
+
+public class HelloWorld extends implements I_Callback {
+\layout LyX-Code
+
+
+\protected_separator 
+ ...
+\layout LyX-Code
+
+
+\protected_separator 
+ try {
+\layout LyX-Code
+
+
+\protected_separator 
+ 
+\protected_separator 
+ CorbaConnection connection = new CorbaConnection(); // Find orb
+\layout LyX-Code
+
+
+\protected_separator 
+
+\protected_separator 
+ 
+\protected_separator 
+String loginName = "Tim";
+\layout LyX-Code
+
+
+\protected_separator 
+ 
+\protected_separator 
+ String passwd = "secret";
+\layout LyX-Code
+
+
+\protected_separator 
+
+\protected_separator 
+
+\protected_separator 
+ String qos = "<qos></qos>";
+\layout LyX-Code
+
+
+\protected_separator 
+
+\protected_separator 
+
+\protected_separator 
+ Server xmlBlaster = senderConnection.login(loginName, passwd, qos, this);
+\layout LyX-Code
+
+
+\protected_separator 
+ }
+\layout LyX-Code
+
+
+\protected_separator 
+ catch (Exception e) {
+\layout LyX-Code
+
+
+\protected_separator 
+
+\protected_separator 
+
+\protected_separator 
+ e.printStackTrace();
+\layout LyX-Code
+
+
+\protected_separator 
+ }
+\layout LyX-Code
+
+
+\protected_separator 
+ xmlBlaster.publish(...); // Do your work
+\layout Standard
+
+There is nothing exciting about this, you supply a login name, a password,
+ and some empty quality of service (qos).
+\layout Standard
+
+The 'this' argument in the login method is for the asynchronous Callback
+ method.
+ We will discuss this soon.
+\layout Standard
+
+If you do a second login without a logout, xmlBlaster will do a auto-logout
+ before the login proceeds.
+ So all subscriptions etc.
+ from the previous logins are destroyed.
 \layout Section
 
 Perl-Client
