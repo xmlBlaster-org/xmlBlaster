@@ -27,7 +27,8 @@
 
       // in the update() method you receive a message on client login:
       String loginName = new String(content);
-      System.out.println("Client " + loginName + " logged in");
+      long sessionId = updateQos.getClientProperty("__sessionId", 0L);
+      System.out.println("Client " + loginName + " logged in with session " + sessionId);
       ]]>
    </example>
    <author>xmlBlaster@marcelruff.info</author>
