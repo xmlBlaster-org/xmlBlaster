@@ -215,7 +215,11 @@ namespace util {
       bool getTypedProperty(const std::string& name, int& value, bool env=true);
       bool getTypedProperty(const std::string& name, long& value, bool env=true);
       bool getTypedProperty(const std::string& name, bool& value, bool env=true);
+#     if __LP64__
+      // long === long long === 64 bit
+#     else
       bool getTypedProperty(const std::string& name, org::xmlBlaster::util::Timestamp& value, bool env=true);
+#     endif
         
        bool setProperty(const std::string &name, const std::string &value,
                        bool overwrite=true);

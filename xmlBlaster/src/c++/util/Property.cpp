@@ -425,12 +425,16 @@ bool Property::getTypedProperty(const string& name, bool& value, bool env)
    return true;
 }
 
+#if __LP64__
+   // long === long long === 64 bit
+#else
 bool Property::getTypedProperty(const string& name, Timestamp& value, bool env)
 {
    if (!propertyExists(name, env)) return false;
    value = getTimestampProperty(name, 0, env);
    return true;
 }
+#endif
   
 std::string Property::toXml(const std::string& extraOffset)
 {
