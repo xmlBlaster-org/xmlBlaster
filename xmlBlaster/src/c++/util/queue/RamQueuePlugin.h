@@ -13,8 +13,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * @author <a href='mailto:laghi@swissinfo.org'>Michele Laghi</a>
  */
 
-#ifndef _UTIL_QUEUE_QUEUE_H
-#define _UTIL_QUEUE_QUEUE_H
+#ifndef _UTIL_QUEUE_RAMQUEUE_H
+#define _UTIL_QUEUE_RAMQUEUE_H
 
 #include <util/xmlBlasterDef.h>
 #include <util/ReferenceHolder.h>
