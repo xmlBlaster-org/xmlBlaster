@@ -273,4 +273,9 @@ only the SNMP subagent module jax.jar is GPL only!
    This is an own compilation of the 1.7.2 code checked out from cvs (hsqldb-dev) on
    2003-06-27.
 
+29) batik SVG viewer
+====================
+   http://xml.apache.org/batik/
+   batik 1.5
+   Used for SVG GUI demo
 
