@@ -120,6 +120,12 @@ public class XmlBlasterAccessTest extends TestCase {
                fail("testDefaultConnectWithoutServer failed: " + e.getMessage());
          }
 
+         if (xmlBlasterAccess.isAlive()) {
+            log.error(ME, "No testing possible when xmlBlaster is running - ignoring this test");
+            xmlBlasterAccess.disconnect(null);
+            continue;
+         }
+
          assertEquals("", null, xmlBlasterAccess.getQueue());
          assertEquals("", false, xmlBlasterAccess.isAlive());
          assertEquals("", false, xmlBlasterAccess.isPolling());
