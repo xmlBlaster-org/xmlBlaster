@@ -2,6 +2,10 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Current cvs
 ===========
+
+ o C client: Added support for UDP based publishOneway() and updateOneway()
+   Contributed by Michal Masa <xmasam@sgi.felk.cvut.cz>
+
  o Bugfix for sending ERASE events in UNREFERENCED topics with XPath subscription
 
  o C client: Added PTHREAD_CREATE_DETACHED to cleanup resources
