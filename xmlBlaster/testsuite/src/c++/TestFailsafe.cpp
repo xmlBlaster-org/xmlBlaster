@@ -11,6 +11,7 @@ namespace org { namespace xmlBlaster { namespace test {
 
 using namespace std;
 using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::qos;
 using namespace org::xmlBlaster::util::dispatch;
 using namespace org::xmlBlaster::util::thread;
 using namespace org::xmlBlaster::util::qos::address;

@@ -93,6 +93,7 @@ namespace org {
 
 using namespace std;
 using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::qos;
 using namespace org::xmlBlaster::util::key;
 using namespace org::xmlBlaster::util::thread;
 using namespace org::xmlBlaster::client::key;

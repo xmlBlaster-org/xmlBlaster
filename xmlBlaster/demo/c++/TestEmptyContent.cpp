@@ -13,6 +13,7 @@ Author:    Michele Laghi
 
 using namespace std;
 using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::qos;
 using namespace org::xmlBlaster::util::dispatch;
 using namespace org::xmlBlaster::client;
 using namespace org::xmlBlaster::client::qos;

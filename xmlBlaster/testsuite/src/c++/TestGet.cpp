@@ -9,6 +9,7 @@ Comment:   Testing get()
 
 using namespace std;
 using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::qos;
 using namespace org::xmlBlaster::util::thread;
 using namespace org::xmlBlaster::client;
 using namespace org::xmlBlaster::client::qos;

@@ -52,13 +52,13 @@ public:
 
    virtual bool isConnected() const = 0;
 
-   virtual org::xmlBlaster::util::qos::ConnectReturnQos connectRaw(const ConnectQos& connectQos) = 0;
+   virtual org::xmlBlaster::util::qos::ConnectReturnQos connectRaw(const org::xmlBlaster::util::qos::ConnectQos& connectQos) = 0;
 
    virtual org::xmlBlaster::client::protocol::I_XmlBlasterConnection& getConnection() const = 0;
 
    virtual org::xmlBlaster::util::qos::ConnectReturnQos* getConnectReturnQos() = 0;
 
-   virtual ConnectQos* getConnectQos() = 0;
+   virtual org::xmlBlaster::util::qos::ConnectQos* getConnectQos() = 0;
 
 };
 
