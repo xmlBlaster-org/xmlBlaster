@@ -3,7 +3,7 @@ Name:      PublishQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: PublishQoS.java,v 1.18 2001/02/12 00:05:53 ruff Exp $
+Version:   $Id: PublishQoS.java,v 1.19 2001/02/23 01:42:01 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -46,12 +46,14 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
    private boolean inSender = false; // parsing inside <sender> ?
    private boolean inExpires = false; // parsing inside <expires> ?
    private boolean inErase = false; // parsing inside <erase> ?
+   private boolean inIsVolatile = false; // parsing inside <isVolatile> ?
 
    /** Internal use only, is this message sent from the persistence layer? */
    private boolean fromPersistenceStore = false;
 
    // flags for QoS state
    private boolean usesXPathQuery = false;
+   private boolean isVolatile = false;
    private boolean isDurable = false;
    private boolean forceUpdate = false;
    private boolean readonly = false;
@@ -136,11 +138,25 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
 
 
    /**
+    * Mark a message to be volatile or not.
+    * <br />
+    * A non-volatile messages stays in memory as long as the server runs<br />
+    * A volatile messages exists only during publish and processing it (doing the updates).<br />
+    * Defaults to false.
     * @return true/false
     */
    public final boolean usesXPathQuery()
    {
       return usesXPathQuery;
+   }
+
+
+   /**
+    * @return true/false
+    */
+   public final boolean isVolatile()
+   {
+      return isVolatile;
    }
 
 
@@ -331,6 +347,20 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
          return;
       }
 
+      if (name.equalsIgnoreCase("isVolatile")) {
+         if (!inQos)
+            return;
+         inIsVolatile = true;
+         if (attrs != null) {
+            int len = attrs.getLength();
+            for (int i = 0; i < len; i++) {
+               Log.warn(ME, "Ignoring sent <isVolatile> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
+            }
+            // if (Log.TRACE) Log.trace(ME, "Found isVolatile tag");
+         }
+         return;
+      }
+
       if (name.equalsIgnoreCase("isDurable")) {
          if (!inQos)
             return;
@@ -409,6 +439,19 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
          return;
       }
 
+      if(name.equalsIgnoreCase("isVolatile")) {
+         inIsVolatile = false;
+         String tmp = character.toString().trim();
+         try {
+            isVolatile = new Boolean(tmp).booleanValue();
+         } catch (NumberFormatException e) {
+            Log.error(ME, "Wrong format of <isVolatile>" + tmp + "</isVolatile>, expected a long in milliseconds.");
+         }
+         // if (Log.TRACE) Log.trace(ME, "Found message isVolatile login name = " + isVolatile);
+         character.setLength(0);
+         return;
+      }
+
    }
 
 
@@ -457,6 +500,7 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
       sb.append(offset).append("   <expires>").append(getExpires()).append("</expires>");
       sb.append(offset).append("   <erase>").append(getEraseTimeout()).append("</erase>");
 
+      sb.append(offset).append("   <isVolatile>").append(isVolatile).append("</isVolatile>");
       if (isDurable())
          sb.append(offset).append("   <isDurable />");
       if (forceUpdate())
@@ -500,6 +544,7 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
             "   <erase>\n" +
             "      24000\n" +
             "   </erase>\n" +
+            "   <isVolatile>false</isVolatile>\n" +
             "   <isDurable />\n" +
             "   <forceUpdate />\n" +
             "   <readonly />\n" +

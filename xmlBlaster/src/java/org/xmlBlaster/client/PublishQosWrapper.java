@@ -3,7 +3,7 @@ Name:      PublishQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: PublishQosWrapper.java,v 1.13 2000/09/15 17:16:14 ruff Exp $
+Version:   $Id: PublishQosWrapper.java,v 1.14 2001/02/23 01:42:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -35,6 +35,7 @@ public class PublishQosWrapper extends QosWrapper
 {
    private String ME = "PublishQosWrapper";
    private Vector destVec = null;
+   private boolean isVolatile = false;
    private boolean isDurable = false;
    private boolean forceUpdate = false;
    private boolean readonly = false;
@@ -96,6 +97,27 @@ public class PublishQosWrapper extends QosWrapper
 
 
    /**
+    * Mark a message to be volatile or not.
+    * <br />
+    * A non-volatile messages stays in memory as long as the server runs<br />
+    * A volatile messages exists only during publish and processing it (doing the updates).<br />
+    * Defaults to false.
+    */
+   public void isVolatile(boolean isVolatile)
+   {
+      this.isVolatile = isVolatile;
+   }
+
+   /**
+    * @see #setIsVolatile()
+    */
+   public boolean isVolatile()
+   {
+      return this.isVolatile;
+   }
+
+
+   /**
     * Mark a message to be persistent.
     */
    public void setDurable()
@@ -152,6 +174,7 @@ public class PublishQosWrapper extends QosWrapper
          sb.append("      " + erase + "\n");
          sb.append("   </erase>\n");
       }
+      sb.append("   <isVolatile>").append(isVolatile).append("</isVolatile>\n");
       if (isDurable)
          sb.append("   <isDurable />\n");
       if (forceUpdate)
