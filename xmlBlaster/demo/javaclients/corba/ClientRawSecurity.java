@@ -3,7 +3,7 @@ Name:      ClientRawSecurity.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code how to access xmlBlaster using CORBA
-Version:   $Id: ClientRawSecurity.java,v 1.1 2001/09/04 12:37:49 ruff Exp $
+Version:   $Id: ClientRawSecurity.java,v 1.2 2001/09/04 12:42:00 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.corba;
 
@@ -193,12 +193,15 @@ public class ClientRawSecurity
          Log.info(ME, "Logout ...");
          try {
             authServer.logout(xmlBlaster);
+            authServer._release();
+            xmlBlaster._release();
          } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
             Log.warn(ME, "XmlBlasterException: " + e.reason);
          }
 
          //----------- Shutdown my callback server -----------------
          try {
+            callback._release();
             rootPOA.deactivate_object(rootPOA.reference_to_id(callback));
          } catch(Exception e) { Log.warn(ME, "POA deactivate callback failed"); }
 
