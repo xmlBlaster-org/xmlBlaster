@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='engine.queue' type='NEW' prio='HIGH' status="INWORK">
+<requirement id='engine.queue' type='NEW' prio='HIGH' status='CLOSED'>
    <topic>XmlBlaster has a sophisticated message queueing engine</topic>
    <description>
       <p>
@@ -32,13 +32,15 @@
       <li>Bounded (max size)<br />
       Every queue has a maximum size. The maximum boundary is adjustable
       as the number of entries in the queue or as maximum memory consumption.
-      On queue overflow a "dead letter" is published.
-      A MsgQueue can be configured to support 'falling
-      through'. In this case the oldest message is removed when the queue is full and
-      a new message arrives.
+      On queue overflow the queue blocks until there is place in the queue
+      again. This means that the publisher client blocks in its publish() method as well.
+      A MsgQueue can be configured to send a <i>deadLetter</i> on overflow (see below).
+      'Falling through' - the oldest message is removed when the queue is full and
+      a new message arrives - is currently not supported.
       </li>
       <li>Dead letter<br />
-      On queue overflow a "dead letter" is published, containing the lost message.
+      On queue overflow or on callback failure a "dead letter" mode is adjustable.
+      In this case a dead letter is published, containing the lost message.
       Interested exception handlers clients can subscribe to "__sys__deadLetter" messages to
       receive them and react accordingly. A logging entry is written in such a case to
       the servers log file. 
@@ -48,43 +50,46 @@
       not reachable, a queue is created to hold messages addressed for this destination.
       Two message queue types are created on login and one for each published callback address.
       <ol>
-         <li>SessionQueue (<i>SessionID:</i>)<br />
-         This queue is created on login and destroyed on logout.
+         <li>SessionQueue (<i>session:</i>)<br />
+         The life cycle of this queue is bound to the login session life cycle, usually it
+         is created on login and destroyed on logout (see requirement engine.login.qos.session).
          It can be used as the ReplyTo address for sent messages.
-         This is the default callback for session based subscriptions without a specified callback in the login QoS.
+         This is the default callback for session based subscriptions.
          </li>
-         <li>SubjectQueue (<i>UserID:</i>)<br />
+         <li>SubjectQueue (<i>subject:</i>)<br />
          This queue is created on login if not existing beforehand.
          The queue is named similar to the login name of the client.
          It may remain living after logout, or may be created before login if
          a PtP message addresses it.
-         This is the default callback for login name based (durable) subscriptions without a specified callback in its QoS.
-         It is destroyed when the queue expires.
+         It is destroyed on logout of the last session of a specific client if it contains no messages
+         (or if forced by the QoS of a disconnect(), see API of DisconnectQos).
+         If the last message in this queue expires and no login session exists it is destroyed [TODO].<br />
          The specified callback server of the SessionQueue is used if not otherwise specified in the login QoS,
          see callback attribute useForSubjectQueue='true'.
-         Every message from this queue is delivered to all current sessions of the user. On multiple logins,
-         the same message is delivered multiple times.
+         The messages from this queue are delivered to all current sessions of the user having
+         set useForSubjectQueue='true'.
+         This means on multiple logins, the same message is delivered multiple times.
          </li>
-         <li>UnrelatedQueue (<i>CbID:</i>)<br />
+         <li>UnrelatedQueue (<i>unrelated:</i>) TODO<br />
          This are queues which are created for subscribes which expressly states a callback
          address in its QoS. It can be a delegated subscribe (e.g. for a dumb toaster).
          This is a durable subscription outliving the logout of its creator (if not otherwise configured).
-         It is destroyed when the queue expires.
-         Subscribes without callbacks specified in its QoS, are using as a default the callback address of the SessionQueue
-         or the SubjectQueue if the first is not available.
+         It is destroyed when no subscription for this queue exists any more.
+         Subscribes without callbacks specified in its QoS,
+         are using as a default the callback address of the SessionQueue.
          </li>
       </ol>
       </li>
       <li>Zero or one callback address<br />
       Every message queue has zero or one callback addresses associated:
       The SessionQueue and the UnrelatedQueue have exactly one for asynchronous
-      updates or zero when browsed synchronously. The SubjectQueue 
-      has one or zero (if not logged in).
+      updates or zero when browsed synchronously.
+      The SubjectQueue has no callback address, it uses the sessions callback.
       </li>
-      <li>Synchronous browsing<br />
+      <li>Synchronous browsing [TODO]<br />
       A message queue may be browsed with the synchronous get() method.
       </li>
-      <li>Sequence on XPath subscription<br />
+      <li>Sequence on XPath subscription [TODO]<br />
       A subscription with XPath may collect many messages with one query.
       The sequence of those message is guaranteed (priority and timestamp subordering).
       </li>
@@ -93,95 +98,100 @@
       </p>
    </description>
    <example lang="Java">
-      <![CDATA[
+<![CDATA[
 
-      These is an example QoS of a connect() invocation:
-      ==================================================
+These is an example QoS of a connect() invocation:
+==================================================
 
-      <qos>
-         ...
-         <!-- SessionQueue callback: Use CORBA to send messages back -->
-         <queue relating='subject' maxMsg='1600' expires='360000000'
-                onOverflow='block' onFailure='deadLetter'>
-            <callback type='IOR' sessionId='sd3lXjs9Fdlggh' pingInterval='60000' useForSubjectQueue='true'>
-               IOR:00011200070009990000....
-            </callback>
-         </queue>
-      </qos>
-
-
-      <qos>
-         ...
-         <!-- specify subjectQueue parameters -->
-         <queue relating='subject' maxMsg='1600' expires='360000000'
-                onOverflow='deadLetter'>
-         </queue>
-      </qos>
+<qos>
+   ...
+   <!-- SessionQueue callback: Use CORBA to send messages back -->
+   <queue relating='subject' maxMsg='1600' expires='360000000'
+            onOverflow='block' onFailure='deadLetter'>
+      <callback type='IOR' sessionId='sd3lXjs9Fdlggh' pingInterval='60000' useForSubjectQueue='true'>
+         IOR:00011200070009990000....
+      </callback>
+   </queue>
+</qos>
 
 
-      <qos>
-         ...
-         <!-- SessionQueue callback:
-              Use CORBA to send messages back with default queue parameters
-         -->
-         <callback type='IOR'>
-            IOR:00011200070009990000....
-            <compress type='gzip' minSize='1000' />
-                      <!-- compress messages bigger 1000 bytes before sending them to me -->
-            <burstMode collectTime='400' /> <!-- Collect messages for 400 milliseconds and update
-                       them in one callback (burst mode) -->
-         </callback>
-      </qos>
+<qos>
+   ...
+   <!-- specify subjectQueue parameters -->
+   <queue relating='subject' maxMsg='1600' expires='360000000'
+            onOverflow='deadLetter'>
+   </queue>
+</qos>
 
 
-      These are example QoS of subscribe() invocations:
-      ================================================
-
-      <!-- The subscribed messages are delivered via the SessionQueue of the subscriber -->
-      <qos>
-      </qos>
-
-      <!-- Same as above -->
-      <qos>
-         <queue relating='session'/>
-      </qos>
-
-      Any other queue overwrites session delivery:
-
-      <!-- The subscribed messages are only delivered via the SubjectQueue of the current client -->
-      <qos>
-         <queue relating='subject'/>
-         <queue relating='subject:somebodyElse'/>
-      </qos>
-
-      <qos>
-         <queue relating='unrelated' maxMsg='1000' maxSize='4000' onOverflow='deadLetter'/>
-            <callback type='EMAIL'>
-               et@mars.universe   <!-- Sends messages to et with specified queue attributes -->
-            </callback>
-         </queue>
-
-         <callback type='EMAIL' onFailure='deadLetter'>
-            tolkien@mars.universe <!-- Sends messages to tolkien, with default queue settings -->
-         </callback>
+<qos>
+   ...
+   <!-- SessionQueue callback:
+         Use CORBA to send messages back with default queue parameters
+   -->
+   <callback type='IOR'>
+      IOR:00011200070009990000....
+      <compress type='gzip' minSize='1000' />
+                  <!-- compress messages bigger 1000 bytes before sending them to me -->
+      <burstMode collectTime='400' /> <!-- Collect messages for 400 milliseconds and update
+                  them in one callback (burst mode) -->
+   </callback>
+</qos>
 
 
-         <callback type='IOR' sessionId='sd3lXjs9Fdlggh'> <!-- Sends message via CORBA as well -->
-            IOR:00011200070009990000....
-         </callback>
+These are example QoS of subscribe() invocations:
+================================================
 
-         <callback type='XML-RPC' sessionId='8sd3lXjspx9Fdlggh'>
-            http:/www.mars.universe:8080/RPC2
-         </callback>
+<!-- The subscribed messages are delivered via the SessionQueue of the subscriber -->
+<qos>
+</qos>
 
-         <!-- The session id is passed to the client callback server, he can check
-              if he trusts this sender -->
-      </qos>
-      
-      ]]>
+<!-- Same as above -->
+<qos>
+   <queue relating='session'/>
+</qos>
+
+Any other queue overwrites session delivery:
+
+<!-- The subscribed messages are only delivered via the SubjectQueue of the current client -->
+<qos>
+   <queue relating='subject'/>
+   <queue relating='subject:somebodyElse'/>
+</qos>
+
+<qos>
+   <queue relating='unrelated' maxMsg='1000' maxSize='4000' onOverflow='deadLetter'/>
+      <callback type='EMAIL'>
+         et@mars.universe   <!-- Sends messages to et with specified queue attributes -->
+      </callback>
+   </queue>
+
+   <callback type='EMAIL' onFailure='deadLetter'>
+      tolkien@mars.universe <!-- Sends messages to tolkien, with default queue settings -->
+   </callback>
+
+   <callback type='XML-RPC' sessionId='8sd3lXjspx9Fdlggh'>
+      http:/www.mars.universe:8080/RPC2
+   </callback>
+
+   <!-- The session id is passed to the client callback server, he can check
+         if he trusts this sender -->
+</qos>
+
+
+These is an example QoS of a disconnect() invocation:
+=====================================================
+
+<qos>
+   <deleteSubjectQueue>false</deleteSubjectQueue>
+</qos>
+
+]]>
    </example>
    <configuration where="server">
+      <p>
       These parameters allow to configure the xmlBlaster server default behavior.
+      </p>
       <table border="1">
          <tr>
             <td>Property</td>
@@ -238,6 +248,7 @@
    <see type="API">org.xmlBlaster.engine.helper.CallbackAddress</see>
    <see type="API">org.xmlBlaster.engine.helper.QueueProperty</see>
    <see type="API">org.xmlBlaster.engine.util.ConnectQos</see>
+   <see type="API">org.xmlBlaster.engine.util.DisconnectQos</see>
    <see type="REQ">engine.callback</see>
    <see type="REQ">engine.qos.login.callback</see>
    <see type="REQ">util.property</see>
@@ -245,7 +256,7 @@
    <see type="REQ">util.property.env</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 02 04</date>
-   <revision>$Revision: 1.10 $</revision>
+   <revision>$Revision: 1.11 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
