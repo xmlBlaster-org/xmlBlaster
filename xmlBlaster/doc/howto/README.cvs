@@ -47,3 +47,8 @@ Merge the branch again with the main development:
       cvs commit
 
 
+Setting up CVS server for xmlBlaster [11/1/1999]:
+=================================================
+
+   export CVS_RSH=/usr/bin/ssh
+   cvs -d :ext:server.xmlBlaster.org:/opt/cvsroot co xmlBlaster
