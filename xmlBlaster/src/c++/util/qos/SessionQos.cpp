@@ -20,7 +20,7 @@ using boost::lexical_cast;
 
 /*---------------------------- SessionQosData --------------------------------*/
 
-SessionQosData::SessionQosData(Global& global, const string& absoluteName="")
+SessionQosData::SessionQosData(Global& global, const string& absoluteName)
     : global_(global)
 {
    timeout_ = global_.getProperty().getTimestampProperty("session.timeout", 86400000ll);
