@@ -81,6 +81,8 @@
                   <xsd:enumeration value="TCL"/>
                   <xsd:enumeration value="Javascript"/>
                   <xsd:enumeration value="XmlRpc"/>
+                  <xsd:enumeration value="Csharp"/>
+                  <xsd:enumeration value="VisualBasic"/>
                </xsd:restriction>
             </xsd:simpleType>
          </xsd:attribute>
@@ -146,6 +148,8 @@
                   <xsd:enumeration value="TCL"/>
                   <xsd:enumeration value="Javascript"/>
                   <xsd:enumeration value="XmlRpc"/>
+                  <xsd:enumeration value="Csharp"/>
+                  <xsd:enumeration value="VisualBasic"/>
                </xsd:restriction>
             </xsd:simpleType>
          </xsd:attribute>
@@ -223,6 +227,8 @@
                   <xsd:enumeration value="TCL"/>
                   <xsd:enumeration value="Javascript"/>
                   <xsd:enumeration value="XmlRpc"/>
+                  <xsd:enumeration value="Csharp"/>
+                  <xsd:enumeration value="VisualBasic"/>
                </xsd:restriction>
             </xsd:simpleType>
          </xsd:attribute>
