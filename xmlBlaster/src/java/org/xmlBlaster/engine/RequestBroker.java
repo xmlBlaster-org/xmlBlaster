@@ -1214,14 +1214,22 @@ synchronized (this) { // Change to snychronized(messageUnitHandler) {
                }
             }
 
+            // Increment counter so MsgQueue doesn't purge our message while we're still
+            // pushing it out to all the subscribers.
+            msgUnitHandler.getMessageUnitWrapper().addEnqueueCounter(1);
+
             //----- 2. now we can send updates to all interested clients:
             if (log.TRACE) log.trace(ME, "Message " + xmlKey.getKeyOid() + " handled, now we can send updates to all interested clients.");
+
             if (contentChanged || publishQos.forceUpdate()) // if the content changed of the publisher forces updates ...
                msgUnitHandler.invokeCallback(sessionInfo, Constants.STATE_OK);
 
             //----- 3. check all known query subscriptions if the new message fits as well
             // TODO: Only check if it is a new message (XmlKey is immutable)
             checkExistingSubscriptions(sessionInfo, xmlKey, msgUnitHandler, publishQos);
+
+            // Unlock the counter now that we're done publishing
+            msgUnitHandler.getMessageUnitWrapper().addEnqueueCounter(-1);
 
             // First all callback calls must be successful - the CbWorker checks it as well
             if (msgUnitHandler.isPublishedWithData() &&
