@@ -28,5 +28,9 @@ public interface I_MsgErrorInfo
     * @return never null
     */
    XmlBlasterException getXmlBlasterException();
+
+   String toXml();
+
+   String toXml(String extraOffset);
 }
 

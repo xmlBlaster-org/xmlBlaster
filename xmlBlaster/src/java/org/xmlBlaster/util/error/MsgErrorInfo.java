@@ -9,6 +9,7 @@ import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.engine.helper.Constants;
 
 
 /**
@@ -70,6 +71,34 @@ public final class MsgErrorInfo implements I_MsgErrorInfo, java.io.Serializable
          return "Problems with " + msgQueueEntries.length + " MsgQueueEntries " + " - " + this.xmlBlasterException.getMessage();
       else
          return this.msgQueueEntries[0].getLogId() + " - " + this.xmlBlasterException.getMessage();
+   }
+
+   /**
+    * Dump state of this object into XML.
+    * <br>
+    * @return XML state of MsgErrorInfo
+    */
+   public final String toXml() {
+      return toXml((String)null);
+   }
+
+   /**
+    * Dump state of this object into XML.
+    * <br>
+    * @param extraOffset indenting of tags
+    * @return XML state of MsgErrorInfo
+    */
+   public final String toXml(String extraOffset) {
+      StringBuffer sb = new StringBuffer(1000);
+      if (extraOffset == null) extraOffset = "";
+      String offset = Constants.OFFSET + extraOffset;
+
+      sb.append(offset).append("<MsgErrorInfo>");
+      for(int i=0; i<msgQueueEntries.length; i++)
+         sb.append(msgQueueEntries[i].toXml(extraOffset+Constants.INDENT));
+      sb.append(xmlBlasterException.toXml(extraOffset+Constants.INDENT));
+      sb.append(offset).append("</MsgErrorInfo>");
+      return sb.toString();
    }
 }
 
