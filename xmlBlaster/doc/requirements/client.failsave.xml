@@ -13,55 +13,129 @@
    </description>
    <example lang="Java">
       <![CDATA[
-      public void login()
-      {
-         try {
-            xmlBlasterConnection = new XmlBlasterConnection(); // Hides Corba stuff
+// Example with default fail save settings,
+// you can change these on command line or in a property file.
+// See configuration section below
+try {
+   con = new XmlBlasterConnection(glob);
 
-            // Setup fail save handling (optional) ...
-            long retryInterval = 4000L;// if connection to xmlBlaster is lost,
-                                       // polling frequency in milli seconds
-            int retries = -1;          // -1 == forever
-            int maxMessages = 1000;    // if connection to xmlBlaster is lost,
-                                       // no. of messages to record locally and playback on reconnect
-            long pingInterval = 2000L;
-            xmlBlasterConnection.initFailSave(this, retryInterval, retries, maxMessages, pingInterval);
-
-            xmlBlasterConnection.login(loginName, passwd, qos, this); // Login to xmlBlaster
-         }
-         catch (XmlBlasterException e) {
-             System.out.println("Login failed, ID=" + e.id + " REASON=" + e.reason);
-         }
-      }
-
-      /**
-       * This is the callback method invoked from XmlBlasterConnection
-       * informing the client in an asynchronous mode if the connection was established.
-       * This method is enforced through interface I_ConnectionProblems
-       */
-      public void reConnected()
-      {
-         // Code your recovery handling ...
-         try {
-            if (xmlBlasterConnection.queueSize() > 0) {
-               xmlBlasterConnection.flushQueue();    // send all tailback messages
+   con.initFailSave(new I_ConnectionProblems() {
+         
+         public void reConnected() {
+            log.info(ME, "I_ConnectionProblems: We were lucky, reconnected to " + glob.getId());
+            //initClient();    // initialize subscription etc. again
+            try {
+               con.flushQueue();    // send all tailback messages
+               // con.resetQueue(); // or discard them (it is our choice)
+            } catch (XmlBlasterException e) {
+               log.error(ME, "Exception during reconnection recovery: " + e.reason);
             }
-         } catch (XmlBlasterException e) {
          }
-      }
 
-      /** listener callback allows to do actions if connection is lost */
-      public void lostConnection()
-      {
-         System.out.println("Lost connection to xmlBlaster");
+         public void lostConnection() {
+            log.warn(ME, "I_ConnectionProblems: Lost connection to " + glob.getId());
+         }
+      });
+
+   ConnectQos qos = new ConnectQos(glob);
+
+   ConnectReturnQos conRetQos = con.connect(qos, new I_Callback() {
+      public String update(String cbSessionId, UpdateKey updateKey, byte[] content,
+                                                               UpdateQos updateQos) {
+         log.info(ME, "Reveiving asynchronous message '" + updateKey.getOid() + "'");
+         return "";
       }
+   });  // Login to xmlBlaster, default handler for updates
+
+   log.info(ME, "Connected to xmlBlaster.");
+   ...
       ]]>
    </example>
+
+   <example lang="Java">
+      <![CDATA[
+// Example with hard coded fail save settings
+// Here the callback methods are not shown
+try {
+   con = new XmlBlasterConnection(glob); // Find orb
+
+   ConnectQos connectQos = new ConnectQos(glob, loginName, passwd);
+
+   // Setup fail save handling ...
+   Address addressProp = new Address(glob);
+   addressProp.setDelay(4000L);      // retry connecting every 4 sec
+   addressProp.setRetries(-1);       // -1 == forever
+   addressProp.setPingInterval(0L);  // switched off
+   addressProp.setMaxMsg(1000);      // queue up to 1000 messages
+   con.initFailSave(this);
+
+   connectQos.setAddress(addressProp);
+
+   // and do the login ...
+   con.connect(connectQos, this);  // Login to xmlBlaster, register for updates
+}
+catch (XmlBlasterException e) {
+      Log.warn(ME, "setUp() - login failed");
+      fail("setUp() - login faile");
+}
+ 
+      ]]>
+   </example>
+
+   <configuration where="server">
+      <p>
+      These parameters allow to configure the clients fail save behavior.
+      </p>
+      <p>
+      Example:
+      <pre>java HelloWorld4 -queue.maxMsg 20000</pre>
+      </p>
+      <table border="1">
+         <tr>
+            <td>Property</td>
+            <td>Default / Example</td>
+            <td>Description</td>
+            <td>Implemented</td>
+         </tr>
+
+         <tr>
+            <td>pingInterval</td>
+            <td>10000</td>
+            <td>Ping every given milliseconds if xmlBlaster connection is OK</td>
+            <td>yes</td>
+         </tr>
+
+         <tr>
+            <td>retries</td>
+            <td>-1 (forever)</td>
+            <td>How often to retry to establish a new connection to xmlBlaster
+                on failure.
+            </td>
+            <td>yes</td>
+         </tr>
+
+         <tr>
+            <td>delay</td>
+            <td>4000</td>
+            <td>Delay between connection retries in milliseconds<br />
+                A delay value > 0 switches fails save mode on, 0 switches it off</td>
+            <td>yes</td>
+         </tr>
+         
+         <tr>
+            <td>queue.maxMsg</td>
+            <td>1000</td>
+            <td>The maximum allowed number of messages in this queue</td>
+            <td>yes</td>
+         </tr>
+      </table>
+   </configuration>
+
    <see>org.xmlBlaster.client.protocol.XmlBlasterConnection</see>
    <author>ruff@swand.lake.de</author>
    <hacker>ruff@swand.lake.de</hacker>
    <date>2000 02 23</date>
-   <revision>$Revision: 1.9 $</revision>
+   <revision>$Revision: 1.10 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
