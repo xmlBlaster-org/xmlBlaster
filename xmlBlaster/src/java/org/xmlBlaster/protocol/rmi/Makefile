@@ -32,7 +32,7 @@ $(CLASS_DIR)/XmlBlasterImpl_Stub.class : $(SRC_JAVA_DIR)/XmlBlasterImpl.java
 	$(RMIC) org.xmlBlaster.protocol.rmi.XmlBlasterImpl
 #------------------------------------------------------------------------------
 
-all: 	all_SUB_DIRS precond java rmi
+all: 	all_SUB_DIRS precond java rmi policy
 
 precond:
 	$(MKDIR_RECURSIVE) $(CLASS_DIR)
@@ -42,6 +42,10 @@ java: $(LOCAL_FILES)
 
 rmi: $(CLASS_DIR)/XmlBlasterImpl_Stub.class $(CLASS_DIR)/AuthServerImpl_Stub.class
 	@echo -e "\033[1mDONE ............ \033[32;40mRMI for $(SRC_JAVA_DIR)\033[0m";
+
+policy:
+	$(CP) $(XMLBLASTER_HOME)/config/xmlBlaster.policy $(CLASS_TOP_DIR)
+	@echo -e "\033[1mDONE ............ \033[32;40mCopied $(XMLBLASTER_HOME)/config/xmlBlaster.policy to $(CLASS_TOP_DIR)\033[0m";
 
 clean: clean_SUB_DIRS
 	@echo -e "Removing all in $(CLASS_DIR) ..."
