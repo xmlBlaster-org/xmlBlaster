@@ -507,7 +507,7 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
    }
 
    /**
-    * Control message life cycle on message expiry. 
+    * Control message life cycle on message expiry, defaults to false. 
     * @param forceDestroy true Force message destroy on message expire<br />
     *        false On message expiry messages which are already in callback queues are delivered.
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.publish.isVolatile.html">The engine.qos.publish.isVolatile requirement</a>
