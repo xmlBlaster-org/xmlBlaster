@@ -1676,11 +1676,11 @@ synchronized (this) {
 
    //====== These methods satisfy the I_AdminNode administration interface =======
 
-   public int getRunlevel() {
-      return glob.getRunlevelManager().getCurrentRunlevel();
+   public String getRunlevel() {
+      return ""+glob.getRunlevelManager().getCurrentRunlevel();
    }
-   public void setRunlevel(int level) throws XmlBlasterException {
-      glob.getRunlevelManager().changeRunlevel(level, true);
+   public void setRunlevel(String levelStr) throws XmlBlasterException {
+      glob.getRunlevelManager().changeRunlevel(levelStr, true);
    }
    /** How long is the server running (in seconds) */
    public long getUptime() {

@@ -17,8 +17,8 @@ import org.xmlBlaster.util.XmlBlasterException;
  * @since 0.79f
  */
 public interface I_AdminNode {
-   public int getRunlevel();
-   public void setRunlevel(int level) throws XmlBlasterException;
+   public String getRunlevel();
+   public void setRunlevel(String level) throws XmlBlasterException;
 
    public long getUptime();
    public long getFreeMem();
