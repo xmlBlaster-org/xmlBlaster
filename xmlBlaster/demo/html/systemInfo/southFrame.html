@@ -6,11 +6,27 @@ COMMENT:
 <html>
    <head>
       <meta http-equiv="Content-Type" CONTENT="text/html; charset=ISO-8859-1">
+      <script language="Javascript1.2">
+         /**
+          * Get some browser infos formatted as HTML
+          */
+         function getBrowserInfo()
+         {
+            var appName     = "Browser name: <i>" + navigator.appName + "</i><br>";
+            var appVersion  = "Browser version: <i>" + navigator.appVersion + "</i><br>";
+            var platform    = "Operating system: <i>" + navigator.platform + "</i><br>";
+            return appName + appVersion + platform;
+         }
+      </script>
    </head>
 
    <!-- body bgcolor="#FFFFFF" -->
    <body>
    <center>
+      <script language="Javascript1.2">
+         var info = getBrowserInfo();
+         document.writeln(info);
+      </script>
       <p />
       The Webserver runs Apache with the Jserv Servlet module.
       <br />
