@@ -25,6 +25,10 @@ echo "STARTING topic TESTS ..."
 java junit.swingui.TestRunner -noloading org.xmlBlaster.test.topic.AllTests
 echo "STARTING persistence TESTS ..."
 java junit.swingui.TestRunner -noloading org.xmlBlaster.test.persistence.AllTests
+echo "STARTING j2ee TESTS ..."
+java junit.swingui.TestRunner -noloading org.xmlBlaster.test.j2ee.AllTests
+echo "STARTING jmx TESTS ..."
+java junit.swingui.TestRunner -noloading org.xmlBlaster.test.jmx.AllTests
 echo "STARTING cluster TESTS ..."
 java junit.swingui.TestRunner -noloading org.xmlBlaster.test.cluster.AllTests
 
