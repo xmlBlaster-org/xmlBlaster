@@ -12,15 +12,15 @@ import org.xmlBlaster.engine.cluster.NodeId;
 /**
  * Handles unified naming convention of login names and user sessions. 
  *
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  * @see org.xmlBlaster.test.classtest.SessionNameTest
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.failsave.html">The client.failsave requirement</a>
  */
-public final class SessionName
+public final class SessionName implements java.io.Serializable
 {
    /** Name for logging output */
    private static String ME = "SessionName";
-   private final Global glob;
+   private transient final Global glob;
    public final static String ROOT_MARKER_TAG = "/node";
    public final static String SUBJECT_MARKER_TAG = "client";
    /** The absolute name */

@@ -10,16 +10,17 @@ import java.util.Iterator;
 
 /**
  * This class holds all method names to access xmlBlaster. 
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.html">The interface requirement</a>
  */
 public final class MethodName implements java.io.Serializable
 {
    private final static Hashtable hash = new Hashtable(); // The key is the 'methodName' String and the value is an 'MethodName' instance
    private final String methodName;
-   private final byte[] methodNameBytes; // for better performance in SOCKET protocol
    private final int argType;
    private final int returnType;
+
+   private transient byte[] methodNameBytes; // for better performance in SOCKET protocol
 
    // The possible method return types, useful for SOCKET protocol (see requirement 'protocol.socket')
    private static final int RETURN_VOID = 0;
@@ -48,7 +49,6 @@ public final class MethodName implements java.io.Serializable
    public static final MethodName PING = new MethodName("ping", ARG_QOS, RETURN_STRING);
    //public static final MethodName EXCEPTION = new MethodName("exception", ARG_MSG, RETURN_VOID);
    // for testsuite only
-   public static final MethodName DUMMY_ENTRY = new MethodName("DummyEntry", ARG_MSGARR, RETURN_VOID);
 
    /**
     * @exception IllegalArgumentException if the given methodName is null
@@ -57,7 +57,6 @@ public final class MethodName implements java.io.Serializable
       if (methodName == null)
          throw new IllegalArgumentException("Your given methodName is null");
       this.methodName = methodName;
-      this.methodNameBytes = this.methodName.getBytes();
       this.argType = argType;
       this.returnType = returnType;
       hash.put(methodName, this);
@@ -82,6 +81,9 @@ public final class MethodName implements java.io.Serializable
     * @return methodName dumped to a byte[]
     */
    public byte[] getMethodNameBytes() {
+      if (this.methodNameBytes == null) {
+         this.methodNameBytes = this.methodName.getBytes();
+      }
       return this.methodNameBytes;
    }
 
@@ -141,6 +143,23 @@ public final class MethodName implements java.io.Serializable
    public static final MethodName toMethodName(byte[] methodNameBytes) throws IllegalArgumentException {
       return toMethodName(new String(methodNameBytes)); // tuning possible by doing it ourself?
    }
+
+   ///////////////
+   // This code is a helper for serialization so that after
+   // deserial the check
+   //   MethodName.PUBLISH == instance
+   // is still usable (the singleton is assured when deserializing)
+   public Object writeReplace() throws java.io.ObjectStreamException {
+      return new SerializedForm(this.getMethodName());
+   }
+   private static class SerializedForm implements java.io.Serializable {
+      String methodName;
+      SerializedForm(String methodName) { this.methodName = methodName; }
+      Object readResolve() throws java.io.ObjectStreamException {
+         return MethodName.toMethodName(methodName);
+      }
+   }
+   ///////////////END
 
    /**
     * <pre>

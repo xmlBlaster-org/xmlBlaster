@@ -18,7 +18,7 @@ package org.xmlBlaster.util.enum;
  * If you need a different set of priorities, replace this implementation or change it to
  * support an adjustable amount of priorities.
  * </p>
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public final class PriorityEnum implements java.io.Serializable
 {
@@ -26,6 +26,11 @@ public final class PriorityEnum implements java.io.Serializable
 
    private PriorityEnum(int priority) {
       this.priority = priority;
+   }
+
+   private PriorityEnum() {
+      this.priority = -1;
+      System.out.println("DEFAULT PriorityEnum " + toString() + " hashCode=" + this.hashCode());
    }
 
    /**
@@ -197,5 +202,73 @@ public final class PriorityEnum implements java.io.Serializable
       new Integer(8),
       new Integer(9)
    };
+
+   ///////////////
+   // This code is a helper for serialization so that after
+   // deserial the check
+   //   PriortiyEnum.MAX == priorityInstance
+   // is still usable (the singleton is assured when deserializing)
+   public Object writeReplace() throws java.io.ObjectStreamException {
+      return new SerializedForm(this.getInt());
+   }
+   private static class SerializedForm implements java.io.Serializable {
+      int prio;
+      SerializedForm(int prio) { this.prio = prio; }
+      Object readResolve() throws java.io.ObjectStreamException {
+         return PriorityEnum.toPriorityEnum(prio);
+      }
+   }
+   ///////////////END
+
+   /** java org.xmlBlaster.util.enum.PriorityEnum */
+   public static void main(String[] args) {
+      // Verifiy serialization:
+      String fileName = "PriorityEnum.ser";
+      PriorityEnum pOrig = PriorityEnum.MAX_PRIORITY;
+      {
+
+         try {
+            java.io.FileOutputStream f = new java.io.FileOutputStream(fileName);
+            java.io.ObjectOutputStream objStream = new java.io.ObjectOutputStream(f);
+            objStream.writeObject(pOrig);
+            objStream.flush();
+            System.out.println("SUCCESS written " + pOrig.toString());
+         }
+         catch (Exception e) {
+            System.err.println("ERROR: " + e.toString());
+         }
+      }
+
+      PriorityEnum pNew = null;
+      {
+
+         try {
+            java.io.FileInputStream f = new java.io.FileInputStream(fileName);
+            java.io.ObjectInputStream objStream = new java.io.ObjectInputStream(f);
+            pNew = (PriorityEnum)objStream.readObject();
+            System.out.println("SUCCESS loaded " + pNew.toString());
+         }
+         catch (Exception e) {
+            System.err.println("ERROR: " + e.toString());
+         }
+      }
+
+      if (pNew.toString().equals(pOrig.toString())) {
+         System.out.println("SUCCESS, string form is equals " + pNew.toString());
+      }
+      else {
+         System.out.println("ERROR, string form is different " + pNew.toString());
+      }
+
+      int hashOrig = pOrig.hashCode();
+      int hashNew = pNew.hashCode();
+
+      if (pNew == pOrig) {
+         System.out.println("SUCCESS, hash is same, the objects are identical");
+      }
+      else {
+         System.out.println("ERROR, hashCode is different hashOrig=" + hashOrig + " hashNew=" + hashNew);
+      }
+   }
 }
 
