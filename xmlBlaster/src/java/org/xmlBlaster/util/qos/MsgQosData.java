@@ -538,11 +538,12 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
     */
    public Destination[] getDestinationArr() {
       if (this.destinationArrCache == null) {
-         if (this.destinationList == null) {
+         ArrayList dd = this.destinationList;
+         if (dd == null) {
             this.destinationArrCache = EMPTY_DESTINATION_ARR;
          }
          else {
-            this.destinationArrCache = (Destination[])this.destinationList.toArray(new Destination[this.destinationList.size()]);
+            this.destinationArrCache = (Destination[])dd.toArray(new Destination[dd.size()]);
          }
       }
       return this.destinationArrCache;
