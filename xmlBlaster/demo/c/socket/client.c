@@ -31,6 +31,9 @@ bool getResponse(ResponseHolder *responseHolder, XmlBlasterException *exception)
 static char *xmlBlasterConnect(const char * const qos, XmlBlasterException *exception);
 static bool xmlBlasterDisconnect(const char * const qos, XmlBlasterException *exception);
 static char *xmlBlasterPublish(MsgUnit *msgUnit, XmlBlasterException *exception);
+static char *xmlBlasterSubscribe(const char * const key, const char * qos, XmlBlasterException *exception);
+static char *xmlBlasterUnSubscribe(const char * const key, const char * qos, XmlBlasterException *exception);
+static char *xmlBlasterErase(const char * const key, const char * const qos, XmlBlasterException *exception);
 static bool isConnected();
 
 XmlBlasterAccess getXmlBlasterAccess(int argc, char** argv) {
@@ -38,6 +41,9 @@ XmlBlasterAccess getXmlBlasterAccess(int argc, char** argv) {
       xmlBlasterAccess.connect = xmlBlasterConnect;
       xmlBlasterAccess.disconnect = xmlBlasterDisconnect;
       xmlBlasterAccess.publish = xmlBlasterPublish;
+      xmlBlasterAccess.subscribe = xmlBlasterSubscribe;
+      xmlBlasterAccess.unSubscribe = xmlBlasterUnSubscribe;
+      xmlBlasterAccess.erase = xmlBlasterErase;
       xmlBlasterAccess.isConnected = isConnected;
    }
    initConnection(argc, argv);
@@ -398,11 +404,12 @@ static bool xmlBlasterDisconnect(const char * const qos, XmlBlasterException *ex
    }
 
    shutdownConnection();
-
+   *secretSessionId = 0;
    return true;
 }
 
 /**
+ * Publish a message to the server. 
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.publish.html
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
  */
@@ -454,6 +461,150 @@ static char *xmlBlasterPublish(MsgUnit *msgUnit, XmlBlasterException *exception)
 }
 
 /**
+ * Subscribe a message. 
+ * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.subscribe.html
+ * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
+ */
+static char *xmlBlasterSubscribe(const char * const key, const char * qos, XmlBlasterException *exception)
+{
+   int qosLen, keyLen, totalLen;
+   unsigned char *data;
+
+   if (key == 0 || exception == 0) {
+      strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+      sprintf(exception->message, "xmlBlasterClient: Please provide valid arguments to xmlBlasterSubscribe()");
+      if (XMLBLASTER_DEBUG) { printf(exception->message); printf("\n"); }
+      return (char *)0;
+   }
+
+   if (qos == (const char *)0) {
+      qos = "";
+   }
+   qosLen = strlen(qos);
+   keyLen = strlen(key);
+
+   totalLen = qosLen + 1 + keyLen + 1;
+
+   data = (unsigned char *)malloc(totalLen);
+
+   int currpos = 0;
+   memcpy(data+currpos, qos, qosLen+1); // inclusive '\0'
+   currpos += qosLen+1;
+
+   memcpy(data+currpos, key, keyLen+1); // inclusive '\0'
+   currpos += keyLen+1;
+
+   ResponseHolder responseHolder;
+   if (sendData(XMLBLASTER_SUBSCRIBE, secretSessionId, data, totalLen,
+                &responseHolder, exception) == false) {
+      return (char *)0;
+   }
+
+   char *response = blobcpy_alloc(responseHolder.data, responseHolder.dataLen);
+   free(responseHolder.data);
+
+   if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: Got response for subscribe(): %s", response);
+
+   return response;
+}
+
+/**
+ * UnSubscribe a message from the server. 
+ * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.unSubscribe.html
+ * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
+ */
+static char *xmlBlasterUnSubscribe(const char * const key, const char * qos, XmlBlasterException *exception)
+{
+   int qosLen, keyLen, totalLen;
+   unsigned char *data;
+
+   if (key == 0 || exception == 0) {
+      strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+      sprintf(exception->message, "xmlBlasterClient: Please provide valid arguments to xmlBlasterUnSubscribe()");
+      if (XMLBLASTER_DEBUG) { printf(exception->message); printf("\n"); }
+      return (char *)0;
+   }
+
+   if (qos == (const char *)0) {
+      qos = "";
+   }
+   qosLen = strlen(qos);
+   keyLen = strlen(key);
+
+   totalLen = qosLen + 1 + keyLen + 1;
+
+   data = (unsigned char *)malloc(totalLen);
+
+   int currpos = 0;
+   memcpy(data+currpos, qos, qosLen+1); // inclusive '\0'
+   currpos += qosLen+1;
+
+   memcpy(data+currpos, key, keyLen+1); // inclusive '\0'
+   currpos += keyLen+1;
+
+   ResponseHolder responseHolder;
+   if (sendData(XMLBLASTER_UNSUBSCRIBE, secretSessionId, data, totalLen,
+                &responseHolder, exception) == false) {
+      return (char *)0;
+   }
+
+   char *response = blobcpy_alloc(responseHolder.data, responseHolder.dataLen);
+   free(responseHolder.data);
+
+   if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: Got response for unSubscribe(): %s", response);
+
+   return response;
+}
+
+/**
+ * Erase a message from the server. 
+ * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.erase.html
+ * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
+ */
+static char *xmlBlasterErase(const char * const key, const char * qos, XmlBlasterException *exception)
+{
+   int qosLen, keyLen, totalLen;
+   unsigned char *data;
+
+   if (key == 0 || exception == 0) {
+      strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+      sprintf(exception->message, "xmlBlasterClient: Please provide valid arguments to xmlBlasterErase()");
+      if (XMLBLASTER_DEBUG) { printf(exception->message); printf("\n"); }
+      return (char *)0;
+   }
+
+   if (qos == (const char *)0) {
+      qos = "";
+   }
+   qosLen = strlen(qos);
+   keyLen = strlen(key);
+
+   totalLen = qosLen + 1 + keyLen + 1;
+
+   data = (unsigned char *)malloc(totalLen);
+
+   int currpos = 0;
+   memcpy(data+currpos, qos, qosLen+1); // inclusive '\0'
+   currpos += qosLen+1;
+
+   memcpy(data+currpos, key, keyLen+1); // inclusive '\0'
+   currpos += keyLen+1;
+
+   ResponseHolder responseHolder;
+   if (sendData(XMLBLASTER_ERASE, secretSessionId, data, totalLen,
+                &responseHolder, exception) == false) {
+      return (char *)0;
+   }
+
+   char *response = blobcpy_alloc(responseHolder.data, responseHolder.dataLen);
+   free(responseHolder.data);
+
+   if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: Got response for erase(): %s", response);
+
+   return response;
+}
+
+/**
  * Here we asynchronous receive the callback from xmlBlaster
  * msg = char *key, char *content, int contentLen, char *qos
  *
@@ -474,7 +625,9 @@ void update(MsgUnit *msg)
    */
 }
 
-
+/**
+ * Test the baby
+ */
 int main(int argc, char** argv)
 {
 #ifndef _WINDOWS
@@ -509,45 +662,97 @@ int main(int argc, char** argv)
 
    XmlBlasterAccess xmlBlasterAccess = getXmlBlasterAccess(argc, argv);
 
-   data = "<qos>"
-          " <securityService type='htpasswd' version='1.0'>"
-          "  <![CDATA["
-          "   <user>michele</user>"
-          "   <passwd>secret</passwd>"
-          "  ]]>"
-          " </securityService>"
-          "</qos>";
+   {  // connect
+      data = "<qos>"
+             " <securityService type='htpasswd' version='1.0'>"
+             "  <![CDATA["
+             "   <user>fritz</user>"
+             "   <passwd>secret</passwd>"
+             "  ]]>"
+             " </securityService>"
+             "</qos>";
 
-   response = xmlBlasterAccess.connect(data, &xmlBlasterException);
-   free(response);
-   if (strlen(xmlBlasterException.errorCode) > 0) {
-      printf("Caught exception during connect, errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
-      exit(1);
-   }
-
-   printf("Connected to xmlBlaster, publishing a message ...\n");
-
-   MsgUnit msgUnit;
-   msgUnit.key = "<key oid='HelloWorld'/>";
-   msgUnit.content = "Some message payload";
-   msgUnit.contentLen = strlen("Some message payload");
-   msgUnit.qos = "<qos><persistent/></qos>";
-   response = xmlBlasterAccess.publish(&msgUnit, &xmlBlasterException);
-   if (response) {
-      printf("Publish success, returned status is '%s'\n", response);
+      response = xmlBlasterAccess.connect(data, &xmlBlasterException);
       free(response);
-   }
-   else {
-      printf("Caught exception in publish, errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
-      exit(1);
-   }
-
-   if (xmlBlasterAccess.disconnect(0, &xmlBlasterException) == false) {
-      printf("Caught exception in disconnect, errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
-      exit(1);
+      if (strlen(xmlBlasterException.errorCode) > 0) {
+         printf("Caught exception during connect, errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
+         exit(1);
+      }
    }
 
-   //publish("<key oid='cpuinfo'/>", data, strlen(data), "<qos/>");
+   {  // publish ...
+      printf("Connected to xmlBlaster, publishing a message ...\n");
+
+      MsgUnit msgUnit;
+      msgUnit.key = "<key oid='HelloWorld'/>";
+      msgUnit.content = "Some message payload";
+      msgUnit.contentLen = strlen("Some message payload");
+      msgUnit.qos = "<qos><persistent/></qos>";
+      response = xmlBlasterAccess.publish(&msgUnit, &xmlBlasterException);
+      if (response) {
+         printf("Publish success, returned status is '%s'\n", response);
+         free(response);
+      }
+      else {
+         printf("Caught exception in publish, errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
+         exit(1);
+      }
+   }
+
+   if (false) {  // subscribe ...  CALLBACK NOT YET IMPLEMENTED (subscribe make no sense)
+      printf("Subscribe a message ...\n");
+
+      const char *key = "<key oid='HelloWorld'/>";
+      const char *qos = "<qos/>";
+      response = xmlBlasterAccess.subscribe(key, qos, &xmlBlasterException);
+      if (response) {
+         printf("Erase success, returned status is '%s'\n", response);
+         free(response);
+      }
+      else {
+         printf("Caught exception in subscribe errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
+         exit(1);
+      }
+   }
+
+   {  // unSubscribe ...
+      printf("UnSubscribe a message ...\n");
+
+      const char *key = "<key oid='HelloWorld'/>";
+      const char *qos = "<qos/>";
+      response = xmlBlasterAccess.unSubscribe(key, qos, &xmlBlasterException);
+      if (response) {
+         printf("Erase success, returned status is '%s'\n", response);
+         free(response);
+      }
+      else {
+         printf("Caught exception in unSubscribe errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
+         exit(1);
+      }
+   }
+
+   {  // erase ...
+      printf("Erasing a message ...\n");
+
+      const char *key = "<key oid='HelloWorld'/>";
+      const char *qos = "<qos/>";
+      response = xmlBlasterAccess.erase(key, qos, &xmlBlasterException);
+      if (response) {
+         printf("Erase success, returned status is '%s'\n", response);
+         free(response);
+      }
+      else {
+         printf("Caught exception in erase errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
+         exit(1);
+      }
+   }
+
+   {  // disconnect ...
+      if (xmlBlasterAccess.disconnect(0, &xmlBlasterException) == false) {
+         printf("Caught exception in disconnect, errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
+         exit(1);
+      }
+   }
 
    if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: going to sleep 100 sec ...\n");
 #  ifndef _WINDOWS
@@ -590,6 +795,7 @@ int strcpy_alloc(char **dest, const char *src)
 
 /**
  * Allocates the string with malloc for you. 
+ * NOTE: If your given blob or len is 0 an empty string of size 1 is returned
  * @return The string or NULL on error
  *         You need to free it with free()
  */
@@ -598,7 +804,9 @@ char *blobcpy_alloc(const unsigned char *blob, const int len)
    char *dest;
    int i;
    if (blob == 0 || len < 1) {
-      return (char *)0;
+      dest = (char *)malloc(1*sizeof(char));
+      *dest = 0;
+      return dest;
    }
 
    dest = (char *)malloc((len+1)*sizeof(char));

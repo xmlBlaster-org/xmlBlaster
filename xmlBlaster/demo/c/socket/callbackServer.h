@@ -110,14 +110,20 @@ typedef struct callbackDataStruct {
 typedef void * (*cbFp)(void *);
 
 typedef char *( * XmlBlasterConnect)(const char * const qos, XmlBlasterException *exception);
-typedef bool  ( * XmlBlasterDisconnect)(const char * const qos, XmlBlasterException *exception);
+typedef bool  ( * XmlBlasterDisconnect)(const char * qos, XmlBlasterException *exception);
 typedef char *( * XmlBlasterPublish)(MsgUnit *msgUnit, XmlBlasterException *exception);
+typedef char *( * XmlBlasterSubscribe)(const char * const key, const char * qos, XmlBlasterException *exception);
+typedef char *( * XmlBlasterUnSubscribe)(const char * const key, const char * qos, XmlBlasterException *exception);
+typedef char *( * XmlBlasterErase)(const char * const key, const char * qos, XmlBlasterException *exception);
 typedef bool  ( * IsConnected)();
 
 typedef struct XmlBlasterAccessStruct {
    XmlBlasterConnect connect;   
    XmlBlasterDisconnect disconnect;   
    XmlBlasterPublish publish;
+   XmlBlasterSubscribe subscribe;
+   XmlBlasterUnSubscribe unSubscribe;
+   XmlBlasterErase erase;
    IsConnected isConnected;
 } XmlBlasterAccess;
 
