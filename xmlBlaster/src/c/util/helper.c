@@ -586,16 +586,19 @@ Dll_Export _INLINE_FUNC bool doLog(XMLBLASTER_LOG_LEVEL currLevel, XMLBLASTER_LO
  */
 Dll_Export void embedException(ExceptionStruct *exception, const char *newErrorCode, const char *newMessage, const ExceptionStruct *embed)
 {
-   char tmp[EXCEPTIONSTRUCT_MESSAGE_LEN];
+   char embedStr[EXCEPTIONSTRUCT_MESSAGE_LEN];
+   char newErrorCodeTmp[EXCEPTIONSTRUCT_ERRORCODE_LEN];
    char message[EXCEPTIONSTRUCT_MESSAGE_LEN];
+
+   strncpy0(newErrorCodeTmp, newErrorCode, EXCEPTIONSTRUCT_ERRORCODE_LEN); /* Make temporary copy in case the memory overlaps */
    if (*embed->errorCode != 0) {
-      SNPRINTF(message, EXCEPTIONSTRUCT_MESSAGE_LEN, "%s {Root cause: %s}", newMessage, getExceptionStr(tmp, EXCEPTIONSTRUCT_MESSAGE_LEN, embed));
+      SNPRINTF(message, EXCEPTIONSTRUCT_MESSAGE_LEN, "%s {Root cause: %s}", newMessage, getExceptionStr(embedStr, EXCEPTIONSTRUCT_MESSAGE_LEN, embed));
    }
    else {
       SNPRINTF(message, EXCEPTIONSTRUCT_MESSAGE_LEN, "%s", newMessage);
    }
    strncpy0(exception->message, message, EXCEPTIONSTRUCT_MESSAGE_LEN);
-   strncpy0(exception->errorCode, newErrorCode, EXCEPTIONSTRUCT_ERRORCODE_LEN);
+   strncpy0(exception->errorCode, newErrorCodeTmp, EXCEPTIONSTRUCT_ERRORCODE_LEN);
 }
 
 /**
@@ -630,13 +633,14 @@ Dll_Export const char *getExceptionStr(char *out, int outSize, const ExceptionSt
  * Convert a 64 bit integer to a string. 
  * This helper concentrates this conversion to one place to
  * simplify porting to compilers with no <code>int64_t = long long</code> support
- * @param buf You need to pass this buffer with, say, 32 bytes of size
+ * @param buf You need to pass this buffer with at least INT64_STRLEN_MAX=22 bytes of size
  * @return buf
  */
 Dll_Export const char* int64ToStr(char * const buf, int64_t val)
 {
    if (buf == 0) return 0;
    *buf = 0;
+   /* SNPRINTF(buf, INT64_STRLEN_MAX, "%lld", val);  The normal sprintf should be safe enough */
    sprintf(buf, "%lld", val);  /* Returns number of written chars */
    return buf;
 }
@@ -652,6 +656,7 @@ Dll_Export const char* int64ToStr(char * const buf, int64_t val)
 Dll_Export bool strToInt64(int64_t *val, const char * const str)
 {
    if (str == 0 || val == 0) return false;
+   /*str[INT64_STRLEN_MAX-1] = 0; sscanf should be safe enough to handle overflow */
    return (sscanf(str, "%lld", val) == 1) ? true : false;
 }
 
