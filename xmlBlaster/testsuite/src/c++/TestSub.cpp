@@ -3,7 +3,7 @@ Name:      TestSub.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.cpp,v 1.14 2003/02/07 11:49:08 laghi Exp $
+Version:   $Id: TestSub.cpp,v 1.15 2003/02/09 21:17:14 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #include "TestSuite.h"
@@ -339,8 +339,8 @@ private:
 
       string contentStr(static_cast<char *>(content), contentSize);
 
-      if (updateQos.getState() != util::Constants::STATE_OK &&
-          updateQos.getState() != util::Constants::STATE_ERASED) {
+      if (updateQos.getState() != Constants::STATE_OK &&
+          updateQos.getState() != org::xmlBlaster::util::Constants::STATE_ERASED) {
          log_.error(ME, "Unexpected message state=" + updateQos.getState());
          assert(0);
       }
@@ -388,7 +388,7 @@ private:
     */
 private:
    void waitOnUpdate(long timeout) {
-      Timestamp delay = timeout;
+      long delay = timeout;
       Thread::sleep(delay);
 /*
       util::StopWatch stopWatch(timeout);
