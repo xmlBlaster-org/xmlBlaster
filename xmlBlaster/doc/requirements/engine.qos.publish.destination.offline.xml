@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='engine.qos.destination.offline' type='NEW' prio='LOW' status="CLOSED">
+<requirement id='engine.qos.publish.destination.offline' type='NEW' prio='LOW' status="CLOSED">
    <topic>If the receiver of a PtP message is offline or has no callback, the sender gets an exception</topic>
    <description>
       If you send a message to a named destination, using the qos &lt;destination&gt; tag,
@@ -33,7 +33,7 @@
    <see>engine.qos.publish.ForceQueuing</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 03 17</date>
-   <revision>$Revision: 1.4 $</revision>
+   <revision>$Revision: 1.1 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
