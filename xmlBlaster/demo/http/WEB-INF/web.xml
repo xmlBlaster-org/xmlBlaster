@@ -44,6 +44,10 @@
       <param-value>false</param-value>
       <description>dumps messages</description>
     </init-param>
+    <init-param>
+      <param-name>queue/connection/defaultPlugin</param-name>
+      <param-value>RAM,1.0</param-value>
+    </init-param>
 
     <!-- Example to look for xmlBlaster on another host -->
     <!-- init-param>
