@@ -620,8 +620,7 @@ TODO
    <!-- =================================================================== -->
    <!-- Creates a test report with junit                                    -->
    <!-- =================================================================== -->
-   <target name="report"
-      description="Creates a HTML test report with junit">
+   <target name="report" description="Creates a HTML test report with junit">
       <property name="report.dir" value="./doc/test/report"/>
       <echo message="Creating report to ${report.dir} ..."/>
       <echo message="NOTE: If the report generation halts here you've probably not added xalan.jar to your classpath"/>
@@ -631,12 +630,12 @@ TODO
          </fileset>
          <report format="noframes" todir="${report.dir}/html"/>
       </junitreport>
-      <echo message="Viewing the report ..."/>
-      <exec dir="${report.dir}/html" executable="junit-noframes.html" os="Windows 2000" vmlauncher="false"/>
+      <!-- echo message="Viewing the report ..."/>
       <exec dir="${report.dir}/html" executable="junit-noframes.html" os="Windows XP" vmlauncher="false"/>
+      <exec dir="${report.dir}/html" executable="junit-noframes.html" os="Windows 2000" vmlauncher="false"/>
       <exec dir="${report.dir}/html" executable="netscape" os="Linux" vmlauncher="false">
-         <arg line="junit-noframes.html"/>
-      </exec>
+         <arg line="${report.dir}/html/junit-noframes.html"/>
+      </exec -->
    </target>
 
    <!-- =================================================================== -->
