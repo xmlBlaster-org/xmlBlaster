@@ -37,7 +37,7 @@ public final class NodeId implements Comparable, java.io.Serializable
     * e.g. "http://xy.com:3412" is not allowed as it contains '/' and ':' chars. 
     * @param id The cluster node id, e.g. "heron".<br />
     * If you pass "/node/heron/client/joe" everything is stripped to get "heron"
-    * @see Global#getStrippedId()
+    * @see org.xmlBlaster.util.Global#getStrippedId()
     */
    public final void setId(String id) {
       if (id == null || id.length() < 1) {
