@@ -1,7 +1,7 @@
 Salute,
 
-the new release 0.845 is out (Mar, 27. 2003).
-(We wait with 0.85 until we got feedback about 0.845)
+the new release 0.846 is out (Apr, 26. 2003).
+(We wait with 0.85 until we got feedback about 0.846)
 
 XmlBlaster is maturing to industrial strength.
 
@@ -23,12 +23,8 @@ IMPORTANT NOTE:
   Use the new files from directory xmlBlaster/config.
   
 3. Backward compatibility:
-  * xmlBlaster 0.845 has changes to the client API (Java)
-    Please read 
-      xmlBlaster/CHANGES
-    and study
-      xmlBlaster/demo/javaclients/HelloWorld3.java
-    as an example.
+  * xmlBlaster 0.846 has changes to the client API (Java)
+    Please read xmlBlaster/CHANGES
 
 4. The default setup of xmlBlaster runs RAM based only,
   there is no persistence for crash recovery.
@@ -44,20 +40,14 @@ IMPORTANT NOTE:
 NEW FEATURES:
 -------------
 
-1. Bug fixes
+1. Now we have really cool Python support - thanks to Peter.
 
-2. New client configuration tutorial:
+2. Many severe bug fixes
+
+3. New plugin overview:
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.configuration.html
 
-3. Redesigned runlevel manager which loads plugins as
-   described in xmlBlasterPlugins.xml, see
-   http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.runlevel.html
-
-4. The powerful queue framework is now emebedded into the Java client library.
-   This supports persistence for crash recovery, swapping and cashing.
-   http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.html
-
-Please read the CHANGES file for more informations.
+And more, please read the CHANGES file for more informations.
 
 
 KNOWN BUGS:

@@ -1,9 +1,13 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
-Changes for 0.xxx [xx, xx 2003]
-===============================
+Changes for 0.846 [26, Apr 2003]
+================================
+
  o Enhanced Python support added by Peter <spex66@gmx.net>
    See xmlBlaster/src/python/README
+
+ o The plugin overview:
+   http://www.xmlblaster.org/MessageFlowPubSubOverview.html
 
  o BUGFIX: sync gap in SubjectInfo.java for PtP messages and offline clients
 
