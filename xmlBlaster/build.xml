@@ -775,10 +775,10 @@ TODO
         includes="*.xml"/>
       <property name="url.start" value=" &lt;url>"/>
       <property name="url.end " value=""/>
-      <pathconvert  targetos="windows" dirsep="/" pathsep="&lt;/url>" property="files" refid="req.files">
+      <pathconvert  targetos="windows" dirsep="/" pathsep="&lt;/url>&lt;url>" property="files" refid="req.files">
         <map from="${base.dir}/doc/requirements/" to="&lt;url>"/>
       </pathconvert>
-      <echo file="${req.dir}/all.xml"><![CDATA[<files>${files}</url></files>]]></echo>                                                                  
+      <echo file="${req.dir}/all.xml"><![CDATA[<files><url>${files}</url></files>]]></echo>                                                                  
       <!-- Create the overview -->
       <style processor="trax" basedir="${req.dir}"
              in="${req.dir}/all.xml"
