@@ -1,0 +1,14 @@
+#!/bin/sh
+# Script to start JServ servlet engine outside of Apache web server
+# To start the servlet engine:
+#  jserv
+# To stop the servlet engine:
+#  jserv -s
+properties=/etc/httpd/conf/jserv/jserv.properties
+log=${XMLBLASTER_HOME}/jserv_manual.log
+
+CLASSPATH=$CLASSPATH:/home/httpd/classes/servlet-2.0.jar
+CLASSPATH=$CLASSPATH:/usr/lib/apache/ApacheJServ.jar
+
+jaco -Djava.compiler= org.apache.jserv.JServ $properties $1
+#jaco org.apache.jserv.JServ $properties $1 2>> $log
