@@ -3,7 +3,7 @@ Name:      UriAuthority.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Parse authentication URI
-Version:   $Id: UriAuthority.java,v 1.2 2002/05/01 21:40:15 ruff Exp $
+Version:   $Id: UriAuthority.java,v 1.3 2002/06/18 18:07:42 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -181,6 +181,22 @@ public class UriAuthority
       return buf.toString();
    }
 
+   public String toXml() {
+      String offset = "\n";
+      StringBuffer sb = new StringBuffer(512);
+      sb.append(offset).append("<uri id='").append(uri).append("'>");
+      sb.append(offset).append("  <user>").append(user).append("</user>");
+      sb.append(offset).append("  <password>").append(password).append("</password>");
+      sb.append(offset).append("  <host>").append(host).append("</host>");
+      sb.append(offset).append("  <port>").append(port).append("</port>");
+      //sb.append("  <authority>").append(authority).append("</authority>");
+      //sb.append("  <path>").append(path).append("</path>");
+      //sb.append("  <query>").append(query).append("</query>");
+      //sb.append("  <fragment>").append(fragment).append("</fragment>");
+      sb.append(offset).append("</uri>");
+      return sb.toString();
+   }
+
    /** To test: javac -g UriAuthority.java
     *           java  org.xmlBlaster.util.UriAuthority
     */
@@ -196,6 +212,7 @@ public class UriAuthority
       UriAuthority uri= new UriAuthority(test);
       if (test.trim().equals(uri.toString())) {
          System.out.println("OK: "+test);
+         System.out.println(uri.toXml());
          return true;
       }
       else
@@ -210,6 +227,7 @@ public class UriAuthority
          result = user + ":" + password + "@localhost:3412";
       if (result.trim().equals(uri.toString())) {
          System.out.println("OK: "+result);
+         System.out.println(uri.toXml());
          return true;
       }
       else
