@@ -2,6 +2,10 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.xxx [xx, xx 2003]
 ===============================
+
+ o Changed REQ: The successful callback does not refresh a session, see:
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.login.session.html
+
  o BUGFIXES in CACHE and JDBC plugins when persistent storage failed
 
  o BUGIFX for passing EraseReturnQos in cluster environment back to client
@@ -24,7 +28,7 @@ Changes for 0.xxx [xx, xx 2003]
     reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) ->
     reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection)
 
-Changes for 0.845 [03, 27 2003]
+Changes for 0.845 [Mar, 27 2003]
 ===============================
 
  o Redesigned, powerful runlevel manager which loads plugins as
