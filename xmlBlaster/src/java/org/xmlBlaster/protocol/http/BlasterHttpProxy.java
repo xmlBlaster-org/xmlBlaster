@@ -3,7 +3,7 @@ Name:      BlasterHttpProxy.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxy.java,v 1.7 2000/03/15 22:18:25 kkrafft2 Exp $
+Version:   $Id: BlasterHttpProxy.java,v 1.8 2000/03/17 17:57:55 kkrafft2 Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -34,7 +34,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
  *   HTTP 1.1 specifies rfc2616 that the connection stays open as the
  *   default case. How must this code be changed?
  * @author Marcel Ruff ruff@swand.lake.de
- * @version $Revision: 1.7 $
+ * @version $Revision: 1.8 $
  */
 public class BlasterHttpProxy
 {
@@ -77,9 +77,11 @@ public class BlasterHttpProxy
     */
    public static ProxyConnection getNewProxyConnection( String loginName, String passwd ) throws XmlBlasterException
    {
-      ProxyConnection pc = new ProxyConnection( loginName, passwd );
-      proxyConnections.put( loginName, pc );
-      return pc;
+      synchronized(proxyConnections) {
+         ProxyConnection pc = new ProxyConnection( loginName, passwd );
+         proxyConnections.put( loginName, pc );
+         return pc;
+      }
    }
 
    /**
@@ -90,8 +92,10 @@ public class BlasterHttpProxy
     */
    public static ProxyConnection getProxyConnectionByLoginName( String loginName ) throws XmlBlasterException
    {
-      //return a proxy connection by login name
-      return (ProxyConnection)proxyConnections.get( loginName );
+      synchronized(proxyConnections) {
+         //return a proxy connection by login name
+         return (ProxyConnection)proxyConnections.get( loginName );
+      }
    }
 
    /**

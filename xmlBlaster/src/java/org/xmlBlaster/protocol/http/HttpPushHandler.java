@@ -3,7 +3,7 @@ Name:      HttpPushHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: HttpPushHandler.java,v 1.6 2000/03/16 17:49:56 kkrafft2 Exp $
+Version:   $Id: HttpPushHandler.java,v 1.7 2000/03/17 17:57:55 kkrafft2 Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -42,6 +42,8 @@ public class HttpPushHandler
    /** handlesMultipart is true for netscape browser */
    private boolean handlesMultipart = false;
 
+   private HttpPingThread pingThread = null;
+
 
    /**
     * Use on browser request.
@@ -70,6 +72,10 @@ public class HttpPushHandler
       this.req = req;
       this.res = res;
       initialize(null, null);
+
+      Log.info(ME,"Creating PingThread ...");
+      pingThread = new HttpPingThread( this, 45000L );
+      pingThread.start();
    }
 
 
@@ -239,5 +245,51 @@ public class HttpPushHandler
          Log.error(ME,e.toString());
       }
    }
+
+      /**
+    * calls the ping method in the parentframe of the callback frame
+    * The data must be Javascript code
+    */
+   public void ping() throws ServletException, IOException
+   {
+                push("if (parent.ping != null) parent.ping();\n");
+   }
+
+
+      /**
+    * Ping the xmlBlaster server, to test if connection is alive
+    */
+   private class HttpPingThread extends Thread
+   {
+      private final String ME = "HttpPingThread";
+      private HttpPushHandler pushHandler;
+      private final long PING_INTERVAL;
+      boolean pingRunning = true;
+
+      /**
+       * @param pingInterval How many milli seconds sleeping between the pings
+       */
+      HttpPingThread(HttpPushHandler pushHandler, long pingInterval) {
+         this.pushHandler = pushHandler;
+         this.PING_INTERVAL = pingInterval;
+         if (Log.CALLS) Log.calls(ME, "Entering constructor HTTP ping interval=" + pingInterval + " millis");
+      }
+      public void run() {
+         Log.info(ME, "Pinging browser ...");
+         while (pingRunning) {
+            try {
+               Thread.currentThread().sleep(PING_INTERVAL);
+            } catch (InterruptedException i) { }
+            try {
+               if(Log.TRACE) Log.trace(ME,"pinging the Browser ...");
+               pushHandler.ping();
+            } catch(Exception e) {
+               //error handling: browser closed connection.
+               Log.warning(ME,"You tried to ping a browser who is not interested.");
+            }
+         }
+      }
+   } // class PingThread
+
 
 }

@@ -3,7 +3,7 @@ Name:      callback.js
 Project:   xmlBlaster.org
 Comment:   Implementing some Javascript callback objects for xmlBlaster
 Author:    ruff@swand.lake.de
-Version:   $Id: callback.js,v 1.4 2000/03/17 16:05:18 kkrafft2 Exp $
+Version:   $Id: callback.js,v 1.5 2000/03/17 17:57:55 kkrafft2 Exp $
 ------------------------------------------------------------------------------*/
 
 // First define the usual xmlBlaster access methods
@@ -173,9 +173,9 @@ function UpdateQos(xml)
 /**
  * Create a message object, which contains the xmlBlaster message as string literals
  *
- * example: 
+ * example:
       var key = new PublishKeyWrapper();
-      var messageWrapperLiteral = new MessageWrapperLiteral(key.toXml(), "Hello World..", "<qos></qos>"); 
+      var messageWrapperLiteral = new MessageWrapperLiteral(key.toXml(), "Hello World..", "<qos></qos>");
 
  * @param key:String  The meta data
  * @param content:String The message itself (binary/octet????!!!)
@@ -197,9 +197,9 @@ function MessageWrapperLiteral(key, content, qos)
 */
 function MessageWrapperDom(key, content, qos)
 {
-   this.key		 	= key;
-   this.content 	= content;
-   this.qos 		= qos;
+   this.key                     = key;
+   this.content         = content;
+   this.qos             = qos;
 }
 
 
@@ -243,7 +243,7 @@ function removeUpdateListener(listenerFrame)
 }
 
 //---------------------------------------------------------------------------------------------
-// This is 
+// This is
 //
 //---------------------------------------------------------------------------------------------
 function removeUpdateListenerAtPos(index)
@@ -266,7 +266,7 @@ function removeUpdateListenerAtPos(index)
 
 
 //---------------------------------------------------------------------------------------------
-// This is 
+// This is
 //
 //---------------------------------------------------------------------------------------------
 function fireMessageUpdateEvent(message)
@@ -277,20 +277,29 @@ function fireMessageUpdateEvent(message)
          removeUpdateListenerAtPos( ii );
          continue;
       }
-       
+   }
+
+   for (var ii=0; ii < listenerList.length; ii++) {
+      if(listenerList[ii] == null ||
+         listenerList[ii].update == null) {
+         removeUpdateListenerAtPos( ii );
+         continue;
+      }
       listenerList[ii].update(message);
    }
+
+
 }
 
 
 //---------------------------------------------------------------------------------------------
-// This is 
+// This is
 //
 //---------------------------------------------------------------------------------------------
 function update( updateKey, content, updateQoS)
 {
-    var updateKey_d = unescape( updateKey.replace(/\+/g, " ") );	
-    var content_d = unescape( content.replace(/\+/g, " ") );	
+    var updateKey_d = unescape( updateKey.replace(/\+/g, " ") );
+    var content_d = unescape( content.replace(/\+/g, " ") );
     var updateQoS_d = unescape( updateQoS.replace(/\+/g, " ") );
 
 
@@ -307,12 +316,12 @@ function update( updateKey, content, updateQoS)
 
 function message(msg)
 {
-   var decoded = unescape( msg.replace(/\+/g, " ") );	
+   var decoded = unescape( msg.replace(/\+/g, " ") );
    alert( decoded );
 }
 function error(msg)
 {
-   var decoded = unescape( msg.replace(/\+/g, " ") );	
+   var decoded = unescape( msg.replace(/\+/g, " ") );
    alert( "Fehler!\n\n"+decoded );
 }
 
