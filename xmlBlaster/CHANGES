@@ -9,6 +9,10 @@ Changes in current subversion repository (svn)
    See: http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.subscribe.multiSubscribe.html
 
  o C++ client library:
+   - #12871 Extended clientProperty API
+   - #12870 Added xerces XMLPlatformUtils::Initialize PanicHandler
+   - #12870 Added locale setting for xerces XMLPlatformUtils::Initialize, adjust with for example
+            - xmlBlaster/locale "de_DE.iso-8859-1" or "en_US.UTF-8"
    - #12864 SOCKET driver: Removed obsolet mutex and obsolete thread
    - #12846 Changed connection_==0 check to be thread safe, passing now logging states to C library
    - #12823,#12825
