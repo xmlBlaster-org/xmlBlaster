@@ -3,15 +3,23 @@ Name:      HttpIorForCpp.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Writes to standard output the IOR read from the HTTP Server
-Version:   $Id: HttpIorForCpp.java,v 1.2 2000/09/15 17:16:21 ruff Exp $
+Version:   $Id: HttpIorForCpp.java,v 1.3 2001/09/04 14:50:10 ruff Exp $
 Author:    michele.laghi@attglobal.net
 -----------------------------------------------------------------------------*/
 
 package org.xmlBlaster.util.cpp;
 
-import org.jutils.JUtilsException;
-import org.jutils.init.Property;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.LoginQosWrapper;
+import org.xmlBlaster.authentication.plugins.InitResultQos;
+import org.xmlBlaster.authentication.plugins.simple.InitQos;
+import org.xmlBlaster.client.protocol.corba.CorbaConnection;
+import org.xmlBlaster.protocol.corba.authenticateIdl.AuthServer;
+import org.xmlBlaster.protocol.corba.authenticateIdl.AuthServerHelper;
+
 
 /**
  * Accesses the http server, reads the IOR for the AuthServer and prints it
@@ -20,51 +28,24 @@ import org.xmlBlaster.util.Log;
 
 public class HttpIorForCpp
 {
+   String authServerIOR;
+   boolean showUsage = false;
 
-   private Property properties_ = null;
-
-   /**
-    * Public constructor
-    */
-   public HttpIorForCpp (String args[])
+   public HttpIorForCpp (String args[]) throws Exception
    {
-      try {
-         properties_ = new Property("xmlBlaster.properties", true, args,
-                                    true);
-      }
-      catch (JUtilsException e) {
-      }
+      showUsage = XmlBlasterProperty.init(args);
 
-      Log.setLogLevel(0);
-   }
+      // check if parameter -name <userName> is given at startup of client
+      String loginName = XmlBlasterProperty.get("-name", "ben");
+      String passwd = XmlBlasterProperty.get("-passwd", "secret");
 
-   /**
-    * Gets the authentication server (reads via the http protocol) from the
-    * given iorHost and iorPort.
-    * @param iorHost string of the url of the server on which the xmlBlaster
-    *                server is running. (ex: "www.xmlBlaster.org").
-    * @param iorPort an integer specifying the port on which it will knock.
-    * @return        the IOR string of the authServer.
-    */
-   private String getAuthenticationServiceIOR (String iorHost, int iorPort)
-          throws Exception
-   {
-      java.net.URL nsURL = new java.net.URL("http", iorHost, iorPort,
-                                            "/AuthenticationService.ior");
+      LoginQosWrapper loginQos = new LoginQosWrapper(); // creates "<qos></qos>" string
+      loginQos.setSecurityQos(new InitQos(loginName, passwd));
 
-      java.io.InputStream nsis = nsURL.openStream();
-      byte[] bytes = new byte[4096];
-      java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
-      int numbytes;
-      while (nsis.available() > 0 && (numbytes = nsis.read(bytes)) > 0) {
-         bos.write(bytes, 0, numbytes);
-      }
-      nsis.close();
-      String ior = bos.toString();
-      if (!ior.startsWith("IOR:"))
-         ior = "IOR:000" + ior;
-         // hack for JDK 1.1.x, where the IOR: is cut away from ByteReader ??? !!!
-      return ior;
+      CorbaConnection con = new CorbaConnection(args);
+
+      AuthServer authServer = con.getAuthenticationService();
+      authServerIOR = con.getOrb().object_to_string(authServer);
    }
 
    /**
@@ -76,29 +57,48 @@ public class HttpIorForCpp
     */
    public String getIOR ()
    {
-      String iorHost = properties_.get("iorHost", "localhost");
-      int    iorPort =
-      properties_.get("iorPort", org.xmlBlaster.protocol.corba.
-                      CorbaDriver.DEFAULT_HTTP_PORT); // 7609
-      String authServerIOR = null;
-      if (iorHost != null && iorPort > 0) {
-         try {
-            authServerIOR = getAuthenticationServiceIOR(iorHost, iorPort);
-         }
-         catch (java.lang.Exception ex) {
-            System.err.println("Error in retrieving the IOR" + ex);
-         }
-      }
       return authServerIOR;
    }
 
 
+   static void usage()
+   {
+      Log.plain("\nAvailable options:");
+      Log.plain("   -name               The login name [ClientSub].");
+      Log.plain("   -passwd             The login name [secret].");
+      XmlBlasterConnection.usage();
+      Log.usage();
+      Log.exit("", "Example: jaco org.xmlBlaster.util.cpp.HttpIorForCpp -name Jeff\n");
+   }
+
+   /** java  org.xmlBlaster.util.cpp.HttpIorForCpp */
    public static void main (String args[])
    {
-      java.io.PrintStream oldStream = System.out;
-      System.setOut(System.err);
-      HttpIorForCpp httpReader = new HttpIorForCpp(args);
-      System.setOut(oldStream);
-      System.out.println(httpReader.getIOR());
+      Exception e = null;
+      class DevNull extends java.io.OutputStream { public void write(int b) {} }
+      java.io.PrintStream oldOut = System.out;
+      java.io.PrintStream oldErr = System.err;
+      System.setOut(new java.io.PrintStream(new DevNull()));
+      System.setErr(new java.io.PrintStream(new DevNull()));
+      HttpIorForCpp httpReader = null;
+      try {
+         httpReader = new HttpIorForCpp(args);
+      }
+      catch (Exception ex) {
+         e=ex;
+      } finally {
+         System.setOut(oldOut);
+         System.setErr(oldErr);
+      }
+      if (e!=null)
+         System.out.println(e.toString());
+
+      if (httpReader != null) {
+         if (httpReader.showUsage == true)
+            HttpIorForCpp.usage();
+         else
+            System.out.println(httpReader.getIOR());
+      }
    }
+
 }
