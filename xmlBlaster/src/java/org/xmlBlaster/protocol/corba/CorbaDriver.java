@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.60 2003/03/27 20:57:06 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.61 2003/03/31 09:42:18 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -572,7 +572,6 @@ public class CorbaDriver implements I_Driver
 
       boolean wait_for_completion = false;
       orb.shutdown(wait_for_completion);
-      if (log.TRACE) log.warn(ME, "Currently orb.shutown is commented out, as it destoyes all POAs in the virtual machine, the cluster testsuite doen' like it");
 
       log.info(ME, "POA and ORB are down, CORBA resources released.");
    }
