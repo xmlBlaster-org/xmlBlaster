@@ -157,21 +157,21 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
    /**
     * Logout from the server.
     * <p />
-	 * Behavior on client side:<br />
+    * Behavior on client side:<br />
     * Destroys pending tail back messages in the client queue
     * and destroys low level connection and callback server.
-	 * You can customize the behavior with disconnectQos.
+    * You can customize the behavior with disconnectQos.
     * <p />
-	 * Behavior on client side:<br />
-	 * The server side session resources are destroyed, pending messages are delete.
+    * Behavior on client side:<br />
+    * The server side session resources are destroyed, pending messages are delete.
     * <p />
-	 * NOTE: If you want to keep all resources on server side for this login session
-	 *       but want to halt your client,
-	 *       shutdown the callback server with <code>leaveServer(null)</code>
-	 *       and throw the xmlBlasterAccess instance away.
-	 *       This is often the case if the client disappears and at a later point wants
-	 *       to reconnect. On server side the queue for this session remains alive and
-	 *       collects messages.
+    * NOTE: If you want to keep all resources on server side for this login session
+    *       but want to halt your client,
+    *       shutdown the callback server with <code>leaveServer(null)</code>
+    *       and throw the xmlBlasterAccess instance away.
+    *       This is often the case if the client disappears and at a later point wants
+    *       to reconnect. On server side the queue for this session remains alive and
+    *       collects messages.
     * @param disconnectQos Describe the desired behavior on disconnect
     * @return false if connect() wasn't called before or if you call disconnect() multiple times
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.disconnect.html">interface.disconnect requirement</a>
@@ -180,8 +180,8 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
 
    /**
     * Leaves the connection to the server and cleans up the 
-    * resources without making a disconnect. This way the
-    * Persistent client messages are kept in queue while 
+    * client side resources without making a server side disconnect. 
+    * This way the client side persistent messages are kept in queue while 
     * transient ones are lost. If you want to delete also the
     * persistent messages you have to do it manually.
     * 
