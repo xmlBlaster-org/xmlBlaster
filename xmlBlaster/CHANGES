@@ -1,5 +1,12 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
+Changes for 0.xxx [xx, xxx 2003]
+================================
+
+ o BUGFIX  '-pluginsFile /yourdirectory/yourfile.xml' works now
+   as expected
+
+
 Changes for 0.848 [23, May 2003]
 ================================
  o Fix in XmlBlasterException for MakeFormat with index > {9}
