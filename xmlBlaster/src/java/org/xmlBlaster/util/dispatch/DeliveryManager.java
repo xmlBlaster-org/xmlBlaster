@@ -408,8 +408,8 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
       synchronized (this) {
          if (!this.isSyncMode) return;
          //this.msgQueue.removePutListener(this);
-         activateDeliveryWorker(); // just in case there are some messages pending in the queue
          this.isSyncMode = false;
+         activateDeliveryWorker(); // just in case there are some messages pending in the queue
          log.info(ME, "Switched to asynchronous message delivery");
       }
    }
@@ -632,6 +632,10 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
       if (this.isShutdown) {
          if (log.TRACE) log.trace(ME, "The dispatcher is shutdown, can't activate callback worker thread" + toXml(""));
          return false; // assert
+      }
+
+      if (this.isSyncMode) {
+         return false;
       }
 
       if (msgQueue.isShutdown()) { // assert
