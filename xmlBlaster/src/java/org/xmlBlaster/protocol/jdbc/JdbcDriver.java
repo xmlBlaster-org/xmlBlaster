@@ -3,7 +3,7 @@ Name:      JdbcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   JdbcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: JdbcDriver.java,v 1.30 2002/06/25 17:40:48 ruff Exp $
+Version:   $Id: JdbcDriver.java,v 1.31 2002/08/12 13:31:48 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
@@ -53,6 +53,8 @@ public class JdbcDriver implements I_Driver, I_Publish
    private String sessionId = null;
    /** JDBC connection pooling, a pool for every user */
    private static NamedConnectionPool namedPool = null;
+   /** key under which my callback is registered */
+   private String cbRegistrationKey = null;
 
    private String loginName = null;
    private String passwd = null;
@@ -107,7 +109,7 @@ public class JdbcDriver implements I_Driver, I_Publish
 
       initDrivers();
 
-      if (log.TRACE) log.trace(ME, "Initialized successfully JDBC driver '" + loginName + "'.");
+      if (log.TRACE) log.trace(ME, "Initialized successfully JDBC driver.");
    }
 
    /**
@@ -127,17 +129,23 @@ public class JdbcDriver implements I_Driver, I_Publish
       }
 
       // "JDBC" below is the 'callback protocol type', which results in instantiation of the given class:
-      CallbackAddress callback = new CallbackAddress(glob, "JDBC");
-      callback.setAddress("org.xmlBlaster.protocol.jdbc.CallbackJdbcDriver");
+      CallbackAddress cbAddress = new CallbackAddress(glob, "JDBC");
+      cbAddress.setAddress("org.xmlBlaster.protocol.jdbc.CallbackJdbcDriver");
 
-      ConnectQos connectQos = new ConnectQos(glob, callback);
+      // Register the native callback driver
+      CallbackJdbcDriver cbDriver = new CallbackJdbcDriver();
+      cbDriver.init(glob, cbAddress);
+      cbRegistrationKey = cbAddress.getType() + cbAddress.getAddress();
+      glob.addNativeCallbackDriver(cbRegistrationKey, cbDriver); // tell that we are the callback driver as well
+
+      ConnectQos connectQos = new ConnectQos(glob, cbAddress);
       connectQos.setSecurityPluginData("htpasswd", "1.0", loginName, passwd);
       connectQos.setSessionTimeout(0L);
 
       ConnectReturnQos returnQos = authenticate.connect(connectQos);
       sessionId = returnQos.getSessionId();
-      
-      log.info(ME, "Started successfully JDBC driver '" + loginName + "'.");
+
+      log.info(ME, "Started successfully JDBC driver with loginName=" + loginName);
    }
 
    /**
@@ -145,7 +153,7 @@ public class JdbcDriver implements I_Driver, I_Publish
     */
    public synchronized void deActivate() throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering deActivate");
-      if (log.TRACE) log.trace(ME, "Implement deActivate()");
+      glob.removeNativeCallbackDriver(cbRegistrationKey);
    }
 
    /**
@@ -183,7 +191,7 @@ public class JdbcDriver implements I_Driver, I_Publish
    public void update(String sender, byte[] content)
    {
       if (log.CALL) log.call(ME, "SQL message from '" + sender + "' received");
-      XmlDBAdapterWorker worker = new XmlDBAdapterWorker(sender, content, this, namedPool);
+      XmlDBAdapterWorker worker = new XmlDBAdapterWorker(glob, sender, content, this, namedPool);
       worker.start();     // In future use callback thread !!!!!
    }
 
