@@ -11,7 +11,6 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.MessageUnitWrapper;
 import org.xmlBlaster.authentication.SessionInfo;
-import org.xmlBlaster.engine.admin.extern.TelnetGateway;
 
 import java.util.Map;
 import java.util.TreeMap;
@@ -37,10 +36,11 @@ public final class CommandManager
    private final LogChannel log;
    private final SessionInfo sessionInfo;
 
+   /** Map to internal handlers like sysprop,client,msg etc */
    private final Map handlerMap = new TreeMap();
 
-   // external gateways:
-   private TelnetGateway telnetGateway = null;
+   /** Map of external gateways to SNMP, telnet etc. */
+   private final Map externMap = new TreeMap();
 
    /**
     * You need to call postInit() after all drivers are loaded.
@@ -80,22 +80,39 @@ public final class CommandManager
 
       // Initialize telnet access ...
       try {
-         int port = glob.getProperty().get("admin.remoteconsole.port", 0); // 2702;
-         port = glob.getProperty().get("admin.remoteconsole.port[" + glob.getId() + "]", port);
-         if (port > 1000)
-            telnetGateway = new TelnetGateway(glob, this, port);
-         else {
-            if (log.TRACE) log.trace(ME, "No telnet gateway configured, port=" + port + " try '-admin.remoteconsole.port 2702' if you want one");
-         }
+         org.xmlBlaster.engine.admin.extern.TelnetGateway telnetGateway = new org.xmlBlaster.engine.admin.extern.TelnetGateway();
+   
+         if (telnetGateway.initialize(glob, this) == true)
+            externMap.put(telnetGateway.getName(), telnetGateway);
       }
       catch(XmlBlasterException e) {
+         e.printStackTrace();
+         log.error(ME, e.toString());
+      }
+      catch(Throwable e) {
+         e.printStackTrace();
          log.error(ME, e.toString());
       }
 
       // Initialize SNMP access ...
+      try {
+         org.xmlBlaster.engine.admin.extern.SnmpGateway snmpGateway = new org.xmlBlaster.engine.admin.extern.SnmpGateway();
 
+         if (snmpGateway.initialize(glob, this) == true)
+            externMap.put(snmpGateway.getName(), snmpGateway);
+      }
+      catch(XmlBlasterException e) {
+         log.error(ME, e.toString());
+      }
+      catch(Throwable e) {
+         e.printStackTrace();
+         log.error(ME, e.toString());
+      }
    }
 
+   /**
+    * Register internal handler for specific tasks. 
+    */
    public synchronized final void register(String key, I_CommandHandler handler) {
       if (key == null || handler == null) {
          Thread.currentThread().dumpStack();
@@ -148,9 +165,13 @@ public final class CommandManager
    }
 
    public void shutdown() {
-      if (telnetGateway != null) {
-         telnetGateway.shutdown();
-         telnetGateway = null; 
+      if (externMap != null && externMap.size() > 0) {
+         Iterator it = externMap.values().iterator();
+         while (it.hasNext()) {
+            I_ExternGateway gw = (I_ExternGateway)it.next();
+            gw.shutdown();
+         }
+         externMap.clear();
       }
 
       if (handlerMap != null && handlerMap.size() > 0) {
@@ -164,6 +185,7 @@ public final class CommandManager
             handlerMap.remove(key); // To be shure we kill again
             // If a handler has registered multiple times, it should be able to handle multiple shutdowns
          }
+         handlerMap.clear();
       }
    }
 
@@ -186,6 +208,14 @@ public final class CommandManager
 
       sb.append(offset).append("<commandManager>");
       /*
+      if (externMap != null && externMap.size() > 0) {
+         Iterator it = externMap.values().iterator();
+         while (it.hasNext()) {
+            I_ExternGatewax gw = (I_ExternGateway)it.next();
+            sb.append(gw.toXml(extraOffset + "   "));
+         }
+         externMap.clear();
+      }
       if (handlerMap != null && handlerMap.size() > 0) {
          Iterator it = handlerMap.values().iterator();
          while (it.hasNext()) {

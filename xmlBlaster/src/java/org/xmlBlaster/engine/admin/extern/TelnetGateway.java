@@ -11,6 +11,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.MessageUnitWrapper;
 import org.xmlBlaster.engine.admin.CommandManager;
+import org.xmlBlaster.engine.admin.I_ExternGateway;
 import org.xmlBlaster.authentication.SessionInfo;
 
 import remotecons.RemoteServer;
@@ -28,33 +29,32 @@ import java.io.IOException;
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.telnet.html">admin.telnet requirement</a>
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.command.html">admin.command requirement</a>
  */
-public final class TelnetGateway implements CommandHandlerIfc
+public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway
 {
    private String ME;
-
-   // The following 3 declarations are 'final' but the SUN JDK 1.3.1 does not like it
-   private final Global glob;
-   private final LogChannel log;
-   private final CommandManager manager;
-   private final int port;
+   private Global glob;
+   private LogChannel log;
+   private CommandManager manager;
+   private int port;
    private RemoteServer rs = null;
 
-
    /**
-    * You need to call postInit() after all drivers are loaded.
-    *
-    * @param sessionInfo Internal handle to be used directly with RequestBroker
-    *                    NOTE: We (the command code) are responsible for security checks
-    *                    as we directly write into RequestBroker.
+    * Creates the remote console server. 
     */
-   public TelnetGateway(Global glob, CommandManager manager, int port) throws XmlBlasterException {
+   public boolean initialize(Global glob, CommandManager commandManager) throws XmlBlasterException {
       this.glob = glob;
       this.log = this.glob.getLog("admin");
       this.ME = "TelnetGateway-" + this.glob.getId();
-      this.manager = manager;
-      this.port = port;
-      createRemoteConsole(port);
-      log.info(ME, "Started remote console server for administration, try 'telnet " + glob.getLocalIP() + " " + port + "' to access it and type 'help'.");
+      this.manager = commandManager;
+      port = glob.getProperty().get("admin.remoteconsole.port", 0); // 2702;
+      port = glob.getProperty().get("admin.remoteconsole.port[" + glob.getId() + "]", port);
+      if (port > 1000) {
+         createRemoteConsole(port);
+         log.info(ME, "Started remote console server for administration, try 'telnet " + glob.getLocalIP() + " " + port + "' to access it and type 'help'.");
+         return true;
+      }
+      if (log.TRACE) log.trace(ME, "No telnet gateway configured, port=" + port + " try '-admin.remoteconsole.port 2702' if you want one");
+      return false;
    }
 
    /**
@@ -156,6 +156,10 @@ public final class TelnetGateway implements CommandHandlerIfc
    public CommandHandlerIfc getInstance() {
       if (log.TRACE) log.trace(ME, "getInstance() is returning myself");
       return this;
+   }
+
+   public String getName() {
+      return "TelnetGateway";
    }
 
    public void shutdown() {
