@@ -76,6 +76,10 @@ public class Timeout extends Thread
    private TreeMap map = null;
    /** Start/Stop the Timeout manager thread */
    private boolean running = true;
+   /** On creation wait until thread started */
+   private boolean ready = false;
+   /** Switch on debugging output */
+   private final boolean debug = false;
 
 
    /**
@@ -100,10 +104,7 @@ public class Timeout extends Thread
     */
    public Timeout()
    {
-      super("Timeout-Thread");
-      map = new TreeMap();
-      setDaemon(true);
-      start();
+      this("Timeout-Thread");
    }
 
 
@@ -116,6 +117,9 @@ public class Timeout extends Thread
       map = new TreeMap();
       setDaemon(true);
       start();
+      while (!ready) { // We block until our timer thread is ready
+         try { Thread.currentThread().sleep(1); } catch (InterruptedException e) {}
+      }
    }
 
 
@@ -140,13 +144,13 @@ public class Timeout extends Thread
          container = null;
          synchronized (map) {
             try {
-               Timestamp nextWakeup = (Timestamp) map.firstKey();
+               Timestamp nextWakeup = (Timestamp) map.firstKey(); // throws exception if empty
                long next = nextWakeup.getMillis();
                long current = System.currentTimeMillis();
                delay = next - current;
                if (delay <= 0) {
                   container = (Container) map.remove(nextWakeup);
-                  if (false) {
+                  if (debug) {
                      long time = System.currentTimeMillis();
                      long diff = time - nextWakeup.getMillis();
                      System.out.println("Timeout occurred, calling listener with real time error of " + diff + " millis");
@@ -154,7 +158,8 @@ public class Timeout extends Thread
                }
             }
             catch (NoSuchElementException e) {
-               // The listener map is empty, nothing to do.
+               if (debug)
+                  System.out.println("The listener map is empty, nothing to do.");
             }
          }
 
@@ -165,6 +170,7 @@ public class Timeout extends Thread
 
          try {
             synchronized (this) {
+               ready = true; // only needed on thread creation / startup
                wait(delay);
             }
          }
@@ -394,6 +400,7 @@ public class Timeout extends Thread
    public static void main(String args[]) throws Exception {
 
       Timeout timeout = new Timeout("TestTimer");
+      System.out.println("Timer created and ready.");
       Timestamp timeoutHandle = timeout.addTimeoutListener(new I_Timeout() {
             public void timeout(Object userData) {
                System.out.println("Timeout happened");
@@ -401,8 +408,7 @@ public class Timeout extends Thread
             }
          },
          2000L, null);
-
-      try { Thread.currentThread().sleep(4000); } catch (InterruptedException e) {}
+      try { Thread.currentThread().sleep(4000L); } catch (InterruptedException e) {}
       System.err.println("ERROR: Timeout not occurred.");
       System.exit(1);
    }
