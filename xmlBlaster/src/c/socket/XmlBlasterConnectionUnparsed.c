@@ -396,6 +396,9 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
    }
    initializeXmlBlasterException(exception);
 
+   if (responseSocketDataHolder)
+      memset(responseSocketDataHolder, 0, sizeof(SocketDataHolder));
+
    if (!xb->isConnected(xb)) {
       strncpy0(exception->errorCode, "communication.noConnection", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%s:%d] No connection to xmlBlaster", __FILE__, __LINE__);
@@ -486,7 +489,7 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
    free(rawMsg);
    rawMsg = 0;
 
-   if (msgType==MSG_TYPE_RESPONSE || msgType==MSG_TYPE_EXCEPTION)
+   if (msgType==MSG_TYPE_RESPONSE || msgType==MSG_TYPE_EXCEPTION || !strcmp(XMLBLASTER_PUBLISH_ONEWAY, methodName))
       return true; /* Responses and exceptions are oneway */
 
    if (responseSocketDataHolder) { /* if not oneway read the response message */
@@ -506,7 +509,6 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
          if (requestInfoP == 0) {
             printf("[XmlBlasterConnectionUnparsed] TODO: returning requestInfo 0 is not implemented");
          }
-         memset(responseSocketDataHolder, 0, sizeof(SocketDataHolder));
          responseSocketDataHolder->type = requestInfoP->responseType;
          responseSocketDataHolder->version = XMLBLASTER_SOCKET_VERSION;
          strncpy0(responseSocketDataHolder->requestId, requestInfo.requestIdStr, MAX_REQUESTID_LEN);
@@ -829,13 +831,13 @@ static void xmlBlasterPublishOneway(XmlBlasterConnectionUnparsed *xb, MsgUnitArr
    for (i=0; i<msgUnitArr->len; i++)
       msgUnitArr->msgUnitArr[i].responseQos = 0; /* Initialize properly */
 
-   if (sendData(xb, XMLBLASTER_PUBLISH, MSG_TYPE_INVOKE, blob.data, blob.dataLen,
+   if (sendData(xb, XMLBLASTER_PUBLISH_ONEWAY, MSG_TYPE_INVOKE, blob.data, blob.dataLen,
                 &responseSocketDataHolder, exception) == false) {
       free(blob.data);
       return;
    }
    free(blob.data);
-   freeBlobHolderContent(&responseSocketDataHolder.blob);
+   freeBlobHolderContent(&responseSocketDataHolder.blob); /* Could be ommitted for oneway */
 }
 
 /**

@@ -288,6 +288,9 @@ static MsgRequestInfo *preSendEvent(MsgRequestInfo *msgRequestInfoP, XmlBlasterE
    bool retVal;
    XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)msgRequestInfoP->xa;
 
+   if (!strcmp(XMLBLASTER_PUBLISH_ONEWAY, msgRequestInfoP->methodName))
+      return msgRequestInfoP;
+
    /* ======== Initialize threading ====== */
    msgRequestInfoP->responseMutexIsLocked = false; /* Only to remember if the client thread holds the lock */
 #  ifdef _WINDOWS
