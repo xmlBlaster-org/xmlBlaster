@@ -1,0 +1,81 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='protocol' type='NEW' prio='LOW' status="CLOSED">
+   <topic>
+      XmlBlaster provides a framework to plugin drivers for new protocols to access
+      xmlBlaster, and for drivers to callback to clients.
+   </topic>
+   <description>
+      <![CDATA[
+      <p>
+      The protocol to access xmlBlaster and the protocol to callback a client
+      are totally decopled. You can for example access xmlBlaster using CORBA and callback
+      to clients using email and http.
+      </p>
+      <p>
+      All xmlBlaster access is handled using three interfaces in the package
+      <code>org.xmlBlaster.protocol</code>:
+      </p>
+      <ul>
+         <li>
+         I_XmlBlaster: This is the only way to access the xmlBlaster core.
+         Your new driver needs to access xmlBlaster by invoking these methods.<br />
+         I_XmlBlaster is implemented by a singleton XmlBlasterImpl, the invocations are
+         checked there by the authentication server, allowing
+         to do all security handling in one place.<br />
+         I_XmlBlaster has methods to pass the XmlKey and QoS as objects and not
+         as literal xml ASCII string, for maximum performing native calls.
+         </li>
+         <li>
+         I_Driver: If you want to support a new protocol to access xmlBlaster
+         you need to implement this interface.<br />
+         As an example have a look into CorbaDriver.java.
+         </li>
+         <li>
+         I_CallbackDriver: If you want to plug in a new protocol to callback
+         to a client (for example with email), you need to implement this interface.<br />
+         For an example study CallbackCorbaDriver.java
+         </li>
+      </ul>
+      <p>
+      Once you have implemented a new protocol driver, you need to add it
+      to xmlBlaster.properties, it is then loaded automatically on the next
+      xmlBlaster startup:
+      </p>
+      Example entry to xmlBlaster.properties for Corba and Email drivers:
+      <pre>
+         #------------------------------------------------------------------------------
+         # List of all xmlBlaster access protocol drivers (I_Driver and I_Callback implementations)
+         # &lt;protocol-type>:&lt;driverClass>,&lt;protocl-type>:&lt;driverClass>,...
+         # For protocl types see I_Driver.java
+         Protocol.Drivers=IOR:org.xmlBlaster.protocol.corba.CorbaDriver,EMAIL:org.xmlBlaster.protocol.email.EmailDriver
+         Protocol.CallbackDrivers=IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver,EMAIL:org.xmlBlaster.protocol.email.CallbackEmailDriver
+      </pre>
+      <p>
+      The callback driver protocol type for email is called "EMAIL"
+      and the Corba driver protocol is called "IOR".<br />
+      This string is used when you do your login in the qos to specify 
+      your callback wishes.<br />
+      See requirement 'engine.qos.login.callback' for further directions.
+      </p>
+      ]]>
+   </description>
+   <todo>
+   </todo>
+   <see type="REQ">engine.qos.login.callback</see>
+   <see type="API">org.xmlBlaster.protocol.I_XmlBlaster</see>
+   <see type="API">org.xmlBlaster.protocol.I_Driver</see>
+   <see type="API">org.xmlBlaster.protocol.I_CallbackDriver</see>
+   <author>ruff@swand.lake.de</author>
+   <hacker>ruff@swand.lake.de</hacker>
+   <effort>4</effort>
+   <date>2000 06 06</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="CLOSED">
+      <name>-</name>
+      <comment>This is tested implicit by all testsuite tests</comment>
+      <test tool="SUITE">testsuite.org.xmlBlaster.TestAll</test>
+   </testcase>
+</requirement>
+
