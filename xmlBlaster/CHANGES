@@ -3,6 +3,10 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.x [200x-xx-xx]
 ============================
+
+ o C++ client library:
+   - Fixed memory leak of 8 bytes in SocketDriver wrapper class
+   - Fixed string bug in lexical_cast.h
  
  o AppletServlet is now processing binary data too (client class sends it 
    in the body of the request)
