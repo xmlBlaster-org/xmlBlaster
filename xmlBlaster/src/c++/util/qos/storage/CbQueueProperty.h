@@ -3,14 +3,14 @@ Name:      CbQueueProperty.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: CbQueueProperty.h,v 1.1 2002/12/20 19:37:17 laghi Exp $
+Version:   $Id: CbQueueProperty.h,v 1.2 2003/01/05 23:11:07 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
  * Helper class holding callback queue properties.
  * <p />
  * See ConnectQos for XML sysntax.
- * @see org.xmlBlaster.util.ConnectQos
+ * @see org.xmlBlaster.client.qos.ConnectQos
  */
 
 #ifndef _UTIL_QUEUE_CBQUEUEPROPERTY_H

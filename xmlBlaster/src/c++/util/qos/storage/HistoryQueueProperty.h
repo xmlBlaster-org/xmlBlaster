@@ -8,7 +8,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Helper class holding history queue properties.
  * <p />
  * See ConnectQos for XML sysntax.
- * @see org.xmlBlaster.util.ConnectQos
+ * @see org.xmlBlaster.client.qos.ConnectQos
  */
 
 #ifndef _UTIL_HISTORYQUEUEPROPERTY_H

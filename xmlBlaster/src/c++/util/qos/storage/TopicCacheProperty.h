@@ -8,7 +8,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Helper class holding properties of the MsgUnit storage. 
  * <p />
  * See ConnectQos for XML sysntax.
- * @see org.xmlBlaster.util.ConnectQos
+ * @see org.xmlBlaster.client.qos.ConnectQos
  */
 
 #ifndef _UTIL_TOPICCACHEPROPERTY_H

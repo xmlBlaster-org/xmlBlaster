@@ -9,7 +9,7 @@ Comment:   Holding callback queue properties
  * Helper class holding callback queue properties.
  * <p />
  * See ConnectQos for XML sysntax.
- * @see org.xmlBlaster.util.ConnectQos
+ * @see org.xmlBlaster.client.qos.ConnectQos
  */
 
 #ifndef _UTIL_QUEUE_QUEUEPROPERTY_H

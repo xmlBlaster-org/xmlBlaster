@@ -3,7 +3,7 @@ Name:      QueuePropertyFactory.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyFactory.h,v 1.1 2002/12/20 19:37:18 laghi Exp $
+Version:   $Id: QueuePropertyFactory.h,v 1.2 2003/01/05 23:11:07 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 
@@ -11,7 +11,7 @@ Version:   $Id: QueuePropertyFactory.h,v 1.1 2002/12/20 19:37:18 laghi Exp $
  * Factory to construct QueueProperty objects
  * <p />
  * See ConnectQos for XML syntax.
- * @see org.xmlBlaster.util.ConnectQos
+ * @see org.xmlBlaster.client.qos.ConnectQos
  */
 
 #ifndef _UTIL_QUEUE_QUEUEPROPERTYFACTORY_H

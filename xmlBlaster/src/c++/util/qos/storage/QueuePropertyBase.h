@@ -3,14 +3,14 @@ Name:      QueuePropertyBase.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.h,v 1.2 2002/12/31 11:45:37 laghi Exp $
+Version:   $Id: QueuePropertyBase.h,v 1.3 2003/01/05 23:11:07 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
  * Helper class holding callback queue properties.
  * <p />
  * See ConnectQos for XML syntax.
- * @see org.xmlBlaster.util.ConnectQos
+ * @see org.xmlBlaster.client.qos.ConnectQos
  */
 
 #ifndef _UTIL_QUEUE_QUEUEPROPERTYBASE_H

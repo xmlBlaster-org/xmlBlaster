@@ -3,7 +3,7 @@ Name:      QueuePropertyBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.cpp,v 1.2 2002/12/31 11:45:37 laghi Exp $
+Version:   $Id: QueuePropertyBase.cpp,v 1.3 2003/01/05 23:11:07 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 
@@ -11,7 +11,7 @@ Version:   $Id: QueuePropertyBase.cpp,v 1.2 2002/12/31 11:45:37 laghi Exp $
  * Helper class holding callback queue properties.
  * <p />
  * See ConnectQos for XML syntax.
- * @see org.xmlBlaster.util.ConnectQos
+ * @see org.xmlBlaster.client.qos.ConnectQos
  */
 
 #include <util/qos/storage/QueuePropertyBase.h>
