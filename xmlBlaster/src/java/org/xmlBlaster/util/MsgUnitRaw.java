@@ -26,6 +26,10 @@ public final class MsgUnitRaw implements java.io.Serializable
    private final byte[] content;
 
    /**
+    * @param msgUnit Temporary object with parsed information, this is not evaluated internally
+    * @param key
+    * @param content
+    * @param qos
     */
    public MsgUnitRaw(MsgUnit msgUnit, String key, byte[] content, String qos) {
       this.msgUnit = msgUnit;
