@@ -5,6 +5,7 @@ import org.jutils.time.StopWatch;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin;
+import org.xmlBlaster.util.queue.I_QueueSizeListener;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.I_QueueEntry;
@@ -45,12 +46,54 @@ import org.xmlBlaster.util.queue.QueuePluginManager;
  * @see org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin
  */
 public class I_QueueTest extends TestCase {
+
+
+   class QueueSizeListener  implements I_QueueSizeListener {
+
+      private long lastNumEntries = 0L, 
+                   lastNumBytes = 0L,
+                   lastIncrementEntries = 0L,
+                   lastIncrementBytes = 0L;
+      private int count = 0;
+      
+      public long getLastIncrementEntries() {
+         return this.lastIncrementEntries;
+      }
+      
+      public long getLastIncrementBytes() {
+         return this.lastIncrementBytes;
+      }
+      
+      public int getCount() {
+         return this.count;
+      }
+      
+      public void clear() {
+         this.lastNumEntries = 0L; 
+         this.lastNumBytes = 0L;
+         this.lastIncrementEntries = 0L;
+         this.lastIncrementBytes = 0L;
+         this.count = 0;
+      }
+      
+      public void changed(I_Queue queue, long numEntries, long numBytes) {
+         this.lastIncrementEntries = numEntries - this.lastNumEntries;
+         this.lastIncrementBytes = numBytes - this.lastNumBytes;
+         this.lastNumEntries = numEntries;
+         this.lastNumBytes = numBytes;
+         this.count++;
+      }
+   }
+   
+
    private String ME = "I_QueueTest";
    protected Global glob;
    protected LogChannel log;
    private StopWatch stopWatch = new StopWatch();
 
    private I_Queue queue;
+   private QueueSizeListener queueSizeListener = new QueueSizeListener();
+   
    static String[] PLUGIN_TYPES = {
                    new String("RAM"),
                    new String("JDBC"),
@@ -236,27 +279,19 @@ public class I_QueueTest extends TestCase {
          //========== Test 1: put(I_QueueEntry[])
          int numLoop = 10;
          ArrayList list = new ArrayList();
-         /*
-         for (int ii=0; ii<numLoop; ii++) {
-            DummyEntry[] queueEntries = {
-                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true),
-                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true),
-                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true)};
-
-            queue.put(queueEntries, false);
-
-            for (int i=0; i < 3; i++) list.add(queueEntries[i]);
-
-            this.checkSizeAndEntries(" put(I_QueueEntry[]) ", list, queue);
-            assertEquals(ME+": Wrong size", (ii+1)*queueEntries.length, queue.getNumOfEntries());
-         }
-         */
 
          //========== Test 2: put(I_QueueEntry)
+         this.queue.removeQueueSizeListener(null);
+         this.queue.addQueueSizeListener(this.queueSizeListener);
+         this.queueSizeListener.clear();
+
          for (int ii=0; ii<numLoop; ii++) {
             DummyEntry queueEntry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true);
             try {
                queue.put(queueEntry, false);
+               assertEquals("number of entries incremented on last invocation", 1, this.queueSizeListener.getLastIncrementEntries());
+               assertEquals("number of bytes incremented on last invocation", queueEntry.getSizeInBytes(), this.queueSizeListener.getLastIncrementBytes());
+               
                if (ii > maxEntries) { // queue allows on overload
                   fail("Didn't expect more than " + maxEntries + " entries" + queue.toXml(""));
                }
@@ -269,6 +304,7 @@ public class I_QueueTest extends TestCase {
                }
             }
          }
+         assertEquals("number of invocations for queue size listener is wrong", maxEntries+1, this.queueSizeListener.getCount());
 
          // The queues allow temporary oversize (one extra put())
          assertEquals(ME+": Wrong total size " + queue.toXml(""), maxEntries+1, queue.getNumOfEntries());
@@ -285,12 +321,23 @@ public class I_QueueTest extends TestCase {
             if (e.getErrorCode()!=ErrorCode.INTERNAL_NOTIMPLEMENTED) throw e;
          }
 
+         
+         //this.queue.removeQueueSizeListener(null);
+         //this.queue.addQueueSizeListener(this.queueSizeListener);
+         //this.queueSizeListener.clear();
+
          entryList = queue.takeLowest(1, -1L, null, false);
+         long singleSize = ((I_QueueEntry)entryList.get(0)).getSizeInBytes(); 
+         long totalSize = singleSize * entryList.size(); 
          assertEquals("TAKE #1 failed"+queue.toXml(""), 1, entryList.size());
          log.info(ME, "curr entries="+queue.getNumOfEntries());
+         assertEquals("number of entries incremented on last invocation", -1, this.queueSizeListener.getLastIncrementEntries());
+         assertEquals("number of bytes incremented on last invocation", -singleSize, this.queueSizeListener.getLastIncrementBytes());
 
          entryList = queue.takeLowest(1, -1L, null, false);
          assertEquals("TAKE #2 failed"+queue.toXml(""), 1, entryList.size());
+         assertEquals("number of entries incremented on last invocation", -1, this.queueSizeListener.getLastIncrementEntries());
+         assertEquals("number of bytes incremented on last invocation", -singleSize, this.queueSizeListener.getLastIncrementBytes());
 
          queue.clear();
          assertEquals(ME+": Wrong empty size", 0L, queue.getNumOfEntries());
@@ -341,6 +388,7 @@ public class I_QueueTest extends TestCase {
       long numOfPersistents = 0;
       long numOfTransients = 0;
       long sizeOfPersistents = 0L;
+
       for (int i=0; i < queueEntries.length; i++) {
          I_QueueEntry entry = queueEntries[i];
          if (entry.isPersistent()) {
@@ -379,6 +427,11 @@ public class I_QueueTest extends TestCase {
          //========== Test 1: put(I_QueueEntry[])
          int numLoop = 10;
          ArrayList list = new ArrayList();
+
+         this.queue.removeQueueSizeListener(null);
+         this.queue.addQueueSizeListener(this.queueSizeListener);
+         this.queueSizeListener.clear();
+
          for (int ii=0; ii<numLoop; ii++) {
             DummyEntry[] queueEntries = {
                          new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true),
@@ -387,11 +440,15 @@ public class I_QueueTest extends TestCase {
 
             queue.put(queueEntries, false);
 
+            assertEquals("number of entries incremented on last invocation", 3, this.queueSizeListener.getLastIncrementEntries());
+            assertEquals("number of bytes incremented on last invocation", 3*queueEntries[0].getSizeInBytes(), this.queueSizeListener.getLastIncrementBytes());
             for (int i=0; i < 3; i++) list.add(queueEntries[i]);
 
             this.checkSizeAndEntries(" put(I_QueueEntry[]) ", list, queue);
             assertEquals(ME+": Wrong size", (ii+1)*queueEntries.length, queue.getNumOfEntries());
          }
+         assertEquals("number of invocations for queue size listener is wrong", numLoop, this.queueSizeListener.getCount());
+
          int total = numLoop*3;
          assertEquals(ME+": Wrong total size", total, queue.getNumOfEntries());
          log.info(ME, "#1 Success, filled " + queue.getNumOfEntries() + " messages into queue");
@@ -651,7 +708,7 @@ public class I_QueueTest extends TestCase {
       try {
          //========== Test 1: remove prio 7 and 9
          {
-            DummyEntry[] queueEntries = {
+           DummyEntry[] queueEntries = {
                          new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true),
                          new DummyEntry(glob, PriorityEnum.HIGH_PRIORITY, queue.getStorageId(), true),
                          new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, queue.getStorageId(), true),
@@ -666,10 +723,18 @@ public class I_QueueTest extends TestCase {
                          new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, queue.getStorageId(), true),
                          new DummyEntry(glob, PriorityEnum.MIN_PRIORITY, queue.getStorageId(), true)
                                         };
+            this.queue.removeQueueSizeListener(null);
+            this.queue.addQueueSizeListener(this.queueSizeListener);
+            this.queueSizeListener.clear();
+                                        
             queue.put(queueEntries, false);
 
             long numRemoved = queue.removeWithPriority(-1, -1L, 7, 9);
 
+            assertEquals("number of invocations", 2, this.queueSizeListener.getCount());
+            assertEquals("number of entries incremented on last invocation", -8, this.queueSizeListener.getLastIncrementEntries());
+            assertEquals("number of bytes incremented on last invocation", -8*queueEntries[0].getSizeInBytes(), this.queueSizeListener.getLastIncrementBytes());
+                                        
             assertEquals(ME+": Wrong number removed", 8, numRemoved);
             assertEquals(ME+": Wrong size", queueEntries.length-8, queue.getNumOfEntries());
 
@@ -701,13 +766,20 @@ public class I_QueueTest extends TestCase {
                          new DummyEntry(glob, PriorityEnum.MAX_PRIORITY, queue.getStorageId(), true),
                          new DummyEntry(glob, PriorityEnum.MIN_PRIORITY, queue.getStorageId(), true)
                                         };
+            this.queue.removeQueueSizeListener(null);
+            this.queue.addQueueSizeListener(this.queueSizeListener);
+            this.queueSizeListener.clear();
+                                        
             queue.put(queueEntries, false);
 
             long numRemoved = queue.removeWithPriority(2, -1L, 7, 9);
 
             assertEquals(ME+": Wrong number removed", 2, numRemoved);
             assertEquals(ME+": Wrong size", queueEntries.length-2, queue.getNumOfEntries());
-
+            assertEquals("number of invocations", 2, this.queueSizeListener.getCount());
+            assertEquals("number of entries incremented on last invocation", -2, this.queueSizeListener.getLastIncrementEntries());
+            assertEquals("number of bytes incremented on last invocation", -2*queueEntries[0].getSizeInBytes(), this.queueSizeListener.getLastIncrementBytes());
+                                        
             log.info(ME, "#2 Success, fill and remove");
          }
          queue.shutdown();
@@ -746,6 +818,10 @@ public class I_QueueTest extends TestCase {
       try {
          //========== Test 1: remove 1 from 1
          {
+            this.queue.removeQueueSizeListener(null);
+            this.queue.addQueueSizeListener(this.queueSizeListener);
+            this.queueSizeListener.clear();
+
             //MsgUnit msgUnit = new MsgUnit("<key/>", "bla".getBytes(), "<qos/>");
             DummyEntry[] queueEntries = { new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), true) };
             queue.put(queueEntries, false);
@@ -754,6 +830,9 @@ public class I_QueueTest extends TestCase {
             long numRemoved = 0L;
             boolean[] tmpArr = queue.removeRandom(testEntryArr);
             for (int i=0; i < tmpArr.length; i++) if(tmpArr[i]) numRemoved++;
+
+            assertEquals("number of entries incremented on last invocation", -1, this.queueSizeListener.getLastIncrementEntries());
+            assertEquals("number of bytes incremented on last invocation", -queueEntries[0].getSizeInBytes(), this.queueSizeListener.getLastIncrementBytes());
 
             assertEquals(ME+": Wrong number removed", 1, numRemoved);
             assertEquals(ME+": Wrong size", 0, queue.getNumOfEntries());
@@ -775,6 +854,9 @@ public class I_QueueTest extends TestCase {
             long numRemoved = 0L;
             boolean[] tmpArr = queue.removeRandom(testEntryArr);
             for (int i=0; i < tmpArr.length; i++) if(tmpArr[i]) numRemoved++;
+
+            assertEquals("number of entries incremented on last invocation", -2, this.queueSizeListener.getLastIncrementEntries());
+            assertEquals("number of bytes incremented on last invocation", -2*queueEntries[0].getSizeInBytes(), this.queueSizeListener.getLastIncrementBytes());
 
             assertEquals(ME+": Wrong number removed", 2, numRemoved);
             assertEquals(ME+": Wrong size", 1, queue.getNumOfEntries());
@@ -803,6 +885,9 @@ public class I_QueueTest extends TestCase {
             long numRemoved = 0L;
             boolean[] tmpArr = queue.removeRandom(dataIdArr);
             for (int i=0; i < tmpArr.length; i++) if(tmpArr[i]) numRemoved++;
+
+            assertEquals("number of entries incremented on last invocation", -2, this.queueSizeListener.getLastIncrementEntries());
+            assertEquals("number of bytes incremented on last invocation", -2*queueEntries[0].getSizeInBytes(), this.queueSizeListener.getLastIncrementBytes());
 
             assertEquals(ME+": Wrong number removed", 2, numRemoved);
             assertEquals(ME+": Wrong size", 1, queue.getNumOfEntries());
@@ -911,6 +996,10 @@ public class I_QueueTest extends TestCase {
       }
 
       list = queue.takeLowest(numEntries, numBytes, refEntry, leaveOne);  // gives back all minus one
+
+      assertEquals("number of entries incremented on last invocation", -currentEntries, this.queueSizeListener.getLastIncrementEntries());
+      assertEquals("number of bytes incremented on last invocation", -currentEntries*origEntries[0].getSizeInBytes(), this.queueSizeListener.getLastIncrementBytes());
+
       assertEquals(me+": Wrong number of entries in takeLowest return ", currentEntries, list.size());
       assertEquals(me+": Wrong number of entries in queue after takeLowest invocation ", entriesLeft-currentEntries, queue.getNumOfEntries());
       assertEquals(me+": Wrong number of bytes in queue after takeLowest invocation ", size*(entriesLeft-currentEntries), queue.getNumOfBytes());
@@ -942,6 +1031,11 @@ public class I_QueueTest extends TestCase {
             long size = 0L;
             long msgSize = 100L; // every msg is 100 bytes long
             int entriesLeft = imax;
+
+
+            this.queue.removeQueueSizeListener(null);
+            this.queue.addQueueSizeListener(this.queueSizeListener);
+            this.queueSizeListener.clear();
 
             DummyEntry queueEntry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), msgSize, true);
 
@@ -1478,8 +1572,6 @@ public class I_QueueTest extends TestCase {
       }
       return suite;
    }
-
-
 
 
    /**
