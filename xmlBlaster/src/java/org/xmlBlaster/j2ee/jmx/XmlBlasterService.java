@@ -44,7 +44,7 @@ import org.jutils.log.LogChannel;
  *
  *
  * @author Peter Antman
- * @version $Revision: 1.2 $ $Date: 2002/09/24 06:59:05 $
+ * @version $Revision: 1.3 $ $Date: 2002/11/05 14:26:13 $
  */
 
 public class XmlBlasterService implements XmlBlasterServiceMBean {
@@ -56,8 +56,8 @@ public class XmlBlasterService implements XmlBlasterServiceMBean {
    private XmlBlasterClassLoader cl;
 
    public XmlBlasterService() {
-      Global g = Global.instance(); 
-      this.glob = g.getClone(null);
+      // Create a global wothout loading the xmlBlaster.properties file
+      glob= new Global(new String[]{},false); 
    }
    /**
     * Set the name of a propertyfile to read settings from.
@@ -94,12 +94,18 @@ public class XmlBlasterService implements XmlBlasterServiceMBean {
     * Start the embeddeb XmlBlaster.
     */
    public void start() throws Exception {
+      //Lets do a little test
+      loadJacorbProperties();
 
       //glob.getProperty().set("trace", "true");
       glob.getProperty().set("xmlBlaster.isEmbedded", "true");
       log = glob.getLog(null);
       log.info(ME,"Starting XmlBlasterService");
-      glob.getProperty().set("classloader.xmlBlaster","true");
+      glob.getProperty().set("classloader.xmlBlaster","false");
+      // Must be set to false to stop the embedded to create an engine Global
+      // in such a way that the xmlBlaster.properties file are loaded
+      // once more!
+      glob.getProperty().set("useXmlBlasterClassloader","false");
       loadPropertyFile();
       log = glob.getLog("XmlBlasterService");
       setupSecurityManager();
@@ -142,7 +148,38 @@ public class XmlBlasterService implements XmlBlasterServiceMBean {
          } // end of else
       }
    }
+
+   /**
+    * Jacorb is not capable of finding its jacorb.properties in the
+    * context classpath. Since ORB is loaded with args from Glob load
+    * jacorb.properties our self, and set them as args array in glob. 
+    * Remember that jacorb.properties is in xmlBlaster.jar.
+    */
+   private void loadJacorbProperties() throws Exception {
+      Properties props = new Properties();
+
+      // Read orb properties file into props
+      ClassLoader cl = Thread.currentThread().getContextClassLoader();
+      InputStream is = cl.getResourceAsStream("jacorb.properties");
+      if (is != null) {
+         props.load(is);
+         String jacorbVerbosity = props.getProperty("jacorb.verbosity");
+         if (jacorbVerbosity != null)
+            System.setProperty("jacorb.verbosity",jacorbVerbosity );
+
+         //init with args array fro jacorb, ORB is inited with this in
+         // corba driver
+         glob.init( Property.propsToArgs(props) );
+
+
+      } else {
+         log.warn(ME,"No jacorb.properties found in context classpath");
+      }
+   }
    
+   /**
+    * If propertyFile is not null, try load it first from the context class loader, then using the standard xmlBlaster algoritm.
+    */
    private void loadPropertyFile() throws IllegalStateException{
       //Only of not null
       if (propFile== null ) 
@@ -154,8 +191,8 @@ public class XmlBlasterService implements XmlBlasterServiceMBean {
          InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(propFile);
          if ( is == null) {
             // Use xmlBlaster way of searching
-         FileInfo i = p.findPath(propFile);
-         is = i.getInputStream();
+            FileInfo i = p.findPath(propFile);
+            is = i.getInputStream();
          } // end of if ()
          
          if ( is != null) {
