@@ -1,0 +1,47 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='cluster.dirtyRead' type='NEW' prio='HIGH' status="INWORK">
+   <topic>A cluster slave node can directly cache published messages</topic>
+   <description>
+      <p>
+      Usually if you publish a message to a cluster slave node, the message
+      is directly forwarded and routed to the master node of this message type.
+      </p>
+      <p>
+      If clients connected to frodo (a slave node) subscribe to messages frodo
+      subscribes it from heron, as heron is the master. Only messages coming from
+      the master are approved. The slaves receives the update and
+      delivers it to the client:
+      </p>
+      <p>
+      <img src="cluster-noDirtyRead-sequence.gif" />
+      </p>
+      <p>
+      It is possible to suppress the update (2.1.1) as the slave
+      can just as well dirty read the published message at step (2):
+      </p>
+      <p>
+      <img src="cluster-dirtyRead-sequence.gif" />
+      </p>
+   </description>
+
+
+   <example lang="XML" type="HTML">
+   </example>
+
+   <configuration where="server">
+   </configuration>
+
+   <see type="REQ">cluster</see>
+
+   <author>ruff@swand.lake.de</author>
+   <date>2002 06 12</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="OPEN">
+      <name>-</name>
+      <comment>Tests a cluster setup as described in this requirement</comment>
+      <test tool="SUITE">clustertest.PublishTest</test>
+   </testcase>
+</requirement>
+
