@@ -1236,7 +1236,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     *                query handling object (SubscriptionInfo.getUniqueKey()) is returned.<br>
     *                You should use this ID if you wish to unSubscribe()<br>
     *                If no match is found, an empty string "" is returned.
-    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     * @see org.xmlBlaster.engine.RequestBroker#subscribe
     */
    public final String subscribe(String xmlKey, String qos, I_Callback cb) throws XmlBlasterException
@@ -1263,7 +1263,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     *                query handling object (SubscriptionInfo.getUniqueKey()) is returned.<br>
     *                You should use this oid if you wish to unSubscribe()<br>
     *                If no match is found, an empty string "" is returned.
-    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     * @see org.xmlBlaster.engine.RequestBroker#subscribe
     */
    public final String subscribe(String xmlKey, String qos) throws XmlBlasterException
@@ -1283,7 +1283,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
    /**
     * Enforced by I_XmlBlaster interface (fail save mode)
-    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public final void unSubscribe(String xmlKey, String qos) throws XmlBlasterException, IllegalArgumentException
    {
@@ -1321,7 +1321,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * <p />
     * See private method handleConnectionException(ConnectionException)
     *
-    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     * @exception XmlBlasterException id="NoConnect" if we give up to connect<br />
     *            id="TryingReconnect" if we are in fail save mode and polling for a connection,
     #            your message is tailed back and flushed on reconnect
@@ -1350,7 +1350,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
    /**
     * Enforced by I_XmlBlaster interface (fail save mode)
-    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public String[] publishArr(MessageUnit [] msgUnitArr) throws XmlBlasterException
    {
@@ -1409,7 +1409,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    }
 
    /**
-    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public void publishOneway(MessageUnit [] msgUnitArr)
    {
@@ -1417,7 +1417,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    }
 
    /**
-    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    private void publishOneway(MessageUnit [] msgUnitArr, boolean flushBurstMode)
    {
@@ -1456,7 +1456,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
    /**
     * Enforced by I_XmlBlaster interface (fail save mode)
-    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public final String[] erase(String xmlKey, String qos) throws XmlBlasterException, IllegalArgumentException
    {
@@ -1499,7 +1499,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
    /**
     * Enforced by I_XmlBlaster interface (fail save mode)
-    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public final MessageUnit[] get(String xmlKey, String qos) throws XmlBlasterException, IllegalArgumentException
    {
@@ -1573,7 +1573,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
    /**
     * Check server. 
-    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public void ping()
    {

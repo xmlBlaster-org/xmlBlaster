@@ -66,7 +66,7 @@ import java.applet.Applet;
  * first time the ORB is created.<br />
  * This will be fixed as soon as possible.
  *
- * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class CorbaConnection implements I_XmlBlasterConnection
@@ -556,7 +556,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
    /**
     * Enforced by I_XmlBlasterConnection interface (fail save mode).
     * see explanations of publish() method.
-    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public final String subscribe(String xmlKey, String qos) throws XmlBlasterException, ConnectionException
    {
@@ -573,7 +573,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
 
    /**
     * Enforced by I_XmlBlasterConnection interface (fail save mode)
-    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public final void unSubscribe(String xmlKey, String qos) throws XmlBlasterException, ConnectionException
    {
@@ -596,7 +596,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
     * This call will not block.
     * <p />
     * Enforced by I_XmlBlasterConnection interface (fail save mode)
-    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public final String publish(MessageUnit msgUnit) throws XmlBlasterException, ConnectionException
    {
@@ -613,7 +613,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
 
 
    /**
-    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public String[] publishArr(MessageUnit [] msgUnitArr) throws XmlBlasterException, ConnectionException
    {
@@ -629,7 +629,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
    }
 
    /**
-    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public void publishOneway(MessageUnit[] msgUnitArr) throws XmlBlasterException, ConnectionException
    {
@@ -642,7 +642,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
    }
 
    /**
-    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public final String[] erase(String xmlKey, String qos) throws XmlBlasterException, ConnectionException
    {
@@ -660,7 +660,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
 
 
    /**
-    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public final MessageUnit[] get(String xmlKey, String qos) throws XmlBlasterException, ConnectionException
    {
@@ -677,7 +677,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
 
    /**
     * Check server.
-    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     */
    public String ping(String qos) throws ConnectionException
    {
