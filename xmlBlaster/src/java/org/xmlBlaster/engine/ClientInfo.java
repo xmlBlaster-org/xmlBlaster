@@ -252,6 +252,7 @@ public class ClientInfo
     */
    private String getUpdateQoS(String subscriptionId, MessageUnitWrapper msgUnitWrapper, int index, int max) throws XmlBlasterException
    {
+      // Check with RequestBroker.get() !!!
       StringBuffer buf = new StringBuffer();
       buf.append("\n<qos>\n");
 

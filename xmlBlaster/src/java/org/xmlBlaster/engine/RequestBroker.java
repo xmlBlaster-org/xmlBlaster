@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.93 2001/12/23 19:51:04 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.94 2001/12/26 15:54:09 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -32,7 +32,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.93 $
+ * @version $Revision: 1.94 $
  * @author ruff@swand.lake.de
  */
 public class RequestBroker implements I_ClientListener, MessageEraseListener
@@ -354,7 +354,9 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
 
          if (msgUnitHandler.isPublishedWithData()) {
             MessageUnit mm = msgUnitHandler.getMessageUnit().getClone();
+            MessageUnitWrapper msgUnitWrapper = msgUnitHandler.getMessageUnitWrapper();
 
+            // Check with ClientInfo.getUpdateQoS() !!!
             StringBuffer buf = new StringBuffer();
             buf.append("\n<qos>\n");
 
@@ -363,8 +365,14 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
             buf.append("   </state>\n");
 
             buf.append("   <sender>\n");
-            buf.append("      ").append(msgUnitHandler.getMessageUnitWrapper().getPublisherName());
+            buf.append("      ").append(msgUnitWrapper.getPublisherName());
             buf.append("\n   </sender>\n");
+
+            buf.append("   ").append(msgUnitWrapper.getXmlRcvTimestamp()).append("\n");
+
+            if (msgUnitWrapper.getPublishQoS().getTimeToLive() >= 0L) {
+               buf.append("   <expiration timeToLive='").append(msgUnitWrapper.getPublishQoS().getTimeToLive()).append("'/>\n");
+            }
 
             buf.append("</qos>");
             mm.qos = buf.toString(); // !!! GetReturnQos should be an object
