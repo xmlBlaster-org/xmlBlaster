@@ -35,6 +35,8 @@ import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.I_InvocationRecorder;
 import org.xmlBlaster.util.InvocationRecorder;
 import org.xmlBlaster.engine.helper.CallbackAddress;
+import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.engine.helper.QueueProperty;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
@@ -563,6 +565,56 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     */
    public void connect(ConnectQos qos, I_Callback client) throws XmlBlasterException
    {
+      connect(qos, client, (QueueProperty)null, (CallbackAddress)null, (String)null);
+   }
+
+   /**
+    * Connect to xmlBlaster with your modified callback parameters. 
+    * <p />
+    *
+    * @param cbAddr  You can pass your special configured callback attributes here.<br />
+    *                We will add the callback address of the here created callback server instance
+    * @exception XmlBlasterException On connection problems
+    * @see #connect(ConnectQos qos, I_Callback client)
+    */
+   public void connect(ConnectQos qos, I_Callback client, CallbackAddress cbAddr) throws XmlBlasterException
+   {
+      connect(qos, client, (QueueProperty)null, cbAddr, (String)null);
+   }
+
+   /**
+    * Connect to xmlBlaster with your given callback sessionId. 
+    * <p />
+    *
+    * @param cbSessionId  You can pass a session ID which is passed to the update method for callback authentication.
+    * @exception XmlBlasterException On connection problems
+    * @see #connect(ConnectQos qos, I_Callback client)
+    */
+   public void connect(ConnectQos qos, I_Callback client, String cbSessionId) throws XmlBlasterException
+   {
+      connect(qos, client, (QueueProperty)null, (CallbackAddress)null, cbSessionId);
+   }
+
+   /**
+    * Connect to xmlBlaster with your modified queue and callback parameters. 
+    * <p />
+    *
+    * @param prop  You can pass your special configured queue attributes here.<br />
+    *              We will add the callback address of the here created callback server instance
+    * @exception XmlBlasterException On connection problems
+    * @see #connect(ConnectQos qos, I_Callback client)
+    */
+   public void connect(ConnectQos qos, I_Callback client, QueueProperty prop) throws XmlBlasterException
+   {
+      connect(qos, client, prop, (CallbackAddress)null, (String)null);
+   }
+
+   /**
+    * Internal connect method, collecting all other connect() variants
+    * @see #connect(ConnectQos qos, I_Callback client)
+    */
+   private void connect(ConnectQos qos, I_Callback client, QueueProperty givenProp, CallbackAddress cbAddr, String cbSessionId) throws XmlBlasterException
+   {
       if (qos.getSecurityPluginType() == null || qos.getSecurityPluginType().length() < 1)
          throw new XmlBlasterException(ME+".Authentication", "Please add your authentication in your login QoS");
 
@@ -578,20 +630,51 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       if (client != null) { // Start a default callback server using same protocol
          this.cbServer = initCbServer(loginName, null);
 
-         // Set the QoS for connect() call
-         CallbackAddress addr = new CallbackAddress(this.cbServer.getCbProtocol()); // "IOR" "RMI" etc.
-         addr.setAddress(this.cbServer.getCbAddress());   // "IOR:0000035656757..." or "rmi:..."
+         // Set all configurable callback parameters, they are added to the connect QoS
 
-         addr.setCollectTime(XmlBlasterProperty.get("cb.burstMode.collectTime", CallbackAddress.DEFAULT_collectTime));
-         addr.setSessionId(XmlBlasterProperty.get("cb.sessionId", CallbackAddress.DEFAULT_sessionId));
-         addr.setPingInterval(XmlBlasterProperty.get("cb.pingInterval", CallbackAddress.DEFAULT_pingInterval));
-         addr.setRetries(XmlBlasterProperty.get("cb.retries", CallbackAddress.DEFAULT_retries));
-         addr.setDelay(XmlBlasterProperty.get("cb.delay", CallbackAddress.DEFAULT_delay));
-         addr.setCompressType(XmlBlasterProperty.get("cb.compressType", CallbackAddress.DEFAULT_compressType));
-         addr.setMinSize(XmlBlasterProperty.get("cb.minSize", CallbackAddress.DEFAULT_minSize));
-         addr.setPtpAllowed(XmlBlasterProperty.get("cb.ptpAllowed", CallbackAddress.DEFAULT_ptpAllowed));
-         qos.addCallbackAddress(addr);
-      }
+         QueueProperty prop = givenProp; // Use user supplied property if != null
+         if (prop == null)
+            prop = new QueueProperty(Constants.RELATING_SESSION);
+
+         prop.setOnOverflow(XmlBlasterProperty.get("cb.queue.onOverflow", QueueProperty.DEFAULT_onOverflow));
+         prop.setOnFailure(XmlBlasterProperty.get("cb.queue.onFailure", QueueProperty.DEFAULT_onFailure));
+
+         CallbackAddress addr = null;
+         if (cbAddr != null) {
+            Log.info(ME, "1111");
+            addr = cbAddr;
+            addr.setType(this.cbServer.getCbProtocol());     // "IOR" "RMI" etc.
+            addr.setAddress(this.cbServer.getCbAddress());   // "IOR:0000035656757..." or "rmi:..."
+         }
+         else if (prop.getCurrentCallbackAddress() != null) { // add the callback data to the user supplied callback attributes
+            Log.info(ME, "22222");
+            addr = prop.getCurrentCallbackAddress();
+            addr.setType(this.cbServer.getCbProtocol());     // "IOR" "RMI" etc.
+            addr.setAddress(this.cbServer.getCbAddress());   // "IOR:0000035656757..." or "rmi:..."
+         }
+         else {
+            Log.info(ME, "333");
+            addr = new CallbackAddress(this.cbServer.getCbProtocol()); // "IOR" "RMI" etc.
+            addr.setAddress(this.cbServer.getCbAddress());   // "IOR:0000035656757..." or "rmi:..."
+
+            addr.setCollectTime(XmlBlasterProperty.get("cb.burstMode.collectTime", CallbackAddress.DEFAULT_collectTime));
+            if (cbSessionId != null)
+               addr.setSessionId(cbSessionId);
+            else
+               addr.setSessionId(XmlBlasterProperty.get("cb.sessionId", CallbackAddress.DEFAULT_sessionId));
+            addr.setPingInterval(XmlBlasterProperty.get("cb.pingInterval", CallbackAddress.DEFAULT_pingInterval));
+            addr.setRetries(XmlBlasterProperty.get("cb.retries", CallbackAddress.DEFAULT_retries));
+            addr.setDelay(XmlBlasterProperty.get("cb.delay", CallbackAddress.DEFAULT_delay));
+            addr.setCompressType(XmlBlasterProperty.get("cb.compressType", CallbackAddress.DEFAULT_compressType));
+            addr.setMinSize(XmlBlasterProperty.get("cb.minSize", CallbackAddress.DEFAULT_minSize));
+            addr.setPtpAllowed(XmlBlasterProperty.get("cb.ptpAllowed", CallbackAddress.DEFAULT_ptpAllowed));
+         }
+         prop.setCallbackAddress(addr);
+         
+         qos.addQueueProperty(prop);
+      } // Callback server configured and running
+
+      //Log.info(ME, "DUMP of ConnectQos\n"  + qos.toXml());
 
       try {
          // 'this' forces to invoke our update() method which we then delegate to the updateClient
@@ -890,18 +973,12 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       return driver.isLoggedIn();
    }
 
-
    /**
-    * This is the callback method (I_Callback) invoked from xmlBlaster
-    * informing the client in an asynchronous mode about a new message.
-    * <p />
-    *
-    * @param loginName The name to whom the callback belongs
-    * @param updateKey The arrived key
-    * @param content   The arrived message content
-    * @param qos       Quality of Service of the MessageUnit
+    * This is the callback method invoked from xmlBlaster
+    * delivering us a new asynchronous message. 
+    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQoS)
     */
-   public void update(String loginName, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS) throws XmlBlasterException
+   public void update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS) throws XmlBlasterException
    {
       //The boss should not be interested in cache updates
       if (Log.CALL) Log.call(ME, "Entering update(" + ((cache != null) ? "using cache" : "no cache") + ") ...");
@@ -919,11 +996,11 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
          if (obj != null) {
             // If a special callback was specified for this subscription:
             I_Callback cb = (I_Callback)obj;
-            cb.update(loginName, updateKey, content, updateQoS); // deliver the update to our client
+            cb.update(cbSessionId, updateKey, content, updateQoS); // deliver the update to our client
          }
          else if (updateClient != null) {
             // If a general callback was specified on login:
-            updateClient.update(loginName, updateKey, content, updateQoS); // deliver the update to our client
+            updateClient.update(cbSessionId, updateKey, content, updateQoS); // deliver the update to our client
          }
 
       }
@@ -1437,8 +1514,10 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       text += "\n";
       text += "Control xmlBlaster callback (if we install a callback server)\n";
       text += "   -cb.sessionId       The session ID which is passed to our callback server update() method.\n";
-      text += "   -cb.burstMode.collectTime Number of milliseconds xmlBlaster shall collect callback messages [0].\n";
-      text += "                          This allows performance tuning, try set it to 200.\n";
+      text += "   -cb.queue.onOverflow  Error handling when queue is full, 'block | deadLetter' [" + QueueProperty.DEFAULT_onOverflow + "].\n";
+      text += "   -cb.queue.onFailure   Error handling when callback failed (after all retries etc.) [" + QueueProperty.DEFAULT_onFailure + "].\n";
+      text += "   -cb.burstMode.collectTime Number of milliseconds xmlBlaster shall collect callback messages [" + CallbackAddress.DEFAULT_collectTime + "].\n";
+      text += "                         This allows performance tuning, try set it to 200.\n";
       text += "   -cb.pingInterval    Pinging every given milliseconds [" + CallbackAddress.DEFAULT_pingInterval + "]\n";
       text += "   -cb.retries         How often to retry if callback fails [" + CallbackAddress.DEFAULT_retries + "]\n";
       text += "   -cb.delay           Delay between callback retires in milliseconds [" + CallbackAddress.DEFAULT_delay + "]\n";
