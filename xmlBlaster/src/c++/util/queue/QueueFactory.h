@@ -31,7 +31,6 @@ class Dll_Export QueueFactory {
    const std::string ME;
    org::xmlBlaster::util::Global& global_;
    org::xmlBlaster::util::I_Log& log_;
-
    static QueueFactory* factory_;
    
    QueueFactory(org::xmlBlaster::util::Global& global);
@@ -48,13 +47,20 @@ class Dll_Export QueueFactory {
    static QueueFactory& getFactory(org::xmlBlaster::util::Global& global);
 
    /**
-    * Creates a queue implementation. 
-    * <p />
-    * It is the responsibility of the user to delete the I_Queue
-    * object once it is not needed anymore.
-    * @exception XmlBlasterException
+    * Creates a queue implementation. It is the responsibility of the user to delete the I_Queue
+    * object once it is not needed anymore by calling <code>releasePlugin()</code>. 
+    * @param property The configuration settings
+    * @param type The queue type, for example "RAM", "SQLite"
+    * @param version The queue version, defaults to "1.0"
+    * @throws XmlBlasterException: "resource.configuration.pluginFailed" if plugin is not known or other errorCodes if it can't be initialized. 
     */
-   I_Queue* createQueue(const org::xmlBlaster::util::qos::storage::QueuePropertyBase& property);
+   I_Queue& getPlugin(const org::xmlBlaster::util::qos::storage::QueuePropertyBase& property);
+                                    /*const std::string& type="RAM", const std::string& version="1.0");*/
+
+   /**
+    * After calling this the <code>queue</code> argument in not usable anymore. 
+    */
+   void releasePlugin(I_Queue *queueP); /*const std::string& type="RAM", const std::string& version="1.0");*/
 };
 
 }}}} // namespace
