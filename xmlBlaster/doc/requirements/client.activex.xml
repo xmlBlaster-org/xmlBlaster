@@ -646,6 +646,9 @@ Catch e As SystemException
 
    <todo where="client" type="HTML">
       <ol>
+        <li>For VisualBasic.net we provide a complete example with asynchronous callbacks.
+          For C# and VisualBasic6 the callback example is missing.</li>
+
         <li>Fix HSQLDB (JDBC database) driver loading problem.
           There seems to be a CLASSLOADER problem which we need to solve.<br/>
           A work around is to copy <code>xmlBlaster\lib\hsqldb.jar</code> to <code>%JRE_HOME%\lib\ext</code>.
@@ -681,6 +684,6 @@ Catch e As SystemException
 
    <author><a href="mailto:xmlblaster@marcelruff.info">Marcel Ruff</a></author>
    <date>2004 03 12</date>
-   <revision>$Revision: 1.13 $</revision>
+   <revision>$Revision: 1.14 $</revision>
 </requirement>
 
