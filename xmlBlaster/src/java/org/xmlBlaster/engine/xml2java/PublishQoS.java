@@ -3,7 +3,7 @@ Name:      PublishQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: PublishQoS.java,v 1.21 2001/12/16 21:25:33 ruff Exp $
+Version:   $Id: PublishQoS.java,v 1.22 2001/12/23 19:52:23 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -479,9 +479,9 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
          try {
             isVolatile = new Boolean(tmp).booleanValue();
          } catch (NumberFormatException e) {
-            Log.error(ME, "Wrong format of <isVolatile>" + tmp + "</isVolatile>, expected a long in milliseconds.");
+            Log.error(ME, "Wrong format of <isVolatile>" + tmp + "</isVolatile>, expected true or false.");
          }
-         // if (Log.TRACE) Log.trace(ME, "Found message isVolatile login name = " + isVolatile);
+         // if (Log.TRACE) Log.trace(ME, "Found isVolatile = " + isVolatile);
          character.setLength(0);
          return;
       }
