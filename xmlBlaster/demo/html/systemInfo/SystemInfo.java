@@ -3,7 +3,7 @@ Name:      SystemInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Servlet to monitor system load on web server
-Version:   $Id: SystemInfo.java,v 1.16 2000/10/18 20:45:41 ruff Exp $
+Version:   $Id: SystemInfo.java,v 1.17 2000/10/30 22:56:10 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package html.systemInfo;
@@ -99,8 +99,6 @@ public class SystemInfo extends HttpServlet
             return;
          }
 
-         corbaConnection.initCache(10);
-
          // Expecting actionType = "cpuinfo" or "meminfo" but it could be
          // any valid key oid.
          Log.info(ME,"Got request for " + actionType + ", sessionId=" + sessionId + " ...");
@@ -108,17 +106,8 @@ public class SystemInfo extends HttpServlet
          SubscribeKeyWrapper xmlKey = new SubscribeKeyWrapper(actionType);
          SubscribeQosWrapper xmlQos = new SubscribeQosWrapper();
 
-         // This get() call does a subscribe() as well behind the scenes, since
-         // we invoked corbaConnection.initCache(10); above.
-         // Further incoming messages are directly transferred to the browser.
-         // We could as well have used corbaConnection.subscribe() here.
-         // Usually you would use this get() when you need the result here
-         // synchronously, for example to process it with a XSL style sheet ...
-         MessageUnit[] msgUnitArr = corbaConnection.get(xmlKey.toXml(), xmlQos.toXml());
-         if (msgUnitArr.length == 1) {
-            String ret = new String(msgUnitArr[0].content);
-            Log.info(ME, "Accessed " + actionType + "=" + ret);
-         }
+         String ret = corbaConnection.subscribe(xmlKey.toXml(), xmlQos.toXml());
+         Log.info(ME, "Subscribed to " + actionType + "=" + ret);
       }
       catch (XmlBlasterException e) {
          String text = "Error from xmlBlaster: " + e.reason;

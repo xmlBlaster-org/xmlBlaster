@@ -3,7 +3,7 @@ Name:      XmlBlasterConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP/RMI or XML-RPC
-Version:   $Id: XmlBlasterConnection.java,v 1.5 2000/10/22 16:38:24 ruff Exp $
+Version:   $Id: XmlBlasterConnection.java,v 1.6 2000/10/30 22:56:11 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol;
@@ -70,7 +70,7 @@ import java.applet.Applet;
  * The interface I_CallbackRaw/I_Callback/I_CallbackExtenden are enforced by AbstractCallbackExtended
  * is for the InvocationRecorder to playback locally queued messages and for the protocol drivers.
  *
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  * @author $Author: ruff $
  */
 public class XmlBlasterConnection extends AbstractCallbackExtended implements I_InvocationRecorder
@@ -516,9 +516,10 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    public void update(String loginName, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS) throws XmlBlasterException
    {
       //The boss should not be interested in cache updates
+      if (Log.CALL) Log.call(ME, "Entering update(" + ((cache != null) ? "using cache" : "no cache") + ") ...");
       boolean forCache = false;
       if( cache != null ) {
-         forCache = cache.update(updateQoS.getSubscriptionId(), updateKey.toXml(), content);
+         forCache = cache.update(updateQoS.getSubscriptionId(), updateKey, content, updateQoS);
       }
       if (!forCache)
          updateClient.update(loginName, updateKey, content, updateQoS); // deliver the update to our client

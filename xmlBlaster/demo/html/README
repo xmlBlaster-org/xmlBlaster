@@ -11,6 +11,8 @@ Howto run the html examples with persistent http connection:
 
    servlet.SystemInfo.code=html.systemInfo.SystemInfo
 
+   Start jserv, e.g.:   $XMLBLASTER_HOME/bin/jserv
+
 
 3. Use the 'make all' or 'build.bat deploy_ear' or copy manually:
    cp -r  ../../src/java/org/xmlBlaster/protocol/http/javascript  javascript
