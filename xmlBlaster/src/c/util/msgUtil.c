@@ -29,12 +29,16 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #  include <sys/types.h>      /* sleep with select() */
 #endif
 
+#if XB_USE_PTHREADS
+#  include <pthread.h> /* For logging output of thread ID, for Windows and WinCE downloaded from http://sources.redhat.com/pthreads-win32 */
+#endif
+
 #if defined(__GNUC__) || defined(__ICC)
    /* To support query state with 'ident libxmlBlasterClientC.so' or 'what libxmlBlasterClientC.so'
       or 'strings libxmlBlasterClientC.so  | grep msgUtil.c' */
-   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: msgUtil.c,v 1.13 2003/10/12 08:49:59 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: msgUtil.c,v 1.14 2003/10/12 09:55:58 ruff Exp $ xmlBlaster @version@";
 #elif defined(__SUNPRO_CC)
-   static const char *rcsid_GlobalCpp  =  "@(#) $Id: msgUtil.c,v 1.13 2003/10/12 08:49:59 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  =  "@(#) $Id: msgUtil.c,v 1.14 2003/10/12 09:55:58 ruff Exp $ xmlBlaster @version@";
 #endif
 
 #define  MICRO_SECS_PER_SECOND 1000000
@@ -812,8 +816,14 @@ Dll_Export void xmlBlasterDefaultLogging(XMLBLASTER_LOG_LEVEL currLevel,
             ctime_r(&t1, (char *)timeStr);
 #        endif
          *(timeStr + strlen(timeStr) - 1) = '\0'; /* strip \n */
-         printf("[%s %s %s] %s %s\n", timeStr, logText[level], location, p,
+#        if XB_USE_PTHREADS
+            printf("[%s %s %s thread0x%x] %s %s\n", timeStr, logText[level], location,
+                                    (int)pthread_self(), p,
                                     (stackTrace != 0) ? stackTrace : "");
+#        else
+            printf("[%s %s %s] %s %s\n", timeStr, logText[level], location, p,
+                                    (stackTrace != 0) ? stackTrace : "");
+#        endif
          free(p);
          free(stackTrace);
          return;
