@@ -75,7 +75,7 @@ final public class Authenticate implements I_Authenticate
       if (Log.CALL) Log.call(ME, "Entering constructor");
       this.glob = global;
       this.glob.setAuthenticate(this);
-      plgnLdr = PluginManager.getInstance();
+      plgnLdr = new PluginManager(global);
       plgnLdr.init(this);
    }
 
