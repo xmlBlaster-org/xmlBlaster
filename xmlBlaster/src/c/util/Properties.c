@@ -2,9 +2,7 @@
 Name:      Properties.c
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Wraps raw socket connection to xmlBlaster
-           Implements sync connection and async callback
-           Needs pthread to compile (multi threading).
+Comment:   A tiny helper to encapsulate command line and environment properties
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 Compile:   gcc -DPropertiesMain -D_ENABLE_STACK_TRACE_ -rdynamic -export-dynamic -Wall -pedantic -g -D_REENTRANT -I.. -o PropertiesMain Properties.c
 See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.socket.html
@@ -24,6 +22,10 @@ static long getLong(Properties *props, const char *key, long defaultValue);
 
 /**
  * Create an instance of a property struct. 
+ * @param argc The number of command line args
+ * @param argv The command line arguments, argv[0] is expected to be the
+ *             name of the process, argv[1] should start with '-' and 
+ *             argv[2] is the value of the argv[1] key ...
  */
 Properties *createProperties(int argc, char** argv) {
    int iarg;
