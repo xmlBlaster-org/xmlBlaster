@@ -2,7 +2,7 @@
 <!--
 COMMENT:
    This frame listens on message updates and draws with the
-   received data a cpuinfo and meminfo frame 
+   received data a cpuinfo and meminfo frame
 -->
 <html>
    <head>
@@ -44,17 +44,17 @@ COMMENT:
          function updateFrame(frameName, content)
          {
             top.xmlBlasterWindow.Log.trace("Drawing to frame " + frameName + ": " + content);
-            
+
             if (content < 1) content = 1;
             if (content > 100) content = 100;
-            
+
             var label = frameName;
             if (frameName=="cpuinfoFrame") label = "CPU";
             if (frameName=="meminfoFrame") label = "MEM";
 
             var doc = parent.frames[frameName].document;
             doc.open();
-            var str = 
+            var str =
                "<!DOCTYPE HTML PUBLIC '-//W3C//DTD HTML 4.0 Transitional//EN'>\n" +
                "<html>\n" +
                "   <head>\n" +
@@ -91,7 +91,7 @@ COMMENT:
       <h2>
          System load on www.xmlBlaster.org
       </h2>
-      XmlBlaster Apache/Jserv web server (Linux) on Intel 486 with 133 MHz
+      XmlBlaster Apache/Jserv web server (Linux) on Intel 486 with 120 MHz
       <br />
       <script language="Javascript1.2">
          /*  top.xmlBlasterWindow is not yet valid if systemInfo.html is the persistentWindow creater
