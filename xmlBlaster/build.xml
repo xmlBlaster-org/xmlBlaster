@@ -140,7 +140,6 @@ Else add it manually.
                 args="-p ${idl} -d ${src.dir} ${idl.dir}/xmlBlaster.idl"/>
 
     <copydir src="${src.dir}" dest="${build.src}/xmlBlaster" excludes="README, Makefile **/ReqBaseServlet.java, **/ReqListServlet.java, **/ReqItemServlet.java, **/OracleSqlFactory.java"/>
-    <echo message="${classes.dir}/manifest.xmlBlaster to ${build.dest}/manifest.xmlBlaster"/>
     <copyfile src="${classes.dir}/manifest.xmlBlaster" dest="${build.dest}/manifest.xmlBlaster"/>
 
     <javac
