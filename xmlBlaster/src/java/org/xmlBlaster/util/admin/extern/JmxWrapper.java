@@ -21,6 +21,7 @@ import com.sun.jdmk.comm.HtmlAdaptorServer;
 import com.sun.jmx.trace.Trace;
 
 
+
 /**
  * JmxWrapper wraps the MBeanServer instance and a HTTPAdaptor.
  */
@@ -72,7 +73,7 @@ public class JmxWrapper
          synchronized (this) {
             if (this.mbeanServer == null) {
                try {
-                  this.mbeanServer = MBeanServerFactory.createMBeanServer();
+                  this.mbeanServer = MBeanServerFactory.createMBeanServer(glob.getLocalIP());
                   this.html = new HtmlAdaptorServer();
                   ObjectName html_name = new ObjectName("Adaptor:name=html,port=8082");
                   this.mbeanServer.registerMBean(this.html, html_name);
@@ -81,13 +82,20 @@ public class JmxWrapper
                catch(Exception ex) {
                   throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_UNAVAILABLE, ME, " could not create MBean Server", ex);
                }
-               this.html.start();    
+               this.html.start();
+              try {
+                startXmlBlasterConnector(this.mbeanServer);
+              }
+              catch (XmlBlasterException ex) {
+                log.error(ME,"Error when starting xmlBlasterConnector " + ex.toString());
+                ex.printStackTrace();
+              }
             }
          }
       }
    }
 
-   
+
    /**
     * registers the specified mbean into the mbean server.
     * the name you specify here is of the kind '/node/heron/client/joe'. What will be registered
@@ -121,5 +129,32 @@ public class JmxWrapper
       catch(Exception ex) {
          throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION, ME, " could not register '" + name + "' into MBean Server.", ex);
       }
+   }
+/**
+ * Starts XmlBlasterConnector on mbeanServer-Instance
+ */
+
+   public void startXmlBlasterConnector(MBeanServer mbeanServer) throws XmlBlasterException {
+     try {
+       log.info(ME, "Registering embedded xmlBlasterConnector for JMX...");
+
+       //start xmlBlaster-Connector:
+       ObjectName xmlBlasterConnector_name = new ObjectName("Adaptor:transport=xmlBlaster,port=3424");
+       mbeanServer.createMBean("org.xmlBlaster.util.admin.extern.XmlBlasterConnector",xmlBlasterConnector_name,null);
+       //start internal xmlBlasterInstance
+       log.info(ME,"Trying to start internal xmlBlaster - with own MBeanServer as Parameter");
+      try {
+        mbeanServer.invoke(xmlBlasterConnector_name, "startInternal", new Object[] {this.mbeanServer}, new String[]{MBeanServer.class.getName()});
+      }
+      catch (Exception ex) {
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION, ME, " could not register  connector into MBean Server.", ex);
+      }
+
+     }
+     catch (Exception e) {
+       e.printStackTrace();
+       log.error(ME,"Error when registering new Connector >>  " + e.toString() );
+       throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_UNAVAILABLE, ME, " could not start embedded xmlBlasterConnector", e);
+     }
    }
 }
