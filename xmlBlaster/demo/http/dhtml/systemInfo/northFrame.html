@@ -27,6 +27,7 @@ COMMENT:
                var content = messageQueue[i].content;
                updateFrame(frameName, content);
             }
+            top.xmlBlasterWindow.setReady( self, true );
          }
 
          /**
@@ -90,7 +91,6 @@ COMMENT:
                "</html>\n";
             doc.write(str);
             doc.close();
-            top.xmlBlasterWindow.setReady( self, true );
          }
       </script>
    </head>
