@@ -1985,14 +1985,85 @@ TODO
       </cc>
 
       <!-- Was only needed for "@version@" replacement during compilation -->
-      <!-- delete file="${src.c.dir}/util/Global_CopyByAnt.cpp" / --> <!-- Leave it for lookup for debugger -->
+      <!-- delete file="${src.c.dir}/msgUtil_CopyByAnt.c" / --> <!-- Leave it for lookup for debugger -->
 
    </target>  <!-- C lib -->
+
+   <target name="c-test" depends="prepare-cpp" description="Create C test clients">
+      <foreach list=""
+               target="compileCExe" param="exeName" delimiter="," inheritAll="true">
+         <param name="compileCSourcePath" value="${testsuite.dir}/src/c" />
+      </foreach>
+   </target>
+
+   <target name="c-demo" depends="prepare-cpp" description="Create C demo clients">
+      <foreach list="LogRedirect"
+               target="compileCExe" param="exeName" delimiter="," inheritAll="true">
+         <param name="compileCSourcePath" value="${demo.dir}/c/socket" />
+      </foreach>
+   </target>
+
+   <target name="compileCExe" description="For internal use only (C clients build)">
+      <echo message="Compiling of C test client '${compileCSourcePath}/bin/${exeName}' to '${compileCSourcePath}/bin/${exeName}'"/>
+      <mkdir dir="${build.dir}/obj"/>
+      <mkdir dir="${compileCSourcePath}/bin"/>
+      <cc debug="${c.debug}" link="executable"
+          outfile="${compileCSourcePath}/bin/${exeName}"
+          objdir="${build.dir}/obj"
+          multithreaded="true" exceptions="true">
+         <compiler refid="gcc"/>
+         <compiler refid="msvc"/>
+         <compiler refid="bcc"/>
+         <compiler refid="CC"/>
+         <fileset dir="${compileCSourcePath}" includes="${exeName}.c"/>
+         <includepath location="${src.c.dir}" />
+
+         <!-- syslibset dir="/usr/lib" libs="stdc++" if="unix"/ -->
+
+         <defineset>
+           <define name="WIN32" value="1" if="windows" />
+           <define name="_WINDOWS" value="1" if="windows" />
+           <define name="_MBCS" value="1" if="windows" />
+           <define name="_USRDLL" value="1" if="windows" />
+           <define name="__sunos__" value="1" if="sun" />
+           <define name="__sparc__" value="1" if="sun" />
+           <define name="UsePthread" value="1" if="sun" />
+           <define name="_REENTRANT" value="1" if="sun" />
+           <define name="XMLBLASTER_C_COMPILE_AS_CPP" value="1" if="sun" /> <!-- Compile lib as C++ until somebody adds a 'cc' task to our build.xml -->
+         </defineset>
+
+         <linker name="gcc"  if="use-gcc">
+            <linkerarg value="-Wl,-rpath=${lib.dir.absolute}" />
+            <libset dir="${lib.dir}" libs="xmlBlasterClientC" />  <!-- xmlBlasterClientC.so -->
+            <syslibset dir="/lib" libs="dl" if="unix"/>
+            <syslibset dir="/usr/lib" libs="pthread" if="unix"/>
+         </linker>
+
+         <linker name="msvc" if="use-msvc">                       <!-- linker does not support nested switch -->
+            <libset dir="${lib.dir}" libs="xmlBlasterClientC" />  <!-- xmlBlasterClientC.dll -->
+         </linker>
+
+         <linker name="bcc"  if="use-bcc" />
+
+         <linker name="CC"> <!-- SunOS -->
+            <syslibset dir="/lib" libs="socket,posix4,nsl"/>
+            <libset dir="${lib.dir}" libs="xmlBlasterClientC" /> <!-- xmlBlasterClientC.so -->
+            <linkerarg value="-i"/>
+            <linkerarg value="-lpthread"/>
+            <linkerarg value="-R ${lib.dir.absolute}"/> <!-- Burn .so path into executables: -->
+            <syslibset dir="/lib" libs="dl" />
+         </linker>
+
+      </cc>
+   </target>   <!-- compileCExe -->
+
+   <target name="c" depends="c-lib, c-demo, c-test" description="Compile C client library and test/demo clients"/>
 
    <!-- =================================================================== -->
    <!-- Cleans everything                                                   -->
    <!-- =================================================================== -->
     <target name="c-clean" depends="prepare" description="Remove C object files">
+       <delete dir="${build.dir}/obj"/>
        <delete includeEmptyDirs="true" failonerror="false">
           <fileset dir="${src.c.dir}" includes="*.000,*.001,*.idb,*.pdb,*.obj"/>
        </delete>
@@ -2001,6 +2072,7 @@ TODO
     <target name="c-delete" depends="c-clean" description="Remove all generated C files/libs/executables">
        <delete includeEmptyDirs="true" failonerror="false">
           <fileset dir="${src.c.dir}" includes="client,*.exe"/>
+          <fileset dir="${demo.dir}/c/socket/bin" includes="*"/>
        </delete>
     </target>
 
