@@ -92,11 +92,20 @@ public final class PublishQos
    }
 
    /**
+    * As a default setting you can subscribe on all messages (PtP or PubSub). 
+    * @param isPubSub true if Publish/Subscribe style is used<br />
+    *         false Only possible for PtP messages to keep PtP secret (you can't subscribe them)
+    */
+   public void setIsPubSub(boolean isPubSub) {
+      this.msgQosData.setIsPubSub(isPubSub);
+   }
+
+   /**
     * Message priority.
     * @return priority 0 (=Lowest) - 9 (=Highest)
     */
    public PriorityEnum getPriority() {
-      return msgQosData.getPriority();
+      return this.msgQosData.getPriority();
    }
 
    /**
@@ -106,7 +115,7 @@ public final class PublishQos
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.publish.priority.html">The engine.qos.publish.priority requirement</a>
     */
    public void setPriority(PriorityEnum priority) {
-      msgQosData.setPriority(priority);
+      this.msgQosData.setPriority(priority);
    }
 
    /**
@@ -115,7 +124,7 @@ public final class PublishQos
     * Default is that xmlBlaster does send messages to subscribed clients, even the content didn't change.
     */
    public void setForceUpdate(boolean force) {
-      msgQosData.setForceUpdate(force);
+      this.msgQosData.setForceUpdate(force);
    }
 
    /**
@@ -124,7 +133,7 @@ public final class PublishQos
     * Only the first publish() will be accepted, followers are denied.
     */
    public void setReadonly(boolean readonly) {
-      msgQosData.setReadonly(readonly);
+      this.msgQosData.setReadonly(readonly);
    }
 
    /**
@@ -137,21 +146,21 @@ public final class PublishQos
     * NOTE: This is a convenience method for setLifeTime(0L) and setForceDestroy(false).
     */
    public void setVolatile(boolean volatileFlag) {
-      msgQosData.setVolatile(volatileFlag);
+      this.msgQosData.setVolatile(volatileFlag);
    }
 
    /**
     * @see #isVolatile()
     */
    public boolean isVolatile() {
-      return msgQosData.isVolatile();
+      return this.msgQosData.isVolatile();
    }
 
    /**
     * Mark a message to be persistent.
     */
    public void setDurable(boolean durable) {
-      msgQosData.setDurable(durable);
+      this.msgQosData.setDurable(durable);
    }
 
    /**
@@ -163,7 +172,7 @@ public final class PublishQos
     * @param lifeTime in milliseconds
     */
    public void setLifeTime(long lifeTime) {
-      msgQosData.setLifeTime(lifeTime);
+      this.msgQosData.setLifeTime(lifeTime);
    }
 
    /**
@@ -171,7 +180,7 @@ public final class PublishQos
     *        false On message expiry messages which are already in callback queues are delivered.
     */
    public void setForceDestroy(boolean forceDestroy) {
-      msgQosData.setForceDestroy(forceDestroy);
+      this.msgQosData.setForceDestroy(forceDestroy);
    }
 
    /**
@@ -245,7 +254,7 @@ public final class PublishQos
     * @return An XML ASCII string
     */
    public String toXml() {
-      return msgQosData.toXml();
+      return this.msgQosData.toXml();
    }
 
    /**

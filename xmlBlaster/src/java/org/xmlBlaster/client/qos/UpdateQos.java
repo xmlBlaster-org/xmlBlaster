@@ -168,7 +168,7 @@ public final class UpdateQos
     * Did i reveive the message in PtP mode?
     */
    public boolean isPtp() {
-      return !isPubSubStyle();
+      return this.msgQosData.isPtp();
    }
 
    /**
