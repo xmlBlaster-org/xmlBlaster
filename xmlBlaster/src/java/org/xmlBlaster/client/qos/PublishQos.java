@@ -255,6 +255,34 @@ public final class PublishQos
       this.msgQosData.addClientProperty(key, value);
    }
 
+   public void addClientProperty(String key, boolean value) {
+      this.msgQosData.addClientProperty(key, value);
+   }
+
+   public void addClientProperty(String key, int value) {
+      this.msgQosData.addClientProperty(key, value);
+   }
+
+   public void addClientProperty(String key, byte value) {
+      this.msgQosData.addClientProperty(key, value);
+   }
+
+   public void addClientProperty(String key, long value) {
+      this.msgQosData.addClientProperty(key, value);
+   }
+
+   public void addClientProperty(String key, short value) {
+      this.msgQosData.addClientProperty(key, value);
+   }
+
+   public void addClientProperty(String key, double value) {
+      this.msgQosData.addClientProperty(key, value);
+   }
+
+   public void addClientProperty(String key, float value) {
+      this.msgQosData.addClientProperty(key, value);
+   }
+
    /**
     * Read back a property. 
     * @return The client property or null if not found
