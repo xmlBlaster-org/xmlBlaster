@@ -21,6 +21,7 @@ extern "C" {
 #endif
 
 #include <util/msgUtil.h>
+#include <util/queue/I_Queue.h>
 #include <util/Properties.h>
 
 struct XmlBlasterConnectionUnparsedStruct;
@@ -28,6 +29,7 @@ typedef struct XmlBlasterConnectionUnparsedStruct XmlBlasterConnectionUnparsed;
 
 /* Declare function pointers to use in struct to simulate object oriented access */
 typedef bool  ( * XmlBlasterConnectionUnparsedInitConnection)(XmlBlasterConnectionUnparsed *xb, XmlBlasterException *exception);
+typedef bool  ( * XmlBlasterConnectionUnparsedInitQueue)(XmlBlasterConnectionUnparsed *xb, QueueProperties *queueProperties, XmlBlasterException *exception);
 typedef char *( * XmlBlasterConnectionUnparsedConnect)(XmlBlasterConnectionUnparsed *xb, const char * const qos, XmlBlasterException *exception);
 typedef bool  ( * XmlBlasterConnectionUnparsedDisconnect)(XmlBlasterConnectionUnparsed *xb, const char * qos, XmlBlasterException *exception);
 typedef char *( * XmlBlasterConnectionUnparsedPublish)(XmlBlasterConnectionUnparsed *xb, MsgUnit *msgUnit, XmlBlasterException *exception);
@@ -42,7 +44,6 @@ typedef bool  ( * XmlBlasterConnectionUnparsedIsConnected)(XmlBlasterConnectionU
 typedef void  ( * XmlBlasterConnectionUnparsedShutdown)(XmlBlasterConnectionUnparsed *xb);
 typedef MsgRequestInfo *( * XmlBlasterConnectionUnparsedPreSendEvent)(void *userP, MsgRequestInfo *msgRequestInfo, XmlBlasterException *exception);
 typedef MsgRequestInfo *( * XmlBlasterConnectionUnparsedPostSendEvent)(void *userP, MsgRequestInfo *msgRequestInfo, XmlBlasterException *exception);
-typedef void  ( * XmlBlasterConnectionUnparsedLogging)(void *logUserP, XMLBLASTER_LOG_LEVEL currLevel, XMLBLASTER_LOG_LEVEL level, const char *location, const char *fmt, ...);
 
 /**
  * All client access to xmlBlaster goes over this struct and its function pointers. 
@@ -56,6 +57,7 @@ struct Dll_Export XmlBlasterConnectionUnparsedStruct {
    char secretSessionId[MAX_SECRETSESSIONID_LEN];
    bool isInitialized;
    XmlBlasterConnectionUnparsedInitConnection initConnection; /* Used internally or by multi threaded embedding only as this is called by connect() automatically */
+   XmlBlasterConnectionUnparsedInitQueue initQueue; /** Call to initialize persistent queue support on lost connection */
    XmlBlasterConnectionUnparsedConnect connect;   
    XmlBlasterConnectionUnparsedDisconnect disconnect;   
    XmlBlasterConnectionUnparsedPublish publish;
@@ -71,8 +73,9 @@ struct Dll_Export XmlBlasterConnectionUnparsedStruct {
    void *preSendEvent_userP;
    XmlBlasterConnectionUnparsedPostSendEvent postSendEvent; /* If a callback function pointer is registered it will be called just after sending a message */
    void *postSendEvent_userP;
+   I_Queue *queueP;
    XMLBLASTER_LOG_LEVEL logLevel;
-   XmlBlasterConnectionUnparsedLogging log;
+   XmlBlasterLogging log;
    void *logUserP;               /* For outside users to pass a user object back to the logging implementation */
 };
 
