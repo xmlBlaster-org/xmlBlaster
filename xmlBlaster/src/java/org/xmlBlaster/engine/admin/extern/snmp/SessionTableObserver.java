@@ -31,6 +31,31 @@ public class SessionTableObserver implements Observer {
             }
       }
 
+      public void sendTrap(AgentXSession session) {
+         CbQueueThresholdOverflow cbQueueNotify;
+         long cbQueueNumMsgs;
+         long cbQueueMaxMsgs;
+         long cbQueueThreshold;
+         for (Enumeration st=sessionTable.elements(); st.hasMoreElements();) {
+            sessionEntryImpl = (SessionEntryImpl)st.nextElement();
+            cbQueueNumMsgs = sessionEntryImpl.get_cbQueueNumMsgs();
+            cbQueueMaxMsgs = sessionEntryImpl.get_cbQueueMaxMsgs();
+            cbQueueThreshold = sessionEntryImpl.get_cbQueueThreshold();
+            System.out.println("cbQueueMaxMsgs: " + cbQueueMaxMsgs + 
+                               ", cbQueueThreshold: " + cbQueueThreshold + 
+                               ", cbQueueNumMsgs: " + cbQueueNumMsgs);
+            if (cbQueueMaxMsgs * cbQueueThreshold < cbQueueNumMsgs) {
+               try {
+                  cbQueueNotify = new CbQueueThresholdOverflow(sessionEntryImpl, sessionEntryImpl, 
+                                      sessionEntryImpl, sessionEntryImpl);
+	          session.notify(cbQueueNotify);
+               } catch (Exception e) {
+	          System.err.println(e);
+	       }
+            }
+         }
+      }
+
       public void update( Subject o ) {
           String clientName;
           String nodeName;

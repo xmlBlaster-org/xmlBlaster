@@ -162,15 +162,31 @@ public class SubagentTest
     public void testProc0() {
 	System.out.println("+++ testProc 0 +++");
         System.setProperty("jax.debug", "true");
+
+        // clientTableThresholdOverflow trap
         NodeEntryImplPeer nodeEntryImplPeer1;
         nodeEntryImplPeer1 = new NodeEntryImplPeer("node1", "host1", 111, 1111, 11, "err1.log", 1);
         nodeTableSubject.addEntry(nodeEntryImplPeer1);
         nodeTableObserver.sendTrap(session);
+
+        // clientQueueThresholdOverflow & sessionTableThresholdOverflow trap
+        ClientEntryImplPeer clientEntryImplPeer1;
+        clientEntryImplPeer1 = new ClientEntryImplPeer("client1", 1, 1, 1111, 11, 1, 111, 11);
+        clientTableSubject.addEntry(nodeEntryImplPeer1.get_nodeName(), clientEntryImplPeer1);
+        clientTableObserver.sendTrap(session);
+
+        // cbQueueThresholdOverflow trap
+        SessionEntryImplPeer sessionEntryImplPeer1;
+        sessionEntryImplPeer1 = new SessionEntryImplPeer("session1", 111, 11, 1, 1);
+        sessionTableSubject.addEntry(nodeEntryImplPeer1.get_nodeName(), 
+                                     clientEntryImplPeer1.get_clientName(),
+                                     sessionEntryImplPeer1);
+        sessionTableObserver.sendTrap(session);
+
     }
 
     /**
      * Tests valid addEntry sequence.
-     * Teststeps: add(node1(connection1, client1(session1)))
      */
     public void testProc1() {
 	System.out.println("+++ testProc 1 +++");
@@ -196,8 +212,6 @@ public class SubagentTest
 
     /**
      * Tests valid addEntry sequence.
-     * Teststeps: add(node1(connection1, client1(session1, session2), client2(session1)))
-     *            add(node2(connection1))
      */
     public void testProc2() {
 	System.out.println("+++ testProc 2 +++");
@@ -205,7 +219,6 @@ public class SubagentTest
         NodeEntryImplPeer nodeEntryImplPeer1;
         NodeEntryImplPeer nodeEntryImplPeer2;
         ConnectionEntryImplPeer connectionEntryImplPeer1;
-        ConnectionEntryImplPeer connectionEntryImplPeer2;
         ClientEntryImplPeer clientEntryImplPeer1;
         ClientEntryImplPeer clientEntryImplPeer2;
         SessionEntryImplPeer sessionEntryImplPeer1;
@@ -238,18 +251,72 @@ public class SubagentTest
                                      sessionEntryImplPeer1);
     }
 
+    /**
+     * Tests invalid addEntry sequence. 
+     * Children nodes cannot be added, because parent nodes do not exist.
+     */
     public void testProc3() {
 	System.out.println("+++ testProc 3 +++");
+
+        NodeEntryImplPeer nodeEntryImplPeer1;
+        NodeEntryImplPeer nodeEntryImplPeer2;
+        ConnectionEntryImplPeer connectionEntryImplPeer1;
+        ClientEntryImplPeer clientEntryImplPeer1;
+        ClientEntryImplPeer clientEntryImplPeer2;
+        SessionEntryImplPeer sessionEntryImplPeer1;
+
+        nodeEntryImplPeer1 = new NodeEntryImplPeer("node1", "host1", 111, 1111, 11, "err1.log", 1);
+        nodeEntryImplPeer2 = new NodeEntryImplPeer("node2", "host2", 222, 2222, 22, "err2.log", 2);
+        connectionEntryImplPeer1 = new ConnectionEntryImplPeer("host1", 1111, "1.1.1.1", 1);
+        clientEntryImplPeer1 = new ClientEntryImplPeer("client1", 1, 1, 1111, 11, 1, 111, 11);
+        clientEntryImplPeer2 = new ClientEntryImplPeer("client2", 2, 2, 2222, 22, 2, 222, 22);
+        sessionEntryImplPeer1 = new SessionEntryImplPeer("session1", 111, 11, 1, 1);
+
+        // add entries to concrete subjects using the observer pattern
+        nodeTableSubject.addEntry(nodeEntryImplPeer1);
+        connectionTableSubject.addEntry(nodeEntryImplPeer2.get_nodeName(), connectionEntryImplPeer1);
+        clientTableSubject.addEntry(nodeEntryImplPeer1.get_nodeName(), clientEntryImplPeer1);
+        clientTableSubject.addEntry(nodeEntryImplPeer2.get_nodeName(), clientEntryImplPeer1);
+        sessionTableSubject.addEntry(nodeEntryImplPeer1.get_nodeName(), 
+                                     clientEntryImplPeer2.get_clientName(),
+                                     sessionEntryImplPeer1);
+        sessionTableSubject.addEntry(nodeEntryImplPeer2.get_nodeName(), 
+                                     clientEntryImplPeer1.get_clientName(),
+                                     sessionEntryImplPeer1);
     }
 
+    /**
+     * Tests invalid removeEntry sequence. 
+     * Parent nodes cannot be removed because children nodes exist.
+     */
     public void testProc4() {
 	System.out.println("+++ testProc 4 +++");
+
+        NodeEntryImplPeer nodeEntryImplPeer1;
+        ConnectionEntryImplPeer connectionEntryImplPeer1;
+        ClientEntryImplPeer clientEntryImplPeer1;
+        SessionEntryImplPeer sessionEntryImplPeer1;
+
+        nodeEntryImplPeer1 = new NodeEntryImplPeer("node1", "host1", 111, 1111, 11, "err1.log", 1);
+        connectionEntryImplPeer1 = new ConnectionEntryImplPeer("host1", 1111, "1.1.1.1", 1);
+        clientEntryImplPeer1 = new ClientEntryImplPeer("client1", 1, 1, 1111, 11, 1, 111, 11);
+        sessionEntryImplPeer1 = new SessionEntryImplPeer("session1", 111, 11, 1, 1);
+
+        // add entries to concrete subjects using the observer pattern
+        nodeTableSubject.addEntry(nodeEntryImplPeer1);
+        connectionTableSubject.addEntry(nodeEntryImplPeer1.get_nodeName(), connectionEntryImplPeer1);
+        clientTableSubject.addEntry(nodeEntryImplPeer1.get_nodeName(), clientEntryImplPeer1);
+        sessionTableSubject.addEntry(nodeEntryImplPeer1.get_nodeName(), 
+                                     clientEntryImplPeer1.get_clientName(),
+                                     sessionEntryImplPeer1);
+
+        // remove entries using the observer pattern
+        clientTableSubject.removeEntry(nodeEntryImplPeer1.get_nodeName(), clientEntryImplPeer1);
+        nodeTableSubject.removeEntry(nodeEntryImplPeer1);
     }
 
     /**
      * Tests valid removeEntry sequence.
-     * Teststeps: add(node1(connection1, client1(session1)))
-     *            remove(connection1, session1, client1, node1)
      */
     public void testProc5() {
 	System.out.println("+++ testProc 5 +++");

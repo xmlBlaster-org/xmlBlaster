@@ -92,7 +92,6 @@ public class NodeTableObserver implements Observer {
          long maxClients;
          long clientThreshold;
          for (Enumeration nt=nodeTable.elements(); nt.hasMoreElements();) {
-            System.out.println("nodeEntry +++ nodeEntry +++ nodeEntry");
             nodeEntryImpl = (NodeEntryImpl)nt.nextElement();
             numClients = nodeEntryImpl.get_numClients();
             maxClients = nodeEntryImpl.get_maxClients();

@@ -86,6 +86,54 @@ public class ClientTableObserver implements Observer {
 	 }
       } 
 
+      public void sendTrap(AgentXSession session) {
+         ClientQueueThresholdOverflow clientQueueNotify;
+         SessionTableThresholdOverflow sessionTableNotify;
+         long clientQueueNumMsgs;
+         long clientQueueMaxMsgs;
+         long clientQueueThreshold;
+         long numSessions;
+         long maxSessions;
+         long sessionThreshold;
+         for (Enumeration ct=clientTable.elements(); ct.hasMoreElements();) {
+            clientEntryImpl = (ClientEntryImpl)ct.nextElement();
+
+            // clientQueueThresholdOverflow trap
+            clientQueueNumMsgs = clientEntryImpl.get_clientQueueNumMsgs();
+            clientQueueMaxMsgs = clientEntryImpl.get_clientQueueMaxMsgs();
+            clientQueueThreshold = clientEntryImpl.get_clientQueueThreshold();
+            System.out.println("clientQueueMaxMsgs: " + clientQueueMaxMsgs + 
+                               ", clientQueueThreshold: " + clientQueueThreshold + 
+                               ", clientQueueNumMsgs: " + clientQueueNumMsgs);
+            if (clientQueueMaxMsgs * clientQueueThreshold < clientQueueNumMsgs) {
+               try {
+                  clientQueueNotify = new ClientQueueThresholdOverflow(clientEntryImpl, clientEntryImpl, 
+                                      clientEntryImpl, clientEntryImpl);
+	          session.notify(clientQueueNotify);
+               } catch (Exception e) {
+	          System.err.println(e);
+	       }
+            }
+
+            // sessionTableThresholdOverflow trap
+            numSessions = clientEntryImpl.get_numSessions();
+            maxSessions = clientEntryImpl.get_maxSessions();
+            sessionThreshold = clientEntryImpl.get_sessionThreshold();
+            System.out.println("maxSessions: " + maxSessions + 
+                               ", sessionThreshold: " + sessionThreshold + 
+                               ", numSessions: " + numSessions);
+            if (maxSessions * sessionThreshold < numSessions) {
+               try {
+                  sessionTableNotify = new SessionTableThresholdOverflow(clientEntryImpl, clientEntryImpl, 
+                                      clientEntryImpl, clientEntryImpl);
+	          session.notify(sessionTableNotify);
+               } catch (Exception e) {
+	          System.err.println(e);
+	       }
+            }
+         } // end for
+      }
+
       public Integer getIndex(String key) {
           return (Integer)clientHashtable.get(key);
       }
