@@ -107,6 +107,8 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    CLASSPATH=${XMLBLASTER_HOME}/lib/gnu-regexp.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/xmlrpc.jar:${CLASSPATH}
 
+   CLASSPATH=${XMLBLASTER_HOME}/lib/remotecons.jar:${CLASSPATH}
+
    CLASSPATH=${XMLBLASTER_HOME}/lib/concurrent.jar:${CLASSPATH}
 
    #CLASSPATH=${XMLBLASTER_HOME}/lib/cpptasks.jar:${CLASSPATH}
