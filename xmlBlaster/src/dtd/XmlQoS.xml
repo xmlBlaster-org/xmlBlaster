@@ -158,9 +158,7 @@ xml version='1.0' encoding='ISO-8859-1' ?>
             Phillipe
          </sender>
 
-         <subscriptionId> <!-- The same id which you got returned from your previous subscribe() call -->
-            Subscription-00 0F 42 37 1A 20 1B 47 28 49 -192.168.10.212-null-952096108799-1
-         </subscriptionId>
+         <subscribe id='__subId:2> <!-- The same id which you got returned from your previous subscribe() call -->
 
          <rcvTimestamp nanos='1007764305862000006' nanos='123456789'> <!-- UTC time when message was created in xmlBlaster server with a publish() call -->
             2001-12-07 23:31:45.862000006 <!-- The nanos from above human readable -->

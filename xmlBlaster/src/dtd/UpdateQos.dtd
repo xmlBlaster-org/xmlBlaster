@@ -3,11 +3,11 @@
 
 <!ELEMENT qos (state?,
                sender?,
-               subscriptionId?
+               subscribe?
               )>
 
 <!ELEMENT state (#PCDATA)>
 
 <!ELEMENT sender (#PCDATA)>
 
-<!ELEMENT subscriptionId (#PCDATA)>
+<!ELEMENT subscribe (#PCDATA)>
