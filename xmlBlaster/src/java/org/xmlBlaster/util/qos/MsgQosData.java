@@ -6,9 +6,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.util.qos;
 
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.Timestamp;
-import org.xmlBlaster.client.qos.UpdateQos;
-import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.PriorityEnum;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.property.PropEntry;
@@ -16,7 +13,6 @@ import org.xmlBlaster.util.property.PropLong;
 import org.xmlBlaster.util.property.PropBoolean;
 
 import org.xmlBlaster.util.qos.address.Destination;
-import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.enum.MethodName;
 
 import java.util.ArrayList;

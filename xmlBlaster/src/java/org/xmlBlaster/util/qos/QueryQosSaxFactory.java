@@ -5,7 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos;
 
-import java.util.HashMap;
+import java.util.Map;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
@@ -455,7 +455,7 @@ public class QueryQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implement
          sb.append(offset).append(" <isUnSubscribe/>");
       }
 
-      HashMap map = queryQosData.getClientProperties();
+      Map map = queryQosData.getClientProperties();
       if (map != null && map.size() > 0) {
          Object[] keys = map.keySet().toArray();
          for (int i=0; i < keys.length; i++) {

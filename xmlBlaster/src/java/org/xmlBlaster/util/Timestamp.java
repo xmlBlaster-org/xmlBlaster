@@ -70,7 +70,6 @@ public class Timestamp implements Comparable, java.io.Serializable
    /** You may overwrite the tag name for XML dumps in derived classes, defaults to &lt;timestamp ... */
    protected String tagName = "timestamp";
 
-
    /**
     * Constructs a current timestamp which is guaranteed to be unique in time for this JVM
     * @exception RuntimeException on overflow (never happens :-=)
@@ -304,7 +303,7 @@ public class Timestamp implements Comparable, java.io.Serializable
     * @return internal state of the Timestamp as an XML ASCII string
     * without human readable JDBC formatting
     */
-   public String toXml(String extraOffset) {
+   public final String toXml(String extraOffset) {
       return toXml(extraOffset, false);
    }
 
@@ -317,7 +316,7 @@ public class Timestamp implements Comparable, java.io.Serializable
     *               "2002-02-10 10:52:40.879456789"
     * @return internal state of the Timestamp as a XML ASCII string
     */
-   public String toXml(String extraOffset, boolean literal)
+   public final String toXml(String extraOffset, boolean literal)
    {
       StringBuffer sb = new StringBuffer(200);
       String offset = "\n ";

@@ -2,6 +2,10 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.xxx [xxxxxxxxxx]
 ==============================
+ o Added a Key and Qos cache for publish (the literal is the key and the Data is the value) -> 15 % better performance
+
+ o Added clientProperty tag to most of the qos (only StatusQos don't have it)
+
  o Added support to set and lookup the engine.Global (via GlobalUtil) for the j2ee components.
 
  o Finished the LOCAL protocol.

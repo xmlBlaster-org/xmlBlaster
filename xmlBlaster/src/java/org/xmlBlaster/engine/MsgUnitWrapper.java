@@ -12,7 +12,6 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.queue.StorageId;
-import org.xmlBlaster.util.enum.MethodName;
 import org.xmlBlaster.util.enum.PriorityEnum;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.Timeout;
@@ -48,7 +47,7 @@ import org.xmlBlaster.client.key.PublishKey;       // for main only
  */
 public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
 {
-   private transient final String ME;
+   private transient final static String ME = "MsgUnitWrapper-";
    private transient final Global glob;
    private transient int historyReferenceCounter; // if is in historyQueue, is swapped to persistence as well
    private transient int referenceCounter;        // total number of references, is swapped to persistence as well
@@ -123,7 +122,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
       }
       this.uniqueId = getMsgQosData().getRcvTimestamp().getTimestamp();
       this.uniqueIdStr = ""+this.uniqueId;
-      this.ME = "MsgUnitWrapper-" + getLogId();
+      // this.ME = "MsgUnitWrapper-" + getLogId();
       this.destroyTimer = this.glob.getMessageTimer();  // holds weak references only
 
       // Estimated calculation of used memory by one MsgUnitWrapper instance
@@ -141,7 +140,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
       toAlive();
       //this.glob.getLog("core").info(ME, "Created message" + toXml());
       if (this.historyReferenceCounter > this.referenceCounter) { // assert
-         this.glob.getLog("core").error(ME, "PANIC: historyReferenceCounter=" + this.historyReferenceCounter + " is bigger than referenceCounter=" + this.referenceCounter + toXml());
+         this.glob.getLog("core").error(ME + getLogId(), "PANIC: historyReferenceCounter=" + this.historyReferenceCounter + " is bigger than referenceCounter=" + this.referenceCounter + toXml());
       }
    }
 
@@ -166,7 +165,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
    public TopicHandler getTopicHandler() throws XmlBlasterException {
       TopicHandler topicHandler = glob.getRequestBroker().getMessageHandlerFromOid(getKeyOid());
       if (topicHandler == null) {
-         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "getTopicHandler() - storage lookup of topic '" + getKeyOid() + "' failed");
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME + getLogId(), "getTopicHandler() - storage lookup of topic '" + getKeyOid() + "' failed");
       }
       return topicHandler;
    }
@@ -233,7 +232,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
       return this.msgUnit;
    }
 
-   public String getKeyOid() {
+   public final String getKeyOid() {
       return getMsgKeyData().getOid();
    }
 
@@ -268,7 +267,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
       return this.uniqueIdStr;
    }
 
-   public String getLogId() {
+   public final String getLogId() {
       return getKeyOid() + "/" + getMsgQosData().getRcvTimestamp();
    }
 
@@ -346,7 +345,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
     * @see org.xmlBlaster.util.queue.I_Entry#added(StorageId)
     */
    public void added(StorageId storageId) {
-      this.glob.getLog("core").error(ME, "added("+storageId.getId()+") invocation not expected");
+      this.glob.getLog("core").error(ME + getLogId(), "added("+storageId.getId()+") invocation not expected");
    }
 
    /**
@@ -354,7 +353,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
     * @see org.xmlBlaster.util.queue.I_Entry#removed(StorageId)
     */
    public void removed(StorageId storageId) {
-      this.glob.getLog("core").error(ME, "removed("+storageId.getId()+") invocation not expected");
+      this.glob.getLog("core").error(ME + getLogId(), "removed("+storageId.getId()+") invocation not expected");
    }
 
    /**
@@ -372,7 +371,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
          if (this.timerKey != null) {
             this.destroyTimer.removeTimeoutListener(this.timerKey);
             this.timerKey = null;
-            this.glob.getLog("core").error(ME, "Unexpected expiry timer in state " + getStateStr());
+            this.glob.getLog("core").error(ME + getLogId(), "Unexpected expiry timer in state " + getStateStr());
          }
 
          long lifeTime = getMsgQosData().getLifeTime();
@@ -459,7 +458,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
                toExpired();
             }
             catch (XmlBlasterException e) {
-               this.glob.getLog("core").error(ME, "Unexpected exception from toExpired() which we can't handle: " + e.getMessage());
+               this.glob.getLog("core").error(ME + getLogId(), "Unexpected exception from toExpired() which we can't handle: " + e.getMessage());
             }
          }
       }

@@ -6,25 +6,27 @@ Comment:   Native Interface to xmlBlaster
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Random;
+
 import org.jutils.log.LogChannel;
-import org.xmlBlaster.engine.xml2java.*;
 import org.xmlBlaster.engine.qos.GetQosServer;
 import org.xmlBlaster.engine.qos.EraseQosServer;
 import org.xmlBlaster.engine.qos.SubscribeQosServer;
 import org.xmlBlaster.engine.qos.UnSubscribeQosServer;
 import org.xmlBlaster.engine.qos.PublishQosServer;
-import org.xmlBlaster.engine.RequestBroker;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.enum.MethodName;
 import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.key.QueryKeyData;
+import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.MsgUnitRaw;
-import org.xmlBlaster.authentication.plugins.PluginManager;
 import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.authentication.SessionInfo;
-import org.xmlBlaster.authentication.plugins.I_Manager;
 import org.xmlBlaster.authentication.plugins.I_Session;
 import org.xmlBlaster.authentication.plugins.I_Subject;
 
@@ -51,6 +53,12 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
    private final LogChannel log;
 
    private static final byte[] EMPTY_BYTES = "".getBytes();
+
+   private final static int MAX_CACHE = 500;
+   private final static int CHUNK_TO_REMOVE = 25;
+   private HashMap qosCache = new HashMap(200);
+   private HashMap keyCache = new HashMap(200);
+
 
    /**
     * One instance of this represents one xmlBlaster server.
@@ -176,13 +184,51 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
       }
    }
 
+   private void removeRandom(Map map, int numToRemove) {
+      Iterator iter = map.entrySet().iterator();
+      Random rand = new Random();
+      int val = rand.nextInt(map.size());
+      for (int i=0; i < val; i++) iter.next();
+      for (int i=0; i < numToRemove; i++) {
+         iter.remove();
+         if (!iter.hasNext()) break;
+         iter.next();
+      }
+   }
+
    /**
     * Parse the raw MsgUnitRaw
     */
+/*
    private MsgUnit toMsgUnit(MsgUnitRaw msgUnitRaw) throws XmlBlasterException {
       MsgKeyData key = glob.getMsgKeyFactory().readObject(msgUnitRaw.getKey());
       PublishQosServer qos = new PublishQosServer(glob, msgUnitRaw.getQos());
       return new MsgUnit(key, msgUnitRaw.getContent(), qos.getData());
+   }
+*/
+   private MsgUnit toMsgUnit(MsgUnitRaw msgUnitRaw) throws XmlBlasterException {
+
+      String keyLiteral = msgUnitRaw.getKey();
+      MsgKeyData key = (MsgKeyData)this.keyCache.get(keyLiteral);
+      if (key == null) {
+         key = glob.getMsgKeyFactory().readObject(keyLiteral);
+         if (this.keyCache.size() >= MAX_CACHE)
+            removeRandom(this.keyCache, CHUNK_TO_REMOVE);
+         this.keyCache.put(keyLiteral, key.clone());
+      }
+      else key = (MsgKeyData)key.clone();      
+      
+      String qosLiteral = msgUnitRaw.getQos();
+      MsgQosData qosData = (MsgQosData)this.qosCache.get(qosLiteral);
+      if (qosData == null) {
+         PublishQosServer qos = new PublishQosServer(glob, qosLiteral);
+         qosData = qos.getData();
+         if (this.qosCache.size() >= MAX_CACHE)
+            removeRandom(this.qosCache, CHUNK_TO_REMOVE);
+         this.qosCache.put(qosLiteral, qosData.clone());
+      }
+      else qosData = (MsgQosData)qosData.clone();
+      return new MsgUnit(key, msgUnitRaw.getContent(), qosData);
    }
 
    /**

@@ -10,7 +10,6 @@ import org.xmlBlaster.util.Global;
 import org.xml.sax.Attributes;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.property.PropString;
 import org.xmlBlaster.util.property.PropLong;
@@ -118,7 +117,7 @@ public abstract class QueuePropertyBase implements Cloneable
     */
    public QueuePropertyBase(Global glob, String nodeId) {
       if (glob == null) {
-         Thread.currentThread().dumpStack();
+         Thread.dumpStack();
          this.glob = new Global();
       }
       else
@@ -227,7 +226,7 @@ public abstract class QueuePropertyBase implements Cloneable
          this.relating = Constants.RELATING_TOPICSTORE;
       else {
          this.log.warn(ME, "Ignoring relating='" + relating + "'");
-         Thread.currentThread().dumpStack();
+         Thread.dumpStack();
       }
    }
 

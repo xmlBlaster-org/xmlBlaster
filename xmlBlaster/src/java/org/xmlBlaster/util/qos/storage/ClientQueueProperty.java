@@ -9,7 +9,6 @@ package org.xmlBlaster.util.qos.storage;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.qos.address.Address;
-import org.xml.sax.Attributes;
 
 /**
  * Helper class holding the client side queue properties.

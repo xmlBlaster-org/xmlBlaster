@@ -21,7 +21,7 @@ import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
 import org.xmlBlaster.util.qos.storage.MsgUnitStoreProperty;
 
 import java.util.ArrayList;
-import java.util.HashMap;
+import java.util.Map;
 
 import org.xml.sax.*;
 
@@ -284,7 +284,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
             }
             else {
                log.warn(ME, "QoS <expiration> misses lifeTime attribute, setting default of " + MsgQosData.getMaxLifeTime());
-               msgQosData.setLifeTime(msgQosData.getMaxLifeTime());
+               msgQosData.setLifeTime(MsgQosData.getMaxLifeTime());
             }
 
             tmp = attrs.getValue("forceDestroy");
@@ -883,7 +883,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          sb.append(msgQosData.getTopicProperty().toXml(extraOffset+Constants.INDENT));
       }
 
-      HashMap map = msgQosData.getClientProperties();
+      Map map = msgQosData.getClientProperties();
       if (map != null && map.size() > 0) {
          Object[] keys = map.keySet().toArray();
          for (int i=0; i < keys.length; i++) {

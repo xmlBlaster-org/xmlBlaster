@@ -3,12 +3,11 @@ Name:      DisconnectQosData.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: DisconnectQosData.java,v 1.4 2003/05/09 17:30:15 laghi Exp $
+Version:   $Id: DisconnectQosData.java,v 1.5 2003/09/19 16:07:09 laghi Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos;
 
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.property.PropBoolean;
 
 

@@ -10,7 +10,6 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
-import org.xml.sax.Attributes;
 
 /**
  * Helper class holding callback queue properties.

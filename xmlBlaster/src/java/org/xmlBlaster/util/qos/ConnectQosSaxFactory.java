@@ -6,7 +6,7 @@ Comment:   Parsing connect QoS
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos;
 
-import java.util.HashMap;
+import java.util.Map;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
@@ -541,7 +541,7 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
          }
       }
 
-      HashMap map = data.getClientProperties();
+      Map map = data.getClientProperties();
       if (map != null && map.size() > 0) {
          Object[] keys = map.keySet().toArray();
          for (int i=0; i < keys.length; i++) {

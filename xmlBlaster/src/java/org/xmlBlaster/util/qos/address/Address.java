@@ -7,7 +7,6 @@ Comment:   Holding address string and protocol string
 package org.xmlBlaster.util.qos.address;
 
 import org.xmlBlaster.util.Global;
-import org.xml.sax.Attributes;
 import org.xmlBlaster.util.enum.Constants;
 
 /**

@@ -8,7 +8,6 @@ package org.xmlBlaster.util.qos.address;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.enum.Constants;
-import org.xml.sax.Attributes;
 
 
 /**
