@@ -12,8 +12,8 @@
   UNCOMMITED    0       X           X               X
   COMMITED      1       -           X               X
   REPEATABLE    2       -           -               X
-  SERIALIZABLE  3       -           -               -  
-   
+  SERIALIZABLE  3       -           -               -
+
 
 - Performance:
   * Normalizing the DOM tree
@@ -38,6 +38,11 @@
 - xmlBlaster.idl
   * rename AuthServer to AuthenticationService
   * rename Server to xmlBlaster
+
+- Journaled Communication
+  For auditing/logging and play back of events (error recovery).
+
+- Allowing compound messages.
 
 - Authentication (login etc)
   Plugin possibility for existing user management systems
