@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, using org.jutils
-Version:   $Id: Global.java,v 1.22 2002/05/27 20:53:31 ruff Exp $
+Version:   $Id: Global.java,v 1.23 2002/05/28 10:19:41 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -318,6 +318,18 @@ public class Global implements Cloneable
     */
    public String getId() {
       return id;
+   }
+
+   /**
+    * Same as getId() but all 'special characters' are stripped
+    * so you can use it for file names.
+    * @return ""
+    */
+   public String getStrippedId() {
+      String strippedId = org.jutils.text.StringHelper.replaceAll(getId(), "/", "");
+      strippedId = org.jutils.text.StringHelper.replaceAll(strippedId, ".", "_");
+      strippedId = org.jutils.text.StringHelper.replaceAll(strippedId, ":", "_");
+      return org.jutils.text.StringHelper.replaceAll(strippedId, "\\", "");
    }
 
    /**
