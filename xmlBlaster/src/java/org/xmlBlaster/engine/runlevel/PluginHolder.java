@@ -114,13 +114,18 @@ public class PluginHolder {
    public PluginConfig[] getAllPluginConfig(String node) {
       if (this.log.CALL) this.log.call(ME, "getAllPluginConfig for node '" + node + "'");
       Hashtable tmp = (Hashtable)this.pluginConfigsDefault.clone();
-      Hashtable nodeTable = (Hashtable)this.pluginConfigsNodes.get(node);
-      if (nodeTable != null) {
-         Enumeration enum = nodeTable.keys();
-         while (enum.hasMoreElements()) {
-            String key = (String)enum.nextElement();
-            tmp.put(key, nodeTable.get(key));
+      if (this.pluginConfigsNodes!=null && node!=null) {
+         Hashtable nodeTable = (Hashtable)this.pluginConfigsNodes.get(node);
+         if (nodeTable != null) {
+            Enumeration enum = nodeTable.keys();
+            while (enum.hasMoreElements()) {
+               String key = (String)enum.nextElement();
+               tmp.put(key, nodeTable.get(key));
+            }
          }
+      }
+      else {
+         log.warn(ME, "No cluster node id given, checking only default plugins");
       }
       // prepare the return array ...
       int size = tmp.size();
