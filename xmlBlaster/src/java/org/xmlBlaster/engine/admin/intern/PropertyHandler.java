@@ -29,6 +29,9 @@ final public class PropertyHandler implements I_CommandHandler, I_Plugin {
    private LogChannel log = null;
    private CommandManager commandManager = null;
 
+
+   public PropertyHandler() {}
+
    /**
     * This is called after creation of the plugin. 
     * @param glob The Global handle of this xmlBlaster server instance.
