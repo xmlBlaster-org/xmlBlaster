@@ -40,9 +40,9 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #if defined(__GNUC__) || defined(__ICC)
    /* To support query state with 'ident libxmlBlasterClientC.so' or 'what libxmlBlasterClientC.so'
       or 'strings libxmlBlasterClientC.so  | grep msgUtil.c' */
-   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: msgUtil.c,v 1.26 2004/04/09 19:26:48 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: msgUtil.c,v 1.27 2004/04/16 15:02:24 ruff Exp $ xmlBlaster @version@";
 #elif defined(__SUNPRO_CC)
-   static const char *rcsid_GlobalCpp  =  "@(#) $Id: msgUtil.c,v 1.26 2004/04/09 19:26:48 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  =  "@(#) $Id: msgUtil.c,v 1.27 2004/04/16 15:02:24 ruff Exp $ xmlBlaster @version@";
 #endif
 
 #define  MICRO_SECS_PER_SECOND 1000000
@@ -214,8 +214,10 @@ Dll_Export bool getAbsoluteTime(long relativeTimeFromNow, struct timespec *absti
    abstime->tv_sec = t1;
    abstime->tv_nsec = 0; /* TODO !!! How to get the more precise current time on Win? */
 
-   abstime->tv_sec += relativeTimeFromNow / 1000;
-   abstime->tv_nsec += (relativeTimeFromNow % 1000) * 1000 * 1000;
+   if (relativeTimeFromNow > 0) {
+      abstime->tv_sec += relativeTimeFromNow / 1000;
+      abstime->tv_nsec += (relativeTimeFromNow % 1000) * 1000 * 1000;
+   }
    if (abstime->tv_nsec >= NANO_SECS_PER_SECOND) {
       abstime->tv_nsec -= NANO_SECS_PER_SECOND;
       abstime->tv_sec += 1;
@@ -230,8 +232,10 @@ Dll_Export bool getAbsoluteTime(long relativeTimeFromNow, struct timespec *absti
    abstime->tv_sec = tv.tv_sec;
    abstime->tv_nsec = tv.tv_usec * 1000;  /* microseconds to nanoseconds */
 
-   abstime->tv_sec += relativeTimeFromNow / 1000;
-   abstime->tv_nsec += (relativeTimeFromNow % 1000) * 1000 * 1000;
+   if (relativeTimeFromNow > 0) {
+      abstime->tv_sec += relativeTimeFromNow / 1000;
+      abstime->tv_nsec += (relativeTimeFromNow % 1000) * 1000 * 1000;
+   }
    if (abstime->tv_nsec >= NANO_SECS_PER_SECOND) {
       abstime->tv_nsec -= NANO_SECS_PER_SECOND;
       abstime->tv_sec += 1;
@@ -241,8 +245,10 @@ Dll_Export bool getAbsoluteTime(long relativeTimeFromNow, struct timespec *absti
 # if MORE_REALTIME
    clock_gettime(CLOCK_REALTIME, abstime);
 
-   abstime->tv_sec += relativeTimeFromNow / 1000;
-   abstime->tv_nsec += (relativeTimeFromNow % 1000) * 1000 * 1000;
+   if (relativeTimeFromNow > 0) {
+      abstime->tv_sec += relativeTimeFromNow / 1000;
+      abstime->tv_nsec += (relativeTimeFromNow % 1000) * 1000 * 1000;
+   }
    if (abstime->tv_nsec >= NANO_SECS_PER_SECOND) {
       abstime->tv_nsec -= NANO_SECS_PER_SECOND;
       abstime->tv_sec += 1;
