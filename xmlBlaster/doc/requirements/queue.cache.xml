@@ -121,14 +121,24 @@
          
         </table>
         Additionally the configuration parameters for the ram queue and the jdbc queue must be defined.
+   </configuration>
 
-      <p>
+   <configuration where="server">
+      <br />
+      <h3>
       These parameters allow to configure a cache queue statically when declared, for example in xmlBlaster.properties:
-      </p>
+      </h3>
       <pre>
 StoragePlugin[CACHE][1.0]=org.xmlBlaster.engine.msgstore.cache.PersistenceCachePlugin,persistentQueue=JDBC,transientQueue=RAM
       </pre>
       <table border="1">
+         <tr>
+            <th>Property</th>
+            <th>Default</th>
+            <th>Description</th>
+            <th>Hot</th>
+            <th>Impl</th>
+         </tr>
          <tr>
             <td>transientQueue</td>
             <td>RAM,1.0</td>
@@ -160,7 +170,7 @@ StoragePlugin[CACHE][1.0]=org.xmlBlaster.engine.msgstore.cache.PersistenceCacheP
 <!--   <see type="REQ">cluster</see> -->
    <author>laghi@swissinfo.org</author>
    <date>2002 11 17</date>
-   <revision>$Revision: 1.8 $</revision>
+   <revision>$Revision: 1.9 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
