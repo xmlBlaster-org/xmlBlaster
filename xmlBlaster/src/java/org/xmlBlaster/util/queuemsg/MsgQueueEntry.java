@@ -382,7 +382,9 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
    }
 
    /**
-    * Returns a shallow clone
+    * Returns a shallow clone. 
+    * Is done by DispatchManager.prepareMsgsFromQueue() so that it can later encrypt
+    * the message without touching the original
     */
    public Object clone() {
       MsgQueueEntry entry = null;
