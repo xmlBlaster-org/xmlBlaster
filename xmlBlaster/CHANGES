@@ -1,8 +1,20 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
  
- o Fixed C client library bugs (memmove, msg payload of 0 etc)
+Changes for 0.85d (beta) [2003-10-12]
+=====================================
+
+ o Bugfix which randomly threw IllegalStateException, occurring
+   since 0.85c
+
+ o Fixed C client library bugs (memmove, zero msg payload and
+   possible thread lock gap) see
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.socket.html
 
  o Added type to client properties in qos
+
+ o Some more work is done on the JMS Java client library, see
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/jms.html
+
 
 Changes for 0.85c (beta) [2003-10-05]
 =====================================
