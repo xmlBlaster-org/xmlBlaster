@@ -3,7 +3,7 @@ Name:      HandleClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   HandleClient class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: HandleClient.java,v 1.8 2002/02/16 16:33:12 ruff Exp $
+Version:   $Id: HandleClient.java,v 1.9 2002/02/18 21:39:45 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -29,7 +29,8 @@ import java.io.BufferedOutputStream;
 
 
 /**
- * Handles a requests from one client with plain socket messaging. 
+ * Holds one socket connection to a client and handles
+ * all requests from one client with plain socket messaging. 
  * 
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
@@ -122,8 +123,10 @@ public class HandleClient extends Executor implements Runnable
    public void run() {
       if (Log.CALL) Log.call(ME, "Handling client request ...");
       Parser receiver = new Parser();
+      receiver.SOCKET_DEBUG = SOCKET_DEBUG;
+
       try {
-         if (Log.TRACE || SOCKET_DEBUG) Log.info(ME, "Client accepted ...");
+         if (Log.TRACE) Log.trace(ME, "Client accepted, coming from host=" + sock.getInetAddress().toString() + " port=" + sock.getPort());
 
          while (running) {
             try {
@@ -139,6 +142,7 @@ public class HandleClient extends Executor implements Runnable
                      ConnectQos conQos = new ConnectQos(receiver.getQos());
                      setLoginName(conQos.getUserId());
                      this.ME += "-" + this.loginName;
+                     Log.info(ME, "Client accepted, coming from host=" + sock.getInetAddress().toString() + " port=" + sock.getPort());
                      callback = new CallbackSocketDriver(this.loginName, this);
                      conQos.setCallbackDriver(callback);  // tell that we are the callback driver as well (see hack in CbInfo.java)
 
