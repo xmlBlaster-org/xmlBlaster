@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.35 2002/05/19 20:36:43 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.36 2002/06/06 15:53:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -279,13 +279,17 @@ public class CorbaDriver implements I_Driver
          String postfix = "";
          if (forCB) postfix = "CB";
 
-         String hostname = glob.getProperty().get("ior.hostname"+postfix, (String)null);
+         String hostname = glob.getProperty().get("hostname", (String)null);
+         hostname = glob.getProperty().get("hostname"+postfix, hostname);
+         hostname = glob.getProperty().get("ior.hostname"+postfix, hostname);
          if (hostname != null) {
             JdkCompatible.setSystemProperty("OAIAddr", hostname);
             if (log.TRACE) log.trace(ME, "Using ior.hostname"+postfix+"=" + System.getProperty("OAIAddr"));
          }
          
-         int port = glob.getProperty().get("ior.port"+postfix, 0);
+         int port = glob.getProperty().get("port", 0);
+         port = glob.getProperty().get("port"+postfix, port);
+         port = glob.getProperty().get("ior.port"+postfix, port);
          if (port > 0) {
             JdkCompatible.setSystemProperty("OAPort", ""+port);
             if (log.TRACE) log.trace(ME, "Using ior.port"+postfix+"=" + System.getProperty("OAPort"));
