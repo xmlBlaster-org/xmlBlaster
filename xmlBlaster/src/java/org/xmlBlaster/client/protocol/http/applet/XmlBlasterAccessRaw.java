@@ -88,8 +88,10 @@ public class XmlBlasterAccessRaw implements I_XmlBlasterAccessRaw
    }
 
    public String subscribe(java.lang.String xmlKey, java.lang.String qos) throws Exception {
-      throw new Exception("XmlBlasterAccessRaw: subscribe() is not implemented");
-      // "ActionType=subscribe", POST, !ONEWAY);
+      System.out.println("XmlBlasterAccessRaw: subscribe(key="+xmlKey+")");
+      String keyEnc = java.net.URLEncoder.encode(xmlKey);
+      String qosEnc = java.net.URLEncoder.encode(qos);
+      return request("ActionType=subscribe&key="+keyEnc+"&qos="+qosEnc, POST, !ONEWAY);
    }
 
    public MsgUnitRaw[] get(java.lang.String xmlKey, java.lang.String qos) throws Exception {

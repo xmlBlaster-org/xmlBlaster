@@ -27,6 +27,13 @@ See: http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.browser.html
      http://www.xmlblaster.org/xmlBlaster/demo/http/index.html
      http://www.xmlblaster.org/xmlBlaster/doc/howto/http/http_tutorial.html
 
+Todo:
+=====
+
+  o Define a protocol which supports binary data (Hashtables with resialized Java objects, or SOCKET style?)
+  o Optimize message flow
+  o Reconnect if e.g. a proxy closes the connection
+  o and much more
 
 Flow:
 =====
@@ -81,8 +88,14 @@ Flow multipart:
 SEND GET:
  http://localhost:8080/xmlBlaster/BlasterHttpProxyServlet?ActionType=login&xmlBlaster.loginName=joe&xmlBlaster.passwd=secret
 
-RCV:
+RCV (Applet output):
 
+XmlBlasterApplet: init
+XmlBlasterAccessRaw: ctor
+XmlBlasterAccessRaw: http://localhost:8080/xmlBlaster/BlasterHttpProxyServlet
+XmlBlasterAccessRaw: Waiting for connect() to establish ...
+XmlBlasterAccessRaw: doPost=false, sending 'http://localhost:8080/xmlBlaster/BlasterHttpProxyServlet?ActionType=dummyToCreateASessionId' ...
+XmlBlasterAccessRaw: Return value for '?ActionType=dummyToCreateASessionId' = '<html><meta http-equiv='no-cache'><meta http-equiv='Cache-Control' content='no-cache'><meta http-equiv='expires' content='Wed, 26 Feb 1997 08:21:57 GMT'><body text='white' bgcolor='white'>Empty response for your ActionType='dummyToCreateASessionId' 1067854960228</body></html>'
 PersistentRequest: Creating now a persistent connection to 'http://localhost:8080/xmlBlaster/BlasterHttpProxyServlet?ActionType=login&xmlBlaster.loginName=joe&xmlBlaster.passwd=secret'
 PersistentRequest: Receiving: 
 PersistentRequest: Receiving: --End
@@ -104,7 +117,6 @@ PersistentRequest: Receiving:       <INPUT TYPE="HIDDEN" NAME="NoName" VALUE="No
 PersistentRequest: Receiving:    </form>
 PersistentRequest: Receiving:    <script language='JavaScript'>
 PersistentRequest: Receiving: if (parent.ping != null) parent.ping('refresh');
-XmlBlasterAccessRaw: doPost=true, sending 'http://localhost:8080/xmlBlaster/BlasterHttpProxyServlet?ActionType=pong' ...
 PersistentRequest: Receiving: </script>
 PersistentRequest: Receiving: </BODY></HTML>
 PersistentRequest: Receiving: 
@@ -127,7 +139,138 @@ PersistentRequest: Receiving:       <INPUT TYPE="HIDDEN" NAME="NoName" VALUE="No
 PersistentRequest: Receiving:    </form>
 PersistentRequest: Receiving:    <script language='JavaScript'>
 PersistentRequest: Receiving: if (parent.ping != null) parent.ping('loginSucceeded');
+XmlBlasterAccessRaw: isConnected(true)
+XmlBlasterAccessRaw: doPost=false, sending 'http://localhost:8080/xmlBlaster/BlasterHttpProxyServlet?ActionType=pong' ...
+XmlBlasterAccessRaw: Return value for '?ActionType=pong' = '<html><meta http-equiv='no-cache'><meta http-equiv='Cache-Control' content='no-cache'><meta http-equiv='expires' content='Wed, 26 Feb 1997 08:21:57 GMT'><body text='white' bgcolor='white'>Empty response for your ActionType='pong' noState 1067854961815</body></html>'
 PersistentRequest: Receiving: </script>
 PersistentRequest: Receiving: </BODY></HTML>
 PersistentRequest: Receiving: 
 PersistentRequest: Receiving: --End
+XmlBlasterAccessRaw: Successfully connected to xmlBlaster as user joe
+XmlBlasterApplet: start
+XmlBlasterApplet: paint called
+PersistentRequest: Receiving: Content-Type: text/html
+PersistentRequest: Receiving: 
+PersistentRequest: Receiving: <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN"><HTML>
+PersistentRequest: Receiving: <HEAD>
+PersistentRequest: Receiving:    <meta http-equiv='Content-Type' content='text/html; charset=iso-8859-1'>
+PersistentRequest: Receiving:    <meta http-equiv='Pragma' content='no-cache'>
+PersistentRequest: Receiving:    <meta http-equiv='Cache-Control' content='no-cache'>
+PersistentRequest: Receiving:    <meta http-equiv='Expires' content='Tue, 31 Dec 1997 23:59:59 GMT'>
+PersistentRequest: Receiving:    <TITLE>BlasterHttpProxy Connection</TITLE>
+PersistentRequest: Receiving: </HEAD>
+PersistentRequest: Receiving: <BODY>
+PersistentRequest: Receiving:    <br>&nbsp;
+PersistentRequest: Receiving:    <br>&nbsp;
+PersistentRequest: Receiving:    <form ACTION="" METHOD="POST" TARGET="callback">
+PersistentRequest: Receiving:       <INPUT TYPE="HIDDEN" NAME="NoName" VALUE="NoValue" />
+PersistentRequest: Receiving:    </form>
+PersistentRequest: Receiving:    <script language='JavaScript'>
+PersistentRequest: Receiving: if (parent.ping != null) parent.ping('refresh-1');
+XmlBlasterAccessRaw: doPost=false, sending 'http://localhost:8080/xmlBlaster/BlasterHttpProxyServlet?ActionType=pong' ...
+XmlBlasterAccessRaw: Return value for '?ActionType=pong' = '<html><meta http-equiv='no-cache'><meta http-equiv='Cache-Control' content='no-cache'><meta http-equiv='expires' content='Wed, 26 Feb 1997 08:21:57 GMT'><body text='white' bgcolor='white'>Empty response for your ActionType='pong' noState 1067854971709</body></html>'
+PersistentRequest: Receiving: </script>
+PersistentRequest: Receiving: </BODY></HTML>
+PersistentRequest: Receiving: 
+PersistentRequest: Receiving: --End
+PersistentRequest: Receiving: Content-Type: text/html
+PersistentRequest: Receiving: 
+PersistentRequest: Receiving: <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN"><HTML>
+PersistentRequest: Receiving: <HEAD>
+PersistentRequest: Receiving:    <meta http-equiv='Content-Type' content='text/html; charset=iso-8859-1'>
+PersistentRequest: Receiving:    <meta http-equiv='Pragma' content='no-cache'>
+PersistentRequest: Receiving:    <meta http-equiv='Cache-Control' content='no-cache'>
+PersistentRequest: Receiving:    <meta http-equiv='Expires' content='Tue, 31 Dec 1997 23:59:59 GMT'>
+PersistentRequest: Receiving:    <TITLE>BlasterHttpProxy Connection</TITLE>
+PersistentRequest: Receiving: </HEAD>
+PersistentRequest: Receiving: <BODY>
+PersistentRequest: Receiving:    <br>&nbsp;
+PersistentRequest: Receiving:    <br>&nbsp;
+PersistentRequest: Receiving:    <form ACTION="" METHOD="POST" TARGET="callback">
+PersistentRequest: Receiving:       <INPUT TYPE="HIDDEN" NAME="NoName" VALUE="NoValue" />
+PersistentRequest: Receiving:    </form>
+PersistentRequest: Receiving:    <script language='JavaScript'>
+PersistentRequest: Receiving: if (parent.ping != null) parent.ping('refresh-2');
+XmlBlasterAccessRaw: doPost=false, sending 'http://localhost:8080/xmlBlaster/BlasterHttpProxyServlet?ActionType=pong' ...
+XmlBlasterAccessRaw: Return value for '?ActionType=pong' = '<html><meta http-equiv='no-cache'><meta http-equiv='Cache-Control' content='no-cache'><meta http-equiv='expires' content='Wed, 26 Feb 1997 08:21:57 GMT'><body text='white' bgcolor='white'>Empty response for your ActionType='pong' noState 1067854981733</body></html>'
+PersistentRequest: Receiving: </script>
+PersistentRequest: Receiving: </BODY></HTML>
+PersistentRequest: Receiving: 
+PersistentRequest: Receiving: --End
+PersistentRequest: Receiving: Content-Type: text/html
+PersistentRequest: Receiving: 
+PersistentRequest: Receiving: <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN"><HTML>
+PersistentRequest: Receiving: <HEAD>
+PersistentRequest: Receiving:    <meta http-equiv='Content-Type' content='text/html; charset=iso-8859-1'>
+PersistentRequest: Receiving:    <meta http-equiv='Pragma' content='no-cache'>
+PersistentRequest: Receiving:    <meta http-equiv='Cache-Control' content='no-cache'>
+PersistentRequest: Receiving:    <meta http-equiv='Expires' content='Tue, 31 Dec 1997 23:59:59 GMT'>
+PersistentRequest: Receiving:    <TITLE>BlasterHttpProxy Connection</TITLE>
+PersistentRequest: Receiving: </HEAD>
+PersistentRequest: Receiving: <BODY>
+PersistentRequest: Receiving:    <br>&nbsp;
+PersistentRequest: Receiving:    <br>&nbsp;
+PersistentRequest: Receiving:    <form ACTION="" METHOD="POST" TARGET="callback">
+PersistentRequest: Receiving:       <INPUT TYPE="HIDDEN" NAME="NoName" VALUE="NoValue" />
+PersistentRequest: Receiving:    </form>
+PersistentRequest: Receiving:    <script language='JavaScript'>
+PersistentRequest: Receiving: if (parent.ping != null) parent.ping('refresh-3');
+XmlBlasterAccessRaw: doPost=false, sending 'http://localhost:8080/xmlBlaster/BlasterHttpProxyServlet?ActionType=pong' ...
+XmlBlasterAccessRaw: Return value for '?ActionType=pong' = '<html><meta http-equiv='no-cache'><meta http-equiv='Cache-Control' content='no-cache'><meta http-equiv='expires' content='Wed, 26 Feb 1997 08:21:57 GMT'><body text='white' bgcolor='white'>Empty response for your ActionType='pong' noState 1067854991716</body></html>'
+PersistentRequest: Receiving: </script>
+PersistentRequest: Receiving: </BODY></HTML>
+PersistentRequest: Receiving: 
+PersistentRequest: Receiving: --End
+PersistentRequest: Receiving: Content-Type: text/html
+PersistentRequest: Receiving: 
+PersistentRequest: Receiving: <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN"><HTML>
+PersistentRequest: Receiving: <HEAD>
+PersistentRequest: Receiving:    <meta http-equiv='Content-Type' content='text/html; charset=iso-8859-1'>
+PersistentRequest: Receiving:    <meta http-equiv='Pragma' content='no-cache'>
+PersistentRequest: Receiving:    <meta http-equiv='Cache-Control' content='no-cache'>
+PersistentRequest: Receiving:    <meta http-equiv='Expires' content='Tue, 31 Dec 1997 23:59:59 GMT'>
+PersistentRequest: Receiving:    <TITLE>BlasterHttpProxy Connection</TITLE>
+PersistentRequest: Receiving: </HEAD>
+PersistentRequest: Receiving: <BODY>
+PersistentRequest: Receiving:    <br>&nbsp;
+PersistentRequest: Receiving:    <br>&nbsp;
+PersistentRequest: Receiving:    <form ACTION="" METHOD="POST" TARGET="callback">
+PersistentRequest: Receiving:       <INPUT TYPE="HIDDEN" NAME="NoName" VALUE="NoValue" />
+PersistentRequest: Receiving:    </form>
+PersistentRequest: Receiving:    <script language='JavaScript'>
+PersistentRequest: Receiving: if (parent.ping != null) parent.ping('refresh-4');
+XmlBlasterAccessRaw: doPost=false, sending 'http://localhost:8080/xmlBlaster/BlasterHttpProxyServlet?ActionType=pong' ...
+XmlBlasterAccessRaw: Return value for '?ActionType=pong' = '<html><meta http-equiv='no-cache'><meta http-equiv='Cache-Control' content='no-cache'><meta http-equiv='expires' content='Wed, 26 Feb 1997 08:21:57 GMT'><body text='white' bgcolor='white'>Empty response for your ActionType='pong' noState 1067855001755</body></html>'
+PersistentRequest: Receiving: </script>
+PersistentRequest: Receiving: </BODY></HTML>
+PersistentRequest: Receiving: 
+
+
+
+PersistentRequest: Receiving: --End
+PersistentRequest: Receiving: Content-Type: text/html
+PersistentRequest: Receiving: 
+PersistentRequest: Receiving: <!DOCTYPE HTML PUBLIC "-//IETF//DTD HTML//EN"><HTML>
+PersistentRequest: Receiving: <HEAD>
+PersistentRequest: Receiving:    <meta http-equiv='Content-Type' content='text/html; charset=iso-8859-1'>
+PersistentRequest: Receiving:    <meta http-equiv='Pragma' content='no-cache'>
+PersistentRequest: Receiving:    <meta http-equiv='Cache-Control' content='no-cache'>
+PersistentRequest: Receiving:    <meta http-equiv='Expires' content='Tue, 31 Dec 1997 23:59:59 GMT'>
+PersistentRequest: Receiving:    <TITLE>BlasterHttpProxy Connection</TITLE>
+PersistentRequest: Receiving: </HEAD>
+PersistentRequest: Receiving: <BODY>
+PersistentRequest: Receiving:    <br>&nbsp;
+PersistentRequest: Receiving:    <br>&nbsp;
+PersistentRequest: Receiving:    <form ACTION="" METHOD="POST" TARGET="callback">
+PersistentRequest: Receiving:       <INPUT TYPE="HIDDEN" NAME="NoName" VALUE="NoValue" />
+PersistentRequest: Receiving:    </form>
+PersistentRequest: Receiving:    <script language='JavaScript'>
+PersistentRequest: Receiving: if (parent.ping != null) parent.ping('refresh-1');
+XmlBlasterAccessRaw: doPost=false, sending 'http://localhost:8080/xmlBlaster/BlasterHttpProxyServlet?ActionType=pong' ...
+XmlBlasterAccessRaw: Return value for '?ActionType=pong' = '<html><meta http-equiv='no-cache'><meta http-equiv='Cache-Control' content='no-cache'><meta http-equiv='expires' content='Wed, 26 Feb 1997 08:21:57 GMT'><body text='white' bgcolor='white'>Empty response for your ActionType='pong' noState 1067856567127</body></html>'
+PersistentRequest: Receiving: if (parent.update != null) parent.update('%3Ckey+oid%3D%27meminfo%27+contentMimeExtended%3D%27systemInfo%27%3E%0A++%3CsystemInfo%3E%3C%2FsystemInfo%3E%0A+%3C%2Fkey%3E','69','%3Cqos%3E%0A++%3Csender%3E%2Fnode%2FxmlBlaster_192_168_1_4_3412%2Fclient%2Fxmlblast%2F-2%3C%2Fsender%3E%0A++%3Csubscribe+id%3D%27__subId%3AxmlBlaster_192_168_1_4_3412-XPATH2%27%2F%3E%0A++%3CrcvTimestamp+nanos%3D%271067856557411000001%27%2F%3E%0A++%3Cqueue+index%3D%270%27+size%3D%271%27%2F%3E%0A++%3CisUpdate%2F%3E%0A+%3C%2Fqos%3E');
+PersistentRequest: Receiving: if (parent.update != null) parent.update('%3Ckey+oid%3D%27cpuinfo%27+contentMimeExtended%3D%27systemInfo%27%3E%0A++%3CsystemInfo%3E%3C%2FsystemInfo%3E%0A+%3C%2Fkey%3E','78','%3Cqos%3E%0A++%3Csender%3E%2Fnode%2FxmlBlaster_192_168_1_4_3412%2Fclient%2Fxmlblast%2F-2%3C%2Fsender%3E%0A++%3Csubscribe+id%3D%27__subId%3AxmlBlaster_192_168_1_4_3412-XPATH2%27%2F%3E%0A++%3CrcvTimestamp+nanos%3D%271067856561120000001%27%2F%3E%0A++%3Cqueue+index%3D%270%27+size%3D%271%27%2F%3E%0A++%3CisUpdate%2F%3E%0A+%3C%2Fqos%3E');
+PersistentRequest: Receiving: if (parent.update != null) parent.update('%3Ckey+oid%3D%27meminfo%27+contentMimeExtended%3D%27systemInfo%27%3E%0A++%3CsystemInfo%3E%3C%2FsystemInfo%3E%0A+%3C%2Fkey%3E','67','%3Cqos%3E%0A++%3Csender%3E%2Fnode%2FxmlBlaster_192_168_1_4_3412%2Fclient%2Fxmlblast%2F-2%3C%2Fsender%3E%0A++%3Csubscribe+id%3D%27__subId%3AxmlBlaster_192_168_1_4_3412-XPATH2%27%2F%3E%0A++%3CrcvTimestamp+nanos%3D%271067856565411000001%27%2F%3E%0A++%3Cqueue+index%3D%270%27+size%3D%271%27%2F%3E%0A++%3CisUpdate%2F%3E%0A+%3C%2Fqos%3E');
+PersistentRequest: Receiving: </script>
+PersistentRequest: Receiving: </BODY></HTML>
+PersistentRequest: Receiving: 

@@ -16,6 +16,7 @@ public class XmlBlasterApplet extends Applet implements I_CallbackRaw
       try {
          this.xmlBlasterAccess = new XmlBlasterAccessRaw(this);
          this.xmlBlasterAccess.connect("<qos/>", this);
+         this.xmlBlasterAccess.subscribe("<key oid='' queryType='XPATH'>//key</key>", "<qos/>");
       }
       catch (Exception e) {
          System.out.println("XmlBlasterApplet: No connection to xmlBlaster: " + e.toString());

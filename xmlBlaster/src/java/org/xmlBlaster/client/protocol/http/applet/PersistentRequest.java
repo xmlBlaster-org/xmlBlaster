@@ -76,9 +76,12 @@ public class PersistentRequest extends Thread {
                this.xmlBlasterAccess.request("?ActionType=pong",
                                 XmlBlasterAccessRaw.GET, !XmlBlasterAccessRaw.ONEWAY);
             }
-            else if (line.indexOf("##content##") != -1) {
+            else if (line.indexOf("if (parent.update != null) parent.update(") != -1) {
                //if (line.regionMatches(0,"##content##",0,11)) {
                update(line);
+               // !!! TODO: In an applet we don't need the 'browserReady' handshake, change code in servlet
+               this.xmlBlasterAccess.request("?ActionType=browserReady",
+                                XmlBlasterAccessRaw.GET, !XmlBlasterAccessRaw.ONEWAY);
             }
             else {
                //System.out.println("PersistentRequest: Ignoring response");
