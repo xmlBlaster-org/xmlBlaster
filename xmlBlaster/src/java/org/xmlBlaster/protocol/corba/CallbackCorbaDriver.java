@@ -3,7 +3,7 @@ Name:      CallbackCorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using CORBA
-Version:   $Id: CallbackCorbaDriver.java,v 1.20 2002/03/22 08:18:48 ruff Exp $
+Version:   $Id: CallbackCorbaDriver.java,v 1.21 2002/03/22 08:31:18 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -22,7 +22,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackHelper;
  * <p>
  * The BlasterCallback.update() method of the client will be invoked
  *
- * @version $Revision: 1.20 $
+ * @version $Revision: 1.21 $
  * @author $Author: ruff $
  */
 public class CallbackCorbaDriver implements I_CallbackDriver
@@ -66,7 +66,7 @@ public class CallbackCorbaDriver implements I_CallbackDriver
    {
       if (msg == null || msg.length < 1) throw new XmlBlasterException(ME, "Illegal update argument");
       if (Log.TRACE) Log.trace(ME, "xmlBlaster.update(" + msg[0].getUniqueKey() + ") to " + callbackAddress.getAddress());
-      Log.info(ME, "xmlBlaster.update(" + msg.length + ")");
+      //Log.info(ME, "xmlBlaster.update(" + msg.length + ")");
 
       org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] updateArr = new org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[msg.length];
       for (int ii=0; ii<msg.length; ii++) {
@@ -90,7 +90,7 @@ public class CallbackCorbaDriver implements I_CallbackDriver
    {
       if (msg == null || msg.length < 1) throw new XmlBlasterException(ME, "Illegal updateOneway argument");
       if (Log.TRACE) Log.trace(ME, "xmlBlaster.updateOneway(" + msg[0].getUniqueKey() + ") to " + callbackAddress.getAddress());
-      Log.info(ME, "xmlBlaster.updateOneway(" + msg.length + ")");
+      //Log.info(ME, "xmlBlaster.updateOneway(" + msg.length + ")");
 
       org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] updateArr = new org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[msg.length];
       for (int ii=0; ii<msg.length; ii++) {
