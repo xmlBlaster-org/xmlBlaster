@@ -83,17 +83,6 @@ public interface I_XmlBlasterConnection extends I_Plugin
     */
    public String getProtocol();
 
-   /*
-    * Is invoked when we poll for the server, for example after we have lost the connection. 
-    * @return ConnectReturnQos string
-    */
-//   public String loginRaw() throws XmlBlasterException;
-
-   /*
-    * @deprecated Use disconnect() instead
-    */
-   //public boolean logout();
-
    public void shutdown() throws XmlBlasterException;
 
    /** 
@@ -105,8 +94,6 @@ public interface I_XmlBlasterConnection extends I_Plugin
    public boolean isLoggedIn();
 
    public String ping(String qos) throws XmlBlasterException;
-
-   //public static void usage();
 
    public java.lang.String subscribe(java.lang.String xmlKey, java.lang.String qos) throws XmlBlasterException;
 
