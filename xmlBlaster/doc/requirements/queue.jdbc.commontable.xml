@@ -1,0 +1,82 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+
+<requirement id='queue.jdbc.commontable' type='NEW' prio='HIGH' status='OPEN'>
+   <topic>
+     JDBC Plugin which stores all queues on a common table.
+   </topic>
+
+   <description>
+     <p>
+     XmlBlaster handles jdbc persistent storage by using a pool of tables. When a queue is created, such a 
+     table is used to store messages of that queue. When the queue is destroyed, the associated table is put 
+     back in the pool of free tables. If there is need for further tables, xmlBlaster automatically adds 
+     tables to the pool.
+     </p>
+     <p>
+     For systems where the programatical creation of tables on the DB is not allowed, it would become 
+     unpractical or even prohibitive to create a sufficient amount of tables for the freetables pool by hand.<br/>
+     For such situations an alternative approach can be used which uses a limited number of tables.
+     </p>
+     <p>
+     <b>Concept</b><br/>
+     On the db we have a certain amount of virtual storage spaces. A single table (the entry point for the 
+     user) contains a list of all these spaces. The name of this table is defined by the property 
+     <b><i>mainTable</i></b> which is passed to the JDBC plugin. This property defaults to 
+     <b>XMLBLASTERMAINTABLE</b>.
+     <pre>
+StoragePlugin[JDBC][1.0]=org.xmlBlaster.util.queue.jdbc.JdbcCommonTableQueuePlugin,
+                         mainTable=XMLBLASTERMAINTABLE
+     </pre>
+     This main table has three rows:
+       <ul>
+         <li><b>envName</b> which is the name of the virtual space (a convenient name here would be the stripped clusterNodeId.</li>
+         <li><b>queuesName</b> is the name of the table containing a list of queue names used within that virtual space.</li> 
+         <li><b>dataName</b> the name of the table which contains the data of all the queues of that virtual space name.</li> 
+       </ul>
+     Every row on the <i>mainTable</i> corresponds to a virtual storage space. 
+     </p>
+     <p>
+     For every virtual storage space (every storage space could be a cluster) two tables are used:
+       <ul>
+         <li><b>queuesTable</b> which has the same name as the entry <i>queuesName</i> on the <i>mainTable</i></li>.
+         <li><b>dataTable</b> which has the same name as the entry <i>dataName</i> on the <i>mainTable</i></li>.
+       </ul>
+       <img src="jdbcDesignCommonTable.gif" border="0" alt="jdbcDesignCommonTable" /> 
+     </p>
+    </description>
+
+
+   <configuration where="server">
+
+     <pre>
+StoragePlugin[JDBC][1.0]=org.xmlBlaster.util.queue.jdbc.JdbcCommonTableQueuePlugin,
+                         mainTable=XMLBLASTERMAINTABLE
+     </pre>
+   </configuration>
+
+   <see type="API">org.xmlBlaster.util.queue.I_Queue</see>
+   <see type="API">org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin</see>
+   <see type="API">org.xmlBlaster.util.queue.QueuePluginManager</see>
+   <see type="API">org.xmlBlaster.util.queue.I_QueueEntry</see>
+   <see type="API">org.xmlBlaster.util.qos.storage.QueuePropertyBase</see>
+   <see type="API">org.xmlBlaster.util.I_Plugin</see>
+   <see type="API">org.xmlBlaster.util.Global</see>
+   <see type="REQ">queue</see>
+   <see type="REQ">queue.jdbc</see>
+   <see type="REQ">queue.jdbc.postgres</see>
+   <see type="REQ">queue.jdbc.oracle</see>
+
+<!--   <see type="REQ">cluster</see> -->
+   <author>laghi@swissinfo.org</author>
+   <date>2003 01 28</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="OPEN">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">org.xmlBlaster.test.classtest.queue.I_QueueTest</test>
+      <test tool="SUITE">org.xmlBlaster.test.classtest.queue.JdbcQueueTest</test>
+   </testcase>
+</requirement>
+
