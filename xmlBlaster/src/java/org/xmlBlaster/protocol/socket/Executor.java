@@ -3,7 +3,7 @@ Name:      Executor.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Send/receive messages over outStream and inStream. 
-Version:   $Id: Executor.java,v 1.13 2002/03/17 07:29:05 ruff Exp $
+Version:   $Id: Executor.java,v 1.14 2002/03/18 00:29:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -63,8 +63,6 @@ public abstract class Executor implements ExecutorBase
    private final String DUMMY_OBJECT = "";
    /** Set debug level */
    protected int SOCKET_DEBUG=0;
-   /** Temporary helper to only show one time the Log.warn for updateIsOneway */
-   protected boolean warnUpdateIsOneway = updateIsOneway ? true : false;
 
    /**
     * For listeners who want to be informed about return messages or exceptions,
@@ -178,11 +176,34 @@ public abstract class Executor implements ExecutorBase
       if (receiver.isInvoke()) {
          // handling invocations ...
 
-         if (Constants.PUBLISH.equals(receiver.getMethodName())) {
+         if (Constants.PUBLISH_ONEWAY.equals(receiver.getMethodName())) {
+            MessageUnit[] arr = receiver.getMessageArr();
+            if (arr == null || arr.length < 1) {
+               Log.error(ME, "Invocation of " + receiver.getMethodName() + "() failed, missing arguments");
+               return true;
+            }
+            xmlBlasterImpl.publishOneway(receiver.getSessionId(), arr);
+         }
+         else if (Constants.PUBLISH.equals(receiver.getMethodName())) {
             MessageUnit[] arr = receiver.getMessageArr();
             if (arr == null || arr.length < 1)
                throw new XmlBlasterException(ME, "Invocation of " + receiver.getMethodName() + "() failed, missing arguments");
             String[] response = xmlBlasterImpl.publishArr(receiver.getSessionId(), arr);
+            executeResponse(receiver, response);
+         }
+         else if (Constants.UPDATE_ONEWAY.equals(receiver.getMethodName())) {
+            MessageUnit[] arr = receiver.getMessageArr();
+            if (arr == null || arr.length < 1) {
+               Log.error(ME, "Invocation of " + receiver.getMethodName() + "() failed, missing arguments");
+               return true;
+            }
+            this.cbClient.updateOneway(receiver.getSessionId(), arr);
+         }
+         else if (Constants.UPDATE.equals(receiver.getMethodName())) {
+            MessageUnit[] arr = receiver.getMessageArr();
+            if (arr == null || arr.length < 1)
+               throw new XmlBlasterException(ME, "Invocation of " + receiver.getMethodName() + "() failed, missing arguments");
+            String[] response = this.cbClient.update(receiver.getSessionId(), arr);
             executeResponse(receiver, response);
          }
          else if (Constants.GET.equals(receiver.getMethodName())) {
@@ -209,23 +230,6 @@ public abstract class Executor implements ExecutorBase
             xmlBlasterImpl.unSubscribe(receiver.getSessionId(), arr[0].getXmlKey(), arr[0].getQos());
             // !!! TODO better return value?
             executeResponse(receiver, "<qos><state>OK</state></qos>");
-         }
-         else if (Constants.UPDATE.equals(receiver.getMethodName())) {
-            MessageUnit[] arr = receiver.getMessageArr();
-            if (arr == null || arr.length < 1)
-               throw new XmlBlasterException(ME, "Invocation of " + receiver.getMethodName() + "() failed, missing arguments");
-            /*String[] response = */this.cbClient.update(receiver.getSessionId(), arr);
-            String[] response = new String[arr.length];      // !!! TODO response from update
-            for (int ii=0; ii<arr.length; ii++)
-               response[ii] = "<qos><state>OK</state></qos>";
-            if (updateIsOneway) {
-               if (warnUpdateIsOneway) {
-                  Log.info(ME, "blocking update() mode is currently switched off");
-                  warnUpdateIsOneway = false;
-               }
-            }
-            else
-               executeResponse(receiver, response);
          }
          else if (Constants.ERASE.equals(receiver.getMethodName())) {
             MessageUnit[] arr = receiver.getMessageArr();

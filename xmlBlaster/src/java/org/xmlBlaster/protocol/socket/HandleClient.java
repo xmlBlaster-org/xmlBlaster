@@ -3,7 +3,7 @@ Name:      HandleClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   HandleClient class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: HandleClient.java,v 1.14 2002/03/17 07:29:05 ruff Exp $
+Version:   $Id: HandleClient.java,v 1.15 2002/03/18 00:29:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -84,10 +84,11 @@ public class HandleClient extends Executor implements Runnable
    /**
     * Updating multiple messages in one sweep, callback to client. 
     * <p />
+    * @param expectingResponse is WAIT_ON_RESPONSE or ONEWAY
+    * @return null if oneway
     * @see org.xmlBlaster.engine.RequestBroker
     */
-   public final String[] sendUpdate(String cbSessionId, MsgQueueEntry[] msg)
-      throws XmlBlasterException, ConnectionException
+   public final String[] sendUpdate(String cbSessionId, MsgQueueEntry[] msg, boolean expectingResponse) throws XmlBlasterException, ConnectionException
    {
       if (Log.CALL) Log.call(ME, "Entering update: id=" + cbSessionId);
 
@@ -103,21 +104,14 @@ public class HandleClient extends Executor implements Runnable
 
          Parser parser = new Parser(Parser.INVOKE_BYTE, Constants.UPDATE, cbSessionId);
          parser.addMessage(msgUnitArr);
-         if (updateIsOneway) {
-            if (warnUpdateIsOneway) {
-               Log.info(ME, "blocking update() mode is currently switched of");
-               warnUpdateIsOneway = false;
-            }
-            execute(parser, ONEWAY);
-            String[] arr = new String[msg.length];
-            for (int jj=0; jj<msg.length; jj++)
-               arr[jj] = "<qos><state>OK</state></qos>";
-            return arr;
-         }
-         else {
+         if (expectingResponse) {
             Object response = execute(parser, WAIT_ON_RESPONSE);
             if (Log.TRACE || SOCKET_DEBUG>0) Log.info(ME, "Got update response " + response.toString());
             return (String[])response; // return the QoS
+         }
+         else {
+            execute(parser, ONEWAY);
+            return null;
          }
       }
       catch (IOException e1) {
@@ -126,6 +120,26 @@ public class HandleClient extends Executor implements Runnable
       }
    }
 
+   /**
+    * Ping to check if callback server is alive. 
+    * This ping checks the availability on the application level.
+    * @param qos Currently an empty string ""
+    * @return    Currently an empty string ""
+    * @exception XmlBlasterException If client not reachable
+    */
+   public final String ping(String qos) throws XmlBlasterException
+   {
+      try {
+         String cbSessionId = "";
+         Parser parser = new Parser(Parser.INVOKE_BYTE, Constants.PING, cbSessionId);
+         parser.addMessage(qos);
+         Object response = execute(parser, WAIT_ON_RESPONSE);
+         if (Log.TRACE || SOCKET_DEBUG>0) Log.info(ME, "Got ping response " + response.toString());
+         return (String)response; // return the QoS
+      } catch (Throwable e) {
+         throw new XmlBlasterException("CallbackPingFailed", "SOCKET callback ping failed: " + e.toString());
+      }
+   }
 
    /**
     * Serve a client
@@ -178,7 +192,7 @@ public class HandleClient extends Executor implements Runnable
                }
             }
             catch (XmlBlasterException e) {
-               Log.error(ME, "Server can't handle message: " + e.toString());
+               if (Log.TRACE) Log.trace(ME, "Can't handle message, throwing exception back to client: " + e.toString());
                try {
                   executeExecption(receiver, e);
                }

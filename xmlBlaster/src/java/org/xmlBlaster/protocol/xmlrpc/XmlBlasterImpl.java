@@ -169,7 +169,27 @@ public class XmlBlasterImpl
       }
    }
 
+   /**
+    * @see xmlBlaster.idl
+    */
+   public void publishOneway(String sessionId, Vector msgUnitArrWrap)
+   {
+      if (Log.CALL) Log.call(ME, "Entering publishOneway() ...");
+      int arrayLength = msgUnitArrWrap.size();
 
+      if (arrayLength < 1) {
+         if (Log.TRACE) Log.trace(ME, "Entering xmlBlaster.publishOneway(), nothing to do, zero msgUnits sent");
+         return;
+      }
+
+      try {
+         MessageUnit[] msgUnitArr = ProtoConverter.vector2MessageUnitArray(msgUnitArrWrap);
+         blasterNative.publishOneway(sessionId, msgUnitArr);
+      }
+      catch (Throwable e) {
+         Log.error(ME, "Caught exception which can't be delivered to client because of 'oneway' mode: " + e.toString());
+      }
+   }
 
    /**
     * @see xmlBlaster.idl
@@ -210,11 +230,11 @@ public class XmlBlasterImpl
 
    /**
     * Test the xml-rpc connection.
-    * @return 1
+    * @return ""
     */
-   public int ping() throws XmlBlasterException
+   public String ping(String qos)
    {
-      return 1;
+      return "";
    }
 
    //   public String toXml() throws XmlBlasterException;

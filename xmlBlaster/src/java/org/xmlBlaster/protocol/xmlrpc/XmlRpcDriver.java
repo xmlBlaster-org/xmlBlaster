@@ -3,7 +3,7 @@ Name:      XmlRpcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   XmlRpcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: XmlRpcDriver.java,v 1.24 2002/03/17 07:29:05 ruff Exp $
+Version:   $Id: XmlRpcDriver.java,v 1.25 2002/03/18 00:29:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
@@ -54,8 +54,9 @@ public class XmlRpcDriver implements I_Driver
    private I_Authenticate authenticate = null;
    /** The singleton handle for this xmlBlaster server */
    private I_XmlBlaster xmlBlasterImpl = null;
+   public static final int DEFAULT_HTTP_PORT = 8080;
    /** The port for the xml-rpc web server */
-   private int xmlPort = 8080;
+   private int xmlPort = DEFAULT_HTTP_PORT;
    /** The xml-rpc HTTP web server */
    private WebServer webServer = null;
    /** The URL which clients need to use to access this server */

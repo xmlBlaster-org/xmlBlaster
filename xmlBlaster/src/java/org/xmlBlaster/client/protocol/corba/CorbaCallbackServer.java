@@ -3,7 +3,7 @@ Name:      CorbaCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaCallbackServer.java,v 1.14 2002/03/17 17:10:58 ruff Exp $
+Version:   $Id: CorbaCallbackServer.java,v 1.15 2002/03/18 00:29:29 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -202,14 +202,21 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
     */
    public void updateOneway(String cbSessionId, org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] msgUnitArr)
    {
+      if (msgUnitArr == null) {
+         Log.warn(ME, "Receiving in updateOneway(" + cbSessionId + ") null message");
+         return;
+      }
+      if (Log.CALL) Log.call(ME, "Entering updateOneway(" + cbSessionId + ") of " + msgUnitArr.length + " messages");
+
       try {
-         update(cbSessionId, msgUnitArr);
+         // convert Corba to internal MessageUnit and call update() ...
+         MessageUnit[] localMsgUnitArr = CorbaDriver.convert(msgUnitArr);
+         boss.updateOneway(cbSessionId, localMsgUnitArr);
       }
       catch (Throwable e) {
          Log.error(ME, "updateOneway() failed, exception is not sent to xmlBlaster: " + e.toString());
          e.printStackTrace();
       }
-         
    }
 
    /**
@@ -239,11 +246,7 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
       try {
          // convert Corba to internal MessageUnit and call update() ...
          MessageUnit[] localMsgUnitArr = CorbaDriver.convert(msgUnitArr);
-         boss.update(cbSessionId, localMsgUnitArr);    // !!!! return value
-         String[] ret = new String[msgUnitArr.length];
-         for (int ii=0; ii<ret.length; ii++)
-            ret[ii] = "<qos><state>OK</state></qos>";
-         return ret;
+         return boss.update(cbSessionId, localMsgUnitArr);
       }
       catch(XmlBlasterException e) {
          Log.error(ME, "Delivering message to client failed, message is lost.");

@@ -3,7 +3,7 @@ Name:      XmlBlasterImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: XmlBlasterImpl.java,v 1.5 2000/09/15 17:16:20 ruff Exp $
+Version:   $Id: XmlBlasterImpl.java,v 1.6 2002/03/18 00:29:36 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
@@ -101,24 +101,28 @@ public class XmlBlasterImpl extends UnicastRemoteObject implements org.xmlBlaste
     */
    public String[] publishArr(String sessionId, MessageUnit[] msgUnitArr) throws RemoteException, XmlBlasterException
    {
-      try {
-         if (Log.CALL) Log.call(ME, "Entering publish() ...");
-
-         String[] returnArr = new String[0];
-
-         if (msgUnitArr.length < 1) {
-            if (Log.TRACE) Log.trace(ME, "Entering xmlBlaster.publish(), nothing to do, zero msgUnits sent");
-            return returnArr;
-         }
-         if (Log.CALL) Log.trace(ME, "Entering xmlBlaster.publish() for " + msgUnitArr.length + " Messages");
-
-         String[] strArr = blasterNative.publishArr(sessionId, msgUnitArr);
-
-         return strArr;
+      if (Log.CALL) Log.trace(ME, "Entering xmlBlaster.publish() for " + msgUnitArr.length + " Messages");
+      if (msgUnitArr.length < 1) {
+         if (Log.TRACE) Log.trace(ME, "Entering xmlBlaster.publishArr(), nothing to do, zero msgUnits sent");
+         return new String[0];
       }
-      catch (org.xmlBlaster.util.XmlBlasterException e) {
-         throw new XmlBlasterException(e.id, e.reason); // transform native exception to Corba exception
+      return blasterNative.publishArr(sessionId, msgUnitArr);
+   }
+
+
+   /**
+    * @see xmlBlaster.idl
+    */
+   public void publishOneway(String sessionId, MessageUnit[] msgUnitArr) throws RemoteException
+   {
+      if (Log.CALL) Log.trace(ME, "Entering xmlBlaster.publishOneway() for " + msgUnitArr.length + " Messages");
+
+      if (msgUnitArr.length < 1) {
+         if (Log.TRACE) Log.trace(ME, "Entering xmlBlaster.publishOneway(), nothing to do, zero msgUnits sent");
+         return;
       }
+
+      blasterNative.publishOneway(sessionId, msgUnitArr);
    }
 
 
@@ -163,14 +167,15 @@ public class XmlBlasterImpl extends UnicastRemoteObject implements org.xmlBlaste
       }
    }
 
-
    /**
-    * Test RMI connection.
-    * @return true
-    */
-   public boolean ping() throws RemoteException, XmlBlasterException
+     * Ping to check if xmlBlaster is alive. 
+     * This ping checks the availability on the application level.
+     * @param qos Currently an empty string ""
+     * @return    Currently an empty string ""
+     */
+   public String ping(String qos) throws RemoteException
    {
-      return true;
+      return "";
    }
 }
 

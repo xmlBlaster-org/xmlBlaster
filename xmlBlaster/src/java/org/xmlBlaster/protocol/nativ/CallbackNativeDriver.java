@@ -3,7 +3,7 @@ Name:      CallbackNativeDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using native interface.
-Version:   $Id: CallbackNativeDriver.java,v 1.4 2002/03/13 16:41:28 ruff Exp $
+Version:   $Id: CallbackNativeDriver.java,v 1.5 2002/03/18 00:29:33 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.nativ;
@@ -69,6 +69,28 @@ public class CallbackNativeDriver implements I_CallbackDriver
       return ret;
    }
 
+
+   /**
+    * The oneway variant, without return value. 
+    * @exception XmlBlasterException Is never from the client (oneway).
+    */
+   public void sendUpdateOneway(MsgQueueEntry[] msg) throws XmlBlasterException
+   {
+      if (msg == null || msg.length < 1) throw new XmlBlasterException(ME, "Illegal updateOneway argument");
+      Log.info(ME, "xmlBlaster.updateOneway(" + msg[0].getUniqueKey() + ") from sender " + msg[0].getPublisherName() + " to " + callbackAddress.getAddress());
+   }
+
+   /**
+    * Ping to check if callback server is alive. 
+    * This ping checks the availability on the application level.
+    * @param qos Currently an empty string ""
+    * @return    Currently an empty string ""
+    * @exception XmlBlasterException If client not reachable
+    */
+   public final String ping(String qos) throws XmlBlasterException
+   {
+      return "";
+   }
 
    /**
     * This method shuts down the driver.

@@ -3,7 +3,7 @@ Name:      CallbackXmlRpcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using XML-RPC interface.
-Version:   $Id: CallbackXmlRpcDriver.java,v 1.12 2002/03/13 16:41:31 ruff Exp $
+Version:   $Id: CallbackXmlRpcDriver.java,v 1.13 2002/03/18 00:29:38 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
@@ -66,7 +66,6 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
       }
    }
 
-
    /**
     * This sends the update to the client.
     * <p />
@@ -121,6 +120,63 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
       }
    }
 
+   /**
+    * The oneway variant, without return value. 
+    * @exception XmlBlasterException Is never from the client (oneway).
+    */
+   public void sendUpdateOneway(MsgQueueEntry[] msg) throws XmlBlasterException
+   {
+      if (msg == null || msg.length < 1) throw new XmlBlasterException(ME, "Illegal updateOneway argument");
+ 
+      // transform the msgUnits to Vectors
+      try {
+         for (int ii=0; ii < msg.length; ii++) {
+            Vector args = new Vector();
+            MessageUnit msgUnit = msg[ii].getMessageUnit();
+            args.addElement(callbackAddress.getSessionId());
+            args.addElement(msgUnit.getXmlKey());
+            args.addElement(msgUnit.getContent());
+            args.addElement(msgUnit.getQos());
+          
+            if (Log.TRACE) Log.trace(ME, "Send an updateOneway to the client ...");
+
+            xmlRpcClient.execute("updateOneway", args);
+
+            if (Log.TRACE) Log.trace(ME, "Successfully sent message '" + msgUnit.getXmlKey()
+                + "' update from sender '" + msg[0].getPublisherName() + "' to '" + callbackAddress.getSessionId() + "'");
+         }
+      }
+      catch (XmlRpcException ex) {
+         XmlBlasterException e = XmlRpcConnection.extractXmlBlasterException(ex);
+         String str = "Sending oneway message to " + callbackAddress.getAddress() + " failed in client: " + ex.toString();
+         if (Log.TRACE) Log.trace(ME + ".sendUpdateOneway", str);
+         throw new XmlBlasterException("CallbackFailed", str);
+      }
+      catch (Throwable e) {
+         String str = "Sending oneway message to " + callbackAddress.getAddress() + " failed: " + e.toString();
+         if (Log.TRACE) Log.trace(ME + ".sendUpdateOneway", str);
+         e.printStackTrace();
+         throw new XmlBlasterException("CallbackFailed", str);
+      }
+   }
+
+   /**
+    * Ping to check if callback server is alive. 
+    * This ping checks the availability on the application level.
+    * @param qos Currently an empty string ""
+    * @return    Currently an empty string ""
+    * @exception XmlBlasterException If client not reachable
+    */
+   public final String ping(String qos) throws XmlBlasterException
+   {
+      try {
+         Vector args = new Vector();
+         args.addElement("");
+         return (String)xmlRpcClient.execute("ping", args);
+      } catch (Throwable e) {
+         throw new XmlBlasterException("CallbackPingFailed", "XmlRpc callback ping failed: " + e.toString());
+      }
+   }
 
    /**
     * This method shuts down the driver.

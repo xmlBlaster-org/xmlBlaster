@@ -638,6 +638,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
          prop.setOnOverflow(XmlBlasterProperty.get("cb.queue.onOverflow", QueueProperty.DEFAULT_onOverflow));
          prop.setOnFailure(XmlBlasterProperty.get("cb.queue.onFailure", QueueProperty.DEFAULT_onFailure));
+         prop.setMaxMsg(XmlBlasterProperty.get("cb.queue.maxMsg", QueueProperty.DEFAULT_maxMsgDefault));
 
          CallbackAddress addr = null;
          if (cbAddr != null) {
@@ -665,8 +666,11 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
             addr.setCompressType(XmlBlasterProperty.get("cb.compressType", CallbackAddress.DEFAULT_compressType));
             addr.setMinSize(XmlBlasterProperty.get("cb.minSize", CallbackAddress.DEFAULT_minSize));
             addr.setPtpAllowed(XmlBlasterProperty.get("cb.ptpAllowed", CallbackAddress.DEFAULT_ptpAllowed));
+            addr.setOneway(XmlBlasterProperty.get("cb.oneway", CallbackAddress.DEFAULT_oneway));
          }
+
          prop.setCallbackAddress(addr);
+         Log.info(ME, "Callback settings: " + prop.getSettings());
          
          qos.addQueueProperty(prop);
       } // Callback server configured and running
@@ -975,7 +979,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * delivering us a new asynchronous message. 
     * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQoS)
     */
-   public void update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS) throws XmlBlasterException
+   public final String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS) throws XmlBlasterException
    {
       //The boss should not be interested in cache updates
       if (Log.CALL) Log.call(ME, "Entering update(" + ((cache != null) ? "using cache" : "no cache") + ") ...");
@@ -993,16 +997,27 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
          if (obj != null) {
             // If a special callback was specified for this subscription:
             I_Callback cb = (I_Callback)obj;
-            cb.update(cbSessionId, updateKey, content, updateQoS); // deliver the update to our client
+            return cb.update(cbSessionId, updateKey, content, updateQoS); // deliver the update to our client
          }
          else if (updateClient != null) {
             // If a general callback was specified on login:
-            updateClient.update(cbSessionId, updateKey, content, updateQoS); // deliver the update to our client
+            return updateClient.update(cbSessionId, updateKey, content, updateQoS); // deliver the update to our client
          }
 
       }
+
+      return "<qos><state>OK</state></qos>";
    }
 
+   /*
+    * The oneway variant without a return value or exception
+    */
+   /*
+   public final void updateOneway(String cbSessionId, String updateKeyLiteral, byte[] content, String updateQoSLiteral)
+   {
+      // currently mapped in AbstractCallbackExtended to String update()
+   }
+   */
 
    private final String subscribeRaw(String xmlKey, String qos) throws XmlBlasterException, ConnectionException, IllegalArgumentException
    {
@@ -1187,6 +1202,31 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       return dummySArr;
    }
 
+   /**
+    * @see xmlBlaster.idl
+    */
+   public void publishOneway(MessageUnit [] msgUnitArr)
+   {
+      if (Log.CALL) Log.call(ME, "publishOneway() ...");
+      try {
+         if (secPlgn!=null) { // security plugin allows e.g. crypting of messages ...
+            MessageUnit mu[] = exportAll(msgUnitArr);
+            driver.publishOneway(mu);
+         }
+         else { // security plugin not available
+            driver.publishOneway(msgUnitArr);
+         }
+      } catch(XmlBlasterException e) {
+         Log.error(ME, "XmlBlasterException is not forwarded to client, we are in 'oneway' mode: " + e.reason);
+      } catch(ConnectionException e) {
+         try {
+            if (recorder != null) recorder.publishArr(msgUnitArr);
+            handleConnectionException(e);
+         } catch(XmlBlasterException e2) {
+            Log.error(ME, "XmlBlasterException is not forwarded to client, we are in 'oneway' mode: " + e2.reason);
+         }
+      }
+   }
 
    /**
     * Enforced by I_InvocationRecorder interface (fail save mode)
@@ -1314,7 +1354,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       if (isReconnectPolling)
          return;
       try {
-         driver.ping();
+         driver.ping("");
          if (Log.CALL) Log.call(ME, "ping success() ...");
          return;
       } catch(ConnectionException e) {
@@ -1511,10 +1551,12 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       text += "\n";
       text += "Control xmlBlaster callback (if we install a callback server)\n";
       text += "   -cb.sessionId       The session ID which is passed to our callback server update() method.\n";
+      text += "   -cb.queue.maxMsg    The max. capacity of the queue in number of messages [" + QueueProperty.DEFAULT_maxMsgDefault + "].\n";
       text += "   -cb.queue.onOverflow  Error handling when queue is full, 'block | deadLetter' [" + QueueProperty.DEFAULT_onOverflow + "].\n";
       text += "   -cb.queue.onFailure   Error handling when callback failed (after all retries etc.) [" + QueueProperty.DEFAULT_onFailure + "].\n";
       text += "   -cb.burstMode.collectTime Number of milliseconds xmlBlaster shall collect callback messages [" + CallbackAddress.DEFAULT_collectTime + "].\n";
       text += "                         This allows performance tuning, try set it to 200.\n";
+      text += "   -cb.oneway          Shall the update() messages be send oneway (no application level ACK) [" + CallbackAddress.DEFAULT_oneway + "]\n";
       text += "   -cb.pingInterval    Pinging every given milliseconds [" + CallbackAddress.DEFAULT_pingInterval + "]\n";
       text += "   -cb.retries         How often to retry if callback fails [" + CallbackAddress.DEFAULT_retries + "]\n";
       text += "   -cb.delay           Delay between callback retires in milliseconds [" + CallbackAddress.DEFAULT_delay + "]\n";

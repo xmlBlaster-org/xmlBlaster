@@ -3,7 +3,7 @@ Name:      CallbackEmailDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using email
-Version:   $Id: CallbackEmailDriver.java,v 1.15 2002/03/13 16:41:25 ruff Exp $
+Version:   $Id: CallbackEmailDriver.java,v 1.16 2002/03/18 00:29:31 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.email;
 
@@ -93,13 +93,34 @@ public class CallbackEmailDriver implements I_CallbackDriver
          for (int ii=0; ii<ret.length; ii++)
             ret[ii] = "<qos><state>OK</state></qos>";
          return ret;
-      } catch (Exception e) {
+      } catch (Throwable e) {
          String str = "Sorry, email callback failed, no mail sent to " + callbackAddress.getAddress() + ": " + e.toString();
          Log.warn(ME + ".EmailSendError", str);
          throw new XmlBlasterException(ME + ".EmailSendError", str);
       }
    }
 
+   /**
+    * The oneway variant, without return value. 
+    * @exception XmlBlasterException Is never from the client (oneway).
+    */
+   public void sendUpdateOneway(MsgQueueEntry[] msg) throws XmlBlasterException
+   {
+      sendUpdate(msg);
+   }
+
+   /**
+    * Ping to check if callback server is alive. 
+    * This ping checks the availability on the application level.
+    * @param qos Currently an empty string ""
+    * @return    Currently an empty string ""
+    * @exception XmlBlasterException If client not reachable
+    */
+   public final String ping(String qos) throws XmlBlasterException
+   {
+      Log.info(ME, "Email ping is not supported, request ignored");
+      return "";
+   }
 
    private String getMailBody(MsgQueueEntry[] msg) throws XmlBlasterException
    {

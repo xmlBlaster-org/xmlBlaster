@@ -132,11 +132,11 @@ public class AuthenticateImpl
 
    /**
     * Test the xml-rpc connection.
-    * @return 1
+    * @return ""
     */
-   public int ping() throws XmlBlasterException
+   public String ping(String qos)
    {
-      return 1;
+      return "";
    }
 
    //   public String toXml() throws XmlBlasterException;

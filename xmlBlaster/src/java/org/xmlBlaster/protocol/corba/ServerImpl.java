@@ -3,7 +3,7 @@ Name:      ServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: ServerImpl.java,v 1.14 2002/03/17 17:10:31 ruff Exp $
+Version:   $Id: ServerImpl.java,v 1.15 2002/03/18 00:29:30 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -152,8 +152,15 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
    public void publishOneway(org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] msgUnitArr)
    {
       try {
-         if (Log.CALL) Log.call(ME, "Entering publishOneway() ...");
-         publishArr(msgUnitArr);
+         if (msgUnitArr == null || msgUnitArr.length < 1) {
+            if (Log.TRACE) Log.trace(ME, "Entering xmlBlaster.publish(), nothing to do, zero msgUnits sent");
+            return;
+         }
+         if (Log.CALL) Log.call(ME, "Entering publishOneway(" + msgUnitArr.length + ") ...");
+         Log.info(ME, "Entering publishOneway(" + msgUnitArr.length + ") ...");
+
+         org.xmlBlaster.engine.helper.MessageUnit[] internalUnitArr = CorbaDriver.convert(msgUnitArr);   // convert Corba to internal ...
+         blaster.publishOneway(getSessionId(), internalUnitArr);
       }
       catch (Throwable e) {
          Log.error(ME, "publishOneway() failed, exception is not sent to client: " + e.toString());
@@ -181,7 +188,6 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
          throw new XmlBlasterException(e.id, e.reason); // transform native exception to Corba exception
       }
    }
-
 
    /**
     * Synchronous access
@@ -235,7 +241,6 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
       return sessionId;
    }
 
-
    /**
     * Converts an oid into a string as a hex dump with an unique identifier "IIOP:" in front.
     * <p />
@@ -257,7 +262,6 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
       // if (Log.TRACE) Log.trace("ServerImpl.CONVERT", "Converted POA-AOM <" + objectId + "> to session ID <" + result + ">");
       return result;
    }
-
 
    /**
     * Ping to check if xmlBlaster is alive.

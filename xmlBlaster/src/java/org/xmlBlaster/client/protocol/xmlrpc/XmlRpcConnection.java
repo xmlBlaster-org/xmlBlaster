@@ -3,7 +3,7 @@ Name:      XmlRpcConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native xmlBlaster Proxy. Can be called by the client in the same VM
-Version:   $Id: XmlRpcConnection.java,v 1.19 2002/03/17 07:29:03 ruff Exp $
+Version:   $Id: XmlRpcConnection.java,v 1.20 2002/03/18 00:29:29 ruff Exp $
 Author:    michele.laghi@attglobal.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.xmlrpc;
@@ -456,6 +456,44 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
 
 
    /**
+    * Publish multiple messages in one sweep.
+    * <p />
+    * @see org.xmlBlaster.engine.RequestBroker
+    */
+   public final void publishOneway(MessageUnit[] msgUnitArr)
+      throws XmlBlasterException, ConnectionException
+   {
+      if (Log.CALL) Log.call(ME, "Entering publishOneway: id=" + sessionId);
+
+      if (msgUnitArr == null) {
+         Log.error(ME + ".InvalidArguments", "The argument of method publishOneway() are invalid");
+         throw new XmlBlasterException(ME + ".InvalidArguments",
+                                       "The argument of method publishOneway() are invalid");
+      }
+
+      try {
+         Vector msgUnitArrWrap = ProtoConverter.messageUnitArray2Vector(msgUnitArr);
+         Vector args = new Vector();
+         args.addElement(sessionId);
+         args.addElement(msgUnitArrWrap);
+         getXmlRpcClient().execute("xmlBlaster.publishOneway", args);
+      }
+      catch (ClassCastException e) {
+         Log.error(ME+".publishOneway", e.toString());
+         e.printStackTrace();
+         throw new XmlBlasterException(ME+".publishOneway", "Class Cast Exception");
+      }
+      catch (IOException e1) {
+         Log.error(ME+".publishOneway", "IO exception: " + e1.toString());
+         throw new ConnectionException("IO exception", e1.toString());
+      }
+      catch (XmlRpcException e) {
+         throw extractXmlBlasterException(e);
+      }
+   }
+
+
+   /**
     * Delete messages.
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
@@ -585,16 +623,16 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
     * Check server.
     * @see xmlBlaster.idl
     */
-   public void ping() throws ConnectionException
+   public String ping(String str) throws ConnectionException
    {
       try {
          Vector args = new Vector();
-         getXmlRpcClient().execute("xmlBlaster.ping", args);
+         args.addElement("");
+         return (String)getXmlRpcClient().execute("xmlBlaster.ping", args);
       } catch(Exception e) {
          throw new ConnectionException(ME+".InvokeError", e.toString());
       }
    }
-
 
    public String toXml() throws XmlBlasterException
    {
@@ -624,7 +662,6 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
          throw extractXmlBlasterException(e);
       }
    }
-
 
    /**
     * Command line usage.

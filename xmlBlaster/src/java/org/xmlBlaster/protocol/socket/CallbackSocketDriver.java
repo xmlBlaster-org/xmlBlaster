@@ -3,7 +3,7 @@ Name:      CallbackSocketDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Sending messages to clients
-Version:   $Id: CallbackSocketDriver.java,v 1.5 2002/03/13 16:41:30 ruff Exp $
+Version:   $Id: CallbackSocketDriver.java,v 1.6 2002/03/18 00:29:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -58,7 +58,32 @@ public class CallbackSocketDriver implements I_CallbackDriver
     */
    public final String[] sendUpdate(MsgQueueEntry[] msg) throws XmlBlasterException
    {
-      return handler.sendUpdate(callbackAddress.getSessionId(), msg);
+      return handler.sendUpdate(callbackAddress.getSessionId(), msg, ExecutorBase.WAIT_ON_RESPONSE);
+   }
+
+   /**
+    * The oneway variant, without return value. 
+    * @exception XmlBlasterException Is never from the client (oneway).
+    */
+   public void sendUpdateOneway(MsgQueueEntry[] msg) throws XmlBlasterException
+   {
+      handler.sendUpdate(callbackAddress.getSessionId(), msg, ExecutorBase.ONEWAY);
+   }
+
+   /**
+    * Ping to check if callback server is alive. 
+    * This ping checks the availability on the application level.
+    * @param qos Currently an empty string ""
+    * @return    Currently an empty string ""
+    * @exception XmlBlasterException If client not reachable
+    */
+   public final String ping(String qos) throws XmlBlasterException
+   {
+      try {
+         return handler.ping(qos);
+      } catch (Throwable e) {
+         throw new XmlBlasterException("CallbackPingFailed", "CORBA callback ping failed: " + e.toString());
+      }
    }
 
    public void shutdown() {

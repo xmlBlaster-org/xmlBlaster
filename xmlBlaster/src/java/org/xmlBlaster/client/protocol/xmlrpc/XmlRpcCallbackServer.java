@@ -180,8 +180,37 @@ public class XmlRpcCallbackServer implements I_CallbackServer
                        String updateQoS) throws XmlBlasterException
    {
       if (Log.CALL) Log.call(ME, "Entering update(): sessionId: " + cbSessionId);
-      client.update(cbSessionId, updateKey, content, updateQoS);
-      return "<qos><state>OK</state></qos>";
+      return client.update(cbSessionId, updateKey, content, updateQoS);
+   }
+
+   /**
+    * The 'oneway' update method. 
+    * <p />
+    * oneway is not natively supported by XmlRpc
+    * <p />
+    * Gets invoked from XmlRpcCallbackImpl.java (which was called by xmlBlaster)
+    */
+   public void updateOneway(String cbSessionId, String updateKey, byte[] content,
+                       String updateQoS)
+   {
+      if (Log.CALL) Log.call(ME, "Entering updateOneway(): sessionId: " + cbSessionId);
+      try {
+         client.updateOneway(cbSessionId, updateKey, content, updateQoS);
+      }
+      catch (Throwable e) {
+         Log.error(ME, "Caught exception which can't be delivered to xmlBlaster because of 'oneway' mode: " + e.toString());
+      }
+   }
+
+   /**
+    * Ping to check if the callback server is alive. 
+    * This ping checks the availability on the application level.
+    * @param qos Currently an empty string ""
+    * @return    Currently an empty string ""
+    */
+   public String ping(String str)
+   {
+      return "";
    }
 } // class XmlRpcCallbackServer
 

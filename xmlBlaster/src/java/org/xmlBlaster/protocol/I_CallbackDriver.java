@@ -22,14 +22,12 @@ public interface I_CallbackDriver
    /** Get a human readable name of this driver */
    public String getName();
 
-
    /**
     * Intialize the driver.
     * @param  callbackAddress Contains the callback address,
     *         e.g. the stringified CORBA callback handle of the client or his email address.
     */
    public void init(CallbackAddress callbackAddress) throws XmlBlasterException;
-
 
    /**
     * Send the message update to the client.
@@ -52,9 +50,22 @@ public interface I_CallbackDriver
     * @exception On callback problems you need to throw a XmlBlasterException e.id="CallbackFailed",
     *            the message will queued until the client logs in again
     */
-   //public String[] sendUpdate(SessionInfo sessionInfo, MessageUnitWrapper msgUnitWrapper, MessageUnit[] messageUnitArr) throws XmlBlasterException;
    public String[] sendUpdate(MsgQueueEntry[] msg) throws XmlBlasterException;
 
+   /**
+    * The oneway variant, without return value
+    * @exception XmlBlasterException Is never from the client (oneway).
+    */
+   public void sendUpdateOneway(MsgQueueEntry[] msg) throws XmlBlasterException;
+
+   /**
+    * Ping to check if xmlBlaster is alive. 
+    * This ping checks the availability on the application level.
+    * @param qos Currently an empty string ""
+    * @return    Currently an empty string ""
+    * @exception On connection error
+    */
+   public String ping(String qos) throws XmlBlasterException;
 
    /**
     * Shut down the driver.

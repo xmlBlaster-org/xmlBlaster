@@ -3,7 +3,7 @@ Name:      CallbackRmiDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using RMI
-Version:   $Id: CallbackRmiDriver.java,v 1.12 2002/03/13 16:41:28 ruff Exp $
+Version:   $Id: CallbackRmiDriver.java,v 1.13 2002/03/18 00:29:35 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
@@ -34,7 +34,7 @@ import java.net.MalformedURLException;
  * Your client needs to have a callback server implementing interface
  * I_XmlBlasterCallback running and registered with rmi-registry.
  *
- * @version $Revision: 1.12 $
+ * @version $Revision: 1.13 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class CallbackRmiDriver implements I_CallbackDriver
@@ -102,7 +102,6 @@ public class CallbackRmiDriver implements I_CallbackDriver
       return cb;
    }
 
-
    /**
     * This sends the update to the client.
     * @exception e.id="CallbackFailed", should be caught and handled appropriate
@@ -127,6 +126,45 @@ public class CallbackRmiDriver implements I_CallbackDriver
       }
    }
 
+   /**
+    * The oneway variant, without return value. 
+    * @exception XmlBlasterException Is never from the client (oneway).
+    */
+   public void sendUpdateOneway(MsgQueueEntry[] msg) throws XmlBlasterException
+   {
+      if (msg == null || msg.length < 1) throw new XmlBlasterException(ME, "Illegal updateOneway argument");
+      if (Log.TRACE) Log.trace(ME, "xmlBlaster.updateOneway() to " + callbackAddress.getSessionId());
+
+      try {
+         MessageUnit[] updateArr = new MessageUnit[msg.length];
+         for (int ii=0; ii<msg.length; ii++)
+            updateArr[ii] = msg[ii].getMessageUnit();
+         getCb().updateOneway(callbackAddress.getSessionId(), updateArr);
+      } catch (Throwable e) {
+         String str;
+         if (msg.length > 1)
+            str = "RMI oneway callback of " + msg.length + " messages to client [" + callbackAddress.getSessionId() + "] failed, reason=" + e.toString();
+         else
+            str = "RMI oneway callback of message '" + msg[0].getMessageUnit().getXmlKey() + "' to client [" + callbackAddress.getSessionId() + "] failed, reason=" + e.toString();
+         throw new XmlBlasterException("CallbackFailed", str);
+      }
+   }
+
+   /**
+    * Ping to check if callback server is alive. 
+    * This ping checks the availability on the application level.
+    * @param qos Currently an empty string ""
+    * @return    Currently an empty string ""
+    * @exception XmlBlasterException If client not reachable
+    */
+   public final String ping(String qos) throws XmlBlasterException
+   {
+      try {
+         return getCb().ping(qos);
+      } catch (Throwable e) {
+         throw new XmlBlasterException("CallbackPingFailed", "RMI callback ping failed: " + e.toString());
+      }
+   }
 
    /**
     * This method shuts down the driver.

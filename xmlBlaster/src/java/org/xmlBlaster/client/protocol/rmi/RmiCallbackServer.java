@@ -3,7 +3,7 @@ Name:      RmiCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: RmiCallbackServer.java,v 1.11 2002/03/17 13:38:13 ruff Exp $
+Version:   $Id: RmiCallbackServer.java,v 1.12 2002/03/18 00:29:29 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.rmi;
@@ -216,12 +216,33 @@ public class RmiCallbackServer extends UnicastRemoteObject implements I_XmlBlast
       if (msgUnitArr == null) throw new XmlBlasterException(ME, "Received update of null message");
       if (Log.CALL) Log.call(ME, "Entering update(" + cbSessionId + ") of " + msgUnitArr.length + " messages");
 
-      client.update(cbSessionId, msgUnitArr); // !!! TODO: add String as return type
-      String[] ret = new String[msgUnitArr.length];
-      for (int ii=0; ii<ret.length; ii++)
-         ret[ii] = "<qos><state>OK</state></qos>";
-      return ret;
+      return client.update(cbSessionId, msgUnitArr);
    }
 
+   /**
+    * The oneway variant for better performance. 
+    */
+   public void updateOneway(String cbSessionId, org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr) throws RemoteException
+   {
+      if (msgUnitArr == null) return;
+      if (Log.CALL) Log.call(ME, "Entering updateOneway(" + cbSessionId + ") of " + msgUnitArr.length + " messages");
+      try {
+         client.updateOneway(cbSessionId, msgUnitArr);
+      }
+      catch (Throwable e) {
+         Log.error(ME, "Caught exception which can't be delivered to xmlBlaster because of 'oneway' mode: " + e.toString());
+      }
+   }
+
+   /**
+    * Ping to check if the xmlBlaster server is alive. 
+    * This ping checks the availability on the application level.
+    * @param qos Currently an empty string ""
+    * @return    Currently an empty string ""
+    */
+   public String ping(String str) throws RemoteException
+   {
+      return "";
+   }
 } // class RmiCallbackServer
 

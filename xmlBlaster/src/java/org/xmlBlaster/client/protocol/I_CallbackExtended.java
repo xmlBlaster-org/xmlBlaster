@@ -3,7 +3,7 @@ Name:      I_XmlRpcCallback.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to easy get the xml-rpc callback messages
-Version:   $Id: I_CallbackExtended.java,v 1.3 2002/03/17 13:38:13 ruff Exp $
+Version:   $Id: I_CallbackExtended.java,v 1.4 2002/03/18 00:29:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol;
 
@@ -19,7 +19,7 @@ import org.xmlBlaster.util.XmlBlasterException;
  * the 3 update() variants, so that the protocol drivers
  * can choose the update() they like most.
  *
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  * @author "Michele Laghi" <michele.laghi@attglobal.net>
  */
 public interface I_CallbackExtended extends I_Callback, I_CallbackRaw
@@ -46,7 +46,12 @@ public interface I_CallbackExtended extends I_Callback, I_CallbackRaw
     * @see I_Callback
     * @see AbstractCallbackExtended
     */
-   public void update(String cbSessionId, String updateKeyLiteral, byte[] content,
+   public String update(String cbSessionId, String updateKeyLiteral, byte[] content,
                       String updateQoSLiteral) throws XmlBlasterException;
+
+   /**
+    * The oneway variant without a return value or exception
+    */
+   public void updateOneway(String cbSessionId, String updateKeyLiteral, byte[] content, String updateQoSLiteral);
 }
 

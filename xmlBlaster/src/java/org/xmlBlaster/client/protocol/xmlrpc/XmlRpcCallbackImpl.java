@@ -3,7 +3,7 @@ Name:      XmlRpcCallbackImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: XmlRpcCallbackImpl.java,v 1.6 2002/03/13 16:41:10 ruff Exp $
+Version:   $Id: XmlRpcCallbackImpl.java,v 1.7 2002/03/18 00:29:29 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.xmlrpc;
@@ -43,7 +43,6 @@ public class XmlRpcCallbackImpl
       this.server = server;
    }
 
-
    /**
     * The update method.
     * <p />
@@ -51,12 +50,33 @@ public class XmlRpcCallbackImpl
     * @param sessionId A sessionId which we can decide if we trust it
     *                  This id is the one specified from the client which has setup the callback.
     */
-   public String update(String sessionId, String updateKey, byte[] content,
+   public String update(String cbSessionId, String updateKey, byte[] content,
                       String updateQoS) throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "Entering update() sessionId=" + sessionId);
-      server.update(sessionId, updateKey, content, updateQoS);
-      return "<qos><state>OK</state></qos>";
+      return server.update(cbSessionId, updateKey, content, updateQoS);
+   }
+
+   /**
+    * The 'oneway' update method. 
+    * <p />
+    * oneway is not natively supported by XmlRpc
+    * <p />
+    * Gets invoked from XmlRpcCallbackImpl.java (which was called by xmlBlaster)
+    */
+   public void updateOneway(String cbSessionId, String updateKey, byte[] content, String updateQoS)
+   {
+      server.updateOneway(cbSessionId, updateKey, content, updateQoS);
+   }
+
+   /**
+    * Ping to check if the callback server is alive. 
+    * This ping checks the availability on the application level.
+    * @param qos Currently an empty string ""
+    * @return    Currently an empty string ""
+    */
+   public String ping(String str)
+   {
+      return server.ping(str);
    }
 } // class XmlRpcCallbackImpl
 

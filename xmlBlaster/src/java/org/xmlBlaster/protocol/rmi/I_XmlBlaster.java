@@ -3,7 +3,7 @@ Name:      I_XmlBlaster.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native Interface to xmlBlaster
-Version:   $Id: I_XmlBlaster.java,v 1.3 2000/10/18 20:45:43 ruff Exp $
+Version:   $Id: I_XmlBlaster.java,v 1.4 2002/03/18 00:29:36 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
@@ -32,7 +32,6 @@ public interface I_XmlBlaster extends java.rmi.Remote
    public String subscribe(String sessionId, String xmlKey_literal, String subscribeQoS_literal)
                            throws RemoteException, XmlBlasterException;
 
-
    /**
     * Unsubscribe from messages.
     * <p />
@@ -40,7 +39,6 @@ public interface I_XmlBlaster extends java.rmi.Remote
     */
    public void unSubscribe(String sessionId, String xmlKey_literal, String unSubscribeQoS_literal)
                            throws RemoteException, XmlBlasterException;
-
 
    /**
     * Publish a message.
@@ -50,7 +48,6 @@ public interface I_XmlBlaster extends java.rmi.Remote
    public String publish(String sessionId, MessageUnit msgUnit)
                            throws RemoteException, XmlBlasterException;
 
-
    /**
     * Publish messages.
     * <p />
@@ -59,6 +56,13 @@ public interface I_XmlBlaster extends java.rmi.Remote
    public String[] publishArr(String sessionId, MessageUnit[] msgUnitArr)
                            throws RemoteException, XmlBlasterException;
 
+   /**
+    * Publish messages.
+    * <p />
+    * @see xmlBlaster.idl
+    */
+   public void publishOneway(String sessionId, MessageUnit[] msgUnitArr)
+                           throws RemoteException;
 
    /**
     * Delete messages.
@@ -68,7 +72,6 @@ public interface I_XmlBlaster extends java.rmi.Remote
    public String[] erase(String sessionId, String xmlKey_literal, String eraseQoS_literal)
                            throws RemoteException, XmlBlasterException;
 
-
    /**
     * Synchronous access a message.
     * <p />
@@ -77,11 +80,12 @@ public interface I_XmlBlaster extends java.rmi.Remote
    public MessageUnit[] get(String sessionId, String xmlKey_literal, String getQoS_literal)
                            throws RemoteException, XmlBlasterException;
 
-
    /**
-    * Check the server.
-    * <p />
+    * Ping to check if the xmlBlaster server is alive. 
+    * This ping checks the availability on the application level.
+    * @param qos Currently an empty string ""
+    * @return    Currently an empty string ""
     */
-   public boolean ping() throws RemoteException, XmlBlasterException;
+   public String ping(String str) throws RemoteException;
 }
 

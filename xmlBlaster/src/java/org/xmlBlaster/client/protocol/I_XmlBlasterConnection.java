@@ -69,7 +69,7 @@ public interface I_XmlBlasterConnection
 
    public boolean isLoggedIn();
 
-   public void ping() throws XmlBlasterException, ConnectionException;
+   public String ping(String qos) throws XmlBlasterException, ConnectionException;
 
    public String subscribe(String xmlKey_literal, String subscribeQoS_literal) throws XmlBlasterException, ConnectionException;
 
@@ -78,6 +78,8 @@ public interface I_XmlBlasterConnection
    public String publish(MessageUnit msgUnit) throws XmlBlasterException, ConnectionException;
 
    public String[] publishArr(MessageUnit[] msgUnitArr) throws XmlBlasterException, ConnectionException;
+
+   public void publishOneway(MessageUnit[] msgUnitArr) throws XmlBlasterException, ConnectionException;
 
    public String[] erase(String xmlKey_literal, String eraseQoS_literal) throws XmlBlasterException, ConnectionException;
 

@@ -3,7 +3,7 @@ Name:      ProtoConverter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Converter used to convert native data to protocol-specific data.
-Version:   $Id: ProtoConverter.java,v 1.3 2001/05/06 07:58:03 ruff Exp $
+Version:   $Id: ProtoConverter.java,v 1.4 2002/03/18 00:29:41 ruff Exp $
 Author:    "Michele Laghi" <michele.laghi@attglobal.net>
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.protocol;
@@ -165,6 +165,31 @@ public class ProtoConverter {
       }
 
       return ret;
+   }
+
+
+   /**
+    * Converts one element of a Vector to a String object.
+    * @param vec vector containing the String to be converted.
+    * @return The String object.
+    * @throws XmlBlasterException if the element in the Vector is not a valid
+    *             String object.
+    */
+   public static String vector2String (Vector vec) throws XmlBlasterException
+   {
+      int size = vec.size();
+      if (size == 0)
+         throw new XmlBlasterException(ME+"vector2String", "There is no string in the vector");
+      if (size > 1)
+         Log.error("ProtoConvertor.vector2String", "There are too many strings in the vector");
+
+      try {
+         return (String)vec.elementAt(0);
+      }
+      catch (ClassCastException e) {
+         Log.error(ME + ".vector2String", "not a valid String: " + e.toString());
+         throw new XmlBlasterException(ME + ".vector2String", "Class Cast Exception, not a valid String");
+      }
    }
 
 

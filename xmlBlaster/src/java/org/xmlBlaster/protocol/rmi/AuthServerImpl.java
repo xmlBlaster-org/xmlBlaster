@@ -3,7 +3,7 @@ Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Authentication access for RMI clients.
-Version:   $Id: AuthServerImpl.java,v 1.14 2001/09/05 13:11:18 ruff Exp $
+Version:   $Id: AuthServerImpl.java,v 1.15 2002/03/18 00:29:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
@@ -43,7 +43,6 @@ public class AuthServerImpl extends UnicastRemoteObject implements org.xmlBlaste
       if (Log.CALL) Log.call(ME, "Entering constructor ...");
       this.authenticate = authenticate;
    }
-
 
    /**
     * Does a login, returns a handle to xmlBlaster interface.
@@ -131,13 +130,14 @@ public class AuthServerImpl extends UnicastRemoteObject implements org.xmlBlaste
       disconnect(sessionId, (new DisconnectQos()).toXml());
    }
 
-
    /**
-    * Test RMI connection.
-    * @return true
+    * Ping to check if the authentication server is alive. 
+    * This ping checks the availability on the application level.
+    * @param qos Currently an empty string ""
+    * @return    Currently an empty string ""
     */
-   public boolean ping() throws RemoteException, XmlBlasterException
+   public String ping(String str) throws RemoteException
    {
-      return true;
+      return "";
    }
 }

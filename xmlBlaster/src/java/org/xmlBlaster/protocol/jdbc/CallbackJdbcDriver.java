@@ -3,7 +3,7 @@ Name:      CallbackJdbcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using jdbc interface.
-Version:   $Id: CallbackJdbcDriver.java,v 1.4 2002/03/13 16:41:26 ruff Exp $
+Version:   $Id: CallbackJdbcDriver.java,v 1.5 2002/03/18 00:29:32 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
@@ -72,6 +72,35 @@ public class CallbackJdbcDriver implements I_CallbackDriver
       return ret;
    }
 
+   /**
+    * The oneway variant, without return value. 
+    * @exception XmlBlasterException Is never from the client (oneway).
+    */
+   public void sendUpdateOneway(MsgQueueEntry[] msg) throws XmlBlasterException
+   {
+      if (msg == null || msg.length < 1) throw new XmlBlasterException(ME, "Illegal update argument");
+      if (Log.TRACE) Log.trace(ME, "xmlBlaster.update(" + msg[0].getUniqueKey() + ") to " + callbackAddress.getAddress());
+
+      for (int ii=0; ii<msg.length; ii++) {
+         try {
+            JdbcDriver.instance.update(msg[ii].getPublisherName(), msg[ii].getMessageUnit().getContent());
+         } catch (Throwable e) {
+            throw new XmlBlasterException("CallbackOnewayFailed", "JDBC Callback of " + ii + "th message '" + msg[ii].getUniqueKey() + "' to client [" + callbackAddress.getSessionId() + "] from [" + msg[ii].getPublisherName() + "] failed, reason=" + e.toString());
+         }
+      }
+   }
+
+   /**
+    * Ping to check if callback server is alive. 
+    * This ping checks the availability on the application level.
+    * @param qos Currently an empty string ""
+    * @return    Currently an empty string ""
+    * @exception XmlBlasterException If client not reachable
+    */
+   public final String ping(String qos) throws XmlBlasterException
+   {
+      return "";
+   }
 
    /**
     * This method shuts down the driver.

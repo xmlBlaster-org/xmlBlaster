@@ -3,7 +3,7 @@ Name:      RmiConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: RmiConnection.java,v 1.17 2002/03/17 07:29:03 ruff Exp $
+Version:   $Id: RmiConnection.java,v 1.18 2002/03/18 00:29:29 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.rmi;
@@ -50,7 +50,7 @@ import java.applet.Applet;
  * <p />
  * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http
  *
- * @version $Revision: 1.17 $
+ * @version $Revision: 1.18 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class RmiConnection implements I_XmlBlasterConnection
@@ -414,6 +414,15 @@ public class RmiConnection implements I_XmlBlasterConnection
       }
    }
 
+   /**
+    * RMI does not support oneway messages. 
+    * @see xmlBlaster.idl
+    */
+   public void publishOneway(MessageUnit [] msgUnitArr) throws XmlBlasterException, ConnectionException
+   {
+      if (Log.CALL) Log.call(ME, "publishOneway(), RMI does not support oneway, we switch to publishArr() ...");
+      publishArr(msgUnitArr);
+   }
 
    /**
     * @see xmlBlaster.idl
@@ -452,11 +461,10 @@ public class RmiConnection implements I_XmlBlasterConnection
     * Check server.
     * @see xmlBlaster.idl
     */
-   public void ping() throws ConnectionException
+   public String ping(String str) throws ConnectionException
    {
       try {
-         getXmlBlaster().ping();
-         return;
+         return getXmlBlaster().ping(str);
       } catch(Exception e) {
          throw new ConnectionException(ME+".InvokeError", e.toString());
       }

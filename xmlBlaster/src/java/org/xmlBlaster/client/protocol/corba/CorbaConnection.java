@@ -674,6 +674,18 @@ public class CorbaConnection implements I_XmlBlasterConnection
       }
    }
 
+   /**
+    * @see xmlBlaster.idl
+    */
+   public void publishOneway(MessageUnit[] msgUnitArr) throws XmlBlasterException, ConnectionException
+   {
+      if (Log.CALL) Log.call(ME, "publishOneway() ...");
+      try {
+         getXmlBlaster().publishOneway(CorbaDriver.convert(msgUnitArr));
+      } catch(Exception e) {
+         throw new ConnectionException(ME+".InvokeError", e.toString());
+      }
+   }
 
    /**
     * @see xmlBlaster.idl
@@ -713,11 +725,10 @@ public class CorbaConnection implements I_XmlBlasterConnection
     * Check server.
     * @see xmlBlaster.idl
     */
-   public void ping() throws ConnectionException
+   public String ping(String qos) throws ConnectionException
    {
       try {
-         String ret = getXmlBlaster().ping("");
-         return;
+         return getXmlBlaster().ping(qos);
       } catch(Exception e) {
          throw new ConnectionException(ME+".InvokeError", e.toString());
       }

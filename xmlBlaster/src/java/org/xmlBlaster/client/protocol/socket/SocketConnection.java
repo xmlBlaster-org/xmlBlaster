@@ -3,7 +3,7 @@ Name:      SocketConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles connection to xmlBlaster with plain sockets
-Version:   $Id: SocketConnection.java,v 1.17 2002/03/17 07:29:03 ruff Exp $
+Version:   $Id: SocketConnection.java,v 1.18 2002/03/18 00:29:29 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -524,6 +524,30 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       }
    }
 
+   /**
+    * Publish multiple messages in one sweep.
+    * <p />
+    * @see org.xmlBlaster.engine.RequestBroker
+    */
+   public final void publishOneway(MessageUnit[] msgUnitArr) throws ConnectionException
+   {
+      if (Log.CALL) Log.call(ME, "Entering publishOneway: id=" + sessionId);
+
+      if (msgUnitArr == null) {
+         Log.error(ME + ".InvalidArguments", "The argument of method publishOneway() are invalid");
+         return;
+      }
+
+      try {
+         Parser parser = new Parser(Parser.INVOKE_BYTE, Constants.PUBLISH_ONEWAY, sessionId);
+         parser.addMessage(msgUnitArr);
+         getCbReceiver().execute(parser, ONEWAY);
+      }
+      catch (Throwable e) {
+         Log.error(ME+".publishOneway", "Sending of oneway message failed: " + e.toString());
+         throw new ConnectionException(ME+".publishOneway", e.toString());
+      }
+   }
 
    /*
    public final String[] sendUpdate(MessageUnit[] msgUnitArr)
@@ -612,14 +636,13 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     * Check server.
     * @see http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl
     */
-   public void ping() throws ConnectionException, XmlBlasterException
+   public String ping(String qos) throws ConnectionException, XmlBlasterException
    {
       try {
          Parser parser = new Parser(Parser.INVOKE_BYTE, Constants.PING, null); // sessionId not necessary
-         parser.addQos("<qos><state>OK</state></qos>");
+         parser.addQos(""); // ("<qos><state>OK</state></qos>");
          Object response = getCbReceiver().execute(parser, WAIT_ON_RESPONSE);
-         // return (String)response; // return the QoS TODO
-         return;
+         return (String)response;
       }
       catch (IOException e1) {
          Log.error(ME+".ping", "IO exception: " + e1.toString());
@@ -635,7 +658,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     * @see http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl
     */
     /*
-   public String update(MessageUnit[] arr) throws XmlBlasterException
+   public String[] update(MessageUnit[] arr) throws XmlBlasterException
    {
       if (Log.CALL) Log.call(ME, "Entering update()");
       if (cbClient == null) {

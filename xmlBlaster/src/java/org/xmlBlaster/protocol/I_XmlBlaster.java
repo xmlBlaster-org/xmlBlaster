@@ -3,7 +3,7 @@ Name:      I_XmlBlaster.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native Interface to xmlBlaster
-Version:   $Id: I_XmlBlaster.java,v 1.8 2002/03/13 16:41:22 ruff Exp $
+Version:   $Id: I_XmlBlaster.java,v 1.9 2002/03/18 00:29:30 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol;
@@ -31,7 +31,6 @@ public interface I_XmlBlaster
     */
    public String subscribe(String sessionId, String xmlKey_literal, String subscribeQoS_literal) throws XmlBlasterException;
 
-
    /**
     * Unsubscribe from messages.
     * <p />
@@ -40,7 +39,6 @@ public interface I_XmlBlaster
     * @see org.xmlBlaster.engine.RequestBroker
     */
    public void unSubscribe(String sessionId, String xmlKey_literal, String unSubscribeQoS_literal) throws XmlBlasterException;
-
 
    /**
     * Publish a message.
@@ -63,7 +61,6 @@ public interface I_XmlBlaster
     */
    public String publish(String sessionId, MessageUnit msgUnit) throws XmlBlasterException;
 
-
    /**
     * Publish messages.
     * <p />
@@ -74,6 +71,17 @@ public interface I_XmlBlaster
     */
    public String[] publishArr(String sessionId, MessageUnit[] msgUnitArr) throws XmlBlasterException;
 
+   /**
+    * Publish messages.
+    * <p />
+    * The oneway variant may be used for better performance,
+    * it is not returning a value (no application level ACK)
+    * and there are no exceptions supported over the connection to the client.
+    *
+    * @see org.xmlBlaster.engine.RequestBroker
+    * @exception XmlBlasterException A local exception in the driver (no client exceptions).
+    */
+   public void publishOneway(String sessionId, MessageUnit[] msgUnitArr);
 
    /**
     * Delete messages.
@@ -82,7 +90,6 @@ public interface I_XmlBlaster
     */
    public String[] erase(String sessionId, String xmlKey_literal, String eraseQoS_literal) throws XmlBlasterException;
 
-
    /**
     * Synchronous access a message.
     * <p />
@@ -90,6 +97,13 @@ public interface I_XmlBlaster
     */
    public MessageUnit[] get(String sessionId, String xmlKey_literal, String getQoS_literal) throws XmlBlasterException;
 
+   /**
+     * Ping to check if xmlBlaster is alive. 
+     * This ping checks the availability on the application level.
+     * @param qos Currently an empty string ""
+     * @return    Currently an empty string ""
+     */
+   public String ping(String qos);
 
    public String toXml() throws XmlBlasterException;
    public String toXml(String extraOffset) throws XmlBlasterException;

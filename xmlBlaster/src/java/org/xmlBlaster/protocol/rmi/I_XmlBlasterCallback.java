@@ -3,7 +3,7 @@ Name:      I_XmlBlasterCallback.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The client callback server interface.
-Version:   $Id: I_XmlBlasterCallback.java,v 1.5 2002/03/13 16:41:28 ruff Exp $
+Version:   $Id: I_XmlBlasterCallback.java,v 1.6 2002/03/18 00:29:36 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
@@ -24,5 +24,20 @@ public interface I_XmlBlasterCallback extends java.rmi.Remote
 {
    public String[] update(String cbSessionId, org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr)
                       throws RemoteException, XmlBlasterException;
+
+   /**
+    * The oneway variant for better performance. 
+    * Does RMI implement a real oneway?
+    */
+   public void updateOneway(String cbSessionId, org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr)
+                      throws RemoteException;
+
+   /**
+    * Ping to check if the xmlBlaster server is alive. 
+    * This ping checks the availability on the application level.
+    * @param qos Currently an empty string ""
+    * @return    Currently an empty string ""
+    */
+   public String ping(String str) throws RemoteException;
 }
 
