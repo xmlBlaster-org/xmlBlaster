@@ -3,7 +3,7 @@ Name:      AddressFactory.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Factory Object for parsing Address objects.
-Version:   $Id: AddressFactory.cpp,v 1.6 2003/02/12 15:02:26 laghi Exp $
+Version:   $Id: AddressFactory.cpp,v 1.7 2003/02/13 13:57:47 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -58,13 +58,9 @@ void AddressFactory::startElement(const XMLCh* const name, AttributeList& attrs)
    }
 
    if (character_.length() > 0) {
-      char* help = charTrimmer_.trim(character_.c_str());
-      if (help != NULL) {
-         string tmp(help);
-         delete help;
-         if (tmp.length() > 0) {
-            address_->setAddress(tmp);
-         }
+      StringTrim::trim(character_);
+      if (!character_.empty()) {
+         address_->setAddress(character_);
       }
       character_.erase();
    }
@@ -185,15 +181,8 @@ void AddressFactory::endElement(const XMLCh* const name)
      XMLString::release(&txt);
    }
    if (SaxHandlerBase::caseCompare(name, address_->rootTag_.c_str())) { // callback
-      string tmp = "";
-      if (character_.length() > 0) {
-         char* help = charTrimmer_.trim(character_.c_str());
-         if (help != NULL) {
-            tmp = string(help);
-            delete help;
-         }
-      }
-      if (tmp.length() > 0) address_->setAddress(tmp);
+      StringTrim::trim(character_);
+      if (!character_.empty()) address_->setAddress(character_);
       else if (address_->getAddress() == "")
          log_.error(ME, address_->rootTag_ + string(" QoS contains no address data"));
 
@@ -203,15 +192,9 @@ void AddressFactory::endElement(const XMLCh* const name)
    else if (SaxHandlerBase::caseCompare(name, "compress")) {
    }
    else if (SaxHandlerBase::caseCompare(name, "ptp")) {
-      if (character_.length() > 0) {
-         char *help = charTrimmer_.trim(character_.c_str());
-         if (help != NULL) {
-            string tmp(help);
-            delete help;
-            bool ret = false;
-            if (tmp == "true") ret = true;
-            address_->ptpAllowed_ = ret;
-         }
+      StringTrim::trim(character_);
+      if (!character_.empty()) {
+         address_->ptpAllowed_ = string("true")==character_ || string("TRUE")==character_;
       }
    }
    character_.erase();

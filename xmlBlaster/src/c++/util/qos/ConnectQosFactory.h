@@ -74,9 +74,6 @@ private:
       subFactory_        = NULL;
    }
 
-protected:
-   bool getBoolFromString(const string& val) const;
-
 public:
    ConnectQosFactory(Global& global);
 

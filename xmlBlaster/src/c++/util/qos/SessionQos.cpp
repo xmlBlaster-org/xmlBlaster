@@ -9,6 +9,7 @@ Comment:   Factory for SessionQosData (for ConnectReturnQos and ConnectQos)
 #include <stdlib.h>
 #include <boost/lexical_cast.hpp>
 #include <util/StringStripper.h>
+#include <util/StringTrim.h>
 #include <util/Global.h>
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
@@ -246,14 +247,11 @@ void SessionQosFactory::characters(const XMLCh* const ch, const unsigned int)
 {
    char *chHelper = XMLString::transcode(ch);
    if (chHelper != NULL) {
-      char *trimmedCh = charTrimmer_.trim(chHelper);
+      string trimmedCh = StringTrim::trim(chHelper);
       XMLString::release(&chHelper);
-      if (trimmedCh != NULL) {
-         character_ += string(trimmedCh);
-         if (log_.trace())
-            log_.trace(ME, string("characters, character:'") + character_ + string("'"));
-         XMLString::release(&trimmedCh);
-      }
+      character_ += trimmedCh;
+      if (log_.trace())
+         log_.trace(ME, string("characters, character:'") + character_ + string("'"));
    }
 }
 

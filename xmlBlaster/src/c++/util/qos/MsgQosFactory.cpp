@@ -6,6 +6,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 #include <util/qos/MsgQosFactory.h>
 #include <util/Global.h>
+#include <util/StringTrim.h>
 #include <boost/lexical_cast.hpp>
 
 using namespace boost;
@@ -142,11 +143,10 @@ void MsgQosFactory::startElement(const XMLCh* const name, AttributeList& attrs)
             destination_.forceQueuing(SaxHandlerBase::getBoolValue(attrs.getValue(i)));
          }
       }
-      char* help = charTrimmer_.trim(character_.c_str());
-      if (help) {
-         destination_.setDestination(SessionQos(global_, help)); // set address or XPath query string if it is before inner tags
+      StringTrim::trim(character_);
+      if (!character_.empty()) {
+         destination_.setDestination(SessionQos(global_, character_)); // set address or XPath query string if it is before inner tags
          character_.erase();
-         delete help;
       }
       return;
    }
@@ -300,7 +300,7 @@ void MsgQosFactory::endElement(const XMLCh* const name)
 
    if( SaxHandlerBase::caseCompare(name, "destination") ) {
       inDestination_ = false;
-      string tmp = stringTrim(character_); // The address or XPath query string
+      string tmp = StringTrim::trim(character_); // The address or XPath query string
       if (!tmp.empty()) {
          destination_.setDestination(SessionQos(global_, tmp)); // set address or XPath query string if it is before the forceQueuing tag
          character_.erase();
@@ -311,7 +311,7 @@ void MsgQosFactory::endElement(const XMLCh* const name)
 
    if(SaxHandlerBase::caseCompare(name, "sender")) {
       inSender_ = false;
-      msgQosData_.setSender(SessionQos(global_, stringTrim(character_)));
+      msgQosData_.setSender(SessionQos(global_, StringTrim::trim(character_)));
       // if (log.trace()) log.trace(ME, "Found message sender login name = " + msgQosData.getSender());
       character_.erase();
       return;
@@ -339,7 +339,7 @@ void MsgQosFactory::endElement(const XMLCh* const name)
 
    if(SaxHandlerBase::caseCompare(name, "forceUpdate")) {
       inIsVolatile_ = false;
-      string tmp = stringTrim(character_);
+      string tmp = StringTrim::trim(character_);
       if (!tmp.empty()) {
          if (tmp == "true") msgQosData_.setForceUpdate(true);
          else msgQosData_.setForceUpdate(false);
@@ -357,7 +357,7 @@ void MsgQosFactory::endElement(const XMLCh* const name)
 
    if(SaxHandlerBase::caseCompare(name, "persistent")) {
       inIsPersistent_ = false;
-      string tmp = stringTrim(character_);
+      string tmp = StringTrim::trim(character_);
       if (!tmp.empty())
          if (tmp == "true") msgQosData_.setPersistent(true);
          else  msgQosData_.setPersistent(false);
@@ -368,7 +368,7 @@ void MsgQosFactory::endElement(const XMLCh* const name)
 
    if(SaxHandlerBase::caseCompare(name, "readonly")) {
       inReadonly_ = false;
-      string tmp = stringTrim(character_);
+      string tmp = StringTrim::trim(character_);
       if (!tmp.empty())
          if (tmp == "true") msgQosData_.setReadonly(true);
          else  msgQosData_.setReadonly(false);
@@ -379,7 +379,7 @@ void MsgQosFactory::endElement(const XMLCh* const name)
 
    if(SaxHandlerBase::caseCompare(name, "redeliver")) {
       inRedeliver_ = false;
-      string tmp = stringTrim(character_);
+      string tmp = StringTrim::trim(character_);
       msgQosData_.setRedeliver(atoi(tmp.c_str()));
       character_.erase();
       return;

@@ -41,22 +41,6 @@ ConnectQosFactory::~ConnectQosFactory()
 }
 */
 
-bool ConnectQosFactory::getBoolFromString(const string& val) const
-{
-   bool ret   = false;
-   char *help = NULL;
-   try {
-      help = charTrimmer_.trim(val.c_str());
-      if (help != NULL) {
-         if (string("true") == string(help)) ret = true;
-      }
-   }
-   catch (...) {
-   }
-   delete help;
-   return ret;
-}
-
 void ConnectQosFactory::characters(const XMLCh* const ch, const unsigned int length)
 {
    if (subFactory_) {
@@ -71,14 +55,10 @@ void ConnectQosFactory::characters(const XMLCh* const ch, const unsigned int len
 
    char *chHelper = XMLString::transcode(ch);
    if (chHelper != NULL) {
-      char *trimmedCh = charTrimmer_.trim(chHelper);
+      character_ += StringTrim::trim(chHelper);
       XMLString::release(&chHelper);
-      if (trimmedCh != NULL) {
-         character_ += string(trimmedCh);
-         if (log_.trace())
-            log_.trace(ME, string("characters, character:'") + character_ + string("'"));
-         XMLString::release(&trimmedCh);
-      }
+      if (log_.trace())
+         log_.trace(ME, string("characters, character:'") + character_ + string("'"));
    }
 }
 
@@ -196,17 +176,20 @@ void ConnectQosFactory::endElement(const XMLCh* const name) {
    }
 
    if (SaxHandlerBase::caseCompare(name, "ptp")) {
-      connectQos_.setPtp(getBoolFromString(character_));
+      connectQos_.setPtp(StringTrim::isTrueTrim(character_));
+      character_.erase();
       return;
    }
 
    if (SaxHandlerBase::caseCompare(name, "clusterNode")) {
-      connectQos_.setClusterNode(getBoolFromString(character_));
+      connectQos_.setClusterNode(StringTrim::isTrueTrim(character_));
+      character_.erase();
       return;
    }
 
    if (SaxHandlerBase::caseCompare(name, "duplicateUpdates")) {
-      connectQos_.setDuplicateUpdates(getBoolFromString(character_));
+      connectQos_.setDuplicateUpdates(StringTrim::isTrueTrim(character_));
+      character_.erase();
       return;
    }
 

@@ -11,7 +11,6 @@ Comment:   Defines ConnectQos, ReturnConnectQos and ConnectQosData
 #include <util/xmlBlasterDef.h>
 #include <string>
 #include <util/XmlQoSBase.h>
-#include <util/StringTrim.h>
 #include <util/ServerRef.h>
 #include <util/qos/SessionQos.h>
 #include <authentication/SecurityQos.h>
