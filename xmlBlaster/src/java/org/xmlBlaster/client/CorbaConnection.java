@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.41 2000/03/13 16:51:30 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.42 2000/03/27 22:02:28 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
@@ -20,7 +20,7 @@ import java.util.Properties;
 
 
 /**
- * This is a little helper class, helping a Java client to connect to xmlBlaster
+ * This is a helper class, helping a Java client to connect to xmlBlaster
  * using IIOP (CORBA).
  * <p>
  * Please note that you don't need to use this wrapper, you can use the raw CORBA
@@ -54,7 +54,7 @@ import java.util.Properties;
  * If the ping fails, the login polling is automatically activated.
  * <p />
  * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http
- * @version $Revision: 1.41 $
+ * @version $Revision: 1.42 $
  * @author $Author: ruff $
  */
 public class CorbaConnection implements ServerOperations
@@ -974,7 +974,7 @@ public class CorbaConnection implements ServerOperations
 
 
    /**
-    * Command line usage. 
+    * Command line usage.
     * <p />
     * These variables may be set in xmlBlaster.properties as well.
     * Don't use the "-" prefix there.
@@ -1065,7 +1065,7 @@ class DefaultCallback implements BlasterCallbackOperations
          if (Log.TRACE) Log.trace(ME, "Received message [" + updateKey.getUniqueKey() + "] from publisher " + updateQoS.getSender());
 
          //Checking whether the Update is for the Cache or for the boss
-         //The boos should not be interested in cache updates
+         //The boss should not be interested in cache updates
          boolean forCache = false;
          if( cache != null ) {
                 forCache = cache.update(updateQoS.getSubscriptionId(), updateKey.toXml(), content);
