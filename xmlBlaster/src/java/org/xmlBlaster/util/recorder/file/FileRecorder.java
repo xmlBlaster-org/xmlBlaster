@@ -322,6 +322,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
 
                   if (cont == null) {
                      long elaps = System.currentTimeMillis()-startOfPullback;
+                     if (elaps == 0L) elaps = 1L;
                      log.info(ME, "Pullback of " + (numAtBeginning-getNumUnread()) +
                          " messages done - elapsed " +
                          org.jutils.time.TimeHelper.millisToNice(elaps) +
