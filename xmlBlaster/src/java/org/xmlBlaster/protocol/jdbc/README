@@ -70,3 +70,16 @@ jmbirchfield@proteus-technologies.com
 Jim
 
 
+Note: A request xml string looks low level typically like this:
+
+   <database:adapter xmlns:database='http://www.xmlBlaster.org/jdbc'>
+      <database:url>url</database:url>
+      <database:username>user</database:username>
+      <database:password>passwd</database:password>
+      <database:interaction type='query'/>
+      <database:command><![CDATA[select * from person></database:command>
+      <database:connectionlifespan ttl='1'/>
+      <database:rowlimit max='100'/>
+      <database:confirmation confirm='true'/>
+   </database:adapter>
+
