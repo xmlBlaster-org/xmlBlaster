@@ -19,6 +19,7 @@ LOCAL_FILES = \
 			$(CLASS_DIR)/ClientSubscriptions.class \
 			$(CLASS_DIR)/MessageUnitHandler.class \
 			$(CLASS_DIR)/XmlKey.class \
+			$(CLASS_DIR)/SubscriptionInfo.class \
 			$(CLASS_DIR)/XmlQoS.class
 #------------------------------------------------------------------------------
 

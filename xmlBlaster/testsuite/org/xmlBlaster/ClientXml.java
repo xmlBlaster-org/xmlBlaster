@@ -3,7 +3,7 @@ Name:      ClientXml.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientXml.java,v 1.1 1999/11/18 19:13:06 ruff Exp $
+Version:   $Id: ClientXml.java,v 1.2 1999/11/18 22:12:15 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -64,17 +64,21 @@ public class ClientXml
          // Intializing my Callback interface:
          BlasterCallbackPOATie callbackTie = new BlasterCallbackPOATie(new BlasterCallbackImpl(ME));
          BlasterCallback callback = BlasterCallbackHelper.narrow(poa.servant_to_reference( callbackTie ));
+         // A dummy implementation of the Callback is in:
+         //    xmlBlaster/src/java/org/xmlBlaster/clientIdl/BlasterCallbackImpl.java
 
 
-         String qos = "";
 
          //----------- Login to the server -----------------------
+         String qos = "";
          try {
             String passwd = "some";
             xmlServer = authServer.login(loginName, passwd, callback, qos);
          } catch(XmlBlasterException e) {
             Log.warning(ME, "XmlBlasterException: " + e.reason);
          }
+
+         String publishOid = "";
 
          String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
                          "<key oid=''>\n" +
@@ -84,35 +88,49 @@ public class ClientXml
                          "</AGENT>" +
                          "</key>";
 
-         // Construct a message
-         String str = "Yeahh, i'm the new content";
-         MessageUnit[] marr = new MessageUnit[1];
-         marr[0] = new MessageUnit(xmlKey, str.getBytes());
-         String[] qarr = new String[1];
-         qarr[0] = "";
 
-         Log.trace(ME, "Publishing ...");
-         try {
-            String[] returnArr = xmlServer.publish(marr, qarr);
-            for (int ii=0; ii<returnArr.length; ii++) {
-               Log.info(ME, "   Returned oid=" + returnArr[ii]);
+         //----------- Construct a message and publish it ---------
+         {
+            String str = "Yeahh, i'm the new content";
+            MessageUnit[] marr = new MessageUnit[1];
+            marr[0] = new MessageUnit(xmlKey, str.getBytes());
+            String[] qarr = new String[1];
+            qarr[0] = "";
+
+            Log.trace(ME, "Publishing ...");
+            String[] returnArr = new String[0];
+            stop.restart();
+            try {
+               returnArr = xmlServer.publish(marr, qarr);
+               for (int ii=0; ii<returnArr.length; ii++) {
+                  Log.info(ME, "   Returned oid=" + returnArr[ii]);
+                  publishOid = returnArr[ii];
+               }
+            } catch(XmlBlasterException e) {
+               Log.warning(ME, "XmlBlasterException: " + e.reason);
             }
-         } catch(XmlBlasterException e) {
-            Log.warning(ME, "XmlBlasterException: " + e.reason);
+            Log.trace(ME, "Publishing done" + stop.nice());
          }
 
-/*
+
+         //----------- Subscribe to the previous message OID -------
+         Log.trace(ME, "Subscribing using the exact oid ...");
+         xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
+                  "<key oid='" + publishOid + "'>\n" +
+                  "</key>";
+         stop.restart();
          try {
             xmlServer.subscribe(xmlKey, qos);
          } catch(XmlBlasterException e) {
             Log.warning(ME, "XmlBlasterException: " + e.reason);
          }
-         Log.trace(ME, "Subscribed to Smiley data ..." + stop.nice());
+         Log.trace(ME, "Subscribed to '" + publishOid + "' ..." + stop.nice());
 
-         delay(); // Wait some time ...
+         delay(2000); // Wait some time ...
 
 
-         Log.trace(ME, "Trying unsubscribe ...");
+         //----------- Unsubscribe from the previous message --------
+         Log.trace(ME, "Unsubscribe ...");
          stop.restart();
          try {
             xmlServer.unSubscribe(xmlKey, qos);
@@ -122,18 +140,49 @@ public class ClientXml
          Log.info(ME, "Unsubscribe done" + stop.nice());
 
 
-         Log.trace(ME, "Trying publish ...");
+         //----------- Subscribe to the previous message XPATH -------
+         Log.trace(ME, "Subscribing using XPath syntax ...");
+         xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
+                  "<key oid='' queryType='XPATH'>\n" +
+                  "/xmlBlaster/key/AGENT" +
+                  "</key>";
+         stop.restart();
          try {
-            marr[0] = new MessageUnit(xmlKey, ((String)("Smiley changed again, but i'm not interested")).getBytes());
-            String[] returnArr = xmlServer.publish(marr, qarr);
-            for (int ii=0; ii<returnArr.length; ii++) {
-               Log.info(ME, "   Returned oid=" + returnArr[ii]);
-            }
+            xmlServer.subscribe(xmlKey, qos);
          } catch(XmlBlasterException e) {
             Log.warning(ME, "XmlBlasterException: " + e.reason);
          }
-         Log.info(ME, "Sending done, there shouldn't be a callback anymore ..." + stop.nice());
-*/
+         Log.trace(ME, "Subscribe done, there should be a Callback");
+
+         delay(2000); // Wait some time ...
+
+
+         Log.trace(ME, "Publishing 10 times ...");
+         {
+            for (int ii=0; ii<10; ii++) {
+               //----------- Construct a message and publish it ---------
+               String str = "Yeahh, i'm the new content " + ii + ", ";
+               MessageUnit[] marr = new MessageUnit[1];
+               xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
+                           "<key oid='" + publishOid + "'>\n" +
+                           "</key>";
+               marr[0] = new MessageUnit(xmlKey, str.getBytes());
+               String[] qarr = new String[1];
+               qarr[0] = "";
+
+               Log.trace(ME, "Publishing ...");
+               String[] returnArr = new String[0];
+               stop.restart();
+               try {
+                  returnArr = xmlServer.publish(marr, qarr);
+               } catch(XmlBlasterException e) {
+                  Log.warning(ME, "XmlBlasterException: " + e.reason);
+               }
+               Log.trace(ME, "Publishing done" + stop.nice());
+            }
+         }
+
+         delay(10000); // Wait some time ...
 
          Log.trace(ME, "Logout ...");
          try {
@@ -148,13 +197,11 @@ public class ClientXml
       orb.run();
    }
 
-   private static final int _delay = 2000;
 
-   private void delay()
+   private void delay(long millis)
    {
-      try
-      {
-          Thread.currentThread().sleep(_delay);
+      try {
+          Thread.currentThread().sleep(millis);
       }
       catch( InterruptedException i)
       {}

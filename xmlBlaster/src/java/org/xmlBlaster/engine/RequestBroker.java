@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.15 1999/11/18 18:50:41 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.16 1999/11/18 22:12:14 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -33,7 +33,7 @@ public class RequestBroker implements ClientListener
    /**
     * All MessageUnitHandler objects are stored in this map. 
     * <p>
-    * key   = messageUnithandler.gerUniqueKey() == xmlKey.getUniqueKey()
+    * key   = messageUnithandler.getUniqueKey() == xmlKey.getUniqueKey() == oid value from <key oid="...">
     * value = MessageUnitHandler object
     */
    final private Map messageContainerMap = Collections.synchronizedMap(new HashMap());
@@ -183,7 +183,6 @@ public class RequestBroker implements ClientListener
    public void subscribe(ClientInfo clientInfo, XmlKey xmlKey, XmlQoS subscribeQoS) throws XmlBlasterException
    {
       SubscriptionInfo subs = new SubscriptionInfo(clientInfo, xmlKey, subscribeQoS);
-
       if (xmlKey.getQueryType() == XmlKey.XPATH_QUERY) { // subscription without a given oid
 
          fireSubscriptionEvent(subs, true);              // fires event for query subscription
@@ -201,9 +200,11 @@ public class RequestBroker implements ClientListener
             com.sun.xml.tree.ElementNode node = (com.sun.xml.tree.ElementNode)obj;
             try {
                String uniqueKey = getKeyOid(node);
-               Log.info(ME, "Client " + clientInfo.toString() + " is subscribing message oid=\"" + xmlKey.getUniqueKey() + "\" after successfull query");
-               subscribeToOid(xmlKey.getUniqueKey(), subs); // fires event for unique oid subscription
+               Log.info(ME, "Client " + clientInfo.toString() + " is subscribing message oid=\"" + uniqueKey + "\" after successfull query");
+               SubscriptionInfo subsExact = new SubscriptionInfo(clientInfo, getXmlKeyFromOid(uniqueKey), subscribeQoS);
+               subscribeToOid(uniqueKey, subsExact); // fires event for unique oid subscription
             } catch (Exception e) {
+               e.printStackTrace();
                Log.error(ME, e.toString());
             }
          }
@@ -222,6 +223,37 @@ public class RequestBroker implements ClientListener
    }
 
 
+   /**
+    * @param oid == XmlKey:uniqueKey
+    */
+   public XmlKey getXmlKeyFromOid(String oid)
+   {
+      MessageUnitHandler messageHandler = getMessageHandlerFromOid(oid);
+      if (messageHandler == null) {
+         return null;
+      }
+      return messageHandler.getXmlKey();
+   }
+
+
+   /**
+    * @param oid == XmlKey:uniqueKey
+    */
+   public MessageUnitHandler getMessageHandlerFromOid(String oid)
+   {
+      synchronized(messageContainerMap) {
+         Object obj = messageContainerMap.get(oid);
+         if (obj == null) {
+            Log.error(ME, "messageHandler == null");
+            return null;
+         }
+         return (MessageUnitHandler)obj;
+      }
+   }
+
+
+   /**
+    */
    private String getKeyOid(org.w3c.dom.Node/*com.sun.xml.tree.ElementNode*/ node) throws XmlBlasterException
    {
       if (node == null) {
@@ -272,22 +304,22 @@ public class RequestBroker implements ClientListener
     */
    private void subscribeToOid(String uniqueKey, SubscriptionInfo subs) throws XmlBlasterException
    {
-      MessageUnitHandler msg;
+      MessageUnitHandler msgHandler;
       synchronized(messageContainerMap) {
          Object obj = messageContainerMap.get(uniqueKey);
          if (obj == null) {
             // This is a new Message, yet unknown ...
-            msg = new MessageUnitHandler(this, subs.getXmlKey());
-            messageContainerMap.put(uniqueKey, msg);
+            msgHandler = new MessageUnitHandler(this, subs.getXmlKey());
+            messageContainerMap.put(uniqueKey, msgHandler);
          }
          else {
             // This message was known before ...
-            msg = (MessageUnitHandler)obj;
+            msgHandler = (MessageUnitHandler)obj;
          }
       }
 
       // Now the MessageUnit exists, subscribe to it
-      msg.addSubscriber(subs);
+      msgHandler.addSubscriber(subs);
 
       fireSubscriptionEvent(subs, true);
    }
@@ -302,7 +334,7 @@ public class RequestBroker implements ClientListener
 
       Object obj;
       synchronized(messageContainerMap) {
-         obj = messageContainerMap.remove(uniqueKey);
+         obj = messageContainerMap.get(uniqueKey);
       }
       if (obj == null) {
          Log.warning(ME + ".DoesntExist", "Sorry, can't unsubscribe, message unit doesn't exist: " + uniqueKey);
@@ -338,82 +370,75 @@ public class RequestBroker implements ClientListener
 
          MessageUnit messageUnit = messageUnitArr[ii];
          XmlKey xmlKey = new XmlKey(messageUnit.xmlKey, true);
-         MessageUnitHandler msgHandler;
 
          returnArr[ii] = xmlKey.getUniqueKey(); // id <key oid=""> was empty, there was a new oid generated
 
          //----- 1. set new value or create the new message:
+         MessageUnitHandler messageHandler = setMessageUnit(xmlKey, messageUnit);
 
-         if (Log.TRACE) Log.trace(ME, "Step 1. Set new value or create the new message ...");
-         boolean messageExisted = false; // to shorten the synchronize block
-
-         synchronized(messageContainerMap) {
-            Object obj = messageContainerMap.get(xmlKey.getUniqueKey());
-            if (obj == null) {
-               msgHandler = new MessageUnitHandler(requestBroker, xmlKey, messageUnit);
-               messageContainerMap.put(xmlKey.getUniqueKey(), msgHandler);
-            }
-            else {
-               msgHandler = (MessageUnitHandler)obj;
-               messageExisted = true;
-            }
-         }
-
-         if (messageExisted) {
-            msgHandler.setContent(xmlKey, messageUnit.content);
-         }
-         else {
-            try {
-               xmlKey.mergeRootNode();  // merge the message DOM tree into the big xmlBlaster DOM tree
-            } catch (XmlBlasterException e) {
-               synchronized(messageContainerMap) {
-                  messageContainerMap.remove(xmlKey.getUniqueKey()); // it didn't exist before, so we have to clean up
-               }
-               throw new XmlBlasterException(e.id, e.reason);
-            }
-         }
-
-
+         // this gap is not 100% thread save
 
          //----- 2. check all known query subscriptions if the new message fits as well
-         if (!messageExisted) {
-            Log.error(ME, "Step 2. Checking existing query subscriptions is still missing"); // !!!
+         if (!messageHandler.isNewCreated()) {
+            messageHandler.setNewCreatedFalse();
+            Log.warning(ME, "Step 2. Checking existing query subscriptions is still missing"); // !!!
             Set set = clientSubscriptions.getQuerySubscribeRequestsSet();
-            Iterator iterator = set.iterator();
-            while (iterator.hasNext()) {
-               SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
-               // reuse CODE from subscribe() ...
+            synchronized (set) {
+               Iterator iterator = set.iterator();
+               while (iterator.hasNext()) {
+                  SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
+                  // reuse CODE from subscribe() ...
+               }
             }
-
          }
-
 
          //----- 3. now we can send updates to all interested clients:
-
-         Map subscriberMap = msgHandler.getSubscriberMap();
-         if (Log.TRACE) Log.trace(ME, "Going to update dependent clients, subscriberMap.size() = " + subscriberMap.size());
-
-         // DANGER: The whole update blocks if one client blocks - needs a redesign !!!
-         // PREFORMANCE: All updates for each client should be collected !!!
-         synchronized(subscriberMap) {
-            Iterator iterator = subscriberMap.values().iterator();
-
-            while (iterator.hasNext())
-            {
-               SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
-               BlasterCallback cb = sub.getClientInfo().getCB();
-               XmlQoSUpdate xmlQoS = new XmlQoSUpdate();
-               MessageUnit[] marr = new MessageUnit[1];
-               marr[0] = messageUnit;
-               String[] qarr = new String[1];
-               qarr[0] = xmlQoS.toString();
-               if (Log.TRACE) Log.trace(ME, "xmlBlaster.update(" + xmlKey.getUniqueKey() + ") to " + sub.getClientInfo().toString());
-               cb.update(marr, qarr);
-            }
-         }
+         messageHandler.invokeCallback();
       }
 
       return returnArr;
+   }
+
+
+   /**
+    * Store or update a new arrived message. 
+    *
+    * @param xmlKey       so the messageUnit.xmlKey_literal is not parsed twice
+    * @param messageUnit  containing the new, published data
+    * @return messageHandler MessageUnitHandler object, holding the new MessageUnit
+    */
+   private MessageUnitHandler setMessageUnit(XmlKey xmlKey, MessageUnit messageUnit) throws XmlBlasterException
+   {
+      if (Log.TRACE) Log.trace(ME, "Store the new arrived message ...");
+      boolean messageExisted = false; // to shorten the synchronize block
+      MessageUnitHandler messageHandler=null;
+
+      synchronized(messageContainerMap) {
+         Object obj = messageContainerMap.get(xmlKey.getUniqueKey());
+         if (obj == null) {
+            messageHandler = new MessageUnitHandler(requestBroker, xmlKey, messageUnit);
+            messageContainerMap.put(xmlKey.getUniqueKey(), messageHandler);
+         }
+         else {
+            messageHandler = (MessageUnitHandler)obj;
+            messageExisted = true;
+         }
+      }
+
+      if (messageExisted) {
+         messageHandler.setContent(xmlKey, messageUnit.content);
+      }
+      else {
+         try {
+            xmlKey.mergeRootNode();  // merge the message DOM tree into the big xmlBlaster DOM tree
+         } catch (XmlBlasterException e) {
+            synchronized(messageContainerMap) {
+               messageContainerMap.remove(xmlKey.getUniqueKey()); // it didn't exist before, so we have to clean up
+            }
+            throw new XmlBlasterException(e.id, e.reason);
+         }
+      }
+      return messageHandler;
    }
 
 

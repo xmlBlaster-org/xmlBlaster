@@ -3,7 +3,7 @@ Name:      SubscriptionInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles exactly one subscritpion (client reference and QoS of this subscrition
-Version:   $Id: SubscriptionInfo.java,v 1.7 1999/11/18 16:59:55 ruff Exp $
+Version:   $Id: SubscriptionInfo.java,v 1.8 1999/11/18 22:12:14 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -64,6 +64,10 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
     */
    public void removeSubscribe() throws XmlBlasterException
    {
+      if (myHandler == null) {
+         Log.warning(ME, "The oid=" + uniqueKey + " has no MessageUnitHandler which takes care of it");
+         return;
+      }
       myHandler.removeSubscriber(this);
    }
 
@@ -117,7 +121,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
          buf.append("-").append(xmlKey.getUniqueKey());
 
          buf.append("-").append(xmlQoS.toString()); // !!!hack?
-         
+
          uniqueKey = buf.toString();
       }
       return uniqueKey;

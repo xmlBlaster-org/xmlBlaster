@@ -3,7 +3,7 @@ Name:      XmlKeyBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKeyBase.java,v 1.7 1999/11/18 18:50:44 ruff Exp $
+Version:   $Id: XmlKeyBase.java,v 1.8 1999/11/18 22:12:15 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -14,6 +14,8 @@ import org.xml.sax.InputSource;
 
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.NodeList;
+import org.w3c.dom.Node;
 import org.w3c.dom.Attr;
 
 
@@ -316,8 +318,18 @@ public class XmlKeyBase
          throw new XmlBlasterException(ME+".WrongRootNode", "Missing \"oid\" attribute in \"key\" tag");
       }
 
+      // extract the query string <key ...>The query string</key>
       if (!isPublish && queryType != EXACT_QUERY) {
-         queryString = node.getNodeValue();
+         NodeList children = node.getChildNodes();
+         if (children != null) {
+            int len = children.getLength();
+            for (int i = 0; i < len; i++) {
+               Node childNode = children.item(i);
+               if (childNode.getNodeType() == Node.TEXT_NODE) {
+                  queryString = childNode.getNodeValue();
+               }
+            }
+         }
          if (queryString==null || queryString.length() < 1) {
             Log.error(ME+".MissingQuery", "Missing query string in <key> ... </key> tag");
             throw new XmlBlasterException(ME+".MissingQuery", "Missing query string in <key> ... </key> tag");

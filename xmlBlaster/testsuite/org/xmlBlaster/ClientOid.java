@@ -3,7 +3,7 @@ Name:      ClientOid.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientOid.java,v 1.1 1999/11/18 19:13:06 ruff Exp $
+Version:   $Id: ClientOid.java,v 1.2 1999/11/18 22:12:15 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -66,6 +66,8 @@ public class ClientOid
          // callbackTie._orb( orb ); // necessary?
          BlasterCallback callback = BlasterCallbackHelper.narrow(poa.servant_to_reference( callbackTie ));
          Log.trace(ME, "Exported Callback Server interface" + stop.nice());
+         // A dummy implementation of the Callback is in:
+         //    xmlBlaster/src/java/org/xmlBlaster/clientIdl/BlasterCallbackImpl.java
 
 
          String qos = orb.object_to_string(callback);

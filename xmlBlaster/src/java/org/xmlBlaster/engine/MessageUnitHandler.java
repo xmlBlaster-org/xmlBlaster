@@ -3,13 +3,14 @@ Name:      MessageUnitHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling exactly one message content
-Version:   $Id: MessageUnitHandler.java,v 1.9 1999/11/18 18:50:40 ruff Exp $
+Version:   $Id: MessageUnitHandler.java,v 1.10 1999/11/18 22:12:14 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.serverIdl.XmlBlasterException;
 import org.xmlBlaster.serverIdl.MessageUnit;
+import org.xmlBlaster.clientIdl.BlasterCallback;
 import java.util.*;
 
 
@@ -48,6 +49,8 @@ public class MessageUnitHandler
    private XmlKey xmlKey = null;     // may be null until the first publish() arrives
    //private QoSKey qosPublish;      // the flags from the publisher
    private String uniqueKey;         // Attribute oid of key tag: <key oid="..."> </key>
+
+   private boolean handlerIsNewCreated=true;  // a little helper for RequestBroker, showing if MessageUnit is new created
 
 
    /**
@@ -98,6 +101,15 @@ public class MessageUnitHandler
 
 
    /**
+    * Accessing the key of this message
+    */
+   public XmlKey getXmlKey()
+   {
+      return xmlKey;
+   }
+
+
+   /**
     * setting update of a changed content
     * @return changed? true:  if content has changed
     *                  false: if content didn't change
@@ -136,6 +148,19 @@ public class MessageUnitHandler
    }
 
 
+   /**
+    * A little helper for RequestBroker, showing if MessageUnit is new created
+    */
+   public final boolean isNewCreated()
+   {
+      return handlerIsNewCreated;
+   }
+   public final void setNewCreatedFalse()
+   {
+      handlerIsNewCreated = false;
+   }
+
+
    /*
     * The root node of the xmlBlaster DOM tree
     */
@@ -161,6 +186,8 @@ public class MessageUnitHandler
       }
 
       sub.addMessageUnitHandler(this);
+
+      invokeCallback(sub);
    }
 
 
@@ -209,6 +236,44 @@ public class MessageUnitHandler
    public Map getSubscriberMap()
    {
       return subscriberMap;
+   }
+
+
+   /**
+    * Send updates to all subscribed clients. 
+    * The whole update blocks if one client would block - to avoid this the IDL update()
+    * method is marked <code>oneway</code>
+    */
+   public void invokeCallback() throws XmlBlasterException
+   {
+      if (Log.TRACE) Log.trace(ME, "Going to update dependent clients, subscriberMap.size() = " + subscriberMap.size());
+
+      // PREFORMANCE: All updates for each client should be collected !!!
+      synchronized(subscriberMap) {
+         Iterator iterator = subscriberMap.values().iterator();
+
+         while (iterator.hasNext()) {
+            invokeCallback((SubscriptionInfo)iterator.next());
+         }
+      }
+   }
+
+
+   /**
+    * Send updates to all subscribed clients. 
+    * The whole update blocks if one client would block - to avoid this the IDL update()
+    * method is marked <code>oneway</code>
+    */
+   public final void invokeCallback(SubscriptionInfo sub) throws XmlBlasterException
+   {
+      BlasterCallback cb = sub.getClientInfo().getCB();
+      XmlQoSUpdate xmlQoS = new XmlQoSUpdate();
+      MessageUnit[] updateMsgArr = new MessageUnit[1];
+      updateMsgArr[0] = messageUnit;
+      String[] qarr = new String[1];
+      qarr[0] = xmlQoS.toString();
+      if (Log.TRACE) Log.trace(ME, "xmlBlaster.update(" + xmlKey.getUniqueKey() + ") to " + sub.getClientInfo().toString());
+      cb.update(updateMsgArr, qarr);
    }
 
 
