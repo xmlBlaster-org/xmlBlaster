@@ -34,22 +34,20 @@
          <td>XmlBlasterException</td><td>exception</td><td>Thrown on error</td>
          </tr>
       </table>
-
-      <p>
-      Note that erasing a message sends to all subscribers an update
-      with the update QoS state id set to ERASED, see HelloWorld4.java as an example.<br />
-      Constants.java defines the ERASED state and other states.
-      </p>
    </description>
 
 
    <example lang="XML" type="HTML">
       <p>
-      Here is an example key and QoS:
+      Here is an example key and QoS with its default settings:
       </p>
       <table border="1">
-         <tr><td>Key</td><td>&lt;key oid='MyMessage'/></td></tr>
-         <tr><td>QoS</td><td>&lt;qos/></td></tr>
+         <tr><td>Key</td><td><code>&lt;key oid='MyMessage'/></code></td></tr>
+         <tr><td>QoS</td><td><code>&lt;qos>
+  &lt;erase forceDestroy='false'/>
+  &lt;notify>true&lt;/notify>
+&lt;/qos></code>
+         </td></tr>
       </table>
       <p>
       And a return value:
@@ -62,6 +60,27 @@
 &lt;/qos>
    </pre>
    </td></tr></table>
+      <p>
+      Note that erasing a message with <code>&lt;notify>true&lt;/notify></code> 
+      sends to all subscribers an update
+      with the update QoS state id set to ERASED, see HelloWorld4.java as an example.<br />
+      Constants.java defines the ERASED state and other states. This setting
+      defaults to true. Here is a typical
+      QoS markup received in the <code>update()</code> method:
+      </p>
+      <pre>
+&lt;qos>
+  &lt;state id='ERASED'/>
+  &lt;sender>/node/heron/client/subby/3&lt;/sender>
+  &lt;subscribe id='__subId:heron-7'/>
+&lt;/qos>
+      </pre>
+      <p>
+      The <code>forceDestroy</code> setting influences the life cycle
+      of this message, please have a look into the message state chart in the
+      <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.message.lifecycle.html#messageLifecylce">
+      engine.message.lifecycle</a> requirement. This setting defaults to false.
+      </p>
    </example>
 
    <example lang="XmlRpc" type="HTML">
@@ -114,7 +133,7 @@
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 01</date>
-   <revision>$Revision: 1.16 $</revision>
+   <revision>$Revision: 1.17 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the erase method invocation</comment>
