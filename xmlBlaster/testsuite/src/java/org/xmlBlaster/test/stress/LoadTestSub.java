@@ -3,7 +3,7 @@ Name:      LoadTestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: LoadTestSub.java,v 1.4 2002/09/14 23:05:50 ruff Exp $
+Version:   $Id: LoadTestSub.java,v 1.5 2002/09/24 16:19:30 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.stress;
 
@@ -339,6 +339,8 @@ public class LoadTestSub extends TestCase implements I_Callback
                                             numPublish, burstModePublish, publishOneway);
       testSub.setUp();
       testSub.testManyPublish();
+      System.out.println("Success, hit a key to logout and exit");
+      try { System.in.read(); } catch(java.io.IOException e) {}
       testSub.tearDown();
    }
 }
