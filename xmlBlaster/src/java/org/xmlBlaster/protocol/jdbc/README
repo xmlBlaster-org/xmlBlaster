@@ -1,20 +1,29 @@
 Ok, so this is a quick and dirty 'HOWTO' for the DB adapter.
 
+================================================================
 Add the following line to your xmlBlaster.properties file:
-JdbcDriver.drivers=oracle.jdbc.driver.OracleDriver,org.gjt.mm.mysql.Driver,postgresql.Driver
 
-It is a comma delimited list of databse drivers.  Use as many as you like.
+   JdbcDriver.drivers=oracle.jdbc.driver.OracleDriver,org.gjt.mm.mysql.Driver,postgresql.Driver
+
+   Protocol.Drivers=IOR:org.xmlBlaster.protocol.corba.CorbaDriver,\
+                    JDBC:org.xmlBlaster.protocol.jdbc.JdbcDriver
+
+   Protocol.CallbackDrivers=IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver,\
+                    JDBC:org.xmlBlaster.protocol.jdbc.CallbackJdbcDriver
+
+JdbcDriver.drivers is a comma delimited list of databse drivers.
+Use as many as you like.
 The appropriate driver class files(jar) must be in your classpath.
  (If you are using jdk 1.2, having the jar file in jre/lib/ext will not do you any good.
   It must be in the CLASSPATH.  This is due to the bootstrapping of jaco)
+================================================================
 
 Start up the server (jaco org.xmlBlaster.Main)
 
-Start up the XmlDBAdapter (jaco org.xmlBlaster.protocol.jdbc.XmlDBAdapter)
-(To exit the adapter, type 'q' in the console).
-
 -----TESTING-----
-You will need access to a database!  You can use the XmlDBClient unchanged if you don't mind typing a lot.  To invoke the client, try something similar to the following:
+You will need access to a database!
+You can use the XmlDBClient unchanged if you don't mind typing a lot.
+To invoke the client, try something similar to the following:
 
 jaco javaclients.jdbc.XmlDBClient
         -url "jdbc:postgresql://24.3.47.214/postgres"
@@ -24,6 +33,15 @@ jaco javaclients.jdbc.XmlDBClient
         -query "select * from foo_table"
         -limit 50
         -confirm true
+
+or to invoke an update:
+
+   jaco javaclients.jdbc.XmlDBClient \
+     -url "jdbc:oracle:thin:@localhost:1521:MARCEL" \
+     -user marcel \
+     -pass secret \
+     -type update \
+     -query "INSERT INTO myTable VALUES( '1', to_date('0816', 'hh24mi'), 'james', 'START')"
 
 Options:
         -url (any valid JDBC url)
@@ -39,7 +57,9 @@ NOTE:
         If you are updating (insert, update, delete) set -type to 'update'.
         If you are updating and don't want a confirmation, set -confirm to 'false'.
 
-For an example of what to expect, please look over the .xml files located in demo/javaclients/jdbc.
+For an example of what to expect, please look over the .xml files
+located in demo/javaclients/jdbc.
+
 Most exceptions are caught and returned in the appropriate xml message.
 There are still one or two bugs that need to be squashed,
 but I am working on those.

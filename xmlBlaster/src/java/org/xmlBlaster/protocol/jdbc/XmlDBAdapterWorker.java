@@ -6,14 +6,13 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   The thread that does the actual connection and interaction
- * Version:   $Id: XmlDBAdapterWorker.java,v 1.10 2000/07/03 13:38:22 ruff Exp $
+ * Version:   $Id: XmlDBAdapterWorker.java,v 1.11 2000/07/08 16:53:34 ruff Exp $
  * ------------------------------------------------------------------------------
  */
 
 package org.xmlBlaster.protocol.jdbc;
 
 import org.jutils.log.Log;
-import org.xmlBlaster.util.pool.jdbc.*;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.Destination;
@@ -40,6 +39,7 @@ public class XmlDBAdapterWorker extends Thread {
    private String                cust;
    private byte[]                content;
    private I_Publish             callback = null;
+   private NamedConnectionPool   namedPool = null;
 
    /**
     * Constructor declaration
@@ -49,10 +49,11 @@ public class XmlDBAdapterWorker extends Thread {
     * @param callback Interface to publish the XML based result set
     */
    public XmlDBAdapterWorker(String cust, byte[] content,
-                             I_Publish callback) {
+                             I_Publish callback, NamedConnectionPool namedPool) {
       this.cust = cust;
       this.content = content;
       this.callback = callback;
+      this.namedPool = namedPool;
    }
 
    /**
@@ -97,31 +98,37 @@ public class XmlDBAdapterWorker extends Thread {
    {
       if (Log.CALLS) Log.calls(ME, "Entering queryDB() ...");
       Connection  conn = null;
-      Statement   s = null;
+      Statement   stmt = null;
       ResultSet   rs = null;
       XmlDocument doc = null;
 
       try {
-         conn =
-            ConnectionManager.getInstance().getConnectionWrapper(descriptor).getConnection();
-         s = conn.createStatement();
+         conn =  namedPool.reserve(descriptor.getUrl(), descriptor.getUsername(), descriptor.getPassword()); // using default connection pool properties
+         stmt = conn.createStatement();
 
          String   command = descriptor.getCommand();
 
-         if (descriptor.getInteraction().equalsIgnoreCase("update")) {
-            if (Log.TRACE) Log.trace(ME, "Trying DB update '" + command + "' ...");
+         try {
+            if (descriptor.getInteraction().equalsIgnoreCase("update")) {
+               if (Log.TRACE) Log.trace(ME, "Trying DB update '" + command + "' ...");
 
-            int   rowsAffected = s.executeUpdate(command);
+               int   rowsAffected = stmt.executeUpdate(command);
 
-            doc = createUpdateDocument(rowsAffected, descriptor);
-         }
-         else {
-            if (Log.TRACE) Log.trace(ME, "Trying SQL query '" + command + "' ...");
-            rs = s.executeQuery(command);
-            doc =
-               DBAdapterUtils.createDocument(descriptor.getDocumentrootnode(),
-                                             descriptor.getRowrootnode(),
-                                             descriptor.getRowlimit(), rs);
+               doc = createUpdateDocument(rowsAffected, descriptor);
+            }
+            else {
+               if (Log.TRACE) Log.trace(ME, "Trying SQL query '" + command + "' ...");
+               rs = stmt.executeQuery(command);
+               doc =
+                  DBAdapterUtils.createDocument(descriptor.getDocumentrootnode(),
+                                                descriptor.getRowrootnode(),
+                                                descriptor.getRowlimit(), rs);
+            }
+         } finally {
+            if (rs!=null) rs.close();
+            if (stmt!=null) stmt.close();
+            if (conn!=null) namedPool.release(descriptor.getUrl(), descriptor.getUsername(), descriptor.getPassword(), conn);
+            if (Log.TRACE) Log.trace(ME, "Query successful done, connection released");
          }
       }
       catch (SQLException e) {
