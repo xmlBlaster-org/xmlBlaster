@@ -3,8 +3,7 @@ Name:      xmlBlaster.idl
 Project:   xmlBlaster.org
 Task:      Server interface
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Not even alpha
-           String arguments my be used empty "", but never with null
+Comment:   String arguments my be used empty "", but never with null
 Compile:   JacORB Java 1.2:
               $JacORB_HOME/bin/idl -p org.xmlBlaster -d ${XMLBLASTER_HOME}/src/java xmlBlaster.idl
            VisiBroker (no JacORB should be in CLASSPATH) Java 1.2:
@@ -13,7 +12,8 @@ Compile:   JacORB Java 1.2:
               $MICO_HOME/bin/idl --poa --no-boa xmlBlaster.idl
            COPE Perl:
               idl2perl -imp xmlBlaster.idl
-Version:   $Id: xmlBlaster.idl,v 1.33 2000/02/29 16:54:19 ruff Exp $
+Author:    ruff@swand.lake.de
+Version:   $Id: xmlBlaster.idl,v 1.34 2000/03/15 22:50:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _xmlBlaster_IDL_
@@ -58,7 +58,7 @@ module serverIdl
     * This contains a MessageUnit and its corresponding QoS, used as return value for the get() method.
     *
     * @param msgUnit The message
-    * @param qos         xmlBlaster quality of service infos
+    * @param qos     xmlBlaster quality of service infos
     */
    struct MessageUnitContainer {
       MessageUnit msgUnit;
@@ -133,8 +133,7 @@ module clientIdl
 module serverIdl
 {
    /**
-    * This is an easy to use, message based, non addressing communication
-    * middleware interface.
+    * This is an easy to use, message based, communication middleware interface.
     * <p>
     * It allows event-driven instant communication between separate modules.<br>
     *
@@ -151,14 +150,15 @@ module serverIdl
     *   allows enhanced performance and early error checking.
     *
     *   Authentication and Authorization is not supported, they will be
-    *   provided as separate servers.<p>
+    *   provided as separate servers or gateways to existing user management
+    *   systems.<p>
     *
-    *   The <KEY id=""> strings have to be handled in a hierarchical manner to avoid
+    *   The <key id=""> strings have to be handled in a hierarchical manner to avoid
     *   namespace conflicts or may be generated (as number) by the xmlBlaster-server.
     *
     * BENEFITS:
     *   xmlBlaster allows instant communication between different uncoupled modules
-    *   spread over the Internet (publish / subscriber framework).
+    *   spread over the Internet (publish / subscriber and point to point framework).
     *
     *   For example:
     *   - Clipboard functionality to store permanent the clipboard entries
@@ -220,7 +220,7 @@ module serverIdl
 
 
       /**
-       * Synchronic read-access methods
+       * Synchronous read-access methods
        * This is the pull modus.
        *
        * @param xmlKey  Key with attributes allowing Regex/XPath/SQL selection<br>
@@ -324,6 +324,8 @@ module serverIdl
  * The xmlBlaster authentication interface.
  * <p>
  * Use this interface to access via login() the xmlBlaster
+ * <p>
+ * The final authentication/authorization interace is not yet specified
  */
 module authenticateIdl
 {
