@@ -11,6 +11,7 @@ SUB_DIRS = src demo
 all: all_SUB_DIRS jar
 
 clean: clean_SUB_DIRS
+	$(RM_RECURSIVE) $(CLASS_TOP_DIR)
 
 distclean: clean
 	$(RM_RECURSIVE) $(JAVADOC_DIR)
@@ -127,9 +128,11 @@ javadoc:
 # Indexing of jar file only since JDK 1.3:  jar -i  ${JAR_DIR}/xmlBlaster.jar
 jar:
 	(	\
+		mkdir ${CLASS_TOP_DIR}; \
 		cd ${CLASS_TOP_DIR}; \
 		$(CP) ${XMLBLASTER_HOME}/config/jacorb.properties.template ${CLASS_TOP_DIR}/jacorb.properties; \
 		$(CP) ${XMLBLASTER_HOME}/config/xmlBlaster.properties.template ${CLASS_TOP_DIR}/xmlBlaster.properties; \
+		$(CP) ${XMLBLASTER_HOME}/config/manifest.xmlBlaster ${CLASS_TOP_DIR}/manifest.xmlBlaster; \
 		jar cmf manifest.xmlBlaster ${JAR_DIR}/xmlBlaster.jar ./org ./testsuite ./javaclients xmlBlaster.policy jacorb.properties xmlBlaster.properties HelloWorld*; \
 	)
 
