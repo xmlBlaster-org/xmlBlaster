@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='admin.commands' type='NEW' prio='MEDIUM' status="CLOSED">
+<requirement id='admin.commands' type='NEW' prio='MEDIUM' status="INWORK">
    <topic>Description of the available commands for remote administration of xmlBlaster</topic>
    <description>
      <p>
@@ -10,13 +10,19 @@
      interface with arbitrary administration protocols like SNMP,
      telnet, JMX or xmlBlaster-command-messages.
      </p>
+     <p><i>
+     CAUTION: This requirement is currently redesigned and not consistent,
+     the telnet examples work but will be changed to the new XML view below (2003 03 11, Marcel).
+     </i></p>
      <h3>
      What data can we monitor and control?
      </h3>
      <p>
      To understand the command syntax imagine a simple xml representation of xmlBlaster nodes
      (an xmlBlaster node is an xmlBlaster server instance in a cluster environment, read
-     the <a href="cluster.html">cluster requirement</a> for more informations):
+     the <a href="cluster.html">cluster requirement</a> for more informations). You
+     can zoom into the server structure to examine any detailed data, some of the
+     settings are changeable in hot operation:
      </p>
      <table border="1"><tr><td><pre>
      <!-- pre class="BORDER" netscape does not like this -->
@@ -27,6 +33,11 @@
    <node id='heron'>
       <uptime>34000</uptime>      <!-- sec -->
       <runlevel>9</runlevel>
+      <!-- runLevel=0 HALTED -->
+      <!-- runLevel=3 ADMIN -->
+      <!-- runLevel=6 CLEANUP -->
+      <!-- runLevel=9 RUNNING -->
+
       <freeMem>13000000</freeMem> <!-- bytes -->
       <nodeId>heron</nodeId>
       <version>0.84</version>
@@ -34,17 +45,22 @@
       <hostname>server.mycomp.com</hostname> <!-- bootstrap -->
       <port>3412</port>
 
-      <!-- runLevel=0 HALTED -->
-      <!-- runLevel=3 ADMIN -->
-      <!-- runLevel=6 CLEANUP -->
-      <!-- runLevel=9 RUNNING -->
+      <buildTimestamp>06/17/2002 01:59 PM</buildTimestamp>
+      <buildJavaVendor>Sun Microsystems Inc.</buildJavaVendor>
+      <buildJavaVersion>1.3.1-beta</buildJavaVersion>
+      <time>Mon Jun 17 15:54:16 CEST 2002<time/> <!-- server time -->
+      <gc/>   <!-- run garbage collector in xmlBlaster JVM -->
+      <exit/> <!-- exit xmlBlaster server -->
+
+      <dump>heronDump.xml</dump>  <!-- dump internal state (similar to this markup) -->
 
       <plugin id='protocol:SOCKET:admin' className='org.xmlBlaster.protocol.socket.SocketDriver'>
          <port>69000</port>
       </plugin>
 
       <!-- A typical plugin which is loaded by client request -->
-      <plugin id='dispatch:priority' className='org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin'
+      <plugin id='dispatch:priority'
+              className='org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin'
               jar='/tmp/my.jar'>
          <attribute id='config'>
             &lt;![CDATA[
@@ -101,15 +117,6 @@
          <attribute id='maxWaitingThreads'>300</attribute>
       </plugin>
 
-      <buildTimestamp>06/17/2002 01:59 PM</buildTimestamp>
-      <buildJavaVendor>Sun Microsystems Inc.</buildJavaVendor>
-      <buildJavaVersion>1.3.1-beta</buildJavaVersion>
-      <time>Mon Jun 17 15:54:16 CEST 2002<time/> <!-- server time -->
-      <gc/>   <!-- run garbage collector in xmlBlaster JVM -->
-      <exit/> <!-- exit xmlBlaster server -->
-
-      <dump>heronDump.txt</dump>  <!-- dump internal state -->
-
       <numClients>4</numClients>
       <maxClients>10000</maxClients>
       <clientThresholdOverflow type='event'/>
@@ -140,27 +147,87 @@
             <numPublished>4</numPublished>
             <numGets>7</numGets>
             <numUpdates>614050</numUpdates>
-            <queue id='callback'>
-               <plugin refid='queue:CACHE'/>
-               <numEntries>7</numEntries>
-               <numBytes>90023</numBytes>
-               <maxEntries>1000</maxEntries>
-               <maxBytes>2000000</maxBytes>
-               <maxEntriesCache>100</maxEntriesCache>
-               <maxBytesCache>200000</maxBytesCache>
-               <treshold>80</threshold>  <!-- 80% -->
-               <thresholdOverflow type='event'/> <!-- a trap -->
-               <clearAction>DEAD_LETTER | DISCARD</clearAction>
-               <address type='XML-RPC'>
-                  http://www.dummy.com:8080/XmlRpc
+
+            <dispatch id='callback' sessionId='4e56890ghdFzj0'
+                  pingInterval='10000' retries='-1' delay='10000'
+                  oneway='false'>
+               <plugin refid='dispatch:priority/>
+               <burstMode collectTime='400' />
+               <compress type='gzip' minSize='3000'/>
+               <ptp>true</ptp>
+               <queue id='callback'>
+                  <plugin refid='queue:CACHE'/>
+                  <numEntries>7</numEntries>
+                  <numBytes>90023</numBytes>
+                  <maxEntries>1000</maxEntries>
+                  <maxBytes>2000000</maxBytes>
+                  <maxEntriesCache>100</maxEntriesCache>
+                  <maxBytesCache>200000</maxBytesCache>
+                  <treshold>80</threshold>  <!-- 80% -->
+                  <thresholdOverflow type='event'/> <!-- a trap -->
+                  <clearAction>DEAD_MESSAGE | DISCARD</clearAction>
+                  <onOverflow>DEAD_MESSAGE</onOverflow>
+                  <entry id='556643'>
+                     <topic refid='hello'>
+                        <entry refid='1046976320144000020'/>
+                     </topic>
+                  </entry>
+               </queue>
+               <address>
+                  <plugin refid='protocol:SOCKET:users'/>
+                  myHost.com:3098
                </address>
-               <entry id='556643'>
-                  <topic refid='hello'>
-                     <entry refid='1046976320144000020'/>
-                  </topic>
-               </entry>
-            </queue>
+            </dispatch>
+
             <subscribe id='__subId:3' oid='hello' creationTime='Mar 7, 2003 6:33:14 PM'/>
+
+            <!-- The settings used on the client side -->
+            <dispatch id='clientSide'>
+               <queue>
+                  <plugin refid='queue:CACHE'/>
+                  <maxEntries>2000</maxEntries>
+                  <entry id='5563009'>
+                     <topic refid='hello'>
+                        <entry refid='1046976320109000001'/>
+                     </topic>
+                  </entry>
+               <queue>
+               <address id='clientSide'>
+                  <plugin refid='protocol:IOR'/>
+                  IOR:54863965868
+               </address>
+               <retries>-1</retries>
+               <pingInterval>10000</pingInterval>
+               <delay>10000</delay>
+               <burstModeCollectTime>0</burstModeCollectTime>
+               <cbSessionId>rcxxy77C</cbSessionId>
+               <cbOneway>false</cbOneway>
+               <cbPtpAllowed>true</cbPtpAllowed>
+            </dispatch>
+            <!-- command line (or telnet) example -->
+            <!--
+               java HelloWorld3
+
+                -/node/heron/client/HelloWorld3/session/3/dispatch/clientSide/queue/clientSide/maxEntries 200
+                -dispatch/clientSide/queue/clientSide/maxEntries 200
+                -dispatch/clientSide/queue//maxEntries 200
+                -queue/clientSide/maxEntries 200
+                -queue//maxEntries 200
+
+                -dispatch/clientSide/pingInterval 10000
+
+                -dispatch/callback/address/callback/  http://x.y.com:8089
+                -dispatch/callback/address//  http://x.y.com:8089
+
+                -dispatch/callback/pingInterval 20000
+
+               Old style:
+                  java HelloWorld3 -queue.maxMsg 200
+                                   -pingInterval 10000
+                                   -ior??
+                                   -cb.pingInterval 20000
+            -->
+
          </session> <!-- -3 -->
 
          <session id='17'>
@@ -660,7 +727,7 @@ UserInfo: joe:mypasswd
    <author>Michele.Laghi@swisscom.com</author>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.40 $</revision>
+   <revision>$Revision: 1.41 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
