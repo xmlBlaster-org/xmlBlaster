@@ -356,6 +356,15 @@ if [ "${USE_CPP}" = "true" ] ; then
 fi
 # end of stuff for the c++ classes
 
+#-------- Checkin for preset Buildcompiler -
+# if you want to switch, set in your own .profile
+# default is modern, possible values are classic, modern or jikes
+if [ "${BUILDCOMPILER}" = "" ] ; then
+   BUILDCOMPILER=modern
+fi
+export BUILDCOMPILER
+${ECHO} "$BLACK_LTGREEN   Set BUILDCOMPILER to ${BUILDCOMPILER} $ESC"
+
 
 #-------- Checking jikes version -
 # use jikes 1.06 or better
@@ -363,9 +372,9 @@ if [ "${JIKES_HOME}" != "" ] ; then
    if [ -d ${JIKES_HOME} ] ; then
       PATH=${PATH}:${JIKES_HOME}
       export PATH
-   if [ "${JDK_1_1}" != "" ] ; then
-    JIKESPATH=${CLASSPATH}
-           export JIKESPATH
+      if [ "${JDK_1_1}" != "" ] ; then
+         JIKESPATH=${CLASSPATH}
+         export JIKESPATH
       else
          JIKESPATH=${CLASSPATH}:${JAVA_HOME}/jre/lib/rt.jar
          export JIKESPATH
