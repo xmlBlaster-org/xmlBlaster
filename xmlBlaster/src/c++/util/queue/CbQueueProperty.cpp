@@ -3,7 +3,7 @@ Name:      CbQueueProperty.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: CbQueueProperty.cpp,v 1.2 2002/12/09 13:00:35 laghi Exp $
+Version:   $Id: CbQueueProperty.cpp,v 1.3 2002/12/10 18:45:42 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -56,8 +56,8 @@ namespace org { namespace xmlBlaster { namespace util { namespace queue {
       ret += string("type=") + getType() + string(" onOverflow=") +
              getOnOverflow() + string(" onFailure=") + getOnFailure() +
              string(" maxMsg=") + lexical_cast<string>(getMaxMsg());
-      if (getCurrentCallbackAddress() != NULL)
-         ret += string(" ") + getCurrentCallbackAddress()->getSettings();
+      if (!addressArr_.empty())
+         ret += string(" ") + getCurrentCallbackAddress().getSettings();
       return ret;
    }
 
@@ -119,52 +119,33 @@ namespace org { namespace xmlBlaster { namespace util { namespace queue {
    /**
     * Currently only one address is allowed, failover addresses will be implemented in a future version
     */
-   void CbQueueProperty::setCallbackAddress(const CallbackAddress& address)
+   void CbQueueProperty::setCallbackAddress(const AddressBase& address)
    {
-      AddressBase* ptr = new CallbackAddress(address);
-      addressArr_.insert(addressArr_.begin(), ptr);
+      addressArr_.insert(addressArr_.begin(), address);
    }
 
    /**
     */
-   void CbQueueProperty::setCallbackAddresses(const vector<CallbackAddress>& addresses)
+   void CbQueueProperty::setCallbackAddresses(const AddressVector& addresses)
    {
-      // clean up the old addresses vector ...
-      QueuePropertyBase::cleanupAddresses();
-      addressArr_ = AddressVector();
-      vector<CallbackAddress>::const_iterator iter = addresses.begin();
-      while(iter != addresses.end()) {
-          setCallbackAddress(*iter);
-        iter++;
-      }
+      addressArr_ = AddressVector(addresses);
    }
 
    /**
     * @return array with size 0 if none available
     */
-   vector<CallbackAddress> CbQueueProperty::getCallbackAddresses()
+   AddressVector CbQueueProperty::getCallbackAddresses()
    {
-      vector<CallbackAddress> ret;
-
-      AddressVector::iterator iter = addressArr_.begin();
-      while (iter != addressArr_.end()) {
-         AddressBase* ptr = *iter;
-         CallbackAddress* ptr1 = dynamic_cast<CallbackAddress*>(ptr);
-         ret.insert(ret.begin(), *ptr1);
-         iter++;
-      }
-      return ret;
+      return addressArr_;
    }
 
    /**
     * @return null if none available
     */
-   CallbackAddress* CbQueueProperty::getCurrentCallbackAddress()
+   AddressBase CbQueueProperty::getCurrentCallbackAddress()
    {
-      if (addressArr_.empty()) return NULL;
-      AddressBase* ptr = *(addressArr_.begin());
-      CallbackAddress* ret = dynamic_cast<CallbackAddress*>(ptr);
-      return ret;
+      if (addressArr_.empty()) return CallbackAddress(global_);
+      return *addressArr_.begin();
    }
 
    /**

@@ -22,15 +22,26 @@ ConnectQosData::ConnectQosData(Global& global)
     : global_(global),
       log_(global.getLog("core")),
       securityQos_(global),
-      serverRef_("")
+      addresses_(),
+      cbAddresses_(),
+      clientQueueProperties_(),
+      cbQueueProperties_(),
+      serverReferences_()
 {
+   clusterNode_      = false;
+   duplicateUpdates_ = false;
 }
 
 ConnectQosData::ConnectQosData(const ConnectQosData& data)
     : global_(data.global_),
       log_(data.log_),
       securityQos_(data.securityQos_),
-      serverRef_(data.serverRef_)
+      addresses_(data.addresses_),
+      cbAddresses_(data.cbAddresses_),
+      clientQueueProperties_(data.clientQueueProperties_),
+      cbQueueProperties_(data.cbQueueProperties_),
+      serverReferences_(data.serverReferences_)
+//      serverRef_(data.serverRef_)
 {
    copy(data);
 }
@@ -41,15 +52,14 @@ ConnectQosData& ConnectQosData::operator =(const ConnectQosData& data)
    return *this;
 }
 
-
 bool ConnectQosData::getPtp() const
 {
    return ptp_;
 }
 
-string ConnectQosData::getPtpAsString() const
+string ConnectQosData::getBoolAsString(bool boolVal) const
 {
-   if (ptp_ == true) return string("true");
+   if (boolVal == true) return string("true");
    return string("false");
 }
 
@@ -81,7 +91,11 @@ string ConnectQosData::getUserId() const
 
 string ConnectQosData::getCallbackType() const
 {
-   return serverRef_.getType();
+   if (serverReferences_.empty()) {
+      if (cbQueueProperties_.empty()) return "IOR";
+      return (*cbQueueProperties_.begin()).getType();
+   }
+   return (*serverReferences_.begin()).getType();
 //   return getCallbackAddress().getType();
 }
 
@@ -95,6 +109,7 @@ SecurityQos ConnectQosData::getSecurityQos() const
    return securityQos_;
 }
 
+/*
 void ConnectQosData::setServerRef(const ServerRef& serverRef)
 {
    serverRef_ = serverRef;
@@ -103,6 +118,43 @@ void ConnectQosData::setServerRef(const ServerRef& serverRef)
 ServerRef ConnectQosData::getServerRef() const
 {
    return serverRef_;
+}
+*/
+
+void ConnectQosData::setClusterNode(bool clusterNode)
+{
+   clusterNode_ = clusterNode;
+}
+
+bool ConnectQosData::isClusterNode() const
+{
+   return clusterNode_;
+}
+
+void ConnectQosData::setDuplicateUpdates(bool duplicateUpdates)
+{
+   duplicateUpdates_ = duplicateUpdates;
+}
+
+bool ConnectQosData::isDuplicateUpdates() const
+{
+   return duplicateUpdates_;
+}
+
+void ConnectQosData::addServerRef(const ServerRef& serverRef)
+{
+   serverReferences_.insert(serverReferences_.end(), serverRef);
+}
+
+vector<ServerRef> ConnectQosData::getServerReferences() const
+{
+   return serverReferences_;
+}
+
+ServerRef ConnectQosData::getServerRef() const
+{
+   if (serverReferences_.empty()) return ServerRef("IOR");
+   return *(serverReferences_.begin());
 }
 
 // methods for queues and addresses ...
@@ -129,7 +181,7 @@ CallbackAddress ConnectQosData::getCbAddress() const
    return *(cbAddresses_.begin());
 }
 
-void ConnectQosData::addClientQueueProperty(const QueueProperty prop)
+void ConnectQosData::addClientQueueProperty(const QueueProperty& prop)
 {
    clientQueueProperties_.insert(clientQueueProperties_.begin(), prop);
 }
@@ -153,6 +205,7 @@ CbQueueProperty ConnectQosData::getCbQueueProperty() const
    return *(cbQueueProperties_.begin());
 }
 
+/*
 string ConnectQosData::toXml(const string& extraOffset) const
 {
    string ret = string("<qos>\n") +
@@ -167,6 +220,61 @@ string ConnectQosData::toXml(const string& extraOffset) const
 
    return ret;
 }
+*/
+
+/**
+ * Dump state of this object into a XML ASCII string.
+ * <br>
+ * @param extraOffset indenting of tags for nice output
+ * @return internal state of the RequestBroker as a XML ASCII string
+ */
+string ConnectQosData::toXml(const string& extraOffset)
+{
+   string offset = "\n" + extraOffset;
+   string ret;
+   ret += offset + string("<qos>");
+
+   // <securityService ...
+   ret += securityQos_.toXml(extraOffset);
+   ret += offset + string("   <ptp>") + getBoolAsString(ptp_)  + string("</ptp>");
+
+   if (isClusterNode())
+      ret += offset + string("   <isClusterNode>") + getBoolAsString(isClusterNode()) + string("</isClusterNode>");
+
+      if (isDuplicateUpdates() == false)
+         ret += offset + string("   <duplicateUpdates>") + getBoolAsString(isDuplicateUpdates()) + string("</duplicateUpdates>");
+
+      ret += sessionQos_.toXml(extraOffset);
+
+      {  // client queue properties 
+         vector<QueueProperty>::iterator
+            iter = clientQueueProperties_.begin();
+         while (iter != clientQueueProperties_.end()) {
+            ret += (*iter).toXml(extraOffset);
+            iter++;
+         }
+      }
+
+      {  //callback queue properties
+         vector<CbQueueProperty>::iterator
+            iter = cbQueueProperties_.begin();
+         while (iter != cbQueueProperties_.end()) {
+            ret += (*iter).toXml(extraOffset);
+            iter++;
+         }
+      }
+      {  //serverReferences
+         vector<ServerRef>::iterator
+            iter = serverReferences_.begin();
+         while (iter != serverReferences_.end()) {
+            ret += (*iter).toXml(extraOffset);
+            iter++;
+         }
+      }
+
+      ret += offset + string("</qos>");
+      return ret;
+   }
 
 }}}} // namespaces
 

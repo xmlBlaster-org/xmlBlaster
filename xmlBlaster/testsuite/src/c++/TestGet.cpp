@@ -246,6 +246,7 @@ public:
 int main(int args, char *argc[]) {
 
    Global& glob = Global::getInstance();
+   glob.initialize(args, argc);
    org::xmlBlaster::TestGet *testSub = new org::xmlBlaster::TestGet(glob, "Tim");
    testSub->setUp(args, argc);
    testSub->testGetMany();

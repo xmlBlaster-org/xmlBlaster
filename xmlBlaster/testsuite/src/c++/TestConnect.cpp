@@ -3,7 +3,7 @@ Name:      TestConnect.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestConnect.cpp,v 1.5 2002/12/05 22:30:38 laghi Exp $
+Version:   $Id: TestConnect.cpp,v 1.6 2002/12/10 18:45:43 laghi Exp $
 -----------------------------------------------------------------------------*/
 
 /**
@@ -212,6 +212,7 @@ int main(int args, char *argc[]) {
       string("</qos>\n");
 
    Global& glob = Global::getInstance();
+   glob.initialize(args, argc);
    org::xmlBlaster::TestConnect
     *testConnect = new org::xmlBlaster::TestConnect(glob, qos1, qos2);
    testConnect->setUp(args, argc);

@@ -68,14 +68,17 @@ private:
    Log&        log_;
    SecurityQos securityQos_;
    SessionQos  sessionQos_;
-   ServerRef   serverRef_;
+//   ServerRef   serverRef_;
    bool        ptp_;
    bool        isDirty_;
+   bool        clusterNode_;
+   bool        duplicateUpdates_;
 
    vector<Address>         addresses_;
    vector<CallbackAddress> cbAddresses_;
    vector<QueueProperty>   clientQueueProperties_;
    vector<CbQueueProperty> cbQueueProperties_;
+   vector<ServerRef>       serverReferences_;
 
    friend class ConnectQosFactory;
 
@@ -83,23 +86,26 @@ private:
    {
       securityQos_            = data.securityQos_;
       sessionQos_             = data.sessionQos_;
-      serverRef_              = data.serverRef_;
+//      serverRef_              = data.serverRef_;
       ptp_                    = data.ptp_;
       isDirty_                = data.isDirty_;
+      clusterNode_            = data.clusterNode_;
+      duplicateUpdates_       = data.duplicateUpdates_;
+      serverReferences_       = data.serverReferences_;
       addresses_              = data.addresses_;
       cbAddresses_            = data.cbAddresses_;
       clientQueueProperties_  = data.clientQueueProperties_;
       cbQueueProperties_      = data.cbQueueProperties_;
+
    }
-
-
 
 public:
    ConnectQosData(Global& global);
    ConnectQosData(const ConnectQosData& data);
    ConnectQosData& operator =(const ConnectQosData& data);
    bool getPtp() const;
-   string getPtpAsString() const;
+//   string getPtpAsString() const;
+   string getBoolAsString(bool boolVal) const;
    void setPtp(bool ptp);
    void setSessionQos(const SessionQos& sessionQos);
    SessionQos getSessionQos() const;
@@ -108,9 +114,18 @@ public:
    string getCallbackType() const;
    void setSecurityQos(const SecurityQos& securityQos);
    SecurityQos getSecurityQos() const;
-   void setServerRef(const ServerRef& serverRef);
+//   void setServerRef(const ServerRef& serverRef);
+//   ServerRef getServerRef() const;
+   void setClusterNode(bool clusterNode);
+   bool isClusterNode() const;
+   void setDuplicateUpdates(bool duplicateUpdates);
+   bool isDuplicateUpdates() const;
+   void addServerRef(const ServerRef& serverRef);
+   vector<ServerRef> getServerReferences() const;
+   /** returns the first found server reference */
    ServerRef getServerRef() const;
-   string toXml(const string& extraOffset="") const;
+
+   string toXml(const string& extraOffset="");
 
    // methods for queues and addresses ...
    void setAddress(const Address& address);
@@ -119,7 +134,7 @@ public:
    void addCbAddress(const CallbackAddress& cbAddress);
    CallbackAddress getCbAddress() const;
 
-   void addClientQueueProperty(const QueueProperty prop);
+   void addClientQueueProperty(const QueueProperty& prop);
    QueueProperty getClientQueueProperty() const;
 
    void addCbQueueProperty(const CbQueueProperty& prop);

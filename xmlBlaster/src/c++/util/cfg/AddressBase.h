@@ -3,7 +3,7 @@ Name:      AddressBase.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address string including protocol
-Version:   $Id: AddressBase.h,v 1.3 2002/12/09 12:26:41 laghi Exp $
+Version:   $Id: AddressBase.h,v 1.4 2002/12/10 18:45:41 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -169,9 +169,9 @@ protected:
 
 public:
 
-   virtual Timestamp getDefaultPingInterval() = 0;
-   virtual int getDefaultRetries() = 0;
-   virtual Timestamp getDefaultDelay() = 0;
+   virtual Timestamp getDefaultPingInterval();
+   virtual int getDefaultRetries();
+   virtual Timestamp getDefaultDelay();
 
    /**
     * common constructor
@@ -424,17 +424,12 @@ public:
 
    /**
     * Dump state of this object into a XML ASCII string.
-    */
-   string toXml();
-
-   /**
-    * Dump state of this object into a XML ASCII string.
     * <br>
     * Only none default values are dumped for performance reasons
     * @param extraOffset indenting of tags for nice output
     * @return The xml representation
     */
-   string toXml(const string& extraOffset);
+   string toXml(const string& extraOffset = "");
 };
 
 }}}}

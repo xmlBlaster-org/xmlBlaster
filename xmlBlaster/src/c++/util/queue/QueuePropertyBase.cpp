@@ -3,7 +3,7 @@ Name:      QueuePropertyBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.cpp,v 1.4 2002/12/09 13:00:35 laghi Exp $
+Version:   $Id: QueuePropertyBase.cpp,v 1.5 2002/12/10 18:45:42 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 
@@ -71,7 +71,7 @@ Dll_Export long DEFAULT_expires;
    {
       // delete all entries of the address vector since they are pointers
       // owned by this object.
-      cleanupAddresses();
+//      cleanupAddresses();
    }
 
    /**
@@ -103,7 +103,7 @@ Dll_Export long DEFAULT_expires;
     * Span of life of this queue.
     * @return Expiry time in milliseconds or 0L if forever
     */
-   Timestamp QueuePropertyBase::getExpires()
+   Timestamp QueuePropertyBase::getExpires() const
    {
       return expires_;
    }
@@ -418,113 +418,6 @@ Dll_Export long DEFAULT_expires;
       return addressArr_;
    }
 
-
-   /**
-    * Called for queue start tag
-    */
-/*
-   void startElement(String uri, String localName, String name, Attributes attrs) {
-      if (attrs != null) {
-         int len = attrs.getLength();
-         int ii=0;
-         for (ii = 0; ii < len; ii++) {
-            if (attrs.getQName(ii).equalsIgnoreCase("relating")) {
-               setRelating(attrs.getValue(ii).trim());
-            }
-            else if (attrs.getQName(ii).equalsIgnoreCase("maxMsg")) {
-               String tmp = attrs.getValue(ii).trim();
-               try {
-                  setMaxMsg(new Long(tmp).longValue());
-               } catch (NumberFormatException e) {
-                  log.error(ME, "Wrong format of <queue maxMsg='" + tmp + "'>, expected a long, using default.");
-               }
-            }
-            else if (attrs.getQName(ii).equalsIgnoreCase("type")) {
-               setType(attrs.getValue(ii).trim());
-            }
-            else if (attrs.getQName(ii).equalsIgnoreCase("version")) {
-               setVersion(attrs.getValue(ii).trim());
-            }
-            else if (attrs.getQName(ii).equalsIgnoreCase("maxMsgCache")) {
-               String tmp = attrs.getValue(ii).trim();
-               try {
-                  setMaxMsgCache(new Long(tmp).longValue());
-               } catch (NumberFormatException e) {
-                  log.error(ME, "Wrong format of <queue maxMsgCache='" + tmp + "'>, expected an long, using default.");
-               }
-            }
-            else if (attrs.getQName(ii).equalsIgnoreCase("maxSize")) {
-               String tmp = attrs.getValue(ii).trim();
-               try {
-                  setMaxSize(new Long(tmp).longValue());
-               } catch (NumberFormatException e) {
-                  log.error(ME, "Wrong format of <queue maxSize='" + tmp + "'>, expected a long in bytes, using default.");
-               }
-            }
-            else if (attrs.getQName(ii).equalsIgnoreCase("maxSizeCache")) {
-               String tmp = attrs.getValue(ii).trim();
-               try {
-                  setMaxSizeCache(new Long(tmp).longValue());
-               } catch (NumberFormatException e) {
-                  log.error(ME, "Wrong format of <queue maxSizeCache='" + tmp + "'>, expected a long in bytes, using default.");
-               }
-            }
-            else if (attrs.getQName(ii).equalsIgnoreCase("storeSwapLevel")) {
-               String tmp = attrs.getValue(ii).trim();
-               try {
-                  setStoreSwapLevel(new Long(tmp).longValue());
-               } catch (NumberFormatException e) {
-                  log.error(ME, "Wrong format of <queue storeSwapLevel='" + tmp + "'>, expected a long in bytes, using default.");
-               }
-            }
-            else if (attrs.getQName(ii).equalsIgnoreCase("storeSwapSize")) {
-               String tmp = attrs.getValue(ii).trim();
-               try {
-                  setStoreSwapSize(new Long(tmp).longValue());
-               } catch (NumberFormatException e) {
-                  log.error(ME, "Wrong format of <queue storeSwapSize='" + tmp + "'>, expected a long in bytes, using default.");
-               }
-            }
-            else if (attrs.getQName(ii).equalsIgnoreCase("reloadSwapLevel")) {
-               String tmp = attrs.getValue(ii).trim();
-               try {
-                  setReloadSwapLevel(new Long(tmp).longValue());
-               } catch (NumberFormatException e) {
-                  log.error(ME, "Wrong format of <queue reloadSwapLevel='" + tmp + "'>, expected a long in bytes, using default.");
-               }
-            }
-            else if (attrs.getQName(ii).equalsIgnoreCase("reloadSwapSize")) {
-               String tmp = attrs.getValue(ii).trim();
-               try {
-                  setReloadSwapSize(new Long(tmp).longValue());
-               } catch (NumberFormatException e) {
-                  log.error(ME, "Wrong format of <queue reloadSwapSize='" + tmp + "'>, expected a long in bytes, using default.");
-               }
-            }
-            else if (attrs.getQName(ii).equalsIgnoreCase("expires")) {
-               String tmp = attrs.getValue(ii).trim();
-               try {
-                  setExpires(new Long(tmp).longValue());
-               } catch (NumberFormatException e) {
-                  log.error(ME, "Wrong format of <queue expires='" + tmp + "'>, expected a long in milliseconds, using default.");
-               }
-            }
-            else if (attrs.getQName(ii).equalsIgnoreCase("onOverflow")) {
-               setOnOverflow(attrs.getValue(ii).trim());
-            }
-            else if (attrs.getQName(ii).equalsIgnoreCase("onFailure")) {
-               setOnFailure(attrs.getValue(ii).trim());
-            }
-            else
-               log.warn(ME, "Ignoring unknown attribute '" + attrs.getQName(ii) + "' in connect QoS <queue>");
-         }
-      }
-      else {
-         log.warn(ME, "Missing 'relating' attribute in connect QoS <queue>");
-      }
-   }
-*/
-
    /**
     * Dump state of this object into a XML ASCII string.
     * <br>
@@ -534,7 +427,6 @@ Dll_Export long DEFAULT_expires;
    string QueuePropertyBase::toXml(const string& extraOffset)
    {
       string offset = "\n   ";
-
       string ret;
       ret += offset + string("<!-- QueuePropertyBase -->");
 
@@ -564,13 +456,13 @@ Dll_Export long DEFAULT_expires;
 
       if (!addressArr_.empty()) {
          ret += string("'>");
-
          AddressVector::iterator iter = addressArr_.begin();
          while (iter != addressArr_.end()) {
-            ret += (*iter)->toXml(extraOffset+"   ");
+            ret += (*iter).toXml(extraOffset + "   ");
             iter++;
          }
          ret += offset + string("</queue>");
+
       }
       else
          ret += string("'/>");
@@ -585,6 +477,7 @@ Dll_Export long DEFAULT_expires;
       return global_;
    }
 
+/*
    void QueuePropertyBase::cleanupAddresses()
    {
       AddressVector::iterator iter = addressArr_.begin();
@@ -595,6 +488,7 @@ Dll_Export long DEFAULT_expires;
         iter = addressArr_.begin();
       }
    }
+*/
 
 }}}} // namespaces
 

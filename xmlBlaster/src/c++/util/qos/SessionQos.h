@@ -56,7 +56,7 @@ public:
    void setName(const string& name);
    string getSessionId() const;
    void setSessionId(const string& sessionId);
-   string toXml() const;
+   string toXml(const string& extraOffset="") const;
 };
 
 class Dll_Export SessionQosFactory: public util::XmlQoSBase

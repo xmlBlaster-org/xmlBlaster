@@ -3,7 +3,7 @@ Name:      QueuePropertyFactory.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Factory which creates objects holding queue properties
-Version:   $Id: QueuePropertyFactory.cpp,v 1.2 2002/12/09 23:19:14 laghi Exp $
+Version:   $Id: QueuePropertyFactory.cpp,v 1.3 2002/12/10 18:45:42 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 #include <util/queue/QueuePropertyFactory.h>
@@ -16,7 +16,7 @@ using boost::lexical_cast;
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
 QueuePropertyFactory::QueuePropertyFactory(Global& global)
-   : SaxHandlerBase(global), addressFactory_(global)
+   : SaxHandlerBase(global), prop_(global, ""), addressFactory_(global)
 {
    inAddress_ = false;
    address_   = NULL;
@@ -29,14 +29,16 @@ QueuePropertyFactory::~QueuePropertyFactory()
    if (cbAddress_ != NULL) delete cbAddress_;
 }
 
+/*
 void QueuePropertyFactory::reset(QueuePropertyBase& prop)
 {
    prop_ = &prop;
 }
+*/
 
-QueuePropertyBase& QueuePropertyFactory::getQueueProperty()
+QueuePropertyBase QueuePropertyFactory::getQueueProperty()
 {
-   return *prop_;
+   return prop_;
 }
 
 
@@ -70,53 +72,53 @@ void QueuePropertyFactory::startElement(const XMLCh* const name, AttributeList& 
       return;
    }
 
-   // not inside any of the sub-elements
-
+   // not inside any of the sub-elements (the root element)
+   prop_ = QueuePropertyBase(global_, "");
    int len = attrs.getLength();
    if (len > 0) {
       int i=0;
       for (i = 0; i < len; i++) {
          if (SaxHandlerBase::caseCompare(attrs.getName(i), "relating")) {
-               prop_->setRelating(SaxHandlerBase::getStringValue(attrs.getValue(i)));
+               prop_.setRelating(SaxHandlerBase::getStringValue(attrs.getValue(i)));
          }
          else if (SaxHandlerBase::caseCompare(attrs.getName(i), "maxMsg")) {
-               prop_->setMaxMsg(SaxHandlerBase::getLongValue(attrs.getValue(i)));
+               prop_.setMaxMsg(SaxHandlerBase::getLongValue(attrs.getValue(i)));
          }
          else if (SaxHandlerBase::caseCompare(attrs.getName(i), "type")) {
-               prop_->setType(SaxHandlerBase::getStringValue(attrs.getValue(i)));
+               prop_.setType(SaxHandlerBase::getStringValue(attrs.getValue(i)));
          }
          else if (SaxHandlerBase::caseCompare(attrs.getName(i), "version")) {
-               prop_->setVersion(SaxHandlerBase::getStringValue(attrs.getValue(i)));
+               prop_.setVersion(SaxHandlerBase::getStringValue(attrs.getValue(i)));
          }
          else if (SaxHandlerBase::caseCompare(attrs.getName(i), "maxMsgCache")) {
-               prop_->setMaxMsgCache(SaxHandlerBase::getLongValue(attrs.getValue(i)));
+               prop_.setMaxMsgCache(SaxHandlerBase::getLongValue(attrs.getValue(i)));
          }
          else if (SaxHandlerBase::caseCompare(attrs.getName(i), "maxMsgSize")) {
-               prop_->setMaxSize(SaxHandlerBase::getLongValue(attrs.getValue(i)));
+               prop_.setMaxSize(SaxHandlerBase::getLongValue(attrs.getValue(i)));
          }
          else if (SaxHandlerBase::caseCompare(attrs.getName(i), "maxSizeCache")) {
-               prop_->setMaxSizeCache(SaxHandlerBase::getLongValue(attrs.getValue(i)));
+               prop_.setMaxSizeCache(SaxHandlerBase::getLongValue(attrs.getValue(i)));
          }
          else if (SaxHandlerBase::caseCompare(attrs.getName(i), "storeSwapLevel")) {
-               prop_->setStoreSwapLevel(SaxHandlerBase::getLongValue(attrs.getValue(i)));
+               prop_.setStoreSwapLevel(SaxHandlerBase::getLongValue(attrs.getValue(i)));
          }
          else if (SaxHandlerBase::caseCompare(attrs.getName(i), "storeSwapSize")) {
-               prop_->setStoreSwapSize(SaxHandlerBase::getLongValue(attrs.getValue(i)));
+               prop_.setStoreSwapSize(SaxHandlerBase::getLongValue(attrs.getValue(i)));
          }
          else if (SaxHandlerBase::caseCompare(attrs.getName(i), "reloadSwapLevel")) {
-               prop_->setReloadSwapLevel(SaxHandlerBase::getLongValue(attrs.getValue(i)));
+               prop_.setReloadSwapLevel(SaxHandlerBase::getLongValue(attrs.getValue(i)));
          }
          else if (SaxHandlerBase::caseCompare(attrs.getName(i), "reloadSwapSize")) {
-               prop_->setReloadSwapSize(SaxHandlerBase::getLongValue(attrs.getValue(i)));
+               prop_.setReloadSwapSize(SaxHandlerBase::getLongValue(attrs.getValue(i)));
          }
          else if (SaxHandlerBase::caseCompare(attrs.getName(i), "expires")) {
-               prop_->setExpires(SaxHandlerBase::getTimestampValue(attrs.getValue(i)));
+               prop_.setExpires(SaxHandlerBase::getTimestampValue(attrs.getValue(i)));
          }
          else if (SaxHandlerBase::caseCompare(attrs.getName(i), "onOverflow")) {
-               prop_->setOnOverflow(SaxHandlerBase::getStringValue(attrs.getValue(i)));
+               prop_.setOnOverflow(SaxHandlerBase::getStringValue(attrs.getValue(i)));
          }
          else if (SaxHandlerBase::caseCompare(attrs.getName(i), "onFailure")) {
-               prop_->setOnFailure(SaxHandlerBase::getStringValue(attrs.getValue(i)));
+               prop_.setOnFailure(SaxHandlerBase::getStringValue(attrs.getValue(i)));
          }
          else {
             char* help = XMLString::transcode(attrs.getName(i));
@@ -143,15 +145,13 @@ void QueuePropertyFactory::endElement(const XMLCh* const name)
    // in case it is inside or entrering an 'address' or 'callbackAddress'
    if (SaxHandlerBase::caseCompare(name, "address")) {
       addressFactory_.endElement(name);
-      AddressBase* ptr = new Address(addressFactory_.getAddress());
-      prop_->addressArr_.insert((prop_->addressArr_).begin(), ptr);
+      prop_.addressArr_.insert((prop_.addressArr_).begin(), addressFactory_.getAddress());
       inAddress_ = false;
       return;
    }
    if (SaxHandlerBase::caseCompare(name, "callback")) {
       addressFactory_.endElement(name);
-      AddressBase* ptr = new CallbackAddress(addressFactory_.getAddress());
-      prop_->addressArr_.insert((prop_->addressArr_).begin(), ptr);
+      prop_.addressArr_.insert((prop_.addressArr_).begin(), addressFactory_.getAddress());
       inAddress_ = false;
       return;
    }
@@ -161,15 +161,20 @@ void QueuePropertyFactory::endElement(const XMLCh* const name)
    }
 }
 
-
-
-
+/*
 QueuePropertyBase&
 QueuePropertyFactory::readQueueProperty(const string& literal, QueuePropertyBase& prop)
 {
    reset(prop);
    init(literal);
    return getQueueProperty();
+}
+*/
+
+QueuePropertyBase QueuePropertyFactory::readObject(const string& literal)
+{
+   init(literal);
+   return prop_;
 }
 
 }}}} // namespaces
@@ -200,11 +205,11 @@ int main(int args, char* argv[])
       cout << literal << endl;
 
       QueuePropertyFactory factory(glob);
-      QueueProperty prop1(glob, "");
+//      QueueProperty prop1(glob, "");
 
-      QueuePropertyBase* ptr = &factory.readQueueProperty(literal, prop1);
+      QueuePropertyBase base= factory.readObject(literal);
       cout << "after reparsing the same object : " << endl;
-      cout << ptr->toXml() << endl;
+      cout << base.toXml() << endl;
    }
    catch (...) {
       cout << "an exception occured in the main thread" << endl;

@@ -43,34 +43,26 @@ namespace org { namespace xmlBlaster { namespace util { namespace queue {
       ret += string("type=") + getType() + string(" onOverflow=") +
              getOnOverflow() + string(" onFailure=") + getOnFailure() +
              string(" maxMsg=") + lexical_cast<string>(getMaxMsg());
-      if (getCurrentAddress() != NULL)
-         ret += string(" ") + getCurrentAddress()->getSettings();
+      if (!addressArr_.empty())
+         ret += string(" ") + getCurrentAddress().getSettings();
       return ret;
    }
 
    /**
     */
-   void QueueProperty::setAddress(const Address& address)
+   void QueueProperty::setAddress(const AddressBase& address)
    {
       // this differes from the current java code (2002-12-07) since it allows
       // multiple addresses
-      AddressBase* el = new Address(address);
-      addressArr_.insert(addressArr_.begin(), el);
+      addressArr_.insert(addressArr_.begin(), address);
    }
 
    /**
     * clears up all addresses and allocates new ones.
     */
-   void QueueProperty::setAddresses(const vector<Address>& addresses)
+   void QueueProperty::setAddresses(const AddressVector& addresses)
    {
-      // clean up the old addresses vector ...
-      QueuePropertyBase::cleanupAddresses();
-      addressArr_ = AddressVector();
-      vector<Address>::const_iterator iter = addresses.begin();
-      while(iter != addresses.end()) {
-          setAddress(*iter);
-        iter++;
-      }
+      addressArr_ = AddressVector(addresses);
    }
 
 
@@ -84,17 +76,11 @@ namespace org { namespace xmlBlaster { namespace util { namespace queue {
    /**
     * @return null if none available
     */
-   Address* QueueProperty::getCurrentAddress()
+   AddressBase QueueProperty::getCurrentAddress()
    {
-      if (addressArr_.empty()) {
-         Address* ptr = new Address(global_);
-         addressArr_.insert(addressArr_.begin(), ptr);
-         return ptr;
-      }
+      if (addressArr_.empty()) return Address(global_);
       // otherwise get the last one added
-      AddressBase* ptr  = *addressArr_.begin();
-      Address*     ptr1 = dynamic_cast<Address*>(ptr);
-      return ptr1;
+      return *addressArr_.begin();
    }
 
    /**

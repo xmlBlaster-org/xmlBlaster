@@ -3,7 +3,7 @@ Name:      QueuePropertyBase.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.h,v 1.3 2002/12/09 13:00:35 laghi Exp $
+Version:   $Id: QueuePropertyBase.h,v 1.4 2002/12/10 18:45:42 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -53,7 +53,7 @@ extern Dll_Export  string DEFAULT_version;
 /** If not otherwise noted a queue dies after the max value, changeable with property e.g. "queue.expires=3600000" milliseconds */
 extern Dll_Export  long DEFAULT_expires;
 
-typedef vector<AddressBase*> AddressVector;
+typedef vector<AddressBase> AddressVector;
 
 class QueuePropertyBase
 {
@@ -219,7 +219,7 @@ public:
     * Span of life of this queue.
     * @return Expiry time in milliseconds or 0L if forever
     */
-   Timestamp getExpires();
+   Timestamp getExpires() const;
 
    /**
     * Span of life of this queue.
@@ -426,7 +426,8 @@ public:
     */
    Global& getGlobal();
 
-   void cleanupAddresses();
+//   void cleanupAddresses();
+
 };
 
 }}}} // namespaces

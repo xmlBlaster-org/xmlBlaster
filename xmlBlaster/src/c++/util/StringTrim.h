@@ -21,14 +21,16 @@ namespace util {
     * This class is part of the package because the XMLString::trim(...) 
     * method in the xerces package does not fullfill our requirements.
     */
-   template <class CharT> class StringTrim {
+   template <class CharT> class StringTrim
+   {
       
    public:
       
       /** 
        * Default constructor. Does nothing
        */
-      StringTrim() {
+      StringTrim()
+      {
       }
       
 
@@ -36,7 +38,8 @@ namespace util {
        * returns the length of the character string str. (by detecting the 
        * first occurence of zero.
        */
-      int stringLength(const CharT *str) {
+      int stringLength(const CharT *str) const
+      {
          int count = 0;
          while (str[count] != (CharT)0) count++;
          return count;
@@ -49,7 +52,8 @@ namespace util {
        * responsible for deleting the return string which has been allocated by
        * this method.
        */
-      CharT* trimStart(const CharT *str) {
+      CharT* trimStart(const CharT *str) const
+      {
          int length = stringLength(str), start = 0;
          while ( (start      != length     ) && 
                  ( (str[start] == (CharT)' ' ) ||
@@ -69,7 +73,8 @@ namespace util {
        * responsible for deleting the return string which has been allocated by
        * this method.
        */
-      CharT* trimEnd(const CharT *str) {
+      CharT* trimEnd(const CharT *str) const
+      {
          int length = stringLength(str), end = length-1;
          while ( (end        != -1     ) && 
                  ( (str[end] == (CharT)' ' ) ||
@@ -90,7 +95,8 @@ namespace util {
        * caller is responsible for deleting the return string which has been 
        * allocated by this method.
        */
-      CharT* trim(const CharT *str) {
+      CharT* trim(const CharT *str) const
+      {
          CharT* buffer = trimStart(str);
          if (buffer == 0) return 0;
          CharT* ret = trimEnd(buffer);

@@ -3,7 +3,7 @@ Name:      CbQueueProperty.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: CbQueueProperty.h,v 1.2 2002/12/09 13:00:35 laghi Exp $
+Version:   $Id: CbQueueProperty.h,v 1.3 2002/12/10 18:45:42 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -104,21 +104,21 @@ public:
    /**
     * Currently only one address is allowed, failover addresses will be implemented in a future version
     */
-   void setCallbackAddress(const CallbackAddress& address);
+   void setCallbackAddress(const AddressBase& address);
 
    /**
     */
-   void setCallbackAddresses(const vector<CallbackAddress>& addresses);
+   void setCallbackAddresses(const AddressVector& addresses);
 
    /**
     * @return array with size 0 if none available
     */
-   vector<CallbackAddress> getCallbackAddresses();
+   AddressVector getCallbackAddresses();
 
    /**
     * @return null if none available
     */
-   CallbackAddress* getCurrentCallbackAddress();
+   AddressBase getCurrentCallbackAddress();
 
    /**
     * Get a usage string for the connection parameters

@@ -18,23 +18,52 @@ using boost::lexical_cast;
 
 
 ConnectQosFactory::ConnectQosFactory(Global& global)
-   : SaxHandlerBase(global), ME("ConnectQosFactory"), sessionQosFactory_(global),
-     securityQosFactory_(global), queuePropertyFactory_(global),
-     addressFactory_(global)
+   : SaxHandlerBase(global),
+     ME("ConnectQosFactory"),
+     sessionQosFactory_(global),
+     securityQosFactory_(global),
+     queuePropertyFactory_(global),
+     addressFactory_(global),
+//     securityQos_(global),
+//     serverRef_("IOR"),
+     connectQos_(global)
 {
    log_.call(ME, "constructor");
    prep();
 }
 
+/*
 ConnectQosFactory::~ConnectQosFactory()
 {
    log_.call(ME, "destructor");
    if (securityQos_ != NULL) delete securityQos_;
    if (serverRef_ != NULL) delete serverRef_;
 }
+*/
+
+bool ConnectQosFactory::getBoolFromString(const string& val) const
+{
+   bool ret   = false;
+   char *help = NULL;
+   try {
+      help = charTrimmer_.trim(val.c_str());
+      if (help != NULL) {
+         if (string("true") == string(help)) ret = true;
+      }
+   }
+   catch (...) {
+   }
+   delete help;
+   return ret;
+}
 
 void ConnectQosFactory::characters(const XMLCh* const ch, const unsigned int length)
 {
+   if (subFactory_) {
+      subFactory_->characters(ch, length);
+      return;
+   }
+
    if (inSession_) {
       sessionQosFactory_.characters(ch, length);
       return;
@@ -62,7 +91,17 @@ void ConnectQosFactory::startElement(const XMLCh* const name, AttributeList& att
    }
 
    if (SaxHandlerBase::caseCompare(name, "qos")) {
+     connectQos_ = ConnectQos(global_); // kind of reset
      return;
+   }
+
+   if (SaxHandlerBase::caseCompare(name, "queue")) {
+      subFactory_ = &queuePropertyFactory_;
+   }
+
+   if (subFactory_) {
+      subFactory_->startElement(name, attrs);
+      return;
    }
 
    if (SaxHandlerBase::caseCompare(name, "securityService")) {
@@ -82,6 +121,17 @@ void ConnectQosFactory::startElement(const XMLCh* const name, AttributeList& att
 
    if (SaxHandlerBase::caseCompare(name, "ptp")) {
       character_.erase();
+      return;
+   }
+
+   if (SaxHandlerBase::caseCompare(name, "isClusterNode")) {
+      character_.erase();
+      return;
+   }
+
+   if (SaxHandlerBase::caseCompare(name, "duplicateUpdates")) {
+      character_.erase();
+      return;
    }
 
    if (SaxHandlerBase::caseCompare(name, "serverRef")) {
@@ -104,26 +154,34 @@ void ConnectQosFactory::endElement(const XMLCh* const name) {
       delete help;
    }
 
+   if (subFactory_) {
+      subFactory_->endElement(name);
+      if (SaxHandlerBase::caseCompare(name, "queue")) {
+         // determine wether it is a callback or a client queue ...
+         QueuePropertyBase help = queuePropertyFactory_.getQueueProperty();
+         if (help.getRelating() == Constants::RELATING_CLIENT) {
+            QueueProperty prop = help;
+            connectQos_.addClientQueueProperty(prop);
+         }
+         else {
+             CbQueueProperty prop = help;
+             connectQos_.addCbQueueProperty(prop);
+         }
+      }
+      return;
+   }
+
    if (SaxHandlerBase::caseCompare(name, "qos")) {
      character_.erase();
      return;
    }
 
    if (SaxHandlerBase::caseCompare(name, "securityService")) {
-      try {
-         inSecurityService_ = false;
-         delete securityQos_;
-         character_ += string("\n</securityService>\n");
-//         securityQos_ = new SecurityQos(global_);
-         securityQos_ = new SecurityQos(securityQosFactory_.parse(character_));
-         character_.erase();
-      }
-      catch (...) {
-         delete securityQos_;
-         securityQos_ = NULL;
-         log_.error(ME, "error when parsing security Service");
-         // throw exception here
-      }
+      inSecurityService_ = false;
+      character_ += string("\n</securityService>\n");
+//      securityQos_ = securityQosFactory_.parse(character_);
+      connectQos_.setSecurityQos(securityQosFactory_.parse(character_));
+      character_.erase();
       return;
    }
 
@@ -134,10 +192,17 @@ void ConnectQosFactory::endElement(const XMLCh* const name) {
    }
 
    if (SaxHandlerBase::caseCompare(name, "ptp")) {
-      char *help = charTrimmer_.trim(character_.c_str());
-      if (string("true")  == string(help)) isPtp_ = true;
-      else isPtp_ = false;
-      delete help;
+      connectQos_.setPtp(getBoolFromString(character_));
+      return;
+   }
+
+   if (SaxHandlerBase::caseCompare(name, "isClusterNode")) {
+      connectQos_.setClusterNode(getBoolFromString(character_));
+      return;
+   }
+
+   if (SaxHandlerBase::caseCompare(name, "duplicateUpdates")) {
+      connectQos_.setDuplicateUpdates(getBoolFromString(character_));
       return;
    }
 
@@ -147,17 +212,10 @@ void ConnectQosFactory::endElement(const XMLCh* const name) {
    }
 
    if (SaxHandlerBase::caseCompare(name, "serverRef")) {
-      try {
-         inServerRef_ = false;
-         string address = character_;
-         serverRef_ = new ServerRef(serverRefType_, address);
-      }
-      catch (...) {
-         delete securityQos_;
-         securityQos_ = NULL;
-         log_.error(ME, "error when parsing security Service");
-         // throw exception here
-      }
+      inServerRef_ = false;
+      string address = character_;
+//      serverRef_ = ServerRef(serverRefType_, address);
+      connectQos_.addServerRef(ServerRef(serverRefType_, address));
       character_.erase();
    }
 
@@ -168,21 +226,15 @@ void ConnectQosFactory::endElement(const XMLCh* const name) {
 ConnectQosData ConnectQosFactory::readObject(const string& qos)
 {
    // this should be synchronized here ....
-//   sessionId_ = "";
-   userId_ = "";
-   delete securityQos_ ;
-   delete serverRef_;
-   securityQos_ = NULL;
-   serverRef_ = NULL;
+//   userId_ = "";
    init(qos);
-   ConnectQosData data(global_);
-//   data.setSessionId(sessionId_);
-   if (securityQos_ != NULL) data.setSecurityQos(*securityQos_);
-   if (serverRef_ != NULL) data.setServerRef(*serverRef_);
-   data.setSessionQos(sessionQosFactory_.getData());
-   data.setPtp(isPtp_);
-//   data.setLiteral(qos);
-   return data;
+//   ConnectQosData data(global_);
+//   connectQos_.setSecurityQos(securityQos_);
+//   connectQos_.addServerRef(serverRef_);
+   connectQos_.setSessionQos(sessionQosFactory_.getData());
+//   connectQos_.setPtp(isPtp_);
+
+   return connectQos_;
 }
 
 }}}} // namespaces
@@ -231,13 +283,14 @@ int main(int args, char* argv[])
        string("</qos>\n");
 
        Global& glob = Global::getInstance();
+       glob.initialize(args, argv);
        ConnectQosFactory factory(glob);
        ConnectQosData data = factory.readObject(qos);
        cout << "sessionId    : " << data.getSessionId() << endl;
        cout << "userId       : " << data.getUserId() << endl;
        cout << " type: " << data.getCallbackType() << endl;
-       cout << "is ptp       : " << data.getPtpAsString() << endl;
-       cout << "server ref   : " << data.getServerRef().toXml() << endl;
+       cout << "is ptp       : " << data.getBoolAsString(data.getPtp()) << endl;
+//       cout << "server ref   : " << data.getServerRef().toXml() << endl;
        cout << "securityQos  : " << data.getSecurityQos().toXml() << endl;
        cout << "sessionQos   : " << data.getSessionQos().toXml() << endl;
 

@@ -54,19 +54,16 @@ private:
    SecurityQosFactory   securityQosFactory_;
    QueuePropertyFactory queuePropertyFactory_;
    AddressFactory       addressFactory_;
-
-   string               userId_;
-   SecurityQos*         securityQos_;
-   ServerRef*           serverRef_;
    string               serverRefType_;
-   bool                 isPtp_;
 
    // helper flags for SAX parsing
    bool inSecurityService_;
    bool inServerRef_;
    bool inSession_;
 
-//   ConnectQos connectQos_;
+   ConnectQos connectQos_;
+   /** when the current parsing point should be handled by another qos factory*/
+   SaxHandlerBase* subFactory_;
 
    void prep()
    {
@@ -74,15 +71,16 @@ private:
       inServerRef_       = false;
       inSession_         = false;
       serverRefType_     = "";
-      isPtp_             = false;
-      securityQos_       = NULL;
-      serverRef_         = NULL;
+      subFactory_        = NULL;
    }
+
+protected:
+   bool getBoolFromString(const string& val) const;
 
 public:
    ConnectQosFactory(Global& global);
 
-   ~ConnectQosFactory();
+//   ~ConnectQosFactory();
 
    /**
     * This characters emulates the java version but keep in mind that it is

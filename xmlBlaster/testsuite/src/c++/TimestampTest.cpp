@@ -77,7 +77,6 @@ int main(int args, char *argc[]) {
 
    org::xmlBlaster::TimestampTest *test = new org::xmlBlaster::TimestampTest("TimestampTest");
 
-
    test->setUp(args, argc);
    test->testTimestamp();
    test->tearDown();

@@ -3,7 +3,7 @@ Name:      AddressBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address string including protocol
-Version:   $Id: AddressBase.cpp,v 1.3 2002/12/09 12:26:41 laghi Exp $
+Version:   $Id: AddressBase.cpp,v 1.4 2002/12/10 18:45:41 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -461,182 +461,23 @@ Dll_Export       string    DEFAULT_dispatchPlugin     = "";
    }
 
 
-   /**
-    * Called for SAX callback start tag
-    */
-
-/*
-   void startElement(const string& uri, const string& localName, const string& name, const string& character, Attributes attrs)
+   Timestamp AddressBase::getDefaultPingInterval()
    {
-      // log.info(ME, "startElement(rootTag=" + rootTag + "): name=" + name + " character='" + character.toString() + "'");
-
-      String tmp = character.toString().trim(); // The address
-      if (tmp.length() > 0) {
-         setAddress(tmp);
-      }
-      character.setLength(0);
-
-      if (name.equalsIgnoreCase(rootTag)) { // "callback"
-         if (attrs != null) {
-            int len = attrs.getLength();
-            for (int i = 0; i < len; i++) {
-               if( attrs.getQName(i).equalsIgnoreCase("type") ) {
-                  setType(attrs.getValue(i).trim());
-               }
-               else if( attrs.getQName(i).equalsIgnoreCase("version") ) {
-                  setVersion(attrs.getValue(i).trim());
-               }
-               else if( attrs.getQName(i).equalsIgnoreCase("hostname") ) {
-                  setHostname(attrs.getValue(i).trim());
-               }
-               else if( attrs.getQName(i).equalsIgnoreCase("port") ) {
-                  String ll = attrs.getValue(i).trim();
-                  try {
-                     setPort(new Integer(ll).intValue());
-                  } catch (NumberFormatException e) {
-                     log.error(ME, "Wrong format of <" + rootTag + " port='" + ll + "'>, expected an integer number.");
-                  }
-               }
-               else if( attrs.getQName(i).equalsIgnoreCase("sessionId") ) {
-                  setSessionId(attrs.getValue(i).trim());
-               }
-               else if( attrs.getQName(i).equalsIgnoreCase("pingInterval") ) {
-                  String ll = attrs.getValue(i).trim();
-                  try {
-                     setPingInterval(new Long(ll).longValue());
-                  } catch (NumberFormatException e) {
-                     log.error(ME, "Wrong format of <" + rootTag + " pingInterval='" + ll + "'>, expected a long in milliseconds.");
-                  }
-               }
-               else if( attrs.getQName(i).equalsIgnoreCase("retries") ) {
-                  String ll = attrs.getValue(i).trim();
-                  try {
-                     setRetries(new Integer(ll).intValue());
-                  } catch (NumberFormatException e) {
-                     log.error(ME, "Wrong format of <" + rootTag + " retries='" + ll + "'>, expected an integer number.");
-                  }
-               }
-               else if( attrs.getQName(i).equalsIgnoreCase("delay") ) {
-                  String ll = attrs.getValue(i).trim();
-                  try {
-                     setDelay(new Long(ll).longValue());
-                  } catch (NumberFormatException e) {
-                     log.error(ME, "Wrong format of <" + rootTag " delay='" + ll + "'>, expected a long in milliseconds.");
-                  }
-               }
-               else if( attrs.getQName(i).equalsIgnoreCase("oneway") ) {
-                  setOneway(new Boolean(attrs.getValue(i).trim()).booleanValue());
-               }
-               else if( attrs.getQName(i).equalsIgnoreCase("useForSubjectQueue") ) {
-                  this.useForSubjectQueue = new Boolean(attrs.getValue(i).trim()).booleanValue();
-               }
-               else if( attrs.getQName(i).equalsIgnoreCase("dispatchPlugin") ) {
-                  this.dispatchPlugin = attrs.getValue(i).trim();
-               }
-               else {
-                  log.error(ME, "Ignoring unknown attribute " + attrs.getQName(i) + " in " + rootTag + " section.");
-               }
-            }
-         }
-         if (getType() == null) {
-            log.error(ME, "Missing '" + rootTag + "' attribute 'type' in QoS");
-            setType("IOR");
-         }
-         if (getSessionId() == null) {
-            log.warn(ME, "Missing '" + rootTag + "' attribute 'sessionId' QoS");
-         }
-         return;
-      }
-
-      if (name.equalsIgnoreCase("burstMode")) {
-         if (attrs != null) {
-            int len = attrs.getLength();
-            int ii=0;
-            for (ii = 0; ii < len; ii++) {
-               if (attrs.getQName(ii).equalsIgnoreCase("collectTime")) {
-                  String ll = attrs.getValue(ii).trim();
-                  try {
-                     setCollectTime(new Long(ll).longValue());
-                  } catch (NumberFormatException e) {
-                     log.error(ME, "Wrong format of <burstMode collectTime='" + ll + "'>, expected a long in milliseconds, burst mode is switched off sync messages.");
-                  }
-               }
-               else if (attrs.getQName(ii).equalsIgnoreCase("collectTimeOneway")) {
-                  String ll = attrs.getValue(ii).trim();
-                  try {
-                     setCollectTimeOneway(new Long(ll).longValue());
-                  } catch (NumberFormatException e) {
-                     log.error(ME, "Wrong format of <burstMode collectTimeOneway='" + ll + "'>, expected a long in milliseconds, burst mode is switched off for oneway messages.");
-                  }
-               }
-            }
-         }
-         else {
-            log.error(ME, "Missing 'collectTime' or 'collectTimeOneway' attribute in login-qos <burstMode>");
-         }
-         return;
-      }
-
-      if (name.equalsIgnoreCase("compress")) {
-         if (attrs != null) {
-            int len = attrs.getLength();
-            for (int ii = 0; ii < len; ii++) {
-               if (attrs.getQName(ii).equalsIgnoreCase("type")) {
-                  setCompressType(attrs.getValue(ii).trim());
-               }
-               else if (attrs.getQName(ii).equalsIgnoreCase("minSize")) {
-                  String ll = attrs.getValue(ii).trim();
-                  try {
-                     setMinSize(new Long(ll).longValue());
-                  } catch (NumberFormatException e) {
-                     log.error(ME, "Wrong format of <compress minSize='" + ll + "'>, expected a long in bytes, compress is switched off.");
-                  }
-               }
-            }
-         }
-         else {
-            log.error(ME, "Missing 'type' attribute in qos <compress>");
-         }
-         return;
-      }
-
-      if (name.equalsIgnoreCase("ptp")) {
-         return;
-      }
+      return 0;
    }
-*/
 
-   /**
-    * Handle SAX parsed end element
-    */
-/*
-   public final void endElement(String uri, String localName, String name, StringBuffer character) {
-      if (name.equalsIgnoreCase(rootTag)) { // "callback"
-         String tmp = character.toString().trim(); // The address (if after inner tags)
-         if (tmp.length() > 0)
-            setAddress(tmp);
-         else if (getAddress() == null)
-            log.error(ME, rootTag + " QoS contains no address data");
-      }
-      else if (name.equalsIgnoreCase("burstMode")) {
-      }
-      else if (name.equalsIgnoreCase("compress")) {
-      }
-      else if (name.equalsIgnoreCase("ptp")) {
-         this.ptpAllowed = new Boolean(character.toString().trim()).booleanValue();
-      }
-
-      character.setLength(0);
-   }
-*/
-
-   /**
-    * Dump state of this object into a XML ASCII string.
-    */
-   string AddressBase::toXml()
+   int AddressBase::getDefaultRetries()
    {
-      return toXml("");
+      return 0;
    }
+
+   Timestamp AddressBase::getDefaultDelay()
+   {
+      return 0;
+   }
+
+
+
 
    /**
     * Dump state of this object into a XML ASCII string.

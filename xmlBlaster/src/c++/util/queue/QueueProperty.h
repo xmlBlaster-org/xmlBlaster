@@ -79,17 +79,17 @@ public:
 
    /**
     */
-   void setAddress(const Address& address);
+   void setAddress(const AddressBase& address);
 
    /**
     * clears up all addresses and allocates new ones.
     */
-   void setAddresses(const vector<Address>& addresses);
+   void setAddresses(const AddressVector& addresses);
 
    /**
     * @return null if none available
     */
-   Address* getCurrentAddress();
+   AddressBase getCurrentAddress();
 
    /**
     * Get a usage string for the connection parameters

@@ -3,7 +3,7 @@ Name:      RamTest.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: RamTest.cpp,v 1.4 2002/12/05 22:30:38 laghi Exp $
+Version:   $Id: RamTest.cpp,v 1.5 2002/12/10 18:45:43 laghi Exp $
 ---------------------------------------------------------------------------*/
 
 #include <string>
@@ -231,6 +231,7 @@ using org::xmlBlaster::util::Global;
 
 int main(int args, char *argc[]) {
    Global& glob = Global::getInstance();
+   glob.initialize(args, argc);
    org::xmlBlaster::RamTest *testSub = new org::xmlBlaster::RamTest(glob, "Tim");
    testSub->setUp(args, argc);
    testSub->testManyPublish();

@@ -90,8 +90,9 @@ void SessionQosData::setLiteral(const string& literal)
    isDirty_ = false;
 }
 
-string SessionQosData::toXml() const
+string SessionQosData::toXml(const string& extraOffset) const
 {
+   string offset = extraOffset; // currently unused.
    if (isDirty_) return SessionQosFactory::writeObject(*this);
    return literal_;
 }
@@ -103,6 +104,7 @@ string SessionQosData::toXml() const
 SessionQosFactory::SessionQosFactory(Global& global)
    : XmlQoSBase(global), ME("SessionQosFactory")
 {
+   sessionQos_ = NULL;
    log_.call(ME, "constructor");
 }
 

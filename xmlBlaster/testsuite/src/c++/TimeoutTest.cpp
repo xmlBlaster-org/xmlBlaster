@@ -83,6 +83,7 @@ public:
 int main(int args, char *argc[]) {
 
    Global& glob = Global::getInstance();
+   glob.initialize(args, argc);
 
    org::xmlBlaster::TimeoutTest *test = new org::xmlBlaster::TimeoutTest(glob, "TimeoutTest");
 

@@ -3,7 +3,7 @@ Name:      QueuePropertyFactory.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyFactory.h,v 1.2 2002/12/09 23:19:14 laghi Exp $
+Version:   $Id: QueuePropertyFactory.h,v 1.3 2002/12/10 18:45:42 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 
@@ -32,7 +32,7 @@ class Dll_Export QueuePropertyFactory : public SaxHandlerBase
 {
 private:
    const string       ME;
-   QueuePropertyBase* prop_;
+   QueuePropertyBase  prop_;
    bool               inAddress_;
    AddressFactory     addressFactory_;
    Address*           address_;
@@ -43,9 +43,9 @@ public:
 
    ~QueuePropertyFactory();
 
-   void reset(QueuePropertyBase& prop);
+//   void reset(QueuePropertyBase& prop);
 
-   QueuePropertyBase& getQueueProperty();
+   QueuePropertyBase getQueueProperty();
 
    /**
     * Called for SAX callback start tag
@@ -57,8 +57,11 @@ public:
    /** End element. */
    void endElement(const XMLCh* const name);
 
+/*
    QueuePropertyBase&
    readQueueProperty(const string& literal, QueuePropertyBase& prop);
+*/
+   QueuePropertyBase readObject(const string& literal);
 
 };
 

@@ -3,7 +3,7 @@ Name:      TestSub.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.cpp,v 1.4 2002/12/05 22:30:38 laghi Exp $
+Version:   $Id: TestSub.cpp,v 1.5 2002/12/10 18:45:44 laghi Exp $
 -----------------------------------------------------------------------------*/
 
 #include <boost/lexical_cast.hpp>
@@ -444,6 +444,7 @@ int main(int args, char *argc[]) {
       return 1;
    }
    Global& glob = Global::getInstance();
+   glob.initialize(args, argc);
    org::xmlBlaster::TestSub *testSub = new org::xmlBlaster::TestSub(glob, "Tim");
    testSub->setUp(args, argc);
    testSub->testPublishAfterSubscribeXPath();

@@ -340,7 +340,8 @@ ConnectReturnQos CorbaConnection::connect(const ConnectQos& connectQos)
    if (log_.CALL) log_.call(me(),"connect(" + loginName_ + ") ...");
    try {
       if (CORBA::is_nil(authServer_)) getAuthenticationService();
-      string reqQos = connectQos.toXml();
+      ConnectQos help = connectQos; // since it is a const
+      string reqQos = help.toXml();
       if (log_.TRACE) log_.trace(me(), string("connect req: ") + reqQos);
       string retQos = authServer_->connect(reqQos.c_str());
       if (log_.TRACE) log_.trace(me(), string("connect ret: ") + retQos);

@@ -66,7 +66,7 @@ void SecurityQosFactory::startElement(const XMLCh* const name, AttributeList& at
 
       unsigned int ii=0;
       for (ii = 0; ii < len; ii++) {
-         if (SaxHandlerBase::caseCompare(attrs.getName(ii), "securityService")) {
+         if (SaxHandlerBase::caseCompare(attrs.getName(ii), "type")) {
             securityQos_.type_ = SaxHandlerBase::getStringValue(attrs.getValue(ii));
          }
          else if (SaxHandlerBase::caseCompare(attrs.getName(ii), "version")) {
@@ -148,7 +148,7 @@ int main(int args, char* argv[])
     }
 
    string xml =
-      string("<securityService type=\"  simple \" version=\"1.0\">\n") +
+      string("<securityService type=\"  htpasswd \" version=\"1.0\">\n") +
       string("   <![CDATA[\n") +
       string("   <passwd>theUsersPwd</passwd>\n") +
       string("   <user>aUser</user>\n") +
