@@ -238,6 +238,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
    {
       if (numOfEntries > Integer.MAX_VALUE)
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "remove: too many entries to remove " + numOfEntries);
+      long size = 0;
       synchronized(this) {
          ReturnDataHolder ret = this.genericPeek((int)numOfEntries, numOfBytes, 0, 9);
          ArrayList elementsToDelete = ret.list;
@@ -255,11 +256,12 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
             }
          }
 
-         if (this.queueSizeListener != null) invokeQueueSizeListener();
          this.storage.removeAll(elementsToDelete);
          this.sizeInBytes -= ret.countBytes;
-         return elementsToDelete.size();
+         size = elementsToDelete.size();
       }
+      if (this.queueSizeListener != null) invokeQueueSizeListener();
+      return size;
    }
 
 
