@@ -86,7 +86,7 @@ public class FileIOTest extends TestCase {
             long count = 0L;
             long start = System.currentTimeMillis();
             while (true) {
-               String data = fileIO.readNext(true);
+               String data = (String)fileIO.readNext(true);
                if (data == null)
                   break;
                count++;
@@ -182,8 +182,8 @@ public class FileIOTest extends TestCase {
          FileIO fileIO = new FileIO(fileName, userDataHandler, num, false);
          fileIO.writeNext("AFirstValue");
          fileIO.writeNext("ASecondValue");
-         assertEquals("Data corrupted", "AFirstValue", fileIO.readNext(true));
-         assertEquals("Data corrupted", "ASecondValue", fileIO.readNext(true));
+         assertEquals("Data corrupted", "AFirstValue", (String)fileIO.readNext(true));
+         assertEquals("Data corrupted", "ASecondValue", (String)fileIO.readNext(true));
       }
       catch(IOException e) {
          fail(testName + " failed: " + e.toString());
@@ -225,7 +225,7 @@ public class FileIOTest extends TestCase {
 
          int count = 0;
          while (true) {
-            String data = fileIO.readNext(true);
+            String data = (String)fileIO.readNext(true);
             if (data == null)
                break;
             count++;
@@ -269,7 +269,7 @@ public class FileIOTest extends TestCase {
             }
 
             try {
-               String data = fileIO.readNext(true);
+               String data = (String)fileIO.readNext(true);
                if (data == null)
                   break;
                count++;
@@ -331,7 +331,7 @@ public class FileIOTest extends TestCase {
 
             int count = 0;
             while (true) {
-               String data = fileIO.readNext(true);
+               String data = (String)fileIO.readNext(true);
                if (data == null)
                   break;
                count++;

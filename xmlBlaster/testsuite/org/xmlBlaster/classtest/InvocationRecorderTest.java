@@ -185,7 +185,7 @@ public class InvocationRecorderTest extends TestCase {
          //assertEquals("XPath is different", xmlKey.getQueryString(), xpath);
          System.out.println("***InvocationRecorderTest: testPlayback [SUCCESS]");
       }
-      catch(Throwable e) {
+      catch(XmlBlasterException e) {
          fail("Exception thrown: " + e.toString());
       }
    }
@@ -258,7 +258,7 @@ public class InvocationRecorderTest extends TestCase {
 
          System.out.println("***InvocationRecorderTest: testOnOverflowException [SUCCESS]");
       }
-      catch(Throwable e) {
+      catch(XmlBlasterException e) {
          fail("Exception thrown: " + e.toString());
       }
    }
@@ -302,7 +302,7 @@ public class InvocationRecorderTest extends TestCase {
 
          System.out.println("***InvocationRecorderTest: testOnOverflowDiscardOldest [SUCCESS]");
       }
-      catch(Throwable e) {
+      catch(XmlBlasterException e) {
          fail("Exception thrown: " + e.toString());
       }
    }
@@ -344,7 +344,7 @@ public class InvocationRecorderTest extends TestCase {
 
          System.out.println("***InvocationRecorderTest: testOnOverflowDiscard [SUCCESS]");
       }
-      catch(Throwable e) {
+      catch(XmlBlasterException e) {
          fail("Exception thrown: " + e.toString());
       }
    }
