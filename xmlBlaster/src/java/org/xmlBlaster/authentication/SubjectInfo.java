@@ -606,7 +606,7 @@ public final class SubjectInfo implements I_AdminSubject
 
       if (getSessions().length >= this.maxSessions) {
          log.warn(ME, "Max sessions = " + this.maxSessions + " for user " + getLoginName() + " exhausted, login denied.");
-         throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME, "Max sessions = " + this.maxSessions + " exhausted, login denied.");
+         throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION_MAXSESSION, ME, "Max sessions = " + this.maxSessions + " exhausted, login denied.");
       }
    }
 
