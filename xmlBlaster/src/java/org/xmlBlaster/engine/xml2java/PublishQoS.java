@@ -3,7 +3,7 @@ Name:      PublishQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: PublishQoS.java,v 1.8 2000/06/13 13:04:00 ruff Exp $
+Version:   $Id: PublishQoS.java,v 1.9 2000/06/13 17:29:43 kron Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -48,6 +48,8 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase
    protected Vector destinationVec = null;
    protected Destination destination = null;
 
+   public long size = 0L; 
+
 
    /**
     * Constructs the specialized quality of service object for a publish() call.
@@ -56,7 +58,8 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase
    public PublishQoS(String xmlQoS_literal) throws XmlBlasterException
    {
       // if (Log.TRACE) Log.trace(ME, "\n"+xmlQoS_literal);
-      parseQos(xmlQoS_literal);
+         parseQos(xmlQoS_literal);
+         size = xmlQoS_literal.length();
    }
 
 
@@ -70,6 +73,7 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase
    {
       this.fromPersistenceStore = fromPersistenceStore;
       parseQos(xmlQoS_literal);
+      size = xmlQoS_literal.length();
    }
 
 
@@ -79,6 +83,7 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase
    {
       if (!isEmpty(xmlQoS_literal)) // if possible avoid expensive SAX parsing
          init(xmlQoS_literal);  // use SAX parser to parse it (is slow)
+      size = xmlQoS_literal.length();
    }
 
 
