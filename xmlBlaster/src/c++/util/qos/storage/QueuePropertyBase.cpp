@@ -3,7 +3,7 @@ Name:      QueuePropertyBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.cpp,v 1.24 2004/09/27 12:54:31 ruff Exp $
+Version:   $Id: QueuePropertyBase.cpp,v 1.25 2004/09/28 15:17:03 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 
@@ -109,7 +109,7 @@ void QueuePropertyBase::initialize(const string& propertyPrefix)
       setType(global_.getProperty().getStringProperty(prefix+"type["+nodeId_+"]", getType()));
       setVersion(global_.getProperty().getStringProperty(prefix+"version["+nodeId_+"]", getVersion()));
    }
-   if (log_.dump()) log_.dump(ME, string("::initialize the property is: ") + toXml());
+   if (log_.trace()) log_.trace(ME, string("::initialized to: ") + toXml());
 }
 
 /*
