@@ -44,13 +44,29 @@
 
      <h2>Compilation with ant</h2>
      <p>
-     First add those lines to your <code>HOME/build.properties</code> (or add it
-     on command line with a leading -D option)
+     First add those lines to your <code>xmlBlaster/build.properties</code> (or
+     add it to <code>HOME/build.properties</code> which has precedence or add it
+     on command line with a leading -D option which is strongest)
      </p>
      <pre>
+# UNIX example:
 XMLBLASTER_PERSISTENT_QUEUE=1
 sqlite.include.dir=/opt/sqlite-bin/include
 sqlite.lib.dir=/opt/sqlite-bin/lib
+     </pre>
+     <p>
+     This expects <code>/opt/sqlite-bin/include/sqlite.h</code> and <code>/opt/sqlite-bin/lib/libsqlite.so*</code>
+     for the above UNIX example.
+     </p>
+     <p>NOTE: For Windows you can download the ready compiled sqlite library
+     <a href="http://www.xmlblaster.org/sqlite-win-bin-2.8.13-cvs.zip">sqlite-win-bin-2.8.13-cvs.zip</a>
+     from xmlBlaster.org, unzip it for example to C:\sqlite and add these lines to build.properties)
+     </p>
+     <pre>
+# Windows example:
+XMLBLASTER_PERSISTENT_QUEUE=1
+sqlite.include.dir=C:/sqlite
+sqlite.lib.dir=C:/sqlite
      </pre>
      <p>
      and compile it:
@@ -62,10 +78,6 @@ build c-delete c
      <pre>
 build -verbose -DXMLBLASTER_PERSISTENT_QUEUE=1 -Dsqlite.include.dir= ... c
      </pre>
-     <p>
-     This expects <code>/opt/sqlite-bin/include/sqlite.h</code> and <code>/opt/sqlite-bin/lib/libsqlite.so*</code>
-     (on Windows it is a dll).
-     </p>
 
      <h2>Compilation manually</h2>
      <p>
@@ -231,7 +243,7 @@ TestQueue
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2004 04 09</date>
-   <revision>$Revision: 1.8 $</revision>
+   <revision>$Revision: 1.9 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
