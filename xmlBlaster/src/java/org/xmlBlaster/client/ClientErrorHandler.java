@@ -66,16 +66,16 @@ public final class ClientErrorHandler implements I_MsgErrorHandler
          log.error(ME, "Connection failed: " + msgErrorInfo.getXmlBlasterException().getMessage());
          if (msgErrorInfo.getDispatchManager() != null) {
             msgErrorInfo.getDispatchManager().toDead(ConnectionStateEnum.UNDEF, msgErrorInfo.getXmlBlasterException());
-            if (xmlBlasterAccess.getQueue() != null)
-               xmlBlasterAccess.getQueue().clear();
+            //if (xmlBlasterAccess.getQueue() != null)
+            //   xmlBlasterAccess.getQueue().clear();
             msgErrorInfo.getDispatchManager().shutdown();
             return;
          }
       }
 
       Thread.dumpStack();
-      if (xmlBlasterAccess.getQueue() != null)
-         xmlBlasterAccess.getQueue().clear();
+      //if (xmlBlasterAccess.getQueue() != null)
+      //   xmlBlasterAccess.getQueue().clear();
    }
 
    /**
