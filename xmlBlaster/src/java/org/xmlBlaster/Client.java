@@ -32,18 +32,37 @@ public class Client
             xmlServer = ServerHelper.narrow(nc.resolve(name));
          }
 
-         // Intializing my Callback interface:
+         // Getting the default POA implementation "RootPOA"
          org.omg.PortableServer.POA poa = 
             org.omg.PortableServer.POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
 
-         org.omg.CORBA.Object o = poa.servant_to_reference(new BlasterCallbackPOATie(new BlasterCallbackImpl(ME)) );
+         // Intializing my Callback interface:
+         BlasterCallbackPOATie callbackTie = new BlasterCallbackPOATie(new BlasterCallbackImpl(ME));
+         // callbackTie._orb( orb ); // necessary?
+         BlasterCallback callback = BlasterCallbackHelper.narrow(poa.servant_to_reference( callbackTie ));
 
+         /*
+         try {
+            Log.info("You are " + orb.default_principal().name(java.net.InetAddress.getLocalHost().toString().getBytes()));
+         } catch (Exception e) {
+         }
+         */
+
+         String qos = orb.object_to_string(callback);
+
+         String sessionId = "";
+         try {
+            String loginName = "Karl";
+            String passwd = "some";
+            sessionId = xmlServer.login(loginName, passwd, callback, qos);
+         } catch(XmlBlasterException e) {
+            Log.warning(ME, "XmlBlasterException: " + e.reason);
+         }
 
          String xmlKey = "KEY_FOR_SMILEY";
-         String qos = orb.object_to_string(o);
 
          try {
-            xmlServer.subscribe(xmlKey, qos);
+            xmlServer.subscribe(sessionId, xmlKey, qos);
          } catch(XmlBlasterException e) {
             Log.warning(ME, "XmlBlasterException: " + e.reason);
          }
@@ -56,7 +75,7 @@ public class Client
          Log.trace(ME, "Sending some new Smiley data ...");
          try {
             String str = "Smiley changed";
-            xmlServer.publish(xmlKey, str.getBytes());
+            xmlServer.publish(sessionId, xmlKey, str.getBytes(), "");
          } catch(XmlBlasterException e) {
             Log.warning(ME, "XmlBlasterException: " + e.reason);
          }
@@ -65,7 +84,7 @@ public class Client
 
          Log.trace(ME, "Trying unsubscribe ...");
          try {
-            xmlServer.unSubscribe(xmlKey, qos);
+            xmlServer.unSubscribe(sessionId, xmlKey, qos);
          } catch(XmlBlasterException e) {
             Log.warning(ME, "XmlBlasterException: " + e.reason);
          }
@@ -73,7 +92,7 @@ public class Client
 
          try {
             String str = "Smiley changed again, but i'm not interested";
-            xmlServer.publish(xmlKey, str.getBytes());
+            xmlServer.publish(sessionId, xmlKey, str.getBytes(), "");
          } catch(XmlBlasterException e) {
             Log.warning(ME, "XmlBlasterException: " + e.reason);
          }

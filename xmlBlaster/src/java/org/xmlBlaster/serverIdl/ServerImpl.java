@@ -4,11 +4,12 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org (LGPL)
 Comment:   Implementing the CORBA xmlBlaster-server interface
            $Revision $
-           $Date: 1999/11/11 16:15:00 $
+           $Date: 1999/11/12 13:07:06 $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.serverIdl;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.clientIdl.BlasterCallback;
 import org.xmlBlaster.engine.RequestBroker;
 import org.xmlBlaster.engine.XmlKey;
 import org.xmlBlaster.engine.XmlQoS;
@@ -49,9 +50,35 @@ public class ServerImpl implements ServerOperations {    // tie approach
 
 
    /**
+    * Authentication of a client
+    * @param cb The Callback interface of the client
+    * @return a unique sessionId for the client, to be used in following calls
+    */
+   public String login(String loginName, String passwd,
+                       BlasterCallback cb,
+                       String qos_literal) throws XmlBlasterException
+   {
+      if (Log.CALLS) Log.trace(ME, "Entering login(loginName=" + loginName + ", qos=" + qos_literal + ")");
+      XmlQoS xmlQoS = new XmlQoS(qos_literal);
+      // !!! return requestBroker.login(loginName, passwd, cb, xmlQoS);
+      return orb.object_to_string(cb);
+   }
+
+
+   /**
+    * Logout of a client
+    */
+   public void logout(String sessionId) throws XmlBlasterException
+   {
+      if (Log.CALLS) Log.trace(ME, "Entering logout(sessionId=" + sessionId);
+      // !!! return requestBroker.logout(sessionId);
+   }
+
+
+   /**
     * @see xmlBlaster.idl
     */
-   public void subscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
+   public void subscribe(String sessionId, String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       if (Log.CALLS) Log.trace(ME, "Entering subscribe(xmlKey=" + xmlKey_literal + ", qos=" + qos_literal + ")");
       XmlKey xmlKey = new XmlKey(xmlKey_literal);
@@ -63,7 +90,7 @@ public class ServerImpl implements ServerOperations {    // tie approach
    /**
     * @see xmlBlaster.idl
     */
-   public void unSubscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
+   public void unSubscribe(String sessionId, String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       if (Log.CALLS) Log.trace(ME, "Entering unSubscribe(xmlKey=" + xmlKey_literal + ", qos=" + qos_literal + ")");
       XmlKey xmlKey = new XmlKey(xmlKey_literal);
@@ -75,21 +102,11 @@ public class ServerImpl implements ServerOperations {    // tie approach
    /**
     * @see xmlBlaster.idl
     */
-   public int publish(String xmlKey_literal, byte[] content) throws XmlBlasterException
-   {
-      if (Log.CALLS) Log.trace(ME, "Entering set(xmlKey=" + xmlKey_literal + ")");
-      return setQoS(xmlKey_literal, content, (String)null);
-   }
-
-
-   /**
-    * @see xmlBlaster.idl
-    */
-   public int setQoS(String xmlKey_literal, byte[] content, String qos_literal) throws XmlBlasterException
+   public int publish(String sessionId, String xmlKey_literal, byte[] content, String qos_literal) throws XmlBlasterException
    {
       XmlKey xmlKey = new XmlKey(xmlKey_literal);
       XmlQoS xmlQoS = new XmlQoS(qos_literal);
-      if (Log.CALLS) Log.trace(ME, "Entering xmlBlaster.setQos(" + xmlKey.getUniqueKey() + ")");
+      if (Log.CALLS) Log.trace(ME, "Entering xmlBlaster.publish(" + xmlKey.getUniqueKey() + ")");
       return requestBroker.set(xmlKey, content, xmlQoS);
    }
 
@@ -97,12 +114,24 @@ public class ServerImpl implements ServerOperations {    // tie approach
    /**
     * @see xmlBlaster.idl
     */
-   public int erase(String xmlKey_literal, String qos_literal) throws XmlBlasterException
+   public int erase(String sessionId, String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       XmlKey xmlKey = new XmlKey(xmlKey_literal);
       XmlQoS xmlQoS = new XmlQoS(qos_literal);
       if (Log.CALLS) Log.trace(ME, "Entering xmlBlaster.erase(" + xmlKey.getUniqueKey() + ")");
       return requestBroker.erase(xmlKey, xmlQoS);
+   }
+
+
+   /**
+    * Synchronous access
+    * @return content
+    * @see xmlBlaster.idl
+    */
+   public byte[] get(String sessionId, String xmlKey, String qos) throws XmlBlasterException
+   {
+       // IMPLEMENT: Operation
+      return null;
    }
 
 

@@ -26,6 +26,9 @@ SRC_JAVA_TOP_DIR=$(XMLBLASTER_HOME)/src/java
 SRC_JAVA_DIR=$(SRC_JAVA_TOP_DIR)/$(THIS_PACKAGE_DIR)
 #------------------------------------------------------------------------------
 
+#CLASSPATH_MAKE=`whois`
+
+
 #------------------------------------------------------------------------------
 IDL2JAVA=/usr/local/JacORB/bin/idl
 #IDL2JAVA=/usr/local/vbroker/bin/idl2java
@@ -34,7 +37,8 @@ IDL2JAVA=/usr/local/JacORB/bin/idl
 JAVAC_FLAGS= -deprecation -g
 
 JAVAC= jikes $(JAVAC_FLAGS) -d $(CLASS_TOP_DIR)
-#JAVAC= javac $(JAVAC_FLAGS) -bootclasspath $(CLASSPATH):../..:.:/usr/local/jdk/jre/lib/rt.jar -sourcepath ../.. -d $(CLASS_TOP_DIR)
+#JAVAC= javac $(JAVAC_FLAGS) -bootclasspath $(CLASSPATH) -sourcepath $(SRC_JAVA_TOP_DIR) -d $(CLASS_TOP_DIR)
+##JAVAC= javac $(JAVAC_FLAGS) -bootclasspath ${JacORB_HOME}/classes:${JacORB_HOME}/classes/jacorb.jar:${JDK_HOME}/jre/lib/rt.jar:$(CLASSPATH) -sourcepath $(SRC_JAVA_TOP_DIR) -d $(CLASS_TOP_DIR)
 
 #RMIC=  rmic -d $(CLASS_TOP_DIR) -classpath $(CLASSPATH):../../
 RMIC=  rmic -d $(CLASS_TOP_DIR)

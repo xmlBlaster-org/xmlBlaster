@@ -3,7 +3,7 @@ Name:      xmlBlaster.idl
 Project:   xmlBlaster.org
 Task:      Serverinterface
 Copyright: LGPL http://www.gnu.org
-           $Id: xmlBlaster.idl,v 1.6 1999/11/11 16:14:53 ruff Exp $
+           $Id: xmlBlaster.idl,v 1.7 1999/11/12 13:07:01 ruff Exp $
 Comment:   Not even alpha
            String arguments my be used empty "", but never with null
 Compile:   idl2java -root_dir ../../classes xmlBlaster.idl
@@ -19,13 +19,69 @@ Compile:   idl2java -root_dir ../../classes xmlBlaster.idl
 //------------------------------------------------------------------------------
 
 
+/**
+ * Decration of common types
+ */
 module org { module xmlBlaster { module serverIdl
 {
    typedef string XmlType;
    typedef sequence<octet> ContentType;
    typedef string ExceptionIdType;
 
+   struct MessageUnit {
+      XmlType xmlKey;
+      ContentType content;
+   };
+   typedef sequence<MessageUnit> MessageUnitArr;
 
+}; }; }; // org::xmlBlaster::serverIdl
+
+
+
+
+/**
+ * Decration of the client Callback interface. 
+ * Declared before the server, so that the server declaration
+ * can use the BlasterCallback interface
+ *
+ * Forward declaration like
+ *    interface org::xmlBlaster::clientIdl::BlasterCallback;
+ * didn't work!?
+ */
+module org { module xmlBlaster { module clientIdl
+{
+   /**
+    * This interface needs to be implemented by the clients using
+    * the AttributeServer
+    * The IOR of this BlasterCallback has to be passed initially to the
+    * xmlBlaster using the initCallback() method
+    */
+   interface BlasterCallback
+   {
+      /**
+       * @param xmlKey  Key<br>
+       * @param qos     Quality of Service<br>
+       *                <notify/>    Notifying only about change (content is empty)
+       *                <metaInfo/>  xmlKey contains all known meta information
+       *                <noAccess/>  Permission denied
+       *                <destroyed/> MessageUnit got erased
+       */
+     //oneway
+     void update(in org::xmlBlaster::serverIdl::XmlType xmlKey,
+                 in org::xmlBlaster::serverIdl::ContentType content,
+                 in org::xmlBlaster::serverIdl::XmlType qos);
+   };
+
+}; }; }; // org::xmlBlaster::clientIdl
+
+
+
+
+/**
+ * The xmlBlaster interface
+ */
+module org { module xmlBlaster { module serverIdl
+{
    /**
     * Exception class for xmlBlaster interface
     */
@@ -94,40 +150,25 @@ module org { module xmlBlaster { module serverIdl
    interface Server
    {
       /**
-       * X.509 Certificate of the server from CA (certificate authority)
+       * Login to server
+       * @param loginName A unique name - Not yet necessary
+       * @param passwd    Pasword - Not yet necessary
+       * @param cb        Reference to the BlasterCallback interface or null for synchronous access
+       * @param qos       Quality of Service, flags for additional client informations
+       *                  like clientCertificate (X.509), timeouts etc.
+       * @return sessionId The unique identifier for the client
        */
-      //readonly attribute string certificate() raises (xmlBlasterException);
+      string login(in string loginName, in string passwd,
+                   in org::xmlBlaster::clientIdl::BlasterCallback cb,
+                   in XmlType qos) raises (XmlBlasterException);
+
 
       /**
        * Login to server
-       * @return sessionId
+       * @param sessionId The client identifier, obtained from login()
        */
-      //string login(in string loginName, in string passwd) raises (xmlBlasterException);
+      void logout(in string sessionId) raises (XmlBlasterException);
 
-
-      /**
-       * Initially tell your BlasterCallback interface IOR
-       * the client must provide this callback interface
-       * if he wants to use the subscribe/publish pattern
-      void initCallback(in Object iorCallback);
-       */
-
-
-      /**
-       * Synchron read-access methods.
-       * This is the polling modus.
-       * RETURN:
-       *   Attribute(s) if no error occurs
-       *   An empty AttributeStruct if key is not existing
-       *     -> attr.key is set to an empty string "" which you may
-       *        check in Java like:  if (attr.key.length() == 0) ...
-       *   Throws Exception if access/internal/other error
-      AttributeStruct get(in AttributeKey key, in long bitFlag)
-                                          raises(XmlBlasterException);
-      AttributeSeq getExpr(in AttributeKey regExpr, in long bitFlag)
-                                          raises(XmlBlasterException);
-                                          raises(XmlBlasterException);
-         */
 
       /**
        * Asynchron read-access methods
@@ -147,20 +188,37 @@ module org { module xmlBlaster { module serverIdl
        *                HACK: Specify the ClientCallback String IOR here!!!
        */
       //oneway
-      void subscribe(in XmlType xmlKey, in XmlType qos)
+      void subscribe(in string sessionId, in XmlType xmlKey, in XmlType qos)
                                           raises(XmlBlasterException);
+
+
+      /**
+       * Synchron read-access methods
+       *
+       * @param xmlKey  Key with attributes allowing Regex/XQL/SQL selection<br>
+       *                See xmlKey.dtd for a description
+       *                HACK: Send a (none XML) String key in this alfa release!!!
+       * @param qos     Quality of Service, flags to control subscritpion<br>
+       *                See qosSubscribe.dtd for a description
+       *                HACK: Specify the ClientCallback String IOR here!!!
+       * @return the content
+       */
+      ContentType get(in string sessionId, in XmlType xmlKey, in XmlType qos)
+                                          raises(XmlBlasterException);
+
 
       /**
        * if a key was subscribed forever, you can cancel your
        * subscription with following method
        *
-       * @param xmlKey  Key with attributes allowing Regex/XQL/SQL selection<br>
-       *                See xmlKey.dtd for a description
-       * @param qos     Quality of Service, flags to control unsubscritpion<br>
-       *                See qosSubscribe.dtd for a description
+       * @param sessionId The client identifier, obtained from login()
+       * @param xmlKey    Key with attributes allowing Regex/XQL/SQL selection<br>
+       *                  See xmlKey.dtd for a description
+       * @param qos       Quality of Service, flags to control unsubscritpion<br>
+       *                  See qosSubscribe.dtd for a description
        */
       //oneway
-      void unSubscribe(in XmlType xmlKey, in XmlType qos)
+      void unSubscribe(in string sessionId, in XmlType xmlKey, in XmlType qos)
                                           raises(XmlBlasterException);
 
 
@@ -172,56 +230,27 @@ module org { module xmlBlaster { module serverIdl
        *
        * @param xmlKey  Key with attributes allowing Regex/XQL/SQL selection<br>
        * @param content The data to store (XML data, java objects, ...)
-       *
-       * @return number of keys successfully set
-       */
-      long publish(in XmlType xmlKey, in ContentType content)
-                                          raises(XmlBlasterException);
-
-      /**
-       * Write-Access Method
-       * Allows to specify Quolity of service (QOS) for some specific
-       * content.
-       * The QOS is remembered for its corresponding xmlKey(s)
-       * by the xmlBlaster server, so you need
-       * only send it once at the beginning
-       *
-       * @param xmlKey  Key with attributes allowing Regex/XQL/SQL selection<br>
-       * @param content The data to store (XML data, java objects, ...)
        * @param qos     Qualitiy of Service which is supported by the xmlBlaster server<br>
        *                or by its plugin (XML formated)
        *
        * @return number of keys successfully set
        */
-      long setQoS(in XmlType xmlKey, in ContentType content, in XmlType qos)
+      long publish(in string sessionId, in XmlType xmlKey, in ContentType content, in XmlType qos)
                                           raises(XmlBlasterException);
+
 
       /**
        * erase an attribute
        * @return number of entries removed
        */
-      long erase(in XmlType xmlKey, in XmlType qos)
+      long erase(in string sessionId, in XmlType xmlKey, in XmlType qos)
                                           raises(XmlBlasterException);
+
+
    };
 
 }; }; }; // org::xmlBlaster::serverIdl
 
 
-
-module org { module xmlBlaster { module clientIdl
-{
-   /**
-    * This interface needs to be implemented by the clients using
-    * the AttributeServer
-    * The IOR of this BlasterCallback has to be passed initially to the
-    * xmlBlaster using the initCallback() method
-    */
-   interface BlasterCallback
-   {
-     //oneway
-     void update(in org::xmlBlaster::serverIdl::XmlType xmlKey, in org::xmlBlaster::serverIdl::ContentType content);
-   };
-
-}; }; }; // org::xmlBlaster::clientIdl
 
 #endif // _xmlBlaster_IDL_

@@ -3,8 +3,8 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org (LGPL)
 Comment:   Handling the Client data
-           $Revision: 1.3 $
-           $Date: 1999/11/11 16:15:00 $
+           $Revision: 1.4 $
+           $Date: 1999/11/12 13:07:06 $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -83,7 +83,6 @@ public class RequestBroker
       ClientInfo clientInfo = getClientInfo(xmlKey, subscribeQoS);
       String uniqueKey = xmlKey.getUniqueKey();
       SubscriptionInfo subs = new SubscriptionInfo(clientInfo, xmlKey, subscribeQoS);
-
       synchronized(messageContainerMap) {
          Object obj = messageContainerMap.get(uniqueKey);
          if (obj == null) {
@@ -152,7 +151,8 @@ public class RequestBroker
             if (Log.DEBUG) Log.trace(ME, "Entering xmlBlaster.set(" + xmlKey.getUniqueKey() + ")");
             SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
             BlasterCallback cb = sub.getClientInfo().getCB();
-            cb.update(xmlKey.toString(), content);
+            XmlQoSUpdate xmlQoS = new XmlQoSUpdate();
+            cb.update(xmlKey.toString(), content, xmlQoS.toString());
          }
       }
 

@@ -3,8 +3,8 @@ Name:      BlasterCallbackImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org (LGPL)
 Comment:   Handling the Client callback
-           $Revision: 1.1 $
-           $Date: 1999/11/11 12:02:18 $
+           $Revision: 1.2 $
+           $Date: 1999/11/12 13:07:06 $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.clientIdl;
 
@@ -34,7 +34,7 @@ import org.xmlBlaster.util.XmlKeyBase;
 </p>
 */
 //public class BlasterCallbackImpl extends BlasterCallbackPOA {         // inheritance approach
-public class BlasterCallbackImpl implements BlasterCallbackOperations { // tie approsch
+public class BlasterCallbackImpl implements BlasterCallbackOperations { // tie approach
    final String ME;
 
    /**
@@ -57,18 +57,8 @@ public class BlasterCallbackImpl implements BlasterCallbackOperations { // tie a
 
 
    /**
-    * <p>
-    * Operation: <b>::org::xmlBlaster::BlasterCallback::update</b>.
-    * <pre>
-    *   #pragma prefix "org/xmlBlaster/BlasterCallback"
-    *   void update(
-    *     in ::org::xmlBlaster::XmlType xmlKey,
-    *     in ::org::xmlBlaster::ContentType content
-    *   );
-    * </pre>
-    * </p>
     */
-   public void update(String xmlKey_literal, byte[] content) {
+   public void update(String xmlKey_literal, byte[] content, String qos_literal) {
       XmlKeyBase xmlKey = new XmlKeyBase(xmlKey_literal);
       Log.info(ME, "Callback invoked for " + xmlKey.toString() + " content length = " + content.length);
    }
