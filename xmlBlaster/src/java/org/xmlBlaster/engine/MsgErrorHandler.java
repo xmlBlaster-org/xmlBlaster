@@ -7,6 +7,7 @@ package org.xmlBlaster.engine;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.queuemsg.ReferenceEntry;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.qos.address.AddressBase;
@@ -19,6 +20,7 @@ import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
 import org.xmlBlaster.util.error.I_MsgErrorInfo;
 import org.xmlBlaster.authentication.SessionInfo;
+import org.xmlBlaster.client.qos.DisconnectQos;
 
 import java.util.ArrayList;
 
@@ -40,7 +42,7 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
    public MsgErrorHandler(Global glob, SessionInfo sessionInfo) {
       this.ME = "MsgErrorHandler-" + sessionInfo.getId();
       this.glob = glob;
-      this.log = glob.getLog("dispatch");
+      this.log = glob.getLog("core");
       this.sessionInfo = sessionInfo;
    }
 
@@ -84,20 +86,30 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
 
       if (log.CALL) log.call(ME, "Error handling started: " + msgErrorInfo.toString());
 
-      // 1. Generate dead letters from passed messages
-      glob.getRequestBroker().deadMessage(msgQueueEntries, msgQueue, message);
-
-      // Remove the above published dead message from the queue
+      // Try to safe some of the PtP messages
       try {
-         if (log.TRACE) log.trace(ME, "Removing " + msgQueueEntries.length + " dead messages from queue");
-         long removed = (msgQueue == null) ? 0 : msgQueue.removeRandom(msgQueueEntries);
-         if (removed != msgQueueEntries.length) {
-            log.warn(ME, "Expected to remove " + msgQueueEntries.length + " messages from queue but where only " + removed + ", exception comes from mime access plugin: " + message);
-            return;  // Seems to come from mime access plugin as the message where not in the queue
-         }
+         msgQueueEntries = putPtPBackToSubjectQueue(this.sessionInfo, msgQueueEntries);
       }
       catch (XmlBlasterException e) {
-         log.warn(ME, "Can't remove " + msgQueueEntries.length + " messages from queue: " + e.getMessage() + ". Original cause was: " + message);
+         log.error(ME, "handleError() problems: " + e.getMessage());
+      }
+
+      if (msgQueueEntries != null && msgQueueEntries.length > 0) {
+         // 1. Generate dead letters from passed messages
+         glob.getRequestBroker().deadMessage(msgQueueEntries, msgQueue, message);
+
+         // Remove the above published dead message from the queue
+         try {
+            if (log.TRACE) log.trace(ME, "Removing " + msgQueueEntries.length + " dead messages from queue");
+            long removed = (msgQueue == null) ? 0 : msgQueue.removeRandom(msgQueueEntries);
+            if (removed != msgQueueEntries.length) {
+               log.warn(ME, "Expected to remove " + msgQueueEntries.length + " messages from queue but where only " + removed + ", exception comes from mime access plugin: " + message);
+               return;  // Seems to come from mime access plugin as the message where not in the queue
+            }
+         }
+         catch (XmlBlasterException e) {
+            log.warn(ME, "Can't remove " + msgQueueEntries.length + " messages from queue: " + e.getMessage() + ". Original cause was: " + message);
+         }
       }
 
       if (xmlBlasterException.isUser()) {
@@ -113,9 +125,16 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
          try {
             QueuePropertyBase queueProperty = (QueuePropertyBase)msgQueue.getProperties();
             if (queueProperty == null || queueProperty.onFailureDeadMessage()) {
-               ArrayList list = msgQueue.take(-1, -1L); // Is not crash save peek() and after deadMessage remove() would be save, change this?
-               MsgQueueEntry[] msgArr = (MsgQueueEntry[])list.toArray(new MsgQueueEntry[list.size()]);
-               glob.getRequestBroker().deadMessage(msgArr, (I_Queue)null, message);
+               // TODO: loop with small amounts to avoid OutOfMemory !
+               ArrayList list = msgQueue.peek(-1, -1L);
+               MsgQueueEntry[] msgArrAll = (MsgQueueEntry[])list.toArray(new MsgQueueEntry[list.size()]);
+               MsgQueueEntry[] msgArr = putPtPBackToSubjectQueue(this.sessionInfo, msgArrAll);
+               if (msgArr.length > 0) {
+                  glob.getRequestBroker().deadMessage(msgArr, (I_Queue)null, message);
+               }
+               if (msgArrAll.length > 0) {
+                  msgQueue.removeRandom(msgArrAll);
+               }
             }
             else {
                log.error(ME, "PANIC: Only onFailure='" + Constants.ONOVERFLOW_DEADMESSAGE +
@@ -135,29 +154,69 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
          if (deliveryManager!=null) deliveryManager.shutdown();
 
          // 3. Kill login session
-         try {
-            //if (address == null || address.getOnExhaustKillSession()) {
-               log.warn(ME, "Callback server is lost, killing login session of client " +
-                             ((msgQueue == null) ? "unknown" : msgQueue.getStorageId().toString()) +
-                             ": " + message);
-               try {
-                  glob.getAuthenticate().disconnect(sessionInfo.getSecretSessionId(), null);
-               }
-               catch (Throwable e) {
-                  log.error(ME, "PANIC: givingUpDelivery error handling failed, " +
-                                 size + " messages are lost: " + message + ": " + e.toString());
-               }
-            //}
-            //else {
-            //   log.error(ME, "PANIC: givingUpDelivery error handling failed, '" + address.getOnExhaust() +
-            //       "' is not supported, " + size + " messages are lost: " + message);
-            //}
-         }
-         catch(Throwable e) {
-            log.error(ME, "PANIC: givingUpDelivery error handling failed, " + size +
-                           " messages are lost: " + message + ": " + e.toString());
+         if (this.sessionInfo != null) {
+            try {
+               //if (address == null || address.getOnExhaustKillSession()) {
+                  log.warn(ME, "Callback server is lost, killing login session of client " +
+                                ((msgQueue == null) ? "unknown" : msgQueue.getStorageId().toString()) +
+                                ": " + message);
+                  try {
+                     DisconnectQos disconnectQos = new DisconnectQos(glob);
+                     disconnectQos.deleteSubjectQueue(false);
+                     glob.getAuthenticate().disconnect(sessionInfo.getSecretSessionId(), disconnectQos.toXml());
+                  }
+                  catch (Throwable e) {
+                     log.error(ME, "PANIC: givingUpDelivery error handling failed, " +
+                                    size + " messages are lost: " + message + ": " + e.toString());
+                  }
+               //}
+               //else {
+               //   log.error(ME, "PANIC: givingUpDelivery error handling failed, '" + address.getOnExhaust() +
+               //       "' is not supported, " + size + " messages are lost: " + message);
+               //}
+            }
+            catch(Throwable e) {
+               log.error(ME, "PANIC: givingUpDelivery error handling failed, " + size +
+                              " messages are lost: " + message + ": " + e.toString());
+            }
          }
       }
+   }
+
+   /**
+    * All PtP messages which were sent to a destination subject (without a pubSessionId)
+    * are put back to the subject queue to be delivered later with another login session
+    * of this user.
+    * @return The remaining entries to be error handled
+    */
+   public MsgQueueEntry[] putPtPBackToSubjectQueue(SessionInfo sessionInfo, MsgQueueEntry[] entries) 
+         throws XmlBlasterException {
+      if (entries == null || entries.length < 1) return entries;
+      if (log.CALL) log.call(ME, "Entering putPtPBackToSubjectQueue() for " + entries.length + " entries");
+      I_Queue subjectQueue = sessionInfo.getSubjectInfo().getSubjectQueue();
+      ArrayList list = new ArrayList(entries.length);
+      for(int ii=0; ii<entries.length; ii++) {
+         ReferenceEntry en = (ReferenceEntry)entries[ii];
+         if (en.getMsgQosData().isPtp() && !en.getReceiver().isSession() &&
+             en.getMsgUnitWrapper().getReferenceCounter() <= 2) {
+            // The getReferenceCounter() check is buggy (Marcel 2003.03.20):
+            // 1. It includes a history entry and this entry but the history is optional
+            // 2. We may send the same message twice with another session if such a callback references the message
+            //    and we stuff the message back to the subject queue
+            // -> We need to specify a PtP load balancer plugin framework and than resolve this issue
+            log.info(ME, "We are the last session taking care on PtP message '" + en.getLogId() + "', putting it back to subject queue");
+            try {
+               subjectQueue.put(en, false);
+               continue;
+            }
+            catch (XmlBlasterException e) {
+               log.error(ME, "Failed to put entry '" + en.getLogId() + "' into subject queue, forwarding it to error handling manager: " + e.getMessage());
+            }
+         }
+         list.add(entries[ii]);
+      }
+      
+      return (MsgQueueEntry[])list.toArray(new MsgQueueEntry[list.size()]);
    }
 
    public void shutdown() {
