@@ -3,7 +3,7 @@ Name:      JdbcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   JdbcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: JdbcDriver.java,v 1.15 2001/09/05 12:48:47 ruff Exp $
+Version:   $Id: JdbcDriver.java,v 1.16 2001/11/19 15:22:53 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
@@ -185,7 +185,7 @@ public class JdbcDriver implements I_Driver, I_Publish
             Log.info(ME, "Jdbc driver '" + driver + "' loaded.");
          }
          catch (Throwable e) {
-            Log.warn(ME, "Couldn't initialize driver =>" + driver);
+            Log.warn(ME, "Couldn't initialize driver <" + driver + ">, please check your CLASSPATH");
          }
       }
       if (numDrivers == 0) {
