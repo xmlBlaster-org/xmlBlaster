@@ -53,7 +53,7 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    fi
    export CLASSPATH
 
-   PATH=$PATH:$XMLBLASTER_HOME/testsuite/bin
+   PATH=$PATH:$XMLBLASTER_HOME/bin:$XMLBLASTER_HOME/testsuite/bin
    export PATH
 
    alias cdx='cd $XMLBLASTER_HOME'
