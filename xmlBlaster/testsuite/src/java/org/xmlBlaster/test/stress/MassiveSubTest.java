@@ -3,8 +3,9 @@ Name:      MassiveSubTest.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: MassiveSubTest.java,v 1.1 2002/09/27 12:23:51 antman Exp $
-------------------------------------------------------------------------------*/package org.xmlBlaster.test.stress;
+Version:   $Id: MassiveSubTest.java,v 1.2 2002/09/30 10:08:48 ruff Exp $
+------------------------------------------------------------------------------*/
+package org.xmlBlaster.test.stress;
 
 import org.jutils.time.StopWatch;
 
@@ -40,7 +41,7 @@ import junit.framework.*;
  * <p>If withEmbedded is set to true will run without an embedded server.</p>
  *
  * @author Peter Antman
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 
 public class MassiveSubTest extends TestCase implements I_Callback {
@@ -456,7 +457,12 @@ public class MassiveSubTest extends TestCase implements I_Callback {
    }
 
    public static void main(String[] args) {
-      
+      Global glob = new Global(args);
+      setProtoMax(glob, "IOR", "500");
+      MassiveSubTest m = new MassiveSubTest(glob, "testManyClients", "testManyClients", true);
+      m.setUp();
+      m.testManyClients();
+      m.tearDown();
    }
    
 } // MassiveSubTest
