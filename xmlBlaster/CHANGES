@@ -2,6 +2,12 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.xxx [xx, xxx 2003]
 ================================
+ o Changed protocol plugin loading behavior.
+   Now we throw an exception if the protocol plugin is not found
+   instead of choosing the default protocol as fallback.
+ 
+ o Updated requirements
+
  o Incompatible changes (update xmlBlaster.properties and xmlBlasterPlugins.xml):
 
    1. Removed XmlBlasterConnection.java, please use XmlBlasterAccess.java
@@ -10,6 +16,8 @@ Changes for 0.xxx [xx, xxx 2003]
    2. XmlBlasterAccess.initCbServer(String loginName, String type, String version) -> initCbServer(String loginName, CallbackAddress cbAddress)
 
    3. Protocol "XML-RPC" renamed to "XMLRPC"
+      -> client server communication will not work between this
+         and the previous release.
 
    4. The protocol address is now configurable with Address.java/CallbackAddress.java
       with the method 
