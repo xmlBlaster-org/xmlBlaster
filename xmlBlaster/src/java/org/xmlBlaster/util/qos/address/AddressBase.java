@@ -724,10 +724,6 @@ public abstract class AddressBase
    public void setCompressType(String compressType) {
       if (compressType == null) this.compressType.setValue("");
       this.compressType.setValue(compressType);
-
-      // TODO !!!
-      if (compressType.length() > 0)
-         log.warn(ME, "Compression of messages is not yet supported");
    }
 
    /**
