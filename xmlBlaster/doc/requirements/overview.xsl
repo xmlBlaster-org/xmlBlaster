@@ -4,7 +4,7 @@ Name:      html.xsl
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Generating a html table with all requirements, to be used as a 'reference handbook'
-Version:   $Id: overview.xsl,v 1.4 2002/05/28 07:15:28 ruff Exp $
+Version:   $Id: overview.xsl,v 1.5 2002/06/17 09:04:40 ruff Exp $
 Author:    ruff@swand.lake.de
 -->
 
@@ -23,6 +23,8 @@ Author:    ruff@swand.lake.de
    <html>
    <head>
       <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+      <meta http-equiv="Pragma" content="no-cache" />
+      <meta http-equiv="Expires" content="Tue, 31 Dec 1997 23:59:59 GMT" />
       <link REL="stylesheet" type="text/css" href="../howto/xmlBlaster.css" />
       <title>xmlBlaster - Requirements</title>
    </head>
@@ -30,7 +32,7 @@ Author:    ruff@swand.lake.de
    <body>
 
    <p class="sideend">
-       Last updated $Date: 2002/05/28 07:15:28 $ $Author: ruff $
+       Last updated $Date: 2002/06/17 09:04:40 $ $Author: ruff $
    </p>
    <p class="sitetitel">XmlBlaster Programmers Reference Overview</p>
 
