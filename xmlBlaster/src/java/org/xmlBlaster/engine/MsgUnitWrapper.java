@@ -188,7 +188,10 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
          }
          this.referenceCounter += count;
       }
-      //if (!isInternal()) glob.getLog("core").info(ME, "Reference count changed from " + (this.referenceCounter-count) + " to " + this.referenceCounter + ", new historyEntries=" + this.historyReferenceCounter);
+      // TODO: Remove the logging
+      if (glob.getLog("core").TRACE && !isInternal()) glob.getLog("core").trace(ME, "Reference count of '" + getLogId() + "' changed from " +
+                         (this.referenceCounter-((isHistoryReference)?2*count:count)) + " to " + this.referenceCounter + 
+                         ", new historyEntries=" + this.historyReferenceCounter);
       if (this.referenceCounter <= 0L) {
          toDestroyed();
       }
