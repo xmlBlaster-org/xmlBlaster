@@ -57,8 +57,6 @@ typedef struct MsgUnit {
 typedef struct MsgUnitStructArr {
    /** Oneway updates are marked with true */
    bool isOneway;
-   /** Who has to free this struct? */
-   bool ownedByCallbackServer;
    /** Authenticate callback messages, this sessionId is returned by xmlBlaster and was initially passed from the client on login */
    char secretSessionId[MAX_SESSIONID_LEN];
    size_t len;

@@ -68,12 +68,13 @@ typedef bool (* IsListening)(CallbackServerUnparsed *cb);
  *         If false and *xmlBlasterException.errorCode==0 we don't send a return message (useful for update dispatcher thread to do it later)
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.update.html
  */
-typedef bool (*UpdateCbFp)(MsgUnitArr **msg, void *userData, XmlBlasterException *xmlBlasterException, void/*SocketDataHolder*/ *socketDataHolder);
+typedef void (*UpdateCbFp)(MsgUnitArr *msg, void *userData, XmlBlasterException *xmlBlasterException, void/*SocketDataHolder*/ *socketDataHolder);
 
 typedef void (* ShutdownCallbackServerRaw)(CallbackServerUnparsed *cb);
 
 typedef void ( * CallbackServerUnparsedSendResponse)(CallbackServerUnparsed *cb, void/*SocketDataHolder*/ *socketDataHolder, MsgUnitArr *msgUnitArr);
 typedef void ( * CallbackServerUnparsedSendXmlBlasterException)(CallbackServerUnparsed *cb, void/*SocketDataHolder*/ *socketDataHolder, XmlBlasterException *exception);
+typedef void ( * CallbackServerUnparsedDoRespond)(bool success, CallbackServerUnparsed *cb, void/*SocketDataHolder*/ *socketDataHolder, MsgUnitArr *msgUnitArrP, XmlBlasterException *exception);
 
 #define MAX_RESPONSE_LISTENER_SIZE 100
 
@@ -118,8 +119,8 @@ struct CallbackServerUnparsedStruct {
    InitCallbackServer runCallbackServer;
    IsListening isListening;
    ShutdownCallbackServerRaw shutdown; /* For internal use (multi thread) only */
-   UpdateCbFp update;
-   void *updateUserData; /* A optional pointer from the client code which is returned to the update() function call */
+   UpdateCbFp updateCb;
+   void *updateCbUserData; /* A optional pointer from the client code which is returned to the update() function call */
    UseThisSocket useThisSocket;
    ResponseListener responseListener[MAX_RESPONSE_LISTENER_SIZE];
    AddResponseListener addResponseListener;
@@ -127,6 +128,7 @@ struct CallbackServerUnparsedStruct {
    bool isShutdown;
    CallbackServerUnparsedSendResponse sendResponse;
    CallbackServerUnparsedSendXmlBlasterException sendXmlBlasterException;
+   CallbackServerUnparsedDoRespond sendResponseOrException;
 };
 
 /**
@@ -143,7 +145,7 @@ struct CallbackServerUnparsedStruct {
  * usually by calling freeXmlBlasterConnectionUnparsed().
  */
 extern CallbackServerUnparsed *getCallbackServerUnparsed(int argc, const char* const* argv,
-                               UpdateCbFp update, void *userData);
+                               UpdateCbFp updateCb, void *userData);
 
 /**
  * free() the CallbackServerUnparsed structure

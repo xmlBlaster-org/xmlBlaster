@@ -62,6 +62,7 @@ struct XmlBlasterAccessUnparsed;
  *         Return false if you want to throw an exception, please fill xmlBlasterException in such a case.
  *         If false and *xmlBlasterException.errorCode==0 we don't send a return message (useful for update dispatcher thread to do it later)
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.update.html
+ * @todo Return void instead of bool
  */
 typedef bool (*UpdateFp)(MsgUnitArr *msg, void *userData, XmlBlasterException *xmlBlasterException);
 
@@ -113,16 +114,8 @@ typedef struct Dll_Export XmlBlasterAccessUnparsed {
    bool callbackMultiThreaded;    /* Shall update messages be transported to the client code in a thread per request? */
    bool lowLevelAutoAck;
    long responseTimeout;
-   /*
-   XmlBlasterBlob responseBlob;
-   char responseType;             // XMLBLASTER_MSG_TYPE_ENUM
-   */
    pthread_t callbackThreadId;
-   /*
-   pthread_mutex_t responseMutex;
-   bool responseMutexIsLocked;
-   pthread_cond_t responseCond;
-   */
+   char threadCounter;
 } XmlBlasterAccessUnparsed;
 
 /**

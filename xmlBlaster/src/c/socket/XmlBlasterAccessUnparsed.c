@@ -38,7 +38,7 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket
  */
 typedef struct Dll_Export UpdateContainer {
    XmlBlasterAccessUnparsed *xa;
-   MsgUnitArr **msgUnitArr;
+   MsgUnitArr *msgUnitArrP;
    void *userData;
    XmlBlasterException exception;     /* Holding a clone from the original as the callback thread may use it for another message */
    SocketDataHolder socketDataHolder; /* Holding a clone from the original */
@@ -60,8 +60,7 @@ static void responseEvent(MsgRequestInfo *msgRequestInfoP, void /*SocketDataHold
 static MsgRequestInfo *preSendEvent(MsgRequestInfo *msgRequestInfo, XmlBlasterException *exception);
 static MsgRequestInfo *postSendEvent(MsgRequestInfo *msgRequestInfo, XmlBlasterException *exception);
 static bool checkArgs(XmlBlasterAccessUnparsed *xa, const char *methodName, bool checkIsConnected, XmlBlasterException *exception);
-static bool defaultUpdate(MsgUnitArr **msgUnitArr, void *userData, XmlBlasterException *xmlBlasterException, void/*SocketDataHolder*/ *socketDataHolder);
-static bool interceptUpdate(MsgUnitArr **msgUnitArr, void *userData, XmlBlasterException *xmlBlasterException, void/*SocketDataHolder*/ *socketDataHolder);
+static void interceptUpdate(MsgUnitArr *msgUnitArr, void *userData, XmlBlasterException *xmlBlasterException, void/*SocketDataHolder*/ *socketDataHolder);
 static bool mutexUnlock(MsgRequestInfo *msgRequestInfoP, XmlBlasterException *exception);
 
 /**
@@ -104,10 +103,12 @@ Dll_Export XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed(int argc, const
    xa->log = xmlBlasterDefaultLogging;
    xa->logUserP = 0;
    xa->clientsUpdateFp = 0;
-   xa->callbackMultiThreaded = xa->props->getBool(xa->props, "plugin/socket/multiThreaded", false);
+   xa->callbackMultiThreaded = xa->props->getBool(xa->props, "plugin/socket/multiThreaded", true);
    xa->callbackMultiThreaded = xa->props->getBool(xa->props, "dispatch/callback/plugin/socket/multiThreaded", xa->callbackMultiThreaded);
-   xa->lowLevelAutoAck = xa->props->getBool(xa->props, "plugin/socket/lowLevelAutoAck", false);
-   xa->lowLevelAutoAck = xa->props->getBool(xa->props, "dispatch/callback/plugin/socket/lowLevelAutoAck", xa->lowLevelAutoAck);
+   /*   xa->lowLevelAutoAck = xa->props->getBool(xa->props, "plugin/socket/lowLevelAutoAck", false); */
+   /*   xa->lowLevelAutoAck = xa->props->getBool(xa->props, "dispatch/callback/plugin/socket/lowLevelAutoAck", xa->lowLevelAutoAck); */
+   /* Currently forced to false: needs mutex and reference counter to not freeMsgUnitArr twice */
+   xa->lowLevelAutoAck = false;
 
    if (xa->callbackMultiThreaded == true) {
       xa->log(xa->logUserP, xa->logLevel, LOG_INFO, __FILE__, "Multi threaded callback delivery is activated with -plugin/socket/multiThreaded true");
@@ -117,6 +118,7 @@ Dll_Export XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed(int argc, const
    xa->responseTimeout = xa->props->getLong(xa->props, "dispatch/connection/plugin/socket/responseTimeout", xa->responseTimeout);
    /* ERROR HANDLING ? xa->log(xa->logUserP, xa->logLevel, LOG_WARN, __FILE__, "Your configuration '-plugin/socket/responseTimeout %s' is invalid", argv[iarg]); */
    xa->callbackThreadId = 0;
+   xa->threadCounter = 0;
 
    if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__,
                                 "Created handle: -logLevel=%s -plugin/socket/responseTimeout=%ld",
@@ -154,7 +156,7 @@ Dll_Export void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xa)
             if (xa->logLevel>=LOG_INFO) xa->log(xa->logUserP, xa->logLevel, LOG_INFO, __FILE__,
                                         "Pthread_join(id=%ld) succeeded for callback server thread", xa->callbackThreadId);
          }
-/*         if (xa->logLevel>=LOG_INFO) xa->log(xa->logUserP, xa->logLevel, LOG_INFO, __FILE__,
+         /*         if (xa->logLevel>=LOG_INFO) xa->log(xa->logUserP, xa->logLevel, LOG_INFO, __FILE__,
                                         "Pthread_join(id=%ld) COMMENTED OUT"); */
          xa->callbackThreadId = 0;
       }
@@ -162,6 +164,18 @@ Dll_Export void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xa)
       xa->callbackP = 0;
    }
 
+   {  /* Wait for any pending update() dispatcher threads to die */
+      int i;
+      int num = 100;
+      int interval = 10;
+      for (i=0; i<num; i++) {
+         if ((int)xa->threadCounter < 1)
+            break;
+         sleepMillis(interval);
+         if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__,
+             "freeXmlBlasterAccessUnparsed(): Sleeping %d millis for update thread to join. %d/%d", interval, i, num);
+      }
+   }
    free(xa);
 }
 
@@ -175,7 +189,6 @@ Dll_Export void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xa)
 static bool initialize(XmlBlasterAccessUnparsed *xa, UpdateFp clientUpdateFp, XmlBlasterException *exception)
 {
    int threadRet = 0;
-   UpdateCbFp updateCbFp;
 
    if (checkArgs(xa, "initialize", false, exception) == false) return false;
 
@@ -185,13 +198,11 @@ static bool initialize(XmlBlasterAccessUnparsed *xa, UpdateFp clientUpdateFp, Xm
 
    if (clientUpdateFp == 0) {
       xa->clientsUpdateFp = 0;
-      updateCbFp = defaultUpdate;
       xa->log(xa->logUserP, xa->logLevel, LOG_WARN, "",
         "Your callback UpdateFp pointer is NULL, we use our default callback handler");
    }
    else {
       xa->clientsUpdateFp = clientUpdateFp;
-      updateCbFp = interceptUpdate;
    }
 
    xa->connectionP = getXmlBlasterConnectionUnparsed(xa->argc, xa->argv);
@@ -208,7 +219,7 @@ static bool initialize(XmlBlasterAccessUnparsed *xa, UpdateFp clientUpdateFp, Xm
       return false;
 
    /* the fourth arg 'xa' is returned as 'void *userData' in update() method */
-   xa->callbackP = getCallbackServerUnparsed(xa->argc, xa->argv, updateCbFp, xa);
+   xa->callbackP = getCallbackServerUnparsed(xa->argc, xa->argv, interceptUpdate, xa);
    if (xa->callbackP == 0) {
       strncpy0(exception->errorCode, "resource.outOfMemory", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
@@ -464,6 +475,8 @@ Dll_Export const char *xmlBlasterAccessUnparsedUsage(char *usage)
 {
    /* take care not to exceed XMLBLASTER_MAX_USAGE_LEN */
    SNPRINTF(usage, XMLBLASTER_MAX_USAGE_LEN, "%.950s%.950s%s", xmlBlasterConnectionUnparsedUsage(), callbackServerRawUsage(),
+                  "\n   -plugin/socket/multiThreaded  [true]"
+                  "\n                       If true the update() call to your client code is a separate thread."
                   "\n   -plugin/socket/responseTimeout  [60000 (one minute)]"
                   "\n                       The time in millis to wait on a response, 0 is forever.");
    
@@ -744,37 +757,6 @@ static bool checkArgs(XmlBlasterAccessUnparsed *xa, const char *methodName,
 }
 
 /**
- * Here we receive the callback messages from xmlBlaster
- * if the client has none specified. We just log the situation
- * about the unhandled callback messages.
- * @see UpdateFp in CallbackServerUnparsed.h
- */
-static bool defaultUpdate(MsgUnitArr **msgUnitArrPP, void *userData, XmlBlasterException *exception, void /*SocketDataHolder*/ *socketDataHolder)
-{
-   size_t i;
-   bool testException = false;
-   XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)userData;
-   MsgUnitArr *msgUnitArr = *msgUnitArrPP;
-
-   for (i=0; i<msgUnitArr->len; i++) {
-      const char *key = msgUnitArr->msgUnitArr[i].key;
-      xa->log(xa->logUserP, xa->logLevel, LOG_INFO, __FILE__,
-          "CALLBACK update() default handler: Asynchronous message update arrived:%s id=%s, we ignore it in this default handler\n",
-          key, ((SocketDataHolder*)socketDataHolder)->requestId);
-      msgUnitArr->msgUnitArr[i].responseQos = strcpyAlloc("<qos><state id='OK'/></qos>");
-      /* Return QoS: Everything is OK */
-   }
-   if (testException) {
-      strncpy0(exception->errorCode, "user.clientCode",
-               XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      strncpy0(exception->message, "I don't want these messages",
-               XMLBLASTEREXCEPTION_MESSAGE_LEN);
-      return false;
-   }
-   return true;
-}
-
-/**
  * Run by the new created thread, calls the clients update method. 
  * Leaving this pthread start routine does an implicit pthread_exit().
  * @param container Holding all necessary informations, we free it when we are done
@@ -783,33 +765,28 @@ static bool defaultUpdate(MsgUnitArr **msgUnitArrPP, void *userData, XmlBlasterE
 static bool runUpdate(UpdateContainer *container)
 {
    XmlBlasterAccessUnparsed *xa = container->xa;
-   MsgUnitArr *msgUnitArr = *container->msgUnitArr;
+   MsgUnitArr *msgUnitArrP = container->msgUnitArrP;
    void *userData = container->userData;
+   CallbackServerUnparsed *cb = (CallbackServerUnparsed*)userData;
    XmlBlasterException *exception = &container->exception;
    SocketDataHolder *socketDataHolder = &container->socketDataHolder;
    bool retVal;
 
    if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, "Entering runUpdate()");
 
-   retVal = xa->clientsUpdateFp(msgUnitArr, userData, exception);
+   retVal = xa->clientsUpdateFp(msgUnitArrP, xa, exception);
 
-   if (xa->lowLevelAutoAck) {
+   if (xa->lowLevelAutoAck) { /* returned already */
    }
    else {
-      if (retVal == true) {
-         xa->callbackP->sendResponse(xa->callbackP, socketDataHolder, msgUnitArr);
-      }
-      else {
-         xa->callbackP->sendXmlBlasterException(xa->callbackP, socketDataHolder, exception);
-      }
+      cb->sendResponseOrException(retVal, cb, socketDataHolder, msgUnitArrP, exception);
    }
-   freeMsgUnitArr(*container->msgUnitArr);
-   *container->msgUnitArr = 0;
 
    free(container);
 
    if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__,
                                 "runUpdate: Update thread 0x%x is exiting", (int)pthread_self());
+   xa->threadCounter--;
    return (retVal==true) ? 0 : 1;
 }
 
@@ -818,19 +795,43 @@ static bool runUpdate(UpdateContainer *container)
  * it to the clients update. 
  * @see UpdateFp in CallbackServerUnparsed.h
  */
-static bool interceptUpdate(MsgUnitArr **msgUnitArrPP, void *userData,
+static void interceptUpdate(MsgUnitArr *msgUnitArrP, void *userData,
                             XmlBlasterException *exception, void /*SocketDataHolder*/ *socketDataHolder)
 {
-   XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)userData;
-   MsgUnitArr *msgUnitArr = *msgUnitArrPP;
+   CallbackServerUnparsed *cb = (CallbackServerUnparsed*)userData;
+   XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)cb->updateCbUserData;
+
+   if (xa->clientsUpdateFp == 0) { /* Client has not registered an update() */
+      size_t i;
+      bool testException = false;
+      bool success = true;
+
+      for (i=0; i<msgUnitArrP->len; i++) {
+         const char *key = msgUnitArrP->msgUnitArr[i].key;
+         xa->log(xa->logUserP, xa->logLevel, LOG_INFO, __FILE__,
+             "CALLBACK update() default handler: Asynchronous message update arrived:%s id=%s, we ignore it in this default handler\n",
+             key, ((SocketDataHolder*)socketDataHolder)->requestId);
+         msgUnitArrP->msgUnitArr[i].responseQos = strcpyAlloc("<qos><state id='OK'/></qos>");
+         /* Return QoS: Everything is OK */
+      }
+      if (testException) {
+         strncpy0(exception->errorCode, "user.clientCode",
+                  XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+         strncpy0(exception->message, "I don't want these messages",
+                  XMLBLASTEREXCEPTION_MESSAGE_LEN);
+         success = false;
+      }
+      cb->sendResponseOrException(success, cb, socketDataHolder, msgUnitArrP, exception);
+      return;
+   }
 
    if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, "interceptUpdate(): Received message");
 
    if (xa->callbackMultiThreaded == false) {
-      return xa->clientsUpdateFp(msgUnitArr, userData, exception);
+      bool ret = xa->clientsUpdateFp(msgUnitArrP, xa, exception);
+      cb->sendResponseOrException(ret, cb, socketDataHolder, msgUnitArrP, exception);
+      return;
    }
-
-   msgUnitArr->ownedByCallbackServer = false;
 
    {
       pthread_t tid;
@@ -838,43 +839,43 @@ static bool interceptUpdate(MsgUnitArr **msgUnitArrPP, void *userData,
       UpdateContainer *container = (UpdateContainer*)malloc(sizeof(UpdateContainer));
       
       container->xa = xa;
-      container->msgUnitArr = msgUnitArrPP;
+      container->msgUnitArrP = msgUnitArrP;
       container->userData = userData;
       memcpy(&container->exception, exception, sizeof(XmlBlasterException));
-      memcpy(&container->socketDataHolder, socketDataHolder, sizeof(SocketDataHolder));
+      memcpy(&container->socketDataHolder, socketDataHolder, sizeof(SocketDataHolder)); /* The blob pointer is freed already by CallbackServerUnparsed */
 
+      if (xa->lowLevelAutoAck) {
+         size_t i;
+         for (i=0; i<msgUnitArrP->len; i++) {
+            msgUnitArrP->msgUnitArr[i].responseQos = strcpyAlloc("<qos><state id='OK'/></qos>");
+         }
+      }
       /* this thread will deliver the update message to the client code,
          Note: we need a thread pool cache for better performance */
       threadRet = pthread_create(&tid, (const pthread_attr_t *)0,
                         (void * (*)(void *))runUpdate, (void *)container);
       if (threadRet != 0) {
+         bool ret = false;
          free(container);
          strncpy0(exception->errorCode, "resource.tooManyThreads", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
          SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
                   "[%.100s:%d] Creating thread failed with error number %d, we deliver the message in the same thread",
                   __FILE__, __LINE__, threadRet);
          xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__, exception->message);
-         return xa->clientsUpdateFp(msgUnitArr, userData, exception);
+         ret = xa->clientsUpdateFp(msgUnitArrP, xa, exception);
+         cb->sendResponseOrException(ret, cb, socketDataHolder, msgUnitArrP, exception);
+         return;
       }
+      xa->threadCounter++;
 
       if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__,
          "interceptUpdate: Received message and delegated it to a separate thread 0x%x to deliver", (int)tid);
    }
 
    if (xa->lowLevelAutoAck) {
-      size_t i;
-      for (i=0; i<msgUnitArr->len; i++) {
-         msgUnitArr->msgUnitArr[i].responseQos = strcpyAlloc("<qos><state id='OK'/></qos>");
-      }
-
       *exception->errorCode = 0;
-      return true;
+      cb->sendResponseOrException(true, cb, socketDataHolder, msgUnitArrP, exception);
    }
-   else {
-      *exception->errorCode = 0;
-      return false;
-   }
-   /* Don't send the update response now */
 }
 
 #ifdef XmlBlasterAccessUnparsedMain /* compile a standalone test program */
@@ -884,16 +885,16 @@ static bool interceptUpdate(MsgUnitArr **msgUnitArrPP, void *userData,
  * FOR TESTING ONLY
  * @see UpdateFp in CallbackServerUnparsed.h
  */
-static bool myUpdate(MsgUnitArr *msgUnitArr, void *userData, XmlBlasterException *xmlBlasterException)
+static bool myUpdate(MsgUnitArr *msgUnitArrP, void *userData, XmlBlasterException *xmlBlasterException)
 {
    size_t i;
    bool testException = false;
    if (userData != 0) ; /* to avoid compiler warning (we don't need it here) */
-   for (i=0; i<msgUnitArr->len; i++) {
-      char *xml = messageUnitToXml(&msgUnitArr->msgUnitArr[i]);
+   for (i=0; i<msgUnitArrP->len; i++) {
+      char *xml = messageUnitToXml(&msgUnitArrP->msgUnitArr[i]);
       printf("[client] CALLBACK update(): Asynchronous message update arrived:%s\n", xml);
       free(xml);
-      msgUnitArr->msgUnitArr[i].responseQos = strcpyAlloc("<qos><state id='OK'/></qos>");
+      msgUnitArrP->msgUnitArr[i].responseQos = strcpyAlloc("<qos><state id='OK'/></qos>");
       /* Return QoS: Everything is OK */
    }
    if (testException) {
