@@ -51,6 +51,12 @@
              messages back to the client. This makes possible a simple fire wall tunneling.
           </li>
 
+        <li> For lower net latency you can switch to UDP based communication.
+          </li>
+
+        <li> High efficient compression on socket stream layer is supported with zlib.
+          </li>
+
         <li> The code is tested for memory leaks with valgrind and partially statically
              checked with splint.
           </li>
@@ -1014,6 +1020,24 @@ Solaris:
          </tr>
 
          <tr>
+            <td>-dispatch/connection/plugin/compress/type</td>
+            <td>-</td>
+            <td>Set to 'zlib:stream' to switch on compression.
+               You need to download zlib from 'http://www.gzip.org/zlib/' and add it for compilation
+               as described in <tt>build.properties</tt>.
+               The server side SOCKET plugin must have enabled 'zlib:stream' compression as well.</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>-dispatch/connection/plugin/socket/useUdpForOneway</td>
+            <td>false</td>
+            <td>Set to true to switch on UDP datagram mode for publishOneway() calls.
+               The server side SOCKET plugin must have enabled the UDP datagram listener as well.</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
             <td>-dispatch/connection/plugin/socket/responseTimeout</td>
             <td>60000 (in milliseconds, defaults to one minute)</td>
             <td>How long to block on method invocation. Throws a "resource.exhaust" exception on timeout.</td>
@@ -1138,7 +1162,7 @@ doxygen Doxyfile
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2003 05 29</date>
-   <revision>$Revision: 1.52 $</revision>
+   <revision>$Revision: 1.53 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
