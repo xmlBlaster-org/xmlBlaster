@@ -69,6 +69,8 @@ ConnectReturnQos XmlBlasterAccess::connect(const ConnectQos& qos, I_Callback *cl
    if (log_.call()) log_.call(ME, "::connect");
    if (log_.dump()) log_.dump(ME, string("::connect: qos: ") + qos.toXml());
 
+   //global_.setId(loginName + currentTimeMillis()); // Not secure if two clients start simultaneously
+
    connectQos_ = qos;
    SecurityQos securityQos = connectQos_.getSecurityQos();
 //   initSecuritySettings(securityQos.getPluginType(), securityQos.getPluginVersion());
@@ -99,7 +101,11 @@ ConnectReturnQos XmlBlasterAccess::connect(const ConnectQos& qos, I_Callback *cl
    }
    if (log_.trace()) log_.trace(ME, string("::connect. connectQos: ") + connectQos_.toXml());
    connectReturnQos_ = connection_->connect(connectQos_);
+
    ME = string("XmlBlasterAccess-") + connectReturnQos_.getSessionQos().getAbsoluteName();
+   
+   global_.setId(connectReturnQos_.getSessionQos().getAbsoluteName());
+   
    return connectReturnQos_;
 }
 
