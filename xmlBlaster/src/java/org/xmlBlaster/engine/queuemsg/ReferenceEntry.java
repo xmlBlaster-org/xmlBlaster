@@ -36,7 +36,7 @@ public class ReferenceEntry extends MsgQueueEntry
    /** Weak reference on the MsgUnit with key/content/qos (raw struct) */
    private transient WeakReference weakMsgUnitWrapper;
 
-   // The keyOid and the rcvTimestamp build the unique id in the topicCache
+   // The keyOid and the rcvTimestamp build the unique id in the msgUnitStore
    protected String keyOid;
    protected long msgUnitWrapperUniqueId;
 
