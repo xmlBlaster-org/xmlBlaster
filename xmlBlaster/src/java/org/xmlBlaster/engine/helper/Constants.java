@@ -141,6 +141,10 @@ public class Constants
    /** message queue onOverflow handling */
    public final static String ONOVERFLOW_EXCEPTION = "exception";
 
+   /** If callback fails more often than is configured the login session is destroyed */
+   public final static String ONEXHAUST_KILL_SESSION = "killSession";
+
+
    /** Praefix to create a sessionId */
    public final static String SESSIONID_PRAEFIX = "sessionId:";
    public final static String SUBSCRIPTIONID_PRAEFIX = "__subId:";
