@@ -3,7 +3,7 @@ Name:      ClientUpdateQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Queue for client messages
-Version:   $Id: ClientUpdateQueue.java,v 1.4 1999/12/09 13:28:36 ruff Exp $
+Version:   $Id: ClientUpdateQueue.java,v 1.5 1999/12/14 10:30:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -23,7 +23,7 @@ import java.util.NoSuchElementException;
  * with the distinction that the consumer is not polling but
  * notified asynchronous.
  *
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  * @author $Author: ruff $
  */
 public class ClientUpdateQueue
@@ -48,7 +48,7 @@ public class ClientUpdateQueue
    {
       MAX_BYTES = 100 * 1000L;  // 100 kByte is maximum queue size
       if (Log.CALLS) Log.calls(ME, "Creating new ClientUpdateQueue ...");
-      this.messageQueue = (LinkedList)Collections.synchronizedList(new LinkedList());
+      init();
    }
 
 
@@ -60,7 +60,17 @@ public class ClientUpdateQueue
    {
       this.MAX_BYTES = maxBytes;
       if (Log.CALLS) Log.calls(ME, "Creating new ClientUpdateQueue(" + maxBytes + ") ...");
-      this.messageQueue = (LinkedList)Collections.synchronizedList(new LinkedList());
+      init();
+   }
+
+
+   /**
+    * Allocates a new LinkedList. 
+    */
+   private void init()
+   {
+      // this.messageQueue = (List)Collections.synchronizedList(new LinkedList());
+      this.messageQueue = new LinkedList();  // !!! thread save?
    }
 
 
@@ -130,7 +140,7 @@ public class ClientUpdateQueue
 
 
    /**
-    * The total amount of bytes consumed by all message - contents in the queue. 
+    * The total amount of bytes consumed by all message - contents in the queue.
     * <p />
     * TODO: !!! how to calculate more exactly the overhead of the message objects?
     * <p />
