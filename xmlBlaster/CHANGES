@@ -1,5 +1,26 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
+ o JDK 1.2 runtime support: The current jacorb.jar does NOT run with JDK 1.2
+   To run xmlBlaster with JDK 1.2 you have these options:
+   - Download an older jacorb.jar and throw it into xmlBlaster/lib
+   or
+   - Switch off the corba plugin in xmlBlasterPlugins.xml, now the
+     server runs fine. For java clients use the for example the SOCKET
+     protocol with the option '-protocol SOCKET'.
+   
+   NOTE: You can compile xmlBlaster with JDK 1.3 (or 1.4) und still
+   run it with JDK 1.2. If you need to compile xmlBlaster with JDK 1.2
+   please exclude the JMX stuff in build.xml (uncomment those):
+      <patternset id="jdk12.notcompatible.sources">
+         <exclude name="**/jmx/**"/>
+         <exclude name="**/jmxgui/**"/>
+         <exclude name="**/memoryleak/**"/>
+      </patternset>
+   build.sh delete; build.sh xmlBlaster
+   (Parts of the testsuite won't compile with JDK 1.2)
+
+ o Fixed hsqldb.jar to compile/run with JDK 1.3 and 1.2 again.
+
  o Fixed dead message loop if a dead message subscriber subribed
    on other messages as well and than crashed.
 

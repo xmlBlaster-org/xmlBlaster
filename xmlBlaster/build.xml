@@ -448,16 +448,17 @@ TODO
       <copy todir="${build.src}/xmlBlaster" filtering="true">
          <fileset dir="${src.java.dir}">
             <exclude name="org/jutils"/>
-            <exclude name="README,**/ReqBaseServlet.java,**/ReqListServlet.java,**/ReqItemServlet.java,**/OracleSqlFactory.java"/>
-            <exclude name="**/ReqBaseServlet.java,**/ReqListServlet.java,**/ReqItemServlet.java,**/OracleSqlFactory.java"/>
-            <exclude name="**/ReqBaseServlet.java,**/ReqListServlet.java,**/ReqItemServlet.java,**/OracleSqlFactory.java"/>
-            <exclude name="**/ReqListServlet.java,**/ReqItemServlet.java,**/OracleSqlFactory.java"/>
-            <exclude name="**/ReqItemServlet.java,**/OracleSqlFactory.java"/>
-            <exclude name="**/OracleSqlFactory.java"/>
-            <exclude name="**/soap/**"/>   <!-- Comment out to activate SOAP driver -->
+            <exclude name="README"/>
+            <exclude name="**/servlet/Req*.java"/>
+            <exclude name="**/soap/**"/>   <!-- Comment out to activate SOAP driver (IS NOT IMPLEMENTED) -->
             <!-- Activate excludes to compile with JDK 1.2 -->
-            <!-- exclude name="**/jmx/**"/ -->
-            <!-- exclude name="**/jmxgui/**"/ -->
+            <patternset id="jdk12.notcompatible.sources">
+               <!-- 
+               <exclude name="**/jmx/**"/>
+               <exclude name="**/jmxgui/**"/>
+               <exclude name="**/memoryleak/**"/>
+                -->
+            </patternset>
          </fileset>
       </copy>
 
@@ -606,7 +607,7 @@ TODO
    </target>
 
    <!-- =================================================================== -->
-   <!-- Compiles the xmlBlaster testsuite source directory                  -->
+   <!-- Compiles the xmlBlaster testsuite source directory (JDK >= 1.3)     -->
    <!-- =================================================================== -->
    <target name="testsuite" depends="xmlBlaster,testsuite-only" description="Compile Java testsuite into testsuite.jar (based on junit) and xmlBlaster before">
    </target>
@@ -624,7 +625,8 @@ TODO
             debug="${debug}"
             optimize="${optimize}"
             deprecation="${deprecation}"
-            target="${JVM.target}" />
+            target="${JVM.target}">
+      </javac>
       <jar destfile="${build.dir}/testsuite.jar" basedir="${build.dest}" includes="org/xmlBlaster/test/**"/>
       <copy file="${build.dir}/testsuite.jar" tofile="${lib.dir}/testsuite.jar"/>
    </target>
