@@ -69,7 +69,7 @@ and some test clients in
      After compilation please set the environment that the C++ test clients
      can find the shared libraries.
      <br />
-     Windows you should add all directories containing dll libraries to you path setting.
+     With Windows you should add all directories containing dll libraries to your path setting.
      <br />
      On Solaris you should add the shared libraries to your LD_LIBRARY path and
      set the ORBIX specific environment settings:
@@ -83,6 +83,11 @@ export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/opt/xmlBlaster/lib:/opt/xerces-c1_6_0/l
 # Start xmlBlaster server somewhere and try a C++ client:
 HelloWorld2
      </pre>
+     <p>
+     On Linux the shared library path is burned into the executable
+     so you need to set LD_LIBRARY_PATH only when you move libraries to
+     other locations (try <i>ldd TestGet</i>).
+     </p>
    </configuration>
 
    <todo type='HTML'>
@@ -100,7 +105,7 @@ HelloWorld2
 
    <date>2003 03 03</date>
 
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
 
    <testcase status="OPEN">
       <name>-</name>
