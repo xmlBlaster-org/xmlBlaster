@@ -2,6 +2,13 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes cvs
 ===========
+ o htpassed authentication:
+   - The password files are not trimmed (leading and trailing spaces are removed)
+   - We now support startWith() and endsWith() in mode 'Security.Server.Plugin.htpasswd.allowPartialUsername=true'
+   - We now support '*:48fdja94jfd' entries which allow to set a wildcard password
+     A matching specific user like 'joe:dfkj843f81' has precedence in password evaluation
+   See: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/security.htpasswd.html
+
  o Cluster support: PtP messages now use the same cluster lookup code as Pub/Sub
    and are fully cluster routing enabled.
 
