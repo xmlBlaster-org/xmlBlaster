@@ -28,6 +28,8 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Enumeration;
 import java.io.IOException;
+import CH.ifa.draw.framework.*;
+
 
 /**
  * @author <a href="mailto:laghi@swissinfo.org">Michele Laghi</a>
@@ -349,8 +351,10 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
             while (enum.hasMoreElements()) {
                String uniqueId = (String)enum.nextElement();
                Figure fig = (Figure)tmpAdded.get(uniqueId);
-               add(uniqueId, fig);
-               super.add(fig);
+               if (!(fig instanceof Drawing)) {
+                  add(uniqueId, fig);
+                  super.add(fig);
+               }
             }
            
             enum = tmpChanged.keys();
