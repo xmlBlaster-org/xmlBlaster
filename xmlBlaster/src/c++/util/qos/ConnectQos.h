@@ -13,6 +13,7 @@ Comment:   Factory for ConnectQosData (for ConnectReturnQos and ConnectQos)
 #include <util/XmlQoSBase.h>
 #include <util/StringTrim.h>
 #include <util/ServerRef.h>
+#include <util/qos/SessionQos.h>
 #include <authentication/SecurityQos.h>
 
 
@@ -43,8 +44,6 @@ Comment:   Factory for ConnectQosData (for ConnectReturnQos and ConnectQos)
  */
 
 
-
-
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
 using namespace org::xmlBlaster::authentication;
@@ -55,6 +54,7 @@ class Dll_Export ConnectQosData
 private:
    string      sessionId_;
    SecurityQos securityQos_;
+   SessionQos  sessionQos_;
    ServerRef   serverRef_;
    bool        isDirty_;
    string      literal_;
@@ -65,7 +65,10 @@ private:
 
 public:
    ConnectQosData();
-   void setSessionId(const string& sessionId);
+//   void setSessionId(const string& sessionId);
+
+   void setSessionQos(const SessionQos& sessionQos);
+   SessionQos getSessionQos() const;
    string getSessionId() const;
    string getUserId() const;
    string getCallbackType() const;
@@ -82,6 +85,7 @@ private:
    const string ME;
 
    string       sessionId_;
+   SessionQosFactory sessionQosFactory_;
    string       userId_;
    SecurityQos* securityQos_;
    ServerRef*   serverRef_;
@@ -90,19 +94,21 @@ private:
    // helper flags for SAX parsing
    bool inSecurityService_;
    bool inCallback_;
+   bool inSession_;
    int args_;
    const char * const* argc_;
    util::StringTrim<char> trim_;
 
    void prep(int args, const char * const argc[])
    {
-      args_ = args;
-      argc_ = argc;
+      args_              = args;
+      argc_              = argc;
       inSecurityService_ = false;
-      inCallback_ = false;
-      callbackType_ = "";
-      securityQos_ = NULL;
-      serverRef_ = NULL;
+      inCallback_        = false;
+      inSession_         = false;
+      callbackType_      = "";
+      securityQos_       = NULL;
+      serverRef_         = NULL;
    }
 
 public:

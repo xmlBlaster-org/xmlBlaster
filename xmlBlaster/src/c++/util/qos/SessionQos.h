@@ -107,7 +107,7 @@ public:
 
 typedef SessionQosData SessionQos;
 
-typedef SessionQosData ConnectReturnQos;
+typedef SessionQosData SessionReturnQos;
 
 }}}} // namespaces
 

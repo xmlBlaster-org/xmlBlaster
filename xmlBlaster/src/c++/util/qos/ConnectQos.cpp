@@ -27,15 +27,29 @@ void ConnectQosData::setLiteral(const string& literal)
    isDirty_ = false;
 }
 
+
+void ConnectQosData::setSessionQos(const SessionQos& sessionQos)
+{
+   sessionQos_ = sessionQos;
+   isDirty_ = true;
+}
+
+SessionQos ConnectQosData::getSessionQos() const
+{
+   return sessionQos_;
+}
+
+/*
 void ConnectQosData::setSessionId(const string& sessionId)
 {
    sessionId_ = sessionId;
    isDirty_ = true;
 }
+*/
 
 string ConnectQosData::getSessionId() const
 {
-   return sessionId_;
+   return sessionQos_.getSessionId();
 }
 
 string ConnectQosData::getUserId() const
@@ -80,7 +94,7 @@ string ConnectQosData::toXml() const
 /*-------------------------- ConnectQosFactory -------------------------------*/
 
 ConnectQosFactory::ConnectQosFactory(int args, const char * const argc[])
-   : XmlQoSBase(args, argc), ME("ConnectQosFactory")
+   : XmlQoSBase(args, argc), ME("ConnectQosFactory"), sessionQosFactory_(args, argc)
 {
    log_.call(ME, "constructor");
    prep(args, argc);
@@ -192,7 +206,7 @@ ConnectQosData ConnectQosFactory::readObject(const string& qos)
    serverRef_ = NULL;
    init(qos);
    ConnectQosData data;
-   data.setSessionId(sessionId_);
+   data.setSessionId();
    if (securityQos_ != NULL) data.setSecurityQos(*securityQos_);
    if (serverRef_ != NULL) data.setServerRef(*serverRef_);
    data.setLiteral(qos);
