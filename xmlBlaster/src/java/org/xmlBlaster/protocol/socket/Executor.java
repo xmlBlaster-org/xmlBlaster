@@ -3,7 +3,7 @@ Name:      Executor.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Send/receive messages over outStream and inStream. 
-Version:   $Id: Executor.java,v 1.15 2002/03/19 21:29:42 ruff Exp $
+Version:   $Id: Executor.java,v 1.16 2002/04/29 09:44:00 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -298,7 +298,7 @@ public abstract class Executor implements ExecutorBase
    public Object execute(Parser parser, boolean expectingResponse) throws XmlBlasterException, IOException {
 
       String requestId = parser.createRequestId(praefix);
-      if (Log.TRACE || SOCKET_DEBUG>0) Log.info(ME, "Invoking  '" + parser.getType() + "' message " + parser.getMethodName() + "(" + requestId + ") expectingResponse=" + expectingResponse);
+      if (Log.TRACE || SOCKET_DEBUG>0) Log.info(ME, "Invoking  parser type='" + parser.getType() + "' message " + parser.getMethodName() + "(requestId=" + requestId + ") expectingResponse=" + expectingResponse);
 
       final Object[] response = new Object[1];  // As only final variables are accessable from the inner class, we put the response in this array
       response[0] = null;
@@ -331,7 +331,7 @@ public abstract class Executor implements ExecutorBase
       try {
          boolean awaikened = startSignal.attempt(responseWaitTime); // block max. milliseconds
          if (awaikened) {
-            if (Log.TRACE || SOCKET_DEBUG>0) Log.info(ME, "Waking up, got response for " + parser.getMethodName() + "(" + requestId + ")");
+            if (Log.TRACE || SOCKET_DEBUG>0) Log.info(ME, "Waking up, got response for " + parser.getMethodName() + "(requestId=" + requestId + ")");
             if (SOCKET_DEBUG>1) Log.info(ME, "Response for " + parser.getMethodName() + "(" + requestId + ") is: " + response[0].toString());
             if (response[0] instanceof XmlBlasterException)
                throw (XmlBlasterException)response[0];
