@@ -3,7 +3,7 @@ Name:      AddressBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address string including protocol
-Version:   $Id: AddressBase.java,v 1.3 2002/04/22 06:17:19 ruff Exp $
+Version:   $Id: AddressBase.java,v 1.4 2002/04/24 06:50:39 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -29,6 +29,10 @@ public abstract class AddressBase
 
    /** The unique address, e.g. the CORBA IOR string */
    protected String address = "";
+   public static final String DEFAULT_host = "";
+   protected String host = DEFAULT_host;
+   public static final int DEFAULT_port = 0;
+   protected int port = DEFAULT_port;
 
    /** The unique protocol type, e.g. "IOR" */
    protected String type;
@@ -110,6 +114,29 @@ public abstract class AddressBase
    public final void setType(String type)
    {
       this.type = type;
+   }
+
+   /**
+    * @param host An IP or DNS
+    */
+   public final void setHost(String host)
+   {
+      this.host = host;
+   }
+
+   public final String getHost()
+   {
+      return this.host;
+   }
+
+   public final void setPort(int port)
+   {
+      this.port = port;
+   }
+
+   public final int getPort()
+   {
+      return this.port;
    }
 
    /**
@@ -318,6 +345,17 @@ public abstract class AddressBase
                if( attrs.getQName(i).equalsIgnoreCase("type") ) {
                   setType(attrs.getValue(i).trim());
                }
+               else if( attrs.getQName(i).equalsIgnoreCase("host") ) {
+                  setHost(attrs.getValue(i).trim());
+               }
+               else if( attrs.getQName(i).equalsIgnoreCase("port") ) {
+                  String ll = attrs.getValue(i).trim();
+                  try {
+                     setPort(new Integer(ll).intValue());
+                  } catch (NumberFormatException e) {
+                     Log.error(ME, "Wrong format of <" + rootTag + " port='" + ll + "'>, expected an integer number.");
+                  }
+               }
                else if( attrs.getQName(i).equalsIgnoreCase("sessionId") ) {
                   setSessionId(attrs.getValue(i).trim());
                }
@@ -467,6 +505,10 @@ public abstract class AddressBase
       offset += extraOffset;
 
       sb.append(offset).append("<").append(rootTag).append(" type='").append(getType()).append("'");
+      if (!DEFAULT_host.equals(getHost()))
+          sb.append(" host='").append(getHost()).append("'");
+      if (DEFAULT_port != getPort())
+          sb.append(" port='").append(getPort()).append("'");
       if (!DEFAULT_sessionId.equals(getSessionId()))
           sb.append(" sessionId='").append(getSessionId()).append("'");
       if (DEFAULT_pingInterval != getPingInterval())
