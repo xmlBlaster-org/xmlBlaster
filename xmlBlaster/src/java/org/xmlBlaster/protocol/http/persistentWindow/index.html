@@ -37,8 +37,10 @@
             else {
                // Response to servlet that we are alive ...
                if (Log.TRACE) Log.trace("Received ping '" + state + "', sending pong back to servlet");
-               // Force a reload, is necessary for MSIE5, otherwise its refreshed from the browser cache
-               self.frames["pingFrame"].location.reload(true);
+               if (isExplorer) {
+                  // Force a reload, is necessary for MSIE5, otherwise its refreshed from the browser cache
+                  self.frames["pingFrame"].location.reload(true);
+               }
                // Sending the state is for debugging and for proxies to let it through (not a similar request)
                self.frames["pingFrame"].location.href="/xmlBlaster/BlasterHttpProxyServlet?ActionType=pong&state=" + state;
             }
@@ -68,8 +70,13 @@
             // add some dynamic data (milliseconds since 1970), that MSIE 5 resends it.
             var date = new Date();
             var millisec = Date.parse(date);
-            self.frames["controlFrame"].location.reload(true);
-            self.frames["controlFrame"].location.href="/xmlBlaster/BlasterHttpProxyServlet?ActionType=browserReady&counter=" + millisec;
+            //if (isExplorer) {
+               self.frames["controlFrame"].location.reload(true);
+            //}
+            // This alone is not enough, sometimes the request does not reach the servlet (mozilla 0.91/tomcat 3.2.3):
+            // See http://developer.netscape.com/docs/manuals/communicator/jsref/wina1.htm
+            //self.frames["controlFrame"].location.href="/xmlBlaster/BlasterHttpProxyServlet?ActionType=browserReady&counter=" + millisec;
+            self.frames["controlFrame"].location.replace("/xmlBlaster/BlasterHttpProxyServlet?ActionType=browserReady&counter=" + millisec);
          }
 
          /**
@@ -79,7 +86,9 @@
          function request(methodName, msgWrapper)
          {
             if (Log.TRACE) Log.trace("Sending request " + methodName + " to serlvet");
-            self.frames["requestFrame"].location.reload(true);
+            if (isExplorer) {
+               self.frames["requestFrame"].location.reload(true);
+            }
             self.frames["requestFrame"].location.href="/xmlBlaster/BlasterHttpProxyServlet?ActionType="+methodName+"&key.oid=" + msgWrapper.key.oid;
          }
 

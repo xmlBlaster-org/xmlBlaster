@@ -187,15 +187,20 @@ function trace_(str)
  */
 function catchError(text, url, row)
 {
-   if (url.indexOf("http://") != -1) { // shorten the URL string
-      url = url.slice(7);
-      var ind = url.indexOf("/");
+   var pos = "Browser";
+   if ((typeof url) == "undefined" || url == null) {
+      pos = "Check you javascript error console!";
+   }
+   else if (url.indexOf("http://") != -1) { // shorten the URL string
+      pos = url.slice(7);
+      var ind = pos.indexOf("/");
       if (ind != -1) {                 // shorten the URL string again
-         url = url.slice(ind+1);
+         pos = pos.slice(ind+1);
       }
    }
-   Log.internal(url + ": " + row, text);
-   return true; // Suppress errors from browser
+   Log.internal(pos + ": " + row, text);
+   return false; // Allow errors from browser
+   //return true; // Suppress errors from browser
 }
 // Set event handler, to catch the internal errors as well
 self.onerror = catchError;

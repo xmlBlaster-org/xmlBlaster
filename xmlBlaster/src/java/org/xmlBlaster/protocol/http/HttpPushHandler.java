@@ -60,8 +60,6 @@ public class HttpPushHandler
    private String head;
    /** The tail of the HTML page */
    private String tail;
-   /** Javascript code to invoke browserReady method */
-   private String readyStr;
    /** Check it the browser is ready to accept more messages */
    private boolean browserIsReady = false;
 
@@ -71,7 +69,7 @@ public class HttpPushHandler
    /** Check browser and holds the http connection */
    private HttpPingThread pingThread = null;
 
-   /** Queue to hold messages until the browser is ready for them */
+   /** Queue to hold messages (class PushDataItem) until the browser is ready for them */
    private Vector pushQueue = null;
 
    private boolean firstPush = true;
@@ -142,10 +140,6 @@ public class HttpPushHandler
           "      <INPUT TYPE=\"HIDDEN\" NAME=\"NoName\" VALUE=\"NoValue\" />\n" +
           "   </form>\n" +
           "   <script language='JavaScript'>\n";
-      }
-
-      if(readyStr == null) {
-         readyStr = "\n  if (parent.browserReady != null) parent.browserReady();\n";
       }
 
       if (handlesMultipart) {
@@ -230,6 +224,12 @@ public class HttpPushHandler
 
    /**
     * check's whether the browser is ready to accept more messages or not
+    * [if (parent.browserReady != null) parent.browserReady();].
+    *        This shows, that the browser had processed the whole message.
+    *        If the Browser implements this javascript function, it could send
+    *        a browserReady signal back to the  BlasterHttpProxyServlet.
+    *        This feature solves the problem, that the browser got messages too fast
+    *        and could not process all content of the message.
     */
    public final boolean isBrowserReady()
    {
@@ -249,10 +249,11 @@ public class HttpPushHandler
       //send queue if browser is ready
       if (browserIsReady) {
          try {
-            pushToBrowser(true);
+            pushToBrowser();
          }
          catch(Exception e) {
             Log.error(ME,"sending push queue to browser failed. ["+e.toString()+"]");
+            deinitialize();
          }
       }
    }
@@ -289,28 +290,13 @@ public class HttpPushHandler
     * Updating data to the browser (callback/push mode).
     * The data must be Javascript code
     * @param str
-    * @param confirm true - There will be append an Javascript code
-    *        [if (parent.browserReady != null) parent.browserReady();].
-    *        This shows, that the browser had processed the whole message.
-    *        If the Browser implements this javascript function, it could send
-    *        a browserReady signal back to the  BlasterHttpProxyServlet.
-    *        This feature solves the problem, that the browser got messages too fast
-    *        and could not process all content of the message.
     */
-   public void push(String str, boolean confirm) throws ServletException, IOException
+   public void push(PushDataItem item) throws ServletException, IOException
    {
       if (closed()) return;
       synchronized(pushQueue) {
-         pushQueue.addElement( str );
-         pushToBrowser(confirm);
-      }
-   }
-   public void push(String str) throws ServletException, IOException
-   {
-      if (closed()) return;
-      synchronized(pushQueue) {
-         pushQueue.addElement( str );
-         pushToBrowser(true);
+         pushQueue.addElement( item );
+         pushToBrowser();
       }
    }
 
@@ -318,7 +304,7 @@ public class HttpPushHandler
    /**
     * Pushing messages in the queue to the browser
     */
-   private void pushToBrowser(boolean confirm) throws ServletException, IOException
+   private void pushToBrowser() throws ServletException, IOException
    {
       if (Log.CALL) Log.call(ME, "Entering pushToBrowser() ...");
 
@@ -347,13 +333,16 @@ public class HttpPushHandler
 
                StringBuffer buf = new StringBuffer(head);
 
-               for( int i = 0; i < pushQueue.size(); i++ )
-                  buf.append((String)pushQueue.elementAt(i));
-
-               if( confirm ) {
-                  buf.append(readyStr);
-                  setBrowserIsReady(false);
+               boolean isMessage = false;
+               // Collect all messages, pings etc from the queue ...
+               for( int i = 0; i < pushQueue.size(); i++ ) {
+                  PushDataItem item = (PushDataItem)pushQueue.elementAt(i);
+                  buf.append(item.data);
+                  if (item.type == PushDataItem.MESSAGE) isMessage = true;
                }
+
+               if (isMessage)
+                  setBrowserIsReady(false); // Force browser to tell us when it is ready
 
                buf.append(tail);
                if (Log.DUMP) Log.dump(ME, "Sending to callbackFrame:\n" + buf.toString());
@@ -387,13 +376,16 @@ public class HttpPushHandler
                else
                   buf.append("<script language='JavaScript'>\n");
 
-               for( int i = 0; i < pushQueue.size(); i++ )
-                  buf.append((String)pushQueue.elementAt(i));
-
-               if( confirm ) {
-                  buf.append(readyStr);
-                  setBrowserIsReady(false);
+               boolean isMessage = false;
+               // Collect all messages, pings etc from the queue ...
+               for( int i = 0; i < pushQueue.size(); i++ ) {
+                  PushDataItem item = (PushDataItem)pushQueue.elementAt(i);
+                  buf.append(item.data);
+                  if (item.type == PushDataItem.MESSAGE) isMessage = true;
                }
+
+               if (isMessage)
+                  setBrowserIsReady(false); // Force browser to tell us when it is ready
 
                // bug, thanks to Just: buf.append(tail);
 
@@ -431,7 +423,7 @@ public class HttpPushHandler
          Log.trace(ME,"************* End of Update *************************");
          */
          String pushStr = "if (parent.update != null) parent.update('"+codedKey+"','"+codedContent+"','"+codedQos+"');\n";
-         push(pushStr);
+         push(new PushDataItem(PushDataItem.MESSAGE, pushStr));
       }
       catch(Exception e) {
          Log.error(ME,e.toString());
@@ -471,7 +463,7 @@ public class HttpPushHandler
    {
       try {
          String codedText = URLEncoder.encode(text);
-         push("if (parent.message != null) parent.message('"+codedText+"');\n");
+         push(new PushDataItem(PushDataItem.LOGGING, "if (parent.message != null) parent.message('"+codedText+"');\n"));
       }
       catch(Exception e) {
          Log.error(ME,e.toString());
@@ -489,7 +481,7 @@ public class HttpPushHandler
    {
       try {
          String codedText = URLEncoder.encode(text);
-         push("if (parent.error != null) parent.error('"+codedText+"');\n");
+         push(new PushDataItem(PushDataItem.LOGGING, "if (parent.error != null) parent.error('"+codedText+"');\n"));
       }
       catch(Exception e) {
          Log.error(ME,e.toString());
@@ -506,7 +498,11 @@ public class HttpPushHandler
     */
    public void ping(String state) throws ServletException, IOException
    {
-      push("if (parent.ping != null) parent.ping('" + state + "');\n",false);
+      if (!isBrowserReady()) {
+         Log.warn(ME, "Browser seems not to be ready, forcing a push nevertheless (checking browser with ping)");
+         setBrowserIsReady(true);
+      }
+      push(new PushDataItem(PushDataItem.PING, "if (parent.ping != null) parent.ping('" + state + "');\n"));
    }
 
 
@@ -518,7 +514,6 @@ public class HttpPushHandler
       if (closed()) return;
       if (pingThread != null) pingThread.pong();
    }
-
 
    /**
     * Ping the browser, to avoid that the web server or the browser

@@ -3,7 +3,7 @@ Name:      BlasterHttpProxyServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxyServlet.java,v 1.53 2001/12/16 04:01:34 ruff Exp $
+Version:   $Id: BlasterHttpProxyServlet.java,v 1.54 2001/12/17 16:41:32 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -44,6 +44,7 @@ import javax.servlet.http.*;
 public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.log.LogableDevice
 {
    private static boolean propertyRead = false;
+   private final String header = "<html><meta http-equiv='no-cache'><meta http-equiv='Cache-Control' content='no-cache'><meta http-equiv='expires' content='Wed, 26 Feb 1997 08:21:57 GMT'>";
 
    /**
     * This method is invoked only once when the servlet is startet.
@@ -64,11 +65,17 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
 
       // Redirect xmlBlaster logs to servlet log file (see method log() below)
       Log.setDefaultLogLevel();
-      //Log.addLogLevel("DUMP");  // Use this to see all messages!
+      if (conf.getInitParameter("dump") != null && conf.getInitParameter("dump").equals("true"))
+         Log.addLogLevel("DUMP"); // Use this to dump messages
       if (conf.getInitParameter("trace") != null && conf.getInitParameter("trace").equals("true"))
          Log.addLogLevel("TRACE"); // Use this to trace the code
+      if (conf.getInitParameter("call") != null && conf.getInitParameter("call").equals("true"))
+         Log.addLogLevel("CALL"); // Use this to show method invocations
+      if (conf.getInitParameter("time") != null && conf.getInitParameter("time").equals("true"))
+         Log.addLogLevel("TIME"); // Use this to measure perfomance
 
-      //Log.addLogLevel("TRACE"); // Use this to trace the code
+      // Log.addLogLevel("DUMP");  // Use this to see all messages!
+      // Log.addLogLevel("TRACE"); // Use this to trace the code
       //Log.addLogLevel("CALL");
       //Log.addLogLevel("TIME");
 
@@ -175,6 +182,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
                           "', authorization='" + req.getHeader("Authorization") +
                           "'.");
 
+            pushHandler.setBrowserIsReady( true );
             pushHandler.ping("loginSucceeded");
 
             while (!pushHandler.closed()) {
@@ -203,13 +211,12 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
          else if(actionType.equals("browserReady")) {
             try {
                HttpPushHandler pushHandler = BlasterHttpProxy.getHttpPushHandler(sessionId);
-               pushHandler.setBrowserIsReady( true );
-
                if (Log.TRACE) Log.trace(ME, "Received 'browserReady'");
+               pushHandler.setBrowserIsReady( true );
 
                // Otherwise the browser (controlFrame) complains 'document contained no data'
                PrintWriter out = res.getWriter();
-               out.println(" <html><body text='white' bgcolor='white'>Empty response for your ActionType='browserReady' " + System.currentTimeMillis() + "</body></html>");
+               out.println(header+"<body text='white' bgcolor='white'>Empty response for your ActionType='browserReady' " + System.currentTimeMillis() + "</body></html>");
                return;
             }
             catch (XmlBlasterException e) {
@@ -237,7 +244,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
 
                // Otherwise the browser (controlFrame) complains 'document contained no data'
                PrintWriter out = res.getWriter();
-               out.println(" <html><body text='white' bgcolor='white'>Empty response for your ActionType='pong' " + Util.getParameter(req, "state", "noState") + " " + System.currentTimeMillis() + "</body></html>");
+               out.println(header+"<body text='white' bgcolor='white'>Empty response for your ActionType='pong' " + Util.getParameter(req, "state", "noState") + " " + System.currentTimeMillis() + "</body></html>");
                return;
             }
             catch (XmlBlasterException e) {
@@ -262,7 +269,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
 
             // Otherwise the browser (controlFrame) complains 'document contained no data'
             PrintWriter out = res.getWriter();
-            out.println(" <html><body text='white' bgcolor='white'><script language='JavaScript1.2'>top.close()</script></body></html>");
+            out.println(header+" <body text='white' bgcolor='white'><script language='JavaScript1.2'>top.close()</script></body></html>");
          }
 
          else {
@@ -276,7 +283,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
          String codedText = URLEncoder.encode( e.reason );
          try {
             HttpPushHandler pushHandler = BlasterHttpProxy.getHttpPushHandler(sessionId);
-            pushHandler.push("if (parent.error != null) parent.error('"+codedText+"');\n",false);
+            pushHandler.push(new PushDataItem(PushDataItem.LOGGING, "if (parent.error != null) parent.error('"+codedText+"');\n"));
          } catch (XmlBlasterException e2) {
             PrintWriter out = res.getWriter();
             out.println(HttpPushHandler.alert(e.reason));
@@ -286,7 +293,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
          e.printStackTrace();
          try {
             HttpPushHandler pushHandler = BlasterHttpProxy.getHttpPushHandler(sessionId);
-            pushHandler.push("if (parent.error != null) parent.error('"+e.toString()+"');\n",false);
+            pushHandler.push(new PushDataItem(PushDataItem.LOGGING, "if (parent.error != null) parent.error('"+e.toString()+"');\n"));
          } catch (XmlBlasterException e2) {
             PrintWriter out = res.getWriter();
             out.println(HttpPushHandler.alert(e.toString()));
@@ -396,7 +403,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
       } catch (XmlBlasterException e) {
          Log.error(ME, "Caught XmlBlaster Exception: " + e.reason);
          String codedText = URLEncoder.encode( e.reason );
-         pushHandler.push("if (parent.error != null) parent.error('"+codedText+"');\n",false);
+         pushHandler.push(new PushDataItem(PushDataItem.LOGGING, "if (parent.error != null) parent.error('"+codedText+"');\n"));
       } catch (Exception e) {
          Log.error(ME, "RemoteException: " + e.getMessage());
          e.printStackTrace();

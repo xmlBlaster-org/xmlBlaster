@@ -27,16 +27,16 @@ function publish(message)
 
 function get(key, qos)
 {
-   Log.error("Invoking get request for " + key.oid + " ...");
+   Log.trace("Invoking get request for " + key.oid + " ...");
    request("get", new MessageWrapperLiteral(key, "", qos));
-   Log.error("Get request for " + key.oid + " done");
+   Log.trace("Get request for " + key.oid + " done");
 }
 
 function subscribe(key, qos)
 {
-   Log.error("Invoking subscribe request for " + key.oid + " ...");
+   Log.trace("Invoking subscribe request for " + key.oid + " ...");
    request("subscribe", new MessageWrapperLiteral(key, "", qos));
-   Log.error("Subscribe request for " + key.oid + " done");
+   Log.trace("Subscribe request for " + key.oid + " done");
 }
 
 function erase(key, qos)
@@ -315,20 +315,23 @@ function sendMessageQueue(queueName)
 
    if( fmq.ready ) {
       if( fmq.frame.update != null ) {
-         if (Log.TRACE) Log.trace("Frame "+fmq.frame.name+" is ready, sending update ...");
+         if (Log.TRACE) Log.trace("Frame "+fmq.frame.name+" is ready, sending queued update ...");
          fmq.frame.update( fmq.messageQueue );
+         /*
          if (Log.TRACE) {
             var str = "Update:<br />";
             for( var i = 0; i < fmq.messageQueue.length; i++ ) {
-               str += fmq.messageQueue[i].key.oid;
+               str += fmq.messageQueue[i].key.oid + ", ";
                if (i<fmq.messageQueue.lengt-1) str += "<br />";
             }
-            if (Log.TRACE) Log.trace("Queue["+fmq.frame.name+"]: "+str);
+            if (Log.TRACE) Log.trace("Queue["+fmq.frame.name+"] processed successfully following messages: "+str);
          }
+         */
       }
       else {
         Log.info("Queue["+fmq.frame.name+"]: frame has no update function.");
       }
+      if (parent.browserReady != null) parent.browserReady();
       fmq.messageQueue.length = 0;
       fmq.retries = 0;
       return;
@@ -522,6 +525,7 @@ function update( updateKey, content, updateQoS)
       var message = new MessageWrapperDom( key, content, qos );
       fireMessageUpdateEvent(message);
    }
+   if (Log.TRACE) Log.trace("Update key.oid="+key.oid+" successfully queued, will be processed by all listener frames after their collection timespan 'fmq.queueTime'");
 }
 
 
