@@ -19,6 +19,8 @@ import org.xmlBlaster.client.queuemsg.MsgQueueUnSubscribeEntry;
 import org.xmlBlaster.client.queuemsg.MsgQueueEraseEntry;
 import org.xmlBlaster.client.queuemsg.MsgQueueGetEntry;
 import org.xmlBlaster.util.dispatch.DispatchConnection;
+import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
@@ -371,19 +373,16 @@ public final class ClientDispatchConnection extends DispatchConnection
     */
    private void connect(MsgQueueEntry entry) throws XmlBlasterException {
       MsgQueueConnectEntry connectEntry = (MsgQueueConnectEntry)entry;
-      String qosOrig = connectEntry.getConnectQosData().toXml();
-      String qos;
       if (securityInterceptor != null) {  // We export/encrypt the message (call the interceptor)
-         qos = securityInterceptor.exportMessage(qosOrig);
+         this.encryptedConnectQos = securityInterceptor.exportMessage(connectEntry.getConnectQosData().toXml());
          if (log.TRACE) log.trace(ME, "Exported/encrypted connect request.");
       }
       else {
          log.warn(ME, "No session security context, connect request is not encrypted");
-         qos = qosOrig;
+         this.encryptedConnectQos = connectEntry.getConnectQosData().toXml();
       }
 
-      this.encryptedConnectQos = qos;
-      String rawReturnVal = this.driver.connect(qos); // Invoke remote server
+      String rawReturnVal = this.driver.connect(this.encryptedConnectQos); // Invoke remote server
 
       connectionsHandler.getDispatchStatistic().incrNumConnect(1);
       
@@ -397,6 +396,23 @@ public final class ClientDispatchConnection extends DispatchConnection
       catch (XmlBlasterException e) {
          log.error(ME, "Can't parse returned connect QoS value '" + rawReturnVal + "': " + e.getMessage());
          throw e;
+      }
+
+      if (!connectEntry.getConnectQosData().getSessionName().isSession()) {
+         // We need to remember the server side assigned public session id for reconnect polling
+         // If do we should probably take a clone:
+         //ConnectQos connectQos = new ConnectQos(this.glob, this.connectReturnQos.getData());
+         ConnectQosData connectQos = connectEntry.getConnectQosData();
+         connectQos.setSessionName(this.connectReturnQos.getSessionName());
+         connectQos.getSessionQos().setSecretSessionId(this.connectReturnQos.getSecretSessionId());
+         if (securityInterceptor != null) {  // We export/encrypt the message (call the interceptor)
+            this.encryptedConnectQos = securityInterceptor.exportMessage(connectQos.toXml());
+            if (log.TRACE) log.trace(ME, "Exported/encrypted connect request.");
+         }
+         else {
+            log.warn(ME, "No session security context, connect request is not encrypted");
+            this.encryptedConnectQos = connectQos.toXml();
+         }
       }
 
       if (connectEntry.wantReturnObj()) {
