@@ -21,6 +21,7 @@ import org.apache.commons.codec.binary.Base64;
  * </pre>
  * If the attribute <code>type</code> is missing we assume a 'String' property
  *
+ * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.clientProperty.html">The client.qos.clientProperty requirement</a>
  */
 public class EncodableData implements java.io.Serializable, Cloneable
 {
