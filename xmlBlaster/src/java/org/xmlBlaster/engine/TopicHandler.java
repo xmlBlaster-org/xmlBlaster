@@ -209,7 +209,10 @@ public final class TopicHandler implements I_Timeout
    /**
     * Initialize the messageUnit cache and the history queue for this topic
     */
-   private void administrativeInitialize(MsgQosData publishQos) throws XmlBlasterException {
+   private synchronized void administrativeInitialize(MsgQosData publishQos) throws XmlBlasterException {
+      if (!isUnconfigured())
+         return;
+
       if (log.DUMP) log.dump(ME, "administrativeInitialize()" + publishQos.toXml());
 
       this.creatorSessionName = publishQos.getSender();
@@ -219,15 +222,29 @@ public final class TopicHandler implements I_Timeout
 
       // Todo: this needs to be done after TopicHandler is created
       startupHistoryQueue();
+
+      if (!isAlive()) {
+         toAlive();
+      }
    }
 
+   /**
+    * This cache stores the 'real meat' (the MsgUnit data struct)
+    */
    private void startupMsgstore() throws XmlBlasterException   {
-      // This cache store the 'real meat' (the MsgUnit data struct)
-      TopicCacheProperty topicCacheProperty = this.topicProperty.getTopicCacheProperty();
-      String type = topicCacheProperty.getType();
-      String version = topicCacheProperty.getVersion();
-      StorageId msgstoreId = new StorageId("topic", glob.getNodeId()+"/"+getUniqueKey());
-      this.msgUnitCache = glob.getMsgStorePluginManager().getPlugin(type, version, msgstoreId, topicCacheProperty); //this.msgUnitCache = new org.xmlBlaster.engine.msgstore.ram.MapPlugin();
+      synchronized (this) {
+         TopicCacheProperty topicCacheProperty = this.topicProperty.getTopicCacheProperty();
+         if (this.msgUnitCache == null) {
+            String type = topicCacheProperty.getType();
+            String version = topicCacheProperty.getVersion();
+            StorageId msgstoreId = new StorageId("topic", glob.getNodeId()+"/"+getUniqueKey());
+            this.msgUnitCache = glob.getMsgStorePluginManager().getPlugin(type, version, msgstoreId, topicCacheProperty); //this.msgUnitCache = new org.xmlBlaster.engine.msgstore.ram.MapPlugin();
+         }
+         else {
+            log.info(ME, "Reconfiguring message store.");
+            this.msgUnitCache.setProperties(topicCacheProperty);
+         }
+      }
    }
 
    /**
@@ -235,16 +252,36 @@ public final class TopicHandler implements I_Timeout
     * as we ask the msgstore for the real messages if some history entries existed. 
     * <p>
     * NOTE: this.historyQueue can be null if maxMsgs=0 is configured
+    * </p>
+    * <p>
+    * This history queue entries hold weak references to the msgUnitCache entries
+    * </p>
     */
    private void startupHistoryQueue() throws XmlBlasterException {
-      // This history queue entries hold weak references to the msgUnitCache entries
-      QueuePropertyBase prop = this.topicProperty.getHistoryQueueProperty();
-      if (prop.getMaxMsg() > 0L) {
-         String type = prop.getType();
-         String version = prop.getVersion();
-         StorageId queueId = new StorageId("history", glob.getNodeId()+"/"+getUniqueKey());
-         this.historyQueue = glob.getQueuePluginManager().getPlugin(type, version, queueId, prop);
-         this.historyQueue.setNotifiedAboutAddOrRemove(true); // Entries are notified to support reference counting
+      synchronized (this) {
+         QueuePropertyBase prop = this.topicProperty.getHistoryQueueProperty();
+         if (this.historyQueue == null) {
+            if (prop.getMaxMsg() > 0L) {
+               String type = prop.getType();
+               String version = prop.getVersion();
+               StorageId queueId = new StorageId("history", glob.getNodeId()+"/"+getUniqueKey());
+               this.historyQueue = glob.getQueuePluginManager().getPlugin(type, version, queueId, prop);
+               this.historyQueue.setNotifiedAboutAddOrRemove(true); // Entries are notified to support reference counting
+            }
+         }
+         else {
+            if (prop.getMaxMsg() > 0L) {
+               log.info(ME, "Reconfiguring history queue.");
+               this.historyQueue.setProperties(prop);
+            }
+            else {
+               log.warn(ME, "Destroying history queue with " + this.historyQueue.getNumOfEntries() +
+                            " entries because of new configuration with maxMsg=0");
+               this.historyQueue.clear();
+               this.historyQueue.shutdown(true);
+               this.historyQueue = null;
+            }
+         }
       }
    }
 
