@@ -13,84 +13,67 @@
    <meta name="revisit-after" content="14 days">
    <meta name="Content-Language" content="en">
    <meta name="Author" content="Marcel Ruff">
+   <meta name="GENERATOR" content="Mozilla/4.7 [de] (Win98; I) [Netscape]">
    <title>xmlBlaster - The Revolution</title>
-   <link REL="stylesheet" type="text/css" href="/xmlBlaster.css">
+<link REL="stylesheet" type="text/css" href="/xmlBlaster.css">
 </head>
-
 <body>
 
-   <p class=sideend>
-      Last updated $Date: 2000/03/28 12:39:29 $ $Author: ruff $
-   </p>
-   <p class=sitetitel>The HTTP callback framework for xmlBlaster</p>
+<div class="sideend">Last updated $Date: 2000/03/29 16:35:02 $ $Author:
+ruff $</div>
 
 
-   <table cellspacing=12>
-      <tr>
-         <td>
-         <p class=celltitel><a NAME="need"></a>What is this?</p>
-            <p>
-            When distributing dynamic content over the internet, you usually choose an applet.
-            The applet connects to the server over CORBA (or any other protocol) and may
-            receive instant notification from the server.<br />
-            But applets produce some well known problems like higher download time,
-            firewalls which won't allow TCP/IP connections etc.
-            </p>
-            <p>
-            This framework addresses these issues.
-            It establishes a persistent http connection to allow instant callbacks
-            of xmlBlaster messages to the browser.
-            </p>
-            <p>
-            Konrad will provide a tutorial how to use this framework
-            in near future.
-            </p>
-         </td>
-      </tr>
-      <tr>
-         <td>
-            <img SRC="CallbackServletDriver.gif">
-         </td>
-      </tr>
-      <tr>
-         <td>
-            <img SRC="BlasterHttpProxy.gif">
-         </td>
-      </tr>
-      <tr>
-         <td>
-         <p class=celltitel><a NAME="need"></a>How does it work?</p>
-            <p>
-            The servlet connects to xmlBlaster using CORBA
-            and to the browser using a persistent http connection
-            (using a hidden frame to communicate).
-            </p>
-            <p>
-            The messages are directly transferred to the browser, which has a
-            Javascript based XML parser and notifies the interested browser frames about the callback.<br />
-            The contentFrame and controlFrame in the picture are only an example,
-            you can provide as many own frames as you wish. This is the work which is left for you
-            to design your web layout.<br />
-            The hidden callbackFrame is always necessary to handle the communication.
-            </p>
-            <p>
-            For Servlet and Javascript examples have a look into the following directory
-            of the xmlBlaster distribution:<br/>
-            <pre>xmlBlaster/src/java/org/xmlBlaster/protocol/http</pre>
-            </p>
-         </td>
-      </tr>
-      <tr>
-         <td>
-         </td>
-      </tr>
-   </table>
+<p class="sitetitel">The HTTP callback framework for xmlBlaster
+<br>&nbsp;
+<table CELLSPACING=12 >
+<tr>
+<td>
+<div class="celltitel"><a NAME="need"></a>What is this?</div>
+
+<p>When distributing dynamic content over the internet, you usually choose
+an applet. The applet connects to the server over CORBA (or any other protocol)
+and may receive instant notification from the server.
+<br>But applets produce some well known problems like higher download time,
+firewalls which won't allow TCP/IP connections etc.&nbsp;
+<p>This framework addresses these issues. It establishes a persistent http
+connection to allow instant callbacks of xmlBlaster messages to the browser.&nbsp;
+<p>Konrad will provide a tutorial how to use this framework in near future.&nbsp;</td>
+</tr>
+
+<tr>
+<td></td>
+</tr>
+
+<tr>
+<td><img SRC="BlasterHttpProxy.gif" ></td>
+</tr>
+
+<tr>
+<td>
+<div class="celltitel"><a NAME="need"></a>How does it work?</div>
+
+<p>The servlet connects to xmlBlaster using CORBA and to the browser using
+a persistent http connection (using a hidden frame to communicate).&nbsp;
+<p>The messages are directly transferred to the browser, which has a Javascript
+based XML parser and notifies the interested browser frames about the callback.
+<br>The contentFrame and controlFrame in the picture are only an example,
+you can provide as many own frames as you wish. This is the work which
+is left for you to design your web layout.
+<br>The hidden callbackFrame is always necessary to handle the communication.&nbsp;
+<p>For Servlet and Javascript examples have a look into the following directory
+of the xmlBlaster distribution:<br/>
+<pre>xmlBlaster/src/java/org/xmlBlaster/protocol/http</pre>
+</td>
+</tr>
+
+<tr>
+<td></td>
+</tr>
+</table>
 
 
-   <p class=sideend>
-      <a href="news.html" target="Content">HOME</a><br />
-   </p>
+<p class="sideend"><a href="news.html" target="Content">HOME</a>
+<br><script LANGUAGE="JavaScript" src="/cgi-bin/counter.pl?FAQ-homepage"></script>
 
-   <script LANGUAGE="JavaScript" src="/cgi-bin/counter.pl?FAQ-homepage"></script>
 </body>
 </html>
