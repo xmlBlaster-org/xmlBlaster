@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.java,v 1.12 1999/11/22 16:12:21 ruff Exp $
+Version:   $Id: Log.java,v 1.13 1999/11/23 10:44:13 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -15,10 +15,8 @@ public class Log
 {
    private final static String ME = "Log";
 
-   public static boolean HACK_POA = true;
-
    /**
-    * Switch DEBUG mode on or of for performance reasons
+    * Switch CALLS mode on or of for performance reasons
     * if (Log.CALLS) Log.trace(....); -> dead code elimination
     */
    public final static boolean CALLS = true;  // trace method calls
@@ -75,7 +73,7 @@ public class Log
    /**
     * Colored output to xterm
     */
-   private final static boolean withXtermEscapeColor = true;
+   private       static boolean withXtermEscapeColor = false;
    private final static StringBuffer INSTANCE_SEPERATOR_E = new StringBuffer(BOLD + ":" + ESC + "  "); // bold
 
    private final static StringBuffer timeE  = new StringBuffer(LTGREEN_BLACK+ "TIME " + ESC + ": ");
@@ -88,6 +86,15 @@ public class Log
    private final static StringBuffer panicE = new StringBuffer(BLACK_RED    + "PANIC" + ESC + ": ");
    private final static StringBuffer exitE  = new StringBuffer(GREEN_BLACK  + "EXIT " + ESC + ": ");
 
+
+   static {
+      String osName = System.getProperty("os.name");     // "Linux" "Windows NT" ...
+      if (osName.startsWith("Window"))
+         withXtermEscapeColor = false;
+      else
+         withXtermEscapeColor = true;
+
+   }
 
    /**
     * Create the Date/Time informations
