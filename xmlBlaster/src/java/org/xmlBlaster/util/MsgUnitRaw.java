@@ -5,6 +5,10 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
+import java.io.OutputStream;
+import java.io.IOException;
+import org.xmlBlaster.client.protocol.http.j2me.Base64; // org.apache.commons.codec.binary.Base64;
+
 /**
  * Encapsulates the xmlKey, content and qos. 
  * <p />
@@ -96,10 +100,51 @@ public final class MsgUnitRaw // implements java.io.Serializable // Is serializa
 
       sb.append(offset).append("<MsgUnitRaw>");
       sb.append(this.key);
-      sb.append(offset).append(" <content>").append(new String(this.content)).append("</content>");
+      sb.append(offset).append(" <content><![CDATA[").append(new String(this.content)).append("]]></content>");
       sb.append(this.qos);
       sb.append(offset).append("</MsgUnitRaw>\n");
 
       return sb.toString();
+   }
+
+   public void toXml(String extraOffset, OutputStream out) throws IOException {
+      StringBuffer sb = new StringBuffer(qos.length() + key.length() + 256);
+      String offset = "\n";
+      if (extraOffset == null) extraOffset = "";
+      offset += extraOffset;
+
+      sb.append(qos);
+      sb.append(key);
+
+      // TODO: Potential charset problem when not Base64 protected
+      boolean doEncode = false;
+      int len = content.length - 2;
+      for (int i=0; i<len; i++) {
+         if (content[i] == (byte)']' && content[i+1] == (byte)']' && content[i+2] == (byte)'>') {
+            doEncode = true;
+            break;
+         }
+      }
+
+      // TODO: Port to EncodableData! But what about J2ME?
+      // Needs to be parseable by XmlScriptInterpreter
+      if (doEncode) { // Constants.ENCODING_BASE64="base64"
+         // link=''?  name=null, size=1000L type=Constants.TYPE_BLOB encoding=Constants.ENCODING_BASE64
+         sb.append(offset).append("<content size='").append(content.length).append("' type='byte[]' encoding='base64'>");
+         out.write(sb.toString().getBytes());
+
+         String encoded = Base64.encode(content);
+         out.write(encoded.getBytes());
+
+         out.write("</content>".getBytes());
+      }
+      else {
+         sb.append(offset).append("<content size='").append(content.length).append("' type='byte[]'><![CDATA[");
+         out.write(sb.toString().getBytes());
+         
+         out.write(content);
+
+         out.write("]]></content>".getBytes());
+      }
    }
 }
