@@ -56,18 +56,12 @@ xml version='1.0' encoding='ISO-8859-1' ?>
 
          <priority>5</priority> <!-- Priority of message, 9 is highest whereas 0 is lowest -->
 
-         <expiration remainingLife='12000' />  <!-- Expires after given milliseconds (message is erased),
-                               clients will get a notify about expiration
+         <expiration lifeTime='12000' />  <!-- Expires after given milliseconds (message is erased).
                                This value is calculated relative to the rcvTimestamp in the xmlBlaster server -->
                           <!-- Default is no expiration (similar to pass -1 milliseconds) -->
                           <!-- A second attribute timestamp='' may be added in a future version,
                                allowing to pass absolute UTC millis since 1970 instead of the relative remainingLife
                                or a form of <expiration type='absolute' ... with year/month ... specified -->
-
-         <isVolatile>false</isVolatile> 
-                          <!-- A non-volatile messages stays in memory as long as the server runs or until it is erased explicitly -->
-                          <!-- A volatile messages exists only during publish and processing it (doing the updates). -->
-                          <!-- Default is false -->
 
          <isDurable />    <!-- The message shall be recoverable if xmlBlaster crashes -->
                           <!-- If you use this feature, you normally give the message a well known key oid -->
