@@ -6,17 +6,23 @@
 # Example (copy this into your .profile or .bashrc):
 #   export JDK_HOME=/usr/local/jdk
 #   export XMLBLASTER_HOME=${HOME}/xmlBlaster
-#   export JacORB_HOME=/usr/local/JacORB       (optional)
-#   export MICO_HOME=/usr/local/mico           (optional)
-#   export JIKES_HOME=/usr/local/jikes         (optional)
+#
+#   These are optional:
+#   export JacORB_HOME=/usr/local/JacORB
+#   export MICO_HOME=/usr/local/mico
+#   export JIKES_HOME=/usr/local/jikes
+#   export USE_ANT=true
+#
 #   . ${XMLBLASTER_HOME}/.bashrc
+#
+# If you want to use Ant to build xmlBlaster set USE_ANT to true
 #
 # If you want to access xmlBlaster using cvs, un comment following line:
 #   export CVSROOT=:pserver:reader@server.xmlBlaster.org:/opt/cvsroot
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash
 # Thanks to Heinrich Goetzger
-# $Revision: 1.35 $
+# $Revision: 1.36 $
 #-----------------------------------------------------------
 
 
@@ -53,22 +59,24 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    ${ECHO} "$BLACK_LTGREEN   Welcome to xmlBlaster.org   $ESC"
    ${ECHO} "$BLACK_LTGREEN      Using XMLBLASTER_HOME=${XMLBLASTER_HOME}  $ESC"
 
-	##### Uncomment if using Ant to build xmlBlaster
-   #CLASSPATH=${XMLBLASTER_HOME}/lib/xmlBlaster.jar:${CLASSPATH}
-   #CLASSPATH=${XMLBLASTER_HOME}/lib/demo.jar:${CLASSPATH}
-   #CLASSPATH=${XMLBLASTER_HOME}/lib/testsuite.jar:${CLASSPATH}
-	#####
    CLASSPATH=${XMLBLASTER_HOME}/lib/xml.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/xtdash.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/omquery.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/test.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/servlet-2.0.jar:${CLASSPATH}
+	if [ ${USE_ANT:=""} = "true" ] ; then
+	   ${ECHO} "$BLACK_LTGREEN      Using Ant to build xmlBlaster  $ESC"
+	   CLASSPATH=${XMLBLASTER_HOME}/lib/xmlBlaster.jar:${CLASSPATH}
+   	CLASSPATH=${XMLBLASTER_HOME}/lib/demo.jar:${CLASSPATH}
+	   CLASSPATH=${XMLBLASTER_HOME}/lib/testsuite.jar:${CLASSPATH}
+	else
+	   if [ -f ${XMLBLASTER_HOME}/lib/xmlBlaster.jar ]; then
+	      CLASSPATH=${XMLBLASTER_HOME}/lib/xmlBlaster.jar:${CLASSPATH}
+	   fi
+	fi
    CLASSPATH=${XMLBLASTER_HOME}/src/java:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/classes:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/demo:${CLASSPATH}
-   if [ -f ${XMLBLASTER_HOME}/lib/xmlBlaster.jar ]; then
-      CLASSPATH=${XMLBLASTER_HOME}/lib/xmlBlaster.jar:${CLASSPATH}
-   fi
    export CLASSPATH
 
    PATH=$PATH:$XMLBLASTER_HOME/bin:$XMLBLASTER_HOME/testsuite/bin
@@ -165,6 +173,9 @@ if [ ${JDK_HOME:=""} != "" ] ; then
       fi
       PATH=${JDK_HOME}/bin:${PATH}
       export PATH
+		# set JAVA_HOME for ANT:
+		JAVA_HOME=$JDK_HOME
+		export JAVA_HOME
    else
       ${ECHO} "$BLACK_RED   The directory JDK_HOME=$JDK_HOME doesn't exist   $ESC"
    fi
