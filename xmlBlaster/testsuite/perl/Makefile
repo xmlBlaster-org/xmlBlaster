@@ -3,4 +3,7 @@ all:
 
 
 clean:
-	rm -rf clientIdl serverIdl authenticateIdl
+	rm -rf serverIdl authenticateIdl
+	rm -f clientIdl/BlasterCallback.pm clientIdl/BlasterCallback_skel.pm clientIdl/BlasterCallback_types.pm
+	rm -f *.pm
+
