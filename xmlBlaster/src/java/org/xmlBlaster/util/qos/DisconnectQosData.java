@@ -3,7 +3,7 @@ Name:      DisconnectQosData.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: DisconnectQosData.java,v 1.2 2003/03/24 16:13:30 ruff Exp $
+Version:   $Id: DisconnectQosData.java,v 1.3 2003/05/06 16:08:42 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.qos;
 
@@ -38,6 +38,16 @@ public class DisconnectQosData extends QosData implements java.io.Serializable, 
    public DisconnectQosData(Global glob, I_DisconnectQosFactory factory, String serialData) {
       super(glob, serialData);
       this.factory = (factory == null) ? this.glob.getDisconnectQosFactory() : factory;
+   }
+
+   /**
+    * @return true/false
+    */
+   public boolean isPersistent() {
+      if (super.isPersistent() == true) {
+         glob.getLog("client").warn(ME, "DisconnectQos messages is changed to be not persistent, as this would disconnect a client automatically on restart if the disconnect is queued on client side");
+      }
+      return false;
    }
 
    /**
