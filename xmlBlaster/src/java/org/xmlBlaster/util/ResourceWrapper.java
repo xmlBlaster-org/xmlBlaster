@@ -3,7 +3,7 @@ Name:      ResourceWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Container for your resource
-Version:   $Id: ResourceWrapper.java,v 1.2 2000/05/30 14:44:10 ruff Exp $
+Version:   $Id: ResourceWrapper.java,v 1.3 2000/05/31 19:48:06 ruff Exp $
            $Source: /opt/cvsroot/xmlBlaster/src/java/org/xmlBlaster/util/Attic/ResourceWrapper.java,v $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
@@ -88,8 +88,8 @@ public class ResourceWrapper
       else
          timeoutHandle = Timeout.getInstance().addTimeoutListener(poolManager, timeout, this);
       if (this.instanceId == null || this.instanceId.length() < 1)
-      if (resource != null)
-         this.instanceId = "" + resource.hashCode();
+         if (resource != null)
+            this.instanceId = "" + resource.hashCode();
    }
 
 
@@ -106,6 +106,17 @@ public class ResourceWrapper
 
 
    /**
+    * How long am i running. 
+    * @return Milliseconds since creation or -1 if not known
+    */
+   public long elapsed()
+   {
+      if (timeout <= 0) return -1;
+      return System.currentTimeMillis() - creationTime;
+   }
+
+
+   /**
     * How long to my death.
     * @return Milliseconds to timeout<br />
     *         0 for infinite life<br />
@@ -114,7 +125,8 @@ public class ResourceWrapper
    public long spanOfTimeToDeath()
    {
       if (timeout <= 0) return 0;
-      return Timeout.getInstance().spanOfTimeToDeath(timeoutHandle);
+      if (timeoutHandle == null) return 0;
+      return Timeout.getInstance().spanToTimeout(timeoutHandle);
    }
 
 
@@ -184,7 +196,7 @@ public class ResourceWrapper
 
 
    /**
-    * Cleanup, reset timer and destroy id. 
+    * Cleanup, reset timer and destroy id.
     */
    public void cleanup()
    {
@@ -212,5 +224,33 @@ public class ResourceWrapper
    public long getCreationTime()
    {
       return creationTime;
+   }
+
+
+   /**
+    * Dump state of this object into a XML ASCII string. 
+    * <p />
+    * @return internal state of this ResourceWrapper as a XML ASCII string
+    */
+   public final String toXml()
+   {
+      return toXml((String)null);
+   }
+
+
+   /**
+    * Dump state of this object into a XML ASCII string. 
+    * <p />
+    * @param extraOffset indenting of tags for nice output
+    * @return internal state of this ResourceWrapper as a XML ASCII string
+    */
+   public final String toXml(String extraOffset)
+   {
+      StringBuffer sb = new StringBuffer();
+      String offset = "\n   ";
+      if (extraOffset == null) extraOffset = "";
+      offset += extraOffset;
+      sb.append(offset).append("<").append(ME).append(" instanceId='").append(instanceId).append("'>");
+      return sb.toString();
    }
 }
