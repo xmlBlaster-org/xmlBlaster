@@ -2,8 +2,8 @@
 Name:      Timeout.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Handling the Client data
-Version:   $Id: Timeout.java,v 1.2 2000/05/26 08:23:39 ruff Exp $
+Comment:   Allows you be called back after a given delay.
+Version:   $Id: Timeout.java,v 1.3 2000/05/26 20:47:21 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -17,25 +17,43 @@ import java.util.*;
  * Note that this class should be called Timer, but with JDK 1.3 there
  * will be a java.util.Timer.
  * <p />
- * There is a single background thread that is used to execute all of the timer's tasks,
- * sequentially. Timer tasks should complete quickly. If a timer task takes excessive time to complete, it "hogs" the timer's
+ * There is a single background thread that is used to execute the I_Timeout.timeout() callback.
+ * Timer callbacks should complete quickly. If a timeout() takes excessive time to complete, it "hogs" the timer's
  * task execution thread. This can, in turn, delay the execution of subsequent tasks, which may "bunch up" and execute in
  * rapid succession when (and if) the offending task finally completes.
  * <p />
  * This singleton is thread-safe.
  * <p />
- * This class does not offer real-time guarantees.
+ * This class does not offer real-time guarantees, but usually notifies you within ~ 20 milliseconds
+ * of the scheduled time.
  * <p />
- * Adding or removing a timer is very perfomant, also when huge amounts of timers (> 1000) are used.
+ * Adding or removing a timer is good performing, also when huge amounts of timers (> 1000) are used.
  * <p />
  * TODO: Use a thread pool to dispatch the timeout callbacks.
+ * <p />
+ * Example:<br />
+ * <pre>
+ * public class MyClass implements I_Timeout {
+ *   ...
+ *   Timeout timeout = Timeout.getInstance();
+ *   Long timeoutHandle = timeout.addTimeoutListener(this, 4000L, "myTimeout");
+ *   ...
+ *   public void timeout(Object userData) {
+ *      System.out.println("Timeout happened");
+ *   }
+ *   ...
+ * }
+ * </pre>
  */
 public class Timeout extends Thread
 {
+   /** Name for logging output */
    private static String ME = "Timeout";
-   private static Timeout theTimeout = null;   // Singleton pattern
+   /** The singleton handle */
+   private static Timeout theTimeout = null;
    /** Sorted map */
    private TreeMap map = null;
+   /** Start/Stop the Timeout manager thread */
    private boolean running = true;
 
    /**
@@ -111,6 +129,7 @@ public class Timeout extends Thread
     * <p />
     * @param listener Your callback handle (you need to implement this interface)
     * @param delay The timeout in milliseconds
+    * @param userData Some arbitrary data you supply, it will be routed back to you when the timeout occurs through method I_Timeout.timeout()
     * @return A handle which you can use to unregister with removeTimeoutListener()
     */
    public final Long addTimeoutListener(I_Timeout listener, long delay, Object userData) throws XmlBlasterException
@@ -143,18 +162,18 @@ public class Timeout extends Thread
    /**
     * Remove a listener before the timeout happened.
     * <p />
-    * @param listener Your callback handle (you need to implement this interface)
-    * @param delay The timeout in milliseconds
-    * @return A handle which you can use to unregister
+    * @param key The timeout handle you received by a previous addTimeoutListener() call
     */
    public final void removeTimeoutListener(Long key) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "Entering removeTimeoutListener(" + key + ") ...");
       synchronized(map) {
          Container container = (Container)map.remove(key);
-         container.callback = null;
-         container.userData = null;
-         container = null;
+         if (container != null) {
+            container.callback = null;
+            container.userData = null;
+            container = null;
+         }
       }
    }
 
@@ -163,11 +182,25 @@ public class Timeout extends Thread
     * Reset all pending timeouts.
     * <p />
     */
-   public final void removeAll() throws XmlBlasterException
+   public final void removeAll()
    {
       if (Log.CALLS) Log.calls(ME, "Entering removeAll() ...");
       synchronized(map) {
          map.clear();
+      }
+   }
+
+
+   /**
+    * Reset this singleton, stop the Timeout manager thread. 
+    */
+   public final void destroy()
+   {
+      removeAll();
+      running = false;
+      synchronized(theTimeout) { theTimeout.notify(); }
+      synchronized (Timeout.class) {
+         theTimeout = null;
       }
    }
 
@@ -199,6 +232,10 @@ public class Timeout extends Thread
 
       //==== 1. We test the functionality:
       Log.info(ME, "Phase 1: Testing basic functionality ...");
+
+      // Test to remove invalid keys
+      timeout.removeTimeoutListener(null);
+      timeout.removeTimeoutListener(new Long(12));
 
       // We have the internal knowledge that the key is the scheduled timeout in millis since 1970
       // so we use it here for testing ...
@@ -235,7 +272,8 @@ public class Timeout extends Thread
       //===== 2. We test a big load:
       final int numTimers = 1000;
       Log.info(ME, "Phase 2: Testing " + numTimers + " timeouts ...");
-      timeout.removeAll();
+      timeout.destroy();
+      timeout = Timeout.getInstance(); // get a new handle
       class Dummy2 implements I_Timeout
       {
          private String ME = "Dummy2";
