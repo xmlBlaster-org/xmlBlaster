@@ -3,24 +3,17 @@ Name:      TestGetFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestGetFilter.java,v 1.1 2002/03/28 15:21:03 ruff Exp $
+Version:   $Id: TestGetFilter.java,v 1.2 2002/03/28 16:01:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
 import org.xmlBlaster.util.Log;
-import org.jutils.init.Args;
-import org.jutils.time.StopWatch;
-
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.DisconnectQos;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
-import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.client.UpdateQoS;
 import org.xmlBlaster.client.GetQosWrapper;
-import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.AccessFilterQos;
 import org.xmlBlaster.util.ServerThread;
@@ -29,9 +22,10 @@ import test.framework.*;
 
 
 /**
- * This client does test login sessions.<br />
- * login/logout combinations are checked with subscribe()/publish() calls
+ * This client tests the <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/mime.plugin.accessfilter.html">
+ * access filter plugin framework</a> on get() invocations. 
  * <p />
+ * We start our own xmlBlaster server in a thread.
  * This client may be invoked multiple time on the same xmlBlaster server,
  * as it cleans up everything after his tests are done.
  * <p>
@@ -68,7 +62,7 @@ public class TestGetFilter extends TestCase
     * Sets up the fixture.
     * <p />
     * We start an own xmlBlaster server in a separate thread,
-    * it has configured to load our simple demo MIME filter plugin.
+    * it is configured to load our simple demo MIME filter plugin.
     * <p />
     * Then we connect as a client
     */
@@ -100,20 +94,6 @@ public class TestGetFilter extends TestCase
          Thread.currentThread().dumpStack();
          Log.error(ME, "Can't connect to xmlBlaster: " + e.toString());
       }
-
-      /*
-      // Get a message with a supplied filter
-      try {
-         GetQosWrapper qos = new GetQosWrapper();
-         qos.addAccessFilter(new AccessFilterQos("ContentLenFilter", "1.0", ""+filterMessageContentBiggerAs));
-
-         MessageUnit[] msgUnits = con.get("<key oid='MSG'/>", qos.toXml());
-         Log.info(ME, "Success: Get ription-id=" + subscribeOid + " done");
-      } catch(XmlBlasterException e) {
-         Log.warn(ME, "XmlBlasterException: " + e.reason);
-         assert("subscribe - XmlBlasterException: " + e.reason, false);
-      }
-      */
    }
 
    /**
