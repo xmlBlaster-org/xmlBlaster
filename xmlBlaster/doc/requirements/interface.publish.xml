@@ -124,7 +124,7 @@ string time = TimestampFactory::getTimeAsString(Timestamp timestamp); // C++
    &lt;!-- The message is automatically destroyed after 60000 milliseconds -->
    &lt;expiration lifeTime='60000'/>
 
-   &lt;!-- The message is saved to harddisk to be recoverable after a server crash -->
+   &lt;!-- The message is saved to harddisk to be recoverable after a crash -->
    &lt;persistent/>
 
    &lt;!-- Don't update messages with identical content as the predecessor -->
@@ -140,7 +140,8 @@ string time = TimestampFactory::getTimeAsString(Timestamp timestamp); // C++
    &lt;!-- Administration: configure the topic on first publish (optional) -->
    &lt;topic readonly='false' destroyDelay='30000' createDomEntry='true'>
       &lt;persistence relating='msgUnitStore' maxEntries='1000' maxBytes='4000'/>
-      &lt;queue relating='history' type='CACHE' version='1.0' maxEntries='1000' maxBytes='4000'/>
+      &lt;queue relating='history' type='CACHE' version='1.0'
+                maxEntries='1000' maxBytes='4000'/>
    &lt;/topic>
 &lt;/qos>
 </pre>
@@ -174,15 +175,17 @@ string time = TimestampFactory::getTimeAsString(Timestamp timestamp); // C++
    &lt;persistent/>  &lt;!-- message is recovered on server crash -->
 
    &lt;forceUpdate>false&lt;/forceUpdate>
-                     &lt;!-- messages with identical content as the predecessor
-                             are not updated -->
+                 &lt;!-- messages with identical content as the predecessor
+                         are not updated -->
 
-   &lt;!-- Send to all login sessions of user 'Tim', if Tim is offline queue it -->
+   &lt;!-- Send to all login sessions of user 'Tim',
+           if Tim is offline queue it -->
    &lt;destination queryType='EXACT' forceQueuing='true'>
       Tim
    &lt;/destination>
 
-   &lt;!-- The login session '-2' of 'Ben' logged in at cluster node 'heron' -->
+   &lt;!-- The login session '-2' of 'Ben' logged in
+           at cluster node 'heron' -->
    &lt;destination>
       /node/heron/client/Ben/-2
    &lt;/destination>
@@ -191,12 +194,13 @@ string time = TimestampFactory::getTimeAsString(Timestamp timestamp); // C++
       //[GROUP='Manager']
    &lt;/destination>
 
-   &lt;!-- Administration: configure the topic on first publish (optional) -->
+   &lt;!-- Administration: configure the topic on first publish
+          (optional) -->
    &lt;topic readonly='false' destroyDelay='60000' createDomEntry='false'>
-      &lt;persistence relating='msgUnitStore' type='CACHE' version='1.0' maxEntries='1000'
-                      maxBytes='4000' onOverflow='deadMessage'/>
-      &lt;queue relating='history' type='CACHE' version='1.0' maxEntries='1000'
-                      maxBytes='4000' onOverflow='exception'/>
+      &lt;persistence relating='msgUnitStore' type='CACHE' version='1.0'
+                maxEntries='1000' maxBytes='4000' onOverflow='deadMessage'/>
+      &lt;queue relating='history' type='CACHE' version='1.0'
+                maxEntries='1000' maxBytes='4000' onOverflow='exception'/>
    &lt;/topic>
 &lt;/qos>
 </pre>
@@ -239,10 +243,10 @@ string time = TimestampFactory::getTimeAsString(Timestamp timestamp); // C++
 
    &lt;!-- Configure the topic on first publish -->
    &lt;topic readonly='false' destroyDelay='60000' createDomEntry='true'>
-      &lt;persistence relating='msgUnitStore' type='CACHE' version='1.0' maxEntries='1000' maxBytes='4000'
-                       onOverflow='deadMessage'/>
-      &lt;queue relating='history' type='CACHE' version='1.0' maxEntries='1000'
-                       maxBytes='4000' onOverflow='exception'/>
+      &lt;persistence relating='msgUnitStore' type='CACHE' version='1.0'
+                 maxEntries='1000' maxBytes='4000' onOverflow='deadMessage'/>
+      &lt;queue relating='history' type='CACHE' version='1.0'
+                 maxEntries='1000' maxBytes='4000' onOverflow='exception'/>
    &lt;/topic>
 &lt;/qos>
 </pre>
@@ -256,7 +260,8 @@ string time = TimestampFactory::getTimeAsString(Timestamp timestamp); // C++
       This is the XmlRpc server interface variant:
       </p>
       <pre>
-   public String publish (String sessionId, Vector msgUnitWrap) throws XmlBlasterException
+   public String publish (String sessionId, Vector msgUnitWrap)
+                                             throws XmlBlasterException
       </pre>
    </example>
 
@@ -329,8 +334,10 @@ $connectQos = "&lt;qos>".
               "  &lt;session timeout='86400000' maxSessions='10'/>".
               "&lt;/qos>";
 
-# Call the remote server and get our result (we need to port to connect(), see XmlBlaster.pm).
-$sessionId = $server->call('authenticate.login', "testpubUser", "secret", $connectQos, "");
+# Call the remote server and get our result (we need to port to connect(),
+# see XmlBlaster.pm).
+$sessionId = $server->call('authenticate.login', "testpubUser",
+                           "secret", $connectQos, "");
 print "\nLogin success on $server_url, got secret sessionId=$sessionId \n";
 
 # Publish a volatile message
