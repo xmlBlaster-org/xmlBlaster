@@ -1,5 +1,7 @@
 Marcel 2003-12-06
 
+See: http://sources.redhat.com/pthreads-win32/
+
 Changed in pthread.h
 
 #include <sched.h>
@@ -14,4 +16,7 @@ This way we avoid to set the compiler include additionally to
 
 on Windows.
 
-See http://sources.redhat.com/pthreads-win32/
+
+pthread tutorial:
+
+  http://www.llnl.gov/computing/tutorials/workshops/workshop/pthreads/MAIN.html#Mutexes
