@@ -161,13 +161,13 @@ public class TestSubXPath extends TestCase
 
       String oid = "INITIAL";
 
-      subscribeXPath("//demo");
+      subscribeXPath("//demoXPath");
       assertEquals("numReceived after subscribe", 0, this.updateInterceptor.waitOnUpdate(1000L, null, null));
       this.updateInterceptor.clear();
 
       try {
          PublishKey pk = new PublishKey(glob, oid, "text/xml", "1.0");
-         pk.setClientTags("<org.xmlBlaster><demo/></org.xmlBlaster>");
+         pk.setClientTags("<org.xmlBlaster><demoXPath/></org.xmlBlaster>");
          PublishQos pq = new PublishQos(glob);
          MsgUnit msgUnit = new MsgUnit(pk, "Hi", pq);
          PublishReturnQos tmp = senderConnection.publish(msgUnit);
