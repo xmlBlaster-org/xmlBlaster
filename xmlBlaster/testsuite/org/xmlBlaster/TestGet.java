@@ -3,7 +3,7 @@ Name:      TestGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestGet.java,v 1.12 2000/06/25 18:32:44 ruff Exp $
+Version:   $Id: TestGet.java,v 1.13 2000/07/11 08:53:46 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -84,6 +84,7 @@ public class TestGet extends TestCase
     */
    protected void tearDown()
    {
+      // TODO: We should use the helpers GetKeyWrapper and GetQosWrapper:
       String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'>\n" +
                       "</key>";
       String qos = "<qos></qos>";
