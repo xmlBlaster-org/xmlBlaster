@@ -3,7 +3,7 @@ Name:      CbManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: CbManager.java,v 1.5 2002/05/31 05:43:44 ruff Exp $
+Version:   $Id: CbManager.java,v 1.6 2002/05/31 16:54:17 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.callback;
@@ -159,48 +159,50 @@ public final class CbManager
       XmlBlasterException ex = null; // to remember exception
       String[] retArr = null;
 
-      try {
          // Try to find a connection which delivers the message ...
          // PtP messages from the subject Queue are delivered to all reachable sessions of this user ...
 
-         for (int ii=0; ii<cbConnectionArr.length; ii++) {
-            if (log.TRACE) log.trace(ME, "Trying cb# " + ii + " state=" + cbConnectionArr[ii].getStateStr() + " ...");
-            if (cbConnectionArr[ii].isAlive()) {
-               try {
-                  retArr = cbConnectionArr[ii].sendUpdate(msg, redeliver);
-                  if (msgQueue.isSessionQueue())
-                     return retArr;
-               } catch(XmlBlasterException e) {
-                  ex = e;
-                  if (log.TRACE && ii<(cbConnectionArr.length-1)) log.trace(ME, "Callback failed, trying other addresses");
+      for (int ii=0; ii<cbConnectionArr.length; ii++) {
+         if (log.TRACE) log.trace(ME, "Trying cb# " + ii + " state=" + cbConnectionArr[ii].getStateStr() + " ...");
+         if (cbConnectionArr[ii].isAlive()) {
+            try {
+               retArr = cbConnectionArr[ii].sendUpdate(msg, redeliver);
+               if (msgQueue.isSessionQueue()) {
+                  if (ex != null) killDeadCons();
+                  return retArr;
                }
+            } catch(XmlBlasterException e) {
+               ex = e;
+               if (log.TRACE && ii<(cbConnectionArr.length-1)) log.trace(ME, "Callback failed, trying other addresses");
             }
          }
-
-         if (msgQueue.isSubjectQueue() && retArr != null)
-            return retArr; // not very nice coded, for subject queue we deliver to all available sessions of this subject, loosing returns from some sessions
-
-         if (ex == null)
-            ex = new XmlBlasterException("CallbackFailed", "Callback of " + msg.length + " messages '" + msg[0].getUniqueKey() +
-               "' to client [" + cbConnectionArr[0].getCbAddress().getSessionId() + "] from [" + msg[0].getPublisherName() + "] failed, no callback connection is alive");
-
-         throw ex;
-
       }
-      finally {
-         if (ex != null) { // cleanup ...
-            while (true) {
-               CbConnection dead = null;
-               for (int ii=0; ii<cbConnectionArr.length; ii++) {
-                  if (cbConnectionArr[ii].isDead()) {
-                     dead = cbConnectionArr[ii];
-                  }
-               }
-               if (dead == null)
-                  break;
-               removeCbConnection(dead);
+
+      if (msgQueue.isSubjectQueue() && retArr != null) {
+         if (ex != null) killDeadCons();
+         return retArr; // not very nice coded, for subject queue we deliver to all available sessions of this subject, loosing returns from some sessions
+      }
+
+      if (ex == null)
+         ex = new XmlBlasterException("CallbackFailed", "Callback of " + msg.length + " messages '" + msg[0].getUniqueKey() +
+            "' to client [" + cbConnectionArr[0].getCbAddress().getSessionId() + "] from [" + msg[0].getPublisherName() + "] failed, no callback connection is alive");
+
+      killDeadCons();
+
+      throw ex;
+   }
+
+   private final void killDeadCons() {
+      while (true) {
+         CbConnection dead = null;
+         for (int ii=0; ii<cbConnectionArr.length; ii++) {
+            if (cbConnectionArr[ii].isDead()) {
+               dead = cbConnectionArr[ii];
             }
          }
+         if (dead == null)
+            break;
+         removeCbConnection(dead);
       }
    }
 
