@@ -88,7 +88,14 @@ public class CallbackSocketDriver implements I_CallbackDriver /* which extends I
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
     */
    public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo) {
-      log.error(ME, "init(PluginInfo) call not is expected, we are loaded dynamically if configured by ConnectQos");
+      if (log == null) {
+         this.glob = glob;
+         this.log = glob.getLog("socket");
+      }
+      // This can happen when on xmlBlaster restart a session is recovered from persistency
+      // and the client has not yet connected (so we can't reuse its socket for callbacks).
+      // In such a case this callback driver is loaded as a dummy.
+      log.trace(ME, "init(PluginInfo) call not is expected, we are loaded dynamically if configured by ConnectQos");
       this.pluginInfo = pluginInfo;
    }
 

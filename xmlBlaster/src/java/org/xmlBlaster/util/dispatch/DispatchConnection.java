@@ -273,7 +273,7 @@ abstract public class DispatchConnection implements I_Timeout
          return returnVal;
       }
       catch (Throwable e) { // the remote ping does not throw any XmlBlasterException, see xmlBlaster.idl
-         if (isAlive() && log.TRACE) log.trace(ME, "Exception from remote ping(), retryCounter=" + retryCounter + ", state=" + this.state.toString());
+         if (isAlive() && log.TRACE) log.trace(ME, "Exception from remote ping(), retryCounter=" + retryCounter + ", state=" + this.state.toString() + ": " + e.toString());
          handleTransition(byDispatchConnectionsHandler, e);
          return ""; // Only reached if from timeout
       }
