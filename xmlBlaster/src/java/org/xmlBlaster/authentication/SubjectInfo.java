@@ -34,7 +34,7 @@ import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.authentication.plugins.I_MsgSecurityInterceptor;
-import org.xmlBlaster.engine.admin.I_AdminSubject;
+import org.xmlBlaster.engine.admin.I_AdminSession;
 
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
 import org.xmlBlaster.util.error.MsgErrorInfo;
@@ -62,11 +62,14 @@ import java.util.Collections;
  * </p>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
-public final class SubjectInfo implements I_AdminSubject
+public final class SubjectInfo /* implements I_AdminSubject -> is delegated to SubjectInfoProtector */
 {
    private String ME = "SubjectInfo";
    private final Global glob;
    private final LogChannel log;
+
+   private final Authenticate authenticate;
+
    /** The cluster wide unique identifier of the subject e.g. "/node/heron/client/joe" */
    private SessionName subjectName;
    /** The partner class from the security framework */
@@ -83,6 +86,8 @@ public final class SubjectInfo implements I_AdminSubject
    private final MsgErrorHandler msgErrorHandler = null; // not yet implemented
 
    private final DeliveryStatistic deliveryStatistic;
+
+   private final SubjectInfoProtector subjectInfoProtector;
 
    private NodeId nodeId = null;
    private boolean determineNodeId = true;
@@ -120,7 +125,7 @@ public final class SubjectInfo implements I_AdminSubject
     * @param securityCtx  The security context of this subject
     * @param prop         The property from the subject queue, usually from connectQos.getSubjectQueueProperty()
     */
-   public SubjectInfo(Global glob, SessionName subjectName) //, I_Subject securityCtx, CbQueueProperty prop)
+   public SubjectInfo(Global glob, Authenticate authenticate, SessionName subjectName) //, I_Subject securityCtx, CbQueueProperty prop)
           throws XmlBlasterException {
       synchronized (SubjectInfo.class) {
          instanceId = instanceCounter;
@@ -128,6 +133,8 @@ public final class SubjectInfo implements I_AdminSubject
       }
       this.glob = glob;
       this.log = this.glob.getLog("auth");
+      this.authenticate = authenticate;
+      this.subjectInfoProtector = new SubjectInfoProtector(this);
       String prae = glob.getLogPrefix();
       this.subjectName = subjectName; //new SessionName(glob, glob.getNodeId(), loginName);
       if (this.subjectName.isSession()) {
@@ -137,8 +144,12 @@ public final class SubjectInfo implements I_AdminSubject
       this.ME = "SubjectInfo-" + instanceCounter + "-" + this.subjectName.getAbsoluteName();
       this.deliveryStatistic = new DeliveryStatistic();
 
-      this.glob.getAuthenticate().addLoginName(this); // register myself
+      this.authenticate.addLoginName(this); // register myself
       if (log.TRACE) log.trace(ME, "Created new SubjectInfo");
+   }
+
+   SubjectInfoProtector getSubjectInfoProtector() {
+      return this.subjectInfoProtector;
    }
 
    /**
@@ -172,7 +183,7 @@ public final class SubjectInfo implements I_AdminSubject
       this.subjectQueue.setNotifiedAboutAddOrRemove(true); // Entries are notified to support reference counting
 
       if (isDead()) {
-         this.glob.getAuthenticate().addLoginName(this); // register myself
+         this.authenticate.addLoginName(this); // register myself
       }
 
       this.state = ALIVE;
@@ -211,7 +222,7 @@ public final class SubjectInfo implements I_AdminSubject
       else
          log.warn(ME, "Destroying SubjectInfo " + getSubjectName() + " as clearQueue is set to true. Lost " + getSubjectQueue().getNumOfEntries() + " messages");
 
-      this.glob.getAuthenticate().removeLoginName(this);  // deregister
+      this.authenticate.removeLoginName(this);  // deregister
 
       this.state = DEAD;
 
@@ -537,18 +548,6 @@ public final class SubjectInfo implements I_AdminSubject
 
    /**
     * Find a session by its public session ID. 
-    * @param pubSessionId e.g. "-2"
-    * @return SessionInfo or null if not found
-    */
-   public final SessionInfo getSessionByPubSessionId(long pubSessionId) {
-      SessionName sessionName = new SessionName(glob, subjectName, pubSessionId);
-      synchronized (this.sessionMap) {
-         return (SessionInfo)this.sessionMap.get(sessionName.getAbsoluteName());
-      }
-   }
-
-   /**
-    * Find a session by its public session ID. 
     * @param sessionName
     * @return SessionInfo or null if not found
     */
@@ -761,13 +760,10 @@ public final class SubjectInfo implements I_AdminSubject
       if (publicSessionId == 0L) {
          return null;
       }
-      SessionInfo[] sessions = getSessions();
-      for (int i=0; i<sessions.length; i++) {
-         SessionInfo sessionInfo = sessions[i];
-         if (sessionInfo.getPublicSessionId() == publicSessionId)
-            return sessionInfo;
+      SessionName sessionName = new SessionName(glob, subjectName, publicSessionId);
+      synchronized (this.sessionMap) {
+         return (SessionInfo)this.sessionMap.get(sessionName.getAbsoluteName());
       }
-      return null;
    }
 
    public final boolean isUndef() {
@@ -797,12 +793,11 @@ public final class SubjectInfo implements I_AdminSubject
       }
    }
 
-
-   //=========== Enforced by I_AdminSubject ================
+   //=========== Enforced by I_AdminSubject and SubjectInfoProtector.java ================
    /**
     * @return uptime in seconds
     */
-   public final long getUptime() {
+   long getUptime() {
       return (System.currentTimeMillis() - this.uptime)/1000L;
    }
 
@@ -810,7 +805,7 @@ public final class SubjectInfo implements I_AdminSubject
     * How many update where sent for this client, the sum of all session and
     * subject queues of this clients.
     */
-   public final long getNumUpdates() {
+   long getNumUpdates() {
       long numUpdates = this.deliveryStatistic.getNumUpdate(); // The sessions which disappeared already are remembered here
       SessionInfo[] sessions = getSessions();
       for (int i=0; i<sessions.length; i++) {
@@ -820,11 +815,11 @@ public final class SubjectInfo implements I_AdminSubject
       return numUpdates;
    }
 
-   public final long getCbQueueNumMsgs() {
+   long getCbQueueNumMsgs() {
       return subjectQueue.getNumOfEntries();
    }
 
-   public final long getCbQueueMaxMsgs() {
+   long getCbQueueMaxMsgs() {
       return subjectQueue.getMaxNumOfEntries();
    }
 
@@ -832,14 +827,14 @@ public final class SubjectInfo implements I_AdminSubject
     * Access the number of sessions of this user.
     * @return The number of sessions of this user
     */
-   public final int getNumSessions() {
+   int getNumSessions() {
       return getSessions().length;
    }
 
    /**
     * @return The max allowed simultaneous logins of this user
     */
-   public final int getMaxSessions() {
+   int getMaxSessions() {
       return this.maxSessions;
    }
 
@@ -847,7 +842,7 @@ public final class SubjectInfo implements I_AdminSubject
     * Access a list of public session identifier e.g. "1,5,7,12"
     * @return An empty string if no sessions available
     */
-   public final String getSessionList() {
+   String getSessionList() {
       int numSessions = getNumSessions();
       if (numSessions < 1)
          return "";
@@ -862,10 +857,20 @@ public final class SubjectInfo implements I_AdminSubject
    }
 
    /**
+    * Find a session by its public session ID. 
+    * @param pubSessionId e.g. "-2"
+    * @return I_AdminSession or null if not found
+    */
+   I_AdminSession getSessionByPubSessionId(long pubSessionId) {
+      SessionInfo sessionInfo = getSessionByPublicId(pubSessionId);
+      return sessionInfo.getSessionInfoProtector();
+   }
+
+   /**
     * Kills all sessions of this client
     * @return The list of killed sessions (public session IDs)
     */
-   public final String getKillClient() throws XmlBlasterException {
+   String getKillClient() throws XmlBlasterException {
       int numSessions = getNumSessions();
       if (numSessions < 1)
          return "";

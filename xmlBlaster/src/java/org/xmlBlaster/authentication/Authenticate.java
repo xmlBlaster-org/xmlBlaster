@@ -37,7 +37,7 @@ import java.util.*;
  * <p>
  * The login method serves as a factory for a xmlBlaster.Server Reference
  */
-final public class Authenticate implements I_Authenticate, I_RunlevelListener
+final public class Authenticate implements I_RunlevelListener
 {
    final private String ME;
 
@@ -75,6 +75,10 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
    /** The singleton handle for this xmlBlaster server */
    private final I_XmlBlaster xmlBlasterImpl;
 
+   /** My security delegate layer which is exposed to the protocol plugins */
+   private final AuthenticateProtector encapsulator;
+
+
    /**
     */
    public Authenticate(Global global) throws XmlBlasterException
@@ -84,7 +88,8 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
       this.ME = "Authenticate" + glob.getLogPrefixDashed();
 
       if (log.CALL) log.call(ME, "Entering constructor");
-      this.glob.setAuthenticate(this);
+      this.encapsulator = new AuthenticateProtector(glob, this); // my security layer (delegate)
+      
       glob.getRunlevelManager().addRunlevelListener(this);
 
       plgnLdr = new PluginManager(global);
@@ -131,7 +136,7 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
       org.xmlBlaster.authentication.plugins.I_SecurityQos securityQos = new org.xmlBlaster.authentication.plugins.simple.SecurityQos(this.glob, loginName.getLoginName(), "");
       session.init(securityQos);
       I_Subject subject = session.getSubject();
-      SubjectInfo subjectInfo = new SubjectInfo(getGlobal(), loginName);
+      SubjectInfo subjectInfo = new SubjectInfo(getGlobal(), this, loginName);
       subjectInfo.toAlive(subject, new CbQueueProperty(getGlobal(), Constants.RELATING_SUBJECT, null));
       org.xmlBlaster.client.qos.ConnectQos connectQos = new org.xmlBlaster.client.qos.ConnectQos(glob);
       connectQos.getSessionQos().setSessionTimeout(0L);  // Lasts forever
@@ -285,7 +290,7 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
             subjectInfo = (SubjectInfo)this.loginNameSubjectInfoMap.get(subjectName.getLoginName());
             //log.error(ME, "DEBUG ONLY, subjectName=" + subjectName.toString() + " loginName=" + subjectName.getLoginName() + " state=" + toXml());
             if (subjectInfo == null) {
-               subjectInfo = new SubjectInfo(getGlobal(), subjectName); // registers itself in loginNameSubjectInfoMap
+               subjectInfo = new SubjectInfo(getGlobal(), this, subjectName); // registers itself in loginNameSubjectInfoMap
             }
          } // synchronized(this.loginNameSubjectInfoMap)
 
@@ -448,7 +453,7 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
       if (subjectInfo == null) {
          // strip nodeId, strip pubSessionId
          SessionName name = new SessionName(glob, glob.getNodeId(), subjectName.getLoginName());
-         subjectInfo = new SubjectInfo(getGlobal(), name);
+         subjectInfo = new SubjectInfo(getGlobal(), this, name);
          subjectInfo.toAlive(null, new CbQueueProperty(getGlobal(), Constants.RELATING_SUBJECT, null));
       }
 

@@ -16,7 +16,6 @@ import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
-import org.xmlBlaster.engine.admin.I_AdminSession;
 import org.xmlBlaster.engine.SubscriptionInfo;
 import org.xmlBlaster.authentication.SubjectInfo;
 import org.xmlBlaster.authentication.plugins.I_Session;
@@ -60,7 +59,7 @@ import org.xmlBlaster.engine.MsgErrorHandler;
  * </ol>
  * @author Marcel Ruff
  */
-public class SessionInfo implements I_Timeout, I_AdminSession
+public class SessionInfo implements I_Timeout
 {
    public static long sentMessages = 0L;
    private String ME = "SessionInfo";
@@ -82,6 +81,7 @@ public class SessionInfo implements I_Timeout, I_AdminSession
    private boolean isShutdown = false;
    /** Protects timerKey refresh */
    private final Object EXPIRY_TIMER_MONITOR = new Object();
+   private final SessionInfoProtector sessionInfoProtector;
 
    /**
     * All MsgUnit which shall be delivered to the current session of the client
@@ -109,6 +109,7 @@ public class SessionInfo implements I_Timeout, I_AdminSession
          log.error(ME+".illegalArgument", tmp);
          throw new XmlBlasterException(ME+".illegalArgument", tmp);
       }
+      this.sessionInfoProtector = new SessionInfoProtector(this);
 
       //String prefix = glob.getLogPrefix();
       subjectInfo.checkNumberOfSessions(connectQos.getData());
@@ -158,6 +159,13 @@ public class SessionInfo implements I_Timeout, I_AdminSession
       }
       else
          log.info(ME, "Session lasts forever, requested expiry timer was 0");
+   }
+
+   /**
+    * The protector prevents direct access to this sessionInfo instance. 
+    */
+   public final SessionInfoProtector getSessionInfoProtector() {
+      return this.sessionInfoProtector;
    }
 
    /**
