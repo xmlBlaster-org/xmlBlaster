@@ -133,9 +133,14 @@ struct CallbackServerUnparsedStruct {
    CallbackServerUnparsedSendResponse sendResponse;
    CallbackServerUnparsedSendXmlBlasterException sendXmlBlasterException;
    CallbackServerUnparsedDoRespond sendResponseOrException;
-
    pthread_mutex_t listenMutex;
 
+   /* Socket write access: */
+   XmlBlasterWriteToSocketFuncHolder writeToSocket;  /**< The function pointer to write n bytes of plain or compressed data to the socket
+                                                  Is initialized in initConnection(), outside users may choose to initialize it to some other function pointer */
+
+   /* Socket read access: */
+   XmlBlasterReadFromSocketFuncHolder readFromSocket; /**< Holding function pointer for compressed/uncompressed socket reads */
 };
 
 /**

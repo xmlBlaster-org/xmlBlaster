@@ -24,6 +24,7 @@ extern "C" {
 #include <util/queue/QueueInterface.h>
 #include <util/Properties.h>
 
+struct XmlBlasterZlibWriteBuffers;
 struct XmlBlasterConnectionUnparsedStruct;
 typedef struct XmlBlasterConnectionUnparsedStruct XmlBlasterConnectionUnparsed;
 
@@ -78,7 +79,16 @@ struct Dll_Export XmlBlasterConnectionUnparsedStruct {
    XMLBLASTER_LOG_LEVEL logLevel;
    XmlBlasterLogging log;
    void *logUserP;               /**< For outside users to pass a user object back to the logging implementation */
-   bool useUdpForOneway;
+   bool useUdpForOneway;         /**< For publishOneway() AND to start callback UDP server (for updateOneway()) */
+
+   /* Socket write access: */
+   XmlBlasterWriteToSocketFuncHolder writeToSocket;  /**< The function pointer to write n bytes of plain or compressed data to the socket
+                                                  Is initialized in initConnection(), outside users may choose to initialize it to some other function pointer */
+   struct XmlBlasterZlibWriteBuffers *zlibWriteBuf; /**< Is null if no "zlib:stream" compression is switched on */
+
+   /* Socket read access: */
+   XmlBlasterReadFromSocketFuncHolder readFromSocket; /**< Holding function pointer for compressed/uncompressed socket reads */
+   struct XmlBlasterZlibReadBuffers *zlibReadBuf; /**< Is null if no "zlib:stream" compression is switched on */
 };
 
 
