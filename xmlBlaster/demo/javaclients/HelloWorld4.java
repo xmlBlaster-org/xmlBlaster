@@ -4,6 +4,11 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
+import org.xmlBlaster.util.error.I_MsgErrorHandler;
+import org.xmlBlaster.util.error.I_MsgErrorInfo;
+import org.xmlBlaster.util.queue.I_QueueEntry;
+import org.xmlBlaster.util.enum.MethodName;
+import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
@@ -24,49 +29,115 @@ import org.xmlBlaster.client.I_XmlBlasterAccess;
 
 
 /**
- * This client connects to xmlBlaster in fail save mode and uses specific update handlers. 
+ * This client connects to xmlBlaster in failsafe mode and uses specific update handlers. 
  * <p />
  * In fail save mode the client will poll for the xmlBlaster server and
  * queue messages until the server is available.
+ * We show all available control of a client in failsafe mode.
  * <p />
  * Invoke: java HelloWorld4
  * <p />
- * Invoke: java HelloWorld4 -session.name joe -passwd secret
+ * Invoke: java HelloWorld4 -session.name joe/2 -passwd secret
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.html" target="others">xmlBlaster interface</a>
  */
 public class HelloWorld4
 {
    private final String ME = "HelloWorld4";
+   private final Global glob;
    private final LogChannel log;
    private I_XmlBlasterAccess con = null;
    private ConnectReturnQos conRetQos = null;
 
    public HelloWorld4(final Global glob) {
-      
+      this.glob = glob;
       log = glob.getLog(null);
 
       try {
          con = glob.getXmlBlasterAccess();
 
+         // Do all client side error handling our self
+         // this error handler is called when we are/were polling for the server:
+         con.setClientErrorHandler(new I_MsgErrorHandler() {
+
+               public void handleError(I_MsgErrorInfo msgErrorInfo) {
+                  if (msgErrorInfo == null) return;
+                  XmlBlasterException ex = msgErrorInfo.getXmlBlasterException();
+                  if (ex.isUser()) {
+                     log.error(ME, "Connection failed: " + msgErrorInfo.getXmlBlasterException().getMessage());
+                     if (msgErrorInfo.getDeliveryManager() != null) {
+                        msgErrorInfo.getDeliveryManager().toDead(ConnectionStateEnum.UNDEF, msgErrorInfo.getXmlBlasterException());
+                        if (msgErrorInfo.getQueue() != null)
+                           msgErrorInfo.getQueue().clear();
+                        msgErrorInfo.getDeliveryManager().shutdown();
+                        return;
+                     }
+                  }
+                  MsgQueueEntry[] entries = msgErrorInfo.getMsgQueueEntries();
+                  for (int i=0; i<entries.length; i++)
+                     log.error(ME, "Message '" + entries[i].getEmbeddedType() + "' '" +
+                                   entries[i].getLogId() + "' is lost: " + msgErrorInfo.getXmlBlasterException().getMessage());
+                  if (msgErrorInfo.getQueue() != null)
+                     msgErrorInfo.getQueue().clear();
+               }
+
+               public void handleErrorSync(I_MsgErrorInfo msgErrorInfo) throws XmlBlasterException {
+                  if (msgErrorInfo.getXmlBlasterException().isCommunication()) {
+                     handleError(msgErrorInfo);
+                     return;
+                  }
+                  throw msgErrorInfo.getXmlBlasterException(); // Throw back to client
+               }
+
+               public void shutdown() {
+               }
+            }
+         );
+
+
+         // Listen on status changes of our connection to xmlBlaster
          con.registerConnectionListener(new I_ConnectionStateListener() {
                
                public void reachedAlive(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-                  conRetQos = connection.getConnectReturnQos();
-                  log.info(ME, "I_ConnectionStateListener: We were lucky, connected to " + glob.getId() + " as " + conRetQos.getSessionName());
-                  //initClient();    // initialize subscription etc. again
-                  //try {
-                  //   connectionHandler.getQueue().clear(); // e.g. discard all msgs (it is our choice)
-                  //} catch (XmlBlasterException e) {
-                  //   log.error(ME, "Exception during reconnection recovery: " + e.getMessage());
-                  //}
+                  log.info(ME, "I_ConnectionStateListener.reachedAlive(): We were lucky, connected to " +
+                           connection.getConnectReturnQos().getSessionName());
+                  if (connection.getQueue().getNumOfEntries() > 0) {
+                     log.info(ME, "I_ConnectionStateListener.reachedAlive(): Queue contains " +
+                              connection.getQueue().getNumOfEntries() + " messages: " +
+                              connection.getQueue().toXml(""));
+                     try {
+                        java.util.ArrayList list = connection.getQueue().peek(-1, -1);
+                        for (int i=0; i<list.size(); i++) {
+                           log.info(ME, ((MsgQueueEntry)list.get(i)).toXml());
+                        }
+                        MsgQueueEntry entry = (MsgQueueEntry)connection.getQueue().peek();
+                        /*
+                        log.info(ME, "I_ConnectionStateListener.reachedAlive(): Discarding messages from queue");
+                        connection.getQueue().clear(); // e.g. discard all msgs (it is our choice)
+                        if (MethodName.CONNECT == entry.getMethodName()) {
+                           connection.getQueue().put(entry, false);
+                        }
+                        */
+                     }
+                     catch (XmlBlasterException e) {
+                     }
+                  }
+                  if (!connection.getConnectReturnQos().isReconnected()) {
+                     log.info(ME, "I_ConnectionStateListener.reachedAlive(): New server instance found");
+                     initClient();    // initialize subscription etc. again
+                  }
+                  else {
+                     log.info(ME, "I_ConnectionStateListener.reachedAlive(): Same server instance found");
+                  }
                }
 
                public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-                  log.warn(ME, "I_ConnectionStateListener: No connection to " + glob.getId() + ", we are polling ...");
+                  log.warn(ME, "I_ConnectionStateListener.reachedPolling(): No connection to " + glob.getId() + ", we are polling ...");
+                  initClient();    // initialize subscription etc., the requests are queued
+                                   // this is only needed if you start publishing offline (see doOurWork())
                }
 
                public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-                  log.error(ME, "I_ConnectionStateListener: Connection to " + glob.getId() + " is dead");
+                  log.error(ME, "I_ConnectionStateListener.reachedDead(): Connection to " + glob.getId() + " is dead");
                }
             });
 
@@ -103,45 +174,7 @@ public class HelloWorld4
          else
             log.info(ME, "Not connected to xmlBlaster, proceeding in fail save mode ...");
 
-
-         SubscribeKey sk = new SubscribeKey(glob, "Banking");
-         SubscribeQos sq = new SubscribeQos(glob);
-         SubscribeReturnQos sr1 = con.subscribe(sk, sq);
-
-
-         sk = new SubscribeKey(glob, "HelloWorld4");
-         sq = new SubscribeQos(glob);
-         SubscribeReturnQos sr2 = con.subscribe(sk, sq, new I_Callback() {
-            public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-               if (updateKey.getOid().equals("HelloWorld4"))
-                  log.info(ME, "Receiving asynchronous message '" + updateKey.getOid() +
-                           "' state=" + updateQos.getState() + " in HelloWorld4 handler");
-               else
-                  log.error(ME, "Receiving unexpected asynchronous message '" + updateKey.getOid() +
-                            "' with state '" + updateQos.getState() + "' in HelloWorld4 handler");
-               return "";
-            }
-         });  // subscribe with our specific update handler
-
-
-         PublishKey pk = new PublishKey(glob, "HelloWorld4", "text/plain", "1.0");
-         PublishQos pq = new PublishQos(glob);
-         MsgUnit msgUnit = new MsgUnit(pk, "Hi", pq);
-         PublishReturnQos retQos = con.publish(msgUnit);
-         log.info(ME, "Published message '" + pk.getOid() + "'");
-
-
-         pk = new PublishKey(glob, "Banking", "text/plain", "1.0");
-         pk.setClientTags("<Account><withdraw/></Account>"); // Add banking specific meta data
-         pq = new PublishQos(glob);
-         msgUnit = new MsgUnit(pk, "Ho".getBytes(), pq);
-         retQos = con.publish(msgUnit);
-         log.info(ME, "Published message '" + pk.getOid() + "'");
-
-         // Wait a second for messages to arrive before we logout
-         try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {}
-         log.info(ME, "Success, hit a key to exit");
-         try { System.in.read(); } catch(java.io.IOException e) {}
+         doOurWork();
       }
       catch (XmlBlasterException e) {
          log.error(ME, "Houston, we have a problem: " + e.getMessage());
@@ -167,6 +200,72 @@ public class HelloWorld4
             
             con.disconnect(new DisconnectQos(glob));
          }
+      }
+   }
+
+   /**
+    * We subsribe to some messages on startup or on reconnect
+    * to a new server instance. 
+    */
+   private void initClient() {
+      log.info(ME, "Entering initClient() and doing subscribes");
+      try {   
+         SubscribeKey sk = new SubscribeKey(glob, "Banking");
+         SubscribeQos sq = new SubscribeQos(glob);
+         sq.setWantInitialUpdate(false);
+         SubscribeReturnQos sr1 = con.subscribe(sk, sq);
+
+
+         sk = new SubscribeKey(glob, "HelloWorld4");
+         sq = new SubscribeQos(glob);
+         sq.setWantInitialUpdate(false);
+         SubscribeReturnQos sr2 = con.subscribe(sk, sq, new I_Callback() {
+            public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
+               if (updateKey.getOid().equals("HelloWorld4"))
+                  log.info(ME, "Receiving asynchronous message '" + updateKey.getOid() +
+                           "' state=" + updateQos.getState() + " in HelloWorld4 handler");
+               else
+                  log.error(ME, "Receiving unexpected asynchronous message '" + updateKey.getOid() +
+                            "' with state '" + updateQos.getState() + "' in HelloWorld4 handler");
+               return "";
+            }
+         });  // subscribe with our specific update handler
+      }
+      catch (XmlBlasterException e) {
+         log.error(ME, "Client initialization failed: " + e.getMessage());
+      }
+   }
+
+   /**
+    * We publish some messages. 
+    */
+   private void doOurWork() {
+      try {
+         // Wait for keyboard entry
+         log.info(ME, "Success, hit a key to publish messages");
+         try { System.in.read(); } catch(java.io.IOException e) {}
+
+         PublishKey pk = new PublishKey(glob, "HelloWorld4", "text/plain", "1.0");
+         PublishQos pq = new PublishQos(glob);
+         MsgUnit msgUnit = new MsgUnit(pk, "Hi", pq);
+         PublishReturnQos retQos = con.publish(msgUnit);
+         log.info(ME, "Published message '" + pk.getOid() + "'");
+
+
+         pk = new PublishKey(glob, "Banking", "text/plain", "1.0");
+         pk.setClientTags("<Account><withdraw/></Account>"); // Add banking specific meta data
+         pq = new PublishQos(glob);
+         msgUnit = new MsgUnit(pk, "Ho".getBytes(), pq);
+         retQos = con.publish(msgUnit);
+         log.info(ME, "Published message '" + pk.getOid() + "'");
+
+         // Wait a second for messages to arrive before we logout
+         try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {}
+         log.info(ME, "Success, hit a key to exit");
+         try { System.in.read(); } catch(java.io.IOException e) {}
+      }
+      catch (XmlBlasterException e) {
+         log.error(ME, "Houston, we have a problem: " + e.getMessage());
       }
    }
 
