@@ -3,7 +3,7 @@ Name:      CorbaCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaCallbackServer.java,v 1.25 2002/06/25 17:52:31 ruff Exp $
+Version:   $Id: CorbaCallbackServer.java,v 1.26 2002/08/04 17:13:19 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -45,7 +45,6 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
    private Global glob;
    private LogChannel log;
    private I_CallbackExtended boss;
-   private String loginName;
 
    public CorbaCallbackServer() {}
 
@@ -65,7 +64,7 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
    /**
     * Construct a CORBA callback server for xmlBlaster, used by java/corba clients.
     * <p />
-    * @param name The login name of the client, for logging and identification with update() callbacks.
+    * @param name The login name of the client, for logging only
     * @param boss My client which wants to receive the update() calls.
     */
    public void initialize(Global glob, String name, I_CallbackExtended boss) throws XmlBlasterException
@@ -83,7 +82,6 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
 
       this.ME = "CorbaCallbackServer-" + name;
       this.boss = boss;
-      this.loginName = name;
       this.orb = orb;
       createCallbackServer();
       log.info(ME, "Success, created CORBA callback server on host " + cbHostname);
