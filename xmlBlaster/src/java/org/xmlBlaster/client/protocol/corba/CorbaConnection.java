@@ -477,7 +477,6 @@ public class CorbaConnection implements I_XmlBlasterConnection
             xmlBlaster = ServerHelper.narrow(orb.string_to_object(xmlBlasterIOR));
          }
          if (log.TRACE) log.trace(ME, "Success, login for " + loginName);
-         if (log.DUMP) log.dump(ME, connectQos.toXml());
          return this.connectReturnQos;
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
          log.warn(ME, "Login failed for " + loginName + ": id=" + e.id + ": reason=" + e.reason);
