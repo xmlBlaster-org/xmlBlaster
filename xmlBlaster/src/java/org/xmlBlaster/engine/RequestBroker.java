@@ -1710,6 +1710,19 @@ synchronized (this) {
    public String getBuildJavaVersion() {
       return glob.getBuildJavaVersion();
    }
+   public String getDump() throws XmlBlasterException {
+      return glob.getAuthenticate().toXml() + glob.getAuthenticate().getXmlBlaster().toXml();
+   }
+   public void setDump(String fn) throws XmlBlasterException{
+      try {
+         org.jutils.io.FileUtil.writeFile(fn, getDump());
+         log.info(ME, "Dumped internal state to " + fn);
+      }
+      catch (org.jutils.JUtilsException e) {
+         throw new XmlBlasterException(e.id, e.reason);
+      }
+      
+   }
    public String getRunlevel() {
       return ""+glob.getRunlevelManager().getCurrentRunlevel();
    }

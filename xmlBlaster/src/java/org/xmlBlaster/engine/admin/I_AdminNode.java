@@ -25,6 +25,8 @@ public interface I_AdminNode {
    public String getBuildTimestamp();
    public String getBuildJavaVendor();
    public String getBuildJavaVersion();
+   public String getDump() throws XmlBlasterException;
+   public void setDump(String fn) throws XmlBlasterException;
 
    public String getRunlevel();
    public void setRunlevel(String level) throws XmlBlasterException;
