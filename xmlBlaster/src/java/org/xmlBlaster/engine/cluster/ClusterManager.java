@@ -142,7 +142,9 @@ public final class ClusterManager
       I_Driver[] drivers = glob.getPublicProtocolDrivers();
       for (int ii=0; ii<drivers.length; ii++) {
          I_Driver driver = drivers[ii];
-         this.myClusterNode.getNodeInfo().addAddress(new Address(driver.getProtocolId(), driver.getRawAddress()));
+         Address addr = new Address(glob, driver.getProtocolId(), glob.getId());
+         addr.setAddress(driver.getRawAddress());
+         this.myClusterNode.getNodeInfo().addAddress(addr);
       }
 
       if (drivers.length > 0)

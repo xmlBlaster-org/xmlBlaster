@@ -3,7 +3,7 @@ Name:      ConnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: ConnectQos.java,v 1.11 2002/04/26 21:31:59 ruff Exp $
+Version:   $Id: ConnectQos.java,v 1.12 2002/05/02 12:36:40 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -676,7 +676,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
             else if (tmpProp.isSessionRelated())
                sessionQueueProperty = tmpProp;
          }
-         tmpAddr = new CallbackAddress();
+         tmpAddr = new CallbackAddress(glob);
          tmpAddr.startElement(uri, localName, name, character, attrs);
          tmpProp.setCallbackAddress(tmpAddr);
          return;
@@ -946,7 +946,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       try {
          Global glob = new Global(args);
          ConnectQos qos;
-         qos = new ConnectQos(glob, new CallbackAddress("IOR"));
+         qos = new ConnectQos(glob, new CallbackAddress(glob, "IOR"));
          I_SecurityQos securityQos = new org.xmlBlaster.authentication.plugins.simple.SecurityQos("joe", "secret");
          qos.setSecurityQos(securityQos);
          System.out.println("Output from manually crafted QoS:\n" + qos.toXml());

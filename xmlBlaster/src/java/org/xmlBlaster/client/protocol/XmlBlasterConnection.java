@@ -709,7 +709,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
             addr.setAddress(this.cbServer.getCbAddress());
          }
          else {
-            addr = new CallbackAddress(this.cbServer.getCbProtocol());
+            addr = new CallbackAddress(glob, this.cbServer.getCbProtocol());
             addr.setAddress(this.cbServer.getCbAddress());
          }
          if (cbSessionId != null)

@@ -154,7 +154,10 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
          String name = glob.getProperty().get("name["+getId()+"]", glob.getId());
          String passwd = glob.getProperty().get("passwd["+getId()+"]", "secret");
 
-         CallbackAddress cbProps = new CallbackAddress();
+         // !!!! TODO: Set the protocol:
+         String protocol = "IOR";
+         Log.warn(ME, "Setting dynamic protocol is missing, using IOR for callbacks for the time being");
+         CallbackAddress cbProps = new CallbackAddress(glob, protocol, getId());
          String cbSessionId = glob.getProperty().get("security.cbSessionId["+getId()+"]", glob.getId());
          cbProps.setSessionId(cbSessionId);
 

@@ -30,7 +30,9 @@ public class Demo
          ConnectQos qos = new ConnectQos(glob, "simple", "1.0", "joe", "secret");
 
          String receiver = glob.getProperty().get("email.receiver", "xmlblaster@xmlblaster.org");
-         qos.addCallbackAddress(new CallbackAddress("EMAIL", receiver));
+         CallbackAddress cbAddr =new CallbackAddress(glob, "EMAIL");
+         cbAddr.setAddress(receiver);
+         qos.addCallbackAddress(cbAddr);
          
          con.connect(qos, null);  // Login to xmlBlaster without callback instantiation
 

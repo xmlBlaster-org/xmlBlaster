@@ -3,7 +3,7 @@ Name:      ClientSubEmail.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSubEmail.java,v 1.8 2002/05/01 21:39:51 ruff Exp $
+Version:   $Id: ClientSubEmail.java,v 1.9 2002/05/02 12:36:39 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -82,9 +82,18 @@ public class ClientSubEmail implements I_Callback
          String loginName = Args.getArg(args, "-name", ME);
          String passwd = Args.getArg(args, "-passwd", "secret");
          ConnectQos loginQos = new ConnectQos(glob); // creates "<qos></qos>" string
-         loginQos.addCallbackAddress(new CallbackAddress("EMAIL", Args.getArg(args, "-email", "ruff@swand.lake.de")));
-         loginQos.addCallbackAddress(new CallbackAddress("EMAIL", Args.getArg(args, "-email2", "et@xyz.org")));
-         loginQos.addCallbackAddress(new CallbackAddress("EMAIL", Args.getArg(args, "-email3", "root@localhost")));
+
+         CallbackAddress c = new CallbackAddress(glob, "EMAIL");
+         c.setAddress(Args.getArg(args, "-email", "et@xyz.org"));
+         loginQos.addCallbackAddress(c);
+
+         c = new CallbackAddress(glob, "EMAIL");
+         c.setAddress(Args.getArg(args, "-email2", "root@localhost"));
+         loginQos.addCallbackAddress(c);
+
+         c = new CallbackAddress(glob, "EMAIL");
+         c.setAddress(Args.getArg(args, "-email3", "et@xyz.org"));
+         loginQos.addCallbackAddress(c);
 
          XmlBlasterConnection blasterConnection = new XmlBlasterConnection(glob);
          blasterConnection.login(loginName, passwd, loginQos, this);

@@ -3,7 +3,7 @@ Name:      SocketCallbackImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using plain socket
-Version:   $Id: SocketCallbackImpl.java,v 1.15 2002/03/17 07:29:03 ruff Exp $
+Version:   $Id: SocketCallbackImpl.java,v 1.16 2002/05/02 12:36:39 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -33,6 +33,7 @@ import java.io.IOException;
 public class SocketCallbackImpl extends Executor implements Runnable, I_CallbackServer
 {
    private final String ME;
+   private Global glob = null;
    /** The connection manager 'singleton' */
    private final SocketConnection sockCon;
    /** A unique name for this client socket */
@@ -63,6 +64,7 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
    /** Initialize and start the callback server */
    public final void initialize(Global glob, String loginName, I_CallbackExtended cbClient) throws XmlBlasterException
    {
+      this.glob = glob;
       setCbClient(cbClient); // access callback client in super class Executor:callback
    }
 
@@ -123,7 +125,7 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
     */
    public CallbackAddress getCallbackHandle()
    {
-      CallbackAddress addr = new CallbackAddress("SOCKET");
+      CallbackAddress addr = new CallbackAddress(glob, "SOCKET");
       addr.setAddress(callbackAddressStr);
       return addr;
    }

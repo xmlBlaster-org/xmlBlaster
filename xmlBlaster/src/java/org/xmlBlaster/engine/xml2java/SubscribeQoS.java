@@ -3,7 +3,7 @@ Name:      SubscribeQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: SubscribeQoS.java,v 1.11 2002/04/26 21:31:52 ruff Exp $
+Version:   $Id: SubscribeQoS.java,v 1.12 2002/05/02 12:36:39 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -165,7 +165,7 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
             tmpProp = new QueueProperty(glob, null); // Use default queue properties for this callback address
             queuePropertyVec.addElement(tmpProp);
          }
-         tmpAddr = new CallbackAddress();
+         tmpAddr = new CallbackAddress(glob);
          tmpAddr.startElement(uri, localName, name, character, attrs);
          tmpProp.setCallbackAddress(tmpAddr);
          return;

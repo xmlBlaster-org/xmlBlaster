@@ -166,14 +166,14 @@ public final class NodeInfo
       }
       if (name.equalsIgnoreCase("address")) {
          inAddress = true;
-         tmpAddress = new Address();
+         tmpAddress = new Address(glob, "", getId());
          tmpAddress.startElement(uri, localName, name, character, attrs);
          return true;
       }
 
       if (name.equalsIgnoreCase("callback")) {
          inCallback = true;
-         tmpCbAddress = new CallbackAddress();
+         tmpCbAddress = new CallbackAddress(glob);
          tmpCbAddress.startElement(uri, localName, name, character, attrs);
          return true;
       }

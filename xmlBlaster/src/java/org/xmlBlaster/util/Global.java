@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, using org.jutils
-Version:   $Id: Global.java,v 1.6 2002/05/01 21:40:14 ruff Exp $
+Version:   $Id: Global.java,v 1.7 2002/05/02 12:36:40 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -146,7 +146,7 @@ public class Global
     */
    public final Address getBootstrapAddress() {
       if (bootstrapAddress == null) {
-         bootstrapAddress = new Address();
+         bootstrapAddress = new Address(this);
          boolean supportOldStyle = true; // for a while we support the old style -iorHost and -iorPort
          if (supportOldStyle) {
             String iorHost = getProperty().get("iorHost", getLocalIP());
