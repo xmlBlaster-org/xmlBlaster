@@ -10,7 +10,6 @@ import org.xmlBlaster.util.qos.TopicProperty;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
-import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.key.GetKey;
@@ -54,7 +53,7 @@ import org.xmlBlaster.client.protocol.XmlBlasterConnection;
  * </p>
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.html" target="others">xmlBlaster interface</a>
  */
-public class HelloWorldPublish implements I_Callback
+public class HelloWorldPublish
 {
    private final String ME = "HelloWorldPublish";
    private final Global glob;
@@ -101,7 +100,7 @@ public class HelloWorldPublish implements I_Callback
          log.info(ME, "============= CreatingConnectQos");
          ConnectQos qos = new ConnectQos(glob);
          log.info(ME, "ConnectQos is " + qos.toXml());
-         ConnectReturnQos crq = con.connect(qos, this);  // Login to xmlBlaster, register for updates
+         ConnectReturnQos crq = con.connect(qos, null);  // Login to xmlBlaster, register for updates
          log.info(ME, "Connect success as " + crq.toXml());
 
          for(int i=0; i<numPublish; i++) {
@@ -163,23 +162,6 @@ public class HelloWorldPublish implements I_Callback
          e.printStackTrace();
          log.error(ME, e.toString());
       }
-   }
-
-   public String update(String cbSessionId, UpdateKey updateKey, byte[] content,
-                        UpdateQos updateQos)
-   {
-      if (updateKey.isInternal()) {
-         log.info("", "Received unexpected internal message '" +
-              updateKey.getOid() + " from xmlBlaster");
-         return "";
-      }
-
-      log.info("", "Received asynchronous message '" + updateKey.getOid() +
-                   "' state=" + updateQos.getState() +
-                   " content=" + new String(content) + " from xmlBlaster");
-
-      UpdateReturnQos uq = new UpdateReturnQos(glob);
-      return uq.toXml();
    }
 
    /**
