@@ -3,7 +3,7 @@ Name:      UpdateKey.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with DOM
-Version:   $Id: UpdateKey.java,v 1.2 1999/12/14 23:18:56 ruff Exp $
+Version:   $Id: UpdateKey.java,v 1.3 1999/12/15 00:45:10 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -49,8 +49,8 @@ public class UpdateKey extends HandlerBase
    /** value from attribute <key oid="..."> */
    protected String keyOid = null;
 
-   /** value from attribute <key oid="" mimeType="..."> */
-   protected String mimeType = null;
+   /** value from attribute <key oid="" contentMime="..."> */
+   protected String contentMime = null;
 
    /**
     * The original key in XML syntax, for example:
@@ -97,7 +97,7 @@ public class UpdateKey extends HandlerBase
 
 
    /**
-    * Access the $lt;key oid="...">. 
+    * Access the $lt;key oid="...">.
     * @return The unique key oid
     */
    public String getUniqueKey()
@@ -107,12 +107,12 @@ public class UpdateKey extends HandlerBase
 
 
    /**
-    * Find out which mime type (syntax) of the XmlKey_literal String.
-    * @return "text/xml" only XML is supported
+    * Find out which mime type (syntax) the content of the message has. 
+    * @return e.g "text/xml" or "image/png"
     */
-   public String getMimeType()
+   public String getContentMime()
    {
-      return mimeType;
+      return contentMime;
    }
 
 
@@ -169,14 +169,14 @@ public class UpdateKey extends HandlerBase
                if( attrs.getName(i).equalsIgnoreCase("oid") ) {
                   keyOid = attrs.getValue(i).trim();
                }
-               if( attrs.getName(i).equalsIgnoreCase("mimeType") ) {
-                  mimeType = attrs.getValue(i).trim();
+               if( attrs.getName(i).equalsIgnoreCase("contentMime") ) {
+                  contentMime = attrs.getValue(i).trim();
                }
             }
             if (keyOid == null)
                Log.warning(ME, "The oid of the message is missing");
-            if (mimeType == null)
-               Log.warning(ME, "The mimeType of the message is missing");
+            if (contentMime == null)
+               Log.warning(ME, "The contentMime of the message is missing");
          }
          return;
       }
@@ -305,7 +305,7 @@ public class UpdateKey extends HandlerBase
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
 
-      sb.append(offset + "<key oid='" + getUniqueKey() + "' mimeType='" + getMimeType() + "'>");
+      sb.append(offset + "<key oid='" + getUniqueKey() + "' contentType='" + getContentMime() + "'>");
       sb.append(offset + "</key>\n");
       return sb;
    }

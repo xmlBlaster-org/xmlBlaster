@@ -3,7 +3,7 @@ Name:      PublishKeyWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey
-Version:   $Id: PublishKeyWrapper.java,v 1.1 1999/12/14 23:18:00 ruff Exp $
+Version:   $Id: PublishKeyWrapper.java,v 1.2 1999/12/15 00:45:10 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -12,7 +12,7 @@ import org.xmlBlaster.serverIdl.XmlBlasterException;
 
 
 /**
- * This class encapsulates the Message meta data and unique identifier (key) of a publish() message. 
+ * This class encapsulates the Message meta data and unique identifier (key) of a publish() message.
  * <p />
  * A typical <b>publish</b> key could look like this:<br />
  * <pre>
@@ -39,10 +39,11 @@ public class PublishKeyWrapper extends KeyWrapper
 {
    private String ME = "PublishKeyWrapper";
    private String mimeType = "text/plain";
+   private String clientTags = "";
 
 
    /**
-    * Constructor with given oid and mimeType. 
+    * Constructor with given oid and mimeType.
     * @param oid is optional and will be generated if ""
     * @param mimeType the MIME type of the content e.g. "text/xml" or "image/gif"
     */
@@ -54,25 +55,28 @@ public class PublishKeyWrapper extends KeyWrapper
    }
 
    /**
-    * Converts the data in XML ASCII string. 
+    * Converts the data in XML ASCII string.
     * @return An XML ASCII string
     */
    public String toString()
    {
-      return this.wrap("");
+      return this.wrap(clientTags);
    }
 
 
    /**
-    * May be used to integrate your application tags. 
+    * May be used to integrate your application tags.
     * <p />
     * Derive your special PublishKey class from this.
     * @param str Your tags in ASCII XML syntax
     */
    public String wrap(String str)
    {
+      clientTags = str;
       StringBuffer sb = new StringBuffer();
-      sb.append("<key oid='").append(oid).append("' contentMime='").append(mimeType).append("'>").append(str).append("</key>");
+      sb.append("<key oid='").append(oid).append("' contentMime='").append(mimeType).append("'>\n");
+      sb.append(clientTags);
+      sb.append("\n</key>");
       return sb.toString();
    }
 }

@@ -3,7 +3,7 @@ Name:      XmlToDom.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper which parses a XML ASCII string into a DOM tree
-Version:   $Id: XmlToDom.java,v 1.7 1999/12/10 16:44:45 ruff Exp $
+Version:   $Id: XmlToDom.java,v 1.8 1999/12/15 00:46:00 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -134,11 +134,11 @@ public class XmlToDom
       try {
          xmlDoc = xmlProc.load(input);
       } catch (java.io.IOException e) {
-         Log.error(ME+".IO", "Problems when building DOM tree from your XML-ASCII string: " + e.toString());
-         throw new XmlBlasterException(ME+".IO", "Problems when building DOM tree from your XML-ASCII string: " + e.toString());
+         Log.error(ME+".IO", "Problems when building DOM tree from your XML-ASCII string: " + e.toString() + "\n" + xmlKey_literal);
+         throw new XmlBlasterException(ME+".IO", "Problems when building DOM tree from your XML-ASCII string: " + e.toString() + "\n" + xmlKey_literal);
       } catch (org.xml.sax.SAXException e) {
-         Log.error(ME+".SAX", "Problems when building DOM tree from your XML-ASCII string: " + e.toString());
-         throw new XmlBlasterException(ME+".SAX", "Problems when building DOM tree from your XML-ASCII string: " + e.toString());
+         Log.error(ME+".SAX", "Problems when building DOM tree from your XML-ASCII string: " + e.toString() + "\n" + xmlKey_literal);
+         throw new XmlBlasterException(ME+".SAX", "Problems when building DOM tree from your XML-ASCII string: " + e.toString() + "\n" + xmlKey_literal);
       }
 
       rootNode = xmlDoc.getDocumentElement();
@@ -158,7 +158,7 @@ public class XmlToDom
 
 
    /**
-    * Dump DOM tree to XML ASCII String. 
+    * Dump DOM tree to XML ASCII String.
     * <p />
     * @param offset indenting of tags with given blanks e.g. "   "
     * @return string with key meta data in XML syntax

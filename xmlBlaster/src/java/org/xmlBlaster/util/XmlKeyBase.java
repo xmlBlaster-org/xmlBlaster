@@ -3,7 +3,7 @@ Name:      XmlKeyBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKeyBase.java,v 1.24 1999/12/14 23:22:43 ruff Exp $
+Version:   $Id: XmlKeyBase.java,v 1.25 1999/12/15 00:46:00 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -94,6 +94,7 @@ public class XmlKeyBase
    protected String xmlKey_literal;
 
    protected String keyOid = null;             // value from attribute <key oid="...">
+   protected String contentMime = null;
 
 
    /**
@@ -201,6 +202,7 @@ public class XmlKeyBase
     * Find out which mime type (syntax) of the XmlKey_literal String.
     * @return "text/xml" only XML is supported
     */
+    /*
    public String getMimeType() throws XmlBlasterException
    {
       loadDomTree();
@@ -210,6 +212,17 @@ public class XmlKeyBase
          return "text/plain";
       else
          return "text/plain";         // not supported!
+   }
+     */
+
+   /**
+    * Find out which mime type (syntax) the content of the message has. 
+    * @return The MIME type, for example "text/xml" in &lt;key oid='' contentMime='text/xml'>
+    */
+   public String getContentMime() throws XmlBlasterException
+   {
+      loadDomTree();
+      return contentMime;
    }
 
 
@@ -289,8 +302,8 @@ public class XmlKeyBase
       String nodeName = node.getNodeName();    // com.sun.xml.tree.ElementNode: getLocalName();
 
       if (!nodeName.equalsIgnoreCase("key")) {
-         Log.error(ME+".WrongRootNode", "The root node must be named \"key\"");
-         throw new XmlBlasterException(ME+".WrongRootNode", "The root node must be named \"key\"");
+         Log.error(ME+".WrongRootNode", "The root node must be named \"key\"\n" + xmlKey_literal);
+         throw new XmlBlasterException(ME+".WrongRootNode", "The root node must be named \"key\"\n" + xmlKey_literal);
       }
 
       keyOid = null;
@@ -315,6 +328,10 @@ public class XmlKeyBase
                }
             }
 
+            if (isPublish && attribute.getNodeName().equalsIgnoreCase("contentMime")) {
+               contentMime = attribute.getNodeValue();
+            }
+
             if (!isPublish && attribute.getNodeName().equalsIgnoreCase("queryType")) {
                String val = attribute.getNodeValue();
                if (val.equalsIgnoreCase("EXACT"))
@@ -334,6 +351,11 @@ public class XmlKeyBase
       if (keyOid == null) {
          Log.error(ME+".WrongRootNode", "Missing \"oid\" attribute in \"key\" tag");
          throw new XmlBlasterException(ME+".WrongRootNode", "Missing \"oid\" attribute in \"key\" tag");
+      }
+
+      if (isPublish && contentMime == null) {
+         Log.warning(ME+".MissingContentMime", "Missing \"contentMime\" attribute in \"key\" tag");
+         contentMime = "text/plain";
       }
 
       // extract the query string <key ...>'The query string'</key>
@@ -397,7 +419,7 @@ public class XmlKeyBase
 
       String oa_port = jacorb.orb.Environment.getProperty("OAPort");
       //  java.net.ServerSocket.getLocalPort();
-      
+
       long currentTime = System.currentTimeMillis();
 
       oid.append(ip_addr).append("-").append(oa_port).append("-").append(currentTime);
