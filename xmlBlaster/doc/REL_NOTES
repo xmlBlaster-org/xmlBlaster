@@ -1,5 +1,11 @@
    Release notes for xmlBlaster (http://www.xmlBlaster.org)
 
+Changes for 0.74 [Feb.??, 2000]
+==============================
+   - Added servlet / browser callback framework
+	  see xmlBlaster/src/java/org/xmlBlaster/protocol/http
+
+
 Changes for 0.73 [Feb.20, 2000]
 ==============================
    - Use the -P option to check out, so old directories won't show up any more:
