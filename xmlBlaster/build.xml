@@ -152,7 +152,7 @@ TODO
    <!-- General C++ compiling setup for VisualC++, Borland and GCC          -->
    <!-- Force from outside compiler: build.bat -Duse-msvc=1 ...             -->
    <!-- =================================================================== -->
-   <property name="compiler" value="msvc"/> <!-- "gcc" "VC6" "bcc" "msvc" -->
+   <property name="compiler" value="msvc"/> <!-- "gcc" "icc" "VC6" "bcc" "msvc" -->
    <property name="cpp.debug" value="true" />
    <property name="chmod.fail" value="true" />
 
@@ -243,6 +243,19 @@ TODO
       <compilerarg value="-D_REENTRANT" />
       <compilerarg value="-rdynamic" />       <!-- To show symbols of a backtrace (see XmlBlasterException.cpp, msgUtil.c) -->
       <compilerarg value="-export-dynamic" /> <!-- To show symbols of a backtrace (see XmlBlasterException.cpp, msgUtil.c) -->
+      <compilerarg value="-D_ENABLE_STACK_TRACE_" /> <!-- To show symbols of a backtrace (see XmlBlasterException.cpp, msgUtil.c) -->
+   </compiler>
+
+   <!-- Compile Intel C -->
+   <compiler id="icc" name="icc" if="use-icc">
+      <compilerarg value="-Wall" />
+      <compilerarg value="-wd810" />
+      <compilerarg value="-wd981" />
+      <compilerarg value="-wd188" />
+      <compilerarg value="-wd193" />
+      <compilerarg value="-wd279" />
+      <compilerarg value="-D_REENTRANT" />
+      <compilerarg value="-rdynamic" />       <!-- To show symbols of a backtrace (see XmlBlasterException.cpp, msgUtil.c) -->
       <compilerarg value="-D_ENABLE_STACK_TRACE_" /> <!-- To show symbols of a backtrace (see XmlBlasterException.cpp, msgUtil.c) -->
    </compiler>
 
@@ -1364,12 +1377,19 @@ TODO
 
       <switch value="${os.name}" caseinsensitive="false">
          <case value="Linux">
-            <property name="use-gcc" value="true" /> <!-- TODO: build.properties has no chance to change this (e.g. for Intel compiler) -->
+            <switch value="${use-icc}" caseinsensitive="true">
+               <case value="true">
+               </case>
+               <default>                                   <!-- (Linux: The .so compiled fine without this but exe linking used wrong CC compiler (from sun) -->
+                  <property name="use-gcc" value="true" /> <!-- TODO: build.properties has no chance to change this (e.g. for KAI compiler) -->
+               </default>
+            </switch>
          </case>                                     <!-- Probably we need to set it all the time in build.properties -->
          <default>                                   <!-- (Linux: The .so compiled fine without this but exe linking used wrong CC compiler (from sun) -->
          </default>
       </switch>
       <echo message=" use-gcc       = ${use-gcc}"/>  <!-- Linux/UNIX default -->
+      <echo message=" use-icc       = ${use-icc}"/>  <!-- Intel C/C++ compiler -->
       <echo message=" use-CC        = ${use-CC}"/>   <!-- SunOS C++, set in your build.properties -->
       <echo message=" use-msvc      = ${use-msvc}"/> <!-- LittleWeak default -->
       <echo message=" use-bcc       = ${use-bcc}"/>
@@ -1740,6 +1760,8 @@ TODO
 
          <linker name="gcc"  if="use-gcc" />
 
+         <linker name="icc"  if="use-icc" />
+
          <linker name="msvc" if="use-msvc"> <!-- linker does not support nested switch -->
             <!-- TAO -->
             <fileset dir="${CORBACPP_HOME}/../ace" includes="ace${tao.lib.type}.lib" if="TAO,windows" />
@@ -2006,6 +2028,7 @@ TODO
           objdir="${build.dir}/obj"
           multithreaded="true">
          <compiler refid="gcc"/>
+         <compiler refid="icc"/>
          <compiler refid="msvc"/> <!-- MS VC++ 7 -->
          <compiler refid="bcc"/>  <!-- Borland -->
          <compiler refid="CC"/>   <!-- SunOS C++ 5.3 -->
@@ -2028,6 +2051,8 @@ TODO
          </defineset>
 
          <linker name="gcc"  if="use-gcc" />
+
+         <linker name="icc"  if="use-icc" />
 
          <linker name="msvc" if="use-msvc"> <!-- linker does not support nested switch -->
            <libset dir="${src.c.dir}/socket" libs="pthreadVC" />
@@ -2079,6 +2104,7 @@ TODO
           objdir="${build.dir}/obj"
           multithreaded="true" exceptions="true">
          <compiler refid="gcc"/>
+         <compiler refid="icc"/>
          <compiler refid="msvc"/>
          <compiler refid="bcc"/>
          <compiler refid="CC"/>
@@ -2101,7 +2127,14 @@ TODO
            <define name="XMLBLASTER_C_COMPILE_AS_CPP" value="1" if="sun" /> <!-- Compile lib as C++ until somebody adds a 'cc' task to our build.xml -->
          </defineset>
 
-         <linker name="gcc"  if="use-gcc">
+         <linker name="gcc" if="use-gcc">
+            <linkerarg value="-Wl,-rpath=${lib.dir.absolute}" />
+            <libset dir="${lib.dir}" libs="xmlBlasterClientC" />  <!-- libxmlBlasterClientC.so -->
+            <syslibset dir="/lib" libs="dl" if="unix"/>
+            <syslibset dir="/usr/lib" libs="pthread" if="unix"/>
+         </linker>
+
+         <linker name="icc" if="use-icc">
             <linkerarg value="-Wl,-rpath=${lib.dir.absolute}" />
             <libset dir="${lib.dir}" libs="xmlBlasterClientC" />  <!-- libxmlBlasterClientC.so -->
             <syslibset dir="/lib" libs="dl" if="unix"/>
@@ -2117,14 +2150,17 @@ TODO
             <libset casesensitive="false" dir="${lib.dir.absolute}" libs="xmlBlasterClientC.dll" />  <!-- xmlBlasterClientC.dll -->
          </linker>
 
-         <linker name="bcc"  if="use-bcc" />
+         <linker name="bcc" if="use-bcc" />
 
-         <linker name="CC"> <!-- SunOS -->
+         <linker name="CC" if="use-CC"> <!-- SunOS -->
             <syslibset dir="/lib" libs="socket,posix4,nsl"/>
             <libset dir="${lib.dir}" libs="xmlBlasterClientC" /> <!-- libxmlBlasterClientC.so -->
             <linkerarg value="-i"/>
             <linkerarg value="-lpthread"/>
-            <linkerarg value="-R ${lib.dir.absolute}"/> <!-- Burn .so path into executables: -->
+             <!-- Burn .so path into executables: -R path1:path2:...
+               We put it in two 'linkerarg' to avoid quotes from cpp-tasks: "-R path1:path2:..." -->
+            <linkerarg value="-R"/>
+            <linkerarg value="${lib.dir}:${lib.dir.absolute}"/>
             <syslibset dir="/lib" libs="dl" />
          </linker>
 
