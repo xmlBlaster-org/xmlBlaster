@@ -3,7 +3,7 @@ Name:      UpdateKey.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with DOM
-Version:   $Id: UpdateKey.java,v 1.25 2002/07/06 17:59:16 ruff Exp $
+Version:   $Id: UpdateKey.java,v 1.26 2002/07/30 09:24:46 jbirkle Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -74,6 +74,15 @@ public class UpdateKey extends SaxHandlerBase
       init(xmlKey); // does the parsing
    }
 
+   /**
+    * Constructs an initialized UpdateKey object.
+    * You must call init yourself
+    */
+   public UpdateKey(Global glob) throws XmlBlasterException
+   {
+      this.glob = glob;
+      if (Log.CALL) Log.trace(ME, "Creating new UpdateKey");
+   }
 
    /**
     * Access the $lt;key oid="...">.
