@@ -1,7 +1,7 @@
-Howto install and compile xmlBlaster
+How to install and compile xmlBlaster
 ====================================
 
-You need JDK 2 or better to run xmlBlaster.
+You need CD 2 or better to run xmlBlaster.
 
 
 1) Install the JacORB CORBA library first (JacORB1_0-beta13):
@@ -45,7 +45,7 @@ You need JDK 2 or better to run xmlBlaster.
 
 
 5) Try the xmlBlaster server
-   Examples in [] use a local running Webserver, customize .jacorb_properties before
+   Examples in [] use a local running web server, customize .jacorb_properties before
 
    a) Start the JacORB Name Service:
 
@@ -53,7 +53,7 @@ You need JDK 2 or better to run xmlBlaster.
 
        [rm /tmp/NS_db;  ${JacORB_HOME}/bin/ns  /usr/local/httpd/htdocs/NS_Ref  /tmp/NS_db]
 
-   b) Start the xmlBlaster server (jaco is the java wrapper from jacORB):
+   b) Start the xmlBlaster server (jaco is the java wrapper from JacORB):
 
        ${JacORB_HOME}/bin/jaco org.xmlBlaster.Main /tmp/NS_Ref
 
@@ -77,7 +77,7 @@ You need JDK 2 or better to run xmlBlaster.
 -------------------------------------------------------------------------
 For developers
 
- 1.) If you use the testsuite-goodies you must set the path to the
+ 1.) If you use the testsuite goodies you must set the path to the
      testsuite- bin directory.
 
     sh, ksh or bash:
@@ -100,7 +100,7 @@ C++ clients with MICO 2.3.0 (http://www.mico.org)
    export MICO_HOME=/usr/local/mico
 
 3) cd ${XMLBLASTER_HOME}/testsuite/c++
-   and follow the intructions in ${XMLBLASTER_HOME}/testsuite/c++/README
+   and follow the instructions in ${XMLBLASTER_HOME}/testsuite/c++/README
 
 
 --------- PERL ----------------------------------------------------------
@@ -143,10 +143,10 @@ a) Using Tcl clients with TclMico http://www.mico.org/
 
 b) Using tcljava (TclBlend/JACL) with an ordinary Java client
    This allows scripting of Java with Tcl, and embedding the
-   Tcl interpreter (callrd jacl) into Java code.
+   Tcl interpreter (called jacl) into Java code.
 
  Here is a description how to use Tcl with MICO (a):
- First get a new Tcl release (eg 8.2) at http://www.scriptics.com
+ First get a new Tcl release (e.g. 8.2) at http://www.scriptics.com
  or directly with cvs:
     export CVSROOT=:pserver:cvs@cvs.scriptics.com:/cvsroot
     cvs login   (passwd = cvs)
