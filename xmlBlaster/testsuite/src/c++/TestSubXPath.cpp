@@ -7,7 +7,6 @@ Comment:   Testing the Timeout Features
 
 #include "TestSuite.h"
 
-using boost::lexical_cast;
 using namespace std;
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::thread;
@@ -20,7 +19,7 @@ namespace org { namespace xmlBlaster { namespace test {
 
 class TestSubXPath : public TestSuite, public virtual I_Callback
 {
-private:                                          
+private:
    Mutex             updateMutex_;
    int               numOfUpdates_;
 
@@ -116,7 +115,7 @@ public:
          assertEquals(log_, ME, (size_t)1, arr.size(), "Erase");
       } 
       catch(XmlBlasterException& e) { 
-			log_.error(ME, "Erase problem: " + e.getMessage());
+                        log_.error(ME, "Erase problem: " + e.getMessage());
          assert(0);
       }
    }

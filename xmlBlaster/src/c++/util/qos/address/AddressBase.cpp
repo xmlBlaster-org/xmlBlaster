@@ -3,7 +3,7 @@ Name:      AddressBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address string including protocol
-Version:   $Id: AddressBase.cpp,v 1.9 2003/02/13 18:59:28 laghi Exp $
+Version:   $Id: AddressBase.cpp,v 1.10 2003/02/18 21:24:26 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -16,11 +16,11 @@ Version:   $Id: AddressBase.cpp,v 1.9 2003/02/13 18:59:28 laghi Exp $
  */
 
 #include <util/qos/address/AddressBase.h>
-#include <boost/lexical_cast.hpp>
+#include <util/lexical_cast.h>
 #include <util/Global.h>
 
 using namespace org::xmlBlaster::util;
-using namespace boost;
+
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace address {
 

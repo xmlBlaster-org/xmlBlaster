@@ -16,10 +16,10 @@ Comment:   Holds the unique name of a cluster node
 
 #include <util/cluster/NodeId.h>
 #include <util/Global.h>
-#include <boost/lexical_cast.hpp>
+#include <util/lexical_cast.h>
 
 using namespace org::xmlBlaster::util;
-using namespace boost;
+
 
 namespace org { namespace xmlBlaster { namespace util { namespace cluster {
 

@@ -8,9 +8,9 @@ Comment:   Basic xmlBlaster exception.
 #include <util/XmlBlasterException.h>
 #include <util/ErrorCode.h>
 #include <stdexcept>
-#include <boost/lexical_cast.hpp>
+#include <util/lexical_cast.h>
 
-using namespace boost;
+
 
 namespace org { namespace xmlBlaster { namespace util {
 

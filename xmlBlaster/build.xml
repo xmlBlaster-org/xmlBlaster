@@ -181,11 +181,15 @@ TODO
    <compiler id="msvc" name="msvc" extends="base-msvc">
       <!--  disable Microsoft Extensions   -->
       <!-- <compilerarg value="/Za"/> -->
+      <compilerarg value="-D${thread.impl}" />
+      <compilerarg value="-DOLDXERCES" if="OLDXERCES" />
    </compiler>       
 
    <compiler id="msvc-with-extensions" extends="base-msvc">
       <!--  enable Microsoft Extensions   -->
       <compilerarg value="/Ze"/>
+      <compilerarg value="-D${thread.impl}" />
+      <compilerarg value="-DOLDXERCES" if="OLDXERCES" />
    </compiler>
 
    <compiler id="bcc" name="bcc" if="use-bcc">
@@ -204,6 +208,8 @@ TODO
       <compilerarg value="-r-" if="is-debug"/>
       <!--  maximize speed     -->
       <compilerarg value="-O2" unless="is-debug"/>
+      <compilerarg value="-D${thread.impl}" />
+      <compilerarg value="-DOLDXERCES" if="OLDXERCES" />
    </compiler>
 
    <compiler id="gcc" name="g++" if="use-gcc">
@@ -215,6 +221,7 @@ TODO
       <compilerarg value="-D_REENTRANT" />
       <compilerarg value="-rdynamic" /> <!-- To show symbols of a backtrace (see XmlBlasterException.cpp -->
       <compilerarg value="-D${thread.impl}" />
+      <compilerarg value="-DOLDXERCES" if="OLDXERCES" />
    </compiler>
 
 

@@ -18,15 +18,14 @@ Comment:   Default handling of Sax callbacks
 #include <util/Global.h>
 #include <util/StopWatch.h>
 
-#include <boost/lexical_cast.hpp>
+#include <util/lexical_cast.h>
 
-using namespace boost;
 
 using namespace std;
 
 using namespace org::xmlBlaster::util;
-    
-   
+
+
 // SaxHandlerBase::SaxHandlerBase(int args, const char * const argc[])
 SaxHandlerBase::SaxHandlerBase(Global& global)
 : 
@@ -414,6 +413,16 @@ bool SaxHandlerBase::getBoolValue(const XMLCh* const value) const
       cerr << "SaxHandlerBase:: Conversion from " << value << " to bool failed" << endl;
    }
    return false;
+}
+
+
+void SaxHandlerBase::releaseXMLCh(XMLCh** data) const
+{
+#ifdef OLDXERCES
+   delete[] data;
+#else
+   XMLString::release(data);
+#endif
 }
 
 #endif

@@ -23,9 +23,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 #include <util/Constants.h>
 #include <util/Global.h>
-#include <boost/lexical_cast.hpp>
+#include <util/lexical_cast.h>
 
-using namespace boost;
+
 
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::qos::storage;

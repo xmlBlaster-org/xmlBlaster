@@ -59,14 +59,3 @@ namespace org { namespace xmlBlaster { namespace util {
 // This software is provided "as is" without express or implied warranty.
 
 #endif
-
-
-using namespace std;
-using namespace org::xmlBlaster::util;
-
-int main()
-{
-   long val = 1000L;
-   cout << lexical_cast<string>(val) << endl;
-   return 0;
-}

@@ -9,7 +9,7 @@ Comment:   Default implementation of the POA_serverIdl::BlasterCallback.
 #define _CLIENT_PROTOCOL_CORBA_DEFAULTCALLBACK_H
 
 #include <string>
-#include <boost/lexical_cast.hpp>
+#include <util/lexical_cast.h>
 #include <util/Log.h>
 #include <client/I_Callback.h>
 #include <client/key/UpdateKey.h>
@@ -28,7 +28,7 @@ Comment:   Default implementation of the POA_serverIdl::BlasterCallback.
 
 
 using namespace std;
-using namespace boost;
+
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::key;
 using namespace org::xmlBlaster::util::qos;

@@ -8,9 +8,9 @@ Comment:   Handles the I_XmlBlasterConnections
 #include <util/dispatch/ConnectionsHandler.h>
 #include <util/Global.h>
 #include <util/Timeout.h>
-#include <boost/lexical_cast.hpp>
+#include <util/lexical_cast.h>
 
-using namespace boost;
+
 
 using namespace org::xmlBlaster::client::protocol;
 using namespace org::xmlBlaster::client;

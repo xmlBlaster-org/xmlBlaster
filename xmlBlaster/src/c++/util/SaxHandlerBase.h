@@ -10,7 +10,7 @@ Comment:   Default handling of Sax callbacks
 
 #include <util/xmlBlasterDef.h>
 #include <string>
-#include <boost/lexical_cast.hpp>
+#include <util/lexical_cast.h>
 #include <sax/DocumentHandler.hpp> // xerces xml parser (www.apache.org)
 #include <sax/ErrorHandler.hpp>
 #include <sax/DTDHandler.hpp>
@@ -279,6 +279,15 @@ protected:
       * method.
       */
      bool getBoolAttr(const AttributeList& list, const XMLCh* const name, bool& value) const;
+
+     /**
+      *  Helper method which encapsulates either the delete[] operator for Xerces-c versions older than 
+      * ver. 2.2.0 or which invokes XMLString::release(XMLCh**) for versions from 2.2.0 and higher. Per
+      * default it assumes you have 2.2.0 or higher. If you have an older version please set in your 
+      * build.properties or in your system environment the variable OLDXERCES.
+      */
+     void releaseXMLCh(XMLCh** data) const;
+
    };
 }}} // namespace
 

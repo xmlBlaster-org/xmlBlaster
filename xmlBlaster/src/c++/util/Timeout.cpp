@@ -14,12 +14,12 @@ Comment:   Allows you be called back after a given delay.
 // #include <boost/thread/condition.hpp>
 // #include <boost/thread/xtime.hpp>
 
-#include <boost/lexical_cast.hpp>
+#include <util/lexical_cast.h>
 #include <util/Constants.h>
 #include <util/Global.h>
 
 using namespace std;
-using namespace boost;
+
 
 /*
 #if defined(_WINDOWS)   
@@ -100,7 +100,11 @@ Timestamp Timeout::addTimeoutListener(I_Timeout *listener, long delay, void *use
          break;
       }
    }
+
+   log_.trace(ME, "addTimeoutListener, going to notify");
+   Lock waitForTimeoutLock(waitForTimeoutMutex_);
    waitForTimeoutCondition_.notify();
+   log_.trace(ME, "addTimeoutListener, successfully notified");
    return key;
 }
 
@@ -175,28 +179,35 @@ void Timeout::shutdown()
    log_.call(ME, " shutdown");
    isRunning_ = false;
    removeAll();
+   Lock waitForTimeoutLock(waitForTimeoutMutex_);
    waitForTimeoutCondition_.notify();
 }
 
 
+size_t Timeout::getTimeoutMapSize()
+{
+   Lock lock(invocationMutex_);
+   return timeoutMap_.size();
+}
+
 
 void Timeout::run()
 {
-   log_.call(ME, " run: operator ()");
+   log_.call(ME, " run()");
    isActive_ = true;
 
    Container *container = NULL;
    Container tmpContainer;
    
    while (isRunning_) {
-      Lock waitForTimeoutLock(waitForTimeoutMutex_);
 
-      log_.trace(ME, " operator (): is running");
+      log_.trace(ME, " run(): is running");
       Timestamp delay = 100000 * Constants::MILLION; // sleep veeery long
 
-
+      size_t oldSize = 0;
       {
          Lock lock(invocationMutex_);
+
          TimeoutMap::iterator iter = timeoutMap_.begin();
          if (iter == timeoutMap_.end()) {
             log_.warn(ME, " The timeout is empty");
@@ -208,9 +219,7 @@ void Timeout::run()
             delay = nextWakeup - timestampFactory_.getTimestamp();
 
             log_.trace(ME, "run, delay       : " + lexical_cast<string>(nextWakeup) + " ns");
-                                if ( delay < 0 ) {
-                                        delay = 0;
-                                }
+            if ( delay < 0 ) delay = 0;
 
             if (delay <= 0) {
                tmpContainer = (*iter).second;
@@ -220,18 +229,24 @@ void Timeout::run()
                   std::cout << ME << " Timeout occurred, calling listener with real time error of " << delay << " nanos" << std::endl;
             }
          }
+         oldSize = timeoutMap_.size();
       }
       // must be outside the sync
       if (container != NULL) {
           (container->first)->timeout(container->second);
           container = NULL;
       }
-                Timestamp milliDelay = delay / Constants::MILLION;
+      Timestamp milliDelay = delay / Constants::MILLION;
       if (milliDelay > 0) {
          log_.trace(ME, "sleeping ... " + lexical_cast<string>(milliDelay) + " milliseconds");
+
+         Lock waitForTimeoutLock(waitForTimeoutMutex_);
+         if (getTimeoutMapSize() == oldSize) {
+            waitForTimeoutCondition_.wait(waitForTimeoutLock, (long)milliDelay);
+            log_.trace(ME, "waking up ... ");
+         }
          isReady_ = true;
-         waitForTimeoutCondition_.wait(waitForTimeoutLock, (long)milliDelay);
-         log_.trace(ME, "waking up .. ");
+
       }
    }
    log_.trace(ME, "the running thread is exiting");

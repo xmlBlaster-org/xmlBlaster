@@ -8,13 +8,13 @@ Comment:   Factory for ConnectQosData (for ConnectReturnQos and ConnectQos)
 #include <util/qos/ConnectQosFactory.h>
 #include <util/Global.h>
 // #include <util/XmlBlasterException>
-#include <boost/lexical_cast.hpp>
+#include <util/lexical_cast.h>
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
 using namespace org::xmlBlaster::authentication;
 using namespace org::xmlBlaster::util;
-using namespace boost;
+
 
 
 ConnectQosFactory::ConnectQosFactory(Global& global)

@@ -3,7 +3,7 @@ Name:      TestRam.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: TestRam.cpp,v 1.7 2003/02/13 18:51:35 ruff Exp $
+Version:   $Id: TestRam.cpp,v 1.8 2003/02/18 21:24:27 laghi Exp $
 ---------------------------------------------------------------------------*/
 
 #include <util/XmlBCfg.h>
@@ -11,7 +11,6 @@ Version:   $Id: TestRam.cpp,v 1.7 2003/02/13 18:51:35 ruff Exp $
 #include <util/StopWatch.h>
 
 using namespace std;
-using namespace boost;
 using namespace org::xmlBlaster::client;
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::qos;

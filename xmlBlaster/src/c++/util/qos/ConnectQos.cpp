@@ -8,14 +8,14 @@ Comment:   Implementation of ConnectQos (ConnectReturnQos ConnectQosData)
 #include <util/qos/ConnectQos.h>
 #include <util/Global.h>
 #include <util/Constants.h>
-#include <boost/lexical_cast.hpp>
+#include <util/lexical_cast.h>
 #include <util/Global.h>
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
 using namespace org::xmlBlaster::authentication;
 using namespace org::xmlBlaster::util;
-using namespace boost;
+
 
 /*---------------------------- ConnectQosData --------------------------------*/
 

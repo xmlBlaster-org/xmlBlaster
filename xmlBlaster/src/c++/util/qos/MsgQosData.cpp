@@ -30,11 +30,11 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 #include <util/qos/MsgQosData.h>
 #include <limits.h>
-#include <boost/lexical_cast.hpp>
+#include <util/lexical_cast.h>
 #include <util/Global.h>
 
 using namespace std;
-using namespace boost;
+
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::qos;
 using namespace org::xmlBlaster::util::cluster;

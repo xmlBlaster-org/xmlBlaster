@@ -115,6 +115,7 @@ class Dll_Export Timeout : public Thread
    Mutex waitForTimeoutMutex_;
    Condition waitForTimeoutCondition_;
 
+   size_t Timeout::getTimeoutMapSize();
 
 //   friend class TimeoutRunner;
  public:

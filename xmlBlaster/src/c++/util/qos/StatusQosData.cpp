@@ -26,7 +26,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/qos/StatusQosData.h>
 #include <util/Global.h>
 // #include <lexical_cast.hpp>
-// using namespace boost;
+// 
 
 using namespace org::xmlBlaster::util;
 using namespace std;

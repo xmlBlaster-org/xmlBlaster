@@ -6,10 +6,10 @@ Comment:   Holding callback queue properties
 ------------------------------------------------------------------------------*/
 
 #include <util/qos/storage/QueueProperty.h>
-#include <boost/lexical_cast.hpp>
+#include <util/lexical_cast.h>
 #include <util/Global.h>
 
-using namespace boost;
+
 
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::qos::address;

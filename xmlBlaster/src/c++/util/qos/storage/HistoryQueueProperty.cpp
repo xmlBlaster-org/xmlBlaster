@@ -12,11 +12,11 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  */
 
 #include <util/qos/storage/HistoryQueueProperty.h>
-#include <boost/lexical_cast.hpp>
+#include <util/lexical_cast.h>
 #include <util/Constants.h>
 #include <util/Global.h>
 
-using namespace boost;
+
 
 using namespace org::xmlBlaster::util;
 using namespace std;

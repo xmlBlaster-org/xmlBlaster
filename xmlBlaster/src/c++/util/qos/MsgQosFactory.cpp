@@ -7,9 +7,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/qos/MsgQosFactory.h>
 #include <util/Global.h>
 #include <util/StringTrim.h>
-#include <boost/lexical_cast.hpp>
+#include <util/lexical_cast.h>
 
-using namespace boost;
+
 
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::cluster;

@@ -7,9 +7,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/queue/MsgQueueEntry.h>
 #include <util/dispatch/I_ConnectionsHandler.h>
 #include <util/Global.h>
-#include <boost/lexical_cast.hpp>
+#include <util/lexical_cast.h>
 
-using namespace boost;
+
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::qos;
 

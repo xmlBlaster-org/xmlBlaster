@@ -142,7 +142,6 @@ class Dll_Export Condition
 {
 private:
    ConditionImpl* condition_;
-
 public:
    Condition();
    

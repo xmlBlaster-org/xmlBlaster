@@ -3,7 +3,7 @@ Name:      TestSub.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.cpp,v 1.18 2003/02/13 20:05:17 ruff Exp $
+Version:   $Id: TestSub.cpp,v 1.19 2003/02/18 21:24:27 laghi Exp $
 -----------------------------------------------------------------------------*/
 
 #include "TestSuite.h"
@@ -25,7 +25,6 @@ using namespace org::xmlBlaster::client;
 using namespace org::xmlBlaster::client::qos;
 using namespace org::xmlBlaster::client::key;
 
-using boost::lexical_cast;
 
 namespace org { namespace xmlBlaster { namespace test {
 

@@ -11,10 +11,10 @@ Comment:   Handling the Client data
 #include <util/XmlBCfg.h>
 #include <sys/timeb.h>
 #include <string>
-#include <boost/lexical_cast.hpp>
+#include <util/lexical_cast.h>
 
 using namespace std;
-using namespace boost;
+
 
 namespace org { namespace xmlBlaster {
 namespace util {

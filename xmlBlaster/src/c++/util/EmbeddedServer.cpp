@@ -7,7 +7,7 @@ Comment:   Testing the Timeout Features
 
 #include <util/EmbeddedServer.h>
 #include <util/Global.h>
-#include <boost/lexical_cast.hpp>
+#include <util/lexical_cast.h>
 
 namespace org { namespace xmlBlaster { namespace util {
 
@@ -36,7 +36,7 @@ void EmbeddedServerRunner::run()
       try {
          owner_.isRunning_ = true;
          int ret = system(cmdLine.c_str());
-         owner_.log_.info(ME, "the embedded server with command line: '" + cmdLine + "' has been stopped, return code is: " + boost::lexical_cast<string>(ret));
+         owner_.log_.info(ME, "the embedded server with command line: '" + cmdLine + "' has been stopped, return code is: " + lexical_cast<string>(ret));
          owner_.isRunning_ = false;
       }
       catch (exception& ex) {

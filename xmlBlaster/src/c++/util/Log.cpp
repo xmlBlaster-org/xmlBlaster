@@ -3,15 +3,15 @@ Name:      Log.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.cpp,v 1.16 2003/02/09 21:32:32 ruff Exp $
+Version:   $Id: Log.cpp,v 1.17 2003/02/18 21:24:24 laghi Exp $
 ----------------------------------------------------------------------------*/
 
 #include <util/Log.h>
 #include <time.h>
-#include <boost/lexical_cast.hpp>
+#include <util/lexical_cast.h>
 
 using namespace std;
-using namespace boost;
+
 
 namespace org { namespace xmlBlaster {
 namespace util {

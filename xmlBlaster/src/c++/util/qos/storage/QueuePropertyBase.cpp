@@ -3,7 +3,7 @@ Name:      QueuePropertyBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.cpp,v 1.13 2003/02/07 11:41:42 laghi Exp $
+Version:   $Id: QueuePropertyBase.cpp,v 1.14 2003/02/18 21:24:26 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 
@@ -15,12 +15,12 @@ Version:   $Id: QueuePropertyBase.cpp,v 1.13 2003/02/07 11:41:42 laghi Exp $
  */
 
 #include <util/qos/storage/QueuePropertyBase.h>
-#include <boost/lexical_cast.hpp>
+#include <util/lexical_cast.h>
 #include <util/Global.h>
 
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::qos::address;
-using namespace boost;
+
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace storage {
 

@@ -9,7 +9,6 @@ Comment:   Testing the Timeout Features
 
 using namespace std;
 using namespace org::xmlBlaster::util;
-using boost::lexical_cast;
 
 /**
  * This client tests the synchronous method get() with its different qos
@@ -21,7 +20,8 @@ using boost::lexical_cast;
 
 namespace org { namespace xmlBlaster { namespace test {
 
-class TestTimestamp {
+class TestTimestamp 
+{
    
 private:
    string ME;

@@ -3,7 +3,7 @@ Name:      Address.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding address string and protocol string
-Version:   $Id: Address.cpp,v 1.4 2003/01/18 17:14:39 ruff Exp $
+Version:   $Id: Address.cpp,v 1.5 2003/02/18 21:24:26 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -21,10 +21,10 @@ Version:   $Id: Address.cpp,v 1.4 2003/01/18 17:14:39 ruff Exp $
  */
 
 #include <util/qos/address/Address.h>
-#include <boost/lexical_cast.hpp>
+#include <util/lexical_cast.h>
 #include <util/Global.h>
 
-using namespace boost;
+
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace address {
 

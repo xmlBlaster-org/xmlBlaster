@@ -6,9 +6,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 #include <util/qos/HistoryQos.h>
 #include <util/Global.h>
-#include <boost/lexical_cast.hpp>
+#include <util/lexical_cast.h>
 
-using namespace boost;
+
 using namespace std;
 using namespace org::xmlBlaster::util;
 

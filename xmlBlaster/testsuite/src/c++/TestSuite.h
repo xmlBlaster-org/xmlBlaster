@@ -17,9 +17,8 @@ Comment:   Testing the Timeout Features
 #include <util/PlatformUtils.hpp>
 #include <util/thread/ThreadImpl.h>
 #include <util/Timestamp.h>
-#include <boost/lexical_cast.hpp>
+#include <util/lexical_cast.h>
 
-using boost::lexical_cast;
 using namespace std;
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::thread;

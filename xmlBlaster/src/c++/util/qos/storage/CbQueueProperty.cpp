@@ -3,7 +3,7 @@ Name:      CbQueueProperty.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: CbQueueProperty.cpp,v 1.6 2003/01/21 22:43:17 laghi Exp $
+Version:   $Id: CbQueueProperty.cpp,v 1.7 2003/02/18 21:24:26 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -14,11 +14,11 @@ Version:   $Id: CbQueueProperty.cpp,v 1.6 2003/01/21 22:43:17 laghi Exp $
  */
 
 #include <util/qos/storage/CbQueueProperty.h>
-#include <boost/lexical_cast.hpp>
+#include <util/lexical_cast.h>
 #include <ctype.h> // for toUpper
 #include <util/Global.h>
 
-using namespace boost;
+
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::qos::address;
 

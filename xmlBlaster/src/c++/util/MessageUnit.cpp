@@ -23,7 +23,7 @@ using namespace org::xmlBlaster::util::key;
 using namespace org::xmlBlaster::util::qos;
 
 namespace org { namespace xmlBlaster { namespace util {
-   
+
 /**
  * Holding a message. 
  * <p />

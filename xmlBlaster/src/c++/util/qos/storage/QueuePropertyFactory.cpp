@@ -3,16 +3,16 @@ Name:      QueuePropertyFactory.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Factory which creates objects holding queue properties
-Version:   $Id: QueuePropertyFactory.cpp,v 1.6 2003/02/12 15:02:26 laghi Exp $
+Version:   $Id: QueuePropertyFactory.cpp,v 1.7 2003/02/18 21:24:26 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 #include <util/qos/storage/QueuePropertyFactory.h>
-#include <boost/lexical_cast.hpp>
+#include <util/lexical_cast.h>
 #include <util/Global.h>
 
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::qos::address;
-using namespace boost;
+
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace storage {
 

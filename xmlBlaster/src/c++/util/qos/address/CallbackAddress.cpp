@@ -3,17 +3,17 @@ Name:      CallbackAddress.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback address string and protocol string
-Version:   $Id: CallbackAddress.cpp,v 1.4 2003/01/18 17:14:39 ruff Exp $
+Version:   $Id: CallbackAddress.cpp,v 1.5 2003/02/18 21:24:26 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 #include <util/qos/address/CallbackAddress.h>
-#include <boost/lexical_cast.hpp>
+#include <util/lexical_cast.h>
 #include <util/Global.h>
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace address {
 
 using namespace org::xmlBlaster::util;
-using namespace boost;
+
 
 inline void CallbackAddress::initialize()
 {

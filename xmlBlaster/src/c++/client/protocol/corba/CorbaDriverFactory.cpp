@@ -9,10 +9,10 @@ Comment:   The client driver for the corba protocol
 #include <util/ErrorCode.h>
 #include <util/XmlBlasterException.h>
 #include <util/Global.h>
-#include <boost/lexical_cast.hpp>
+#include <util/lexical_cast.h>
 
 using namespace org::xmlBlaster::util;
-using namespace boost;
+
 
 using namespace std;
 

@@ -12,7 +12,6 @@ Comment:   Testing the Timeout Features
 #include <util/PlatformUtils.hpp>
 #include "TestSuite.h"
 
-using boost::lexical_cast;
 using namespace std;
 using namespace org::xmlBlaster::util;
 

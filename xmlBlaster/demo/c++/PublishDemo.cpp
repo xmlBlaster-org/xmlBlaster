@@ -8,16 +8,16 @@ Comment:   Little demo to show how a publish is done
 #include <client/XmlBlasterAccess.h>
 #include <util/Global.h>
 #include <util/PlatformUtils.hpp>
-#include <boost/lexical_cast.hpp>
+#include <util/lexical_cast.h>
 
 
 /**
  *
  */
 
-using boost::lexical_cast;
 using namespace std;
 using namespace org::xmlBlaster::client;
+using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::client::qos;
 using namespace org::xmlBlaster::client::key;
 

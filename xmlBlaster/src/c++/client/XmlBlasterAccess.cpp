@@ -6,9 +6,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 #include <client/XmlBlasterAccess.h>
 #include <util/Global.h>
-#include <boost/lexical_cast.hpp>
+#include <util/lexical_cast.h>
 
-using namespace boost;
+
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::qos;
 using namespace org::xmlBlaster::util::dispatch;
@@ -31,7 +31,7 @@ XmlBlasterAccess::XmlBlasterAccess(Global& global)
    connection_         = NULL;
    deliveryManager_    = NULL;
    connectionProblems_ = NULL;
-   instanceName_ = boost::lexical_cast<string>(this);
+   instanceName_       = lexical_cast<string>(this);
 }
 
 XmlBlasterAccess::~XmlBlasterAccess()

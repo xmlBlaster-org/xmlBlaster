@@ -8,7 +8,6 @@ Comment:   Testing the Timeout Features
 #include <client/protocol/corba/CorbaDriverFactory.h>
 #include "TestSuite.h"
 
-using boost::lexical_cast;
 using namespace std;
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::client::protocol::corba;

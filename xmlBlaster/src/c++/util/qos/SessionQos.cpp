@@ -7,7 +7,7 @@ Comment:   Factory for SessionQosData (for ConnectReturnQos and ConnectQos)
 
 #include <util/qos/SessionQos.h>
 #include <stdlib.h>
-#include <boost/lexical_cast.hpp>
+#include <util/lexical_cast.h>
 #include <util/StringStripper.h>
 #include <util/StringTrim.h>
 #include <util/Global.h>
@@ -16,7 +16,7 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
 using namespace org::xmlBlaster::util;
 using namespace std;
-using namespace boost;
+
 
 
 /*---------------------------- SessionQosData --------------------------------*/

@@ -7,7 +7,6 @@ Comment:   Testing the Timeout Features
 
 #include "TestSuite.h"
 
-using boost::lexical_cast;
 using namespace std;
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::thread;

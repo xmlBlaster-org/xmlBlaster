@@ -3,7 +3,7 @@ Name:      AddressFactory.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Factory Object for parsing Address objects.
-Version:   $Id: AddressFactory.cpp,v 1.7 2003/02/13 13:57:47 ruff Exp $
+Version:   $Id: AddressFactory.cpp,v 1.8 2003/02/18 21:24:26 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -18,10 +18,10 @@ Version:   $Id: AddressFactory.cpp,v 1.7 2003/02/13 13:57:47 ruff Exp $
 
 #include <util/qos/address/AddressFactory.h>
 #include <util/Global.h>
-#include <boost/lexical_cast.hpp>
+#include <util/lexical_cast.h>
 
 using namespace org::xmlBlaster::util;
-using namespace boost;
+
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace address {
 
