@@ -44,6 +44,7 @@ else
    #JIT_COMPILER="-Djava.compiler="
    echo -e "\033[32;40m  Running JacORB with JDK 1.2 and JIT=$JIT_COMPILER\033[0m"
    java -native $JIT_COMPILER $BlasterServerMemory -Xbootclasspath:"${JacORB_LIB}:${JacORB_LIB}/jacorb.jar:${JDK_HOME}/jre/lib/rt.jar:${CLASSPATH}"  "$@"
+   #java -green -Djava.compiler= -Xbootclasspath:"${CLASSPATH}"  "$@"
 fi
 
 
