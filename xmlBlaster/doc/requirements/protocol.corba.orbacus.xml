@@ -3,7 +3,7 @@
 
 <requirement id='protocol.corba.orbacus' type='NEW' prio='LOW' status="OPEN">
    <topic>
-      The XmlBlaster server can be compiled & run with orbacus. The same is 
+      The XmlBlaster server can be compiled and run with ORBacus. The same is
       true for java- and c++ clients.
    </topic>
    <description>-</description>
@@ -13,12 +13,12 @@
    </todo>
    <author>michele.laghi@attglobal.net</author>
    <date>2000 05 09</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>The testsuite does not start automatically. Once the client
-               application has started you must manually input 
-	       <code>testsuite.org.xmlBlaster.TestAll</code>
+               application has started you must manually input
+               <code>testsuite.org.xmlBlaster.TestAll</code>
       </comment>
       <test tool="SUITE">testsuite.org.xmlBlaster.TestAll</test>
    </testcase>
