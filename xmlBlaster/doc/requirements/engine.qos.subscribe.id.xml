@@ -18,7 +18,7 @@
      environment, a proposed syntax is:
      </p>
      <pre>
-     "__subId:/node/[cluserNodeId]/client/[loginName]/[publicSessionId]/[your number or id]"
+"__subId:/node/[cluserNodeId]/client/[loginName]/[publicSessionId]/[your number or id]"
      </pre>
      <p>
      Example:
@@ -63,7 +63,7 @@ catch (Exception e) {
    <author>ruff@swand.lake.de</author>
    <hacker>ruff@swand.lake.de</hacker>
    <date>2002 06 26</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
