@@ -105,8 +105,8 @@ public final class ConnectQos
    /**
     * Set the secret sessionId
     */
-   public void setSessionId(String id) {
-      this.connectQosData.getSessionQos().setSessionId(id);
+   public void setSecretSessionId(String id) {
+      this.connectQosData.getSessionQos().setSecretSessionId(id);
    }
 
    /**
