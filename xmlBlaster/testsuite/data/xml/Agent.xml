@@ -43,6 +43,7 @@
    <key oid='1'>
       <AGENT id="192.168.124.10" subId="1" type="generic">
          <DRIVER id="FileProof" pollingFreq="10">
+            AAAA
          </DRIVER>
       </AGENT>
    </key>
