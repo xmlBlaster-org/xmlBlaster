@@ -170,7 +170,6 @@ public class AllProtocols implements I_Callback
 
       new AllProtocols(glob);
    }
-}
 
 class Con {
    public Con(String[] args, String helpText) {
@@ -181,3 +180,5 @@ class Con {
    public Global glob;
    public XmlBlasterConnection con;
 };
+}
+
