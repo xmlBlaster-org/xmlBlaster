@@ -14,7 +14,9 @@
      What data can we monitor and control?
      </h3>
      <p>
-     To understand the command syntax imagine a simple xml representation of xmlBlaster nodes:
+     To understand the command syntax imagine a simple xml representation of xmlBlaster nodes
+     (an xmlBlaster node is an xmlBlaster server instance in a cluster environment, read
+     the <a href="cluster.html">cluster requirement</a> for more informations):
      </p>
      <pre><!-- pre class="BORDER" netscape does not like this --><![CDATA[
 <node>
@@ -96,7 +98,7 @@
       <p>
          Lets have a look at the xmlBlaster cluster node <i>heron</i>. This is 
          an xmlBlaster server running somewhere on the net (<i>server.mycomp.com:3412</i>).<br />
-         <i>heron</i> has its own attributes like <i>uptime</i> and <i>freemem</i>
+         <i>heron</i> has its own attributes like <i>uptime</i> and <i>freeMem</i>
          which are leafs in the tree. In addition <i>heron</i> has tags which
          have children themselves, more exact the tags:
       </p>
@@ -372,7 +374,7 @@
          <tr>
             <td>telnet</td>
             <td><pre>get /node/heron/?freeMem</pre></td>
-            <td>With telnet you give the command <i>get</i> followed by the query (separated with a white space)
+            <td>With telnet you give the command <i>get</i> followed by the query (separated with a blank)
             </td>
             <td>no</td>
          </tr>
@@ -489,11 +491,11 @@ UserInfo: joe:mypasswd
    <author>Michele.Laghi@swisscom.com</author>
    <author>ruff@swand.lake.de</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.7 $</revision>
+   <revision>$Revision: 1.8 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
-      <test tool="SUITE"></test>
+      <test tool="SUITE">classtest.CommandWrapperTest</test>
    </testcase>
 </requirement>
 
