@@ -10,8 +10,8 @@
       <meta http-equiv="Content-Type" CONTENT="text/html; charset=ISO-8859-1">
 
       <!-- xparse is a Javascript XML-DOM parser from http://www.jeremie.com/Dev/XML/index.jer Copyright 1998 Jeremie -->
-      <script Language="JavaScript" src="/javascript/xparse.js" type="text/javascript"></script>
       <script Language="JavaScript" src="/javascript/util.js" type="text/javascript"></script>
+      <script Language="JavaScript" src="/javascript/xparse.js" type="text/javascript"></script>
       <script Language="JavaScript" src="/javascript/callback.js" type="text/javascript"></script>
 
       <script language="JavaScript1.2">
@@ -32,14 +32,16 @@
             }
             else {
                // Response to servlet that we are alive ...
-               Log.trace("Received refresh ping '" + state + "', sending pong back to servlet");
+               Log.warning("Received ping '" + state + "', sending pong back to servlet");
                // Sending the state is for debugging only (or for proxies to let it through?)
+               self.frames["controlFrame"].location.reload(true);
+               // self.frames["controlFrame"].location.href="/servlet/BlasterHttpProxyServlet?ActionType=pong";
                self.frames["controlFrame"].location.href="/servlet/BlasterHttpProxyServlet?ActionType=pong&state=" + state;
             }
             if ((typeof pingTimeoutHandler) != "undefined")
                window.clearTimeout(pingTimeoutHandler);
 
-            // Check for ping every 15 seconds, this value needs to 
+            // Check for ping every 15 seconds, this value needs to
             // be bigger than the HttpPushHandler.java  PING_INTERVAL value
             pingTimeoutHandler = window.setTimeout( "cutConnection()", 15000);
          }
@@ -58,6 +60,7 @@
          function browserReady()
          {
             Log.trace("Sending browserReady() to serlvet");
+            self.frames["controlFrame"].location.reload(true);
             self.frames["controlFrame"].location.href="/servlet/BlasterHttpProxyServlet?ActionType=browserReady";
          }
 
