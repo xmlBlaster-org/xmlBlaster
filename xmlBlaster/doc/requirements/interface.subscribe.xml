@@ -21,7 +21,7 @@
    typedef string XmlType;
    typedef sequence&lt;string> StringArr;
 
-   string subscribe(in XmlType xmlKey, in XmlType qos) raises(XmlBlasterException);
+   XmlType subscribe(in XmlType xmlKey, in XmlType qos) raises(XmlBlasterException);
       </pre>
          
       <table border="1">
@@ -42,6 +42,18 @@
          </td>
          </tr>
       </table>
+
+      <br />
+      <h3>
+      A special note how to subscribe in cluster environments:
+      </h3>
+      <p>
+      If you subscribe to a cluster slave node, the subscription is only
+      forwarded to a master node if the subscription key matches the configured
+      master selection.
+      </p>
+      
+
    </description>
 
 
@@ -50,7 +62,7 @@
       Here is an example of an exact query:
       </p>
       <table border="1">
-         <tr><td>Key</td><td>&lt;key oid='MyMessage'/></td></tr>
+         <tr><td>Key</td><td>&lt;key oid='MyMessage' /></td></tr>
          <tr><td>QoS</td><td>&lt;qos/></td></tr>
       </table>
       <p>
@@ -64,12 +76,14 @@
 &lt;/qos>
    </pre>
    </td></tr></table>
+   </example>
    
+   <example lang="XML" type="HTML">
       <p>
       Here is an example of an XPATH query:
       </p>
       <table border="1">
-         <tr><td>Key</td><td>&lt;key oid='' queryType='XPATH'> /xmlBlaster/key[starts-with(@oid,'radar.')] &lt;/key></td></tr>
+         <tr><td>Key</td><td>&lt;key oid='' queryType='XPATH'> /xmlBlaster/key[starts-with(@oid,'radar.')]  &lt;/key></td></tr>
          <tr><td>QoS</td><td>&lt;qos/></td></tr>
       </table>
       <p>
@@ -86,6 +100,27 @@
 
    </example>
 
+   <example lang="XML" type="HTML">
+      <p>
+      A subscription in a cluster environment belonging to domain <i>RUGBY_NEWS</i>
+      </p>
+      <table border="1">
+         <tr><td>Key</td><td>&lt;key oid='MyMessage' domain='RUGBY_NEWS' /></td></tr>
+         <tr><td>QoS</td><td>&lt;qos/></td></tr>
+      </table>
+      <p>
+      And a return value:
+    </p>
+   <table border="1"><tr><td>
+   <pre>
+&lt;qos>
+   &lt;state id='OK'/>
+   &lt;subscribe id='__subId:34023'/>
+&lt;/qos>
+   </pre>
+   </td></tr></table>
+   </example>
+   
    <example lang="XmlRpc" type="HTML">
       <p>
       This is the XmlRpc server interface variant:
@@ -118,10 +153,55 @@
    </p>
    </example>
 
+   <example lang="Java" type="HTML">
+      <p>
+      A typical Java client code for an XPATH subscription:
+      </p>
+      <pre>
+   import org.xmlBlaster.client.*;
+   ...
+
+   SubscribeKeyWrapper sk = new SubscribeKeyWrapper("/xmlBlaster/key[@oid='radar.track']",
+                            Constants.XPATH);
+
+   SubscribeQosWrapper sq = new SubscribeQosWrapper();
+
+   SubscribeRetQos sr = con.subscribe(sk.toXml(), sq.toXml());
+
+   System.out.println("Success, subscriptionId=" + sr.getSubscriptionId());
+
+      </pre>
+   </example>
+
+   <example lang="Java" type="HTML">
+      <p>
+      A typical Java client code for a subscriptions in a cluster environment
+      which uses selection of master nodes with message domains:
+      </p>
+      <pre>
+   import org.xmlBlaster.client.*;
+   ...
+
+   SubscribeKeyWrapper sk = new SubscribeKeyWrapper("MyMessageOid");
+
+   sk.setDomain("RUGBY_NEWS"); // Subscription is forwarded from slaves to master
+   // without setting the domain the subscribe would just be handled by the slave connected to
+
+   SubscribeRetQos sr = con.subscribe(sk.toXml(), null);
+
+   System.out.println("Success, subscriptionId=" + sr.getSubscriptionId());
+
+      </pre>
+   </example>
+
+
    <configuration>
    </configuration>
 
    <see type="REQ">interface</see>
+   <see type="REQ">engine.qos.subscribe.duplicate</see>
+   <see type="REQ">engine.qos.subscribe.OfflineQueuing</see>
+   <see type="REQ">client.subscribe.dispatch</see>
 
    <see type="API">org.xmlBlaster.engine.xml2java.XmlKey</see>
    <see type="API">org.xmlBlaster.client.SubscribeQosWrapper</see>
@@ -131,11 +211,19 @@
 
    <author>ruff@swand.lake.de</author>
    <date>2002 06 01</date>
-   <revision>$Revision: 1.3 $</revision>
+   <revision>$Revision: 1.4 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the subscribe method invocation</comment>
+      <test tool="SUITE">testsuite.org.xmlBlaster.TestSub</test>
+      <test tool="SUITE">testsuite.org.xmlBlaster.TestSubExact</test>
+      <test tool="SUITE">testsuite.org.xmlBlaster.TestSubXPath</test>
+      <test tool="SUITE">testsuite.org.xmlBlaster.TestSubManyClients</test>
+      <test tool="SUITE">testsuite.org.xmlBlaster.TestSubNoDup</test>
       <test tool="SUITE">testsuite.org.xmlBlaster.TestSubXPathMany</test>
+      <test tool="SUITE">testsuite.org.xmlBlaster.TestSubDispatch</test>
+      <test tool="SUITE">testsuite.org.xmlBlaster.TestSubLostClient</test>
+      <test tool="SUITE">testsuite.org.xmlBlaster.TestSubMulti</test>
    </testcase>
 </requirement>
 
