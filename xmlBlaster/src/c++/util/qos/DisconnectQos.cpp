@@ -3,7 +3,7 @@ Name:      DisconnectQos.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: DisconnectQos.cpp,v 1.4 2004/02/09 10:08:02 ruff Exp $
+Version:   $Id: DisconnectQos.cpp,v 1.5 2004/06/18 20:08:07 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 #include <util/qos/DisconnectQos.h>
@@ -22,6 +22,7 @@ DisconnectQos::DisconnectQos(Global& global)
 {
    deleteSubjectQueue_ = true;
    clearSessions_      = false;
+   clearClientQueue_   = false;
 }
 
 DisconnectQos::DisconnectQos(const DisconnectQos& qos)
@@ -94,6 +95,15 @@ string DisconnectQos::toXml(const string& extraOffset) const
 
    return ret;
 }
+
+   bool DisconnectQos::getClearClientQueue() const {
+      return clearClientQueue_;
+   }
+
+   void DisconnectQos::setClearClientQueue(bool clearClientQueue) {
+      clearClientQueue_ = clearClientQueue;
+   }
+
 
 }}}}
 

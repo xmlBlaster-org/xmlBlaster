@@ -3,7 +3,7 @@ Name:      DisconnectQos.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: DisconnectQos.h,v 1.10 2004/02/08 23:10:15 ruff Exp $
+Version:   $Id: DisconnectQos.h,v 1.11 2004/06/18 20:08:07 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -45,6 +45,7 @@ private:
    org::xmlBlaster::util::I_Log&    log_;
    bool    deleteSubjectQueue_; // = true;
    bool    clearSessions_; // = false;
+   bool    clearClientQueue_; 
 
 protected:
    ClientPropertyMap clientProperties_; 
@@ -98,6 +99,9 @@ public:
     */
    std::string toXml(const std::string& extraOffset="") const;
 
+   bool getClearClientQueue() const;
+   
+   void setClearClientQueue(bool clearClientQueue);
 };
 
 }}}}
