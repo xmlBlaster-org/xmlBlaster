@@ -2,9 +2,7 @@
 Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Handling global data
-Version:   $Id: Global.java,v 1.25 2002/11/26 12:38:22 ruff Exp $
-Author:    ruff@swand.lake.de
+Comment:   Handling global data on server side
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -23,6 +21,9 @@ import org.xmlBlaster.engine.helper.AddressBase;
 import org.xmlBlaster.util.dispatch.DeliveryManager;
 import org.xmlBlaster.util.dispatch.DeliveryConnectionsHandler;
 import org.xmlBlaster.engine.dispatch.CbDeliveryConnectionsHandler;
+import org.xmlBlaster.util.queue.I_EntryFactory;
+import org.xmlBlaster.engine.queuemsg.ServerEntryFactory;
+import org.xmlBlaster.engine.msgstore.MsgStorePluginManager;
 
 
 import java.util.*;
@@ -32,7 +33,7 @@ import java.io.IOException;
 /**
  * This holds global needed data of one xmlBlaster instance. 
  * <p>
- * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
 public final class Global extends org.xmlBlaster.util.Global implements I_RunlevelListener
 {
@@ -45,11 +46,14 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    private NodeId nodeId = null;
    private ClusterManager clusterManager;
    private Timeout sessionTimer;
+   private Timeout topicTimer;
 
    private boolean useCluster = true; // default
    private boolean firstUseCluster = true; // to allow caching
 
    private ProtocolManager protocolManager;
+
+   private MsgStorePluginManager msgStorePluginManager;
 
    private CommandManager commandManager;
    private boolean useAdminManager = true;
@@ -63,6 +67,10 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
       if (sessionTimer != null) {
          sessionTimer.shutdown();
          sessionTimer = null;
+      }
+      if (topicTimer != null) {
+         topicTimer.shutdown();
+         topicTimer = null;
       }
    }
 
@@ -116,14 +124,16 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
 
    private void initThis() {
       String myId = getProperty().get("cluster.node.id", (String)null);
+      if (myId == null && !useCluster())
+         myId = "xmlBlaster";  // fallback
       if (myId == null && getBootstrapAddress().getPort() > 0) {
-         myId = getBootstrapAddress().getAddress();
+         myId = getStrippedString(getBootstrapAddress().getAddress());
       }
       if (myId != null) {
          setId(myId);
-         log.info(ME, "Setting xmlBlaster instance name (-cluster.node.id) to '" + getId() + "'");
       }
       getRunlevelManager().addRunlevelListener(this);
+      log.info(ME, "Setting xmlBlaster instance name (-cluster.node.id) to '" + getId() + "'");
    }
 
    /**
@@ -146,7 +156,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
 
    public final void setId(String id) {
       super.setId(id);
-      nodeId = new NodeId(id);
+      this.nodeId = new NodeId(id);
    }
 
    /**
@@ -204,7 +214,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
          if (this.clusterManager.getNumNodes() == 1)
             return "";
          */
-         return "/node/" + getAdminId();
+         return "/node/" + getId(); //getStrippedId();
       }
       else
          return "";
@@ -219,8 +229,8 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
     * @param post the postfix string like "client"
     */
    public final String getLogPrefixDashed(String post) {
-      String prae = getLogPrefix();
-      return (prae.length() < 1) ? ("-" + post) : ("-/node/" + getAdminId() + "/" + post); // relativ or absolute addressed
+      String prae = getLogPrefix();                         // getStrippedId
+      return (prae.length() < 1) ? ("-" + post) : ("-/node/" + getId() + "/" + post); // relativ or absolute addressed
    }
 
    /**
@@ -269,6 +279,16 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
       return this.protocolManager;
    }
 
+   public final MsgStorePluginManager getMsgStorePluginManager() {
+      if (msgStorePluginManager == null) {
+         synchronized (MsgStorePluginManager.class) {
+            if (msgStorePluginManager == null)
+               msgStorePluginManager = new MsgStorePluginManager(this);
+         }
+      }
+      return msgStorePluginManager;
+   }
+
    /**
     * Sets the unique node id of this xmlBlaster server instance (needed for clustering). 
     * <p />
@@ -296,6 +316,31 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
          }
       }
       return this.sessionTimer;
+   }
+
+   /**
+    * Access the handle of the TopicHandler timer thread. 
+    * @return The Timeout instance
+    */
+   public final Timeout getTopicTimer() {
+      if (this.topicTimer == null) {
+         synchronized(this) {
+            if (this.topicTimer == null)
+               this.topicTimer = new Timeout("XmlBlaster.TopicTimer");
+         }
+      }
+      return this.topicTimer;
+   }
+
+   /**
+    * The factory creating queue or msgstore entries from persistent store. 
+    * Is derived from util.Global
+    * @param name A name identifying this plugin.
+    */
+   public I_EntryFactory getEntryFactory(String name) {
+      ServerEntryFactory factory = new ServerEntryFactory();
+      factory.initialize(this, name);
+      return factory;
    }
 
    /**
@@ -351,6 +396,10 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
       return this.momClientGateway;
    }
 
+   public final boolean supportAdministrative() {
+      return this.momClientGateway != null;
+   }
+
    /**
     * Invoked by CommandManager to register message command handler
     */
@@ -368,7 +417,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
          Thread.currentThread().dumpStack();
          return false;
       }
-      return xmlKey.getUniqueKey().startsWith("__cmd:");
+      return xmlKey.isAdministrative();
    }
 
    /**
@@ -453,7 +502,9 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
 
    public String getDump() throws XmlBlasterException {
       StringBuffer sb = new StringBuffer(10000);
-      sb.append("<xmlBlaster id='").append(getId()).append("'");
+      String offset = "\n";
+
+      sb.append(offset).append("<xmlBlaster id='").append(getId()).append("'");
       sb.append(" version='").append(getVersion()).append("' counter='").append(counter).append("'");
       sb.append("\n   ");
       sb.append(" buildTimestamp='").append(getBuildTimestamp()).append("'");
@@ -469,7 +520,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
             sb.append(getAuthenticate().getXmlBlaster().toXml());
          }
       }
-      sb.append("</xmlBlaster>");
+      sb.append(offset).append("</xmlBlaster>");
       return sb.toString();
    }
 
