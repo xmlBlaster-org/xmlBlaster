@@ -3,6 +3,10 @@
     This is nonsense, the minimal DOM tree couldn't be parsed by XPath
   * Normalizing the DOM tree
 
+- Testing implementation of unsubscribe() XPath oid
+
+- Testing implementation of erase() with XPath
+
 - Automatic disconnect detection of a client e.g. [ Closing connection to 192.168.1.1:1424 ]
   this is important if the client didn't logout
 
