@@ -237,6 +237,11 @@
        <td>OK (see <tt>mom.eraseOnDrop</tt> setting)</td>
        <td>OK (see <tt>mom.eraseOnDrop</tt> setting)</td>
      </tr>
+     <tr>
+       <td>Comment</td>
+       <td>Not suitable for huge tables as the complete table is scanned</td>
+       <td>Suitable for tables which huge amount of rows, does not detect row deletes</td>
+     </tr>
    </table>
    </description>
 
