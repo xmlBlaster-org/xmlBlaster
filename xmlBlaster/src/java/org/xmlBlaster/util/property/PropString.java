@@ -90,7 +90,7 @@ public final class PropString extends PropEntry implements java.io.Serializable,
 
    /** java org.xmlBlaster.util.property.PropString */
    public static void main(String[] args) {
-      PropString dummy = new PropString("dummy", "Hi");
+      PropString dummy = new PropString("propName", null);
       System.out.println(dummy.toXml());
    }
 }
