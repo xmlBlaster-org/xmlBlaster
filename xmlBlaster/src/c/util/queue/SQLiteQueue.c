@@ -526,6 +526,10 @@ static bool parseQueueEntryArr(I_Queue *queueP, size_t currIndex, void *userP,
 
    if (*queueEntryArrPP == 0) {
       *queueEntryArrPP = (QueueEntryArr *)calloc(1, sizeof(QueueEntryArr));;
+      if (helper->maxNumOfEntries == 0) {
+         doContinue = false;
+         return doContinue;
+      }
    }
    queueEntryArr = *queueEntryArrPP;
 
@@ -581,9 +585,9 @@ static bool parseQueueEntryArr(I_Queue *queueP, size_t currIndex, void *userP,
    helper->currEntries += 1;
    helper->currBytes += queueEntry->embeddedBlob.dataLen;
 
-   /* Limit the number of entries but return at least one */
-   if ((helper->maxNumOfEntries != -1 && helper->currEntries != 0 && helper->currEntries >= helper->maxNumOfEntries) ||
-       (helper->maxNumOfBytes != -1 && helper->currBytes != 0 && helper->currBytes >= helper->maxNumOfBytes)) {
+   /* Limit the number of entries */
+   if ((helper->maxNumOfEntries != -1 && helper->currEntries >= helper->maxNumOfEntries) ||
+       (helper->maxNumOfBytes != -1 && helper->currBytes >= helper->maxNumOfBytes)) {
       /* sqlite_interrupt(dbInfo->db); -> sets rc==SQLITE_ERROR on next sqlite-step() which i can't distinguish from a real error */
       doContinue = false;
    }
@@ -764,6 +768,7 @@ static int32_t persistentQueueRandomRemove(I_Queue *queueP, QueueEntryArr *queue
 {
    bool stateOk = true;
    int64_t numOfBytes = 0;
+   int32_t countDeleted = 0;
    sqlite_vm *pVm = 0;
    DbInfo *dbInfo;
    if (checkArgs(queueP, "randomRemove", true, exception) == false || queueEntryArr == 0 ||
@@ -804,7 +809,7 @@ static int32_t persistentQueueRandomRemove(I_Queue *queueP, QueueEntryArr *queue
    }
 
    if (stateOk) {
-      int countDeleted = sqlite_last_statement_changes(dbInfo->db);
+      countDeleted = (int32_t)sqlite_last_statement_changes(dbInfo->db);
       if (countDeleted < 0 || (size_t)countDeleted != queueEntryArr->len) {
          fillCache(queueP, exception); /* calculate numOfBytes again */
       }
@@ -814,7 +819,7 @@ static int32_t persistentQueueRandomRemove(I_Queue *queueP, QueueEntryArr *queue
       }
    }
 
-   return 0;
+   return countDeleted;
 }
 
 /**

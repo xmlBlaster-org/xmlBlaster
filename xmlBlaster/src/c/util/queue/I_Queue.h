@@ -99,14 +99,15 @@ struct I_QueueStruct {
    I_QueuePut put;
 
    /**
-    * Returns maximum the first num element in the queue og highest priority
+    * Returns maximum the first num element in the queue of highest priority
     * but does not remove it from that queue (leaves it untouched).
     * @param queueP The 'this' pointer (similar to the hidden C++ 'this' pointer)
     * @param maxNumOfEntries Access num entries, if -1 access all entries currently found
     * @param maxNumOfBytes so many entries are returned as not to exceed the amount specified. If the first
     *        entry is bigger than this amount, it is returned anyway. -1 is unlimited.
     * @param exception *exception.errorCode!=0 if the underlying implementation gets an exception
-    * @return list with QueueEntry, the least elements with respect to the given time ordering or len==0.
+    * @return list with QueueEntry, the least elements with respect to the given time ordering
+    *         or QueueEntryArr.len==0.
     *         Returned pointer is only NULL on exception
     */
    I_QueuePeekWithSamePriority peekWithSamePriority;
