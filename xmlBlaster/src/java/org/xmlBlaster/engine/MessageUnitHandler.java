@@ -436,7 +436,8 @@ public class MessageUnitHandler
             I_AccessFilter filter = requestBroker.getAccessPluginManager().getAccessFilter(
                                       filterQos[ii].getType(), filterQos[ii].getVersion(), 
                                       xmlKey.getContentMime(), xmlKey.getContentMimeExtended());
-            if (filter != null && filter.match(publisherSessionInfo, sub.getSessionInfo(), msgUnitWrapper, filterQos[ii].getQuery()) == false)
+            if (filter != null && filter.match(publisherSessionInfo, sub.getSessionInfo(),
+                                               msgUnitWrapper, filterQos[ii].getQuery()) == false)
                return true; // filtered message is not send to client
          }
       }
