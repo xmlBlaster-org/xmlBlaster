@@ -47,11 +47,7 @@ public:
       queue_ = NULL;
    }
 
-   virtual ~TestQueue()
-   {
-      delete queue_;
-      queue_ = NULL;
-   }
+   virtual ~TestQueue() { }
 
    void testPublishCompare() 
    {
@@ -131,7 +127,7 @@ public:
       log_.info(me, "");
       log_.info(me, "this test creates a queue. The following checks are done:");
       ClientQueueProperty prop(global_, "");
-      queue_ = QueueFactory::getFactory(global_).createQueue(prop);
+      queue_ = &QueueFactory::getFactory(global_).getPlugin(prop);
       assertEquals(log_, me, true, queue_->empty(), " 1. the queue must be empty after creation");
       ConnectQos connQos(global_);
       ConnectQueueEntry entry(global_, connQos);
@@ -151,7 +147,7 @@ public:
       log_.info(me, "");
       log_.info(me, "this test checks the order in which entries are returned from the queue");
       ClientQueueProperty prop(global_, "");
-      queue_ = QueueFactory::getFactory(global_).createQueue(prop);
+      queue_ = &QueueFactory::getFactory(global_).getPlugin(prop);
       ConnectQos connQos(global_);
       ConnectQueueEntry   entry(global_, connQos, "7", 1);
       queue_->put(entry);
@@ -206,7 +202,7 @@ public:
       log_.info(me, "this test checks that an excess of entries really throws an exception");
       ClientQueueProperty prop(global_, "");
       prop.setMaxEntries(10);
-      queue_ = QueueFactory::getFactory(global_).createQueue(prop);
+      queue_ = &QueueFactory::getFactory(global_).getPlugin(prop);
       ConnectQos connQos(global_);
       int i=0;
       try {
@@ -243,7 +239,7 @@ public:
       ConnectQos connQos(global_);
       ConnectQueueEntry entry(global_, connQos);
       prop.setMaxBytes(10 * entry.getSizeInBytes());
-      queue_ = QueueFactory::getFactory(global_).createQueue(prop);
+      queue_ = &QueueFactory::getFactory(global_).getPlugin(prop);
 
       int i=0;
       try {
@@ -269,26 +265,16 @@ public:
       log_.info(me, "test ended successfully");
    }
 
-
-
-
-
    void setUp() 
    {
-      if (queue_) {
-         delete queue_;
-         queue_ = NULL;
-      }
    }
 
    void tearDown() {
       if (queue_) {
-         delete queue_;
+         QueueFactory::getFactory(global_).releasePlugin(queue_);
          queue_ = NULL;
       }
    }
-
-
 };
    
 }}} // namespace
