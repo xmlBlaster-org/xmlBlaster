@@ -8,6 +8,12 @@ Changes in current subversion repository (svn)
 Changes for 1.RC3 [2004-12-08] #12997
 =====================================
 
+ o #13013 Added filepoller plugin to retrieve and publish files from a directory
+
+ o #13013 Added getter in Global for properties when mixed with plugin properties
+
+ o #13013 Added I_PluginConfig interface 
+
  o #12995 Changed subscription ID to be unique over time
 
  o #12988 Bugfix in script: CDATA in content are not passed through anymore and duplication of 

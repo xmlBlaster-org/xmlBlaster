@@ -5,7 +5,7 @@
 <xmlBlaster>
 
   <connect/>
-  <publish><key oid="1"><airport /></key><content>Hi</content></publish>
+  <publish><key oid="1"><airport /></key><content><![CDATA[Hi]]></content></publish>
   <subscribe><key queryType="XPATH">//airport</key><qos/></subscribe>
   <publish><key oid="2"><airport /></key><content>Hi again</content></publish>
   <wait delay="2000" />
