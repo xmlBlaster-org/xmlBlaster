@@ -252,7 +252,7 @@ static const char * test_overflow()
          queueEntry.uniqueId = idArr[i];
          strncpy0(queueEntry.embeddedType, "MSG_RAW|publish", QUEUE_ENTRY_EMBEDDEDTYPE_LEN);
          queueEntry.embeddedType[QUEUE_ENTRY_EMBEDDEDTYPE_LEN-1] = 0;
-         queueEntry.embeddedBlob.data = "0123456789";
+         queueEntry.embeddedBlob.data = (char *)"0123456789";
          queueEntry.embeddedBlob.dataLen = strlen(queueEntry.embeddedBlob.data);
 
          queueP->put(queueP, &queueEntry, &exception);
@@ -284,7 +284,7 @@ static const char * test_overflow()
          queueEntry.sizeInBytes = 20;
          strncpy0(queueEntry.embeddedType, "MSG_RAW|publish", QUEUE_ENTRY_EMBEDDEDTYPE_LEN);
          queueEntry.embeddedType[QUEUE_ENTRY_EMBEDDEDTYPE_LEN-1] = 0;
-         queueEntry.embeddedBlob.data = "0123456789";
+         queueEntry.embeddedBlob.data = (char *)"0123456789";
          queueEntry.embeddedBlob.dataLen = strlen(queueEntry.embeddedBlob.data);
 
          queueP->put(queueP, &queueEntry, &exception);
