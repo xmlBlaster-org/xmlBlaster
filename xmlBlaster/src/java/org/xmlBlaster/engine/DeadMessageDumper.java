@@ -32,14 +32,15 @@ import org.xmlBlaster.client.qos.UpdateQos;
 /**
  * Subscribes to the "__sys__deadMessage" topic and dumps the dead messages to the hard disk. 
  * <p>
- * The dumped messages are xml formatted and can be resend with #org.xmlBlaster.client.script.XmlScriptInterpreter:
+ * The dumped messages are xml formatted and can be resend with {@link org.xmlBlaster.client.script.XmlScriptInterpreter}:
  * </p>
  * <pre>
  * java org.xmlBlaster.Main -xmlBlaster/acceptWrongSenderAddress/joe true
  *
  * java javaclients.script.XmlScript -prepareForPublish true -session.name joe -requestFile 2004-10-23_21_25_33_39.xml
  * </pre>
- * <p>In the above example xmlBlaster allows 'joe' to send faked sender addresses (the original ones)</p>
+ * <p>In the above example xmlBlaster allows 'joe' to send faked sender addresses (the original ones)
+ *  with the command line parameter <tt>-xmlBlaster/acceptWrongSenderAddress/joe true</tt>.</p>
  *
  * <p>
  * This <tt>DeadMessageDumper</tt> plugin is started with the run level manager as configured in xmlBlasterPlugins.xml,
@@ -64,7 +65,7 @@ import org.xmlBlaster.client.qos.UpdateQos;
  * </p>
  *
  * @author <a href="mailto:xmlblast@marcelruff.info">Marcel Ruff</a>
- * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.runlevel.howto.html">The engine.runlevel.howto requirement</a>
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.errorHandling.html">The admin.errorHandling requirement</a>
  */
 public class DeadMessageDumper implements I_Plugin {
 
@@ -83,22 +84,13 @@ public class DeadMessageDumper implements I_Plugin {
    /** forceBase64==false: ASCII dump for content if possible (XML embedable) */
    private boolean forceBase64 = false;
 
-   private static final String[] nativeConnectArgs = {
-              "-protocol", "LOCAL",
-              "-dispatch/connection/pingInterval", "0",
-              "-dispatch/connection/burstMode/collectTime", "0",
-              "-dispatch/callback/pingInterval", "0",
-              "-dispatch/callback/burstMode/collectTime", "0",
-              "-queue/defaultPlugin", "RAM,1.0"
-           };
-   
    /**
     * Initializes the plugin
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global, org.xmlBlaster.util.plugin.PluginInfo)
     */
    public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo) throws XmlBlasterException {
       this.pluginInfo = pluginInfo;
-      this.global = glob.getClone(nativeConnectArgs);
+      this.global = glob.getClone(glob.getNativeConnectArgs());
       this.global.addObjectEntry("ServerNodeScope", glob.getObjectEntry("ServerNodeScope"));
       this.log = this.global.getLog("core");
 
@@ -155,7 +147,6 @@ public class DeadMessageDumper implements I_Plugin {
          this.connection = new XmlBlasterAccess(this.global);
 
          ConnectQos connectQos = new ConnectQos(this.global, loginName, password);
-         connectQos.getSessionQos().setSessionTimeout(0L);
          connectQos.setSecretCbSessionId(secretCbSessionId);
          // Constants.ONOVERFLOW_DISCARDOLDEST
 
