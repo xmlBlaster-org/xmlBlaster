@@ -3,7 +3,7 @@ Name:      TestLoginLogoutEvent.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout event test for xmlBlaster
-Version:   $Id: TestLoginLogoutEvent.java,v 1.5 2000/06/19 15:48:39 ruff Exp $
+Version:   $Id: TestLoginLogoutEvent.java,v 1.6 2000/06/20 13:32:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -251,7 +251,6 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
       } catch(org.jutils.JUtilsException e) {
          Log.panic(ME, e.toString());
       }
-      Log.setLogLevel(XmlBlasterProperty.getProperty());
       TestLoginLogoutEvent testSub = new TestLoginLogoutEvent("TestLoginLogoutEvent", "Tim", "Joe");
       testSub.setUp();
       testSub.testLoginLogout();

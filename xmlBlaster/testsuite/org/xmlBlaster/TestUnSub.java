@@ -3,7 +3,7 @@ Name:      TestUnSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestUnSub.java,v 1.9 2000/06/19 15:48:40 ruff Exp $
+Version:   $Id: TestUnSub.java,v 1.10 2000/06/20 13:32:59 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -329,7 +329,6 @@ public class TestUnSub extends TestCase implements I_Callback
       } catch(org.jutils.JUtilsException e) {
          Log.panic(ME, e.toString());
       }
-      Log.setLogLevel(XmlBlasterProperty.getProperty());
       TestUnSub testSub = new TestUnSub("TestUnSub", "Tim");
 
       testSub.setUp();

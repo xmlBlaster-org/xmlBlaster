@@ -3,7 +3,7 @@ Name:      SystemInfoPublisher.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a client to publish system infos to xmlBlaster
-Version:   $Id: SystemInfoPublisher.java,v 1.7 2000/06/19 15:48:35 ruff Exp $
+Version:   $Id: SystemInfoPublisher.java,v 1.8 2000/06/20 13:32:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 package html.systemInfo;
 
@@ -61,7 +61,6 @@ public class SystemInfoPublisher
          usage();
          return;
       }
-      Log.setLogLevel(XmlBlasterProperty.getProperty());
 
       loginName = Args.getArg(args, "-name", ME);
       passwd = Args.getArg(args, "-passwd", "secret");

@@ -3,7 +3,7 @@ Name:      XmlBlasterProperty.java
 Project:   jutils.org
 Copyright: jutils.org, see jutils-LICENSE file
 Comment:   Properties for jutils, see jutils.property
-Version:   $Id: XmlBlasterProperty.java,v 1.1 2000/06/19 20:35:12 ruff Exp $
+Version:   $Id: XmlBlasterProperty.java,v 1.2 2000/06/20 13:32:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -17,6 +17,16 @@ import java.util.Properties;
 /**
  * xmlBlaster.properties and command line handling.
  * <p />
+ * Note that after loading the properties, the Log class
+ * is automatically initialized with these as well.
+ * <p />
+ * If you want to pass your command line arguments, call
+ * <pre>
+ *   try {
+ *      XmlBlasterProperty.init(args);
+ *   } catch(org.jutils.JUtilsException e) { }
+ * </pre>
+ * after program startup.
  * @see org.jutils.init.Property
  */
 public class XmlBlasterProperty
@@ -119,19 +129,22 @@ public class XmlBlasterProperty
    private final static Property getProps()
    {
       if (property == null) {
-         try {
-            property = new Property("xmlBlaster.properties", true, null, true);  // initialize without args!
-         }
-         catch (JUtilsException e) {
-            System.err.println(ME + ": " + e.toString());
+         synchronized (XmlBlasterProperty.class) {
             try {
-               property = new Property(null, true, null, true);  // initialize without args and properties file!
+               property = new Property("xmlBlaster.properties", true, null, true);  // initialize without args!
             }
-            catch (JUtilsException e2) {
-               System.err.println(ME + ": " + e2.toString());
-               Log.panic(ME, e2.toString());
+            catch (JUtilsException e) {
+               System.err.println(ME + ": Error in xmlBlaster.properties: " + e.toString());
+               try {
+                  property = new Property(null, true, null, true);  // initialize without args and properties file!
+               }
+               catch (JUtilsException e2) {
+                  System.err.println(ME + ": " + e2.toString());
+                  Log.panic(ME, e2.toString());
+               }
             }
          }
+         Log.setLogLevel(property); // Initialize logging as well.
       }
       return property;
    }
@@ -140,23 +153,16 @@ public class XmlBlasterProperty
    public final static void init(String[] args) throws JUtilsException
    {
       property = new Property("xmlBlaster.properties", true, args, true);  // initialize
+      Log.setLogLevel(property);  // Initialize logging as well.
       // System.out.println(toXml());
    }
 
    public final static void addArgs2Props(String[] args) throws JUtilsException
    {
       getProps().addArgs2Props(args);
+      Log.setLogLevel(property);   // Initialize logging as well.
    }
 
-   /*
-    * Low level access.
-    */
-    /*
-   public final static Properties getProperties()
-   {
-      return property.getProperties();
-   }
-      */
 
    /**
     * For testing only
@@ -177,10 +183,6 @@ public class XmlBlasterProperty
       System.out.println("Persistence.Dummy=" + XmlBlasterProperty.get("Persistence.Dummy", false));
       System.out.println("Persistence.Driver=" + XmlBlasterProperty.get("Persistence.Driver", "NONE"));
       System.out.println("Persistence.Dummy=" + XmlBlasterProperty.get("Persistence.Dummy", "NONE"));
-      /*
-      Properties props = XmlBlasterProperty.getProperties();
-      System.out.println("All properties:\n" + props);
-      */
       System.out.println("All properties as XML:\n" + XmlBlasterProperty.toXml());
    }
 }

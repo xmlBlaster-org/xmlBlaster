@@ -3,7 +3,7 @@ Name:      ClientErase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientErase.java,v 1.12 2000/06/19 15:48:35 ruff Exp $
+Version:   $Id: ClientErase.java,v 1.13 2000/06/20 13:32:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -118,12 +118,6 @@ public class ClientErase
 
    public static void main(String args[])
    {
-      try {
-         XmlBlasterProperty.init(args);
-      } catch(org.jutils.JUtilsException e) {
-         Log.panic(ME, e.toString());
-      }
-      Log.setLogLevel(XmlBlasterProperty.getProperty());
       new ClientErase(args);
       Log.exit(ClientErase.ME, "Good bye");
    }

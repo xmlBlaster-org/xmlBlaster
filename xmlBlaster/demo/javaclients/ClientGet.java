@@ -3,7 +3,7 @@ Name:      ClientGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientGet.java,v 1.12 2000/06/19 15:48:35 ruff Exp $
+Version:   $Id: ClientGet.java,v 1.13 2000/06/20 13:32:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -42,7 +42,6 @@ public class ClientGet
       } catch(org.jutils.JUtilsException e) {
          Log.panic(ME, e.toString());
       }
-      Log.setLogLevel(XmlBlasterProperty.getProperty());
       try {
          try {
             // check if parameter -name <userName> is given at startup of client

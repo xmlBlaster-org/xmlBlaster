@@ -3,7 +3,7 @@ Name:      LoadTestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: LoadTestSub.java,v 1.16 2000/06/19 15:48:39 ruff Exp $
+Version:   $Id: LoadTestSub.java,v 1.17 2000/06/20 13:32:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -281,7 +281,6 @@ public class LoadTestSub extends TestCase implements I_Callback
       } catch(org.jutils.JUtilsException e) {
          Log.panic(ME, e.toString());
       }
-      Log.setLogLevel(XmlBlasterProperty.getProperty()); // initialize log level
       LoadTestSub testSub = new LoadTestSub("LoadTestSub", "Tim");
       testSub.setUp();
       testSub.testManyPublish();

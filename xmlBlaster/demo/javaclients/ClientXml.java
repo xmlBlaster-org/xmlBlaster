@@ -3,7 +3,7 @@ Name:      ClientXml.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientXml.java,v 1.13 2000/06/19 15:48:35 ruff Exp $
+Version:   $Id: ClientXml.java,v 1.14 2000/06/20 13:32:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -47,7 +47,6 @@ public class ClientXml implements I_Callback
       } catch(org.jutils.JUtilsException e) {
          Log.panic(ME, e.toString());
       }
-      Log.setLogLevel(XmlBlasterProperty.getProperty());
       StopWatch stop = new StopWatch();
       try {
          // check if parameter -name <userName> is given at startup of client

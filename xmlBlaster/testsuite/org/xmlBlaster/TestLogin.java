@@ -3,7 +3,7 @@ Name:      TestLogin.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestLogin.java,v 1.12 2000/06/19 15:48:39 ruff Exp $
+Version:   $Id: TestLogin.java,v 1.13 2000/06/20 13:32:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -327,7 +327,6 @@ public class TestLogin extends TestCase implements I_Callback
       } catch(org.jutils.JUtilsException e) {
          Log.panic(ME, e.toString());
       }
-      Log.setLogLevel(XmlBlasterProperty.getProperty());
       TestLogin testSub = new TestLogin("TestLogin", "Tim", "Joe");
       testSub.setUp();
       testSub.testLoginLogout();

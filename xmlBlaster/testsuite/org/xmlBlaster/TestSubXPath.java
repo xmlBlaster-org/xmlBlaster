@@ -3,7 +3,7 @@ Name:      TestSubXPath.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubXPath.java,v 1.4 2000/06/19 15:48:40 ruff Exp $
+Version:   $Id: TestSubXPath.java,v 1.5 2000/06/20 13:32:59 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -264,7 +264,6 @@ public class TestSubXPath extends TestCase implements I_Callback
       } catch(org.jutils.JUtilsException e) {
          Log.panic(ME, e.toString());
       }
-      Log.setLogLevel(XmlBlasterProperty.getProperty());
       TestSubXPath testSub = new TestSubXPath("TestSubXPath", "Tim");
       testSub.setUp();
       testSub.testPublishAfterSubscribeXPath();

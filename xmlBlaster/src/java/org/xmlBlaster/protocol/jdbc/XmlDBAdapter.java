@@ -5,7 +5,7 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   Main class for xml database adapter
- * Version:   $Id: XmlDBAdapter.java,v 1.7 2000/06/19 15:48:38 ruff Exp $
+ * Version:   $Id: XmlDBAdapter.java,v 1.8 2000/06/20 13:32:57 ruff Exp $
  * ------------------------------------------------------------------------------
  */
 package org.xmlBlaster.protocol.jdbc;
@@ -55,7 +55,6 @@ public class XmlDBAdapter implements I_Callback {
       } catch(org.jutils.JUtilsException e) {
          Log.panic(ME, e.toString());
       }
-      Log.setLogLevel(XmlBlasterProperty.getProperty());
 
       initDrivers();
       initBlaster();

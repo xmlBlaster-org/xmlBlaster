@@ -3,7 +3,7 @@ Name:      TestPersistence.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing durable messages
-Version:   $Id: TestPersistence.java,v 1.9 2000/06/19 15:48:39 ruff Exp $
+Version:   $Id: TestPersistence.java,v 1.10 2000/06/20 13:32:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -261,8 +261,6 @@ public class TestPersistence extends TestCase implements I_Callback
       } catch(org.jutils.JUtilsException e) {
          Log.panic(ME, e.toString());
       }
-      Log.setLogLevel(XmlBlasterProperty.getProperty());
-      Log.setLogLevel(args);
       TestPersistence testSub = new TestPersistence("TestPersistence");
       testSub.setUp();
       testSub.testDurable();

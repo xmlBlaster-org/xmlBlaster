@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.44 2000/06/19 15:48:37 ruff Exp $
+Version:   $Id: Main.java,v 1.45 2000/06/20 13:32:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -99,7 +99,6 @@ public class Main
          usage();
          return;
       }
-      Log.setLogLevel(XmlBlasterProperty.getProperty()); // initialize log level
 
       try {
          authenticate = new Authenticate();

@@ -3,7 +3,7 @@ Name:      TestPubForce.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestPubForce.java,v 1.5 2000/06/19 15:48:40 ruff Exp $
+Version:   $Id: TestPubForce.java,v 1.6 2000/06/20 13:32:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -283,7 +283,6 @@ public class TestPubForce extends TestCase implements I_Callback
       } catch(org.jutils.JUtilsException e) {
          Log.panic(ME, e.toString());
       }
-      Log.setLogLevel(XmlBlasterProperty.getProperty());
       TestPubForce testSub = new TestPubForce("TestPubForce", "Tim");
       testSub.setUp();
       testSub.testPublishForceUpdate();

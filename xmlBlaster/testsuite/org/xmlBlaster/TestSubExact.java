@@ -3,7 +3,7 @@ Name:      TestSubExact.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubExact.java,v 1.4 2000/06/19 15:48:40 ruff Exp $
+Version:   $Id: TestSubExact.java,v 1.5 2000/06/20 13:32:59 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -265,7 +265,6 @@ public class TestSubExact extends TestCase implements I_Callback
       } catch(org.jutils.JUtilsException e) {
          Log.panic(ME, e.toString());
       }
-      Log.setLogLevel(XmlBlasterProperty.getProperty());
       TestSubExact testSub = new TestSubExact("TestSubExact", "Tim");
       testSub.setUp();
       testSub.testPublishAfterSubscribe();

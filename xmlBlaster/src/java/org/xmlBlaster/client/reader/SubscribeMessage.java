@@ -3,7 +3,7 @@ Name:      SubscribeMessage.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code to subscribe from command line for a message
-Version:   $Id: SubscribeMessage.java,v 1.6 2000/06/19 15:48:37 ruff Exp $
+Version:   $Id: SubscribeMessage.java,v 1.7 2000/06/20 13:32:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.reader;
 
@@ -55,7 +55,6 @@ public class SubscribeMessage implements I_Callback
          usage();
          return;
       }
-      Log.setLogLevel(XmlBlasterProperty.getProperty());
 
       loginName = Args.getArg(args, "-name", ME);
       passwd = Args.getArg(args, "-passwd", "secret");

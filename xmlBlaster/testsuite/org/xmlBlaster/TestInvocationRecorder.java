@@ -3,7 +3,7 @@ Name:      TestInvocationRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing the InvocationRecorder
-Version:   $Id: TestInvocationRecorder.java,v 1.8 2000/06/19 15:48:39 ruff Exp $
+Version:   $Id: TestInvocationRecorder.java,v 1.9 2000/06/20 13:32:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -278,7 +278,6 @@ public class TestInvocationRecorder extends TestCase implements I_InvocationReco
       } catch(org.jutils.JUtilsException e) {
          Log.panic(ME, e.toString());
       }
-      Log.setLogLevel(XmlBlasterProperty.getProperty());
       TestInvocationRecorder testSub = new TestInvocationRecorder("test");
       testSub.setUp();
       testSub.test();

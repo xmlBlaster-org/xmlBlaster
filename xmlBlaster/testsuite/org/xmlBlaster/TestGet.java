@@ -3,7 +3,7 @@ Name:      TestGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestGet.java,v 1.10 2000/06/19 15:48:39 ruff Exp $
+Version:   $Id: TestGet.java,v 1.11 2000/06/20 13:32:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -194,7 +194,6 @@ public class TestGet extends TestCase
       } catch(org.jutils.JUtilsException e) {
          Log.panic(ME, e.toString());
       }
-      Log.setLogLevel(XmlBlasterProperty.getProperty());
       TestGet testSub = new TestGet("TestGet", "Tim");
       testSub.setUp();
       testSub.testGet();

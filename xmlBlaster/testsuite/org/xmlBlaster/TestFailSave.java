@@ -3,7 +3,7 @@ Name:      TestFailSave.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSave.java,v 1.19 2000/06/19 15:48:39 ruff Exp $
+Version:   $Id: TestFailSave.java,v 1.20 2000/06/20 13:32:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -329,7 +329,6 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
       } catch(org.jutils.JUtilsException e) {
          Log.panic(ME, e.toString());
       }
-      Log.setLogLevel(XmlBlasterProperty.getProperty()); // initialize log level
       TestFailSave testSub = new TestFailSave("TestFailSave", "Tim");
       testSub.setUp();
       testSub.testFailSave();
