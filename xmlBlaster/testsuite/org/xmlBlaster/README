@@ -9,6 +9,15 @@ The xmlBlaster test suite
 
    junit.jar is distributed in $XMLBLASTER_HOME/lib/junit.jar
 
+Note:
+-----
+
+   In the current directory there are tests with
+   a running xmlBlaster.
+
+   In directory classtest you should add tests
+   on class level.
+
 
 Start the test suite:
 ---------------------
