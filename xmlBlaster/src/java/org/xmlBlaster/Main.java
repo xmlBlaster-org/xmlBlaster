@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.89 2002/05/30 16:26:01 ruff Exp $
+Version:   $Id: Main.java,v 1.90 2002/06/12 18:53:14 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -29,8 +29,6 @@ import java.util.StringTokenizer;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.lang.reflect.Method;
-
-import remotecons.RemoteServer;
 
 
 /**
@@ -154,8 +152,6 @@ public class Main
             System.exit(0);
          }
          
-         createRemoteConsole();
-
          runLevel = RUNNING;
 
          log.info(ME, Memory.getStatistic());
@@ -391,31 +387,6 @@ public class Main
    }
 
    /**
-    * Creates a server which is accessible with telnet. 
-    * This allows you to access xmlBlaster and query for example the free memory:
-    * <pre>
-    *  telnet 192.168.1.2 2702
-    *  mem
-    * </pre>
-    * Enter 'help' for all available commands.
-    */
-   public void createRemoteConsole()
-   {
-      int port = glob.getProperty().get("remoteconsole.port", 0); // 2702;
-      if (port > 1000) {
-         RemoteServer rs = new RemoteServer();
-         rs.setServer_port(port);
-         try {
-           rs.initialize(null);
-           log.info(ME, "Started remote console server, try 'telnet " + glob.getLocalIP() + " " + port + "' to access it and type 'help'.");
-         } catch (IOException e) {
-           e.printStackTrace();
-           log.error(ME, "Initializing of remote console failed:" + e.toString());
-         }
-      }
-   }
-
-   /**
     * Check for keyboard entries from console.
     * <p />
     * Supported input is:
@@ -600,7 +571,7 @@ public class Main
       log.plain(ME, "   -useKeyboard false  Switch off keyboard input, to allow xmlBlaster running in background.");
       log.plain(ME, "   -useKeyboard false  Switch off keyboard input, to allow xmlBlaster running in background.");
       log.plain(ME, "   -doBlocking  false  Switch off blocking, the main method is by default never returning.");
-      log.plain(ME, "   -remoteconsole.port If given port > 1000, a server is started which is available with telnet [0].");
+      log.plain(ME, "   -admin.remoteconsole.port If given port > 1000 (e.g. 2702), a server is started which is available with telnet [0].");
       log.plain(ME, "----------------------------------------------------------");
       log.plain(ME, "Example:");
       log.plain(ME, "   java org.xmlBlaster.Main -port 3412");
