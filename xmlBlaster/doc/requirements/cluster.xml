@@ -46,6 +46,8 @@
       Clustering in our sense covers the following topics:
       </h3>
       <ol>
+      
+      
       <li><h4>Scalability:</h4><br />
       A master xmlBlaster server instance allows to have any number of slave xmlBlaster server instances
       for specific message domains. These slaves can have further slaves again.
@@ -72,12 +74,41 @@
       in analogy to the network time protocol (NTP). A stratum of 0 is the master itself,
       1 is the first slave and stratum=2 would be bilbo in the above picture.
       </p>
-      <b>
-      This feature is implemented for Publish/Subscribe and ready for production use. PtP routing
-      is not implemented.
-      </b>
+      <p>
+      Implementation status:
+      </p>
+      <table border="1">
+         <tr>
+            <th>Mode</th>
+            <th>Description</th>
+            <th>Hot</th>
+            <th>Impl</th>
+         </tr>
+
+         <tr>
+            <td>Publish/Subscribe</td>
+            <td>
+            This feature is implemented for Publish/Subscribe and ready for production use.<br />
+            Changing the cluster configuration in hot operation is addressed
+            by the design but final implementation and testing of this feature is missing.
+            </td>
+            <td><img src="no.gif" border="0" alt="no" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>PtP</td>
+            <td>
+            PtP routing in cluster environment is available. Routing supports
+            currently directly connected cluster nodes only.
+            </td>
+            <td><img src="no.gif" border="0" alt="no" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+      </table>
       <br />
       </li>
+
+
       <li><h4>Availability (Failover):</h4><br />
       An xmlBlaster slave may adopt the master role for selective message types
       if the current xmlBlaster master fails.
@@ -105,7 +136,33 @@
       needs to find another one.
       </li>
       </ul>
+      <p>
+      Implementation status:
+      </p>
+      <table border="1">
+         <tr>
+            <th>Mode</th>
+            <th>Description</th>
+            <th>Hot</th>
+            <th>Impl</th>
+         </tr>
+
+         <tr>
+            <td>Publish/Subscribe</td>
+            <td>-</td>
+            <td><img src="no.gif" border="0" alt="no" /></td>
+            <td><img src="no.gif" border="0" alt="no" /></td>
+         </tr>
+         <tr>
+            <td>PtP</td>
+            <td>-</td>
+            <td><img src="no.gif" border="0" alt="no" /></td>
+            <td><img src="no.gif" border="0" alt="no" /></td>
+         </tr>
+      </table>
       </li>
+
+
       <li><h4>Logical separation based on message domains:</h4><br />
       One xmlBlaster instance can be the master for selective messages (e.g. for
       stock exchange messages) and be slave for other messages (e.g. for 
@@ -119,10 +176,35 @@
       As we can see the node <i>heron</i> is master of messages of the domain "RUGBY_NEWS" but
       caches "STOCK_EXCHANGE" as well.
       </p>
-      <b>
-      This feature is implemented for Publish/Subscribe and ready for production use. PtP routing
-      is not implemented.
-      </b>
+      <p>
+      Implementation status:
+      </p>
+      <table border="1">
+         <tr>
+            <th>Mode</th>
+            <th>Description</th>
+            <th>Hot</th>
+            <th>Impl</th>
+         </tr>
+
+         <tr>
+            <td>Publish/Subscribe</td>
+            <td>
+            This feature is implemented for Publish/Subscribe and ready for production use.   
+            </td>
+            <td><img src="no.gif" border="0" alt="no" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>PtP</td>
+            <td>
+            PtP routing in cluster environment is available. Routing supports
+            currently directly connected cluster nodes only.
+            </td>
+            <td><img src="no.gif" border="0" alt="no" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+      </table>
       <br />
       </li>
       <li><h4>Load balancing:</h4><br />
@@ -140,6 +222,36 @@
       In the above scenario heron1 and heron2 share their knowledge.
       Slave nodes can choose which of those servers to use.
       </p>
+      <p>
+      Implementation status:
+      </p>
+      <table border="1">
+         <tr>
+            <th>Mode</th>
+            <th>Description</th>
+            <th>Hot</th>
+            <th>Impl</th>
+         </tr>
+
+         <tr>
+            <td>Publish/Subscribe</td>
+            <td>
+            Mirroring of messges is possible in master/slave operation,
+            mirroring of session stateful information is currently not implemented.
+            </td>
+            <td><img src="no.gif" border="0" alt="no" /></td>
+            <td><img src="no.gif" border="0" alt="no" /></td>
+         </tr>
+         <tr>
+            <td>PtP</td>
+            <td>
+            Mirroring of PtP messages is currently not supported as
+            user session mirroring is not available.
+            </td>
+            <td><img src="no.gif" border="0" alt="no" /></td>
+            <td><img src="no.gif" border="0" alt="no" /></td>
+         </tr>
+      </table>
       </li>
       </ol>
 
@@ -425,7 +537,7 @@ cluster.node[heron]=\
          </pre></td>
          <td>Bilbo is slave of a slave for heron messages.
          Therefore it is stratum = 2 (two steps from the master).
-         It only knows bilbo, its direct parent node.
+         It only knows frodo, its direct parent node.
          </td>
          </tr>
 
@@ -725,18 +837,19 @@ cluster.node[heron]=\
       </table>
    </configuration>
 
+   <see type="REQ">cluster.dirtyRead</see>
+   <see type="REQ">util.property</see>
    <see type="API">org.xmlBlaster.engine.cluster.ClusterManager</see>
    <see type="API">org.xmlBlaster.engine.cluster.ClusterNode</see>
    <see type="API">org.xmlBlaster.engine.cluster.simpledomain.DomainToMaster</see>
    <see type="API">org.xmlBlaster.engine.cluster.simpledomain.RoundRobin</see>
-   <see type="REQ">util.property</see>
    <see type="LOCAL">../../demo/javaclients/cluster/README</see>
 
    <author>ruff@swand.lake.de</author>
    <author>Heinrich.Goetzger@exploding-systems.de</author>
    <author>Michele.Laghi@swisscom.com</author>
    <date>2002 05 12</date>
-   <revision>$Revision: 1.38 $</revision>
+   <revision>$Revision: 1.39 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests a cluster setup as described in this requirement</comment>
