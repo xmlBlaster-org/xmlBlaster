@@ -128,6 +128,17 @@
       <action do='LOAD' onStartupRunlevel='5' sequence='5' />
       <action do='STOP' onShutdownRunlevel='4' sequence='1'/>   
    </plugin>
+
+   <!--
+   <plugin id='DeadMessageDumper' className='org.xmlBlaster.engine.DeadMessageDumper'>
+      <action do='LOAD' onStartupRunlevel='7' sequence='1' onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='6' sequence='1'/>
+      <attribute id='loginName'>_DeadMessageDumper</attribute>
+      <attribute id='password'>secret</attribute>
+      <attribute id='forceBase64'>false</attribute>
+   </plugin>
+   -->
+      <!-- attribute id='directoryName'>/tmp</attribute -->
    <!--===============================================-->
 
 
