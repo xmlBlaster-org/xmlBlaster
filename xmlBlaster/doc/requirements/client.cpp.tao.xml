@@ -17,6 +17,57 @@
    </description>
 
    <example lang="CPP" type="HTML">
+      <p>Needed components from TAO for xmlBlaster:</p>
+      <table border="1">
+         <tr>
+       <th>
+          Component
+       </th>
+       <th>
+          Description
+       </th>
+    </tr>
+         <tr>
+       <td>
+          ACE
+       </td>
+       <td>
+          The ACE library is needed by TAO.
+       </td>
+    </tr>
+         <tr>
+       <td>
+          TAO
+       </td>
+       <td>
+          The TAO core is needed.
+       </td>
+    </tr>
+         <tr>
+       <td>
+          TAO_IDL
+       </td>
+       <td>
+          The TAO IDL compiler needs to be compiled.
+       </td>
+    </tr>
+         <tr>
+       <td>
+          apps/gperf/src
+       </td>
+       <td>
+          The TAO IDL compiler needs the gperf tool.
+       </td>
+    </tr>
+         <tr>
+       <td>
+          TAO/orbsvcs
+       </td>
+       <td>
+          From the CORBA services only the CosNaming service is needed.
+       </td>
+    </tr>
+      </table>
    </example>
 
    <configuration where="client">
@@ -35,6 +86,19 @@
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
       </table>
+      <p>
+         To compile you can use the xmlBlaster/src/c++/tao.xml file.
+      </p>
+      <p>
+         Please take a copy from xmlBlaster/build.properties into
+         your home directory (it has precedence there) and adjust
+         the path settings to find CORBA and the XML parser.
+      </p>
+      <pre>
+         cd xmlBlaster\src\c++
+
+         ..\..\build.bat -verbose -f tao.xml all
+      </pre>
    </configuration>
 
    <todo type='HTML'>
@@ -51,7 +115,7 @@
    
    <date>2002 08 27</date>
    
-   <revision>$Revision: 1.5 $</revision>
+   <revision>$Revision: 1.6 $</revision>
 
    <testcase status="OPEN">
       <name>-</name>
