@@ -3,7 +3,7 @@ Name:      XmlBlasterImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native Interface to xmlBlaster
-Version:   $Id: XmlBlasterImpl.java,v 1.11 2002/03/18 00:28:29 ruff Exp $
+Version:   $Id: XmlBlasterImpl.java,v 1.12 2002/04/19 11:03:32 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -40,8 +40,6 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
    private RequestBroker requestBroker;
    private Authenticate authenticate;
 
-   private PluginManager plgnLdr = null;
-
    private static final byte[] EMPTY_BYTES = "".getBytes();
 
    /**
@@ -52,7 +50,6 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
    {
       this.authenticate = authenticate;
       this.requestBroker = new RequestBroker(authenticate);
-      plgnLdr = PluginManager.getInstance();
    }
 
    /**
