@@ -104,7 +104,7 @@ public class PluginManager extends PluginManagerBase {
     * @return please return your default plugin classname or null if not specified
     */
    public String getDefaultPluginName(String type, String version) {
-      return "org.xmlBlaster.authentication.plugins.simple.Manager";
+      return defaultPluginName;
    }
 
    /**
