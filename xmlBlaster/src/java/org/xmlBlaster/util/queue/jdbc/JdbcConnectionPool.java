@@ -64,6 +64,8 @@ public class JdbcConnectionPool implements I_Timeout {
    private long reconnectionTimeout = 10000L;
    private I_ConnectionListener connectionListener = null;
 
+   private static boolean firstConnectError = true;
+
 
   /**
    * Invoked by the timer when a check for reconnection is wanted again
@@ -271,15 +273,21 @@ public class JdbcConnectionPool implements I_Timeout {
          this.initialized = true;
       }
       catch (SQLException ex) {
-         this.log.error(ME, "exception when connecting to DB, error code: '" + ex.getErrorCode() + " : " + ex.getMessage() + "' DB configuration details follow (check if the DB is running)");
-         this.log.error(ME, "diagnostics: initialize -prefix is           : '" + prefix + "'");
-         this.log.error(ME, "diagnostics: initialize -url                 : '" + url + "'");
-         this.log.error(ME, "diagnostics: initialize -user                : '" + user + "'");
-         this.log.error(ME, "diagnostics: initialize -password            : '" + password + "'");
-         this.log.error(ME, "diagnostics: initialize -max number of conn  : '" + this.capacity + "'");
-         this.log.error(ME, "diagnostics: initialize -conn busy timeout   : '" + this.connectionBusyTimeout + "'");
-         this.log.error(ME, "diagnostics: initialize -driver list         : '" + xmlBlasterJdbc + "'");
-         this.log.error(ME, "diagnostics: initialize -max. waiting Threads: '" + this.maxWaitingThreads + "'");
+         if (firstConnectError) {
+            firstConnectError = false;
+            this.log.error(ME, "exception when connecting to DB, error code: '" + ex.getErrorCode() + " : " + ex.getMessage() + "' DB configuration details follow (check if the DB is running)");
+            this.log.info(ME, "diagnostics: initialize -prefix is           : '" + prefix + "'");
+            this.log.info(ME, "diagnostics: initialize -url                 : '" + url + "'");
+            this.log.info(ME, "diagnostics: initialize -user                : '" + user + "'");
+            this.log.info(ME, "diagnostics: initialize -password            : '" + password + "'");
+            this.log.info(ME, "diagnostics: initialize -max number of conn  : '" + this.capacity + "'");
+            this.log.info(ME, "diagnostics: initialize -conn busy timeout   : '" + this.connectionBusyTimeout + "'");
+            this.log.info(ME, "diagnostics: initialize -driver list         : '" + xmlBlasterJdbc + "'");
+            this.log.info(ME, "diagnostics: initialize -max. waiting Threads: '" + this.maxWaitingThreads + "'");
+         }
+         else {
+            if (this.log.TRACE) this.log.trace(ME, "exception when connecting to DB, error code: '" + ex.getErrorCode() + " : " + ex.getMessage() + "' DB configuration details follow (check if the DB is running)");
+         }
 
          // clean up the connections which might have been established
          // even if it probably won't help that much ...
