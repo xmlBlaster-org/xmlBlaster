@@ -7,7 +7,8 @@ import java.applet.Applet;
 import java.awt.Graphics;
 import java.awt.TextArea;
 import java.awt.Color;
-import java.util.Map;
+import java.util.Hashtable;
+//import java.util.Map;
 
 /**
  * An example applet which connects to xmlBlaster using a persistent http tunnel for callbacks
@@ -24,8 +25,10 @@ public class SystemInfoApplet extends Applet implements I_CallbackRaw
 {
    I_XmlBlasterAccessRaw xmlBlasterAccess;
    TextArea textArea;
+   boolean runAsApplet;
 
    public void init(){
+      this.runAsApplet = true;
       System.out.println("SystemInfoApplet: Applet.init() called");
       try {
          setBackground(Color.white);
@@ -40,7 +43,7 @@ public class SystemInfoApplet extends Applet implements I_CallbackRaw
          this.xmlBlasterAccess.connect(null, this);
          print("Connected to xmlBlaster");
 
-         Map subReturnQos = this.xmlBlasterAccess.subscribe("<key oid='cpuinfo'/>", "<qos/>");
+         Hashtable subReturnQos = this.xmlBlasterAccess.subscribe("<key oid='cpuinfo'/>", "<qos/>");
          subReturnQos = this.xmlBlasterAccess.subscribe("<key oid='meminfo'/>", "<qos/>");
          print("Subscribed on 'cpuinfo' and 'meminfo' topics");
 
@@ -53,8 +56,24 @@ public class SystemInfoApplet extends Applet implements I_CallbackRaw
       }
    }
  
+   public void init(Hashtable properties){
+      try {
+         this.xmlBlasterAccess = new XmlBlasterAccessRaw(properties);
+         this.xmlBlasterAccess.connect(null, this);
+
+         Hashtable subReturnQos = this.xmlBlasterAccess.subscribe("<key oid='cpuinfo'/>", "<qos/>");
+         subReturnQos = this.xmlBlasterAccess.subscribe("<key oid='meminfo'/>", "<qos/>");
+      }
+      catch (Exception e) {
+         e.printStackTrace();
+      }
+   }
+ 
    private void print(String text) {
-      this.textArea.append("SystemInfoApplet: " + text + "\n");
+      if (this.runAsApplet)
+         this.textArea.append("SystemInfoApplet: " + text + "\n");
+      else    
+         System.out.println("SystemInfo: " + text + "\n");
    }
 
    public void destroy(){
@@ -76,10 +95,23 @@ public class SystemInfoApplet extends Applet implements I_CallbackRaw
    /**
     * Here you receive the callback messages from xmlBlaster. 
     */
-   public String update(String cbSessionId, Map updateKey, byte[] content, Map updateQos) throws Exception {
+   public String update(String cbSessionId, Hashtable updateKey, byte[] content, Hashtable updateQos) throws Exception {
       print("Asynchronous Update: key=" + updateKey.get("/key/@oid") + "=" + new String(content));
       //repaint();
       return "<qos/>";
    }
+   
+   public static void main(String[] args) {
+      SystemInfoApplet appl = new SystemInfoApplet();
+      Hashtable properties = new Hashtable();
+      if (args.length < 1) 
+         properties.put("xmlBlaster/servletUrl", "http://localhost:8080/xmlBlaster/AppletServlet");
+      else properties.put("xmlBlaster/servletUrl", args[0]);
+      //properties.put("xmlBlaster/loginName", "tester");
+      //properties.put("xmlBlaster/passwd", "secret");
+      properties.put("xmlBlaster/logLevels", "ERROR,WARN,INFO");
+      appl.init(properties);
+   }
+   
 }
 

@@ -5,10 +5,9 @@ import org.xmlBlaster.client.protocol.http.applet.I_XmlBlasterAccessRaw;
 import org.xmlBlaster.client.protocol.http.applet.XmlBlasterAccessRaw;
 import org.xmlBlaster.client.protocol.http.applet.Msg;
 import java.applet.Applet;
-import java.awt.Graphics;
 import java.awt.TextArea;
 import java.awt.Color;
-import java.util.Map;
+import java.util.Hashtable;
 
 /**
  * An example applet which connects to xmlBlaster using a persistent
@@ -41,15 +40,15 @@ public class HelloWorld3 extends Applet implements I_CallbackRaw
          this.xb.connect(null, this);
          print("Connected to xmlBlaster");
 
-         Map subReturnQos = this.xb.subscribe("<key oid='HELLO'/>", "<qos/>");
+         Hashtable subReturnQos = this.xb.subscribe("<key oid='HELLO'/>", "<qos/>");
          print("Subscribed, id=" + subReturnQos.get("/qos/subscribe/@id"));
 
-         Map pubReturnQos = this.xb.publish("<key oid='HELLO'/>",
+         Hashtable pubReturnQos = this.xb.publish("<key oid='HELLO'/>",
                                  "Hello World".getBytes(), "<qos/>");
          print("Published 'HELLO', returned status is " +
                      pubReturnQos.get("/qos/state/@id"));
 
-         Map[] unSubReturnQos = this.xb.unSubscribe("<key oid='" +
+         Hashtable[] unSubReturnQos = this.xb.unSubscribe("<key oid='" +
                    subReturnQos.get("/qos/subscribe/@id")+"'/>", "<qos/>");
          print("UnSubscribed " + unSubReturnQos.length + " topics");
 
@@ -59,7 +58,7 @@ public class HelloWorld3 extends Applet implements I_CallbackRaw
                                     " content=" + msgs[i].getContentStr());
          }
 
-         Map[] eraseReturnQos=this.xb.erase("<key oid='HELLO'/>","<qos/>");
+         Hashtable[] eraseReturnQos=this.xb.erase("<key oid='HELLO'/>","<qos/>");
          print("Erase " + eraseReturnQos.length + " topics");
       }
       catch (Exception e) {
@@ -85,8 +84,8 @@ public class HelloWorld3 extends Applet implements I_CallbackRaw
    /**
     * Here you receive the callback messages from xmlBlaster. 
     */
-   public String update(String cbSessionId, Map updateKey, byte[] content,
-                        Map updateQos) throws Exception {
+   public String update(String cbSessionId, Hashtable updateKey, byte[] content,
+                        Hashtable updateQos) throws Exception {
       print("---- START update received -----");
       print("key=" + updateKey.get("/key/@oid") + " state=" +
             updateQos.get("/qos/state/@id"));
