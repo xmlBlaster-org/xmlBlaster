@@ -94,7 +94,7 @@ void Sax2Parser::endDocument()
 }
 
 /** Receive notification of the end of an element. */
-void Sax2Parser::endElement(const XMLCh *const uri, const XMLCh *const localname, const XMLCh *const qname)
+void Sax2Parser::endElement(const XMLCh *const /*uri*/, const XMLCh *const /*localname*/, const XMLCh *const qname)
 {
    if (log_.call()) log_.call(ME, string("endElement"));
    handler_->endElement(getStringValue(qname));
@@ -108,7 +108,7 @@ void Sax2Parser::startDocument()
 }
 
 /** Receive notification of the start of an element. */
-void Sax2Parser::startElement(const XMLCh *const uri, const XMLCh *const localname, const XMLCh *const qname, const Attributes &attrs)
+void Sax2Parser::startElement(const XMLCh *const /*uri*/, const XMLCh *const /*localname*/, const XMLCh *const qname, const Attributes &attrs)
 {
    if (log_.call()) log_.call(ME, string("startElement"));
    AttributeMap tmpMap;

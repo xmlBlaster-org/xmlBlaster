@@ -129,13 +129,13 @@ void XmlHandlerBase::endDocument()
    if (log_.trace()) log_.trace(ME, "endDocument");
 }
 
-void XmlHandlerBase::startElement(const string &name, const AttributeMap& attrs) 
+void XmlHandlerBase::startElement(const string &/*name*/, const AttributeMap& /*attrs*/) 
 {
    log_.warn(ME,"Please provide your startElement() impl.");
 }
 
 /** End element. */
-void XmlHandlerBase::endElement(const string &name)
+void XmlHandlerBase::endElement(const string &/*name*/)
 {
    log_.warn(ME,"Please provide your endElement() impl.");
 }
