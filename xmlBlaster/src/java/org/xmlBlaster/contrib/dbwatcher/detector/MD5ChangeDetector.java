@@ -151,6 +151,8 @@ public class MD5ChangeDetector implements I_ChangeDetector
       this.queryMeatStatement = info.get("db.queryMeatStatement", (String)null);
       if (this.queryMeatStatement != null && this.queryMeatStatement.length() < 1)
          this.queryMeatStatement = null;
+      if (this.queryMeatStatement != null)
+         this.queryMeatStatement = this.queryMeatStatement.trim();
 
       // Check if we need to make a data conversion
       if (this.dataConverter != null && this.queryMeatStatement != null) {
@@ -170,12 +172,13 @@ public class MD5ChangeDetector implements I_ChangeDetector
       if (this.changeDetectStatement == null) {
          throw new IllegalArgumentException("Please pass a change detection SQL statement, for example 'changeDetector.detectStatement=SELECT col1, col2 FROM TEST_POLL ORDER BY ICAO_ID'");
       }
+      this.changeDetectStatement = this.changeDetectStatement.trim();
 
       ClassLoader cl = this.getClass().getClassLoader();
 
       this.dbPool = (I_DbPool)this.info.getObject("db.pool");
       if (this.dbPool == null) {
-         String dbPoolClass = this.info.get("dbPool.class", "org.xmlBlaster.contrib.db.DbPool");
+         String dbPoolClass = this.info.get("dbPool.class", "org.xmlBlaster.contrib.db.DbPool").trim();
          if (dbPoolClass.length() > 0) {
             this.dbPool = (I_DbPool)cl.loadClass(dbPoolClass).newInstance();
             this.dbPool.init(info);
@@ -256,6 +259,7 @@ public class MD5ChangeDetector implements I_ChangeDetector
          });
       }
       catch (Exception e) {
+         e.printStackTrace();
          log.severe("Panic: Change detection failed for '" +
                     this.changeDetectStatement + "': " + e.toString()); 
       }
@@ -286,7 +290,7 @@ public class MD5ChangeDetector implements I_ChangeDetector
       
       while (rs.next()) {
          for (int i=1; i<=cols; i++) { // Add cols for later MD5 calculation
-            buf.append(rs.getObject(i));
+            buf.append(rs.getString(i));
          }
          
          if (dataConverter != null) { // Create XML dump on demand
@@ -443,7 +447,10 @@ public class MD5ChangeDetector implements I_ChangeDetector
             groupColValue = newGroupColValue;
 
             for (int i=1; i<=cols; i++) { // Add cols for later MD5 calculation
-               buf.append(rs.getObject(i));
+               //System.out.println(">"+rs.getObject(i).toString()+"<");   ">oracle.sql.TIMESTAMP@157b46f<"
+               //System.out.println(">"+rs.getString(i)+"<");              ">2005-1-31.23.0. 47. 236121000<"
+               // -> getObject is not useful as it returns for same timestamp another object instance.
+               buf.append(rs.getString(i));
             }
             
             if (dataConverter != null) { // Create XML dump on demand
