@@ -2,7 +2,7 @@
 
 <!-- ===========================================================================
 
- xmlBlaster build file
+ xmlBlaster build file to compile xmlBlaster-server and its Java/C/C++ clients.
 
 Authors:
  James Birchfield "jmbirchfield@proteustechnologies.com"
@@ -76,7 +76,7 @@ TODO
    <property file="build.properties" />
 
    <property name="name" value="xmlBlaster"/>
-   <property name="version" value="0.85d"/>
+   <property name="version" value="0.85e"/>
    <property name="year" value="1999-2003"/>
 
    <!-- property name="build.compiler" value="classic"/ -->

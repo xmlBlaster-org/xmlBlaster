@@ -1,5 +1,8 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
+Changes for 0.85e (beta) [2003-10-31]
+=====================================
+
  o Ported C client library to OSF1 V5.1 1885 alpha
    Thanks to FdGiglio@naples.sema.slb.com
 

@@ -1,19 +1,23 @@
 Bom dia,
 
-the new release 0.85d beta is out (Oct, 12 2003).
+the new release 0.85e beta is out (Oct, 31 2003).
 
-We wait with the stable release 0.85 until we got feedback about 0.85d
+We wait with the stable release 0.85 until we got feedback about 0.85e
 
 
 IMPORTANT NOTE:
 ---------------
 
-1. This update is backward compatible to 0.849
+1. The new 0.85e contains bugfixes.
+   Please upgrade from 0.85d,
+   the releases are completely compatible.
+
+2. This update is backward compatible to 0.849
    Please read xmlBlaster/CHANGES for details.
    It is recommended to use the new xmlBlaster.properties
    to get the nicer exception logging formatting.
 
-2. For older updates remove your old xmlBlaster.properties,
+3. For older updates remove your old xmlBlaster.properties,
    xmlBlasterPlugins.xml and jacorb.properties files.
    Use the new files from directory xmlBlaster/config.
   
@@ -38,7 +42,7 @@ KNOWN BUGS:
 NEXT RELEASES:
 --------------
 
-0.85d beta is already considered stable for production use.
+0.85e beta is already considered stable for production use.
 
 For 0.85 we try to resolve the JacORB deadlock
 bug which occurres in seldom circumstances
