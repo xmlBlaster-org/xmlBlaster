@@ -104,6 +104,7 @@ static bool myUpdate(::MsgUnitArr *msgUnitArr, void *userData,
 
 void SocketDriver::freeResources(bool deleteConnection)
 {
+   if (log_.call()) log_.call(ME, "freeResources("+lexical_cast<std::string>(deleteConnection)+") connection_=" + ((connection_==0)?"0":lexical_cast<std::string>(connection_)));
    if (deleteConnection && connection_ != 0) {
       freeXmlBlasterAccessUnparsed(connection_);
       connection_ = 0;
@@ -192,7 +193,7 @@ SocketDriver::SocketDriver(const SocketDriver& socketDriver)
    argsStructP_ = new ArgsStruct_T;
    //memset(argsStructP_, '\0', sizeof(ArgsStruct_T));
    global_.fillArgs(*argsStructP_);
-   if (log_.call()) log_.call("SocketDriver", string("Constructor"));
+   if (log_.call()) log_.call(ME, string("Copy constructor"));
 }
 
 SocketDriver& SocketDriver::operator =(const SocketDriver& /*socketDriver*/)
@@ -296,7 +297,7 @@ bool myUpdate(::MsgUnitArr *msgUnitArr, void *userData,
       for (size_t i=0; i<msgUnitArr->len; i++) {
          //char *xml = messageUnitToXml(&msgUnitArr->msgUnitArr[i]);
          //printf("[client] CALLBACK update(): Asynchronous message update arrived:%s\n",xml);
-			//xmlBlasterFree(xml);
+                        //xmlBlasterFree(xml);
          if (log.trace()) log.trace(ME, "Received callback message");
          ::MsgUnit& msgUnit = msgUnitArr->msgUnitArr[i];
          I_Callback* cb = socketDriver->getCallbackClient();
@@ -322,10 +323,10 @@ bool myUpdate(::MsgUnitArr *msgUnitArr, void *userData,
                    e.getMessage();
       log.error(ME, tmp);
       for (size_t i=0; i<msgUnitArr->len; i++) {
-			char* xml = messageUnitToXmlLimited(&msgUnitArr->msgUnitArr[i], 100);
-	      log.error(ME, xml);
-			xmlBlasterFree(xml);
-		}
+         char* xml = messageUnitToXmlLimited(&msgUnitArr->msgUnitArr[i], 100);
+         log.error(ME, xml);
+         xmlBlasterFree(xml);
+      }
       strncpy0(exception->errorCode, e.getErrorCodeStr().c_str(), XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       strncpy0(exception->message, tmp.c_str(), XMLBLASTEREXCEPTION_MESSAGE_LEN);
       return false;
@@ -334,10 +335,10 @@ bool myUpdate(::MsgUnitArr *msgUnitArr, void *userData,
       string tmp = "Unidentified exception caught in C++ update(), " + lexical_cast<std::string>(msgUnitArr->len) + " messages are handled as not delivered";
       log.error(ME, tmp);
       for (size_t i=0; i<msgUnitArr->len; i++) {
-			char* xml = messageUnitToXmlLimited(&msgUnitArr->msgUnitArr[i], 100);
-	      log.error(ME, xml);
-			xmlBlasterFree(xml);
-		}
+         char* xml = messageUnitToXmlLimited(&msgUnitArr->msgUnitArr[i], 100);
+         log.error(ME, xml);
+         xmlBlasterFree(xml);
+      }
       strncpy0(exception->errorCode, "user.update.error", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       strncpy0(exception->message, tmp.c_str(), XMLBLASTEREXCEPTION_MESSAGE_LEN);
       return false;

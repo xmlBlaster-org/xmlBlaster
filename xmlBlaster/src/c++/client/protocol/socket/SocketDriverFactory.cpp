@@ -29,7 +29,7 @@ SocketDriverFactory::SocketDriverFactory(Global& global)
      getterMutex_()
 {
    I_Log& log = global.getLog("org.xmlBlaster.client.protocol.socket");
-   if (log.call()) log.call("SocketDriver", string("Constructor"));
+   if (log.call()) log.call(ME, string("Constructor"));
    doRun_     = true;
    isRunning_ = false;
 
@@ -84,14 +84,14 @@ SocketDriver& SocketDriverFactory::getDriverInstance(Global* global)
    string instanceName = lexical_cast<string>(global);
    I_Log& log = global->getLog("org.xmlBlaster.client.protocol.socket");
 
-   if (log.call()) log.call("SocketDriver", string("getInstance for ") + instanceName);
+   if (log.call()) log.call(ME, string("getInstance for ") + instanceName);
    SocketDriver*  driver = NULL;
    int count = 1;
    {
       Lock lock(getterMutex_);
       DriversMap::iterator iter = drivers_.find(global);
       if (iter == drivers_.end()) {
-         if (log.trace()) log.trace("SocketDriver", string("created a new instance for ") + instanceName);
+         if (log.trace()) log.trace(ME, string("created a new instance for ") + instanceName);
          driver = new SocketDriver(*global, mutex_, instanceName);
          // initially the counter is set to 1
          drivers_.insert(DriversMap::value_type(global, pair<SocketDriver*, int>(driver, 1)));
@@ -103,7 +103,7 @@ SocketDriver& SocketDriverFactory::getDriverInstance(Global* global)
       }
    }
    if (log.trace()) 
-      log.trace("SocketDriver", string("number of instances for '") + instanceName + "' are " + lexical_cast<std::string>(count));
+      log.trace(ME, string("number of instances for '") + instanceName + "' are " + lexical_cast<std::string>(count));
    return *driver;
 }
 
@@ -113,12 +113,12 @@ int SocketDriverFactory::killDriverInstance(Global* global)
    string instanceName = lexical_cast<string>(global);
    I_Log& log = global->getLog("org.xmlBlaster.client.protocol.socket");
 
-   log.call(ME, "killDriverInstance");
+   log.call(ME, string("killDriverInstance with a total of ") + lexical_cast<string>(drivers_.size()) + " instances, looking for global " + global->getId() + " instanceName=" + instanceName);
    Lock lock(getterMutex_);
    DriversMap::iterator iter = drivers_.find(global);
    if (iter == drivers_.end()) return -1;
    int ret = --(*iter).second.second;
-   if (log.trace()) log.trace(ME, string("instances before deleting ") + lexical_cast<std::string>(ret));
+   if (log.trace()) log.trace(ME, string("instances before deleting ") + lexical_cast<std::string>(ret+1));
    if (ret <= 0) {
       if (log.trace()) log.trace(ME, string("kill instance '") + instanceName + "' will be deleted now");
       // do remove it since the counter is zero
@@ -127,7 +127,7 @@ int SocketDriverFactory::killDriverInstance(Global* global)
       delete driver;
    }
    if (log.trace()) 
-      log.trace("SocketDriver", string("kill instance '") + instanceName + "' the number of references is " + lexical_cast<std::string>(ret));
+      log.trace(ME, string("kill instance '") + instanceName + "' the number of references is " + lexical_cast<std::string>(ret));
    return ret;
 }
 
