@@ -3,7 +3,7 @@ Name:      Parser.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Parser class for raw socket messages
-Version:   $Id: Parser.java,v 1.37 2003/01/18 17:08:09 ruff Exp $
+Version:   $Id: Parser.java,v 1.38 2003/05/14 12:50:25 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -562,6 +562,8 @@ public class Parser
          return; // The shortest ping ever
       }
 
+      if (log.DUMP) log.dump(ME, "Raw message received '" + toLiteral(buf.buf) + "'");
+
       checksum = (buf.buf[NUM_FIELD_LEN] > 0);
       if (checksum) {
          log.warn(ME, "Ignoring checksum flag");
@@ -594,7 +596,11 @@ public class Parser
       byte[] content = null;
       for (int ii=0; ii<Integer.MAX_VALUE; ii++) {
          qos = toString(buf);
-         if (buf.offset >= buf.buf.length) break;
+         if (buf.offset >= buf.buf.length) {
+            MsgUnitRaw msgUnit = new MsgUnitRaw(null, (byte[])null, qos);
+            addMessage(msgUnit);
+            break;
+         }
 
          String key = toString(buf);
          if (buf.offset >= buf.buf.length) {
@@ -811,8 +817,8 @@ public class Parser
             return new String(buf.buf, startOffset, buf.offset-startOffset-1);
          }
       }
-      if (buf.offset == buf.buf.length)
-         return EMPTY_STRING;
+      //if (buf.offset == buf.buf.length)
+      //   return EMPTY_STRING;
 
       return new String(buf.buf, startOffset, buf.offset-startOffset);
    }
