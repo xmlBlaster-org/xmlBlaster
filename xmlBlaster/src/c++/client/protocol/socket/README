@@ -1,7 +1,5 @@
-This plugin shall communicate with the SOCKET protocol to xmlBlaster.
+This plugin communicates with the SOCKET protocol to xmlBlaster.
 It uses the C SOCKET client library and wraps it for our C++ code.
-
-The implementation is not finished!
 
 COMPILE:
 
