@@ -3,12 +3,12 @@ Name:      XmlKeyDom.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Building a huge DOM tree for all known MessageUnit xmlKey
-Version:   $Id: XmlKeyDom.java,v 1.14 2002/05/09 11:49:04 ruff Exp $
+Version:   $Id: XmlKeyDom.java,v 1.15 2002/07/09 18:06:55 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 
 import org.xmlBlaster.engine.RequestBroker;
 import org.xmlBlaster.authentication.SessionInfo;
@@ -47,13 +47,15 @@ public class XmlKeyDom implements I_MergeDomNode
 {
    final private static String ME = "XmlKeyDom";
 
+   private final LogChannel log;
+
    protected com.fujitsu.xml.omquery.DomQueryMgr queryMgr = null;
 
    protected Document xmlKeyDoc = null;
 
    protected String encoding = "ISO-8859-1";             // !!! TODO: access from xmlBlaster.properties file
                                                          // default is "UTF-8"
-   protected RequestBroker requestBroker = null;
+   protected final RequestBroker requestBroker;
 
 
    /**
@@ -62,6 +64,7 @@ public class XmlKeyDom implements I_MergeDomNode
    protected XmlKeyDom(RequestBroker requestBroker) throws XmlBlasterException
    {
       this.requestBroker = requestBroker;
+      this.log = requestBroker.getGlobal().getLog("core");
 
       // Instantiate the xmlBlaster DOM tree with <xmlBlaster> root node (DOM portable)
       String xml = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
@@ -78,7 +81,7 @@ public class XmlKeyDom implements I_MergeDomNode
          DocumentBuilder db = dbf.newDocumentBuilder ();
          xmlKeyDoc = db.parse(input);
       } catch (Exception e) {
-         Log.error(ME+".IO", "Problems when building DOM tree from your XmlKey: " + e.toString());
+         log.error(ME+".IO", "Problems when building DOM tree from your XmlKey: " + e.toString());
          throw new XmlBlasterException(ME, "Problems when building DOM tree from your XmlKey: " + e.toString());
       }
    }
@@ -133,10 +136,10 @@ public class XmlKeyDom implements I_MergeDomNode
 
          Enumeration nodeIter;
          try {
-            if (Log.TRACE) Log.trace(ME, "Goin' to query DOM tree with XPATH = " + xmlKey.getQueryString());
+            if (log.TRACE) log.trace(ME, "Goin' to query DOM tree with XPATH = " + xmlKey.getQueryString());
             nodeIter = getQueryMgr().getNodesByXPath(xmlKeyDoc, xmlKey.getQueryString());
          } catch (Exception e) {
-            Log.warn(ME + ".InvalidQuery", "Sorry, can't access, query snytax is wrong for '" + xmlKey.getQueryString() + "' : " + e.toString());
+            log.warn(ME + ".InvalidQuery", "Sorry, can't access, query snytax is wrong for '" + xmlKey.getQueryString() + "' : " + e.toString());
             e.printStackTrace();
             throw new XmlBlasterException(ME + ".InvalidQuery", "Sorry, can't access, query snytax is wrong");
          }
@@ -147,18 +150,18 @@ public class XmlKeyDom implements I_MergeDomNode
             Element node = (Element)obj;
             try {
                String uniqueKey = getKeyOid(node);
-               Log.info(ME, "Client " + clientName + " is accessing message oid=\"" + uniqueKey + "\" after successful query");
+               if (log.TRACE) log.info(ME, "Client " + clientName + " is accessing message oid=\"" + uniqueKey + "\" after successful query");
                xmlKeyVec.addElement(requestBroker.getXmlKeyFromOid(uniqueKey));
             } catch (Exception e) {
                e.printStackTrace();
-               Log.error(ME, e.toString());
+               log.error(ME, e.toString());
             }
          }
-         Log.info(ME, n + " MessageUnits matched to subscription \"" + xmlKey.getQueryString() + "\"");
+         if (log.TRACE) log.info(ME, n + " MessageUnits matched to subscription \"" + xmlKey.getQueryString() + "\"");
       }
 
       else {
-         Log.warn(ME + ".UnsupportedQueryType", "Sorry, can't access, query snytax is unknown: " + xmlKey.getQueryType());
+         log.warn(ME + ".UnsupportedQueryType", "Sorry, can't access, query snytax is unknown: " + xmlKey.getQueryType());
          throw new XmlBlasterException(ME + ".UnsupportedQueryType", "Sorry, can't access, query snytax is unknown: " + xmlKey.getQueryType());
       }
 
@@ -173,14 +176,14 @@ public class XmlKeyDom implements I_MergeDomNode
    protected final String getKeyOid(org.w3c.dom.Node node) throws XmlBlasterException
    {
       if (node == null) {
-         Log.warn(ME+".NoParentNode", "no parent node found");
+         log.warn(ME+".NoParentNode", "no parent node found");
          throw new XmlBlasterException(ME+".NoParentNode", "no parent node found");
       }
 
       String nodeName = node.getNodeName();
 
       if (nodeName.equals("xmlBlaster")) {       // ERROR: the root node, must be specially handled
-         Log.warn(ME+".NodeNotAllowed", "<xmlBlaster> node not allowed");
+         log.warn(ME+".NodeNotAllowed", "<xmlBlaster> node not allowed");
          throw new XmlBlasterException(ME+".NodeNotAllowed", "<xmlBlaster> node not allowed");
       }
 
@@ -206,13 +209,13 @@ public class XmlKeyDom implements I_MergeDomNode
             org.w3c.dom.Attr attribute = (org.w3c.dom.Attr)attributes.item(i);
             if (attribute.getNodeName().equals("oid")) {
                String val = attribute.getNodeValue();
-               // Log.trace(ME, "Found key oid=\"" + val + "\"");
+               // log.trace(ME, "Found key oid=\"" + val + "\"");
                return val;
             }
          }
       }
 
-      Log.warn(ME+".InternalKeyOid", "Internal getKeyOid() error");
+      log.warn(ME+".InternalKeyOid", "Internal getKeyOid() error");
       throw new XmlBlasterException(ME+".InternalKeyOid", "Internal getKeyOid() error");
    }
 
