@@ -4,9 +4,9 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client callback
            YOU MAY USE THIS AS YOUR Callback implementation, JUST TAKE A COPY OF IT
-Version:   $Id: BlasterCallbackImpl.java,v 1.1 2000/06/25 18:32:39 ruff Exp $
+Version:   $Id: BlasterCallbackImpl.java,v 1.2 2000/06/26 13:47:45 ruff Exp $
 ------------------------------------------------------------------------------*/
-package javaclients;
+package javaclients.corba;
 
 import org.jutils.log.Log;
 import org.xmlBlaster.util.XmlBlasterException;
