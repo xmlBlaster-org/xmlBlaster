@@ -121,24 +121,38 @@ final public class Authenticate implements I_RunlevelListener
     * Use this to create a user and session for internal users only.
     * This method is a security risk never allow external code to call it (there is no
     * passwd needed).
-    * Note that only the security instances are created, they are not registered
-    * with the Authentication server.
+    * Note that for loginNames starting with "__" only the security instances are created,
+    * they are not registered with the Authentication server.
     */
-   public SessionInfo unsecureCreateSession(SessionName loginName) throws XmlBlasterException
+   public SessionInfo unsecureCreateSession(org.xmlBlaster.client.qos.ConnectQos connectQos) throws XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "Entering unsecureCreateSession(" + loginName + ")");
-      String secretSessionId = createSessionId(loginName.getLoginName());
+      SessionName sessionName = connectQos.getSessionName();
+      if (log.CALL) log.call(ME, "Entering unsecureCreateSession(" + sessionName + ")");
+      String secretSessionId = createSessionId(sessionName.getLoginName());
       org.xmlBlaster.authentication.plugins.simple.Manager manager = new org.xmlBlaster.authentication.plugins.simple.Manager();
       manager.init(glob, null);
       I_Session session = new org.xmlBlaster.authentication.plugins.simple.Session(manager, secretSessionId);
-      org.xmlBlaster.authentication.plugins.I_SecurityQos securityQos = new org.xmlBlaster.authentication.plugins.simple.SecurityQos(this.glob, loginName.getLoginName(), "");
+      org.xmlBlaster.authentication.plugins.I_SecurityQos securityQos = new org.xmlBlaster.authentication.plugins.simple.SecurityQos(this.glob, sessionName.getLoginName(), "");
       session.init(securityQos);
       I_Subject subject = session.getSubject();
-      SubjectInfo subjectInfo = new SubjectInfo(getGlobal(), this, loginName);
-      subjectInfo.toAlive(subject, new CbQueueProperty(getGlobal(), Constants.RELATING_SUBJECT, null));
-      org.xmlBlaster.client.qos.ConnectQos connectQos = new org.xmlBlaster.client.qos.ConnectQos(glob);
-      connectQos.getSessionQos().setSessionTimeout(0L);  // Lasts forever
-      return new SessionInfo(subjectInfo, session, new ConnectQosServer(glob, connectQos.getData()), getGlobal());
+
+      SubjectInfo subjectInfo = null;
+      if (sessionName.getLoginName().startsWith("__")) { // __RequestBroker_internal
+         // strip the pubSessionId and create a subjectInfo ...
+         SessionName subjectName = new SessionName(glob, sessionName.getNodeId(), sessionName.getLoginName());
+         subjectInfo = new SubjectInfo(getGlobal(), this, subjectName);
+         subjectInfo.toAlive(subject, new CbQueueProperty(getGlobal(), Constants.RELATING_SUBJECT, null));
+      }
+      else {
+         subjectInfo = getOrCreateSubjectInfoByName(sessionName);
+      }
+
+      SessionInfo sessionInfo = subjectInfo.getSession(sessionName);
+      if (sessionInfo == null) {
+         sessionInfo = new SessionInfo(subjectInfo, session, new ConnectQosServer(glob, connectQos.getData()), getGlobal());
+      }
+
+      return sessionInfo;
    }
 
    /**
