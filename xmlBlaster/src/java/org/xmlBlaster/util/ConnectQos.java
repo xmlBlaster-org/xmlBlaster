@@ -3,7 +3,7 @@ Name:      ConnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: ConnectQos.java,v 1.39 2003/01/06 11:34:10 ruff Exp $
+Version:   $Id: ConnectQos.java,v 1.40 2003/01/17 12:50:24 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -105,7 +105,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    /** Holding queue properties for the server side callback queue */
    protected transient Vector cbQueuePropertyVec = new Vector();
    /** Holding queue property if subject related, a reference to a cbQueuePropertyVec entry */
-   private transient CbQueueProperty subjectCbQueueProperty = null;
+   private transient CbQueueProperty subjectQueueProperty = null;
    /** Holding queue property if session related, a reference to a cbQueuePropertyVec entry */
    private transient CbQueueProperty sessionCbQueueProperty = null;
 
@@ -319,7 +319,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    /**
     * Returns never null. 
     * <p />
-    * If no CbQueueProperty exists, a RELATING_SESSION queue property object is created
+    * If no CbQueueProperty exists, a RELATING_CALLBACK queue property object is created
     * on the fly.
     * <p />
     * If more than one CbQueueProperty exists, the first is chosen. (Verify this behavior)!
@@ -328,7 +328,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       if (cbQueuePropertyVec.size() > 0)
          return (CbQueueProperty)cbQueuePropertyVec.elementAt(0);
 
-      addCbQueueProperty(new CbQueueProperty(glob, Constants.RELATING_SESSION, nodeId));
+      addCbQueueProperty(new CbQueueProperty(glob, Constants.RELATING_CALLBACK, nodeId));
       return (CbQueueProperty)cbQueuePropertyVec.elementAt(0);
    }
 
@@ -337,19 +337,19 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     * The subjectQueue has never callback addresses, the addresses of the sessions are used
     * if configured.
     */
-   public final CbQueueProperty getSubjectCbQueueProperty() {
-      if (this.subjectCbQueueProperty == null) {
-         this.subjectCbQueueProperty = new CbQueueProperty(glob, Constants.RELATING_SUBJECT, nodeId);
+   public final CbQueueProperty getSubjectQueueProperty() {
+      if (this.subjectQueueProperty == null) {
+         this.subjectQueueProperty = new CbQueueProperty(glob, Constants.RELATING_SUBJECT, nodeId);
       }
-      return this.subjectCbQueueProperty;
+      return this.subjectQueueProperty;
    }
 
-   public void setSubjectCbQueueProperty(CbQueueProperty subjectCbQueueProperty) {
-      this.subjectCbQueueProperty = subjectCbQueueProperty;
+   public void setSubjectQueueProperty(CbQueueProperty subjectQueueProperty) {
+      this.subjectQueueProperty = subjectQueueProperty;
    }
 
-   public boolean subjectCbQueuePropertyIsInitialized() {
-      return (this.subjectCbQueueProperty != null);
+   public boolean hasSubjectQueueProperty() {
+      return (this.subjectQueueProperty != null);
    }
 
    /**
@@ -357,7 +357,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     */
    public final CbQueueProperty getSessionCbQueueProperty() {
       if (this.sessionCbQueueProperty == null)
-         this.sessionCbQueueProperty = new CbQueueProperty(glob, Constants.RELATING_SESSION, nodeId);
+         this.sessionCbQueueProperty = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, nodeId);
       return this.sessionCbQueueProperty;
    }
 
@@ -786,8 +786,8 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          cbQueuePropertyVec.addElement(prop);
       }
       else if (prop.isSubjectRelated()) {
-         if (this.subjectCbQueueProperty != null) log.warn(ME, "addCbQueueProperty() overwrites previous subject queue setting");
-         this.subjectCbQueueProperty = prop;
+         if (this.subjectQueueProperty != null) log.warn(ME, "addCbQueueProperty() overwrites previous subject queue setting");
+         this.subjectQueueProperty = prop;
          cbQueuePropertyVec.addElement(prop);
       }
    }
@@ -1239,7 +1239,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
             "   <isClusterNode>true</isClusterNode>\n" +
             "   <duplicateUpdates>false</duplicateUpdates>\n" +
             "   <session timeout='3600000' maxSessions='20' clearSessions='false' sessionId='wvt57gj'/>\n" +
-            "   <queue relating='session' maxMsg='1000' maxBytes='4000' onOverflow='deadMessage'>\n" +
+            "   <queue relating='callback' maxMsg='1000' maxBytes='4000' onOverflow='deadMessage'>\n" +
             "      <callback type='IOR' sessionId='4e56890ghdFzj0' pingInterval='60000' retries='1' delay='60000' useForSubjectQueue='true'>\n" +
             "         <ptp>true</ptp>\n" +
             "         IOR:00011200070009990000....\n" +
@@ -1258,7 +1258,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
             "      <ptp>true</ptp>\n" +
             "      http:/www.mars.universe:8080/RPC2\n" +
             "   </callback>\n" +
-            "   <queue relating='session' maxMsg='1600' maxBytes='2000'/>\n" +
+            "   <queue relating='callback' maxMsg='1600' maxBytes='2000'/>\n" +
             "   <queue relating='client' maxMsg='9600' maxBytes='92000' expires='960000000'>\n" +
             "      <address type='IOR' sessionId='clientAAXX' pingInterval='99000' retries='9' delay='90000'>\n" +
             "         IOR:00011200070009990000....\n" +

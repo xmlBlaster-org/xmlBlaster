@@ -100,7 +100,7 @@ public class Constants
    public final static String INFO_QUEUED = "QUEUED";
 
    /** Type of a message callback queue */
-   public final static String RELATING_SESSION = "session";
+   public final static String RELATING_CALLBACK = "callback";
    /** Type of a message callback queue */
    public final static String RELATING_SUBJECT = "subject";
    /** Type of a message queue  on client side */

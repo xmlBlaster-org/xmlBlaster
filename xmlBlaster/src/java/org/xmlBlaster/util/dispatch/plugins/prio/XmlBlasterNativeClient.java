@@ -107,7 +107,7 @@ public final class XmlBlasterNativeClient implements I_Callback
       CallbackAddress cbAddress = new CallbackAddress(this.glob);
       cbAddress.setSessionId(this.cbSessionId); // to protect our callback server - see method update()
       cbAddress.setDispatchPlugin("undef");
-      this.connectQos.getCbQueueProperty().setCallbackAddress(cbAddress);
+      this.connectQos.addCallbackAddress(cbAddress);
 
       this.xmlBlasterCon.initFailSave(new I_ConnectionProblems() {
             
