@@ -3,7 +3,7 @@ Name:      TestPubForce.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestPubForce.java,v 1.4 2002/12/18 13:16:19 ruff Exp $
+Version:   $Id: TestPubForce.java,v 1.5 2003/01/03 17:19:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -206,9 +206,13 @@ public class TestPubForce extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      if (log.CALL) log.call(ME, "Receiving update of a message ...");
+      log.info(ME, "Receiving update of a message " + updateKey.getOid() + "...");
 
       numReceived += 1;
+
+      if (updateQos.isErased()) {
+         return "";
+      }
 
       assertEquals("Wrong sender", senderName, updateQos.getSender().getLoginName());
       assertEquals("Wrong oid of message returned", publishOid, updateKey.getOid());

@@ -150,7 +150,7 @@ public class TestUpdateClientException extends TestCase implements I_Callback
       try { Thread.currentThread().sleep(200L); } catch( InterruptedException i) {}   // Wait 200 milli seconds, until all updates are processed ...
 
       try {
-         EraseReturnQos[] arr = con.erase("<key oid='MSG'/>", "<qos/>");
+         EraseReturnQos[] arr = con.erase("<key oid='"+msgOidNormal+"'/>", "<qos/>");
          assertEquals("Erase", 1, arr.length);
       } catch(XmlBlasterException e) { fail("Erase XmlBlasterException: " + e.getMessage()); }
 

@@ -217,6 +217,10 @@ public class TestErase extends TestCase implements I_Callback
 
       numReceived += 1;
 
+      if (updateQos.isErased()) {
+         return "";
+      }
+
       if (expectingErase) {
          assertEquals("Wrong update state", Constants.STATE_ERASED, updateQos.getState());
          assertTrue("Wrong update state", updateQos.isErased());

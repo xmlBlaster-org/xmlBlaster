@@ -3,7 +3,7 @@ Name:      TestSubMulti.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubMulti.java,v 1.4 2002/12/18 13:16:19 ruff Exp $
+Version:   $Id: TestSubMulti.java,v 1.5 2003/01/03 17:19:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -183,6 +183,10 @@ public class TestSubMulti extends TestCase implements I_Callback
       log.info(ME, "Receiving update of message oid=" + updateKey.getOid() + "...");
 
       numReceived += 1;
+
+      if (updateQos.isErased()) {
+         return "";
+      }
 
       assertEquals("Wrong sender", senderName, updateQos.getSender().getLoginName());
       try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Sleep to assure that publish() is returned with publishOid

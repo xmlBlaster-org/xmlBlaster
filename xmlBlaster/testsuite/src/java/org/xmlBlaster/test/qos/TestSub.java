@@ -3,7 +3,7 @@ Name:      TestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.java,v 1.5 2002/12/18 13:16:19 ruff Exp $
+Version:   $Id: TestSub.java,v 1.6 2003/01/03 17:19:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -207,6 +207,10 @@ public class TestSub extends TestCase implements I_Callback
       log.info(ME, "subscribeOid=" + subscribeOid + ":" + updateQos.toXml());
 
       numReceived += 1;
+
+      if (updateQos.isErased()) {
+         return "";
+      }
 
       // wait that the subscribe() has returned as well
       for (int ii=0; ii<5; ii++) {

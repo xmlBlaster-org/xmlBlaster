@@ -198,6 +198,10 @@ public class TestSubId extends TestCase implements I_Callback
       if (log.CALL) log.call(ME, "Receiving update of a message ...");
       log.info(ME, "sentSubscribeId=" + sentSubscribeId + ":" + updateQos.toXml());
 
+      if (updateQos.isErased()) {
+         return "";
+      }
+
       numReceived += 1;
 
       // Wait that publish() returns and set 'publishOid' properly

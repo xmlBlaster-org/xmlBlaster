@@ -185,19 +185,30 @@ public class TestSubExact extends TestCase implements I_Callback
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
    {
-      if (log.CALL) log.call(ME, "Receiving update of a message ...");
+      if (log.CALL) log.call(ME, "Receiving update of a message from sender = " + updateQos.getSender() + " ...");
 
       numReceived += 1;
 
       // Wait that publish() returns and set 'publishOid' properly
       try { Thread.currentThread().sleep(200); } catch( InterruptedException i) {}
 
-      assertEquals("Wrong sender", senderName, updateQos.getSender().getLoginName());
-      assertEquals("engine.qos.update.subscriptionId: Wrong subscriptionId", subscribeOid, updateQos.getSubscriptionId());
-      assertEquals("Wrong oid of message returned", publishOid, updateKey.getOid());
-      assertEquals("Message content is corrupted", new String(senderContent), new String(content));
-      assertEquals("Message contentMime is corrupted", contentMime, updateKey.getContentMime());
-      assertEquals("Message contentMimeExtended is corrupted", contentMimeExtended, updateKey.getContentMimeExtended());
+      if (updateQos.isErased()) {
+         return "";
+      }
+
+      try {
+         assertEquals("Wrong sender", senderName, updateQos.getSender().getLoginName());
+         assertEquals("engine.qos.update.subscriptionId: Wrong subscriptionId", subscribeOid, updateQos.getSubscriptionId());
+         assertEquals("Wrong oid of message returned", publishOid, updateKey.getOid());
+         assertEquals("Message content is corrupted", new String(senderContent), new String(content));
+         assertEquals("Message contentMime is corrupted", contentMime, updateKey.getContentMime());
+         assertEquals("Message contentMimeExtended is corrupted", contentMimeExtended, updateKey.getContentMimeExtended());
+      }
+      catch (RuntimeException e) { // TODO: pass problem to junit
+         e.printStackTrace();
+         log.error(ME, e.toString());
+         throw e;
+      }
 
       messageArrived = true;
       return "";

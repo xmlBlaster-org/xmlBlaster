@@ -303,6 +303,10 @@ public class TestFailSaveAsync extends TestCase implements I_Callback, I_Connect
 
          String oid = updateKey.getOid();
 
+         if (updateQos.isErased()) {
+            return "";
+         }
+
          numReceived++;
 
          assertEquals("Wrong sender", senderName, updateQos.getSender().getLoginName());
@@ -328,7 +332,7 @@ public class TestFailSaveAsync extends TestCase implements I_Callback, I_Connect
             contentCounter = Integer.parseInt(cnt);
             assertEquals("Wrong counter in content", ii, contentCounter);
          } catch(NumberFormatException e) {
-            log.error(ME, "Can't extract message number");
+            log.error(ME, "Can't extract message number '" + new String(content) + "': " + updateQos.toXml());
          }
 
          log.info(ME, "Update message oid=" + oid + " numReceived=" + numReceived + ", numNormalPublishReceived=" + numNormalPublishReceived + " numTailbackReceived=" + numTailbackReceived + " ...");
