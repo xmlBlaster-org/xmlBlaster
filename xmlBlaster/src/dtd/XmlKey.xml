@@ -46,6 +46,21 @@
    </get>
 
 
+   <!-- Deliver information about internal state of xmlBlaster -->
+   <get>
+      <key oid='__sys__TotalMem' queryType='EXACT'>  <!-- Amount of totally allocated RAM [bytes] -->
+      </key>
+   </get>
+
+
+   <!-- Deliver all informations about internal state of xmlBlaster -->
+   <get>
+      <key oid='' queryType='XPATH'>
+         xmlBlaster/key/__sys__internal
+      </key>
+   </get>
+
+
    <!-- Accessing message 4711 asynchronous -->
    <subscribe>
       <key oid=\"KEY_FOR_SMILEY\" queryType='EXACT'>
