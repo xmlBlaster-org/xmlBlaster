@@ -22,6 +22,7 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
    - Bugfix for lexical_cast<double> and lexical_cast<long double>
      which rounded to only 6 digits
    - Added Base64 support for ClientProperty
+   - Bugfix: SAX parsers are now thread safe
    - Other minor changes
 
  o C-client library:
