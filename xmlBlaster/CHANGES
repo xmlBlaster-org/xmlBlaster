@@ -3,6 +3,11 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes for 0.xxx [xxxx-xx-xx] (cvs only)
 =========================================
 
+ o Fixed client side thread demand by implementing
+   lazy instantiation. This for example reduces the 
+   number of xmlBlaster specific threads from 5 to 1 for
+   a Java SOCKET connection.
+
  o Fixed possible thread leak in java client library
    when using many client connections and Global is not
    garbage collected frequently enough by the JVM
