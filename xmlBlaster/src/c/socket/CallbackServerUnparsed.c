@@ -176,6 +176,7 @@ static int runCallbackServer(CallbackServerUnparsed *cb)
 
       memset(&xmlBlasterException, 0, sizeof(XmlBlasterException));
 
+      /* Here we block until a message arrives, see parseSocketData() */
       success = readMessage(cb, &socketDataHolder, &xmlBlasterException);
 
       if (success == false) { /* EOF */
@@ -184,7 +185,7 @@ static int runCallbackServer(CallbackServerUnparsed *cb)
          break;
       }
 
-      if (*xmlBlasterException.errorCode != 0) { /* Caught an exception */
+      if (*xmlBlasterException.errorCode != 0) {
          printf("[CallbackServerUnparsed] WARNING: Couldn't read message from xmlBlaster: errorCode=%s message=%s\n",
                    xmlBlasterException.errorCode, xmlBlasterException.message);
          continue;
@@ -221,7 +222,6 @@ static int runCallbackServer(CallbackServerUnparsed *cb)
          sendResponse(cb, &socketDataHolder, msgUnitArr);
       }
       else {
-         /* !!! throw the exception to xmlBlaster is buggy, XmlBlasterException is not correct formatted !!! */
          printf("CallbackServerUnparsed.update(): Throwing the XmlBlasterException '%s' back to the server:\n%s\n",
                 xmlBlasterException.errorCode, xmlBlasterException.message);
          sendXmlBlasterException(cb, &socketDataHolder, &xmlBlasterException);

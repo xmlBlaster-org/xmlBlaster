@@ -17,6 +17,7 @@ struct XmlBlasterConnectionUnparsedStruct;
 typedef struct XmlBlasterConnectionUnparsedStruct XmlBlasterConnectionUnparsed;
 
 /* Declare function pointers to use in struct to simulate object oriented access */
+typedef bool  ( * XmlBlasterConnectionUnparsedInitConnection)(XmlBlasterConnectionUnparsed *xb);
 typedef char *( * XmlBlasterConnectionUnparsedConnect)(XmlBlasterConnectionUnparsed *xb, const char * const qos, XmlBlasterException *exception);
 typedef bool  ( * XmlBlasterConnectionUnparsedDisconnect)(XmlBlasterConnectionUnparsed *xb, const char * qos, XmlBlasterException *exception);
 typedef char *( * XmlBlasterConnectionUnparsedPublish)(XmlBlasterConnectionUnparsed *xb, MsgUnit *msgUnit, XmlBlasterException *exception);
@@ -40,6 +41,7 @@ struct XmlBlasterConnectionUnparsedStruct {
    long requestId;
    char secretSessionId[MAX_SECRETSESSIONID_LEN];
    bool isInitialized;
+   XmlBlasterConnectionUnparsedInitConnection initConnection; /* Used internally or by multi threaded embedding only as this is called by connect() automatically */
    XmlBlasterConnectionUnparsedConnect connect;   
    XmlBlasterConnectionUnparsedDisconnect disconnect;   
    XmlBlasterConnectionUnparsedPublish publish;

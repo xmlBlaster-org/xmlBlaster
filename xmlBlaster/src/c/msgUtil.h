@@ -34,6 +34,9 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #define XMLBLASTER_UNSUBSCRIBE "unSubscribe"
 #define XMLBLASTER_ERASE "erase"
 
+/**
+ * Holds arbitrary raw data and its length
+ */
 typedef struct XmlBlasterBlobStruct {
    size_t dataLen;
    char *data;
@@ -59,12 +62,12 @@ typedef struct MsgUnitStructArr {
 typedef struct MsgRequestInfoStruct {
    const char *requestIdStr;
    const char *methodName;
+   char responseType;
    XmlBlasterBlob blob;
 } MsgRequestInfo;
 
 #define XMLBLASTEREXCEPTION_ERRORCODE_LEN 56
 #define XMLBLASTEREXCEPTION_MESSAGE_LEN 1024
-#define XMLBLASTEREXCEPTION_MESSAGE_FMT "%1020s" 
 typedef struct XmlBlasterExceptionStruct {
    bool remote; /* true if exception is from remote */
    char errorCode[XMLBLASTEREXCEPTION_ERRORCODE_LEN];

@@ -56,7 +56,9 @@ struct XmlBlasterAccessUnparsedStruct {
    XmlBlasterAccessUnparsedPing ping;
    XmlBlasterAccessUnparsedIsConnected isConnected;
    bool debug;
+   long responseTimeout;
    XmlBlasterBlob responseBlob;
+   char responseType;             /* XMLBLASTER_MSG_TYPE_ENUM */
    pthread_t callbackThreadId;
    pthread_mutex_t responseMutex; /* Needed for boss/worker model to block until an update arrives */
    pthread_cond_t responseCond;

@@ -19,11 +19,19 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #include <msgUtil.h>
 
 #define  MAX_SESSIONID_LEN 256
+
+/* Settings for MSG_FLAG_POS_TYPE */
+typedef enum XMLBLASTER_MSG_TYPE_ENUM {
+   MSG_TYPE_INVOKE = 73,
+   MSG_TYPE_RESPONSE = 82,
+   MSG_TYPE_EXCEPTION = 69
+} XMLBLASTER_MSG_TYPE;
+
 typedef struct SocketDataHolderStruct {
    size_t msgLen;
    bool checksum;
    bool compressed;
-   char type;
+   char type;  /* XMLBLASTER_MSG_TYPE */
    char version;
    char requestId[MAX_REQUESTID_LEN];
    char methodName[MAX_METHODNAME_LEN];
@@ -45,13 +53,6 @@ enum MSG_FLAG_POS_ENUM {
    MSG_POS_REQESTID
 };
 
-/* Settings for MSG_FLAG_POS_TYPE */
-enum XMLBLASTER_MSG_TYPE_ENUM {
-   MSG_TYPE_INVOKE = 73,
-   MSG_TYPE_RESPONSE = 82,
-   MSG_TYPE_EXCEPTION = 69
-};
-
 #define XMLBLASTER_VERSION 49
 
 
@@ -68,5 +69,6 @@ extern char *encodeSocketMessage(
               size_t *rawMsgLen);
 extern char *encodeMsgUnit(MsgUnit *msgUnit, size_t *totalLen, bool debug);
 extern bool parseSocketData(int xmlBlasterSocket, SocketDataHolder *socketDataHolder, XmlBlasterException *exception, bool debug);
+extern void convertToXmlBlasterException(XmlBlasterBlob *blob, XmlBlasterException *exception, bool debug);
 extern MsgUnitArr *parseMsgUnitArr(size_t dataLen, char *data);
 

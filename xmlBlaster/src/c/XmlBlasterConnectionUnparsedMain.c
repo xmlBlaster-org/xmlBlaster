@@ -54,10 +54,6 @@ int main(int argc, char** argv)
    }
 
    xb = getXmlBlasterConnectionUnparsed(argc, argv);
-   if (xb == (XmlBlasterConnectionUnparsed *)0) {
-      printf("[XmlBlasterConnectionUnparsedMain] Connection failed, please start xmlBlaster server first\n");
-      exit(1);
-   }
    xb->debug = debug;
 
    if (xb->ping(xb, 0) == (char *)0) {
@@ -82,6 +78,7 @@ int main(int argc, char** argv)
       response = xb->connect(xb, connectQos, &xmlBlasterException);
       if (*xmlBlasterException.errorCode != 0) {
          printf("[XmlBlasterConnectionUnparsedMain] Caught exception during connect errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
+         freeXmlBlasterConnectionUnparsed(xb);
          exit(1);
       }
       free(response);
@@ -106,6 +103,7 @@ int main(int argc, char** argv)
       response = xb->subscribe(xb, key, qos, &xmlBlasterException);
       if (*xmlBlasterException.errorCode != 0) {
          printf("[XmlBlasterConnectionUnparsedMain] Caught exception in subscribe errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
+         freeXmlBlasterConnectionUnparsed(xb);
          exit(1);
       }
       printf("[XmlBlasterConnectionUnparsedMain] Subscribe success, returned status is '%s'\n", response);
@@ -122,6 +120,7 @@ int main(int argc, char** argv)
       response = xb->publish(xb, &msgUnit, &xmlBlasterException);
       if (*xmlBlasterException.errorCode != 0) {
          printf("[XmlBlasterConnectionUnparsedMain] Caught exception in publish errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
+         freeXmlBlasterConnectionUnparsed(xb);
          exit(1);
       }
       printf("[XmlBlasterConnectionUnparsedMain] Publish success, returned status is '%s'\n", response);
@@ -139,6 +138,7 @@ int main(int argc, char** argv)
       }
       else {
          printf("[XmlBlasterConnectionUnparsedMain] Caught exception in unSubscribe errorCode=%s, message=%s\n", xmlBlasterException.errorCode, xmlBlasterException.message);
+         freeXmlBlasterConnectionUnparsed(xb);
          exit(1);
       }
    }
@@ -152,6 +152,7 @@ int main(int argc, char** argv)
       msgUnitArr = xb->get(xb, key, qos, &xmlBlasterException);
       if (*xmlBlasterException.errorCode != 0) {
          printf("[XmlBlasterConnectionUnparsedMain] Caught exception in get errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
+         freeXmlBlasterConnectionUnparsed(xb);
          exit(1);
       }
       if (msgUnitArr != (MsgUnitArr *)0) {
@@ -172,6 +173,7 @@ int main(int argc, char** argv)
       }
       else {
          printf("[XmlBlasterConnectionUnparsedMain] Caught exception in get errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
+         freeXmlBlasterConnectionUnparsed(xb);
          exit(1);
       }
    }
@@ -184,6 +186,7 @@ int main(int argc, char** argv)
       response = xb->erase(xb, key, qos, &xmlBlasterException);
       if (*xmlBlasterException.errorCode != 0) {
          printf("[XmlBlasterConnectionUnparsedMain] Caught exception in erase errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
+         freeXmlBlasterConnectionUnparsed(xb);
          exit(1);
       }
       printf("[XmlBlasterConnectionUnparsedMain] Erase success, returned status is '%s'\n", response);
@@ -193,6 +196,7 @@ int main(int argc, char** argv)
    {  /* disconnect ... */
       if (xb->disconnect(xb, 0, &xmlBlasterException) == false) {
          printf("[XmlBlasterConnectionUnparsedMain] Caught exception in disconnect, errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
+         freeXmlBlasterConnectionUnparsed(xb);
          exit(1);
       }
    }

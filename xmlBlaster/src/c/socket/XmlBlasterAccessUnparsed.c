@@ -19,6 +19,7 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket
 #include <ctype.h>
 #include <errno.h>
 #include <sys/types.h>
+#include <sys/time.h> /* gettimeofday() */
 #include <socket/xmlBlasterSocket.h>
 #include <XmlBlasterAccessUnparsed.h>
 
@@ -27,6 +28,9 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket
 #else
 #  include <unistd.h> /* sleep(), only used in main */
 #endif
+
+#define  MICRO_SECS_PER_SECOND 1000000
+#define  NANO_SECS_PER_SECOND MICRO_SECS_PER_SECOND * 1000
 
 static bool initialize(XmlBlasterAccessUnparsed *xa, UpdateFp update);
 static char *xmlBlasterConnect(XmlBlasterAccessUnparsed *xa, const char * const qos, UpdateFp update, XmlBlasterException *exception);
@@ -41,6 +45,7 @@ static bool isConnected(XmlBlasterAccessUnparsed *xa);
 static void responseEvent(void /*XmlBlasterAccessUnparsed*/ *userP, void /*SocketDataHolder*/ *socketDataHolder);
 static MsgRequestInfo *preSendEvent(void /*XmlBlasterAccessUnparsed*/ *userP, MsgRequestInfo *msgRequestInfo, XmlBlasterException *exception);
 static MsgRequestInfo *postSendEvent(void /*XmlBlasterAccessUnparsed*/ *userP, MsgRequestInfo *msgRequestInfo, XmlBlasterException *exception);
+static void getAbsoluteTime(XmlBlasterAccessUnparsed *xa, struct timespec *abstime);
 
 /**
  * Create an instance for access xmlBlaster. 
@@ -65,7 +70,9 @@ XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed(int argc, char** argv) {
    xa->ping = xmlBlasterPing;
    xa->isConnected = isConnected;
    xa->debug = false;
+   xa->responseTimeout = 60000; /* One minute (given in millis) */
    memset(&xa->responseBlob, 0, sizeof(XmlBlasterBlob));
+   xa->responseType = 0;
    xa->callbackThreadId = 0;
 #  ifdef _WINDOWS
    xa->responseMutex = PTHREAD_MUTEX_INITIALIZER;
@@ -73,7 +80,10 @@ XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed(int argc, char** argv) {
 #  else
    /* On Linux gcc & SUN CC:
         "parse error before '{' token"
-      when initializing directly, so we do a hack here: */
+      when initializing directly, so we do a hack here:
+      (NOTE: using pthread_cond_init() would be the choice to
+      initialize but this only works with dynamic conds)
+   */
    {
       pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
       xa->responseMutex = mutex;
@@ -87,7 +97,15 @@ XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed(int argc, char** argv) {
    for (iarg=0; iarg < argc-1; iarg++) {
       if (strcmp(argv[iarg], "-debug") == 0)
          xa->debug = !strcmp(argv[++iarg], "true");
+      else if (strcmp(argv[iarg], "-plugin/socket/responseTimeout") == 0)
+         sscanf(argv[++iarg], "%ld", &xa->responseTimeout);
    }
+   for (iarg=0; iarg < argc-1; iarg++) {
+      if (strcmp(argv[iarg], "-dispatch/connection/plugin/socket/responseTimeout") == 0)
+         sscanf(argv[++iarg], "%ld", &xa->responseTimeout);
+   }
+   if (xa->debug) printf("[XmlBlasterAccessUnparsed] Created handle: -debug=%d -plugin/socket/responseTimeout=%ld\n",
+                         xa->debug, xa->responseTimeout);
    return xa;
 }
 
@@ -132,10 +150,14 @@ static bool initialize(XmlBlasterAccessUnparsed *xa, UpdateFp updateFp)
    if (xa->isInitialized) {
       return true;
    }
+
    xa->connectionP = getXmlBlasterConnectionUnparsed(xa->argc, xa->argv);
    if (xa->connectionP == 0) {
       return false;
    }
+   if (xa->connectionP->initConnection(xa->connectionP) == false) /* Establish low level TCP/IP connection */
+      return false;
+
    xa->callbackP = getCallbackServerUnparsed(xa->argc, xa->argv, updateFp);
    if (xa->callbackP == 0) {
       freeXmlBlasterConnectionUnparsed(xa->connectionP);
@@ -213,7 +235,9 @@ static void responseEvent(void *userP, void /*SocketDataHolder*/ *socketDataHold
    XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)userP;
 
    blobcpyAlloc(&xa->responseBlob, s->blob.data, s->blob.dataLen);
-   if (xa->debug) printf("[XmlBlasterAccessUnparsed] responseEvent(dataLen=%d) occured\n", xa->responseBlob.dataLen);
+   xa->responseType = s->type;
+   if (xa->debug) printf("[XmlBlasterAccessUnparsed] responseEvent(msgType=%c, dataLen=%d) occured\n",
+                         xa->responseType, xa->responseBlob.dataLen);
 
    if ((retVal = pthread_mutex_lock(&xa->responseMutex)) != 0) {
       printf("[XmlBlasterAccessUnparsed] ERROR trying to lock responseMutex in responseEvent() %d\n", retVal);
@@ -252,8 +276,23 @@ static MsgRequestInfo *postSendEvent(void *userP, MsgRequestInfo *msgRequestInfo
    
    /* Wait for response, the callback server delivers it */
    while (xa->responseBlob.dataLen == 0) { /* Protect for spurious wake ups (e.g. by SIGUSR1) */
-      pthread_cond_wait(&xa->responseCond, &xa->responseMutex); /* pthread_cond_timedwait() */
-      if (xa->debug) printf("[XmlBlasterAccessUnparsed] Wake up tread, response of length %d arrived\n", xa->responseBlob.dataLen);
+      if (xa->responseTimeout > 0) {
+         struct timespec abstime;
+         int error;
+         getAbsoluteTime(xa, &abstime);
+         error = pthread_cond_timedwait(&xa->responseCond, &xa->responseMutex, &abstime);
+         if (error == ETIMEDOUT) {
+            strncpy0(exception->errorCode, "resource.exhaust", XMLBLASTEREXCEPTION_ERRORCODE_LEN); /* ErrorCode.RESOURCE_EXHAUST */
+            sprintf(exception->message, "[XmlBlasterAccessUnparsed] Waiting on response for '%s()' with requestId=%s timed out after blocking %ld millis\n",
+                                        msgRequestInfo->methodName, msgRequestInfo->requestIdStr, xa->responseTimeout);
+            if (xa->debug) { printf(exception->message); printf("\n"); }
+            return (MsgRequestInfo *)0;
+         }
+      }
+      else {
+         pthread_cond_wait(&xa->responseCond, &xa->responseMutex); /* Wakes up from responseEvent() */
+         if (xa->debug) printf("[XmlBlasterAccessUnparsed] Wake up tread, response of length %d arrived\n", xa->responseBlob.dataLen);
+      }
    }
 
    if ((retVal = pthread_mutex_unlock(&xa->responseMutex)) != 0) {
@@ -263,9 +302,14 @@ static MsgRequestInfo *postSendEvent(void *userP, MsgRequestInfo *msgRequestInfo
       return (MsgRequestInfo *)0;
    }
 
+   msgRequestInfo->responseType = xa->responseType;
    msgRequestInfo->blob.dataLen = xa->responseBlob.dataLen;
    msgRequestInfo->blob.data = xa->responseBlob.data;
 
+   if (xa->debug) printf("[XmlBlasterAccessUnparsed] Thread wake up in postSendEvent() for msgType=%c and dataLen=%d\n",
+                         msgRequestInfo->responseType, msgRequestInfo->blob.dataLen);
+
+   xa->responseType = 0;
    xa->responseBlob.dataLen = 0;
    xa->responseBlob.data = 0; /* msgRequestInfo->blob.data is now responsible to free() the data */
    
@@ -279,7 +323,10 @@ static MsgRequestInfo *postSendEvent(void *userP, MsgRequestInfo *msgRequestInfo
 const char *xmlBlasterAccessUnparsedUsage(char *usage)
 {
    /* take care not to exceed XMLBLASTER_MAX_USAGE_LEN */
-   sprintf(usage, "%.1020s%.1020s", xmlBlasterConnectionUnparsedUsage(), callbackServerRawUsage());
+   sprintf(usage, "%.950s%.950s%s", xmlBlasterConnectionUnparsedUsage(), callbackServerRawUsage(),
+                  "\n  -plugin/socket/responseTimeout  [60000 (one minute)]"
+                  "\n                       The time in millis to wait on a response, 0 is forever");
+   
    return usage;
 }
 
@@ -403,6 +450,40 @@ static MsgUnitArr *xmlBlasterGet(XmlBlasterAccessUnparsed *xa, const char * cons
    return xa->connectionP->get(xa->connectionP, key, qos, exception);
 }
 
+/**
+ * Fills the given abstime with absolute time, using the given timeout xa->responseTimeout in milliseconds
+ * On Linux < 2.5.64 does not support high resolution timers clock_gettime(),
+ * but patches are available at http://sourceforge.net/projects/high-res-timers
+ */
+static void getAbsoluteTime(XmlBlasterAccessUnparsed *xa, struct timespec *abstime)
+{
+# if _WINDOWS
+   clock_gettime(CLOCK_REALTIME, abstime);
+
+   abstime->tv_sec += xa->responseTimeout / 1000;
+   abstime->tv_nsec += (xa->responseTimeout % 1000) * 1000 * 1000;
+   if (abstime->tv_nsec >= NANO_SECS_PER_SECOND) {
+      abstime->tv_nsec -= NANO_SECS_PER_SECOND;
+      abstime->tv_sec += 1;
+   }
+# else /* LINUX, __sun */
+   struct timeval tv;
+
+   memset(abstime, 0, sizeof(struct timespec));
+
+   gettimeofday(&tv, 0);
+   abstime->tv_sec = tv.tv_sec;
+   abstime->tv_nsec = tv.tv_usec * 1000;  /* microseconds to nanoseconds */
+
+   abstime->tv_sec += xa->responseTimeout / 1000;
+   abstime->tv_nsec += (xa->responseTimeout % 1000) * 1000 * 1000;
+   if (abstime->tv_nsec >= NANO_SECS_PER_SECOND) {
+      abstime->tv_nsec -= NANO_SECS_PER_SECOND;
+      abstime->tv_sec += 1;
+   }
+# endif
+}
+
 
 #ifdef XmlBlasterAccessUnparsedMain /* compile a standalone test program */
 
@@ -417,11 +498,14 @@ bool myUpdate(MsgUnitArr *msgUnitArr, XmlBlasterException *xmlBlasterException)
       char *xml = messageUnitToXml(&msgUnitArr->msgUnitArr[i]);
       printf("[client] CALLBACK update(): Asynchronous message update arrived:%s\n", xml);
       free(xml);
-      msgUnitArr->msgUnitArr[i].responseQos = strcpyAlloc("<qos><state id='OK'/></qos>"); /* Return QoS: Everything is OK */
+      msgUnitArr->msgUnitArr[i].responseQos = strcpyAlloc("<qos><state id='OK'/></qos>");
+      /* Return QoS: Everything is OK */
    }
    if (testException) {
-      strncpy0(xmlBlasterException->errorCode, "user.clientCode", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      strncpy0(xmlBlasterException->message, "I don't want these messages", XMLBLASTEREXCEPTION_MESSAGE_LEN);
+      strncpy0(xmlBlasterException->errorCode, "user.clientCode",
+               XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+      strncpy0(xmlBlasterException->message, "I don't want these messages",
+               XMLBLASTEREXCEPTION_MESSAGE_LEN);
       return false;
    }
    return true;
@@ -453,7 +537,8 @@ int main(int argc, char** argv)
       bool debug = false;
 
 #     ifdef PTHREAD_THREADS_MAX
-         printf("[client] Try option '-help' if you need usage informations, max %d threads per process are supported on this OS\n", PTHREAD_THREADS_MAX);
+         printf("[client] Try option '-help' if you need usage informations, max %d"
+                " threads per process are supported on this OS\n", PTHREAD_THREADS_MAX);
 #     else
          printf("[client] Try option '-help' if you need usage informations\n");
 #     endif
@@ -465,7 +550,8 @@ int main(int argc, char** argv)
             "\n  -debug               true/false [false]"
             "\n  -numTests            How often to run the same tests [1]"
             "\n\nExample:"
-            "\n  XmlBlasterAccessUnparsedMain -debug true -dispatch/connection/plugin/socket/hostname server.mars.universe";
+            "\n  XmlBlasterAccessUnparsedMain -debug true"
+                 " -dispatch/connection/plugin/socket/hostname server.mars.universe";
             printf("Usage:\n%s%s\n", xmlBlasterAccessUnparsedUsage(usage), pp);
             exit(1);
          }
@@ -478,7 +564,8 @@ int main(int argc, char** argv)
 
       xa = getXmlBlasterAccessUnparsed(argc, argv);
       if (xa->initialize(xa, myUpdate) == false) {
-         printf("[client] Connection to xmlBlaster failed, please start the server or check your configuration\n");
+         printf("[client] Connection to xmlBlaster failed,"
+                " please start the server or check your configuration\n");
          freeXmlBlasterAccessUnparsed(xa);
          exit(1);
       }
@@ -486,12 +573,13 @@ int main(int argc, char** argv)
       {  /* connect */
          char connectQos[2048];
          char callbackQos[1024];
-            sprintf(callbackQos,
-                   "<queue relating='callback' maxEntries='100' maxEntriesCache='100'>"
-                   "  <callback type='SOCKET' sessionId='%s'>"
-                   "    socket://%s:%d"
-                   "  </callback>"
-                   "</queue>", callbackSessionId, xa->callbackP->hostCB, xa->callbackP->portCB);
+         sprintf(callbackQos,
+                  "<queue relating='callback' maxEntries='100' maxEntriesCache='100'>"
+                  "  <callback type='SOCKET' sessionId='%s'>"
+                  "    socket://%s:%d"
+                  "  </callback>"
+                  "</queue>",
+                  callbackSessionId, xa->callbackP->hostCB, xa->callbackP->portCB);
          sprintf(connectQos,
                 "<qos>"
                 " <securityService type='htpasswd' version='1.0'>"
@@ -505,7 +593,8 @@ int main(int argc, char** argv)
 
          response = xa->connect(xa, connectQos, myUpdate, &xmlBlasterException);
          if (*xmlBlasterException.errorCode != 0) {
-            printf("[client] Caught exception during connect errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
+            printf("[client] Caught exception during connect errorCode=%s, message=%s\n",
+                   xmlBlasterException.errorCode, xmlBlasterException.message);
             freeXmlBlasterAccessUnparsed(xa);
             exit(1);
          }
@@ -528,7 +617,8 @@ int main(int argc, char** argv)
          printf("[client] Subscribe message 'HelloWorld' ...\n");
          response = xa->subscribe(xa, key, qos, &xmlBlasterException);
          if (*xmlBlasterException.errorCode != 0) {
-            printf("[client] Caught exception in subscribe errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
+            printf("[client] Caught exception in subscribe errorCode=%s, message=%s\n",
+                   xmlBlasterException.errorCode, xmlBlasterException.message);
             xa->disconnect(xa, 0, &xmlBlasterException);
             freeXmlBlasterAccessUnparsed(xa);
             exit(1);
@@ -545,9 +635,10 @@ int main(int argc, char** argv)
          msgUnit.contentLen = strlen(msgUnit.content);
          msgUnit.qos =strcpyAlloc("<qos><persistent/></qos>");
          response = xa->publish(xa, &msgUnit, &xmlBlasterException);
-    freeMsgUnitData(&msgUnit);
+         freeMsgUnitData(&msgUnit);
          if (*xmlBlasterException.errorCode != 0) {
-            printf("[client] Caught exception in publish errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
+            printf("[client] Caught exception in publish errorCode=%s, message=%s\n",
+                   xmlBlasterException.errorCode, xmlBlasterException.message);
             xa->disconnect(xa, 0, &xmlBlasterException);
             freeXmlBlasterAccessUnparsed(xa);
             exit(1);
@@ -566,7 +657,8 @@ int main(int argc, char** argv)
             free(response);
          }
          else {
-            printf("[client] Caught exception in unSubscribe errorCode=%s, message=%s\n", xmlBlasterException.errorCode, xmlBlasterException.message);
+            printf("[client] Caught exception in unSubscribe errorCode=%s, message=%s\n",
+                   xmlBlasterException.errorCode, xmlBlasterException.message);
             xa->disconnect(xa, 0, &xmlBlasterException);
             freeXmlBlasterAccessUnparsed(xa);
             exit(1);
@@ -581,15 +673,18 @@ int main(int argc, char** argv)
          printf("[client] Get synchronous messages with XPath '//key' ...\n");
          msgUnitArr = xa->get(xa, key, qos, &xmlBlasterException);
          if (*xmlBlasterException.errorCode != 0) {
-            printf("[client] Caught exception in get errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
+            printf("[client] Caught exception in get errorCode=%s, message=%s\n",
+                   xmlBlasterException.errorCode, xmlBlasterException.message);
             xa->disconnect(xa, 0, &xmlBlasterException);
             freeXmlBlasterAccessUnparsed(xa);
             exit(1);
          }
          if (msgUnitArr != (MsgUnitArr *)0) {
             for (i=0; i<msgUnitArr->len; i++) {
-               char *contentStr = strFromBlobAlloc(msgUnitArr->msgUnitArr[i].content, msgUnitArr->msgUnitArr[i].contentLen);
-               const char *dots = (msgUnitArr->msgUnitArr[i].contentLen > 96) ? " ..." : "";
+               char *contentStr = strFromBlobAlloc(msgUnitArr->msgUnitArr[i].content,
+                                                msgUnitArr->msgUnitArr[i].contentLen);
+               const char *dots = (msgUnitArr->msgUnitArr[i].contentLen > 96) ?
+                                  " ..." : "";
                printf("\n[client] Received message#%u/%u:\n"
                       "-------------------------------------"
                       "%s\n <content>%.100s%s</content>%s\n"
@@ -603,7 +698,8 @@ int main(int argc, char** argv)
             freeMsgUnitArr(msgUnitArr);
          }
          else {
-            printf("[client] Caught exception in get errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
+            printf("[client] Caught exception in get errorCode=%s, message=%s\n",
+                   xmlBlasterException.errorCode, xmlBlasterException.message);
             xa->disconnect(xa, 0, &xmlBlasterException);
             freeXmlBlasterAccessUnparsed(xa);
             exit(1);
@@ -617,7 +713,8 @@ int main(int argc, char** argv)
          printf("[client] Erasing message 'HelloWorld' ...\n");
          response = xa->erase(xa, key, qos, &xmlBlasterException);
          if (*xmlBlasterException.errorCode != 0) {
-            printf("[client] Caught exception in erase errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
+            printf("[client] Caught exception in erase errorCode=%s, message=%s\n",
+                   xmlBlasterException.errorCode, xmlBlasterException.message);
             xa->disconnect(xa, 0, &xmlBlasterException);
             freeXmlBlasterAccessUnparsed(xa);
             exit(1);
@@ -627,7 +724,8 @@ int main(int argc, char** argv)
       }
 
       if (xa->disconnect(xa, 0, &xmlBlasterException) == false) {
-         printf("[client] Caught exception in disconnect, errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
+         printf("[client] Caught exception in disconnect, errorCode=%s, message=%s\n",
+                xmlBlasterException.errorCode, xmlBlasterException.message);
          freeXmlBlasterAccessUnparsed(xa);
          exit(1);
       }

@@ -191,9 +191,9 @@ char *encodeSocketMessage(
  * @param socketDataHolder The struct to put the parsed message into (needs to be allocated by you or on your stack)
  * @param exception The struct to put exceptions into (needs to be allocated by you or to be on your stack)
  * @param debug Set to true to have debugging output on console
- * @return true: A messages is parsed and put into your socketDataHolder
- *         (you need to free(socketDataHolder->data) after working with it)
- *         or if *exception->errorCode != 0: An error occurred and the exception struct is filled with information (you don't need to free anything)
+ * @return true: A messages is parsed and put into your socketDataHolder,
+ *         you need to free(socketDataHolder->data) after working with it.
+ *         Please check socketDataHolder->type if it is an exception.
  *         false: The socket is closed (EOF)
  */
 bool parseSocketData(int xmlBlasterSocket, SocketDataHolder *socketDataHolder, XmlBlasterException *exception, bool debug) 
@@ -300,22 +300,22 @@ bool parseSocketData(int xmlBlasterSocket, SocketDataHolder *socketDataHolder, X
 
    free(rawMsg);
    rawMsg = 0;
-
-   if (socketDataHolder->type == MSG_TYPE_EXCEPTION) { /* convert XmlBlasterException */
-      size_t currpos = 0;
-      exception->remote = true;
-      strncpy0(exception->errorCode, socketDataHolder->blob.data+currpos, XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-      currpos += strlen(exception->errorCode) + 1;
-      sprintf(exception->message, XMLBLASTEREXCEPTION_MESSAGE_FMT, socketDataHolder->blob.data+currpos);
-      trim(exception->message);
-      
-      free(socketDataHolder->blob.data);
-      socketDataHolder->blob.data = 0;
-      socketDataHolder->blob.dataLen = 0;
-      return true;
-   }
-
    return true;
+}
+
+/**
+ * The blob data is copied into the given exception object. 
+ */
+void convertToXmlBlasterException(XmlBlasterBlob *blob, XmlBlasterException *exception, bool debug)
+{
+   size_t currpos = 0;
+   int len;
+   exception->remote = true;
+   strncpy0(exception->errorCode, blob->data+currpos, XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+   currpos += strlen(exception->errorCode) + 1;
+   len = ((blob->dataLen-currpos) > XMLBLASTEREXCEPTION_MESSAGE_LEN) ? XMLBLASTEREXCEPTION_MESSAGE_LEN : (blob->dataLen-currpos);
+   strncpy0(exception->message, blob->data+currpos, len);
+   trim(exception->message);
 }
 
 /**
@@ -340,6 +340,7 @@ MsgUnitArr *parseMsgUnitArr(size_t dataLen, char *data)
 
       {
          MsgUnit *msgUnit = &msgUnitArr->msgUnitArr[currIndex++];
+         memset(msgUnit, 0, sizeof(MsgUnit));
         
          /* read QoS */
          msgUnit->qos = strcpyAlloc(data+currpos);

@@ -4,8 +4,12 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   HelloWorld connects with raw socket to xmlBlaster
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
-Compile:   gcc -Wall -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c msgUtil.c socket/xmlBlasterSocket.c socket/XmlBlasterConnectionUnparsed.c
-Compile-Win: cl /MT /W3 /Wp64 -D_WINDOWS -I. HelloWorld.c msgUtil.c socket\*.c ws2_32.lib
+Compile:
+  Linux:   gcc -Wall -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c msgUtil.c
+           socket/xmlBlasterSocket.c socket/XmlBlasterConnectionUnparsed.c
+  Win:  cl /MT /W3 /Wp64 -D_WINDOWS -I. HelloWorld.c msgUtil.c socket\*.c ws2_32.lib
+  Sun:  cc -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c msgUtil.c
+        socket/xmlBlasterSocket.c socket/XmlBlasterConnectionUnparsed.c -lsocket -lnsl
 Date:      05/2003
 -----------------------------------------------------------------------------*/
 #include <stdio.h>
@@ -20,50 +24,45 @@ int main(int argc, char** argv)
 {
    MsgUnitArr *msgUnitArr;
    XmlBlasterException exception;
-   char *connectQos;
-   char *response;
+   char *connectQos, *response;
    
    XmlBlasterConnectionUnparsed *xb = getXmlBlasterConnectionUnparsed(argc, argv);
-   if (xb == (XmlBlasterConnectionUnparsed *)0) {
-      printf("[HelloWorld] Connection failed, please start xmlBlaster server first\n");
-      exit(1);
-   }
 
-   connectQos =
-            "<qos>"
-            " <securityService type='htpasswd'>"
-            /*"  <![CDATA["*/
-            "   <user>fritz</user>"
-            "   <passwd>secret</passwd>"
-            /*"  ]]>"*/
-            " </securityService>"
-            "</qos>";
-
+   connectQos =   "<qos>"
+                  " <securityService type='htpasswd' version='1.0'>"
+                  "   <user>fritz</user>"
+                  "   <passwd>secret</passwd>"
+                  " </securityService>"
+                  "</qos>";
    response = xb->connect(xb, connectQos, &exception);
    free(response);
-   if (strlen(exception.errorCode) > 0) {
-      printf("[client] Caught exception during connect, errorCode=%s, message=%s", exception.errorCode, exception.message);
+   if (*exception.errorCode != 0) {
+      printf("[client] Caught exception during connect, errorCode=%s, message=%s",
+             exception.errorCode, exception.message);
+      freeXmlBlasterConnectionUnparsed(xb);
       exit(1);
    }
 
    printf("[HelloWorld] Connected to xmlBlaster, invoking now get() ...\n");
    
    msgUnitArr = xb->get(xb, "<key oid='__cmd:?freeMem'/>", 0, &exception);
-
-   if (msgUnitArr != (MsgUnitArr *)0 && msgUnitArr->len > 0) {
-      char *contentStr = strFromBlobAlloc(msgUnitArr->msgUnitArr[0].content, msgUnitArr->msgUnitArr[0].contentLen);
-      printf("[HelloWorld] xmlBlaster has currently %s bytes of free memory\n", contentStr);
-      free(contentStr);
-      freeMsgUnitArr(msgUnitArr);
-   }
-   else {
-      printf("[HelloWorld] Caught exception in get errorCode=%s, message=%s", exception.errorCode, exception.message);
+   if (*exception.errorCode != 0) {
+      printf("[HelloWorld] Caught exception in get errorCode=%s, message=%s",
+             exception.errorCode, exception.message);
+      freeXmlBlasterConnectionUnparsed(xb);
       exit(1);
    }
+   if (msgUnitArr != (MsgUnitArr *)0 && msgUnitArr->len > 0) {
+      char *contentStr = strFromBlobAlloc(msgUnitArr->msgUnitArr[0].content,
+                                          msgUnitArr->msgUnitArr[0].contentLen);
+      printf("[HelloWorld] xmlBlaster has %s bytes of free memory\n", contentStr);
+      free(contentStr);
+   }
+   freeMsgUnitArr(msgUnitArr);
    
    xb->disconnect(xb, 0, &exception);
 
    freeXmlBlasterConnectionUnparsed(xb);
    printf("[HelloWorld] Good bye.\n");
-   exit(0);
+   return 0;
 }

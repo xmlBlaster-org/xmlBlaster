@@ -118,14 +118,6 @@ Next steps:
 
 o Clean up the code
  - make a lib from it
- - add callback support with pthreads
-   on UNIX: DONE
-   on WIN:  CONE: http://sources.redhat.com/pthreads-win32 on Windows
-
-o Make layers of functionality
- - raw communication: DONE
- - adding threading support to allow callbacks in the same process: DONE
- - expat parsing
 
 o Wrap it as a C++ protocol plugin to be independend of CORBA and
  use the C++ testsuite for this C implementation 
@@ -138,7 +130,7 @@ You should check your code at least with:
 
 o UNIX gcc and g++ with and without the -ansi option
   and with valgrind:
-  valgrind -v --leak-check=yes --show-reachable=yes XmlBlasterConnectionUnparsedMain
+  valgrind --leak-check=yes --leak-resolution=high --show-reachable=yes -v XmlBlasterAccessUnparsedMain
 
 o Windows cl
 
@@ -146,14 +138,11 @@ o Windows cl
 Executable sizes on Linux gcc 3.3
 =================================
 
-   XmlBlasterConnectionUnparsedMain  26 KB
+   XmlBlasterAccessUnparsedMain  41 KBytes
 
 
 Open issues:
 ============
-
-o Throwing an XmlBlasterException from CallbackServer
-  back to xmlBlaster: The exception is buggy encoded
 
 o Adding mutex to every function call
 
@@ -164,6 +153,8 @@ o Invoking xmlBlaster from within the callback thread (in update() function)
 o Add logging redirection (using a configurable function pointer)
 
 o Add extended property support (parsing command line and getenv())
+
+o XML parsing with expat
 
 o Add ant task c-lib
 
