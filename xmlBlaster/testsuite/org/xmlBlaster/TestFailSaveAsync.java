@@ -3,7 +3,7 @@ Name:      TestFailSaveAsync.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSaveAsync.java,v 1.1 2002/06/15 16:17:05 ruff Exp $
+Version:   $Id: TestFailSaveAsync.java,v 1.2 2002/06/17 07:02:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -258,7 +258,7 @@ public class TestFailSaveAsync extends TestCase implements I_Callback, I_Connect
 
       int numFailsave = reconnectMsg-failMsg;  // 20
       int numPublish = maxMsg-numFailsave;     // 80
-      waitOnUpdate(12000L + (long)((1000.0 * numPublish / publishRate) + (1000.0 * numFailsave / pullbackRate)), maxMsg);
+      waitOnUpdate(16000L + (long)((1000.0 * numPublish / publishRate) + (1000.0 * numFailsave / pullbackRate)), maxMsg);
    }
 
    /**
@@ -339,7 +339,7 @@ public class TestFailSaveAsync extends TestCase implements I_Callback, I_Connect
             int expectedTailback = (int)((80.-reconnectMsg)*(1.*pullbackRate/publishRate));
             int diff = Math.abs(numTailbackReceived - expectedTailback);
 
-            if (diff > 4) {
+            if (diff > 6) {
                String text = "Expected tailback updates = " + expectedTailback + " but got " + numTailbackReceived;
                log.error(ME, text);
                fail(text);
