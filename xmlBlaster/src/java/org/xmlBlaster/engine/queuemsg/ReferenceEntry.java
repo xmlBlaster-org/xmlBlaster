@@ -30,7 +30,7 @@ import java.lang.ref.WeakReference;
 public class ReferenceEntry extends MsgQueueEntry
 {
    private final String ME; // for logging
-   protected transient Global glob; // engine.Global
+   protected final transient Global glob; // engine.Global
 
    /** Weak reference on the MsgUnit with key/content/qos (raw struct) */
    private transient WeakReference weakMsgUnitWrapper;
@@ -114,6 +114,10 @@ public class ReferenceEntry extends MsgQueueEntry
          // added() is not triggered when coming from persistency
          msgUnitWrapper.incrementReferenceCounter(1, storageId);
       }
+   }
+
+   public final Global getGlobal() {
+      return this.glob;
    }
 
    /** @return the MsgUnitWrapper or null if not found */
