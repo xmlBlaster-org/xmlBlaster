@@ -42,7 +42,7 @@ public class InitQos extends SaxHandlerBase {
    public InitQos(String loginName, String password)
    {
       this.user = loginName;
-      this.password = password;
+      this.passwd = password;
       this.type = "simple";
       this.version = "1.0";
    }
