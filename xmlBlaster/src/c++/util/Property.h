@@ -134,7 +134,7 @@ namespace util {
          if (out == 0) return count;
          MapType::const_iterator iter = properties_.begin();
          while (iter != properties_.end()) {
-            out << (*iter).first << "=" << (*iter).second << endl;
+           out << (*iter).first << "=" << (*iter).second << std::endl;
             iter++;
             count++;
          }
