@@ -1256,7 +1256,7 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     * @see org.xmlBlaster.util.queue.I_StorageProblemNotifier#unRegisterStorageProblemListener(I_StorageProblemListener)
     */
    public boolean unRegisterStorageProblemListener(I_StorageProblemListener listener) {
-      if (this.manager == null) return false;
+      if (this.manager == null || listener == null) return false;
       return this.manager.unRegisterStorageProblemListener(listener);
    }
 
