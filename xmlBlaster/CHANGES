@@ -2,6 +2,9 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.848 [23, May 2003]
 ================================
+ o Fix in XmlBlasterException for MakeFormat with index > {9}
+   IBM JDK 1.3.1 can't handle it (i believe 1.4 handles it now).
+
  o Changed protocol plugin loading behavior.
    Now we throw an exception if the protocol plugin is not found
    instead of choosing the default protocol as fallback.
