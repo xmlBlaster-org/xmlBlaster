@@ -2058,13 +2058,39 @@ public class LdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       }
 
       String req = null;
-      req = "SELECT * from " + this.entriesTableName + " where queueName='" + queueName + "' and nodeId='" + nodeId + 
-            "' and prio=(select max(prio) from " + this.entriesTableName + " where queueName='" + queueName + 
-            "' AND nodeId='" + nodeId + "')  ORDER BY dataId ASC";
-
-      if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getEntriesBySamePriority"), "Request: '" + req + "'");
-
+      int prio = 0;
+      req = "SELECT max(prio) from " + this.entriesTableName + " where queueName='" + queueName + "' and nodeId='" + nodeId + "'";
       LdbcPreparedQuery query = null;
+      try {
+         query = new LdbcPreparedQuery(pool, req, this.log, numOfEntries);
+         query.rs.next();
+         prio = query.rs.getInt(1);
+         if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getEntriesBySamePriority"), "Max prio " + new Integer(prio).toString());
+               }
+      catch (XmlBlasterException ex) {
+         throw ex;
+      }
+      catch (Throwable ex) {
+         if (checkIfDBLoss(query != null ? query.conn : null, getLogId(queueName, nodeId, "getEntriesBySamePriority"), ex))
+            throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".getEntriesBySamePriority", "", ex); 
+         else throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME + ".getEntriesBySamePriority", "", ex); 
+      }
+      finally {
+         try {
+            if (query != null) query.close();
+         }
+         catch (Throwable ex1) {
+            this.log.error(ME, "exception when closing query: " + ex1.toString());
+            ex1.printStackTrace();
+         }
+      }
+//      req = "SELECT * from " + this.entriesTableName + " where queueName='" + queueName + "' and nodeId='" + nodeId + 
+//            "' and prio=(select max(prio) from " + this.entriesTableName + " where queueName='" + queueName + 
+//            "' AND nodeId='" + nodeId + "')  ORDER BY dataId ASC";
+      req = "SELECT * from " + this.entriesTableName + " where queueName='" + queueName + "' and nodeId='" + nodeId + 
+            "' and prio=" + new Integer(prio).toString() + " ORDER BY dataId ASC";
+      if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "getEntriesBySamePriority"), "Request: '" + req + "'");
+      query = null;
       try {
          query = new LdbcPreparedQuery(pool, req, this.log, numOfEntries);
          ArrayList ret = processResultSet(query.rs, storageId, numOfEntries, numOfBytes, false);
