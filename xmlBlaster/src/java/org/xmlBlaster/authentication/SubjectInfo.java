@@ -66,7 +66,6 @@ public class SubjectInfo implements I_AdminSubject
    // Enforced by I_AdminSubject
    /** Incarnation time of this object instance in millis */
    private long uptime;
-   private long numUpdates = 0L;
    private int maxSessions;
    
 
@@ -481,16 +480,6 @@ public class SubjectInfo implements I_AdminSubject
    }
 
    /**
-    * Add the update counter, this is not thread save
-    * for performance reasons, in very rare cases the counter
-    * could be wrong.
-    */
-   public final void addNumUpdates() {
-      this.numUpdates++;
-   }
-
-
-   /**
     * Get the SessionInfo with its public session identifier e.g. "5"
     * @return null if not found
     */
@@ -518,7 +507,8 @@ public class SubjectInfo implements I_AdminSubject
     * subject queues of this clients. 
     */ 
    public final long getNumUpdates() {
-      return this.numUpdates;
+      return this.subjectQueue.getNumUpdates();
+      // for (iSession) num += iSessionQueue.getNumUpdates(); ?
    }
 
    public final int getCbQueueNumMsgs() {

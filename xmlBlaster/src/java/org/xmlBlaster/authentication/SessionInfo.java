@@ -73,7 +73,6 @@ public class SessionInfo implements I_Timeout, I_AdminSession
    // Enforced by I_AdminSubject
    /** Incarnation time of this object instance in millis */
    private long uptime;
-   private long numUpdates = 0L;
 
    /**
     * Create this instance when a client did a login.
@@ -330,7 +329,6 @@ public class SessionInfo implements I_Timeout, I_AdminSession
       return sb.toString();
    }
 
-
    //=========== Enforced by I_AdminSession ================
    /**
     * @return uptime in seconds
@@ -343,7 +341,7 @@ public class SessionInfo implements I_Timeout, I_AdminSession
     * subject queues of this clients. 
     */ 
    public final long getNumUpdates() {
-      return this.numUpdates;
+      return this.sessionQueue.getNumUpdates();
    }
 
    public final int getCbQueueNumMsgs() {
