@@ -1,0 +1,21 @@
+SubscribeMessage allows to subscribe from command line for a message. 
+
+
+Example for subscribing to a message:
+=====================================
+
+   - Start xmlBlaster if not running already:
+
+      jaco org.xmlBlaster.MainGUI
+
+   - And subscirbe to a message
+     (here the actual memory consumption of xmlBlaster):
+
+     jaco org.xmlBlaster.client.reader.SubscribeMessage -oid __sys__TotalMem
+
+
+How to get help:
+================
+
+   jaco org.xmlBlaster.client.reader.SubscribeMessage -?
+
