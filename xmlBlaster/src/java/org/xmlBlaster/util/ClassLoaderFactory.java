@@ -3,7 +3,7 @@ Name:      ClassLoaderFactory.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Creates a new class loader for the pluginmanager.
-Version:   $Id: ClassLoaderFactory.java,v 1.4 2002/07/13 20:58:46 goetzger Exp $
+Version:   $Id: ClassLoaderFactory.java,v 1.5 2002/08/20 16:15:51 kkrafft2 Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
@@ -167,12 +167,13 @@ public class ClassLoaderFactory {
 
       if (log.TRACE) log.trace(ME, "className: '" + callerClassName + "'");
 
-      String fileSeparator = System.getProperty("file.separator");
+      //String fileSeparator = System.getProperty("file.separator");
       // Now we need to replace the '.' from the package name to the '/' for a path name.
       // vi compliant ;-) :s/\./\//cg
       // Or even better: replace it by the property file.separator of the desired OS.
-      callerClassName = StringHelper.replaceAll(callerClassName, ".", fileSeparator); // replace '.' by fileSeperator
-      // callerClassName = callerClassName.replaceAll("\\.", fileSeparator); // since JDK 1.4 :-(
+      //callerClassName = StringHelper.replaceAll(callerClassName, ".", fileSeparator); // replace '.' by fileSeperator
+      callerClassName = StringHelper.replaceAll(callerClassName, ".", "/"); // replace '.' by fileSeperator
+      //callerClassName = callerClassName.replaceAll("\\.", fileSeparator); // since JDK 1.4 :-(
       if (log.TRACE) log.trace(ME, "className: '" + callerClassName + "'");
 
       if(classResource.indexOf('!') == -1) {
