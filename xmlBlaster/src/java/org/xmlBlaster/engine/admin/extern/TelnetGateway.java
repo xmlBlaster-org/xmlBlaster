@@ -13,6 +13,7 @@ import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.admin.CommandManager;
 import org.xmlBlaster.engine.admin.CommandWrapper;
 import org.xmlBlaster.engine.admin.I_ExternGateway;
+import org.xmlBlaster.engine.admin.SetReturn;
 import org.xmlBlaster.authentication.SessionInfo;
 
 import remotecons.RemoteServer;
@@ -131,13 +132,12 @@ public final class TelnetGateway implements CommandHandlerIfc, I_ExternGateway
             return sb.toString() + CRLF;
          }
          else if (cmdType.trim().equalsIgnoreCase("SET")) {
-            String ret = manager.set(query);
-            CommandWrapper w = new CommandWrapper(glob, cmd); // To have the nicer query (not performing, should be passed from CommandManager back as well?)
-            if (ret == null) return "NO ENTRY SET: " + cmd + CRLF;
-            return w.getCommandStripAssign() + "=" + ret + CRLF;
+            SetReturn ret = manager.set(query);
+            if (ret == null) return "NO ENTRY SET: " + ret.commandWrapper.getCommand() + CRLF;
+            return ret.commandWrapper.getCommandStripAssign() + "=" + ret.returnString + CRLF;
          }
          else if (cmdType.trim().equalsIgnoreCase("HELP")) {
-            return help(query);
+            return CRLF + help(query) + CRLF;
          }
          else {
             return null;

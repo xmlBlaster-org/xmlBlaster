@@ -156,7 +156,7 @@ public final class CommandManager implements I_RunlevelListener
    /**
     * @return The return status or null if not set. 
     */
-   public synchronized final String set(String cmd) throws XmlBlasterException {
+   public synchronized final SetReturn set(String cmd) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "set(" + cmd + ")");
       if (cmd == null || cmd.length() < 1)
          throw new IllegalArgumentException("Please pass a command which is not null");
@@ -171,7 +171,7 @@ public final class CommandManager implements I_RunlevelListener
             throw new XmlBlasterException(ME, "Sorry can't process your command '" + cmd + "', the third level '" + w.getThirdLevel() + "' has no registered handler (key=" + key + ")");
          }
          I_CommandHandler handler = (I_CommandHandler)obj;
-         return handler.set(w);
+         return new SetReturn(w, handler.set(w));
       }
       catch (XmlBlasterException e) {
          throw e;
@@ -185,7 +185,7 @@ public final class CommandManager implements I_RunlevelListener
    /**
     */
    public String help() {
-      return "\n\rXmlBlaster administration, see http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.commands.html\n\r";
+      return "XmlBlaster administration, see http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.commands.html";
    }
 
    /**
