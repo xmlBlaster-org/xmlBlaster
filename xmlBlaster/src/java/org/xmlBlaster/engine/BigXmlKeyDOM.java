@@ -3,7 +3,7 @@ Name:      BigXmlKeyDOM.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Building a huge DOM tree for all known MessageUnit xmlKey
-Version:   $Id: BigXmlKeyDOM.java,v 1.27 2002/07/07 19:19:50 ruff Exp $
+Version:   $Id: BigXmlKeyDOM.java,v 1.28 2002/07/09 18:12:09 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -33,7 +33,7 @@ public class BigXmlKeyDOM extends XmlKeyDom
 {
    final private static String ME = "BigXmlKeyDOM";
 
-   private Authenticate authenticate = null;
+   private final Authenticate authenticate;
    private final LogChannel log;
 
 
@@ -44,7 +44,6 @@ public class BigXmlKeyDOM extends XmlKeyDom
    {
       super(requestBroker);
 
-      this.requestBroker = requestBroker;
       this.authenticate = authenticate;
       this.log = requestBroker.getLog();
    }
