@@ -79,19 +79,20 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
    protected void setUp()
    {
       // We register here the demo plugin with xmlBlaster server, supplying an argument to the plugin
-      String[] args = new String[12];
-      args[0] = "-bootstrapPort";        // For all protocol we may use set an alternate server port
-      args[1] = "" + serverPort;
-      args[2] = "-plugin/socket/port";
-      args[3] = "" + (serverPort-1);
-      args[4] = "-plugin/rmi/registryPort";
-      args[5] = "" + (serverPort-2);
-      args[6] = "-plugin/xmlrpc/port";
-      args[7] = "" + (serverPort-3);
-      args[8] = "-MimeAccessPlugin[ContentLenFilter][1.0]";
-      args[9] = "org.xmlBlaster.engine.mime.demo.ContentLenFilter,DEFAULT_MAX_LEN=200,THROW_EXCEPTION_FOR_LEN=3";
-      args[12] = "-admin.remoteconsole.port";
-      args[13] = "0";
+      String[] args = {
+         "-bootstrapPort",        // For all protocol we may use set an alternate server port
+         "" + serverPort,
+         "-plugin/socket/port",
+         "" + (serverPort-1),
+         "-plugin/rmi/registryPort",
+         "" + (serverPort-2),
+         "-plugin/xmlrpc/port",
+         "" + (serverPort-3),
+         "-MimeAccessPlugin[ContentLenFilter][1.0]",
+         "org.xmlBlaster.engine.mime.demo.ContentLenFilter,DEFAULT_MAX_LEN=200,THROW_EXCEPTION_FOR_LEN=3",
+         "-admin.remoteconsole.port",
+         "0"
+      };
       glob.init(args);
 
       serverThread = EmbeddedXmlBlaster.startXmlBlaster(args);

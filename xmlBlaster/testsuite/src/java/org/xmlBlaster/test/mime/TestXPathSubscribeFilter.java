@@ -84,22 +84,23 @@ public class TestXPathSubscribeFilter extends TestCase implements I_Callback
     */
    protected void setUp()
    {
-      String[] args = new String[14];
-      args[0] = "-bootstrapPort";        // For all protocol we may use set an alternate server port
-      args[1] = "" + serverPort;
-      args[2] = "-plugin/socket/port";
-      args[3] = "" + (serverPort-1);
-      args[4] = "-plugin/rmi/registryPort";
-      args[5] = "" + (serverPort-2);
-      args[6] = "-plugin/xmlrpc/port";
-      args[7] = "" + (serverPort-3);
-      args[8] = "-MimeAccessPlugin[XPathFilter][1.0]";
-      args[9] = "org.xmlBlaster.engine.mime.xpath.XPathFilter";
-      //,classpath=xpath/jaxen-core.jar:xpath/jaxen-dom.jar:xpath/saxpath.jar
-      args[12] = "-admin.remoteconsole.port";
-      args[13] = "0";
-      args[14] = "-trace";
-      args[15] = "false";
+      String[] args = {
+         "-bootstrapPort",        // For all protocol we may use set an alternate server port
+         "" + serverPort,
+         "-plugin/socket/port",
+         "" + (serverPort-1),
+         "-plugin/rmi/registryPort",
+         "" + (serverPort-2),
+         "-plugin/xmlrpc/port",
+         "" + (serverPort-3),
+         "-MimeAccessPlugin[XPathFilter][1.0]",
+         "org.xmlBlaster.engine.mime.xpath.XPathFilter",
+         //,classpath=xpath/jaxen-core.jar:xpath/jaxen-dom.jar:xpath/saxpath.jar
+         "-admin.remoteconsole.port",
+         "0",
+         "-trace",
+         "false"
+      };
       glob.init(args);
 
       serverThread = EmbeddedXmlBlaster.startXmlBlaster(args);
