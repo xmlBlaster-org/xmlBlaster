@@ -2,6 +2,19 @@
 
 Changes for 0.78 [???     2000]
 ===============================
+  - Added protocol plugin possibility in xmlBlaster.properties
+    Default settings are Corba drivers:
+      #------------------------------------------------------------------------------
+      # List of all xmlBlaster access protocol drivers (I_Driver and I_Callback implementations)
+      # <protocol-type>:<driverClass>,<protocl-type>:<driverClass>,...
+      # For protocol types see I_Driver.java
+      Protocol.Drivers=IOR:org.xmlBlaster.protocol.corba.CorbaDriver
+      Protocol.CallbackDrivers=IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver
+
+  - Added native interface for xmlBlaster: I_XmlBlaster.
+    All plugged in protocol drivers need to use this interface.
+    The authentication is checked there in a controlled way.
+
   - The package org.xmlBlaster.authenticate is now CORBA independend.
     It uses or generates a unique sessionId string to track a login session
     of a user. This allows easier integration of other

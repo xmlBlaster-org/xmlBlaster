@@ -3,26 +3,24 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.38 2000/06/04 21:13:28 ruff Exp $
+Version:   $Id: Main.java,v 1.39 2000/06/04 23:44:45 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
 import org.xmlBlaster.util.*;
 import org.xmlBlaster.engine.*;
 import org.xmlBlaster.protocol.I_XmlBlaster;
-import org.xmlBlaster.protocol.corba.serverIdl.*;
-import org.xmlBlaster.protocol.corba.authenticateIdl.AuthServerPOATie;
-import org.xmlBlaster.protocol.corba.AuthServerImpl;
+import org.xmlBlaster.protocol.I_Driver;
+import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
 import org.xmlBlaster.authentication.Authenticate;
-import org.xmlBlaster.authentication.HttpIORServer;
 import java.io.*;
-import org.omg.CosNaming.*;
+import java.util.*;
 
 
 /**
  * Main class to invoke the xmlBlaster server.
  * <p />
- * Command line parameters supported are for example:
+ * Command line parameters supported are for example (CORBA driver):
  * <p />
  * <ul>
  *    <li><code>-iorFile 'file name'   </code>default is no dumping of IOR<br />
@@ -50,21 +48,12 @@ import org.omg.CosNaming.*;
 public class Main
 {
    final private String ME = "Main";
-   private static org.omg.CORBA.ORB orb;
-   private HttpIORServer httpIORServer = null;  // xmlBlaster publishes his AuthServer IOR
-   private NamingContext nc = null;
-   private NameComponent [] name = null;
-   private String iorFile = null;
-   /** XmlBlaster internal http listen port is 7609, to access IOR for bootstrapping */
-   public static final int DEFAULT_HTTP_PORT = 7609;
-   /** The singleton handle for this xmlBlaster server */
-   private AuthServerImpl authServer = null; // !!!!! remove
    /** The singleton handle for this xmlBlaster server */
    private Authenticate authenticate = null;
    /** The singleton handle for this xmlBlaster server */
    private I_XmlBlaster xmlBlasterImpl = null;
-   private org.omg.PortableServer.POA rootPOA = null;
-   private org.omg.CORBA.Object authRef = null;
+   /** Vector holding all protocol I_Driver.java implementations, e.g. CorbaDriver */
+   private Vector protocols = new Vector();
 
    /**
     * true: If instance created by control panel<br />
@@ -98,86 +87,20 @@ public class Main
       }
       Log.setLogLevel(args); // initialize log level and xmlBlaster.property file
 
-      orb = org.omg.CORBA.ORB.init(args, null);
       try {
-         rootPOA = org.omg.PortableServer.POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
-         rootPOA.the_POAManager().activate();
-
          authenticate = new Authenticate();
          xmlBlasterImpl = new XmlBlasterImpl(authenticate);
 
-         // !!!!!!!!! This is all protocol specific !!! move away
-         authServer = new AuthServerImpl(orb, authenticate, xmlBlasterImpl);
+         loadDrivers();
 
-         // USING TIE:
-         org.omg.PortableServer.Servant authServant = new AuthServerPOATie(authServer);
-         authRef = ((AuthServerPOATie)(authServant))._this(orb);
-         // NOT TIE:
-         // org.omg.PortableServer.Servant authServant = new AuthServerImpl(orb);
-         // authRef = rootPOA.servant_to_reference(authServant);
-
-
-         // There are three variants how xmlBlaster publishes its AuthServer IOR (object reference)
-
-         // 1) Write IOR to given file
-         String iorFile = Property.getProperty("iorFile", (String)null);
-         if(iorFile != null) {
-            PrintWriter ps = new PrintWriter(new FileOutputStream(new File(iorFile)));
-            ps.println(orb.object_to_string(authRef));
-            ps.close();
-            Log.info(ME, "Published AuthServer IOR to file " + iorFile);
-         }
-
-         // 2) Publish IOR on given port (switch off this feature with '-iorPort 0'
-         int iorPort = Property.getProperty("iorPort", DEFAULT_HTTP_PORT); // default xmlBlaster IOR publishing port is 7609 (HTTP_PORT)
-         if (iorPort > 0) {
-            httpIORServer = new HttpIORServer(iorPort, orb.object_to_string(authRef));
-            Log.info(ME, "Published AuthServer IOR on port " + iorPort);
-         }
-
-         // 3) Publish IOR to a naming service
-         boolean useNameService = Property.getProperty("ns", true);  // default is to publish myself to the naming service
-         if (useNameService) {
+         // Loop through protocol drivers and start them
+         for (int ii=0; ii<protocols.size(); ii++) {
+            I_Driver driver = (I_Driver)protocols.elementAt(ii);
             try {
-               nc = getNamingService();
-               name = new NameComponent[1];
-               name[0] = new NameComponent(); // name[0] = new NameComponent("AuthenticationService", "service");
-               name[0].id = "xmlBlaster-Authenticate";
-               name[0].kind = "MOM";
-
-               nc.bind(name, authRef);
-               Log.info(ME, "Published AuthServer IOR to naming service");
-            }
-            catch (XmlBlasterException e) {
-               nc = null;
-               if (iorPort > 0) {
-                  Log.info(ME, "You don't need the naming service, i'll switch to builtin http IOR download");
-               }
-               else if (iorFile != null) {
-                  Log.info(ME, "You don't need the naming service, i'll switch to iorFile = " + iorFile);
-               }
-               else {
-                  usage();
-                  Log.panic(ME, "You switched off the internal http server and you didn't specify a file name for IOR dump! Sorry - good bye.");
-               }
-            } catch (org.omg.CORBA.COMM_FAILURE e) {
-               nc = null;
-               if (iorPort > 0) {
-                  Log.info(ME, "Can't publish AuthServer to naming service, is your naming service really running?\n" +
-                               e.toString() +
-                               "You don't need the naming service, i'll switch to builtin http IOR download");
-               }
-               else if (iorFile != null) {
-                  Log.info(ME, "Can't publish AuthServer to naming service, is your naming service really running?\n" +
-                               e.toString() +
-                               "You don't need the naming service, i'll switch to iorFile = " + iorFile);
-               }
-               else {
-                  usage();
-                  Log.panic(ME, "Can't publish AuthServer to naming service, is your naming service really running?\n" +
-                               e.toString() +
-                               "\nYou switched off the internal http server and you didn't specify a file name for IOR dump! Sorry - good bye.");
-               }
+               driver.init(args, authenticate, xmlBlasterImpl);
+            } catch (XmlBlasterException e) {
+               Log.error(ME, "Initializing of driver " + driver.getName() + " failed:" + e.reason);
+               continue;
             }
          }
 
@@ -198,7 +121,9 @@ public class Main
 
       boolean useKeyboard = Property.getProperty("useKeyboard", true);
       if (!useKeyboard) {
-         orb.run();
+         // !!! orb.run();
+         try { Thread.currentThread().wait();
+         } catch(InterruptedException e) { Log.warning(ME, "Caught exception: " + e.toString()); }
       }
 
       // Used by testsuite to switch off blocking, this Main method is by default never returning:
@@ -212,38 +137,56 @@ public class Main
 
 
    /**
+    * Load the drivers from xmlBlaster.properties.
+    * <p />
+    * Default is "Protocol.Drivers=IOR:org.xmlBlaster.protocol.corba.CorbaDriver"
+    */
+   private void loadDrivers()
+   {
+      String drivers = Property.getProperty("Protocol.Drivers", "IOR:org.xmlBlaster.protocol.corba.CorbaDriver");
+      StringTokenizer st = new StringTokenizer(drivers, ",");
+      int numDrivers = st.countTokens();
+      for (int ii=0; ii<numDrivers; ii++) {
+         String token = st.nextToken().trim();
+         int index = token.indexOf(":");
+         if (index < 0) {
+            Log.error(ME, "Wrong syntax in xmlBlaster.properties Protocol.Drivers, driver ignored: " + token);
+            continue;
+         }
+         String protocol = token.substring(0, index).trim();
+         String driverId = token.substring(index+1).trim();
+
+         // Load the protocol driver ...
+         try {
+            if (Log.TRACE) Log.trace(ME, "Trying Class.forName('" + driverId + "') ...");
+            Class cl = java.lang.Class.forName(driverId);
+            I_Driver driver = (I_Driver)cl.newInstance();
+            protocols.addElement(driver);
+            Log.info(ME, "Found protocol driver '" + driverId + "'");
+         }
+         catch (IllegalAccessException e) {
+            Log.error(ME, "The driver class '" + driverId + "' is not accessible\n -> check the driver name and/or the CLASSPATH to the driver");
+         }
+         catch (SecurityException e) {
+            Log.error(ME, "No right to access the driver class or initializer '" + driverId + "'");
+         }
+         catch (Throwable e) {
+            Log.error(ME, "The driver class or initializer '" + driverId + "' is invalid\n -> check the driver name and/or the CLASSPATH to the driver file: " + e.toString());
+         }
+      }
+   }
+
+
+   /**
     *  Instructs the ORB to shut down, which causes all object adapters to shut down.
     */
    public void shutdown(boolean wait_for_completion)
    {
-      Log.info(ME, "Shutting down POA and ORB ...");
-      try {
-         if (httpIORServer != null) httpIORServer.shutdown();
-         if (nc != null) nc.unbind(name);
-         if (iorFile != null) FileUtil.deleteFile(null, iorFile);
+      Log.info(ME, "Shutting down xmlBlaster ...");
+      for (int ii=0; ii<protocols.size(); ii++) {
+         I_Driver driver = (I_Driver)protocols.elementAt(ii);
+         driver.shutdown();
       }
-      catch (Exception e) {
-         Log.warning(ME, "Problems during ORB cleanup: " + e.toString());
-         e.printStackTrace();
-      }
-
-      if (rootPOA != null && authRef != null) {
-         try {
-            rootPOA.deactivate_object(rootPOA.reference_to_id(authRef));
-         } catch(Exception e) { Log.warning(ME, "POA deactivate authentication servant failed"); }
-      }
-
-      if (rootPOA != null) {
-         try {
-            rootPOA.the_POAManager().deactivate(false, true);
-         } catch(Exception e) { Log.warning(ME, "POA deactivate failed"); }
-         rootPOA = null;
-      }
-
-      authRef = null;
-
-      orb.shutdown(wait_for_completion);
-      if (Log.TRACE) Log.trace(ME, "POA and ORB are down, CORBA resources released.");
    }
 
 
@@ -266,15 +209,6 @@ public class Main
 
 
    /**
-    * @return Access to our orb handle
-    */
-   public static org.omg.CORBA.ORB getOrb()
-   {
-      return orb;
-   }
-
-
-   /**
     * Check for keyboard entries from console.
     * <p />
     * Supported input is:
@@ -290,10 +224,10 @@ public class Main
    {
       BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
       while (true) {
-         // orbacus needs this
-         if (orb.work_pending()) orb.perform_work();
+         // orbacus needs this !!! Michele?
+         // if (orb.work_pending()) orb.perform_work();
          try {
-            String line = in.readLine().trim();
+            String line = in.readLine().trim(); // Blocking in I/O
             if (line.toLowerCase().equals("g")) {
                if (controlPanel == null) {
                   Log.info(ME, "Invoking control panel GUI ...");
@@ -338,51 +272,6 @@ public class Main
 
 
    /**
-    * Locate the CORBA Naming Service.
-    * <p />
-    * The found naming service is cached, for better performance in subsequent calls
-    * @return NamingContext, reference on name service<br />
-    *         Note that this reference may be invalid, because the naming service is not running any more
-    * @exception XmlBlasterException
-    *                    CORBA error handling if no naming service is found
-    */
-   private NamingContext getNamingService() throws XmlBlasterException
-   {
-      if (Log.CALLS) Log.calls(ME, "getNamingService() ...");
-      if (nc != null)
-         return nc;
-
-      NamingContext nameService = null;
-      try {
-         // Get a reference to the Name Service, CORBA compliant:
-         org.omg.CORBA.Object nameServiceObj = orb.resolve_initial_references("NameService");
-         if (nameServiceObj == null) {
-            Log.warning(ME + ".NoNameService", "Can't access naming service, is there any running?");
-            throw new XmlBlasterException(ME + ".NoNameService", "Can't access naming service, is there any running?");
-         }
-         if (Log.TRACE) Log.trace(ME, "Successfully accessed initial orb references for naming service (IOR)");
-
-         nameService = org.omg.CosNaming.NamingContextHelper.narrow(nameServiceObj);
-         if (nameService == null) {
-            Log.error(ME + ".NoNameService", "Can't access naming service == null");
-            throw new XmlBlasterException(ME + ".NoNameService", "Can't access naming service (narrow problem)");
-         }
-         if (Log.TRACE) Log.trace(ME, "Successfully narrowed handle for naming service");
-
-         return nameService; // Note: the naming service IOR is successfully evaluated (from a IOR),
-                             // but it is not sure that the naming service is really running
-      }
-      catch (XmlBlasterException e) {
-         throw e;
-      }
-      catch (Exception e) {
-         Log.warning(ME + ".NoNameService", "Can't access naming service: " + e.toString());
-         throw new XmlBlasterException(ME + ".NoNameService", e.toString());
-      }
-   }
-
-
-   /**
     * Keyboard input usage.
     */
    private void keyboardUsage()
@@ -405,13 +294,10 @@ public class Main
       Log.plain(ME, "----------------------------------------------------------");
       Log.plain(ME, "jaco org.xmlBlaster.Main <options>");
       Log.plain(ME, "----------------------------------------------------------");
-      Log.plain(ME, "Options:");
-      Log.plain(ME, "   -?                  Print this message.");
-      Log.plain(ME, "   -iorFile            Specify a file where to dump the IOR of the AuthServer (for client access).");
-      Log.plain(ME, "   -iorPort            Specify a port number where the builtin http server publishes its AuthServer IOR.");
-      Log.plain(ME, "                       Default is port "+DEFAULT_HTTP_PORT+", the port 0 switches this feature off.");
-      Log.plain(ME, "   -ns false           Don't publish the IOR to a naming service.");
-      Log.plain(ME, "                       Default is to publish the IOR to a naming service.");
+      for (int ii=0; ii<protocols.size(); ii++) {
+         I_Driver driver = (I_Driver)protocols.elementAt(ii);
+         Log.plain(ME, driver.usage());
+      }
       Log.usage();
       Log.plain(ME, "----------------------------------------------------------");
       Log.plain(ME, "Example:");

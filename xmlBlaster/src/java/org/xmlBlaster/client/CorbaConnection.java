@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.53 2000/06/04 10:41:03 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.54 2000/06/04 23:44:45 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
@@ -61,7 +61,7 @@ import java.util.Properties;
  * first time the ORB is created.<br />
  * This will be fixed as soon as possible.
  *
- * @version $Revision: 1.53 $
+ * @version $Revision: 1.54 $
  * @author $Author: ruff $
  */
 public class CorbaConnection implements ServerOperations
@@ -386,7 +386,7 @@ public class CorbaConnection implements ServerOperations
 
       // 2) check if argument -iorHost <hostName or IP> -iorPort <number> at program startup is given
       String iorHost = Property.getProperty("iorHost", "localhost");
-      int iorPort = Property.getProperty("iorPort", org.xmlBlaster.Main.DEFAULT_HTTP_PORT); // 7609
+      int iorPort = Property.getProperty("iorPort", org.xmlBlaster.protocol.corba.CorbaDriver.DEFAULT_HTTP_PORT); // 7609
       if (iorHost != null && iorPort > 0) {
          try {
             authServerIOR = getAuthenticationServiceIOR(iorHost, iorPort);

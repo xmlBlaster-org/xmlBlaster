@@ -3,7 +3,7 @@ Name:      ClientInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: ClientInfo.java,v 1.30 2000/06/04 19:13:23 ruff Exp $
+Version:   $Id: ClientInfo.java,v 1.31 2000/06/04 23:44:45 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -14,10 +14,13 @@ import org.xmlBlaster.protocol.corba.CallbackCorbaDriver;
 import org.xmlBlaster.protocol.email.CallbackEmailDriver;
 import org.xmlBlaster.authentication.AuthenticationInfo;
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Property;
 import org.xmlBlaster.util.Destination;
 import org.xmlBlaster.util.CallbackAddress;
 import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
+
+import java.util.*;
 
 
 /**
@@ -32,7 +35,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
  * It also contains a message queue, where messages are stored
  * until they are delivered at the next login of this client.
  *
- * @version $Revision: 1.30 $
+ * @version $Revision: 1.31 $
  * @author $Author: ruff $
  */
 public class ClientInfo
@@ -44,6 +47,8 @@ public class ClientInfo
    private I_CallbackDriver[] callbackDrivers = new I_CallbackDriver[0];
    private static long instanceCounter = 0L;
    private long instanceId = 0L;
+   /** Map holding the Class of all protocol I_CallbackDriver.java implementations, e.g. CallbackCorbaDriver */
+   private Hashtable protocols = null;
 
    /**
     * All MessageUnit which can't be delivered to the client (if he is not logged in)
@@ -61,6 +66,7 @@ public class ClientInfo
     */
    public ClientInfo(AuthenticationInfo authInfo) throws XmlBlasterException
    {
+      loadDrivers();
       instanceId = instanceCounter;
       instanceCounter++;
       if (Log.CALLS) Log.trace(ME, "Creating new ClientInfo " + authInfo.toString());
@@ -75,6 +81,7 @@ public class ClientInfo
     */
    public ClientInfo(String loginName)
    {
+      loadDrivers();
       instanceId = instanceCounter;
       instanceCounter++;
       if (Log.CALLS) Log.trace(ME, "Creating new empty ClientInfo for " + loginName);
@@ -83,11 +90,47 @@ public class ClientInfo
 
 
    /**
+    * Load the callback drivers from xmlBlaster.properties. 
+    * <p />
     * Accessing the CallbackDriver for this client, supporting the
     * desired protocol (CORBA, EMAIL, HTTP).
-    *
-    * @return the CallbackDriver for this client
+    * <p />
+    * Default is "Protocol.Drivers=IOR:org.xmlBlaster.protocol.corba.CorbaDriver"
     */
+   private final void loadDrivers()
+   {
+      if (protocols != null)
+         return;
+
+      protocols = new Hashtable();
+      String drivers = Property.getProperty("Protocol.CallbackDrivers", "IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver");
+      StringTokenizer st = new StringTokenizer(drivers, ",");
+      int numDrivers = st.countTokens();
+      for (int ii=0; ii<numDrivers; ii++) {
+         String token = st.nextToken().trim();
+         int index = token.indexOf(":");
+         if (index < 0) {
+            Log.error(ME, "Wrong syntax in xmlBlaster.properties Protocol.CallbackDrivers, driver ignored: " + token);
+            continue;
+         }
+         String protocol = token.substring(0, index).trim();
+         String driverId = token.substring(index+1).trim();
+
+         // Load the protocol driver ...
+         try {
+            if (Log.TRACE) Log.trace(ME, "Trying Class.forName('" + driverId + "') ...");
+            Class cl = java.lang.Class.forName(driverId);
+            protocols.put(protocol, cl);
+            // Log.info(ME, "Found callback driver class '" + driverId + "' for protocol '" + protocol + "'");
+         }
+         catch (SecurityException e) {
+            Log.error(ME, "No right to access the driver class or initializer '" + driverId + "'");
+         }
+         catch (Throwable e) {
+            Log.error(ME, "The driver class or initializer '" + driverId + "' is invalid\n -> check the driver name and/or the CLASSPATH to the driver file: " + e.toString());
+         }
+      }
+   }
 
 
    /**
@@ -203,20 +246,27 @@ public class ClientInfo
       else {
          callbackDrivers = new I_CallbackDriver[cbArr.length];
          for (int ii=0; ii<cbArr.length; ii++) {
-            if (cbArr[ii].getType().equals("IOR")) {
-               callbackDrivers[ii] = new CallbackCorbaDriver(cbArr[ii]);
-            }
-            else if (cbArr[ii].getType().equals("EMAIL")) {
-               callbackDrivers[ii] = new CallbackEmailDriver(cbArr[ii]);
-            }
-            else if (cbArr[ii].getType().equals("XML-RPC")) {
+            // Load the protocol driver ...
+            Class cl = (Class)protocols.get(cbArr[ii].getType());
+            if (cl == null) {
                Log.error(ME+".UnknownCallbackProtocol", "Sorry, callback type='" + cbArr[ii].getType() + "' is not supported");
                throw new XmlBlasterException("UnknownCallbackProtocol", "Sorry, callback type='" + cbArr[ii].getType() + "' is not supported");
-               // callbackDrivers[ii] = new CallbackXmlRpcDriver(cbArr[ii]);
             }
-            else {
-               Log.error(ME+".UnknownCallbackProtocol", "Sorry, callback type='" + cbArr[ii].getType() + "' is not supported");
-               throw new XmlBlasterException("UnknownCallbackProtocol", "Sorry, callback type='" + cbArr[ii].getType() + "' is not supported");
+
+
+            try {
+               callbackDrivers[ii] = (I_CallbackDriver)cl.newInstance();
+               callbackDrivers[ii].init(cbArr[ii]);
+               if (Log.TRACE) Log.trace(ME, "Created callback driver for protocol '" + cbArr[ii].getType() + "'");
+            }
+            catch (IllegalAccessException e) {
+               Log.error(ME, "The driver class '" + cbArr[ii].getType() + "' is not accessible\n -> check the driver name and/or the CLASSPATH to the driver");
+            }
+            catch (SecurityException e) {
+               Log.error(ME, "No right to access the driver class or initializer '" + cbArr[ii].getType() + "'");
+            }
+            catch (Throwable e) {
+               Log.error(ME, "The driver class or initializer '" + cbArr[ii].getType() + "' is invalid\n -> check the driver name and/or the CLASSPATH to the driver file: " + e.toString());
             }
          }
       }

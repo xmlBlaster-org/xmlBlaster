@@ -3,7 +3,7 @@ Name:      CallbackCorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using CORBA
-Version:   $Id: CallbackCorbaDriver.java,v 1.6 2000/05/16 20:57:38 ruff Exp $
+Version:   $Id: CallbackCorbaDriver.java,v 1.7 2000/06/04 23:44:46 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -26,7 +26,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackHelper;
  * <p>
  * The BlasterCallback.update() method of the client will be invoked
  *
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  * @author $Author: ruff $
  */
 public class CallbackCorbaDriver implements I_CallbackDriver
@@ -35,16 +35,24 @@ public class CallbackCorbaDriver implements I_CallbackDriver
    private BlasterCallback cb = null;
    private CallbackAddress callbackAddress = null;
 
+
+   /** Get a human readable name of this driver */
+   public String getName()
+   {
+      return ME;
+   }
+
+
    /**
-    * Get callback reference here. 
+    * Get callback reference here.
     * @param  callbackAddress Contains the stringified CORBA callback handle of the client
     */
-   public CallbackCorbaDriver(CallbackAddress callbackAddress) throws XmlBlasterException
+   public void init(CallbackAddress callbackAddress) throws XmlBlasterException
    {
       this.callbackAddress = callbackAddress;
-      String callbackIOR = callbackAddress.getAddress(); 
+      String callbackIOR = callbackAddress.getAddress();
       try {
-         cb = BlasterCallbackHelper.narrow(Main.getOrb().string_to_object(callbackIOR));
+         cb = BlasterCallbackHelper.narrow(CorbaDriver.getOrb().string_to_object(callbackIOR));
          Log.info(ME, "Accessing client callback reference using given IOR string");
       }
       catch (Exception e) {
@@ -80,4 +88,13 @@ public class CallbackCorbaDriver implements I_CallbackDriver
       }
    }
 
+
+   /**
+    * This method shuts down the driver. 
+    * <p />
+    */
+   public void shutdown()
+   {
+      Log.warning(ME, "shutdown implementation is missing");
+   }
 }

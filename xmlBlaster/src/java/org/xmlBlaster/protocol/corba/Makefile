@@ -16,6 +16,7 @@ SRC_JAVA_DIR = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster/protocol/corba
 SUB_DIRS = serverIdl clientIdl authenticateIdl
 LOCAL_FILES = \
 			$(CLASS_DIR)/AuthServerImpl.class \
+			$(CLASS_DIR)/CorbaDriver.class \
 			$(CLASS_DIR)/CallbackCorbaDriver.class \
 			$(CLASS_DIR)/ServerImpl.class
 #------------------------------------------------------------------------------

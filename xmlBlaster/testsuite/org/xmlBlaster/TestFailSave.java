@@ -3,7 +3,7 @@ Name:      TestFailSave.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSave.java,v 1.15 2000/05/24 14:35:03 ruff Exp $
+Version:   $Id: TestFailSave.java,v 1.16 2000/06/04 23:44:46 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -122,7 +122,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
       // reset to default server port (necessary if other tests follow in the same JVM).
       String[] args = new String[2];
       args[0] = "-iorPort";
-      args[1] = "" + org.xmlBlaster.Main.DEFAULT_HTTP_PORT;
+      args[1] = "" + org.xmlBlaster.protocol.corba.CorbaDriver.DEFAULT_HTTP_PORT;
       Property.addArgs2Props(Property.getProps(), args);
    }
 

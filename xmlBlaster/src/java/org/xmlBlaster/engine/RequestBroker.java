@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.69 2000/06/04 21:13:28 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.70 2000/06/04 23:44:46 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -29,7 +29,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.69 $
+ * @version $Revision: 1.70 $
  * @author ruff@swand.lake.de
  */
 public class RequestBroker implements I_ClientListener, MessageEraseListener
@@ -111,7 +111,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     * One instance of this represents one xmlBlaster server.
     * @param authenticate The authentication service
     */
-   public RequestBroker(Authenticate authenticate) throws XmlBlasterException
+   RequestBroker(Authenticate authenticate) throws XmlBlasterException
    {
       this.xmlKeyLoginEvent = "<key oid='__sys__Login' contentMime='text/plain'>\n</key>";
       this.publishQosLoginEvent = new PublishQoS("<qos>\n   <forceUpdate/>\n</qos>");
@@ -160,7 +160,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     * Note that you can't change the driver during runtime (this would need some code added).
     * @return interface to the configured persistence driver or null if no is available
     */
-   public final I_PersistenceDriver getPersistenceDriver()
+   final I_PersistenceDriver getPersistenceDriver()
    {
       if (usePersistence == false) return (I_PersistenceDriver)null;
 
@@ -249,7 +249,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     * @see addListener in Java event model
     * @see addObserver in Java observer pattern
     */
-   public String subscribe(ClientInfo clientInfo, XmlKey xmlKey, SubscribeQoS subscribeQoS) throws XmlBlasterException
+   String subscribe(ClientInfo clientInfo, XmlKey xmlKey, SubscribeQoS subscribeQoS) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "Entering subscribe(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "') ...");
 
@@ -298,7 +298,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     * </pre>
     * @return A sequence of 0 - n MessageUnit structs
     */
-   public MessageUnitContainer[] get(ClientInfo clientInfo, XmlKey xmlKey, GetQoS subscribeQoS) throws XmlBlasterException
+   MessageUnitContainer[] get(ClientInfo clientInfo, XmlKey xmlKey, GetQoS subscribeQoS) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "Entering get(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "') ...");
       if (xmlKey.isInternalStateQuery())
@@ -446,7 +446,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     * @param oid  This is the XmlKey:uniqueKey
     * @return null if not found
     */
-   public final MessageUnitHandler getMessageHandlerFromOid(String oid)
+   final MessageUnitHandler getMessageHandlerFromOid(String oid)
    {
       synchronized(messageContainerMap) {
          Object obj = messageContainerMap.get(oid);
@@ -512,7 +512,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     *    &lt;/qos>
     * </pre>
     */
-   public void unSubscribe(ClientInfo clientInfo, XmlKey xmlKey, UnSubscribeQoS unSubscribeQoS) throws XmlBlasterException
+   void unSubscribe(ClientInfo clientInfo, XmlKey xmlKey, UnSubscribeQoS unSubscribeQoS) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "Entering unSubscribe(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "') ...");
 
@@ -628,7 +628,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     * @see xmlBlaster.idl for comments
     */
    public String publish(ClientInfo clientInfo, MessageUnit msgUnit, PublishQoS publishQoS) throws XmlBlasterException
-   {
+   {  // !!! remove public
       if (Log.CALLS) Log.calls(ME, "Entering publish() ...");
 
       if (msgUnit == null || publishQoS==null) {
@@ -810,7 +810,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     * @return String array with the key oid's which are deleted
     *         "" strings mark query subscriptions
     */
-   public String[] erase(ClientInfo clientInfo, XmlKey xmlKey, EraseQoS qoS) throws XmlBlasterException
+   String[] erase(ClientInfo clientInfo, XmlKey xmlKey, EraseQoS qoS) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "Entering erase(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "') ...");
 
@@ -931,7 +931,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
    /**
     * Is fired on unSubscribe() and several times on erase().
     */
-   public final void fireSubscriptionEvent(SubscriptionInfo subscriptionInfo, boolean subscribe) throws XmlBlasterException
+   final void fireSubscriptionEvent(SubscriptionInfo subscriptionInfo, boolean subscribe) throws XmlBlasterException
    {
       if (Log.TRACE) Log.trace(ME, "Going to fire fireSubscriptionEvent() ...");
 
