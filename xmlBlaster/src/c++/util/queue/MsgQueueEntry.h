@@ -181,7 +181,7 @@ public:
     * This is the second order criteria in the queue
     * @return The unique Id of this entry.
     */
-   long getUniqueId() const;
+   Timestamp getUniqueId() const;
 
    /**
     * gets the content of this queue entry (the embedded object). In

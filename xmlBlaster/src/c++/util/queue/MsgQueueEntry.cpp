@@ -121,7 +121,7 @@ bool MsgQueueEntry::isPersistent() const
    return persistent_;
 }
 
-long MsgQueueEntry::getUniqueId() const
+Timestamp MsgQueueEntry::getUniqueId() const
 {
    return uniqueId_;
 }
