@@ -7,7 +7,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.util.queue.jdbc;
 
 import org.xmlBlaster.util.XmlBlasterException;
-
+import org.xmlBlaster.util.enum.ErrorCode;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.PreparedStatement;
@@ -34,6 +34,11 @@ public class PreparedQuery {
    /**
     * This constructor can be used if you want to have several invocations
     * whitin the same transaction.
+    * @param pool The JdbcConnectionPool to use for this prepared quuery
+    * @param request the string to use as the request 
+    * @param isAutoCommit
+    * @param log
+    * @param fetchSize
     */
    public PreparedQuery(JdbcConnectionPool pool, String request, boolean isAutoCommit, LogChannel log, int fetchSize)
       throws SQLException, XmlBlasterException {
@@ -78,7 +83,7 @@ public class PreparedQuery {
 
       this.log.call(ME, "inTransactionRequest: " + request);
       if (this.conn.getAutoCommit())
-         throw new XmlBlasterException(ME, "inTransactionRequest should not be called if autocommit is on");
+         throw new XmlBlasterException(pool.getGlobal(), ErrorCode.INTERNAL_UNKNOWN, ME, "inTransactionRequest should not be called if autocommit is on");
 
       try {
          this.st = conn.prepareStatement(request);

@@ -5,7 +5,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing the Timeout Features
 -----------------------------------------------------------------------------*/
 
-#include <client/protocol/corba/CorbaDriver.h>
+#include <client/protocol/corba/CorbaDriverFactory.h>
 #include "TestSuite.h"
 
 using boost::lexical_cast;
@@ -19,11 +19,12 @@ namespace org { namespace xmlBlaster { namespace test {
 class TestCorbaDriver
 {
 private:
-   string  ME;
-   Global& global_;
-   Log&    log_;
-   Mutex   updateMutex_;
-   int     numOfUpdates_;
+   string              ME;
+   Global&             global_;
+   Log&                log_;
+   Mutex               updateMutex_;
+   int                 numOfUpdates_;
+   CorbaDriverFactory& factory_;
 
 public:
 
@@ -31,7 +32,8 @@ public:
       : ME("TestCorbaDriver"), 
         global_(glob), 
         log_(glob.getLog()),
-        updateMutex_()
+        updateMutex_(),
+        factory_(CorbaDriverFactory::getFactory(glob))
    {
    }
 
@@ -51,51 +53,51 @@ public:
    void testSingleDriver()
    {
       log_.info(ME, "testing single driver: start");
-      CorbaDriver& driver1 = CorbaDriver::getInstance(global_, "one");
-      CorbaDriver& driver2 = CorbaDriver::getInstance(global_, "one");
-      CorbaDriver& driver3 = CorbaDriver::getInstance(global_, "one");
+      CorbaDriver& driver1 = factory_.getDriverInstance("one");
+      CorbaDriver& driver2 = factory_.getDriverInstance("one");
+      CorbaDriver& driver3 = factory_.getDriverInstance("one");
       // should be three instances with the name 'one' now ...
 
       assertEquals(log_, ME, &driver1, &driver2, "Both 'one' drivers should share the same address");
       assertEquals(log_, ME, &driver2, &driver3, "Both 'one' drivers should share the same address");
-      assertEquals(log_, ME, 2, CorbaDriver::killInstance("one"), "number of 'one' instances should be 2 (after deletion)");
+      assertEquals(log_, ME, 2, factory_.killDriverInstance("one"), "number of 'one' instances should be 2 (after deletion)");
       Thread::sleepSecs(1);
-      assertEquals(log_, ME, 1, CorbaDriver::killInstance("one"), "number of 'one' instances should be 1 (after deletion)");
+      assertEquals(log_, ME, 1, factory_.killDriverInstance("one"), "number of 'one' instances should be 1 (after deletion)");
       Thread::sleepSecs(1);
-      assertEquals(log_, ME, 0, CorbaDriver::killInstance("one"), "number of 'one' instances should be 0 (after deletion)");
+      assertEquals(log_, ME, 0, factory_.killDriverInstance("one"), "number of 'one' instances should be 0 (after deletion)");
       Thread::sleepSecs(1);
-      assertEquals(log_, ME, -1, CorbaDriver::killInstance("one"), "number of 'one' instances should be -1 (after deletion)");
+      assertEquals(log_, ME, -1, factory_.killDriverInstance("one"), "number of 'one' instances should be -1 (after deletion)");
       Thread::sleepSecs(1);
-      assertEquals(log_, ME, -1, CorbaDriver::killInstance("one"), "number of 'one' instances should be -1 (after deletion)");
+      assertEquals(log_, ME, -1, factory_.killDriverInstance("one"), "number of 'one' instances should be -1 (after deletion)");
       log_.info(ME, "testing single driver: end");
    }
 
    void testMultipleDrivers()
    {
       log_.info(ME, "testing multiple drivers: start");
-      CorbaDriver& driver1 = CorbaDriver::getInstance(global_, "one");
-      CorbaDriver& driver2 = CorbaDriver::getInstance(global_, "two");
-      CorbaDriver& driver3 = CorbaDriver::getInstance(global_, "three");
-      CorbaDriver::getInstance(global_, "two");
-      CorbaDriver::getInstance(global_, "three");
+      CorbaDriver& driver1 = factory_.getDriverInstance("one");
+      CorbaDriver& driver2 = factory_.getDriverInstance("two");
+      CorbaDriver& driver3 = factory_.getDriverInstance("three");
+      factory_.getDriverInstance("two");
+      factory_.getDriverInstance("three");
       // should be three instances with the name 'one' now ...
 
       assertDifferes(log_, ME, &driver1, &driver2, "'one' and 'two' should NOT share the same address");
       assertDifferes(log_, ME, &driver2, &driver3, "Both 'one' drivers should share the same address");
       
       Thread::sleepSecs(1);
-      assertEquals(log_, ME, 0, CorbaDriver::killInstance("one"), "number of 'one' instances should be 0 (after deletion)");
+      assertEquals(log_, ME, 0, factory_.killDriverInstance("one"), "number of 'one' instances should be 0 (after deletion)");
       Thread::sleepSecs(1);
-      assertEquals(log_, ME, -1, CorbaDriver::killInstance("one"), "number of 'one' instances should be -1 (after deletion)");
+      assertEquals(log_, ME, -1, factory_.killDriverInstance("one"), "number of 'one' instances should be -1 (after deletion)");
       Thread::sleepSecs(1);
-      assertEquals(log_, ME, 1, CorbaDriver::killInstance("two"), "number of 'two' instances should be 1 (after deletion)");
+      assertEquals(log_, ME, 1, factory_.killDriverInstance("two"), "number of 'two' instances should be 1 (after deletion)");
       Thread::sleepSecs(1);
-      assertEquals(log_, ME, 1, CorbaDriver::killInstance("three"), "number of 'three' instances should be 1 (after deletion)");
+      assertEquals(log_, ME, 1, factory_.killDriverInstance("three"), "number of 'three' instances should be 1 (after deletion)");
       Thread::sleepSecs(1);
-      assertEquals(log_, ME, 0, CorbaDriver::killInstance("three"), "number of 'three' instances should be 0 (after deletion)");
+      assertEquals(log_, ME, 0, factory_.killDriverInstance("three"), "number of 'three' instances should be 0 (after deletion)");
       // here the thread still should be running ...
       Thread::sleepSecs(2);
-      assertEquals(log_, ME, 0, CorbaDriver::killInstance("two"), "number of 'two' instances should be 0 (after deletion)");
+      assertEquals(log_, ME, 0, factory_.killDriverInstance("two"), "number of 'two' instances should be 0 (after deletion)");
       log_.info(ME, "testing multiple drivers: end");
    }
 

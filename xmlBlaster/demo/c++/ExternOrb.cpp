@@ -41,17 +41,19 @@ class ExternOrb : public I_Callback,           // for the asynchroneous updates
                   public Thread                // the thread to perform the orb work
 {
 private:
-   string         ME;                          // the string identifying this class when logging
-   Global&        global_;
-   Log&           log_;                                                                                                                                // the reference to the log object for this instance
-   bool           doRun_;
-   CORBA::ORB_ptr orb_;
+   string              ME;                     // the string identifying this class when logging
+   Global&             global_;
+   Log&                log_;                                                                                                                                // the reference to the log object for this instance
+   bool                doRun_;
+   CORBA::ORB_ptr      orb_;
+   CorbaDriverFactory& factory_;
 public:
    ExternOrb(Global& glob, CORBA::ORB_ptr orb)
    : Thread(),
      ME("ExternOrb"),
      global_(glob), 
-     log_(glob.getLog("demo"))
+     log_(glob.getLog("demo")),
+     factory_(CorbaDriverFactory::getFactory(glob, orb))
    {                  
       doRun_ = true;
       orb_   = orb;
@@ -62,7 +64,7 @@ public:
    {
       doRun_ = false;
       this->join();
-      CorbaDriver::killInstance("externOrb");
+      factory_.killDriverInstance("externOrb");
    }
 
 

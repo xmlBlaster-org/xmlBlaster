@@ -17,14 +17,13 @@ using namespace org::xmlBlaster::client::protocol;
 namespace org { namespace xmlBlaster { namespace client {
 
 
-XmlBlasterAccess::XmlBlasterAccess(Global& global, const string& instanceName)
-   : ME(string("XmlBlasterAccess-") + instanceName),
+XmlBlasterAccess::XmlBlasterAccess(Global& global)
+   : ME(string("XmlBlasterAccess-UNCONNECTED")),
      serverNodeId_("xmlBlaster"), 
      connectQos_(global), 
      connectReturnQos_(global),
      global_(global), 
-     log_(global.getLog("client")), 
-     instanceName_(instanceName)
+     log_(global.getLog("client"))
 {
    log_.call(ME, "::constructor");
    cbServer_           = NULL;
@@ -32,6 +31,7 @@ XmlBlasterAccess::XmlBlasterAccess(Global& global, const string& instanceName)
    connection_         = NULL;
    deliveryManager_    = NULL;
    connectionProblems_ = NULL;
+   instanceName_ = boost::lexical_cast<string>(this);
 }
 
 XmlBlasterAccess::~XmlBlasterAccess()
@@ -58,6 +58,7 @@ XmlBlasterAccess::~XmlBlasterAccess()
 
 ConnectReturnQos XmlBlasterAccess::connect(const ConnectQos& qos, I_Callback *clientAddr)
 {
+   ME = string("XmlBlasterAccess-") + qos.getSessionQos().getAbsoluteName();
    log_.call(ME, "::connect");
    connectQos_ = qos;
    SecurityQos securityQos = connectQos_.getSecurityQos();
@@ -87,6 +88,7 @@ ConnectReturnQos XmlBlasterAccess::connect(const ConnectQos& qos, I_Callback *cl
    }
    if (log_.trace()) log_.trace(ME, string("::connect. connectQos: ") + connectQos_.toXml());
    connectReturnQos_ = connection_->connect(connectQos_);
+   ME = string("XmlBlasterAccess-") + connectReturnQos_.getSessionQos().getAbsoluteName();
    return connectReturnQos_;
 }
 
@@ -119,7 +121,7 @@ XmlBlasterAccess::initCbServer(const string& loginName, const string& type, cons
 }
 
 void
-XmlBlasterAccess::initSecuritySettings(const string& secMechanism, const string& secVersion)
+XmlBlasterAccess::initSecuritySettings(const string& /*secMechanism*/, const string& /*secVersion*/)
 {
    log_.error(ME, "initSecuritySettings not implemented yet");
 }

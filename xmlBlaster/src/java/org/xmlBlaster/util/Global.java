@@ -1449,7 +1449,7 @@ public class Global implements Cloneable
       if (obj == null) {
          JdbcConnectionPool pool = new JdbcConnectionPool();
          try {
-            pool.initialize(this, pluginInfo);
+            pool.initialize(this, pluginInfo.getParameters());
             manager = new JdbcManager(pool, getEntryFactory(managerName));
             pool.registerStorageProblemListener(manager);
             manager.setUp();
@@ -1471,7 +1471,7 @@ public class Global implements Cloneable
       try {
          if (!manager.getPool().isInitialized()) {
 //            manager.getPool().initialize(this, managerName + ".queue.persistent");
-            manager.getPool().initialize(this, pluginInfo);
+            manager.getPool().initialize(this, pluginInfo.getParameters());
             if (log.TRACE) log.trace(ME, "Initialized JdbcManager pool for storage class '" + managerName + "'");
          }
       }
@@ -1509,7 +1509,7 @@ public class Global implements Cloneable
       if (obj == null) {
          JdbcConnectionPool pool = new JdbcConnectionPool();
          try {
-            pool.initialize(this, pluginInfo);
+            pool.initialize(this, pluginInfo.getParameters());
             manager = new JdbcManagerCommonTable(pool, getEntryFactory(managerName));
             pool.registerStorageProblemListener(manager);
             manager.setUp();
@@ -1531,7 +1531,7 @@ public class Global implements Cloneable
       try {
          if (!manager.getPool().isInitialized()) {
 //            manager.getPool().initialize(this, managerName + ".queue.persistent");
-            manager.getPool().initialize(this, pluginInfo);
+            manager.getPool().initialize(this, pluginInfo.getParameters());
             if (log.TRACE) log.trace(ME, "Initialized JdbcManager pool for storage class '" + managerName + "'");
          }
       }
@@ -1573,7 +1573,7 @@ public class Global implements Cloneable
 
       JdbcConnectionPool pool = new JdbcConnectionPool();
       try {
-         pool.initialize(this, pluginInfo);
+         pool.initialize(this, pluginInfo.getParameters());
       }
       catch (ClassNotFoundException ex) {
          this.log.error(ME, "wipOutDB class not found: " + ex.getMessage());

@@ -116,7 +116,7 @@ CorbaDriver& CorbaDriverFactory::getDriverInstance(const string& instanceName)
       DriversMap::iterator iter = drivers_.find(instanceName);
       if (iter == drivers_.end()) {
          if (log_.trace()) log_.trace("CorbaDriver", string("created a new instance for ") + instanceName);
-         driver = new CorbaDriver(global_, mutex_, doRun_, isRunning_, instanceName, orb_);
+         driver = new CorbaDriver(global_, mutex_, instanceName, orb_);
          // initially the counter is set to 1
          drivers_.insert(DriversMap::value_type(instanceName, pair<CorbaDriver*, int>(driver, 1)));
          if (!isRunning_) start(); // if threadSafe isRunning_ will never be set to true

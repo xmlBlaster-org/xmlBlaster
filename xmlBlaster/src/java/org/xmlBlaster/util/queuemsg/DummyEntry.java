@@ -28,6 +28,7 @@ public class DummyEntry extends MsgQueueEntry {
    /**
     * This constructor is for internal creation from persistence only (passing the original timestamp). 
     */
+/*
    public DummyEntry(Global glob, PriorityEnum priority, Timestamp timestamp, StorageId storageId, int size, boolean persistent) {
       super(glob, ENTRY_TYPE, priority, timestamp, storageId, persistent);
    }
@@ -35,7 +36,7 @@ public class DummyEntry extends MsgQueueEntry {
    public DummyEntry(Global glob, PriorityEnum priority, StorageId storageId, int size, boolean persistent) {
       super(glob, ENTRY_TYPE, priority, storageId, persistent);
    }
-
+*/
    public Object getEmbeddedObject() {
       return null;
    }

@@ -36,31 +36,21 @@ namespace org {
    namespace protocol {
     namespace corba {
 
+/*
    class CorbaDriver;
    typedef map<string, CorbaDriver*> DriverMap;
+*/
 
    using namespace org::xmlBlaster::util::qos;
 
    class Dll_Export CorbaDriver 
       : public virtual I_CallbackServer, 
-        public virtual I_XmlBlasterConnection, 
-        public Thread
+        public virtual I_XmlBlasterConnection
    {
-   friend CorbaDriver& getInstance(Global& global, const string& instanceName);
-   /**
-    * If the reference counter is negative, it returns -1 (this means that there is no instance.
-    * If it is zero '0', it stops the singleton. if it is negative it returns -1.
-    */
-//   friend int killInstance(const string& instanceName);
    friend class CorbaDriverFactory;
 
    private:
-      static DriverMap& getDrivers();
-
-      bool&            doRun_;
-      bool&            isRunning_; 
       Mutex&           mutex_;
-      int              count_;
       string           instanceName_;
       CorbaConnection* connection_;
       DefaultCallback* defaultCallback_;
@@ -69,7 +59,7 @@ namespace org {
       Log&             log_;
       StatusQosFactory statusQosFactory_;
       MsgQosFactory    msgQosFactory_;
-      bool             orbIsThreadSave_;
+      bool             orbIsThreadSafe_;
 
       /**
        * frees the resources used. It only frees the resource specified with
@@ -87,9 +77,7 @@ namespace org {
        * @param instanceName
        * @param orb
        */
-      CorbaDriver(Global& global, Mutex& mutex, bool& doRun, bool& isRunning, const string instanceName, CORBA::ORB_ptr orb=NULL);
-
-//      CorbaDriver();
+      CorbaDriver(Global& global, Mutex& mutex, const string instanceName, CORBA::ORB_ptr orb=NULL);
 
       CorbaDriver(const CorbaDriver& corbaDriver);
 
@@ -104,23 +92,12 @@ namespace org {
        * In your real application this should be done by your main loop (e.g. from X-Window)
        * E.g. mico has a helper implementation to register its file descriptors with another main loop.
        */
-      void run();
+//      void run();
 
    public:
-      bool orbRun() {
-         if ( this->connection_ == 0 ) {
-            return false;
-         }
-         this->connection_->getOrb()->run();
-         return true;
-      }
 
-      static CorbaDriver& getInstance(Global& global, const string& instanceName, CORBA::ORB_ptr orb=NULL);
-
-      static int killInstance(const string& instanceName);
-
-      bool orbIsThreadSave() const {
-         return this->orbIsThreadSave_;
+      bool orbIsThreadSafe() const {
+         return this->orbIsThreadSafe_;
       }
 
       // methods inherited from I_CallbackServer

@@ -56,7 +56,7 @@ public:
       log_.trace(ME, string("successfully subscribed to xmlBlaster. Return qos: ") + subRetQos.toXml());
    }
 
-   string update(const string& sessionId, UpdateKey& updateKey, void *content, long contentSize, UpdateQos& updateQos)
+   string update(const string& /*sessionId*/, UpdateKey& updateKey, void *content, long contentSize, UpdateQos& updateQos)
    {
       log_.info(ME, "update invoked");
       if (log_.trace()) log_.trace(ME, "update: key    : " + updateKey.toXml());

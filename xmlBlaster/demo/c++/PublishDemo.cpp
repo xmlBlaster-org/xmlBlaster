@@ -46,16 +46,7 @@ public:
       log_.trace(ME, "successfully connected to xmlBlaster. Return qos: " + retQos.toXml());
    }
 
-   void publish(const string& oid="c++-demo", const string& clientTags="<demo/>", const string& content="simple content")
-   {
-      PublishKey key(global_, oid, "text/xml", "1.0");
-      key.setClientTags("<org.xmlBlaster><demo/></org.xmlBlaster>");
-      PublishQos qos(global_);
-      MessageUnit msgUnit(key, content, qos);
-      log_.trace(ME, string("published message unit: ") + msgUnit.toXml());
-      PublishReturnQos tmp = connection_.publish(msgUnit);
-      log_.trace(ME, string("publish return qos: ") + tmp.toXml());
-   }
+   void publish(const string& oid="c++-demo", const string& clientTags="<demo/>", const string& content="simple content");
 
 /*
       try {
@@ -72,6 +63,20 @@ public:
 */
 
 };
+
+void PublishDemo::publish(const string& oid="c++-demo", const string&, const string& content="simple content")
+{
+   PublishKey key(global_, oid, "text/xml", "1.0");
+   key.setClientTags("<org.xmlBlaster><demo/></org.xmlBlaster>");
+   PublishQos qos(global_);
+   MessageUnit msgUnit(key, content, qos);
+   log_.trace(ME, string("published message unit: ") + msgUnit.toXml());
+   PublishReturnQos tmp = connection_.publish(msgUnit);
+   log_.trace(ME, string("publish return qos: ") + tmp.toXml());
+}
+
+
+
 
 /**
  * Try

@@ -123,7 +123,7 @@ public:
       }
    }
 
-   string update(const string& sessionId, UpdateKey& updateKey, void *content, long contentSize, UpdateQos& updateQos)
+   string update(const string& /*sessionId*/, UpdateKey& updateKey, void* /*content*/, long /*contentSize*/, UpdateQos& updateQos)
    {
       log_.info(ME, "update: key: " + updateKey.toXml());
       log_.info(ME, "update: qos: " + updateQos.toXml());

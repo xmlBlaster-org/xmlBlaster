@@ -61,13 +61,8 @@ private:
    I_ConnectionProblems* connectionProblems_;
    Global& global_;
    Log&    log_;
+   string  instanceName_;
    
-   /** 
-    * the name to be given to this instance (used to map the connections and passed to the connections 
-    * handler.
-    */
-    const string instanceName_;
-
 public:
    /**
     * Create an xmlBlaster accessor. 
@@ -78,7 +73,7 @@ public:
     * provided they all have the same name. This name is also used to identify instances on logging and when
     * throwing exceptions.
     */
-   XmlBlasterAccess(Global& global, const string& instanceName="default");
+   XmlBlasterAccess(Global& global);
 
    virtual ~XmlBlasterAccess();
 

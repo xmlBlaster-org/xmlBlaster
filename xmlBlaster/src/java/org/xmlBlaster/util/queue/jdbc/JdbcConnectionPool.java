@@ -68,7 +68,16 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
    private I_StorageProblemListener storageProblemListener = null;
 
    private static boolean firstConnectError = true;
+   private Properties pluginProp = null;
 
+
+   /**
+    * returns the plugin properties, i.e. the specific properties passed to the jdbc queue plugin.
+    * These are commonly used by the jdbc manager.
+    */
+    public Properties getPluginProperties() {
+       return this.pluginProp;
+    }
 
   /**
    * Invoked by the timer when a check for reconnection is wanted again
@@ -219,7 +228,6 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
     * <li>prefix.url DEFAULTS TO "jdbc:postgresql://localhost/test"</li> <li>prefix.user DEFAULTS TO "postgres"</li>
     * <li>prefix.password  DEFAULTS TO ""</li> </ul>
     *
-    * @deprecated you should use initialize(Global, PluginInfo) instead
     */
 /*
    public synchronized void initialize(Global glob, String prefix)
@@ -335,13 +343,13 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
     * <li>prefix.url DEFAULTS TO "jdbc:postgresql://localhost/test"</li> <li>prefix.user DEFAULTS TO "postgres"</li>
     * <li>prefix.password  DEFAULTS TO ""</li> </ul>
     */
-   public synchronized void initialize(Global glob, PluginInfo pluginInfo)
+   public synchronized void initialize(Global glob, Properties pluginProperties)
       throws ClassNotFoundException, SQLException, XmlBlasterException {
-      this.glob = glob;
-      this.log = this.glob.getLog("jdbc");
-      if (this.log.CALL) this.log.call(ME, "initialize. Used Plugin type and version: " + pluginInfo.getTypeVersion());
 
       if (this.initialized) return;
+      this.glob = glob;
+      this.pluginProp = pluginProperties;
+      this.log = this.glob.getLog("jdbc");
 
       // could these also be part of the properties specific to the invoking plugin ?
       org.jutils.init.Property prop = glob.getProperty();
@@ -361,7 +369,6 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       //   cb.queue.persistent.url=jdbc:postgresql://localhost/test
       //   client.queue.persistent.url=jdbc:postgresql://localhost/test
 
-      java.util.Properties pluginProp = pluginInfo.getParameters();
 
       // the old generic properties (for the defaults) outside the plugin 
       this.url = prop.get("queue.persistent.url", "jdbc:postgresql://localhost/test");
@@ -415,7 +422,6 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
       this.tableNamePrefix = pluginProp.getProperty("tableNamePrefix", this.tableNamePrefix).trim().toUpperCase();
 
       if (this.log.DUMP) {
-         this.log.dump(ME, "initialize -type/version is     : '" + pluginInfo.getTypeVersion() + "'");
          this.log.dump(ME, "initialize -url                 : " + url);
          this.log.dump(ME, "initialize -user                : " + user);
          this.log.dump(ME, "initialize -password            : " + password);
@@ -446,7 +452,6 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
          if (firstConnectError) {
             firstConnectError = false;
             this.log.error(ME, "exception when connecting to DB, error code : '" + ex.getErrorCode() + " : " + ex.getMessage() + "' DB configuration details follow (check if the DB is running)");
-            this.log.info(ME, "diagnostics: initialize -type/version is     : '" + pluginInfo.getTypeVersion() + "'");
             this.log.info(ME, "diagnostics: initialize -url                 : '" + url + "'");
             this.log.info(ME, "diagnostics: initialize -user                : '" + user + "'");
             this.log.info(ME, "diagnostics: initialize -password            : '" + password + "'");
@@ -464,7 +469,7 @@ public class JdbcConnectionPool implements I_Timeout, I_StorageProblemNotifier {
          for (int i = 0; i < this.currentIndex; i++) disconnect(i);
          throw ex;
       }
-      this.log.info(ME, "Connections for plugin type/version '" + pluginInfo.getTypeVersion() + "' to DB '" + url + "' successfully established.");
+      this.log.info(ME, "Connections to DB '" + url + "' successfully established.");
    }
 
 

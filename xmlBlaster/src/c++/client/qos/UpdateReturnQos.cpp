@@ -22,7 +22,7 @@ namespace org { namespace xmlBlaster { namespace client { namespace qos {
    {
    }
 
-   UpdateReturnQos UpdateReturnQos::operator =(const UpdateReturnQos& data)
+   UpdateReturnQos UpdateReturnQos::operator =(const UpdateReturnQos& /*data*/)
    {
       return *this;
    }
