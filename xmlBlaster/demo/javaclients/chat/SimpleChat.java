@@ -3,7 +3,7 @@ Name:      SimpleChat.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo of a simple chat client for xmlBlaster as java application
-Version:   $Id: SimpleChat.java,v 1.18 2001/08/20 23:50:38 ruff Exp $
+Version:   $Id: SimpleChat.java,v 1.19 2001/08/21 10:23:08 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.chat;
 
@@ -57,6 +57,7 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
    private Panel fPanel;
    private TextArea output;
    private TextField input;
+   private Label label;
    private String args[];
 
    public SimpleChat(String title, String args[]){
@@ -86,6 +87,7 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
       try {
          logFileName = Args.getArg(args, "-logFile", System.getProperty("user.home") + System.getProperty("file.separator") + "xmlBlasterChat.log");
          Log.info(ME, "Logging messages to " + logFileName);
+         label.setText(logFileName);
       } catch (JUtilsException e) {
          Log.error(ME, e.toString());
       }
@@ -106,7 +108,7 @@ public class SimpleChat extends Frame implements I_Callback, ActionListener, I_C
       connectButton.addActionListener(this);
       fPanel.add("North",connectButton);
 
-      Label label = new Label("LOGGING");
+      label = new Label("LOGGING");
       fPanel.add("West",label);
 
       // Button for sending message (Publish )
