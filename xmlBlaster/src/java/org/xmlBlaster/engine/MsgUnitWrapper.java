@@ -27,7 +27,7 @@ import org.xmlBlaster.client.key.PublishKey;       // for main only
 
 
 /**
- * Wraps an publish() message into an entry for a persistence cache. 
+ * Wraps a publish() message into an entry for a persistence cache. 
  * <p>
  * There are two options to make this object persistent (measure on a 2GHz Intel Linux laptop with Postgres):
  * </p>
