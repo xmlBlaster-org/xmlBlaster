@@ -18,14 +18,14 @@
       <THEAD>
          <TR>
          <TD><b>ID</b></TD>
-         <TD>Author</TD>
+         <TD>Status</TD>
          <TD>Topic</TD>
          </TR>
       </THEAD>
-      <xsl:for-each order-by="+ Name" select="/requirement">
+      <xsl:for-each order-by="+ requirement[@id]" select="/requirement">
          <TR>
-            <TD><xsl:value-of select="revision"/></TD>
-            <TD><xsl:value-of select="author"/></TD>
+            <TD><xsl:value-of select="@id"/></TD>
+            <TD><xsl:value-of select="fix/@status"/></TD>
             <TD><xsl:value-of select="topic"/></TD>
          </TR>
       </xsl:for-each>
