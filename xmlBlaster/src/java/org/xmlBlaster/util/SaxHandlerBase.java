@@ -3,7 +3,7 @@ Name:      SaxHandlerBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Default handling of Sax callbacks
-Version:   $Id: SaxHandlerBase.java,v 1.21 2002/12/18 11:52:54 ruff Exp $
+Version:   $Id: SaxHandlerBase.java,v 1.22 2003/02/20 18:57:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -18,6 +18,9 @@ import org.xml.sax.XMLReader;
 import org.xml.sax.Locator;
 import org.xml.sax.ContentHandler;
 import org.xml.sax.ErrorHandler;
+import org.xml.sax.SAXNotRecognizedException;
+import org.xml.sax.SAXNotSupportedException;
+import org.xml.sax.ext.LexicalHandler;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.parsers.SAXParser;
 
@@ -27,7 +30,7 @@ import javax.xml.parsers.SAXParser;
  * <p />
  * You may use this as a base class for your SAX2 handling.
  */
-public class SaxHandlerBase implements ContentHandler, ErrorHandler
+public class SaxHandlerBase implements ContentHandler, ErrorHandler, LexicalHandler
 {
    private String ME = "SaxHandlerBase";
 
@@ -95,6 +98,22 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler
 
          parser.setContentHandler(this);
          parser.setErrorHandler(this); // !!! new MyErrorHandler ());
+
+         /*
+         final boolean useLexicalHandler = true; // switch on to get CDATA events
+         if (useLexicalHandler) {
+            try {
+               parser.setProperty("http://xml.org/sax/properties/lexical-handler", this); // register for startCDATA() etc. events
+            }
+            catch (SAXNotRecognizedException e) {
+               log.warn(ME, "The SAX parser does not support the LexicalHandler interface, CDATA sections can't be restored" + e.toString());
+            }
+            catch (SAXNotSupportedException e) {
+               log.warn(ME, "The SAX parser does not support the LexicalHandler interface, CDATA sections can't be restored" + e.toString());
+            }
+         }
+         */
+
          parser.parse(new InputSource(new StringReader(xmlData)));
       }
       catch (StopParseException e) { // Doesn't work, with SUN parser (Exception is wrapped into org.xml.sax.SAXParseException)
@@ -135,6 +154,22 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler
       return xmlLiteral;
    }
 
+   /*
+    * trims outer CDATA and spaces
+   public String trimAll(String in) {
+      String tmp = in.trim();
+      if (tmp.startsWith("<![CDATA[")) {
+         tmp = tmp.substring("<![CDATA[".length());
+         int last = tmp.lastIndexOf("]]>");
+         if (last > -1) {
+            tmp = tmp.substring(0, last);
+            return tmp.trim();
+         }
+      }
+      return in;
+   }
+    */
+
    //
    // ContentHandler (or DefaultHandler) methods
    //
@@ -145,7 +180,7 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler
     * <key>Hello</key>
     */
    public void characters(char ch[], int start, int length) {
-      //character.append(new String(ch, start, length));
+      // log.info(ME, "Entering characters(str=" + new String(ch, start, length) + ")");
       character.append(ch, start, length);
    }
 
@@ -159,72 +194,85 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler
    }
 
    public void endPrefixMapping(java.lang.String prefix) {
-      log.warn(ME, "Entering endPrefixMapping() ...");
+      log.warn(ME, "Entering endPrefixMapping(prefix="+prefix+") ...");
    }
 
    /** Ignorable whitespace. */
-   public void ignorableWhitespace(char[] ch, int start, int length)
-   {
+   public void ignorableWhitespace(char[] ch, int start, int length) {
+      // log.info(ME, "Entering ignorableWhitespace(str=" + new String(ch, start, length) + ")");
    }
 
    /** Processing instruction. */
-   public void processingInstruction(java.lang.String target, java.lang.String data)
-   {
+   public void processingInstruction(java.lang.String target, java.lang.String data) {
+      // log.info(ME, "Entering processingInstruction(target=" + target + " data=" + data);
    }
 
    public void setDocumentLocator(Locator locator) {
       this.locator = locator;
    }
 
-   public void skippedEntity(java.lang.String name)
-   {
+   public void skippedEntity(java.lang.String name) {
       log.warn(ME, "Entering skippedEntity() ...");
    }
 
    /** Start document. */
-   public void startDocument()
-   {
+   public void startDocument() {
+      // log.info(ME, "Entering startDocument");
    }
+
+   //public InputSource resolveEntity(java.lang.String publicId, java.lang.String systemId) {
+   //   log.warn(ME, "Entering resolveEntity(publicId="+publicId+", systemId="+systemId+")");
+   //   return null;
+   //}
 
    /**
     * Receive notification of the beginning of an element.
     * The Parser will invoke this method at the beginning of every element in the XML document;
     * there will be a corresponding endElement event for every startElement event (even when the element is empty).
     * All of the element's content will be reported, in order, before the corresponding endElement event.
+    * <p>
+    * Example:
+    * </p>
+    * <p>
+    *  With a namespace: &lt;database:adapter xmlns:database='http://www.xmlBlaster.org/jdbc'/>
+    * </p>
+    * <p>
+    *  uri=http://www.xmlBlaster.org/jdbc
+    *  localName=adapter
+    *  name=database:adapter
+    * </p>
+    *
+    * <p>
+    *  Without a namespace: &lt;adapter/>
+    * </p>
+    * <p>
+    *  uri= 
+    *  localName=adapter
+    *  name=adapter
+    * </p>
     */
-   public void startElement(String namespaceURI, String localName, String qName, Attributes atts)
-   {
+   public void startElement(String namespaceURI, String localName, String qName, Attributes atts) {
       log.warn(ME, "Please provide your startElement() implementation");
    }
 
-   public void startPrefixMapping(java.lang.String prefix, java.lang.String uri)
-   {
+   public void startPrefixMapping(java.lang.String prefix, java.lang.String uri) {
       log.warn(ME, "Entering startPrefixMapping() ...");
    }
 
 
-
-   //
-   // ErrorHandler methods
-   //
-
+   //========== ErrorHandler interface methods =============
    /** Warning. */
-   public void warning(SAXParseException ex)
-   {
+   public void warning(SAXParseException ex) {
       log.warn(ME, "warning: " + getLocationString(ex) + ": " + ex.getMessage() + " PublicId=" + ex.getPublicId() + ", SystemId=" + ex.getSystemId() + "\n" + xmlLiteral);
    }
 
-
    /** Error. */
-   public void error(SAXParseException ex)
-   {
+   public void error(SAXParseException ex) {
       log.warn(ME, "error: " + getLocationString(ex) + ": " + ex.getMessage() + "\n" + xmlLiteral);
    }
 
-
    /** Fatal error. */
-   public void fatalError(SAXParseException ex) throws SAXException
-   {
+   public void fatalError(SAXParseException ex) throws SAXException {
       if (ex.getMessage().indexOf("org.xmlBlaster.util.StopParseException") > -1) { // org.xml.sax.SAXParseException
          // using Picolo SAX2 parser we end up here
          if (log.TRACE) log.trace(ME+".fatalError", "Parsing execution stopped half the way");
@@ -236,17 +284,13 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler
       throw ex;
    }
 
-
-   /** Fatal error. */
-   public void notationDecl(String name, String publicId, String systemId)
-   {
+   /**  */
+   public void notationDecl(String name, String publicId, String systemId) {
       if (log.TRACE) log.trace(ME, "notationDecl(name="+name+", publicId="+publicId+", systemId="+systemId+")");
    }
 
-
-   /** Fatal error. */
-   public void unparsedEntityDecl(String name, String publicId, String systemId, String notationName)
-   {
+   /**  */
+   public void unparsedEntityDecl(String name, String publicId, String systemId, String notationName) {
       if (log.TRACE) log.trace(ME, "unparsedEntityDecl(name="+name+
                                           ", publicId="+publicId+
                                           ", systemId="+systemId+
@@ -273,5 +317,35 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler
 
       return str.toString();
 
+   }
+
+   //=============== LexicalHandler interface =====================
+   /** Report an XML comment anywhere in the document. (interface LexicalHandler) */
+   public void comment(char[] ch, int start, int length) {
+      //if (log.TRACE) log.trace(ME, "Entering comment(str=" + new String(ch, start, length) + ")");
+   }
+   /** Report the end of a CDATA section. (interface LexicalHandler) */
+   public void endCDATA() {
+      //if (log.TRACE) log.trace(ME, "endCDATA()");
+   }
+   /** Report the end of DTD declarations. (interface LexicalHandler) */
+   public void endDTD() {
+      //if (log.TRACE) log.trace(ME, "endDTD()");
+   }
+   /** Report the end of an entity. (interface LexicalHandler) */
+   public void endEntity(java.lang.String name) {
+      //if (log.TRACE) log.trace(ME, "endEntity(name="+name+")");
+   }
+   /** Report the start of a CDATA section. (interface LexicalHandler) */
+   public void startCDATA() {
+      //if (log.TRACE) log.trace(ME, "startCDATA()");
+   }
+   /** Report the start of DTD declarations, if any. (interface LexicalHandler) */
+   public void startDTD(java.lang.String name, java.lang.String publicId, java.lang.String systemId) {
+      //if (log.TRACE) log.trace(ME, "startDTD(name="+name+", publicId="+publicId+", systemId="+systemId+")");
+   }
+   /** Report the beginning of some internal and external XML entities. (interface LexicalHandler) */
+   public void startEntity(java.lang.String name) {
+      //if (log.TRACE) log.trace(ME, "startEntity(name="+name+")");
    }
 }
