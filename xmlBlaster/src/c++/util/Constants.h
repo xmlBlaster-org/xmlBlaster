@@ -22,7 +22,7 @@ namespace org { namespace xmlBlaster {
  * The natural place for those constants would be the xmlBlaster.idl, 
  * this way the constants from java would have been exported automatically
  * to C++ as well. But we want to be independent from CORBA.
- * @see xmlBlaster/src/java/org/xmlBlaster/engine/helper/Constants.java
+ * @see xmlBlaster/src/java/org/xmlBlaster/util/def/Constants.java
  */
    //class Dll_Export Constants {
 
@@ -128,6 +128,11 @@ namespace org { namespace xmlBlaster {
    */
    extern Dll_Export const char * INFO_QUEUED;
 
+   // See org.xmlBlaster.engine.queuemsg.ServerEntryFactory.java ENTRY_TYPE_MSG_RAW
+   // for persistency serialization
+   extern Dll_Export const std::string ENTRY_TYPE_MSG_RAW; // "MSG_RAW"; msgUnit is dumped as specified in the protocol.socket requirement (see C persistent queue)
+
+
    /** Type of a message queue */
    extern Dll_Export const char * RELATING_CALLBACK;
    /** Type of a message queue */
@@ -178,6 +183,11 @@ namespace org { namespace xmlBlaster {
    extern Dll_Export const char * EMAIL;
    extern Dll_Export const char * XML_RPC;
 
+   extern Dll_Export const char * RAM;
+   extern Dll_Export const char * CACHE;
+   extern Dll_Export const char * ODBC;
+   extern Dll_Export const char * SQLITE;
+
    extern Dll_Export const char * OFFSET;
    extern Dll_Export const char * INDENT;
 
@@ -193,6 +203,8 @@ namespace org { namespace xmlBlaster {
    extern Dll_Export const char * TYPE_INT;
    extern Dll_Export const char * TYPE_SHORT;
    extern Dll_Export const char * TYPE_LONG;
+
+
 
    extern Dll_Export const org::xmlBlaster::util::Timestamp THOUSAND;
    extern Dll_Export const org::xmlBlaster::util::Timestamp MILLION;

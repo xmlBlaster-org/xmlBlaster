@@ -29,6 +29,8 @@ const char * STATE_FORWARD_ERROR = "FORWARD_ERROR";
 
 const char * INFO_QUEUED = "QUEUED";
 
+const std::string ENTRY_TYPE_MSG_RAW = "MSG_RAW"; // msgUnit is dumped as specified in the protocol.socket requirement (see C persistent queue)
+
 const char * RELATING_CALLBACK   = "callback";
 const char * RELATING_SUBJECT    = "subject";
 const char * RELATING_UNRELATED  = "unrelated";
@@ -69,6 +71,11 @@ const char * SOCKET  = "SOCKET";
 const char * IOR     = "IOR";
 const char * EMAIL   = "EMAIL";
 const char * XML_RPC = "XMLRPC";
+
+const char * RAM = "RAM";
+const char * CACHE = "CACHE";
+const char * ODBC = "ODBC";
+const char * SQLITE = "SQLite";
 
 const char * INDENT  = " ";
 const char * OFFSET  = "\n ";
