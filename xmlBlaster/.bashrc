@@ -154,9 +154,9 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    if [ -d ${XMLBLASTER_HOME}/src/java ]; then
       CLASSPATH=${XMLBLASTER_HOME}/src/java:${CLASSPATH}
    fi
-   if [ -d ${XMLBLASTER_HOME}/classes ]; then
+   #if [ -d ${XMLBLASTER_HOME}/classes ]; then
       CLASSPATH=${XMLBLASTER_HOME}/classes:${CLASSPATH}
-   fi
+   #fi
    if [ -d ${XMLBLASTER_HOME}/demo ]; then
       CLASSPATH=${XMLBLASTER_HOME}/demo:${CLASSPATH}
    fi
