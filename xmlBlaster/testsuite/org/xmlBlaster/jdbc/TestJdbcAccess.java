@@ -2,8 +2,7 @@
 Name:      TestJdbcAccess.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestJdbcAccess.java,v 1.2 2002/08/15 17:07:59 ruff Exp $
+Comment:   Test JDBC plugin
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster.jdbc;
 
@@ -52,17 +51,15 @@ public class TestJdbcAccess extends TestCase
    private XmlDbMessageWrapper wrap = null;
 
    /**
-    * Constructs the TestJdbcAccess object.
+    * Constructs the TestJdbcAccess object. 
     * <p />
     * @param testName   The name used in the test suite
-    * @param name       The name to login to the xmlBlaster
     */
-   public TestJdbcAccess(Global glob, String testName, String name)
-   {
+   public TestJdbcAccess(String testName) {
       super(testName);
-      this.glob = glob;
+      this.glob = Global.instance();
       this.log = glob.getLog(null);
-      this.name = name;
+      this.name = testName; // name to login to xmlBlaster
    }
 
    /**
@@ -146,6 +143,16 @@ public class TestJdbcAccess extends TestCase
       log.info(ME, "######## Start testQueries()");
       wrap.initUpdate(true, "CREATE TABLE cars (name CHAR(25), id NUMERIC(4,0))");
       String result = invokeSyncQuery(wrap);
+   
+      String[] brands = { "Fiat", "Audi", "BMW", "Porsche", "Mercedes", "Renault", "Citroen" };
+      for (int ii=0; ii<brands.length; ii++) {
+         wrap.initUpdate(true, "INSERT INTO cars (name, id) VALUES('" + brands[ii] + "', " + (ii+1) + ")");
+         result = invokeSyncQuery(wrap);
+      }
+
+      wrap.initQuery(100, true, "SELECT * from cars");
+      result = invokeSyncQuery(wrap);
+      log.info(ME, "Retrieved cars:\n" + result);
    }
 
    /**
@@ -168,37 +175,6 @@ public class TestJdbcAccess extends TestCase
          fail("Query failed: " + e.toString());
          return "";
       }
-   }
-
-   /**
-    * Method is used by TestRunner to load these tests
-    */
-   public static Test suite()
-   {
-       TestSuite suite= new TestSuite();
-       String loginName = "Tim";
-       suite.addTest(new TestJdbcAccess(new Global(), "testQueries", "Tim"));
-       return suite;
-   }
-
-   /**
-    * Invoke: 
-    * <pre>
-    *   java testsuite.org.xmlBlaster.jdbc.TestJdbcAccess
-    *   java -Djava.compiler= junit.textui.TestRunner testsuite.org.xmlBlaster.jdbc.TestJdbcAccess
-    * <pre>
-    */
-   public static void main(String args[])
-   {
-      Global glob = new Global();
-      if (glob.init(args) != 0) {
-         System.out.println("Init failed");
-         System.exit(1);
-      }
-      TestJdbcAccess test = new TestJdbcAccess(glob, "TestJdbcAccess", "Tim");
-      test.setUp();
-      test.testQueries();
-      test.tearDown();
    }
 }
 
