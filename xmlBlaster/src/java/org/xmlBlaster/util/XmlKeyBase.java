@@ -3,7 +3,7 @@ Name:      XmlKeyBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKeyBase.java,v 1.20 1999/12/10 15:55:43 ruff Exp $
+Version:   $Id: XmlKeyBase.java,v 1.21 1999/12/10 16:44:45 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -137,11 +137,11 @@ public class XmlKeyBase
 
       if (!this.xmlKey_literal.startsWith("<")) {
          keyType = ASCII_TYPE;  // eg "Airport/Runway1/WindVeloc3"
-         keyOid = xmlKey_literal;
+         keyOid = this.xmlKey_literal;
 
-         // Works well with ASCII, but is switched of for the moment
-         // perhaps we should make it configureable thru a porperty file !!!
-         // Example: xmlKey_literal="Airport.*" as a regulaer expression
+         // Works well with ASCII, but is switched off for the moment
+         // perhaps we should make it configurable through a property file !!!
+         // Example: xmlKey_literal="Airport.*" as a regular expression
 
          Log.error(ME+".XML", "Invalid XmlKey syntax, only XML syntax beginning with \"<\" is supported");
          throw new XmlBlasterException(ME+".XML", "Invalid XmlKey syntax, only XML syntax beginning with \"<\" is supported");
@@ -161,7 +161,11 @@ public class XmlKeyBase
 
 
    /**
-    * Access the literal ASCII xmlKey.
+    * Access the literal XML-ASCII xmlKey. 
+    * <p />
+    * Note that this may vary from the original ASCII string:<br />
+    * When the key oid was generated locally, the literal string contains
+    * this new generated oid as well.
     * @return the literal ASCII xmlKey
     */
    public String literal()
@@ -260,7 +264,7 @@ public class XmlKeyBase
 
 
    /**
-    * Fills the DOM tree, and assures that a valid <pre>&lt;key oid="..."></pre> is used. 
+    * Fills the DOM tree, and assures that a valid <pre>&lt;key oid="..."></pre> is used.
     * <p>
     * keyOid will be set properly if no error occurs
     * xmlToDom will be set properly if no error occurs
@@ -337,7 +341,7 @@ public class XmlKeyBase
          throw new XmlBlasterException(ME+".WrongRootNode", "Missing \"oid\" attribute in \"key\" tag");
       }
 
-      // extract the query string <key ...>The query string</key>
+      // extract the query string <key ...>'The query string'</key>
       if (!isPublish && queryType != EXACT_QUERY) {
          NodeList children = node.getChildNodes();
          if (children != null) {
@@ -355,9 +359,12 @@ public class XmlKeyBase
          }
       }
 
+      if (/*isPublish && */isGeneratedOid) {
+         xmlKey_literal = xmlToDom.domToXml(""); // write the generated key back to literal string
+      }
    }
 
-
+   
    /**
     * Should be called by publish() to merge the local XmlKey DOM into the big xmlBlaster DOM tree
     */

@@ -3,7 +3,7 @@ Name:      XmlToDom.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper which parses a XML ASCII string into a DOM tree
-Version:   $Id: XmlToDom.java,v 1.6 1999/12/09 17:15:48 ruff Exp $
+Version:   $Id: XmlToDom.java,v 1.7 1999/12/10 16:44:45 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -158,6 +158,29 @@ public class XmlToDom
 
 
    /**
+    * Dump DOM tree to XML ASCII String. 
+    * <p />
+    * @param offset indenting of tags with given blanks e.g. "   "
+    * @return string with key meta data in XML syntax
+    */
+   public String domToXml(String offset)
+   {
+      StringBuffer sb = new StringBuffer();
+      try {
+         java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
+         ((com.sun.xml.tree.XmlDocument)xmlDoc).write(out);
+         StringTokenizer st = new StringTokenizer(out.toString(), "\n");
+         while (st.hasMoreTokens()) {
+            sb.append(offset + st.nextToken());
+         }
+      } catch (Exception e) {
+         return "";
+      }
+      return sb.toString();
+   }
+
+
+   /**
     * Dump state of this object into XML.
     * <br>
     * @return XML state of MessageUnitHandler
@@ -182,14 +205,7 @@ public class XmlToDom
       offset += extraOffset;
 
       sb.append(offset + "<XmlToDom>");
-      try {
-         java.io.ByteArrayOutputStream out = new java.io.ByteArrayOutputStream();
-         ((com.sun.xml.tree.XmlDocument)xmlDoc).write(out);
-         StringTokenizer st = new StringTokenizer(out.toString(), "\n");
-         while (st.hasMoreTokens()) {
-            sb.append(offset + "   " + st.nextToken());
-         }
-      } catch (Exception e) { }
+      sb.append(domToXml(offset + "   "));
       sb.append(offset + "</XmlToDom>\n");
       return sb;
    }

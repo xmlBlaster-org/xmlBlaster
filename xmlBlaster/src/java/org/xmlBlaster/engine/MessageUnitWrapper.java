@@ -3,7 +3,7 @@ Name:      MessageUnitWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping the CORBA MessageUnit to allow some nicer usage
-Version:   $Id: MessageUnitWrapper.java,v 1.5 1999/12/09 16:12:27 ruff Exp $
+Version:   $Id: MessageUnitWrapper.java,v 1.6 1999/12/10 16:44:45 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -59,6 +59,9 @@ public class MessageUnitWrapper
       if (this.messageUnit.content == null)
          this.messageUnit.content = new byte[0];
 
+      if (this.xmlKey.isGeneratedOid())  // if the oid is generated, we need to update the messageUnit.xmlKey as well
+         this.messageUnit.xmlKey = xmlKey.literal();
+
       if (Log.CALLS) Log.trace(ME, "Creating new MessageUnitWrapper for published message, key oid=" + uniqueKey);
    }
 
@@ -73,7 +76,7 @@ public class MessageUnitWrapper
 
 
    /**
-    * Setting update of a changed content. 
+    * Setting update of a changed content.
     * <p />
     * @param content The new data blob
     * @param publisherName The source of the data (unique login name)

@@ -3,7 +3,7 @@ Name:      ClientPubDestination.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster and publishing to destinations
-Version:   $Id: ClientPubDestination.java,v 1.3 1999/12/10 09:20:22 ruff Exp $
+Version:   $Id: ClientPubDestination.java,v 1.4 1999/12/10 16:44:45 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -18,6 +18,9 @@ import org.xmlBlaster.clientIdl.*;
 /**
  * This client tests the PtP style, Manuel sends to Ulrike a love letter. 
  * <p>
+ * Note that the two clients (client logins) are simulated in this class.<br />
+ * Manuel is the 'sender' and Ulrike the 'receiver'
+ * <p>
  * Invoke example:
  *    ${JacORB_HOME}/bin/jaco testsuite.org.xmlBlaster.ClientPubDestination
  */
@@ -28,6 +31,7 @@ public class ClientPubDestination
    private final String[] args;
 
    private final String senderName = "Manuel";
+   private String publishOid = "";
 
    private final String receiverName = "Ulrike";
    private CorbaConnection receiverConnection = null;
@@ -49,7 +53,7 @@ public class ClientPubDestination
    private boolean testScenario()
    {
       if (initReceiver(receiverName) == false) return false;
-      
+
       if (initSender(senderName) == false) return false;
 
       receiverConnection.logout(receiverXmlBlaster);
@@ -125,8 +129,8 @@ public class ClientPubDestination
             String content = "Hi " + receiverName + ", i love you, " + senderName;
             MessageUnit messageUnit = new MessageUnit(xmlKey, content.getBytes());
             try {
-               String publishOid = xmlBlaster.publish(messageUnit, qos);
-               Log.info(ME, "Sending done, Returned oid=" + publishOid);
+               publishOid = xmlBlaster.publish(messageUnit, qos);
+               Log.info(ME, "Sending done, returned oid=" + publishOid);
             } catch(XmlBlasterException e) {
                Log.error(ME, "publish() XmlBlasterException: " + e.reason);
                retVal = false;
@@ -177,15 +181,22 @@ public class ClientPubDestination
             Log.error(ME, e.reason);
          }
 
-         // Now we know all about the received message, dump it or do some checks
-         Log.plain(loginName + "UpdateKey", updateKey.printOn().toString());
-         Log.plain(loginName + "content", (new String(content)).toString());
-         Log.plain(loginName + "UpdateQoS", updateQoS.printOn().toString());
+         // Now we know all about the received message, dump it and do some checks
+
+         if (Log.DUMP) Log.dump(loginName + "UpdateKey", updateKey.printOn().toString());
+         if (Log.DUMP) Log.dump(loginName + "content", (new String(content)).toString());
+         if (Log.DUMP) Log.dump(loginName + "UpdateQoS", updateQoS.printOn().toString());
 
          if (loginName.equals(receiverName))
             Log.info(ME, "Success, " + loginName + " received message from " + updateQoS.getSender());
          else
             Log.error(ME, "Wrong receiver " + loginName + " expected " + receiverName);
+
+         String keyOid = "";
+         try { keyOid = updateKey.getUniqueKey(); } catch(XmlBlasterException e) { e.printStackTrace(); }
+
+         if (!keyOid.equals(publishOid))
+            Log.error(ME, "Wrong oid of message returned, publish oid = " + publishOid + " and received oid = " + keyOid);
 
       }
    }
