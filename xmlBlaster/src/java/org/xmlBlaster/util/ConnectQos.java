@@ -3,14 +3,15 @@ Name:      ConnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: ConnectQos.java,v 1.4 2001/12/20 22:04:42 ruff Exp $
+Version:   $Id: ConnectQos.java,v 1.5 2002/02/14 22:52:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.ServerRef;
-import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.client.PluginLoader;
 import org.xmlBlaster.client.QosWrapper;
 import org.xmlBlaster.authentication.plugins.I_ClientPlugin;
@@ -76,6 +77,8 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    protected I_SecurityQos securityQos;
    protected transient String tmpSecurityPluginType = null;
    protected transient String tmpSecurityPluginVersion = null;
+
+   protected I_CallbackDriver cbDriver = null;
 
    /**
     * The server reference, e.g. the CORBA IOR string or the XML-RPC url
@@ -388,6 +391,26 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       addressVec.addElement(callback);
       addressArr = null; // reset to be recalculated on demand
    }
+
+   /**
+    * Deliver the driver object to be reused on callback
+    * @param cbDriver    If protocolServer driver shall be reused for protocolCallback driver (native/SOCKET)
+    */
+   public void setCallbackDriver(I_CallbackDriver cbDriver)
+   {
+      this.cbDriver = cbDriver;
+   }
+
+
+   /**
+    * Deliver the driver object to be reused on callback
+    * @param cbDriver    If protocolServer driver shall be reused for protocolCallback driver (native/SOCKET)
+    */
+   public I_CallbackDriver getCallbackDriver()
+   {
+      return this.cbDriver;
+   }
+
 
    /**
     * @return the login credentials or null if not set
