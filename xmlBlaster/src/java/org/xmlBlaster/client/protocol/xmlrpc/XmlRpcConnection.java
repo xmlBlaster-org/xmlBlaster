@@ -25,6 +25,7 @@ import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
 import org.xmlBlaster.util.qos.address.Address;
+import org.xmlBlaster.protocol.xmlrpc.XmlRpcUrl;
 
 import java.applet.Applet;
 
@@ -45,10 +46,9 @@ import org.apache.xmlrpc.XmlRpcException;
 public class XmlRpcConnection implements I_XmlBlasterConnection
 {
    private String ME = "XmlRpcConnection";
-   public static final int DEFAULT_SERVER_PORT = 8080; // port of xmlBlaster server
    private Global glob;
    private LogChannel log;
-   private String url = "http://localhost:" + DEFAULT_SERVER_PORT;
+   private XmlRpcUrl xmlRpcUrl;
    private XmlRpcClient xmlRpcClient; // xml-rpc client to send method calls.
    private String sessionId;
    protected ConnectReturnQos connectReturnQos;
@@ -111,20 +111,14 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
       }
 
       this.clientAddress = address;
+      this.xmlRpcUrl = new XmlRpcUrl(glob, this.clientAddress);
       try {
-         String hostname = this.clientAddress.getEnv("hostname", glob.getLocalIP()).getValue();
-         // default xmlBlaster XMLRPC publishing port is 8080
-         int port = this.clientAddress.getEnv("port", DEFAULT_SERVER_PORT).getValue();
-         this.url = "http://" + hostname + ":" + port + "/";
-
          // dispatch/clientSide/protocol/xmlrpc/debug
          if (this.clientAddress.getEnv("debug", false).getValue() == true)
             XmlRpc.setDebug(true);
 
-         this.clientAddress.setRawAddress(this.url);
-         
-         this.xmlRpcClient = new XmlRpcClient(url);
-         log.info(ME, "Created XmlRpc client to " + url);
+         this.xmlRpcClient = new XmlRpcClient(this.xmlRpcUrl.getUrl());
+         log.info(ME, "Created XmlRpc client to " + this.xmlRpcUrl.getUrl());
       }
       catch (java.net.MalformedURLException e) {
          log.error(ME+".constructor", "Malformed URL: " + e.toString());
@@ -159,7 +153,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
     */
    public String connect(String connectQos) throws XmlBlasterException {
       if (connectQos == null)
-         throw new XmlBlasterException(ME+".connect()", "Please specify a valid QoS");
+         throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME, "Please specify a valid ConnectQoS");
 
       if (log.CALL) log.call(ME, "Entering login");
       if (isLoggedIn()) {
@@ -186,7 +180,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
       }
       catch (ClassCastException e) {
          log.error(ME+".login", "return value not a valid String: " + e.toString());
-         throw new XmlBlasterException(ME+".LoginFailed", "return value not a valid String, Class Cast Exception: " + e.toString());
+         throw XmlBlasterException.convert(glob, ME, "return value not a valid String, Class Cast Exception", e);
       }
       catch (IOException e) {
          log.warn(ME+".login", "Login to xmlBlaster failed: " + e.toString());
@@ -375,7 +369,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
 
       if (msgUnitArr == null) {
          log.error(ME + ".InvalidArguments", "The argument of method publishArr() are invalid");
-         throw new XmlBlasterException(ME + ".InvalidArguments",
+         throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME,
                                        "The argument of method publishArr() are invalid");
       }
 
@@ -419,7 +413,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
 
       if (msgUnitArr == null) {
          log.error(ME + ".InvalidArguments", "The argument of method publishOneway() are invalid");
-         throw new XmlBlasterException(ME + ".InvalidArguments",
+         throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME,
                                        "The argument of method publishOneway() are invalid");
       }
 
@@ -433,7 +427,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
       catch (ClassCastException e) {
          log.error(ME+".publishOneway", e.toString());
          e.printStackTrace();
-         throw new XmlBlasterException(ME+".publishOneway", "Class Cast Exception");
+         throw XmlBlasterException.convert(glob, ME, "publishOneway Class Cast Exception", e);
       }
       catch (IOException e) {
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "publishOneway", e);
@@ -484,7 +478,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
 
       catch (ClassCastException e) {
          log.error(ME+".erase", "not a valid Vector: " + e.toString());
-         throw new XmlBlasterException("Not a valid Vector", "Class Cast Exception");
+         throw XmlBlasterException.convert(glob, ME, "erase Class Cast Exception", e);
       }
 
       catch (IOException e1) {
@@ -534,7 +528,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
       }
       catch (ClassCastException e) {
          log.error(ME+".get", "not a valid Vector: " + e.toString());
-         throw new XmlBlasterException("Not a valid Vector", "Class Cast Exception");
+         throw XmlBlasterException.convert(glob, ME, "get Class Cast Exception", e);
       }
       catch (IOException e1) {
          log.error(ME+".get", "IO exception: " + e1.toString());
@@ -589,11 +583,11 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
       }
       catch (ClassCastException e) {
          log.error(ME+".toXml", "not a valid Vector: " + e.toString());
-         throw new XmlBlasterException("Not a valid Vector", "Class Cast Exception");
+         throw XmlBlasterException.convert(glob, ME, "toXml Class Cast Exception", e);
       }
-      catch (IOException e1) {
-         log.error(ME+".toXml", "IO exception: " + e1.toString());
-         throw new XmlBlasterException("IO exception", e1.toString());
+      catch (IOException e) {
+         log.error(ME+".toXml", "IO exception: " + e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "toXml", e);
       }
       catch (XmlRpcException e) {
          throw extractXmlBlasterException(glob, e);
@@ -612,7 +606,7 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
       text += "XmlRpcConnection 'XMLRPC' options:\n";
       text += "   -dispatch/clientSide/protocol/xmlrpc/port\n";
       text += "                       Specify a port number where xmlBlaster XMLRPC web server listens.\n";
-      text += "                       Default is port "+DEFAULT_SERVER_PORT+", the port 0 switches this feature off.\n";
+      text += "                       Default is port "+org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver.DEFAULT_HTTP_PORT+", the port 0 switches this feature off.\n";
       text += "   -dispatch/clientSide/protocol/xmlrpc/hostname\n";
       text += "                       Specify a hostname where the xmlBlaster web server runs.\n";
       text += "                       Default is the localhost.\n";
