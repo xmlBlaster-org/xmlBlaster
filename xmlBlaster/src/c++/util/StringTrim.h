@@ -80,22 +80,22 @@ namespace util {
 
       /**
        * @param str The checked std::string (is not modified)
-       * @return true if trimmed std::string is "TRUE" or "true" else false
+       * @return true if trimmed std::string is "TRUE" or "true" or "1" else false
        */
       static bool isTrue(const std::string& str) {
          std::string tmp = trim(str.c_str());
-         return std::string("true")==tmp || std::string("TRUE")==tmp;
+         return std::string("true")==tmp || std::string("1")==tmp || std::string("TRUE")==tmp;
       }
 
       /**
        * Use this method instead of isTrue(std::string&) if your input std::string may
        * be manipulated (it performs a bit better then the other method). 
        * @param str The checked std::string (is trimmed!!)
-       * @return true if trimmed std::string is "TRUE" or "true" else false
+       * @return true if trimmed std::string is "TRUE" or "true" or "1" else false
        */
       static bool isTrueTrim(std::string& str) {
          trim(str);
-         return std::string("true")==str || std::string("TRUE")==str;
+         return std::string("true")==str || std::string("1")==str || std::string("TRUE")==str;
       }
 
       /**
