@@ -7,7 +7,7 @@ Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.cluster;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.MessageUnitWrapper;
@@ -47,7 +47,7 @@ public final class ClusterManager
 
    // The following 8 declarations are 'final' but the SUN JDK 1.3.1 does not like it
    private Global glob;
-   private Log log;
+   private LogChannel log;
 
    private MapMsgToMasterPluginManager mapMsgToMasterPluginManager;
    private LoadBalancerPluginManager loadBalancerPluginManager;
@@ -67,7 +67,7 @@ public final class ClusterManager
 
    public ClusterManager(Global glob) throws XmlBlasterException {
       this.glob = glob;
-      this.log = this.glob.getLog();
+      this.log = this.glob.getLog("cluster");
 
       this.pluginLoadBalancerType = this.glob.getProperty().get("cluster.loadBalancer.type", "RoundRobin");
       this.pluginLoadBalancerVersion = this.glob.getProperty().get("cluster.loadBalancer.version", "1.0");
@@ -76,7 +76,7 @@ public final class ClusterManager
                 this.pluginLoadBalancerType, this.pluginLoadBalancerVersion); // "RoundRobin", "1.0"
       if (loadBalancer == null) {
          String tmp = "No load balancer plugin type='" + this.pluginLoadBalancerType + "' version='" + this.pluginLoadBalancerVersion + "' found, clustering switched off";
-         Log.error(ME, tmp);
+         log.error(ME, tmp);
          //Thread.currentThread().dumpStack();
          throw new XmlBlasterException("ClusterManager.PluginFailed", tmp); // is caught in RequestBroker.java
       }
@@ -267,7 +267,7 @@ public final class ClusterManager
    public final void removeConnection(NodeId nodeId) {
       ClusterNode info = getClusterNode(nodeId);
       if (info == null) {
-         Log.error(ME, "Unknown node id = " + nodeId.toString() + ", can't remove xmlBlasterConnection");
+         log.error(ME, "Unknown node id = " + nodeId.toString() + ", can't remove xmlBlasterConnection");
          return;
       }
       info.resetXmlBlasterConnection();
@@ -285,7 +285,7 @@ public final class ClusterManager
       if (msgWrapper.getXmlKey().getUniqueKey().startsWith(Constants.INTERNAL_OID_PRAEFIX)) {
          // internal system messages are handled locally
          if (msgWrapper.getXmlKey().getUniqueKey().startsWith(Constants.INTERNAL_OID_CLUSTER_PRAEFIX))
-            glob.getLog().error(ME, "Forwarding of " + msgWrapper.getXmlKey().getUniqueKey() + " implementation is missing");
+            log.error(ME, "Forwarding of " + msgWrapper.getXmlKey().getUniqueKey() + " implementation is missing");
             // !!! TODO: forward system messages with cluster info of foreign nodes!
          return null;
       }
@@ -300,7 +300,7 @@ public final class ClusterManager
 
       PublishQos publishQos = msgWrapper.getPublishQos();
       if (publishQos.count(glob.getNodeId()) > 1) { // Checked in RequestBroker as well with warning
-         glob.getLog().warn(ME, "Warning, message oid='" + msgWrapper.getXmlKey().getUniqueKey() +
+         log.warn(ME, "Warning, message oid='" + msgWrapper.getXmlKey().getUniqueKey() +
             "' passed my node id='" + glob.getId() + "' before, we have a circular routing problem, keeping message locally");
          return null;
       }
@@ -310,11 +310,11 @@ public final class ClusterManager
       while (it.hasNext()) {
          ClusterNode clusterNode = (ClusterNode)it.next();
          if (clusterNode.isAllowed() == false) {
-            glob.getLog().info(ME, "Ignoring master node id='" + clusterNode.getId() + "' because it is not available");
+            log.info(ME, "Ignoring master node id='" + clusterNode.getId() + "' because it is not available");
             continue;
          }
          if (!clusterNode.isLocalNode() && publishQos.count(clusterNode.getNodeId()) > 0) {
-            glob.getLog().info(ME, "Ignoring node id='" + clusterNode.getId() + "' for routing, message oid='" + msgWrapper.getXmlKey().getUniqueKey() +
+            log.info(ME, "Ignoring node id='" + clusterNode.getId() + "' for routing, message oid='" + msgWrapper.getXmlKey().getUniqueKey() +
                "' has been there already");
             continue;
          }
@@ -328,7 +328,7 @@ public final class ClusterManager
                                nodeDomainInfo.getType(), nodeDomainInfo.getVersion(), // "DomainToMaster", "1.0"
                                msgWrapper.getContentMime(), msgWrapper.getContentMimeExtended());
             if (domainMapper == null) {
-               Log.warn(ME, "No domain mapping plugin type='" + nodeDomainInfo.getType() + "' version='" + nodeDomainInfo.getVersion() +
+               log.warn(ME, "No domain mapping plugin type='" + nodeDomainInfo.getType() + "' version='" + nodeDomainInfo.getVersion() +
                             "' found for message mime='" + msgWrapper.getContentMime() + "' and '" + msgWrapper.getContentMimeExtended() +
                             "' ignoring rules " + nodeDomainInfo.toXml());
                continue;
@@ -348,12 +348,12 @@ public final class ClusterManager
             if (log.TRACE) log.trace(ME, "Using local node for message, no master mapping rules are known.");
          }
          else {
-            Log.warn(ME, "No master found for message oid='" + msgWrapper.getUniqueKey() + "' domain='" + msgWrapper.getXmlKey().getDomain() + "'");
+            log.warn(ME, "No master found for message oid='" + msgWrapper.getUniqueKey() + "' domain='" + msgWrapper.getXmlKey().getDomain() + "'");
          }
          return null;
       }
       if (masterSet.size() > 1) {
-         Log.info(ME, masterSet.size() + " masters found for message oid='" + msgWrapper.getUniqueKey() + "' domain='" + msgWrapper.getXmlKey().getDomain() + "'");
+         log.info(ME, masterSet.size() + " masters found for message oid='" + msgWrapper.getUniqueKey() + "' domain='" + msgWrapper.getXmlKey().getDomain() + "'");
       }
 
       ClusterNode clusterNode = loadBalancer.getClusterNode(masterSet); // Invoke for masterSet.size()==1 as well, the balancer may choose to ignore it
@@ -371,7 +371,7 @@ public final class ClusterManager
    }
 
    public final XmlBlasterConnection getConnection(NodeId nodeId) {
-      Log.error(ME, "getConnection() is not implemented");
+      log.error(ME, "getConnection() is not implemented");
       return null;
       /*
       ClusterNode clusterNode = getClusterNode(nodeId);
@@ -424,7 +424,7 @@ public final class ClusterManager
       public final int compare(Object o1, Object o2) {
          String id1 = (String)o1;
          String id2 = (String)o2;
-         //Log.info("NodeComparator", "Compare " + id1 + " to " + id2);
+         //log.info("NodeComparator", "Compare " + id1 + " to " + id2);
          if (id1.equals(id2))
             return 0;
          if (id1.equals(glob.getId())) // id1 is local node
@@ -449,7 +449,7 @@ public final class ClusterManager
       public final int compare(Object o1, Object o2) {
          NodeDomainInfo id1 = (NodeDomainInfo)o1;
          NodeDomainInfo id2 = (NodeDomainInfo)o2;
-         //Log.info("MasterNodeComparator", "Compare " + id1 + " to " + id2);
+         //log.info("MasterNodeComparator", "Compare " + id1 + " to " + id2);
 
          if (id1.equals(id2))
             return 0;
