@@ -3,7 +3,7 @@ Name:      TestGetFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestGetFilter.java,v 1.5 2002/12/20 16:33:12 ruff Exp $
+Version:   $Id: TestGetFilter.java,v 1.6 2003/01/03 17:21:34 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.mime;
 
@@ -34,7 +34,7 @@ import junit.framework.*;
  * Invoke examples:<br />
  * <pre>
  *    java junit.textui.TestRunner org.xmlBlaster.test.mime.TestGetFilter
- *    java junit.swingui.TestRunner org.xmlBlaster.test.mime.TestGetFilter
+ *    java junit.swingui.TestRunner -noloading org.xmlBlaster.test.mime.TestGetFilter
  * </pre>
  */
 public class TestGetFilter extends TestCase

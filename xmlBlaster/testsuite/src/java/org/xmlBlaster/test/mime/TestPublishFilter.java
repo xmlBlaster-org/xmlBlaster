@@ -38,8 +38,9 @@ import junit.framework.*;
  * Invoke examples:<br />
  * <pre>
  *    java junit.textui.TestRunner org.xmlBlaster.test.mime.TestPublishFilter
- *    java junit.swingui.TestRunner org.xmlBlaster.test.mime.TestPublishFilter
+ *    java junit.swingui.TestRunner -noloading org.xmlBlaster.test.mime.TestPublishFilter
  * </pre>
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/mime.plugin.publishfilter.html">The mime.plugin.publishfilter requirement</a>
  */
 public class TestPublishFilter extends TestCase
 {
