@@ -12,6 +12,7 @@ Changes for 0.x [200x-xx-xx]
    Thanks to zzwzyz@hotmail.com
 
  o Added support for C and C++ based persistent queue based on http://www.sqlite.org
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.queue.html
 
  o Added possibility to activate/inhibit dispatch of callback entries (SessionInfo.activateDispatcher)
 
