@@ -125,7 +125,7 @@ public abstract class QueuePropertyBase implements Cloneable
       else
          this.glob = glob;
       this.log = glob.getLog("core");
-      this.nodeId = nodeId;
+      this.nodeId = (nodeId == null) ? glob.getStrippedId() : nodeId;
    }
 
    /**
@@ -183,6 +183,7 @@ public abstract class QueuePropertyBase implements Cloneable
          PropString defaultPlugin = new PropString(this.type.getDefaultValue()+","+this.version.getDefaultValue());
          // Port to linked ContextNode?
          propName = defaultPlugin.setFromEnv(this.glob, nodeId, context, getRootTagName(), relating, "defaultPlugin");
+         if (log.TRACE) log.trace(ME, "Lookup of propName=" + propName + " defaultValue=" + defaultPlugin.getValue());
          PluginInfo pluginInfo = new PluginInfo(glob, null, defaultPlugin.getValue());
          this.type.setDefaultValue(pluginInfo.getType());
          this.version.setDefaultValue(pluginInfo.getVersion());
@@ -272,7 +273,7 @@ public abstract class QueuePropertyBase implements Cloneable
    /**
     * The plugin type. 
     * <br />
-    * @return e.g. "CACHE"
+    * @return e.g. "CACHE" or null to choose current configured default plugin
     */
    public final String getType() {
       return this.type.getValue();
@@ -290,7 +291,7 @@ public abstract class QueuePropertyBase implements Cloneable
    /**
     * The plugin version. 
     * <br />
-    * @return e.g. "1.0"
+    * @return e.g. "1.0" or null to configure current default plugin
     */
    public final String getVersion() {
       return this.version.getValue();
