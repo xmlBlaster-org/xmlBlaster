@@ -181,7 +181,18 @@ namespace org { namespace xmlBlaster {
    extern Dll_Export const char * OFFSET;
    extern Dll_Export const char * INDENT;
 
-   extern Dll_Export const char * INDENT;
+   extern Dll_Export const char * ENCODING_BASE64;
+   extern Dll_Export const char * ENCODING_NONE;
+
+   //extern Dll_Export const char * TYPE_STRING = "String"; // is default
+   extern Dll_Export const char * TYPE_BLOB;
+   extern Dll_Export const char * TYPE_BOOLEAN;
+   extern Dll_Export const char * TYPE_BYTE;
+   extern Dll_Export const char * TYPE_DOUBLE;
+   extern Dll_Export const char * TYPE_FLOAT;
+   extern Dll_Export const char * TYPE_INT;
+   extern Dll_Export const char * TYPE_SHORT;
+   extern Dll_Export const char * TYPE_LONG;
 
    extern Dll_Export const org::xmlBlaster::util::Timestamp THOUSAND;
    extern Dll_Export const org::xmlBlaster::util::Timestamp MILLION;

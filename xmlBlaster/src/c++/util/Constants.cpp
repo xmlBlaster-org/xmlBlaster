@@ -73,6 +73,19 @@ const char * XML_RPC = "XMLRPC";
 const char * INDENT  = " ";
 const char * OFFSET  = "\n ";
 
+const char * ENCODING_BASE64  = "base64";
+const char * ENCODING_NONE  = "";
+
+//const char * TYPE_STRING = "String"; // is default
+const char * TYPE_BLOB = "byte[]";
+const char * TYPE_BOOLEAN = "boolean";
+const char * TYPE_BYTE = "byte";
+const char * TYPE_DOUBLE = "double";
+const char * TYPE_FLOAT = "float";
+const char * TYPE_INT = "int";
+const char * TYPE_SHORT = "short";
+const char * TYPE_LONG = "long";
+
 const Timestamp THOUSAND = 1000;
 const Timestamp MILLION  = 1000 * THOUSAND;
 const Timestamp BILLION  = 1000 * MILLION;
