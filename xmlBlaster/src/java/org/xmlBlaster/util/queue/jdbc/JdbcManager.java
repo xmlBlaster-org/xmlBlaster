@@ -34,7 +34,7 @@ import org.xmlBlaster.util.Timestamp;
 import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.TreeSet;
-import java.util.HashSet;
+import java.util.WeakHashMap;
 import java.util.StringTokenizer;
 import java.util.Iterator;
 
@@ -65,7 +65,8 @@ public class JdbcManager implements I_ConnectionListener {
    private final LogChannel log;
    private final JdbcConnectionPool pool;
    private final I_EntryFactory factory;
-   private final HashSet listener;
+   private final WeakHashMap listener;
+   private final static String DUMMY_VALUE = "A";
    private final TreeSet queues;
 
    private final String tableNamePrefix;
@@ -129,7 +130,7 @@ public class JdbcManager implements I_ConnectionListener {
 
       Hashtable names = pool.getMapping();
       this.queues = new TreeSet();
-      this.listener = new HashSet();
+      this.listener = new WeakHashMap();
 
       this.stringTxt = (String)names.get("string");
       if (this.stringTxt == null) this.stringTxt = "text";
@@ -175,8 +176,8 @@ public class JdbcManager implements I_ConnectionListener {
    * Adds (registers) a listener for connection/disconnection events.
    */
    public void registerListener(I_ConnectionListener entry) {
-      synchronized (this) {
-         this.listener.add(entry);
+      synchronized (this.listener) {
+         this.listener.put(entry, DUMMY_VALUE);  // use DUMMY_VALUE to support check in unregisterListener()
       }
    }
 
@@ -185,8 +186,8 @@ public class JdbcManager implements I_ConnectionListener {
    * @return boolean true if the entry was successfully removed.
    */
    public boolean unregisterListener(I_ConnectionListener entry) {
-      synchronized (this) {
-         return this.listener.remove(entry);
+      synchronized (this.listener) {
+         return this.listener.remove(entry) != null;
       }
    }
 
@@ -223,8 +224,8 @@ public class JdbcManager implements I_ConnectionListener {
     * listeners without danger
     */
    public I_ConnectionListener[] getConnectionListenerArr() {
-      synchronized (this) {
-         return (I_ConnectionListener[])this.listener.toArray(new I_ConnectionListener[this.listener.size()]);
+      synchronized (this.listener) {
+         return (I_ConnectionListener[])this.listener.keySet().toArray(new I_ConnectionListener[this.listener.size()]);
       }
    }
 
