@@ -64,8 +64,12 @@ namespace org { namespace xmlBlaster { namespace util {
 
         return result;
     }
+#if __GNUC__ == 2
+  // Problems with g++ 2.95.3 and template<>
+#else
     template<> Dll_Export std::string lexical_cast(bool arg); // See Global.cpp
     template<> Dll_Export const char * lexical_cast(bool arg);
+#endif
 }}}
 
 
