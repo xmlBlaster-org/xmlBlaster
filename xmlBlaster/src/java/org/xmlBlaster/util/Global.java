@@ -969,7 +969,9 @@ public class Global implements Cloneable
       sb.append("   -logFile <fileName> Log to given file.\n");
       sb.append("   -logConsole false   Supress logging to console.\n");
       sb.append("\n");
-      sb.append("Control logging of properties framework:\n");
+      sb.append("Control properties framework:\n");
+      sb.append("   -propertyFile <file> Specify an xmlBlaster property file to load.\n");
+      sb.append("                        The contained settings overwrite a property file found in the xmlBlaster.jar file.\n");
       sb.append("   -property.verbose   0 switches logging off, 2 is most verbose when loading properties on startup [" + Property.DEFAULT_VERBOSE + "].\n");
       return sb.toString();
    }
