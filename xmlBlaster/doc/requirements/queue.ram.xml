@@ -1,0 +1,80 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+
+<requirement id='queue.ram' type='NEW' prio='HIGH' status='CLOSED'>
+   <topic>
+        XmlBlaster provides a plugin for a memory based queue called RamQueuePlugin which implements
+        the I_Queue and I_Plugin interface.
+    </topic>
+    <description>
+       <p>The RamQueuePlugin offers the ability to store messages transiently. If a crash should occur, all
+       data stored in the queue will be lost.</p>
+    </description>
+
+    <example lang="Java" type="HTML">
+       These are example QoS of subscribe() invocations:
+       <pre>    
+           &lt;qos>
+               &lt;queue maxCacheMsg='1000' maxCacheSize='4000'  onOverflow='deadMessage'/>
+           &lt;/queue>
+       </pre>
+   </example>
+   <configuration where="server">
+
+      <p>
+      These parameters allow to configure ram based queues
+      </p>
+      <table border="1">
+         <tr>
+            <th>Property</th>
+            <th>Default</th>
+            <th>Description</th>
+            <th>Hot</th>
+            <th>Impl</th>
+         </tr>
+         <tr>
+            <td>QueuePlugin[RAM][1.0]</td>
+            <td>org.xmlBlaster.util.queue.ram.RamQueuePlugin</td>
+            <td>specifies the class to be used for this particular queue plugin (in this case the plugin offering caching facilities)</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>queue.maxMsg</td>
+            <td>1000</td>
+            <td>specifies the maximum number of entries allowed in this queue</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>queue.maxSize</td>
+            <td>2097152</td>
+            <td>(2MB) specifies the maximum total size allowed in this queue</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+        </table>
+   </configuration>
+
+   <see type="API">org.xmlBlaster.util.queue.I_Queue</see>
+   <see type="API">org.xmlBlaster.util.queue.ram.RamQueuePlugin</see>
+   <see type="API">org.xmlBlaster.util.queue.QueuePluginManager</see>
+   <see type="API">org.xmlBlaster.util.queue.I_QueueEntry</see>
+   <see type="API">org.xmlBlaster.engine.helper.QueuePropertyBase</see>
+   <see type="API">org.xmlBlaster.util.I_Plugin</see>
+   <see type="API">org.xmlBlaster.util.Global</see>
+   <see type="REQ">queue</see>
+
+<!--   <see type="REQ">cluster</see> -->
+   <author>laghi@swissinfo.org</author>
+   <date>2002 11 15</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="CLOSED">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">org.xmlBlaster.test.classtest.queue.I_QueueTest</test>
+      <test tool="SUITE">org.xmlBlaster.test.classtest.queue.JdbcQueueTest</test>
+   </testcase>
+</requirement>
+

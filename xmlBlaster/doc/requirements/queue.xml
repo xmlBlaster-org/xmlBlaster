@@ -1,0 +1,123 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+
+<requirement id='queue' type='NEW' prio='HIGH' status='CLOSED'>
+   <topic>
+      To the disposal of XmlBlaster there is a complete queue framework offering
+      generic plugin based storage. The queues can be <b>persistent</b> or
+      <b>transient</b>.
+   </topic>
+   <description>
+     <p>Queues can (and are) used in different parts in xmlBlaster. On client side
+      they are used to store the messages waiting to be delivered to xmlBlaster.
+      This is commonly the case when the communication between client and server
+      is temporarly down.</p>
+      <p>On the server side there are callback queues (also called update queues) to
+      <b>temporarly</b> store messages waiting to be delivered, for example callbacks to client
+      subscriptions or PtP messages, or to <b>persistently</b> store the messages in order
+      to be able to recover after a server crash.</p>
+      <p>Another usage of queues within xmlBlaster is the storage of the history of
+      messages, i.e. to store several <i>publishes</i> made on the same message-<i>oid</i>.</p>
+      <p>Queues are also used as swapping devices to free memory when memory consumption
+      is high.</p>
+      <p>The different queue implementations used within xmlBlaster are plugins, so if you want some 
+      specific feature, or if you want to implement your own queue, this can be done.</p>
+      <p>Queue entries have priorities (from 0 to 9) and a garanteed order of delivery within the same 
+      priority. This means that messages are sorted primarly by priority: higher priority messages are the 
+      first ones extracted by a take, peek or remove action. The second ordering criteria applied is the 
+      uniqueId of the entry. The lower uniqueId are returned first (since normally this uniqueId is
+      related to the timestamp, older entries are returned first).</p>
+      
+   </description>
+
+    <example lang="Java" type="HTML">
+       These are example QoS of subscribe() invocations:
+       <pre>    
+           &lt;qos>
+               &lt;queue maxMsg='1000' maxSize='4000'  onOverflow='deadMessage'/>
+           &lt;/queue>
+       </pre>
+   </example>
+   <configuration where="server">
+
+        <p>
+      These parameters allow to configure the queues.
+      </p>
+      <table border="1">
+         <tr>
+            <th>Property</th>
+            <th>Default</th>
+            <th>Description</th>
+            <th>Hot</th>
+            <th>Impl</th>
+         </tr>
+
+         <tr>
+            <td>queue.defaultPlugin</td>
+            <td>CACHE,1.0</td>
+            <td>specifies the type (or the alias name) and version of the plugin to be used as default if nothing else is specified</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>QueuePlugin[CACHE][1.0]</td>
+            <td>org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin</td>
+            <td>specifies the class to be used for this particular queue plugin (in this case the plugin offering caching facilities)</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>queue.maxMsg</td>
+            <td>1000</td>
+            <td>specifies the maximum number of entries allowed in this queue (if it is a persistent queue)</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>queue.maxCacheMsg</td>
+            <td>1000</td>
+            <td>specifies the maximum number of entries allowed in this queue (if the queue is a memory based queue like RAM queues)</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>queue.maxSize</td>
+            <td>10485760</td>
+            <td>(10 MB) specifies the maximum total size in Bytes allowed for this queue (if it is a persistent queue)</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>queue.maxCacheSize</td>
+            <td>2097152</td>
+            <td>(2MB) specifies the maximum total size allowed in this queue (if the queue is a memory based queue like RAM queues)</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+        </table>
+   </configuration>
+
+
+   <see type="API">org.xmlBlaster.util.queue.I_Queue</see>
+   <see type="API">org.xmlBlaster.util.queue.QueuePluginManager</see>
+   <see type="API">org.xmlBlaster.util.queue.I_QueueEntry</see>
+   <see type="API">org.xmlBlaster.engine.helper.QueuePropertyBase</see>
+   <see type="API">org.xmlBlaster.util.I_Plugin</see>
+   <see type="API">org.xmlBlaster.util.Global</see>
+
+<!--   <see type="REQ">cluster</see> -->
+   <author>laghi@swissinfo.org</author>
+   <date>2002 11 15</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="CLOSED">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">org.xmlBlaster.test.classtest.queue.I_QueueTest</test>
+      <test tool="SUITE">org.xmlBlaster.test.classtest.queue.JdbcQueueTest</test>
+   </testcase>
+</requirement>
+
