@@ -71,7 +71,7 @@ int main(int argc, char* argv[]) {
     try {
       obj0 = orb->resolve_initial_references("NameService");
     } catch(const CORBA::ORB::InvalidName&) {
-      cerr << argv[0] << ": can't resolve `NameService'" << endl;
+      cerr << argv[0] << ": can't resolve `NameService'" << endl << "Start naming service and try" << endl << "   ./clientPOA -ORBNamingIOR `cat ${DocumentRoot}/NS_Ref`" << endl << "(read README file)" << endl;
       return 1;
     }
 
