@@ -346,17 +346,48 @@ java -jar lib/xmlBlaster.jar -dump[socket] true -trace[socket] true
          </tr>
       </table>
    </configuration>
+   <configuration where="client">
+      <p>The Java socket implementation on client side supports
+         the same properties as the server (we reuse the same implementation)
+         but has these additional features:
+      </p>
+      <table border="1">
+         <tr>
+            <td>Property</td>
+            <td>Default</td>
+            <td>Description</td>
+            <td>Implemented</td>
+         </tr>
+
+         <tr>
+            <td>socket.cb.multiThreaded</td>
+            <td>true</td>
+            <td>
+            <ul>
+              <li>true: Incoming callback requests (the update() method) are dispatched to one thread per request.<br />
+               This avoids deadlocks if you call recursively the server - calling for example in the
+               update() thread a publish() or subscribe() would otherwise deadlock (publishOneway() is OK).<br />
+               Note that oneway message updates (method updateOneway()) are not guaranteed to be in sequence, since one thread on
+               client side may overtake another one.<br />
+               The update() variant with return value is still guaranteed to keep the sequence
+               since xmlBlaster on server side uses exactly one thread per client to callback.
+              </li>
+              <li>false: There is only one thread for callbacks on client side, this guarantees that even your updateOneway() method
+              receives the messages in strict order.<br />
+              On the other hand you can't call any non-oneway xmlBlaster method in the update() body since this would deadlock.
+              </li>
+            </ul>
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+      </table>
+   </configuration>
    <todo type="HTML">
    <ol>
       <li>
       Currently the server has implemented a one thread/client approach.
       This doesn't scale very well with thousands of clients -
       probably we should support one thread/request with a thread pool as well.
-      </li>
-      <li>
-      When a Java client in the update() thread sends a publish()
-      the client will deadlock, as we only have one thread for receiving
-      data. A publishOneway() works fine as this is not acknowledged.
       </li>
       <li>
       Different encodings on client and server side could be a problem, test with 
@@ -369,7 +400,7 @@ java -jar lib/xmlBlaster.jar -dump[socket] true -trace[socket] true
    <see type="API">org.xmlBlaster.protocol.socket.SocketDriver</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 02 12</date>
-   <revision>$Revision: 1.20 $</revision>
+   <revision>$Revision: 1.21 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
