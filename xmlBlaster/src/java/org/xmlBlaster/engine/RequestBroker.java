@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.92 2001/09/08 22:50:51 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.93 2001/12/23 19:51:04 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -32,7 +32,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.92 $
+ * @version $Revision: 1.93 $
  * @author ruff@swand.lake.de
  */
 public class RequestBroker implements I_ClientListener, MessageEraseListener
@@ -573,7 +573,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
     *         Example (note that the qos are not yet fully implemented):<p />
     * <pre>
     *    &lt;qos>
-    *       &lt;noNotify />     &lt;!-- The subscribers shall not be notified when this message is destroyed -->
+    *       &lt;notify>false</notify>     &lt;!-- The subscribers shall not be notified when this message is destroyed -->
     *    &lt;/qos>
     * </pre>
     */

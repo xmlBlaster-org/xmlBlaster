@@ -3,7 +3,7 @@ Name:      EraseQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: EraseQosWrapper.java,v 1.1 2001/12/23 11:40:00 ruff Exp $
+Version:   $Id: EraseQosWrapper.java,v 1.2 2001/12/23 19:49:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -45,7 +45,7 @@ public class EraseQosWrapper extends QosWrapper
     * Constructor to receive notifies only (no data content will be delivered).
     * <p />
     * This may be useful if you have huge contents, and you only want to be informed about a change
-    * @param notify true - notify subscribers
+    * @param notify true - notify subscribers that message is erased
     */
    public EraseQosWrapper(boolean notify)
    {
@@ -54,7 +54,7 @@ public class EraseQosWrapper extends QosWrapper
 
 
    /**
-    * 
+    * @param notify true - notify subscribers that message is erased (default is true)
     */
    public void setNotify(boolean notify)
    {
