@@ -1,10 +1,11 @@
 - Performance: 
- 
   * Implementing of  XtOmQuery for oid access (minimal data in DOM tree)
     This is nonsense, the minimal DOM tree couldn't be parsed by XPath
   * Normalizing the DOM tree
 
 - dtd support
+
+- Change our XmlKey <key> tag name to avoid conflicts with <xsl:key>
 
 - get for OID request
 
