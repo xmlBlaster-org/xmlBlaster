@@ -34,7 +34,6 @@ public class TestAuthenticationHtPassWd extends TestCase
     try
     { FileUtil.writeFile(userhome+"test.htpasswd","existingUser:yZum5CYzDk.EE\n");
       FileUtil.writeFile(userhome+"test.htpasswd1","*");
-      Log.error(ME,"In TestAuthenticationHtPassWd");
     }
     catch(Exception ex)
     { assertTrue("Could not create password files in directory '" + userhome + "'. Tests won't work!",false);

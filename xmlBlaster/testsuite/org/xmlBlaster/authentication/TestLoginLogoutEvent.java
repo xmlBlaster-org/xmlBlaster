@@ -3,7 +3,7 @@ Name:      TestLoginLogoutEvent.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout event test for xmlBlaster
-Version:   $Id: TestLoginLogoutEvent.java,v 1.1 2002/06/07 18:23:25 ruff Exp $
+Version:   $Id: TestLoginLogoutEvent.java,v 1.2 2002/06/25 18:01:46 ruff Exp $
 ------------------------------------------------------------------------------*/
 package authentication;
 
@@ -108,14 +108,22 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
       String xmlKey = "<key oid='__sys__Logout' queryType='EXACT'></key>";
       String qos = "<qos></qos>";
       numReceived = 0;
-      try {
-         firstConnection.unSubscribe(xmlKey, qos);
-      } catch(XmlBlasterException e) {
-         Log.warn(ME+"-subscribe", "XmlBlasterException: " + e.reason);
-         assertTrue("unSubscribe - XmlBlasterException: " + e.reason, false);
+      if (firstConnection != null) {
+         try {
+            firstConnection.unSubscribe(xmlKey, qos);
+         } catch(XmlBlasterException e) {
+            Log.warn(ME+"-subscribe", "XmlBlasterException: " + e.reason);
+            assertTrue("unSubscribe - XmlBlasterException: " + e.reason, false);
+         }
+
+         firstConnection.disconnect(null);
+         firstConnection = null;
       }
 
-      firstConnection.disconnect(null);
+      if (secondConnection != null) {
+         secondConnection.disconnect(null);
+         secondConnection = null;
+      }
    }
 
 
@@ -158,8 +166,8 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
       expectedName = secondName; // second name should be returned on this login
       try {
          secondConnection = new XmlBlasterConnection(); // Find orb
-         ConnectQos qos = new ConnectQos(glob); // == "<qos></qos>";
-         secondConnection.login(secondName, passwd, qos, this); // Login to xmlBlaster
+         ConnectQos qos = new ConnectQos(glob, secondName, passwd); // == "<qos></qos>";
+         secondConnection.connect(qos, this); // Login to xmlBlaster
          waitOnUpdate(1000L, 1);  // login event arrived?
 
          // Test the '__sys__UserList' feature:
@@ -188,7 +196,9 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
 
       numReceived = 0;
       expectedName = secondName; // second name should be returned on this login
-      secondConnection.logout();
+      secondConnection.disconnect(null);
+      secondConnection = null;
+
       waitOnUpdate(2000L, 1);    // expecting a logout event message
    }
 

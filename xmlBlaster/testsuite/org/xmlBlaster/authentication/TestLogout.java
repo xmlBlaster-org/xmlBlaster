@@ -25,7 +25,7 @@ import junit.framework.*;
  */
 public class TestLogout extends TestCase implements I_Callback
 {
-   private static String ME = "Tim";
+   private static String ME = "TestLogout";
    private final Global glob;
    private final LogChannel log;
 
@@ -69,8 +69,9 @@ public class TestLogout extends TestCase implements I_Callback
                }
             });
 
-         ConnectQos qos = new ConnectQos(glob);
+         ConnectQos qos = new ConnectQos(glob, ME, "secret");
          con.connect(qos, this); // Login to xmlBlaster
+         log.info(ME, "Successful login");
       }
       catch (XmlBlasterException e) {
          log.error(ME, e.toString());
@@ -114,7 +115,7 @@ public class TestLogout extends TestCase implements I_Callback
     * instead of the JacORB ORB, which won't work.
     * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <pre>   java -Djava.compiler= junit.textui.TestRunner authentication.TestLogout</pre>
+    * <pre>   java -Djava.compiler= junit.textui.TestRunner -noloading authentication.TestLogout</pre>
     */
    public static void main(String args[]) {
       Global glob = new Global();
