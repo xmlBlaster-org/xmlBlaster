@@ -195,7 +195,7 @@ void PublishDemo::connect()
    //connQos.setSecurityQos(sec);
    log_.trace(ME, string("connecting to xmlBlaster. Connect qos: ") + connQos.toXml());
    ConnectReturnQos retQos = connection_.connect(connQos, NULL); // no callback
-   log_.trace(ME, "successfully connected to xmlBlaster. Return qos: " + retQos.toXml());
+   log_.trace(ME, "successfully connected to " + connection_.getServerNodeId() + ". Return qos: " + retQos.toXml());
 }
 
 void PublishDemo::publish()
