@@ -157,7 +157,7 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
 
    {  /* Switch on compression? */
       const char *compressType = xb->props->getString(xb->props, "plugin/socket/compress/type", "");
-      compressType = xb->props->getString(xb->props, "dispatch/connection/plugin/compress/type", compressType);
+      compressType = xb->props->getString(xb->props, "dispatch/connection/plugin/socket/compress/type", compressType);
 
       if (!strcmp(compressType, "zlib:stream")) {
          

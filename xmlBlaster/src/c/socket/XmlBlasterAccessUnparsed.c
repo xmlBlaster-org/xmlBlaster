@@ -212,7 +212,7 @@ static bool initialize(XmlBlasterAccessUnparsed *xa, UpdateFp clientUpdateFp, Xm
 
    /* Switch on compression? */
    compressType = xa->props->getString(xa->props, "plugin/socket/compress/type", "");
-   compressType = xa->props->getString(xa->props, "dispatch/connection/plugin/compress/type", compressType);
+   compressType = xa->props->getString(xa->props, "dispatch/connection/plugin/socket/compress/type", compressType);
          
    if (!strcmp(compressType, "zlib:stream")) {
       xa->connectionP->writeToSocket.funcP = writenCompressed;
