@@ -455,10 +455,9 @@ public interface I_Queue extends I_StorageProblemNotifier
 
    /**
     * adds a queue size listener to the queue. If one is already 
-    * registered it is silently replaced since only one listener is
-    * allowed.
+    * registered it throws an IllegalArgumentException.
     *  
-    * @param listener the listener to be added. If you pass null nothing
+    * @param listener the listener to be added. If you pass null
     *        an IllegalArgumentException is thrown.
     */
    public void addQueueSizeListener(I_QueueSizeListener listener);

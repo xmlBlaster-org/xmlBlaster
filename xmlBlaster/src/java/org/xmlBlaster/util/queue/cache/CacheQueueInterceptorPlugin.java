@@ -1260,6 +1260,8 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
    public void addQueueSizeListener(I_QueueSizeListener listener) {
       if (listener == null) 
          throw new IllegalArgumentException(ME + ": addQueueSizeListener(null) is not allowed");
+      if (this.queueSizeListener != null) 
+         throw new IllegalArgumentException(ME + ": addQueueSizeListener() not allowed now: there is already one registered. Remove it before assigning a new one");
       synchronized(this.queueSizeListenerSync) {
          this.queueSizeListener = listener;
       }
