@@ -3,7 +3,7 @@ Name:      PublishKeyWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey
-Version:   $Id: PublishKeyWrapper.java,v 1.4 2000/01/19 21:03:48 ruff Exp $
+Version:   $Id: PublishKeyWrapper.java,v 1.5 2000/01/24 17:52:48 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -37,7 +37,7 @@ import org.xmlBlaster.serverIdl.XmlBlasterException;
  */
 public class PublishKeyWrapper extends KeyWrapper
 {
-   private String ME = "PublishKeyWrapper";
+   private final static String ME = "PublishKeyWrapper";
    /** value from attribute <key oid="" contentMime="..."> */
    private String contentMime = "text/plain";
    /** value from attribute <key oid="" contentMimeExtended="..."> */
