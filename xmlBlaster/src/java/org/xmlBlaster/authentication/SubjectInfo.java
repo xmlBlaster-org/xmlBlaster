@@ -24,6 +24,7 @@ import org.xmlBlaster.engine.cluster.ClusterNode;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.enum.MethodName;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.dispatch.DeliveryManager;
@@ -34,6 +35,10 @@ import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.authentication.plugins.I_MsgSecurityInterceptor;
 import org.xmlBlaster.engine.admin.I_AdminSubject;
+
+import org.xmlBlaster.util.error.I_MsgErrorHandler;
+import org.xmlBlaster.util.error.MsgErrorInfo;
+import org.xmlBlaster.engine.MsgErrorHandler;
 
 import java.util.Map;
 import java.util.HashMap;
@@ -74,6 +79,8 @@ public final class SubjectInfo implements I_AdminSubject
    private Map sessionMap = new HashMap();
    private SessionInfo[] sessionArrCache;
    public CallbackAddress[] callbackAddressCache = null;
+
+   private final MsgErrorHandler msgErrorHandler = null; // not yet implemented
 
    private final DeliveryStatistic deliveryStatistic;
 
@@ -216,6 +223,9 @@ public final class SubjectInfo implements I_AdminSubject
          this.callbackAddressCache = null;
       }
 
+      if (this.msgErrorHandler != null)
+         this.msgErrorHandler.shutdown();
+
       // Not possible to allow toAlive()
       //this.securityCtx = null;
    }
@@ -337,28 +347,24 @@ public final class SubjectInfo implements I_AdminSubject
     * @param destination The Destination object of the receiver
     */
    public final void queueMessage(MsgQueueEntry entry) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "queuing message");
-      /*
-      if (msgUnit == null) {
-         log.error(ME+".Internal", "Can't queue null message");
-         throw new XmlBlasterException(ME+".Internal", "Can't queue null message");
-      }
-
-      MsgQueueUpdateEntry entry = new MsgQueueUpdateEntry(glob, msgUnit, this.subjectQueue, getSubjectName());
-      */
+      if (log.CALL) log.call(ME, "Queuing message for destination " + entry.getReceiver());
       if (log.DUMP) log.dump(ME, "Putting PtP message to queue: " + entry.toXml(""));
 
       int countForwarded = forwardToSessionQueue(entry);
 
       if (countForwarded == 0) {
-         log.warn(ME, "No login session available, queueing message '" + entry.getLogId() + "'");
+         if (entry.getReceiver().isSession()) {
+            if (log.TRACE) log.trace(ME, "Destination session '" + entry.getReceiver().getAbsoluteName() + "' is unknown, throwing exception");
+            throw new XmlBlasterException(glob, ErrorCode.USER_PTP_UNKNOWNDESTINATION_SESSION, ME, "Destination session '" + entry.getReceiver().getAbsoluteName() + "' is unknown, message is not delivered");
+         }
+         log.warn(ME, "No login session available for client '" + entry.getReceiver().getAbsoluteName() +
+                      "', queueing message '" + entry.getLogId() + "'");
          try {
             this.subjectQueue.put(entry, false);
             forwardToSessionQueue();
          }
          catch (Throwable e) {
-            log.warn(ME, e.toString());
-            throw new XmlBlasterException(ME, "Can't process PtP message: " + e.toString());
+            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "Can't process PtP message", e);
          }
       }
    }
@@ -375,7 +381,7 @@ public final class SubjectInfo implements I_AdminSubject
 
       long numMsgs = 0;
       MsgQueueUpdateEntry entry = null;
-      if (log.TRACE) log.trace(ME, "Forwarding " + this.subjectQueue.getNumOfEntries() + " messages in subcject queue to session queue");
+      if (log.TRACE) log.trace(ME, "Trying to forward " + this.subjectQueue.getNumOfEntries() + " messages in subject queue to session queue ...");
       while (true) {
          try {
             entry = (MsgQueueUpdateEntry)this.subjectQueue.peek(); // none blocking
@@ -386,6 +392,18 @@ public final class SubjectInfo implements I_AdminSubject
                this.subjectQueue.remove(); // Remove the forwarded entry (blocking)
                numMsgs++;
             }
+            else {
+               // We need to escape the while(true), (handle a msg to a pubSessionId which is unknown):
+               this.subjectQueue.remove(); // Remove the entry
+
+               String message = "Session '" + entry.getReceiver().getAbsoluteName() + "' is unknown, message '" + entry.getLogId() + "' is not delivered";
+               MsgQueueEntry[] msgQueueEntries = new MsgQueueEntry[] { entry };
+               this.glob.getRequestBroker().deadMessage(msgQueueEntries, null, message);
+
+               //XmlBlasterException ex = new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME,
+               //    "Session '" + entry.getReceiver().getAbsoluteName() + "' is unknown, message '" + entry.getId() + "' is not delivered");
+               //getMsgErrorHandler().handleError(new MsgErrorInfo(glob, entry, ex);
+            }
          }
          catch(Throwable e) {
             String id = (entry == null) ? "" : entry.getKeyOid();
@@ -393,6 +411,8 @@ public final class SubjectInfo implements I_AdminSubject
          }
       }
 
+      if (log.TRACE) log.trace(ME, "Forwarded " + numMsgs + " messages from subject queue to session queue");
+      
       if (!isLoggedIn()) { // Check if we can shutdown now
          shutdown(false, false);
       }
@@ -410,14 +430,40 @@ public final class SubjectInfo implements I_AdminSubject
       if (getSessions().length < 1) return 0;
 
       int countForwarded = 0;
+
+      SessionName destination = entry.getReceiver();
+
+      // send to a specific session ...
+      if (destination.isSession()) { 
+         SessionInfo sessionInfo = getSession(destination);
+         if (sessionInfo != null) {
+            if (log.TRACE) log.trace(ME, "Forwarding msg " + entry.getLogId() + " from " +
+                          this.subjectQueue.getStorageId() + " size=" + this.subjectQueue.getNumOfEntries() +
+                          " to session queue " + sessionInfo.getSessionQueue().getStorageId() +
+                          " size=" + sessionInfo.getSessionQueue().getNumOfEntries());
+            try {
+               sessionInfo.queueMessage(entry);
+               return 1;
+            }
+            catch (Throwable e) {
+               log.warn(ME, "Can't deliver message with session '" + sessionInfo.getId() + "': " + e.toString());
+            }
+         }
+         log.warn(ME, "Can't forward msg " + entry.getLogId() + " from " +
+                     this.subjectQueue.getStorageId() + " size=" + this.subjectQueue.getNumOfEntries() +
+                     " to unknown session '" + entry.getReceiver().getAbsoluteName() + "'");
+         return 0;
+      }
+
+      // ... or send to ALL sessions
       SessionInfo[] sessions = getSessions();
       for (int i=0; i<sessions.length; i++) {
          SessionInfo sessionInfo = sessions[i];
-         if (log.TRACE) log.trace(ME, "Forwarding msg " + entry.getLogId() + " from " +
+         if (sessionInfo.hasCallback()) {
+            if (log.TRACE) log.trace(ME, "Forwarding msg " + entry.getLogId() + " from " +
                           this.subjectQueue.getStorageId() + " size=" + this.subjectQueue.getNumOfEntries() +
                           " to session queue " + sessionInfo.getSessionQueue().getStorageId() +
                           " size=" + sessionInfo.getSessionQueue().getNumOfEntries() + " ...");
-         if (sessionInfo.hasCallback()) {
             try {
                sessionInfo.queueMessage(entry);
                countForwarded++;
@@ -428,6 +474,18 @@ public final class SubjectInfo implements I_AdminSubject
          }
       }
       return countForwarded;
+   }
+
+   public final I_MsgErrorHandler getMsgErrorHandler() {
+      if (this.msgErrorHandler == null) {
+         synchronized(this) {
+            if (this.msgErrorHandler == null) {
+               log.error(ME, "INTERNAL: Support for MsgErrorHandler is not implemented");
+               //this.msgErrorHandler = new MsgErrorHandler(glob, this);
+            }
+         }
+      }
+      return this.msgErrorHandler;
    }
 
    /**
@@ -455,6 +513,40 @@ public final class SubjectInfo implements I_AdminSubject
       }
       return this.sessionArrCache;
       
+   }
+
+   /**
+    * Find a session by its absolute name. 
+    * @param absoluteName e.g. "/node/heron/client/joe/2"
+    * @return SessionInfo or null if not found
+    */
+   public final SessionInfo getSessionByAbsoluteName(String absoluteName) {
+      synchronized (this.sessionMap) {
+         return (SessionInfo)this.sessionMap.get(absoluteName);
+      }
+   }
+
+   /**
+    * Find a session by its public session ID. 
+    * @param pubSessionId e.g. "-2"
+    * @return SessionInfo or null if not found
+    */
+   public final SessionInfo getSessionByPubSessionId(long pubSessionId) {
+      SessionName sessionName = new SessionName(glob, subjectName, pubSessionId);
+      synchronized (this.sessionMap) {
+         return (SessionInfo)this.sessionMap.get(sessionName.getAbsoluteName());
+      }
+   }
+
+   /**
+    * Find a session by its public session ID. 
+    * @param sessionName
+    * @return SessionInfo or null if not found
+    */
+   public final SessionInfo getSession(SessionName sessionName) {
+      synchronized (this.sessionMap) {
+         return (SessionInfo)this.sessionMap.get(sessionName.getAbsoluteName());
+      }
    }
 
    public final SessionInfo getFirstSession() {
@@ -510,7 +602,7 @@ public final class SubjectInfo implements I_AdminSubject
 
       if (getSessions().length >= this.maxSessions) {
          log.warn(ME, "Max sessions = " + this.maxSessions + " for user " + getLoginName() + " exhausted, login denied.");
-         throw new XmlBlasterException(ME, "Max sessions = " + this.maxSessions + " exhausted, login denied.");
+         throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME, "Max sessions = " + this.maxSessions + " exhausted, login denied.");
       }
    }
 
@@ -523,10 +615,7 @@ public final class SubjectInfo implements I_AdminSubject
     */
    public final void notifyAboutLogin(SessionInfo sessionInfo) throws XmlBlasterException {
       if (!isAlive()) { // disconnect() and connect() are not synchronized, so this can happen
-         String text = "SubjectInfo is shutdown, try to login again";
-         Thread.currentThread().dumpStack();
-         log.error(ME, text);
-         throw new XmlBlasterException(ME, text);
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "SubjectInfo is shutdown, try to login again");
       }
       if (log.CALL) log.call(ME, "notifyAboutLogin(" + sessionInfo.getSecretSessionId() + ")");
       synchronized (this.sessionMap) {
@@ -550,10 +639,7 @@ public final class SubjectInfo implements I_AdminSubject
     */
    public final void notifyAboutLogout(String absoluteSessionName, boolean clearQueue, boolean forceShutdownEvenIfEntriesExist) throws XmlBlasterException {
       if (!isAlive()) { // disconnect() and connect() are not synchronized, so this can happen
-         String text = "SubjectInfo is shutdown, no logout";
-         Thread.currentThread().dumpStack();
-         log.error(ME, text);
-         throw new XmlBlasterException(ME, text);
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "SubjectInfo is shutdown, no logout");
       }
       if (log.CALL) log.call(ME, "Entering notifyAboutLogout(" + absoluteSessionName + ", " + clearQueue + ")");
       SessionInfo sessionInfo = null;
