@@ -45,7 +45,7 @@ public:
       log_.info(ME, "testClientProperty(): Starting tests ...");
       try {
          {
-            ClientProperty cp("key", string("string"));
+            ClientProperty cp("key", string("s tring"));
             cout << "name=" << cp.getName() 
                  << ", valueB64=" << cp.getValueRaw()
                  << ", value=" << cp.getStringValue()
@@ -54,8 +54,8 @@ public:
                  << cp.toXml("")
                  << endl << endl;
             assertEquals(log_, ME, "key", cp.getName(), "name");
-            assertEquals(log_, ME, "string", cp.getStringValue(), "value");
-            assertEquals(log_, ME, "string", cp.getValueRaw(), "encoded value");
+            assertEquals(log_, ME, "s tring", cp.getStringValue(), "value");
+            assertEquals(log_, ME, "s tring", cp.getValueRaw(), "encoded value");
             assertEquals(log_, ME, "", cp.getType(), "type");
             assertEquals(log_, ME, "", cp.getEncoding(), "encoding");
             assertEquals(log_, ME, false, cp.isBase64(), "isBase64");
@@ -75,6 +75,20 @@ public:
             assertEquals(log_, ME, "", cp.getType(), "type");
             assertEquals(log_, ME, "base64", cp.getEncoding(), "encoding");
             assertEquals(log_, ME, true, cp.isBase64(), "isBase64");
+         }
+         {
+            ClientProperty cp("transactionID", string("x2004062008 4423489478000"));
+            cout << "name=" << cp.getName() 
+                 << ", valueB64=" << cp.getValueRaw()
+                 << ", value=" << cp.getStringValue()
+                 << ", type=" << cp.getType()
+                 << ", isBase64=" << cp.isBase64()
+                 << cp.toXml("")
+                 << endl << endl;
+            assertEquals(log_, ME, "transactionID", cp.getName(), "name");
+            assertEquals(log_, ME, "x2004062008 4423489478000", cp.getStringValue(), "value");
+            assertEquals(log_, ME, "", cp.getType(), "type");
+            assertEquals(log_, ME, "", cp.getEncoding(), "encoding");
          }
          {
             ClientProperty cp("key", string("str<<<ing"));
