@@ -293,8 +293,8 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
                   numPersistentPut = this.persistentStore.put(mapEntry);
                }
                catch (XmlBlasterException ex) {
-                  this.log.error(ME, "put: an error occured when writing to the persistent queue, the persistent entry " + mapEntry.getLogId() +
-                                " will temporarly be handled as transient. Is the DB up and running ? " + ex.getMessage() + "state "  + this.toXml(""));
+                  this.log.error(ME, "put: an error occurred when writing to the persistent queue, the persistent entry " + mapEntry.getLogId() +
+                                " will temporarily be handled as transient. Is the DB up and running ? " + ex.getMessage() + "state "  + this.toXml(""));
                }
             }
          }
