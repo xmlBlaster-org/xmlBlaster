@@ -3,7 +3,7 @@ Name:      ClientQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling login QoS (quality of service), knows how to parse with SAX
-Version:   $Id: ClientQoS.java,v 1.14 2001/08/30 17:14:49 ruff Exp $
+Version:   $Id: ClientQoS.java,v 1.15 2001/08/31 15:24:19 ruff Exp $
 Author:    ruff@swand.lake.de
 -----------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
@@ -22,6 +22,9 @@ import java.io.Serializable;
  * <p />
  * QoS Informations sent from the client to the server via the login() method<br />
  * They inform the server about client preferences and wishes
+ * <p />
+ * This class corresponds to the Java client helper class LoginQosWrapper.
+ * @see org.xmlBlaster.client.LoginQosWrapper
  */
 public class ClientQoS extends org.xmlBlaster.util.XmlQoSBase implements Serializable
 {
@@ -38,11 +41,14 @@ public class ClientQoS extends org.xmlBlaster.util.XmlQoSBase implements Seriali
    private String securityPluginVersion = null;
    private String securityPluginData = null;
    private String sessionId = null;
+   private long sessionTimeout = 3600L * 1000L; // One hour
+   private int maxSessions = 6;
 
    private boolean inBurstMode = false;
    private boolean inCompress = false;
    private boolean inPtpAllowed = false;
    private boolean inSecurityService = false;
+   private boolean inSession = false;
    private boolean inSessionId = false;
 
    /**
@@ -279,7 +285,28 @@ public class ClientQoS extends org.xmlBlaster.util.XmlQoSBase implements Seriali
          return;
       }
 
+      if (name.equalsIgnoreCase("session")) {
+         inSession = true;
+         if (attrs != null) {
+            int len = attrs.getLength();
+            int ii=0;
+            for (ii = 0; ii < len; ii++) {
+               if (attrs.getQName(ii).equalsIgnoreCase("timeout"))
+                  this.sessionTimeout = (new Long(attrs.getValue(ii).trim())).longValue();
+               else if (attrs.getQName(ii).equalsIgnoreCase("maxSessions"))
+                  this.maxSessions = (new Integer(attrs.getValue(ii).trim())).intValue();
+               else
+                  Log.warn(ME, "Ignoring unknown attribute '" + attrs.getQName(ii) + "' of <session> element");
+            }
+         }
+         character.setLength(0);
+
+         return;
+      }
+
       if (name.equalsIgnoreCase("sessionId")) {
+         if (!inSession)
+            return;
          inSessionId = true;
          character.setLength(0);
 
@@ -341,9 +368,15 @@ public class ClientQoS extends org.xmlBlaster.util.XmlQoSBase implements Seriali
         securityPluginData = "<securityService type=\""+getSecurityPluginType()+"\" version=\""+getSecurityPluginVersion()+"\">"+character.toString().trim()+"</securityService>";
       }
 
+      if (name.equalsIgnoreCase("session")) {
+         inSession = false;
+      }
+
       if (name.equalsIgnoreCase("sessionId")) {
-        inSessionId = false;
-        setSessionId(character.toString().trim());
+         if (inSession) {
+            inSessionId = false;
+            setSessionId(character.toString().trim());
+         }
       }
 
    }
@@ -393,6 +426,9 @@ public class ClientQoS extends org.xmlBlaster.util.XmlQoSBase implements Seriali
          XmlBlasterProperty.init(args);
          String xml =
             "<qos>\n" +
+            "   <session timeout='3600000' maxSessions='20'>" +
+            "      <sessionId>anId</sessionId>" +
+            "   </session>" +
             "   <callback type='IOR'>\n" +
             "      <PtP>true</PtP>\n" +
             "      IOR:00011200070009990000....\n" +
@@ -408,7 +444,6 @@ public class ClientQoS extends org.xmlBlaster.util.XmlQoSBase implements Seriali
             "      http:/www.mars.universe:8080/RPC2\n" +
             "   </callback>\n" +
             "   <offlineQueuing timeout='3600' />\n" +
-            "   <sessionId>anId</sessionId>" +
             "   <securityService type=\"simple\" version=\"1.0\">\n" +
             "      <![CDATA[\n" +
             "         <user>aUser</user>\n" +
