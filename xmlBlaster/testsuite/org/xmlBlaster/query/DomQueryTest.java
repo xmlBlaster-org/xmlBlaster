@@ -13,7 +13,7 @@ Comment:   Syntax for Query:
 
 Compile:   jikes *.java  (put local directory into CLASSPATH)
 Invoke:    java DomQueryTest AgentBig.xml xmlBlaster/key/AGENT[@id=\"192.168.124.10\"] xmlBlaster/key/AGENT/DRIVER[@id=\"FileProof\"] xmlBlaster/key[@oid=\"2\"]
-Version:   $Id: DomQueryTest.java,v 1.1 1999/11/17 16:21:14 kron Exp $
+Version:   $Id: DomQueryTest.java,v 1.2 1999/12/20 08:51:36 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 package testsuite.org.xmlBlaster.query;
@@ -77,7 +77,7 @@ class DomQueryTest
             Log.info(ME, "Create DOM - Document" + docTime.nice());     // [ 1 sec 608 millis ] [ 3 sec 69 millis ]
 
             StopWatch mgrTime = new StopWatch();
-            query_mgr = new DomQueryMgr(doc);             
+            query_mgr = new DomQueryMgr(doc);
             Log.info(ME, "Instantiate DomQueryMgr" + mgrTime.nice());   // [ 240 millis ] [ 204 millis ]
 
             if (argv.length > 1) {
@@ -121,7 +121,7 @@ class DomQueryTest
             Log.info(ME, "Create DOM - Document" + docTime.nice());     // [ 28 millis ] [ 1 sec 487 millis ]
 
             StopWatch mgrTime = new StopWatch();
-            query_mgr = new DomQueryMgr(doc);             
+            query_mgr = new DomQueryMgr(doc);
             Log.info(ME, "Instantiate DomQueryMgr" + mgrTime.nice());   // [ 1 millis ] [ 1 millis ]
 
             if (argv.length > 1) {
@@ -149,6 +149,10 @@ class DomQueryTest
          System.err.println(e.getMessage());
          e.printStackTrace();
       }
+      catch (Exception e) {
+         System.err.println(e.getMessage());
+         e.printStackTrace();
+      }
    }
 
    private int getNumNodes(Enumeration nodeIter, boolean dumpIt) throws XSLException
@@ -165,9 +169,12 @@ class DomQueryTest
 
             if (testAgentNavigation) {
                try {
-                  Log.info(ME, "Found key oid=\"" + getKeyOID(node) + "\"\n");
+                  String keyOid = getKeyOID(node); // look for <key oid="">
+                  if (keyOid != null)
+                     Log.info(ME, "Found key oid=\"" + getKeyOID(node) + "\"\n");
                } catch (Exception e) {
                   Log.error(ME, e.toString());
+                  e.printStackTrace();
                }
             }
          }
@@ -187,7 +194,7 @@ class DomQueryTest
    private String getKeyOID(org.w3c.dom.Node/*com.sun.xml.tree.ElementNode*/ node) throws Exception
    {
       if (node == null)
-         throw new Exception("no parent node found");
+         return null;    // throw new Exception("no parent node found");
 
       String nodeName = node.getNodeName();    // com.sun.xml.tree.ElementNode: getLocalName();
       // Log.trace(ME, "Anlyzing node = " + nodeName);
