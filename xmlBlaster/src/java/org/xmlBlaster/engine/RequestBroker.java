@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.41 1999/12/14 23:20:22 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.42 1999/12/22 12:26:18 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -28,12 +28,17 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.41 $
+ * @version $Revision: 1.42 $
  * @author $Author: ruff $
  */
 public class RequestBroker implements ClientListener, MessageEraseListener
 {
-   final private static String ME = "RequestBroker";
+   /** Total count of published messages */
+   public static long publishedMessages = 0L;
+   /** Total count of accessed messages via get() */
+   public static long getMessages = 0L;
+
+   private static final String ME = "RequestBroker";
 
    /** myself, singleton pattern */
    private static RequestBroker requestBroker = null;
@@ -47,22 +52,22 @@ public class RequestBroker implements ClientListener, MessageEraseListener
     * key   = messageUnithandler.getUniqueKey() == xmlKey.getUniqueKey() == oid value from <key oid="...">
     * value = MessageUnitHandler object
     */
-   final private Map messageContainerMap = Collections.synchronizedMap(new HashMap());
+   private final Map messageContainerMap = Collections.synchronizedMap(new HashMap());
 
    /**
     * Helper to handle the subscriptions
     */
-   final private ClientSubscriptions clientSubscriptions;
+   private final ClientSubscriptions clientSubscriptions;
 
    /**
     * For listeners who want to be informed about subscribe/unsubscribe events
     */
-   final private Set subscriptionListenerSet = Collections.synchronizedSet(new HashSet());
+   private final Set subscriptionListenerSet = Collections.synchronizedSet(new HashSet());
 
    /**
     * For listeners who want to be informed about erase() of messages.
     */
-   final private Set messageEraseListenerSet = Collections.synchronizedSet(new HashSet());
+   private final Set messageEraseListenerSet = Collections.synchronizedSet(new HashSet());
 
    /**
     * This is a handle on the big DOM tree with all XmlKey keys (all message meta data)
@@ -233,6 +238,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
          messageUnitArr[ii] = messageUnitHandler.getMessageUnit();;
       }
 
+      getMessages += xmlKeyVec.size();
       return messageUnitArr;
    }
 
@@ -510,6 +516,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
          throw new XmlBlasterException(ME + ".UnsopportedMoMStyle", "Please verify your publish - QoS, only PTP (point to point) and Publish/Subscribe is supported");
       }
 
+      publishedMessages++;
       return retVal;
    }
 
