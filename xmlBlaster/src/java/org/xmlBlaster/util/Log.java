@@ -3,7 +3,7 @@ Name:      Log.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.java,v 1.37 2000/02/18 14:52:35 ruff Exp $
+Version:   $Id: Log.java,v 1.38 2000/02/27 19:59:54 roth Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 import java.io.*;
@@ -388,6 +388,7 @@ public class Log
       if((LOGLEVEL & L_PANIC) != 0)
       {
          log((withXtermEscapeColor) ? panicE : panicX, instance, text);
+         System.out.println(text);
          numErrorInvocations++;
          // displayStatistics();
          exitLow(1);
