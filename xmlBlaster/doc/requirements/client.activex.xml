@@ -22,6 +22,15 @@
       <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.script.html" target="others">client.script requirement</a>
       and
       <a href="http://java.sun.com/j2se/1.4.2/docs/guide/beans/axbridge/developerguide/index.html" target="others">ActiveX bridge howto</a>
+      by calling <code>sendRequest()</code>.
+     </p>
+     <p>
+     Alternatively you can use the methods like <code>publish()</code> or <code>subscribe()</code>
+     directly.
+     These methods have the advantage to return a ready parsed object to the ActiveX component,
+     for example Visual Basic can directly call all methods of <code>SubscribeReturnQos</code>
+     which is returned by <code>subscribe()</code>.
+     You can lookup all supported methods in the Javadoc API of <code>XmlScriptAccess</code> bean.
      </p>
 
      <h3>Limitations</h3>
@@ -89,7 +98,7 @@ xmlBlaster\demo\activex
     java -jar lib\xmlBlaster.jar
 </pre>
 
-   <h3>Usage</h3>
+   <h3>API usage</h3>
    <p>
    The Java bean <a href="http://www.xmlblaster.org/xmlBlaster/doc/api/org/xmlBlaster/client/activex/XmlScriptAccess.html" target="others">XmlScriptAccess</a> exports
    all needed functionality to activeX aware languages.
@@ -111,7 +120,7 @@ Try
 
    Dim subscribeReturnQos As Object
 
-   subscribeReturnQos = xmlBlaster.subscribe("&lt;key oid='HelloWorld3'/>", "&lt;qos/>")
+   subscribeReturnQos = xmlBlaster.subscribe("<key oid='HelloWorld3'/>", "<qos/>")
    
    ' Access examples:
    ' subscribeReturnQos.getSubcriptionId()
@@ -126,6 +135,17 @@ Catch e As SystemException
    java object in the Javadoc API and call the
    methods as you would do in Java
    </p>
+
+   <h3>Callback usage</h3>
+   <p>As events into ActiveX can't have a return value and can't throw
+     an exception back to us we handle it here as a callback, for example
+     Visual Basic needs to call <code>sendUpdateReturn()</code> or <code>sendUpdateException()</code> after
+     processing a message received by <code>update()</code>.
+     Our update thread blocks until one of those two methods is called, however
+     the blocking times out after 10 minutes which is adjustable with
+     the property <code>client/activex/responseWaitTime</code> given in milli seconds.
+ </p>
+
    </description>
 
    <example lang="Csharp" type="HTML">
@@ -205,6 +225,174 @@ End Module
    ]]></pre>
    </example>
 
+   <example lang="VisualBasic" type="HTML">
+      <h3><a NAME="example"></a>VisualBasic.net example with asynchronous callbacks</h3>
+   <pre><style type="text/css">
+<!--
+              .LINE_NO {color: #000000; background: #ffffff}
+              .Unknown {color: #ffffff; background: #ffffff}
+              .NOTHING {color: #000000; background: #ffffff}
+               .STRING {color: red; background: #ffffff}
+              .COMMENT {color: #000000; background: #b1b1b1}
+              .SYMBOL1 {color: #000000; background: #ffffff}
+              .SYMBOL2 {color: #000000; background: #ffffff}
+              .SYMBOL3 {color: #000000; background: #ffffff}
+              .SYMBOL4 {color: #000000; background: #ffffff}
+              .SYMBOL5 {color: #000000; background: #ffffff}
+              .SYMBOL6 {color: #000000; background: #ffffff}
+              .SYMBOL7 {color: #000000; background: #ffffff}
+              .SYMBOL8 {color: #000000; background: #ffffff}
+              .SYMBOL9 {color: #000000; background: #ffffff}
+              .KEYWORD {color: green; background: #ffffff}
+             .OPERATOR {color: #000000; background: #ffffff}
+                .LABEL {color: #000000; background: #ffffff}
+               .NUMBER {color: #ff005a; background: #ffffff}
+        .CHAR_CONSTANT {color: #000000; background: #ffffff}
+            .DIRECTIVE {color: #ff00ff; background: #ffffff}
+              .NUMBER2 {color: #ff005a; background: #ffffff}
+                 .TYPE {color: #4e4eff; background: #ffffff}
+             .FUNCTION {color: #4e4eff; background: #ffffff}
+              .COMMAND {color: #4e4eff; background: #ffffff}
+               .OBJECT {color: #4e4eff; background: #ffffff}
+             .CONSTANT {color: #4e4eff; background: #ffffff}
+                .CLASS {color: #4e4eff; background: #ffffff}
+             .INSTANCE {color: #4e4eff; background: #ffffff}
+               .METHOD {color: #4e4eff; background: #ffffff}
+            .ATTRIBUTE {color: #000000; background: #ffffff}
+                .VALUE {color: #4e4eff; background: #ffffff}
+--></style><font face="Terminal,10,Regular,1,Lucida Console,Fixed" />
+<span class="COMMENT">'------------------------------------------------------------------------------</span>
+<span class="COMMENT">' XmlBlaster access with asynchronous callbacks from Visual Basic .net</span>
+<span class="COMMENT">' Calls are routed over ActiveX encapsulating a Java client bean which</span>
+<span class="COMMENT">' connects to xmlBlaster</span>
+<span class="COMMENT">' @file xmlBlaster/demo/activex/VisualBasic3.vb</span>
+<span class="COMMENT">' @author Marcel Ruff, xmlBlaster@marcelruff.info (2004-03-17)</span>
+<span class="COMMENT">' @see http://www.xmlBlaster.org/xmlBlaster/doc/requirements/client.activex.html</span>
+<span class="COMMENT">' @see org.xmlBlaster.client.activex.XmlScriptAccess</span>
+<span class="COMMENT">'------------------------------------------------------------------------------</span>
+<span class="NOTHING">Imports </span><span class="KEYWORD">System</span>
+
+<span class="NOTHING">Module HelloWorld3</span>
+<span class="NOTHING">   </span><span class="KEYWORD">Private</span><span class="NOTHING"> WithEvents xmlBlaster </span><span class="KEYWORD">As</span><span class="NOTHING"> XmlScriptAccess.XmlScriptAccessClass</span>
+<span class="NOTHING">   </span><span class="KEYWORD">Dim</span><span class="NOTHING"> ascii </span><span class="KEYWORD">As</span><span class="NOTHING"> </span><span class="KEYWORD">System</span><span class="NOTHING">.</span><span class="KEYWORD">Text</span><span class="NOTHING">.ASCIIEncoding = </span><span class="KEYWORD">New</span><span class="NOTHING"> </span><span class="KEYWORD">System</span><span class="NOTHING">.</span><span class="KEYWORD">Text</span><span class="NOTHING">.ASCIIEncoding</span>
+
+<span class="NOTHING">   </span><span class="KEYWORD">Sub</span><span class="NOTHING"> Main()</span>
+<span class="NOTHING">      </span><span class="KEYWORD">Call</span><span class="NOTHING"> HelloWorld3()</span>
+<span class="NOTHING">   </span><span class="KEYWORD">End</span><span class="NOTHING"> </span><span class="KEYWORD">Sub</span>
+
+<span class="NOTHING">   </span><span class="COMMENT">'---------------------------------------------------------------------------</span>
+<span class="NOTHING">   </span><span class="COMMENT">' This method is called asynchronously from java delivering a message. </span>
+<span class="NOTHING">   </span><span class="COMMENT">' As events from java into ActiveX can't deliver a return value</span>
+<span class="NOTHING">   </span><span class="COMMENT">' or an exception back we need to call either</span>
+<span class="NOTHING">   </span><span class="COMMENT">'    setUpdateReturn()        -&gt; passes a return value to the server</span>
+<span class="NOTHING">   </span><span class="COMMENT">' or</span>
+<span class="NOTHING">   </span><span class="COMMENT">'    setUpdateException()     -&gt; throws an XmlBlasterException</span>
+<span class="NOTHING">   </span><span class="COMMENT">' If you forget this the update thread of the java bean will block forever</span>
+<span class="NOTHING">   </span><span class="COMMENT">'---------------------------------------------------------------------------</span>
+<span class="NOTHING">   </span><span class="KEYWORD">Private</span><span class="NOTHING"> </span><span class="KEYWORD">Sub</span><span class="NOTHING"> XmlScriptAccess_update(</span><span class="KEYWORD">ByVal</span><span class="NOTHING"> msg </span><span class="KEYWORD">As</span><span class="NOTHING"> </span><span class="KEYWORD">Object</span><span class="NOTHING">) _</span>
+<span class="NOTHING">               Handles xmlBlaster.XmlScriptAccessSource_Event_update</span>
+<span class="NOTHING">      Try</span>
+<span class="NOTHING">         </span><span class="KEYWORD">Dim</span><span class="NOTHING"> age </span><span class="KEYWORD">As</span><span class="NOTHING"> </span><span class="KEYWORD">String</span>
+<span class="NOTHING">         age = msg.getQos().getClientProperty(</span><span class="STRING">"myAge"</span><span class="NOTHING">).getStringValue()</span>
+<span class="NOTHING">         Console.WriteLine(</span><span class="STRING">"SUCCESS: Update arrived: "</span><span class="NOTHING"> &amp; msg.getCbSessionId() &amp; _</span>
+<span class="NOTHING">                 </span><span class="STRING">", oid="</span><span class="NOTHING"> &amp; msg.getKey().getOid() &amp; _</span>
+<span class="NOTHING">                 </span><span class="STRING">", content="</span><span class="NOTHING"> &amp; msg.getContentStr() &amp; _</span>
+<span class="NOTHING">                 </span><span class="STRING">", myAge="</span><span class="NOTHING"> &amp; age)</span>
+<span class="NOTHING">         xmlBlaster.setUpdateReturn(</span><span class="STRING">"&lt;qos&gt;&lt;state id='OK'/&gt;&lt;/qos&gt;"</span><span class="NOTHING">)</span>
+<span class="NOTHING">      Catch e </span><span class="KEYWORD">As</span><span class="NOTHING"> SystemException</span>
+<span class="NOTHING">         Console.WriteLine(</span><span class="STRING">"Exception in update:"</span><span class="NOTHING"> &amp; e.ToString())</span>
+<span class="NOTHING">         xmlBlaster.setUpdateException(</span><span class="STRING">"user.update.internalError"</span><span class="NOTHING">, e.ToString())</span>
+<span class="NOTHING">      </span><span class="KEYWORD">End</span><span class="NOTHING"> Try</span>
+<span class="NOTHING">   </span><span class="KEYWORD">End</span><span class="NOTHING"> </span><span class="KEYWORD">Sub</span>
+
+<span class="NOTHING">   </span><span class="COMMENT">'---------------------------------------------------------------------------</span>
+<span class="NOTHING">   </span><span class="COMMENT">' Connect to xmlBlaster and try all possible methods</span>
+<span class="NOTHING">   </span><span class="COMMENT">'---------------------------------------------------------------------------</span>
+<span class="NOTHING">   </span><span class="KEYWORD">Sub</span><span class="NOTHING"> HelloWorld3()</span>
+<span class="NOTHING">      </span><span class="KEYWORD">Dim</span><span class="NOTHING"> key, qos </span><span class="KEYWORD">As</span><span class="NOTHING"> </span><span class="KEYWORD">String</span>
+
+<span class="NOTHING">      xmlBlaster = </span><span class="KEYWORD">New</span><span class="NOTHING"> XmlScriptAccess.XmlScriptAccessClass</span>
+
+<span class="NOTHING">      </span><span class="KEYWORD">Dim</span><span class="NOTHING"> prop </span><span class="KEYWORD">As</span><span class="NOTHING"> </span><span class="KEYWORD">Object</span><span class="NOTHING"> = xmlBlaster.createPropertiesInstance()</span>
+<span class="NOTHING">      prop.setProperty(</span><span class="STRING">"protocol"</span><span class="NOTHING">, </span><span class="STRING">"SOCKET"</span><span class="NOTHING">)</span>
+<span class="NOTHING">      prop.setProperty(</span><span class="STRING">"trace"</span><span class="NOTHING">, </span><span class="STRING">"false"</span><span class="NOTHING">)</span>
+<span class="NOTHING">      xmlBlaster.initialize(prop)</span>
+
+<span class="NOTHING">      Try</span>
+<span class="NOTHING">         </span><span class="COMMENT">' Connect to the server</span>
+<span class="NOTHING">         qos = </span><span class="STRING">"&lt;qos&gt;"</span><span class="NOTHING"> &amp; _</span>
+<span class="NOTHING">               </span><span class="STRING">"  &lt;securityService type='htpasswd' version='1.0'&gt;"</span><span class="NOTHING"> &amp; _</span>
+<span class="NOTHING">               </span><span class="STRING">"   &lt;![CDATA["</span><span class="NOTHING"> &amp; _</span>
+<span class="NOTHING">               </span><span class="STRING">"   &lt;user&gt;HelloWorld3&lt;/user&gt;"</span><span class="NOTHING"> &amp; _</span>
+<span class="NOTHING">               </span><span class="STRING">"   &lt;passwd&gt;secret&lt;/passwd&gt;"</span><span class="NOTHING"> &amp; _</span>
+<span class="NOTHING">               </span><span class="STRING">"   ]]&gt;"</span><span class="NOTHING"> &amp; _</span>
+<span class="NOTHING">               </span><span class="STRING">"  &lt;/securityService&gt;"</span><span class="NOTHING"> &amp; _</span>
+<span class="NOTHING">               </span><span class="STRING">"&lt;/qos&gt;"</span>
+<span class="NOTHING">         </span><span class="KEYWORD">Dim</span><span class="NOTHING"> connectReturnQos </span><span class="KEYWORD">As</span><span class="NOTHING"> </span><span class="KEYWORD">Object</span>
+<span class="NOTHING">         connectReturnQos = xmlBlaster.connect(qos)</span>
+<span class="NOTHING">         Console.WriteLine(</span><span class="STRING">"Connected to xmlBlaster, sessionId="</span><span class="NOTHING"> &amp; _</span>
+<span class="NOTHING">                           connectReturnQos.getSecretSessionId())</span>
+
+<span class="NOTHING">         </span><span class="COMMENT">' Publish a message</span>
+<span class="NOTHING">         key = </span><span class="STRING">"&lt;key oid='HelloWorld3' contentMime='text/xml'&gt;"</span><span class="NOTHING"> &amp; _</span>
+<span class="NOTHING">               </span><span class="STRING">"  &lt;org.xmlBlaster&gt;&lt;demo/&gt;&lt;/org.xmlBlaster&gt;"</span><span class="NOTHING"> &amp; _</span>
+<span class="NOTHING">               </span><span class="STRING">"&lt;/key&gt;"</span>
+<span class="NOTHING">         </span><span class="KEYWORD">Dim</span><span class="NOTHING"> content </span><span class="KEYWORD">As</span><span class="NOTHING"> Byte() = ascii.GetBytes(</span><span class="STRING">"Hi"</span><span class="NOTHING">)</span>
+<span class="NOTHING">         qos = </span><span class="STRING">"&lt;qos&gt;"</span><span class="NOTHING"> &amp; _</span>
+<span class="NOTHING">               </span><span class="STRING">"&lt;clientProperty name='myAge' type='int'&gt;18&lt;/clientProperty&gt;"</span><span class="NOTHING"> &amp; _</span>
+<span class="NOTHING">               </span><span class="STRING">"&lt;/qos&gt;"</span>
+<span class="NOTHING">         </span><span class="KEYWORD">Dim</span><span class="NOTHING"> publishReturnQos </span><span class="KEYWORD">As</span><span class="NOTHING"> </span><span class="KEYWORD">Object</span>
+<span class="NOTHING">         publishReturnQos = xmlBlaster.publishBlob(key, content, qos)</span>
+<span class="NOTHING">         Console.WriteLine(</span><span class="STRING">"Published message id="</span><span class="NOTHING"> &amp; _</span>
+<span class="NOTHING">                       publishReturnQos.getRcvTimestamp().toXml(</span><span class="STRING">""</span><span class="NOTHING">, </span><span class="KEYWORD">True</span><span class="NOTHING">))</span>
+
+<span class="NOTHING">         </span><span class="COMMENT">' Get synchronous the above message</span>
+<span class="NOTHING">         </span><span class="KEYWORD">Dim</span><span class="NOTHING"> getMsgArr </span><span class="KEYWORD">As</span><span class="NOTHING"> </span><span class="KEYWORD">Object</span><span class="NOTHING">()</span>
+<span class="NOTHING">         getMsgArr = xmlBlaster.</span><span class="KEYWORD">get</span><span class="NOTHING">(</span><span class="STRING">"&lt;key oid='HelloWorld3'/&gt;"</span><span class="NOTHING">, </span><span class="STRING">"&lt;qos/&gt;"</span><span class="NOTHING">)</span>
+<span class="NOTHING">         </span><span class="KEYWORD">Dim</span><span class="NOTHING"> msg </span><span class="KEYWORD">As</span><span class="NOTHING"> </span><span class="KEYWORD">Object</span>
+<span class="NOTHING">         </span><span class="KEYWORD">For</span><span class="NOTHING"> Each msg In getMsgArr</span>
+<span class="NOTHING">            Console.WriteLine(</span><span class="STRING">"Get returned:"</span><span class="NOTHING"> &amp; msg.toXml())</span>
+<span class="NOTHING">         </span><span class="KEYWORD">Next</span>
+
+<span class="NOTHING">         </span><span class="COMMENT">' Subscribe</span>
+<span class="NOTHING">         </span><span class="KEYWORD">Dim</span><span class="NOTHING"> subscribeReturnQos </span><span class="KEYWORD">As</span><span class="NOTHING"> </span><span class="KEYWORD">Object</span>
+<span class="NOTHING">         subscribeReturnQos = xmlBlaster.subscribe(</span><span class="STRING">"&lt;key oid='HelloWorld3'/&gt;"</span><span class="NOTHING">, </span><span class="STRING">"&lt;qos/&gt;"</span><span class="NOTHING">)</span>
+<span class="NOTHING">         Console.WriteLine(</span><span class="STRING">"Got subscribe response:"</span><span class="NOTHING"> &amp; _</span>
+<span class="NOTHING">                           subscribeReturnQos.getSubscriptionId())</span>
+
+<span class="NOTHING">         </span><span class="COMMENT">' Give control to the main loop to receive the update event</span>
+<span class="NOTHING">         </span><span class="KEYWORD">System</span><span class="NOTHING">.Windows.</span><span class="KEYWORD">Forms</span><span class="NOTHING">.Application.</span><span class="KEYWORD">DoEvents</span><span class="NOTHING">()</span>
+
+<span class="NOTHING">         </span><span class="COMMENT">' Publish again, message arrives asynchronously in</span>
+<span class="NOTHING">         </span><span class="COMMENT">' Sub XmlScriptAccess_update() (see above)</span>
+<span class="NOTHING">         publishReturnQos = xmlBlaster.publish(key, </span><span class="STRING">"Ho"</span><span class="NOTHING">, qos)</span>
+<span class="NOTHING">         Console.WriteLine(</span><span class="STRING">"Got publish response:"</span><span class="NOTHING"> &amp; publishReturnQos.toXml())</span>
+
+<span class="NOTHING">         </span><span class="COMMENT">' Give control to the main loop to receive the update event</span>
+<span class="NOTHING">         </span><span class="KEYWORD">System</span><span class="NOTHING">.Windows.</span><span class="KEYWORD">Forms</span><span class="NOTHING">.Application.</span><span class="KEYWORD">DoEvents</span><span class="NOTHING">()</span>
+
+<span class="NOTHING">         </span><span class="COMMENT">' UnSubscribe</span>
+<span class="NOTHING">         </span><span class="KEYWORD">Dim</span><span class="NOTHING"> k </span><span class="KEYWORD">As</span><span class="NOTHING"> </span><span class="KEYWORD">String</span><span class="NOTHING"> = </span><span class="STRING">"&lt;key oid='"</span><span class="NOTHING"> &amp; subscribeReturnQos.getSubscriptionId() &amp; </span><span class="STRING">"'/&gt;"</span>
+<span class="NOTHING">         xmlBlaster.unSubscribe(k, </span><span class="STRING">"&lt;qos/&gt;"</span><span class="NOTHING">)</span>
+
+<span class="NOTHING">         </span><span class="COMMENT">' Destroy the topic "HelloWorld3"</span>
+<span class="NOTHING">         xmlBlaster.</span><span class="KEYWORD">erase</span><span class="NOTHING">(</span><span class="STRING">"&lt;key oid='HelloWorld3'/&gt;"</span><span class="NOTHING">, </span><span class="STRING">"&lt;qos/&gt;"</span><span class="NOTHING">)</span>
+
+<span class="NOTHING">         </span><span class="COMMENT">' Leave the server, cleanup resources</span>
+<span class="NOTHING">         xmlBlaster.disconnect(</span><span class="STRING">"&lt;qos/&gt;"</span><span class="NOTHING">)</span>
+
+<span class="NOTHING">         </span><span class="COMMENT">' Pass control to eventLoop ...</span>
+<span class="NOTHING">         </span><span class="KEYWORD">MsgBox</span><span class="NOTHING">(</span><span class="STRING">"Click me to finish ..."</span><span class="NOTHING">)</span>
+
+<span class="NOTHING">      Catch e </span><span class="KEYWORD">As</span><span class="NOTHING"> SystemException</span>
+<span class="NOTHING">         Console.WriteLine(</span><span class="STRING">"Exception:"</span><span class="NOTHING"> &amp; e.ToString())</span>
+<span class="NOTHING">      </span><span class="KEYWORD">End</span><span class="NOTHING"> Try</span>
+<span class="NOTHING">   </span><span class="KEYWORD">End</span><span class="NOTHING"> </span><span class="KEYWORD">Sub</span>
+<span class="KEYWORD">End</span><span class="NOTHING"> Module</span>
+
+   </pre>
+   </example>
+
    <configuration where="client">
    <p>
    Set JRE_HOME to point to your java runtime environment, for example<br />
@@ -225,7 +413,7 @@ End Module
            doe not seem to solve the problem entirely, so please stick to the SOCKET
            protocol until this issue is resolved.</li>
 
-         <li>Callback events don't have a return: How to transport the return value back?
+         <li>How to handle java 'byte[]' in Visual Basic?
          </li>
      </ol>
    </todo>
@@ -240,6 +428,6 @@ End Module
 
    <author><a href="mailto:xmlblaster@marcelruff.info">Marcel Ruff</a></author>
    <date>2004 03 12</date>
-   <revision>$Revision: 1.5 $</revision>
+   <revision>$Revision: 1.6 $</revision>
 </requirement>
 
