@@ -1,0 +1,17 @@
+Marcel 2003-12-06
+
+Changed in pthread.h
+
+#include <sched.h>
+
+to
+
+#include "sched.h"
+
+This way we avoid to set the compiler include additionally to 
+
+  xmlBlaster/src/c/pthreads
+
+on Windows.
+
+See http://sources.redhat.com/pthreads-win32/
