@@ -15,14 +15,16 @@
       </p>
       <p>
       A client session has a default duration of 24 hours (this is configurable).
-      Every client request (like publish(), subscribe() etc.) refreshes the duration of the session.
+      Every client request (like <i>publish()</i>, <i>subscribe()</i> etc.)
+      refreshes the duration of the session.
       After 24 hours of inactivity the session expires.
       </p>
       <p>
       Note that client callbacks don't refresh the session timer. If you 
       have a client which does only subscribe and does no other activities
       you need to set the session timeout to indefinitely or you need to
-      call early enough a faked invocation like get() to avoid that the subscriber
+      call early enough <i>xmlBlasterAccess.refreshSession()</i> or
+      a faked invocation like <i>get()</i> to avoid that the subscriber
       is suddenly disconnected.
       On the other hand, this can be used to limit the life span of a subscribe.<br />
       You may wonder why a successful update does not refresh the session:
@@ -135,7 +137,7 @@
    <author>xmlBlaster@marcelruff.info</author>
    <author>krafft@doubleslash.de</author>
    <date>2002 03 11</date>
-   <revision>$Revision: 1.13 $</revision>
+   <revision>$Revision: 1.14 $</revision>
    <testcase status="CLOSED">
       <name>Marcel Ruff</name>
       <comment>All specified requirements are tested</comment>
