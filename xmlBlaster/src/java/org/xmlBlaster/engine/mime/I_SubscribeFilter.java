@@ -1,9 +1,9 @@
 /*------------------------------------------------------------------------------
-Name:      I_ContentFilter.java
+Name:      I_SubscribeFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface hiding the real callback protocol
-Version:   $Id: I_ContentFilter.java,v 1.1 2002/03/14 17:21:46 ruff Exp $
+Version:   $Id: I_SubscribeFilter.java,v 1.1 2002/03/14 18:34:02 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime;
@@ -16,17 +16,10 @@ import org.xmlBlaster.engine.Global;
 /**
  * This interface hides the real protocol used to check messages. 
  * <p />
- * The interface may be used to filter messages:
- * <ul>
- *    <li>Filter subscribed messages.
- *        Only messages where the match() method
- *        returns true are sent via update() to the client
- *    </li>
- *    <li>Filter published messages.
- *        Only message where the match() method returns true
- *        are accepted from xmlBlaster.
- *    </li>
- * </ul>
+ * The interface may be used to filter subscribed messages.
+ * Only messages where the match() method returns true
+ * are sent via update() to the client
+ * <p />
  * Note that you can manipulate the content of a message with your plugin
  * but changing the XmlKey or QoS is not allowed.
  * <p />
@@ -52,19 +45,13 @@ import org.xmlBlaster.engine.Global;
  * @version $Revision: 1.1 $
  * @author ruff@swand.lake.de
  */
-public interface I_ContentFilter
+public interface I_SubscribeFilter
 {
    /**
     * This is called after instantiation of the plugin 
     * @param glob The Global handle of this xmlBlaster server instance.
     */
    public void initialize(Global glob);
-
-   /*
-    * @return true If you want to install this
-   public boolean useForPublish();
-   public boolean useForSubscribe();
-   */
 
    /** Get a human readable name of this filter implementation */
    public String getName();
@@ -78,13 +65,13 @@ public interface I_ContentFilter
    /**
     * Check if the filter rule matches for this message. 
     * @return true If the filter matches this message, else false
-    * @exception XmlBlasterException Is thrown on problems, for example if MIME type
-    *            does not fit to message content
     * @param msgUnit The message to check
     * @param query   The query string containing the filter rule on subscribe usually
     *                the client defines his own rule which is passed here.<br />
-    *                null: If for example on publish no rule is known, your plugin
-    *                      needs to have its own general rule in this case or react how it likes.
+    *                null: If for a subscribe() no rule is given, your plugin
+    *                      needs to have its own general rule or react how it likes.
+    * @exception XmlBlasterException Is thrown on problems, for example if MIME type
+    *            does not fit to message content
     */
    public boolean match(MessageUnit msgUnit, FilterRule query) throws XmlBlasterException;
 }
