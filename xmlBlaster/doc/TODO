@@ -14,6 +14,7 @@
 - Testing implementation of erase() with XPath
 
 - Client should be able to query which subscriptions he has
+- Getting a login notification through CORBA is not yet implemented.
 
 - Automatic disconnect detection of a client e.g. [ Closing connection to 192.168.1.1:1424 ]
   this is important if the client didn't logout
