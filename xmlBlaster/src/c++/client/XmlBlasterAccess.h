@@ -57,7 +57,8 @@ private:
    /** Used to callback the clients default update() method (as given on connect()) */
    org::xmlBlaster::client::I_Callback* updateClient_;
    
-   /** used to temporarly store the failsafe notification address (if any). Once initFailsafe is called, this
+   /** 
+    * Used to temporary store the fail safe notification address (if any). Once initFailsafe is called, this
     * pointer is set to NULL again. This way connection_.initFailsafe will be invoked even if the user has
     * called XmlBlasterAccess::initFailsafe before the connection_ member has been created.
     */
@@ -66,14 +67,14 @@ private:
    org::xmlBlaster::util::I_Log&    log_;
    std::string  instanceName_;
 
-	/**
-	 * Private copy constructor, clones are not supported
-	 */
+   /**
+    * Private copy constructor, clones are not supported
+    */
    XmlBlasterAccess(const XmlBlasterAccess &global);
 
-	/**
-	 * Private assignement operator, clones are not supported
-	 */
+   /**
+    * Private assignment operator, clones are not supported
+    */
    XmlBlasterAccess& operator =(const XmlBlasterAccess &);
    
 public:
