@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.52 2000/05/26 20:48:12 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.53 2000/06/04 10:41:03 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
@@ -61,7 +61,7 @@ import java.util.Properties;
  * first time the ORB is created.<br />
  * This will be fixed as soon as possible.
  *
- * @version $Revision: 1.52 $
+ * @version $Revision: 1.53 $
  * @author $Author: ruff $
  */
 public class CorbaConnection implements ServerOperations
@@ -631,28 +631,16 @@ public class CorbaConnection implements ServerOperations
 
    /**
     * Logout from the server.
-    * <p />
-    * Note that this kills the server ping thread as well (if in fail save mode)
-    * @return true successfully logged out
-    *         false failure on logout
-    * @deprecated Use logout() without arguments
-    */
-   public boolean logout(Server xmlBlaster)
-   {
-      killPing();
-      return logout();
-   }
-
-
-   /**
-    * Logout from the server.
     * The callback server is removed as well, releasing all CORBA threads.
+    * Note that this kills the server ping thread as well (if in fail save mode)
     * @return true successfully logged out
     *         false failure on logout
     */
    public boolean logout()
    {
       if (Log.CALLS) Log.calls(ME, "logout() ...");
+
+      killPing();
 
       if (xmlBlaster == null) {
          if (!isInFailSaveMode() || recorder.size() == 0)
