@@ -1,5 +1,5 @@
 /*------------------------------------------------------------------------------
-Name:      TopicCacheProperty.java
+Name:      MsgUnitStoreProperty.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
@@ -16,16 +16,16 @@ import org.xml.sax.Attributes;
  * See ConnectQos for XML sysntax.
  * @see org.xmlBlaster.client.qos.ConnectQos
  */
-public class TopicCacheProperty extends QueuePropertyBase
+public class MsgUnitStoreProperty extends QueuePropertyBase
 {
-   private static final String ME = "TopicCacheProperty";
+   private static final String ME = "MsgUnitStoreProperty";
    private final LogChannel log;
 
    /**
     * @param nodeId    If not null, the command line properties will look for prop[nodeId] as well,
     * e.g. -queue.maxMsg and -queue.maxMsg[heron] will be searched
     */
-   public TopicCacheProperty(Global glob, String nodeId) {
+   public MsgUnitStoreProperty(Global glob, String nodeId) {
       super(glob, nodeId);
       this.log = glob.getLog("core");
       relating = Constants.RELATING_TOPICCACHE;
@@ -36,8 +36,8 @@ public class TopicCacheProperty extends QueuePropertyBase
     * Configure property settings
     */
    protected void initialize() {
-      //super.initialize(null);  // would allow to name different "msgstore" e.g. "topic.msgstore"
-      super.initialize("topic");
+      super.initialize(null);
+      //super.initialize("topic"); //--> topic.msgUnitStore.maxMsg
    }
 
    public final boolean onOverflowDeadMessage() {
@@ -47,15 +47,15 @@ public class TopicCacheProperty extends QueuePropertyBase
    }
 
    /**
-    * The tag name for configuration, here it is &lt;msgstore ...>
+    * The tag name for configuration, here it is &lt;msgUnitStore ...>
     */
    public String getRootTagName() {
-      return "msgstore";
+      return "msgUnitStore";
    }
 
-   /** For testing: java org.xmlBlaster.util.qos.storage.TopicCacheProperty */
+   /** For testing: java org.xmlBlaster.util.qos.storage.MsgUnitStoreProperty */
    public static void main(String[] args) {
-      TopicCacheProperty prop = new TopicCacheProperty(new Global(args), null);
+      MsgUnitStoreProperty prop = new MsgUnitStoreProperty(new Global(args), null);
       System.out.println(prop.toXml());
    }
 }

@@ -8,7 +8,7 @@ package org.xmlBlaster.util.qos;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.enum.Constants;
-import org.xmlBlaster.util.qos.storage.TopicCacheProperty;
+import org.xmlBlaster.util.qos.storage.MsgUnitStoreProperty;
 import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
 import org.xmlBlaster.util.property.PropBoolean;
 import org.xmlBlaster.util.property.PropLong;
@@ -32,7 +32,7 @@ public final class TopicProperty implements java.io.Serializable
    private String ME = "TopicProperty";
    private transient Global glob;
    private transient LogChannel log;
-   private transient TopicCacheProperty topicCacheProperty;
+   private transient MsgUnitStoreProperty msgUnitStoreProperty;
    private transient HistoryQueueProperty historyQueueProperty;
 
    /**
@@ -129,22 +129,22 @@ public final class TopicProperty implements java.io.Serializable
       this.createDomEntry.setValue(createDomEntry);
    }
 
-   public boolean hasTopicCacheProperty() {
-      return this.topicCacheProperty != null;
+   public boolean hasMsgUnitStoreProperty() {
+      return this.msgUnitStoreProperty != null;
    }
 
    /**
     * @return the configuration of the message store, is never null
     */
-   public TopicCacheProperty getTopicCacheProperty() {
-      if (this.topicCacheProperty == null) {
-         this.topicCacheProperty = new TopicCacheProperty(glob, glob.getId());
+   public MsgUnitStoreProperty getMsgUnitStoreProperty() {
+      if (this.msgUnitStoreProperty == null) {
+         this.msgUnitStoreProperty = new MsgUnitStoreProperty(glob, glob.getId());
       }
-      return this.topicCacheProperty;
+      return this.msgUnitStoreProperty;
    }
 
-   public void setTopicCacheProperty(TopicCacheProperty topicCacheProperty) {
-      this.topicCacheProperty = topicCacheProperty;
+   public void setMsgUnitStoreProperty(MsgUnitStoreProperty msgUnitStoreProperty) {
+      this.msgUnitStoreProperty = msgUnitStoreProperty;
    }
 
    public boolean hasHistoryQueueProperty() {
@@ -198,8 +198,8 @@ public final class TopicProperty implements java.io.Serializable
       sb.append(">");
       //private String subscriptionId;
 
-      if (hasTopicCacheProperty()) {
-         sb.append(getTopicCacheProperty().toXml(extraOffset+Constants.INDENT));
+      if (hasMsgUnitStoreProperty()) {
+         sb.append(getMsgUnitStoreProperty().toXml(extraOffset+Constants.INDENT));
       }
       if (hasHistoryQueueProperty()) {
          sb.append(getHistoryQueueProperty().toXml(extraOffset+Constants.INDENT));
