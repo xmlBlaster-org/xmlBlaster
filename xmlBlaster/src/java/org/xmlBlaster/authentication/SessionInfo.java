@@ -424,14 +424,11 @@ public class SessionInfo implements I_Timeout, I_QueueSizeListener
          long max = getSessionQueue().getMaxNumOfEntries();
          if (lastNumEntries >= max && numEntries < max) {
             if (log.TRACE) log.trace(ME, "SessionQueue has emptied from " + lastNumEntries +
-                           " to " + numEntries + " entries, calling subjectInfo.forwardToSessionQueue()");
-
-            log.error(ME, "DEBUG ONLY: TODO: Implement it: sessionQueue has emptied from " + lastNumEntries +
-                           " to " + numEntries + " entries, calling subjectInfo.forwardToSessionQueue()");
+                           " to " + numEntries + " entries, calling SubjectInfoShuffler.shuffle()");
             lastNumEntries = numEntries; // to avoid recursion
             this.sessionQueue.removeQueueSizeListener(this);
             
-            subjectInfo.forwardToSessionQueue();
+            this.glob.getSubjectInfoShuffler().shuffle(subjectInfo);
             
             this.sessionQueue.addQueueSizeListener(this);
          }
