@@ -3,7 +3,7 @@ Name:      StopWatch.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: StopWatch.java,v 1.5 1999/12/27 21:22:39 ruff Exp $
+Version:   $Id: StopWatch.java,v 1.6 2000/05/27 11:57:44 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -61,28 +61,7 @@ public class StopWatch
     */
    public final String toString()
    {
-      long millis = elapsed();
-      long seconds = millis / 1000;
-      long sec = (seconds % 3600) % 60;
-      long min = (seconds % 3600) / 60;
-      long hour = seconds / 3600;
-
-      StringBuffer strbuf = new StringBuffer(60);
-
-      strbuf.append(" [ ");
-
-      if (hour > 0L)
-         strbuf.append(hour + " h ");
-      if (min > 0L)
-         strbuf.append(min + " min ");
-      if (sec > 0L)
-         strbuf.append(sec + " sec ");
-
-      strbuf.append((millis % 1000) + " millis");
-
-      strbuf.append(" ]");
-
-      return strbuf.toString();
+      return TimeHelper.millisToNice(elapsed());
    }
 
 
@@ -119,7 +98,6 @@ public class StopWatch
 
       Log.exit(me, "Good bye");
    }
-
 }
 
 
