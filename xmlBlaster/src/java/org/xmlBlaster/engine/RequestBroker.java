@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.81 2000/09/15 17:16:15 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.82 2000/10/24 09:44:45 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -32,7 +32,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.81 $
+ * @version $Revision: 1.82 $
  * @author ruff@swand.lake.de
  */
 public class RequestBroker implements I_ClientListener, MessageEraseListener
@@ -172,8 +172,10 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
    /**
     * This Interface allows to hook in your own persistence driver.
     * <p />
-    * Configure the driver through xmlBlaster.properties
-    * <br />
+    * Configure the driver through xmlBlaster.properties<br />
+    *    Persistence.Driver=org.xmlBlaster.engine.persistence.filestore.FileDriver<br />
+    * is default.
+    * <p />
     * Note that you can't change the driver during runtime (this would need some code added).
     * @return interface to the configured persistence driver or null if no is available
     */
@@ -182,7 +184,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
       if (usePersistence == false) return (I_PersistenceDriver)null;
 
       if (persistenceDriver == null) {
-         String driverClass = XmlBlasterProperty.get("Persistence.Driver", (String)null);
+         String driverClass = XmlBlasterProperty.get("Persistence.Driver", "org.xmlBlaster.engine.persistence.filestore.FileDriver");
          if (driverClass == null) {
             Log.warn(ME, "xmlBlaster will run memory based only, the 'Persistence.Driver' property is not set in xmlBlaster.properties");
             usePersistence = false;
@@ -199,6 +201,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
             usePersistence = false;
             return (I_PersistenceDriver)null;
          }
+         Log.info(ME, "Loaded persistence driver " + driverClass);
       }
       return persistenceDriver;
    }

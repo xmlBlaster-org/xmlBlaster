@@ -106,7 +106,7 @@ LogFormat.Time=MEDIUM
 #
 # Lazy recover (not at server startup but on demand) is not yet supported.
 Persistence.Driver=org.xmlBlaster.engine.persistence.filestore.FileDriver
-Persistence.Path=${user.home}/tmp
+Persistence.Path=${user.home}${file.separator}tmp
 Persistence.LazyRecovery=false
 
 #-------------------  Filestore database --------------------------------------

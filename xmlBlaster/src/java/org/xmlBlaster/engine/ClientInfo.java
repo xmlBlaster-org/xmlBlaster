@@ -3,7 +3,7 @@ Name:      ClientInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: ClientInfo.java,v 1.40 2000/09/15 17:16:14 ruff Exp $
+Version:   $Id: ClientInfo.java,v 1.41 2000/10/24 09:44:45 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -35,7 +35,7 @@ import java.util.*;
  * It also contains a message queue, where messages are stored
  * until they are delivered at the next login of this client.
  *
- * @version $Revision: 1.40 $
+ * @version $Revision: 1.41 $
  * @author $Author: ruff $
  */
 public class ClientInfo
@@ -91,9 +91,9 @@ public class ClientInfo
     * Load the callback drivers from xmlBlaster.properties.
     * <p />
     * Accessing the CallbackDriver for this client, supporting the
-    * desired protocol (CORBA, EMAIL, HTTP).
+    * desired protocol (CORBA, EMAIL, HTTP, RMI).
     * <p />
-    * Default is "Protocol.Drivers=IOR:org.xmlBlaster.protocol.corba.CorbaDriver,JDBC:org.xmlBlaster.protocol.jdbc.JdbcDriver,XML-RPC:org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver"
+    * Default is support for IOR, XML-RPC, RMI and the JDBC service (ODBC bridge)
     */
    private final void loadDrivers()
    {
@@ -101,7 +101,13 @@ public class ClientInfo
          return;
 
       protocols = new Hashtable();
-      String drivers = XmlBlasterProperty.get("Protocol.CallbackDrivers", "IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver,JDBC:org.xmlBlaster.protocol.jdbc.CallbackJdbcDriver,XML-RPC:org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver");
+      String defaultDrivers =
+               "IOR:org.xmlBlaster.protocol.corba.CallbackCorbaDriver," +
+               "RMI:org.xmlBlaster.protocol.rmi.CallbackRmiDriver," +
+               "XML-RPC:org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver," +
+               "JDBC:org.xmlBlaster.protocol.jdbc.CallbackJdbcDriver";
+
+      String drivers = XmlBlasterProperty.get("Protocol.CallbackDrivers", defaultDrivers);
       StringTokenizer st = new StringTokenizer(drivers, ",");
       int numDrivers = st.countTokens();
       for (int ii=0; ii<numDrivers; ii++) {

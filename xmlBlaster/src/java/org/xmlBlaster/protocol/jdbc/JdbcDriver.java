@@ -3,7 +3,7 @@ Name:      JdbcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   JdbcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: JdbcDriver.java,v 1.7 2000/10/11 07:47:44 ruff Exp $
+Version:   $Id: JdbcDriver.java,v 1.8 2000/10/24 09:44:45 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
@@ -109,9 +109,9 @@ public class JdbcDriver implements I_Driver, I_Publish
     */
    public void shutdown()
    {
-      Log.info(ME, "Shutting down JDBC driver ...");
       try { authenticate.logout(sessionId); } catch(XmlBlasterException e) { }
       namedPool.destroy();
+      Log.info(ME, "JDBC service stopped, resources released.");
    }
 
 
@@ -181,9 +181,11 @@ public class JdbcDriver implements I_Driver, I_Publish
 
    /**
     * Load the JDBC drivers from xmlBlaster.properties.
+    * <p />
+    * Default is JdbcDriver.drivers=sun.jdbc.odbc.JdbcOdbcDriver
     */
    private void initDrivers() {
-      String            drivers = XmlBlasterProperty.get("JdbcDriver.drivers", "");
+      String            drivers = XmlBlasterProperty.get("JdbcDriver.drivers", "sun.jdbc.odbc.JdbcOdbcDriver");
       StringTokenizer   st = new StringTokenizer(drivers, ",");
       int               numDrivers = st.countTokens();
       String            driver = "";

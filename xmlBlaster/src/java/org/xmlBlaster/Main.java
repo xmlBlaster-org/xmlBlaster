@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.58 2000/10/22 21:30:44 ruff Exp $
+Version:   $Id: Main.java,v 1.59 2000/10/24 09:44:45 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -175,11 +175,20 @@ public class Main
    /**
     * Load the drivers from xmlBlaster.properties.
     * <p />
-    * Default is "Protocol.Drivers=IOR:org.xmlBlaster.protocol.corba.CorbaDriver,JDBC:org.xmlBlaster.protocol.jdbc.JdbcDriver,XML-RPC:org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver"
+    * Default is "Protocol.Drivers=<br />
+    *   IOR:org.xmlBlaster.protocol.corba.CorbaDriver,<br />
+    *   RMI:org.xmlBlaster.protocol.rmi.RmiDriver,<br />
+    *   XML-RPC:org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver,<br />
+    *   JDBC:org.xmlBlaster.protocol.jdbc.JdbcDriver
     */
    private void loadDrivers()
    {
-      String drivers = XmlBlasterProperty.get("Protocol.Drivers", "IOR:org.xmlBlaster.protocol.corba.CorbaDriver,JDBC:org.xmlBlaster.protocol.jdbc.JdbcDriver,XML-RPC:org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver");
+      String defaultDrivers =
+                 "IOR:org.xmlBlaster.protocol.corba.CorbaDriver," +
+                 "RMI:org.xmlBlaster.protocol.rmi.RmiDriver," +
+                 "XML-RPC:org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver," +
+                 "JDBC:org.xmlBlaster.protocol.jdbc.JdbcDriver";
+      String drivers = XmlBlasterProperty.get("Protocol.Drivers", defaultDrivers);
       StringTokenizer st = new StringTokenizer(drivers, ",");
       int numDrivers = st.countTokens();
       for (int ii=0; ii<numDrivers; ii++) {

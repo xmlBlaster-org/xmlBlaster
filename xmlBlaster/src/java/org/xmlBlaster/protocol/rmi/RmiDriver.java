@@ -3,7 +3,7 @@ Name:      RmiDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   RmiDriver class to invoke the xmlBlaster server using RMI.
-Version:   $Id: RmiDriver.java,v 1.13 2000/10/22 19:36:30 ruff Exp $
+Version:   $Id: RmiDriver.java,v 1.14 2000/10/24 09:44:46 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
@@ -139,7 +139,7 @@ public class RmiDriver implements I_Driver
     */
    public void shutdown()
    {
-      Log.info(ME, "Shutting down RMI driver ...");
+      if (Log.TRACE) Log.trace(ME, "Shutting down RMI driver ...");
 
       try {
          if (authBindName != null) Naming.unbind(authBindName);
@@ -147,6 +147,8 @@ public class RmiDriver implements I_Driver
       } catch (Exception e) {
          ;
       }
+
+      Log.info(ME, "RMI driver stopped, naming entries released.");
    }
 
 
