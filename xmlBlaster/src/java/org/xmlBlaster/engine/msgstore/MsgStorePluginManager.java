@@ -98,11 +98,11 @@ public class MsgStorePluginManager extends PluginManagerBase
    public String getDefaultPluginName(String type, String version) {
       for (int i=0; i<defaultPluginNames.length; i++) {
          if (defaultPluginNames[i][0].equalsIgnoreCase(type)) {
-            log.error(ME, "for type=" + type + "-->" + defaultPluginNames[i][1]);
+            if (log.TRACE) log.trace(ME, "Choosing for type=" + type + " plugin " + defaultPluginNames[i][1]);
             return defaultPluginNames[i][1];
          }
       }
-      log.error(ME, "for type=" + type + " DEFAULT " + defaultPluginNames[0][1]);
+      log.warn(ME, "Choosing for type=" + type + " default plugin " + defaultPluginNames[0][1]);
       return defaultPluginNames[0][1];
    }
 }
