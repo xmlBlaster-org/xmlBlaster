@@ -514,8 +514,6 @@ public class I_QueueTest extends TestCase {
             log.info(ME, "#2 Success, peek(int)");
          }
 
-
-
          //========== Test 3: peekSamePriority(-1)
          {
             DummyEntry[] queueEntries = {
@@ -588,6 +586,33 @@ public class I_QueueTest extends TestCase {
             log.info(ME, "#4 Success, peekWithPriority()");
          }
 
+
+         //========== Test 5: peek(100, 60)
+         {
+            DummyEntry[] queueEntries = {
+                         new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), 80, true),
+                         new DummyEntry(glob, PriorityEnum.HIGH_PRIORITY, queue.getStorageId(), 80, true),
+                         new DummyEntry(glob, PriorityEnum.HIGH_PRIORITY, queue.getStorageId(), 80, true),
+                         new DummyEntry(glob, PriorityEnum.HIGH_PRIORITY, queue.getStorageId(), 80, true),
+                         new DummyEntry(glob, PriorityEnum.HIGH_PRIORITY, queue.getStorageId(), 80, true),
+                                        };
+            queue.put(queueEntries, false);
+
+            try {
+               ArrayList results = queue.peek(100, 60); // does no remove
+               assertNotNull(ME+": the result should not be null");
+               assertEquals(ME+": Expected one entry on peek(100,60)", 1, results.size());
+            }
+            catch (XmlBlasterException e) {
+               e.printStackTrace();
+               assertTrue("An exception should not occur here " + e.getMessage(), false);
+            }
+            
+            queue.clear();
+            assertEquals(ME+": Expected empty queue", 0, queue.getNumOfEntries());
+
+            log.info(ME, "#5 Success, peek(100, 60)");
+         }
 
          System.out.println("***" + ME + " [SUCCESS]");
          queue.shutdown();
