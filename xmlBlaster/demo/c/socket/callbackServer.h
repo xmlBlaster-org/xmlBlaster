@@ -64,7 +64,8 @@ typedef struct ResponseHolderStruct {
 } ResponseHolder;
 
 #define XMLBLASTEREXCEPTION_ERRORCODE_LEN 56
-#define XMLBLASTEREXCEPTION_MESSAGE_LEN 512
+#define XMLBLASTEREXCEPTION_MESSAGE_LEN 1024
+#define XMLBLASTEREXCEPTION_MESSAGE_FMT "%1020s" 
 typedef struct XmlBlasterExceptionStruct {
    bool remote; // true if exception is from remote
    char errorCode[XMLBLASTEREXCEPTION_ERRORCODE_LEN];
@@ -108,11 +109,25 @@ typedef struct callbackDataStruct {
 /* for pthread */
 typedef void * (*cbFp)(void *);
 
+typedef char *( * XmlBlasterConnect)(const char * const qos, XmlBlasterException *exception);
+typedef bool  ( * XmlBlasterDisconnect)(const char * const qos, XmlBlasterException *exception);
+typedef char *( * XmlBlasterPublish)(MsgUnit *msgUnit, XmlBlasterException *exception);
+typedef bool  ( * IsConnected)();
+
+typedef struct XmlBlasterAccessStruct {
+   XmlBlasterConnect connect;   
+   XmlBlasterDisconnect disconnect;   
+   XmlBlasterPublish publish;
+   IsConnected isConnected;
+} XmlBlasterAccess;
+
+
+extern XmlBlasterAccess getXmlBlasterAccess(int argc, char** argv);
 extern int readn(int fd, char *ptr, int nbytes);
+extern void initConnection(int argc, char** argv);
 extern void initCallbackServer(callbackData *data);
 extern int getLength(char *data);
 extern int isListening();
-extern int isConnected();
 extern void shutdownCallbackServer();
 extern char *contentToString(char *content, MsgUnit *msg);
 extern char *messageUnitToXml(MsgUnit *msg);

@@ -24,12 +24,32 @@ int socketToXmlBlaster = -1;
 static long requestId = 0;
 #define MAX_SECRETSESSIONID_LEN 256
 static unsigned char secretSessionId[MAX_SECRETSESSIONID_LEN];
+static XmlBlasterAccess xmlBlasterAccess;
+bool isInitialized = false;
 
 bool getResponse(ResponseHolder *responseHolder, XmlBlasterException *exception);
-char * xmlBlasterConnect(const char * qos, XmlBlasterException *exception);
+static char *xmlBlasterConnect(const char * const qos, XmlBlasterException *exception);
+static bool xmlBlasterDisconnect(const char * const qos, XmlBlasterException *exception);
+static char *xmlBlasterPublish(MsgUnit *msgUnit, XmlBlasterException *exception);
+static bool isConnected();
 
-int initConnection(int argc, char** argv)
+XmlBlasterAccess getXmlBlasterAccess(int argc, char** argv) {
+   if (!isInitialized) {
+      xmlBlasterAccess.connect = xmlBlasterConnect;
+      xmlBlasterAccess.disconnect = xmlBlasterDisconnect;
+      xmlBlasterAccess.publish = xmlBlasterPublish;
+      xmlBlasterAccess.isConnected = isConnected;
+   }
+   initConnection(argc, argv);
+   return xmlBlasterAccess;
+}
+
+void initConnection(int argc, char** argv)
 {
+   if (isInitialized) {
+      return;
+   }
+
    int iarg;
    char *servTcpPort = "7607";
 
@@ -72,12 +92,13 @@ int initConnection(int argc, char** argv)
          }
       }
    }
-   return 0;
+   isInitialized = true;
+   return;
 }
 
-int isConnected()
+bool isConnected()
 {
-   return socketToXmlBlaster > -1;
+   return (socketToXmlBlaster > -1) ? true : false;
 }
 
 void shutdownConnection()
@@ -91,8 +112,8 @@ void shutdownConnection()
 /**
  * @param methodName The name of the remote method to invoke e.g. "connect"
  * @param data The message payload to send
- * @param response The returned data, you need to free it with free()
- *        You need to supply it.
+ * @param response The returned data, you need to free it with free(response->data) if we returned true.
+ *        Supply NULL for oneway messages.
  * @param exception The exception struct, exception->errorCode is filled on exception.
  *        You need to supply it.
  * @return true if OK and response is filled<br />
@@ -100,7 +121,7 @@ void shutdownConnection()
  */
 bool sendData(const char * const methodName,
               const unsigned char *const sessionId, 
-              const unsigned char *const data,
+              const unsigned char *data,
               long dataLen,
               ResponseHolder *responseHolder,
               XmlBlasterException *exception)
@@ -110,15 +131,30 @@ bool sendData(const char * const methodName,
    unsigned char *rawMsg = (unsigned char *)0;
    int currpos = 0;
    unsigned char tmp[256];
+
+   if (data == 0) {
+      data = "";
+      dataLen = 0;
+   }
+
    long lenUnzipped = dataLen;
    char lenFormatStr[56]; // = "%10.d";
    char lenStr[MSG_LEN_FIELD_LEN+1];
 
    if (exception == 0) {
-      if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: ERROR Invalid argument exception=NULL, message not sent\n");
+      strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+      sprintf(exception->message, "xmlBlasterClient: Please provide valid exception to sendData()");
+      if (XMLBLASTER_DEBUG) { printf(exception->message); printf("\n"); }
       return false;
    }
    *exception->errorCode = 0;
+
+   if (strcmp(XMLBLASTER_CONNECT, methodName) && strlen(secretSessionId) < 1) {
+      strncpy0(exception->errorCode, "user.notConnected", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+      sprintf(exception->message, "xmlBlasterClient: Please call connect() before invoking '%s'\n", methodName);
+      if (XMLBLASTER_DEBUG) { printf(exception->message); printf("\n"); }
+      return false;
+   }
 
    requestId++;
 
@@ -166,22 +202,32 @@ bool sendData(const char * const methodName,
    }
 
    free(rawMsg);
+   rawMsg = 0;
 
-   getResponse(responseHolder, exception);
+   if (responseHolder) { // if not oneway
+      if (getResponse(responseHolder, exception) == false) {
+         return false;
+      }
 
-   if (XMLBLASTER_DEBUG) {
-      char rawMsgStr[responseHolder->dataLen+1];
-      toReadableDump(responseHolder->data, responseHolder->dataLen, rawMsgStr);
-      printf("Received response msgLen=%ld type=%c version=%c requestId=%ld methodName=%s dateLen=%ld data='%s'\n",
-             responseHolder->msgLen, responseHolder->type, responseHolder->version, responseHolder->requestId,
-             responseHolder->methodName, responseHolder->dataLen, rawMsgStr);
+      if (XMLBLASTER_DEBUG) {
+         char rawMsgStr[responseHolder->dataLen+1];
+         toReadableDump(responseHolder->data, responseHolder->dataLen, rawMsgStr);
+         printf("Received response msgLen=%ld type=%c version=%c requestId=%ld methodName=%s dateLen=%ld data='%.100s ...'\n",
+                  responseHolder->msgLen, responseHolder->type, responseHolder->version, responseHolder->requestId,
+                  responseHolder->methodName, responseHolder->dataLen, rawMsgStr);
+      }
    }
 
    return true;
 }
 
 /**
- * Parse the returned message from xmlBlaster
+ * Parse the returned message from xmlBlaster. 
+ * The responseHolder holds all informations about the returned data from xmlBlaster,
+ * on error the exception struct is filled.
+ *
+ * @param responseHolder You need to free(responseHolder->data) if return is 'true'.
+ * @param exception Contains the exception thrown (on error only)
  * @return true if OK and false if exception is filled
  */
 bool getResponse(ResponseHolder *responseHolder, XmlBlasterException *exception) 
@@ -262,15 +308,105 @@ bool getResponse(ResponseHolder *responseHolder, XmlBlasterException *exception)
    memcpy(responseHolder->data, rawMsg+currPos, responseHolder->dataLen);
 
    free(rawMsg);
+   rawMsg = 0;
+
+   if (responseHolder->type == MSG_TYPE_EXCEPTION) { // convert XmlBlasterException
+      int currpos = 0;
+      strncpy0(exception->errorCode, responseHolder->data+currpos, XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+      currpos += strlen(exception->errorCode) + 1;
+      sprintf(exception->message, XMLBLASTEREXCEPTION_MESSAGE_FMT, responseHolder->data+currpos);
+      trim(exception->message);
+      
+      free(responseHolder->data);
+      responseHolder->data = 0;
+      return false;
+   }
+
    return true;
 }
 
 /**
-* @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.publish.html
-* @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
-*/
-//void xmlBlasterPublish(char *key, char *content, int contentLen, char *qos)
-char *xmlBlasterPublish(MsgUnit *msgUnit, XmlBlasterException *exception)
+ * Connect to the server. 
+ * @param qos The QoS to connect
+ * @param The exception struct, exception->errorCode is filled on exception
+ * @return The ConnectReturnQos raw xml string, you need to free() it
+ * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.publish.html
+ * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
+ */
+static char *xmlBlasterConnect(const char * const qos, XmlBlasterException *exception)
+{
+   if (qos == 0 || exception == 0) {
+      strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+      sprintf(exception->message, "xmlBlasterClient: Please provide valid arguments to xmlBlasterConnect()");
+      if (XMLBLASTER_DEBUG) { printf(exception->message); printf("\n"); }
+      return (char *)0;
+   }
+
+   ResponseHolder responseHolder;
+   if (sendData(XMLBLASTER_CONNECT, secretSessionId, (const unsigned char *)qos,
+                (qos == (const char *)0) ? 0 : strlen(qos),
+                &responseHolder, exception) == false) {
+      return (char *)0;
+   }
+
+   char *response = blobcpy_alloc(responseHolder.data, responseHolder.dataLen);
+   free(responseHolder.data);
+
+   // Extract secret session ID from ConnectReturnQos
+   *secretSessionId = 0;
+   const char *pStart = strstr(response, "sessionId='");
+   if (pStart) {
+      pStart += strlen("sessionId='");
+      const char *pEnd = strstr(pStart, "'");
+      if (pEnd) {
+         int len = pEnd - pStart + 1;
+         if (len >= MAX_SECRETSESSIONID_LEN) {
+            strncpy0(exception->errorCode, "user.response", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+            sprintf(exception->message, "xmlBlasterClient: ERROR Received too long secret sessionId with len=%d, please change setting MAX_SECRETSESSIONID_LEN", len);
+            if (XMLBLASTER_DEBUG) { printf(exception->message); printf("\n"); }
+         }
+         strncpy0(secretSessionId, pStart, len);
+      }
+   }
+
+   if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: Got response for connect(secretSessionId=%s)", secretSessionId);
+
+   return response;
+}
+
+/**
+ * Disconnect from server. 
+ * @param qos The QoS to disconnect
+ * @param The exception struct, exception->errorCode is filled on exception
+ * @return false on exception
+ * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.publish.html
+ * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
+ */
+static bool xmlBlasterDisconnect(const char * const qos, XmlBlasterException *exception)
+{
+   if (exception == 0) {
+      strncpy0(exception->errorCode, "user.illegalargument", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+      sprintf(exception->message, "xmlBlasterClient: Please provide valid arguments to xmlBlasterDisconnect()");
+      if (XMLBLASTER_DEBUG) { printf(exception->message); printf("\n"); }
+      return false;
+   }
+
+   if (sendData(XMLBLASTER_DISCONNECT, secretSessionId, (const unsigned char *)qos, 
+                (qos == (const char *)0) ? 0 : strlen(qos),
+                0, exception) == false) {
+      return false;
+   }
+
+   shutdownConnection();
+
+   return true;
+}
+
+/**
+ * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.publish.html
+ * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
+ */
+static char *xmlBlasterPublish(MsgUnit *msgUnit, XmlBlasterException *exception)
 {
    int qosLen, keyLen, totalLen;
    unsigned char *data;
@@ -310,53 +446,10 @@ char *xmlBlasterPublish(MsgUnit *msgUnit, XmlBlasterException *exception)
       return 0;
    }
    free(data);
-   char *response = blobcpy_alloc(responseHolder.data, responseHolder.dataLen);
-   free(responseHolder.data);
-   return response;
-}
-
-/**
- * @param qos The QoS to connect
- * @param The exception struct, exception->errorCode is filled on exception
- * @return The ConnectReturnQos raw xml string, you need to free() it
- * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/interface.publish.html
- * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
- */
-char *xmlBlasterConnect(const char * const qos, XmlBlasterException *exception)
-{
-   if (qos == 0 || exception == 0) {
-      if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: ERROR Invalid argument=NULL in connect(), message not sent\n");
-      return (char *)0;
-   }
-
-   ResponseHolder responseHolder;
-   if (sendData(XMLBLASTER_CONNECT, secretSessionId, (const unsigned char * const)qos, strlen(qos),
-                &responseHolder, exception) == false) {
-      return 0;
-   }
 
    char *response = blobcpy_alloc(responseHolder.data, responseHolder.dataLen);
    free(responseHolder.data);
-
-   // Extract secret session ID from ConnectReturnQos
-   *secretSessionId = 0;
-   const char *pStart = strstr(response, "sessionId='");
-   if (pStart) {
-      pStart += strlen("sessionId='");
-      const char *pEnd = strstr(pStart, "'");
-      if (pEnd) {
-         int len = pEnd - pStart + 1;
-         if (len >= MAX_SECRETSESSIONID_LEN) {
-            strncpy0(exception->errorCode, "user.response", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
-            sprintf(exception->message, "xmlBlasterClient: ERROR Received too long secret sessionId with len=%d, please change setting MAX_SECRETSESSIONID_LEN", len);
-            if (XMLBLASTER_DEBUG) { printf(exception->message); printf("\n"); }
-         }
-         strncpy0(secretSessionId, pStart, len);
-      }
-   }
-
-   if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: Got response for connect(secretSessionId=%s)", secretSessionId);
-
+   responseHolder.data = 0;
    return response;
 }
 
@@ -390,6 +483,7 @@ int main(int argc, char** argv)
    int ret, iarg;
    char *data = (char *)0;
    char *response = (char *)0;
+   bool startCallback = false;
    XmlBlasterException xmlBlasterException;
 
    callbackData cbArgs;
@@ -403,14 +497,18 @@ int main(int argc, char** argv)
          cbArgs.hostCB = argv[++iarg];
       else if (strcmp(argv[iarg], "-socket.portCB") == 0)
          cbArgs.portCB = atoi(argv[++iarg]);
+      else if (strcmp(argv[iarg], "-startCallback") == 0)
+         startCallback = true;
    }
 
 #  ifndef _WINDOWS
-   ret = pthread_create(&tid, 0, (cbFp)initCallbackServer, &cbArgs);
+   if (startCallback) {
+      ret = pthread_create(&tid, 0, (cbFp)initCallbackServer, &cbArgs);
+   }
 #  endif
 
-   initConnection(argc, argv);
-   
+   XmlBlasterAccess xmlBlasterAccess = getXmlBlasterAccess(argc, argv);
+
    data = "<qos>"
           " <securityService type='htpasswd' version='1.0'>"
           "  <![CDATA["
@@ -420,7 +518,7 @@ int main(int argc, char** argv)
           " </securityService>"
           "</qos>";
 
-   response = xmlBlasterConnect(data, &xmlBlasterException);
+   response = xmlBlasterAccess.connect(data, &xmlBlasterException);
    free(response);
    if (strlen(xmlBlasterException.errorCode) > 0) {
       printf("Caught exception during connect, errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
@@ -434,8 +532,7 @@ int main(int argc, char** argv)
    msgUnit.content = "Some message payload";
    msgUnit.contentLen = strlen("Some message payload");
    msgUnit.qos = "<qos><persistent/></qos>";
-   response = xmlBlasterPublish(&msgUnit, &xmlBlasterException);
-
+   response = xmlBlasterAccess.publish(&msgUnit, &xmlBlasterException);
    if (response) {
       printf("Publish success, returned status is '%s'\n", response);
       free(response);
@@ -445,11 +542,18 @@ int main(int argc, char** argv)
       exit(1);
    }
 
+   if (xmlBlasterAccess.disconnect(0, &xmlBlasterException) == false) {
+      printf("Caught exception in disconnect, errorCode=%s, message=%s", xmlBlasterException.errorCode, xmlBlasterException.message);
+      exit(1);
+   }
+
    //publish("<key oid='cpuinfo'/>", data, strlen(data), "<qos/>");
 
    if (XMLBLASTER_DEBUG) printf("xmlBlasterClient: going to sleep 100 sec ...\n");
 #  ifndef _WINDOWS
-   sleep(10000);
+   if (startCallback) {
+      sleep(10000);
+   }
 #  endif
    exit(0);
 }
