@@ -82,6 +82,45 @@ public class TestEmbeddedXmlBlaster extends TestCase
    }
 
    /**
+    * RMI fails as we don't know how to kill the registry
+    * JacORB 1.3.30 can't reinitialize the orb if once shutdown (so we leave it alive)
+    *        hopefully fixed with JacORB 1.4.2
+    * XmlRpc has one thread open???
+    *
+    * <pre>
+    * BEFORE:
+    *
+    * Thread Group: system  Max Priority: 10
+    *     Thread: Signal dispatcher  Priority: 5 Daemon
+    *     Thread: Reference Handler  Priority: 10 Daemon
+    *     Thread: Finalizer  Priority: 8 Daemon
+    *     Thread Group: main  Max Priority: 10
+    *         Thread: main  Priority: 5
+    *
+    * AFTER:
+    *
+    * Thread Group: system  Max Priority: 10
+    *     Thread: Signal dispatcher  Priority: 5 Daemon
+    *     Thread: Reference Handler  Priority: 10 Daemon
+    *     Thread: Finalizer  Priority: 8 Daemon
+    *     Thread: RMI TCP Accept-1  Priority: 5 Daemon
+    *     Thread: RMI TCP Accept-2  Priority: 5 Daemon
+    *     Thread: GC Daemon  Priority: 2 Daemon
+    *     Thread: RMI RenewClean-[192.168.1.3:33493]  Priority: 5 Daemon
+    *     Thread: RMI LeaseChecker  Priority: 5 Daemon
+    *     Thread: RMI ConnectionExpiration-[192.168.1.3:33493]  Priority: 5 Daemon
+    *     Thread: RMI ConnectionExpiration-[kinder:7613]  Priority: 5 Daemon
+    *     Thread Group: main  Max Priority: 10
+    *         Thread: XmlBlaster MainThread  Priority: 5
+    *         Thread: Thread-11  Priority: 10 Daemon
+    *         Thread: JacORB Listener Thread on port 33489  Priority: 5 Daemon
+    *         Thread: Thread-14  Priority: 10 Daemon
+    *         Thread: Thread-16  Priority: 5 Daemon
+    *         Thread Group: XML-RPC Runner  Max Priority: 10
+    *     Thread Group: RMI Runtime  Max Priority: 10
+    *         Thread: TCP Connection(3)-192.168.1.3  Priority: 5 Daemon
+    *         Thread: TCP Connection(4)-192.168.1.3  Priority: 5 Daemon
+    * </pre>
     */
    public void testThreadFree()
    {
@@ -113,7 +152,6 @@ public class TestEmbeddedXmlBlaster extends TestCase
 
       serverThread = EmbeddedXmlBlaster.startXmlBlaster(glob);
       log.info(ME, "XmlBlaster is ready for testing JDBC access");
-
 
       // Stop xmlBlaster
       try { Thread.currentThread().sleep(100L); } catch( InterruptedException i) {}
