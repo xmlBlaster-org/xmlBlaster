@@ -3,11 +3,12 @@ Name:      MsgQueueEntry.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping the CORBA MessageUnit to allow some nicer usage
-Version:   $Id: MsgQueueEntry.java,v 1.3 2002/03/17 13:32:49 ruff Exp $
+Version:   $Id: MsgQueueEntry.java,v 1.4 2002/04/23 15:07:30 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queue;
 
+import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.RequestBroker;
 import org.xmlBlaster.engine.MessageUnitWrapper;
 import org.xmlBlaster.engine.xml2java.XmlKey;
@@ -35,17 +36,19 @@ public class MsgQueueEntry
 {
    private final static String ME = "MsgQueueEntry";
 
+   private final Global glob;
+
    /** The SubscriptionInfo if a Pub/Sub message, is null for PtP messages */
-   private SubscriptionInfo subscriptionInfo;
+   private final SubscriptionInfo subscriptionInfo;
 
    /** The security context of the receiver, is needed to export the message */
    private SessionInfo receiverSessionInfo;
    /** The subjectInfo of the receiver for PtP messages */
-   private SubjectInfo receiverSubjectInfo;
+   private final SubjectInfo receiverSubjectInfo;
    private boolean isSubjectQueue = false;
 
    /** The MessageUnitWrapper containing the MessageUnit and the parsed PublishQos */
-   private MessageUnitWrapper msgUnitWrapper = null;
+   private final MessageUnitWrapper msgUnitWrapper;
 
    /** The MessageUnit with key/content/qos (raw struct) */
    private MessageUnit msgUnit;
@@ -60,15 +63,15 @@ public class MsgQueueEntry
     * @param receiverSubjectInfo Destinationsubject
     * @param msgUnitWrapper contains the parsed message
     */
-   public MsgQueueEntry(SubjectInfo receiverSubjectInfo, MessageUnitWrapper msgUnitWrapper) throws XmlBlasterException {
+   public MsgQueueEntry(Global glob, SubjectInfo receiverSubjectInfo, MessageUnitWrapper msgUnitWrapper) throws XmlBlasterException {
       if (receiverSubjectInfo == null || msgUnitWrapper == null) {
          Log.error(ME, "Invalid constructor parameter");
          Thread.currentThread().dumpStack();
          throw new XmlBlasterException(ME, "Invalid constructor parameter");
       }
-      
-      this.isSubjectQueue = true;
 
+      this.glob = glob;
+      this.isSubjectQueue = true;
       this.subscriptionInfo = null;
       this.receiverSubjectInfo = receiverSubjectInfo;
       this.receiverSessionInfo = null;
@@ -84,13 +87,14 @@ public class MsgQueueEntry
     * @param receiverSessionInfo Session of the destination, to export the message
     * @param msgUnitWrapper contains the parsed message
     */
-   public MsgQueueEntry(SessionInfo receiverSessionInfo, MessageUnitWrapper msgUnitWrapper) throws XmlBlasterException {
+   public MsgQueueEntry(Global glob, SessionInfo receiverSessionInfo, MessageUnitWrapper msgUnitWrapper) throws XmlBlasterException {
       if (receiverSessionInfo == null || msgUnitWrapper == null) {
          Log.error(ME, "Invalid constructor parameter");
          Thread.currentThread().dumpStack();
          throw new XmlBlasterException(ME, "Invalid constructor parameter");
       }
       
+      this.glob = glob;
       this.subscriptionInfo = null;
       this.receiverSessionInfo = receiverSessionInfo;
       this.receiverSubjectInfo = receiverSessionInfo.getSubjectInfo();
@@ -106,13 +110,14 @@ public class MsgQueueEntry
     * @param subscriptionInfo Of the subscriber, to export the message
     * @param msgUnitWrapper contains the parsed message
     */
-   public MsgQueueEntry(SubscriptionInfo subscriptionInfo, MessageUnitWrapper msgUnitWrapper) throws XmlBlasterException {
+   public MsgQueueEntry(Global glob, SubscriptionInfo subscriptionInfo, MessageUnitWrapper msgUnitWrapper) throws XmlBlasterException {
       if (subscriptionInfo == null || msgUnitWrapper == null) {
          Log.error(ME, "Invalid constructor parameter with subscriptionInfo");
          Thread.currentThread().dumpStack();
          throw new XmlBlasterException(ME, "Invalid constructor parameter");
       }
       
+      this.glob = glob;
       this.subscriptionInfo = subscriptionInfo;
       this.receiverSessionInfo = subscriptionInfo.getSessionInfo();
       this.receiverSubjectInfo = this.receiverSessionInfo.getSubjectInfo();
@@ -222,7 +227,7 @@ public class MsgQueueEntry
    {
       String subscriptionId = (subscriptionInfo == null) ? null : subscriptionInfo.getUniqueKey();
       return UpdateQoS.toXml(subscriptionId, msgUnitWrapper,
-                          index, getMsgQueue().size()+max, Constants.STATE_OK, redeliver);
+                          index, getMsgQueue().size()+max, Constants.STATE_OK, redeliver, glob.getId());
    }
 
    /**
