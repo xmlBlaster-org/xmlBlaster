@@ -92,13 +92,24 @@ public final class SubscribeQos
     * Do we want to have an initial update on subscribe if the message
     * exists already?
     * Defaults to true. 
-    * @return true if initial update wanted
+    * @param initialUpdate true if initial update wanted
     *         false if only updates on new publishes are sent
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.subscribe.initialUpdate.html">The engine.qos.subscribe.initialUpdate requirement</a>
     * @see QueryQosData#setWantInitialUpdate(boolean)
     */
    public void setWantInitialUpdate(boolean initialUpdate) {
       this.queryQosData.setWantInitialUpdate(initialUpdate);
+   }
+
+   /**
+    * Do we want the callback messages of this subscription as oneway with <tt>updateOneway()</tt> or with
+    * the acknowledged <tt>update()</tt>. 
+    * @param updateOneway Defaults to false. 
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html">The interface.subscribe requirement</a>
+    * @see QueryQosData#setWantUpdateOneway(boolean)
+    */
+   public void setWantUpdateOneway(boolean updateOneway) {
+      this.queryQosData.setWantUpdateOneway(updateOneway);
    }
 
    /**
