@@ -38,7 +38,7 @@ extern "C" {
 #  endif
 #endif
 
-/* The following comment is used by doxygen: */
+/* The following comment is used by doxygen for the main html page: */
 /*! \mainpage Hints about the C client library usage.
  *
  * \section intro_sec The C client library
@@ -46,22 +46,29 @@ extern "C" {
  * The xmlBlaster C client library supports access to xmlBlaster with asynchronous callbacks.
  * Details about compilation and its usage can be found in the 
  * http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.socket.html requirement.
- * As a C developer you entry point to use is the struct XmlBlasterAccessUnparsed and
+ *
+ * As a C developer your entry point to use is the struct XmlBlasterAccessUnparsed and
  * a complete overview demo code is HelloWorld3.c
  *
  * \section queue_sec The C persistent queue
  *
  * There is a C based persistent queue available. Currently this C client library and
  * the queue implementation are used in the C++ client library for easy xmlBlaster connection
- * and client side queuing. For details read the
+ * and client side queuing.
+ * As a C developer your entry point to use is the struct I_QueueStruct and a source code example
+ * is TestQueue.c
+ *
+ * For details read the
  * http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.queue.html requirement.
  *
  * \section cpp_sec The C++ client library
  * The C++ client library offers many extended client side features compared to the C library.
  * If you need those additional features and the library size is not the primary concern
  * you should consider to use the C++ library.
+ *
  * For details read the
- * http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.cpp.html requirement.
+ * http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.cpp.html requirement
+ * and look at the API documentation at http://www.xmlblaster.org/xmlBlaster/doc/doxygen/cpp/html/index.html
  */
 
 
@@ -98,6 +105,8 @@ typedef bool  ( * XmlBlasterAccessUnparsedIsConnected)(struct XmlBlasterAccessUn
  * Create an instance of #XmlBlasterAccessUnparsed with a call to #getXmlBlasterAccessUnparsed()
  * and you are ready to access xmlBlaster. Don't forget to free everything when you don't need
  * xmlBlaster access anymore with a call to #freeXmlBlasterAccessUnparsed()
+ *
+ * See HelloWorld3.c for a complete usage example.
  *
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.socket.html
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html
