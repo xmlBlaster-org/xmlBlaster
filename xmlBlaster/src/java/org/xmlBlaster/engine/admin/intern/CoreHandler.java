@@ -167,8 +167,59 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
       return new MessageUnit[0];
    }
 
+   /**
+    * Set a value. 
+    */
    public String set(CommandWrapper cmd) throws XmlBlasterException {
-      throw new XmlBlasterException(ME, "Sorry, set access on core is not implemented");
+      if (cmd == null)
+         throw new XmlBlasterException(ME, "Please pass a command which is not null");
+
+      String client = cmd.getThirdLevel();
+      if (client == null || client.length() < 1)
+         throw new XmlBlasterException(ME, "Please pass a command which has a valid property added, '" + cmd.getCommand() + "' is too short, aborted request.");
+
+      if (client.startsWith("?")) {
+         // for example "/node/heron/?freeMem"
+         String ret = ""+setInvoke(cmd.getKey(), glob.getRequestBroker(), I_AdminNode.class, cmd.getValue());
+         log.info(ME, "Set " + cmd.getCommandStripAssign() + "=" + cmd.getValue());
+         return cmd.getCommandStripAssign() + "=" + cmd.getValue();
+      }
+
+      String loginName = cmd.getUserNameLevel();
+      if (loginName == null || loginName.length() < 1 || loginName.startsWith("?"))
+         throw new XmlBlasterException(ME, "Please pass a command which has a valid client name in '" + cmd.getCommand() + "' with '" + loginName + "' is invalid");
+
+      SubjectInfo subjectInfo = glob.getAuthenticate().getSubjectInfoByName(loginName);
+      if (subjectInfo == null)
+         throw new XmlBlasterException(ME, "Please pass a command which has a valid client name in '" + cmd.getCommand() + "' client '" + loginName + "' is unknown");
+
+      String pubSessionId = cmd.getSessionIdLevel();
+      if (pubSessionId == null || pubSessionId.length() < 1)
+         throw new XmlBlasterException(ME, "Please pass a command which has a valid public session ID in '" + cmd.getCommand() + "'.");
+
+      if (pubSessionId.startsWith("?")) {
+         // for example "/node/heron/joe/?uptime"
+         String ret = ""+setInvoke(cmd.getKey(), subjectInfo, I_AdminSubject.class, cmd.getValue());
+         log.info(ME, "Set " + cmd.getCommandStripAssign() + "=" + cmd.getValue());
+         return cmd.getCommandStripAssign() + "=" + cmd.getValue();
+      }
+
+      String sessionAttr = cmd.getSessionAttrLevel();
+      if (sessionAttr == null || sessionAttr.length() < 1 || sessionAttr.startsWith("?")==false)
+         throw new XmlBlasterException(ME, "Please pass a command which has a valid session attribute in '" + cmd.getCommand() + "'.");
+
+      if (sessionAttr.startsWith("?")) {
+         // for example "client/joe/ses17/?cb.queue.maxMsg"
+         SessionInfo sessionInfo = subjectInfo.getSessionByPublicId(pubSessionId);
+         if (sessionInfo == null)
+            throw new XmlBlasterException(ME, "The public session ID '" + pubSessionId + "' in '" + cmd.getCommand() + "' is unknown.");
+         String ret = ""+setInvoke(cmd.getKey(), sessionInfo, I_AdminSession.class, cmd.getValue());
+         log.info(ME, "Set " + cmd.getCommandStripAssign() + "=" + cmd.getValue());
+         return cmd.getCommandStripAssign() + "=" + cmd.getValue();
+      }
+
+      log.info(ME, cmd.getCommand() + " not implemented");
+      return null;
    }
 
    /**
@@ -193,6 +244,17 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
          return returnValue;
          */
       }
+      catch (java.lang.reflect.InvocationTargetException e) {
+         Throwable t = e.getTargetException();
+         if (t instanceof XmlBlasterException)
+            throw (XmlBlasterException)t;
+         else {
+            String text = "Invoke of property '" + property + "' failed: " + t.toString();
+            log.error(ME, text);
+            t.printStackTrace();
+            throw new XmlBlasterException(ME, text);
+         }
+      }
       catch (Exception e) {
          //e.printStackTrace();
          log.error(ME, "Invoke for get method '" + methodName + "' on class=" + aInterface + " on object=" + impl.getClass() + " failed: " + e.toString());
@@ -205,17 +267,43 @@ final public class CoreHandler implements I_CommandHandler, I_Plugin {
     * @param aClass e.g. I_AdminSubject.class
     * @param argValues = new Object[1]; argValues[0] = "Hi"
     */
-   private void setInvoke(String property, Object impl, Class aClass, Object[] argValues) throws XmlBlasterException {
+   private Object setInvoke(String property, Object impl, Class aClass, Object[] argValues) throws XmlBlasterException {
       try {
          PropertyDescriptor desc = new PropertyDescriptor(property, aClass);
          Method method = desc.getWriteMethod();
-         method.invoke (impl, null); //argValues);
-         log.info(ME, "Invoke set method '" + property + "'");
+         Object obj = method.invoke (impl, argValues);
+         log.info(ME, "Successful invoked set method '" + property + "'");
+         if (obj != null) log.warn(ME, "Ignoring returned value of set method '" + property + "'");
+         return obj;
+      }
+      catch (java.lang.reflect.InvocationTargetException e) {
+         Throwable t = e.getTargetException();
+         if (t instanceof XmlBlasterException)
+            throw (XmlBlasterException)t;
+         else {
+            String text = "Invoke property '" + property + "' with " + argValues.length + " arguments failed: " + t.toString();
+            log.error(ME, text);
+            t.printStackTrace();
+            throw new XmlBlasterException(ME, text);
+         }
       }
       catch (Exception e) {
-         log.error(ME, "Invoke for method '" + property + "' failed: " + e.toString());
-         throw new XmlBlasterException(ME, "Invoke for method '" + property + "' on class=" + aClass + " on object=" + impl.getClass() + " failed: " + e.toString());
+         if (argValues.length > 0) {
+            log.error(ME, "Invoke for property '" + property + "' with " + argValues.length + " arguments of type " +
+               argValues[0].getClass().toString() +
+               " on interface " + aClass.toString() + " failed: " + e.toString());
+         }
+         else {
+            log.error(ME, "Invoke for property '" + property + "' on interface " + aClass.toString() + " failed: " + e.toString());
+         }
+         throw new XmlBlasterException(ME, "Invoke for property '" + property + "' on class=" + aClass + " on object=" + impl.getClass() + " failed: " + e.toString());
       }
+   }
+
+   private Object setInvoke(String property, Object impl, Class aClass, String value) throws XmlBlasterException {
+      Object[] argValues = new Object[1];
+      argValues[0] = value;
+      return setInvoke(property, impl, aClass, argValues);
    }
 
    public String help() {
