@@ -3,12 +3,12 @@ Name:      PublishQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: PublishQos.java,v 1.12 2002/06/11 14:18:13 ruff Exp $
+Version:   $Id: PublishQos.java,v 1.13 2002/06/25 17:44:51 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.RcvTimestamp;
@@ -76,6 +76,7 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
 {
    private String ME = "PublishQos";
    private final Global glob;
+   private final LogChannel log;
 
    /**
     * A message lease lasts forever if not otherwise specified. <p />
@@ -164,8 +165,9 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     */
    public PublishQos(Global glob, String xmlQoS_literal) throws XmlBlasterException
    {
-      // if (Log.TRACE) Log.trace(ME, "\n"+xmlQoS_literal);
+      // if (log.TRACE) log.trace(ME, "\n"+xmlQoS_literal);
       this.glob = glob;
+      this.log = glob.getLog("core");
       touchRcvTimestamp();
       setRemainingLife(getMaxRemainingLife());
       parseQos(xmlQoS_literal);
@@ -183,6 +185,7 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    public PublishQos(Global glob, String xmlQoS_literal, boolean fromPersistenceStore) throws XmlBlasterException
    {
       this.glob = glob;
+      this.log = glob.getLog("core");
       if (!fromPersistenceStore) {
          touchRcvTimestamp();
          setRemainingLife(getMaxRemainingLife());
@@ -192,18 +195,18 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       if (xmlQoS_literal != null)
          size = xmlQoS_literal.length();
       if (fromPersistenceStore && !rcvTimestampFound) {
-         Log.error(ME, "Message from persistent store is missing rcvTimestamp");
+         log.error(ME, "Message from persistent store is missing rcvTimestamp");
       }
    }
 
 
    /**
-    * Constructs the specialized quality of service object for a publish() call.
-    * @param the XML based ASCII string
+    * Constructs the specialized quality of service object for a cluster update() forward call.
     */
    public PublishQos(Global glob, UpdateQos qos) throws XmlBlasterException
    {
       this.glob = glob;
+      this.log = glob.getLog("core");
       setSender(qos.getSender());
       // !!! setState(qos.getState());
       this.rcvTimestamp = qos.getRcvTimestamp();
@@ -331,7 +334,7 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    public final void addRouteInfo(RouteInfo routeInfo)
    {
       if (routeInfo == null) {
-         Log.error(ME, "Adding null routeInfo");
+         log.error(ME, "Adding null routeInfo");
          return;
       }
 
@@ -488,7 +491,7 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    public final Timestamp getRcvTimestamp()
    {
       if (rcvTimestamp == null) {
-         Log.error(ME, "rcvTimestamp is not set, setting it to current");
+         log.error(ME, "rcvTimestamp is not set, setting it to current");
          touchRcvTimestamp();
       }
       return rcvTimestamp;
@@ -545,7 +548,7 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
                      destination.setQueryType(queryType);
                   }
                   else
-                     Log.error(ME, "Sorry, destination queryType='" + queryType + "' is not supported");
+                     log.error(ME, "Sorry, destination queryType='" + queryType + "' is not supported");
                }
                else if( attrs.getQName(i).equalsIgnoreCase("forceQueuing") ) {
                   String tmp = attrs.getValue(i).trim();
@@ -569,9 +572,9 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          if (attrs != null) {
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
-               Log.warn(ME, "Ignoring sent <sender> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
+               log.warn(ME, "Ignoring sent <sender> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
             }
-            // if (Log.TRACE) Log.trace(ME, "Found sender tag");
+            // if (log.TRACE) log.trace(ME, "Found sender tag");
          }
          return;
       }
@@ -583,9 +586,9 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          if (attrs != null) {
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
-               Log.warn(ME, "Ignoring sent <priority> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
+               log.warn(ME, "Ignoring sent <priority> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
             }
-            // if (Log.TRACE) Log.trace(ME, "Found priority tag");
+            // if (log.TRACE) log.trace(ME, "Found priority tag");
          }
          return;
       }
@@ -598,13 +601,13 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
             int len = attrs.getLength();
             String tmp = attrs.getValue("remainingLife");
             if (tmp != null) {
-               try { setRemainingLife(Long.parseLong(tmp.trim())); } catch(NumberFormatException e) { Log.error(ME, "Invalid remainingLife - millis =" + tmp); };
+               try { setRemainingLife(Long.parseLong(tmp.trim())); } catch(NumberFormatException e) { log.error(ME, "Invalid remainingLife - millis =" + tmp); };
             }
             else {
-               Log.warn(ME, "QoS <expiration> misses remainingLife attribute, setting default of " + getMaxRemainingLife());
+               log.warn(ME, "QoS <expiration> misses remainingLife attribute, setting default of " + getMaxRemainingLife());
                setRemainingLife(getMaxRemainingLife());
             }
-            // if (Log.TRACE) Log.trace(ME, "Found expiration tag");
+            // if (log.TRACE) log.trace(ME, "Found expiration tag");
          }
          return;
       }
@@ -617,7 +620,7 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
             if (fromPersistenceStore) {  // First we need the rcvTimestamp:
                String tmp = attrs.getValue("nanos");
                if (tmp != null) {
-                  try { rcvTimestamp = new RcvTimestamp(Long.parseLong(tmp.trim())); rcvTimestampFound = true; } catch(NumberFormatException e) { Log.error(ME, "Invalid rcvTimestamp - millis =" + tmp); };
+                  try { rcvTimestamp = new RcvTimestamp(Long.parseLong(tmp.trim())); rcvTimestampFound = true; } catch(NumberFormatException e) { log.error(ME, "Invalid rcvTimestamp - millis =" + tmp); };
                }
             }
          }
@@ -633,7 +636,7 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       }
       if (name.equalsIgnoreCase("node")) {
          if (!inRoute) {
-            Log.error(ME, "Ignoring <node>, it is not inside <route>");
+            log.error(ME, "Ignoring <node>, it is not inside <route>");
             return;
          }
 
@@ -641,7 +644,7 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
 
             String id = attrs.getValue("id");
             if (id == null || id.length() < 1) {
-               Log.error(ME, "QoS <route><node> misses id attribute, ignoring node");
+               log.error(ME, "QoS <route><node> misses id attribute, ignoring node");
                return;
             }
             NodeId nodeId = new NodeId(id);
@@ -649,30 +652,30 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
             int stratum = 0;
             String tmp = attrs.getValue("stratum");
             if (tmp != null) {
-               try { stratum = Integer.parseInt(tmp.trim()); } catch(NumberFormatException e) { Log.error(ME, "Invalid stratum =" + tmp); };
+               try { stratum = Integer.parseInt(tmp.trim()); } catch(NumberFormatException e) { log.error(ME, "Invalid stratum =" + tmp); };
             }
             else {
-               Log.warn(ME, "QoS <route><node> misses stratum attribute, setting to 0: " + xmlLiteral);
+               log.warn(ME, "QoS <route><node> misses stratum attribute, setting to 0: " + xmlLiteral);
                Thread.currentThread().dumpStack();
             }
 
             Timestamp timestamp = null;
             tmp = attrs.getValue("timestamp");
             if (tmp != null) {
-               try { timestamp = new Timestamp(Long.parseLong(tmp.trim())); } catch(NumberFormatException e) { Log.error(ME, "Invalid route Timestamp - nanos =" + tmp); };
+               try { timestamp = new Timestamp(Long.parseLong(tmp.trim())); } catch(NumberFormatException e) { log.error(ME, "Invalid route Timestamp - nanos =" + tmp); };
             }
             else {
-               Log.warn(ME, "QoS <route><node> misses receive timestamp attribute, setting to 0");
+               log.warn(ME, "QoS <route><node> misses receive timestamp attribute, setting to 0");
                timestamp = new Timestamp(0L);
             }
 
             String tmpDirty = attrs.getValue("dirtyRead");
             boolean dirtyRead = org.xmlBlaster.engine.cluster.NodeDomainInfo.DEFAULT_dirtyRead;
             if (tmpDirty != null) {
-               try { dirtyRead = new Boolean(tmpDirty.trim()).booleanValue(); } catch(NumberFormatException e) { Log.error(ME, "Invalid dirtyRead =" + tmpDirty); };
+               try { dirtyRead = new Boolean(tmpDirty.trim()).booleanValue(); } catch(NumberFormatException e) { log.error(ME, "Invalid dirtyRead =" + tmpDirty); };
             }
 
-            if (Log.TRACE) Log.trace(ME, "Found node tag");
+            if (log.TRACE) log.trace(ME, "Found node tag");
 
             routeInfo = new RouteInfo(nodeId, stratum, timestamp);
             if (tmpDirty != null)
@@ -686,7 +689,7 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          if (!inDestination)
             return;
          destination.forceQueuing(true);
-         Log.warn(ME, "forceQueuing is an attribute of destination - change your code");
+         log.warn(ME, "forceQueuing is an attribute of destination - change your code");
          return;
       }
 
@@ -697,9 +700,9 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          if (attrs != null) {
             int len = attrs.getLength();
             for (int i = 0; i < len; i++) {
-               Log.warn(ME, "Ignoring sent <isVolatile> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
+               log.warn(ME, "Ignoring sent <isVolatile> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
             }
-            // if (Log.TRACE) Log.trace(ME, "Found isVolatile tag");
+            // if (log.TRACE) log.trace(ME, "Found isVolatile tag");
          }
          return;
       }
@@ -751,7 +754,7 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       if(name.equalsIgnoreCase("sender")) {
          inSender = false;
          sender = character.toString().trim();
-         // if (Log.TRACE) Log.trace(ME, "Found message sender login name = " + sender);
+         // if (log.TRACE) log.trace(ME, "Found message sender login name = " + sender);
          character.setLength(0);
          return;
       }
@@ -759,7 +762,7 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
       if(name.equalsIgnoreCase("priority")) {
          inPriority = false;
          priority = Constants.getPriority(character.toString(), Constants.NORM_PRIORITY);
-         // if (Log.TRACE) Log.trace(ME, "Found priority = " + priority);
+         // if (log.TRACE) log.trace(ME, "Found priority = " + priority);
          character.setLength(0);
          return;
       }
@@ -787,7 +790,7 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
             forceUpdate = new Boolean(tmp).booleanValue();
-         // if (Log.TRACE) Log.trace(ME, "Found forceUpdate = " + forceUpdate);
+         // if (log.TRACE) log.trace(ME, "Found forceUpdate = " + forceUpdate);
          character.setLength(0);
          return;
       }
@@ -797,7 +800,7 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
             isVolatile = new Boolean(tmp).booleanValue();
-         // if (Log.TRACE) Log.trace(ME, "Found isVolatile = " + isVolatile);
+         // if (log.TRACE) log.trace(ME, "Found isVolatile = " + isVolatile);
          character.setLength(0);
          return;
       }
@@ -807,7 +810,7 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
             isDurable = new Boolean(tmp).booleanValue();
-         // if (Log.TRACE) Log.trace(ME, "Found isDurable = " + isDurable);
+         // if (log.TRACE) log.trace(ME, "Found isDurable = " + isDurable);
          character.setLength(0);
          return;
       }
@@ -817,7 +820,7 @@ public class PublishQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
             readonly = new Boolean(tmp).booleanValue();
-         // if (Log.TRACE) Log.trace(ME, "Found readonly = " + readonly);
+         // if (log.TRACE) log.trace(ME, "Found readonly = " + readonly);
          character.setLength(0);
          return;
       }
