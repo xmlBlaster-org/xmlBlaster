@@ -73,7 +73,7 @@
       <img src="cluster.availability.gif" border="0" title="XmlBlaster cluster example" alt="Example for a typical xmlBlaster cluster" />
       </p>
       </li>
-      <li><h4>Logical separation based on cluster topics:</h4><br />
+      <li><h4>Logical separation based on message domains:</h4><br />
       One xmlBlaster instance can be the master for selective messages (e.g. for
       stock exchange messages) and be slave for other messages (e.g. for 
       air traffic radar tracks or rugby news) simultaneously. Consequently a client interested
@@ -82,7 +82,7 @@
       <img src="cluster.topic.gif" border="0" title="XmlBlaster cluster example" alt="Example for a typical xmlBlaster cluster" />
       </p>
       <p>
-      As we can see the node <i>golan</i> is master of "STOCK_EXCHANGE" messages but
+      As we can see the node <i>golan</i> is master of messages of the domain "STOCK_EXCHANGE" but
       caches "RUGBY_NEWS" as well.
       </p>
       </li>
@@ -115,8 +115,8 @@
    </description>
    <example lang="Java">
       <![CDATA[
-      <key oid='__sys__clusternode:heron'>
-         <__sys__clusternode/>
+      <key oid='__sys__cluster.node:heron'>
+         <__sys__cluster.node/>
       </key>
 
    content=
@@ -124,12 +124,17 @@
          <address type='IOR'>IOR:00044550005...</address>
          <address type='XML-RPC'>http:/www.mars.universe:8080/RPC2</address>
          <callback type='XML-RPC'>http:/www.mars.universe:8081/RPC2</callback>
+         <backupnode>
+            <clusternode id='avalon'/>  <!-- first failover node -->
+            <clusternode id='golan'/>   <!-- second backup node -->
+         </backupnode>
+         <nameservice>true</nameservice>
       </clusternode>
 
 
 
-      <key oid='__sys__clusternodestate:heron'>
-         <__sys__clusternodestate/>
+      <key oid='__sys__cluster.node.state:heron'>
+         <__sys__cluster.node.state/>
       </key>
  
    content=
@@ -138,16 +143,25 @@
             <cpu id='0' idle='40'/>            <!-- currently 60% load on first CPU -->
             <cpu id='1' idle='44'/>
             <ram free='12000'/>                <!-- xmlBlaster server instance has 12 MB free memory -->
+            <performance bogomips='1205.86'/>
          </state>
       </clusternode>
 
 
 
-      <key oid='__sys__clusternodemaster:heron'>
-         <__sys__clusternodemaster/>
+      <key oid='__sys__cluster.node.master:heron'>
+         <__sys__cluster.node.master/>
       </key>
  
    content=
+      <clusternode id='heron'>
+         <master>
+            <key domain=''/>           <!-- default setting -->
+            <key domain='football'/>
+            <key domain='rugby'/>
+         </master>
+      </clusternode>
+
       <clusternode id='heron'>
          <master>
             <key oid='radar.track'/>
@@ -157,11 +171,18 @@
          </master>
       </clusternode>
 
+
+   A message can specify its domain as a key attribute:
+
+      <key oid='football.49.results' domain='football'/>
+
+   One or many domains are mapped to a cluster master name.
+   The 
       ]]>
    </example>
    <author>ruff@swand.lake.de</author>
    <date>2000 04 03</date>
-   <revision>$Revision: 1.5 $</revision>
+   <revision>$Revision: 1.6 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
