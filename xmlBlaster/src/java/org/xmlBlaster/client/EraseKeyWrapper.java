@@ -3,12 +3,13 @@ Name:      EraseKeyWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey
-Version:   $Id: EraseKeyWrapper.java,v 1.1 2001/12/23 11:40:00 ruff Exp $
+Version:   $Id: EraseKeyWrapper.java,v 1.2 2002/05/16 23:35:12 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.engine.helper.Constants;
 
 
 /**
@@ -98,12 +99,24 @@ public class EraseKeyWrapper extends KeyWrapper
    {
       queryString = str;
 
-      StringBuffer sb = new StringBuffer();
-      sb.append("<key oid='").append(oid).append("'");
-      sb.append(" queryType='").append(queryType).append("'");
-      sb.append(">\n");
-      sb.append(queryString);
-      sb.append("\n</key>");
+      StringBuffer sb = new StringBuffer(256);
+      sb.append("<key");
+      if (queryType.equals(Constants.EXACT)) {
+         sb.append(" oid='").append(oid).append("'");
+      }
+      if (domain.length() > 0) {
+         sb.append(" domain='").append(domain).append("'");
+      }
+
+      if (queryType.equals(Constants.XPATH)) {
+         sb.append(" queryType='").append(queryType).append("'>\n");
+         sb.append(queryString);
+         sb.append("\n</key>");
+      }
+      else {
+         sb.append("/>");
+      }
+
       return sb.toString();
    }
 }
