@@ -3,7 +3,7 @@ Name:      RoundRobin.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Simple demo implementation for clustering
-Author:    ruff@swand.lake.de
+Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.cluster.simpledomain;
 
@@ -23,7 +23,7 @@ import java.util.Iterator;
 
 /**
  * Implements dummy load balancing for xmlBlaster using round robin approach. 
- * @author ruff@swand.lake.de 
+ * @author xmlBlaster@marcelruff.info 
  * @since 0.79e
  */
 final public class RoundRobin implements I_LoadBalancer, I_Plugin {

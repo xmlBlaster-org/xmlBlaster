@@ -9,10 +9,10 @@ import org.xmlBlaster.util.Timestamp;
 
 /**
  * This class holds the information about a route node which the message passed. 
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public final class RouteInfo implements java.io.Serializable {
-
+   //private transient final Global;
    private NodeId nodeId;
    private int stratum;
    private Timestamp timestamp;
