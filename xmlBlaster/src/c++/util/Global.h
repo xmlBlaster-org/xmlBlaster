@@ -3,7 +3,7 @@ Name:      Global.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The global object (a stack for all pseudo static stuff).
-Version:   $Id: Global.h,v 1.36 2004/09/20 14:05:04 ruff Exp $
+Version:   $Id: Global.h,v 1.37 2004/09/21 14:51:10 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef ORG_XMLBLASTER_UTIL_GLOBAL_H
@@ -192,6 +192,15 @@ public:
 
    /**
     * If no log is found with that name, one is created. 
+	 * You should have initialized Global with your properties to
+	 * before your first call to getLog(), for example:
+	 * <pre>
+	 * std::map<std::string, std::string, std::less<std::string> > propertyMap;
+	 * ... // insert configuration key / values
+    * Global& myGlobal = Global::getInstance().initialize(propertyMap);
+	 * I_Log& log = myGlobal.getLog("BlasterClient"));
+	 * ...
+    * </pre>
     */
    org::xmlBlaster::util::I_Log& getLog(const std::string &logName="org.xmlBlaster");
 
