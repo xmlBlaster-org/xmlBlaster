@@ -3,7 +3,7 @@ Name:      HttpPushHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: HttpPushHandler.java,v 1.16 2000/05/03 17:12:50 ruff Exp $
+Version:   $Id: HttpPushHandler.java,v 1.17 2000/05/05 16:57:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -116,7 +116,7 @@ public class HttpPushHandler
           "   <br>&nbsp;\n" +
           "   <br>&nbsp;\n" +
           "   <form ACTION=\"\" METHOD=\"POST\" TARGET=\"callback\">\n" +
-          "      <INPUT TYPE=\"HIDDEN\" NAME=\"NoName\" VALUE=\"NoValue\">\n" +
+          "      <INPUT TYPE=\"HIDDEN\" NAME=\"NoName\" VALUE=\"NoValue\" />\n" +
           "   </form>\n" +
           "   <script language='JavaScript'>\n";
       }
@@ -360,7 +360,7 @@ public class HttpPushHandler
 
 
    /**
-    * Calls the message method in the parentframe of the callback frame. 
+    * Calls the message method in the parentframe of the callback frame.
     * <p />
     * See callback.js message() method.
     * @param text This must be Javascript code (usually a message string)
@@ -378,7 +378,7 @@ public class HttpPushHandler
 
 
    /**
-    * Calls the error method in the parentframe of the callback frame. 
+    * Calls the error method in the parentframe of the callback frame.
     * <p />
     * See callback.js error() method, which shows an alert window.
     * @param text This must be Javascript code (usually an error string)
