@@ -3,7 +3,7 @@ Name:      ConnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: ConnectQos.java,v 1.36 2002/12/20 16:32:46 ruff Exp $
+Version:   $Id: ConnectQos.java,v 1.37 2002/12/24 14:15:33 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -1119,50 +1119,49 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
          }
       }
 
-      StringBuffer sb = new StringBuffer(256);
-      String offset = "\n";
+      StringBuffer sb = new StringBuffer(1000);
       if (extraOffset == null) extraOffset = "";
-      offset += extraOffset;
+      String offset = Constants.OFFSET + extraOffset;
 
       sb.append(offset).append("<qos>");
 
       // <securityService ...
       if(securityQos!=null) sb.append(securityQos.toXml(extraOffset)); // includes the qos of the ClientSecurityHelper
 
-      sb.append(offset).append("   <ptp>").append(ptpAllowed).append("</ptp>");
+      sb.append(offset).append(" <ptp>").append(ptpAllowed).append("</ptp>");
    
       if (isClusterNode())
-         sb.append(offset).append("   <isClusterNode>").append(isClusterNode()).append("</isClusterNode>");
+         sb.append(offset).append(" <isClusterNode>").append(isClusterNode()).append("</isClusterNode>");
 
       if (duplicateUpdates() == false)
-         sb.append(offset).append("   <duplicateUpdates>").append(duplicateUpdates()).append("</duplicateUpdates>");
+         sb.append(offset).append(" <duplicateUpdates>").append(duplicateUpdates()).append("</duplicateUpdates>");
 
-      sb.append(offset).append("   <session timeout='").append(sessionTimeout);
+      sb.append(offset).append(" <session timeout='").append(sessionTimeout);
       sb.append("' maxSessions='").append(maxSessions);
       sb.append("' clearSessions='").append(clearSessions());
       if (getSessionName() != null)
          sb.append("' name='").append(getSessionName().getAbsoluteName());
       if(sessionId!=null) {
          sb.append("'>");
-         sb.append(offset).append("      <sessionId>").append(sessionId).append("</sessionId>");
-         sb.append(offset).append("   </session>");
+         sb.append(offset).append("  <sessionId>").append(sessionId).append("</sessionId>");
+         sb.append(offset).append(" </session>");
       }
       else
          sb.append("'/>");
 
       for (int ii=0; ii<clientQueuePropertyList.size(); ii++) {
          QueueProperty ad = (QueueProperty)clientQueuePropertyList.get(ii);
-         sb.append(ad.toXml(extraOffset));
+         sb.append(ad.toXml(extraOffset+Constants.INDENT));
       }
       
       for (int ii=0; ii<cbQueuePropertyVec.size(); ii++) {
          CbQueueProperty ad = (CbQueueProperty)cbQueuePropertyVec.elementAt(ii);
-         sb.append(ad.toXml(extraOffset));
+         sb.append(ad.toXml(extraOffset+Constants.INDENT));
       }
       
       for (int ii=0; ii<serverRefVec.size(); ii++) {
          ServerRef ref = (ServerRef)serverRefVec.elementAt(ii);
-         sb.append(ref.toXml(extraOffset));
+         sb.append(ref.toXml(extraOffset+Constants.INDENT));
          if (ii < serverRefVec.size()-1)
             sb.append("\n");
       }
