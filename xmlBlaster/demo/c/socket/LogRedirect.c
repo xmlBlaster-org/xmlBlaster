@@ -50,7 +50,7 @@ int main(int argc, char** argv)
       }
    }
 
-   xa = getXmlBlasterAccessUnparsed(argc, argv);
+   xa = getXmlBlasterAccessUnparsed(argc, (const char* const*)argv);
 
    /* Register our own logging function */
    xa->log = myLogger;
