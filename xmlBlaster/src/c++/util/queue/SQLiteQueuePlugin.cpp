@@ -12,7 +12,8 @@ Author:    xmlBlaster@marcelruff.info
 #include <util/lexical_cast.h>
 #include <util/MessageUnit.h>
 #include <util/queue/PublishQueueEntry.h>
-#include <socket/xmlBlasterSocket.h> // C xmlBlaster client library
+#include <socket/xmlBlasterSocket.h> // C xmlBlaster client library: for msgUnit serialize
+#include <util/queue/QueueInterface.h> // The C implementation interface
 
 using namespace std;
 using namespace org::xmlBlaster::util;
@@ -158,7 +159,7 @@ SQLiteQueuePlugin::SQLiteQueuePlugin(Global& global, const ClientQueueProperty& 
    queueProperties.userObject = &log_;
 
    queueP_ = createQueue(&queueProperties, &exception); // &log_ Used in myLogger(), see above
-   if (*exception.errorCode != 0) throw convertFromQueueException(exception);
+   if (*exception.errorCode != 0) throw convertFromQueueException(&exception);
 
    log_.info(ME, "Created queue [" + getType() + "][" + getVersion() + "]");
 }
@@ -235,7 +236,7 @@ void SQLiteQueuePlugin::put(const MsgQueueEntry &entry)
 
    queueP_->put(queueP_, &queueEntry, &exception);
 
-   if (*exception.errorCode != 0) throw convertFromQueueException(exception);
+   if (*exception.errorCode != 0) throw convertFromQueueException(&exception);
 }
 
 const vector<EntryType> SQLiteQueuePlugin::peekWithSamePriority(long maxNumOfEntries, long maxNumOfBytes) const
@@ -248,7 +249,7 @@ const vector<EntryType> SQLiteQueuePlugin::peekWithSamePriority(long maxNumOfEnt
 
    ::ExceptionStruct exception;
    ::QueueEntryArr *entriesC = queueP_->peekWithSamePriority(queueP_, maxNumOfEntries, maxNumOfBytes, &exception);
-   if (*exception.errorCode != 0) throw convertFromQueueException(exception);
+   if (*exception.errorCode != 0) throw convertFromQueueException(&exception);
 
    // Now we need to copy the C results into C++ classes ...
 
@@ -283,7 +284,7 @@ const vector<EntryType> SQLiteQueuePlugin::peekWithSamePriority(long maxNumOfEnt
             MsgQosData msgQosData = msgQosFactory_.readObject(string(msgUnit.qos));
             MessageUnit messageUnit(msgKeyData, msgUnit.contentLen, (const unsigned char*)msgUnit.content, msgQosData);
             PublishQueueEntry *pq = new PublishQueueEntry(global_, messageUnit, queueEntryC.embeddedType,
-                                           queueEntryC.priority, queueEntryC.isPersistent);
+                                           queueEntryC.priority, queueEntryC.isPersistent, queueEntryC.uniqueId);
             if (log_.trace()) log_.trace(ME, "Got PublishQueueEntry from queue");
             ret.insert(ret.end(), EntryType(*pq));
             if (log_.trace()) log_.trace(ME, "PublishQueueEntry is reference countet");
@@ -321,19 +322,53 @@ long SQLiteQueuePlugin::randomRemove(const vector<EntryType>::const_iterator &st
    Lock lock(accessMutex_);
    if (queueP_ == 0) throw XmlBlasterException(RESOURCE_DB_UNAVAILABLE, ME, "Sorry, no persistent queue is available, randomRemove() failed");
    if (start == end || queueP_->empty(queueP_)) return 0;
+
+   ::QueueEntryArr queueEntryArr;
+   memset(&queueEntryArr, 0, sizeof(QueueEntryArr));
+   {
+      vector<EntryType>::const_iterator iter = start;
+      while (iter != end) {
+         iter++;
+         queueEntryArr.len++;
+      }
+   }
+   if (queueEntryArr.len < 1) return 0;
+
+   queueEntryArr.queueEntryArr = (QueueEntry *)calloc(queueEntryArr.len, sizeof(QueueEntry));
+
    vector<EntryType>::const_iterator iter = start;
-   QueueEntryArr *queueEntryArr = 0;
-   while (iter != end) {
+   for (int currIndex=0; iter != end; ++iter, currIndex++) {
+      const EntryType &entryType = (*iter);
+      const MsgQueueEntry &entry = *entryType;
+      ::QueueEntry &queueEntry = queueEntryArr.queueEntryArr[currIndex];
+
+      // Copy C++ to C struct ...
+
+      queueEntry.priority = entry.getPriority();
+      queueEntry.isPersistent = entry.isPersistent();
+      queueEntry.uniqueId = entry.getUniqueId();
+      strncpy0(queueEntry.embeddedType, entry.getEmbeddedType().c_str(), QUEUE_ENTRY_EMBEDDEDTYPE_LEN);  // "MSG_RAW|publish"
+      queueEntry.embeddedType[QUEUE_ENTRY_EMBEDDEDTYPE_LEN-1] = 0;
       /*
-      EntryType entryType = (*iter);
-      ----> Copy from C++ into C array TODO !!!!!!!!!!!
+      const BlobHolder *blob = (const BlobHolder *)entry.getEmbeddedObject();
+      if (blob == 0) throw XmlBlasterException(INTERNAL_ILLEGALARGUMENT, ME, "put() failed, the entry " + entry.getLogId() + " returned NULL for embeddedObject");
+      queueEntry.embeddedBlob.data = blob->data;
+      queueEntry.embeddedBlob.dataLen = blob->dataLen;
       */
-      iter++;
+      if (log_.dump()) {
+         char *dumpP = ::queueEntryToXml(&queueEntry, 200);
+         log_.dump(ME+".put()", string("Put blob to queue:") + dumpP);
+         xmlBlasterFree(dumpP);
+      }
    }
 
    ::ExceptionStruct exception;
-   int32_t numRemoved = queueP_->randomRemove(queueP_, queueEntryArr, &exception);
-   if (*exception.errorCode != 0) throw convertFromQueueException(exception);
+
+   int32_t numRemoved = queueP_->randomRemove(queueP_, &queueEntryArr, &exception);
+
+   freeQueueEntryArrInternal(&queueEntryArr);
+
+   if (*exception.errorCode != 0) throw convertFromQueueException(&exception);
    return (long)numRemoved;
 }
 
@@ -381,18 +416,18 @@ void SQLiteQueuePlugin::destroy()
    if (queueP_ == 0) throw XmlBlasterException(RESOURCE_DB_UNAVAILABLE, ME, "Sorry, no persistent queue is available, destroy() failed");
    ::ExceptionStruct exception;
    queueP_->destroy(&queueP_, &exception);
-   if (*exception.errorCode != 0) throw convertFromQueueException(exception);
+   if (*exception.errorCode != 0) throw convertFromQueueException(&exception);
 }
 
 // Exception conversion ....
-org::xmlBlaster::util::XmlBlasterException SQLiteQueuePlugin::convertFromQueueException(const ::ExceptionStruct& ex) const
+org::xmlBlaster::util::XmlBlasterException SQLiteQueuePlugin::convertFromQueueException(const ::ExceptionStruct *ex) const
 {
    return org::xmlBlaster::util::XmlBlasterException(
-            (*ex.errorCode=='\0')?string("internal.unknown"):string(ex.errorCode),
+            (*ex->errorCode=='\0')?string("internal.unknown"):string(ex->errorCode),
             string(""),
             ME,
             "en",
-            string(ex.message),
+            string(ex->message),
             global_.getVersion() + " " + global_.getBuildTimestamp());
 }
 

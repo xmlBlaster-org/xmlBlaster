@@ -16,7 +16,9 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/key/MsgKeyFactory.h>
 #include <util/thread/ThreadImpl.h>
 #include <util/I_Log.h>
-#include <util/queue/QueueInterface.h> // The C implementation interface
+
+struct I_QueueStruct;
+struct ExceptionStruct;
 
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
@@ -42,7 +44,7 @@ protected:
    org::xmlBlaster::util::Global& global_;
    org::xmlBlaster::util::I_Log& log_;
    org::xmlBlaster::util::qos::storage::QueuePropertyBase property_;
-   ::I_Queue *queueP_; // The C based xmlBlaster SQLite queue implementation
+   struct ::I_QueueStruct *queueP_; // The C based xmlBlaster SQLite queue implementation
    mutable org::xmlBlaster::util::qos::StatusQosFactory statusQosFactory_;
    mutable org::xmlBlaster::util::key::MsgKeyFactory msgKeyFactory_;
    mutable org::xmlBlaster::util::qos::MsgQosFactory msgQosFactory_;
@@ -124,7 +126,7 @@ public:
    /**
     * Converts the C ExceptionStruct into our XmlBlasterException class. 
     */
-   org::xmlBlaster::util::XmlBlasterException convertFromQueueException(const ::ExceptionStruct& ex) const;
+   org::xmlBlaster::util::XmlBlasterException convertFromQueueException(const ::ExceptionStruct *ex) const;
 
    /**
     * Parse the embedded type information. 
