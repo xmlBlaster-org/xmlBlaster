@@ -157,7 +157,7 @@ public final class CommandManager implements I_RunlevelListener
          if (w.getThirdLevel().startsWith("?")) {
             key = "DEFAULT";  // One handler needs to register itself with "DEFAULT"
          }
-         Object obj = this.handlerMap.get(key);
+         Object obj = this.handlerMap.get(key); // e.g. "topic" or "client" or "sysprop"
          if (obj == null) {
             throw new XmlBlasterException(glob, ErrorCode.USER_ILLEGALARGUMENT, ME, "Sorry can't process your command '" + cmd + "', '" + w.getThirdLevel() + "' has no registered handler (key=" + key + ")");
          }
