@@ -19,13 +19,15 @@ COMMENT:
           *        qos     = UpdateQos object
           */
          function update( messageQueue ) {
+            top.xmlBlasterWindow.setReady( self, false );
             top.xmlBlasterWindow.Log.trace("northFrame is receiving " + messageQueue.length + " updates");
             for( var i = 0; i < messageQueue.length; i++ ) {
-               top.xmlBlasterWindow.setReady( self, false );
                var keyOid = messageQueue[i].key.oid;
                var content = messageQueue[i].content;
                updateFrame(keyOid, content);
             }
+            top.xmlBlasterWindow.Log.trace("Processed " + i + " SVG updates");
+            top.xmlBlasterWindow.setReady( self, true );
          }
 
          /**
@@ -42,7 +44,7 @@ COMMENT:
             // Uncomment to test the other methods:
             //test();
             top.xmlBlasterWindow.setReady( self, true );
-            top.xmlBlasterWindow.Log.trace("OK, i am ready");
+            top.xmlBlasterWindow.Log.trace("OK, i am initialized and ready");
          }
 
          /**
@@ -115,9 +117,6 @@ COMMENT:
             */
 
             Log.trace("SVG picture is successfully updated with new value");
-            
-            top.xmlBlasterWindow.setReady( self, true );
-
          }
 
          /**
