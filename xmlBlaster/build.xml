@@ -1484,8 +1484,6 @@ TODO
          <sysincludepath location="${XMLCPP_HOME}/include" />             <!-- xerces 1.6.0 -->
          <sysincludepath location="${XMLCPP_HOME}/include/xercesc" />     <!-- Since xerces 1.7.0 -->
 
-         <syslibset dir="/lib" libs="dl" if="unix"/>
-         <syslibset dir="/usr/lib" libs="pthread" if="unix"/>
          <!-- syslibset dir="/usr/lib" libs="stdc++" if="unix"/ -->
 
          <defineset>
@@ -1523,6 +1521,10 @@ TODO
 
             <!-- xmlBlasterClient.dll -->
             <libset dir="${lib.dir}" libs="xmlBlasterClient" />
+      
+            <syslibset dir="/lib" libs="dl" if="unix"/>
+            <syslibset dir="/usr/lib" libs="pthread" if="unix"/>
+
          </linker>
 
          <linker name="msvc" if="use-msvc"> <!-- linker does not support nested switch -->
