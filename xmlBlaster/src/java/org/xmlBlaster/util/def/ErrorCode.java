@@ -184,6 +184,12 @@ public final class ErrorCode implements java.io.Serializable
          }
       );
 
+   public static final ErrorCode RESOURCE_DB_BLOCK = new ErrorCode("resource.db.block",
+         "A timeout occurred while accessing the database, typically caused by concurrent multithreaded access", // Used in C queue (SQLite)
+         new ResourceInfo[] {
+         }
+      );
+
    public static final ErrorCode RESOURCE_DB_UNKNOWN = new ErrorCode("resource.db.unknown",
          "An unknown error with the backend database using JDBC occurred",
          new ResourceInfo[] {
