@@ -22,6 +22,8 @@ import junit.framework.*;
  * <pre>
  * java -Djava.compiler= junit.textui.TestRunner -noloading clustertest.PublishTest
  * </pre>
+ * NOTE: asserts() in update() methods are routed back to server and are not handled
+ *       by the junit testsuite, so we check double (see code).
  * @see http://www.xmlblaster.org/xmlBlaster/doc/requirements/cluster.html
  */
 public class PublishTest extends TestCase {
@@ -42,7 +44,12 @@ public class PublishTest extends TestCase {
 
    private int updateCounterHeron = 0;
    private int updateCounterFrodo = 0;
+   private int updateCounterBilbo = 0;
    private String oid = "PublishToBilbo";
+   private String domain = "RUGBY_NEWS"; // heron is master for RUGBY_NEWS
+   private String contentStr = "We win";
+
+   private String assertInUpdate = null;
 
    public PublishTest(String name) {
       super(name);
@@ -199,29 +206,33 @@ public class PublishTest extends TestCase {
       try {
          bilboCon = connect(bilboGlob, new I_Callback() {  // Login to xmlBlaster, register for updates
                public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-                  fail("bilbo should not receive the message '" + updateKey.getOid() + "'");
+                  assertInUpdate = bilboGlob.getId() + ": Should not receive the message '" + updateKey.getOid() + "'";
+                  fail(assertInUpdate); // This is routed to server, not to junit
                   return "";
                }
             });
-
-         String domain = "RUGBY_NEWS"; // heron is master for RUGBY_NEWS
-         String content = "We win";
+         assertTrue(assertInUpdate, assertInUpdate == null);
+         assertInUpdate = null;
 
          PublishKeyWrapper pk = new PublishKeyWrapper(oid, "text/plain", "1.0", domain);
          PublishQosWrapper pq = new PublishQosWrapper();
-         MessageUnit msgUnit = new MessageUnit(pk.toXml(), content.getBytes(), pq.toXml());
+         MessageUnit msgUnit = new MessageUnit(pk.toXml(), contentStr.getBytes(), pq.toXml());
          String retQos = bilboCon.publish(msgUnit);
-         log.info(ME+":"+bilboGlob.getId(), "Published message of domain='" + pk.getDomain() + "' and content='" + content +
+         log.info(ME+":"+bilboGlob.getId(), "Published message of domain='" + pk.getDomain() + "' and content='" + contentStr +
                                     "' to xmlBlaster node with IP=" + bilboGlob.getProperty().get("port",0) +
                                     ", the returned QoS is: " + retQos);
 
 
          heronCon = connect(heronGlob, new I_Callback() {  // Login to xmlBlaster, register for updates
                public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-                  log.info(ME+":"+heronGlob.getId(), "Receive message '" + updateKey.getOid() + "'");
+                  log.error(ME+":"+heronGlob.getId(), "Receive message '" + updateKey.getOid() + "'");
+                  assertInUpdate = heronGlob.getId() + ": Did not expect message update in default handler";
+                  fail(assertInUpdate); // This is routed to server, not to junit
                   return "";
                }
             });
+         assertTrue(assertInUpdate, assertInUpdate == null);
+         assertInUpdate = null;
 
          System.err.println("->Check if the message has reached the master node heron ...");
          GetKeyWrapper gk = new GetKeyWrapper(oid);
@@ -259,12 +270,18 @@ public class PublishTest extends TestCase {
          SubscribeQosWrapper sq = new SubscribeQosWrapper();
          String subId = heronCon.subscribe(sk.toXml(), sq.toXml(), new I_Callback() {
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-               assertEquals("Reveiving unexpected asynchronous update message", oid, updateKey.getOid());
+               assertInUpdate = heronGlob.getId() + ": Reveiving unexpected asynchronous update message";
+               assertEquals(assertInUpdate, oid, updateKey.getOid());
+               assertInUpdate = heronGlob.getId() + ": Reveiving corrupted asynchronous update message";
+               assertEquals(assertInUpdate, contentStr, new String(content));
                log.info(ME+":"+heronGlob.getId(), "Reveiving asynchronous message '" + updateKey.getOid() + "' in " + oid + " handler");
                updateCounterHeron++;
+               assertInUpdate = null;
                return "";
             }
          });  // subscribe with our specific update handler
+         assertTrue(assertInUpdate, assertInUpdate == null);
+         assertInUpdate = null;
 
          stopFrodo();
 
@@ -278,9 +295,9 @@ public class PublishTest extends TestCase {
          // publish again ...
          pk = new PublishKeyWrapper(oid, "text/plain", "1.0", domain);
          pq = new PublishQosWrapper();
-         msgUnit = new MessageUnit(pk.toXml(), content.getBytes(), pq.toXml());
+         msgUnit = new MessageUnit(pk.toXml(), contentStr.getBytes(), pq.toXml());
          retQos = bilboCon.publish(msgUnit);
-         log.info(ME+":"+bilboGlob.getId(), "Published message of domain='" + pk.getDomain() + "' and content='" + content +
+         log.info(ME+":"+bilboGlob.getId(), "Published message of domain='" + pk.getDomain() + "' and content='" + contentStr +
                                     "' to xmlBlaster node with IP=" + bilboGlob.getProperty().get("port",0) +
                                     ", the returned QoS is: " + retQos);
 
@@ -293,10 +310,12 @@ public class PublishTest extends TestCase {
          System.err.println("->Connect to frodo ...");
          frodoCon = connect(frodoGlob, new I_Callback() {
                public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
-                  fail(frodoGlob.getId() + ": Receive unexpected message '" + updateKey.getOid() + "'");
+                  assertInUpdate = frodoGlob.getId() + ": Receive unexpected message '" + updateKey.getOid() + "'";
                   return "";
                }
             });
+         assertTrue(assertInUpdate, assertInUpdate == null);
+         assertInUpdate = null;
 
          System.err.println("->Subscribe from frodo, is he able to organize it?");
          sk = new SubscribeKeyWrapper(oid);
@@ -306,12 +325,37 @@ public class PublishTest extends TestCase {
             public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) {
                log.info(ME+":"+frodoGlob.getId(), "Reveiving asynchronous message '" + updateKey.getOid() + "' in " + oid + " handler");
                updateCounterFrodo++;
+               assertInUpdate = null;
                return "";
             }
          });  // subscribe with our specific update handler
+         assertTrue(assertInUpdate, assertInUpdate == null);
+         assertInUpdate = null;
 
          try { Thread.currentThread().sleep(5000); } catch( InterruptedException i) {} // Wait some time
          assertEquals("frodo is reachable again, subscribe should work", 1, updateCounterFrodo);
+        
+         updateCounterHeron = 0;
+         updateCounterFrodo = 0;
+         updateCounterBilbo = 0;
+
+         System.err.println("->Check unSubscribe from client frodo ...");
+         UnSubscribeKeyWrapper uk = new UnSubscribeKeyWrapper(subId);
+         UnSubscribeQosWrapper uq = new UnSubscribeQosWrapper();
+         frodoCon.unSubscribe(uk.toXml(), uq.toXml());
+
+         System.err.println("->Check publish, frodo should not get it ...");
+         pk = new PublishKeyWrapper(oid, "text/plain", "1.0", domain);
+         pq = new PublishQosWrapper();
+         msgUnit = new MessageUnit(pk.toXml(), contentStr.getBytes(), pq.toXml());
+         retQos = frodoCon.publish(msgUnit);
+         log.info(ME+":"+frodoGlob.getId(), "Published message of domain='" + pk.getDomain() + "' and content='" + contentStr +
+                                    "' to xmlBlaster node with IP=" + frodoGlob.getProperty().get("port",0) +
+                                    ", the returned QoS is: " + retQos);
+         assertEquals("frodo is unSubscribed and should not receive message", 0, updateCounterFrodo);
+         assertEquals("heron has not received message", 1, updateCounterHeron);
+
+
       }
       catch (XmlBlasterException e) {
          e.printStackTrace();
