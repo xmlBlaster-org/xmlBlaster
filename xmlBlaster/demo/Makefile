@@ -13,7 +13,7 @@ SRC_JAVA_DIR = $(XMLBLASTER_HOME)/demo
 
 
 #------------------------------------------------------------------------------
-SUB_DIRS = javaclients queryXML
+SUB_DIRS = javaclients queryXML html
 #------------------------------------------------------------------------------
 
 
