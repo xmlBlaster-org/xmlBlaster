@@ -1,16 +1,15 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
-<!-- 
+<!--
    The first frame: little helper to load the login servlet 'BlasterHttpProxyServlet'
 
-   parent.location.search: ?ActionType=login&loginName=martin&passwd=secret
-
-   I couldn't find out how to pass the search string directly in the
-   frameset of 'callbackFrame', so i am using this helper file.
+   This will be replaced by a call to the servlet.
 
    See index.html
  -->
 <html>
 <head>
+   <meta http-equiv="Content-Type" CONTENT="text/html; charset=ISO-8859-1">
+</head>
 <body bgcolor="white">
    <script language="JavaScript1.2">
       var servlet = '/servlet/BlasterHttpProxyServlet'+parent.location.search;
