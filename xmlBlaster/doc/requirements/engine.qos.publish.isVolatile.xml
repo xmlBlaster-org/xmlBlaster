@@ -50,11 +50,11 @@ con.publish(new MsgUnit("<key oid='HelloWorld2'/>",
    <author>pra@mint.se</author>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2001 02 22</date>
-   <revision>$Revision: 1.11 $</revision>
+   <revision>$Revision: 1.12 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
-      <test tool="SUITE">org.xmlBlaster.test.msgexpiry.TestTopicLifeCycle</test>
+      <test tool="SUITE">org.xmlBlaster.test.topic.TestTopicLifeCycle</test>
    </testcase>
 </requirement>
 

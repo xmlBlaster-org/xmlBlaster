@@ -207,11 +207,11 @@
    <see type="REQ">engine.message</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 11 17</date>
-   <revision>$Revision: 1.7 $</revision>
+   <revision>$Revision: 1.8 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
-      <test tool="SUITE">org.xmlBlaster.test.msgexpiry.TestTopicLifeCycle</test>
+      <test tool="SUITE">org.xmlBlaster.test.topic.TestTopicLifeCycle</test>
    </testcase>
 </requirement>
 
