@@ -369,9 +369,9 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
             }
             continue;
          }
-         if (entry.isExpired()) {
-            log.info(ME, "Message " + entry.getLogId() + " is expired but not destroyed, forwarding it");
-         }
+         //if (entry.isExpired()) {
+         //   log.info(ME, "Message " + entry.getLogId() + " is expired but not destroyed, forwarding it");
+         //}
          result.add(entry.clone());
       }
 
