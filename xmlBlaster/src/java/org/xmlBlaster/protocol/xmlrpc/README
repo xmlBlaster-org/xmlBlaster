@@ -14,11 +14,11 @@ and add xmlrpc.jar to your CLASSPATH.
 Test the driver:
 ================
 
-   $JAVA_WRAP -Dsax.driver=com.sun.xml.parser.Parser org.xmlBlaster.Main
-   java -Dsax.driver=com.sun.xml.parser.Parser org.xmlBlaster.client.protocol.xmlrpc.XmlBlasterProxy
+   $JAVA_WRAP org.xmlBlaster.Main
+   java org.xmlBlaster.client.protocol.xmlrpc.XmlBlasterProxy
 
-   The $JAVA_WRAP is an environment variable which points to the correct java wrapper depending on 
-   which CORBA implementation you are using (it points to jaco for JacORB and to 
+   The $JAVA_WRAP is an environment variable which points to the correct java wrapper depending on
+   which CORBA implementation you are using (it points to jaco for JacORB and to
    $XMLBLASTER_HOME/config/java_orbacus.sh for ORBACUS).
 
 
@@ -32,30 +32,12 @@ To further Test the driver:
 
 
 
-Using the proxy - Deprecated
-============================
-Start the server:
-
-   java org.xmlBlaster.Main
-
-Start the xml-rpc proxy:
-
-   java -Dsax.driver=com.sun.xml.parser.Parser org.xmlBlaster.protocol.xmlrpc.XmlRpcProxy
-
-  or with James Clark xml parser:
-
-   java -Dsax.driver=xp org.xmlBlaster.protocol.xmlrpc.XmlRpcProxy
-
-
-Start an xml-rpc client:
-
     java -Dsax.driver=xp   helma.xmlrpc.XmlRpcClient http://localhost:8080 proxy.subscribe "<key oid='cpuinfo'></key>" "<qos></qos>"
     java -Dsax.driver=javax.xml.parsers.SAXParser helma.xmlrpc.XmlRpcClient http://localhost:8080 proxy.subscribe "<key oid='cpuinfo'></key>" "<qos></qos>"
 
 and the proxy receives the updates.
 
 TODO:
- - Implement a native xml-rpc driver.
  - Transform MessageUnitContainer[] into <array>
    for the get() call
  - How to do asynchronous callbacks?
