@@ -46,7 +46,7 @@ public class SessionStoreProperty extends QueuePropertyBase
     * The tag name for configuration, here it is &lt;session ...>
     */
    public String getRootTagName() {
-      return "session";
+      return "persistence";
    }
 
    /** For testing: java org.xmlBlaster.util.qos.storage.SessionStoreProperty */

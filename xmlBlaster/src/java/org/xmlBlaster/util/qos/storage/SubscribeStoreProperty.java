@@ -46,7 +46,7 @@ public class SubscribeStoreProperty extends QueuePropertyBase
     * The tag name for configuration, here it is &lt;subecribe ...>
     */
    public String getRootTagName() {
-      return "subscribe";
+      return "persistence";
    }
 
    /** For testing: java org.xmlBlaster.util.qos.storage.SubscribeStoreProperty */
