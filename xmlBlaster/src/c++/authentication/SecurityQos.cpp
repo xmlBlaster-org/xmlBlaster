@@ -18,7 +18,7 @@ SecurityQos::SecurityQos(Global& global,
                          const string& loginName,
                          const string& password,
                          const string& pluginTypeVersion)
-   : ME("SecurityQos"), global_(global), log_(global.getLog("org.xmBlaster.authentication"))
+   : ME("SecurityQos"), global_(global), log_(global.getLog("org.xmlBlaster.authentication"))
 {
 
    string tv = (pluginTypeVersion == "") ? "htpasswd,1.0" : pluginTypeVersion;
