@@ -3,7 +3,7 @@ Name:      Address.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding address string and protocol string
-Version:   $Id: Address.java,v 1.9 2002/05/17 13:19:41 ruff Exp $
+Version:   $Id: Address.java,v 1.10 2002/05/19 17:53:19 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -94,7 +94,9 @@ public class Address extends AddressBase
     */
    private void initialize()
    {
-      setPort(glob.getProperty().get("client.port", getPort()));
+      setPort(glob.getProperty().get("port", getPort()));
+      setPort(glob.getProperty().get("client.port", getPort())); // this is stronger (do we need it?)
+
       setType(glob.getProperty().get("client.protocol", getType()));
       setCollectTime(glob.getProperty().get("burstMode.collectTime", DEFAULT_collectTime));
       setCollectTimeOneway(glob.getProperty().get("burstMode.collectTimeOneway", DEFAULT_collectTimeOneway));
@@ -107,7 +109,9 @@ public class Address extends AddressBase
       setPtpAllowed(glob.getProperty().get("ptpAllowed", DEFAULT_ptpAllowed));
       setSessionId(glob.getProperty().get("sessionId", DEFAULT_sessionId));
       if (nodeId != null) {
-         setPort(glob.getProperty().get("client.port["+nodeId+"]", getPort()));
+         setPort(glob.getProperty().get("port["+nodeId+"]", getPort()));
+         setPort(glob.getProperty().get("client.port["+nodeId+"]", getPort())); // this is stronger (do we need it?)
+
          setType(glob.getProperty().get("client.protocol["+nodeId+"]", getType()));
          setCollectTime(glob.getProperty().get("burstMode.collectTime["+nodeId+"]", getCollectTime()));
          setCollectTimeOneway(glob.getProperty().get("burstMode.collectTimeOneway["+nodeId+"]", getCollectTimeOneway()));
