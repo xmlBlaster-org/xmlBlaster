@@ -957,8 +957,9 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
          if (log.TRACE) log.trace(ME, "Successful login to " + getServerNodeId());
 
-         if (isReconnectPolling)
+         if (isReconnectPolling) {
             clientProblemCallback.reConnected();
+         }
 
          startPinging();
          return this.connectReturnQos;
