@@ -15,14 +15,45 @@
 #------------------------------------------------------------------------------
 
 
-#------------------------------------------------------------------------------
-# Persistent store (see javadoc of FileDriver)
+#******************************************************************************
+*                  Persistence configuration for xmlBlaster                   *
+*******************************************************************************    
+
+#------------------- Global setting for the persistence -----------------------
+# FileDrivers are for the xmlBlaster persistence: 
+#   org.xmlBlaster.engine.persistence.filestore.FileDriver (Filestore)
+#   org.xmlBlaster.engine.persistence.mudb.MuDbDriver      (MessageUnit database)
+#
 # Lazy recover (not at server startup but on demand) is not yet supported.
-Persistence.Driver=org.xmlBlaster.engine.FileDriver
+Persistence.Driver=org.xmlBlaster.engine.persistence.filestore.FileDriver
 Persistence.Path=${user.home}/tmp
 Persistence.LazyRecovery=false
-#------------------------------------------------------------------------------
 
+#-------------------  Filestore database --------------------------------------
+# at the moment 'nothing'.
+#-------------------  MessageUnit database ------------------------------------
+#
+#   Setup your Cachesize in byte default is 2MB
+#mudb.Cachesize=1000000
+#
+#   Setup max size of a message in byte default is 5kbyte
+#mudb.Messagesize=100
+#
+#   Setup the Isolation Level. Overview on the possible lock modes:
+#   The IsolationLevel "uncommitted" corresponds to the weakest level (0),
+#   "serializable" to the strongest level (4).
+#
+#                  ANSI    Dirty   Non Repreatable  Phantom Read
+#     LOCK                 Read    Read
+#     ----------------------------------------------------------
+#     UNCOMMITED    0       X           X               X
+#     COMMITED      1       -           X               X
+#     REPEATABLE    2       -           -               X
+#     SERIALIZABLE  3       -           -               -
+#
+#   Example for UNCOMMITED:
+#mudb.Isolationslevel=0
+*******************************************************************************
 
 #------------------------------------------------------------------------------
 # List of all xmlBlaster access protocol drivers (I_Driver and I_Callback implementations)
@@ -101,31 +132,3 @@ LogFormat.Time=MEDIUM
 #LogFormat.Language=de
 #LogFormat.Country=DE
 #------------------------------------------------------------------------------
-
-#------------------------------------------------------------------------------
-# XMLDB (PDOM - Persistence Document Object Model)
-#
-#   Setup your Cachesize in byte default is 2MB
-#xmldb.Cachesize=1000000
-#
-#   Configure you xmldb-path
-#xmldb.Dbpath=${user.home}
-#
-#   Setup max size of a message in byte default is 5kbyte
-#xmldb.Messagesize=100
-#
-#   Setup the Isolation Level. Overview on the possible lock modes:
-#   The IsolationLevel "uncommitted" corresponds to the weakest level (0),
-#   "serializable" to the strongest level (4).
-#
-#                  ANSI    Dirty   Non Repreatable  Phantom Read
-#     LOCK                 Read    Read
-#     ----------------------------------------------------------
-#     UNCOMMITED    0       X           X               X
-#     COMMITED      1       -           X               X
-#     REPEATABLE    2       -           -               X
-#     SERIALIZABLE  3       -           -               -
-#
-#   Example for UNCOMMITED:
-#xmldb.Isolationslevel=0
-
