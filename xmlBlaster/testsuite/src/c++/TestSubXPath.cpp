@@ -120,7 +120,7 @@ public:
       }
    }
 
-   string update(const string&, UpdateKey&, void*, long, UpdateQos&)
+   string update(const string&, UpdateKey&, const unsigned char*, long, UpdateQos&)
    {
       Lock lock(updateMutex_);
       log_.info(ME, "update invoked");

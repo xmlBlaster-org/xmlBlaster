@@ -100,7 +100,7 @@ public:
     */
    string update(const string &/*sessionId*/,
                  UpdateKey &/*updateKey*/,
-                 void * /*content*/, 
+                 const unsigned char * /*content*/, 
                  long /*contentSize*/,
                  UpdateQos &/*updateQos*/) 
    {

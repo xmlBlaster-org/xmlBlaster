@@ -221,6 +221,7 @@ public:
       }
       catch (XmlBlasterException ex) {
          assertEquals(log_, me, ex.getErrorCodeStr(), string("resource.overflow.queue.entries"), "3. checking that exceeding number of entries throws the correct exception.");
+         queue_->clear();
       }
       log_.info(me, "test ended successfully");
    }
@@ -294,36 +295,36 @@ int main(int args, char *argc[])
    Global& glob = Global::getInstance();
    glob.initialize(args, argc);
 
-   TestQueue *testObj = new TestQueue(glob, "TestQueue");
+   TestQueue testObj = TestQueue(glob, "TestQueue");
 
-   testObj->setUp();
-   testObj->testPublishCompare();
-   testObj->tearDown();
+   testObj.setUp();
+   testObj.testPublishCompare();
+   testObj.tearDown();
 
-   testObj->setUp();
-   testObj->testConnectCompare();
-   testObj->setUp();
-   testObj->tearDown();
+   testObj.setUp();
+   testObj.testConnectCompare();
+   testObj.setUp();
+   testObj.tearDown();
 
-   testObj->setUp();
-   testObj->testMixedCompare();
-   testObj->tearDown();
+   testObj.setUp();
+   testObj.testMixedCompare();
+   testObj.tearDown();
 
-   testObj->setUp();
-   testObj->testWithOneEntry();
-   testObj->tearDown();
+   testObj.setUp();
+   testObj.testWithOneEntry();
+   testObj.tearDown();
 
-   testObj->setUp();
-   testObj->testOrder();
-   testObj->tearDown();
+   testObj.setUp();
+   testObj.testOrder();
+   testObj.tearDown();
 
-   testObj->setUp();
-   testObj->testMaxMsg();
-   testObj->tearDown();
+   testObj.setUp();
+   testObj.testMaxMsg();
+   testObj.tearDown();
 
-   testObj->setUp();
-   testObj->testMaxEntries();
-   testObj->tearDown();
+   testObj.setUp();
+   testObj.testMaxEntries();
+   testObj.tearDown();
 
    org::xmlBlaster::util::Object_Lifetime_Manager::fini();
    return 0;

@@ -305,7 +305,7 @@ public:
       TestSuite::tearDown();
    }
 
-   string update(const string& sessionId, UpdateKey& updateKey, void *content, long contentSize, UpdateQos& updateQos)
+   string update(const string& sessionId, UpdateKey& updateKey, const unsigned char *content, long contentSize, UpdateQos& updateQos)
    {
       Lock lock(updateMutex_);
       if (log_.trace()) log_.trace(ME, "update: session: " + sessionId);

@@ -3,7 +3,7 @@ Name:      TestSub.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.cpp,v 1.25 2003/07/07 12:09:27 ruff Exp $
+Version:   $Id: TestSub.cpp,v 1.26 2004/01/14 15:20:26 ruff Exp $
 -----------------------------------------------------------------------------*/
 #include "TestSuite.h"
 #include <iostream>
@@ -327,7 +327,7 @@ private:
     */
    string update(const string &sessionId,
                UpdateKey &updateKey,
-               void *content, long contentSize,
+               const unsigned char *content, long contentSize,
                UpdateQos &updateQos) 
    {
       log_.info(ME, string("Receiving update of message oid=") +
@@ -335,7 +335,7 @@ private:
                 " authentication sessionId=" + sessionId + " ...");
       numReceived_ ++;
 
-      string contentStr(static_cast<char *>(content), contentSize);
+      string contentStr(reinterpret_cast<char *>(const_cast<unsigned char *>(content)), contentSize);
 
       if (updateQos.getState() != Constants::STATE_OK &&
           updateQos.getState() != org::xmlBlaster::util::Constants::STATE_ERASED) {

@@ -3,7 +3,7 @@ Name:      TestRam.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: TestRam.cpp,v 1.12 2003/08/16 19:39:58 ruff Exp $
+Version:   $Id: TestRam.cpp,v 1.13 2004/01/14 15:20:26 ruff Exp $
 ---------------------------------------------------------------------------*/
 #include <util/XmlBCfg.h>
 #include "TestSuite.h"
@@ -114,7 +114,7 @@ public:
             log_.error(ME, string("XmlBlasterException: ") + e.toXml());
          }
       }
-      log_.info(ME, "Erased " + lexical_cast<string>(NUM_PUBLISH) + " messages");
+      log_.info(ME, "Erased " + lexical_cast<string>(NUM_PUBLISH) + " topics");
 
       connection_.disconnect(DisconnectQos(global_));
    }
@@ -127,7 +127,7 @@ public:
     */
    void testPublish() 
    {
-      if (log_.trace()) log_.trace(ME, "Publishing messages ...");
+      if (log_.trace()) log_.trace(ME, "Publishing new topics ...");
 
       vector<util::MessageUnit> msgVec;
       msgVec.reserve(NUM_PUBLISH);
@@ -160,7 +160,7 @@ public:
          log_.info(ME, string("xmlBlaster used allocated memory before ") +
                    "publishing = " + usedMemBefore);
 
-         log_.info(ME, "Publishing " + lexical_cast<string>(NUM_PUBLISH) + " messages ...");
+         log_.info(ME, "Publishing " + lexical_cast<string>(NUM_PUBLISH) + " new topics ...");
          stopWatch_.restart();
          // 2. publish all the messages
          vector<PublishReturnQos> publishOidArr = connection_.publishArr(msgVec);
@@ -172,10 +172,10 @@ public:
          }
 
          long avg = (long)((double)NUM_PUBLISH / elapsed);
-         log_.info(ME, "Success: Publishing done, " + lexical_cast<string>(NUM_PUBLISH) + " messages sent, average messages/second = " + lexical_cast<string>(avg));
+         log_.info(ME, "Success: Publishing done, " + lexical_cast<string>(NUM_PUBLISH) + " messages sent, average new topics/second = " + lexical_cast<string>(avg));
 
          if (publishOidArr.size() != NUM_PUBLISH) {
-            log_.error(ME, "numPublished is wrong");
+            log_.error(ME, "numPublished=" + lexical_cast<string>(publishOidArr.size()) + " is wrong");
             assert(0);
          }
 
@@ -186,7 +186,7 @@ public:
          long usedAfter = lexical_cast<long>(usedMemAfter);
          log_.info(ME, string("xmlBlaster used allocated memory after ") +
                    "publishing = " + usedMemAfter);
-         log_.info(ME, lexical_cast<string>((usedAfter-usedBefore)/NUM_PUBLISH) + " bytes/message");
+         log_.info(ME, lexical_cast<string>((usedAfter-usedBefore)/NUM_PUBLISH) + " bytes/topic");
       }
       catch(XmlBlasterException &e) {
          log_.warn(ME, string("Exception: ") + e.toXml());
@@ -223,17 +223,15 @@ using namespace org::xmlBlaster::test;
 
 int main(int args, char *argc[]) {
    org::xmlBlaster::util::Object_Lifetime_Manager::init();
-   TestRam* testObj = NULL;
    try {
-      testObj = new TestRam(args, argc, "Tim");
-      testObj->setUp();
-      testObj->testManyPublish();
-      testObj->tearDown();
+      TestRam testObj(args, argc, "Tim");
+      testObj.setUp();
+      testObj.testManyPublish();
+      testObj.tearDown();
    }
    catch (...) {
+      std::cout << "ERROR: Caught exception!!!!" << endl;
    }
-   delete testObj;
-   testObj = NULL;
    org::xmlBlaster::util::Object_Lifetime_Manager::fini();
    return 0;
 }
