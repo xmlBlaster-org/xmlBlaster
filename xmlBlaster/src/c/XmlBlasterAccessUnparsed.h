@@ -58,12 +58,10 @@ typedef void  ( * XmlBlasterLogging)(XMLBLASTER_LOG_LEVEL currLevel, XMLBLASTER_
  * to xmlBlaster is lost.
  */
 typedef struct Dll_Export XmlBlasterAccessUnparsed {
+  /* public: */
    int argc;
    char **argv;
    Properties *props;
-   XmlBlasterConnectionUnparsed *connectionP;
-   CallbackServerUnparsed *callbackP;
-   bool isInitialized;
    void *userData; /* A client can use this pointer to point to any client specific information */
    XmlBlasterAccessUnparsedConnect connect;   
    XmlBlasterAccessUnparsedInitialize initialize;
@@ -77,11 +75,16 @@ typedef struct Dll_Export XmlBlasterAccessUnparsed {
    XmlBlasterAccessUnparsedIsConnected isConnected;
    XMLBLASTER_LOG_LEVEL logLevel;
    XmlBlasterLogging log;
+  /* private: */
+   XmlBlasterConnectionUnparsed *connectionP;
+   CallbackServerUnparsed *callbackP;
+   bool isInitialized;
    long responseTimeout;
    XmlBlasterBlob responseBlob;
    char responseType;             /* XMLBLASTER_MSG_TYPE_ENUM */
    pthread_t callbackThreadId;
    pthread_mutex_t responseMutex; /* Needed for boss/worker model to block until an update arrives */
+   bool responseMutexIsLocked;
    pthread_cond_t responseCond;
 } XmlBlasterAccessUnparsed;
 
