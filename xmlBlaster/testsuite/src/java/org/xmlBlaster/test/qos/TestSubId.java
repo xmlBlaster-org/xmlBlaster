@@ -31,6 +31,7 @@ import junit.framework.*;
  *    java junit.textui.TestRunner org.xmlBlaster.test.qos.TestSubId
  *    java junit.swingui.TestRunner org.xmlBlaster.test.qos.TestSubId
  * </pre>
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.subscribe.id.html">The engine.qos.subscribe.id requirement</a>
  */
 public class TestSubId extends TestCase implements I_Callback
 {
