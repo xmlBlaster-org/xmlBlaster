@@ -5,7 +5,7 @@ Changes for 0.x [200x-xx-xx]
 ============================
 
  o Tested on IBM s390: Linux 2.4.19-4 SMP s390
-   Java client/server, C++ and C compiles and runs fine
+   Java client/server, C++ and C compiles (g++ 3.2.2) and runs fine
 
  o C++ client library:
    - Fixed memory leak of 8 bytes in SocketDriver wrapper class
