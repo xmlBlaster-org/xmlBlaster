@@ -42,9 +42,8 @@ MsgQosFactory::MsgQosFactory(Global& global)
    inState_           = false;
    inSubscribe_       = false;
    inRedeliver_       = false;
-   inTopic_           = false;
    inQueue_           = false;
-   inPersistence_        = false;
+   inPersistence_     = false;
    inDestination_     = false;
    inSender_          = false;
    inPriority_        = false;
@@ -172,16 +171,6 @@ void MsgQosFactory::startElement(const XMLCh* const name, AttributeList& attrs)
       if (getLongAttr(attrs, REMAINING_LIFE, tmpLong)) msgQosData_.setRemainingLifeStatic(tmpLong);
       return;
    }
-   if (SaxHandlerBase::caseCompare(name, "persistence")) {
-      if (!inQos_) return;
-      inTopic_ = true;
-      TopicProperty tmpProp(global_);
-      if (getBoolAttr(attrs, READ_ONLY, tmpBool)) tmpProp.setReadonly(tmpBool);
-      if (getLongAttr(attrs, DESTROY_DELAY, tmpLong)) tmpProp.setDestroyDelay(tmpLong);
-//       if (getBoolAttr(attrs, CREATE_DOM_ENTRY, tmpBool)) tmpProp.setCreateDomEntry(tmpBool);
-      msgQosData_.setTopicProperty(tmpProp);
-      return;
-   }
    if (SaxHandlerBase::caseCompare(name, "rcvTimestamp")) {
       if (!inQos_) return;
       if (getTimestampAttr(attrs, NANOS, tmpTimestamp)) msgQosData_.setRcvTimestamp(tmpTimestamp);
@@ -238,11 +227,6 @@ void MsgQosFactory::startElement(const XMLCh* const name, AttributeList& attrs)
       return;
    }
 
-   if (SaxHandlerBase::caseCompare(name, "isVolatile")) { // deprecated
-      if (!inQos_) return;
-      inIsVolatile_ = true;
-      return;
-   }
    if (SaxHandlerBase::caseCompare(name, "persistent")) {
       if (!inQos_) return;
       msgQosData_.setPersistent(true);
@@ -345,11 +329,6 @@ void MsgQosFactory::endElement(const XMLCh* const name)
       character_.erase();
       return;
    }
-   if(SaxHandlerBase::caseCompare(name, "persistence")) {
-      inTopic_ = false;
-      character_.erase();
-      return;
-   }
 
    if(SaxHandlerBase::caseCompare(name, "rcvTimestamp")) {
       inRcvTimestamp_ = false;
@@ -371,20 +350,6 @@ void MsgQosFactory::endElement(const XMLCh* const name)
 
    if (SaxHandlerBase::caseCompare(name, "subscribe")) {
       inSubscribe_ = false;
-      character_.erase();
-      return;
-   }
-
-   if(SaxHandlerBase::caseCompare(name, "isVolatile")) { // deprecated
-      inIsVolatile_ = false;
-      string tmp = stringTrim(character_);
-      if (!tmp.empty()) {
-         if (tmp == "true") msgQosData_.setVolatile(true);
-         else  msgQosData_.setVolatile(false);
-         if (msgQosData_.isVolatile())  {
-            log_.warn(ME, string("Found 'isVolatile=") + global_.getBoolAsString(msgQosData_.isVolatile()) + "' which is deprecated, use lifeTime==0&&forceDestroy==false instead");
-         }
-      }
       character_.erase();
       return;
    }
