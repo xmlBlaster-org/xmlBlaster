@@ -67,3 +67,10 @@
    
 	See LICENSE file from http://www.cosy.sbg.ac.at/~ppalfrad/code2html
 
+8) miniJacorb.jar
+=================
+
+   The minimal Jacorb implementation which is necessary when running 
+	and compiling xmlBlaster with corba implementations other than jacorb. 
+	It is a (mini) alternative to 6). Use it only if you don't want
+	jacorb on your machine.

@@ -1,4 +1,9 @@
    Release notes for xmlBlaster (http://www.xmlBlaster.org)
+  
+   - CORBA implementors other than JACORB and MICO can now be used. ORBACUS 
+     can work for the xmlBlaster server, java clients and c++ clients. You 
+     need OB-4.0b3 (for c++) and JOB-4.0b3 (for Java) or higher. You can 
+     find more about ORBACUS at http://www.ooc.com.
 
 
 Changes for 0.76 [May.8, 2000]
