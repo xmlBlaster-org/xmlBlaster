@@ -57,6 +57,15 @@ public final class EraseQos
    }
 
    /**
+    * Notify the subscribers on erase. 
+    * <p/>
+    * Defaults to true. 
+    */
+   public void notifySubscribers(boolean notify) {
+      this.queryQosData.setWantNotify(notify);
+   }
+
+   /**
     * Defaults to false: If a topic is still referenced by callback messages
     * it will be not erased immediately but we wait until all pending messages are delivered. 
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.message.lifecycle.html">engine.message.lifecycle requirement</a>
