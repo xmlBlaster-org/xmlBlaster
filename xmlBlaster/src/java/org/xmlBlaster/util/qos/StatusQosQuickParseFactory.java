@@ -7,6 +7,8 @@ package org.xmlBlaster.util.qos;
 
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.RcvTimestamp;
 
 /**
  * Parsing xml QoS (quality of service) of return status. 
@@ -44,10 +46,22 @@ public class StatusQosQuickParseFactory implements I_StatusQosFactory
    public synchronized StatusQosData readObject(String xmlQos) throws XmlBlasterException {
       statusQosData = new StatusQosData(glob, this, xmlQos);
       if (xmlQos != null && xmlQos.length() > 15) { // "<qos/>" or "<qos></qos>"
+
          statusQosData.setState(parseOurself(xmlQos, "<state id="));
          statusQosData.setStateInfo(parseOurself(xmlQos, "info="));
          statusQosData.setSubscriptionId(parseOurself(xmlQos, "<subscribe id="));
          statusQosData.setKeyOid(parseOurself(xmlQos, "<key oid="));
+
+         String tmp = parseOurself(xmlQos, "<rcvTimestamp nanos=");
+         if (tmp != null) {
+            try {
+               statusQosData.setRcvTimestamp(new RcvTimestamp(Long.parseLong(tmp)));
+            }
+            catch(NumberFormatException e) {
+               e.printStackTrace();
+               this.glob.getLog(null).error(ME, "Invalid rcvTimestamp - nanos =" + tmp);
+            }
+         }
       }
       return statusQosData;
    }

@@ -9,6 +9,8 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.RcvTimestamp;
 
 import org.xml.sax.*;
 import org.xml.sax.helpers.*;
@@ -20,8 +22,16 @@ import org.xml.sax.helpers.*;
  * <pre>
  *  &lt;qos>
  *     &lt;state id='OK' info='QUEUED[bilbo]'/>
- *     &lt;key oid='yourMessageOid'/> <!-- PublishReturnQos and EraseReturnQos only -->
- *     &lt;subscribe id='_subId:1/> <!-- SubscribeReturnQos and UnSubscribeQos only -->
+ *
+ *     &lt;!-- PublishReturnQos and EraseReturnQos only -->
+ *     &lt;key oid='yourMessageOid'/>
+ *
+ *     &lt;!-- SubscribeReturnQos and UnSubscribeQos only -->
+ *     &lt;subscribe id='_subId:1/>
+ *
+ *     &lt;!-- UTC time when message was created in xmlBlaster server,
+ *              in nanoseconds since 1970 -->
+ *     &lt;rcvTimestamp nanos='1007764305862000002'>
  *  &lt;/qos>
  * </pre>
  * @see org.xmlBlaster.util.qos.StatusQosData
@@ -40,6 +50,7 @@ public class StatusQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implemen
    private boolean inState = false;
    private boolean inSubscribe = false;
    private boolean inKey = false;
+   private boolean inRcvTimestamp = false;
 
    /**
     * Can be used as singleton. 
@@ -115,7 +126,23 @@ public class StatusQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implemen
          }
          return;
       }
-   }
+ 
+      if (name.equalsIgnoreCase("rcvTimestamp")) {
+        if (!inQos)
+           return;
+        if (attrs != null) {
+           int len = attrs.getLength();
+           for (int i = 0; i < len; i++) {
+              if( attrs.getQName(i).equalsIgnoreCase("nanos") ) {
+                String tmp = attrs.getValue(i).trim();
+                try { statusQosData.setRcvTimestamp(new RcvTimestamp(Long.parseLong(tmp))); } catch(NumberFormatException e) { log.error(ME, "Invalid rcvTimestamp - nanos =" + tmp); };
+              }
+           }
+        }
+        inRcvTimestamp = true;
+        return;
+     }
+  }
 
    /**
     * End element, event from SAX parser.
@@ -138,8 +165,14 @@ public class StatusQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implemen
          return;
       }
 
-      if(name.equalsIgnoreCase("key")) {
+      if (name.equalsIgnoreCase("key")) {
          inKey = false;
+         character.setLength(0);
+         return;
+      }
+
+      if (name.equalsIgnoreCase("rcvTimestamp")) {
+         inRcvTimestamp = false;
          character.setLength(0);
          return;
       }
@@ -173,6 +206,10 @@ public class StatusQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implemen
          sb.append(offset).append(" <subscribe id='").append(statusQosData.getSubscriptionId()).append("'/>");
       if (statusQosData.getKeyOid() != null)
          sb.append(offset).append(" <key oid='").append(statusQosData.getKeyOid()).append("'/>");
+
+      if (statusQosData.getRcvTimestamp() != null)
+         sb.append(statusQosData.getRcvTimestamp().toXml(extraOffset+Constants.INDENT, false));
+
       sb.append(offset).append("</qos>");
 
       if (sb.length() < 16)

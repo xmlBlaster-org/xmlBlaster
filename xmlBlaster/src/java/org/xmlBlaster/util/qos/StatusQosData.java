@@ -26,16 +26,10 @@ import org.xmlBlaster.util.enum.Constants;
  * @see org.xmlBlaster.test.classtest.qos.StatusQosFactoryTest
  * @author xmlBlaster@marcelruff.info
  */
-public final class StatusQosData implements java.io.Serializable, Cloneable
+public final class StatusQosData extends QosData implements java.io.Serializable, Cloneable
 {
    private String ME = "StatusQosData";
-   private transient final Global glob;
    private transient final I_StatusQosFactory factory;
-   private transient final String serialData;
-
-   /** the state of the message, defaults to "OK" if no state is returned */
-   private String state = Constants.STATE_OK;
-   private String stateInfo;
 
    /** The subscription ID of a subscribe() invocation */
    private String subscriptionId;
@@ -71,79 +65,8 @@ public final class StatusQosData implements java.io.Serializable, Cloneable
     * @param true
     */
    public StatusQosData(Global glob, I_StatusQosFactory factory, String serialData) {
-      this.glob = glob;
+      super(glob, serialData);
       this.factory = (factory==null) ? glob.getStatusQosFactory() : factory;
-      this.serialData = serialData;
-   }
-
-   /**
-    * The unparsed data. 
-    */
-   public String getData() {
-      return this.serialData;
-   }
-
-   /**
-    * @param state The state of an update message. See Constants.java
-    */
-   public void setState(String state) {
-      this.state = state;
-   }
-
-   /**
-    * Access state of message on update().
-    * @return "OK", "ERROR" etc. See Constants.java
-    */
-   public String getState() {
-      return this.state;
-   }
-
-   /**
-    * True if the message is OK on update(). 
-    */
-   public boolean isOk() {
-      return Constants.STATE_OK.equals(this.state);
-   }
-
-   /**
-    * True if the message was erased by timer or by a
-    * client invoking erase(). 
-    */
-   public boolean isErased() {
-      return Constants.STATE_ERASED.equals(this.state);
-   }
-
-   /**
-    * True if a timeout on this message occurred. 
-    * <p />
-    * Timeouts are spanned by the publisher and thrown by xmlBlaster
-    * on timeout to indicate for example
-    * STALE messages or any other user problem domain specific event.
-    */
-   public final boolean isTimeout() {
-      return Constants.STATE_TIMEOUT.equals(this.state);
-   }
-
-   /**
-    * True on cluster forward problems
-    */
-   public final boolean isForwardError() {
-      return Constants.STATE_FORWARD_ERROR.equals(this.state);
-   }
-
-   /**
-    * @param state The human readable state text of an update message
-    */
-   public void setStateInfo(String stateInfo) {
-      this.stateInfo = stateInfo;
-   }
-
-   /**
-    * Access state of message on update().
-    * @return The human readable info text
-    */
-   public String getStateInfo() {
-      return this.stateInfo;
    }
 
    /**
@@ -216,11 +139,6 @@ public final class StatusQosData implements java.io.Serializable, Cloneable
     * like boolean, String, int.
     */
    public Object clone() {
-      try {
-         return super.clone();
-      }
-      catch (CloneNotSupportedException e) {
-         return null;
-      }
+      return super.clone();
    }
 }
