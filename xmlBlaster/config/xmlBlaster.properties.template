@@ -72,7 +72,10 @@ Security.Client.Plugin[htpasswd][1.0]=org.xmlBlaster.authentication.plugins.htpa
 # NOTE: Please use xmlBlasterPlugins.xml to configure which protocols to offer
 
 CbProtocolPlugin[IOR][1.0]=org.xmlBlaster.protocol.corba.CallbackCorbaDriver
-#CbProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.protocol.socket.CallbackSocketDriver
+# The CallbackSocketDriver is a fake as we tunnel back through the same socket
+# But we need it for persistent Session/Subscription recovery on server startup
+CbProtocolPlugin[SOCKET][1.0]=org.xmlBlaster.protocol.socket.CallbackSocketDriver
+CbProtocolPlugin[socket_ssl][1.0]=org.xmlBlaster.protocol.socket.CallbackSocketDriver
 #CbProtocolPlugin[RMI][1.0]=org.xmlBlaster.protocol.rmi.CallbackRmiDriver
 CbProtocolPlugin[XMLRPC][1.0]=org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver
 CbProtocolPlugin[LOCAL][1.0]=org.xmlBlaster.protocol.local.CallbackLocalDriver
