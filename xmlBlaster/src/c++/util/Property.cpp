@@ -218,8 +218,7 @@ Property::getTimestampProperty(const string &name, Timestamp def, bool env)
    string value = getProperty(name, env);
    if (value.length() == 0) return def;
    char *test = (char*)0;
-   // WARNING THIS IS NOT ANSI COMPATIBLE ...
-   long ret = atoll(value.c_str());
+   long ret = STRING_TO_TIMESTAMP(value.c_str());
    if (test == value.c_str()) return def;
    return ret;
 }

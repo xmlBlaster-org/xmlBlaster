@@ -3,7 +3,7 @@ Name:      Address.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding address string and protocol string
-Version:   $Id: Address.h,v 1.1 2002/12/06 19:28:14 laghi Exp $
+Version:   $Id: Address.h,v 1.2 2002/12/09 12:26:41 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -27,16 +27,10 @@ Version:   $Id: Address.h,v 1.1 2002/12/06 19:28:14 laghi Exp $
 
 namespace org { namespace xmlBlaster { namespace util { namespace cfg {
 
-class Address : public AddressBase
+class Dll_Export Address : public AddressBase
 {
 private:
-     const string ME; // = "Address";
-
-   /** The node id to which we want to connect */
-   string nodeId_; //  = null;
-
-   /** TODO: Move this attribute to CbQueueProperty.java */
-   long maxMsg_;
+     // string ME; // = "Address";
 
    /**
     * Configure property settings. 
@@ -100,6 +94,19 @@ public:
     *    <code>-retries 10</code>
     */
    Address(Global& global, const string& type="", const string& nodeId="");
+
+   /**
+    * copy constructor
+    */
+   Address(const AddressBase& addr);
+
+   /**
+    * Assignment operator. Note that both assignment operator and copy
+    * constructor are taking an AddressBase as argument. This because Address
+    * is only a decorator to AddressBase, i.e. it does not provide any new
+    * member, it only has different accessors.
+    */
+   Address& operator =(const AddressBase& addr);
 
    void setMaxMsg(long maxMsg);
 

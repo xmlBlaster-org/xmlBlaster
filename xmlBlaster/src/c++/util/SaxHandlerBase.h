@@ -224,9 +224,14 @@ namespace util {
        int getIntValue(const XMLCh* const value);
 
        /**
-        * returns a value (usually from an attribute) as a string
+        * returns a value (usually from an attribute) as a long
         */
        long getLongValue(const XMLCh* const value);
+
+       /**
+        * returns a value (usually from an attribute) as a Timestamp
+        */
+        Timestamp getTimestampValue(const XMLCh* const value);
    };
 }}} // namespace
 

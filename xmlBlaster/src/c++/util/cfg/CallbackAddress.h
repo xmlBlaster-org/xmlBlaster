@@ -3,7 +3,7 @@ Name:      CallbackAddress.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback address string and protocol string
-Version:   $Id: CallbackAddress.h,v 1.1 2002/12/06 21:13:32 laghi Exp $
+Version:   $Id: CallbackAddress.h,v 1.2 2002/12/09 12:26:41 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -33,11 +33,9 @@ namespace org { namespace xmlBlaster { namespace util { namespace cfg {
 
 using namespace org::xmlBlaster::util;
 
-class CallbackAddress : public AddressBase
+class Dll_Export CallbackAddress : public AddressBase
 {
 private:
-   const string ME; // = "CallbackAddress";
-   string nodeId_; //  = null;
 
    /**
     * Configure property settings
@@ -90,6 +88,16 @@ public:
     *    <code>-cb.retries 10</code>
     */
    CallbackAddress(Global& global, const string& type="", const string nodeId="");
+
+   /**
+    * copy constructor
+    */
+   CallbackAddress(const AddressBase& addr);
+
+   /**
+    * Assignment operator
+    */
+   CallbackAddress& operator =(const AddressBase& addr);
 
    /** How often to retry if connection fails: defaults to 0 retries, on failure we give up */
    int getDefaultRetries();

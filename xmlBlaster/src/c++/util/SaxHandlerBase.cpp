@@ -323,4 +323,25 @@ SaxHandlerBase::getLongValue(const XMLCh* const value)
    return ret;
 }
 
+/**
+ * returns a value (usually from an attribute) as a string
+ */
+Timestamp
+SaxHandlerBase::getTimestampValue(const XMLCh* const value)
+{
+   char* help1   = NULL;
+   char* help2   = NULL;
+   Timestamp ret = 0l;
+   try {
+      help1 = XMLString::transcode(value);
+      help2 = charTrimmer_.trim(help1);
+      // this might not be fully ansi compatible
+      ret = STRING_TO_TIMESTAMP(help2);
+   }
+   catch (...) {}
+   delete help1;
+   delete help2;
+   return ret;
+}
+
 #endif

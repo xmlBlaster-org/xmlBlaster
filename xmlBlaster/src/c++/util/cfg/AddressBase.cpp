@@ -3,7 +3,7 @@ Name:      AddressBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address string including protocol
-Version:   $Id: AddressBase.cpp,v 1.2 2002/12/06 19:28:14 laghi Exp $
+Version:   $Id: AddressBase.cpp,v 1.3 2002/12/09 12:26:41 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -38,11 +38,42 @@ Dll_Export       string    DEFAULT_dispatchPlugin     = "";
 
 
    AddressBase::AddressBase(Global& global, const string& rootTag)
-      : ME("AddressBase"), global_(global), log_(global.getLog("core"))
+      : global_(global), log_(global.getLog("core"))
    {
       // set the defaults here ...
+      ME = "AddressBase";
+      nodeId_ = "";
+      maxMsg_ = 0;
+      address_ = "";
+      hostname_ = "";
+      isHardcodedHostname_ = false;
+      type_ = DEFAULT_type;
+      port_ = DEFAULT_port;
+      version_ = DEFAULT_version;
+      collectTime_ = DEFAULT_collectTime;
+      collectTimeOneway_ = DEFAULT_collectTimeOneway;
+      oneway_ = DEFAULT_oneway;
+      compressType_ = DEFAULT_compressType;
+      minSize_ = DEFAULT_minSize;
+      ptpAllowed_ = DEFAULT_ptpAllowed;
+      sessionId_ = DEFAULT_sessionId;
+      useForSubjectQueue_ = DEFAULT_useForSubjectQueue;
+      dispatchPlugin_ = DEFAULT_dispatchPlugin;
       setRootTag(rootTag);
    }
+
+   AddressBase::AddressBase(const AddressBase& addr)
+      : global_(addr.global_), log_(addr.log_)
+   {
+      copy(addr);
+   }
+
+   AddressBase& AddressBase::operator =(const AddressBase& addr)
+   {
+      copy(addr);
+      return *this;
+   }
+
 
    AddressBase::~AddressBase()
    {

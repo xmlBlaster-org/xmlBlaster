@@ -3,7 +3,7 @@ Name:      Address.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding address string and protocol string
-Version:   $Id: Address.cpp,v 1.1 2002/12/06 19:28:14 laghi Exp $
+Version:   $Id: Address.cpp,v 1.2 2002/12/09 12:26:41 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -28,12 +28,27 @@ using boost::lexical_cast;
 namespace org { namespace xmlBlaster { namespace util { namespace cfg {
 
    Address::Address(Global& global, const string& type, const string& nodeId)
-    : AddressBase(global, "address"), ME("Address")
+    : AddressBase(global, "address")
    {
+      ME = "Address";
       if (nodeId != "") nodeId_ = nodeId;
+      pingInterval_ = getDefaultPingInterval();
+      retries_ = getDefaultRetries();
+      delay_ = getDefaultDelay();
       initialize();
       if (type != "")   type_ = type;
    }
+
+   Address::Address(const AddressBase& addr) : AddressBase(addr)
+   {
+   }
+
+   Address& Address::operator =(const AddressBase& addr)
+   {
+      AddressBase::copy(addr);
+      return *this;
+   }
+
 
    void Address::setMaxMsg(long maxMsg)
    {

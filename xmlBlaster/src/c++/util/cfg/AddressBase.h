@@ -3,7 +3,7 @@ Name:      AddressBase.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address string including protocol
-Version:   $Id: AddressBase.h,v 1.2 2002/12/06 19:28:14 laghi Exp $
+Version:   $Id: AddressBase.h,v 1.3 2002/12/09 12:26:41 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -43,10 +43,13 @@ extern Dll_Export const string    DEFAULT_sessionId;
 extern Dll_Export const bool      DEFAULT_useForSubjectQueue;
 extern Dll_Export       string    DEFAULT_dispatchPlugin;
 
+
+
 class Dll_Export AddressBase
 {
+   friend class AddressFactory;
+
 private:
-   const string ME;
    int port_;
 
    /**
@@ -58,10 +61,18 @@ private:
    }
 
 protected:
+   string  ME;
    Global& global_;
    Log&    log_;
 
    string rootTag_;
+
+   /** The node id to which we want to connect */
+   string nodeId_;
+
+   /** TODO: Move this attribute to CbQueueProperty.java */
+   long maxMsg_; // only used in Address
+
    /** The unique address, e.g. the CORBA IOR string */
    string address_;
 
@@ -130,6 +141,32 @@ protected:
       address_  = ""; // reset cache
    }
 
+   void copy(const AddressBase& addr)
+   {
+      port_                = addr.port_;
+      ME                   = addr.ME;
+      rootTag_             = addr.rootTag_;
+      address_             = addr.address_;
+      hostname_            = addr.hostname_;
+      isHardcodedHostname_ = addr.isHardcodedHostname_;
+      type_                = addr.type_;
+      version_             = addr.version_;
+      collectTime_         = addr.collectTime_;
+      collectTimeOneway_   = addr.collectTimeOneway_;
+      pingInterval_        = addr.pingInterval_;
+      retries_             = addr.retries_;
+      delay_               = addr.delay_;
+      oneway_              = addr.oneway_;
+      compressType_        = addr.compressType_;
+      minSize_             = addr.minSize_;
+      ptpAllowed_          = addr.ptpAllowed_;
+      sessionId_           = addr.sessionId_;
+      useForSubjectQueue_  = addr.useForSubjectQueue_;
+      dispatchPlugin_      = addr.dispatchPlugin_;
+      nodeId_              = addr.nodeId_;
+      maxMsg_              = addr.maxMsg_;
+   }
+
 public:
 
    virtual Timestamp getDefaultPingInterval() = 0;
@@ -137,8 +174,19 @@ public:
    virtual Timestamp getDefaultDelay() = 0;
 
    /**
+    * common constructor
     */
    AddressBase(Global& global, const string& rootTag="");
+
+   /**
+    * copy constructor
+    */
+   AddressBase(const AddressBase& addr);
+
+   /**
+    * Assignment operator
+    */
+   AddressBase& operator =(const AddressBase& addr);
 
    virtual ~AddressBase();
 

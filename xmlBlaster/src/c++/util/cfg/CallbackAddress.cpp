@@ -3,7 +3,7 @@ Name:      CallbackAddress.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback address string and protocol string
-Version:   $Id: CallbackAddress.cpp,v 1.1 2002/12/06 21:13:32 laghi Exp $
+Version:   $Id: CallbackAddress.cpp,v 1.2 2002/12/09 12:26:41 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 #include <util/cfg/CallbackAddress.h>
@@ -15,11 +15,25 @@ using namespace org::xmlBlaster::util;
 using boost::lexical_cast;
 
    CallbackAddress::CallbackAddress(Global& global, const string& type, const string nodeId)
-      : AddressBase(global, "callback"), ME("CallbackAddress")
+      : AddressBase(global, "callback")
    {
+      ME = "CallbackAddress";
       if (nodeId != "") nodeId_ = nodeId;
+      pingInterval_ = getDefaultPingInterval();
+      retries_ = getDefaultRetries();
+      delay_ = getDefaultDelay();
       initialize();
       if (type != "") setType(type);
+   }
+
+   CallbackAddress::CallbackAddress(const AddressBase& addr) : AddressBase(addr)
+   {
+   }
+
+   CallbackAddress& CallbackAddress::operator =(const AddressBase& addr)
+   {
+      AddressBase::copy(addr);
+      return *this;
    }
 
    /** How often to retry if connection fails: defaults to 0 retries, on failure we give up */
