@@ -373,9 +373,11 @@ public  class XmlBlasterDrawing extends StandardDrawing implements I_Timeout, I_
                String uniqueId = (String)enum.nextElement();
                Figure fig = (Figure)this.timestampFigureTable.get(uniqueId);
                remove(uniqueId, fig);
-               super.orphan(fig);
-               FigureChangeEvent ev = new FigureChangeEvent(fig);
-               figureRequestUpdate(ev);
+               if (fig != null) {
+                  super.orphan(fig);
+                  FigureChangeEvent ev = new FigureChangeEvent(fig);
+                  figureRequestUpdate(ev);
+               }
             }
            
             this.doRecord = true;
