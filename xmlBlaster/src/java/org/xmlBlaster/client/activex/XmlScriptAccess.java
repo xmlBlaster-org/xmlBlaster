@@ -63,7 +63,7 @@ public class XmlScriptAccess extends SimpleBeanInfo implements I_Callback {
    }
 
    /**
-    * Remov a C# / VisualBasic listener. 
+    * Remove a C# / VisualBasic listener. 
     */
    public void removeUpdateListener(UpdateListener updateListener) {
       this.updateListener = null;
@@ -116,12 +116,11 @@ public class XmlScriptAccess extends SimpleBeanInfo implements I_Callback {
          return this.outStream.toString();
       }
       catch (XmlBlasterException e) {
-         log.error(ME, "Client failed: " + e.getMessage());
-         e.printStackTrace();
+         log.warn(ME, "sendRequest failed: " + e.getMessage());
          throw new RuntimeException(e.getMessage());
       }
       catch (Exception e) {
-         log.error(ME, "Client failed: " + e.toString());
+         log.error(ME, "sendRequest failed: " + e.toString());
          e.printStackTrace();
          throw new RuntimeException(e.toString());
       }
