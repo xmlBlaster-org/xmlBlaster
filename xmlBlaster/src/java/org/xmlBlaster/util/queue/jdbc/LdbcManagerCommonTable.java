@@ -1671,7 +1671,7 @@ public class LdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       }
       catch (Throwable ex) {
          try {
-            query.conn.rollback();
+            if (query != null && query.conn != null) query.conn.rollback();
          }
          catch (Throwable ex1) {
             this.log.error(ME, "could not rollback: " + ex.toString());
