@@ -23,6 +23,23 @@
   * rename AuthServer to AuthenticationService
   * rename Server to xmlBlaster
 
+- Authentication (login etc)
+  Plugin possibility for existing user management systems
+  * JNDI with XML based LDAP access http://www.dsml.org/about.html
+
+- Authorization (ACL access control lists)
+  Our ACL should be XML based, so its possible to
+  query who may do what through XPath on Client meta informations which
+  are XML based, simple approach:
+  
+  [User]  [Action]  [Data]
+  Martin  read      marketing-paper
+  Joe     write     homepage-layout
+
+  User:   may be any user based information like role, group, property etc. (XPath query)
+  Action: read, write, erase, change
+  Data:   Any data in xmlBlaster (XPath query)
+
 - reliability of update() callback
   The update() method is declared oneway, so the xmlBlaster
   can't guarantee if the update is delivered.
