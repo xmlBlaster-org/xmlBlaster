@@ -3,7 +3,7 @@ Name:      Global.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The global object (a stack for all pseudo static stuff).
-Version:   $Id: Global.h,v 1.13 2003/02/12 15:02:26 laghi Exp $
+Version:   $Id: Global.h,v 1.14 2003/02/13 15:05:04 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_GLOBAL_H
@@ -112,7 +112,7 @@ public:
     /**
      * returns the specified value as a string.
      */
-    static string getBoolAsString(bool val);
+    static const string& getBoolAsString(bool val);
 
     /**
 

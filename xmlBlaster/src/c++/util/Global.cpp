@@ -3,7 +3,7 @@ Name:      Global.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Global.cpp,v 1.19 2003/02/12 15:02:26 laghi Exp $
+Version:   $Id: Global.cpp,v 1.20 2003/02/13 15:05:04 ruff Exp $
 ------------------------------------------------------------------------------*/
 #include <client/protocol/CbServerPluginManager.h>
 #include <util/dispatch/DeliveryManager.h>
@@ -153,10 +153,12 @@ Timeout& Global::getPingTimer()
    return *pingTimer_;
 }
 
-string Global::getBoolAsString(bool val)
+const string& Global::getBoolAsString(bool val)
 {
-   if (val) return "true";
-   else return "false";
+   static const string _TRUE = "true";
+   static const string _FALSE = "false";
+   if (val) return _TRUE;
+   else return _FALSE;
 }
 
 
