@@ -3,7 +3,7 @@ Name:      MessageUnitWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping the CORBA MessageUnit to allow some nicer usage
-Version:   $Id: MessageUnitWrapper.java,v 1.20 2000/07/02 17:20:29 ruff Exp $
+Version:   $Id: MessageUnitWrapper.java,v 1.21 2000/09/03 17:52:06 kron Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -13,7 +13,7 @@ import org.xmlBlaster.engine.xml2java.PublishQoS;
 import org.jutils.log.Log;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.engine.I_PersistenceDriver;
+import org.xmlBlaster.engine.persistence.I_PersistenceDriver;
 import java.util.*;
 
 
@@ -83,7 +83,10 @@ public class MessageUnitWrapper
          this.msgUnit.xmlKey = xmlKey.literal();
 
       if (persistenceDriver != null && publishQoS.isDurable() && !publishQoS.fromPersistenceStore())
+      {
          persistenceDriver.store(this);
+         if(Log.TRACE) Log.trace(ME,"Storing MessageUnit with key oid="+xmlKey.getKeyOid());
+      }
 
       publishQoS.setFromPersistenceStore(false);
 
@@ -94,7 +97,7 @@ public class MessageUnitWrapper
    /**
     * Accessing the key of this message
     */
-   final XmlKey getXmlKey()
+   public final XmlKey getXmlKey()
    {
       return xmlKey;
    }
@@ -137,7 +140,7 @@ public class MessageUnitWrapper
 
       if (changed) {  // new content is not the same as old one
          this.msgUnit.content = newContent;
-         if (persistenceDriver != null && publishQoS.isDurable()) // && !publishQoS.fromPersistenceStore())
+         if (persistenceDriver != null && publishQoS.isDurable()) //&& !publishQoS.fromPersistenceStore())
             persistenceDriver.store(xmlKey, newContent);
          return true;
       }
@@ -168,14 +171,14 @@ public class MessageUnitWrapper
    /**
     * Access the flags from the publisher
     */
-   final PublishQoS getPublishQoS()
+   public final PublishQoS getPublishQoS()
    {
       return publishQoS;
    }
 
 
    /**
-    * Access the unique login name of the (last) publisher. 
+    * Access the unique login name of the (last) publisher.
     * <p />
     * The sender of this message.
     * @return loginName of the data source which last updated this message
@@ -213,7 +216,7 @@ public class MessageUnitWrapper
     * Note it has package scope access only.
     * If you want to access it from elsewhere, use the getMessageUnitClone() method
     */
-   final MessageUnit getMessageUnit() throws XmlBlasterException
+   public final MessageUnit getMessageUnit() throws XmlBlasterException
    {
       if (msgUnit == null) {
          Log.error(ME + ".EmptyMessageUnit", "Internal problem, msgUnit = null");
