@@ -30,14 +30,11 @@ import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.util.qos.TopicProperty;
-import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
 import org.xmlBlaster.util.qos.storage.TopicStoreProperty;
 import org.xmlBlaster.util.qos.AccessFilterQos;
-import org.xmlBlaster.util.dispatch.DeliveryWorkerPool;
 import org.xmlBlaster.util.cluster.RouteInfo;
 import org.xmlBlaster.client.key.UpdateKey;
-import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
@@ -47,6 +44,7 @@ import org.xmlBlaster.engine.queuemsg.ReferenceEntry;
 import org.xmlBlaster.engine.queuemsg.MsgQueueHistoryEntry;
 import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.engine.queuemsg.TopicEntry;
+import org.xmlBlaster.engine.persistence.I_PersistenceDriver;
 import org.xmlBlaster.engine.mime.I_AccessFilter;
 import org.xmlBlaster.engine.mime.AccessPluginManager;
 import org.xmlBlaster.engine.mime.I_PublishFilter;
@@ -59,24 +57,19 @@ import org.xmlBlaster.engine.qos.EraseQosServer;
 import org.xmlBlaster.engine.qos.GetQosServer;
 import org.xmlBlaster.engine.qos.GetReturnQosServer;
 import org.xmlBlaster.engine.cluster.PublishRetQosWrapper;
-import org.xmlBlaster.engine.persistence.I_PersistenceDriver;
 import org.xmlBlaster.engine.persistence.PersistencePluginManager;
 import org.xmlBlaster.engine.admin.CommandManager;
-import org.xmlBlaster.engine.admin.I_AdminNode;
-import org.xmlBlaster.engine.persistence.MsgFileDumper;
 import org.xmlBlaster.engine.msgstore.I_Map;
 import org.xmlBlaster.engine.msgstore.I_MapEntry;
 import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.authentication.I_ClientListener;
 import org.xmlBlaster.authentication.ClientEvent;
 import org.xmlBlaster.authentication.SessionInfo;
-import org.xmlBlaster.authentication.SubjectInfo;
 import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
 import org.xmlBlaster.engine.runlevel.RunlevelManager;
 import org.xmlBlaster.util.admin.extern.JmxWrapper;
 
 import java.util.*;
-import java.io.*;
 
 
 /**
@@ -383,17 +376,22 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
 
       boolean wipeOutJdbcDB = glob.getProperty().get("wipeOutJdbcDB", false);
       if (wipeOutJdbcDB) {
+         this.glob.setWipeOutDB(wipeOutJdbcDB);
+         // it is now the responsability of the QueuePlugin (see JdbcQueueCommonTable) to
+         // really perform the wipeout, the request broker only gives him an order to do so. 
+/*         
          String tableNamePrefix = "XMLBLASTER";
          tableNamePrefix = glob.getProperty().get("queue.persistent.tableNamePrefix", tableNamePrefix).toUpperCase();
          log.warn(ME, "You have set '-wipeOutJdbcDB true', we will destroy now the complete JDBC persistence store entries of prefix="+tableNamePrefix);
          try {
             java.util.Properties prop = new java.util.Properties();
             prop.put("tableNamePrefix", tableNamePrefix);
-            glob.wipeOutDB("JDBC", "1.0", prop, true);
+            JdbcManagerCommonTable.wipeOutDB(glob, "JDBC", "1.0", prop, true);
          }
-         catch (XmlBlasterException e) {
-            log.error(ME, "Wipe out of JDBC database entries failed: " + e.getMessage());
+          catch (XmlBlasterException e) {
+          log.error(ME, "Wipe out of JDBC database entries failed: " + e.getMessage());
          }
+*/
       }
 
       boolean useTopicStore = glob.getProperty().get("useTopicStore", true);

@@ -20,6 +20,8 @@ import java.sql.BatchUpdateException;
 
 import java.util.Hashtable;
 
+import org.xmlBlaster.util.plugin.PluginInfo;
+import org.xmlBlaster.util.queue.QueuePluginManager;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_Queue;
@@ -2405,11 +2407,70 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       return sb.toString();
    }
 
+
+   /**
+    * wipes out the db. The Properties to use as a default are these from the QueuePlugin with the 
+    * configuration name specified by defaultConfName (default is 'JDBC'). You can overwrite these 
+    * properties entirely or partially with 'properties'.
+    * @param confType the name of the configuration to use as default. If you pass null, then 
+    *                 'JDBC' will be taken.
+    * @param confVersion the version to use as a default. If you pass null, then '1.0' will be taken.
+    * @param properties the properties to use to overwrite the default properties. If you pass null, no 
+    *        properties will be overwritten, and the default will be used.
+    * @param setupNewTables tells the manager to recreate empty tables if set to 'true'. Note that this flag only
+    *        has effect if the JdbcManagerCommonTable is used.
+    */
+   public static void wipeOutDB(Global glob, String confType, String confVersion, java.util.Properties properties, boolean setupNewTables) 
+      throws XmlBlasterException {
+      LogChannel log = glob.getLog("jdbc");
+      if (confType == null) confType = "JDBC";
+      if (confVersion == null) confVersion = "1.0";
+      QueuePluginManager pluginManager = new QueuePluginManager(glob);
+      PluginInfo pluginInfo = new PluginInfo(glob, pluginManager, confType, confVersion);
+      // clone the properties (to make sure they only belong to us) ...
+      java.util.Properties
+         ownProperties = (java.util.Properties)pluginInfo.getParameters().clone();
+      //overwrite our onw properties ...
+      if (properties != null) {
+         java.util.Enumeration enum = properties.keys();
+         while (enum.hasMoreElements()) {
+            String key =(String)enum.nextElement();
+            ownProperties.put(key, properties.getProperty(key));
+         }
+      }
+      JdbcConnectionPool pool = new JdbcConnectionPool();
+      try {
+         pool.initialize(glob, pluginInfo.getParameters());
+      }
+      catch (ClassNotFoundException ex) {
+         log.error(ME, "wipOutDB class not found: " + ex.getMessage());
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "wipeOutDB class not found", ex);
+      }
+      catch (SQLException ex) {
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "wipeOutDB SQL exception", ex);
+      }
+
+      // determine which jdbc manager class to use
+      String queueClassName = pluginInfo.getClassName();
+      if ("org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin".equals(queueClassName)) {
+         log.error(ME, "org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin is not supported anymore");
+      }
+      else if ("org.xmlBlaster.util.queue.jdbc.JdbcQueueCommonTablePlugin".equals(queueClassName)) {
+         // then it is a JdbcManagerCommontTable
+         // then it is a JdbcManager
+         JdbcManagerCommonTable manager = new JdbcManagerCommonTable(pool, null);
+         pool.registerStorageProblemListener(manager);
+         manager.setUp();
+         manager.wipeOutDB(setupNewTables);
+      }
+      else {
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "wipeOutDB for plugin '" + queueClassName + "' is not implemented");
+      }
+   }
+
    /**
     * This main method can be used to delete all tables on the db which start
     * with a certain prefix. It is useful to cleanup the entire DB.
-    * 
-    *
     * 
     * </pre>
     */
@@ -2426,7 +2487,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       }
 
       try {
-         glob.wipeOutDB(type, version, null, false);
+         JdbcManagerCommonTable.wipeOutDB(glob, type, version, null, false);
       }
       catch (Exception ex) {
          System.err.println("Main" + ex.toString());

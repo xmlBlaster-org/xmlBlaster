@@ -12,13 +12,10 @@ import org.jutils.text.StringHelper;
 import org.jutils.log.LogChannel;
 import org.jutils.log.LogDeviceConsole;
 import org.jutils.log.LogDeviceFile;
-import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.util.cluster.NodeId;
 import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.qos.address.Address;
-import org.xmlBlaster.util.qos.address.AddressBase;
-import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.client.PluginLoader;
 import org.xmlBlaster.util.key.I_MsgKeyFactory;
 import org.xmlBlaster.util.key.MsgKeySaxFactory;
@@ -33,12 +30,10 @@ import org.xmlBlaster.util.qos.MsgQosSaxFactory;
 import org.xmlBlaster.util.qos.I_QueryQosFactory;
 import org.xmlBlaster.util.qos.QueryQosSaxFactory;
 import org.xmlBlaster.util.qos.I_StatusQosFactory;
-import org.xmlBlaster.util.qos.StatusQosSaxFactory;
 import org.xmlBlaster.util.qos.StatusQosQuickParseFactory;
 import org.xmlBlaster.util.recorder.RecorderPluginManager;
 import org.xmlBlaster.util.classloader.ClassLoaderFactory;
 import org.xmlBlaster.util.XmlProcessor;
-import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.QueuePluginManager;
 import org.xmlBlaster.util.dispatch.plugins.DispatchPluginManager;
 import org.xmlBlaster.util.dispatch.DeliveryManager;
@@ -53,12 +48,8 @@ import org.xmlBlaster.util.log.I_LogDeviceFactory;
 import org.jutils.log.LogableDevice;
 
 import org.xmlBlaster.util.enum.ErrorCode;
-import org.xmlBlaster.util.queue.QueuePluginManager;
-// import org.xmlBlaster.util.queue.jdbc.JdbcManager;
 import org.xmlBlaster.util.queue.jdbc.JdbcManagerCommonTable;
-import org.xmlBlaster.util.queue.jdbc.JdbcConnectionPool;
 import org.xmlBlaster.util.queue.I_EntryFactory;
-import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.plugin.PluginManagerBase;
 import org.xmlBlaster.util.plugin.PluginRegistry;
 import org.xmlBlaster.client.queuemsg.ClientEntryFactory;
@@ -66,9 +57,6 @@ import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.XmlBlasterAccess;
 
 import java.util.Properties;
-
-import java.applet.Applet;
-
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
@@ -78,7 +66,6 @@ import java.util.Hashtable;
 import java.util.Enumeration;
 
 import java.net.Socket;
-import java.sql.SQLException;
 import org.xmlBlaster.util.JAXPFactory;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -185,6 +172,9 @@ public class Global implements Cloneable
    protected I_XmlBlasterAccess xmlBlasterAccess;
 
    protected boolean isDoingShutdown = false;
+   
+   /** set to allow wipe out the persistence on restarts */
+   protected boolean wipeOutDB = false;
 
    /**
     * Constructs an initial Global object,
@@ -1380,6 +1370,7 @@ public class Global implements Cloneable
     * @param setupNewTables tells the manager to recreate empty tables if set to 'true'. Note that this flag only
     *        has effect if the JdbcManagerCommonTable is used.
     */
+/*
    public void wipeOutDB(String confType, String confVersion, java.util.Properties properties, boolean setupNewTables) 
       throws XmlBlasterException {
       if (confType == null) confType = "JDBC";
@@ -1426,6 +1417,7 @@ public class Global implements Cloneable
          throw new XmlBlasterException(this, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "wipeOutDB for plugin '" + queueClassName + "' is not implemented");
       }
    }
+*/
 
    /**
     * This notation is URLEncoder since JDK 1.4.
@@ -1688,6 +1680,24 @@ public class Global implements Cloneable
       }
       return this.xmlBlasterAccess;
    }
+
+   /**
+    * Tells the queue manager it should remove all entries from the persisence.
+    * This is used by the RequestBroker when starting up
+    * @param doWipeout
+    */
+   public void setWipeOutDB(boolean doWipeout) {
+      this.wipeOutDB = doWipeout;
+   }
+
+   /**
+    * Tells the jdbc queue manager if a cleanup of the DB is necessary
+    * @return true if a cleanup is necessary
+    */
+   public boolean getWipeOutDB() {
+      return this.wipeOutDB;
+   }
+   
 
    /**
     * Command line usage.

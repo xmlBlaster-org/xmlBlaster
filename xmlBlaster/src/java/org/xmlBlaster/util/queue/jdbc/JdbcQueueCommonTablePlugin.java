@@ -15,7 +15,6 @@ import org.xmlBlaster.util.queue.I_QueueEntry;
 import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.queue.I_QueuePutListener;
 import org.xmlBlaster.util.queue.ReturnDataHolder;
-// import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.queue.I_StoragePlugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.qos.storage.QueuePropertyBase;
@@ -23,16 +22,11 @@ import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.engine.msgstore.I_Map;
 import org.xmlBlaster.engine.msgstore.I_MapEntry;
 import org.xmlBlaster.engine.msgstore.I_ChangeCallback;
-import org.xmlBlaster.util.queue.I_StorageProblemNotifier;
 import org.xmlBlaster.util.queue.I_StorageProblemListener;
 
-import java.sql.ResultSet;
 import java.sql.SQLException;
-// import java.sql.SQLException;
-import java.sql.Statement;
 
 import java.util.ArrayList;
-import java.util.Properties;
 
 
 /**
@@ -190,6 +184,15 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       catch (Throwable ex) {
          if (this.log.TRACE) this.log.trace(location, "getJdbcCommonTableQueueManager internal exception: " + ex.toString());
          throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, location, "getJdbcQueueManager: throwable when initializing the connection pool", ex);
+      }
+
+      if (this.glob.getWipeOutDB()) {
+         synchronized (this.glob) {
+            if (this.glob.getWipeOutDB()) {
+               manager.wipeOutDB(true);
+               this.glob.setWipeOutDB(false);
+            }
+         }
       }
       return manager;
    }
