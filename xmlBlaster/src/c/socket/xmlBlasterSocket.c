@@ -226,7 +226,14 @@ bool parseSocketData(int xmlBlasterSocket, SocketDataHolder *socketDataHolder, X
    }
    strcpy(ptr, msgLenPtr);
    trim(ptr);
-   sscanf(ptr, "%u", &socketDataHolder->msgLen);
+   if (sscanf(ptr, "%u", &socketDataHolder->msgLen) != 1) {
+      strncpy0(exception->errorCode, "user.connect", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
+      sprintf(exception->message,
+              "[xmlBlasterSocket] ERROR Received numRead=%d header bytes with invalid message length='%s'",
+              numRead, msgLenPtr);
+      if (debug) { printf(exception->message); printf("\n"); }
+      return true;
+   }
    if (debug) printf("[xmlBlasterSocket] Receiving message of size %u ...\n", socketDataHolder->msgLen);
 
    /* read the complete message */
@@ -291,7 +298,12 @@ bool parseSocketData(int xmlBlasterSocket, SocketDataHolder *socketDataHolder, X
    strncpy0(tmpPtr, rawMsg+currPos, 256);
    currPos += strlen(tmpPtr)+1;
    trim(tmpPtr);
-   sscanf(tmpPtr, "%u", &socketDataHolder->dataLenUncompressed);
+   if (strlen(tmpPtr) > 0 && sscanf(tmpPtr, "%u", &socketDataHolder->dataLenUncompressed) != 1) {
+      printf("[xmlBlasterSocket] WARN uncompressed data length '%s' is invalid, we continue nevertheless\n", tmpPtr);
+   }
+   else {
+      socketDataHolder->dataLenUncompressed = 0;
+   }
 
    /* Read the payload */
    socketDataHolder->blob.dataLen = socketDataHolder->msgLen - currPos;
@@ -363,7 +375,9 @@ MsgUnitArr *parseMsgUnitArr(size_t dataLen, char *data)
             strcpy(ptr, data+currpos);
             currpos += strlen(ptr)+1;
             trim(ptr);
-            sscanf(ptr, "%u", &msgUnit->contentLen);
+            if (sscanf(ptr, "%u", &msgUnit->contentLen) != 1) {
+               printf("[xmlBlasterSocket] WARN MsgUnit content length '%s' is invalid, we continue nevertheless\n", ptr);
+            }
         
             msgUnit->content = (char *)malloc(msgUnit->contentLen * sizeof(char));
             memcpy(msgUnit->content, data+currpos, msgUnit->contentLen);

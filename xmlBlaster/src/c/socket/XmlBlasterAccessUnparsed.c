@@ -100,12 +100,16 @@ XmlBlasterAccessUnparsed *getXmlBlasterAccessUnparsed(int argc, char** argv) {
    for (iarg=0; iarg < argc-1; iarg++) {
       if (strcmp(argv[iarg], "-debug") == 0)
          xa->debug = !strcmp(argv[++iarg], "true");
-      else if (strcmp(argv[iarg], "-plugin/socket/responseTimeout") == 0)
-         sscanf(argv[++iarg], "%ld", &xa->responseTimeout);
+      else if (strcmp(argv[iarg], "-plugin/socket/responseTimeout") == 0) {
+         if (sscanf(argv[++iarg], "%ld", &xa->responseTimeout) != 1)
+            printf("[XmlBlasterAccessUnparsed] WARN '-plugin/socket/responseTimeout %s' is invalid\n", argv[iarg]);
+      }
    }
    for (iarg=0; iarg < argc-1; iarg++) {
-      if (strcmp(argv[iarg], "-dispatch/connection/plugin/socket/responseTimeout") == 0)
-         sscanf(argv[++iarg], "%ld", &xa->responseTimeout);
+      if (strcmp(argv[iarg], "-dispatch/connection/plugin/socket/responseTimeout") == 0) {
+         if (sscanf(argv[++iarg], "%ld", &xa->responseTimeout) != 1)
+           printf("[XmlBlasterAccessUnparsed] WARN '-dispatch/connection/plugin/socket/responseTimeout %s' is invalid\n", argv[iarg]);
+      }
    }
    if (xa->debug) printf("[XmlBlasterAccessUnparsed] Created handle: -debug=%d -plugin/socket/responseTimeout=%ld\n",
                          xa->debug, xa->responseTimeout);
@@ -535,8 +539,10 @@ int main(int argc, char** argv)
    int ii;
    int numTests = 1;
    for (ii=0; ii < argc-1; ii++)
-      if (strcmp(argv[ii], "-numTests") == 0)
-         sscanf(argv[++ii], "%d", &numTests);
+      if (strcmp(argv[ii], "-numTests") == 0) {
+         if (sscanf(argv[++ii], "%d", &numTests) != 1)
+            printf("[XmlBlasterAccessUnparsed] WARN '-numTests %s' is invalid\n", argv[ii]);
+      }
 
    for (ii=0; ii<numTests; ii++) {
       int iarg;
