@@ -10,8 +10,8 @@ Example feeding a gif image:
        -xmlQos "<qos><isDurable/><ForceUpdate/></qos>"
 
 
-Example feeding a text file (key and qos are also specified in a textfile):
-===========================================================================
+Example feeding a text file (key and qos are also specified in a text file):
+============================================================================
 
    jaco org.xmlBlaster.client.filestore.PublishFile \
        -c Hello.txt \
