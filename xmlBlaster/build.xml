@@ -2841,7 +2841,7 @@ TODO
    </target>  <!-- C lib -->
 
    <target name="c-test" depends="prepare-cpp" description="Create C test clients">
-      <foreach list="TestQueue,TestUtil,TestSocket,TestMethods,TestError,TestStress"
+      <foreach list="TestLeaveServer,TestQueue,TestUtil,TestSocket,TestMethods,TestError,TestStress"
                target="compileCExe" param="exeName" delimiter="," inheritAll="true">
          <param name="compileCSourcePath" value="${testsuite.dir}/src/c" />
       </foreach>
