@@ -1045,14 +1045,22 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     */
    public String getLoginName()
    {
-      if (driver != null)
-         return driver.getLoginName();
+      if (driver != null) {
+         String nm = driver.getLoginName();
+         if (nm != null && nm.length() > 0)
+            return nm;
+      }
+
       try {
-         if (connectQos != null)
-            return connectQos.getSecurityQos().getUserId();
+         if (connectQos != null) {
+            String nm = connectQos.getSecurityQos().getUserId();
+            if (nm != null && nm.length() > 0)
+               return nm;
+         }
       }
       catch (XmlBlasterException e) {}
-      return "client?";
+
+      return glob.getId(); // "client?";
    }
 
    /**
