@@ -42,6 +42,7 @@ public class TestAll
       suite.addTest(TestLoginLogoutEvent.suite());
       suite.addTest(TestGet.suite());
       suite.addTest(TestGetFilter.suite());
+      suite.addTest(TestGetRegexFilter.suite());
       suite.addTest(TestSubExact.suite());
       suite.addTest(TestSub.suite());
       suite.addTest(TestSubDispatch.suite());
