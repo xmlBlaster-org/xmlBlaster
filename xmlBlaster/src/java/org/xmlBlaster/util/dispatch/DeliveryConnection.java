@@ -178,11 +178,8 @@ abstract public class DeliveryConnection implements I_Timeout
       }
       catch (XmlBlasterException e) {
          if (isPolling() && log.TRACE) log.trace(ME, "Exception from update(), retryCounter=" + retryCounter + ", state=" + state.toString());
-         log.warn(ME, "sending failed and redeliver counter is not implemented");
-         /*
          for (int i=0; i<msgArr.length; i++)
-            UpdateQosServer.incrRedeliver(msgArr[i].getMsgQosData());
-         */
+            msgArr[i].incrRedeliverCounter();
          if (e.isCommunication()) {
             handleTransition(false, true, e); // never returns - throws exception
          }
