@@ -2,6 +2,11 @@
 
 Changes for 0.74 [Feb.??, 2000]
 ==============================
+   - Changed xmlBlaster.idl: messageUnit    -> msgUnit
+                             messageUnitArr -> msgUnitArr
+     Case does not matter, IDL is case-insensitive when detecting name clashes.
+	  (Thanks to Michele Laghi)
+
    - Added a guide line for xmlBLaster core developer, see
 	  xmlBlaster/doc/developer-guidelines.html
 
