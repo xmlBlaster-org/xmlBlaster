@@ -35,6 +35,7 @@ Changes for 0.79d [Dec, 30 2001]
 
   - Added a message receive timestamp in update QoS, see:
     http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.update.rcvTimestamp.html
+    The feature is not yet used by the server.
 
   - Bugfix when interpreting command line option -xmlrpc.hostname
 
