@@ -28,16 +28,15 @@ public class Manager implements I_Manager{
 
 
    public Manager() {
-      Log.trace(ME+"."+ME+"()", "-------START--------\n");
-      Log.trace(ME+"."+ME+"()", "-------END----------\n");
+      if (Log.TRACE) Log.trace(ME+"."+ME+"()", "Constructor");
    }
 
    public void init(String[] options) throws org.xmlBlaster.util.XmlBlasterException {
-      Log.trace(ME+".init()", "-------START--------\n");
+      if (Log.TRACE) Log.trace(ME+".init()", "Entering init");
       if (options.length>0) {
          Log.warn(ME+".init()", "Got unexpected options! Check xmlBlasters configuration!");
       }
-      Log.trace(ME+".init()", "-------END--------\n");
+      if (Log.TRACE) Log.trace(ME+".init()", "Leaving init");
    }
 
    public String getType() {
@@ -50,12 +49,12 @@ public class Manager implements I_Manager{
 
 
    public I_Session reserveSession(String sessionId) throws XmlBlasterException {
-      Log.trace(ME+".reserveSession(String sessionId="+sessionId+")", "-------START--------\n");
+      if (Log.TRACE) Log.trace(ME+".reserveSession(String sessionId="+sessionId+")", "-------START--------");
       Session session = new Session(this, sessionId);
       synchronized(sessions) {
          sessions.put(sessionId, session);
       }
-      Log.trace(ME+".reserveSession(...))", "-------END--------\n");
+      if (Log.TRACE) Log.trace(ME+".reserveSession(...))", "-------END--------");
 
       return session;
    }
