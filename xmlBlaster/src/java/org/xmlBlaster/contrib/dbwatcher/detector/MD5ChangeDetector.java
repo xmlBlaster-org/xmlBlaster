@@ -36,7 +36,7 @@ import org.xmlBlaster.contrib.dbwatcher.convert.I_DataConverter;
 /**
  * Check the database and compare the MD5 of the result set
  * to the previous one. 
- * <p />
+ * <p>Configuration:</p>
  * <ul>
  *  <li><tt>changeDetector.detectStatement</tt> for example
  *      <tt>"SELECT col1, col2, ICAO_ID FROM TEST_POLL ORDER BY ICAO_ID</tt>
@@ -47,9 +47,11 @@ import org.xmlBlaster.contrib.dbwatcher.convert.I_DataConverter;
  *       If not configured, the whole query is MD5 compared and triggers on change exactly one publish event
  *  </li>
  * </ul>
+ * <p>
  * If the table does not exist in the DB no event is triggered, if an empty
  * table comes to existence an empty event with untouched topic name
  * is triggered:
+ * </p>
  * <pre>
  * topic='db.change.event.${ICAO_ID}'
  * 
@@ -57,6 +59,11 @@ import org.xmlBlaster.contrib.dbwatcher.convert.I_DataConverter;
  * &lt;sql>
  * &lt;/sql>
  * </pre>
+ *
+ * <p>
+ * Note that the previous MD5 values are hold in RAM only, after
+ * plugin restart they are lost and a complete set of data is send again.
+ * </p>
  * 
  * @author Marcel Ruff
  */

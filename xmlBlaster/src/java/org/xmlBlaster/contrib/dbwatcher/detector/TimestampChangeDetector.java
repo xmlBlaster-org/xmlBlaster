@@ -24,12 +24,30 @@ import org.xmlBlaster.contrib.dbwatcher.I_ChangeListener;
 import org.xmlBlaster.contrib.dbwatcher.convert.I_DataConverter;
 
 /**
- * Check the database and compare the Timestamp of a table of the result set
- * to the previous one. 
+ * Check the database and compare the change timestamp of a table to the previous one. 
+ * <p>Configuration:</p>
+ * <ul>
+ *  <li><tt>changeDetector.detectStatement</tt> the SQL statement which detects that a change has occurred, for example
+ *      <tt>SELECT MAX(TO_CHAR(ts, 'YYYY-MM-DD HH24:MI:SSXFF')) FROM TEST_TS</tt>
+ *  </li>
+ *  <li><tt>changeDetector.timestampColNum</tt> is set to 1 and specifies the column number
+ *       where the above <tt>changeDetector.detectStatement</tt> delivers the max result.
+ *       Usually you don't need to change this.
+ *  </li>
+ *  <li><tt>db.queryMeatStatement</tt> is executed when a change was detected, it collects
+ *      the wanted data to send as a message, for example
+ *      <tt>SELECT * FROM TEST_POLL WHERE TO_CHAR(TS, 'YYYY-MM-DD HH24:MI:SSXFF') > '${oldTimestamp}' ORDER BY CAR</tt>.
+ *      It should be order by the <tt>changeDetector.groupColName</tt> value (if such is given).
+ *  </li>
+ *  <li><tt>changeDetector.groupColName</tt> in the above example
+ *      <tt>ICAO_ID</tt>, the SELECT must be sorted after this column and must
+ *       list it. All distinct <tt>ICAO_ID</tt> values trigger an own publish event.
+ *       If not configured, the whole query is MD5 compared and triggers on change exactly one publish event
+ *  </li>
+ * </ul>
  * <p>
- * Note: There is a transaction gap between the detectStatement and the
- * queryMeatStatement. Under heavy changes there may come some events
- * multiple times!
+ * Note that the previous timestamp value is hold in RAM only, after
+ * plugin restart it is lost and a complete set of data is send again.
  * </p>
  * @author Marcel Ruff 
  */
