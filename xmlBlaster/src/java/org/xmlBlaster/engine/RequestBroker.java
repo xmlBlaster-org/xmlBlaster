@@ -1222,29 +1222,19 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
                if (log.DUMP) log.dump(ME, toXml());
             }
          }
-         else { // Try to unSubscribe with message oid instead of subscribe id:
+         else { // Try to unSubscribe with topic oid instead of subscribe id:
             String suppliedXmlKey = xmlKey.getOid(); // remember supplied oid, another oid may be generated later
 
-            KeyData[] keyDataArr = queryMatchingKeys(sessionInfo, xmlKey, unSubscribeQos.getData());
-
-            if ((keyDataArr.length == 0 || keyDataArr.length == 1 && keyDataArr[0] == null) && xmlKey.isExact()) {
-               // Special case: the oid describes a returned oid from a XPATH subscription (if not, its an unknown oid - error)
-               SubscriptionInfo subs = clientSubscriptions.getSubscription(sessionInfo, xmlKey.getOid()); // Access the XPATH subscription object ...
-               if (subs != null && subs.getKeyData().isQuery()) { // now do the query again ...
-                  keyDataArr = queryMatchingKeys(sessionInfo, (QueryKeyData)subs.getKeyData(), unSubscribeQos.getData());
-                  fireUnSubscribeEvent(subs);    // Remove the object containing the XPath query
-                  subscriptionIdSet.add(subs.getSubscriptionId());
+            TopicHandler[] topicHandlerArr = queryMatchingTopics(sessionInfo, xmlKey, unSubscribeQos.getData());
+            //Set oidSet = new HashSet(topicHandlerArr.length);  // for return values (TODO: change to TreeSet to maintain order)
+            for (int ii=0; ii<topicHandlerArr.length; ii++) {
+               TopicHandler topicHandler = topicHandlerArr[ii];
+               if (topicHandler == null) { // unSubscribe on a unknown message ...
+                  log.warn(ME, "UnSubscribe on unknown topic [" + xmlKey.getOid() + "] is ignored");
+                  continue;
                }
-            }
 
-            for (int ii=0; ii<keyDataArr.length; ii++) {
-               KeyData xmlKeyExact = keyDataArr[ii];
-               if (xmlKeyExact == null) {
-                  log.warn(ME + ".OidUnknown", "unSubscribe(" + suppliedXmlKey +") from " + sessionInfo.getLoginName() + ", can't access message, key oid '" + suppliedXmlKey + "' is unknown");
-                  throw new XmlBlasterException(glob, ErrorCode.USER_OID_UNKNOWN, ME, "unSubscribe(" + suppliedXmlKey + ") failed, can't access message, key oid '" + suppliedXmlKey + "' is unknown");
-               }
-               TopicHandler handler = getMessageHandlerFromOid(xmlKeyExact.getOid());
-               Vector subs = handler.findSubscriber(sessionInfo);
+               Vector subs = topicHandler.findSubscriber(sessionInfo);
                for (int jj=0; subs != null && jj<subs.size(); jj++) {
                   SubscriptionInfo sub = (SubscriptionInfo)subs.elementAt(jj);
                   if (sub != null) {
@@ -1252,11 +1242,11 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
                      subscriptionIdSet.add(sub.getSubscriptionId());
                   }
                   else
-                     log.warn(ME, "UnSubscribe of " + xmlKeyExact.getOid() + " failed");
+                     log.warn(ME, "UnSubscribe of " + topicHandler.getId() + " failed");
                }
             }
 
-            if (keyDataArr.length < 1) {
+            if (topicHandlerArr.length < 1) {
                log.error(ME + ".OidUnknown2", "Can't access subscription, unSubscribe failed, your supplied key oid '" + suppliedXmlKey + "' is invalid");
                throw new XmlBlasterException(glob, ErrorCode.USER_OID_UNKNOWN, ME, "Can't access subscription, unSubscribe failed, your supplied key oid '" + suppliedXmlKey + "' is invalid");
             }
