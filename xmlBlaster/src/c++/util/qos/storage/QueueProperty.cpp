@@ -16,17 +16,11 @@ using namespace org::xmlBlaster::util::qos::address;
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace storage {
 
-   inline void QueueProperty::initialize()
-   {
-      QueuePropertyBase::initialize("");
-   }
-
    QueueProperty::QueueProperty(Global& global, const string& nodeId) :
       QueuePropertyBase(global, nodeId)
    {
       ME = "QueueProperty";
       relating_ = Constants::RELATING_CLIENT;
-      initialize();
    }
 
    QueueProperty::QueueProperty(const QueuePropertyBase& prop)

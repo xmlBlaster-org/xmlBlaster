@@ -3,7 +3,7 @@ Name:      Global.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The global object (a stack for all pseudo static stuff).
-Version:   $Id: Global.h,v 1.11 2003/01/16 21:36:25 laghi Exp $
+Version:   $Id: Global.h,v 1.12 2003/01/21 22:43:17 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_GLOBAL_H
@@ -81,7 +81,7 @@ public:
     * @param delay the time in milliseconds from now the return value has to point to.
     * @exception RuntimeException on overflow (never happens :-=)
     */
-   void initialize(int args=0, const char * const argc[]=0);
+   Global& initialize(int args=0, const char * const argc[]=0);
 
    /**
     * If no log is found with that name, one is created and added to the

@@ -3,7 +3,7 @@ Name:      CbQueueProperty.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: CbQueueProperty.cpp,v 1.5 2003/01/17 13:07:21 ruff Exp $
+Version:   $Id: CbQueueProperty.cpp,v 1.6 2003/01/21 22:43:17 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -24,45 +24,14 @@ using namespace org::xmlBlaster::util::qos::address;
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace storage {
 
-   inline void CbQueueProperty::initialize()
-   {
-      QueuePropertyBase::initialize("callback");
-
-      // Set the queue properties
-/*
-      setMaxMsg(global_.getProperty().getLongProperty("cb.queue.maxMsg", DEFAULT_maxMsgDefault));
-      setMaxBytes(global_.getProperty().getLongProperty("cb.queue.maxBytes", DEFAULT_bytesDefault));
-      setMaxMsgCache(global_.getProperty().getLongProperty("cb.queue.maxMsgCache", DEFAULT_maxMsgCacheDefault));
-      setMaxBytesCache(global_.getProperty().getLongProperty("cb.queue.maxBytesCache", DEFAULT_bytesCacheDefault));
-      setStoreSwapLevel(global_.getProperty().getLongProperty("cb.queue.storeSwapLevel", (long)(DEFAULT_storeSwapLevelRatio * maxBytesCache_)));
-      setStoreSwapBytes(global_.getProperty().getLongProperty("cb.queue.storeSwapBytes", (long)(DEFAULT_storeSwapBytesRatio * maxBytesCache_)));
-      setReloadSwapLevel(global_.getProperty().getLongProperty("cb.queue.reloadSwapLevel", (long)(DEFAULT_reloadSwapLevelRatio * maxBytesCache_)));
-      setReloadSwapBytes(global_.getProperty().getLongProperty("cb.queue.reloadSwapBytes", (long)(DEFAULT_reloadSwapBytesRatio * maxBytesCache_)));
-      setExpires(global_.getProperty().getTimestampProperty("cb.queue.expires", DEFAULT_maxExpires));
-      setOnOverflow(global_.getProperty().getStringProperty("cb.queue.onOverflow", DEFAULT_onOverflow));
-      setOnFailure(global_.getProperty().getStringProperty("cb.queue.onFailure", DEFAULT_onFailure));
-      setType(global_.getProperty().getStringProperty("cb.queue.type", DEFAULT_type));
-      setVersion(global_.getProperty().getStringProperty("cb.queue.version", DEFAULT_version));
-      if (nodeId_ != "") {
-         setMaxMsg(global_.getProperty().getLongProperty(string("cb.queue.maxMsg[")+nodeId_+string("]"), getMaxMsg()));
-         setMaxBytes(global_.getProperty().getLongProperty(string("cb.queue.maxBytes[")+nodeId_+string("]"), getMaxBytes()));
-         setExpires(global_.getProperty().getTimestampProperty(string("cb.queue.expires[")+nodeId_+string("]"), getExpires()));
-         setOnOverflow(global_.getProperty().getStringProperty(string("cb.queue.onOverflow[")+nodeId_+string("]"), getOnOverflow()));
-         setOnFailure(global_.getProperty().getStringProperty(string("cb.queue.onFailure[")+nodeId_+string("]"), getOnFailure()));
-         setType(global_.getProperty().getStringProperty(string("cb.queue.type[")+nodeId_+string("]"), getType()));
-         setVersion(global_.getProperty().getStringProperty(string("cb.queue.version[")+nodeId_+string("]"), getVersion()));
-      }
-*/
-   }
-
    CbQueueProperty::CbQueueProperty(Global& global,
                                     const string& relating,
                                     const string& nodeId)
                                   : QueuePropertyBase(global, global.getLog("dispatch"), nodeId)
    {
       ME = "CbQueueProperty";
-      initialize();
       setRelating(relating);
+      QueuePropertyBase::initialize(Constants::RELATING_CALLBACK);
    }
 
    CbQueueProperty::CbQueueProperty(const QueuePropertyBase& prop)

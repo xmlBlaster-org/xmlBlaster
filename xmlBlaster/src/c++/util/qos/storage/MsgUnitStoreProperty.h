@@ -37,11 +37,6 @@ public:
 
    MsgUnitStoreProperty& operator =(const QueuePropertyBase& prop);
 
-    /**
-    * Configure property settings
-    */
-   void initialize();
-
    bool onOverflowDeadMessage();
 
    /**

@@ -41,11 +41,6 @@ public:
     */
    string getSettings();
 
-   /**
-    * Configure property settings
-    */
-   void initialize();
-
    bool onOverflowDeadMessage();
 };
 

@@ -27,7 +27,7 @@ MsgUnitStoreProperty::MsgUnitStoreProperty(Global& global, const string& nodeId)
 {
    ME = string("MsgUnitStoreProperty");
    relating_ = Constants::RELATING_MSGUNITSTORE;
-   initialize();
+   QueuePropertyBase::initialize(Constants::RELATING_MSGUNITSTORE);
 }
 
 MsgUnitStoreProperty::MsgUnitStoreProperty(const QueuePropertyBase& prop)
@@ -41,15 +41,6 @@ MsgUnitStoreProperty& MsgUnitStoreProperty::operator =(const QueuePropertyBase& 
    return *this;
 }
 
-
-
-/**
- * Configure property settings
- */
-void MsgUnitStoreProperty::initialize()
-{
-   QueuePropertyBase::initialize(Constants::RELATING_MSGUNITSTORE);
-}
 
 bool MsgUnitStoreProperty::onOverflowDeadMessage()
 {

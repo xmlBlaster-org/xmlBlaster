@@ -28,7 +28,7 @@ HistoryQueueProperty::HistoryQueueProperty(Global& global, const string& nodeId)
 {
    ME = "HistoryQueueProperty";
    setRelating(Constants::RELATING_HISTORY);
-   initialize();
+   QueuePropertyBase::initialize(Constants::RELATING_HISTORY);
 }
 
 HistoryQueueProperty::HistoryQueueProperty(const QueuePropertyBase& prop)
@@ -47,11 +47,6 @@ string HistoryQueueProperty::getSettings()
    string ret;
    ret += "type=" + getType() + " onOverflow=" + getOnOverflow() + " onFailure=" + getOnFailure() + " maxMsg=" + lexical_cast<string>(getMaxMsg());
    return ret;
-}
-
-void HistoryQueueProperty::initialize()
-{
-   QueuePropertyBase::initialize("history");
 }
 
 bool HistoryQueueProperty::onOverflowDeadMessage()

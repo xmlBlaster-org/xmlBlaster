@@ -34,11 +34,6 @@ class Dll_Export QueueProperty : public QueuePropertyBase
 {
 protected:
 
-   /**
-    * Configure property settings
-    */
-   inline void initialize();
-
 public:
    /**
     * @param nodeId    If not null, the command line properties will look for prop[nodeId] as well,

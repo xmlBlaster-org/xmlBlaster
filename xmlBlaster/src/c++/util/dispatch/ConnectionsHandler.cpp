@@ -104,7 +104,7 @@ ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
    }
    enum States oldState = status_;
    status_ = CONNECTED;
-   connectionProblems_->reachedAlive(oldState, this);
+   if (connectionProblems_) connectionProblems_->reachedAlive(oldState, this);
    // start the ping if in failsafe, i.e. if delay > 0
    startPinger();
    return *connectReturnQos_;

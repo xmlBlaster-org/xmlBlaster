@@ -3,7 +3,7 @@ Name:      CbQueueProperty.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: CbQueueProperty.h,v 1.5 2003/01/17 13:07:21 ruff Exp $
+Version:   $Id: CbQueueProperty.h,v 1.6 2003/01/21 22:43:17 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -33,11 +33,6 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos { namespac
 class Dll_Export CbQueueProperty : public QueuePropertyBase
 {
 protected:
-
-   /**
-    * Configure property settings
-    */
-   inline void initialize();
 
    /**
     * @param relating  To what is this queue related: Constants.RELATING_CALLBACK | Constants.RELATING_SUBJECT

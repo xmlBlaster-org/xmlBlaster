@@ -93,6 +93,7 @@ void MsgQosFactory::startElement(const XMLCh* const name, AttributeList& attrs)
      inQos_ = true;
      return;
    }
+   /*
    if ( SaxHandlerBase::caseCompare(name, "queue") || inQueue_) {
       if (!inQos_) return;
       inQueue_ = true;
@@ -103,6 +104,7 @@ void MsgQosFactory::startElement(const XMLCh* const name, AttributeList& attrs)
       queuePropertyFactory_.startElement(name, attrs);
       return;
    }
+   */
    if (SaxHandlerBase::caseCompare(name, "persistence") || inPersistence_) {
       if (!inQos_) return;
       inPersistence_ = true;
