@@ -11,6 +11,8 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.engine.xml2java.XmlKey;
+import org.xmlBlaster.engine.xml2java.PublishQos;
 import org.xmlBlaster.engine.admin.CommandManager;
 import org.xmlBlaster.engine.admin.CommandWrapper;
 import org.xmlBlaster.engine.admin.I_ExternGateway;
@@ -54,105 +56,74 @@ public final class MomClientGateway implements I_ExternGateway
    }
 
    /**
-    * Called by RequestBroker on arrival of command messages. 
+    * Called by RequestBroker on get() of command messages. 
     * @param sessionInfo The client
     * @param command The key oid, for example "__cmd:/node/heron/?numClients"
     */
    public MessageUnit[] getCommand(SessionInfo sessionInfo, String command) throws XmlBlasterException {
       String cmdType = "get";
-      //try {
-         if (command == null) {
-            throw new XmlBlasterException(ME, "Ignoring your empty command.");
-         }
-         command = command.trim();
-         if (!command.startsWith("__cmd:") || command.length() < ("__cmd:".length() + 1)) {
-            throw new XmlBlasterException(ME, "Ignoring your empty command '" + command + "'.");
-         }
-
-         int dotIndex = command.indexOf(":");
-         String query = command.substring(dotIndex+1).trim();  // "/node/heron/?numClients"
-
-         /*
-         CommandWrapper cw = new CommandWrapper(glob, query);
-
-         String topCommand = cw.getThirdLevel();
-         log.info(ME, "Processing command " + cw.toXml());
-
-         if (topCommand == null)
-            throw new XmlBlasterException(ME, "Ignoring your command '" + command + "', can't understand it.");
-
-         if (topCommand.equalsIgnoreCase("time")) {
-            MessageUnit[] msgs = new MessageUnit[1];
-            msgs[0] = new MessageUnit("<key oid='" + command + "'", ""+new java.util.Date(), "<qos/>");
-            return msgs;
-         }
-         */
-
-         return commandManager.get(sessionInfo.getSessionId(), query);
-
-/*
-         if (command.trim().toUpperCase().startsWith("MEM")) {
-            Runtime rt = Runtime.getRuntime();
-            return ""+rt.totalMemory()+"/"+rt.freeMemory();
-         }
-
-         StringTokenizer st = new StringTokenizer(command, " ");
-         if (!st.hasMoreTokens()) {
-            return getErrorText("Ignoring your empty command.");
-         }
-
-         if (!st.hasMoreTokens()) {
-            if (cmdType.trim().equalsIgnoreCase("GET") ||
-                cmdType.trim().equalsIgnoreCase("SET") ||
-                cmdType.trim().equalsIgnoreCase("CONNECT")) {
-               return getErrorText("Ignoring your empty command '" + command + "'");
-            }
-            if (cmdType.trim().equalsIgnoreCase("echo")) {
-               return null;
-            }
-         }
-
-         // Commands with login only:
-
-         if (command.trim().equalsIgnoreCase("gc")) {
-            System.gc();
-            return "OK";
-         }
-
-         if (command.trim().toUpperCase().startsWith("EXIT")) {
-            return "EXIT is not supported";
-         }
-
-         if (log.TRACE) log.trace(ME, "Invoking cmdType=" + cmdType + " command=" + command + " from '" + command + "'");
-
-         if (cmdType.trim().equalsIgnoreCase("GET")) {
-            MessageUnit[] msgs = commandManager.get(sessionInfo.getSessionId(), command);
-            if (msgs.length == 0) return "NO ENTRY FOUND: " + command;
-            StringBuffer sb = new StringBuffer(msgs.length * 40);
-            for (int ii=0; ii<msgs.length; ii++) {
-               MessageUnit msg = msgs[ii];
-               if (msg.getQos().startsWith("text/plain"))
-                  sb.append(msg.getXmlKey()).append("=").append(msg.getContentStr());
-               else
-                  sb.append(msg.toXml());
-            }
-            return sb.toString();
-         }
-         else if (cmdType.trim().equalsIgnoreCase("SET")) {
-            SetReturn ret = commandManager.set(sessionInfo.getSessionId(), command);
-            if (ret == null) return "NO ENTRY SET: " + ret.commandWrapper.getCommand();
-            return ret.commandWrapper.getCommandStripAssign() + "=" + ret.returnString;
-         }
-         else {
-            return null;
-            //return getErrorText("Ignoring unknown command '" + cmdType + "' of '" + command + "'");
-         }
+      if (command == null) {
+         throw new XmlBlasterException(ME, "Ignoring your empty command.");
       }
-      catch (XmlBlasterException e) {
-         if (log.TRACE) log.trace(ME+".momClient", e.toString());
-         return e.toString();
+      command = command.trim();
+      if (!command.startsWith("__cmd:") || command.length() < ("__cmd:".length() + 1)) {
+         throw new XmlBlasterException(ME, "Ignoring your empty command '" + command + "'.");
+      }
+
+      int dotIndex = command.indexOf(":");
+      String query = command.substring(dotIndex+1).trim();  // "/node/heron/?numClients"
+
+      /*
+      CommandWrapper cw = new CommandWrapper(glob, query);
+
+      String topCommand = cw.getThirdLevel();
+      log.info(ME, "Processing command " + cw.toXml());
+
+      if (topCommand == null)
+         throw new XmlBlasterException(ME, "Ignoring your command '" + command + "', can't understand it.");
+
+      if (topCommand.equalsIgnoreCase("time")) {
+         MessageUnit[] msgs = new MessageUnit[1];
+         msgs[0] = new MessageUnit("<key oid='" + command + "'", ""+new java.util.Date(), "<qos/>");
+         return msgs;
       }
       */
+
+      return commandManager.get(sessionInfo.getSessionId(), query);
+   }
+
+   /**
+    * Called by RequestBroker on publish() of command messages. 
+    * @param sessionInfo The client
+    * @param xmlKey The key oid, for example "__cmd:/node/heron/?numClients"
+    */
+   public String setCommand(SessionInfo sessionInfo, XmlKey xmlKey, MessageUnit msgUnit,
+                    PublishQos publishQos, boolean isClusterUpdate) throws XmlBlasterException {
+      String cmdType = "set";
+      String command = xmlKey.getUniqueKey();
+      if (command == null) {
+         throw new XmlBlasterException(ME, "Ignoring your empty command.");
+      }
+      command = command.trim();
+      if (!command.startsWith("__cmd:") || command.length() < ("__cmd:".length() + 1)) {
+         throw new XmlBlasterException(ME, "Ignoring your empty command '" + command + "'.");
+      }
+
+      int dotIndex = command.indexOf(":");
+      String query = command.substring(dotIndex+1).trim();  // "/node/heron/?numClients"
+
+      SetReturn ret = commandManager.set(sessionInfo.getSessionId(), query);
+
+      if (ret == null)
+         throw new XmlBlasterException(ME, "Your command '" + ret.commandWrapper.getCommand() + "' failed, reason is unknown");
+
+      String info = ret.commandWrapper.getCommandStripAssign() + "=" + ret.returnString;
+      StringBuffer buf = new StringBuffer(160);
+      buf.append("<qos><state id='").append(Constants.STATE_OK).append("'");
+      if (info.indexOf("'") == -1)
+         buf.append(" info='").append(info).append("'");
+      buf.append("/><key oid='").append(xmlKey.getUniqueKey()).append("'/></qos>");
+      return buf.toString();
    }
 
    private final String getErrorText(String error) {
