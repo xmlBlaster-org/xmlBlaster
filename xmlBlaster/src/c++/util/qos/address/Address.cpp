@@ -3,7 +3,7 @@ Name:      Address.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding address string and protocol string
-Version:   $Id: Address.cpp,v 1.17 2004/08/26 15:04:36 ruff Exp $
+Version:   $Id: Address.cpp,v 1.18 2004/08/29 17:39:26 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -84,9 +84,9 @@ inline void Address::initialize()
 Address::Address(Global& global, const string& type, const string& nodeId)
  : AddressBase(global, "address")
 {
-   defaultRetries_      = -1;
-   defaultDelay_        = 0;
-   defaultPingInterval_ = 10000;
+   defaultRetries_      = -1;    // How often to retry if connection fails: defaults to -1 (retry forever), 0 switches failsafe mode off
+   defaultDelay_        = 5000;  // Delay between connection retries in milliseconds: defaults to 5000 (5 sec)
+   defaultPingInterval_ = 10000; // Ping interval: pinging every given milliseconds, defaults to 10 seconds
    pingInterval_ = defaultPingInterval_;
    retries_      = defaultRetries_;
    delay_        = defaultDelay_;
