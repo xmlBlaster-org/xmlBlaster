@@ -16,10 +16,12 @@
 
 
 #========================IMPORTANT NOTE========================================
-# NOTE: If you uncomment the following 5 lines for the server, and the next 1 for the client, xmlBlaster
+# NOTE: If you uncomment the following 7 lines for the server, and the next 1 for the client, xmlBlaster
 # will run RAM based only (without any database)
 # Server side
 #persistence/msgUnitStore/defaultPlugin=RAM,1.0
+#persistence/session/defaultPlugin=RAM,1.0
+#persistence/subscribe/defaultPlugin=RAM,1.0
 #queue/subject/defaultPlugin=RAM,1.0
 #queue/history/defaultPlugin=RAM,1.0
 #queue/callback/defaultPlugin=RAM,1.0
