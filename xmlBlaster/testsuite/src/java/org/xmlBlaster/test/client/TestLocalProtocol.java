@@ -1,7 +1,7 @@
 /*
  * Copyright (c) 2003 Peter Antman, Teknik i Media  <peter.antman@tim.se>
  *
- * $Id: TestLocalProtocol.java,v 1.1 2003/09/18 14:34:20 antman Exp $
+ * $Id: TestLocalProtocol.java,v 1.2 2003/09/18 22:39:24 ruff Exp $
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -45,7 +45,7 @@ import java.util.HashMap;
  * <p>We start an embedded server so that we have access to the engine.Global.</p>
  *
  * @author <a href="mailto:pra@tim.se">Peter Antman</a>
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
 
 public class TestLocalProtocol extends TestCase implements I_Callback {
@@ -67,9 +67,13 @@ public class TestLocalProtocol extends TestCase implements I_Callback {
    String subscribeOid2;
 
    
+   public TestLocalProtocol (){
+      this(null, "TestLocalProtocol", "TestLocalProtocol");
+   }
+
    public TestLocalProtocol (Global glob, String testName, String name){
       super(testName);
-      this.glob = glob;
+      this.glob = (glob == null) ? Global.instance() : glob;
       this.log = this.glob.getLog("test");
       this.name = name;
 
