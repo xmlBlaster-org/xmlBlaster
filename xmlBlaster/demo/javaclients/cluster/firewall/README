@@ -30,7 +30,7 @@ Try the example:
 ================
 
 First we do this on the same machine.
-Open 4 xterm (DOS boxes) and change to directory
+Open 5 xterm (or DOS boxes) and change to directory
 
   xmlBlaster/demo/javaclients/cluster/firewall
 
@@ -82,9 +82,12 @@ to
 
 and start the second subscriber with this address as well:
 
-   java javaclients.HelloWorldSubscribe
-         -oid ClusterTest
-         -protocol SOCKET 
-         -dispatch/connection/plugin/socket/hostname socket://myServer.myCompany.com:8900
-         -dispatch/connection/plugin/socket/port 8900
+   java javaclients.HelloWorldSubscribe \
+         -oid ClusterTest \
+         -protocol SOCKET \
+         -dispatch/connection/plugin/socket/hostname myServer.myCompany.com \
+         -dispatch/connection/plugin/socket/port 8900 \
          -session.name subscriberAtHeron
+
+Note that the only port which needs to be opened through the firewall
+is the outgoing port 8900 to the server myServer.myCompany.com
