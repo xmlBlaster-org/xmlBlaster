@@ -3,7 +3,7 @@ Name:      EraseQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: EraseQoS.java,v 1.10 2002/06/25 17:44:16 ruff Exp $
+Version:   $Id: EraseQoS.java,v 1.11 2002/06/27 11:08:30 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -35,6 +35,16 @@ public class EraseQoS extends org.xmlBlaster.util.XmlQoSBase
    /**
     * Constructs the specialized quality of service object for a publish() call.
     */
+   public EraseQoS(Global glob) throws XmlBlasterException
+   {
+      log = glob.getLog("core");
+      if (log.CALL) log.call(ME, "Creating EraseQoS(DEFAULT)");
+   }
+
+
+   /**
+    * Constructs the specialized quality of service object for a publish() call.
+    */
    public EraseQoS(Global glob, String xmlQoS_literal) throws XmlBlasterException
    {
       log = glob.getLog("core");
@@ -59,6 +69,11 @@ public class EraseQoS extends org.xmlBlaster.util.XmlQoSBase
    public final boolean isNotify()
    {
       return notify;
+   }
+
+
+   public final void setNotify(boolean notify) {
+      this.notify = notify;
    }
 
 
@@ -145,6 +160,7 @@ public class EraseQoS extends org.xmlBlaster.util.XmlQoSBase
       offset += extraOffset;
 
       sb.append(offset).append("<qos> <!-- EraseQos -->");
+      sb.append(offset).append("  <notify>").append(notify).append("</notify>");
       sb.append(offset).append("</qos>");
 
       return sb.toString();
