@@ -102,11 +102,15 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
    private StringBuffer key = new StringBuffer();
    private StringBuffer content = new StringBuffer();
 
+   private boolean isConnected;
+
    /** Encapsulates the content of the current message (useful for encoding) */
    private EncodableData contentData;
    // private boolean inQos, inKey, inContent;
    private int inQos, inKey, inContent;
    private String link;
+
+   private I_MsgUnitCb msgUnitCb;
    
    /** the attachments (some contents can be in the attachments) */
    private HashMap attachments;
@@ -183,6 +187,14 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
     */
    public XmlScriptInterpreter(Global glob, OutputStream out) {
       this(glob, glob.getXmlBlasterAccess(), out, out, null);
+   }
+
+   /**
+    * You can register a callback which can manipulate the MsgUnit just
+    * before it is sent. 
+    */
+   public void registerMsgUnitCb(I_MsgUnitCb msgUnitCb) {
+      this.msgUnitCb = msgUnitCb;
    }
 
    /**
@@ -288,6 +300,7 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
          this.inContent++;
          this.link = null;
          this.content = new StringBuffer();
+         String sizeStr = atts.getValue("size"); // long
          String type = atts.getValue("type");
          String encoding = atts.getValue("encoding");
          this.contentData = new EncodableData(this.glob, "content", null, type, encoding);
@@ -335,11 +348,12 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
     * @param qName
     */
    private void fireCommand(String qName) throws XmlBlasterException {      
-      if ("connect".equals(qName)) {
+      if ("connect".equals(qName) || !this.isConnected) {
+         boolean implicitConnect = !"connect".equals(qName);
          if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement connect: " + this.qos.toString());
          // if (this.qos.length() < 1) this.qos.append("<qos />");
          String ret = null;
-         if (this.qos.length() < 1) {
+         if (implicitConnect || this.qos.length() < 1) {
             ConnectQos connectQos = new ConnectQos(this.glob);
             ret = this.access.connect(connectQos, this.callback).toXml();
          }
@@ -355,7 +369,10 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
          this.response.append(ret);
          this.response.append("\n</connect>\n");
          flushResponse();
-         return;
+         this.isConnected = true;
+         if (!implicitConnect) {
+            return;
+         }
       }
       if ("disconnect".equals(qName)) {
          if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement disconnect: " + this.qos.toString());
@@ -371,6 +388,9 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
          if (this.qos.length() < 1) this.qos.append("<qos />");
          if (this.key.length() < 1) this.key.append("<key />");
          MsgUnit msgUnit = buildMsgUnit();
+         if (this.msgUnitCb != null) {
+            this.msgUnitCb.intercept(msgUnit);
+         }
          if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement publish: " + msgUnit.toXml());
          PublishReturnQos ret = this.access.publish(msgUnit);
          this.response.append("\n<!-- __________________________________  publish ________________________________ -->");
