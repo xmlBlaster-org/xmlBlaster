@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.59 2000/10/24 09:44:45 ruff Exp $
+Version:   $Id: Main.java,v 1.60 2000/11/01 11:02:52 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -12,6 +12,7 @@ import org.xmlBlaster.util.Log;
 import org.jutils.init.Args;
 import org.jutils.io.FileUtil;
 import org.jutils.runtime.Memory;
+import org.jutils.runtime.ThreadLister;
 
 import org.xmlBlaster.engine.*;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -102,6 +103,7 @@ public class Main
    {
       this.args = args;
       boolean showUsage = false;
+      Thread.currentThread().setName("XmlBlaster MainThread");
 
       try {
          showUsage = XmlBlasterProperty.init(args);
@@ -149,6 +151,8 @@ public class Main
          e.printStackTrace();
          Log.panic(ME, e.toString());
       }
+
+      if (Log.DUMP) ThreadLister.listAllThreads(System.out);
 
       boolean useKeyboard = XmlBlasterProperty.get("useKeyboard", true);
       if (!useKeyboard) {

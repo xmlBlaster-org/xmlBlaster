@@ -3,7 +3,7 @@ Name:      MainGUI.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: MainGUI.java,v 1.36 2000/10/24 17:22:53 ruff Exp $
+Version:   $Id: MainGUI.java,v 1.37 2000/11/01 11:02:53 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -127,6 +127,7 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
       // Poll xmlBlaster internal states
       PollingThread poller = new PollingThread(this);
       poller.start();
+
    }
 
 
@@ -588,6 +589,7 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
        **/
       public void run()
       {
+         Thread.currentThread().setName("XmlBlaster GUIPollingThread");
          try {
             if (Log.TRACE) Log.trace(ME, "Starting poller");
             while (true) {
