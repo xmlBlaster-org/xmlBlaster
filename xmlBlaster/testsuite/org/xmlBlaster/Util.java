@@ -3,7 +3,7 @@ Name:      Util.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Some helper methods for test clients
-Version:   $Id: Util.java,v 1.12 2002/06/18 13:51:57 ruff Exp $
+Version:   $Id: Util.java,v 1.13 2002/06/27 12:51:19 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -59,19 +59,20 @@ public class Util
     */
    public static String[] getDefaultServerPorts()
    {
-      String[] argsDefault = new String[12];
-      argsDefault[0] = "-port";
-      argsDefault[1] = "" + Constants.XMLBLASTER_PORT;
-      argsDefault[2] = "-socket.port";
-      argsDefault[3] = "" + org.xmlBlaster.protocol.socket.SocketDriver.DEFAULT_SERVER_PORT;
-      argsDefault[4] = "-rmi.registryPort";
-      argsDefault[5] = "" + org.xmlBlaster.protocol.rmi.RmiDriver.DEFAULT_REGISTRY_PORT;
-      argsDefault[6] = "-xmlrpc.port";
-      argsDefault[7] = "" + org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver.DEFAULT_HTTP_PORT;
-      argsDefault[8] = "-client.port";
-      argsDefault[9] = "" + Constants.XMLBLASTER_PORT;
-      argsDefault[10] = "-admin.remoteconsole.port";
-      argsDefault[11] = "" + org.xmlBlaster.engine.admin.extern.TelnetGateway.TELNET_PORT;
+      String[] argsDefault = {
+         "-port",
+         "" + Constants.XMLBLASTER_PORT,
+         "-socket.port",
+         "" + org.xmlBlaster.protocol.socket.SocketDriver.DEFAULT_SERVER_PORT,
+         "-rmi.registryPort",
+         "" + org.xmlBlaster.protocol.rmi.RmiDriver.DEFAULT_REGISTRY_PORT,
+         "-xmlrpc.port",
+         "" + org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver.DEFAULT_HTTP_PORT,
+         "-client.port",
+         "" + Constants.XMLBLASTER_PORT,
+         "-admin.remoteconsole.port",
+         "" + org.xmlBlaster.engine.admin.extern.TelnetGateway.TELNET_PORT
+         };
       return argsDefault;
    }
 
