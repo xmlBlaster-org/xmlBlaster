@@ -3,7 +3,7 @@ Name:      Parser.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Parser class for raw socket messages
-Version:   $Id: Parser.java,v 1.9 2002/02/14 22:53:37 ruff Exp $
+Version:   $Id: Parser.java,v 1.10 2002/02/15 12:59:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -124,6 +124,15 @@ public class Parser extends Converter
    }
 
 
+   public Parser(String type, String methodName, String sessionId) {
+      msgVec = new Vector();
+      initialize();
+      setType(type);
+      setMethodName(methodName);
+      setSessionId(sessionId);
+   }
+
+
    public Parser(String type, String requestId, String methodName, String sessionId) {
       msgVec = new Vector();
       initialize();
@@ -232,6 +241,7 @@ public class Parser extends Converter
    
    /** The authentication sessionId */
    public String getSessionId() {
+      if (sessionId == null) return "";
       return this.sessionId;
    }
 
@@ -352,10 +362,12 @@ public class Parser extends Converter
    public void parse(InputStream inputStream) throws IOException {
 
       initialize();
+      /*
       for (int ii=0; ii<20 && (inputStream.available() <= 0); ii++) {
          Log.warn(ME, "Client sends empty data, trying again after sleeping 10 milli [" + ii + "]...");
          org.jutils.runtime.Sleeper.sleep(10); // On heavy logins, sometimes available() returns 0, but after sleeping it is OK
       }
+      */
       BufferedInputStream in = new BufferedInputStream(inputStream);
 
       msgLength = toLong(in);
@@ -747,6 +759,7 @@ public class Parser extends Converter
          }
          {
             Parser receiver = new Parser();
+            receiver.setSessionId(null);
             ByteArrayInputStream in = new ByteArrayInputStream(rawMsg);
             receiver.parse(in);
             //System.out.println("\nReceived: \n" + receiver.dump());
