@@ -1,14 +1,24 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
+Changes for 0.xxx [xxxx-xx-xx] (cvs only)
+=========================================
+
+ o Bugfix for topics with a destroy delay of 0 msec.
+   Reported by Dominique Petitpierre
+
+
 Changes for 0.85beta [2003-09-24]
 =================================
 
- o Changed all getBytes to getBinaryStream in JdbcManagerCommonTable and changed signature of I_EntryFactory.createEntry
+ o Changed all getBytes to getBinaryStream in JdbcManagerCommonTable and changed
+   signature of I_EntryFactory.createEntry
    to take an input stream (due to problems with Oracle 9i and BLOB)
 
- o Changed default type for Oracle to BLOB (since RAW LONG is deprecated in 9i). Max Blob size is 4GB
+ o Changed default type for Oracle to BLOB (since RAW LONG is deprecated in 9i).
+   Max Blob size is 4GB
 
- o Added a Key and Qos cache for publish (the literal is the key and the Data is the value) -> 15 % better performance
+ o Added a Key and Qos cache for publish (the literal is the key and the Data is the value)
+   -> 15 % better performance
 
  o Added clientProperty tag to most of the qos (only StatusQos don't have it)
 
@@ -18,17 +28,25 @@ Changes for 0.85beta [2003-09-24]
 
  o Added flag enableBatchMode in the jdbc queue plugins
 
- o added storage of blob in DummyEntry (before it was a fictive size, now its complete size is stored/retrieved from the DB).
+ o added storage of blob in DummyEntry (before it was a fictive size,
+   now its complete size is stored/retrieved from the DB).
+
  o Moved to JacORB 2.0 beta 2 + (cvs) from 2003-09-14 15:00
    You can check out this version with:
     cvs -d :pserver:anonymous@www.jacorb.org/cvsroot/jacorb checkout -D '2003-09-14 15:00' JacORB
    idl.jar is patched to contain JacORB/lib/logkit.jar
 
- o Updated XPathFilter to support Jaxen XPath extension functions, also added the functions RecursiveTextFunction and ContainsIgnoreCaseFunction.
+ o Updated XPathFilter to support Jaxen XPath extension functions,
+   also added the functions RecursiveTextFunction and ContainsIgnoreCaseFunction.
 
- o Updated j2ee components to the latest API changes. Also fixed property handling so that xmlBlaster.properties is not loaded by default. xmlBlaster.properties and xmlBlasterPlugins.xml is removed from the xmlBlaster.jar to not upset the propertyloading.
+ o Updated j2ee components to the latest API changes.
+   Also fixed property handling so that xmlBlaster.properties is not loaded by default.
+   xmlBlaster.properties and xmlBlasterPlugins.xml is removed from the xmlBlaster.jar
+   to not upset the propertyloading.
 
- o Changed ClassLoaderFactory to be interface based, now pluggable with property classLoaderFactory. Moved implementing ClassLoaderFactory to StandaloneClassLoaderFactory and added a ContextClassLoaderFactory to be used in certain embedded environments.
+ o Changed ClassLoaderFactory to be interface based, now pluggable with property classLoaderFactory.
+   Moved implementing ClassLoaderFactory to StandaloneClassLoaderFactory and
+   added a ContextClassLoaderFactory to be used in certain embedded environments.
 
  o Bugfix in Timeout.java
    - userData is now correctly passed
