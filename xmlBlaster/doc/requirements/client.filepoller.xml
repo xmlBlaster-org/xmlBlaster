@@ -75,6 +75,11 @@
               <li><i>_fileDate</i></li> (the timestamp of the file in ms as a long)
            </ul>
          </li>
+	 <li>
+	   To listen to different directories and/or to publish on different topics you need to configure different
+	   plugins. When doing so assign to each plugin a different id (this is actually a general requirement for the
+	   plugins).
+	 </li>
        </ul>
    </description>
    <configuration where="server">

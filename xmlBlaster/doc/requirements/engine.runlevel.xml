@@ -243,8 +243,9 @@
      The plugin tag has the following attributes:
      <ul>
         <li><b>id</b> (mandatory) which is the name uniquely identifying this plugin configuration. The 
-            structure used to identify the plugins can be free chosen, it is not evaluated but is needed
-            for referencing the plugin with refid.
+            structure used to identify the plugins can be free chosen, it is needed
+            for referencing the plugin with refid. Note that this id must be unique, you can not assign the
+	    same id to more than one plugin.
         </li>
         <li><b>className</b> (mandatory) the full name of the java class implementing the plugin.</li>
         <li><b>jar</b> (optional) the coloumn (:) separated list of jar files on which to search for the 
