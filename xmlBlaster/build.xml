@@ -57,6 +57,7 @@ Else add it manually.
   <taskdef name="cc" classname="net.sf.antcontrib.cpptasks.CCTask" />
   <typedef name="defineset" classname="net.sf.antcontrib.cpptasks.types.DefineSet" />
   <typedef name="libset" classname="net.sf.antcontrib.cpptasks.types.LibrarySet" />
+  <taskdef name="foreach" classname="org.apache.tools.ant.taskdefs.contrib.ForEach" />
 
   <property file="build.properties"/>
 
@@ -476,6 +477,7 @@ Else add it manually.
      </cc>
   </target>
 
+
   <!-- =================================================================== -->
   <!-- Corba/C++ integration - create C++ testclients                      -->
   <!-- See http://sourceforge.net/projects/ant-contrib/                    -->
@@ -491,26 +493,29 @@ Else add it manually.
                     -L/opt/local/mico/lib -lmicocoss2.3.6
                     -L/home/xmlblast/xmlBlaster/lib -lxmlBlasterClient -lstdc++
   -->
-  <target name="cpp-test" depends="cpp-lib">
-  <!-- target name="cpp-test" -->
-     <echo message="Compiling of C++ test clients in '${testsuite.dir}/c++/bin' ..."/>
+  <target name="cpp-test"> <!-- depends="cpp-lib" -->
+     <foreach list="TestGet,TestSub,TestLogin,RamTest,clientPOA" target="compileCppExe" param="exeName" delimiter="," />
+  </target>
+
+  <target name="compileCppExe">
+     <echo message="Compiling of C++ test client '${testsuite.dir}/c++/bin/${exeName}' ..."/>
 
      <!-- Access with <libset refid="libs"/> does not work yet: -->
-     <libset id="libs"> 
+     <!-- libset id="libs"> 
         <libpath location="${CORBACPP_HOME}/lib"/>
         <fileset dir="${CORBACPP_HOME}/lib" includes="*mico${CORBACPP_VER}.*,*micocoss${CORBACPP_VER}.*" />
         <fileset dir="${XMLCPP_HOME}/lib" includes="*xerces-c${XMLCPP_VER}.*" />
         <fileset dir="${lib.dir}" includes="*xmlBlasterClient.*" />
-     </libset>
+     </libset -->
 
      <cc debug="true" link="executable"
-         outfile="${testsuite.dir}/c++/bin/TestGet"
+         outfile="${testsuite.dir}/c++/bin/${exeName}"
          objdir="build/obj">
         <compiler name="msvc" if="windows">
            <defineset define="DLL_EXPORT"/>
         </compiler>
         <compiler name="gcc"/>
-        <fileset dir="${testsuite.dir}/c++" includes="TestGet.cpp"/>
+        <fileset dir="${testsuite.dir}/c++" includes="${exeName}.cpp"/>
         <includepath location="${src.cpp.dir}" />
         <sysincludepath location="${CORBACPP_HOME}/include" />
         <sysincludepath location="${XMLCPP_HOME}/include" />
@@ -530,117 +535,6 @@ Else add it manually.
         <linkerarg value="-Wl,-rpath=${XMLCPP_HOME}/lib" />
         <linkerarg value="-Wl,-rpath=${lib.dir}" />
      </cc>
-
-     <cc debug="true" link="executable"
-         outfile="${testsuite.dir}/c++/bin/TestSub"
-         objdir="build/obj">
-        <compiler name="msvc" if="windows">
-           <defineset define="DLL_EXPORT"/>
-        </compiler>
-        <compiler name="gcc"/>
-        <fileset dir="${testsuite.dir}/c++" includes="TestSub.cpp"/>
-        <includepath location="${src.cpp.dir}" />
-        <sysincludepath location="${CORBACPP_HOME}/include" />
-        <sysincludepath location="${XMLCPP_HOME}/include" />
-        <libset libs="mico${CORBACPP_VER}, micocoss${CORBACPP_VER}, xerces-c${XMLCPP_VER}, xmlBlasterClient, pthread, dl, stdc++">
-           <libpath location="${CORBACPP_HOME}/lib"/>
-           <libpath location="${XMLCPP_HOME}/lib"/>
-           <libpath location="${lib.dir}"/>
-        </libset>
-        <defineset>
-           <define name="MICO" value="1" />
-        </defineset>
-        <compilerarg value="-Wall" />
-        <compilerarg value="-Wstrict-prototypes" />
-        <compilerarg value="-Wimplicit-int" />
-        <compilerarg value="-Werror-implicit-function-declaration" />
-        <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/lib" />
-        <linkerarg value="-Wl,-rpath=${XMLCPP_HOME}/lib" />
-        <linkerarg value="-Wl,-rpath=${lib.dir}" />
-     </cc>
-
-     <cc debug="true" link="executable"
-         outfile="${testsuite.dir}/c++/bin/RamTest"
-         objdir="build/obj">
-        <compiler name="msvc" if="windows">
-           <defineset define="DLL_EXPORT"/>
-        </compiler>
-        <compiler name="gcc"/>
-        <fileset dir="${testsuite.dir}/c++" includes="RamTest.cpp"/>
-        <includepath location="${src.cpp.dir}" />
-        <sysincludepath location="${CORBACPP_HOME}/include" />
-        <sysincludepath location="${XMLCPP_HOME}/include" />
-        <libset libs="mico${CORBACPP_VER}, micocoss${CORBACPP_VER}, xerces-c${XMLCPP_VER}, xmlBlasterClient, pthread, dl, stdc++">
-           <libpath location="${CORBACPP_HOME}/lib"/>
-           <libpath location="${XMLCPP_HOME}/lib"/>
-           <libpath location="${lib.dir}"/>
-        </libset>
-        <defineset>
-           <define name="MICO" value="1" />
-        </defineset>
-        <compilerarg value="-Wall" />
-        <compilerarg value="-Wstrict-prototypes" />
-        <compilerarg value="-Wimplicit-int" />
-        <compilerarg value="-Werror-implicit-function-declaration" />
-        <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/lib" />
-        <linkerarg value="-Wl,-rpath=${XMLCPP_HOME}/lib" />
-        <linkerarg value="-Wl,-rpath=${lib.dir}" />
-     </cc>
-
-     <cc debug="true" link="executable" outfile="${testsuite.dir}/c++/bin/TestLogin" objdir="build/obj">
-        <compiler name="msvc" if="windows">
-           <defineset define="DLL_EXPORT"/>
-        </compiler>
-        <compiler name="gcc"/>
-        <fileset dir="${testsuite.dir}/c++" includes="TestLogin.cpp"/>
-        <includepath location="${src.cpp.dir}" />
-        <sysincludepath location="${CORBACPP_HOME}/include" />
-        <sysincludepath location="${XMLCPP_HOME}/include" />
-        <libset libs="mico${CORBACPP_VER}, micocoss${CORBACPP_VER}, xerces-c${XMLCPP_VER}, xmlBlasterClient, pthread, dl, stdc++">
-           <libpath location="${CORBACPP_HOME}/lib"/>
-           <libpath location="${XMLCPP_HOME}/lib"/>
-           <libpath location="${lib.dir}"/>
-        </libset>
-        <defineset>
-           <define name="MICO" value="1" />
-        </defineset>
-        <compilerarg value="-Wall" />
-        <compilerarg value="-Wstrict-prototypes" />
-        <compilerarg value="-Wimplicit-int" />
-        <compilerarg value="-Werror-implicit-function-declaration" />
-        <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/lib" />
-        <linkerarg value="-Wl,-rpath=${XMLCPP_HOME}/lib" />
-        <linkerarg value="-Wl,-rpath=${lib.dir}" />
-     </cc>
-
-     <cc debug="true" link="executable"
-         outfile="${testsuite.dir}/c++/bin/clientPOA"
-         objdir="build/obj">
-        <compiler name="msvc" if="windows">
-           <defineset define="DLL_EXPORT"/>
-        </compiler>
-        <compiler name="gcc"/>
-        <fileset dir="${testsuite.dir}/c++" includes="clientPOA.cpp"/>
-        <includepath location="${src.cpp.dir}" />
-        <sysincludepath location="${CORBACPP_HOME}/include" />
-        <sysincludepath location="${XMLCPP_HOME}/include" />
-        <libset libs="mico${CORBACPP_VER}, micocoss${CORBACPP_VER}, xerces-c${XMLCPP_VER}, xmlBlasterClient, pthread, dl, stdc++">
-           <libpath location="${CORBACPP_HOME}/lib"/>
-           <libpath location="${XMLCPP_HOME}/lib"/>
-           <libpath location="${lib.dir}"/>
-        </libset>
-        <defineset>
-           <define name="MICO" value="1" />
-        </defineset>
-        <compilerarg value="-Wall" />
-        <compilerarg value="-Wstrict-prototypes" />
-        <compilerarg value="-Wimplicit-int" />
-        <compilerarg value="-Werror-implicit-function-declaration" />
-        <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/lib" />
-        <linkerarg value="-Wl,-rpath=${XMLCPP_HOME}/lib" />
-        <linkerarg value="-Wl,-rpath=${lib.dir}" />
-     </cc>
-
   </target>
 
   <!-- =================================================================== -->

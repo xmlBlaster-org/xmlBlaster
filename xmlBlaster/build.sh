@@ -7,25 +7,29 @@ if [ ${JAVA_HOME:=""} = "" ] ; then
    exit
 fi
 
-CLASSPATH=lib/ant.jar:lib/parser.jar:lib/jaxp.jar:lib/idl.jar:lib/jacorb.jar:$CLASSPATH
+CLASSPATH=lib/ant/ant.jar:lib/ant/cpptasks.jar:lib/ant/ant-contrib.jar:$CLASSPATH
+
+CLASSPATH=lib/parser.jar:lib/jaxp.jar:$CLASSPATH
+CLASSPATH=lib/idl.jar:lib/jacorb.jar:$CLASSPATH
 CLASSPATH=lib/omquery.jar:lib/xtdash.jar:lib/servlet.jar:lib/test.jar:$CLASSPATH
 CLASSPATH=$JAVA_HOME/lib/tools.jar:lib/xmlrpc.jar:lib/a2Blaster.jar:lib/jutils.jar:$CLASSPATH
 CLASSPATH=lib/mail.jar:lib/activation.jar:lib/cpptasks.jar:$CLASSPATH
-CLASSPATH=lib/batik-awt-util.jar:$CLASSPATH
-CLASSPATH=lib/batik-bridge.jar:$CLASSPATH
-CLASSPATH=lib/batik-css.jar:$CLASSPATH
-CLASSPATH=lib/batik-dom.jar:$CLASSPATH
-CLASSPATH=lib/batik-ext.jar:$CLASSPATH
-CLASSPATH=lib/batik-extension.jar:$CLASSPATH
-CLASSPATH=lib/batik-gui-util.jar:$CLASSPATH
-CLASSPATH=lib/batik-gvt.jar:$CLASSPATH
-CLASSPATH=lib/batik-parser.jar:$CLASSPATH
-CLASSPATH=lib/batik-script.jar:$CLASSPATH
-CLASSPATH=lib/batik-svg-dom.jar:$CLASSPATH
-CLASSPATH=lib/batik-svggen.jar:$CLASSPATH
-CLASSPATH=lib/batik-transcoder.jar:$CLASSPATH
-CLASSPATH=lib/batik-util.jar:$CLASSPATH
-CLASSPATH=lib/batik-xml.jar:$CLASSPATH
+
+CLASSPATH=lib/batik/batik-awt-util.jar:$CLASSPATH
+CLASSPATH=lib/batik/batik-bridge.jar:$CLASSPATH
+CLASSPATH=lib/batik/batik-css.jar:$CLASSPATH
+CLASSPATH=lib/batik/batik-dom.jar:$CLASSPATH
+CLASSPATH=lib/batik/batik-ext.jar:$CLASSPATH
+CLASSPATH=lib/batik/batik-extension.jar:$CLASSPATH
+CLASSPATH=lib/batik/batik-gui-util.jar:$CLASSPATH
+CLASSPATH=lib/batik/batik-gvt.jar:$CLASSPATH
+CLASSPATH=lib/batik/batik-parser.jar:$CLASSPATH
+CLASSPATH=lib/batik/batik-script.jar:$CLASSPATH
+CLASSPATH=lib/batik/batik-svg-dom.jar:$CLASSPATH
+CLASSPATH=lib/batik/batik-svggen.jar:$CLASSPATH
+CLASSPATH=lib/batik/batik-transcoder.jar:$CLASSPATH
+CLASSPATH=lib/batik/batik-util.jar:$CLASSPATH
+CLASSPATH=lib/batik/batik-xml.jar:$CLASSPATH
 
 ALL_ENV=`env`
 MY_DEF=""
@@ -37,6 +41,6 @@ done
 
 # -Dbuild.compiler=jikes  or  modern  or classic
 
-$JAVA_HOME/bin/java -Dbuild.compiler=jikes -Dant.home=$XMLBLASTER_HOME ${MY_DEF} -classpath $CLASSPATH org.apache.tools.ant.Main $@
-#$JAVA_HOME/bin/java                         -Dant.home=$XMLBLASTER_HOME ${MY_DEF} -classpath $CLASSPATH org.apache.tools.ant.Main $@
+#$JAVA_HOME/bin/java -Dbuild.compiler=jikes -Dant.home=$XMLBLASTER_HOME ${MY_DEF} -classpath $CLASSPATH org.apache.tools.ant.Main $@
+$JAVA_HOME/bin/java                         -Dant.home=$XMLBLASTER_HOME ${MY_DEF} -classpath $CLASSPATH org.apache.tools.ant.Main $@
 
