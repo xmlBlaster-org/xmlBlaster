@@ -7,7 +7,6 @@ Howto install and compile xmlBlaster
    http://www.inf.fu-berlin.de/~brose/jacorb/
 
 
-
 2) Set the environment to the xmlBlaster directory
 
    For example using the sh, ksh or bash:
@@ -24,3 +23,20 @@ Howto install and compile xmlBlaster
 
      export CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/classes:${XMLBLASTER_HOME}/src/java
 
+
+4) Go to the home directory of xmlBlaster and type:
+
+     make all
+
+
+5) Try the xmlBlaster server
+
+   a) Start the JacORB Name Service:
+
+	   /usr/local/JacORB/bin/ns  /tmp/NS_Ref 
+
+   b) Start the xmlBlaster server (jaco is the java wrapper from jacORB):
+
+     jaco org.xmlBlaster.Main /tmp/NS_Ref
+
+     (or for better debugging: jaco -Djava.compiler= org.xmlBlaster.Main)
