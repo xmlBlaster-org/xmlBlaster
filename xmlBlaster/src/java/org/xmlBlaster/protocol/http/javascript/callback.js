@@ -13,17 +13,21 @@ var isLoggedIn = false;
 
 /**
  * Called from controlFrame when the user clicks on Login button
+ * @deprecated
  */
 function login(login, passwd)
 {
    loginName = login;
    top.target = "callbackFrame";
-   top.location.href = "/servlet/Callback?ActionType=login&loginName=" + loginName + "&passwd=" + passwd;
+   top.location.href = "/servlet/BlasterHttpProxyServlet?ActionType=login&loginName=" + loginName + "&passwd=" + passwd;
    Log.info("Leaving login...");
    return true;
 }
 
 
+/**
+ * @deprecated
+ */
 function logout()
 {
    loginName = "";
@@ -125,11 +129,11 @@ function UpdateKey(xml)
    this.root = top.Xparse(xml);     // The Javascript DOM tree
    var keyNode = this.root.contents[0];
    if (keyNode.name != "key") {
-      if(Log.DEBUG) Log.warning('Key tag is missing in new arrvied message, received an unknown tag &lt;' + keyNode.name + '>');
+      Log.warning('Key tag is missing in new arrvied message, received an unknown tag &lt;' + keyNode.name + '>');
       return;
    }
    for(attrib in keyNode.attributes) {
-      // Log.info('Processing ' + attrib + '="' + keyNode.attributes[attrib] + '" ...');
+      // Log.trace('Processing ' + attrib + '="' + keyNode.attributes[attrib] + '" ...');
       if (attrib == "oid")
          this.oid = keyNode.attributes[attrib];
       else if (attrib == "contentMime")
@@ -151,7 +155,7 @@ function UpdateQos(xml)
          break;
    }
    if (qosNode.name != "qos") {
-      if(Log.DEBUG) Log.warning('Qos tag is missing in new arrvied message, received only unknown tags.');
+      Log.warning('Qos tag is missing in new arrvied message, received only unknown tags.');
       return;
    }
 
@@ -216,16 +220,16 @@ function FrameMessageQueue( frameHandle )
    this.ready                   = false;
    this.timeOutHandle           = null;
    this.frame                   = frameHandle;
-   this.messageQueue            = new Array();
+   this.messageQueue            = new Array(); // array of MessageWrapperDom objects
    this.queue                   = queue_;
 }
 
 /*
- *
+ * @param message MessageWrapperDom object
  */
 function queue_( message )
 {
-   //Log.info("Queueing message "+message.key.oid+" in queue "+this.frame.name);
+   Log.trace("Queueing message oid='"+message.key.oid+"' in queue "+this.frame.name);
    this.messageQueue[this.messageQueue.length] = message;
 
    if( !queueing ) {
@@ -265,23 +269,24 @@ function sendMessageQueue(queueName)
 
    if( fmq.ready ) {
       if( fmq.frame.update != null ) {
+         Log.trace("Frame "+fmq.frame.name+" is ready, sending update ...");
          fmq.frame.update( fmq.messageQueue );
          var str = "Update:<br />";
          for( var i = 0; i < fmq.messageQueue.length; i++ )
             str += fmq.messageQueue[i].key.oid + "<br />";
-        if(Log.DEBUG) Log.info("Queue["+fmq.frame.name+"]: "+str);
+         Log.trace("Queue["+fmq.frame.name+"]: "+str);
       }
       else {
-        if(Log.DEBUG) Log.warning("Queue["+fmq.frame.name+"]: frame has no update function.");
+        Log.warning("Queue["+fmq.frame.name+"]: frame has no update function.");
       }
       fmq.messageQueue.length = 0;
       fmq.retries = 0;
       return;
    }
    else {
-      if(Log.DEBUG) Log.warning("Frame "+fmq.frame.name+" is not ready. Try it again.");
+      Log.warning("Frame "+fmq.frame.name+" is not ready. Try it again.");
       if( fmq.retries > 200 ) {                            //more than 200*100ms = 20 sec. not availible
-         if(Log.DEBUG) Log.warning("Maximum number of retries reached for frame ["+fmq.frame.name+"].");
+         Log.warning("Maximum number of retries reached for frame ["+fmq.frame.name+"].");
          fmq.messageQueue.length = 0;
          window.clearTimeout( fmq.timeOutHandle );
          removeUpdateListener( fmq.frame );
@@ -310,16 +315,22 @@ function setReady( frame, ready )
 
 
 /*
+ * This allows a frame to register itself, the frame
+ * will be notified with the 'update()' method when new
+ * messages arrive from the servlet/xmlBlaster.
  *
+ * @param listenerFrame - The window handle of the frame
  */
-function addUpdateListener( listenerFrame ) {
+function addUpdateListener( listenerFrame )
+{
+   Log.trace("Adding frame '" + listenerFrame.name + "' as update-listener");
    if(listenerFrame.update==null) {
       return;
    }
 
    for( i = 0; i < listenerList.length;) {
       if (listenerList[i].frame.closed ) {
-         if(Log.DEBUG) Log.warning("Frame has been closed, removing it ...");
+         Log.warning("Frame has been closed, removing it ...");
          removeUpdateListenerAtPos( i );
          continue;
       }
@@ -382,16 +393,17 @@ function removeUpdateListenerAtPos( index ) {
 }
 
 
-/*
- *
+/**
+ * For debugging.
+ * @return All current listener frames
  */
-function showListener()
+function getListeners()
 {
-   var str = "Listener:\n\n";
+   var str = "Current registered frame listeners:\n\n";
    for( var i = 0; i < listenerList.length; i++ ) {
       str += "-" + listenerList[i].frame.name + ", ready="+listenerList[i].ready+"\n";
    }
-   alert( str );
+   return str;
 }
 
 function reloadListener()
@@ -404,44 +416,53 @@ function reloadListener()
 
 
 /*
- *
+ * Notify all frames about this update.
+ * @param message MessageWrapperDom object
  */
 function fireMessageUpdateEvent( message )
 {
    for( var i = 0; i < listenerList.length;  ) {
       if (listenerList[i].frame.closed ) {
-         if(Log.DEBUG) Log.warning("Frame has been closed, removing it ...");
+         Log.warning("Frame has been closed, removing it ...");
          removeUpdateListenerAtPos( i );
          continue;
       }
       i++;
    }
 
-   //showListener();
+   Log.trace(getListeners());
 
    for( var i = 0; i < listenerList.length; i++ ) {
       listenerList[i].queue( message );
    }
-
 }
 
 
 /*
  * This is update-Method which is called by the callback frame.
+ * This message comes from the Servlet through the persistent http
+ * connection.
  * @param updateKey:String
  * @param content:String
  * @param updateQoS:String
  */
 function update( updateKey, content, updateQoS)
 {
-    var updateKey_d     = unescape( updateKey.replace(/\+/g, " ") );
-    var content_d       = unescape( content.replace(/\+/g, " ") );
-    var updateQoS_d     = unescape( updateQoS.replace(/\+/g, " ") );
+   var type = typeof updateKey;
+   if (type != "string") {
+      Log.error("Wrong type '" + type + "' of update xmlKey, callback ignored");
+      return;
+   }
+   Log.trace("Update coming in, updateKey="+updateKey.toString());
+
+   var updateKey_d = unescape( updateKey.replace(/\+/g, " ") );
+   var content_d   = unescape( content.replace(/\+/g, " ") );
+   var updateQoS_d = unescape( updateQoS.replace(/\+/g, " ") );
 
    var key = new UpdateKey(updateKey_d);
    var qos = new UpdateQos(updateQoS_d);
 
-   if(Log.DEBUG) Log.info("Update coming in key.oid="+key.oid);
+   Log.trace("Update coming in key.oid="+key.oid);
    if(key.contentMimeExtended.lastIndexOf("EXCEPTION") != -1) {
       alert("Exception:\n\n"+content_d );
    }
@@ -455,22 +476,24 @@ function update( updateKey, content, updateQoS)
 }
 
 
-
-
 /*
- *
+ * Popup messages from servlet
  */
 function message(msg)
 {
    var decoded = unescape( msg.replace(/\+/g, " ") );
+   Log.info(decoded);
    alert( decoded );
 }
+
+
 /*
- *
+ * Popup error messages from servlet
  */
 function error(msg)
 {
    var decoded = unescape( msg.replace(/\+/g, " ") );
-   alert( "Fehler!\n\n"+decoded );
+   Log.error(decoded);
+   alert( "Error\n\n"+decoded );
 }
 
