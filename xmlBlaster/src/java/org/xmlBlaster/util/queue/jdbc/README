@@ -2,7 +2,7 @@ Here follows a short description on how to quickly install postgres on a
 linux.
 
 Download and install postgres accordingly to the instructions you get from 
-postgres (see http://www.postgres.org)
+postgres (see http://www.postgresql.org/)
 
 Once it is installed you can congfigure it by invoking the following:
 
