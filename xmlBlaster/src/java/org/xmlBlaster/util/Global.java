@@ -94,7 +94,7 @@ public class Global implements Cloneable
    private static Global firstInstance = null;
 
    /** Version string, please change for new releases (4 digits) */
-   private String versionDefault = "0.844";
+   private String versionDefault = "0.845";
    /** This will be replaced by build.xml with the current version */
    private String version = "@version@";
    /** This will be replaced by build.xml with the build timestamp */

@@ -1,7 +1,15 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
-Changes for 0.xxx [xxx, xx 2003]
-================================
+Changes for 0.845 [03, 27 2003]
+===============================
+
+ o Redesigned, powerful runlevel manager which loads plugins as
+   described in xmlBlasterPlugins.xml, see
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.runlevel.html
+
+ o New client side configuration guide
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.configuration.html
+
  o Updated JacORB to 1.4.50, cvs from 2003-03-279
    to get fixed orb.shutdown().
 

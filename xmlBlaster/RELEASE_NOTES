@@ -1,7 +1,7 @@
 Salute,
 
-the new release 0.844 is out (Mar, 20. 2003).
-(We wait with 0.85 until we got feedback about 0.844)
+the new release 0.845 is out (Mar, 27. 2003).
+(We wait with 0.85 until we got feedback about 0.845)
 
 XmlBlaster is maturing to industrial strength.
 
@@ -15,25 +15,22 @@ In many of the features we are already far ahead, some others are still missing
 IMPORTANT NOTE:
 ---------------
 
-If you upgrade from 0.841:
-
 1. Edit xmlBlaster/build.properties to
   compile the C++ clients or to use jikes.
 
-If you upgrade from 0.840 or older:
-
-1. Remove your old xmlBlaster.properties, jacorb.properties files.
+2. Remove your old xmlBlaster.properties, xmlBlasterPlugins.xml
+  and jacorb.properties files.
   Use the new files from directory xmlBlaster/config.
-
-2. Backward compatibility:
-  * xmlBlaster 0.841 had changes to the client API (Java and C++)
+  
+3. Backward compatibility:
+  * xmlBlaster 0.845 has changes to the client API (Java)
     Please read 
       xmlBlaster/CHANGES
     and study
       xmlBlaster/demo/javaclients/HelloWorld3.java
     as an example.
 
-3. The default setup of xmlBlaster runs RAM based only,
+4. The default setup of xmlBlaster runs RAM based only,
   there is no persistence for crash recovery.
   To switch it on you need Postgres or Oracle installed, see
     http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.jdbc.postgres.html
@@ -49,7 +46,16 @@ NEW FEATURES:
 
 1. Bug fixes
 
-2. Client subscriptions can now be queried
+2. New client configuration tutorial:
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.configuration.html
+
+3. Redesigned runlevel manager which loads plugins as
+   described in xmlBlasterPlugins.xml, see
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.runlevel.html
+
+4. The powerful queue framework is now emebedded into the Java client library.
+   This supports persistence for crash recovery, swapping and cashing.
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.html
 
 Please read the CHANGES file for more informations.
 
@@ -72,17 +78,11 @@ NEXT RELEASES:
 
 The next release is 0.85 and we strive to have these additional changes:
 
-1. The new queue framework is embedded to the Java client library
-   (inclusive the dispatcher plugin framework)
+1. Performance profiling and extended stress tests
 
-2. History message access will be better documented and more
-   query options are implemented
+2. An embedded JDBC database additionally to Postgres and Oracle.
 
-3. Performance profiling and extended memory leak checks
-
-4. An embedded JDBC database additionally to Postgres and Oracle.
-
-5. Finish port to new property syntax (see mailing list discussion).
+3. Finish port to new property syntax
 
 
 The planned features of release 0.9 are an open issue.
