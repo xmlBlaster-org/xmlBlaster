@@ -140,9 +140,10 @@ msgLen[10] flag[6] requestId methodName secretSessionId lenUnzipped userData che
       <tr>
          <td>disconnect</td>
          <td>QoS{string}</td>
-         <td>-</td>
+         <td>""</td>
          <td><img src="ok.gif" border="0" alt="yes" /></td>
-         <td>The socket is closed during logout by the server, no response is send</td>
+         <td>The server sends the response (ACK) immediately from the SOCKET layer.
+	     It can't send it later because the socket is shutdown during server side disconnect</td>
       </tr>
       <tr>
          <td>ping</td>
@@ -294,6 +295,9 @@ The '"' is just to show the boundary, '"' is not part of the message.
    </example>
 
    <example lang="Java" type="HTML">
+      <h3>
+      Java command line examples
+      </h3>
       <p>
       You can switch on nice debugging output with these options:
       </p>
@@ -333,6 +337,67 @@ glob.init(args);
 ConnectQos qos = new ConnectQos(glob);
 
 ...
+      </pre>
+   </example>
+
+   <example lang="Java" type="HTML">
+      <h3>
+      Using SSL communication
+      </h3>
+      <p>
+      To establish a SSL connection you need to set some configuration properties on command line
+      or in xmlBlaster.properties.
+      </p>
+      <p>
+      The first step is to generate a certificate with the <tt>keytool</tt> program that comes with the SDK.
+      Issue the keytool command with the -genkey option to generate a keypair, the -keystore option
+      to specify the key store file, and the -keyalg options to specify the encryption algorithm, read
+      the <a href="http://java.sun.com/developer/JDCTechTips/2004/tt0914.html#2" target="others">SSL tutorial</a> and the
+      <a href="http://java.sun.com/j2se/1.4.2/docs/guide/security/jsse/JSSERefGuide.html" target="SSL">SSL reference guide</a>
+      for more details:
+      </p>
+      <pre>
+keytool -genkey -keystore testStore -keyalg RSA
+      </pre>
+      <p>
+      Now you are ready to start the xmlBlaster server with enabled SSL:
+      </p>
+      <pre>
+java -jar lib/xmlBlaster.jar -plugin/socket/SSL true -plugin/socket/keystore testStore -plugin/socket/keystorepass testtest
+      </pre>
+      <p>
+      and finally we start a client to test it:
+      </p>
+      <pre>
+java HelloWorld3 -protocol SOCKET -plugin/socket/SSL true -plugin/socket/keystore testStore -plugin/socket/keystorepass testtest
+      </pre>
+      <p>
+      To check the encryption dump the TCP/IP packages for example with tcpdump:
+      </p>
+      <pre>
+tcpdump -i lo -A -vvv dst port 7607
+      </pre>
+      <p>
+      If you want to establish a SSL SOCKET server besides a unsecure SOCKET server
+      you need to register two SOCKET protocol drivers each listening on a different port.
+      Here is an example of such entries in <tt>xmlBlasterPlugins.xml</tt>:
+      </p>
+      <pre>
+&lt;plugin id='SOCKET' className='org.xmlBlaster.protocol.socket.SocketDriver'>
+   &lt;action do='LOAD' onStartupRunlevel='3' sequence='2' 
+           onFail='resource.configuration.pluginFailed'/>
+   &lt;action do='STOP' onShutdownRunlevel='2' sequence='5'/>   
+&lt;/plugin>
+
+&lt;plugin id='SOCKET_SSL' className='org.xmlBlaster.protocol.socket.SocketDriver'>
+   &lt;action do='LOAD' onStartupRunlevel='3' sequence='2' 
+           onFail='resource.configuration.pluginFailed'/>
+   &lt;action do='STOP' onShutdownRunlevel='2' sequence='5'/>   
+   &lt;attribute id='plugin/socket/SSL'>true&lt;/attribute>
+   &lt;attribute id='plugin/socket/keystore'>testStore&lt;/attribute>
+   &lt;attribute id='plugin/socket/keystorepass'>testtest&lt;/attribute>
+   &lt;attribute id='port'>7609&lt;/attribute>
+&lt;/plugin>
       </pre>
    </example>
 
@@ -438,6 +503,55 @@ ConnectQos qos = new ConnectQos(glob);
          </tr>
 
          <tr>
+            <td>plugin/socket/SSL</td>
+            <td>false</td>
+            <td>true enables SSL support on server or client socket.
+	    If the server side plugin has switched on SSL it will accept
+	    only SSL clients. To have SSL and non-SSL SOCKET connections
+	    you need to register two SOCKET plugins in xmlBlasterPlugins.xml
+	    which listen on different ports, for details see the example section.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>plugin/socket/keystore</td>
+            <td>''</td>
+            <td>The path of your SSL keystore file. Use the java utility keytool.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>plugin/socket/keystorepass</td>
+            <td>''</td>
+            <td>The password of your keystore file.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>plugin/socket/compress/type</td>
+            <td>''</td>
+            <td>Valid values are:
+	      <ul>
+	        <li>'' disables compression (default)</li>
+		<li>'zlib:stream' compresses whole stream</li>
+		<li>'zlib' only compresses flushed chunks bigger than 'compress/minSize' bytes</li>
+	      </ul>
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>plugin/socket/compress/minSize</td>
+            <td>0</td>
+            <td>Compress message bigger than given bytes, see above
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
             <td>dump[socket]</td>
             <td>false</td>
             <td>true switches message dump on
@@ -530,7 +644,7 @@ ConnectQos qos = new ConnectQos(glob);
    <see type="CODE" lang="C">socket/XmlBlasterAccessUnparsed.c</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 02 12</date>
-   <revision>$Revision: 1.43 $</revision>
+   <revision>$Revision: 1.44 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
