@@ -52,6 +52,11 @@ cb.queue.defaultPlugin=RAM,1.0
 cb.queue.persistent.tablePrefix=xmlBlaster
 cb.queue.persistent.tableAllocationIncrement=2
 -----------------------------------------------------------------
+
+Cleanup the tables in the database:
+ 
+  java org.xmlBlaster.util.queue.jdbc.JdbcManager
+  - Input a prefix (all tables found starting with the prefix specified will be deleted: xmlblaster
    
 
 Enjoy 

@@ -1508,8 +1508,12 @@ public class JdbcManager implements I_ConnectionListener {
    /**
     * This main method can be used to delete all tables on the db which start
     * with a certain prefix. It is useful to cleanup the entire DB.
-    *
+    * 
     * IMPORTANT: caution must be used to avoid to delete the wrong data.
+    * <pre>
+    * java org.xmlBlaster.util.queue.jdbc.JdbcManager
+    * and enter XMLBLASTER or TEST
+    * </pre>
     */
    public static void main(String[] args) {
       Global glob = Global.instance();
@@ -1535,6 +1539,7 @@ public class JdbcManager implements I_ConnectionListener {
             System.exit(-1);
          }
 
+         glob.getProperty().set("queue.persistent.tableNamePrefix", prefix);
          glob.getProperty().set("cb.queue.persistent.tableNamePrefix", prefix);
          System.out.println("when deleting the DB I will be using the settings for the callback queue (see them in xmlBlaster.properties)");
          StorageId id = new StorageId("cb", "dummy");
