@@ -22,7 +22,7 @@
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash
 # Thanks to Heinrich Goetzger
-# $Revision: 1.39 $
+# $Revision: 1.40 $
 #-----------------------------------------------------------
 
 
@@ -74,9 +74,16 @@ if [ -d ${XMLBLASTER_HOME} ]; then
          CLASSPATH=${XMLBLASTER_HOME}/lib/xmlBlaster.jar:${CLASSPATH}
       fi
    fi
-   CLASSPATH=${XMLBLASTER_HOME}/src/java:${CLASSPATH}
-   CLASSPATH=${XMLBLASTER_HOME}/classes:${CLASSPATH}
-   CLASSPATH=${XMLBLASTER_HOME}/demo:${CLASSPATH}
+
+   if [ -d ${XMLBLASTER_HOME}/src/java ]; then
+      CLASSPATH=${XMLBLASTER_HOME}/src/java:${CLASSPATH}
+   fi
+   if [ -d ${XMLBLASTER_HOME}/classes ]; then
+      CLASSPATH=${XMLBLASTER_HOME}/classes:${CLASSPATH}
+   fi
+   if [ -d ${XMLBLASTER_HOME}/demo ]; then
+      CLASSPATH=${XMLBLASTER_HOME}/demo:${CLASSPATH}
+   fi
    export CLASSPATH
 
    PATH=$PATH:$XMLBLASTER_HOME/bin:$XMLBLASTER_HOME/testsuite/bin
