@@ -272,7 +272,7 @@ function sendMessageQueue(queueName)
          }
       }
       else {
-        Log.warning("Queue["+fmq.frame.name+"]: frame has no update function.");
+        Log.info("Queue["+fmq.frame.name+"]: frame has no update function.");
       }
       fmq.messageQueue.length = 0;
       fmq.retries = 0;
