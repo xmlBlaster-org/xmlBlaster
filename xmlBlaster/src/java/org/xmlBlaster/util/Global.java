@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, using org.jutils
-Version:   $Id: Global.java,v 1.10 2002/05/11 09:35:59 ruff Exp $
+Version:   $Id: Global.java,v 1.11 2002/05/11 10:41:09 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -51,6 +51,8 @@ public class Global implements Cloneable
 
    private String[] args;
    protected final XmlBlasterProperty property;
+   protected boolean showUsage = false;
+
    protected final Log log;
    private final Map nativeCallbackDriverMap;
    /** Store objecte in the scope of one client connection or server instance */
@@ -109,7 +111,7 @@ public class Global implements Cloneable
          this.args = new String[0];
       try {
          // XmlBlasterProperty.addArgs2Props(this.args); // enforce that the args are added to the xmlBlaster.properties hash table
-         boolean showUsage = property.init(this.args);  // initialize
+         showUsage = property.init(this.args);  // initialize
          if (showUsage) return 1;
          return 0;
       } catch (JUtilsException e) {
@@ -119,12 +121,21 @@ public class Global implements Cloneable
    }
 
    /**
+    * Allows you to query if user wants help. 
+    * @return true If '-help' or '-?' was passed to us
+    */
+   public final boolean showUsage()
+   {
+      return showUsage;
+   }
+
+   /**
     * @return 1 Show usage, 0 OK, -1 error
     */
    public int init(java.applet.Applet applet)
    {
       try {
-         boolean showUsage = property.init(applet);
+         showUsage = property.init(applet);
          if (showUsage) return 1;
          return 0;
       } catch (JUtilsException e) {
