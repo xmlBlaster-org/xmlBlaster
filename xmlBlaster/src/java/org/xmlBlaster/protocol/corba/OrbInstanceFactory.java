@@ -130,12 +130,19 @@ public final class OrbInstanceFactory
             if (log.TRACE) log.trace(ME, "Using OAPort=" + address.getEnvLookupKey("port") + "=" + props.getProperty("OAPort"));
          }
 
-         int verbose = glob.getProperty().get("jacorb.verbosity", -1);
+         int verbose = glob.getProperty().get("jacorb.log.default.verbosity", -1);
          if (verbose >= 0) {
-            //JdkCompatible.setSystemProperty("jacorb.verbosity", ""+verbose);
-            props.put("jacorb.verbosity", ""+verbose);
-            if (log.TRACE) log.trace(ME, "Using jacorb.verbosity=" + props.getProperty("jacorb.verbosity"));
+            //JdkCompatible.setSystemProperty("jacorb.log.default.verbosity", ""+verbose);
+            props.put("jacorb.log.default.verbosity", ""+verbose);
+            if (log.TRACE) log.trace(ME, "Using jacorb.log.default.verbosity=" + props.getProperty("jacorb.log.default.verbosity"));
          }
+
+         // Bug workaround: with JacORB 2.1 we get logging from POA,
+         // Setting jacorb.poa.log.verbosity=0 in jacorb.properties does not help
+         // setting ' java -Djacorb.poa.log.verbosity=0 ... ' helps:
+         int verbosePoa = glob.getProperty().get("jacorb.poa.log.verbosity", 0);
+         props.put("jacorb.poa.log.verbosity", ""+verbosePoa);
+         if (log.TRACE) log.trace(ME, "Using jacorb.poa.log.verbosity=" + verbosePoa);
       }
 
       if (log.TRACE) log.trace(ME, "Using org.omg.CORBA.ORBClass=" + props.getProperty("org.omg.CORBA.ORBClass"));
