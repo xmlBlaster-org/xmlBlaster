@@ -156,11 +156,27 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
       boolean jdk14loggingCapture = glob.getProperty().get("xmlBlaster/jdk14loggingCapture", true);
       if (jdk14loggingCapture) {
          try {
+            // Use reflection to be JDK 1.3 runtime compatible:
+            Class clazz = java.lang.Class.forName("org.xmlBlaster.util.log.XmlBlasterJdk14LoggingHandler");
+            Class[] paramCls = new Class[1];
+            paramCls[0] = org.xmlBlaster.util.Global.class;
+            Object[] params = new Object[1];
+            params[0] = this.glob;
+           java.lang.reflect.Method method = clazz.getMethod("initLogManager", paramCls);
+            method.invoke(clazz, params);
+         }
+         catch (Throwable e) {
+            log.warn(ME, "Capturing JDK 1.4 logging output failed (which is OK in a JDK 1.3 environment): " + e.toString());
+         }
+         /*
+         try {
+            // since JKD 1.4:
             XmlBlasterJdk14LoggingHandler.initLogManager(this.glob);
          }
          catch (XmlBlasterException e) {
             log.warn(ME, "Capturing JDK 1.4 logging output failed: " + e.toString());
          }
+         */
       }
 
       long sleepOnStartup = glob.getProperty().get("xmlBlaster/sleepOnStartup", 0L);
