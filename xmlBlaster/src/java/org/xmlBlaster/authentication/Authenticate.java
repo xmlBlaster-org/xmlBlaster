@@ -163,7 +163,7 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
    {
       // [1] Try reconnecting with secret sessionId
       try {
-         if (log.CALL) log.call(ME, "Entering connect(secretSessionId=" + secretSessionId + ")");
+         if (log.CALL) log.call(ME, "Entering connect(sessionName=" + connectQos.getSessionName() + ")"); // " secretSessionId=" + secretSessionId + ")");
          if (log.DUMP) log.dump(ME, "ConnectQos=" + connectQos.toXml());
 
          // Get or create the secretSessionId (we respect a user supplied secretSessionId) ...
@@ -175,6 +175,9 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
          if (secretSessionId != null && secretSessionId.length() >= 2) {
             SessionInfo info = getSessionInfo(secretSessionId);
             if (info != null) {
+               
+               info.updateConnectQos(connectQos);
+
                ConnectReturnQosServer returnQos = new ConnectReturnQosServer(glob, info.getConnectQos().getData());
                returnQos.getSessionQos().setSessionId(secretSessionId);
                returnQos.getSessionQos().setSessionName(info.getSessionName());
@@ -197,6 +200,8 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
                // Check password as we can't trust the public session ID
                // throws XmlBlasterExceptions if authentication fails
                info.getSecuritySession().verify(connectQos.getSecurityQos());
+
+               info.updateConnectQos(connectQos);
                
                ConnectReturnQosServer returnQos = new ConnectReturnQosServer(glob, info.getConnectQos().getData());
                returnQos.getSessionQos().setSessionId(info.getSessionId());
@@ -266,11 +271,11 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
          subjectInfo = getSubjectInfoByName(subjectName);
          //log.error(ME, "DEBUG ONLY, subjectName=" + subjectName.toString() + " loginName=" + subjectName.getLoginName() + " state=" + toXml());
          if (subjectInfo == null) {
-            subjectInfo = new SubjectInfo(getGlobal(), subjectCtx, connectQos.getSubjectCbQueueProperty());
+            subjectInfo = new SubjectInfo(getGlobal(), subjectCtx, connectQos.getSubjectQueueProperty());
             addLoginName(subjectInfo);
          }
          else  // TODO: Reconfigure subject queue only when queue relating='subject' was used
-            subjectInfo.setCbQueueProperty(connectQos.getSubjectCbQueueProperty()); // overwrites only if not null
+            subjectInfo.setCbQueueProperty(connectQos.getSubjectQueueProperty()); // overwrites only if not null
 
          // Check if client does a relogin and wants to destroy old sessions
          if (connectQos.getSessionQos().clearSessions() == true && subjectInfo.getNumSessions() > 0) {

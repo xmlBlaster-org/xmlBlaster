@@ -99,7 +99,7 @@ public class SubjectInfo implements I_AdminSubject
     * Create this instance when a client did a login.
     * <p />
     * @param securityCtx  The security context of this subject
-    * @param prop         The property from the subject queue, usually from connectQos.getSubjectCbQueueProperty()
+    * @param prop         The property from the subject queue, usually from connectQos.getSubjectQueueProperty()
     */
    public SubjectInfo(Global glob, I_Subject securityCtx, CbQueueProperty prop) throws XmlBlasterException {
       this(glob, securityCtx.getName(), securityCtx, prop);
@@ -126,7 +126,7 @@ public class SubjectInfo implements I_AdminSubject
     * <p />
     * @param loginName    The unique loginName
     * @param securityCtx  The security context of this subject
-    * @param prop         The property from the subject queue, usually from connectQos.getSubjectCbQueueProperty()
+    * @param prop         The property from the subject queue, usually from connectQos.getSubjectQueueProperty()
     */
    private SubjectInfo(Global glob, String loginName, I_Subject securityCtx, CbQueueProperty prop)
           throws XmlBlasterException {
@@ -150,7 +150,7 @@ public class SubjectInfo implements I_AdminSubject
       if (prop == null) prop = new CbQueueProperty(glob, Constants.RELATING_SUBJECT, glob.getId());
       String type = prop.getType();
       String version = prop.getVersion();
-      this.subjectQueue = glob.getQueuePluginManager().getPlugin(type, version, new StorageId("cb", this.subjectName.getAbsoluteName()), prop);
+      this.subjectQueue = glob.getQueuePluginManager().getPlugin(type, version, new StorageId(Constants.RELATING_CALLBACK, this.subjectName.getAbsoluteName()), prop);
       this.subjectQueue.setNotifiedAboutAddOrRemove(true); // Entries are notified to support reference counting
 
       if (log.TRACE) log.trace(ME, "Created new SubjectInfo");
