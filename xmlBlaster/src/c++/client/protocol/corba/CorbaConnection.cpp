@@ -208,7 +208,7 @@ void CorbaConnection::initAuthenticationService()
      }
      if (!authServerIOR.empty()) {
         CORBA::Object_var obj = orb_->string_to_object(authServerIOR.c_str());
-        if (obj != 0 && !CORBA::is_nil(obj.in())) {
+        if (!CORBA::is_nil(obj.in())) {
            if (!CORBA::is_nil(authServer_)) {
               CORBA::release(authServer_);
               authServer_ = 0;
@@ -275,7 +275,7 @@ void CorbaConnection::initAuthenticationService()
             tmp->list(0, bl, bi);
 
             // process the remaining bindings if an iterator exists:
-            if (CORBA::is_nil(authServer_) && bi!=0 && !CORBA::is_nil(bi.in())) {
+            if (CORBA::is_nil(authServer_) && !CORBA::is_nil(bi.in())) {
                int i = 0;
                CORBA::Boolean more;
                do {
@@ -310,7 +310,7 @@ void CorbaConnection::initAuthenticationService()
                      }
                   }
 
-                  if (authServerFirst == 0 || CORBA::is_nil(authServerFirst.in())) {
+                  if (CORBA::is_nil(authServerFirst.in())) {
                      if (log_.trace()) log_.trace(me(), "Remember the first server");
                      try {
                         firstServerName = tmpServerName;
@@ -327,7 +327,7 @@ void CorbaConnection::initAuthenticationService()
          }
 
          if (CORBA::is_nil(authServer_)) {
-            if (authServerFirst != 0 && !CORBA::is_nil(authServerFirst.in())) {
+            if (!CORBA::is_nil(authServerFirst.in())) {
                if (countServerFound > 1) {
                   string str = string("Can't choose one of ") + lexical_cast<string>(countServerFound) +
                                  " avalailable server in CORBA NameService: " + serverNameList +
