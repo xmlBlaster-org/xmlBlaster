@@ -1,4 +1,4 @@
-$Id: README,v 1.4 2002/02/09 21:20:22 goetzger Exp $
+$Id: README,v 1.5 2002/03/01 13:20:05 goetzger Exp $
 
 Integration of Xindice (former dbXML) into xmlBlaster as persistence plugin
 ---------------------------------------------------------------------------
@@ -10,15 +10,14 @@ STATE:      - beta
 	      ORBs in CLASSPATH. see Mailinglist 
 
 
-RESOURCES:  http://www.xindice.org
+RESOURCES:  http://www.xindice.org or
+	    http://xml.apache.org/xindice/
 	    http://www.xmlBlaster.org
-	    soon there will be something under http://xml.apache.org/xindice (I hope)
             
 
 TRAPS/BUGS: What is with BLOBs?
             How can we store best binary data?
 	    Xindice has been tested succsefully on following platforms:
-
 
 
 TODO:       Need to finish Test-case! (need to implemet CLASSLOADER before)
@@ -42,9 +41,9 @@ Where to get:
 
 1. packed
 
-   The release 1.0rc1 (DarkHorse) has been released on Feb 8th 2002. This will be shipped
-   with xmlBlaster till a final release 2.0 is available.
-   You can get a cpoy @ http://www.xindice.org
+   The release 1.0rc2 (Pepper) has been released on Feb 26th 2002. This will be shipped
+   with xmlBlaster till a final release 1.0 is available.
+   You can get a copy @ http://www.xindice.org
 
 2. cvs
 
@@ -72,7 +71,7 @@ Start and prepare Xindice:
 	Starting Xindice
 	----------------
 
-	Xindice 1.0rc1 (DarkHorse)
+	Xindice 1.0rc2 (Pepper)
 
 	Database: 'db' initializing
 	Script: 'GET' added to script storage
@@ -165,6 +164,7 @@ How to use it from the client:
 
    and list a single content by using:
    $ xindice rd -c /db/xmlBlaster -n amIdurable-XmlKey.xml
+
    <?xml version="1.0"?>
    <key oid="amIdurable" contentMime="text/plain">
    </key>
@@ -264,6 +264,7 @@ See another example here:
    See the document with the key Hello.txt-XmlCon.xml
 
 	xindice rd -c /db/xmlBlaster -n Hello.txt-XmlCon.xml
+
 	<?xml version="1.0"?>
 	<content><![CDATA[Hello world
 	]]></content>
