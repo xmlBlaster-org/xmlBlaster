@@ -82,7 +82,7 @@ namespace util {
       Property(int args=0, const char * const argc[]=0) : properties_() {
 
          if (args && argc) {
-            loadCommandLineProps(args, argc, "-", false); // xmlBlaster-style properties
+            loadCommandLineProps(args, argc, std::string("-"), false); // xmlBlaster-style properties
          }
 
          //loadPropertyFile();
