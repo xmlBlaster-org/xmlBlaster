@@ -6,7 +6,7 @@ Name:      Timestamp.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Timestamp.h,v 1.13 2003/01/14 13:28:01 johnson Exp $
+Version:   $Id: Timestamp.h,v 1.14 2003/01/22 13:11:29 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_TIMESTAMP_H
@@ -15,7 +15,7 @@ Version:   $Id: Timestamp.h,v 1.13 2003/01/14 13:28:01 johnson Exp $
 #include <util/xmlBlasterDef.h>
 #include <string>
 #include <time.h>
-#include <util/thread/Thread.h>
+#include <util/thread/ThreadImpl.h>
 
 using namespace std;
 

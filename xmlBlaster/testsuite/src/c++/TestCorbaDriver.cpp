@@ -11,7 +11,7 @@ Comment:   Testing the Timeout Features
 #include <util/Global.h>
 #include <util/Log.h>
 #include <util/PlatformUtils.hpp>
-// #include <util/thread/Thread.h>
+// #include <util/thread/ThreadImpl.h>
 // #include <util/Timestamp.h>
 #include <client/protocol/corba/CorbaDriver.h>
 #include <boost/lexical_cast.hpp>

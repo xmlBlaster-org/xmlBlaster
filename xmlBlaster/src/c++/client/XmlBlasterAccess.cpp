@@ -312,7 +312,7 @@ long XmlBlasterAccess::flushQueue()
 
 #include <util/PlatformUtils.hpp>
 #include <util/Timestamp.h>
-#include <util/thread/Thread.h>
+#include <util/thread/ThreadImpl.h>
 
 using namespace std;
 using namespace org::xmlBlaster::client;

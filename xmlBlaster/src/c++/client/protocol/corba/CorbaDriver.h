@@ -22,7 +22,7 @@ Comment:   The client driver for the corba protocol
 #include <client/xmlBlasterClient.h>
 #include <util/qos/StatusQosFactory.h>
 #include <util/qos/MsgQosFactory.h>
-#include <util/thread/Thread.h>
+#include <util/thread/ThreadImpl.h>
 #include <map>
 
 using namespace org::xmlBlaster::util;

@@ -25,7 +25,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/queue/SubscribeQueueEntry.h>
 #include <util/queue/UnSubscribeQueueEntry.h>
 #include <util/qos/storage/QueueProperty.h>
-#include <util/thread/Thread.h>
+#include <util/thread/ThreadImpl.h>
 #include <util/Log.h>
 #include <set>
 

@@ -20,7 +20,7 @@ Comment:   Handles the I_XmlBlasterConnections
 #include <util/dispatch/I_ConnectionsHandler.h>
 #include <client/I_ConnectionProblems.h>
 #include <util/XmlBlasterException.h>
-#include <util/thread/Thread.h>
+#include <util/thread/ThreadImpl.h>
 #include <util/I_Timeout.h>
 #include <util/queue/MsgQueue.h>
 #include <util/queue/PublishQueueEntry.h>

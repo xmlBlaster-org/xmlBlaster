@@ -9,7 +9,7 @@ Comment:   Testing the Timeout Features
 #include <iostream>
 #include <string>
 #include <util/Global.h>
-#include <util/thread/Thread.h>
+#include <util/thread/ThreadImpl.h>
 
 using namespace std;
 using namespace org::xmlBlaster::util;

@@ -12,7 +12,7 @@ Comment:   Testing the Timeout Features
 #include <client/XmlBlasterAccess.h>
 #include <util/XmlBlasterException.h>
 #include <util/Log.h>
-#include <util/thread/Thread.h>
+#include <util/thread/ThreadImpl.h>
 
 /**
  * Embedds an xmlBlaster server so that you can control its start and stop from within a c++ program.

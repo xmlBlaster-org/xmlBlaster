@@ -3,7 +3,7 @@ Name:      TestSub.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.cpp,v 1.11 2003/01/12 00:47:51 laghi Exp $
+Version:   $Id: TestSub.cpp,v 1.12 2003/01/22 13:11:30 laghi Exp $
 -----------------------------------------------------------------------------*/
 
 #include <client/XmlBlasterAccess.h>
@@ -14,7 +14,7 @@ Version:   $Id: TestSub.cpp,v 1.11 2003/01/12 00:47:51 laghi Exp $
 
 #include <util/StopWatch.h>
 #include <util/Global.h>
-#include <util/thread/Thread.h>
+#include <util/thread/ThreadImpl.h>
 
 /**
  * This client tests the method subscribe() with a later publish() with XPath

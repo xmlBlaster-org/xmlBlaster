@@ -15,7 +15,7 @@ Comment:   Allows you be called back after a given delay.
 
 #include <string>
 #include <map>
-#include <util/thread/Thread.h>
+#include <util/thread/ThreadImpl.h>
 
 
 
