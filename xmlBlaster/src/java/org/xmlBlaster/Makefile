@@ -14,8 +14,11 @@ SRC_JAVA_DIR = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster
 
 #------------------------------------------------------------------------------
 LOCAL_FILES = \
+			$(CLASS_DIR)/Main.class \
 			$(CLASS_DIR)/Server.class \
-			$(CLASS_DIR)/BlasterCallback.class
+			$(CLASS_DIR)/ServerImpl.class \
+			$(CLASS_DIR)/BlasterCallback.class \
+			$(CLASS_DIR)/BlasterCallbackImpl.class
 #------------------------------------------------------------------------------
 
 
