@@ -1706,7 +1706,7 @@ TODO
    <!-- =================================================================== -->
    <!-- Prepares env settings for C++ client library compilation            -->
    <!-- =================================================================== -->
-   <target name="prepare-cpp" depends="prepare" description="For internal use only, C++ client environment">
+   <target name="initialize-cpp" depends="prepare" description="For internal use only, C++ client environment">
       <echo message="Adjust following settings in build.properties if necessary:"/>
       <!-- echo message=" STL_HOME      = ${STL_HOME}"/ -->
       <echo message=" os.name       = ${os.name}"/>
@@ -1852,7 +1852,9 @@ TODO
       <!-- Remove old stuff to simplify update, these two lines can be removed in May 2004 -->
       <delete file="${src.cpp.dir}/util/Global_CopyByAnt.cpp" />
       <delete file="${src.c.dir}/util/msgUtil_CopyByAnt.c" />
+   </target>
 
+   <target name="prepare-cpp" depends="initialize-cpp" description="For internal use only, C++ client environment">
       <!--
          C++: Copy all .cpp and .h files to the build.tmp directory.
         "@version@" and "@build.timestamp@" is replaced to current values by ant (Global.cpp)
@@ -2655,7 +2657,7 @@ TODO
    </target>  <!-- C lib -->
 
    <target name="c-test" depends="prepare-cpp" description="Create C test clients">
-      <foreach list="TestQueue,TestUtil,TestMethods,TestError,TestStress"
+      <foreach list="TestQueue,TestUtil,TestSocket,TestMethods,TestError,TestStress"
                target="compileCExe" param="exeName" delimiter="," inheritAll="true">
          <param name="compileCSourcePath" value="${testsuite.dir}/src/c" />
       </foreach>
@@ -2755,7 +2757,7 @@ TODO
    <!-- =================================================================== -->
    <!-- Cleans everything                                                   -->
    <!-- =================================================================== -->
-    <target name="c-clean" depends="prepare" description="Remove C object files">
+    <target name="c-clean" depends="initialize-cpp" description="Remove C object files">
        <delete dir="${c.obj.dir}"/>
        <delete includeEmptyDirs="true" failonerror="false">
           <fileset dir="${build.src.c.dir}"/>
@@ -2776,11 +2778,11 @@ TODO
           <fileset dir="${demo.dir}/c/socket/bin" includes="*"/>
           <fileset dir="${demo.dir}/c/bin" includes="*"/>
           <fileset dir="${testsuite.dir}/src/c/bin" includes="*"/>
-          <fileset dir="${lib.dir}" includes="pthreadVC.dll,*xmlBlasterClientC*.*"/>
+          <fileset dir="${lib.dir}" includes="pthreadVC.dll,*xmlBlasterClientC${C_DEBUG_POSTFIX}.*"/>
        </delete>
     </target>
 
-    <target name="cpp-clean" depends="prepare" description="Remove C++ object files">
+    <target name="cpp-clean" depends="initialize-cpp" description="Remove C++ object files">
        <delete dir="${cpp.obj.dir}"/>
        <delete dir=".c_dependency_cache"/>
        <delete includeEmptyDirs="true" failonerror="false">
@@ -2792,7 +2794,7 @@ TODO
        <delete includeEmptyDirs="true" failonerror="false">
           <fileset dir="${build.src.cpp.dir}"/>
           <fileset dir="${src.cpp.dir}/generated" includes="*.o, *.cc, *.cpp, *.h, *.hh, *.i"/>
-          <fileset dir="${lib.dir}" includes="*xmlBlasterClient.*,history.xml"/>
+          <fileset dir="${lib.dir}" includes="*xmlBlasterClient${CPP_DEBUG_POSTFIX}.*,history.xml"/>
           <fileset dir="${testsuite.dir}/src/c++/bin" includes="*"/>
           <fileset dir="${demo.dir}/c++/bin" includes="*"/>
           <fileset dir="${idl.dir}" includes="*Idl/*.java"/>
