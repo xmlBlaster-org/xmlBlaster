@@ -286,6 +286,25 @@
            <i>resource.configuration</i> error is thrown and the runlevel flow is interrupted.
        </li>
      </ul>
+
+    
+    The replacement for '${...}' is supported. Note that the assignment of a '$'
+    variable can only be done in global scope, that is in the xmlBlaster.properties or command line,
+    and JVM properties but not in the xmlBlasterPlugins.xml.
+    This means that if you define 
+    <pre>
+ someName=someValue
+    </pre>
+    and in the xmlBlasterPlugins.xml:
+    <pre>
+    <![CDATA[
+   ...
+
+      <attribute id='furtherAttribute'>${someName}</attribute>
+   ...
+    ]]>
+    </pre>
+    then the attribute of 'furtheAttribute' will be 'someValue'.
    </description>
 
    <example lang="any" type="HTML">
