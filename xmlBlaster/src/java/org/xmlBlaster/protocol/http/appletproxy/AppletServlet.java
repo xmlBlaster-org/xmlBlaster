@@ -16,8 +16,8 @@ import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
-import org.xmlBlaster.client.protocol.http.applet.I_XmlBlasterAccessRaw;
-import org.xmlBlaster.client.protocol.http.applet.ObjectOutputStreamMicro;
+import org.xmlBlaster.client.protocol.http.common.I_XmlBlasterAccessRaw;
+import org.xmlBlaster.client.protocol.http.common.ObjectOutputStreamMicro;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
@@ -286,6 +286,10 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
       }
    }
 
+   private final String decode(String in, String encoding) {
+      return new String(Base64.decodeBase64(in.getBytes()));
+   }
+
    /**
     * POST request from the applet. 
     * <p>
@@ -341,11 +345,11 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
       try {
          // Extract the message data
          String oid = getParameter(req, "key.oid", (String)null);
-         if (oid != null) oid = Global.decode(oid, ENCODING);
+         if (oid != null) oid = this.decode(oid, ENCODING);
 
          String key = getParameter(req, "key", (String)null);
          if (key != null) {
-            key = Global.decode(key, ENCODING);
+            key = this.decode(key, ENCODING);
             if (log.DUMP) log.dump(ME, "key=\n'" + key + "'");
          }
          
@@ -360,7 +364,7 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
 
          String qos = getParameter(req, "qos", (String)null);
          if (qos != null) {
-            qos = Global.decode(qos, ENCODING);
+            qos = this.decode(qos, ENCODING);
          }
          else
             qos = ""; 

@@ -17,8 +17,8 @@ import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
-import org.xmlBlaster.client.protocol.http.applet.I_XmlBlasterAccessRaw;
-import org.xmlBlaster.client.protocol.http.applet.ObjectOutputStreamMicro;
+import org.xmlBlaster.client.protocol.http.common.I_XmlBlasterAccessRaw;
+import org.xmlBlaster.client.protocol.http.common.ObjectOutputStreamMicro;
 import org.xmlBlaster.client.qos.UpdateQos;
 
 import javax.servlet.*;
@@ -26,7 +26,6 @@ import javax.servlet.http.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-//import java.io.ObjectOutputStream;
 import java.util.Hashtable;
 
 import org.apache.commons.codec.binary.Base64;
@@ -82,7 +81,8 @@ public class PushHandler implements I_Callback, I_Timeout
    public PushHandler(HttpServletRequest req, HttpServletResponse res, String sessionId,
                           String loginName, I_XmlBlasterAccess xmlBlasterAccess, Timeout timeout)
                                throws ServletException, IOException {
-      this.log = org.xmlBlaster.util.Global.instance().getLog("http");
+      // this.log = org.xmlBlaster.util.Global.instance().getLog("http");
+      this.log = org.xmlBlaster.util.Global.instance().getLog("servlet");
       this.res = res;
       this.sessionId = sessionId;
       this.xmlBlasterAccess = xmlBlasterAccess;
@@ -243,7 +243,10 @@ public class PushHandler implements I_Callback, I_Timeout
     */
    private void pushToApplet(byte[] chunk) throws IOException {
       if (log.TRACE) log.trace(ME, "Pushing multipart for applet, size=" + chunk.length);
+      if (log.TRACE) log.trace(ME, "Pushing multipart for applet, content='" + new String(chunk) + "'");
+      
       byte[] base64 = Base64.encodeBase64(chunk, isChunked);
+      if (log.TRACE) log.trace(ME, "Pushing multipart for applet, content (encoded)='" + new String(base64) + "'");
       synchronized(outMulti) {
          outMulti.println(new String(base64));
          outMulti.println("--End");
