@@ -1,0 +1,29 @@
+xmlBlaster@marcelruff.info 2004-01
+
+The C++ client library is fairly complete
+and memory leak checked with valgrind.
+
+Following issues however remain:
+
+o Add expat xml parser into the distribution
+  and use the Arabica SAX2 layer for simple parsing
+  -> This avoids to download Xerces separately
+
+o Change ConnectQos  to use ClientProperty as well
+  (similar to MsgQosData.h)
+  This has currently no operational impact
+
+o Extend testsuite to check ALL parameters shown with
+  PublishDemo -help
+  SubscribeDemo -help
+
+o Add valgrind memory leak tests for exception cases
+
+o TestQueue: this test shows memory leaks with valgrind,
+  we need to investigate further
+
+o The client side queue is RAM based only.
+  We could embedd http://www.sqlite.org/ for persistence
+
+o Add subscribe specific 'update()' similar to the Java
+  client library approach
