@@ -108,11 +108,11 @@
            command line arguments -->
       <numSysprop>117</numSysprop>
       <syspropList>java.io.tmpdir,java.vm.version,...</syspropList>
-      <attribute id='java.io.tmpdir'>/tmp</sysprop>
-      <attribute id='java.vm.version'>1.3.1</sysprop>
-      <attribute id='user.language'>es</sysprop>
-      <attribute id='Persistence.Path'>/home/mom/data</sysprop>
-      <attribute id='logFile'>/var/log/xmlBlaster-heron.log</sysprop>
+      <sysprop id='java.io.tmpdir'>/tmp</sysprop>
+      <sysprop id='java.vm.version'>1.3.1</sysprop>
+      <sysprop id='user.language'>es</sysprop>
+      <sysprop id='Persistence.Path'>/home/mom/data</sysprop>
+      <sysprop id='logFile'>/var/log/xmlBlaster-heron.log</sysprop>
          ...
 
       <plugin id='QueuePluginCache' code='org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin'>
@@ -123,11 +123,11 @@
       <plugin id='QueuePluginRAM' code='org.xmlBlaster.util.queue.cache.JDBCQueueInterceptorPlugin'/>
 
       <plugin id='QueuePluginJDBC' code='org.xmlBlaster.util.queue.cache.JDBCQueueInterceptorPlugin'>
-         <attribute id='url'>jdbc:oracle:thin:@localhost:1521:noty</sysprop>
-         <attribute id='user'>joe</sysprop>
-         <attribute id='password'>secret</sysprop>
-         <attribute id='connectionBusyTimeout'>90000</sysprop>
-         <attribute id='maxWaitingThreads'>300</sysprop>
+         <attribute id='url'>jdbc:oracle:thin:@localhost:1521:noty</attribute>
+         <attribute id='user'>joe</attribute>
+         <attribute id='password'>secret</attribute>
+         <attribute id='connectionBusyTimeout'>90000</attribute>
+         <attribute id='maxWaitingThreads'>300</attribute>
       </plugin>
 
       <!-- xmlBlaster messages -->
@@ -605,7 +605,7 @@ UserInfo: joe:mypasswd
    <author>Michele.Laghi@swisscom.com</author>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.35 $</revision>
+   <revision>$Revision: 1.36 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
