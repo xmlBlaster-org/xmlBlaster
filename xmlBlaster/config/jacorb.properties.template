@@ -20,15 +20,22 @@
 
 #ORBInitRef.NameService=corbaloc::160.45.110.41:38693/StandardNS/NameServer%2DPOA/_root
 #ORBInitRef.NameService=file:/c:/NS_Ref
-# xmlBlaster default:
-ORBInitRef.NameService=http://localhost/NS_Ref
+ORBInitRef.NameService=http://www.x.y.z/~user/NS_Ref
 #ORBInitRef.TradingService=http://www.x.y.z/~user/TraderRef
 
 # JacORB-specific URLs
-jacorb.ImplementationRepositoryURL=http://www.x.y.z/~user/ImR_Ref
 jacorb.ProxyServerURL=http://www.x.y.z/~user/Appligator_Ref
 
 
+##################################
+#                                #
+#   ORB version number output    #
+#                                #
+##################################
+
+# if on, the ORB's version number is printed
+# any time the ORB is initialized
+jacorb.orb.print_version=on
 
 ##################################
 #                                #
@@ -53,7 +60,7 @@ jacorb.verbosity=1
 #                                                #
 #    WARNING: The following properties should    # 
 #    only be edited by the expert user. They     #
-#    can be left untouched for most cases!       #
+#    can be left untouched in most cases!        #
 #                                                #
 ##################################################
 
@@ -66,15 +73,27 @@ jacorb.verbosity=1
 ################################
 
 # number of retries if connection cannot directly be established
-#jacorb.retries=5
-# xmlBlaster default:
-jacorb.retries=1
+jacorb.retries=5
 
 # how many msecs. do we wait between retries
 jacorb.retry_interval=500
 
 # size of network buffers for outgoing messages
 jacorb.outbuf_size=2048
+
+# log2 of maximum buffer size managed by the internal 
+# buffer manager. 
+#
+# This is NOT the maximum buffer size that
+# can be used, but just the largest size of buffers that
+# will be kept and managed. This value will be added to
+# an internal constant of 5, so the real value in bytes
+# is 2**(5+maxManagedBufSize-1). You only need to increase this
+# value if you are dealing with LOTS of LARGE data structures.
+# You may decrease it to make the buffer manager release large
+# buffers immediately rather than keeping them for later 
+# reuse.
+jacorb.maxManagedBufSize=18
 
 # client-side timeout, set no non-zero to stop blocking
 # after so many msecs.
@@ -96,10 +115,29 @@ jacorb.outbuf_size=2048
 # they are explicitely deleted by calling _release(). This is useful
 # for persistent and long-living CORBA objects.
 #
-#jacorb.hashtable_class=jacorb.util.WeakHashtable
+#jacorb.hashtable_class=org.jacorb.util.WeakHashtable
 #
 jacorb.hashtable_class=java.util.Hashtable
 
+
+###########################################
+#                                         #
+#       Proxy address in IOR              #
+#                                         #
+###########################################
+
+#
+# with these two properties it is possible to 
+# tell the ORB what IP/port IORs should contain,
+# if the ServerSockets IP/port can't be used
+# (e.g. for traffic through a firewall). 
+#
+# WARNING: this is just "dumb" replacing, so you 
+# have to take care of your configuration!
+#
+
+#jacorb.ior_proxy_host=1.2.3.4
+#jacorb.ior_proxy_port=4711
 
 
 ###########################################
@@ -112,8 +150,7 @@ jacorb.hashtable_class=java.util.Hashtable
 # object references). NOTE: Adresses like 127.0.0.X
 # will only be accessible from the same machine!
 #OAIAddr=1.2.3.4
-
-
+#OAPort=4711
 
 ################################
 #                              #
@@ -131,7 +168,7 @@ jacorb.use_appligator=off
 #   Please leave them in!  #
 #                          #
 ############################
-org.omg.PortableInterceptor.ORBInitializerClass.standard_init=jacorb.orb.standardInterceptors.IORInterceptorInitializer
+org.omg.PortableInterceptor.ORBInitializerClass.standard_init=org.jacorb.orb.standardInterceptors.IORInterceptorInitializer
 
 
 
@@ -142,6 +179,10 @@ org.omg.PortableInterceptor.ORBInitializerClass.standard_init=jacorb.orb.standar
 ###############################################
 # Switch off to avoid contacting the ImR on every server start-up
 jacorb.use_imr=off
+
+jacorb.imr.allow_auto_register=off
+
+ORBInitRef.ImplementationRepository=http://www.x.y.z/~user/ImR_Ref
 
 jacorb.imr.table_file=Z:\table.dat
 jacorb.imr.backup_file=z:\backup.dat
@@ -158,7 +199,7 @@ jacorb.implname=StandardImplName
 # This is supposed to be a generic startup string for everything
 # that calls Runtime.exec(). Might be replaced by jaco[.bat].
 #
-jacorb.java_exec=java -Dorg.omg.CORBA.ORBClass=jacorb.orb.ORB -Dorg.omg.CORBA.ORBSingletonClass=jacorb.orb.ORBSingleton
+jacorb.java_exec=java -Dorg.omg.CORBA.ORBClass=org.jacorb.orb.ORB -Dorg.omg.CORBA.ORBSingletonClass=org.jacorb.orb.ORBSingleton
 
 
 
@@ -168,19 +209,34 @@ jacorb.java_exec=java -Dorg.omg.CORBA.ORBClass=jacorb.orb.ORB -Dorg.omg.CORBA.OR
 #                       #
 #########################
 
-# For using SSL, this interceptor *must* be set. Otherwise, it can
-# be left commented out.
-#org.omg.PortableInterceptor.ORBInitializerClass.ForwardInit=jacorb.security.ssl.SecurityServiceInitializer
+#
+# The port number used by SSL, will be dynmically assigned
+# by default
+#
 
-#
-# numbers are hex values (omitting leading 0x)
-#
+#OASSLPort=4711
+
+# This interceptor must be set if programs need access to
+# certificates using the CORBA Security API, SSL works also
+# without this interceptor
+
+#org.omg.PortableInterceptor.ORBInitializerClass.ForwardInit=org.jacorb.security.ssl.SecurityServiceInitializer
+
+# IIOP/SSL parameters (numbers are decimal values):
+# EstablishTrustInClient = 40
+# EstablishTrustInTarget = 20
+# mutual authentication = 60
+
 jacorb.security.support_ssl=off
-jacorb.security.ssl.supported_options=64
+jacorb.security.ssl.supported_options=60
 jacorb.security.enforce_ssl=off
-jacorb.security.ssl.required_options=64
+jacorb.security.ssl.required_options=60
 
 # files with public key certs of trusted CAs
+#
+# WARNING: If no CA certs are present, the IAIK chain verifier will
+# accept ALL otherwise valid chains!
+#
 jacorb.security.trustees=trustee1.cert,trustee2.cert
 
 # the name of the default key alias to look up in the keystore
@@ -192,14 +248,24 @@ jacorb.security.keystore=.keystore
 jacorb.security.keystore_password=jacorb
 
 # qualified classname of access decision object
-jacorb.security.access_decision=jacorb.security.level2.AccessDecisionImpl
+jacorb.security.access_decision=org.jacorb.security.level2.AccessDecisionImpl
+
+# list of qualified classnames of principal authenticator objects,
+# separated by commas (no whitespaces!). The first entry (that can
+# be successfully created) will be available through the
+# principal_authenticator property.
+jacorb.security.principal_authenticator=org.jacorb.security.level2.PrincipalAuthenticatorImpl
 
 # the qualified classname of the ssl socket factory class
-jacorb.ssl.socket_factory=jacorb.security.ssl.SSLSocketFactory
+jacorb.ssl.socket_factory=org.jacorb.security.ssl.SSLSocketFactory
 
 # the qualified classname of the ssl server socket factory class
-jacorb.ssl.server_socket_factory=jacorb.security.ssl.SSLServerSocketFactory
+jacorb.ssl.server_socket_factory=org.jacorb.security.ssl.SSLServerSocketFactory
 
+# exchange ssl client server roles to enforce client authentication, but 
+# attention: this causes problems with peers that not prepared to handle 
+# this role change
+jacorb.security.change_ssl_roles=off
 
 
 #########################
@@ -212,22 +278,17 @@ jacorb.ssl.server_socket_factory=jacorb.security.ssl.SSLServerSocketFactory
 jacorb.poa.monitoring=off
 
 # thread pool configuration for request processing
-# jacorb.poa.thread_pool_max=20
-# xmlBlaster default:
-jacorb.poa.thread_pool_max=50
+jacorb.poa.thread_pool_max=20
 jacorb.poa.thread_pool_min=5
 
 # if set, request processing threads in thePOA
 # will run at this priority. If not set or invalid,
 # MAX_PRIORITY will be used.
-# xmlBlaster default:
-jacorb.poa.thread_priority=8
+#jacorb.poa.thread_priority=
 
 # size of the request queue, clients will receive Corba.TRANSIENT
 # exceptions if load exceeds this limit
-# jacorb.poa.queue_max=100
-# xmlBlaster default:
-jacorb.poa.queue_max=5000
+jacorb.poa.queue_max=100
 
 
 

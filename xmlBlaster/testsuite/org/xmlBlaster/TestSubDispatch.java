@@ -3,7 +3,7 @@ Name:      TestSubDispatch.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubDispatch.java,v 1.2 2001/08/30 21:28:51 ruff Exp $
+Version:   $Id: TestSubDispatch.java,v 1.3 2001/08/31 15:30:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -106,7 +106,6 @@ public class TestSubDispatch extends TestCase implements I_Callback
 
       senderConnection.logout();
    }
-
 
    /**
     * TEST: Subscribe to messages with XPATH.
@@ -238,6 +237,13 @@ public class TestSubDispatch extends TestCase implements I_Callback
          }
       }
       messageArrived = false;
+   }
+
+
+   // Helper for inner class
+   private void assertEquals(String a, String b, String c)
+   {
+      super.assertEquals(a, b, c);
    }
 
 

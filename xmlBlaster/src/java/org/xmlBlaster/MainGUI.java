@@ -3,7 +3,7 @@ Name:      MainGUI.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: MainGUI.java,v 1.37 2000/11/01 11:02:53 ruff Exp $
+Version:   $Id: MainGUI.java,v 1.38 2001/08/31 15:30:48 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -22,7 +22,7 @@ import org.xmlBlaster.protocol.I_XmlBlaster;
 import java.util.Vector;
 import java.awt.*;
 import java.awt.event.*;
-import jacorb.poa.gui.beans.FillLevelBar;
+import org.jacorb.poa.gui.beans.FillLevelBar;
 
 
 /**

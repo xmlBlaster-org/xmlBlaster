@@ -3,7 +3,7 @@ Name:      HelloWorld.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Applet test for xmlBlaster
-Version:   $Id: HelloWorld.java,v 1.12 2000/10/18 20:45:41 ruff Exp $
+Version:   $Id: HelloWorld.java,v 1.13 2001/08/31 15:30:43 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.HelloWorldApplet;
 
@@ -40,7 +40,7 @@ import java.awt.*;
 public class HelloWorld extends Applet implements I_Callback, ActionListener, org.jutils.log.LogableDevice, WindowListener
 {
    private static String ME = "HelloWorld";
-   public static boolean isApplet = true;      // usually true; but jacorb.orb.ORB.init(Applet, Properties) is buggy !!!
+   public static boolean isApplet = true;      // usually true; but org.jacorb.orb.ORB.init(Applet, Properties) is buggy !!!
    public static HelloWorld helloWorld = null; // reference to myself (only for main)
 
    private String oid = "HelloWorld-Message";

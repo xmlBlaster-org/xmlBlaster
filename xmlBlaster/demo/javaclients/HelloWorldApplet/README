@@ -79,8 +79,8 @@ c:\JacORB1_1\classes;c:\ant\lib\ant.jar;c:\JacORB1_1\lib\idl.jar;c:\JacORB1_
 1\lib\jacorb.jar;c:\jdk1.2.2\lib\tools.jar;.
 
 
-E:\>appletviewer -J-Dorg.omg.CORBA.ORBClass=jacorb.orb.ORB -J-Dorg.omg.CORBA
-.ORBSingletonClass=jacorb.orb.ORBSingleton http://localhost/Jacorb/test.html
+E:\>appletviewer -J-Dorg.omg.CORBA.ORBClass=org.jacorb.orb.ORB -J-Dorg.omg.CORBA
+.ORBSingletonClass=org.jacorb.orb.ORBSingleton http://localhost/Jacorb/test.html
 java.lang.NoClassDefFoundError: org/omg/CosNaming/NamingContextOperations
         at java.lang.Class.newInstance0(Native Method)
         at java.lang.Class.newInstance(Class.java:241)
@@ -91,7 +91,7 @@ java.lang.NoClassDefFoundError: org/omg/CosNaming/NamingContextOperations
 
 
 E:\>appletviewer -J-cp -Jc:\JacORB1_1\lib\jacorb.jar -J-Dorg.omg.CORBA.ORBCl
-ass=jacorb.orb.ORB -J-Dorg.omg.CORBA.ORBSingletonClass=jacorb.orb.ORBSinglet
+ass=org.jacorb.orb.ORB -J-Dorg.omg.CORBA.ORBSingletonClass=org.jacorb.orb.ORBSinglet
 on http://localhost/Jacorb/test.html
 Initializing the ORB
 Could not read local jacorb properties.
@@ -105,8 +105,8 @@ java.lang.RuntimeException: Appligator not reachable! Check configuration
 
 
 E:\>appletviewer -J-Xbootclasspath:c:\JacORB1_1\lib\jacorb.jar;c:\jdk1.2.2\j
-re\lib\rt.jar -J-Dorg.omg.CORBA.ORBClass=jacorb.orb.ORB -J-Dorg.omg.CORBA.OR
-BSingletonClass=jacorb.orb.ORBSingleton http://localhost/Jacorb/test.html
+re\lib\rt.jar -J-Dorg.omg.CORBA.ORBClass=org.jacorb.orb.ORB -J-Dorg.omg.CORBA.OR
+BSingletonClass=org.jacorb.orb.ORBSingleton http://localhost/Jacorb/test.html
 Initializing the ORB
 Could not read local jacorb properties.
 Reading properties from url:http://localhost/Jacorb/jacorb.properties
@@ -149,8 +149,8 @@ Add:
 
 This prepends the JacORB classes to the vm.  Even though the 1.1 works
 with Sun's orb running as an application it fails as an applet.  I
-didn't supply the "-Dorg.omg.CORBA.ORBClass=jacorb.orb.ORB
--Dorg.omg.CORBA.ORBSingletonClass=jacorb.orb.ORBSingleton" parameter
+didn't supply the "-Dorg.omg.CORBA.ORBClass=org.jacorb.orb.ORB
+-Dorg.omg.CORBA.ORBSingletonClass=org.jacorb.orb.ORBSingleton" parameter
 although you probably could.  You could also change the path in the
 parameter to an HTTP address if you wanted to DL the jacorb.jar from a
 web server (I haven't tried this) instead of locally as list above.

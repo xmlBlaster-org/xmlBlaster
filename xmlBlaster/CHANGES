@@ -117,8 +117,8 @@ Changes for 0.79a [Nov, 16 2000]
 
  - JacORB as CORBA default:
    Setting default System properties to
-     org.omg.CORBA.ORBClass=jacorb.orb.ORB
-     org.omg.CORBA.ORBSingletonClass=jacorb.orb.ORBSingleton
+     org.omg.CORBA.ORBClass=org.jacorb.orb.ORB
+     org.omg.CORBA.ORBSingletonClass=org.jacorb.orb.ORBSingleton
    in our CORBA drivers (if not set differently from environment).
 
  - Severe bugfix with CORBA POA sessionId.

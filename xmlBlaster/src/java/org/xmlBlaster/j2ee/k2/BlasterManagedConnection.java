@@ -105,55 +105,55 @@ public class BlasterManagedConnection implements ManagedConnection {
     Vector listeners = new Vector();
 
     public BlasterManagedConnection(BlasterManagedConnectionFactory mcf,
-				    String user, 
-				    String pwd) throws ResourceException{
-	this.mcf = mcf;
-	this.user = user;
-	this.pwd = pwd;
-	
-	try {
-	    /*
-	      Some params:
-	      -client.protocol RMI | IOR | XML-RPC
-	      
+                                    String user, 
+                                    String pwd) throws ResourceException{
+        this.mcf = mcf;
+        this.user = user;
+        this.pwd = pwd;
+        
+        try {
+            /*
+              Some params:
+              -client.protocol RMI | IOR | XML-RPC
+              
 
-	      RMI:
-	      rmi.hostname
-	      rmi.registryPort
-	      rmi.AuthServer.url
+              RMI:
+              rmi.hostname
+              rmi.registryPort
+              rmi.AuthServer.url
 
-	      Memo: for RMI server:
-	     -Djava.rmi.server.codebase=file:///${XMLBLASTER_HOME}/classes/  
-	     -Djava.security.policy=${XMLBLASTER_HOME}/config/xmlBlaster.policy 
-	     -Djava.rmi.server.hostname=hostname.domainname
-	     
+              Memo: for RMI server:
+             -Djava.rmi.server.codebase=file:///${XMLBLASTER_HOME}/classes/  
+             -Djava.security.policy=${XMLBLASTER_HOME}/config/xmlBlaster.policy 
+             -Djava.rmi.server.hostname=hostname.domainname
+             
 
-	      CORBA:
-	      -ior OR string is directly given
-	      -iorFile IOR string is given through a file</li>
-	      -iorHost hostName or IP where xmlBlaster is running</li>
-	      -iorPort where the internal xmlBlaster-http server publishes its Ior
+              CORBA:
+              -ior OR string is directly given
+              -iorFile IOR string is given through a file</li>
+              -iorHost hostName or IP where xmlBlaster is running</li>
+              -iorPort where the internal xmlBlaster-http server publishes its Ior
 
-	      from/to system:
-	      -org.omg.CORBA.ORBClass=jacorb.orb.ORB
-	      -org.omg.CORBA.ORBSingletonClass=jacorb.orb.ORBSingleton
+              from/to system:
+              -org.omg.CORBA.ORBClass=org.jacorb.orb.ORB
+              -org.omg.CORBA.ORBSingletonClass=org.jacorb.orb.ORBSingleton
 
-	     */
+             */
 
-	    // Test with env
-	    /*
-	    String rmiEnv[] = new String[] {"-client.protocol","RMI"};
-	    String orbEnv[] = new String[] {"-client.protocol","IOR","-org.omg.CORBA.ORBClass","jacorb.orb.ORB","-org.omg.CORBA.ORBSingletonClass","jacorb.orb.ORBSingleton","-iorHost","151.177.109.74"};
-	    */
-	    
-	// Set up physical pipe
-	    // physicalPipe = new XmlBlasterConnection(orbEnv);
-	    physicalPipe = new XmlBlasterConnection();
-	    System.out.println("Physical pipe: " + physicalPipe + " set up");
-	}catch(XmlBlasterException ex) {
-	    throw new CommException("Could not create connection: " + ex);
-	}
-	
+            // Test with env
+            /*
+            String rmiEnv[] = new String[] {"-client.protocol","RMI"};
+            String orbEnv[] = new String[] {"-client.protocol","IOR","-org.omg.CORBA.ORBClass","org.jacorb.orb.ORB","-org.omg.CORBA.ORBSingletonClass","org.jacorb.orb.ORBSingleton","-iorHost","151.177.109.74"};
+            */
+            
+        // Set up physical pipe
+            // physicalPipe = new XmlBlasterConnection(orbEnv);
+            physicalPipe = new XmlBlasterConnection();
+            System.out.println("Physical pipe: " + physicalPipe + " set up");
+        }catch(XmlBlasterException ex) {
+            throw new CommException("Could not create connection: " + ex);
+        }
+        
     }
 
     //---- ManagedConnection ----
@@ -168,55 +168,55 @@ public class BlasterManagedConnection implements ManagedConnection {
                                 ConnectionRequestInfo info) 
         throws ResourceException {
 
-	// Check user first
-	BlasterCred cred = BlasterCred.getBlasterCred(mcf,subject,info);
+        // Check user first
+        BlasterCred cred = BlasterCred.getBlasterCred(mcf,subject,info);
 
-	// Should we throw on null user here?
-	// Check cred, only the same user as original is allowed
-	if (cred.name == null)
-	    throw new SecurityException("UserName not allowed to be null");
-	if (user != null && !user.equals(cred.name) )
-	    throw new SecurityException("Password credentials not the same, reauthentication not allowed");
-	
-	// If we are here we may set the user if its null
-	if (user == null)
-	    user = cred.name;
+        // Should we throw on null user here?
+        // Check cred, only the same user as original is allowed
+        if (cred.name == null)
+            throw new SecurityException("UserName not allowed to be null");
+        if (user != null && !user.equals(cred.name) )
+            throw new SecurityException("Password credentials not the same, reauthentication not allowed");
+        
+        // If we are here we may set the user if its null
+        if (user == null)
+            user = cred.name;
 
-	// Check if we have or might produce a valid handle
-	if (handle != null && !closed){
-	    // We already have a handle, but it is active
-	    throw new IllegalStateException("Connection sharing not supported");
-	}else if (handle == null) {
-	    // Create a new one
-	    handle = new BlasterConnectionImpl(this);
-	    // login to physical connection
-	    doLogin();
-	    closed = false;
-	} else if (handle != null && closed) {
-	    // Reactivate
-	    handle.open();
-	} else {
-	    // Here we shoudl never be
-	    throw new IllegalStateException("Hoops, how did we end up here. Physcial pipe is probabky null");
-	}
-	return handle;
+        // Check if we have or might produce a valid handle
+        if (handle != null && !closed){
+            // We already have a handle, but it is active
+            throw new IllegalStateException("Connection sharing not supported");
+        }else if (handle == null) {
+            // Create a new one
+            handle = new BlasterConnectionImpl(this);
+            // login to physical connection
+            doLogin();
+            closed = false;
+        } else if (handle != null && closed) {
+            // Reactivate
+            handle.open();
+        } else {
+            // Here we shoudl never be
+            throw new IllegalStateException("Hoops, how did we end up here. Physcial pipe is probabky null");
+        }
+        return handle;
     }
     
     /**
      * Destroy the physical connection
      */
     public void destroy() throws ResourceException {
-	if (isDestroyed) return;
-	isDestroyed = true;
-	//
-	// Destroy handle
-	handle.destroy();
+        if (isDestroyed) return;
+        isDestroyed = true;
+        //
+        // Destroy handle
+        handle.destroy();
 
-	// Clean the used pseudouser
-	releasePseudoUser();
-	// Try logout first
-	physicalPipe.logout();
-	physicalPipe = null;// Is this good?
+        // Clean the used pseudouser
+        releasePseudoUser();
+        // Try logout first
+        physicalPipe.logout();
+        physicalPipe = null;// Is this good?
     }
     
 
@@ -232,13 +232,13 @@ public class BlasterManagedConnection implements ManagedConnection {
      *
      */
     public void cleanup() throws ResourceException {
-	
-	if(isDestroyed)
-	    throw new IllegalStateException("ManagedConnection already destroyd");
-	// 
-	closed = true;
-	handle.cleanup();
-	
+        
+        if(isDestroyed)
+            throw new IllegalStateException("ManagedConnection already destroyd");
+        // 
+        closed = true;
+        handle.cleanup();
+        
     }
 
 
@@ -250,14 +250,14 @@ public class BlasterManagedConnection implements ManagedConnection {
         throws ResourceException {
 
         if(!isDestroyed &&
-	   handle == null &&
-	   connection instanceof BlasterConnectionImpl) {
-	    BlasterConnectionImpl h = (BlasterConnectionImpl) connection;
+           handle == null &&
+           connection instanceof BlasterConnectionImpl) {
+            BlasterConnectionImpl h = (BlasterConnectionImpl) connection;
             h.setBlasterManagedConnection(this);
-	    handle = h;
-	}else {
-	    throw new IllegalStateException("ManagedConnection in an illegal state");
-	}
+            handle = h;
+        }else {
+            throw new IllegalStateException("ManagedConnection in an illegal state");
+        }
 
     }
 
@@ -268,22 +268,22 @@ public class BlasterManagedConnection implements ManagedConnection {
 
 
     public void removeConnectionEventListener(ConnectionEventListener listener) {
-	
+        
         listeners.removeElement(listener);
     }
     
     
     public XAResource getXAResource() throws ResourceException {
-	throw new NotSupportedException("XA transaction not supported");
+        throw new NotSupportedException("XA transaction not supported");
     }
 
     public LocalTransaction getLocalTransaction() throws ResourceException {
-	throw new NotSupportedException("Local transaction not supported");
+        throw new NotSupportedException("Local transaction not supported");
     }
     
     public ManagedConnectionMetaData getMetaData() throws ResourceException {
         if(isDestroyed)
-	    throw new IllegalStateException("ManagedConnection already destroyd");
+            throw new IllegalStateException("ManagedConnection already destroyd");
         return new BlasterMetaData(this);
     }
     
@@ -297,116 +297,116 @@ public class BlasterManagedConnection implements ManagedConnection {
 
     //---- Api between mc and handle
     void removeHandle(BlasterConnectionImpl handle) {
-	handle = null;
-	closed = true;
+        handle = null;
+        closed = true;
     }
 
 
     XmlBlasterConnection getBlasterConnection() throws  XmlBlasterException{
-	return physicalPipe;
+        return physicalPipe;
     }
     /**
      * This is used both internaly and by handles. We do  lot of sanity checks
      * here (failover ;-) Move to failoverGetConnection
      */
     XmlBlasterConnection getFailoverBlasterConnection()throws XmlBlasterException {
-	// Do some checks first
-	/* These are not needed here, keep for the sake of memmory ;-)
-	boolean doLogin = false;
-	if (pysicalPipe == null) {
-	    pysicalPipe = new XmlBlasterConnection();
-	    
-	}
-	if(!pysicalPipe.isLoggedIn()) {
-	    doLogin = true;
-	}
-	*/
-	// OK if we where not logged in, do that now
-	//if(doLogin) 
-	//    doLogin();
-	
-	//Ping - for sanity check
-	//try {
-	    // There is a bug in XmlBalaster here
-	//    physicalPipe.ping();// FIXME - what the f-ck does this bugger do?
-	//}catch(ConnectionException ex) {
-	    // Try a new round
-	/*
-	    if (!physicalPipe.logout()) {
-		// Invalidate this connection
-		destroy();
-		throw new XmlBlasterException("Could not logout, connection probaly down. Invalidating connection");
-	    }
-	    doLogin();
-	}
-	*/
-	return physicalPipe;
+        // Do some checks first
+        /* These are not needed here, keep for the sake of memmory ;-)
+        boolean doLogin = false;
+        if (pysicalPipe == null) {
+            pysicalPipe = new XmlBlasterConnection();
+            
+        }
+        if(!pysicalPipe.isLoggedIn()) {
+            doLogin = true;
+        }
+        */
+        // OK if we where not logged in, do that now
+        //if(doLogin) 
+        //    doLogin();
+        
+        //Ping - for sanity check
+        //try {
+            // There is a bug in XmlBalaster here
+        //    physicalPipe.ping();// FIXME - what the f-ck does this bugger do?
+        //}catch(ConnectionException ex) {
+            // Try a new round
+        /*
+            if (!physicalPipe.logout()) {
+                // Invalidate this connection
+                destroy();
+                throw new XmlBlasterException("Could not logout, connection probaly down. Invalidating connection");
+            }
+            doLogin();
+        }
+        */
+        return physicalPipe;
     }
     
     void handleClose(BlasterConnection impl) {
-	closed = true;
-	ConnectionEvent ev = new ConnectionEvent(this, ConnectionEvent.CONNECTION_CLOSED);
-	Vector list = (Vector) listeners.clone();
-	int size = list.size();
+        closed = true;
+        ConnectionEvent ev = new ConnectionEvent(this, ConnectionEvent.CONNECTION_CLOSED);
+        Vector list = (Vector) listeners.clone();
+        int size = list.size();
         for (int i=0; i<size; i++) {
-	    ConnectionEventListener l = 
+            ConnectionEventListener l = 
                 (ConnectionEventListener) list.elementAt(i);
-	    l.connectionClosed(ev);
-	}
+            l.connectionClosed(ev);
+        }
     }
 
     void handleError(BlasterConnection impl, Exception ex) {
-	ConnectionEvent ev = null;
-	if (ex != null)
-	    ev = new ConnectionEvent(this, ConnectionEvent.CONNECTION_ERROR_OCCURRED, ex);
-	else 
-	    ev = new ConnectionEvent(this, ConnectionEvent.CONNECTION_ERROR_OCCURRED);
-	Vector list = (Vector) listeners.clone();
-	int size = list.size();
+        ConnectionEvent ev = null;
+        if (ex != null)
+            ev = new ConnectionEvent(this, ConnectionEvent.CONNECTION_ERROR_OCCURRED, ex);
+        else 
+            ev = new ConnectionEvent(this, ConnectionEvent.CONNECTION_ERROR_OCCURRED);
+        Vector list = (Vector) listeners.clone();
+        int size = list.size();
         for (int i=0; i<size; i++) {
-	    ConnectionEventListener l = 
+            ConnectionEventListener l = 
                 (ConnectionEventListener) list.elementAt(i);
-	    l.connectionErrorOccurred(ev);
-	}
+            l.connectionErrorOccurred(ev);
+        }
     }
     // ---- for mcf
     String getUserName() {
-	return user;
+        return user;
     }
 
     BlasterManagedConnectionFactory getManagedConnectionFactory() {
-	return mcf;
+        return mcf;
     }
 
     // --- internal helper methods ----
 
     private void doLogin() throws CommException {
-	// Every time we login we map a user to a pseudo-user
-	    pseudoUser = getPseudoUser();
-	    try {
-		System.out.println("Physical pipe: " + physicalPipe);
-		physicalPipe.login(
-				   // This is a pseudouser, user-n
-				   pseudoUser,
-				   pwd,
-				   // No callback allowed for now, use message
-				   // driven beans
-				   null);
-	    }catch(XmlBlasterException ex) {
-		throw new CommException("Could not login : " +ex);
-	    }
-	    
+        // Every time we login we map a user to a pseudo-user
+            pseudoUser = getPseudoUser();
+            try {
+                System.out.println("Physical pipe: " + physicalPipe);
+                physicalPipe.login(
+                                   // This is a pseudouser, user-n
+                                   pseudoUser,
+                                   pwd,
+                                   // No callback allowed for now, use message
+                                   // driven beans
+                                   null);
+            }catch(XmlBlasterException ex) {
+                throw new CommException("Could not login : " +ex);
+            }
+            
     }
 
     private String getPseudoUser() {
-	if (pseudoUser == null) 
-	    pseudoUser = mcf.getUserPool().popPseudoUser(user);
-	return pseudoUser;
+        if (pseudoUser == null) 
+            pseudoUser = mcf.getUserPool().popPseudoUser(user);
+        return pseudoUser;
     
     }
 
     private void releasePseudoUser() {
-	mcf.getUserPool().push(user,pseudoUser);
+        mcf.getUserPool().push(user,pseudoUser);
     }
 } // BlasterManagedConnection
 

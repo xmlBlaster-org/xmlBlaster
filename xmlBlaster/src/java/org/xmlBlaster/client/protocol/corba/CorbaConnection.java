@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.18 2001/08/30 17:14:49 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.19 2001/08/31 15:30:48 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -66,7 +66,7 @@ import java.io.IOException;
  * first time the ORB is created.<br />
  * This will be fixed as soon as possible.
  *
- * @version $Revision: 1.18 $
+ * @version $Revision: 1.19 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class CorbaConnection implements I_XmlBlasterConnection
@@ -113,8 +113,8 @@ public class CorbaConnection implements I_XmlBlasterConnection
       if (orb == null) { // Thread leak !!!
          // If not set, force to use JacORB instead of JDK internal ORB (which is outdated)
          if (System.getProperty("org.omg.CORBA.ORBClass") == null) {
-            System.setProperty("org.omg.CORBA.ORBClass", XmlBlasterProperty.get("org.omg.CORBA.ORBClass", "jacorb.orb.ORB"));
-            System.setProperty("org.omg.CORBA.ORBSingletonClass", XmlBlasterProperty.get("org.omg.CORBA.ORBSingletonClass", "jacorb.orb.ORBSingleton"));
+            System.setProperty("org.omg.CORBA.ORBClass", XmlBlasterProperty.get("org.omg.CORBA.ORBClass", "org.jacorb.orb.ORB"));
+            System.setProperty("org.omg.CORBA.ORBSingletonClass", XmlBlasterProperty.get("org.omg.CORBA.ORBSingletonClass", "org.jacorb.orb.ORBSingleton"));
          }
          orb = org.omg.CORBA.ORB.init(args, null);
       }
@@ -139,8 +139,8 @@ public class CorbaConnection implements I_XmlBlasterConnection
     *        VSPACE   = 0
     *        ALIGN    = middle
     *     >
-    *     &lt;PARAM name=org.omg.CORBA.ORBClass value=jacorb.orb.ORB>
-    *     &lt;PARAM name=org.omg.CORBA.ORBSingletonClass value=jacorb.orb.ORBSingleton>
+    *     &lt;PARAM name=org.omg.CORBA.ORBClass value=org.jacorb.orb.ORB>
+    *     &lt;PARAM name=org.omg.CORBA.ORBSingletonClass value=org.jacorb.orb.ORBSingleton>
     *     &lt;PARAM name=SVCnameroot value=xmlBlaster-Authenticate>
     *     &lt;/APPLET>
     *  </pre>
@@ -149,8 +149,8 @@ public class CorbaConnection implements I_XmlBlasterConnection
    public CorbaConnection(Applet ap)
    {
       // try to force to use JacORB instead of builtin CORBA:
-      String orbClassName = "jacorb.orb.ORB";
-      String orbSingleton = "jacorb.orb.ORBSingleton";
+      String orbClassName = "org.jacorb.orb.ORB";
+      String orbSingleton = "org.jacorb.orb.ORBSingleton";
       java.util.Properties props = new java.util.Properties();
       props.put("org.omg.CORBA.ORBClass", orbClassName);
       props.put("org.omg.CORBA.ORBSingletonClass", orbSingleton);

@@ -3,7 +3,7 @@ Name:      BlasterHttpProxyServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxyServlet.java,v 1.51 2001/02/14 21:34:25 ruff Exp $
+Version:   $Id: BlasterHttpProxyServlet.java,v 1.52 2001/08/31 15:30:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -410,7 +410,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
          Log.trace(ME, "Found system parameter org.omg.CORBA.ORBClass=" + conf.getInitParameter("org.omg.CORBA.ORBClass"));
       }
       else
-         props.put("org.omg.CORBA.ORBClass", "jacorb.orb.ORB");
+         props.put("org.omg.CORBA.ORBClass", "org.jacorb.orb.ORB");
       Log.info(ME, "Using system parameter org.omg.CORBA.ORBClass=" + props.get("org.omg.CORBA.ORBClass"));
 
       if (conf.getInitParameter("org.omg.CORBA.ORBSingletonClass") != null) {
@@ -418,7 +418,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.jutils.l
          Log.trace(ME, "Found system parameter org.omg.CORBA.ORBSingletonClass=" + conf.getInitParameter("org.omg.CORBA.ORBSingletonClass"));
       }
       else
-         props.put("org.omg.CORBA.ORBSingletonClass", "jacorb.orb.ORBSingleton");
+         props.put("org.omg.CORBA.ORBSingletonClass", "org.jacorb.orb.ORBSingleton");
       Log.info(ME, "Using system parameter org.omg.CORBA.ORBSingletonClass=" + props.get("org.omg.CORBA.ORBSingletonClass"));
 
       // xmlBlaster uses Suns XML parser as default

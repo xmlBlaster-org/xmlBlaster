@@ -350,8 +350,8 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     *        VSPACE   = 0
     *        ALIGN    = middle
     *     >
-    *     &lt;PARAM name=org.omg.CORBA.ORBClass value=jacorb.orb.ORB>
-    *     &lt;PARAM name=org.omg.CORBA.ORBSingletonClass value=jacorb.orb.ORBSingleton>
+    *     &lt;PARAM name=org.omg.CORBA.ORBClass value=org.jacorb.orb.ORB>
+    *     &lt;PARAM name=org.omg.CORBA.ORBSingletonClass value=org.jacorb.orb.ORBSingleton>
     *     &lt;PARAM name=SVCnameroot value=xmlBlaster-Authenticate>
     *     &lt;/APPLET>
     *  </pre>

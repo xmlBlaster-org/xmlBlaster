@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.17 2001/03/26 14:15:33 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.18 2001/08/31 15:30:48 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -79,8 +79,8 @@ public class CorbaDriver implements I_Driver
       */
       // If not set, force to use JacORB instead of JDK internal ORB (which is outdated)
       if (System.getProperty("org.omg.CORBA.ORBClass") == null) {
-         System.setProperty("org.omg.CORBA.ORBClass", XmlBlasterProperty.get("org.omg.CORBA.ORBClass", "jacorb.orb.ORB"));
-         System.setProperty("org.omg.CORBA.ORBSingletonClass", XmlBlasterProperty.get("org.omg.CORBA.ORBSingletonClass", "jacorb.orb.ORBSingleton"));
+         System.setProperty("org.omg.CORBA.ORBClass", XmlBlasterProperty.get("org.omg.CORBA.ORBClass", "org.jacorb.orb.ORB"));
+         System.setProperty("org.omg.CORBA.ORBSingletonClass", XmlBlasterProperty.get("org.omg.CORBA.ORBSingletonClass", "org.jacorb.orb.ORBSingleton"));
       }
 
       orb = org.omg.CORBA.ORB.init(args, null);
@@ -314,7 +314,8 @@ public class CorbaDriver implements I_Driver
          throw e;
       }
       catch (Exception e) {
-         throw new XmlBlasterException(ME + ".NoNameService", e.toString());
+         if (Log.TRACE) Log.trace(ME + ".NoNameService", e.toString());
+         throw new XmlBlasterException(ME + ".NoNameService", "No CORBA naming service found - read docu at <http://jacorb.inf.fu-berlin.de> if you want one.");
       }
    }
 

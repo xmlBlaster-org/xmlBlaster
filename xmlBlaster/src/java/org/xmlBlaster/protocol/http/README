@@ -21,8 +21,8 @@ So you need to:
  - You install orb.properties into 'java.home' and there will be no problem.
 or
  - Edit /etc/httpd/conf/jserv/jserv.properties and add (see below as well):
-      wrapper.bin.parameters=-Dorg.omg.CORBA.ORBClass=jacorb.orb.ORB
-      wrapper.bin.parameters=-Dorg.omg.CORBA.ORBSingletonClass=jacorb.orb.ORBSingleton
+      wrapper.bin.parameters=-Dorg.omg.CORBA.ORBClass=org.jacorb.orb.ORB
+      wrapper.bin.parameters=-Dorg.omg.CORBA.ORBSingletonClass=org.jacorb.orb.ORBSingleton
 or
  - Include the jacorb.jar file first in the bootclasspath
    otherwise the JDK-internal CORBA is used.
@@ -130,8 +130,8 @@ Config files setup:
       servlet.SystemInfo.code=demo.html.systemInfo.SystemInfo
       servlet.PXSLServlet.code=PXSLServlet
 
-      servlets.default.initArgs=org.omg.CORBA.ORBClass=jacorb.orb.ORB
-      servlets.default.initArgs=org.omg.CORBA.ORBSingletonClass=jacorb.orb.ORBSingleton
+      servlets.default.initArgs=org.omg.CORBA.ORBClass=org.jacorb.orb.ORB
+      servlets.default.initArgs=org.omg.CORBA.ORBSingletonClass=org.jacorb.orb.ORBSingleton
       servlets.default.initArgs=org.xml.sax.parser=com.sun.xml.parser.Parser
 
 
@@ -139,8 +139,8 @@ Config files setup:
 
       wrapper.bin=/usr/local/jdk/bin/java
 
-      wrapper.bin.parameters=-Dorg.omg.CORBA.ORBClass=jacorb.orb.ORB
-      wrapper.bin.parameters=-Dorg.omg.CORBA.ORBSingletonClass=jacorb.orb.ORBSingleton
+      wrapper.bin.parameters=-Dorg.omg.CORBA.ORBClass=org.jacorb.orb.ORB
+      wrapper.bin.parameters=-Dorg.omg.CORBA.ORBSingletonClass=org.jacorb.orb.ORBSingleton
       wrapper.bin.parameters=-Dorg.xml.sax.parser=com.sun.xml.parser.Parser
 
       wrapper.classpath=/home/ruff/xmlBlaster/lib/jacorb.jar

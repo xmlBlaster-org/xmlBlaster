@@ -27,7 +27,7 @@ Security.Server.Plugin[a2Blaster][1.0]=org.xmlBlaster.authentication.plugins.a2B
 # use our helper class XmlBlasterConnection.java
 # With "gui,1.0" will the server popup a GUI panel
 #Security.Client.ForcePlugin=gui,1.0
-#Security.Client.Plugin[gui][1.0]=org.xmlBlaster.authentication.plugins.demo.ClientHelper
+Security.Client.Plugin[gui][1.0]=org.xmlBlaster.authentication.plugins.demo.ClientHelper
 #------------------------------------------------------------------------------
 
 
