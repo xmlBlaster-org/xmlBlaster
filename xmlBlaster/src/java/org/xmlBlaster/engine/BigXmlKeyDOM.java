@@ -3,18 +3,20 @@ Name:      BigXmlKeyDOM.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Building a huge DOM tree for all known MessageUnit xmlKey
-Version:   $Id: BigXmlKeyDOM.java,v 1.9 2000/01/31 12:00:29 ruff Exp $
+Version:   $Id: BigXmlKeyDOM.java,v 1.10 2000/02/20 17:38:51 ruff Exp $
+Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
+import org.xmlBlaster.engine.xml2java.XmlKeyDom;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlToDom;
 import org.xmlBlaster.util.I_MergeDomNode;
 import org.xmlBlaster.util.XmlKeyBase;
 import org.xmlBlaster.util.XmlQoSBase;
-import org.xmlBlaster.serverIdl.XmlBlasterException;
-import org.xmlBlaster.serverIdl.MessageUnit;
-import org.xmlBlaster.clientIdl.BlasterCallback;
+import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
+import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
+import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
 import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.authentication.ClientListener;
 import org.xmlBlaster.authentication.ClientEvent;

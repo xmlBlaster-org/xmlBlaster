@@ -3,7 +3,7 @@ Name:      ClientXml.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientXml.java,v 1.6 2000/01/30 18:44:51 ruff Exp $
+Version:   $Id: ClientXml.java,v 1.7 2000/02/20 17:38:48 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -12,8 +12,8 @@ import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
 import org.xmlBlaster.util.*;
-import org.xmlBlaster.serverIdl.*;
-import org.xmlBlaster.clientIdl.*;
+import org.xmlBlaster.protocol.corba.serverIdl.*;
+import org.xmlBlaster.protocol.corba.clientIdl.*;
 
 
 /**

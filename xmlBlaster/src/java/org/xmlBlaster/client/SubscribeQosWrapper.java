@@ -3,12 +3,12 @@ Name:      SubscribeQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: SubscribeQosWrapper.java,v 1.1 2000/01/21 19:06:04 ruff Exp $
+Version:   $Id: SubscribeQosWrapper.java,v 1.2 2000/02/20 17:38:50 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
 import org.xmlBlaster.util.Log;
-import org.xmlBlaster.serverIdl.XmlBlasterException;
+import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
 import java.util.Vector;
 
 
@@ -29,18 +29,18 @@ import java.util.Vector;
 public class SubscribeQosWrapper extends QosWrapper
 {
    private String ME = "SubscribeQosWrapper";
-   
+
    /** not yet supported */
    private boolean noMeta = false;
 
    private boolean noContent = false;
-   
+
    private boolean noLocal = false;
 
 
 
    /**
-    * Constructor for default qos (quality of service). 
+    * Constructor for default qos (quality of service).
     */
    public SubscribeQosWrapper()
    {
@@ -48,7 +48,7 @@ public class SubscribeQosWrapper extends QosWrapper
 
 
    /**
-    * Constructor to receive notifies only (no data content will be delivered). 
+    * Constructor to receive notifies only (no data content will be delivered).
     * <p />
     * This may be useful if you have huge contents, and you only want to be informed about a change
     * @param noContent true - no data content is delivered
@@ -60,7 +60,7 @@ public class SubscribeQosWrapper extends QosWrapper
 
 
    /**
-    * Inhibit the delivery of messages to myself if i have published it. 
+    * Inhibit the delivery of messages to myself if i have published it.
     */
    public void setNoLocal()
    {

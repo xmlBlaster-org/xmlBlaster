@@ -3,7 +3,7 @@ Name:      MainGUI.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: MainGUI.java,v 1.21 2000/02/03 08:00:52 ruff Exp $
+Version:   $Id: MainGUI.java,v 1.22 2000/02/20 17:38:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -13,8 +13,8 @@ import org.xmlBlaster.engine.RequestBroker;
 import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.authentication.Authenticate;
-import org.xmlBlaster.serverIdl.*;
-import org.xmlBlaster.clientIdl.*;
+import org.xmlBlaster.protocol.corba.serverIdl.*;
+import org.xmlBlaster.protocol.corba.clientIdl.*;
 
 import java.util.Vector;
 import java.awt.*;

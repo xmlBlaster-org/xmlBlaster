@@ -7,9 +7,9 @@
 
 #------------------------------------------------------------------------------
 include $(XMLBLASTER_HOME)/Makefile.Include
-OUT_DIR_A = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster/authenticateIdl
-OUT_DIR_S = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster/serverIdl
-OUT_DIR_C = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster/clientIdl
+OUT_DIR_A = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster/protocol/corba/authenticateIdl
+OUT_DIR_S = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster/protocol/corba/serverIdl
+OUT_DIR_C = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster/protocol/corba/clientIdl
 #------------------------------------------------------------------------------
 
 
@@ -19,6 +19,7 @@ $(OUT_DIR_S)/Server.java: xmlBlaster.idl
 all: precond idl
 
 precond:
+	$(MKDIR_RECURSIVE) $(OUT_DIR_A)
 	$(MKDIR_RECURSIVE) $(OUT_DIR_S)
 	$(MKDIR_RECURSIVE) $(OUT_DIR_C)
 
@@ -31,7 +32,7 @@ clean:
 	$(RM) $(OUT_DIR_A)/*Stub.* $(OUT_DIR_A)/*POA*.*
 	$(RM) $(OUT_DIR_A)/AuthServer.java
 	$(RM) $(OUT_DIR_S)/*Operations.* $(OUT_DIR_S)/*Helper* $(OUT_DIR_S)/*Holder* 
-	$(RM) $(OUT_DIR_S)/*Stub.* $(OUT_DIR_S)/*POA*.*
+	$(RM) $(OUT_DIR_S)/*Stub.* $(OUT_DIR_S)/*POA*.* $(OUT_DIR_S)/MessageUnitContainer.java
 	$(RM) $(OUT_DIR_S)/Server.java $(OUT_DIR_S)/XmlBlasterException.java   $(OUT_DIR_S)/MessageUnit.java
 	$(RM) $(OUT_DIR_C)/*Operations.* $(OUT_DIR_C)/*Helper* $(OUT_DIR_C)/*Holder* 
 	$(RM) $(OUT_DIR_C)/*Stub.* $(OUT_DIR_C)/*POA*.*

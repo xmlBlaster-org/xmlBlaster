@@ -3,20 +3,20 @@ Name:      Authenticate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login for clients
-Version:   $Id: Authenticate.java,v 1.23 2000/01/30 18:50:38 ruff Exp $
+Version:   $Id: Authenticate.java,v 1.24 2000/02/20 17:38:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.StopWatch;
-import org.xmlBlaster.serverIdl.XmlBlasterException;
-import org.xmlBlaster.serverIdl.ServerHelper;
-import org.xmlBlaster.serverIdl.ServerImpl;
-import org.xmlBlaster.serverIdl.ServerPOATie;
-import org.xmlBlaster.serverIdl.MessageUnit;
-import org.xmlBlaster.authenticateIdl.AuthServerImpl;
+import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
+import org.xmlBlaster.protocol.corba.serverIdl.ServerHelper;
+import org.xmlBlaster.protocol.corba.ServerImpl;
+import org.xmlBlaster.protocol.corba.serverIdl.ServerPOATie;
+import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
+import org.xmlBlaster.protocol.corba.AuthServerImpl;
 import org.xmlBlaster.engine.ClientInfo;
-import org.xmlBlaster.clientIdl.BlasterCallback;
+import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
 import java.util.*;
 
 import org.omg.PortableServer.*;
@@ -187,7 +187,7 @@ public class Authenticate
     * @return The xmlBlaster.Server interface
     * @exception XmlBlasterException Access denied
     */
-   public org.xmlBlaster.serverIdl.Server login(String loginName, String passwd,
+   public org.xmlBlaster.protocol.corba.serverIdl.Server login(String loginName, String passwd,
                        BlasterCallback callback, String callbackIOR,
                        String xmlQoS_literal) throws XmlBlasterException
    {
@@ -220,7 +220,7 @@ public class Authenticate
          throw new XmlBlasterException(ME+"Unknown", "login failed: " + e.toString());
       }
 
-      org.xmlBlaster.serverIdl.Server xmlBlaster = org.xmlBlaster.serverIdl.ServerHelper.narrow(certificatedServerRef);
+      org.xmlBlaster.protocol.corba.serverIdl.Server xmlBlaster = org.xmlBlaster.protocol.corba.serverIdl.ServerHelper.narrow(certificatedServerRef);
       ClientQoS xmlQoS = new ClientQoS(xmlQoS_literal);
       AuthenticationInfo authInfo = new AuthenticationInfo(uniqueClientKey, loginName, passwd, xmlBlaster, callback, callbackIOR, xmlQoS);
 
@@ -288,7 +288,7 @@ public class Authenticate
     * <p>
     * @exception XmlBlasterException If client is unknown
     */
-   public void logout(org.xmlBlaster.serverIdl.Server xmlServer) throws XmlBlasterException
+   public void logout(org.xmlBlaster.protocol.corba.serverIdl.Server xmlServer) throws XmlBlasterException
    {
       if (Log.DUMP) Log.dump(ME, "-------START-logout()---------\n" + printOn().toString());
       ClientInfo clientInfo = resetClientInfo(xmlServer, true);
@@ -309,7 +309,7 @@ public class Authenticate
     * @param xmlServer xmlBlaster CORBA handle
     * @param clearQueue Shall the message queue of the client be destroyed as well?
     */
-   private ClientInfo resetClientInfo(org.xmlBlaster.serverIdl.Server xmlServer, boolean clearQueue) throws XmlBlasterException
+   private ClientInfo resetClientInfo(org.xmlBlaster.protocol.corba.serverIdl.Server xmlServer, boolean clearQueue) throws XmlBlasterException
    {
       byte[] oid;
 
@@ -338,7 +338,7 @@ public class Authenticate
          Log.error(ME+".Unknown", "Sorry, you are not known, no logout");
          throw new XmlBlasterException(ME+".Unknown", "Sorry, you are not known, no logout");
       }
-      
+
       ClientInfo clientInfo = (ClientInfo)obj;
 
       fireClientEvent(clientInfo, false); // informs all ClientListener

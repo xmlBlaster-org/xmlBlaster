@@ -3,7 +3,7 @@ Name:      TestPersistence.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing durable messages
-Version:   $Id: TestPersistence.java,v 1.1 2000/01/31 12:02:42 ruff Exp $
+Version:   $Id: TestPersistence.java,v 1.2 2000/02/20 17:38:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -12,13 +12,13 @@ import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
 import org.xmlBlaster.util.*;
-import org.xmlBlaster.serverIdl.*;
-import org.xmlBlaster.clientIdl.*;
+import org.xmlBlaster.protocol.corba.serverIdl.*;
+import org.xmlBlaster.protocol.corba.clientIdl.*;
 import test.framework.*;
 
 
 /**
- * This client tests the persistence driver, the $lt;isDurable> flag. 
+ * This client tests the persistence driver, the $lt;isDurable> flag.
  * <p>
  * Invoke examples:<br />
  * <code>
@@ -95,7 +95,7 @@ public class TestPersistence extends TestCase implements I_Callback
 
 
    /**
-    * Publish a durable message. 
+    * Publish a durable message.
     * <p />
     */
    public void sendDurable()
@@ -126,7 +126,7 @@ public class TestPersistence extends TestCase implements I_Callback
 
 
    /**
-    * TEST: Publish a durable message. 
+    * TEST: Publish a durable message.
     * <p />
     */
    public void testDurable()
@@ -140,7 +140,7 @@ public class TestPersistence extends TestCase implements I_Callback
 
 
    /**
-    * If the FileDriver is used, check if the correct content is written. 
+    * If the FileDriver is used, check if the correct content is written.
     */
    void checkContent(boolean checkContent)
    {

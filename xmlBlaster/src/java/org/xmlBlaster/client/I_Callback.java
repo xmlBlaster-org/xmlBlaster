@@ -3,13 +3,13 @@ Name:      I_Callback.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to easy get the callback messages
-Version:   $Id: I_Callback.java,v 1.2 1999/12/16 11:49:16 ruff Exp $
+Version:   $Id: I_Callback.java,v 1.3 2000/02/20 17:38:50 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
 import org.xmlBlaster.util.*;
-import org.xmlBlaster.serverIdl.*;
-import org.xmlBlaster.clientIdl.*;
+import org.xmlBlaster.protocol.corba.serverIdl.*;
+import org.xmlBlaster.protocol.corba.clientIdl.*;
 
 
 /**
@@ -18,7 +18,7 @@ import org.xmlBlaster.clientIdl.*;
  * <p>
  * You may use this, if you don't want to program with the rawer CORBA BlasterCallback.update()
  *
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  * @author $Author: ruff $
  */
 public interface I_Callback

@@ -3,7 +3,7 @@ Name:      TestPtDQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtDQueue.java,v 1.5 2000/02/01 15:18:20 ruff Exp $
+Version:   $Id: TestPtDQueue.java,v 1.6 2000/02/20 17:38:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -14,8 +14,8 @@ import org.xmlBlaster.client.UpdateQoS;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Args;
 import org.xmlBlaster.util.StopWatch;
-import org.xmlBlaster.serverIdl.*;
-import org.xmlBlaster.clientIdl.*;
+import org.xmlBlaster.protocol.corba.serverIdl.*;
+import org.xmlBlaster.protocol.corba.clientIdl.*;
 import test.framework.*;
 
 

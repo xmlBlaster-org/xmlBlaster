@@ -3,12 +3,12 @@ Name:      SubscribeKeyWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey
-Version:   $Id: SubscribeKeyWrapper.java,v 1.2 2000/01/24 11:13:30 ruff Exp $
+Version:   $Id: SubscribeKeyWrapper.java,v 1.3 2000/02/20 17:38:50 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
 import org.xmlBlaster.util.Log;
-import org.xmlBlaster.serverIdl.XmlBlasterException;
+import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
 
 
 /**

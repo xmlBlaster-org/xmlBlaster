@@ -3,12 +3,12 @@ Name:      KeyWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey
-Version:   $Id: KeyWrapper.java,v 1.2 1999/12/16 11:29:51 ruff Exp $
+Version:   $Id: KeyWrapper.java,v 1.3 2000/02/20 17:38:50 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
 import org.xmlBlaster.util.Log;
-import org.xmlBlaster.serverIdl.XmlBlasterException;
+import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
 
 
 /**
@@ -52,7 +52,7 @@ public class KeyWrapper
 
 
    /**
-    * Converts the data in XML ASCII string. 
+    * Converts the data in XML ASCII string.
     * <p />
     * This is the minimal key representation.<br />
     * You should provide your own toString() method.

@@ -13,7 +13,7 @@ Comment:   Syntax for Query:
 
 Compile:   jikes *.java  (put local directory into CLASSPATH)
 Invoke:    java DomQueryTest AgentBig.xml xmlBlaster/key/AGENT[@id=\"192.168.124.10\"] xmlBlaster/key/AGENT/DRIVER[@id=\"FileProof\"] xmlBlaster/key[@oid=\"2\"]
-Version:   $Id: DomQueryTest.java,v 1.4 1999/11/17 13:51:21 ruff Exp $
+Version:   $Id: DomQueryTest.java,v 1.5 2000/02/20 17:38:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 import com.jclark.xsl.om.*;
@@ -75,7 +75,7 @@ class DomQueryTest
             Log.info(ME, "Create DOM - Document" + docTime.nice());     // [ 1 sec 608 millis ] [ 3 sec 69 millis ]
 
             StopWatch mgrTime = new StopWatch();
-            query_mgr = new DomQueryMgr(doc);             
+            query_mgr = new DomQueryMgr(doc);
             Log.info(ME, "Instantiate DomQueryMgr" + mgrTime.nice());   // [ 240 millis ] [ 204 millis ]
 
             if (argv.length > 1) {
@@ -119,7 +119,7 @@ class DomQueryTest
             Log.info(ME, "Create DOM - Document" + docTime.nice());     // [ 28 millis ] [ 1 sec 487 millis ]
 
             StopWatch mgrTime = new StopWatch();
-            query_mgr = new DomQueryMgr(doc);             
+            query_mgr = new DomQueryMgr(doc);
             Log.info(ME, "Instantiate DomQueryMgr" + mgrTime.nice());   // [ 1 millis ] [ 1 millis ]
 
             if (argv.length > 1) {
@@ -165,7 +165,7 @@ class DomQueryTest
                try {
                   Log.info(ME, "Found key oid=\"" + getKeyOID(node) + "\"\n");
                } catch (Exception e) {
-                  Log.error(ME, e.toString());
+                  Log.warning(ME, "Found no xmlBlaster key oid. " + e.toString());
                }
             }
          }

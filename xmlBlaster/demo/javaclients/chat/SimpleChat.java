@@ -3,14 +3,14 @@ Name:      SimpleChat.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo of a simple chat client for xmlBlaster as java application
-Version:   $Id: SimpleChat.java,v 1.2 2000/02/11 22:51:18 ruff Exp $
+Version:   $Id: SimpleChat.java,v 1.3 2000/02/20 17:38:48 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 package javaclients.chat;
 
 import org.xmlBlaster.util.*;
-import org.xmlBlaster.serverIdl.*;
-import org.xmlBlaster.clientIdl.*;
+import org.xmlBlaster.protocol.corba.serverIdl.*;
+import org.xmlBlaster.protocol.corba.clientIdl.*;
 import org.xmlBlaster.client.CorbaConnection;
 import org.omg.CosNaming.*;
 import org.xmlBlaster.client.UpdateQoS;
@@ -137,7 +137,7 @@ public class SimpleChat extends Frame implements BlasterCallbackOperations, Acti
    }
 
    /** CallBack of xmlBlaster */
-   public void update(org.xmlBlaster.serverIdl.MessageUnit[] messageUnitArr, java.lang.String[] qosArr)
+   public void update(org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] messageUnitArr, java.lang.String[] qosArr)
    {
 
       for (int ii=0; ii<messageUnitArr.length; ii++) {

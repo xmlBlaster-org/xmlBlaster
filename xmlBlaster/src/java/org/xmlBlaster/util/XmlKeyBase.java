@@ -3,11 +3,11 @@ Name:      XmlKeyBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKeyBase.java,v 1.31 2000/01/23 22:45:06 ruff Exp $
+Version:   $Id: XmlKeyBase.java,v 1.32 2000/02/20 17:38:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
-import org.xmlBlaster.serverIdl.XmlBlasterException;
+import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
 import org.xmlBlaster.engine.RequestBroker;
 
 import org.xml.sax.InputSource;

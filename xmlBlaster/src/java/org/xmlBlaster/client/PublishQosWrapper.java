@@ -3,13 +3,13 @@ Name:      PublishQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: PublishQosWrapper.java,v 1.4 2000/02/02 18:54:29 ruff Exp $
+Version:   $Id: PublishQosWrapper.java,v 1.5 2000/02/20 17:38:50 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Destination;
-import org.xmlBlaster.serverIdl.XmlBlasterException;
+import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
 import java.util.Vector;
 
 
@@ -52,9 +52,9 @@ public class PublishQosWrapper extends QosWrapper
 
 
    /**
-    * Default constructor for transient PtP messages. 
+    * Default constructor for transient PtP messages.
     * <p />
-    * To make the message persistent, use the 
+    * To make the message persistent, use the
     * @param destination The object containing the destination address.<br />
     *        To add more destinations, us the addDestination() method.
     */
@@ -96,7 +96,7 @@ public class PublishQosWrapper extends QosWrapper
 
 
    /**
-    * Mark a message to be persistent. 
+    * Mark a message to be persistent.
     */
    public void setDurable()
    {

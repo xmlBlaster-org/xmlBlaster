@@ -1,6 +1,7 @@
 To generate a HTML version from the xml file download from
 
    http://www.nwalsh.com/docbook/xsl/index.html
+	(http://www.jtauber.com/fop/)
 
    dbx106.zip
 
@@ -41,3 +42,18 @@ Generate pdf output:
    export CLASSPATH=$CLASSPATH:/opt/fop_bin_0_12_0.jar
 
 	java -Dorg.xml.sax.parser=com.sun.xml.parser.Parser org.apache.fop.apps.CommandLine whitepaper.fo whitepaper.pdf
+
+
+Other pdf generators:
+=====================
+
+   FO to PDF (Latex based)
+   	http://users.ox.ac.uk/~rahtz/passivetex/
+	   Converts FO to TeX to PDF. Has direct support for MathML. Need a
+	   pdftex installed.
+
+
+   FO2PDF (commercial, no demo version)
+      http://www.renderx.com
+      Looks to be the most complete FO processor, commercial but unreleased,
+      converts to PDF. Web site has validator service and many examples.

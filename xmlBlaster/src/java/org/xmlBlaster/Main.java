@@ -3,14 +3,15 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.22 2000/02/18 14:54:26 ruff Exp $
+Version:   $Id: Main.java,v 1.23 2000/02/20 17:38:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
 import org.xmlBlaster.util.*;
 import org.xmlBlaster.engine.*;
-import org.xmlBlaster.serverIdl.*;
-import org.xmlBlaster.authenticateIdl.*;
+import org.xmlBlaster.protocol.corba.serverIdl.*;
+import org.xmlBlaster.protocol.corba.authenticateIdl.AuthServerPOATie;
+import org.xmlBlaster.protocol.corba.AuthServerImpl;
 import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.authentication.HttpIORServer;
 import java.io.*;
@@ -20,7 +21,7 @@ import org.omg.CosNaming.*;
 /**
  * Main class to invoke the xmlBlaster server.
  * <p />
- * Startparameters supported
+ * Start parameters supported
  * <p />
  * <ul>
  *    <li><code>-iorFile 'file name'   </code>default is no dumping of IOR<br />
@@ -113,9 +114,22 @@ public class Main
          catch (XmlBlasterException e) {
             Log.info(ME, "AuthServer IOR is not published to naming service");
          } catch (org.omg.CORBA.COMM_FAILURE e) {
-            Log.info(ME, "Can't publish AuthServer to naming service, is your naming service really running?\n" +
-                         e.toString() +
-                         "\nYou don't need the naming service, i'll switch to builtin http IOR download");
+            if (iorPort > 0) {
+               Log.info(ME, "Can't publish AuthServer to naming service, is your naming service really running?\n" +
+                            e.toString() +
+                            "\nYou don't need the naming service, i'll switch to builtin http IOR download");
+            }
+            else if (iorFile != null) {
+               Log.info(ME, "Can't publish AuthServer to naming service, is your naming service really running?\n" +
+                            e.toString() +
+                            "\nYou don't need the naming service, i'll switch to iorFile = " + iorFile);
+            }
+            else {
+               usage();
+               Log.panic(ME, "Can't publish AuthServer to naming service, is your naming service really running?\n" +
+                            e.toString() +
+                            "\n\nYou switched off the internal http server and you didn't specify a file name for IOR dump! Sorry - good bye.");
+            }
          }
 
          Log.info(ME, Memory.getStatistic());

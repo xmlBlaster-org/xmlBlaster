@@ -3,19 +3,19 @@ Name:      TestPub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestPub.java,v 1.1 2000/01/31 12:03:34 ruff Exp $
+Version:   $Id: TestPub.java,v 1.2 2000/02/20 17:38:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
 import org.xmlBlaster.client.*;
 import org.xmlBlaster.util.*;
-import org.xmlBlaster.serverIdl.*;
-import org.xmlBlaster.clientIdl.*;
+import org.xmlBlaster.protocol.corba.serverIdl.*;
+import org.xmlBlaster.protocol.corba.clientIdl.*;
 import test.framework.*;
 
 
 /**
- * This client tests the method publish() with its different qos variants. 
+ * This client tests the method publish() with its different qos variants.
  * <br />
  * <p>
  * This client may be invoked multiple time on the same xmlBlaster server,

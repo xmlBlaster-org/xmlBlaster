@@ -3,11 +3,11 @@ Name:      XmlQoSBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: XmlQoSBase.java,v 1.8 1999/12/20 08:52:58 ruff Exp $
+Version:   $Id: XmlQoSBase.java,v 1.9 2000/02/20 17:38:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
-import org.xmlBlaster.serverIdl.XmlBlasterException;
+import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
 import java.io.*;
 import org.xml.sax.*;
 import org.xml.sax.helpers.*;

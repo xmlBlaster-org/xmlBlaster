@@ -3,7 +3,7 @@ Name:      RamTest.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: RamTest.java,v 1.2 2000/01/30 18:42:56 ruff Exp $
+Version:   $Id: RamTest.java,v 1.3 2000/02/20 17:38:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -11,8 +11,8 @@ import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.StopWatch;
 import org.xmlBlaster.util.Memory;
-import org.xmlBlaster.serverIdl.*;
-import org.xmlBlaster.clientIdl.*;
+import org.xmlBlaster.protocol.corba.serverIdl.*;
+import org.xmlBlaster.protocol.corba.clientIdl.*;
 import test.framework.*;
 
 

@@ -3,14 +3,17 @@ Name:      MessageUnitHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling exactly one message content
-Version:   $Id: MessageUnitHandler.java,v 1.25 2000/02/01 15:18:19 ruff Exp $
+Version:   $Id: MessageUnitHandler.java,v 1.26 2000/02/20 17:38:51 ruff Exp $
+Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
+import org.xmlBlaster.engine.xml2java.XmlKey;
+import org.xmlBlaster.engine.xml2java.PublishQoS;
 import org.xmlBlaster.util.*;
-import org.xmlBlaster.serverIdl.XmlBlasterException;
-import org.xmlBlaster.serverIdl.MessageUnit;
-import org.xmlBlaster.clientIdl.BlasterCallback;
+import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
+import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
+import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
 import java.util.*;
 
 

@@ -43,7 +43,7 @@ precond:
 java: $(LOCAL_FILES)
 	@echo -e "\033[1mDONE ............ \033[32;40mAll of $(SRC_JAVA_DIR)\033[0m";
 
-clean:
+clean: clean_SUB_DIRS
 	@echo "Removing all in $(CLASS_DIR) ..."
 	$(RM) $(CLASS_DIR)/*.*
 

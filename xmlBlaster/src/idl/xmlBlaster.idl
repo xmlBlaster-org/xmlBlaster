@@ -13,14 +13,14 @@ Compile:   JacORB Java 1.2:
               $MICO_HOME/bin/idl --poa --no-boa xmlBlaster.idl
            COPE Perl:
               idl2perl -imp xmlBlaster.idl
-Version:   $Id: xmlBlaster.idl,v 1.30 2000/01/07 20:33:18 ruff Exp $
+Version:   $Id: xmlBlaster.idl,v 1.31 2000/02/20 17:38:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _xmlBlaster_IDL_
 #define _xmlBlaster_IDL_
 
 
-#pragma prefix "org.xmlBlaster"
+#pragma prefix "org.xmlBlaster.protocol.corba"
 
 //------------------------------------------------------------------------------
 //#include "xy.idl"
@@ -76,7 +76,7 @@ module serverIdl
       string reason;       // in English
    };
 
-}; // org::xmlBlaster::serverIdl
+}; // org::xmlBlaster::protocol::corba::serverIdl
 
 
 
@@ -123,7 +123,7 @@ module clientIdl
                                 //raises(serverIdl::XmlBlasterException);
    };
 
-}; // org::xmlBlaster::clientIdl
+}; // org::xmlBlaster::protocol::corba::clientIdl
 
 
 
@@ -310,7 +310,7 @@ module serverIdl
 
    }; // interface server
 
-}; // org::xmlBlaster::serverIdl
+}; // org::xmlBlaster::protocol::corba::serverIdl
 
 
 
@@ -352,7 +352,7 @@ module authenticateIdl
    };
 
 
-}; // org::xmlBlaster::AuthenticateIdl
+}; // org::xmlBlaster::protocol::corba::authenticateIdl
 
 
 

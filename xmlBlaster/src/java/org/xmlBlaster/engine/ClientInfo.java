@@ -3,15 +3,21 @@ Name:      ClientInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: ClientInfo.java,v 1.22 2000/02/01 15:18:19 ruff Exp $
+Version:   $Id: ClientInfo.java,v 1.23 2000/02/20 17:38:51 ruff Exp $
+Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
+import org.xmlBlaster.engine.xml2java.XmlKey;
+import org.xmlBlaster.protocol.I_CallbackDriver;
+import org.xmlBlaster.protocol.corba.CallbackCorbaDriver;
+import org.xmlBlaster.protocol.email.CallbackEmailDriver;
+import org.xmlBlaster.protocol.http.CallbackHttpDriver;
 import org.xmlBlaster.authentication.AuthenticationInfo;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Destination;
-import org.xmlBlaster.serverIdl.XmlBlasterException;
-import org.xmlBlaster.clientIdl.BlasterCallback;
+import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
+import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
 
 
 /**
@@ -26,7 +32,7 @@ import org.xmlBlaster.clientIdl.BlasterCallback;
  * It also contains a message queue, where messages are stored
  * until they are delivered at the next login of this client.
  *
- * @version $Revision: 1.22 $
+ * @version $Revision: 1.23 $
  * @author $Author: ruff $
  */
 public class ClientInfo
@@ -89,7 +95,7 @@ public class ClientInfo
 
 
    /**
-    * This sends the update to the client, or stores it in the client queue or throws an exception. 
+    * This sends the update to the client, or stores it in the client queue or throws an exception.
     * @param messageUnitWrapper Wraps the messageUnit with some more infos
     * @param destination The Destination object of the receiver (is null in Pub/Sub mode!)
     */

@@ -3,19 +3,19 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.22 2000/02/18 14:53:11 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.23 2000/02/20 17:38:50 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.FileUtil;
 import org.xmlBlaster.util.Args;
-import org.xmlBlaster.serverIdl.XmlBlasterException;
-import org.xmlBlaster.serverIdl.Server;
-import org.xmlBlaster.serverIdl.MessageUnit;
-import org.xmlBlaster.authenticateIdl.AuthServer;
-import org.xmlBlaster.authenticateIdl.AuthServerHelper;
-import org.xmlBlaster.clientIdl.*;
+import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
+import org.xmlBlaster.protocol.corba.serverIdl.Server;
+import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
+import org.xmlBlaster.protocol.corba.authenticateIdl.AuthServer;
+import org.xmlBlaster.protocol.corba.authenticateIdl.AuthServerHelper;
+import org.xmlBlaster.protocol.corba.clientIdl.*;
 
 import org.omg.CosNaming.*;
 import java.applet.Applet;
@@ -34,7 +34,7 @@ import java.util.Properties;
  * <p />
  * Invoke: jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestSub
  *
- * @version $Revision: 1.22 $
+ * @version $Revision: 1.23 $
  * @author $Author: ruff $
  */
 public class CorbaConnection
@@ -319,10 +319,15 @@ public class CorbaConnection
       String iorHost = Args.getArg(args, "-iorHost", "localhost");
       int iorPort = Args.getArg(args, "-iorPort", 7609);
       if (iorHost != null && iorPort > 0) {
-         authServerIOR = getAuthenticationServiceIOR(iorHost, iorPort);
-         authServer = AuthServerHelper.narrow(orb.string_to_object(authServerIOR));
-         Log.info(ME, "Accessing xmlBlaster AuthServer IOR using builtin http connection, host " + iorHost + " and port " + iorPort);
-         return authServer;
+         try {
+            authServerIOR = getAuthenticationServiceIOR(iorHost, iorPort);
+            authServer = AuthServerHelper.narrow(orb.string_to_object(authServerIOR));
+            Log.info(ME, "Accessing xmlBlaster AuthServer IOR using builtin http connection, host " + iorHost + " and port " + iorPort);
+            return authServer;
+         }
+         catch(Exception e) {
+            Log.warning(ME, "XmlBlaster not found on host " + iorHost + " and port " + iorPort + ". Trying to find a naming service ...");
+         }
       }
 
 
@@ -335,6 +340,7 @@ public class CorbaConnection
          name[0].id = "xmlBlaster-Authenticate";
          name[0].kind = "MOM";
          authServer = AuthServerHelper.narrow(nc.resolve(name));
+         Log.info(ME, "Accessing xmlBlaster using a naming service.");
          return authServer;
       }
       catch(Exception e) {
@@ -508,29 +514,23 @@ public class CorbaConnection
     * @param host the host running xmlBlaster
     * @param iorPort the port on which the IOR is served (the xmlBlaster mini http server)
     */
-   private String getAuthenticationServiceIOR(String iorHost, int iorPort)
+   private String getAuthenticationServiceIOR(String iorHost, int iorPort) throws Exception
    {
-      try {
-         java.net.URL nsURL = new java.net.URL("http", iorHost, iorPort, "/AuthenticationService.ior");
-         // Note: the file name /AuthenticationService.ior is ignored in the current server implementation
-         java.io.InputStream nsis = nsURL.openStream();
-         byte[] bytes = new byte[4096];
-         java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
-         int numbytes;
-         while (nsis.available() > 0 && (numbytes = nsis.read(bytes)) > 0) {
-            bos.write(bytes, 0, numbytes);
-         }
-         nsis.close();
-         String ior = bos.toString();
-         if (!ior.startsWith("IOR:"))
-            ior = "IOR:000" + ior; // hack for JDK 1.1.x, where the IOR: is cut away from ByteReader ??? !!!
-         // Log.trace(ME, "Sending IOR='" + ior + "'");
-         return ior;
+      java.net.URL nsURL = new java.net.URL("http", iorHost, iorPort, "/AuthenticationService.ior");
+      // Note: the file name /AuthenticationService.ior is ignored in the current server implementation
+      java.io.InputStream nsis = nsURL.openStream();
+      byte[] bytes = new byte[4096];
+      java.io.ByteArrayOutputStream bos = new java.io.ByteArrayOutputStream();
+      int numbytes;
+      while (nsis.available() > 0 && (numbytes = nsis.read(bytes)) > 0) {
+         bos.write(bytes, 0, numbytes);
       }
-      catch (Exception ex) {
-         Log.panic(ME, "Is xmlBlaster up and running? \n" + ex);
-         return null;
-      }
+      nsis.close();
+      String ior = bos.toString();
+      if (!ior.startsWith("IOR:"))
+         ior = "IOR:000" + ior; // hack for JDK 1.1.x, where the IOR: is cut away from ByteReader ??? !!!
+      // Log.trace(ME, "Sending IOR='" + ior + "'");
+      return ior;
    }
 }
 

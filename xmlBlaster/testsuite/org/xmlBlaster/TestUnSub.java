@@ -3,7 +3,7 @@ Name:      TestUnSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestUnSub.java,v 1.2 2000/01/24 09:03:07 ruff Exp $
+Version:   $Id: TestUnSub.java,v 1.3 2000/02/20 17:38:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -14,8 +14,8 @@ import org.xmlBlaster.client.UpdateQoS;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Args;
 import org.xmlBlaster.util.StopWatch;
-import org.xmlBlaster.serverIdl.*;
-import org.xmlBlaster.clientIdl.*;
+import org.xmlBlaster.protocol.corba.serverIdl.*;
+import org.xmlBlaster.protocol.corba.clientIdl.*;
 import test.framework.*;
 
 
@@ -213,7 +213,7 @@ public class TestUnSub extends TestCase implements I_Callback
 
    /**
     * TEST: Publish a message, subscribe on it with XPATH and
-    *       unSubscribe again with the returned oid. 
+    *       unSubscribe again with the returned oid.
     */
    public void testSubscribeUnSubscribeExact()
    {
@@ -228,8 +228,8 @@ public class TestUnSub extends TestCase implements I_Callback
 
 
    /**
-    * TEST: Publish a message, subscribe on it with XPATH and 
-    *       unSubscribe again with the same XPATH query. 
+    * TEST: Publish a message, subscribe on it with XPATH and
+    *       unSubscribe again with the same XPATH query.
     */
    public void testSubscribeUnSubscribeXPath()
    {

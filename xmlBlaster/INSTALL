@@ -12,6 +12,15 @@ We hope these hints are useful to get you running with xmlBlaster.
 If you have problems, don't hesitate to contact the maintainers
 through the mailing list (see http://www.xmlBlaster.org).
 
+If you do some own hacks, feel free to contribute them back,
+so anybody benefits from your glorious invention.
+This project is living from ideas and contributions.
+If you are a Python hacker, why not contribute some Python
+helper classes?
+If you prefer Smalltalk, why not contributing your xmlBlaster
+client solution?
+But, if you are lazy, just use and enjoy xmlBlaster as delivered!
+
 
 +--------------------+
 | REQUIRED           |
@@ -96,9 +105,17 @@ Unpack the distribution to some location ($HOME/xmlBlaster is a good spot).
 +--------------------+
 
 You have three options to start the xmlBlaster-Server.
-See the ${XMLBLASTER_HOME}/src/java/org/xmlBlaster/README file for more instructions.
 
-1. xmlBlaster with builtin HTTP-Server on localhost, port=7609 which to pass the server IOR
+See the ${XMLBLASTER_HOME}/src/java/org/xmlBlaster/README file for more
+instructions.
+
+One important note:
+   You can't start xmlBlaster on JDK 1.2.x with the java command directly,
+   since this would use the JDK internal ORB (which is outdated).
+   You always have to use the little wrapper script 'jaco' which
+   sets the -Xbootclasspath to use the JacORB CORBA implementation!
+
+1. A variant using the xmlBlaster built in http server (localhost / 7609 is default)
    (This is the Default-Startup)
 
      jaco org.xmlBlaster.MainGUI
@@ -109,7 +126,7 @@ See the ${XMLBLASTER_HOME}/src/java/org/xmlBlaster/README file for more instruct
 
 
 
-2. A variant using the xmlBlaster built in http server (localhost / 7609 is default)
+2. A variant using the xmlBlaster built in http server, specify the port to listen
 
      jaco org.xmlBlaster.MainGUI -iorPort 7609
 
@@ -129,15 +146,29 @@ See the ${XMLBLASTER_HOME}/src/java/org/xmlBlaster/README file for more instruct
 
 
 
-4. Variant using a naming service and a local web server to publish the name service.
-   Edit ${HOME}/.jacorb_properties accordingly e.g. jacorb.NameServerURL=http://localhost:80/NS_Ref):
+4. Variant using a naming service and a local web server to publish
+   the name service IOR.
 
-     rm /tmp/NS_db;  ${JacORB_HOME}/bin/ns  /usr/local/httpd/htdocs/NS_Ref  /tmp/NS_db
+   Assuming the document root of your web server is /usr/local/httpd/htdocs/NS_Ref:
 
-     jaco org.xmlBlaster.MainGUI
+     ${JacORB_HOME}/bin/ns  /usr/local/httpd/htdocs/NS_Ref
 
-     jaco javaclients.ClientXml
+   iorPort -1 switches the internal http server off:
 
+     jaco org.xmlBlaster.MainGUI -iorPort -1
+
+   This client looks into .jacorb_properties to find the URL with the naming service IOR.
+   Edit ${HOME}/.jacorb_properties accordingly e.g. jacorb.NameServerURL=http://localhost:80/NS_Ref
+
+     jaco javaclients.ClientXml -iorPort -1
+
+   If you have problems, check your web server:
+
+     telnet localhost 80
+     GET /NS_Ref HTTP/1.0
+
+   you should receive the IOR string, if everything is setup properly and the
+   naming service is running.
 
 
 +--------------------+
@@ -229,8 +260,6 @@ C++ clients with MICO 2.3.0 (http://www.mico.org)
 -------------------------------------------------------------------------
 Perl clients with COPE 0.50_51 (http://www.lunatech.com/research/corba/cope/)
 You need MICO first
-AWARE: The current COPE Version 0.50_51 has problems with oneway methods
-       which raise exceptions, so it will not work with xmlBlaster for the moment
 
 1) get Exception-0.97_01A.tgz (ftp://ftp.matematik.su.se/pub/teke.)
 

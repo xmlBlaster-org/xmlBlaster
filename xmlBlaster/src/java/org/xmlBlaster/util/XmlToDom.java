@@ -3,11 +3,11 @@ Name:      XmlToDom.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper which parses a XML ASCII string into a DOM tree
-Version:   $Id: XmlToDom.java,v 1.8 1999/12/15 00:46:00 ruff Exp $
+Version:   $Id: XmlToDom.java,v 1.9 2000/02/20 17:38:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
-import org.xmlBlaster.serverIdl.XmlBlasterException;
+import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
 import org.xml.sax.InputSource;
 import org.w3c.dom.Document;
 import org.w3c.dom.NamedNodeMap;

@@ -3,14 +3,15 @@ Name:      I_PersistenceDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface hiding the real callback protocol
-Version:   $Id: I_PersistenceDriver.java,v 1.3 2000/01/30 20:19:57 ruff Exp $
+Version:   $Id: I_PersistenceDriver.java,v 1.4 2000/02/20 17:38:52 ruff Exp $
+Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence;
 
-import org.xmlBlaster.serverIdl.XmlBlasterException;
+import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
 import org.xmlBlaster.engine.MessageUnitWrapper;
 import org.xmlBlaster.engine.RequestBroker;
-import org.xmlBlaster.engine.XmlKey;
+import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.engine.ClientInfo;
 
 
@@ -27,7 +28,7 @@ import org.xmlBlaster.engine.ClientInfo;
  * <br />
  * TODO: Extend interface to support caching!<br />
  *
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  * @author $Author: ruff $
  */
 public interface I_PersistenceDriver

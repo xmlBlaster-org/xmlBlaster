@@ -18,13 +18,14 @@ distclean: clean
 
 PACKGS = org.xmlBlaster \
 			org.xmlBlaster.engine \
+			org.xmlBlaster.engine.xml2java \
 			org.xmlBlaster.engine.persistence \
-			org.xmlBlaster.authenticateIdl \
 			org.xmlBlaster.authentication \
 			org.xmlBlaster.client \
-			org.xmlBlaster.client.filestore \
-			org.xmlBlaster.clientIdl \
-			org.xmlBlaster.serverIdl \
+			org.xmlBlaster.client.feeder \
+			org.xmlBlaster.protocol.corba.clientIdl \
+			org.xmlBlaster.protocol.corba.authenticateIdl \
+			org.xmlBlaster.protocol.corba.serverIdl \
 			org.xmlBlaster.util
 
 TEST_PACKGS = testsuite.org.xmlBlaster

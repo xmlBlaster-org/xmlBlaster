@@ -3,13 +3,13 @@ Name:      AuthenticationInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the authentication data
-Version:   $Id: AuthenticationInfo.java,v 1.6 1999/12/09 13:28:36 ruff Exp $
+Version:   $Id: AuthenticationInfo.java,v 1.7 2000/02/20 17:38:50 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
 import org.xmlBlaster.util.Log;
-import org.xmlBlaster.serverIdl.XmlBlasterException;
-import org.xmlBlaster.clientIdl.BlasterCallback;
+import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
+import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
 
 
 /**
@@ -24,7 +24,7 @@ public class AuthenticationInfo
    private String uniqueKey;
    private String loginName;
    private String passwd;
-   private org.xmlBlaster.serverIdl.Server xmlBlaster;
+   private org.xmlBlaster.protocol.corba.serverIdl.Server xmlBlaster;
    private ClientQoS clientQoS;
    private BlasterCallback callback=null;
    private String callbackIOR;
@@ -42,7 +42,7 @@ public class AuthenticationInfo
     * @param clientQoS   The login quality of service
     */
    public AuthenticationInfo(String uniqueKey, String loginName, String passwd,
-                       org.xmlBlaster.serverIdl.Server xmlBlaster,
+                       org.xmlBlaster.protocol.corba.serverIdl.Server xmlBlaster,
                        BlasterCallback callback,
                        String callbackIOR, ClientQoS clientQoS)
    {
@@ -75,7 +75,7 @@ public class AuthenticationInfo
     * The CORBA xmlBlaster server reference serving this client.
     * @return Server reference
     */
-   org.xmlBlaster.serverIdl.Server getXmlBlaster() throws XmlBlasterException
+   org.xmlBlaster.protocol.corba.serverIdl.Server getXmlBlaster() throws XmlBlasterException
    {
       if (this.xmlBlaster == null) {
          Log.error(ME+"NoCallback", "Sorry, no xmlBlaster Server for " + loginName);
@@ -86,7 +86,7 @@ public class AuthenticationInfo
 
 
    /**
-    * This is the unique identifier of the client. 
+    * This is the unique identifier of the client.
     * <p />
     * It is currently the byte[] oid from the POA active object map.
     * @return oid
@@ -108,7 +108,7 @@ public class AuthenticationInfo
 
 
    /**
-    * email callbacks are not yet supported. 
+    * email callbacks are not yet supported.
     * @return false
     */
    public final boolean useEmailCB()
@@ -119,7 +119,7 @@ public class AuthenticationInfo
 
 
    /**
-    * Http callbacks are not yet supported. 
+    * Http callbacks are not yet supported.
     * @return false
     */
    public final boolean useHttpCB()
@@ -130,7 +130,7 @@ public class AuthenticationInfo
 
 
    /**
-    * Only CORBA callbacks are supported in this version. 
+    * Only CORBA callbacks are supported in this version.
     * @return true/false
     */
    public final boolean useCorbaCB()
