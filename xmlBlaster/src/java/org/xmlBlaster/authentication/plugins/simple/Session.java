@@ -23,7 +23,7 @@ public class Session implements I_Session {
    private String sessionId = null;
    private boolean authenticated = false;
 
-   private static Subject dummyUsr = null;
+   private Subject dummyUsr = null;
 
 
    public Session(Manager sm, String sessionId) {
