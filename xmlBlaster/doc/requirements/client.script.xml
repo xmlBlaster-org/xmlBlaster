@@ -40,6 +40,7 @@
        <li><b>subscribe</b> childs: <i>key</i> and <i>qos</i></li>
        <li><b>unSubscribe</b> childs: <i>key</i> and <i>qos</i></li>
        <li><b>wait</b> no childs but one attribute: <i>delay</i>: the time to wait expressed in milliseconds</li>
+       <li><b>input</b> Waits until the user hits a key, no childs but two attributes: <i>message</i>: the prompt message; <i>delay</i>: the time to wait expressed in milliseconds until the message prompt is displayed</li>
      </ul>
      For the qos and the key tags the syntax is the one defined in the client interface.
      The <b>message</b> subtag in the publishArr contains the same childs as a publish tag.
@@ -78,7 +79,7 @@ java javaclients.script.XmlScript \
       The simpleSession.xml in this case would contain what follows. The answers coming
       from xmlBlaster are collected in out.xml. If you want the output on the standard 
       output stream omit to specify a responseFile. If you want to read from the standard
-      input stream omit the requestFile.	
+      input stream omit the requestFile.        
       <pre>
 <![CDATA[
 <xmlBlaster>
@@ -103,6 +104,8 @@ java javaclients.script.XmlScript \
   </publishArr>
 
   <get><key oid="test" /></get>
+
+  <input message="Hit a key to continue # "/>
 
    <subscribe>
      <key queryType="XPATH">//airport</key>
