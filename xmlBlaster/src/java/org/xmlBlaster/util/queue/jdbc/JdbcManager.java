@@ -95,7 +95,7 @@ public class JdbcManager implements I_ConnectionListener {
       this.pool = pool;
       this.glob = this.pool.getGlobal();
       this.log = glob.getLog("queue");
-      this.log.call(ME, "Constructor called");
+      if (this.log.CALL) this.log.call(ME, "Constructor called");
 
       this.factory = factory;
 
@@ -194,7 +194,7 @@ public class JdbcManager implements I_ConnectionListener {
     * @see I_ConnectionListener#disconnected()
     */
    public void disconnected() {
-      this.log.call(ME, "disconnected invoked");
+      if (this.log.CALL) this.log.call(ME, "disconnected invoked");
       this.isConnected = false;
       I_ConnectionListener[] listenerArr = getConnectionListenerArr();
       for(int i=0; i<listenerArr.length; i++) {
@@ -208,7 +208,7 @@ public class JdbcManager implements I_ConnectionListener {
     * @see I_ConnectionListener#reconnected()
     */
    public void reconnected() {
-      this.log.call(ME, "reconnected invoked");
+      if (this.log.CALL) this.log.call(ME, "reconnected invoked");
       this.isConnected = true;
       I_ConnectionListener[] listenerArr = getConnectionListenerArr();
       for(int i=0; i<listenerArr.length; i++) {
@@ -240,7 +240,7 @@ public class JdbcManager implements I_ConnectionListener {
     * connection has been broken it will inform the connection pool.
     * @param location where the exception occured.
     * @param ex the exception which has to be handled.
-    * @param trace additional information to put in the logging trace.
+    * @param trace additional information to put in the logetLogId(tableName, storageId, "getEntries")gging trace.
     * @return boolean true if it was a communication exception
     * 
     */
@@ -281,15 +281,15 @@ public class JdbcManager implements I_ConnectionListener {
    public final String getTable(String queueName, long capacity)
       throws SQLException, XmlBlasterException {
 
-      this.log.call(ME, "getTable");
+      if (this.log.CALL) this.log.call(getLogId(queueName, null, "getTable"), "Entering");
       if (!this.isConnected)
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "getTable:the DB disconnected. Handling queue '" + queueName + "' is currently not possible");
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, getLogId(queueName, null, "getTable"), "The is DB disconnected. Handling queue '" + queueName + "' is currently not possible");
 
       String associatedTableName = null;
       PreparedQuery query = null;
 
       String req = "SELECT tablename from " + this.tableNamePrefix + "USEDTABLES where queuename='" + queueName + "'";
-      if (this.log.TRACE) this.log.trace(ME, "getTable: request: '" + req + "'");
+      if (this.log.TRACE) this.log.trace(getLogId(queueName, null, "getTable"), "Request: '" + req + "'");
 
       try {
 
@@ -298,25 +298,24 @@ public class JdbcManager implements I_ConnectionListener {
          boolean tableExists = query.rs.next();
 
          if (tableExists) {
-            if (this.log.TRACE) this.log.trace(ME, "the table " + this.tableNamePrefix + "USEDTABLES exists");
             associatedTableName = query.rs.getString(1);
+            if (this.log.TRACE) this.log.trace(getLogId(queueName, null, "getTable"), "The table exists in " + this.tableNamePrefix + "USEDTABLES, found associatedTableName=" + associatedTableName);
             query.close();
             return associatedTableName;
          }
-         if (this.log.TRACE) this.log.trace(ME, "the table " + this.tableNamePrefix + "USEDTABLES does not exist");
+         if (this.log.TRACE) this.log.trace(getLogId(queueName, null, "getTable"), "The table does not exist in " + this.tableNamePrefix + "USEDTABLES");
          query.close();
 
          // ok none found, lets associate a new one ...
-         if (this.log.CALL)
-            this.log.call(ME, "getTable invoked on " + queueName + " with capacity " + capacity);
+         if (this.log.TRACE) this.log.trace(getLogId(queueName, null, "getTable"), "Invoked on " + queueName + " with capacity " + capacity);
          req = "SELECT tableName from " + this.tableNamePrefix + "FREETABLES";
          query = new PreparedQuery(this.pool, req, false, this.log, 1);
 
          boolean freeTablesAvailable =query.rs.next();
-         if (this.log.TRACE) this.log.trace(ME, "freetables available: " + freeTablesAvailable);
+         if (this.log.TRACE) this.log.trace(getLogId(queueName, null, "getTable"), "Freetables available: " + freeTablesAvailable);
          if (!freeTablesAvailable) {
 //            query.close();
-            this.log.trace(ME, "no free tables: adding new tables");
+            this.log.trace(getLogId(queueName, null, "getTable"), "No free tables: adding new tables");
             addFreeTables(this.queueIncrement, query.conn);
 //            query = new PreparedQuery(this.pool, req, false, this.log, -1);
             query.inTransactionRequest(req /*, -1 */);
@@ -325,16 +324,17 @@ public class JdbcManager implements I_ConnectionListener {
          associatedTableName = query.rs.getString(1);
 
          req = "DELETE FROM " + this.tableNamePrefix + "FREETABLES where tablename='" + associatedTableName + "'";
-         if (this.log.TRACE) this.log.trace(ME, "getTable: request: '" + req + "'");
+         if (this.log.TRACE) this.log.trace(getLogId(queueName, null, "getTable"), "Request: '" + req + "'");
          update(req, query.conn);
 
-         req = "INSERT INTO " + this.tableNamePrefix + "USEDTABLES VALUES ('" + queueName + "','" + associatedTableName + "'," + capacity + ")";         if (this.log.TRACE) this.log.trace(ME, "getTable: request: '" + req + "'");
+         req = "INSERT INTO " + this.tableNamePrefix + "USEDTABLES VALUES ('" + queueName + "','" + associatedTableName + "'," + capacity + ")";
+         if (this.log.TRACE) this.log.trace(getLogId(queueName, null, "getTable"), "Request: '" + req + "'");
          update(req, query.conn);
          this.queues.add(queueName);
          return associatedTableName;
       }
       catch (SQLException ex) {
-         handleSQLException("getTable", ex);
+         handleSQLException(getLogId(queueName, null, "getTable"), ex);
          throw ex;
       }
       finally {
@@ -362,9 +362,8 @@ public class JdbcManager implements I_ConnectionListener {
    public long getNumOfBytes(String tableName)
       throws SQLException, XmlBlasterException {
 
-      this.log.call(ME, "getNumOfBytes");
       if (!this.isConnected)
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "getNumOfBytes: the DB disconnected. Handling table '" + tableName + "' is currently not possible");
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, getLogId(tableName, null, "getNumOfBytes"), "The DB is disconnected. Handling table '" + tableName + "' is currently not possible");
 
       Connection conn = null;
       PreparedStatement st = null;
@@ -378,7 +377,7 @@ public class JdbcManager implements I_ConnectionListener {
          return rs.getLong(1);
       }
       catch (SQLException ex) {
-         handleSQLException("getNumOfBytes", ex);
+         handleSQLException(getLogId(tableName, null, "getNumOfBytes"), ex);
          throw ex;
       }
       finally {
@@ -395,14 +394,14 @@ public class JdbcManager implements I_ConnectionListener {
     */
    public final long releaseTable(String strippedQueueName, String tableName)
       throws SQLException, XmlBlasterException {
-      if (this.log.CALL)
-         this.log.call(ME, "releaseTable invoked for " + strippedQueueName + " in table " + tableName);
+
+      if (this.log.CALL) this.log.call(getLogId(tableName+"-"+strippedQueueName, null, "releaseTable"), "Entering");
 
       if (!this.isConnected)
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "releaseTable: the DB disconnected. Handling queue '" + strippedQueueName + "' is currently not possible");
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, getLogId(strippedQueueName, null, "releaseTable"), "The DB disconnected. Handling queue '" + strippedQueueName + "' is currently not possible");
 
       String req = "DELETE FROM " + this.tableNamePrefix + "USEDTABLES where queueName='" + strippedQueueName + "'";
-      if (this.log.TRACE) this.log.trace(ME, "releaseTable: request: '" + req + "'");
+      if (this.log.TRACE) this.log.trace(getLogId(strippedQueueName, null, "releaseTable"), "Request: '" + req + "'");
 
       Connection conn = null;
 
@@ -412,11 +411,11 @@ public class JdbcManager implements I_ConnectionListener {
          int ret = update(req, conn);
 
          req = "DELETE FROM " + tableName;
-         if (this.log.TRACE) this.log.trace(ME, "releaseTable: request: '" + req + "'");
+         if (this.log.TRACE) this.log.trace(getLogId(strippedQueueName, null, "releaseTable"), "Request: '" + req + "'");
          update(req, conn);
 
          req = "INSERT INTO " + this.tableNamePrefix + "FREETABLES VALUES ('" + tableName + "')";
-         if (this.log.TRACE) this.log.trace(ME, "releaseTable: request: '" + req + "'");
+         if (this.log.TRACE) this.log.trace(getLogId(strippedQueueName, null, "releaseTable"), "Request: '" + req + "'");
          update(req, conn);
          conn.commit();
          return (long)ret;
@@ -427,7 +426,7 @@ public class JdbcManager implements I_ConnectionListener {
       }
       catch (SQLException ex) {
          if (conn != null) conn.rollback();
-         handleSQLException("releaseTable", ex);
+         handleSQLException(getLogId(strippedQueueName, null, "releaseTable"), ex);
          throw ex;
       }
       finally {
@@ -443,7 +442,7 @@ public class JdbcManager implements I_ConnectionListener {
     */
    private final boolean createInitialTables()
       throws SQLException, XmlBlasterException {
-      this.log.call(ME, "createInitialTables");
+      if (this.log.CALL) this.log.call(ME, "createInitialTables");
 
       if (!this.isConnected)
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "createInitialTables: the DB disconnected. Handling is currently not possible");
@@ -452,7 +451,7 @@ public class JdbcManager implements I_ConnectionListener {
       boolean usedtablesExists = false;
 
       String req = "SELECT count(*) from " + tablesTxt + " where upper(" + tableNameTxt + ")='" + this.tableNamePrefix + "FREETABLES'";
-      if (this.log.TRACE) this.log.trace(ME, "createInitialTables: request: '" + req + "'");
+      if (this.log.TRACE) this.log.trace(getLogId(null, null, "createInitialTables"), "Request: '" + req + "'");
 
       PreparedQuery query = null;
 
@@ -461,28 +460,28 @@ public class JdbcManager implements I_ConnectionListener {
          query.rs.next();
          int size = query.rs.getInt(1);
          if (size > 0) freetablesExists = true;
+         if (this.log.TRACE) this.log.trace(getLogId(null, null, "createInitialTables"), "Num FREETABLES=" + size);
 
          req = "SELECT count(*) from " + tablesTxt + " where upper(" + tableNameTxt + ")='" + this.tableNamePrefix + "USEDTABLES'";
-         if (this.log.TRACE) this.log.trace(ME, "createInitialTables: request: '" + req + "'");
+         if (this.log.TRACE) this.log.trace(getLogId(null, null, "createInitialTables"), "Request: '" + req + "'");
 
          query.inTransactionRequest(req /*, -1*/);
          query.rs.next();
          size = query.rs.getInt(1);
+         if (this.log.TRACE) this.log.trace(getLogId(null, null, "createInitialTables"), "Num USEDTABLES=" + size);
 
          if (size > 0) usedtablesExists = true;
 
          if (!freetablesExists) {
             req = "CREATE TABLE " + this.tableNamePrefix + "FREETABLES (tableName  " + stringTxt + " PRIMARY KEY)";
-            if (this.log.TRACE) this.log.trace(ME, "createInitialTables: request: '" + req + "'");
-            this.log.trace(ME, "createQueueTable: " + req);
+            if (this.log.TRACE) this.log.trace(getLogId(null, null, "createInitialTables"), "Request: '" + req + "'");
             update(req, query.conn);
          }
 
          if (!usedtablesExists) {
             req = "CREATE TABLE " + this.tableNamePrefix + "USEDTABLES (queueName  " + stringTxt + " PRIMARY KEY, tableName " + stringTxt +
                 ", capacity  " + longintTxt + ")";
-            if (this.log.TRACE) this.log.trace(ME, "createInitialTables: request: '" + req + "'");
-            this.log.trace(ME, "createQueueTable: " + req);
+            if (this.log.TRACE) this.log.trace(getLogId(null, null, "createInitialTables"), "Request: '" + req + "'");
             update(req, query.conn);
          }
 
@@ -490,7 +489,7 @@ public class JdbcManager implements I_ConnectionListener {
          return !freetablesExists;
       }
       catch (SQLException ex) {
-         handleSQLException("createInitialTables", ex, "SQL request giving problems: " + req);
+         handleSQLException(getLogId(null, null, "createInitialTables"), ex, "SQL request giving problems: " + req);
          throw ex;
       }
       finally {
@@ -504,8 +503,7 @@ public class JdbcManager implements I_ConnectionListener {
    private final int addFreeTables(int numOfTables, Connection conn)
       throws SQLException, XmlBlasterException {
       try {
-         if (this.log.CALL)
-            log.call(ME, "addFreeTables will create " + numOfTables + " tables");
+         if (this.log.CALL) log.call(ME, "addFreeTables will create " + numOfTables + " tables");
 
          if (!this.isConnected)
             throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "addFreeTables: the DB disconnected. Handling is currently not possible");
@@ -515,7 +513,7 @@ public class JdbcManager implements I_ConnectionListener {
             String tableName = this.tableNamePrefix + timestamp.getTimestamp();
             createQueueTable(tableName, conn);
             String req = "INSERT INTO " + this.tableNamePrefix + "FREETABLES VALUES ('" + tableName + "')";
-            if (this.log.TRACE) this.log.trace(ME, "addFreeTables: request: '" + req + "'");
+            if (this.log.TRACE) this.log.trace(getLogId(null, null, "addFreeTables"), "Request: '" + req + "'");
             update(req, conn);
          }
          return numOfTables;
@@ -534,17 +532,17 @@ public class JdbcManager implements I_ConnectionListener {
     * a certain amount of such tables are created.
     */
    public final void setUp() throws SQLException, XmlBlasterException {
-      this.log.call(ME, "setUp");
+      if (this.log.CALL) this.log.call(ME, "setUp");
 
       try {
          if (!this.dbInitialized) {
-            this.log.trace(ME, "initializing the first time the pool");
+            if (this.log.TRACE) this.log.trace(getLogId(null, null, "setUp"), "Initializing the first time the pool");
             createInitialTables();
             this.dbInitialized = true;
          }
       }
       catch (SQLException ex) {
-         handleSQLException("setUp", ex, "table name giving Problems");
+         handleSQLException(getLogId(null, null, "setUp"), ex, "Table name giving Problems");
          throw ex;
       }
    }
@@ -553,7 +551,7 @@ public class JdbcManager implements I_ConnectionListener {
    private final ArrayList processResultSet(ResultSet rs, StorageId storageId, int numOfEntries, long numOfBytes, boolean onlyId)
       throws SQLException, XmlBlasterException {
 
-      this.log.call(ME,"processResultSet invoked");
+      if (this.log.CALL) this.log.call(getLogId(null, storageId, "processResultSet"), "Entering");
 
       ArrayList entries = new ArrayList();
       int count = 0;
@@ -627,7 +625,7 @@ public class JdbcManager implements I_ConnectionListener {
    private final ReturnDataHolder processResultSetForDeleting(ResultSet rs, int numOfEntries, long numOfBytes)
       throws SQLException, XmlBlasterException {
 
-      this.log.call(ME,"processResultSetForDeleting invoked");
+      if (this.log.CALL) this.log.call(ME,"processResultSetForDeleting invoked");
       ReturnDataHolder ret = new ReturnDataHolder();
       long currentAmount = 0L;
       while ( (rs.next()) && ((ret.countEntries < numOfEntries) || (numOfEntries < 0)) &&
@@ -661,7 +659,7 @@ public class JdbcManager implements I_ConnectionListener {
     */
    private final int update(String request)
       throws SQLException, XmlBlasterException {
-      this.log.call(ME, "update called with " + request);
+      if (this.log.CALL) this.log.call(getLogId(null, null, "update"), "Entering request=" + request);
 
       Connection conn = null;
       Statement  statement = null;
@@ -669,18 +667,18 @@ public class JdbcManager implements I_ConnectionListener {
 
       try {
          conn = pool.getConnection();
-         if (this.log.TRACE) this.log.call(ME, "update: creating statement");
+         //if (this.log.TRACE) this.log.trace(ME, "update: creating statement");
          statement = conn.createStatement();
-         if (this.log.TRACE) this.log.call(ME, "update: executing statement");
+         if (this.log.TRACE) this.log.trace(getLogId(null, null, "update"), "Executing statement: " + request);
          ret = statement.executeUpdate(request);
-         if (this.log.TRACE) this.log.call(ME, "update: executed statement, ret=" + ret);
+         if (this.log.TRACE) this.log.trace(getLogId(null, null, "update"), "Executed statement, number of changed entries=" + ret);
       }
       finally {
-         if (this.log.TRACE) this.log.call(ME, "update: closing statement");
+         //if (this.log.TRACE) this.log.trace(ME, "update: closing statement");
          if (statement !=null) statement.close();
-         if (this.log.TRACE) this.log.call(ME, "update: releasing connection");
+         //if (this.log.TRACE) this.log.trace(ME, "update: releasing connection");
          if (conn != null) this.pool.releaseConnection(conn);
-         if (this.log.TRACE) this.log.call(ME, "update: connection released");
+         //if (this.log.TRACE) this.log.trace(ME, "update: connection released");
       }
 
       return ret;
@@ -699,8 +697,7 @@ public class JdbcManager implements I_ConnectionListener {
    private final int update(String request, Connection conn)
       throws SQLException {
 
-      if (this.log.CALL)
-         this.log.call(ME, "update called with " + request + " and connection " + conn);
+      if (this.log.CALL) this.log.call(getLogId(null, null, "update"), "Request=" + request + " and connection " + conn);
 
       Statement  statement = null;
       int ret = 0;
@@ -708,6 +705,7 @@ public class JdbcManager implements I_ConnectionListener {
       try {
          statement = conn.createStatement();
          ret = statement.executeUpdate(request);
+         if (this.log.TRACE) this.log.trace(getLogId(null, null, "update"), "Executed statement, number of changed entries=" + ret);
       }
 
       finally {
@@ -723,10 +721,9 @@ public class JdbcManager implements I_ConnectionListener {
     */
    public int deleteAllTransient(String tableName) throws XmlBlasterException, SQLException {
       try {
-         this.log.call(ME, "deleteAllTransient");
+         if (this.log.CALL) this.log.call(getLogId(tableName, null, "deleteAllTransient"), "deleteAllTransient");
          if (!this.isConnected) {
-            if (this.log.TRACE)
-               this.log.trace(ME, "deleteAllTransient. for " + tableName + " currently not possible. No connection to the DB");
+            if (this.log.TRACE) this.log.trace(getLogId(tableName, null, "deleteAllTransient"), "Currently not possible. No connection to the DB");
             return 0;
          }
 
@@ -735,7 +732,7 @@ public class JdbcManager implements I_ConnectionListener {
          return update(req);
       }
       catch (SQLException ex) {
-         handleSQLException("deleteAllTransient", ex);
+         handleSQLException(getLogId(tableName, null, "deleteAllTransient"), ex);
          throw ex;
       }
    }
@@ -749,7 +746,7 @@ public class JdbcManager implements I_ConnectionListener {
     * "delete from tableName where dataId in(";
     */
    private ArrayList whereInStatement(String reqPrefix, long[] uniqueIds) {
-      this.log.call(ME, "whereInStatement");
+      if (this.log.CALL) this.log.call(ME, "whereInStatement");
       final String reqPostfix = ")";
       boolean isFirst = true;
       int initialLength = reqPrefix.length() + reqPostfix.length() + 2;
@@ -809,12 +806,10 @@ public class JdbcManager implements I_ConnectionListener {
    public boolean addEntry(String tableName, I_Entry entry)
       throws SQLException, XmlBlasterException {
 
-      if (this.log.CALL)
-         this.log.call(ME, "addition called for " + tableName);
+      if (this.log.CALL) this.log.call(getLogId(tableName, null, "addEntry"), "Entering");
 
       if (!this.isConnected) {
-         if (this.log.TRACE)
-            this.log.trace(ME, "addEntry. On '" + tableName + "' for entry '" + entry.getUniqueId() + "' currently not possible. No connection to the DB");
+         if (this.log.TRACE) this.log.trace(getLogId(tableName, null, "addEntry"), "For entry '" + entry.getUniqueId() + "' currently not possible. No connection to the DB");
          return false;
       }
 
@@ -834,7 +829,7 @@ public class JdbcManager implements I_ConnectionListener {
       try {
          conn = this.pool.getConnection();
          String req = "INSERT INTO " + tableName + " VALUES ( ?, ?, ?, ?, ?, ?)";
-         if (this.log.TRACE) this.log.trace(ME, req);
+         if (this.log.TRACE) this.log.trace(getLogId(tableName, null, "addEntry"), req);
 
          preStatement = conn.prepareStatement(req);
          preStatement.setLong(1, dataId);
@@ -846,14 +841,17 @@ public class JdbcManager implements I_ConnectionListener {
          preStatement.setLong(5, sizeInBytes);
          preStatement.setBytes(6, blob);
 
-         if (this.log.TRACE) this.log.trace(ME, preStatement.toString());
+         if (this.log.TRACE) this.log.trace(getLogId(tableName, null, "addEntry"), preStatement.toString());
 
-         preStatement.executeUpdate();
+         int num = preStatement.executeUpdate();
+         if (this.log.TRACE) this.log.trace(getLogId(tableName, null, "addEntry"), "Added " + num + " entries, entryId='" + entry.getUniqueId() + "'");
          ret = true;
       }
       catch (SQLException ex) {
-         this.log.warn(ME, "could not insert entry '" +  entry.getUniqueId() + "' probably because already in DB");
-         if (handleSQLException("addEntry", ex)) throw ex;
+         this.log.warn(getLogId(tableName, null, "addEntry"), "Could not insert entry '" +
+                  entry.getClass().getName() + "'-'" +  entry.getLogId() + "-" + entry.getUniqueId() + "': " + ex.toString());
+         if (handleSQLException(getLogId(tableName, null, "addEntry"), ex)) throw ex;
+         //Thread.currentThread().dumpStack();
          ret = false;
       }
       finally {
@@ -873,12 +871,12 @@ public class JdbcManager implements I_ConnectionListener {
    public ReturnDataHolder getAndDeleteLowest(String tableName, StorageId storageId, int numOfEntries, long numOfBytes,
       int maxPriority, long minUniqueId, boolean leaveOne) throws XmlBlasterException, SQLException {
 
-      this.log.call(ME, "getAndDeleteLowest called");
+      if (this.log.CALL) this.log.call(getLogId(tableName, storageId, "getAndDeleteLowest"), "Entering");
       ReturnDataHolder ret = new ReturnDataHolder();
 
       if (!this.isConnected) {
          if (this.log.TRACE)
-            this.log.trace(ME, "getAndDeleteLowest. On table '" + tableName + "' currently not possible. No connection to the DB");
+            this.log.trace(getLogId(tableName, storageId, "getAndDeleteLowest"), "Currently not possible. No connection to the DB");
          return ret;
       }
 
@@ -916,8 +914,7 @@ public class JdbcManager implements I_ConnectionListener {
             // check if allowed or already outside the range ...
             if (((numOfBytes<0)||(sizeInBytes+amount<numOfBytes)||(count==0)) &&
                ((prio<maxPriority) || ((prio==maxPriority)&&(dataId>minUniqueId)) )) {
-               if (this.log.DUMP)
-                  this.log.dump(ME, "getAndDeleteLowest: dataId: " + dataId + ", prio: " + prio + ", typeName: " + typeName + " isDurable: " + durable);
+               if (this.log.DUMP) this.log.dump(getLogId(tableName, storageId, "getAndDeleteLowest"), "dataId: " + dataId + ", prio: " + prio + ", typeName: " + typeName + " isDurable: " + durable);
                ret.list.add(this.factory.createEntry(prio, dataId, typeName, durable, blob, storageId));
                amount += sizeInBytes;
                if (amount > numOfBytes) doContinue = false;
@@ -950,14 +947,14 @@ public class JdbcManager implements I_ConnectionListener {
          for (int i=0; i < reqList.size(); i++) {
             req = (String)reqList.get(i);
             if (this.log.TRACE)
-               this.log.trace(ME, "deleteEntries, req: 'delete from " + req + "'");
+               this.log.trace(getLogId(tableName, storageId, "getAndDeleteLowest"), "'delete from " + req + "'");
             update(req, query.conn);
          }
 
          return ret;
       }
       catch (SQLException ex) {
-         handleSQLException("getAndDeleteLowest", ex);
+         handleSQLException(getLogId(tableName, storageId, "getAndDeleteLowest"), ex);
          throw ex;
       }
       finally {
@@ -978,11 +975,11 @@ public class JdbcManager implements I_ConnectionListener {
     */
    public int deleteEntries(String tableName, long[] uniqueIds)
       throws XmlBlasterException, SQLException {
-     this.log.call(ME, "deleteEntries");
+      if (this.log.CALL) this.log.call(getLogId(tableName, null, "deleteEntries"), "Entering");
 
       if (!this.isConnected) {
          if (this.log.TRACE)
-            this.log.trace(ME, "deleteEntries. On table '" + tableName + "' currently not possible. No connection to the DB");
+            this.log.trace(getLogId(tableName, null, "deleteEntries"), "Currently not possible. No connection to the DB");
          return 0;
       }
 
@@ -994,14 +991,14 @@ public class JdbcManager implements I_ConnectionListener {
          for (int i=0; i < reqList.size(); i++) {
             String req = (String)reqList.get(i);
             if (this.log.TRACE)
-               this.log.trace(ME, "deleteEntries, req: 'delete from " + req + "'");
+               this.log.trace(getLogId(tableName, null, "deleteEntries"), "'delete from " + req + "'");
 
             count +=  update(req);
          }
          return count;
       }
       catch (SQLException ex) {
-         handleSQLException("deleteEntries", ex);
+         handleSQLException(getLogId(tableName, null, "deleteEntries"), ex);
          throw ex;
       }
    }
@@ -1020,16 +1017,18 @@ public class JdbcManager implements I_ConnectionListener {
     */
    public ReturnDataHolder deleteFirstEntries(String tableName, long numOfEntries, long amount)
       throws XmlBlasterException, SQLException {
-      this.log.call(ME, "deleteFirstEntries called");
+      if (this.log.CALL) this.log.call(getLogId(tableName, null, "deleteFirstEntries called"), "Entering");
 
       ReturnDataHolder ret = new ReturnDataHolder();
       if (!this.isConnected) {
          if (this.log.TRACE)
-            this.log.trace(ME, "deleteFirstEntries. On table '" + tableName + "' currently not possible. No connection to the DB");
+            this.log.trace(getLogId(tableName, null, "deleteFirstEntries"), "Currently not possible. No connection to the DB");
          return ret;
       }
 
-      if (numOfEntries > Integer.MAX_VALUE) throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "The number of entries=" + numOfEntries + " to be deleted is too big for this system");
+      if (numOfEntries > Integer.MAX_VALUE)
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, getLogId(tableName, null, "deleteFirstEntries"),
+               "The number of entries=" + numOfEntries + " to be deleted is too big for this system");
 
       PreparedQuery query = null;
 
@@ -1041,7 +1040,8 @@ public class JdbcManager implements I_ConnectionListener {
          query = new PreparedQuery(pool, req, false, this.log, -1);
          // I only want the uniqueId (dataId)
          if (numOfEntries >= Integer.MAX_VALUE)
-            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "deleteFirstEntries: the number of entries=" + numOfEntries + " to delete exceeds the maximum allowed byteSize");
+            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, getLogId(tableName, null, "deleteFirstEntries"),
+                     "The number of entries=" + numOfEntries + " to delete exceeds the maximum allowed byteSize");
 
          ret = processResultSetForDeleting(query.rs, (int)numOfEntries, amount);
 
@@ -1057,7 +1057,7 @@ public class JdbcManager implements I_ConnectionListener {
          // everything in the same transaction (just in case)
          for (int i=0; i < reqList.size(); i++) {
             req = (String)reqList.get(i);
-            if (this.log.TRACE) this.log.trace(ME, "deleteFirstEntries, req: '" + req + "'");
+            if (this.log.TRACE) this.log.trace(getLogId(tableName, null, "deleteFirstEntries"), "'" + req + "'");
 
             ret.countEntries +=  update(req, query.conn);
          }
@@ -1066,7 +1066,7 @@ public class JdbcManager implements I_ConnectionListener {
 
       }
       catch (SQLException ex) {
-         handleSQLException("deleteFirstEntries", ex);
+         handleSQLException(getLogId(tableName, null, "deleteFirstEntries"), ex);
          throw ex;
       }
       finally {
@@ -1087,27 +1087,27 @@ public class JdbcManager implements I_ConnectionListener {
    public ArrayList getEntriesByPriority(int numOfEntries, long numOfBytes, int minPrio, int maxPrio, String tableName, StorageId storageId)
       throws XmlBlasterException, SQLException {
 
-      this.log.call(ME, "getEntriesByPriority");
+      if (this.log.CALL) this.log.call(getLogId(tableName, storageId, "getEntriesByPriority"), "Entering");
 
       if (!this.isConnected) {
-         if (this.log.TRACE)
-            this.log.trace(ME, "getEntriesByPriority.  Currently not possible. No connection to the DB");
+         if (this.log.TRACE) this.log.trace(getLogId(tableName, storageId, "getEntriesByPriority"), "Currently not possible. No connection to the DB");
          return new ArrayList();
       }
 
       String req = "SELECT * from " + tableName + " where prio >= " + minPrio + " and prio <= " + maxPrio +
             " ORDER BY prio DESC, dataid ASC";
 
-      if (this.log.TRACE) this.log.trace(ME, "getEntriesByPriority: request: '" + req + "'");
+      if (this.log.TRACE) this.log.trace(getLogId(tableName, storageId, "getEntriesByPriority"), "Request: '" + req + "'");
 
       PreparedQuery query =null;
       try {
          query = new PreparedQuery(pool, req, this.log, numOfEntries);
          ArrayList ret = processResultSet(query.rs, storageId, numOfEntries, numOfBytes, false);
+         if (this.log.TRACE) this.log.trace(getLogId(tableName, storageId, "getEntriesByPriority"), "Found " + ret.size() + " entries");
          return ret;
       }
       catch (SQLException ex) {
-         handleSQLException("getEntriesByPriority", ex);
+         handleSQLException(getLogId(tableName, storageId, "getEntriesByPriority"), ex);
          throw ex;
       }
       finally {
@@ -1126,11 +1126,11 @@ public class JdbcManager implements I_ConnectionListener {
    public ArrayList getEntriesBySamePriority(int numOfEntries, long numOfBytes, String tableName, StorageId storageId)
       throws XmlBlasterException, SQLException {
       // 65 ms (for 10000 msg)
-      this.log.call(ME, "getEntriesBySamePriority");
+      if (this.log.CALL) this.log.call(getLogId(tableName, storageId, "getEntriesBySamePriority"), "Entering");
 
       if (!this.isConnected) {
          if (this.log.TRACE)
-            this.log.trace(ME, "getEntriesBySamePriority.  Currently not possible. No connection to the DB");
+            this.log.trace(getLogId(tableName, storageId, "getEntriesBySamePriority"), "Currently not possible. No connection to the DB");
          return new ArrayList();
       }
 
@@ -1138,16 +1138,17 @@ public class JdbcManager implements I_ConnectionListener {
       req = "SELECT * from " + tableName + " where prio=(select max(prio) from " + tableName +
          ")  ORDER BY dataid ASC";
 
-      if (this.log.TRACE) this.log.trace(ME, "getEntriesBySamePriority: request: '" + req + "'");
+      if (this.log.TRACE) this.log.trace(getLogId(tableName, storageId, "getEntriesBySamePriority"), "Request: '" + req + "'");
 
       PreparedQuery query = null;
       try {
          query = new PreparedQuery(pool, req, this.log, numOfEntries);
          ArrayList ret = processResultSet(query.rs, storageId, numOfEntries, numOfBytes, false);
+         if (this.log.TRACE) this.log.trace(getLogId(tableName, storageId, "getEntriesBySamePriority"), "Found " + ret.size() + " entries");
          return ret;
       }
       catch (SQLException ex) {
-         handleSQLException("getEntriesBySamePriority", ex);
+         handleSQLException(getLogId(tableName, storageId, "getEntriesBySamePriority"), ex);
          throw ex;
       }
       finally {
@@ -1166,24 +1167,24 @@ public class JdbcManager implements I_ConnectionListener {
     */
    public ArrayList getEntries(int numOfEntries, long numOfBytes, String tableName, StorageId storageId)
       throws XmlBlasterException, SQLException {
-      this.log.call(ME, "getEntries");
+      if (this.log.CALL) this.log.call(getLogId(tableName, storageId, "getEntries"), "Entering");
 
       if (!this.isConnected) {
-         if (this.log.TRACE)
-            this.log.trace(ME, "getEntries.  Currently not possible. No connection to the DB");
+         if (this.log.TRACE) this.log.trace(getLogId(tableName, storageId, "getEntries"), "Currently not possible. No connection to the DB");
          return new ArrayList();
       }
 
       String req = "SELECT * from " + tableName + " ORDER BY prio DESC, dataid ASC";
-      if (this.log.TRACE) this.log.trace(ME, "getEntries: request: '" + req + "'");
+      if (this.log.TRACE) this.log.trace(getLogId(tableName, storageId, "getEntries"), "Request: '" + req + "'");
       PreparedQuery query = null;
       try {
          query = new PreparedQuery(pool, req, this.log, numOfEntries);
          ArrayList ret = processResultSet(query.rs, storageId, numOfEntries, numOfBytes, false);
+         if (this.log.TRACE) this.log.trace(getLogId(tableName, storageId, "getEntries"), "Found " + ret.size() + " entries");
          return ret;
       }
       catch (SQLException ex) {
-         handleSQLException("getEntries", ex);
+         handleSQLException(getLogId(tableName, storageId, "getEntries"), ex);
          throw ex;
       }
       finally {
@@ -1200,26 +1201,26 @@ public class JdbcManager implements I_ConnectionListener {
     */
    public ArrayList getEntriesWithLimit(String tableName, StorageId storageId, I_Entry limitEntry)
       throws XmlBlasterException, SQLException {
-      this.log.call(ME, "getEntriesWithLimit");
+      if (this.log.CALL) this.log.call(getLogId(tableName, storageId, "getEntriesWithLimit"), "Entering");
 
       if (!this.isConnected) {
-         if (this.log.TRACE)
-            this.log.trace(ME, "getEntriesWithLimit.  Currently not possible. No connection to the DB");
+         if (this.log.TRACE) this.log.trace(getLogId(tableName, storageId, "getEntriesWithLimit"), "Currently not possible. No connection to the DB");
          return new ArrayList();
       }
 
       int limitPrio = limitEntry.getPriority();
       long limitId = limitEntry.getUniqueId();
       String req = "SELECT * from " + tableName + " WHERE (prio > " + limitPrio + " OR (prio = " + limitPrio + " AND dataId < "  + limitId + ") ) ORDER BY prio DESC, dataid ASC";
-      if (this.log.TRACE) this.log.trace(ME, "getEntries: request: '" + req + "'");
+      if (this.log.TRACE) this.log.trace(getLogId(tableName, storageId, "getEntriesWithLimit"), "Request: '" + req + "'");
       PreparedQuery query = null;
       try {
          query = new PreparedQuery(pool, req, this.log, -1);
          ArrayList ret = processResultSet(query.rs, storageId, -1, -1L, false);
+         if (this.log.TRACE) this.log.trace(getLogId(tableName, storageId, "getEntriesWithLimit"), "Found " + ret.size() + " entries");
          return ret;
       }
       catch (SQLException ex) {
-         handleSQLException("getEntries", ex);
+         handleSQLException(getLogId(tableName, storageId, "getEntriesWithLimit"), ex);
          throw ex;
       }
       finally {
@@ -1227,20 +1228,15 @@ public class JdbcManager implements I_ConnectionListener {
       }
    }
 
-
-
-
-
    /**
     * gets all the entries which have the dataid specified in the argument list.
     * If the list is empty or null, an empty ArrayList object is returned.
     */
    public ArrayList getEntries(long[] dataids, String tableName, StorageId storageId)
       throws XmlBlasterException, SQLException {
-      this.log.call(ME, "getEntries");
+      if (this.log.CALL) this.log.call(getLogId(tableName, storageId, "getEntries"), "Entering");
       if (!this.isConnected) {
-         if (this.log.TRACE)
-            this.log.trace(ME, "getEntries.  Currently not possible. No connection to the DB");
+         if (this.log.TRACE) this.log.trace(getLogId(tableName, storageId, "getEntries"), "Currently not possible. No connection to the DB");
          return new ArrayList();
       }
 
@@ -1254,22 +1250,23 @@ public class JdbcManager implements I_ConnectionListener {
       PreparedQuery query = null;
       try {
          req = (String)requests.get(0);
-         if (this.log.TRACE) this.log.trace(ME, "getEntries: request: '" + req + "'");
+         if (this.log.TRACE) this.log.trace(getLogId(tableName, storageId, "getEntries"), "Request: '" + req + "'");
          query = new PreparedQuery(pool, req, this.log, -1);
 
          ArrayList ret = processResultSet(query.rs, storageId, -1, -1L, false);
 
          for (int i=1; i < requests.size(); i++) {
             req = (String)requests.get(i);
-            if (this.log.TRACE) this.log.trace(ME, "getEntries: request: '" + req + "'");
+            if (this.log.TRACE) this.log.trace(getLogId(tableName, storageId, "getEntries"), "Request: '" + req + "'");
             query.inTransactionRequest(req /*, -1 */);
             ret.addAll(processResultSet(query.rs, storageId, -1, -1L, false));
          }
+         if (this.log.TRACE) this.log.trace(getLogId(tableName, storageId, "getEntries"), "Found " + ret.size() + " entries");
          return ret;
 
       }
       catch (SQLException ex) {
-         handleSQLException("getEntries", ex);
+         handleSQLException(getLogId(tableName, storageId, "getEntries"), ex);
          throw ex;
       }
       finally {
@@ -1285,25 +1282,24 @@ public class JdbcManager implements I_ConnectionListener {
     */
    public final long getNumOfEntries(String tableName)
       throws SQLException, XmlBlasterException {
-      this.log.call(ME, "size");
       if (!this.isConnected) {
-         if (this.log.TRACE)
-            this.log.trace(ME, "size.  on table '" + tableName + "' currently not possible. No connection to the DB");
+         if (this.log.TRACE) this.log.trace(getLogId(tableName, null, "getNumOfEntries"), "Currently not possible. No connection to the DB");
          return 0L;
       }
 
-      String req = "select count(*) from " + tableName + "";
-      if (this.log.TRACE) this.log.trace(ME, "size: request: '" + req + "'");
+      String req = "select count(*) from " + tableName;
+      if (this.log.TRACE) this.log.trace(getLogId(tableName, null, "getNumOfEntries"), "Request: '" + req + "'");
       PreparedQuery query = null;
 
       try {
          query = new PreparedQuery(pool, req, this.log, -1);
          query.rs.next();
          long ret = query.rs.getLong(1);
+         if (this.log.TRACE) this.log.trace(getLogId(tableName, null, "getNumOfEntries"), "Num=" + ret);
          return ret;
       }
       catch (SQLException ex) {
-         handleSQLException("getEntriesBySamePriority", ex);
+         handleSQLException(getLogId(tableName, null, "getNumOfEntries"), ex);
          throw ex;
       }
       finally {
@@ -1318,16 +1314,14 @@ public class JdbcManager implements I_ConnectionListener {
     */
    public final long getNumOfDurables(String tableName)
       throws SQLException, XmlBlasterException {
-      this.log.call(ME, "getNumOfDurable");
 
       if (!this.isConnected) {
-         if (this.log.TRACE)
-            this.log.trace(ME, "getNumOfDurables.  on table '" + tableName + "' currently not possible. No connection to the DB");
+         if (this.log.TRACE) this.log.trace(getLogId(tableName, null, "getNumOfDurables"), "Currently not possible. No connection to the DB");
          return 0L;
       }
 
       String req = "select count(*) from " + tableName + " where durable='T'";
-      if (this.log.TRACE) this.log.trace(ME, "getNumOfDurable: request: '" + req + "'");
+      if (this.log.TRACE) this.log.trace(getLogId(tableName, null, "getNumOfDurable"), "Request: '" + req + "'");
       PreparedQuery query = null;
       try {
          query = new PreparedQuery(pool, req, this.log, -1);
@@ -1336,7 +1330,7 @@ public class JdbcManager implements I_ConnectionListener {
          return ret;
       }
       catch (SQLException ex) {
-         handleSQLException("getNumOfDurables", ex);
+         handleSQLException(getLogId(tableName, null, "getNumOfDurables"), ex);
          throw ex;
       }
       finally {
@@ -1351,16 +1345,15 @@ public class JdbcManager implements I_ConnectionListener {
     */
    public final long getSizeOfDurables(String tableName)
       throws SQLException, XmlBlasterException {
-      this.log.call(ME, "getSizeOfDurable");
+      if (this.log.CALL) this.log.call(getLogId(tableName, null, "getSizeOfDurable"), "Entering");
 
       if (!this.isConnected) {
-         if (this.log.TRACE)
-            this.log.trace(ME, "getSizeOfDurable.  on table '" + tableName + "' currently not possible. No connection to the DB");
+         if (this.log.TRACE) this.log.trace(getLogId(tableName, null, "getSizeOfDurable"), "Currently not possible. No connection to the DB");
          return 0L;
       }
 
       String req = "select sum(bytesize) from " + tableName + " where durable='T'";
-      if (this.log.TRACE) this.log.trace(ME, "getNumOfDurable: request: '" + req + "'");
+      if (this.log.TRACE) this.log.trace(getLogId(tableName, null, "getNumOfDurables"), "Request: '" + req + "'");
       PreparedQuery query = null;
       try {
          query = new PreparedQuery(pool, req, this.log, -1);
@@ -1369,7 +1362,7 @@ public class JdbcManager implements I_ConnectionListener {
          return ret;
       }
       catch (SQLException ex) {
-         handleSQLException("getNumOfDurables", ex);
+         handleSQLException(getLogId(tableName, null, "getNumOfDurables"), ex);
          throw ex;
       }
       finally {
@@ -1386,23 +1379,24 @@ public class JdbcManager implements I_ConnectionListener {
    private boolean createQueueTable(String tableName, Connection conn)
       throws SQLException, XmlBlasterException {
 
-      this.log.call(ME, "createQueueTable called for " + tableName);
+      if (this.log.CALL) this.log.call(getLogId(tableName, null, "createQueueTable"), "Entering");
       if (!this.isConnected) {
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "createQueueTable. No Connection to the DB. Could not create table '" + tableName + "'");
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, getLogId(tableName, null, "createQueueTable"),
+                   "No Connection to the DB. Could not create table '" + tableName + "'");
       }
 
       String req = "CREATE TABLE " + tableName + " (" + "dataId  " + longintTxt + " PRIMARY KEY, prio " + intTxt +
           ", flag " + stringTxt + ", durable " + booleanTxt + ", byteSize " + longintTxt + ", blob " + blobTxt + ")";
 
-      if (this.log.TRACE) this.log.trace(ME, "createQueueTable: request: '" + req + "'");
+      if (this.log.TRACE) this.log.trace(getLogId(tableName, null, "createQueueTable"), "Request: '" + req + "'");
 
       try {
          int ret = update(req, conn);
-         if (ret > 0) return true;
-         else  return false;
+         if (this.log.TRACE) this.log.trace(getLogId(tableName, null, "createQueueTable"), "Num=" + ret);
+         return (ret > 0);
       }
       catch (SQLException ex) {
-         handleSQLException("createQueueTable", ex);
+         handleSQLException(getLogId(tableName, null, "createQueueTable"), ex);
          throw ex;
       }
 
@@ -1436,10 +1430,10 @@ public class JdbcManager implements I_ConnectionListener {
    public final int cleanUp(String queueName, boolean force)
       throws XmlBlasterException {
 
-      this.log.call(ME, "cleanUp");
+      if (this.log.CALL) this.log.call(getLogId(queueName, null, "cleanUp"), "Entering");
 
       if (!this.isConnected) {
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "cleanUp. No Connection to the DB. Could not clean up queue '" + queueName + "'");
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, getLogId(queueName, null, "cleanUp"), "No Connection to the DB. Could not clean up queue '" + queueName + "'");
       }
 
 
@@ -1447,7 +1441,7 @@ public class JdbcManager implements I_ConnectionListener {
       if ((!force) && (this.queues.size()>0)) return this.queues.size();
 
       if (!this.pool.isInitialized()) {
-         this.log.trace(ME, "cleanUp: already cleaned up, not doing anything");
+         this.log.trace(getLogId(queueName, null, "cleanUp"), "Already cleaned up, not doing anything");
          return 0;
       }
 
@@ -1456,7 +1450,7 @@ public class JdbcManager implements I_ConnectionListener {
 
       // retrieve all tables to delete
       String req = "SELECT " + this.tableNameTxt + " FROM " + this.tablesTxt + "";
-      if (this.log.TRACE) this.log.trace(ME, "cleanUp: request: '" + req + "'");
+      if (this.log.TRACE) this.log.trace(getLogId(queueName, null, "cleanUp"), "Request: '" + req + "'");
       PreparedQuery query = null;
 
       java.util.Vector vec = new java.util.Vector();
@@ -1468,15 +1462,15 @@ public class JdbcManager implements I_ConnectionListener {
          }
       }
       catch (SQLException ex) {
-         handleSQLException("cleanUp", ex);
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME, "cleanUp: SQLException when retrieving the list of tables", ex);
+         handleSQLException(getLogId(queueName, null, "cleanUp"), ex);
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, getLogId(queueName, null, "cleanUp"), "cleanUp: SQLException when retrieving the list of tables", ex);
       }
       finally {
          try {
             if (query != null) query.close();
          }
          catch (Exception ex) {
-            throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME, "cleanUp: exception when closing the query", ex);
+            throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, getLogId(queueName, null, "cleanUp"), "cleanUp: exception when closing the query", ex);
          }
       }
 
@@ -1484,26 +1478,48 @@ public class JdbcManager implements I_ConnectionListener {
       for (int i=0; i < vec.size(); i++) {
          String name = (String)vec.elementAt(i);
          req = "DROP TABLE " + name + "";
-         if (this.log.TRACE) this.log.trace(ME, "cleanUp: request: '" + req + "'");
+         if (this.log.TRACE) this.log.trace(getLogId(queueName, null, "cleanUp"), "Request: '" + req + "'");
          try {
             this.update(req);
             count++;
          }
          catch (Exception ex) {
             if (ex instanceof SQLException)
-               handleSQLException("createQueueTable", (SQLException)ex);
-            this.log.error(ME, "could not delete queue '" + name + "'");
+               handleSQLException(getLogId(queueName, null, "cleanUp"), (SQLException)ex);
+            this.log.error(getLogId(queueName, null, "cleanUp"), "Could not delete queue '" + name + "'");
          }
       }
 
       // free DB resources
-      if (this.log.TRACE) this.log.trace(ME, "cleanUp: disconnecting the pool");
+      if (this.log.TRACE) this.log.trace(getLogId(queueName, null, "cleanUp"), "Disconnecting the pool");
       this.pool.disconnect();
       this.dbInitialized = false;
       //this.listener.clear(); // ?
       return 0;
    }
 
+   /**
+    * @param tableName or null
+    * @param storageId or null
+    * @return A nice location string for logging (instead of plain ME)
+    */
+   private final String getLogId(String tableName, StorageId storageId, String methodName) {
+      StringBuffer sb = new StringBuffer(200);
+      sb.append(ME);
+      if (this.tableNamePrefix != null) {
+         sb.append("-").append(this.tableNamePrefix);
+      }
+      if (storageId != null) {
+         sb.append("-").append(storageId.toString());
+      }
+      if (tableName != null) {
+         sb.append("-").append(tableName);
+      }
+      if (methodName != null) {
+         sb.append("-").append(methodName).append("()");
+      }
+      return sb.toString();
+   }
 
    /**
     * This main method can be used to delete all tables on the db which start
@@ -1518,39 +1534,55 @@ public class JdbcManager implements I_ConnectionListener {
    public static void main(String[] args) {
       Global glob = Global.instance();
       glob.init(args);
-      String prefix = null;
-
-      java.io.InputStreamReader reader = new java.io.InputStreamReader(System.in);
-      java.io.BufferedReader buff = new java.io.BufferedReader(reader);
-
-      StorageId queueId = new StorageId("dummy", "dummy");
+      
       System.out.println("DANGER DANGER DANGER. BE CAREFUL NOT TO DELETE THE");
       System.out.println("WRONG DATA.");
       System.out.println("");
       System.out.print("- Input a prefix (all tables found starting with the prefix specified will be deleted: ");
-
+      
+      String tableNamePrefix = null;
       try {
-
-         prefix = buff.readLine();
-         prefix = prefix.toUpperCase();
-
-         if (prefix == null || prefix.length() < 1) {
-            System.out.println("The prefix is empty. Not doing anything");
+         java.io.InputStreamReader reader = new java.io.InputStreamReader(System.in);
+         java.io.BufferedReader buff = new java.io.BufferedReader(reader);
+         tableNamePrefix = buff.readLine().toUpperCase();
+         if (tableNamePrefix == null || tableNamePrefix.length() < 1) {
+            System.out.println("The tableNamePrefix is empty. Not doing anything");
             System.exit(-1);
          }
-
-         glob.getProperty().set("queue.persistent.tableNamePrefix", prefix);
-         glob.getProperty().set("cb.queue.persistent.tableNamePrefix", prefix);
-         System.out.println("when deleting the DB I will be using the settings for the callback queue (see them in xmlBlaster.properties)");
-         StorageId id = new StorageId("cb", "dummy");
-         JdbcManager manager = glob.getJdbcQueueManager(id);
-         manager.cleanUp(id.getStrippedId(), true);
-
       }
-      catch (Exception ex) {
-         ex.printStackTrace();
+      catch (java.io.IOException e) {
+         System.out.println("tableNamePrefix read error: " + e.toString());
+         System.exit(-1);
       }
 
+      try {
+         wipeOutDB(glob, tableNamePrefix);
+      }
+      catch (XmlBlasterException e) {
+         e.printStackTrace();
+         System.out.println("wipueOutDB error: " + e.getMessage());
+         System.exit(-1);
+      }
+   }
+
+   /**
+    * This destroys the complete entries in the backend database.
+    * Handle with extreme care
+    * @return the number of queues still remaining to be cleaned up
+    */
+   public static int wipeOutDB(Global glob, String tableNamePrefix) throws XmlBlasterException {
+      try {
+         glob.getProperty().set("queue.persistent.tableNamePrefix", tableNamePrefix);
+         glob.getProperty().set("cb.queue.persistent.tableNamePrefix", tableNamePrefix);
+         //System.out.println("when deleting the DB I will be using the settings for the callback queue (see them in xmlBlaster.properties)");
+      }
+      catch (org.jutils.JUtilsException e) {
+         System.out.println("setProperty error: " + e.toString());
+      }
+
+      StorageId id = new StorageId("cb", "dummy");
+      JdbcManager manager = glob.getJdbcQueueManager(id);
+      return manager.cleanUp(id.getStrippedId(), true);
    }
 
 }
