@@ -3,7 +3,7 @@ Name:      AddressBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address string including protocol
-Version:   $Id: AddressBase.java,v 1.1 2002/04/15 12:52:06 ruff Exp $
+Version:   $Id: AddressBase.java,v 1.2 2002/04/21 10:35:53 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -28,7 +28,7 @@ public abstract class AddressBase
    protected String rootTag = null;
 
    /** The unique address, e.g. the CORBA IOR string */
-   protected String address = null;
+   protected String address = "";
 
    /** The unique protocol type, e.g. "IOR" */
    protected String type;
@@ -119,6 +119,7 @@ public abstract class AddressBase
     */
    public final void setAddress(String address)
    {
+      if (address == null) { Thread.currentThread().dumpStack(); throw new IllegalArgumentException("AddressBase.setAddress(null) null argument is not allowed"); }
       this.address = address;
    }
 
@@ -302,6 +303,8 @@ public abstract class AddressBase
     */
    public final void startElement(String uri, String localName, String name, StringBuffer character, Attributes attrs)
    {
+      Log.info(ME, "startElement(rootTag=" + rootTag + "): name=" + name + " character='" + character.toString() + "'");
+
       String tmp = character.toString().trim(); // The address
       if (tmp.length() > 0) {
          setAddress(tmp);

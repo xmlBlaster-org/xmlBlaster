@@ -3,7 +3,7 @@ Name:      Address.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding address string and protocol string
-Version:   $Id: Address.java,v 1.1 2002/04/15 12:52:06 ruff Exp $
+Version:   $Id: Address.java,v 1.2 2002/04/21 10:35:53 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -60,7 +60,7 @@ public class Address extends AddressBase
    }
 
    /**
-    * Configure property settings
+    * Configure property settings. 
     */
    private void initialize()
    {
