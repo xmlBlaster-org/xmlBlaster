@@ -56,25 +56,36 @@ public class ClassLoaderFactory {
          log.info(ME, "Analyzing classpath=" + classPathStr + " for plugin " + pluginInfo.getClassName());
          StringTokenizer st = new StringTokenizer(classPathStr, ";:");
          while (st.hasMoreElements()) {
-            String jar = (String)st.nextElement();
+            String jar = (String)st.nextElement();  // e.g. "soap/soap.jar"
+            if (log.TRACE) log.trace(ME, "Looking for jar '" + jar + "' ...");
             File f = new File(jar); // 1. check absolute path
             if (f.canRead()) {
                classPath.add(jar);
                continue;
             }
-            jar = f.getName();
-            f = new File(jar);      // 2. check local directory
+            String jarStripped = f.getName();      // e.g. "soap.jar"
+            if (log.TRACE) log.trace(ME, "Looking for jarStripped '" + jarStripped + "' ...");
+            f = new File(jarStripped);      // 2. check local directory
             if (f.canRead()) {
-               classPath.add(jar);
+               classPath.add(jarStripped);
                continue;
             }
-            String resourceJar = loaderInfo.rootPath +jar;
-            log.info(ME, "Analyzing classpath token=" + jar + " resourceJar=" + resourceJar);
+            String resourceJar = loaderInfo.rootPath +jar; // e.g. "/home/xmlblast/xmlBlaster/lib/soap/soap.jar"
+            if (log.TRACE) log.trace(ME, "Looking for resourceJar=" + resourceJar + " ...");
             f = new File(resourceJar);      // 3. check resource path of this instance
             if (f.canRead()) {
                classPath.add(resourceJar);
                continue;
             }
+            String resourceJarStripped = loaderInfo.rootPath +jar;   // e.g. "/home/xmlblast/xmlBlaster/lib/soap.jar"
+            if (log.TRACE) log.trace(ME, "Looking for resourceJarStripped=" + resourceJarStripped + " ...");
+            f = new File(resourceJarStripped);      // 3. check resource path of this instance
+            if (f.canRead()) {
+               classPath.add(resourceJarStripped);
+               continue;
+            }
+            log.info(ME, "Plugin '" + pluginInfo.getClassName() + "' specific jar file '" + jar + "' not found, using JVM default CLASSPATH");
+
                                     // 4. check JVM classpath
             URL[] urls = ((URLClassLoader)this.getClass().getClassLoader()).getURLs();
             for (int j=0; j<urls.length; j++) {
