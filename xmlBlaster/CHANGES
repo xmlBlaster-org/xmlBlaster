@@ -2,6 +2,15 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.8x [xxx, xx 200x]
 ===============================
+ o ConnectQos changes
+   Removed tag <sessionId>bla</sessionId>,
+   introduced attribute <session sessionId='bla'/> instead
+   Introduced attribute <session name='/node/heron/client/joe/2'/>
+   to support session reconnecting (for durable sessions and lost connections)
+
+ o Specifing the loginName on client side on command line changed
+   Please use now '-session.name joe' or '-session.name joe/2' instead
+
  o Bugfix for UserList event message, now the
    correct users are returned
 
