@@ -3,8 +3,8 @@ Name:      RamRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   RamRecorder for client messages
-Version:   $Id: RamRecorder.java,v 1.11 2002/11/26 12:40:13 ruff Exp $
-Author:    ruff@swand.lake.de
+Version:   $Id: RamRecorder.java,v 1.12 2002/12/18 12:10:12 ruff Exp $
+Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.recorder.ram;
 
@@ -19,7 +19,7 @@ import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.recorder.I_InvocationRecorder;
 import org.xmlBlaster.util.qos.StatusQosData;
 import org.xmlBlaster.engine.helper.Constants;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.client.I_CallbackRaw;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
@@ -41,11 +41,12 @@ import java.util.*;
  * <pre>
  * RecorderPlugin[RamRecorder][1.0]=org.xmlBlaster.util.recorder.ram.RamRecorder
  * </pre>
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  * @see org.xmlBlaster.test.qos.TestFailSave
  * @see org.xmlBlaster.test.classtest.InvocationRecorderTest
  */
-public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRaw
+public class RamRecorder implements I_Plugin, I_InvocationRecorder//, I_CallbackRaw
+//                    I_InvocationRecorder contains client.protocol.I_XmlBlaster and  I_CallbackRaw
 {
    private String ME = "RamRecorder";
    private Global glob;
@@ -62,9 +63,9 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
     * The recorder calls these methods when doing a playback
     */
    private I_XmlBlaster serverCallback = null;
-   private I_CallbackRaw clientCallback = null;
+   //private I_CallbackRaw clientCallback = null;
 
-   private final MessageUnit[] dummyMArr = new MessageUnit[0];
+   private final MsgUnit[] dummyMArr = new MsgUnit[0];
    private final String[] dummySArr = new String[0];
    private final String dummyS = new String();
    private final PublishReturnQos[] dummyPubRetQosArr = new PublishReturnQos[0];
@@ -81,8 +82,8 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
     * @param maxEntries The maximum number of invocations to store
     * @see org.xmlBlaster.util.recorder.I_InvocationRecorder#initialize
     */
-   public void initialize(Global glob, String fn, long maxEntries, I_XmlBlaster serverCallback,
-                             I_CallbackRaw clientCallback)
+   public void initialize(Global glob, String fn, long maxEntries, I_XmlBlaster serverCallback)
+                             //I_CallbackRaw clientCallback)
    {
       this.glob = glob;
       this.log = glob.getLog("recorder");
@@ -100,7 +101,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
       }
       this.queue = new Queue(ME, (int)maxEntries);
       this.serverCallback = serverCallback;
-      this.clientCallback = clientCallback;
+      //this.clientCallback = clientCallback;
       log.info(ME, "Invocation recorder is initialized to queue max=" + maxEntries + " tail back messages on failure");
    }
 
@@ -307,6 +308,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
          }
       }
 
+      /*
       if (clientCallback != null) {
          // This should be faster then reflection
          if (cont.method.equals("update")) {
@@ -318,6 +320,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
             return;
          }
       }
+      */
 
       log.error(ME, "Internal error: Method '" + cont.method + "' is unknown");
       throw new XmlBlasterException(ME, "Internal error: Method '" + cont.method + "' is unknown");
@@ -378,7 +381,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     * @exception XmlBlasterException if queue is full
     */
-   public PublishReturnQos publish(MessageUnit msgUnit) throws XmlBlasterException
+   public PublishReturnQos publish(MsgUnit msgUnit) throws XmlBlasterException
    {
       InvocationContainer cont = new InvocationContainer();
       cont.method = "publish";
@@ -394,7 +397,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
    }
 
 
-   public void publishOneway(MessageUnit [] msgUnitArr) {
+   public void publishOneway(MsgUnit [] msgUnitArr) {
       InvocationContainer cont = new InvocationContainer();
       cont.method = "publishOneway";
       cont.msgUnitArr = msgUnitArr;
@@ -412,7 +415,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     * @exception XmlBlasterException if queue is full
     */
-   public PublishReturnQos[] publishArr(MessageUnit [] msgUnitArr) throws XmlBlasterException
+   public PublishReturnQos[] publishArr(MsgUnit [] msgUnitArr) throws XmlBlasterException
    {
       InvocationContainer cont = new InvocationContainer();
       cont.method = "publishArr";
@@ -453,7 +456,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
     * @exception XmlBlasterException if queue is full
     */
-   public MessageUnit[] get(String xmlKey_literal, String qos_literal) throws XmlBlasterException
+   public MsgUnit[] get(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
       InvocationContainer cont = new InvocationContainer();
       cont.method = "get";
@@ -484,7 +487,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
     * delivering us a new asynchronous message. 
     * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
     */
-   public String[] update(String cbSessionId, MessageUnit [] msgUnitArr) throws XmlBlasterException
+   public String[] update(String cbSessionId, MsgUnit [] msgUnitArr) throws XmlBlasterException
    {
       InvocationContainer cont = new InvocationContainer();
       cont.method = "update";
@@ -505,7 +508,7 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
     * delivering us a new asynchronous message. 
     * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
     */
-   public void updateOneway(String cbSessionId, MessageUnit [] msgUnitArr)
+   public void updateOneway(String cbSessionId, MsgUnit [] msgUnitArr)
    {
       InvocationContainer cont = new InvocationContainer();
       cont.method = "updateOneway";
@@ -531,8 +534,8 @@ public class RamRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRa
       String cbSessionId;
       String xmlKey;
       String xmlQos;
-      MessageUnit msgUnit;
-      MessageUnit[] msgUnitArr;
+      MsgUnit msgUnit;
+      MsgUnit[] msgUnitArr;
 
       InvocationContainer() {
          timestamp = System.currentTimeMillis();

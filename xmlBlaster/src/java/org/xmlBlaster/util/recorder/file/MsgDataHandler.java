@@ -8,7 +8,7 @@ package org.xmlBlaster.util.recorder.file;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.MethodName;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 
 import java.io.RandomAccessFile;
 import java.io.IOException;
@@ -20,9 +20,11 @@ import java.io.IOException;
  */
 final class MsgDataHandler implements I_UserDataHandler
 {
+   private final Global glob;
    private final String ME = "MsgDataHandler";
 
    public MsgDataHandler(Global glob) {
+      this.glob = glob;
    }
 
    public final void writeData(final RandomAccessFile ra, final Object userData) throws IOException, XmlBlasterException {
@@ -68,12 +70,12 @@ final class MsgDataHandler implements I_UserDataHandler
          if (cont.method.wantsStrMsgArrArg()) { // UPDATE and UPDATE_ONEWAY
             cont.cbSessionId = ra.readUTF();
          }
-         cont.msgUnitArr = new MessageUnit[ra.readInt()];
+         cont.msgUnitArr = new MsgUnit[ra.readInt()];
          for (int i=0; i<cont.msgUnitArr.length; i++) {
             key = ra.readUTF();
             content = new byte[ra.readInt()];
             ra.read(content);
-            cont.msgUnitArr[i] = new MessageUnit(key, content, ra.readUTF());
+            cont.msgUnitArr[i] = new MsgUnit(glob, key, content, ra.readUTF());
          }
       }
       else if (cont.method.wantsKeyQosArg()) { // e.g. MethodName.SUBSCRIBE)

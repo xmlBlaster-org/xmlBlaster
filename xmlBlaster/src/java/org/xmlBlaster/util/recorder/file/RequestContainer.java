@@ -10,7 +10,7 @@ package org.xmlBlaster.util.recorder.file;
 
 import java.io.Serializable;
 
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.enum.MethodName;
 
 /**
@@ -26,8 +26,8 @@ public class RequestContainer implements Serializable
   String cbSessionId;
   String xmlKey;
   String xmlQos;
-  //MessageUnit msgUnit;
-  MessageUnit[] msgUnitArr;
+  //MsgUnit msgUnit;
+  MsgUnit[] msgUnitArr;
 
   RequestContainer()
   { timestamp = System.currentTimeMillis();

@@ -14,7 +14,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.MethodName;
 import org.xmlBlaster.util.recorder.I_InvocationRecorder;
 import org.xmlBlaster.util.qos.StatusQosData;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.client.I_CallbackRaw;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
@@ -39,11 +39,11 @@ import java.io.IOException;
  * See the <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/util.recorder.html">util.recorder</a> requirement.
  * @author astelzl@avitech.de
  * @author pavol.hrnciarik@pixelpark.com
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  * @see org.xmlBlaster.test.qos.TestFailSave
  * @see org.xmlBlaster.test.classtest.InvocationRecorderTest
  */
-public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackRaw
+public class FileRecorder implements I_Plugin, I_InvocationRecorder//, I_CallbackRaw
 {
    private final String ME = "FileRecorder";
    private Global glob;
@@ -54,9 +54,9 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
    private String fileName;
 
    private I_XmlBlaster serverCallback = null;
-   private I_CallbackRaw clientCallback = null;
+   //private I_CallbackRaw clientCallback = null;
 
-   private final MessageUnit[] dummyMArr = new MessageUnit[0];
+   private final MsgUnit[] dummyMArr = new MsgUnit[0];
    private final String[] dummySArr = new String[0];
    private final String dummyS = "";
    private final PublishReturnQos[] dummyPubRetQosArr = new PublishReturnQos[0];
@@ -85,11 +85,12 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
    * </pre>
    * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/util.recorder.html">util.recorder requirement</a>
    */
-   public void initialize(Global glob, String fn, long maxEntries, I_XmlBlaster serverCallback, I_CallbackRaw clientCallback) throws XmlBlasterException
+   public void initialize(Global glob, String fn, long maxEntries, I_XmlBlaster serverCallback) throws XmlBlasterException
+   //, I_CallbackRaw clientCallback) throws XmlBlasterException
    {
       this.glob = glob;
       this.serverCallback = serverCallback;
-      this.clientCallback = clientCallback;
+      //this.clientCallback = clientCallback;
       this.log = glob.getLog("recorder");
       StatusQosData statRetQos = new StatusQosData(glob);
       statRetQos.setStateInfo(Constants.INFO_QUEUED);
@@ -286,10 +287,14 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
       }
 
       long elaps = System.currentTimeMillis()-startOfPullback;
-      log.info(ME, "Pullback of " + (numAtBeginning-getNumUnread()) + " messages done - elapsed " +
-            org.jutils.time.TimeHelper.millisToNice(elaps) +
-            " average rate was " + (numAtBeginning*1000L/elaps) + 
-            " msg/sec, numUnread=" + getNumUnread());
+      if (elaps > 0) {
+         log.info(ME, "Pullback of " + (numAtBeginning-getNumUnread()) + " messages done - elapsed " +
+               org.jutils.time.TimeHelper.millisToNice(elaps) +
+               " average rate was " + (numAtBeginning*1000L/elaps) + 
+               " msg/sec, numUnread=" + getNumUnread());
+      }
+      else
+         log.info(ME, "Pullback of " + (numAtBeginning-getNumUnread()) + " messages done very fast");
       // we are done, everything played back
    }
 
@@ -434,6 +439,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
       }
     }
 
+    /*
     if (clientCallback != null) 
     {
       // This should be faster then reflection
@@ -448,6 +454,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
         return;
       }
     }
+    */
 
     log.error(ME, "Internal error: Method '" + cont.method + "' is unknown");
     throw new XmlBlasterException(ME, "Internal error: Method '" + cont.method + "' is unknown");
@@ -492,11 +499,11 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
   /**
    * storing publish request
    */
-  public PublishReturnQos publish(MessageUnit msgUnit) throws XmlBlasterException
+  public PublishReturnQos publish(MsgUnit msgUnit) throws XmlBlasterException
   {
     RequestContainer cont = new RequestContainer();
     cont.method = MethodName.PUBLISH;
-    cont.msgUnitArr = new MessageUnit[] { msgUnit };
+    cont.msgUnitArr = new MsgUnit[] { msgUnit };
     try
     { rb.writeNext(cont);
     }
@@ -509,7 +516,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
   /**
    * storing publishOneway request
    */
-  public void publishOneway(MessageUnit[] msgUnitArr) throws XmlBlasterException
+  public void publishOneway(MsgUnit[] msgUnitArr) throws XmlBlasterException
   { 
     RequestContainer cont = new RequestContainer();
     cont.method = MethodName.PUBLISH_ONEWAY;
@@ -525,7 +532,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
   /**
    * storing publishArr request
    */
-  public PublishReturnQos[] publishArr(MessageUnit[] msgUnitArr) throws XmlBlasterException
+  public PublishReturnQos[] publishArr(MsgUnit[] msgUnitArr) throws XmlBlasterException
   { 
     RequestContainer cont = new RequestContainer();
     cont.method = MethodName.PUBLISH;
@@ -560,7 +567,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
   /**
    * storing get request
    */
-  public MessageUnit[] get(String xmlKey, String qos) throws XmlBlasterException
+  public MsgUnit[] get(String xmlKey, String qos) throws XmlBlasterException
   {
     RequestContainer cont = new RequestContainer();
     cont.method = MethodName.GET;
@@ -582,7 +589,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
    /**
     * storing update request
     */
-   public String[] update(String cbSessionId, MessageUnit[] msgUnitArr) throws XmlBlasterException
+   public String[] update(String cbSessionId, MsgUnit[] msgUnitArr) throws XmlBlasterException
    {
       RequestContainer cont = new RequestContainer();
       cont.method = MethodName.UPDATE;
@@ -602,7 +609,7 @@ public class FileRecorder implements I_Plugin, I_InvocationRecorder, I_CallbackR
   /**
    * storing updateOneway request
    */
-  public void updateOneway(String cbSessionId, MessageUnit[] msgUnitArr) // throws XmlBlasterException
+  public void updateOneway(String cbSessionId, MsgUnit[] msgUnitArr) // throws XmlBlasterException
   {
     RequestContainer cont = new RequestContainer();
     cont.method = MethodName.UPDATE_ONEWAY;
