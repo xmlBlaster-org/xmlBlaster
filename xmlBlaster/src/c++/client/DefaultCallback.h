@@ -124,7 +124,7 @@ namespace org { namespace xmlBlaster {
                   string msg = "\n";
                   for (string::size_type j=0; j < msgUnit.content.length(); j++) 
                      msg += (char)msgUnit.content[j];
-                  log_.dump("content", msg);
+                  log_.dump("content", "Message received '" + msg + "' with size=" + lexical_cast<string>(msgUnit.content.length()));
                }
                if (log_.DUMP) log_.dump("UpdateQos", "\n" + updateQos->printOn());
                if (log_.TRACE) log_.trace(me(), "Received message [" + updateKey->getUniqueKey() + "] from publisher " + updateQos->getSender());
@@ -148,8 +148,6 @@ namespace org { namespace xmlBlaster {
                }
                CORBA::String_var str = CORBA::string_dup(oneRes.c_str());
                (*res)[i] = str;
-               delete updateKey;
-               delete updateQos;
             } 
             catch (serverIdl::XmlBlasterException &e) {
                log_.error(me(), string(e.reason) + " message is on error state: " + updateKey->printOn());
@@ -162,7 +160,9 @@ namespace org { namespace xmlBlaster {
                log_.error(me(), tmp);
                throw serverIdl::XmlBlasterException("UpdateFailed", tmp.c_str());
             }
-         
+
+            delete updateKey;
+            delete updateQos;
          } // for every message
 
          return res; // res._retn();
@@ -181,10 +181,10 @@ namespace org { namespace xmlBlaster {
          }
 
          for (string::size_type i=0; i < msgUnitArr.length(); i++) {
+            UpdateKey *updateKey = 0;
+            UpdateQos *updateQos = 0;
             try {
                const serverIdl::MessageUnit &msgUnit = msgUnitArr[i];
-               UpdateKey *updateKey = 0;
-               UpdateQos *updateQos = 0;
                try {
                   updateKey = new UpdateKey();
                   updateKey->init(string(msgUnit.xmlKey));
@@ -203,9 +203,6 @@ namespace org { namespace xmlBlaster {
                }
                else
                   log_.warn(me(), "can not update: no callback defined");
-
-               delete updateKey;
-               delete updateQos;
             }
             catch (const exception& e) {
                log_.error(me(), string("Exception caught in updateOneway(), it is not transferred to server: ") + e.what());
@@ -213,6 +210,9 @@ namespace org { namespace xmlBlaster {
             catch(...) {
                log_.error(me(), "Exception caught in updateOneway(), it is not transferred to server");
             }
+
+            delete updateKey;
+            delete updateQos;
          } // for each message
 
       } // updateOneway
@@ -223,7 +223,7 @@ namespace org { namespace xmlBlaster {
        */
       char *ping(const char *qos) {
          if (log_.CALL) log_.call(me(), "ping() ...");
-         return "";
+         return CORBA::string_dup("");
       } // ping
 
    }; // class DefaultCallback
