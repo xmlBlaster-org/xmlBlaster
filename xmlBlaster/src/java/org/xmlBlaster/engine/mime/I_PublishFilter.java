@@ -3,7 +3,7 @@ Name:      I_PublishFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface to plugin a publish filter
-Version:   $Id: I_PublishFilter.java,v 1.1 2002/04/05 18:45:00 ruff Exp $
+Version:   $Id: I_PublishFilter.java,v 1.2 2002/06/08 23:20:13 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime;
@@ -15,7 +15,7 @@ import org.xmlBlaster.engine.Global;
 
 
 /**
- * This interface hides the real protocol used to intercept published messages. 
+ * This interface hides the real implementation used to intercept published messages. 
  * <p />
  * The interface may be used to filter/check/manipulate messages arriving with publish().
  * Only messages where the intercept() method returns "OK" or "" are accepted and passed
@@ -41,7 +41,7 @@ import org.xmlBlaster.engine.Global;
  *    </li>
  * </ul>
  *
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  * @author ruff@swand.lake.de
  */
 public interface I_PublishFilter
