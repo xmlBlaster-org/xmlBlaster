@@ -128,20 +128,40 @@ sub _fromXml {
 	my $self = shift ;
 	my $xml = shift ;
 
-	#
-	#	<qos>
-	#	<securityService type="htpasswd" version="1.0">
-	#		<user>afdas</user>
-	#		<passwd>xb12afdas</passwd>
-	#	</securityService>
-	#	<ptp>true</ptp>
-	#	<session timeout='3600000' maxSessions='6'>
-	#		<sessionId>195.246.158.42-null-1013428006016--1307479829-22</sessionId>
-	#	</session>
-	#	</qos>
-	#
+# <qos>
+#   <securityService
+#     type="htpasswd"
+#     version="1.0">
+#    <user>admin</user>
+#    <passwd>secret</passwd>
+#   </securityService>
+#   <session name='/node/http_129_194_17_16_3412/client/admin/-24'
+#       timeout='86400000'
+#       maxSessions='10'
+#       clearSessions='false'
+#       sessionId='sessionId:129.194.17.16-null-1053040177135-712235115-24'/>
+#   <queue
+#       relating='clientSide'
+#       maxEntries='10000000'
+#       maxEntriesCache='1000'>
+#    <address
+#        type='IOR'
+#        hostname='129.194.17.16'
+#        port='3412'
+#        dispatchPlugin='undef'>
+#     http://129.194.17.16:3412
+#    </address>
+#   </queue>
+#   <queue
+#       relating='subject'/>
+#   <queue
+#       relating='callback'
+#       maxEntries='1000'
+#       maxEntriesCache='1000'/>
+#  </qos>
 
-	if( $xml =~ /<sessionId>(.*)<\/sessionId>/ ){
+
+	if( $xml =~ /\bsessionId=\'([^\']*)\'/ ){
 		$self->{'sessionId'} = $1 ;
 	}
 
