@@ -26,10 +26,10 @@ Compile:   gcc -DUSE_MAIN -o callbackServer callbackServer.c
 static const bool XMLBLASTER_DEBUG = true;
 
 typedef struct MsgUnitStruct {
-   char *xmlKey;   /* XML formatted ASCII string of message key */
-   char *content;  /* Raw data */
-   int contentLength;
-   char *qos;      /* XML formatted ASCII string of Quality of Service */
+   char *key;               // XML formatted ASCII string of message key
+   unsigned char *content;  // Raw data
+   int contentLen;
+   char *qos;               // XML formatted ASCII string of Quality of Service
 } MsgUnit;
 
 // See org.xmlBlaster.util.enum.MethodName.java

@@ -138,7 +138,7 @@ void initCallbackServer(callbackData *cbArgs)
       pp = rawData;
       keyLen = getLength(pp);
       pp += MSG_LEN_FIELD_LEN;
-      messageUnit.xmlKey = pp;
+      messageUnit.key = pp;
       pp += keyLen;
       qosLen = getLength(pp);
       *pp = '\0';             /* terminate key string */
@@ -146,7 +146,7 @@ void initCallbackServer(callbackData *cbArgs)
       pp += MSG_LEN_FIELD_LEN;
       messageUnit.qos = pp;
       pp += qosLen;
-      messageUnit.contentLength = getLength(pp);
+      messageUnit.contentLen = getLength(pp);
       *pp = '\0';             /* terminate qos string */
 
       pp += MSG_LEN_FIELD_LEN;
@@ -186,12 +186,12 @@ void shutdownCallbackServer()
  */
 char *messageUnitToXml(MsgUnit *msg)
 {
-        //char content[msg->contentLength+1];
-   char *content = malloc(msg->contentLength+1);
-   int len = 100 + strlen(msg->xmlKey) + msg->contentLength + strlen(msg->qos);
+        //char content[msg->contentLen+1];
+   char *content = malloc(msg->contentLen+1);
+   int len = 100 + strlen(msg->key) + msg->contentLen + strlen(msg->qos);
    char *xml = (char *)malloc(len*sizeof(char));
    sprintf(xml, "%s\n<content><![CDATA[%s]]></content>\n%s",
-                      msg->xmlKey,
+                      msg->key,
                       contentToString(content, msg), /* append \0 */
                       msg->qos);
         free(content);
@@ -200,8 +200,8 @@ char *messageUnitToXml(MsgUnit *msg)
 
 char *contentToString(char *content, MsgUnit *msg)
 {
-   strncpy(content, msg->content, msg->contentLength);
-   *(content + msg->contentLength) = 0;
+   strncpy(content, msg->content, msg->contentLen);
+   *(content + msg->contentLen) = 0;
    return content;
 }
 
