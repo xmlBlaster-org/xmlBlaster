@@ -114,12 +114,13 @@ help:
 	@echo "xmlBlaster generation utility"
 	@echo "--> Usage: "
 	@echo "   make all       --> makes everything new"
-	@echo "   make clean     --> deletes all classes"
-	@echo "   make distclean --> deletes all classes/doc/jar"
-	@echo "   make javadoc   --> call 'make javadoc' in xmlBlaster root dir"
+	@echo "   make clean     --> deletes all classes in $(CLASS_TOP_DIR)"
+	@echo "   make distclean --> does a 'clean' and additionally deletes ${JAVADOC_DIR} and $(JAR_DIR)/xmlBlaster.jar"
+	@echo "   make javadoc   --> call 'make javadoc' in xmlBlaster root dir, javadoc in ${JAVADOC_DIR}"
 	@echo "   make demo      --> makes everything new and starts a demo"
 	@echo "   make test      --> makes everything new and starts a test scenario"
 	@echo "   make jar       --> makes jar files of all packages into directory $(JAR_DIR)"
+	@echo "   make doc       --> makes javadoc and requirement reference handbook"
 
 
 
