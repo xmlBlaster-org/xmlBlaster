@@ -418,7 +418,7 @@ public class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
       else
          this.connectQos = qos;
 
-      doLogin(true);
+      loginRaw(true);
    }
 
    /**
@@ -448,19 +448,19 @@ public class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
       this.loginName=qos.getUserId();
       this.passwd=null; // not necessary here
 
-      boolean verbose = (firstAttempt) ? true : false;
-      firstAttempt = false;
+      boolean verbose = this.firstAttempt;
+      this.firstAttempt = false;
 
-      return doLogin(verbose);
+      return loginRaw(verbose);
    }
 
 
    /**
     * Is invoked when we poll for the server, for example after we have lost the connection. 
-    * Enforced by interface I_XmlBlasterConnection
+    * @see I_XmlBlasterConnection#loginRaw
     */
    public ConnectReturnQos loginRaw() throws XmlBlasterException {
-      return doLogin(false);
+      return loginRaw(false);
    }
 
 
@@ -473,7 +473,7 @@ public class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
     * @return The returned QoS or null
     * @exception       XmlBlasterException if login fails
     */
-   public ConnectReturnQos doLogin(boolean verbose) throws XmlBlasterException {
+   private ConnectReturnQos loginRaw(boolean verbose) throws XmlBlasterException {
       if (log.CALL) log.call(ME, "loginRaw(" + loginName + ") ...");
 
       try {
@@ -554,8 +554,7 @@ public class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
          log.warn(ME, "Remote exception: " + CorbaDriver.convert(glob, e).getMessage());
       } catch(org.omg.CORBA.OBJ_ADAPTER e) {
-         XmlBlasterException xmlBlasterException = XmlBlasterException.convert(glob, ME, "No disconnect possible, no CORBA connection", e);
-         log.warn(ME, xmlBlasterException.getMessage());
+         log.warn(ME, "No disconnect possible, no CORBA connection available: " + e.toString());
       } catch(Throwable e) {
          XmlBlasterException xmlBlasterException = XmlBlasterException.convert(glob, ME, null, e);
          log.warn(ME, xmlBlasterException.getMessage());
@@ -688,6 +687,7 @@ public class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
          throw CorbaDriver.convert(glob, e); // transform Corba exception to native exception
       } catch(Throwable e) {
+         log.error(ME+".erase", "IO exception: " + e.toString() + " sessionId=" + this.sessionId);
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "erase", e);
       }
    }
