@@ -63,7 +63,15 @@ Note:      The gcc and icc (>=8) both define __GNUC__
 #   include <stdint.h>  /*-> C99:  uint64_t etc. */
 # endif
 
-# define PRINTF_PREFIX_INT64_T "%lld"
+  /* __unix __WIN64 __WIN32 */
+# if __LP64__
+   /* For example a Xeon processor with UNIX */
+#  define PRINTF_PREFIX_INT64_T "%ld"
+   /*#elif __ILP64__ __LLP64__ */
+# else
+#  define PRINTF_PREFIX_INT64_T "%lld"
+# endif
+
 #endif
 /*#define INT64_DIGITLEN_MAX 19  Size of a max int64_t dumped to a string: LLONG_MAX from limits.h 9223372036854775807 */
 #define INT64_STRLEN_MAX 22 /**< Size of a max int64_t dumped to a string including an optional LL and termination '\0': LLONG_MAX from limits.h 9223372036854775807LL */
