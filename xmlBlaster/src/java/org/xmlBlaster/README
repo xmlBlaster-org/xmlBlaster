@@ -1,7 +1,10 @@
 Overview of the xmlBlaster.org packages
 =======================================
 
-1. The xmlBlaster.idl generates to directories:
+1. The xmlBlaster.idl generates three directories:
+
+   - authenticateIdl
+     The CORBA interface to login and logout
 
    - serverIdl
      The CORBA interface of the xmlBlaster server.
@@ -22,13 +25,22 @@ Overview of the xmlBlaster.org packages
 3. The directory 'engine' contains the xmlBlaster server code.
 
 
-4. Main.java is used to invoke the xmlBlaster server:
+4. The directory 'authentication' contains the login/logout code
+
+
+5. Main.java is used to invoke the xmlBlaster server:
 
       jaco org.xmlBlaster.Main
 
    Don't forget to start the JacORB Name Service 'ns' before.
 
+   Optionally you can also start the server with
 
-5. Client.java may be used as a first test client:
+      jaco org.xmlBlaster.MainGUI
+
+   which pops up a button to quit the server
+
+
+6. Client.java may be used as a first test client:
 
      jaco org.xmlBlaster.Client
