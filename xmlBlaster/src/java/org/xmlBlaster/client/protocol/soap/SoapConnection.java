@@ -20,7 +20,6 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 
 import org.xmlBlaster.util.MsgUnitRaw;
-import org.xmlBlaster.engine.xml2java.*;
 import org.xmlBlaster.client.qos.GetQos;
 import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.UpdateQos;
@@ -342,7 +341,6 @@ public class SoapConnection implements I_XmlBlasterConnection
    /**
     * Unsubscribe from messages.
     * <p />
-    * @see org.xmlBlaster.engine.RequestBroker
     */
    public final void unSubscribe (String xmlKey_literal,
                                  String qos_literal) throws XmlBlasterException {
@@ -407,7 +405,6 @@ public class SoapConnection implements I_XmlBlasterConnection
    /**
     * Publish multiple messages in one sweep.
     * <p />
-    * @see org.xmlBlaster.engine.RequestBroker
     */
    public final String[] publishArr(MsgUnitRaw[] msgUnitArr)
       throws XmlBlasterException {
@@ -453,7 +450,6 @@ public class SoapConnection implements I_XmlBlasterConnection
    /**
     * Publish multiple messages in one sweep.
     * <p />
-    * @see org.xmlBlaster.engine.RequestBroker
     */
    public final void publishOneway(MsgUnitRaw[] msgUnitArr)
       throws XmlBlasterException
@@ -493,20 +489,6 @@ public class SoapConnection implements I_XmlBlasterConnection
     * Delete messages.
     * <p />
     */
-   public final String[] erase (XmlKey xmlKey, EraseQos eraseQoS)
-      throws XmlBlasterException
-   {
-      String xmlKey_literal = xmlKey.toXml();
-      String eraseQoS_literal = eraseQoS.toXml();
-
-      return erase(xmlKey_literal, eraseQoS_literal);
-   }
-
-   /**
-    * Delete messages.
-    * <p />
-    * @see org.xmlBlaster.engine.RequestBroker
-    */
    public final String[] erase(String xmlKey_literal, String qos_literal)
       throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering erase() id=" + sessionId);
@@ -541,24 +523,10 @@ public class SoapConnection implements I_XmlBlasterConnection
       */
    }
 
-   /**
-    * Synchronous access a message.
-    * <p />
-    * @see org.xmlBlaster.engine.RequestBroker
-    */
-   public final MsgUnitRaw[] get (XmlKey xmlKey, GetQos getQoS)
-      throws XmlBlasterException {
-      String xmlKey_literal = xmlKey.toXml();
-      String getQoS_literal = getQoS.toXml();
-
-      return get(xmlKey_literal, getQoS_literal);
-   }
-
 
    /**
     * Synchronous access a message.
     * <p />
-    * @see org.xmlBlaster.engine.RequestBroker
     */
    public final MsgUnitRaw[] get(String xmlKey_literal,
                                   String qos_literal) throws XmlBlasterException
