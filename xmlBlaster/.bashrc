@@ -55,9 +55,9 @@ fi
 #-------- Checking xmlBlaster --------
 if [ "${XMLBLASTER_HOME}" = "" ] ; then
    export XMLBLASTER_HOME=`pwd`
-   if [ ! -f ${XMLBLASTER_HOME}/build.properties ] ; then
+   if [ ! -f ${XMLBLASTER_HOME}/build.xml ] ; then
       export XMLBLASTER_HOME=${HOME}/xmlBlaster
-      if [ ! -f ${XMLBLASTER_HOME}/build.properties ] ; then
+      if [ ! -f ${XMLBLASTER_HOME}/build.xml ] ; then
          ${ECHO} "$BLACK_RED   Please set the environment variable XMLBLASTER_HOME          $ESC"
          ${ECHO} "$BLACK_RED      Example: 'export XMLBLASTER_HOME=`pwd`'   $ESC"
          return
@@ -269,8 +269,8 @@ if [ "${USE_CPP}" = "true" ] ; then
   export PATH=${PATH}:${XMLBLASTER_HOME}/testsuite/c++/bin
   #check if xerces is installed and version of xerces is set
   if [ "${XMLCPP_VER}" = "" ] ; then
-      ${ECHO} "$BLACK_YELLOW   XMLCPP_VER is not set. I will set it to 1_6_0 $ESC"
-      export XMLCPP_VER="1_6_0"
+      ${ECHO} "$BLACK_YELLOW   XMLCPP_VER is not set. I will set it to 1_7_0 $ESC"
+      export XMLCPP_VER="1_7_0"
       CPP_ERROR=true
   else
       ${ECHO} "$BLACK_LTGREEN   XMLCPP_VER     =${XMLCPP_VER} $ESC"
@@ -299,18 +299,23 @@ if [ "${USE_CPP}" = "true" ] ; then
     CPP_ERROR=true
   fi
   if [ "${CORBACPP_VER}" = "" ] ; then
-    export CORBACPP_VER="2.3.6"
+    export CORBACPP_VER="2.3.7"
     ${ECHO} "$BLACK_YELLOW   CORBACPP_VER is not set. I will set it to ${CORBACPP_VER} $ESC"
     CPP_ERROR=true
   fi
   #home directory of the corba implementation
   if [ "${CORBACPP_HOME}" = "" ] ; then
-    if [ -d /opt/mico ] ; then
-       export CORBACPP_HOME=/opt/mico
+    if [ -d /opt/local/mico ] ; then
+       export CORBACPP_HOME=/opt/local/mico
        ${ECHO} "$BLACK_YELLOW   CORBACPP_HOME is not set. I will set it to ${CORBACPP_HOME}. $ESC"
     else
-       ${ECHO} "$BLACK_RED   CORBACPP_HOME is not set. Please set it to the directory where corba is installed. $ESC"
-       CPP_ERROR=true
+       if [ -d /opt/mico ] ; then
+          export CORBACPP_HOME=/opt/mico
+          ${ECHO} "$BLACK_YELLOW   CORBACPP_HOME is not set. I will set it to ${CORBACPP_HOME}. $ESC"
+       else
+          ${ECHO} "$BLACK_RED   CORBACPP_HOME is not set. Please set it to the directory where corba is installed. $ESC"
+          CPP_ERROR=true
+       fi
     fi
   fi
   if [ ! -d ${CORBACPP_HOME} ] ; then
