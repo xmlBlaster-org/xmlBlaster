@@ -3,7 +3,7 @@ Name:      ConnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: ConnectQos.java,v 1.33 2002/11/26 18:22:53 ruff Exp $
+Version:   $Id: ConnectQos.java,v 1.34 2002/12/18 11:48:11 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -45,13 +45,13 @@ import java.io.Serializable;
  *        &lt;session name='/node/heron/client/joe/-9' timeout='3600000' maxSessions='10' clearSessions='false' sessionId='4e56890ghdFzj0'/>
  *        &lt;ptp>true&lt;/ptp>
  *        &lt;!-- The client side queue: -->
- *        &lt;queue relating='client' type='CACHE' version='1.0' maxMsg='1000' maxSize='4000' onOverflow='exception'>
+ *        &lt;queue relating='client' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='exception'>
  *           &lt;address type='IOR' sessionId='4e56890ghdFzj0'>
  *              IOR:10000010033200000099000010....
  *           &lt;/address>
  *        &lt;queue>
  *        &lt;!-- The server side callback queue: -->
- *        &lt;queue relating='session' type='CACHE' version='1.0' maxMsg='1000' maxSize='4000' onOverflow='deadMessage'>
+ *        &lt;queue relating='session' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='deadMessage'>
  *           &lt;callback type='IOR' sessionId='4e56890ghdFzj0'>
  *              IOR:10000010033200000099000010....
  *              &lt;burstMode collectTime='400' />
@@ -1218,7 +1218,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
             "   <session timeout='3600000' maxSessions='20' clearSessions='false'>\n" +
             "      <sessionId>anId</sessionId>\n" +
             "   </session>\n" +
-            "   <queue relating='session' maxMsg='1000' maxSize='4000' onOverflow='deadMessage'>\n" +
+            "   <queue relating='session' maxMsg='1000' maxBytes='4000' onOverflow='deadMessage'>\n" +
             "      <callback type='IOR' sessionId='4e56890ghdFzj0' pingInterval='60000' retries='1' delay='60000' useForSubjectQueue='true'>\n" +
             "         <ptp>true</ptp>\n" +
             "         IOR:00011200070009990000....\n" +
@@ -1237,8 +1237,8 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
             "      <ptp>true</ptp>\n" +
             "      http:/www.mars.universe:8080/RPC2\n" +
             "   </callback>\n" +
-            "   <queue relating='session' maxMsg='1600' maxSize='2000'/>\n" +
-            "   <queue relating='client' maxMsg='9600' maxSize='92000' expires='960000000'>\n" +
+            "   <queue relating='session' maxMsg='1600' maxBytes='2000'/>\n" +
+            "   <queue relating='client' maxMsg='9600' maxBytes='92000' expires='960000000'>\n" +
             "      <address type='IOR' sessionId='clientAAXX' pingInterval='99000' retries='9' delay='90000'>\n" +
             "         IOR:00011200070009990000....\n" +
             "         <compress type='gzip' minSize='1000' />\n" +
