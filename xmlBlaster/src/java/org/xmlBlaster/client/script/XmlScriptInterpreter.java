@@ -242,10 +242,18 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
 
    public void characters(char[] ch, int start, int length) {
       // append on the corresponding buffer
-      if (this.inCDATA > 0) this.cdata.append(ch, start, length);
-      if (this.inQos > 0) this.qos.append(ch, start, length);
-      else if (this.inKey > 0) this.key.append(ch, start, length);
-      else if (this.inContent > 0) this.content.append(ch, start, length);
+      if (this.inCDATA > 0) {
+         this.cdata.append(ch, start, length);
+      }
+      else if (this.inQos > 0) {
+         this.qos.append(ch, start, length);
+      }
+      else if (this.inKey > 0) {
+         this.key.append(ch, start, length);
+      }
+      else if (this.inContent > 0) {
+         this.content.append(ch, start, length);
+      }
       else super.characters(ch, start, length);
    }
 
@@ -608,7 +616,8 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
    public void startCDATA() {
       if (this.log.CALL) this.log.call(ME, "startCDATA");
       this.inCDATA++;
-      this.cdata.append("<![CDATA[");
+      if (this.inContent == 0)
+         this.cdata.append("<![CDATA[");
    }
    
    public void endCDATA() {
@@ -618,7 +627,8 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
          this.log.call(ME, "endCDATA: " + txt);
       }
       this.inCDATA--;
-      this.cdata.append("]]>");
+      if (this.inContent == 0) 
+         this.cdata.append("]]>");
       if (this.inCDATA == 0) {
          // append on the corresponding buffer
          if (this.inQos > 0) this.qos.append(this.cdata);
