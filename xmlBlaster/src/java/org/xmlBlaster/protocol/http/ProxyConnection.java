@@ -3,7 +3,7 @@ Name:      ProxyConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: ProxyConnection.java,v 1.10 2000/03/29 16:33:35 kkrafft2 Exp $
+Version:   $Id: ProxyConnection.java,v 1.11 2000/05/03 17:13:34 ruff Exp $
 Author:    Marcel Ruff ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
@@ -31,7 +31,7 @@ import java.util.Properties;
  * you need to specify environment variables in the servlet configuration file,<br />
  * for JServ see /etc/httpd/conf/jserv/zone.properties,<br />
  * for jrun see jrun/jsm-default/services/jse/properties/servlets.properties.<br />
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  * @author ruff@swand.lake.de
  */
 public class ProxyConnection implements I_Callback
@@ -41,7 +41,7 @@ public class ProxyConnection implements I_Callback
    private CorbaConnection corbaConnection              = null;
    private Server       xmlBlaster                      = null;
    private Hashtable httpConnections                    = null;
-   private ProxyInterceptor interceptor                 = null;
+   private I_ProxyInterceptor interceptor                 = null;
 
 
    /**
@@ -68,7 +68,7 @@ public class ProxyConnection implements I_Callback
 
    /**
     * Invoking the callback to the browser. If an interceptor is set, the interceptor
-    * could modify the update parameters.
+    * could modify the update parameters. 
     * <p />
     * This sends the message to the hidden frame in the browser
     */
@@ -111,6 +111,10 @@ public class ProxyConnection implements I_Callback
    {
       return loginName;
    }
+
+   /**
+    * The HttpPushHandler handles and hides the persistent connection to the browser. 
+    */
    public void addHttpPushHandler( String sessionId, HttpPushHandler pushHandler )
    {
       if( sessionId == null || pushHandler == null )
@@ -129,7 +133,13 @@ public class ProxyConnection implements I_Callback
       return (HttpPushHandler)httpConnections.get( sessionId );
    }
 
-   public void setProxyInterceptor( ProxyInterceptor interceptor )
+   /**
+    * If you implement I_ProxyInterceptor and register it here,
+    * your update() implementation is called and may manipulate the
+    * received message from xmlBlaster before it is sent to the browser. 
+    * @parameter interceptor Your optional implementation
+    */
+   public void setProxyInterceptor( I_ProxyInterceptor interceptor )
    {
       this.interceptor = interceptor;
    }
