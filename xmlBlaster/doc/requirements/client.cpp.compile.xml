@@ -9,7 +9,7 @@
    <description>
      <h2>Overview</h2>
      <p>You can use the <b><a href="http://ant.apache.org/" target="others">ant tool</a></b> with
-     the C++ compile extension <b><a href="http://sourceforge.net/projects/ant-contrib/" target="others">cpptasks</a></b>
+     the C++ compile extension <b><a href="http://ant-contrib.sourceforge.net/cc.html" target="others">cpptasks</a></b>
      to compile the xmlBlaster client C++ library, the C++ demo clients and the C++ testsuite.
      All necessary compile tools are provide in the xmlBlaster distribution.
      </p>

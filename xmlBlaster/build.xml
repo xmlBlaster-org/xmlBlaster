@@ -2304,8 +2304,8 @@ TODO
    </target>
 
    <!-- =================================================================== -->
-   <!-- c++ client integration - create libxmlBlasterClient.sl (so,dll)         -->
-   <!-- See http://sourceforge.net/projects/ant-contrib/                    -->
+   <!-- c++ client integration - create libxmlBlasterClient.sl (so,dll)     -->
+   <!-- See http://ant-contrib.sourceforge.net/cc.html                      -->
    <!-- =================================================================== -->
    <target name="cpp-lib" depends="prepare-cpp" description="c++ client integration - create libxmlBlasterClient.sl (dll)">
 
@@ -2520,8 +2520,8 @@ TODO
 
 
    <!-- =================================================================== -->
-   <!-- c++ client integration - create C++ test clients                     -->
-   <!-- See http://sourceforge.net/projects/ant-contrib/                    -->
+   <!-- c++ client integration - create C++ test clients                    -->
+   <!-- See http://ant-contrib.sourceforge.net/cc.html                      -->
    <!-- =================================================================== -->
    <!--
       Linux:
@@ -2843,7 +2843,7 @@ TODO
 
    <!-- =================================================================== -->
    <!-- C client integration - create libxmlBlasterClientC.sl (so,dll)      -->
-   <!-- See http://sourceforge.net/projects/ant-contrib/                    -->
+   <!-- See http://ant-contrib.sourceforge.net/cc.html                      -->
    <!-- =================================================================== -->
    <target name="c-lib" depends="prepare-cpp" description="C client integration - create libxmlBlasterClientC.sl (dll)">
       <mkdir dir="${c.obj.dir}"/>

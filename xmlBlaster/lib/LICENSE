@@ -174,7 +174,7 @@ only the SNMP subagent module jax.jar is GPL only!
     cvs -z3 -d:pserver:anonymous@cvs.sourceforge.net:/cvsroot/ant-contrib co -P cpptasks 
   See:  http://ant-contrib.sourceforge.net/cc.html
 
-  ant-contrib.jar  cvs from Feb 12, 2003
+  ant-contrib.jar 1.0b2 from 2005-02-03
   ant supplement to compile C++ clients and shared library
   used in build.sh/build.bat for build.xml
   See http://sourceforge.net/projects/ant-contrib/
