@@ -26,7 +26,7 @@
       <action do='LOAD' onStartupRunlevel='3' sequence='2' 
               onFail='resource.configuration.pluginFailed'/>
       <action do='STOP' onShutdownRunlevel='2' sequence='5'/>   
-      <attribute id='compress/type'></attribute>  <!-- Default: no compression for C and C++ access -->
+      <attribute id='compress/type'></attribute>  <!-- Default: no compression for python,php,perl access -->
    </plugin>
 
    <!-- Example to start a second SOCKET plugin with different listener port -->
@@ -43,7 +43,18 @@
    </plugin>
 -->
 
-   <!-- Example to start a second SOCKET plugin with SSL support on different listener port -->
+   <!-- Example to start a SOCKET plugin with compression support on different listener port -->
+<!--
+   <plugin id='socket_z' className='org.xmlBlaster.protocol.socket.SocketDriver'>
+      <action do='LOAD' onStartupRunlevel='3' sequence='2' 
+              onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='2' sequence='5'/>   
+      <attribute id='port'>7606</attribute>
+      <attribute id='compress/type'>zlib:stream</attribute>
+   </plugin>
+-->
+
+   <!-- Example to start a second SOCKET plugin with SSL and compression support on different listener port -->
    <!-- Read: http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket.html#SSL -->
 <!--
    <plugin id='socket_ssl' className='org.xmlBlaster.protocol.socket.SocketDriver'>
