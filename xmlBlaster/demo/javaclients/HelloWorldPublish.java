@@ -6,7 +6,9 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.PriorityEnum;
+import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.qos.TopicProperty;
+import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
@@ -44,11 +46,17 @@ import org.xmlBlaster.client.protocol.XmlBlasterConnection;
  *
  * Invoke (after starting the xmlBlaster server):
  * <pre>
+ *Publish manually 10 messages:
  * java javaclients.HelloWorldPublish -interactive true -numPublish 10 -oid Hello -persistent true -erase true
  *
+ *Publish automatically 10 messages and sleep 1 sec in between:
  * java javaclients.HelloWorldPublish -interactive false -sleep 1000 -numPublish 10 -oid Hello -persistent true -erase true
  *
+ *Login as joe/5 and send one persistent message:
  * java javaclients.HelloWorldPublish -session.name joe/5 -passwd secret -persistent true -dump[HelloWorldPublish] true
+ *
+ *Send a PtP message:
+ * java javaclients.HelloWorldPublish -destination jack/17 -forceQueuing true -persistent true -subscribeable true
  * </pre>
  * <p>
  * If interactive is false, the sleep gives the number of millis to sleep before publishing the next message.
@@ -80,23 +88,32 @@ public class HelloWorldPublish
          boolean readonly = glob.getProperty().get("readonly", false);
          long destroyDelay = glob.getProperty().get("destroyDelay", 60000L);
          boolean createDomEntry = glob.getProperty().get("createDomEntry", true);
+         boolean forceQueuing = glob.getProperty().get("forceQueuing", true);
+         boolean subscribeable = glob.getProperty().get("subscribeable", true);
+         String destination = glob.getProperty().get("destination", (String)null);
          boolean erase = glob.getProperty().get("erase", true);
          boolean disconnect = glob.getProperty().get("disconnect", true);
 
          log.info(ME, "Used settings are:");
          log.info(ME, "   -interactive    " + interactive);
          log.info(ME, "   -sleep          " + sleep);
+         log.info(ME, "   -erase          " + erase);
+         log.info(ME, "   -disconnect     " + disconnect);
+         log.info(ME, " Pub/Sub settings");
          log.info(ME, "   -numPublish     " + numPublish);
          log.info(ME, "   -oid            " + oid);
          log.info(ME, "   -content        " + content);
          log.info(ME, "   -priority       " + priority.toString());
          log.info(ME, "   -persistent     " + persistent);
          log.info(ME, "   -lifeTime       " + lifeTime);
+         log.info(ME, " Topic settings");
          log.info(ME, "   -readonly       " + readonly);
          log.info(ME, "   -destroyDelay   " + destroyDelay);
          log.info(ME, "   -createDomEntry " + createDomEntry);
-         log.info(ME, "   -erase          " + erase);
-         log.info(ME, "   -disconnect     " + disconnect);
+         log.info(ME, " PtP settings");
+         log.info(ME, "   -subscribeable  " + subscribeable);
+         log.info(ME, "   -forceQueuing   " + forceQueuing);
+         log.info(ME, "   -destination    " + destination);
          log.info(ME, "For more info please read:");
          log.info(ME, "   http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html");
 
@@ -112,12 +129,12 @@ public class HelloWorldPublish
          for(int i=0; i<numPublish; i++) {
 
             if (interactive) {
-               log.info(ME, "Hit a key to publish '" + oid + "' #" + i + "/" + numPublish);
+               log.info(ME, "Hit a key to publish '" + oid + "' #" + (i+1) + "/" + numPublish);
                try { System.in.read(); } catch(java.io.IOException e) {}
             }
             else {
                try { Thread.currentThread().sleep(sleep); } catch( InterruptedException e) {}
-               log.info(ME, "Publish '" + oid + "' #" + i + "/" + numPublish);
+               log.info(ME, "Publish '" + oid + "' #" + (i+1) + "/" + numPublish);
             }
 
             PublishKey pk = new PublishKey(glob, oid, "text/xml", "1.0");
@@ -126,6 +143,8 @@ public class HelloWorldPublish
             pq.setPriority(priority);
             pq.setPersistent(persistent);
             pq.setLifeTime(lifeTime);
+            pq.setIsSubscribeable(subscribeable);
+            
             if (i == 0) {
                TopicProperty topicProperty = new TopicProperty(glob);
                topicProperty.setDestroyDelay(destroyDelay);
@@ -134,12 +153,21 @@ public class HelloWorldPublish
                pq.setTopicProperty(topicProperty);
                log.info(ME, "Added TopicProperty on first publish: " + topicProperty.toXml());
             }
+            
+            if (destination != null) {
+               Destination dest = new Destination(glob, new SessionName(glob, destination));
+               dest.forceQueuing(forceQueuing);
+               pq.addDestination(dest);
+            }
+
             MsgUnit msgUnit = new MsgUnit(glob, pk, content, pq);
+            if (log.DUMP) log.dump("", "Going to publish message: " + msgUnit.toXml());
+
             PublishReturnQos prq = con.publish(msgUnit);
-            if (log.DUMP) log.dump("", "Published message: " + msgUnit.toXml());
             if (log.DUMP) log.dump("", "Returned: " + prq.toXml());
 
-            log.info(ME, "Got status='" + prq.getState() + "' rcvTimestamp=" + prq.getRcvTimestamp().toString() +
+            log.info(ME, "#" + (i+1) + "/" + numPublish +
+                         ": Got status='" + prq.getState() + "' rcvTimestamp=" + prq.getRcvTimestamp().toString() +
                          " for published message '" + prq.getKeyOid() + "'");
          }
 
