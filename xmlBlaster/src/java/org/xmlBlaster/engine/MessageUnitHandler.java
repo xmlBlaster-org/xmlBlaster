@@ -3,12 +3,13 @@ Name:      MessageUnitHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org (LGPL)
 Comment:   Handling exactly one message content
-           $Revision: 1.2 $  $Date: 1999/11/11 16:15:00 $
+           $Revision: 1.3 $  $Date: 1999/11/12 14:31:32 $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.serverIdl.XmlBlasterException;
+import org.xmlBlaster.serverIdl.MessageUnit;
 import java.util.*;
 
 
@@ -40,9 +41,10 @@ public class MessageUnitHandler
    /**
     * This is the Message itself
     */
+   private MessageUnit messageUnit;
    private XmlKey xmlKey;
-   private String uniqueKey; // Attribute oid of key tag: <key oid="..."> </key>
-   private byte[] content;   // the data BLOB
+   //private QoSKey qosPublish; // the flags from the publisher
+   private String uniqueKey;  // Attribute oid of key tag: <key oid="..."> </key>
 
 
    /**
@@ -51,31 +53,36 @@ public class MessageUnitHandler
    public MessageUnitHandler(RequestBroker requestBroker, SubscriptionInfo sub) throws XmlBlasterException
    {
       this.xmlKey = sub.getXmlKey();
+      this.messageUnit = new MessageUnit(sub.getXmlKey().toString(), new byte[0]);
       this.uniqueKey = xmlKey.getUniqueKey();
-      this.content = new byte[0];
 
       if (Log.CALLS) Log.trace(ME, "Creating new MessageUnitHandler because of subscription. Key=" + uniqueKey);
 
       addSubscriber(sub);
+
+      // mimeType and content remains unknown until first data is fed
    }
 
 
    /**
     * Constructor if a yet unknown object is fed by method set()
     */
-   public MessageUnitHandler(RequestBroker requestBroker, XmlKey xmlKey, byte[] content)
+   public MessageUnitHandler(RequestBroker requestBroker, MessageUnit messageUnit/*, QoSKey qosPublish*/) throws XmlBlasterException
    {
-      this.xmlKey = xmlKey;
-      this.uniqueKey = xmlKey.getUniqueKey();
+      if (requestBroker == null || messageUnit == null || messageUnit.xmlKey == null) {
+         Log.error(ME, "Invalid constructor parameters");
+         throw new XmlBlasterException(ME, "Invalid constructor parameters");
+      }
 
-      if (content == null)
-         content = new byte[0];
+      if (messageUnit.content == null)
+         messageUnit.content = new byte[0];
+
+      this.messageUnit = messageUnit;
+      this.xmlKey = new XmlKey(messageUnit.xmlKey);
+      this.uniqueKey = this.xmlKey.getUniqueKey();
+      //this.qosPublish = qosPublish;
 
       if (Log.CALLS) Log.trace(ME, "Creating new MessageUnitHandler setting new data. Key=" + uniqueKey);
-
-      this.content = content;
-
-      // mimeType and content remains unknown until first data is fed
    }
 
 
@@ -86,25 +93,25 @@ public class MessageUnitHandler
     */
    public boolean setContent(byte[] content)
    {
-      if (Log.CALLS) Log.trace(ME, "Updating xmlKey " + xmlKey.toString());
+      if (Log.CALLS) Log.trace(ME, "Updating xmlKey " + messageUnit.xmlKey.toString());
 
       if (content == null)
          content = new byte[0];
 
       boolean changed = false;
-      if (this.content.length != content.length) {
+      if (this.messageUnit.content.length != content.length) {
          changed = true;
       }
       else {
          for (int ii=0; ii<content.length; ii++)
-            if (this.content[ii] != content[ii]) {
+            if (this.messageUnit.content[ii] != content[ii]) {
                changed = true;
                break;
             }
       }
 
       if (changed) {  // new content is not the same as old one
-         this.content = content;
+         this.messageUnit.content = content;
          return true;
       }
       else {
@@ -152,7 +159,7 @@ public class MessageUnitHandler
 
    public String getMimeType() throws XmlBlasterException
    {
-      if (xmlKey == null) {
+      if (messageUnit.xmlKey == null) {
          Log.error(ME + ".UnknownMime", "Sorry, mime type not yet known for " + getUniqueKey());
          throw new XmlBlasterException(ME + ".UnknownMime", "Sorry, mime type not yet known for " + getUniqueKey());
       }

@@ -4,7 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org (LGPL)
 Comment:   Implementing the CORBA xmlBlaster-server interface
            $Revision $
-           $Date: 1999/11/12 13:07:06 $
+           $Date: 1999/11/12 14:31:34 $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.serverIdl;
 
@@ -102,12 +102,14 @@ public class ServerImpl implements ServerOperations {    // tie approach
    /**
     * @see xmlBlaster.idl
     */
-   public int publish(String sessionId, String xmlKey_literal, byte[] content, String qos_literal) throws XmlBlasterException
+   public int publish(String sessionId, MessageUnit [] messageUnitArr, String [] qos_literal_Arr) throws XmlBlasterException
    {
-      XmlKey xmlKey = new XmlKey(xmlKey_literal);
-      XmlQoS xmlQoS = new XmlQoS(qos_literal);
-      if (Log.CALLS) Log.trace(ME, "Entering xmlBlaster.publish(" + xmlKey.getUniqueKey() + ")");
-      return requestBroker.set(xmlKey, content, xmlQoS);
+      if (messageUnitArr.length < 1) {
+         if (Log.CALLS) Log.trace(ME, "Entering xmlBlaster.publish(), nothing to do, zero messageUnits sent");
+         return 0;
+      }
+      if (Log.CALLS) Log.trace(ME, "Entering xmlBlaster.publish() for " + messageUnitArr.length + " Messages");
+      return requestBroker.publish(messageUnitArr, qos_literal_Arr);
    }
 
 
@@ -128,10 +130,11 @@ public class ServerImpl implements ServerOperations {    // tie approach
     * @return content
     * @see xmlBlaster.idl
     */
-   public byte[] get(String sessionId, String xmlKey, String qos) throws XmlBlasterException
+   public MessageUnit[] get(String sessionId, String xmlKey, String qos) throws XmlBlasterException
    {
+      MessageUnit[] messageUnitArr = new MessageUnit[0];
        // IMPLEMENT: Operation
-      return null;
+      return messageUnitArr;
    }
 
 

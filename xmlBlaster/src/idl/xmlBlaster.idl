@@ -3,7 +3,7 @@ Name:      xmlBlaster.idl
 Project:   xmlBlaster.org
 Task:      Serverinterface
 Copyright: LGPL http://www.gnu.org
-           $Id: xmlBlaster.idl,v 1.7 1999/11/12 13:07:01 ruff Exp $
+           $Id: xmlBlaster.idl,v 1.8 1999/11/12 14:31:22 ruff Exp $
 Comment:   Not even alpha
            String arguments my be used empty "", but never with null
 Compile:   idl2java -root_dir ../../classes xmlBlaster.idl
@@ -25,9 +25,16 @@ Compile:   idl2java -root_dir ../../classes xmlBlaster.idl
 module org { module xmlBlaster { module serverIdl
 {
    typedef string XmlType;
+   typedef sequence<XmlType> XmlTypeArr;
+
    typedef sequence<octet> ContentType;
    typedef string ExceptionIdType;
 
+   /**
+    * This contains all informations about a Message and the Message itself
+    * @param xmlKey  Unique message key with index attributes
+    * @param content The data itself (XML data, java objects, ...)
+    */
    struct MessageUnit {
       XmlType xmlKey;
       ContentType content;
@@ -40,7 +47,7 @@ module org { module xmlBlaster { module serverIdl
 
 
 /**
- * Decration of the client Callback interface. 
+ * Decration of the client Callback interface.
  * Declared before the server, so that the server declaration
  * can use the BlasterCallback interface
  *
@@ -59,17 +66,12 @@ module org { module xmlBlaster { module clientIdl
    interface BlasterCallback
    {
       /**
-       * @param xmlKey  Key<br>
-       * @param qos     Quality of Service<br>
-       *                <notify/>    Notifying only about change (content is empty)
-       *                <metaInfo/>  xmlKey contains all known meta information
-       *                <noAccess/>  Permission denied
-       *                <destroyed/> MessageUnit got erased
+       * @param messageUnit Contains a sequence of 0 - n MessageUnit structs
+       * @param qos         Qualitiy of Service for each MessageUnit
        */
      //oneway
-     void update(in org::xmlBlaster::serverIdl::XmlType xmlKey,
-                 in org::xmlBlaster::serverIdl::ContentType content,
-                 in org::xmlBlaster::serverIdl::XmlType qos);
+     void update(in org::xmlBlaster::serverIdl::MessageUnitArr messageUnitArr,
+                 in org::xmlBlaster::serverIdl::XmlTypeArr qosArr);
    };
 
 }; }; }; // org::xmlBlaster::clientIdl
@@ -171,13 +173,10 @@ module org { module xmlBlaster { module serverIdl
 
 
       /**
-       * Asynchron read-access methods
+       * Asynchron read-access method
        * The result are returned to the
        * Client-Callback interface via the update() method.
-       * If you wish automatical updates when changes occur,
-       * please register yourself with your Observable
-       * Tell your own Interface Callback IOR initially using initCallback()
-       * and implement the method update(AttributeSeq)
+       * You need to implement the method BlasterCallback.update(AttributeSeq)
        * This is the push modus.
        *
        * @param xmlKey  Key with attributes allowing Regex/XQL/SQL selection<br>
@@ -194,6 +193,7 @@ module org { module xmlBlaster { module serverIdl
 
       /**
        * Synchron read-access methods
+       * This is the pull modus.
        *
        * @param xmlKey  Key with attributes allowing Regex/XQL/SQL selection<br>
        *                See xmlKey.dtd for a description
@@ -201,9 +201,9 @@ module org { module xmlBlaster { module serverIdl
        * @param qos     Quality of Service, flags to control subscritpion<br>
        *                See qosSubscribe.dtd for a description
        *                HACK: Specify the ClientCallback String IOR here!!!
-       * @return the content
+       * @return Contains a sequence of 0 - n MessageUnit structs
        */
-      ContentType get(in string sessionId, in XmlType xmlKey, in XmlType qos)
+      MessageUnitArr get(in string sessionId, in XmlType xmlKey, in XmlType qos)
                                           raises(XmlBlasterException);
 
 
@@ -226,16 +226,18 @@ module org { module xmlBlaster { module serverIdl
        * Write-Access Method
        * This triggers the method update() if observed by somebody
        * If the given key doesn't exist, it will be automatically added, <br>
-       * so this covers the SQL'ish INSERT and UPDATE
+       * so this covers the SQL'ish INSERT and UPDATE.<p>
        *
-       * @param xmlKey  Key with attributes allowing Regex/XQL/SQL selection<br>
-       * @param content The data to store (XML data, java objects, ...)
-       * @param qos     Qualitiy of Service which is supported by the xmlBlaster server<br>
-       *                or by its plugin (XML formated)
+       * For performance or transaction reasons, you can send a whole array
+       * of MessageUnits with one Invokation of publish()
+       *
+       * @param messageUnit Contains a sequence of 0 - n MessageUnit structs
+       * @param qos         Qualitiy of Service for each MessageUnit
        *
        * @return number of keys successfully set
        */
-      long publish(in string sessionId, in XmlType xmlKey, in ContentType content, in XmlType qos)
+      //oneway
+      long publish(in string sessionId, in MessageUnitArr messageUnitArr, in XmlTypeArr qosArr)
                                           raises(XmlBlasterException);
 
 

@@ -66,21 +66,26 @@ public class Client
          } catch(XmlBlasterException e) {
             Log.warning(ME, "XmlBlasterException: " + e.reason);
          }
+         Log.trace(ME, "Subscribed to Smiley data ...");
 
-         // Wait some time ...
-         double val=2;
-         for (int ii=0; ii<50000; ii++)
-            val += 8;
+         // Construct a message
+         String str = "Smiley changed";
+         MessageUnit[] marr = new MessageUnit[1];
+         marr[0] = new MessageUnit(xmlKey, str.getBytes());
+         String[] qarr = new String[1];
+         qarr[0] = "";
 
          Log.trace(ME, "Sending some new Smiley data ...");
          try {
-            String str = "Smiley changed";
-            xmlServer.publish(sessionId, xmlKey, str.getBytes(), "");
+            xmlServer.publish(sessionId, marr, qarr);
+
          } catch(XmlBlasterException e) {
             Log.warning(ME, "XmlBlasterException: " + e.reason);
          }
 
          Log.info(ME, "Sending done, waiting for response ...");
+         delay(); // Wait some time ...
+
 
          Log.trace(ME, "Trying unsubscribe ...");
          try {
@@ -90,9 +95,10 @@ public class Client
          }
          Log.info(ME, "Unsubscribe done");
 
+
          try {
-            String str = "Smiley changed again, but i'm not interested";
-            xmlServer.publish(sessionId, xmlKey, str.getBytes(), "");
+            marr[0] = new MessageUnit(xmlKey, ((String)("Smiley changed again, but i'm not interested")).getBytes());
+            xmlServer.publish(sessionId, marr, qarr);
          } catch(XmlBlasterException e) {
             Log.warning(ME, "XmlBlasterException: " + e.reason);
          }
@@ -109,6 +115,19 @@ public class Client
       orb.run();
    }
 
+   private static final int _delay = 2000;
+
+   private void delay()
+   {
+      try
+      {
+          Thread.currentThread().sleep(_delay);
+      }
+      catch( InterruptedException i)
+      {}
+   }
+   
+   
    public static void main(String args[]) 
    {
       new Client(args);

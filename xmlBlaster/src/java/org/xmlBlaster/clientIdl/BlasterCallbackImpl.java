@@ -3,13 +3,14 @@ Name:      BlasterCallbackImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org (LGPL)
 Comment:   Handling the Client callback
-           $Revision: 1.2 $
-           $Date: 1999/11/12 13:07:06 $
+           $Revision: 1.3 $
+           $Date: 1999/11/12 14:31:29 $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.clientIdl;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlKeyBase;
+import org.xmlBlaster.serverIdl.MessageUnit;
 
 
 /**
@@ -58,8 +59,11 @@ public class BlasterCallbackImpl implements BlasterCallbackOperations { // tie a
 
    /**
     */
-   public void update(String xmlKey_literal, byte[] content, String qos_literal) {
-      XmlKeyBase xmlKey = new XmlKeyBase(xmlKey_literal);
-      Log.info(ME, "Callback invoked for " + xmlKey.toString() + " content length = " + content.length);
+   public void update(MessageUnit[] messageUnitArr, String[] qos_literal_Arr) {
+      for (int ii=0; ii<messageUnitArr.length; ii++) {
+         MessageUnit messageUnit = messageUnitArr[ii];
+         XmlKeyBase xmlKey = new XmlKeyBase(messageUnit.xmlKey);
+         Log.info(ME, "Callback invoked for " + xmlKey.toString() + " content length = " + messageUnit.content.length);
+      }
    }
 }

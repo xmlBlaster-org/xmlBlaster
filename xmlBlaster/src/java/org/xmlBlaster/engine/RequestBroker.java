@@ -3,14 +3,15 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org (LGPL)
 Comment:   Handling the Client data
-           $Revision: 1.4 $
-           $Date: 1999/11/12 13:07:06 $
+           $Revision: 1.5 $
+           $Date: 1999/11/12 14:31:32 $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.serverIdl.XmlBlasterException;
 import org.xmlBlaster.serverIdl.ServerImpl;
+import org.xmlBlaster.serverIdl.MessageUnit;
 import org.xmlBlaster.clientIdl.BlasterCallback;
 import java.util.*;
 
@@ -123,40 +124,56 @@ public class RequestBroker
 
    /**
     */
-   public int set(XmlKey xmlKey, byte[] content, XmlQoS setQoS) throws XmlBlasterException
+   public int publish(MessageUnit[] messageUnitArr, String[] qos_literal_Arr) throws XmlBlasterException
    {
-      // !!! TODO: handling of setQoS
+      // !!! TODO: handling of qos
 
-      MessageUnitHandler msg;
+      int retVal = 0;
 
-      synchronized(messageContainerMap) {
-         Object obj = messageContainerMap.get(xmlKey.getUniqueKey());
-         if (obj == null) {
-            msg = new MessageUnitHandler(requestBroker, xmlKey, content);
-            messageContainerMap.put(msg.getUniqueKey(), msg);
+      for (int ii=0; ii<messageUnitArr.length; ii++) {
+
+         MessageUnit messageUnit = messageUnitArr[ii];
+         XmlKey xmlKey = new XmlKey(messageUnit.xmlKey);
+         MessageUnitHandler msgHandler;
+
+         synchronized(messageContainerMap) {
+            Object obj = messageContainerMap.get(xmlKey.getUniqueKey());
+            if (obj == null) {
+               msgHandler = new MessageUnitHandler(requestBroker, messageUnit);
+               messageContainerMap.put(msgHandler.getUniqueKey(), msgHandler);
+            }
+            else {
+               msgHandler = (MessageUnitHandler)obj;
+               msgHandler.setContent(messageUnit.content);
+            }
          }
-         else {
-            msg = (MessageUnitHandler)obj;
-            msg.setContent(content);
+
+         Map subscriberMap = msgHandler.getSubscriberMap();
+         if (Log.DEBUG) Log.trace(ME, "subscriberMap.size() = " + subscriberMap.size());
+
+         // DANGER: The whole update blocks if one client blocks - needs a redesign !!!
+         // PREFORMANCE: All updates for each client should be collected !!!
+         synchronized(subscriberMap) {
+            Iterator iterator = subscriberMap.values().iterator();
+
+            while (iterator.hasNext())
+            {
+               if (Log.DEBUG) Log.trace(ME, "Entering xmlBlaster.set(" + xmlKey.getUniqueKey() + ")");
+               SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
+               BlasterCallback cb = sub.getClientInfo().getCB();
+               XmlQoSUpdate xmlQoS = new XmlQoSUpdate();
+               MessageUnit[] marr = new MessageUnit[1];
+               marr[0] = messageUnit;
+               String[] qarr = new String[1];
+               qarr[0] = xmlQoS.toString();
+               cb.update(marr, qarr);
+            }
          }
+
+         retVal++;
       }
 
-      Map subscriberMap = msg.getSubscriberMap();
-      if (Log.DEBUG) Log.trace(ME, "subscriberMap.size() = " + subscriberMap.size());
-      synchronized(subscriberMap) {
-         Iterator iterator = subscriberMap.values().iterator();
-
-         while (iterator.hasNext())
-         {
-            if (Log.DEBUG) Log.trace(ME, "Entering xmlBlaster.set(" + xmlKey.getUniqueKey() + ")");
-            SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
-            BlasterCallback cb = sub.getClientInfo().getCB();
-            XmlQoSUpdate xmlQoS = new XmlQoSUpdate();
-            cb.update(xmlKey.toString(), content, xmlQoS.toString());
-         }
-      }
-
-      return 1;
+      return retVal;
    }
 
 
