@@ -3,7 +3,7 @@ Name:      SocketConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handles connection to xmlBlaster with plain sockets
-Version:   $Id: SocketConnection.java,v 1.32 2002/09/10 18:57:59 ruff Exp $
+Version:   $Id: SocketConnection.java,v 1.33 2002/09/14 23:12:08 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -83,7 +83,6 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    /** The client login name */
    protected String loginName = "";
    private I_CallbackExtended cbClient = null;
-   int SOCKET_DEBUG=0;
 
    /**
     * Connect to xmlBlaster using plain socket with native message format.
@@ -100,7 +99,6 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    {
       this.glob = glob;
       this.log = glob.getLog("socket");
-      SOCKET_DEBUG = glob.getProperty().get("socket.debug", 0);
    }
 
    /**
@@ -175,7 +173,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
             log.info(ME, "Local parameters are " + localHostname + " on port " + localPort);
          }
          else {
-            if (SOCKET_DEBUG>0 || log.TRACE) log.info(ME, "Trying socket connection to " + hostname + " on port " + port + " ...");
+            if (log.TRACE) log.trace(ME, "Trying socket connection to " + hostname + " on port " + port + " ...");
             this.sock = new Socket(inetAddr, port);
             this.localPort = sock.getLocalPort();
             this.localHostname = sock.getLocalAddress().getHostAddress();
