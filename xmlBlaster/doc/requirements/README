@@ -8,7 +8,7 @@ Each requirement is described in an own xml file
 Requirements have no numbers but a unique describing name,
 the filename is the same as the <requirement id=""> ID.
 
-Every requirement needs a <fix> tag, which refers to the testsuite
+Every requirement needs a <testcase> tag, which refers to the testsuite
 with one to many full automatic test cases.
 
 Every bug is noted here and checked with a testsuite case.
@@ -16,6 +16,10 @@ Every bug is noted here and checked with a testsuite case.
 You can query a closed requirement as follows:
    java DomQueryTest  engine.get.no.xml  "requirement/fix[@status='CLOSED']/.."
 
+The html.xsl files needs the all.xml file to go though all xml requirements
+and build a HTML table.
+
+CollectXml.java is a little helper which generates all.xml
 
 
 Generate HTML output with Sun XML parser:
@@ -30,151 +34,11 @@ Generate HTML output with James Clarks XML parser:
 
 
 Validating with IBM parser:
----------------------------
+===========================
 export CLASSPATH=/www/xml4j/xml4j.jar:/www/xml4j/xml4jSamples.jar:$CLASSPATH
 java dom.DOMCount -p dom.wrappers.DOMParser engine.get.no.xml
 java dom.DOMWriter -p dom.wrappers.DOMParser engine.get.no.xml 
 
-
-
-<xsl:template match="other-content">
- <br/>
-  <font color="red">
-    <xsl:apply-templates/>
-  </font>
- <br/>
-</xsl:template>
-
-
-
-Collect all xml into one xsl/html:
-
- Your "master document" must have a DTD which defines an external
- entity, like so:
-     <!ENTITY filetoinclude SYSTEM
- "http://www.whereveritis.com/includedfile.xml">
- Then, at the point in the master document where you want to embed the
- external file, insert:
-     &filetoinclude;
-  
- If your XML declaration uses the standalone document declaration, its
- value must be "no" (since the "includedfile.xml" file, in this case,
- will now be required to process the master document.)
-  
- Note that the entity name (filetoinclude) and value of the SYSTEM
- identifier should be replaced with whatever you want to use in your
- case.
-  
- (BTW, your XML application also needs to use a parser which will read
- the DTD--otherwise, of course, the definition of the external entity
- won't be seen and processed.)
-
-
-
- Subject: 
-       RE: How to reference many XML files in XSL
-   Date: 
-       Wed, 1 Mar 2000 10:02:22 +0100
-  From: 
-       Linda van den Brink <lvdbrink@baan.nl>
-    To: 
-       "'Marcel Ruff'" <ruff@swand.lake.de>
-
-
-
-
-Yes, it's possible. Basically there are two ways to solve
-this. Which is
-better depends mostly on whether the names of your input files
-are fixed and
-known.
-
-1. Use XML entities. Create a 'master' XML document in which
-you include
-entity references to all your XML files. Give this master XML
-document to
-the parser and it will behave as if you have one input file.
-Then it's
-probably not that difficult to create the output file. You
-have to create
-the master XML document, so this solution is good if the input
-files are
-always the same. 
-
-2. Use the document() function. This allows for a more dynamic
-process. You
-need to have an XML file as main input, but it can be a dummy
-file. All your
-XML files are fed to the processor as extra input files by the
-document()
-function. You can either give the urls of the files in your
-XSL stylesheet
-like this 
-<xsl:for-each select="document('file1.xml')">
-Or you can have a separate file that has the urls for all the
-files you want
-to use as input. This separate file could be created
-dynamically by a small
-batch script, perl script, etc. (I don't have one, but most
-people can do a
-little scripting). 
-The code for that would be something like (not tested!)
-XML file with urls, 'files.xml': 
-<files>
-        <url>file1.xml</url>
-      <url>file2.xml</url>
-<!-- etc -->
-</files>
-XSL: 
-<xsl:template match="/">
-        <htmL><head><title>title</title></head><body><table>
-        <xsl:for-each select="document('files.xml')/files">
-                <xsl:apply-templates select="document(url)"/>
-        </xsl:for-each>
-        </table></body></html>
-</xsl:template>
-
-And then just write a template to get each document's data
-into a table row.
-
-
-Hope this helps!
-Linda
-
-
-
-
-
-
-
- 
-> Is it possible with XSLT to have lots of input files, > and
-create one output > file listing specific data from each of the
-files? yes that's exactly what the document() function does.
-Mike Brown adds: For more than one file, you could have: In
-filenames_file.xml you could have: <someURIs>
-<file>file1.xml</file> <file>file2.xml</file>
-<file>http://foo/file3.xml</file>
-<file>file://D|/dev/src/file4.xml</file>
-<file>../../file5.xml</file> </someURIs>
-
- Then in a template in your XSL you could have:
-
-<xsl:for-each select="document('filenames_file.xml')/someURIs/file/text()">
-	<xsl:variable name="current_file_root" select="document(string(.))"/> <!-- the next lines are just for example -->
-		<xsl:text> current file: </xsl:text> <xsl:value-of select="."/>
-		<xsl:text> # of elements: </xsl:text>
-	<xsl:value-of select="count($current_file_root//*)"/>
-</xsl:for-each> 
-
-
-
-
-For embedded HTML examples:
-
-<xsl:template match="HTML_BODY">
- <xsl:value-of select="." disable-output-escaping="yes"/>
-</xsl:template >
 
 
 ruff@swand.lake.de
