@@ -27,7 +27,7 @@ import junit.framework.*;
 
 
 /**
- * Tests the fail save behavior of the XmlBlasterConnection client helper class.
+ * Tests the fail safe behavior of the XmlBlasterConnection client helper class (does not test server side fail safe).
  * <br />For a description of what this fail save mode can do for you, please
  * read the API documentation of XmlBlasterConnection.
  * <p>
