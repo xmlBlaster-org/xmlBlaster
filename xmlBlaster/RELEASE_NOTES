@@ -1,54 +1,49 @@
-Bom dia,
+This is xmlBlaster version 0.9 *stable*
 
-the new release 0.85e beta is out (Oct, 31 2003).
+You  get  many new goodies, a complete C++ access layer, stable
+access  from  good old C, a tiny applet example, a complete xml
+script  access layer, many bug fixes (most for PtP messages and
+heavy swapping) and much more.
 
-We wait with the stable release 0.85 until we got feedback about 0.85e
+XmlBlaster  is  under development or productive in a huge range
+of  industries  like  satellite  control,  air  traffic control
+telecommunication, radar, car industry, process monitoring etc.
 
+This  release  is backward compatible to the previous regarding
+the  client  server  communication protocols (except the markup
+subscribeable was renamed to subscribable).
 
-IMPORTANT NOTE:
----------------
+The  Java/C/C++  access  libraries  (client side API) have some
+incompatibilities  which  your  compiler will tell you (details
+are in the CHANGES file).
 
-1. The new 0.85e contains bugfixes.
-   Please upgrade from 0.85d,
-   the releases are completely compatible.
+It   is   tested   under   Linux/Solaris-SPARC/WinXP  with  JDK
+(1.2)1.3-1.5  and  g++  2.9x/3.x, icc 8, MSVisualC++ from 2003,
+SunCC    compilers.    There    is    no   reason   why   other
+platforms/compilers should not work, just try it.
 
-2. This update is backward compatible to 0.849
-   Please read xmlBlaster/CHANGES for details.
-   It is recommended to use the new xmlBlaster.properties
-   to get the nicer exception logging formatting.
+It  is  leak  checked  in  RAM  and  on  persistence  store for
+Java,C,C++.
 
-3. For older updates remove your old xmlBlaster.properties,
-   xmlBlasterPlugins.xml and jacorb.properties files.
-   Use the new files from directory xmlBlaster/config.
-  
-
-NEW FEATURES:
--------------
-
-o  Bug fixes.
-
-o  Please read the CHANGES file for more informations.
+Please use the new xmlBlaster.properties file.
 
 
-KNOWN BUGS:
+The xmlBlaster maintainers
+http://www.xmlBlaster.org
+
+
+See:
+----
+http://www.xmlblaster.org/xmlBlaster/CHANGES
+http://www.xmlblaster.org/xmlBlaster/RELEASE_NOTES
+
+Known bugs:
 -----------
-
-1. telnet/remoteconsole loops forever after shutdown of embeeded xmlBlaster
-   (switch off in such a case with -admin.remoteconsole.port 0)
+1.   telnet/remoteconsole   loops  forever  after  shutdown  of
+   embeeded   xmlBlaster   (switch  off  in  such a  case  with
+   -admin.remoteconsole.port 0)
 
 2. JacORB deadlock in seldom cases during login
 
+3. Connection problems to remote RMI servers
 
-NEXT RELEASES:
---------------
-
-0.85e beta is already considered stable for production use.
-
-For 0.85 we try to resolve the JacORB deadlock
-bug which occurres in seldom circumstances
-during login,
-
-enjoy,
-
-The xmlBlaster.org maintainers
-http://www.xmlBlaster.org

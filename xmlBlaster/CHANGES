@@ -1,5 +1,8 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
+Changes for 0.9 [2004-02-23]
+============================
+
  o Ported java code to JDK 1.5
    - As 'enum' is now (Jdk1.5) a reserved keyword we renamed our package 'enum' to 'def'
      by replacing the token '.enum.' to '.def.' in the complete source tree.
@@ -13,12 +16,12 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
  o The msgStore cache implementation supports now LRU (last recently used) lookup
 
- o added setter and getter for subject queue property in ConnectQos
+ o Added setter and getter for subject queue property in ConnectQos
 
- o added a shuffler thread to forward entries from SubjectQueue to
+ o Added a shuffler thread to forward entries from SubjectQueue to
    SessionQueue (to acheave Thread safety).
 
- o added I_QueueSizeListener to listen to changes in size of a queue
+ o Added I_QueueSizeListener to listen to changes in size of a queue
 
  o Bugfix: Reconfiguration of client reconnect (same pubSessionId)
    supports now queue properties and sync/async reconfiguration
@@ -40,22 +43,22 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
  o XmlScriptInterpreter now uses a Reader (InputStream was starting
    processing AFTER reading whole stream).
   
- o added persistent session+subscription support in c++
+ o Added persistent session+subscription support in c++
 
  o Global.detachJdbcManagerCommonTable() removed (was obsolete)
 
- o the EntryFactories are now threadsafe and the Global.getEntryFactory now
+ o The EntryFactories are now threadsafe and the Global.getEntryFactory now
    does not take any name and the factory is a singleton. EntryFactory.getName
    does not exist anymore. I_StoragePlugin.getType can be used instead
  
- o added XmlScriptInterpreter which can execute xmlBlaster commands from an
+ o Added XmlScriptInterpreter which can execute xmlBlaster commands from an
    xml file (in a way similar to ant, maven and jelly)
 
  o Nested key tags are now allowed inside key
  
- o added a new class EncodableData (ClientProperty now extends from it)
+ o Added a new class EncodableData (ClientProperty now extends from it)
   
- o elimintated MsgTopicErrorHandler since used nowere
+ o Elimintated MsgTopicErrorHandler since used nowhere
 
  o Changed build.xml for C and C++ compilation
    Now the source files are copied to a separate destination
@@ -69,7 +72,7 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
      'void *' to 'const unsigned char *'
    - The global.getLog() method now returns the interface I_Log (an abstract class)
      to the logging framework instead of the Log.cpp implementation itself.
-     This allows pluggin in your own logging framework
+     This allows to plug in your own logging framework
 
  o C++ client library:
    - xmlBlaster.properties is read (-propertyFile ... or in $HOME or in $XMLBLASTER_HOME)
@@ -188,7 +191,7 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
  o Moved HelloWorld*.java examples to directory xmlBlaster/demo to
    avoid package name problems
 
- o QosData: embedded client each client property with CDATA (java and c++)
+ o QosData: embedded each client property with CDATA (java and c++)
 
  o Fixed mouse sensitive area in chessRhino.svg
 
