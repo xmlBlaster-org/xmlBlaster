@@ -120,6 +120,7 @@ public class HelloWorldPublish
          final boolean eraseTailback = glob.getProperty().get("eraseTailback", false);
          int contentSize = glob.getProperty().get("contentSize", -1); // 2000000);
          boolean eraseForceDestroy = glob.getProperty().get("erase.forceDestroy", false);
+         boolean connectPersistent = glob.getProperty().get("connect/qos/persistent", false);
          
          Map clientPropertyMap = glob.getProperty().get("clientProperty", (Map)null);
 
@@ -172,6 +173,8 @@ public class HelloWorldPublish
          log.info(ME, "   -destination    " + destination);
          log.info(ME, " Erase settings");
          log.info(ME, "   -erase.forceDestroy " + eraseForceDestroy);
+         log.info(ME, " ConnectQos settings");
+         log.info(ME, "   -connect/qos/persistent " + connectPersistent);
          log.info(ME, "For more info please read:");
          log.info(ME, "   http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html");
 
@@ -208,6 +211,9 @@ public class HelloWorldPublish
          // ConnectQos checks -session.name and -passwd from command line
          log.info(ME, "============= CreatingConnectQos");
          ConnectQos qos = new ConnectQos(glob);
+         if (connectPersistent) {
+            qos.setPersistent(connectPersistent);
+         }
          log.info(ME, "ConnectQos is " + qos.toXml());
          ConnectReturnQos crq = con.connect(qos, null);  // Login to xmlBlaster, register for updates
          log.info(ME, "Connect success as " + crq.toXml());
