@@ -83,7 +83,7 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
    private SessionInfo[] sessionArrCache;
    public CallbackAddress[] callbackAddressCache = null;
 
-   private final MsgErrorHandler msgErrorHandler = null; // not yet implemented
+   private MsgErrorHandler msgErrorHandler;
 
    private final DeliveryStatistic deliveryStatistic;
 
@@ -368,7 +368,7 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
                   catch (XmlBlasterException e) {
                      log.warn(ME, "flushHoldbackQueue() failed: " + e.getMessage());
                      // errorCode == "ONOVERFLOW"
-                     this.msgErrorHandler.handleError(new MsgErrorInfo(glob, queueEntries, null, e));
+                     getMsgErrorHandler().handleError(new MsgErrorInfo(glob, queueEntries, null, e));
                   }
 
                   try {
@@ -444,12 +444,12 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
 
       int countForwarded = forwardToSessionQueue(entry);
 
-      if (countForwarded == 0) {
+      if (countForwarded <= 0) {
          if (entry.getReceiver().isSession()) {
             if (log.TRACE) log.trace(ME, "Destination session '" + entry.getReceiver().getAbsoluteName() + "' is unknown, throwing exception");
             throw new XmlBlasterException(glob, ErrorCode.USER_PTP_UNKNOWNDESTINATION_SESSION, ME, "Destination session '" + entry.getReceiver().getAbsoluteName() + "' is unknown, message is not delivered");
          }
-         log.warn(ME, "No login session available for client '" + entry.getReceiver().getAbsoluteName() +
+         log.warn(ME, "No login session which accepts PtP messages is available for client '" + entry.getReceiver().getAbsoluteName() +
                       "', queueing message '" + entry.getLogId() + "'");
          try {
             this.subjectQueue.put(entry, I_Queue.USE_PUT_INTERCEPTOR);
@@ -484,12 +484,16 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
                this.subjectQueue.removeRandom(entry); // Remove the forwarded entry (blocking)
                numMsgs++;
             }
+            else if (countForwarded == -1) { // There are sessions but they don't want PtP
+               break;
+            }
             else {
                // We need to escape the while(true), (handle a msg to a pubSessionId which is unknown):
                String message = "Session '" + entry.getReceiver().getAbsoluteName() + "' is unknown, message '" + entry.getLogId() + "' is not delivered";
                MsgQueueEntry[] msgQueueEntries = new MsgQueueEntry[] { entry };
-               MsgErrorInfo msgErrorInfo = new MsgErrorInfo(glob, msgQueueEntries, null, null);  // this.subjectQueue
-               msgErrorHandler.handleErrorSync(msgErrorInfo);
+               XmlBlasterException e = new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME, message);
+               MsgErrorInfo msgErrorInfo = new MsgErrorInfo(glob, msgQueueEntries, null, e);  // this.subjectQueue
+               getMsgErrorHandler().handleErrorSync(msgErrorInfo);
                // !!!
                //this.glob.getRequestBroker().deadMessage(msgQueueEntries, null, message);
 
@@ -499,9 +503,16 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
                //getMsgErrorHandler().handleError(new MsgErrorInfo(glob, entry, null, ex);
             }
          }
+         catch(XmlBlasterException e) {
+            String id = (entry == null) ? "" : entry.getKeyOid();
+            log.warn(ME, "Can't forward message " + id + " to session queue, keeping it in subject queue: " + e.getMessage());
+            break;
+         }
          catch(Throwable e) {
             String id = (entry == null) ? "" : entry.getKeyOid();
-            log.warn(ME, "Can't forward message " + id + " to session queue, keeping it in subject queue");
+            log.warn(ME, "Can't forward message " + id + " to session queue, keeping it in subject queue: " + e.toString());
+            e.printStackTrace();
+            break;
          }
       }
 
@@ -517,13 +528,15 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
    /**
     * Forward the given message to session queue.
     * @return Number of session queues this message is forwarded to
-    *         or 0 if not delivered at all
+    *         or 0 if not delivered at all,
+    *         -1 if not delivered because the available sessions don't want PtP
     */
    private final int forwardToSessionQueue(MsgQueueEntry entry) {
 
       if (getSessions().length < 1) return 0;
 
       int countForwarded = 0;
+      boolean hasPtpNotAllowed = false;
 
       SessionName destination = entry.getReceiver();
 
@@ -553,7 +566,9 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
       SessionInfo[] sessions = getSessions();
       for (int i=0; i<sessions.length; i++) {
          SessionInfo sessionInfo = sessions[i];
-         if (sessionInfo.hasCallback()) {
+         if (!sessionInfo.getConnectQos().isPtpAllowed())
+            hasPtpNotAllowed = true;
+         if (sessionInfo.getConnectQos().isPtpAllowed() && sessionInfo.hasCallback()) {
             if (log.TRACE) log.trace(ME, "Forwarding msg " + entry.getLogId() + " from " +
                           this.subjectQueue.getStorageId() + " size=" + this.subjectQueue.getNumOfEntries() +
                           " to session queue " + sessionInfo.getSessionQueue().getStorageId() +
@@ -567,7 +582,11 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
             }
          }
       }
-      return countForwarded;
+
+      if (countForwarded > 0) {
+         return countForwarded;
+      }
+      return (hasPtpNotAllowed) ? -1 : 0;
    }
 
    public final I_MsgErrorHandler getMsgErrorHandler() {
@@ -575,7 +594,7 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
          synchronized(this) {
             if (this.msgErrorHandler == null) {
                log.error(ME, "INTERNAL: Support for MsgErrorHandler is not implemented");
-               //this.msgErrorHandler = new MsgErrorHandler(glob, this);
+               this.msgErrorHandler = new MsgErrorHandler(glob, null);
             }
          }
       }
