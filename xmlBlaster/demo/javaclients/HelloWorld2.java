@@ -24,7 +24,7 @@ public class HelloWorld2 implements I_Callback
       try {
          XmlBlasterConnection con = new XmlBlasterConnection(glob);
 
-         ConnectQos qos = new ConnectQos(glob, "joe", "secret");
+         ConnectQos qos = new ConnectQos(glob);
          con.connect(qos, this);  // Login to xmlBlaster, register for updates
 
          con.subscribe("<key oid='HelloWorld2'/>", "<qos/>");
@@ -69,7 +69,7 @@ public class HelloWorld2 implements I_Callback
 
       if (glob.init(args) != 0) { // Get help with -help
          XmlBlasterConnection.usage();
-         glob.getLog(null).info("HelloWorld2", "Example: java HelloWorld2\n");
+         glob.getLog(null).info("HelloWorld2", "Example: java HelloWorld2 -session.name Jack\n");
          System.exit(1);
       }
 

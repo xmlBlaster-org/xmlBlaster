@@ -41,7 +41,7 @@ import org.xmlBlaster.client.protocol.XmlBlasterConnection;
  *
  * Invoke: java HelloWorld3
  * <p />
- * Invoke: java HelloWorld3 -loginName joe -passwd secret
+ * Invoke: java HelloWorld3 -session.name joe -passwd secret
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.html" target="others">xmlBlaster interface</a>
  */
 public class HelloWorld3 implements I_Callback
@@ -55,8 +55,9 @@ public class HelloWorld3 implements I_Callback
       try {
          XmlBlasterConnection con = new XmlBlasterConnection(glob);
 
-         // Check if other name or password was given on command line:
-         String name = glob.getProperty().get("loginName", "HelloWorld3");
+         // Check if other login name or password was given on command line:
+         // (This is redundant as it is done by ConnectQos already)
+         String name = glob.getProperty().get("session.name", "HelloWorld3");
          String passwd = glob.getProperty().get("passwd", "secret");
 
          ConnectQos qos = new ConnectQos(glob, name, passwd);
@@ -142,7 +143,7 @@ public class HelloWorld3 implements I_Callback
       
       if (glob.init(args) != 0) { // Get help with -help
          XmlBlasterConnection.usage();
-         System.err.println("Example: java HelloWorld3 -loginName Jeff\n");
+         System.err.println("Example: java HelloWorld3 -session.name Jeff\n");
          System.exit(1);
       }
 

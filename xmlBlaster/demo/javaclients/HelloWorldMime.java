@@ -43,7 +43,7 @@ import org.xmlBlaster.client.protocol.XmlBlasterConnection;
  *
  * Invoke: java HelloWorldMime
  * <p />
- * Invoke: java HelloWorldMime -loginName joe -passwd secret
+ * Invoke: java HelloWorldMime -session.name joe -passwd secret
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.html" target="others">xmlBlaster interface</a>
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/mime.plugin.access.xpath.html" target="others">xmlBlaster mime.plugin.access.xpath requirement</a>
  */
@@ -132,7 +132,7 @@ public class HelloWorldMime implements I_Callback
       
       if (glob.init(args) != 0) { // Get help with -help
          XmlBlasterConnection.usage();
-         System.err.println("Example: java HelloWorldMime -loginName Jeff\n");
+         System.err.println("Example: java HelloWorldMime -session.name Jeff\n");
          System.exit(1);
       }
 

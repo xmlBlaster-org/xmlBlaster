@@ -33,7 +33,7 @@ import org.xmlBlaster.client.protocol.XmlBlasterConnection;
  * <p />
  * Invoke: java HelloWorld6
  * <p />
- * Invoke: java HelloWorld6 -loginName joe -passwd secret
+ * Invoke: java HelloWorld6 -session.name joe -passwd secret -client.protocol XML-RPC
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.html" target="others">xmlBlaster interface</a>
  */
 public class HelloWorld6
@@ -197,7 +197,7 @@ public class HelloWorld6
       
       if (glob.init(args) != 0) { // Get help with -help
          XmlBlasterConnection.usage();
-         System.err.println("Example: java HelloWorld6 -loginName Jeff\n");
+         System.err.println("Example: java HelloWorld6 -session.name Jeff\n");
          System.exit(1);
       }
 

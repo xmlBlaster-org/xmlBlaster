@@ -206,7 +206,7 @@ public class VolatileTest
       if (glob.init(args) != 0) {
          XmlBlasterConnection.usage();
          System.out.println("Get help: java javaclients.VolatileTest -help\n");
-         System.out.println("Example: java javaclients.VolatileTest -loginName Jeff\n");
+         System.out.println("Example: java javaclients.VolatileTest -session.name Jeff\n");
          System.exit(1);
       }
       new VolatileTest(glob);

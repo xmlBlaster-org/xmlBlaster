@@ -43,7 +43,7 @@ import org.xmlBlaster.client.protocol.XmlBlasterConnection;
  * <p />
  * Invoke: java HelloWorldVolatile
  * <p />
- * Invoke: java HelloWorldVolatile -loginName joe -passwd secret
+ * Invoke: java HelloWorldVolatile -session.name joe -passwd secret
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.html" target="others">xmlBlaster interface</a>
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.message.lifecycle.html" target="others">engine.message.lifecycle</a>
  */
@@ -58,11 +58,7 @@ public class HelloWorldVolatile implements I_Callback
       try {
          XmlBlasterConnection con = new XmlBlasterConnection(glob);
 
-         // Check if other name or password was given on command line:
-         String name = glob.getProperty().get("loginName", "HelloWorldVolatile");
-         String passwd = glob.getProperty().get("passwd", "secret");
-
-         ConnectQos qos = new ConnectQos(glob, name, passwd);
+         ConnectQos qos = new ConnectQos(glob);
          con.connect(qos, this);  // Login to xmlBlaster, register for updates
 
          // Subscribe for the volatile message
@@ -127,7 +123,7 @@ public class HelloWorldVolatile implements I_Callback
       
       if (glob.init(args) != 0) { // Get help with -help
          XmlBlasterConnection.usage();
-         System.err.println("Example: java HelloWorldVolatile -loginName Jeff\n");
+         System.err.println("Example: java HelloWorldVolatile -session.name Jeff\n");
          System.exit(1);
       }
 

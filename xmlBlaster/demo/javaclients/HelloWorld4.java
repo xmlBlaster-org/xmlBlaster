@@ -30,7 +30,7 @@ import org.xmlBlaster.client.protocol.XmlBlasterConnection;
  * <p />
  * Invoke: java HelloWorld4
  * <p />
- * Invoke: java HelloWorld4 -loginName joe -passwd secret
+ * Invoke: java HelloWorld4 -session.name joe -passwd secret
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.html" target="others">xmlBlaster interface</a>
  */
 public class HelloWorld4
@@ -182,7 +182,7 @@ public class HelloWorld4
       
       if (glob.init(args) != 0) { // Get help with -help
          XmlBlasterConnection.usage();
-         System.err.println("Example: java HelloWorld4 -loginName Jeff\n");
+         System.err.println("Example: java HelloWorld4 -session.name Jeff\n");
          System.exit(1);
       }
 
