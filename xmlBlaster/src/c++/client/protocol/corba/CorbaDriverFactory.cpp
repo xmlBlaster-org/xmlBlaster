@@ -90,7 +90,7 @@ CorbaDriverFactory::~CorbaDriverFactory()
       }
    }
    if (isOwnOrb_) {
-      if (CORBA::is_nil(orb_)) {
+      if (!CORBA::is_nil(orb_)) {
          if (log_.trace()) log_.trace(ME, "shutting down the orb");
          orb_->shutdown(true);
          if (log_.trace()) log_.trace(ME, "destroying the orb");
