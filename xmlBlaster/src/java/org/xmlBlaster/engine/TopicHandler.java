@@ -72,6 +72,8 @@ public final class TopicHandler implements I_Timeout
    /** The broker which manages me */
    private final RequestBroker requestBroker;
 
+   private MsgUnitWrapper tmpVolatileMsgUnitWrapper;
+
    // Default is that a single client can subscribe the same message multiple times
    // private boolean allowMultiSubscriptionPerClient = glob.getProperty().get("Engine.allowMultiSubscriptionPerClient", true);
 
@@ -379,6 +381,13 @@ public final class TopicHandler implements I_Timeout
             if (changed || msgQosData.isForceUpdate()) { // if the content changed of the publisher forces updates ...
                invokeCallback(publisherSessionInfo, msgUnitWrapper);
             }
+
+            if (isNewCreated()) {
+               // Check all known query subscriptions if the new message fits as well (does it only if TopicHandler is new)
+               this.tmpVolatileMsgUnitWrapper = msgUnitWrapper;
+               glob.getRequestBroker().checkExistingSubscriptions(publisherSessionInfo, this, publishQosServer);
+               this.tmpVolatileMsgUnitWrapper = null;
+            }
          }
          finally {
             // Event to check if counter == 0 to remove cache entry again (happens e.g. for volatile msg without a no subscription)
@@ -543,11 +552,11 @@ public final class TopicHandler implements I_Timeout
     * A little helper for RequestBroker, showing if MsgUnit is new created
     */
    public final boolean isNewCreated() {
-      return handlerIsNewCreated;
+      return this.handlerIsNewCreated;
    }
 
    public final void setNewCreatedFalse() {
-      handlerIsNewCreated = false;
+      this.handlerIsNewCreated = false;
    }
 
    /*
@@ -584,12 +593,19 @@ public final class TopicHandler implements I_Timeout
 
       QueryQosData queryQos = sub.getQueryQosData();
 
-      if (queryQos.getWantInitialUpdate() == true && hasHistoryEntries()) {
-         MsgUnitWrapper[] wrappers = getMsgUnitWrapperArr(queryQos.getHistoryQos().getNumEntries());
-         if (invokeCallback(null, sub, wrappers) == 0) {
-            Set removeSet = new HashSet();
-            removeSet.add(sub);
-            handleCallbackFailed(removeSet);
+      if (queryQos.getWantInitialUpdate() == true) {
+         MsgUnitWrapper[] wrappers = null;
+         if (this.tmpVolatileMsgUnitWrapper != null)
+            wrappers = new MsgUnitWrapper[] { this.tmpVolatileMsgUnitWrapper };
+         else if (hasHistoryEntries())
+            wrappers = getMsgUnitWrapperArr(queryQos.getHistoryQos().getNumEntries());
+
+         if (wrappers != null) {
+            if (invokeCallback(null, sub, wrappers) == 0) {
+               Set removeSet = new HashSet();
+               removeSet.add(sub);
+               handleCallbackFailed(removeSet);
+            }
          }
       }
 
