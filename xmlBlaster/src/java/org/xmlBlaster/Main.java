@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.74 2002/03/27 15:33:02 ruff Exp $
+Version:   $Id: Main.java,v 1.75 2002/04/19 11:06:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -73,12 +73,12 @@ public class Main
    private Authenticate authenticate = null;
    /** The singleton handle for this xmlBlaster server */
    private I_XmlBlaster xmlBlasterImpl = null;
-   /** Vector holding all protocol I_Driver.java implementations, e.g. CorbaDriver */
-   private Vector protocols = new Vector();
    /** command line arguments */
    private String[] args = null;
    /** Version string, please change for new releases (4 digits) */
    private Global glob = null;
+   /** A unique name for this xmlBlaster server instance, if running in a cluster */
+   private String uniqueNodeIdName = null;
    /** Version string, please change for new releases (4 digits) */
    private String version = "0.79e";
 
@@ -128,6 +128,13 @@ public class Main
          catchSignals();
 
          loadDrivers();
+
+         if (glob.getNodeId() == null) {
+            if (uniqueNodeIdName != null)
+               glob.setUniqueNodeIdName(uniqueNodeIdName);
+            else
+               glob.setUniqueNodeIdName(createNodeId());
+         }
 
          if (showUsage) {
             usage();  // Now we can display the complete usage of all loaded drivers
@@ -203,7 +210,15 @@ public class Main
          String protocol = token.substring(0, index).trim();
          String driverId = token.substring(index+1).trim();
          try {
-            loadDriver(protocol, driverId);
+            I_Driver driver = loadDriver(protocol, driverId);
+            //Log.info(ME, "Loaded address " + driver.getRawAddress());
+            if (driver.getRawAddress() != null) {
+               // choose the shortest (human readable) unique name for this cluster node (xmlBlaster instance)
+               if (uniqueNodeIdName == null)
+                  uniqueNodeIdName = driver.getRawAddress();
+               else if (uniqueNodeIdName.length() > driver.getRawAddress().length())
+                  uniqueNodeIdName = driver.getRawAddress();
+            }
          }
          catch (XmlBlasterException e) {
             Log.error(ME, e.toString());
@@ -232,7 +247,7 @@ public class Main
          if (Log.TRACE) Log.trace(ME, "Trying Class.forName('" + driverId + "') ...");
          Class cl = java.lang.Class.forName(driverId);
          driver = (I_Driver)cl.newInstance();
-         protocols.addElement(driver);
+         glob.addProtocolDriver(driver);
          Log.info(ME, "Found '" + protocol + "' driver '" + driverId + "'");
       }
       catch (IllegalAccessException e) {
@@ -268,21 +283,12 @@ public class Main
     */
    public void shutdown()
    {
-      if (protocols.size() > 0) {
+      if (glob.getProtocolDrivers().size() > 0) {
          Log.info(ME, "Shutting down xmlBlaster ...");
          if (Log.DUMP) ThreadLister.listAllThreads(System.out);
       }
 
-      for (int ii=0; ii<protocols.size(); ii++) {
-         I_Driver driver = (I_Driver)protocols.elementAt(ii);
-         try {
-            driver.shutdown();
-         }
-         catch (Throwable e) {
-            Log.error(ME, "Shutdown of driver " + driver.getName() + " failed: " + e.toString());
-         }
-      }
-      protocols.clear();
+      glob.shutdownProtocolDrivers();
    }
 
 
@@ -371,6 +377,33 @@ public class Main
       }
    }
 
+   /**
+    * Generate a unique xmlBlaster instance ID. 
+    * This is the last fallback to create a cluster node id:
+    * <ol>
+    *   <li>cluster.node.id : The environment is checked for a given cluster node id</li>
+    *   <li>address :         The protocol drivers are checked if one has established a socket</li>
+    *   <li>createNodeId :    We generate a unique node id</li>
+    * </ol>
+    *  @return unique ID
+    */
+   private String createNodeId() throws XmlBlasterException
+   {
+      String ip;
+      try  {
+         java.net.InetAddress addr = java.net.InetAddress.getLocalHost();
+         ip = addr.getHostAddress();
+      } catch (Exception e) {
+         Log.warn(ME, "Can't determin your IP address");
+         ip = "localhost";
+      }
+
+      StringBuffer buf = new StringBuffer(256);
+      buf.append("ClusterNodeId-").append(ip).append("-").append(System.currentTimeMillis());
+      String nodeName = buf.toString();
+      if (Log.TRACE) Log.trace(ME, "Created node id='" + nodeName + "'");
+      return nodeName;
+   }
 
    /**
     * Add shutdown hook.
@@ -448,10 +481,14 @@ public class Main
       Log.plain(ME, "java org.xmlBlaster.Main <options>");
       Log.plain(ME, "----------------------------------------------------------");
       Log.plain(ME, "   -h                  Show the complete usage.");
+      Vector protocols = glob.getProtocolDrivers();
       for (int ii=0; ii<protocols.size(); ii++) {
          I_Driver driver = (I_Driver)protocols.elementAt(ii);
          Log.plain(ME, driver.usage());
       }
+      Log.plain(ME, "Cluster support:");
+      Log.plain(ME, "   -cluster.node.id    A unique name for this xmlBlaster instance, e.g. 'com.myCompany.myHost'");
+      Log.plain(ME, "                       If not specified a unique name is choosen and displayed on command line");
       Log.usage();
       Log.plain(ME, "Other stuff:");
       Log.plain(ME, "   -useKeyboard false  Switch off keyboard input, to allow xmlBlaster running in background.");
