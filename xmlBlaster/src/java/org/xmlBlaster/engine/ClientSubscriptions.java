@@ -3,7 +3,7 @@ Name:      ClientSubscriptions.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling subscriptions, collected for each Client
-Version:   $Id: ClientSubscriptions.java,v 1.22 2002/03/13 16:41:11 ruff Exp $
+Version:   $Id: ClientSubscriptions.java,v 1.23 2002/03/13 19:23:42 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -25,7 +25,7 @@ import java.io.*;
  * Handling subscriptions, collected for each Client.
  * <p />
  * The interface SubscriptionListener informs about subscribe/unsubscribe events
- * @version: $Id: ClientSubscriptions.java,v 1.22 2002/03/13 16:41:11 ruff Exp $
+ * @version: $Id: ClientSubscriptions.java,v 1.23 2002/03/13 19:23:42 ruff Exp $
  * @author Marcel Ruff
  */
 public class ClientSubscriptions implements I_ClientListener, SubscriptionListener, MessageEraseListener
@@ -90,25 +90,6 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
    {
       return querySubscribeRequestsSet;
    }
-
-
-   /**
-    * If you have the ingredients to construct a unique id of a subscription, you may access the
-    * SubscriptionInfo object here.
-    * <p />
-    * You can access XPATH or EXACT subscription objects through this method
-    * @param sessionInfo All infos about the client
-    * @param xmlKey     The XML based message key
-    * @param qos        The base QoS class
-    * @return corresponding subscriptionInfo object<br />
-    *         or null if not found
-    */
-   public SubscriptionInfo getSubscription(SessionInfo sessionInfo, XmlKey xmlKey, XmlQoSBase qos) throws XmlBlasterException
-   {
-      String subscriptionInfoUniqueKey = SubscriptionInfo.generateUniqueKey(sessionInfo.getSessionQueue(), xmlKey, qos).toString();
-      return getSubscription(sessionInfo, subscriptionInfoUniqueKey);
-   }
-
 
    /**
     * If you have the unique id of a subscription, you may access the
