@@ -1,0 +1,390 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='admin.commands' type='NEW' prio='MEDIUM' status="INWORK">
+   <topic>Description of the available commands for remote administration of xmlBlaster</topic>
+   <description>
+     <p>
+     XmlBlaster has an internal command interface which allows to
+     monitor and control the server. You can connect to this command
+     interface with arbitrary administration protocols like SNMP,
+     telnet, JMX or xmlBlaster-command-messages.
+     </p>
+     <h3>
+     What data can we monitor and control?
+     </h3>
+     <p>
+     To understand the command syntax imagine a simple xml representation of xmlBlaster nodes:
+     </p>
+     <pre class="BORDER"><![CDATA[
+<node>
+   <numNodes>5</numNodes>
+   <nodeList>heron,avalon,golan,frodo,bilbo</nodeList>
+   <heron>
+      <uptime>34000</uptime>      <!-- sec -->
+      <freeMem>13000000</freeMem> <!-- bytes -->
+      <hostname>server.mycomp.com</hostname>
+      <port>3412</host>
+
+      <numClients>4</numClients>
+      <maxClients>10000</maxClients>
+      <clientList>joe,jack,averell,william</clientList>
+      <client>
+         <joe>
+            <uptime>10050</uptime>
+            <cb.queue.numMsgs>247</cb.queue.numMsgs>
+            <cb.queue.maxMsg>1000</cb.queue.maxMsg>
+
+            <numSessions>2</numSessions>
+            <maxSessions>10</maxSessions>
+            <ses17>
+               <uptime>10050</uptime>
+               <cb.queue.numMsgs>37</cb.queue.numMsgs>
+               <cb.queue.maxMsg>1000</cb.queue.maxMsg>
+            </ses17>
+
+            <ses32>
+               ...
+            </ses32>
+         </joe>
+
+         <jack>
+            ...
+         </jack>
+
+      </client>
+
+      <numSysprop>117</numSysprop>
+      <syspropList>java.io.tmpdir,java.vm.version,...</syspropList>
+      <sysprop>
+         <java.io.tmpdir>/tmp</java.io.tmpdir>
+         <java.vm.version>1.3.1</java.vm.version>
+         <user.language>es</user.language>
+      </sysprop>
+
+      <numMsgs>7140</numMsgs>
+      <msgList>hello,radar.track,myMessage,__sys__FreeMem,...</msgList>
+      <msg>
+         <hello>
+            <key></key>
+            <content>world</content>
+            <qos></qos>
+         </hello>
+
+         <radar.track>
+            ...
+         </radar.track>
+      </msg>
+   </heron>
+
+   <avalon>
+      ...
+   </avalon>
+</node>
+     ]]></pre>
+
+      <p>
+         As you have probably noticed, the tree syntax is a mixture of class names
+         like <code>node</code> or <code>client</code> and instance names
+         like <code>heron</code> or <code>joe</code>. This is conceptually a bit strange
+         but it resulted in a simple view of xmlBlaster so we have chosen it like this.
+      </p>
+      <p>
+         Lets have a look at the xmlBlaster cluster node <code>heron</code>. This is 
+         an xmlBlaster server running somewhere on the net (<code>server.mycomp.com:3412</code>).<br />
+         <code>heron</code> has its own attributes like <code>uptime</code> and <code>freemem</code>
+         which are leafs in the tree. In addition <code>heron</code> has tags which
+         have children themselves, more exact the tags:
+      </p>
+      <ol>
+        <li><code>client</code> Allows you to survey the logged in clients</li>
+        <li><code>sysprop</code> Inspect the system properties, xmlBlaster.properties and command line arguments</li>
+        <li><code>msg</code> Examine or manipulate the messages in xmlBlaster</li>
+      </ol>
+      <h3>
+         What is allowed to do with these attributes?
+      </h3>
+      <table border="1">
+         <tr>
+            <td>Command</td>
+            <td>Description</td>
+            <td>MOM</td>
+            <td>telnet</td>
+            <td>SNMP</td>
+            <td>JMX</td>
+            <td>Implemented</td>
+         </tr>
+         <tr>
+            <td>GET</td>
+            <td>We can read all attributes</td>
+            <td>get()</td>
+            <td>get</td>
+            <td>get</td>
+            <td>getAttributes()</td>
+            <td>no</td>
+         </tr>
+         <tr>
+            <td>SET</td>
+            <td>We can write/change selective attributes</td>
+            <td>publish()</td>
+            <td>set</td>
+            <td>set</td>
+            <td>setAttributes()</td>
+            <td>no</td>
+         </tr>
+         <tr>
+            <td>SUBSCRIBE</td>
+            <td>We can subscribe for change events on selective attributes</td>
+            <td>subscribe()</td>
+            <td>subscribe</td>
+            <td>trap</td>
+            <td>Notification</td>
+            <td>no</td>
+         </tr>
+         <tr>
+            <td>POLL</td>
+            <td>We can ask xmlBlaster to send us the current value of an attribute
+               for example every 10 seconds (every specified amount of cycle time)</td>
+            <td>subscribe()</td>
+            <td>poll</td>
+            <td>trap</td>
+            <td>Notification</td>
+            <td>no</td>
+         </tr>
+         <tr>
+            <td>SCHEDULE</td>
+            <td>We can ask xmlBlaster to send us the current value of an attribute
+              on fixed times, for example always at midnight</td>
+            <td>subscribe()</td>
+            <td>schedule</td>
+            <td>trap</td>
+            <td>Notification</td>
+            <td>no</td>
+         </tr>
+      </table>
+
+      <p>For JMX the DynamicMBean and Notification interface is used.</p>
+
+      <h3>
+         How can we query these attributes?
+      </h3>
+      <p>
+         The following table gives an overview of the query syntax, it
+         is URL conforming to allow direct queries from a browser (authentication
+         is not specified yet) and it is simple to allow typing it into a telnet terminal.
+      </p>
+      <table border="1">
+         <tr>
+            <td>Command</td>
+            <td>Description</td>
+         </tr>
+         <tr>
+            <td>/node/?numNodes</td>
+            <td>Query the number of xmlBlaster cluster nodes (running xmlBlaster instances)</td>
+         </tr>
+         <tr>
+            <td>/node/heron/?freeMem</td>
+            <td>Query the free memory in bytes</td>
+         </tr>
+         <tr>
+            <td>/node/heron/?numClients</td>
+            <td>How many clients are logged in to heron</td>
+         </tr>
+         <tr>
+            <td>/node/heron/client/joe/?sessionList</td>
+            <td>Retrieve the public session IDs of joe (if joe is logged in three times, there will be three entries)</td>
+         </tr>
+         <tr>
+            <td>client/joe/?sessionList</td>
+            <td>Same as above but relative addressed</td>
+         </tr>
+         <tr>
+            <td>client/joe/ses17/?uptime</td>
+            <td>How long is session ID 17 logged in (in seconds)</td>
+         </tr>
+         <tr>
+            <td>client/joe/ses17/?cb.queue.maxMsg=30000</td>
+            <td>Change to max. callback queue size of joe-session-ID 17 to 30 thousand messages</td>
+         </tr>
+         <tr>
+            <td>/node/heron/sysprop/?java.vm.version</td>
+            <td>Access the JDK version</td>
+         </tr>
+         <tr>
+            <td>sysprop/?user.language=es</td>
+            <td>Change the language to spanish (relative addressed)</td>
+         </tr>
+         <tr>
+            <td>sysprop/?info=false</td>
+            <td>Switch off logging of infos</td>
+         </tr>
+         <tr>
+            <td>sysprop/?trace[corba]=true</td>
+            <td>Switch on trace mode for the corba layer</td>
+         </tr>
+         <tr>
+            <td>/node/heron/?numMsgs</td>
+            <td>How many messages are currently in heron</td>
+         </tr>
+         <tr>
+            <td>/node/heron/msg/Hello/?content</td>
+            <td>Access the message content of the message with key-oid="Hello"</td>
+         </tr>
+         <tr>
+            <td>/node/heron/msg/Hello/?content=How are you</td>
+            <td>Change the message content of the message with key-oid="Hello" to "How are you"</td>
+         </tr>
+         <tr>
+            <td>/node/heron/msg/?Hello</td>
+            <td>Return the complete message (oid=Hello)</td>
+         </tr>
+         <tr>
+            <td>/node/heron/msg/Hello/?key</td>
+            <td>Return the complete key of this message</td>
+         </tr>
+         <tr>
+            <td>/node/heron/msg/Hello/?key.contentMime</td>
+            <td>Return the MIME type of this message</td>
+         </tr>
+      </table>
+      <p>
+      You can address an attribute with global scope <code>/node/heron/client/joe/?uptime</code>
+      or with relative scope <code>client/joe/?uptime</code>. The relative query assumes
+      the current xmlBlaster node you are connected to.
+      </p>
+      <h3>
+      How can we use these commands?
+      </h3>
+      <table border="1">
+         <tr>
+            <td>Protocol</td>
+            <td>Example</td>
+            <td>Description</td>
+            <td>Implemented</td>
+         </tr>
+
+         <tr>
+            <td>MoM clients</td>
+            <td><pre>get("&lt;key oid='__cmd:/node/heron/?freeMem'/>","&lt;qos/>)</pre></td>
+            <td>The token <code>__cmd:</code> marks the oid to be used as a command
+            </td>
+            <td>no</td>
+         </tr>
+      
+         <tr>
+            <td>telnet</td>
+            <td>get /node/heron/?freeMem</td>
+            <td>With telnet you give the command <code>get</code> followed by the query (separated with a white space)
+            </td>
+            <td>no</td>
+         </tr>
+
+         <tr>
+            <td>SNMP</td>
+            <td>get /node/heron/?freeMem</td>
+            <td> </td>
+            <td>no</td>
+         </tr>
+
+         <tr>
+            <td>JMX</td>
+            <td>getAttribute("/node/heron/?freeMem")</td>
+            <td>This is a method of DynamicMBean</td>
+            <td>no</td>
+         </tr>
+
+      </table>
+
+      <h3>
+         How does authentication work?
+      </h3>
+      For MoM clients the usual authentication applies.<br />
+      For telnet clients this is an open issue.<br />
+      For SNMP access the authentication is done in SNMP<br />
+      For JMX we have not investigated yet.
+
+   </description>
+
+
+   <example lang="any" type="HTML">
+      <p>
+         Here is an example of a complete and valid URI, we should try
+         not to break this syntax with our query language:
+      </p>
+      <pre class="BORDER">
+http://joe:mypassword@server.xmlBlaster.org:3412/myPath/?key.oid=MyMessage#myFragment
+
+Protocol: http
+Host:     server.xmlBlaster.org
+Port:     3412
+File:     /myPath/?key.oid=MyMessage
+Path:     /myPath/
+Query:    key.oid=MyMessage
+Ref:      myFragment
+UserInfo: joe:mypassword
+      </pre>
+   </example>
+
+   <configuration where="server">
+      <p>
+      The available commands are marked as R=readable, W=writable, S=subscribable
+      T=schedulable, P=pollable
+      </p>
+      <p>
+      If you want to change a value, you need to use a <code>publish()</code> message,
+      or with telnet you would use <code>set</code>, for SNMP you use a <code>set</code>
+      command as well.
+      </p>
+      <table border="1">
+         <tr>
+            <td>Command</td>
+            <td>Type</td>
+            <td>Read/Write</td>
+            <td>Description</td>
+            <td>Implemented</td>
+         </tr>
+
+         <tr>
+            <td>client/joe/?uptime</td>
+            <td>int</td>
+            <td>R</td>
+            <td>Get the number of seconds the user is logged in
+            </td>
+            <td>no</td>
+         </tr>
+      
+         <tr>
+            <td>sysprop/?trace[auth]</td>
+            <td>boolean</td>
+            <td>R/W</td>
+            <td>Monitor or change the <code>trace</code> log level, but
+            only for authentication issues
+            </td>
+            <td>no</td>
+         </tr>
+
+         <tr>
+            <td>TODO</td>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+         </tr>
+
+      </table>
+   </configuration>
+
+   <see type="REQ">admin</see>
+
+   <author>Heinrich.Goetzger@exploding-systems.de</author>
+   <author>Michele.Laghi@swisscom.com</author>
+   <author>ruff@swand.lake.de</author>
+   <date>2002 06 12</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="OPEN">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE"></test>
+   </testcase>
+</requirement>
+
