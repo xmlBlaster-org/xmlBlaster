@@ -37,7 +37,7 @@ Building instructions
 Ok, let's build the baby. First, make sure your current working directory is
 where this very file is located. Then type
 
-  ./build.sh all (unix)
+  ./build.sh all (unix)    (-debug -verbose -buildfile <file>)
   .\build.bat all (win32)
 
 if everything is right and all the required packages are visible, this action
@@ -96,6 +96,7 @@ Else add it manually.
   <property name="build.war" value="${build.dir}/war"/>
 
   <property name="dist.dir" value="./dist"/>
+  <property name="dist-client.dir" value="./dist-client"/>
 
 
   <property name="xmlblaster_home" value="."/>
@@ -132,6 +133,7 @@ Else add it manually.
     <echo message="                   demonstrates persistent http callbacks"/>
     <echo message="   k2          --> create the J2EE connector"/>
     <echo message="   jms-adapter --> create the J2EE connector example bean"/>
+    <echo message="   dist-client --> create for a typical client the necessary xmlBlasterClient.jar file"/>
     <echo message=""/>
     <echo message=" See the comments inside the build.xml file for more details."/>
     <echo message="-------------------------------------------------------------"/>
@@ -216,7 +218,7 @@ Else add it manually.
            destdir="${build.dest}"
            classpath="${classpath}:${lib.dir}/${name}.jar"
            debug="${debug}"/>
-    <jar destfile="${build.dir}/demo.jar" basedir="${build.dest}" includes="javaclients/**/*.class"/>
+    <jar destfile="${build.dir}/demo.jar" basedir="${build.dest}" includes="javaclients/**/*.class,http/**/*.class"/>
     <copy file="${build.dir}/demo.jar" tofile="${lib.dir}/demo.jar"/>
   </target>
 
@@ -228,7 +230,7 @@ Else add it manually.
     <delete file="${lib.dir}/demo.jar"/>
     <delete file="${lib.dir}/testsuite.jar"/>
     <delete file="${build.dir}/${name}.jar"/>
-    <jar destfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}" includes="org/**/*.*,testsuite/**,javaclients/**/*.class,html/systemInfo/*.class,xmlBlaster.policy,*.gif,*.properties"/>
+    <jar destfile="${build.dir}/${name}.jar" manifest="${build.dest}/manifest.xmlBlaster" basedir="${build.dest}" includes="org/**/*.*,testsuite/**,javaclients/**/*.class,http/**/*.class,html/systemInfo/*.class,xmlBlaster.policy,*.gif,*.properties"/>
     <copy file="${build.dir}/${name}.jar" tofile="${lib.dir}/${name}.jar"/>
   </target>
 
@@ -421,6 +423,30 @@ Else add it manually.
     <jar destfile="${name}-${version}.jar" basedir="${dist.dir}"/>
   </target>
 
+  <!-- =================================================================== -->
+  <!-- Creates the distribution for java clients                           -->
+  <!-- =================================================================== -->
+  <target name="dist-client" depends="all">
+    <mkdir dir="${dist-client.dir}"/>
+    <mkdir dir="${dist-client.dir}/lib"/>
+    <mkdir dir="${dist-client.dir}/classes"/>
+
+    <unjar src="${lib.dir}/${name}.jar" dest="${dist-client.dir}/classes" />
+    <unjar src="${lib.dir}/jacorb.jar" dest="${dist-client.dir}/classes" />
+    <unjar src="${lib.dir}/jutils.jar" dest="${dist-client.dir}/classes" />
+    <unjar src="${lib.dir}/xmlrpc.jar" dest="${dist-client.dir}/classes" />
+    
+    <delete includeEmptyDirs="true"><fileset dir="${dist-client.dir}/classes" includes="**/META-INF/**"/></delete>
+    <jar destfile="${dist-client.dir}/lib/xmlBlasterClient.jar" basedir="${dist-client.dir}/classes"/>
+    <delete includeEmptyDirs="true"><fileset dir="${dist-client.dir}/classes" /></delete>
+
+    <echo message="--------------------------------------------"/>
+    <echo message="Created ${dist-client.dir}/lib/xmlBlasterClient.jar"/>
+    <echo message="It supports clients with XmlRpc, CORBA and RMI"/>
+    <echo message="Note: The XML parser support is not included, we expect your XML library."/>
+    <echo message="--------------------------------------------"/>
+  </target>
+
 
   <!-- =================================================================== -->
   <!-- Corba/C++ integration - create libxmlBlasterClient.sl (dll)         -->
@@ -554,6 +580,9 @@ Else add it manually.
    <target name="delete" depends="clean">
       <delete>
          <fileset dir="${dist.dir}" includes="**"/>
+      </delete>
+      <delete>
+         <fileset dir="${dist-client.dir}" includes="**"/>
       </delete>
    </target>
 </project>
