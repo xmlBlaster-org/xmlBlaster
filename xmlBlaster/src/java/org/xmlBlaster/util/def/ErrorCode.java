@@ -228,6 +228,14 @@ public final class ErrorCode implements java.io.Serializable
          }
       );
 
+   public static final ErrorCode RESOURCE_CONFIGURATION_SSLSOCKET = new ErrorCode("resource.configuration.sslSocket",
+         "A SOCKET plugin required couldn't be loaded, please check your (ssl) configuration.",
+         new ResourceInfo[] {
+            new ResourceInfo(ResourceInfo.REQ, "The runlevel manager howto", "engine.runlevel.howto"),
+            new ResourceInfo(ResourceInfo.REQ, "The SOCKET protocol specification", "protocol.socket")
+         }
+      );
+
    public static final ErrorCode RESOURCE_CONFIGURATION_ADDRESS = new ErrorCode("resource.configuration.address",
          "A remote address you passed is invalid, please check your configuration.",
          new ResourceInfo[] {
