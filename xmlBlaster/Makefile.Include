@@ -38,8 +38,11 @@ IDL2JAVA=$(JacORB_HOME)/bin/idl -p org.xmlBlaster
 #JAVAC_FLAGS=
 JAVAC_FLAGS= -deprecation -g
 
+ifdef JIKES_HOME
 JAVAC= jikes $(JAVAC_FLAGS) -d $(CLASS_TOP_DIR)
-#JAVAC= javac $(JAVAC_FLAGS) -bootclasspath $(CLASSPATH) -sourcepath $(SRC_JAVA_TOP_DIR) -d $(CLASS_TOP_DIR)
+else
+JAVAC= javac $(JAVAC_FLAGS) -bootclasspath $(CLASSPATH) -sourcepath $(SRC_JAVA_TOP_DIR) -d $(CLASS_TOP_DIR)
+endif
 #JAVAC= javac $(JAVAC_FLAGS) -bootclasspath ${JacORB_HOME}/classes:${JacORB_HOME}/classes/jacorb.jar:${JDK_HOME}/jre/lib/rt.jar:$(CLASSPATH) -sourcepath $(SRC_JAVA_TOP_DIR) -d $(CLASS_TOP_DIR)
 
 #RMIC=  rmic -d $(CLASS_TOP_DIR) -classpath $(CLASSPATH):../../
