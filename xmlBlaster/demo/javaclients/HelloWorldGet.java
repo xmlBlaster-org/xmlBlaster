@@ -15,7 +15,8 @@ import org.xmlBlaster.client.key.GetReturnKey;
 import org.xmlBlaster.client.qos.GetQos;
 import org.xmlBlaster.client.qos.GetReturnQos;
 import org.xmlBlaster.util.qos.AccessFilterQos;
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.client.I_XmlBlasterAccess;
+import org.xmlBlaster.client.XmlBlasterAccess;
 
 
 /**
@@ -90,7 +91,7 @@ public class HelloWorldGet
          log.info(ME, "For more info please read:");
          log.info(ME, "   http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.get.html");
 
-         XmlBlasterConnection con = new XmlBlasterConnection(glob);
+         I_XmlBlasterAccess con = glob.getXmlBlasterAccess();
 
          // ConnectQos checks -session.name and -passwd from command line
          log.info(ME, "============= CreatingConnectQos");
@@ -168,7 +169,7 @@ public class HelloWorldGet
       Global glob = new Global();
       
       if (glob.init(args) != 0) { // Get help with -help
-         XmlBlasterConnection.usage();
+         System.out.println(glob.usage());
          System.err.println("\nExample:");
          System.err.println("  java javaclients.HelloWorldGet -oid Hello -initialUpdate true\n");
          System.exit(1);
