@@ -38,7 +38,9 @@ namespace org {
 
 
 CorbaConnection::CorbaConnection(Global& global, CORBA::ORB_ptr orb)
-  : /* loginQos_(), */
+  : orb_(0),
+    poa_(0),
+    /* loginQos_(), */
     connectReturnQos_(global), 
     global_(global), 
     log_(global.getLog("corba")),

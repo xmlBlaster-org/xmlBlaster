@@ -66,7 +66,15 @@ void QueryQosData::copy(const QueryQosData& data)
  * @param The factory which knows how to serialize and parse me
  */
 QueryQosData::QueryQosData(Global& global)
-   : QosData(global), filters_(), historyQos_(global)
+   : QosData(global),
+      forceDestroy_(false),
+      meta_(true), 
+      content_(true),
+      local_(true),
+      initialUpdate_(true),
+      notify_(true),
+      filters_(),
+      historyQos_(global)
 {
    ME = "QueryQosData";
 }
