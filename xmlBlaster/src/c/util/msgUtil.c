@@ -36,9 +36,9 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #if defined(__GNUC__) || defined(__ICC)
    /* To support query state with 'ident libxmlBlasterClientC.so' or 'what libxmlBlasterClientC.so'
       or 'strings libxmlBlasterClientC.so  | grep msgUtil.c' */
-   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: msgUtil.c,v 1.15 2003/10/29 21:06:25 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: msgUtil.c,v 1.16 2003/10/29 21:08:53 ruff Exp $ xmlBlaster @version@";
 #elif defined(__SUNPRO_CC)
-   static const char *rcsid_GlobalCpp  =  "@(#) $Id: msgUtil.c,v 1.15 2003/10/29 21:06:25 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  =  "@(#) $Id: msgUtil.c,v 1.16 2003/10/29 21:08:53 ruff Exp $ xmlBlaster @version@";
 #endif
 
 #define  MICRO_SECS_PER_SECOND 1000000
@@ -675,7 +675,7 @@ Dll_Export struct hostent * gethostbyname_re (const char *host,struct hostent *h
 #   endif /* SOME_SERVER_EXAMPLE */
 
 #else /* !_WINDOWS */
-#ifdef HAVE_FUNC_GETHOSTBYNAME_R_6
+#if defined(HAVE_FUNC_GETHOSTBYNAME_R_6)
    struct hostent *hp;
    int herr,res;
 
@@ -703,8 +703,7 @@ Dll_Export struct hostent * gethostbyname_re (const char *host,struct hostent *h
       return 0;
    }
    return hp;
-#else
-#  ifdef HAVE_FUNC_GETHOSTBYNAME_R_5
+#elif defined(HAVE_FUNC_GETHOSTBYNAME_R_5)
       struct hostent *hp;
       int herr;
 
@@ -725,8 +724,7 @@ Dll_Export struct hostent * gethostbyname_re (const char *host,struct hostent *h
          if (*tmphstbuf == 0) return 0;
       }
       return hp;
-#  else
-#     ifdef HAVE_FUNC_GETHOSTBYNAME_R_3
+#elif defined(HAVE_FUNC_GETHOSTBYNAME_R_3)
          if (*hstbuflen == 0)
          {
             *hstbuflen = sizeof(struct hostent_data);
@@ -747,13 +745,11 @@ Dll_Export struct hostent * gethostbyname_re (const char *host,struct hostent *h
             return 0;
          }
          return hostbuf;
-#     else
+#else
          hostbuf = 0;  /* Do something with unused arguments to avoid compiler warning */
          tmphstbuf = 0;
          hstbuflen = 0;
          return gethostbyname(host); /* Not thread safe */
-#     endif
-#  endif
 #endif /* !_WINDOWS */
 #endif /* _WINDOWS */
 }
