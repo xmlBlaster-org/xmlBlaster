@@ -2375,9 +2375,9 @@ TODO
        <delete dir="${dist-client.dir}"/>
    </target>
 
-    <target name="clean" depends="cpp-clean,java-clean" description="Remove generated Java and C++ files">
+    <target name="clean" depends="cpp-clean,c-clean,java-clean" description="Remove generated Java, C and C++ files">
     </target>
 
-    <target name="delete" depends="clean,cpp-delete,java-delete,docs-delete" description="Remove all generated ditribution Java, C++ and documentation files">
+    <target name="delete" depends="clean,cpp-delete,c-delete,java-delete,docs-delete" description="Remove all generated ditribution Java, C, C++ and documentation files">
    </target>
 </project>
