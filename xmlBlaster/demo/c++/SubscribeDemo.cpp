@@ -331,7 +331,7 @@ public:
 /**
  * Try
  * <pre>
- *   java TestSubXPath -help
+ *   SubscribeDemo -help
  * </pre>
  * for usage help
  */

@@ -267,6 +267,9 @@ static void usage(Log& log)
    str += "\n -numPublish (int): the number of publishes which have to be done";
    str += "\n -sleep (ms): the delay to wait between each publish. If negative (default) it does not wait";
    str += "\n ...";
+   str += "\nExample:\n";
+   str += "   PublishDemo -trace true -numPublish 1000\n";
+   str += "   PublishDemo -destination joe -oid Hello -content 'Hi joe'\n";
    log.plain("PublishDemo", str);
    exit(0);
 }
@@ -275,7 +278,7 @@ static void usage(Log& log)
 /**
  * Try
  * <pre>
- *   java TestSubXPath -help
+ *   PublishDemo -help
  * </pre>
  * for usage help
  */
