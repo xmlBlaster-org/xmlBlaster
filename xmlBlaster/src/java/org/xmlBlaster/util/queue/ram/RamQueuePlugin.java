@@ -670,13 +670,13 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
       if (getNumOfEntries() > property.getMaxEntries()) { // Allow superload one time only
          String reason = "Queue overflow (num of entries), " + property.getMaxEntries() +
                   " messages are in queue, try increasing '" + this.property.getPropName("maxEntries") + "' on client login.";
-         if (log.TRACE) log.trace(ME, reason);
+         if (log.TRACE) log.trace(ME, reason+toXml());
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, reason);
       }
       if (this.getNumOfBytes() > property.getMaxBytes()) { // Allow superload one time only
          String reason = "Queue overflow, " + this.getNumOfBytes() + " bytes are in queue, try increasing '" +
                          this.property.getPropName("maxBytes") + "' on client login.";
-         if (log.TRACE) log.trace(ME, reason);
+         if (log.TRACE) log.trace(ME, reason+toXml());
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, reason);
       }
 
