@@ -222,9 +222,6 @@ public class HelloWorldSubscribe implements I_Callback
             log.info(ME, "Waiting on update ...");
          }
 
-         Global.waitOnKeyboardHit("Success, hit a key to exit");
-
-
          if (interactiveUpdate) {
             try { Thread.sleep(1000000000); } catch( InterruptedException i) {}
          }
