@@ -3,7 +3,7 @@ Name:      TestFailSave.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSave.java,v 1.8 2000/02/28 18:40:30 ruff Exp $
+Version:   $Id: TestFailSave.java,v 1.9 2000/02/29 08:12:07 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -36,16 +36,13 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
    private int serverPort = 7604;
    private ServerThread serverThread;
 
-   private String subscribeOid;
    private CorbaConnection corbaConnection;
    private String senderName;
-   private String receiverName;         // sender/receiver is here the same client
 
    private int numReceived = 0;         // error checking
    private int numPublish = 8;
    private int numStop = 3;
-   private final String contentMime = "text/xml";
-   private final String contentMimeExtended = "1.0";
+   private final String contentMime = "text/plain";
 
    /**
     * Constructs the TestFailSave object.
@@ -57,7 +54,6 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
    {
        super(testName);
        this.senderName = loginName;
-       this.receiverName = loginName;
    }
 
 
@@ -115,16 +111,16 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
       } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
       assertEquals("Wrong number of message erased", strArr.length, (numPublish - numStop));
 
-      Util.delay(1000L);    // Wait some time
-
+      Util.delay(500L);    // Wait some time
       corbaConnection.logout();
+      
+      Util.delay(500L);    // Wait some time
+      stopServer();
    }
 
 
    /**
     * TEST: Subscribe to messages with XPATH.
-    * <p />
-    * The returned subscribeOid is checked
     */
    public void testSubscribe()
    {
@@ -134,7 +130,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
                       "   //TestFailSave-AGENT" +
                       "</key>";
       String qos = "<qos></qos>";
-      subscribeOid = null;
+      String subscribeOid = null;
       try {
          subscribeOid = corbaConnection.subscribe(xmlKey, qos);
          Log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
@@ -249,7 +245,6 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
 
       numReceived += 1;
 
-      assertEquals("Wrong receveiver", receiverName, loginName);
       assertEquals("Wrong sender", senderName, updateQoS.getSender());
       assertEquals("Message contentMime is corrupted", contentMime, updateKey.getContentMime());
 
