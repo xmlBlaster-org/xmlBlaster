@@ -3,12 +3,13 @@ Name:      AuthenticationInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the authentication data
-Version:   $Id: AuthenticationInfo.java,v 1.16 2001/09/05 10:05:32 ruff Exp $
+Version:   $Id: AuthenticationInfo.java,v 1.17 2002/02/14 22:57:36 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.ConnectQos;
+import org.xmlBlaster.protocol.I_CallbackDriver;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.util.XmlBlasterException;
 
@@ -57,6 +58,14 @@ public class AuthenticationInfo
    public final CallbackAddress[] getCallbackAddresses() throws XmlBlasterException
    {
       return connectQos.getCallbackAddresses();
+   }
+
+   /**
+    * The native callback driver as passed from the socket driver
+    */
+   public final I_CallbackDriver getCallbackDriver()
+   {
+      return connectQos.getCallbackDriver();
    }
 
 
