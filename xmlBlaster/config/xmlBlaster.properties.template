@@ -77,6 +77,7 @@ JdbcDriver.drivers=sun.jdbc.odbc.JdbcOdbcDriver
 # <timestamp>:<levelStr>:<instance>:<text>
 #
 # Apr 29, 2000 4:43:35 PM:INFO :Main:Published AuthServer IOR on port 7609
+LogFormat=[{0} {1} {2}] {3}
 #LogFormat={0}:{1}:{2}:{3}
 #
 # Apr 29, 2000 5:36:21 PM INFO  Published AuthServer IOR on port 7609
