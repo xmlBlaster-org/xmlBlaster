@@ -7,25 +7,14 @@
 #   JAVA_HOME=/opt/jdk
 #   xmlBlaster.sh
 #
-# Starting the java interpreter, using JacORB omg libs instead of those
-# from JDK 1.2
-#
-#   Basically, you don't need this script anymore, calling java or javac
-#   directly is enough - if you are using JDK 1.1 or, for JDK 1.2,
-#   installed the orb.properties file correctly. If this was not
-#   possible, you need to set and pass the system properties 
-#   org.omg.CORBA.ORBClass and org.omg.CORBA.ORBSingletonClass on 
-#   the command line. For convenience, you can use this script
-#
-#   Copy orb.properties to JAVA_HOME/lib or edit the existing
-#   orb.properties file. Then you don't need this script.
-#
-# NOTE: If you want to use the naming service, you need to use jaco,
-#       which sets the -Xbootclasspath
-#       since otherwise the wrong NamingContext from JDK is used.
+# NOTE: JVM settings force using JacORB CORBA libs and naming service
+#       instead of those from JDK 1.2 or 1.3
 #
 # NOTE: If you use the RMI server, you should adjust the security policy
 #       file ${XMLBLASTER_HOME}/config/xmlBlaster.policy
+#
+# NOTE: Just edit this script, if you need to increase JVM memory or
+#       other settings (see last line)!
 
 BLACK_LTGREEN="\033[40;46m"
 BLACK_RED="\033[30;41m"
