@@ -77,7 +77,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
       this.log = this.glob.getLog("cluster");
       this.nodeInfo = new NodeInfo(glob, nodeId);
       this.state = new NodeStateInfo(glob);
-      this.ME = "ClusterNode-" + getId();
+      this.ME = "ClusterNode-" + glob.getId() + "-" + getId();
 //!!!      addDomainInfo(new NodeDomainInfo());
    }
 

@@ -277,6 +277,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     */
    public void setServerNodeId(String nodeId) {
       this.serverNodeId = nodeId;
+      this.ME = "XmlBlasterConnection-" + getMe();
    }
 
    public final Global getGlobal() {
@@ -568,7 +569,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     */
    public synchronized void login(String loginName, String passwd, ConnectQos qos, I_Callback client) throws XmlBlasterException
    {
-      this.ME = "XmlBlasterConnection-" + loginName;
+      this.ME = "XmlBlasterConnection-" + loginName + "-" + getServerNodeId();
       this.updateClient = client;
       if (log.CALL) log.call(ME, "login() ...");
 
@@ -682,8 +683,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
       this.connectQos = qos;
 
-      String loginName = connectQos.getSecurityQos().getUserId();
-      this.ME = "XmlBlasterConnection-" + loginName;
+      this.ME = "XmlBlasterConnection-" + getMe();
       this.updateClient = client;
       if (log.CALL) log.call(ME, "connect() ...");
       if (log.DUMP) log.dump(ME, "connect() " + (client==null?"with":"without") + " callback qos=\n" + connectQos.toXml());
@@ -719,7 +719,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       initSecuritySettings(connectQos.getSecurityPluginType(), connectQos.getSecurityPluginVersion());
 
       if (client != null) { // Start a default callback server using same protocol
-         this.cbServer = initCbServer(loginName, null);
+         this.cbServer = initCbServer(getLoginName(), null);
 
          // Set all configurable callback parameters, they are added to the connect QoS
 
@@ -1027,12 +1027,32 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
 
    /**
+    * Create a descriptive ME, for logging only
+    * @return "joe-bilbo" in cluster environment otherwise only "joe"
+    */
+   private final String getMe()
+   {
+      if (getServerNodeId().equals("xmlBlaster")) {
+         return getLoginName();
+      }
+      return getLoginName() + "-" + getServerNodeId();
+   }
+
+
+   /**
     * Access the login name.
     * @return your login name or null if you are not logged in
     */
    public String getLoginName()
    {
-      return driver.getLoginName();
+      if (driver != null)
+         return driver.getLoginName();
+      try {
+         if (connectQos != null)
+            return connectQos.getSecurityQos().getUserId();
+      }
+      catch (XmlBlasterException e) {}
+      return "client?";
    }
 
    /**
@@ -1900,7 +1920,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
        */
       LoginThread(XmlBlasterConnection con, long retryInterval, int retries) {
          this.con = con;
-         this.ME = "LoginThread-" + con.getServerNodeId();
+         this.ME = "LoginThread-" + getMe();
          this.RETRY_INTERVAL = retryInterval;
          this.RETRIES = retries;
          long logEveryMillis = 60000; // every minute a log
@@ -1949,7 +1969,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     */
    private class PingThread extends Thread
    {
-      private final String ME = "PingThread";
+      private final String ME;
       private XmlBlasterConnection con;
       private final long PING_INTERVAL;
       boolean pingRunning = true;
@@ -1959,6 +1979,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
        */
       PingThread(XmlBlasterConnection con, long pingInterval) {
          this.con = con;
+         this.ME = "PingThread-" + getMe();
          this.PING_INTERVAL = pingInterval;
          if (log.CALL) log.call(ME, "Entering constructor ping interval=" + pingInterval + " millis");
       }

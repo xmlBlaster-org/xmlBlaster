@@ -33,7 +33,7 @@ import java.util.*;
  */
 final public class Authenticate implements I_Authenticate
 {
-   final private static String ME = "Authenticate";
+   final private String ME;
 
    public static final String DEFAULT_SECURITYPLUGIN_TYPE = "simple";
    public static final String DEFAULT_SECURITYPLUGIN_VERSION = "1.0";
@@ -76,6 +76,8 @@ final public class Authenticate implements I_Authenticate
    {
       this.glob = global;
       this.log = this.glob.getLog("auth");
+      this.ME = "Authenticate-" + glob.getId();
+
       if (log.CALL) log.call(ME, "Entering constructor");
       this.glob.setAuthenticate(this);
       plgnLdr = new PluginManager(global);
