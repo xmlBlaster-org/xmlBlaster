@@ -3,7 +3,7 @@ Name:      ContentLenFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface hiding the real callback protocol
-Version:   $Id: ContentLenFilter.java,v 1.10 2002/05/01 21:40:08 ruff Exp $
+Version:   $Id: ContentLenFilter.java,v 1.11 2002/05/06 07:29:25 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime.demo;
@@ -15,6 +15,7 @@ import org.xmlBlaster.authentication.SubjectInfo;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.MessageUnitWrapper;
+import org.xmlBlaster.engine.mime.Query;
 import org.xmlBlaster.engine.mime.I_AccessFilter;
 import org.xmlBlaster.engine.Global;
 
@@ -145,7 +146,7 @@ public class ContentLenFilter implements I_Plugin, I_AccessFilter
     *            For the publisher it looks as if the publish failed completely. Probably it is
     *            best to return 'false' instead and log the situation.
     */
-   public boolean match(SubjectInfo publisher, SubjectInfo receiver, MessageUnitWrapper msgUnitWrapper, String query) throws XmlBlasterException {
+   public boolean match(SubjectInfo publisher, SubjectInfo receiver, MessageUnitWrapper msgUnitWrapper, Query query) throws XmlBlasterException {
       if (msgUnitWrapper == null) {
          Thread.currentThread().dumpStack();
          throw new XmlBlasterException(ME, "Illegal argument in match() call");
@@ -157,7 +158,7 @@ public class ContentLenFilter implements I_Plugin, I_AccessFilter
          long maxLen;
 
          if (query != null) { // Subscriber/getter has given own max length
-            maxLen = new Long(query.trim()).longValue();
+            maxLen = new Long(query.toString().trim()).longValue();
          }
          else                 // Use default max length
             maxLen = DEFAULT_MAX_LEN;
