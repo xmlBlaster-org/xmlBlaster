@@ -11,6 +11,7 @@ namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
 using namespace std;
 using namespace org::xmlBlaster::util::dispatch;
+using namespace org::xmlBlaster::util::qos;
 using namespace org::xmlBlaster::client::qos;
 using namespace org::xmlBlaster::client::key;
 

@@ -11,6 +11,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
 using namespace std;
+using namespace org::xmlBlaster::util::qos;
 using namespace org::xmlBlaster::util::dispatch;
 
 ConnectQueueEntry::ConnectQueueEntry(Global& global, const ConnectQos& connectQos, int priority, Timestamp uniqueId)

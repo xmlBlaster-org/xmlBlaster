@@ -211,6 +211,11 @@ public:
    bool isPersistent() const;
 
    /**
+    * Set the sender name into the QoS. 
+    */
+   void setSender(org::xmlBlaster::util::SessionNameRef sender);
+
+   /**
     * This is the second order criteria in the queue
     * @return The unique Id of this entry.
     */

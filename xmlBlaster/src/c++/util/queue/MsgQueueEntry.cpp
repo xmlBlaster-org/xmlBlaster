@@ -124,6 +124,16 @@ bool MsgQueueEntry::isPersistent() const
    return persistent_;
 }
 
+void MsgQueueEntry::setSender(org::xmlBlaster::util::SessionNameRef sender)
+{
+   if (msgUnit_) {
+      msgUnit_->getQos().setSender(sender);
+   }
+   //connectQos_
+   //queryQosData_
+   //statusQosData_
+}
+
 Timestamp MsgQueueEntry::getUniqueId() const
 {
    return uniqueId_;
