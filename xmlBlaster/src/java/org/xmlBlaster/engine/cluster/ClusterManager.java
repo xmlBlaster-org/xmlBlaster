@@ -168,6 +168,27 @@ public final class ClusterManager implements I_RunlevelListener
    }
 
    /**
+    * On xmlBlaster startup we need to wait for incoming messages until clusterManager is ready. 
+    * NOTE: This should be resolved in future by the runlevel manager
+    * @return false on timeout (manager was never ready)
+    */
+   public boolean blockUntilReady() {
+      if (this.postInitialized)
+         return true;
+      for (int i=0; i<2000; i++) {
+         try { Thread.currentThread().sleep(10L); } catch( InterruptedException ie) {}
+         if (this.postInitialized)
+            return true;
+      }
+      log.error(ME, "Waited for " + (2000*10L) + " millis for cluster manager to be ready, giving up");
+      return false;
+   }
+
+   public boolean isReady() {
+      return this.postInitialized;
+   }
+
+   /**
     * TODO: not implemented yet
     * You can't currently configure the cluster setup with messages, only statically
     * on startup
@@ -509,6 +530,7 @@ public final class ClusterManager implements I_RunlevelListener
     * @return The ClusterNode instance or null if unknown
     */
    public final ClusterNode getClusterNode(String id) {
+      if (this.clusterNodeMap == null) return null;
       return (ClusterNode)this.clusterNodeMap.get(id);
    }
 
@@ -699,7 +721,7 @@ public final class ClusterManager implements I_RunlevelListener
       String offset = Constants.OFFSET + extraOffset;
 
       sb.append(offset).append("<clusterManager>");
-      if (clusterNodeMap != null && clusterNodeMap.size() > 0) {
+      if (this.clusterNodeMap != null && this.clusterNodeMap.size() > 0) {
          ClusterNode[] clusterNodes = getClusterNodes();
          for(int i=0; i<clusterNodes.length; i++) {
             sb.append(clusterNodes[i].toXml(extraOffset + Constants.INDENT));
