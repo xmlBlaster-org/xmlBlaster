@@ -256,7 +256,7 @@ TODO
       <compilerarg value="-pedantic" />
       <compilerarg value="-Wno-long-long" />  <!-- with -pedantic: to suppress warning: ANSI C does not support `long long', C99 supports it -->
       <compilerarg value="-D_REENTRANT" />
-      <compilerarg value="-rdynamic" />       <!-- To show symbols of a backtrace (see XmlBlasterException.cpp, msgUtil.c) -->
+      <compilerarg value="-rdynamic" />  <!-- To show symbols of a backtrace (see XmlBlasterException.cpp, msgUtil.c) -->
       <compilerarg value="-export-dynamic" /> <!-- To show symbols of a backtrace (see XmlBlasterException.cpp, msgUtil.c) -->
       <compilerarg value="${gcc.enableStackTrace}" /> <!-- To show symbols of a backtrace (see XmlBlasterException.cpp, msgUtil.c) -->
       <compilerarg value="-D${thread.impl}" />
@@ -685,7 +685,7 @@ TODO
         includes="jboss-service.xml"
         prefix="META-INF"/>
       <fileset dir="${lib.dir}"
-        includes="activation.jar,jacorb/idl.jar,jacorb/avalon-framework-4.1.5.jar,jacrob/logkit-1.2.jar,jacorb/jacorb.jar,omquery.jar,xtdash.jar,remotecons.jar,jax.jar,concurrent.jar,jaxp.jar,parser.jar, xmlrpc.jar,gnu-regexp.jar,tinySQL.jar"
+        includes="activation.jar,jacorb/idl.jar,jacorb/avalon-framework-4.1.5.jar,jacorb/logkit-1.2.jar,jacorb/jacorb.jar,omquery.jar,xtdash.jar,remotecons.jar,jax.jar,concurrent.jar,jaxp.jar,parser.jar, xmlrpc.jar,gnu-regexp.jar,tinySQL.jar"
         />                                             
       <fileset dir="${build.dir}/sar"
         includes="xmlBlaster.properties,xmlBlasterPlugins.xml,xmlBlaster.jar"
@@ -1356,6 +1356,8 @@ TODO
          <case value="true">
             <echo message="Adding ${lib.dir}/jacorb/jacorb.jar for CORBA support" />
             <unjar src="${lib.dir}/jacorb/jacorb.jar" dest="${dist-classes.dir}" />
+            <unjar src="${lib.dir}/jacorb/avalon-framework-4.1.5.jar" dest="${dist-classes.dir}" />
+            <unjar src="${lib.dir}/jacorb/logkit-1.2.jar" dest="${dist-classes.dir}" />
             <unjar src="${lib.dir}/miniJacorb.jar" dest="${dist-classes.dir}" />
          </case>
          <default>
@@ -1542,6 +1544,8 @@ TODO
             <echo message="Adding ${lib.dir}/jacorb/jacorb.jar for CORBA support" />
             <unjar src="${lib.dir}/jacorb/jacorb.jar" dest="${dist-client.dir}/classes" />
             <unjar src="${lib.dir}/miniJacorb.jar" dest="${dist-client.dir}/classes" />
+            <unjar src="${lib.dir}/jacorb/logkit-1.2.jar" dest="${dist-classes.dir}" />
+            <unjar src="${lib.dir}/miniJacorb.jar" dest="${dist-classes.dir}" />
          </case>
          <default>
             <echo message="ADD_CORBA=${ADD_CORBA}: No CORBA support added." />
@@ -2289,9 +2293,6 @@ TODO
       </foreach>
    </target>
 
-
-
-
    <target name="cpp-demo" depends="prepare-cpp" description="Create C++ demo clients">
       <foreach list="HelloWorld2,PublishDemo,SubscribeDemo,ExternOrb,TestEmptyContent"
                target="compileCppExe" param="exeName" delimiter="," inheritAll="true">
@@ -2331,23 +2332,48 @@ TODO
 
          <!-- syslibset dir="/usr/lib" libs="stdc++" if="unix"/ -->
 
-         <defineset>
+         <defineset> <!-- See compiler id="base-msvc" at top of file -->
+           <define name="COMPILE_CORBA_PLUGIN" value="1" if="COMPILE_CORBA_DEFINE" />   <!-- Add the Corba protocol plugin? -->
+           <define name="COMPILE_SOCKET_PLUGIN" value="1" if="COMPILE_SOCKET_DEFINE" />   <!-- Add the C socket library wrapper plugin? -->
            <define name="XMLBLASTER_${corba.product}" value="1" />   <!-- "XMLBLASTER_TAO" or "XMLBLASTER_MICO" or "XMLBLASTER_ORBIX" etc., see client/protocol/corba/CompatibleCorba.h -->
-           <define name="WIN32" value="1" if="windows" />
-           <define name="_WINDOWS" value="1" if="windows" />
+           <define name="XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN" value="1" if="COMPILE_LOG4CPLUS_DEFINE" />   <!-- Add the log4cplus logging library -->
+           <define name="XMLBLASTER_PERSISTENT_QUEUE" value="1" if="XMLBLASTER_PERSISTENT_QUEUE" /> <!-- Use persistent queue -->
+
+           <define name="__WIN32__" if="windows"/>                   <!-- omnithread, OMNIORB -->
            <define name="RTCs" value="1" if="windows" /> <!-- show stack problems -->
            <define name="RTCu" value="1" if="windows" /> <!-- show uninitialized vars -->
-           <define name="_MBCS" value="1" if="windows" />
-           <define name="_USRDLL" value="1" if="windows" />
-           <define name="COMPILE_CORBA_PLUGIN" value="1" if="COMPILE_CORBA_DEFINE" />   <!-- Compile Corba specific tests (TestCorbaDriver.cpp) ? -->
-           <!-- Is a library detail: -->
-           <!-- define name="COMPILE_SOCKET_PLUGIN" value="1" if="COMPILE_SOCKET_DEFINE" / -->   <!-- Compile Socket tests? -->
-           <!-- define name="XMLBLASTER_COMPILE_LOG4CPLUS_PLUGIN" value="1" if="COMPILE_LOG4CPLUS_DEFINE" / -->   <!-- Add the log4cplus logging library -->
-           <!-- define name="XMLBLASTER_PERSISTENT_QUEUE" value="1" if="XMLBLASTER_PERSISTENT_QUEUE" / --> <!-- Compile SQLite tests? -->
+           <define name="_WIN32_WINNT" value="0x0400" if="windows"/> <!-- omnithread, OMNIORB -->
+           <define name="__x86__" if="windows"/>                     <!-- omnithread, OMNIORB -->  <!-- ${sun.cpu.endian}="little" -->
+           <define name="__NT__" if="windows"/>                      <!-- omnithread, OMNIORB -->
+           <define name="__OSVERSION__" value="4" if="windows"/>     <!-- omnithread, OMNIORB -->
+           <define name="_OMNITHREAD_DLL" value="1" if="windows"/>   <!-- omnithread, OMNIORB -->
+
+           <undefine name="HAVE_LSTAT" if="windows" /> <!-- log4cplus only configurator.cxx:604-->
+           <define name="LOG4CPLUS_BUILD_DLL" value="1" if="windows" /> <!-- log4cplus only -->
+           <define name="_WIN32" value="1" if="windows" />        <!-- log4cplus only -->
+           <define name="WIN32" value="1" if="windows" />
+           <define name="_WINDOWS" value="1" if="windows" />
+           <define name="DLL_BUILD" value="1" if="windows" />     <!-- Needed in XmlBCfg.h, sets DLL_Export -->
+           <define name="_MBCS" value="1" if="windows" />         <!-- TCHAR == char -->
+           <!--define name="_USRDLL" value="1" if="windows" /-->  <!-- Regular DLLs that statically link to MFC only -->
+           <!--define name="_WINDLL" value="1" if="windows" /-->  <!-- Regular DLLs that statically link to MFC only -->
+           <!-- undefine name="UNWANTEDDEF" / -->                 <!-- example only -->
+
+           <define name="__linux" value="1" if="linux" />
+
+           <define name="__sunos__" value="1" if="sun" />
+           <define name="__sparc__" value="1" if="sun" />
+           <define name="__OSVERSION__" value="5" if="sun" />
+           <define name="SVR4" value="1" if="sun" />
+           <define name="UsePthread" value="1" if="sun" />
+           <define name="_REENTRANT" value="1" if="sun" />
+           <define name="PthreadDraftVersion" value="10" if="sun" />
+
+           <define name="BOOST_ASSERT_CONFIG" value="1" if="BOOST" /> <!-- To get error if compiler etc is not supported -->
          </defineset>
 
          <linker name="gcc"  if="use-gcc">
-
+<!--
             <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/../ace" if="TAO" />
             <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/lib" if="MICO" />
             <linkerarg value="-Wl,-rpath=${CORBACPP_HOME}/lib" if="OMNIORB" />
@@ -2355,6 +2381,7 @@ TODO
             <linkerarg value="-Wl,-rpath=${XMLCPP_HOME}/lib" />
             <linkerarg value="-Wl,-rpath=${lib.dir.absolute}" />
             <linkerarg value="-Wl,-rpath=${sqlite.lib.dir}" if="XMLBLASTER_PERSISTENT_QUEUE" />
+-->
 
             <!-- TAO -->
             <libset dir="${CORBACPP_HOME}/../ace" libs="ACE" if="TAO" />
@@ -2391,6 +2418,9 @@ TODO
 
             <syslibset dir="/lib" libs="dl" if="unix"/>
             <syslibset dir="/usr/lib" libs="pthread" if="unix"/>
+            <syslibset dir="/usr/lib" libs="socket" if="unix"/>
+            <syslibset dir="/usr/local/lib" libs="stdc++" if="unix"/>
+            <syslibset dir="/usr/lib" libs="rt" if="unix"/>
 
          </linker>
 
@@ -2644,11 +2674,13 @@ TODO
          </defineset>
 
          <linker name="gcc" if="use-gcc">
-            <linkerarg value="-Wl,-rpath=${lib.dir.absolute}:${sqlite.lib.dir}" />
+<!--            <linkerarg value="-Wl,-rpath=${lib.dir.absolute}:${sqlite.lib.dir}" /> -->
+            <linkerarg value="-Wl" />
             <libset dir="${lib.dir}" libs="xmlBlasterClientC" />  <!-- libxmlBlasterClientC.so -->
             <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE" />  <!-- libsqlite.so -->
             <syslibset dir="/lib" libs="dl" if="unix"/>
             <syslibset dir="/usr/lib" libs="pthread" if="unix"/>
+            <syslibset dir="/usr/lib" libs="socket" if="unix"/>
          </linker>
 
          <linker name="icc" if="use-icc">
