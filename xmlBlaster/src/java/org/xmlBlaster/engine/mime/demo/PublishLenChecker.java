@@ -3,7 +3,7 @@ Name:      PublishLenChecker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface hiding the real callback protocol
-Version:   $Id: PublishLenChecker.java,v 1.6 2002/05/16 18:34:42 ruff Exp $
+Version:   $Id: PublishLenChecker.java,v 1.7 2002/06/08 23:00:48 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime.demo;
@@ -146,8 +146,11 @@ public class PublishLenChecker implements I_Plugin, I_PublishFilter
    public String intercept(SubjectInfo publisher, MessageUnitWrapper msgUnitWrapper) throws XmlBlasterException {
       if (msgUnitWrapper == null) {
          Thread.currentThread().dumpStack();
-         throw new XmlBlasterException(ME, "Illegal argument in intercept() call");
+         throw new XmlBlasterException(ME, "Illegal argument in intercept() call - msgUnitWrapper is null");
       }
+
+      if (msgUnitWrapper.getXmlKey().isInternalMsg())
+         return "";  // ignore internal messages
 
       MessageUnit msgUnit = msgUnitWrapper.getMessageUnit();
 
@@ -159,7 +162,7 @@ public class PublishLenChecker implements I_Plugin, I_PublishFilter
             throw new XmlBlasterException(ME, "Test what happens if we throw an exception");
          }
          if (msgUnit.getContent().length > maxLen) {
-            log.info(ME, "Message rejected, msgLen=" + msgUnit.getContent().length + " max allowed=" + maxLen);
+            log.info(ME, "Message REJECTED, msgLen=" + msgUnit.getContent().length + " max allowed=" + maxLen);
             return "REJECTED";
          }
          else {
