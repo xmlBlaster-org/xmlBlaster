@@ -136,8 +136,10 @@ static bool initConnection(XmlBlasterConnectionUnparsed *xb, XmlBlasterException
 
    strcpy(serverHostName, "localhost");
    gethostname(serverHostName, 250);
-   memmove(serverHostName, xb->props->getString(xb->props, "plugin/socket/hostname", serverHostName), 250);
-   memmove(serverHostName, xb->props->getString(xb->props, "dispatch/connection/plugin/socket/hostname", serverHostName), 250);
+   const char *hn = xb->props->getString(xb->props, "plugin/socket/hostname", serverHostName);
+   memmove(serverHostName, hn, strlen(hn+1));  // including '\0'
+   hn = xb->props->getString(xb->props, "dispatch/connection/plugin/socket/hostname", serverHostName);
+   memmove(serverHostName, hn, strlen(hn+1));
 
    if (xb->logLevel>=LOG_TRACE) xb->log(xb->logUserP, xb->logLevel, LOG_TRACE, __FILE__,
       "Lookup xmlBlaster on -dispatch/connection/plugin/socket/hostname %s -dispatch/connection/plugin/socket/port %s ...",

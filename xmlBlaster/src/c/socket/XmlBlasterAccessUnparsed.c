@@ -66,7 +66,13 @@ static bool mutexUnlock(XmlBlasterAccessUnparsed *xa, XmlBlasterException *excep
 
 /**
  * Create an instance for access xmlBlaster. 
- * This is usually the first call of a client.
+ * This is usually the first call of a client. 
+ * <br />
+ * NOTE: Our properties point on the passed argv memory, so you should
+ * not free the original argv memory before you free XmlBlasterAccessUnparsed.
+ * @param argc The number of argv properties
+ * @param argv The command line properties, see <code>Properties *createProperties(int argc, const char* const* argv)</code>
+ *             for a specification
  * @return NULL if bootstrapping failed. If not NULL you need to free() it when you are done
  * usually by calling freeXmlBlasterAccessUnparsed().
  */
