@@ -2,7 +2,8 @@
   * Implementing of  XtOmQuery for oid access (minimal data in DOM tree)
     This is nonsense, the minimal DOM tree couldn't be parsed by XPath
   * Normalizing the DOM tree
-  * Profiling http://www.optimizeit.com/ etc
+  * Profiling http://www.optimizeit.com/ or
+              http://www.klg.com/ - JProbe (no Linux!?)
   * Use SML instead of XML? http://www.xml.com/pub/1999/11/sml/index.html
 
 - Integrate with Java API for XML Parsing 1.0 
