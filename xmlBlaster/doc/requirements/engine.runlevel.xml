@@ -230,7 +230,8 @@
            i.e. if an exception is thrown and the plugin could not be loaded. The value of this attribute is
 	   the error code of the exeption to be thrown. If nothing (or empty) is specified, then the exeption
 	   is catched, a warn or error is logged (error if runtime exception or xmlBlaster internal error)
-	   and the normal flow of the program is continued.
+	   and the normal flow of the program is continued. If the error code is unknown a
+	   <i>resource.configuration</i> error is thrown and the runlevel flow is interrupted.
        </li>
      </ul>
    </description>
@@ -286,7 +287,7 @@ r 3
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 14</date>
-   <revision>$Revision: 1.10 $</revision>
+   <revision>$Revision: 1.11 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
