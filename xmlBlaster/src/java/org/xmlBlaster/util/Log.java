@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.java,v 1.27 1999/12/21 12:09:10 ruff Exp $
+Version:   $Id: Log.java,v 1.28 1999/12/21 12:10:34 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -26,19 +26,19 @@ public class Log
     * <p />
     * The same applies for TIME, TRACE and DUMP
     */
-   public final static boolean CALLS = true;  // trace method calls
+   public final static boolean CALLS = false;  // trace method calls
    /**
     * Performance logging output true/false
     */
-   public final static boolean TIME  = true;  // trace performance
+   public final static boolean TIME  = false;  // trace performance
    /**
     * Fine grained code logging output true/false
     */
-   public final static boolean TRACE = true;  // trace application flow
+   public final static boolean TRACE = false;  // trace application flow
    /**
     * Dump internal xmlBlaster state in xml format, true/false
     */
-   public final static boolean DUMP  = true;  // dump internal state
+   public final static boolean DUMP  = false;  // dump internal state
 
    /**
     * Logging levels
