@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.51 2000/05/24 14:40:24 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.52 2000/05/26 20:48:12 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
@@ -40,8 +40,7 @@ import java.util.Properties;
  * As soon as the connection can be established again, you are informed by I_ConnectionProblems.reConnect()
  * you may send some initial messages (as on startup of your client) and invoke
  * corbaConnection.flushQueue() to send all messages collected during disruption in the correct order or
- * corbaConnection.resetQueue() to discard the queued messages.
- * to xmlBlaster.<br />
+ * corbaConnection.resetQueue() to discard the queued messages to xmlBlaster.<br />
  * One drawback is, that the return values of your requests are lost, since you were none blocking
  * continuing during the connection was lost.
  * <p />
@@ -62,7 +61,7 @@ import java.util.Properties;
  * first time the ORB is created.<br />
  * This will be fixed as soon as possible.
  *
- * @version $Revision: 1.51 $
+ * @version $Revision: 1.52 $
  * @author $Author: ruff $
  */
 public class CorbaConnection implements ServerOperations

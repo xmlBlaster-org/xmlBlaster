@@ -3,7 +3,7 @@ Name:      Property.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, see xmlBlaster.property
-Version:   $Id: Property.java,v 1.13 2000/05/19 20:36:00 ruff Exp $
+Version:   $Id: Property.java,v 1.14 2000/05/26 20:46:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -15,7 +15,7 @@ import java.util.Enumeration;
 /**
  * Properties for xmlBlaster, see $HOME/xmlBlaster.properties.
  * <p />
- * The variables following variables may be used and are replaced on occurrence:
+ * The variables following variables may be used in the properties file and are replaced on occurrence:
  * <ul>
  *    <li>$user.dir =   The current directory </i>
  *    <li>$user.home =  The users home directory</i>
@@ -272,14 +272,15 @@ public class Property
 
 
    /**
-    * Look for properties file.
-    * 1) In $HOME
-    * 2) In $XMLBLASTER_HOME
-    * 3) Local directory
-    * 4) In java.home directory, e.g. /opt/jdk1.2.2/jre/lib
-    *    You may use this path for Servlets, demons etc.
+    * Look for properties file. 
+    * <p />
+    * 1) In user.home - $HOME<br />
+    * 2) In $XMLBLASTER_HOME<br />
+    * 3) Local directory user.dir<br />
+    * 4) In java.home directory, e.g. /opt/jdk1.2.2/jre/lib<br />
+    *    You may use this path for Servlets, demons etc.<br />
     * 5) Fallback: \xmlBlaster oder /usr/local/xmlBlaster
-    *
+    * <p />
     * @param fileName e.g. "xmlBlaster.properties"
     * @return The path to file, e.g. "\xmlBlaster\"
     */
@@ -378,7 +379,8 @@ public class Property
     * Add key/values, for example from startup command line args to
     * the property variable.
     * <p />
-    * Args parameters are stronger and overwrite the property file variables
+    * Args parameters are stronger and overwrite the property file variables.
+    * <p />
     * The arg key must have a leading - or + (as usual on command line).<br />
     * The leading - are stripped (to match the property variable)
     * args must be a tuple (key / value pairs) or
