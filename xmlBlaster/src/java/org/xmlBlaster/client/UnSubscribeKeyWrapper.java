@@ -3,7 +3,7 @@ Name:      UnSubscribeKeyWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey
-Version:   $Id: UnSubscribeKeyWrapper.java,v 1.1 2001/12/23 10:19:08 ruff Exp $
+Version:   $Id: UnSubscribeKeyWrapper.java,v 1.2 2002/06/15 16:03:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -84,7 +84,13 @@ public class UnSubscribeKeyWrapper extends KeyWrapper
     */
    public String toXml()
    {
-      return this.wrap(queryString);
+      StringBuffer sb = new StringBuffer();
+      sb.append("<key oid='").append(oid).append("'");
+      sb.append(" queryType='").append(queryType).append("'");
+      sb.append(">\n");
+      sb.append(queryString);
+      sb.append("\n</key>");
+      return sb.toString();
    }
 
 
@@ -97,13 +103,6 @@ public class UnSubscribeKeyWrapper extends KeyWrapper
    public String wrap(String str)
    {
       queryString = str;
-
-      StringBuffer sb = new StringBuffer();
-      sb.append("<key oid='").append(oid).append("'");
-      sb.append(" queryType='").append(queryType).append("'");
-      sb.append(">\n");
-      sb.append(queryString);
-      sb.append("\n</key>");
-      return sb.toString();
+      return toXml();
    }
 }

@@ -3,7 +3,7 @@ Name:      PublishKeyWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey
-Version:   $Id: PublishKeyWrapper.java,v 1.13 2002/04/23 15:03:17 ruff Exp $
+Version:   $Id: PublishKeyWrapper.java,v 1.14 2002/06/15 16:03:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -122,20 +122,7 @@ public class PublishKeyWrapper extends KeyWrapper
     */
    public String toXml()
    {
-      return this.wrap(clientTags);
-   }
-
-
-   /**
-    * May be used to integrate your application tags.
-    * <p />
-    * Derive your special PublishKey class from this.
-    * @param str Your tags in ASCII XML syntax
-    */
-   public String wrap(String str)
-   {
-      clientTags = str;
-      StringBuffer sb = new StringBuffer();
+      StringBuffer sb = new StringBuffer(256);
       sb.append("<key oid='").append(oid).append("'");
       sb.append(" contentMime='").append(contentMime).append("'");
       if (contentMimeExtended != null && contentMimeExtended.length() > 0)
@@ -150,5 +137,18 @@ public class PublishKeyWrapper extends KeyWrapper
       else
          sb.append("/>");
       return sb.toString();
+   }
+
+
+   /**
+    * May be used to integrate your application tags.
+    * <p />
+    * Derive your special PublishKey class from this.
+    * @param str Your tags in ASCII XML syntax
+    */
+   public String wrap(String str)
+   {
+      clientTags = str;
+      return this.toXml();
    }
 }

@@ -3,7 +3,7 @@ Name:      SubscribeKeyWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey
-Version:   $Id: SubscribeKeyWrapper.java,v 1.8 2002/05/16 15:42:02 ruff Exp $
+Version:   $Id: SubscribeKeyWrapper.java,v 1.9 2002/06/15 16:03:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -88,20 +88,6 @@ public class SubscribeKeyWrapper extends KeyWrapper
     */
    public String toXml()
    {
-      return this.wrap(queryString);
-   }
-
-
-   /**
-    * May be used to integrate your application tags.
-    * <p />
-    * Derive your special PublishKey class from this.
-    * @param str Your tags in ASCII XML syntax
-    */
-   public String wrap(String str)
-   {
-      queryString = str;
-
       StringBuffer sb = new StringBuffer(256);
       sb.append("<key");
       if (queryType.equals(Constants.EXACT)) {
@@ -120,5 +106,18 @@ public class SubscribeKeyWrapper extends KeyWrapper
       }
 
       return sb.toString();
+   }
+
+
+   /**
+    * May be used to integrate your application tags.
+    * <p />
+    * Derive your special PublishKey class from this.
+    * @param str Your tags in ASCII XML syntax
+    */
+   public String wrap(String str)
+   {
+      queryString = str;
+      return toXml();
    }
 }
