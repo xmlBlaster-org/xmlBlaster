@@ -616,6 +616,9 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
       synchronized (this.updateDispatcher) {
          SubscribeReturnQos subscribeReturnQos = subscribe(subscribeKey, subscribeQos);
          this.updateDispatcher.addCallback(subscribeReturnQos.getSubscriptionId(), cb);
+         if (!subscribeReturnQos.isFakedReturn()) {
+            this.updateDispatcher.ackSubscription(subscribeReturnQos.getSubscriptionId());
+         }
          return subscribeReturnQos;
       }
    }
@@ -828,8 +831,13 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
     */
    private void cleanupForNewServer() {
       if (this.updateDispatcher.size() > 0) {
-         log.info(ME, "Removing " + this.updateDispatcher.size() + " subscribe specific callback registrations");
-         this.updateDispatcher.clear(); // to avoid memory leaks
+         int num = this.updateDispatcher.clearAckSubscriptions(); // to avoid memory leaks
+         if (num > 0) {
+            log.info(ME, "Removed " + num + " subscribe specific callback registrations");
+         }
+         // TODO: On switch to sync delivery and the client has
+         // cleared subscribes from the queue manually we have still a memory leak here:
+         // We would need to call clearNAKSubscriptions()
       }
       if (this.synchronousCache != null) {
          this.synchronousCache.clear(); // we need to re-subscribe
