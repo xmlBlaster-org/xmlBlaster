@@ -3,6 +3,8 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.x [200x-xx-xx]
 ============================
+ 
+ o Added Thread Name to Logs 
 
  o Added a demo applet with XML script access to xmlBlaster.
    Location: xmlBlaster/demo/http/applet/XmlScript.java
