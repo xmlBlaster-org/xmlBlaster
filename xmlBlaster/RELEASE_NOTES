@@ -1,15 +1,8 @@
-Salute,
+Bom dia,
 
-the new release 0.846 is out (Apr, 26. 2003).
-(We wait with 0.85 until we got feedback about 0.846)
+the new release 0.847 is out (May, 12. 2003).
 
-XmlBlaster is maturing to industrial strength.
-
-We are now on the way to be a valid alternative to commercial MoMs
-such as MQSeries and SonicMQ.
-
-In many of the features we are already far ahead, some others are still missing
-(like transaction support and a SWING administration console).
+We wait with stable release 0.85 until we got feedback about 0.847
 
 
 IMPORTANT NOTE:
@@ -21,10 +14,10 @@ IMPORTANT NOTE:
 2. Remove your old xmlBlaster.properties, xmlBlasterPlugins.xml
   and jacorb.properties files.
   Use the new files from directory xmlBlaster/config.
+  (For upgrades of 0.844 or earlier)
   
 3. Backward compatibility:
-  * xmlBlaster 0.846 has changes to the client API (Java)
-    Please read xmlBlaster/CHANGES
+  * No incompatible changes since 0.846
 
 4. The default setup of xmlBlaster runs RAM based only,
   there is no persistence for crash recovery.
@@ -40,14 +33,9 @@ IMPORTANT NOTE:
 NEW FEATURES:
 -------------
 
-1. Now we have really cool Python support - thanks to Peter.
+   Bug fixes
 
-2. Many severe bug fixes
-
-3. New plugin overview:
-   http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.configuration.html
-
-And more, please read the CHANGES file for more informations.
+   Please read the CHANGES file for more informations.
 
 
 KNOWN BUGS:
@@ -68,11 +56,7 @@ NEXT RELEASES:
 
 The next release is 0.85 and we strive to have these additional changes:
 
-1. Performance profiling and extended stress tests
-
-2. An embedded JDBC database additionally to Postgres and Oracle.
-
-3. Finish port to new property syntax
+  o Bug fixes
 
 
 The planned features of release 0.9 are an open issue.

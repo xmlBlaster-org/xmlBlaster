@@ -1,8 +1,12 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
-Changes for 0.xxx [xx, xxx 2003]
+Changes for 0.847 [12, May 2003]
 ================================
- o added javaclients.graphical.GraphicChat as a demo
+
+ o Michele Laghi added a grafic chat demo using xmlBlaster.
+   It can be used for example to discuss designs and the
+   remote participants drawings are instantly copied to the other
+   users. See xmlBlaster/demo/javaclients/graphical/README
 
  o added Martin's managed objects in the c++ clients 
 
