@@ -33,3 +33,6 @@ jar: all
 	( cd $(CLASS_TOP_DIR); jar cvf $(JAR_DIR)/xmlBlaster.jar ./org )
 
 
+test: all
+	( cd $(XMLBLASTER_HOME)/testsuite/org/xmlBlaster; make test )
+
