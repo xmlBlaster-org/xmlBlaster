@@ -6,68 +6,11 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 /**
  * Parsing xml QoS (quality of service) of publish() and update(). 
- * <p />
- * Example for Pub/Sub style:<p />
- * <pre>
- *  &lt;qos> &lt;
- *     &lt;state id='OK' info='Keep on running"/> <!-- Only for updates and PtP -->
- *     &lt;sender>Tim&lt;/sender>
- *     &lt;priority>5&lt;/priority>
- *     &lt;subscribe id='__subId:1'/> <!-- Only for updates -->
- *     &lt;rcvTimestamp nanos='1007764305862000002'> &lt;!-- UTC time when message was created in xmlBlaster server with a publish() call, in nanoseconds since 1970 -->
- *           2001-12-07 23:31:45.862000002   &lt;!-- The nanos from above but human readable -->
- *     &lt;/rcvTimestamp>
- *     &lt;expiration lifeTime='129595811' forceDestroy='false'/> <!-- Only for persistence layer -->
- *     &lt;queue index='0' of='1'/> &lt;!-- If queued messages are flushed on login -->
- *     &lt;persistent/>
- *     &lt;redeliver>4&lt;/redeliver>             <!-- Only for updates -->
- *     &lt;route>
- *        &lt;node id='heron'/>
- *     &lt;/route>
- *     &lt;topic readonly='false' destroyDelay='60000' createDomEntry='true'>
- *        &lt;queue relating='topic' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000000' onOverflow='deadMessage'/>
- *        &lt;queue relating='history' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000000' onOverflow='exception'/>
- *     &lt;/topic>
- *  &lt;/qos>
- * </pre>
- * Example for PtP addressing style:&lt;p />
- * <pre>
- *  &lt;qos>
- *     &lt;subscribeable>false&lt;/subscribeable>  &lt;!-- false to make PtP message invisible for subscribes -->
- *     &lt;destination queryType='EXACT' forceQueuing='true'>
- *        Tim
- *     &lt;/destination>
- *     &lt;destination queryType='EXACT'>
- *        /node/heron/client/Ben
- *     &lt;/destination>
- *     &lt;destination queryType='XPATH'>   <!-- Not supported yet -->
- *        //[GROUP='Manager']
- *     &lt;/destination>
- *     &lt;destination queryType='XPATH'>   <!-- Not supported yet -->
- *        //ROLE/[@id='Developer']
- *     &lt;/destination>
- *     &lt;sender>
- *        Gesa
- *     &lt;/sender>
- *     &lt;priority>7&lt;/priority>
- *     &lt;route>
- *        &lt;node id='bilbo' stratum='2' timestamp='34460239640' dirtyRead='true'/>
- *     &lt;/route>
- *  &lt;/qos>
- * </pre>
  * <p>
- * Note that receiveTimestamp is in nanoseconds, whereas all other time values are milliseconds
+ * See REQ interface.publish for a XML markup description
  * </p>
- * The receive timestamp can be delivered in human readable form as well
- * by setting on server command line:
- * <pre>
- *   -cb.receiveTimestampHumanReadable true
- *
- *   &lt;rcvTimestamp nanos='1015959656372000000'>
- *     2002-03-12 20:00:56.372
- *   &lt;/rcvTimestamp>
- * </pre>
  * @see org.xmlBlaster.test.classtest.qos.MsgQosFactoryTest
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html">The interface.publish requirement</a>
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.publish.destination.PtP.html">The engine.qos.publish.destination.PtP requirement</a>
  * @author xmlBlaster@marcelruff.info
  */

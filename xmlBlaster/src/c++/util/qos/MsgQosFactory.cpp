@@ -273,14 +273,13 @@ void MsgQosFactory::endElement(const XMLCh* const name)
             tmpProp.setHistoryQueueProperty(tmp);
             msgQosData_.setTopicProperty(tmpProp);
          }
-         else if (relating == Constants::RELATING_TOPICSTORE) {
-            tmpProp.setMsgUnitStoreProperty(tmp);
-            msgQosData_.setTopicProperty(tmpProp);
+         else {
+            log_.error(ME, string("Ignoring unknown <queue relating='") + relating + "'/> configuration");
          }
          return;
       }
 
-      if(SaxHandlerBase::caseCompare(name, "persistence")) {
+      if(SaxHandlerBase::caseCompare(name, "persistence")) { // topic: RELATING_MSGUNITSTORE
          inPersistence_ = false;
          character_.erase();
          QueuePropertyBase tmp = queuePropertyFactory_.getQueueProperty();
