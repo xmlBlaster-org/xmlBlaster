@@ -222,6 +222,7 @@ TODO
       <compilerarg value="-D_REENTRANT" />
       <compilerarg value="-rdynamic" /> <!-- To show symbols of a backtrace (see XmlBlasterException.cpp -->
       <compilerarg value="-D${thread.impl}" />
+      <compilerarg value="-D_ENABLE_STACK_TRACE_" />
    </compiler>
 
   <compiler id="CC" name="CC" if="use-CC"> <!-- SunOS 5.8 C++ 5.3 -->
@@ -1594,7 +1595,7 @@ TODO
 
    <!--
       Here an example on how to compile a single test application ...
-      ./build.sh -DcompileCppSourcePath=/home/xmlBlaster/testsuite/src/c++ -DexeName=TestConnect compileCppExe
+      ./build.sh -DexeName=TestGet cpp-test-single
    -->
    <target name="cpp-test-single" depends="prepare-cpp" description="Create single C++ test client">
       <foreach list="${cppToCompile}"
@@ -1605,7 +1606,7 @@ TODO
 
    <!--
       Here an example on how to compile a single test application ...
-      ./build.sh -DcompileCppSourcePath=/home/xmlBlaster/testsuite/src/c++ -DexeName=TestConnect compileCppExe
+      ./build.sh -DexeName=HelloWorld2 cpp-demo-single
    -->
    <target name="cpp-demo-single" depends="prepare-cpp" description="Create single C++ demo client">
       <foreach list="${cppToCompile}"
