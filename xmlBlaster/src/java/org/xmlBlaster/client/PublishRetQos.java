@@ -199,19 +199,19 @@ public final class PublishRetQos /*extends org.xmlBlaster.util.XmlQoSBase*/ impl
     */
    public final String toXml(String extraOffset) {
       StringBuffer sb = new StringBuffer(180);
-      String offset = "\n   ";
+      String offset = "\n";
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
 
       sb.append(offset).append("<qos>"); // <!-- PublishRetQos -->");
       if (getStateId().length() > 0) {
-         sb.append(offset).append("   <state id='").append(stateId);
+         sb.append(offset).append("  <state id='").append(stateId);
          if (stateInfo != null)
-            sb.append(offset).append("' info='").append(stateInfo);
+            sb.append("' info='").append(stateInfo);
          sb.append("'/>");
       }
       if (getOid() != null)
-         sb.append(offset).append("   <key oid='").append(getOid()).append("'/>");
+         sb.append(offset).append("  <key oid='").append(getOid()).append("'/>");
       sb.append(offset).append("</qos>");
 
       return sb.toString();
