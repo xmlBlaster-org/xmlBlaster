@@ -104,10 +104,10 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
     * <p />
     * The fail save mode is switched on, you can configure it:
     * <ul>
-    *   <li>delay[heron] defaults to 2000L</li>
-    *   <li>client.failSave.pingInterval[heron] defaults to 10 * 1000L</li>
-    *   <li>client.failSave.retries[heron] defaults to -1 == forever</li>
-    *   <li>client.failSave.maxInvocations[heron] defaults to 100000</li>
+    *   <li>delay[heron] defaults to 4000L</li>
+    *   <li>pingInterval[heron] defaults to 10 * 1000L</li>
+    *   <li>retries[heron] defaults to -1 == forever</li>
+    *   <li>queue.maxMsg[heron] defaults to 100000</li>
     *   <li>security.plugin.type[heron] defaults to "simple"</li>
     *   <li>security.plugin.version[heron] defaults to "1.0"</li>
     *   <li>name[heron] the login name defaults to our local node id</li>

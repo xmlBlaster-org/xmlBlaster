@@ -230,7 +230,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * Initialize client side burst mode. 
     */
    private void initBurstMode(Address address) {
-      this.publishOnewayCollectTime = address.getCollectTime(); // glob.getProperty().get("client.publishOneway.collectTime", 0L);
+      this.publishOnewayCollectTime = address.getCollectTime(); // glob.getProperty().get("burstMode.collectTimeOneway", 0L);
       if (this.publishOnewayCollectTime > 0L) {
          this.publishOnewayBurstModeVec = new Vector(1000);
          this.publishOnewayTimer = new Timeout("PublishOnewayTimer");
