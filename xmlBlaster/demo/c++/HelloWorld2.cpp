@@ -1,18 +1,10 @@
 
-#include <util/xmlBlasterDef.h>
 #include <client/XmlBlasterAccess.h>
-#include <util/qos/ConnectQos.h>
 #include <util/XmlBlasterException.h>
 #include <util/Global.h>
 #include <util/Log.h>
-#include <client/I_Callback.h>
-#include <client/UpdateKey.h>
-#include <client/UpdateQos.h>
-#include <util/MessageUnit.h>
 #include <util/PlatformUtils.hpp>
 #include <util/Timestamp.h>
-
-#include <util/qos/PublishQos.h>
 
 /**
  * This client connects to xmlBlaster and subscribes to a message.
@@ -26,6 +18,8 @@
 using namespace std;
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::client;
+using namespace org::xmlBlaster::client::qos;
+using namespace org::xmlBlaster::client::key;
 using namespace org::xmlBlaster;
 
 class HelloWorld2 :public I_Callback
@@ -48,23 +42,27 @@ public:
    {
       try {
          XmlBlasterAccess con(global_);
-         log_.info(ME, "connecting to xmlBlaster");
 
          ConnectQos qos(global_, "joe", "secret");
+         log_.info(ME, string("connecting to xmlBlaster. Connect qos: ") + qos.toXml());
          ConnectReturnQos retQos = con.connect(qos, this);  // Login to xmlBlaster, register for updates
          log_.info(ME, "successfully connected to xmlBlaster. Return qos: " + retQos.toXml());
-         log_.info(ME, "subscribing to xmlBlaster");
-         con.subscribe("<key oid='HelloWorld2'/>", "<qos/>");
-         log_.info(ME, "successfully subscribed to xmlBlaster");
+
+	 SubscribeKey subKey(global_);
+	 subKey.setOid("HelloWorld2");
+	 SubscribeQos subQos(global_);
+         log_.info(ME, string("subscribing to xmlBlaster with key: ") + subKey.toXml() + " and qos: " + subQos.toXml());
+
+         SubscribeReturnQos subRetQos = con.subscribe(subKey, subQos);
+         log_.info(ME, string("successfully subscribed to xmlBlaster. Return qos: ") + subRetQos.toXml());
 
          PublishQos publishQos(global_);
-         MessageUnit msgUnit(string("<key oid='HelloWorld2'/>"),
-                                     string("Hi"),
-                                     publishQos);
-
-         log_.info(ME, "publishing to xmlBlaster");
-         con.publish(msgUnit);
-         log_.info(ME, "successfully published to xmlBlaster");
+	 PublishKey publishKey(global_);
+	 publishKey.setOid("HelloWorld2");
+         MessageUnit msgUnit(publishKey, string("Hi"), publishQos);
+         log_.info(ME, string("publishing to xmlBlaster with message: ") + msgUnit.toXml());
+         PublishReturnQos pubRetQos = con.publish(msgUnit);
+         log_.info(ME, "successfully published to xmlBlaster. Return qos: " + pubRetQos.toXml());
          try {
             TimestampFactory::sleepSecs(1);
          }
@@ -72,8 +70,17 @@ public:
             cout << e.toXml() << endl;
          }
 
-         con.erase("<key oid='HelloWorld2'/>", "<qos/>");
-         con.disconnect("<qos/>");
+         EraseKey eraseKey(global_);
+	 eraseKey.setOid("HelloWorld2");
+	 EraseQos eraseQos(global_);
+         log_.info(ME, string("erasing the published message. Key: ") + eraseKey.toXml() + " qos: " + eraseQos.toXml());
+	 vector<EraseReturnQos> eraseRetQos = con.erase(eraseKey, eraseQos);
+	 for (size_t i=0; i < eraseRetQos.size(); i++ ) {
+            log_.info(ME, string("successfully erased the message. return qos: ") + eraseRetQos[i].toXml());
+	 }
+
+	 DisconnectQos disconnectQos(global_);
+         con.disconnect(disconnectQos);
       }
       catch (XmlBlasterException e) {
          cout << e.toXml() << endl;
@@ -82,9 +89,8 @@ public:
 
    string update(const string& sessionId, UpdateKey& updateKey, void *content, long contentSize, UpdateQos& updateQos)
    {
-      log_.info(ME, "update: unique Key: " + updateKey.getUniqueKey());
-      log_.info(ME, "update: state     : " + updateQos.getState());
-      log_.info(ME, "update: updateQos : " + updateQos.toXml());
+      log_.info(ME, "update: key: " + updateKey.toXml());
+      log_.info(ME, "update: qos: " + updateQos.toXml());
       return "";
    }
 
