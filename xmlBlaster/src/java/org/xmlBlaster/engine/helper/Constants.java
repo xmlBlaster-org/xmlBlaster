@@ -123,12 +123,16 @@ public class Constants
    public static final String       ERASE = "erase";
    /** The publish() method */
    public static final String     PUBLISH = "publish";
+   /** The publishOneway() method */
+   public static final String PUBLISH_ONEWAY = "publishOneway";
    /** The subscribe() method */
    public static final String   SUBSCRIBE = "subscribe";
    /** The unSubscribe() method */
    public static final String UNSUBSCRIBE = "unSubscribe";
    /** The update() method */
    public static final String      UPDATE = "update";
+   /** The updateOneway() method */
+   public static final String UPDATE_ONEWAY = "updateOneway";
    /** The ping() method */
    public static final String        PING = "ping";
    /** The connect() method */
@@ -146,9 +150,11 @@ public class Constants
       if (Constants.GET.equals(method) ||
           Constants.ERASE.equals(method) ||
           Constants.PUBLISH.equals(method) ||
+          Constants.PUBLISH_ONEWAY.equals(method) ||
           Constants.SUBSCRIBE.equals(method) ||
           Constants.UNSUBSCRIBE.equals(method) ||
           Constants.UPDATE.equals(method) ||
+          Constants.UPDATE_ONEWAY.equals(method) ||
           Constants.PING.equals(method) ||
           Constants.CONNECT.equals(method) ||
           Constants.DISCONNECT.equals(method))
