@@ -40,6 +40,16 @@ public final class SessionQos implements java.io.Serializable, Cloneable
    /** Clear on login all other sessions of this user (for recovery reasons) "session.clearSessions false" */
    private PropBoolean clearSessions = new PropBoolean(false);
 
+   /**
+    * If reconnectSameClientOnly=true a client with a given publicSessionId
+    * can only reconnect to xmlBlaster if it is the the client instance which
+    * created the login session (other clients can't capture the session).
+    * This option is useful if you want to assure a singleton client (set additionally
+    * maxSessions=1).
+    * Defaults to false.
+    */
+   protected PropBoolean reconnectSameClientOnly = new PropBoolean(false);
+
    /** Passing own secret sessionId */
    private String sessionId = null;
 
@@ -78,12 +88,14 @@ public final class SessionQos implements java.io.Serializable, Cloneable
       setSessionTimeout(glob.getProperty().get("session.timeout", Constants.DAY_IN_MILLIS)); // One day
       setMaxSessions(glob.getProperty().get("session.maxSessions", DEFAULT_maxSessions));
       clearSessions(glob.getProperty().get("session.clearSessions", false));
+      setReconnectSameClientOnly(glob.getProperty().get("session.reconnectSameClientOnly", false));
       setSecretSessionId(glob.getProperty().get("session.secretSessionId", (String)null));
       if (nodeId != null) {
          sessionNameStr = glob.getProperty().get("session.name["+nodeId+"]", sessionNameStr);
          setSessionTimeout(glob.getProperty().get("session.timeout["+nodeId+"]", getSessionTimeout()));
          setMaxSessions(glob.getProperty().get("session.maxSessions["+nodeId+"]", getMaxSessions()));
          clearSessions(glob.getProperty().get("session.clearSessions["+nodeId+"]", clearSessions()));
+         setReconnectSameClientOnly(glob.getProperty().get("session.reconnectSameClientOnly["+nodeId+"]", reconnectSameClientOnly()));
          setSecretSessionId(glob.getProperty().get("session.secretSessionId["+nodeId+"]", getSecretSessionId()));
       }
 
@@ -150,6 +162,26 @@ public final class SessionQos implements java.io.Serializable, Cloneable
     */
    public void clearSessions(boolean clear) {
       this.clearSessions.setValue(clear);
+   }
+
+   /**
+    * @param Set if we allow multiple updates for the same message if we have subscribed multiple times to it. 
+    */
+   public void setReconnectSameClientOnly(boolean reconnectSameClientOnly) {
+      this.reconnectSameClientOnly.setValue(reconnectSameClientOnly);
+   }
+
+   /**
+    * @return true if we allow multiple updates for the same message if we have subscribed multiple times to it. 
+    */
+   public boolean reconnectSameClientOnly() {
+      return this.reconnectSameClientOnly.getValue();
+   }
+
+   /**
+    */
+   public PropBoolean reconnectSameClientOnlyProp() {
+      return this.reconnectSameClientOnly;
    }
 
    /**
@@ -268,11 +300,39 @@ public final class SessionQos implements java.io.Serializable, Cloneable
       if (this.clearSessions.isModified()) {
          sb.append(" clearSessions='").append(clearSessions()).append("'");
       }
+      if (this.reconnectSameClientOnly.isModified()) {
+         sb.append(" reconnectSameClientOnly='").append(reconnectSameClientOnly()).append("'");
+      }
       if (this.sessionId!=null)
          sb.append(" sessionId='").append(this.sessionId).append("'");
       sb.append("/>");
 
       return sb.toString();
+   }
+
+   /**
+    * Returns a shallow clone, you can change safely all basic or immutable types
+    * like boolean, String, int.
+    */
+   public Object clone() {
+      try {
+         log.error(ME, "clone() is not tested");
+         SessionQos newOne = null;
+         newOne = (SessionQos)super.clone();
+         synchronized(this) {
+            newOne.sessionTimeout = (PropLong)this.sessionTimeout.clone();
+            newOne.maxSessions = (PropInt)this.maxSessions.clone();
+            newOne.clearSessions = (PropBoolean)this.clearSessions.clone();
+            newOne.reconnectSameClientOnly = (PropBoolean)this.reconnectSameClientOnly.clone();
+            //newOne.sessionName = (SessionName)this.sessionName.clone();
+            //newOne.nodeId = (NodeId)this.nodeId.clone();
+         }
+         return newOne;
+      }
+      catch (java.lang.CloneNotSupportedException e) {
+         log.error(ME, e.toString());
+         return null;
+      }
    }
 
    /**
@@ -288,6 +348,8 @@ public final class SessionQos implements java.io.Serializable, Cloneable
       text += "                       Maximum number of simultanous logins per client [" + DEFAULT_maxSessions + "].\n";
       text += "   -session.clearSessions\n";
       text += "                       Kill other sessions running under my login name [false]\n";
+      text += "   -session.reconnectSameClientOnly\n";
+      text += "                       Only creator client may reconnect to session [false]\n";
       text += "   -session.secretSessionId\n";
       text += "                       The secret sessionId []\n";
       text += "\n";
