@@ -71,10 +71,30 @@ or develop with xmlBlaster, please read the following section
 how to do it.
 
 
-+----------------------+
-| INSTALLATION - UNIX  |
-+----------------------+
++-----------------------------------------+
+| INSTALLATION FOR DEVELOPERS - USING ANT |
++-----------------------------------------+
 
+If you want to develop with xmlBlaster you can use the
+ant build tool.
+
+1. Set JAVA_HOME environment to point to your java installation.
+
+2. Compile xmlBlaster like this (in the xmlBlaster root directory):
+
+   UNIX:       build.sh all
+
+   WINDOWS:    build.bat all
+
+Now you are done, if you want to compile with the Make utility
+read the following sections.
+
+
++-------------------------------------+
+| INSTALLATION FOR DEVELOPERS - UNIX  |
++-------------------------------------+
+
+If you want to compile with the Make utility:
 
 1. Extend your CLASSPATH and PATH environment variable. 
 
@@ -166,9 +186,11 @@ how to do it.
       export JIKES_HOME=/usr/local/jikes     (to use your jikes java compiler instead of javac, http://www.alphaworks.ibm.com/tech/jikes)
 
 
-+------------------------+
-| INSTALLATION - WINDOWS |
-+------------------------+
++----------------------------------------+
+| INSTALLATION FOR DEVELOPERS - WINDOWS  |
++----------------------------------------+
+
+If you want to compile with the Make utility:
 
 XmlBlaster comes compiled and ready to go.
 Unpack the distribution to some location ($HOME/xmlBlaster is a good spot).
@@ -269,37 +291,37 @@ One important note:
    - Start xmlBlaster like this:
       java -Dorg.omg.CORBA.ORBClass=jacorb.orb.ORB
            -Dorg.omg.CORBA.ORBSingletonClass=jacorb.orb.ORBSingleton
-   - Use our little script 'jaco' which does this
+   - Use our little script 'jaco' which does this, type 'jaco' instead of 'java'.
    - Or install orb.properties (see above, the recommended way)
 
 1. A variant using the xmlBlaster built in http server (localhost / 7609 is default)
    (This is the Default-Startup)
 
-     jaco org.xmlBlaster.MainGUI
+     java org.xmlBlaster.MainGUI
 
    and a testclient
     
-     jaco javaclients.ClientSub
+     java javaclients.ClientSub
 
 
 
 2. A variant using the xmlBlaster built in http server, specify the port to listen
 
-     jaco org.xmlBlaster.MainGUI -iorPort 7609
+     java org.xmlBlaster.MainGUI -iorPort 7609
 
    and a testclient
 
-     jaco javaclients.ClientSub -iorHost localhost -iorPort 7609
+     java javaclients.ClientSub -iorHost localhost -iorPort 7609
 
 
 
 3. A variant using a file to pass the server IOR:
 
-      jaco org.xmlBlaster.MainGUI -iorFile /tmp/Blaster_Ref
+      java org.xmlBlaster.MainGUI -iorFile /tmp/Blaster_Ref
 
    and a testclient
 
-     jaco javaclients.ClientSub -iorFile /tmp/Blaster_Ref
+     java javaclients.ClientSub -iorFile /tmp/Blaster_Ref
 
 
 
@@ -312,7 +334,7 @@ One important note:
 
    iorPort 0 switches the internal http server off:
 
-     jaco org.xmlBlaster.MainGUI -iorPort 0
+     java org.xmlBlaster.MainGUI -iorPort 0
 
    This client looks into jacorb.properties to find the URL with the naming service IOR.
    Edit ${HOME}/jacorb.properties accordingly e.g.
@@ -325,7 +347,7 @@ One important note:
 
    Start a client:
 
-     jaco javaclients.ClientXml -iorPort 0
+     java javaclients.ClientXml -iorPort 0
 
    If you have problems, check your web server:
 
@@ -397,10 +419,10 @@ It´s a pretty basic kind of chat-application but worth a try.
 
 Compile it (or use '-cp lib/xmlBlaster.jar') and start it like that:
 
-   jaco javaclients.chat.SimpleChat -name Nickname
+   java javaclients.chat.SimpleChat -name Nickname
 
 where "Nickname" should be different for each client you start.
-Don´t forget to start the server (jaco org.xmlBlaster.Main) first.
+Don´t forget to start the server (java org.xmlBlaster.Main) first.
 
 
 
