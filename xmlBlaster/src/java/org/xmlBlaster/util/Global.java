@@ -34,7 +34,6 @@ import org.xmlBlaster.util.qos.StatusQosQuickParseFactory;
 import org.xmlBlaster.util.recorder.RecorderPluginManager;
 import org.xmlBlaster.util.classloader.ClassLoaderFactory;
 import org.xmlBlaster.util.classloader.StandaloneClassLoaderFactory;
-import org.xmlBlaster.util.XmlProcessor;
 import org.xmlBlaster.util.queue.QueuePluginManager;
 import org.xmlBlaster.util.dispatch.plugins.DispatchPluginManager;
 import org.xmlBlaster.util.dispatch.DispatchManager;
@@ -62,12 +61,13 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.Collections;
 import java.net.MalformedURLException;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.PrintStream;
 import java.util.Hashtable;
 import java.util.Enumeration;
 
 import java.net.Socket;
-import org.xmlBlaster.util.JAXPFactory;
 import javax.xml.parsers.SAXParserFactory;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.FactoryConfigurationError;
@@ -1714,8 +1714,15 @@ public class Global implements Cloneable
    public boolean getWipeOutDB() {
       return this.wipeOutDB;
    }
-   
 
+   public static String getStackTraceAsString() {
+      // this is just to send the stack trace to the log file (stderr does not go there)
+      ByteArrayOutputStream baos = new ByteArrayOutputStream();
+      PrintStream pstr = new PrintStream(baos);
+      new Exception().printStackTrace(pstr);
+      return new String(baos.toByteArray());
+   }
+   
    /**
     * Command line usage.
     * <p />
