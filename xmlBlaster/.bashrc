@@ -47,6 +47,7 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    CLASSPATH=${XMLBLASTER_HOME}/lib/test.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/src/java:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/classes:${CLASSPATH}
+   CLASSPATH=${XMLBLASTER_HOME}/demo:${CLASSPATH}
 	if [ -f ${XMLBLASTER_HOME}/lib/xmlBlaster.jar ]; then
 	   CLASSPATH=${XMLBLASTER_HOME}/lib/xmlBlaster.jar:${CLASSPATH}
 	fi
@@ -60,6 +61,7 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    alias cdxs='cd $XMLBLASTER_HOME/src'
    alias cdxi='cd $XMLBLASTER_HOME/src/idl'
    alias cdxj='cd $XMLBLASTER_HOME/src/java/org/xmlBlaster'
+   alias cdxd='cd $XMLBLASTER_HOME/demo'
    alias cdxt='cd $XMLBLASTER_HOME/testsuite'
    alias cdxtj='cd $XMLBLASTER_HOME/testsuite/org/xmlBlaster'
 else

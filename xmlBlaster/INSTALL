@@ -43,6 +43,7 @@
 
      setenv CLASSPATH ${CLASSPATH}:${XMLBLASTER_HOME}/classes
      setenv CLASSPATH ${CLASSPATH}:${XMLBLASTER_HOME}/src/java
+     setenv CLASSPATH ${CLASSPATH}:${XMLBLASTER_HOME}/demo
      setenv CLASSPATH ${CLASSPATH}:${XMLBLASTER_HOME}/lib/omquery.jar
      setenv CLASSPATH ${CLASSPATH}:${XMLBLASTER_HOME}/lib/xtdash.jar
      setenv CLASSPATH ${CLASSPATH}:${XMLBLASTER_HOME}/lib/xml.jar
