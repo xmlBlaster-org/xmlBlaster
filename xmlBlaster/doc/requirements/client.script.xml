@@ -7,11 +7,11 @@
 
      <p>All invocations available to communicate to xmlBlaster can be done by submitting an 
         xml document (which we also call a script). The syntax for the xml script has been 
-	designed with a particular emphasis on simplicity and flexibility.<br/>
-	Flexibility is important since this scripting capability can be for a broad varity of
-	purposes. For example it can be used in the email protocol or it can be used in build
-	tools such as ant and maven, it can be used to execute xml in an update message, in an
-	xsp, ....
+        designed with a particular emphasis on simplicity and flexibility.<br/>
+        Flexibility is important since this scripting capability can be for a broad varity of
+        purposes. For example it can be used in the email protocol or it can be used in build
+        tools such as ant and maven, it can be used to execute xml in an update message, in an
+        xsp, ....
      </p>
      <p>
      The script works with three streams:
@@ -53,7 +53,7 @@
      of the content element is used. If a link is specified, then the text content is 
      ignored.
      </p>
-     	
+        
      <p><b>The syntax of the response:</b></p>
      <p>
      A response starts with an <b>xmlBlasterResponse</b> tag having an optional <b>id</b> attribute
@@ -74,8 +74,9 @@
 
 <![CDATA[
 <xmlBlaster>
-  <!-- note that if you omit the qos it will take an empty one (default behavior) -->
+  <!-- note that if you omit the qos it will take an empty one (default) -->
   <connect/>
+
   <subscribe><key oid="test"></key><qos/></subscribe>
 
   <wait delay="1000" />
@@ -92,6 +93,7 @@
       <qos/>
     </message>
   </publishArr>
+
   <get><key oid="test" /></get>
 
    <subscribe>
@@ -99,9 +101,13 @@
    </subscribe>
 
   <wait delay="1000" />
-    <unSubscribe><key oid="test"/></unSubscribe>
+
+  <unSubscribe><key oid="test"/></unSubscribe>
+
   <erase><key oid="test"></key><qos/></erase>
+
   <wait delay="1000" />
+
   <disconnect />
 </xmlBlaster>
 ]]>
@@ -111,226 +117,225 @@
       <p>And as the response to the upper request:<br/>
       <pre>
 <![CDATA[   
+<xmlBlasterResponse>
 
-      <xmlBlasterResponse>
-
-      <!-- __________________________________  connect ________________________________ -->
-      <connect>
-       <qos>
-        <securityService type="htpasswd" version="1.0"><![CDATA[
+   <!-- _____________________  connect ________________________________ -->
+   <connect>
+      <qos>
+         <securityService type="htpasswd" version="1.0">
          <user>michele</user>
          <passwd>secret</passwd>
-        ]]&gt;</securityService>
-        <session name='/node/xmlBlaster_127_0_0_2_3412/client/michele/-3' timeout='86400000' maxSessions='10' clearSessions='false' 
-	         reconnectSameClientOnly='false' sessionId='IIOP:0111332A41420B1F1516'/>
-        <queue relating='connection'>
+         </securityService>
+         <session name='/node/xmlBlaster_127_0_0_2_3412/client/michele/-3'
+               timeout='86400000' maxSessions='10' clearSessions='false' 
+               reconnectSameClientOnly='false' sessionId='IIOP:0111332A414'/>
+         <queue relating='connection'>
          <address type='IOR'>
-          
+            
          </address>
-        </queue>
-        <queue relating='subject'/>
-        <queue relating='callback' maxEntries='1000' maxEntriesCache='1000'>
+         </queue>
+         <queue relating='subject'/>
+         <queue relating='callback' maxEntries='1000' maxEntriesCache='1000'>
          <callback type='IOR' dispatchPlugin='undef'>
-          IOR:000000000000004049444C3A6F72672E786D6C426C6173746..........
+            IOR:000000000000004049444C3A6F72672E786D6C426C6173746..........
          </callback>
-        </queue>
-        <serverRef type='IOR'>
-        IOR:000000000000003749444C3A6F72672E786D6C426C617374657..........
-        </serverRef>
-       </qos>
-      </connect>
+         </queue>
+         <serverRef type='IOR'>
+            IOR:000000000000003749444C3A6F72672E786D6C426C617374657........
+         </serverRef>
+      </qos>
+   </connect>
 
-      <!-- __________________________________  subscribe ______________________________ -->
-      <subscribe>
-           <qos>
-            <subscribe id='__subId:xmlBlaster_127_0_0_2_3412-5'/>
-           <isSubscribe/>
-           </qos>
-      </subscribe>
+   <!-- _____________________  subscribe ______________________________ -->
+   <subscribe>
+      <qos>
+         <subscribe id='__subId:xmlBlaster_127_0_0_2_3412-5'/>
+         <isSubscribe/>
+      </qos>
+   </subscribe>
 
-      <!-- -- -- -- -- -- -- -- -- -- -- -- -- update -- -- -- -- -- -- -- -- -- -- -- -->
-        <update>
-        <sessionId>unknown</sessionId>
-           <key oid='test'>
-                <airport name='london'></airport>
-           </key>
-           <content><![CDATA [This is a simple script test]]&gt;</content>
-           <qos>
-            <sender>/node/xmlBlaster_127_0_0_2_3412/client/michele/-3</sender>
-            <subscribe id='__subId:xmlBlaster_127_0_0_2_3412-5'/>
-            <rcvTimestamp nanos='1075409585202000001'/>
-            <queue index='0' size='1'/>
-            <isUpdate/>
-           </qos>
-        </update>
+   <!-- -- -- -- -- -- -- -- -- update -- -- -- -- -- -- -- -- -- -- -- -->
+   <update>
+      <sessionId>unknown</sessionId>
+      <key oid='test'>
+         <airport name='london'></airport>
+      </key>
+      <content><![CDATA [This is a simple script test]]&gt;</content>
+      <qos>
+         <sender>/node/xmlBlaster_127_0_0_2_3412/client/michele/-3</sender>
+         <subscribe id='__subId:xmlBlaster_127_0_0_2_3412-5'/>
+         <rcvTimestamp nanos='1075409585202000001'/>
+         <queue index='0' size='1'/>
+         <isUpdate/>
+      </qos>
+   </update>
 
-      <!-- __________________________________  publish ________________________________ -->
-      <publish>
-         <qos>
-          <key oid='test'/>
-          <rcvTimestamp nanos='1075409585202000001'/>
+   <!-- ________________________  publish ________________________________ -->
+   <publish>
+      <qos>
+         <key oid='test'/>
+         <rcvTimestamp nanos='1075409585202000001'/>
          <isPublish/>
+      </qos>
+   </publish>
+
+   <!-- -- -- -- -- -- -- -- -- -- update -- -- -- -- -- -- -- -- -- -- -- -->
+   <update>
+      <sessionId>unknown</sessionId>
+      <key oid='test'/>
+      <content><![CDATA [This is a simple script test 1]]&gt;</content>
+      <qos>
+         <sender>/node/xmlBlaster_127_0_0_2_3412/client/michele/-3</sender>
+         <subscribe id='__subId:xmlBlaster_127_0_0_2_3412-5'/>
+         <rcvTimestamp nanos='1075409585342000001'/>
+         <queue index='0' size='1'/>
+         <isUpdate/>
+      </qos>
+   </update>
+
+   <!-- -- -- -- -- -- -- -- -- -- update -- -- -- -- -- -- -- -- -- -- -- -->
+   <update>
+   <sessionId>unknown</sessionId>
+      <key oid='test'/>
+      <content><![CDATA [This is a simple script test 2]]&gt;</content>
+      <qos>
+         <sender>/node/xmlBlaster_127_0_0_2_3412/client/michele/-3</sender>
+         <subscribe id='__subId:xmlBlaster_127_0_0_2_3412-5'/>
+         <rcvTimestamp nanos='1075409585348000001'/>
+         <queue index='0' size='1'/>
+         <isUpdate/>
+      </qos>
+   </update>
+
+   <!-- -- -- -- -- -- -- -- -- -- update -- -- -- -- -- -- -- -- -- -- -- -->
+   <update>
+      <sessionId>unknown</sessionId>
+      <key oid='test'/>
+      <content><![CDATA [This is a simple script test 3]]&gt;</content>
+      <qos>
+         <sender>/node/xmlBlaster_127_0_0_2_3412/client/michele/-3</sender>
+         <subscribe id='__subId:xmlBlaster_127_0_0_2_3412-5'/>
+         <rcvTimestamp nanos='1075409585400000001'/>
+         <queue index='0' size='1'/>
+         <isUpdate/>
+      </qos>
+   </update>
+
+   <!-- -- -- -- -- -- -- -- -- -- update -- -- -- -- -- -- -- -- -- -- -- -->
+   <update>
+   <sessionId>unknown</sessionId>
+      <key oid='test'/>
+      <content><![CDATA [This is a simple script test 4]]&gt;</content>
+      <qos>
+         <sender>/node/xmlBlaster_127_0_0_2_3412/client/michele/-3</sender>
+         <subscribe id='__subId:xmlBlaster_127_0_0_2_3412-5'/>
+         <rcvTimestamp nanos='1075409585412000001'/>
+         <queue index='0' size='1'/>
+         <isUpdate/>
+      </qos>
+   </update>
+
+   <!-- ________________________  publishArr _____________________________ -->
+   <publishArr>
+      <message>
+         <qos>
+            <key oid='test'/>
+            <rcvTimestamp nanos='1075409585342000001'/>
+            <isPublish/>
          </qos>
-      </publish>
+      </message>
 
-      <!-- -- -- -- -- -- -- -- -- -- -- -- -- update -- -- -- -- -- -- -- -- -- -- -- -->
-        <update>
-        <sessionId>unknown</sessionId>
-           <key oid='test'/>
-           <content><![CDATA [This is a simple script test 1]]&gt;</content>
-           <qos>
-            <sender>/node/xmlBlaster_127_0_0_2_3412/client/michele/-3</sender>
-            <subscribe id='__subId:xmlBlaster_127_0_0_2_3412-5'/>
-            <rcvTimestamp nanos='1075409585342000001'/>
-            <queue index='0' size='1'/>
-            <isUpdate/>
-           </qos>
-        </update>
-
-      <!-- -- -- -- -- -- -- -- -- -- -- -- -- update -- -- -- -- -- -- -- -- -- -- -- -->
-        <update>
-        <sessionId>unknown</sessionId>
-           <key oid='test'/>
-           <content><![CDATA [This is a simple script test 2]]&gt;</content>
-           <qos>
-            <sender>/node/xmlBlaster_127_0_0_2_3412/client/michele/-3</sender>
-            <subscribe id='__subId:xmlBlaster_127_0_0_2_3412-5'/>
-            <rcvTimestamp nanos='1075409585348000001'/>
-            <queue index='0' size='1'/>
-            <isUpdate/>
-           </qos>
-        </update>
-
-      <!-- -- -- -- -- -- -- -- -- -- -- -- -- update -- -- -- -- -- -- -- -- -- -- -- -->
-        <update>
-        <sessionId>unknown</sessionId>
-           <key oid='test'/>
-           <content><![CDATA [This is a simple script test 3]]&gt;</content>
-           <qos>
-            <sender>/node/xmlBlaster_127_0_0_2_3412/client/michele/-3</sender>
-            <subscribe id='__subId:xmlBlaster_127_0_0_2_3412-5'/>
-            <rcvTimestamp nanos='1075409585400000001'/>
-            <queue index='0' size='1'/>
-            <isUpdate/>
-           </qos>
-        </update>
-
-      <!-- -- -- -- -- -- -- -- -- -- -- -- -- update -- -- -- -- -- -- -- -- -- -- -- -->
-        <update>
-        <sessionId>unknown</sessionId>
-           <key oid='test'/>
-           <content><![CDATA [This is a simple script test 4]]&gt;</content>
-           <qos>
-            <sender>/node/xmlBlaster_127_0_0_2_3412/client/michele/-3</sender>
-            <subscribe id='__subId:xmlBlaster_127_0_0_2_3412-5'/>
-            <rcvTimestamp nanos='1075409585412000001'/>
-            <queue index='0' size='1'/>
-            <isUpdate/>
-           </qos>
-        </update>
-
-      <!-- __________________________________  publishArr _____________________________ -->
-      <publishArr>
-        <message>
-           <qos>
-            <key oid='test'/>
-            <rcvTimestamp nanos='1075409585342000001'/>
-           <isPublish/>
-           </qos>
-        </message>
-
-        <message>
-           <qos>
+      <message>
+         <qos>
             <key oid='test'/>
             <rcvTimestamp nanos='1075409585348000001'/>
-           <isPublish/>
-           </qos>
-        </message>
+            <isPublish/>
+         </qos>
+      </message>
 
-        <message>
-           <qos>
+      <message>
+         <qos>
             <key oid='test'/>
             <rcvTimestamp nanos='1075409585400000001'/>
-           <isPublish/>
-           </qos>
-        </message>
+            <isPublish/>
+         </qos>
+      </message>
 
-        <message>
-           <qos>
+      <message>
+         <qos>
             <key oid='test'/>
             <rcvTimestamp nanos='1075409585412000001'/>
-           <isPublish/>
-           </qos>
-        </message>
+            <isPublish/>
+         </qos>
+      </message>
+   </publishArr>
 
-      </publishArr>
-
-      <!-- __________________________________  get ____________________________________ -->
-      <get>
-        <message>
-            <key oid='test'/>
-             <content><![CDATA[This is a simple script test 4]]&gt;</content>
-            <qos>
-             <sender>/node/xmlBlaster_127_0_0_2_3412/client/michele/-3</sender>
-             <rcvTimestamp nanos='1075409585412000001'/>
-             <route>
-              <node id='xmlBlaster_127_0_0_2_3412' stratum='0' timestamp='1075409585412000001' dirtyRead='false'/>
-             </route>
-            </qos>
-        </message>
-      </get>
-
-      <!-- -- -- -- -- -- -- -- -- -- -- -- -- update -- -- -- -- -- -- -- -- -- -- -- -->
-        <update>
-        <sessionId>unknown</sessionId>
-           <key oid='test'/>
-           <content><![CDATA [This is a simple script test 4]]&gt;</content>
-           <qos>
+   <!-- ________________________  get ____________________________________ -->
+   <get>
+      <message>
+         <key oid='test'/>
+         <content><![CDATA[This is a simple script test 4]]&gt;</content>
+         <qos>
             <sender>/node/xmlBlaster_127_0_0_2_3412/client/michele/-3</sender>
-            <subscribe id='__subId:xmlBlaster_127_0_0_2_3412-XPATH6'/>
             <rcvTimestamp nanos='1075409585412000001'/>
-            <queue index='0' size='1'/>
             <route>
-             <node id='xmlBlaster_127_0_0_2_3412' stratum='0' timestamp='1075409585412000001' dirtyRead='false'/>
+            <node id='xmlBlaster_127_0_0_2_3412' stratum='0'
+                  timestamp='1075409585412000001' dirtyRead='false'/>
             </route>
-            <isUpdate/>
-           </qos>
-        </update>
-
-      <!-- __________________________________  subscribe ______________________________ -->
-      <subscribe>
-           <qos>
-            <subscribe id='__subId:xmlBlaster_127_0_0_2_3412-XPATH6'/>
-           <isSubscribe/>
-           </qos>
-      </subscribe>
-
-      <!-- __________________________________  unSubscribe ____________________________ -->
-      <unSubscribe>
-         <qos>
-          <subscribe id='__subId:xmlBlaster_127_0_0_2_3412-5'/>
-         <isUnSubscribe/>
          </qos>
-         <qos>
-          <subscribe id='__subId:xmlBlaster_127_0_0_2_3412-XPATH6:7'/>
-         <isUnSubscribe/>
-         </qos>
-      </unSubscribe>
+      </message>
+   </get>
 
-      <!-- __________________________________  erase __________________________________ -->
-      <erase>
-         <qos>
-          <key oid='test'/>
+   <!-- -- -- -- -- -- -- -- -- -- update -- -- -- -- -- -- -- -- -- -- -- -->
+   <update>
+      <sessionId>unknown</sessionId>
+      <key oid='test'/>
+      <content><![CDATA [This is a simple script test 4]]&gt;</content>
+      <qos>
+         <sender>/node/xmlBlaster_127_0_0_2_3412/client/michele/-3</sender>
+         <subscribe id='__subId:xmlBlaster_127_0_0_2_3412-XPATH6'/>
+         <rcvTimestamp nanos='1075409585412000001'/>
+         <queue index='0' size='1'/>
+         <route>
+            <node id='xmlBlaster_127_0_0_2_3412' stratum='0'
+                  timestamp='1075409585412000001' dirtyRead='false'/>
+         </route>
+         <isUpdate/>
+      </qos>
+   </update>
+
+   <!-- ________________________  subscribe ______________________________ -->
+   <subscribe>
+      <qos>
+         <subscribe id='__subId:xmlBlaster_127_0_0_2_3412-XPATH6'/>
+         <isSubscribe/>
+      </qos>
+   </subscribe>
+
+   <!-- ________________________  unSubscribe ____________________________ -->
+   <unSubscribe>
+      <qos>
+         <subscribe id='__subId:xmlBlaster_127_0_0_2_3412-5'/>
+         <isUnSubscribe/>
+      </qos>
+      <qos>
+         <subscribe id='__subId:xmlBlaster_127_0_0_2_3412-XPATH6:7'/>
+         <isUnSubscribe/>
+      </qos>
+   </unSubscribe>
+
+   <!-- ________________________  erase __________________________________ -->
+   <erase>
+      <qos>
+         <key oid='test'/>
          <isErase/>
-         </qos>
-      </erase>
+      </qos>
+   </erase>
 
-      <!-- __________________________________  disconnect _____________________________ -->
-      <disconnect>true</disconnect>
+   <!-- ________________________  disconnect _____________________________ -->
+   <disconnect>true</disconnect>
 
-      </xmlBlasterResponse>
-
-
+</xmlBlasterResponse>
 ]]>
       </pre>
       </p>
@@ -348,7 +353,7 @@
 
    <author>laghi@swissinfo.org</author>
    <date>2004 01 29</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
