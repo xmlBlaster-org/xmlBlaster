@@ -1,5 +1,33 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
+ o Changed build.xml for C and C++ compilation
+   Now the source files are copied to a separate destination
+
+ o C++ client library (Incompatible API change):
+   The update() method argument 'content' changed from
+   'void *' to 'const unsigned char *'
+
+ o C++ client library:
+   Added native SOCKET protocol plugin based on the C-client library
+   Fixed command line usage, try 'HelloWorld2 -help'
+   Fixed memory leak for some XmlBlasterExceptions thrown
+   Logging cleanup (switchable xterm colors)
+   Added Global::getCompiler()
+   Fixed LifeTimeManager to have destruction sequence reversed to creation sequence
+   Added map to LifeTimeManager to support registered object lookup by key
+   Other minor changes
+
+ o C-client library:
+   Fixed to return secretSessionId in update() method
+   Fixed to return isOneway in update() method
+   Fixed get() return without a match
+   Renamed xmlBlasterAccess->userData to userObject to avoid ambiguity
+
+ o C-client library (Incompatible API change):
+   Fixed unSubscribe() and erase() to return now 'QosArr *' instead
+   of 'char *'. See xmlBlaster/demo/c/socket/HelloWorld3.c for a usage
+   example.
+
  o Renamed build.sh to build. Now on UNIX and Windows the build command is the same,
    for example 'build all'
 
@@ -17,13 +45,13 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
  o manifest.xmlBlaster: Added missing jhotdraw.jar, demo.jar and testsuite.jar
 
- o C-Client: changed include in pthread.h for simpler compilation
+ o C-client: changed include in pthread.h for simpler compilation
 
  o Fixed update problem when content is empty
 
  o Fixed dead letter handling on callback queue overflow
 
- o C client library: Fixed bug in trim() which lead on stress tests
+ o C-client library: Fixed bug in trim() which lead on stress tests
    to corrupted messages.
    Thanks to FdGiglio@naples.sema.slb.com
 
