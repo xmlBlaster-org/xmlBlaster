@@ -65,6 +65,38 @@ import org.xmlBlaster.contrib.dbwatcher.convert.I_DataConverter;
  * plugin restart they are lost and a complete set of data is send again.
  * </p>
  * 
+   <table border="1">
+     <tr>
+       <th>DB statement</th>
+       <th>Reported change</th>
+       <th>Comment</th>
+     </tr>
+     <tr>
+       <td>CREATE</td>
+       <td>CREATE</td>
+       <td>-</td>
+     </tr>
+     <tr>
+       <td>INSERT</td>
+       <td>INSERT</td>
+       <td>On multiple table entries for a <tt>changeDetector.groupColName</tt> the change is reported as <tt>UPDATE</tt></td>
+     </tr>
+     <tr>
+       <td>UPDATE</td>
+       <td>UPDATE</td>
+       <td>-</td>
+     </tr>
+     <tr>
+       <td>DELETE</td>
+       <td>DELETE</td>
+       <td>-</td>
+     </tr>
+     <tr>
+       <td>DROP</td>
+       <td>DROP</td>
+       <td>see <tt>mom.eraseOnDrop</tt> configuration</td>
+     </tr>
+   </table>
  * @author Marcel Ruff
  */
 public class MD5ChangeDetector implements I_ChangeDetector

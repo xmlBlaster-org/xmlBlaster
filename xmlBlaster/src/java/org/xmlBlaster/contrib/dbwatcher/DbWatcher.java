@@ -247,6 +247,9 @@ public class DbWatcher implements I_ChangeListener {
    public int publishMessagesFromStmt(final String stmt, final boolean useGroupCol,
                                final ChangeEvent changeEvent,
                                Connection conn) throws Exception {
+      if (conn == null) {
+         throw new IllegalArgumentException("publishMessagesFromStmt() does not support passing a null JDBC-Connection");
+      }
       this.changeCount = 0;
       final String command = (changeEvent.getCommand() == null) ? "UPDATE" : changeEvent.getCommand();
       Connection connRet = null;

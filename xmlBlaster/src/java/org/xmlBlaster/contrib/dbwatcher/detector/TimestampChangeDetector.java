@@ -25,7 +25,7 @@ import org.xmlBlaster.contrib.dbwatcher.convert.I_DataConverter;
 
 /**
  * Check the database and compare the change timestamp of a table to the previous one. 
- * <p>Configuration:</p>
+ * <h2>Configuration</h2>
  * <ul>
  *  <li><tt>changeDetector.detectStatement</tt> the SQL statement which detects that a change has occurred, for example
  *      <tt>SELECT MAX(TO_CHAR(ts, 'YYYY-MM-DD HH24:MI:SSXFF')) FROM TEST_TS</tt>
@@ -42,9 +42,48 @@ import org.xmlBlaster.contrib.dbwatcher.convert.I_DataConverter;
  *  <li><tt>changeDetector.groupColName</tt> in the above example
  *      <tt>ICAO_ID</tt>, the SELECT must be sorted after this column and must
  *       list it. All distinct <tt>ICAO_ID</tt> values trigger an own publish event.
- *       If not configured, the whole query is MD5 compared and triggers on change exactly one publish event
+ *       If not configured, this plugin triggers on change exactly one publish event.
  *  </li>
  * </ul>
+ *
+ * <h2>Limitations</h2>
+ * <p>The nature of this plugin is based on a timestamp comparison,
+ * as such it does not detect <b>DELETE</b> changes of database rows, as this
+ * will not create a new timestamp. All other commands (CREATE, INSERT, UPDATE) will
+ * touch the timestamp and are therefor detected. Additionally a DROP is detected.</p>
+   <table border="1">
+     <tr>
+       <th>DB statement</th>
+       <th>Reported change</th>
+       <th>Comment</th>
+     </tr>
+     <tr>
+       <td>CREATE</td>
+       <td>CREATE</td>
+       <td>-</td>
+     </tr>
+     <tr>
+       <td>INSERT</td>
+       <td>UPDATE</td>
+       <td>SQL <tt>INSERT</tt> statement are reported as <tt>UPDATE</tt></td>
+     </tr>
+     <tr>
+       <td>UPDATE</td>
+       <td>UPDATE</td>
+       <td>-</td>
+     </tr>
+     <tr>
+       <td>DELETE</td>
+       <td>-</td>
+       <td>Is not detected</td>
+     </tr>
+     <tr>
+       <td>DROP</td>
+       <td>DROP</td>
+       <td>see <tt>mom.eraseOnDrop</tt> configuration</td>
+     </tr>
+   </table>
+ *
  * <p>
  * Note that the previous timestamp value is hold in RAM only, after
  * plugin restart it is lost and a complete set of data is send again.
