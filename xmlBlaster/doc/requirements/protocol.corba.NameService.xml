@@ -1,0 +1,163 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='protocol.corba.NameService' type='NEW' prio='HIGH' status="CLOSED">
+   <topic>Multiple xmlBlaster server instances can register themselves in a CORBA NameService</topic>
+   <description>
+      <p>
+      Clients can lookup an xmlBlaster server with a CORBA NameService. The xmlBlaster
+      servers register themselves in a hierarchical manner in the NameService as shown
+      in the following illustration:
+      </p>
+      <center><p>
+      <img src="CORBA_NameService.gif" border="0" title="XmlBlaster NameService entries" alt="XmlBlaster NameService entries" />
+      </p></center>
+      <p>
+      In this example there are three xmlBlaster server running which have registered
+      themselves under there cluster.node.id names <i>heron</i>, <i>avalon</i> and <i>frodo</i>.
+      </p>
+      <p>
+      Clients can query the root context <i>xmlBlaster.MOM</i> to choose a server they want to connect to.
+      </p>
+      <p>
+      When a server shuts down it removes its NameService entry. If a server
+      crashes (e.g. by kill -9) it can't remove the NameService entry, but on startup
+      it will overwrite the previous setting.
+      </p>
+   </description>
+
+   <example lang="JAVA" type="HTML">
+   <p>
+     Here we show an example which plays with NameService entries, please
+     start all instances in a separate DOS-box or xterm.
+   </p>
+   <p>
+   We assume that you have started a NameService
+   and the IOR of the NameService is dumped to <i>/tmp/ns.ior</i>, here
+   are examples how to start the JacORB or the ORBIX NameService:
+   </p>
+<pre>
+# Start the JacORB NameService:
+jaco -DOAPort=7608  org.jacorb.naming.NameServer /tmp/ns.ior
+</pre>
+
+
+<pre>
+# The ORBIX NameService:
+/opt/orbix/etc/bin> start_XX_services
+
+# query the IOR (for ORBIX only)
+itadmin
+% ns resolve
+IOR:010000002800000049...
+
+# Put this IOR into /tmp/ns.ior
+</pre>
+   <p>
+   Now we are ready to start some servers and a client.
+   We have set <i>-trace[corba] true</i> to get more logging output from the CORBA plugin,
+   further we have set <i>-port 0</i> to suppress internal IOR download (as we want to test the NameService).
+   </p>
+   <pre>
+# Start heron:
+java -DORBInitRef.NameService=file:///tmp/ns.ior 
+     -jar lib/xmlBlaster.jar
+     -trace[corba] true
+     -port 0
+     -cluster.node.id heron
+
+# Start avalon:
+java -DORBInitRef.NameService=file:///tmp/ns.ior 
+     -jar lib/xmlBlaster.jar
+     -trace[corba] true
+     -port 0
+     -cluster.node.id avalon
+
+# Start frodo:
+java -DORBInitRef.NameService=file:///tmp/ns.ior 
+     -jar lib/xmlBlaster.jar
+     -trace[corba] true
+     -port 0
+     -cluster.node.id frodo
+
+# If you use the ORBIX NameService you can check the entries:
+% ns list
+xmlBlaster.MOM  Context
+% ns list xmlBlaster.MOM
+frodo.MOM       Object
+heron.MOM       Object
+avalon.MOM      Object
+
+# Now start a client:
+java -DORBInitRef.NameService=file:///tmp/ns.ior -cp lib/xmlBlaster.jar HelloWorld2
+
+# OOppps, you got an error as the client does not know which server to choose,
+# we choose avalon
+java -DORBInitRef.NameService=file:///tmp/ns.ior -cp lib/xmlBlaster.jar HelloWorld2
+     -trace[CORBA] true
+     -NameService.node.id avalon
+   </pre>
+   </example>
+
+   <configuration>
+      <p>
+      These parameters allow to configure the NameService entries on server side
+      and to specify the desired lookup on client side.
+      </p>
+      <p>
+      They can be set on command line, in the xmlBlaster.properties file or
+      dynamically via messages.
+      </p>
+      <table border="1">
+         <tr>
+            <th>Property</th>
+            <th>Default / Example</th>
+            <th>Description</th>
+            <th>Implemented</th>
+         </tr>
+
+         <tr>
+            <td>NameService.context.id</td>
+            <td>xmlBlaster</td>
+            <td>The root context entry in the NameService, it defaults to <i>xmlBlaster</i></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>NameService.context.kind</td>
+            <td>MOM</td>
+            <td>The kind of service is set to <i>MOM</i></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>NameService.node.id</td>
+            <td>[The xmlBlaster server name]</td>
+            <td>This property is set as default to the name of the server instance (the value of <i>-cluster.node.id</i>).
+                You can overwrite it by setting this property.</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         
+         <tr>
+            <td>NameService.node.kind</td>
+            <td>MOM</td>
+            <td>The kind of service is set to <i>MOM</i></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+      </table>
+   </configuration>
+
+   <see type="REQ">protocol</see>
+   <see type="CODE">org.xmlBlaster.protocol.corba.CorbaDriver</see>
+   <see type="CODE">org.xmlBlaster.client.protocol.corba.CorbaConnection</see>
+
+   <author>xmlBlaster@marcelruff.info</author>
+   <date>2003 02 27</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="OPEN">
+      <name>-</name>
+      <comment>Tests a setup as described in this requirement</comment>
+      <test tool="SUITE"></test>
+   </testcase>
+</requirement>
+
