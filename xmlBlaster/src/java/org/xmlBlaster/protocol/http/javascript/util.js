@@ -307,6 +307,24 @@ function displayLogs()
    var clearStr = 'javascript:opener.logToWindow("CLEAR", "CLEAR", "CLEAR")';
    tableStr += "<A HREF='" + clearStr + "'>clear</A>\n";
 
+   if (self.opener.top.Log.INFO == true) {
+      var noInfoStr = 'javascript:self.opener.top.Log.INFO=false; ' + clearStr;
+      tableStr += "&nbsp;<A HREF='" + noInfoStr + "'>Info off</A>\n";
+   }
+   else {
+      var infoStr = 'javascript:self.opener.top.Log.INFO=true; ' + clearStr;
+      tableStr += "&nbsp;&nbsp;<A HREF='" + infoStr + "'>Info on</A>\n";
+   }
+
+   if (self.opener.top.Log.TRACE == true) {
+      var noTraceStr = 'javascript:self.opener.top.Log.TRACE=false; ' + clearStr;
+      tableStr += "&nbsp;<A HREF='" + noTraceStr + "'>Trace off</A>\n";
+   }
+   else {
+      var traceStr = 'javascript:self.opener.top.Log.TRACE=true; ' + clearStr;
+      tableStr += "&nbsp;&nbsp;<A HREF='" + traceStr + "'>Trace on</A>\n";
+   }
+
    d.writeln(tableStr);
    d.writeln('<P /></BODY>\n</HTML>');
    d.close();
