@@ -82,7 +82,11 @@
    &lt;filter type='GnuRegexFilter' version='1.0'>^H.*$&lt;/filter>
                                 
    &lt;!-- Default is to deliver the current entry (numEntries='1'), '-1' deliver all (default: 1) -->
-   &lt;history numEntries='20'/>
+   &lt;!-- newestFirst let you change the delivery order, it defaults to true -->
+   &lt;!-- The higher priority messages are always delivered first. -->
+   &lt;!-- In one priority the newest message is delivered first with 'true', setting 'false' -->
+   &lt;!-- reverts the delivery sequence in this priority. -->
+   &lt;history numEntries='20' newestFirst='true'/>
 &lt;/qos>
       </pre>
 
@@ -269,7 +273,7 @@
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 01</date>
-   <revision>$Revision: 1.21 $</revision>
+   <revision>$Revision: 1.22 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the subscribe method invocation</comment>

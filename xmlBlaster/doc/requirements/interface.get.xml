@@ -53,8 +53,12 @@
       ^H.*$
    &lt;/filter>
 
-   &lt;!-- Default is to deliver the current entry (numEntries='1'), '-1' deliver all -->
-   &lt;history numEntries='20'/>
+   &lt;!-- Default is to deliver the current entry (numEntries='1'), '-1' deliver all (default: 1) -->
+   &lt;!-- newestFirst let you change the delivery order, it defaults to true -->
+   &lt;!-- The higher priority messages are always delivered first. -->
+   &lt;!-- In one priority the newest message is delivered first with 'true', setting 'false' -->
+   &lt;!-- reverts the delivery sequence in this priority. -->
+   &lt;history numEntries='20' newestFirst='true'/>
 &lt;/qos>
       </pre>
 
@@ -203,7 +207,7 @@
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 30</date>
-   <revision>$Revision: 1.9 $</revision>
+   <revision>$Revision: 1.10 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>Tests the get method invocation (cluster test is missing!)</comment>
