@@ -73,6 +73,7 @@ public class MsgQosFactoryTest extends TestCase {
             "   </sender>\n" +
             "   <priority>MIN</priority>\n" +
             //"   <expiration lifeTime='2400' remainingLife='12000'/>\n" + // uncomment as it is in concurrence to isVolatile
+            "   <administrative/>\n" +
             "   <isDurable/>\n" +
             "   <forceUpdate>false</forceUpdate>\n" +
             "   <route>\n" +
@@ -88,6 +89,7 @@ public class MsgQosFactoryTest extends TestCase {
          assertEquals("", "AA", qos.getState());
          assertEquals("", "SOMETHING", qos.getStateInfo());
          assertEquals("", true, qos.isPtp());
+         assertEquals("", true, qos.isAdministrative());
          assertEquals("", true, qos.isDurable());
          assertEquals("", false, qos.isForceUpdate());
          assertEquals("", false, qos.isReadonly());
@@ -154,6 +156,7 @@ public class MsgQosFactoryTest extends TestCase {
             "   <priority>MIN</priority>\n" +
             "   <expiration lifeTime='2400' remainingLife='12000' forceDestroy='true'/>\n" +
             "   <rcvTimestamp nanos='1234'/>\n" +
+            "   <administrative/>\n" +
             "   <isDurable/>\n" +
             "   <forceUpdate>false</forceUpdate>\n" +
             "   <route>\n" +
@@ -162,7 +165,7 @@ public class MsgQosFactoryTest extends TestCase {
             "      <node id='heron' stratum='0' timestamp='9408630564'/>\n" +
             "   </route>\n" +
             "   <topic readonly='true' destroyDelay='120000' createDomEntry='true'>\n" +
-            "      <msgUnitStore type='TO' version='3.0' maxMsg='4' maxBytes='40' onOverflow='deadMessage'/>\n" +
+            "      <persistence relating='msgUnitStore' type='TO' version='3.0' maxMsg='4' maxBytes='40' onOverflow='deadMessage'/>\n" +
             "      <queue relating='history' type='HI' version='2.0' maxMsg='3' maxBytes='30' onOverflow='deadMessage'/>\n" +
             "   </topic>\n" +
             "</qos>\n";
@@ -178,6 +181,7 @@ public class MsgQosFactoryTest extends TestCase {
          assertEquals("", "SOMETHING", qos.getStateInfo());
          assertEquals("", true, qos.isPtp());
          assertEquals("", false, qos.isVolatile());
+         assertEquals("", true, qos.isAdministrative());
          assertEquals("", true, qos.isDurable());
          assertEquals("", false, qos.isForceUpdate());
          assertEquals("", true, qos.isReadonly());
@@ -466,6 +470,35 @@ public class MsgQosFactoryTest extends TestCase {
    }
 
    /**
+    * Tests given administrative
+    */
+   public void testAdministrative() {
+      System.out.println("***MsgQosFactoryTest: testAdministrative ...");
+      
+      //try {
+         MsgQosData msgQosData = new MsgQosData(glob);
+         msgQosData.setAdministrative(true);
+         assertEquals("", PriorityEnum.MAX_PRIORITY.getInt(), msgQosData.getPriority().getInt());
+         String xml = msgQosData.toXml();
+         /*
+            "<qos>\n" +
+            "   <priority>MAX</priority>\n" +
+            "   <administrative/>\n" +
+            "</qos>\n";
+         */
+         log.info(ME, "Created administrative publish" + xml);
+         assertTrue("Missing administrative in " + xml, xml.indexOf("<administrative/>") > -1);
+         assertTrue("Wrong priority in " + xml, xml.indexOf("9") > -1 || xml.indexOf("MAX") > -1 );
+
+      //}
+      //catch (XmlBlasterException e) {
+      //   fail("testAdministrative failed: " + e.toString());
+      //}
+
+      System.out.println("***MsgQosFactoryTest: testAdministrative [SUCCESS]");
+   }
+
+   /**
     * Tests empty xml string
     */
    public void testDefault() {
@@ -478,6 +511,7 @@ public class MsgQosFactoryTest extends TestCase {
          assertEquals("", true, qos.isSubscribeable());
          assertEquals("", false, qos.isPtp());
          assertEquals("", false, qos.isVolatile());
+         assertEquals("", false, qos.isAdministrative());
          assertEquals("", false, qos.isDurable());
          assertEquals("", true, qos.isForceUpdate());
          assertEquals("", false, qos.isReadonly());
@@ -507,6 +541,7 @@ public class MsgQosFactoryTest extends TestCase {
       testSub.testParse();
       testSub.testToXml();
       testSub.testFromPersistentStore();
+      testSub.testAdministrative();
       testSub.testPublishQosServer();
       testSub.testGetReturnQos();
       testSub.testUpdateQos();
