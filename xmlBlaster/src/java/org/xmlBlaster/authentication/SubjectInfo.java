@@ -227,7 +227,7 @@ public final class SubjectInfo implements I_AdminSubject
       //log.error(ME, "DEBUG ONLY: finalize - garbage collected " + getLoginName());
       if (log.TRACE) log.trace(ME, "finalize - garbage collected " + getLoginName());
       boolean force = true;
-      this.subjectQueue.shutdown(force);
+      this.subjectQueue.shutdown();
    }
 
    /**

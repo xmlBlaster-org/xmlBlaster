@@ -209,9 +209,8 @@ public class SessionInfo implements I_Timeout, I_AdminSession
          this.expiryTimer.removeTimeoutListener(timerKey);
          timerKey = null;
       }
-      boolean force = false;
       if (this.sessionQueue != null) {
-         this.sessionQueue.shutdown(force);
+         this.sessionQueue.shutdown();
          //this.sessionQueue = null; Not set to null to support avoid synchronize(this.sessionQueue)
       }
       if (this.msgErrorHandler != null)

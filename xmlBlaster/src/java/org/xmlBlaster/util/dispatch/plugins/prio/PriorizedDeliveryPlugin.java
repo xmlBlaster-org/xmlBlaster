@@ -536,7 +536,7 @@ public final class PriorizedDeliveryPlugin implements I_MsgDeliveryInterceptor, 
             // org.xmlBlaster.test.dispatch.TestPriorizedDeliveryWithLostCallback throws an exception if
             // we activate the following line -> we need to investigate this issue
             //try { de.getHoldbackQueue().destroy(); } catch (XmlBlasterException e) { log.error(ME, "Problems on shutdown of holdback queue: " + e.toString()); }
-            de.getHoldbackQueue().shutdown(true);
+            de.getHoldbackQueue().shutdown();
          }
       }
    }

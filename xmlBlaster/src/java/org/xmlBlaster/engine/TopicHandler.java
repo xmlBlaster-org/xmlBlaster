@@ -300,7 +300,7 @@ public final class TopicHandler implements I_Timeout
                log.warn(ME, "Destroying history queue with " + this.historyQueue.getNumOfEntries() +
                             " entries because of new configuration with maxMsg=0");
                this.historyQueue.clear();
-               this.historyQueue.shutdown(true);
+               this.historyQueue.shutdown();
                this.historyQueue = null;
             }
          }
@@ -1391,7 +1391,7 @@ public final class TopicHandler implements I_Timeout
                }
             }
             if (this.historyQueue != null) {
-               this.historyQueue.shutdown(true);
+               this.historyQueue.shutdown();
             }
 
             if (hasCacheEntries()) {
@@ -1404,7 +1404,7 @@ public final class TopicHandler implements I_Timeout
                }
             }
             if (this.msgUnitCache != null) {
-               this.msgUnitCache.shutdown(true);
+               this.msgUnitCache.shutdown();
             }
 
             if (this.topicEntry != null) { // a second time if the above notifySubscribersAboutErase() made an unconfigured topic alive

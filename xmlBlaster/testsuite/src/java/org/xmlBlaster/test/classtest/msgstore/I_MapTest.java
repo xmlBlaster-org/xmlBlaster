@@ -172,12 +172,12 @@ public class I_MapTest extends TestCase {
          log.info(ME, "usage() test:" + i_map.usage());
 
          assertEquals(ME+": should not be shutdown", false, i_map.isShutdown());
-         i_map.shutdown(true);
+         i_map.shutdown();
          assertEquals(ME+": should be shutdown", true, i_map.isShutdown());
 
          log.info(ME, "#2 Success, filled " + i_map.getNumOfEntries() + " messages into queue");
          System.out.println("***" + ME + " [SUCCESS]");
-         i_map.shutdown(true);
+         i_map.shutdown();
       }
       catch(XmlBlasterException e) {
          fail(ME + ": Exception thrown: " + e.getMessage());
@@ -245,7 +245,7 @@ public class I_MapTest extends TestCase {
          assertEquals(ME+": Wrong empty size", 0L, i_map.getNumOfEntries());
 
          System.out.println("***" + ME + " [SUCCESS]");
-         i_map.shutdown(true);
+         i_map.shutdown();
       }
       catch(XmlBlasterException e) {
          fail(ME + ": Exception thrown: " + e.getMessage());
@@ -346,7 +346,7 @@ public class I_MapTest extends TestCase {
 
          System.out.println("***" + ME + " [SUCCESS]");
          i_map.clear();
-         i_map.shutdown(true);
+         i_map.shutdown();
       }
       catch(XmlBlasterException e) {
          e.printStackTrace();
@@ -425,7 +425,7 @@ public class I_MapTest extends TestCase {
       finally {
          try {
             i_map.clear();
-            i_map.shutdown(true);
+            i_map.shutdown();
          }
          catch(XmlBlasterException e) {
             e.printStackTrace();
@@ -512,7 +512,7 @@ public class I_MapTest extends TestCase {
       finally {
          try {
             i_map.clear();
-            i_map.shutdown(true);
+            i_map.shutdown();
          }
          catch(XmlBlasterException e) {
             e.printStackTrace();
