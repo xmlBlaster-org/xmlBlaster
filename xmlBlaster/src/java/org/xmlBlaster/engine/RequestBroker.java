@@ -185,7 +185,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
          if (obj != null)
             return (I_AccessFilter)obj;
 
-         return addSubcribeFilterPlugin(type, version); // try to load it
+         return addAccessFilterPlugin(type, version); // try to load it
 
       } catch (Exception e) {
          Log.error(ME, "Problems accessing subcribe filter [" + type + "][" + version +"] mime=" + mime + " mimeExtended=" + mimeExtended + ": " + e.toString());
@@ -198,13 +198,13 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
     * Invoked on new subscription or get() invocation, loads plugin. 
     * @return null if not found
     */
-   final I_AccessFilter addSubcribeFilterPlugin(String type, String version)
+   final I_AccessFilter addAccessFilterPlugin(String type, String version)
    {
       StringBuffer key = new StringBuffer(80);
       key.append(type).append(version);
       Object obj = subscribeFilterMap.get(key.toString());
       if (obj != null) {
-         Log.info(ME, "Subscribe filter '" + key.toString() + "' is loaded already");
+         Log.info(ME, "Access filter '" + key.toString() + "' is loaded already");
          return (I_AccessFilter)obj;
       }
 
