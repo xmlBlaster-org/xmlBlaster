@@ -10,7 +10,6 @@ package org.xmlBlaster.engine;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
-import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.engine.runlevel.I_RunlevelListener;
@@ -59,7 +58,7 @@ public final class AvailabilityChecker implements I_RunlevelListener
       if (isInternalUser)
          return;
 
-      if (!this.startup && action == MethodName.DISCONNECT)
+      if (!this.startup && action == MethodName.DISCONNECT && this.currRunlevel >= RunlevelManager.RUNLEVEL_STANDBY)
          return; // to allow internal services to disconnect on shutdown
 
       if (this.startup && this.currRunlevel < RunlevelManager.RUNLEVEL_STANDBY) // 3
