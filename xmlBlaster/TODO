@@ -59,11 +59,10 @@ TECHNOLOGY
 (1) XML Schema support. Necessary to use XPATH DTD-ID:
     An element node may have a unique identifier (ID).
     This is the value of the attribute that is declared in the Schema/DTD as type ID
-(2) Support for XQL see www.fatdog.com
 
-(3) Support for Wireless Application Protocol (WAP)
+(2) Support for Wireless Application Protocol (WAP)
 
-(4) proprietary Protocol plugins (not CORBA)
+(3) proprietary Protocol plugins (not CORBA)
     ----------------------------------------
     - Protocol plugins (www.webdav.com)
     - state less protocols (email, http, webDav)
