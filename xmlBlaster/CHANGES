@@ -17,6 +17,13 @@ TODO:
 
 DONE:
 
+  - Added a framework to add your own MIME based plugins to filter subscriptions
+    Please read
+       http://www.xmlblaster.org/xmlBlaster/doc/requirements/mime.plugin.subscribe.html
+    to find out what this is about (it contains a nice picture)
+    and
+       http://www.xmlblaster.org/xmlBlaster/doc/requirements/mime.plugin.subscribe.howto.html
+    how to code your own plugin. 
 
   - For PtP messages <forceQueuing> is now an
     attribute of <destination forceQueuing='true'>
