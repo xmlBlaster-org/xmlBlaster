@@ -127,7 +127,7 @@
             <td>get</td>
             <td>get</td>
             <td>getAttributes()</td>
-            <td>no</td>
+            <td>yes (telnet)</td>
          </tr>
          <tr>
             <td>SET</td>
@@ -376,7 +376,7 @@
             <td><pre>get /node/heron/?freeMem</pre></td>
             <td>With telnet you give the command <i>get</i> followed by the query (separated with a blank)
             </td>
-            <td>no</td>
+            <td>yes</td>
          </tr>
 
          <tr>
@@ -461,7 +461,7 @@ UserInfo: joe:mypasswd
             <td>R</td>
             <td>Get the number of seconds the user is logged in
             </td>
-            <td>no</td>
+            <td>yes (telnet)</td>
          </tr>
       
          <tr>
@@ -497,7 +497,7 @@ UserInfo: joe:mypasswd
    <author>Michele.Laghi@swisscom.com</author>
    <author>ruff@swand.lake.de</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.9 $</revision>
+   <revision>$Revision: 1.10 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
