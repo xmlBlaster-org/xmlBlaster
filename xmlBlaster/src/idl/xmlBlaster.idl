@@ -13,7 +13,7 @@ Compile:   JacORB Java 1.2:
               $MICO_HOME/bin/idl --poa --no-boa xmlBlaster.idl
            COPE Perl:
               idl2perl -imp xmlBlaster.idl
-Version:   $Id: xmlBlaster.idl,v 1.29 1999/12/09 13:28:35 ruff Exp $
+Version:   $Id: xmlBlaster.idl,v 1.30 2000/01/07 20:33:18 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _xmlBlaster_IDL_
@@ -52,6 +52,19 @@ module serverIdl
       ContentType content;
    };
    typedef sequence<MessageUnit> MessageUnitArr;
+
+
+   /**
+    * This contains a MessageUnit and its corresponding QoS, used as return value for the get() method.
+    *
+    * @param messageUnit The message
+    * @param qos         xmlBlaster quality of service infos
+    */
+   struct MessageUnitContainer {
+      MessageUnit messageUnit;
+      XmlType qos;
+   };
+   typedef sequence<MessageUnitContainer> MessageUnitContainerArr;
 
 
    /**
@@ -214,9 +227,9 @@ module serverIdl
        *                See xmlKey.dtd for a description
        * @param qos     Quality of Service, flags to control subscription<br>
        *                See qosSubscribe.dtd for a description
-       * @return Contains a sequence of 0 - n MessageUnit structs
+       * @return Contains a sequence of 0 - n MessageUnit structs with its qos infos
        */
-      MessageUnitArr get(in XmlType xmlKey, in XmlType qos)
+      MessageUnitContainerArr get(in XmlType xmlKey, in XmlType qos)
                                           raises(XmlBlasterException);
 
 
