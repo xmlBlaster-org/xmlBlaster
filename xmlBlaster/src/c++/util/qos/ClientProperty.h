@@ -213,7 +213,7 @@ template <typename T_VALUE> void ClientProperty::guessType(const T_VALUE& value)
    char *cP=0;
    unsigned char *cUP=0;
    const unsigned char *cUPC=0;
-   long long ll=0LL;
+   Timestamp ll=0LL; // Assumed to be 'long long int' == int64_t (C99) == _int64 (Windows)
    std::vector<char> vc;
    std::vector<unsigned char> vuc;
 
