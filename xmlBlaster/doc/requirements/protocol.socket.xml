@@ -265,15 +265,6 @@ The '"' is just to show the boundary, '"' is not part of the message.
       Different encodings on client and server side could be a problem, test with 
       java -Dfile.encoding=ISO8859_1 ... or System.setProperty("file.encoding","Cp850");
       </li>
-      <li>
-      The ping expecting a return string (synchronous block) is CPU expensive. To
-      test only the socket connection a oneway ping should be enough?
-      </li>
-      <li>
-      There is one performance bug left. When running a performance test,
-      only 25% of the CPU is occupied, there seems to be at times some thread sleep or
-      similar effect.
-      </li>
    </ol>
    </todo>
    <see type="REQ">protocol</see>
@@ -281,7 +272,7 @@ The '"' is just to show the boundary, '"' is not part of the message.
    <see type="API">org.xmlBlaster.protocol.socket.SocketDriver</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 02 12</date>
-   <revision>$Revision: 1.11 $</revision>
+   <revision>$Revision: 1.12 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
