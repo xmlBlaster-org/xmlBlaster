@@ -114,6 +114,9 @@ public class HelloWorldPublish
          boolean disconnect = glob.getProperty().get("disconnect", true);
          final boolean eraseTailback = glob.getProperty().get("eraseTailback", false);
          int contentSize = glob.getProperty().get("contentSize", -1); // 2000000);
+         boolean eraseForceDestroy = glob.getProperty().get("erase.forceDestroy", false);
+         boolean notifySubscribers = glob.getProperty().get("erase.notifySubscribers", true);
+         
          Map clientPropertyMap = glob.getProperty().get("clientProperty", (Map)null);
 
          if (historyMaxMsg < 1 && !glob.getProperty().propertyExists("destroyDelay"))
@@ -161,6 +164,9 @@ public class HelloWorldPublish
          log.info(ME, "   -subscribable  " + subscribable);
          log.info(ME, "   -forceQueuing   " + forceQueuing);
          log.info(ME, "   -destination    " + destination);
+         log.info(ME, " Erase settings");
+         log.info(ME, "   -erase.forceDestroy      " + eraseForceDestroy);
+         log.info(ME, "   -erase.notifySubscribers " + notifySubscribers);
          log.info(ME, "For more info please read:");
          log.info(ME, "   http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html");
 
@@ -290,6 +296,9 @@ public class HelloWorldPublish
 
             EraseKey ek = new EraseKey(glob, oid);
             EraseQos eq = new EraseQos(glob);
+            eq.notifySubscribers(notifySubscribers);
+            eq.setForceDestroy(eraseForceDestroy);
+            if (log.DUMP) log.dump("", "Going to erase the topic: " + ek.toXml() + eq.toXml());
             EraseReturnQos[] eraseArr = con.erase(ek, eq);
             log.info(ME, "Erase success");
          }
