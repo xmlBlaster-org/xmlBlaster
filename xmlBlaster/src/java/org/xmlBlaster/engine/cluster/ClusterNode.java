@@ -9,7 +9,7 @@ package org.xmlBlaster.engine.cluster;
 
 import org.xmlBlaster.engine.Global;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.ConnectReturnQos;
@@ -37,7 +37,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
 {
    private final String ME;
    private final Global glob;
-   private final Log log;
+   private final LogChannel log;
    
    private XmlBlasterConnection xmlBlasterConnection = null;
    private boolean available;
@@ -68,7 +68,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
     */
    public ClusterNode(Global glob, NodeId nodeId) {
       this.glob = glob;
-      this.log = glob.getLog();
+      this.log = this.glob.getLog("cluster");
       this.nodeInfo = new NodeInfo(glob, nodeId);
       this.state = new NodeStateInfo(glob);
       this.ME = "ClusterNode-" + getId();
@@ -144,7 +144,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
 
          Address addr = getNodeInfo().getAddress();
          if (addr == null) {
-            Log.error(ME, "Can't connect to node '" + getId() + "', address is null");
+            log.error(ME, "Can't connect to node '" + getId() + "', address is null");
             throw new XmlBlasterException(ME, "Can't connect to node '" + getId() + "', address is null");
          }
          qos.setAddress(addr);      // use the configured access properties
@@ -153,19 +153,19 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
          qos.clearSessions(true);   // We only login once, kill other (older) sessions of myself!
 
          try {
-            Log.info(ME, "Trying to connect to node '" + getId() + "' on address '" + addr.getAddress() + "' using protocol=" + addr.getType());
+            log.info(ME, "Trying to connect to node '" + getId() + "' on address '" + addr.getAddress() + "' using protocol=" + addr.getType());
 
             if (glob.getClusterManager().isLocalAddress(addr)) {
-               Log.error(ME, "We want to connect to ourself, route to node'" + getId() + "' ignored: ConnectQos=" + qos.toXml());
+               log.error(ME, "We want to connect to ourself, route to node'" + getId() + "' ignored: ConnectQos=" + qos.toXml());
                return null;
             }
-            if (Log.DUMP) Log.dump(ME, "Connecting to other cluster node, ConnectQos=" + qos.toXml());
+            if (log.DUMP) log.dump(ME, "Connecting to other cluster node, ConnectQos=" + qos.toXml());
 
             ConnectReturnQos retQos = this.xmlBlasterConnection.connect(qos, this);
          }
          catch(XmlBlasterException e) {
-            Log.warn(ME, "Connecting to " + getId() + " is currently not possible: " + e.toString());
-            Log.info(ME, "The connection is in fail save mode and will queue messages until " + getId() + " is available");
+            log.warn(ME, "Connecting to " + getId() + " is currently not possible: " + e.toString());
+            log.info(ME, "The connection is in fail save mode and will queue messages until " + getId() + " is available");
          }
       }
       return xmlBlasterConnection;
@@ -319,15 +319,15 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
       available = true;
       try {
          if (xmlBlasterConnection.queueSize() > 0) {
-            Log.info(ME, "Reconnected to xmlBlaster node '" + getId() + "', sending " + xmlBlasterConnection.queueSize() + " tailback messages ...");
+            log.info(ME, "Reconnected to xmlBlaster node '" + getId() + "', sending " + xmlBlasterConnection.queueSize() + " tailback messages ...");
             xmlBlasterConnection.flushQueue();
          }
          else
-            Log.info(ME, "Reconnected to " + getId() + ", no backup messages to flush");
+            log.info(ME, "Reconnected to " + getId() + ", no backup messages to flush");
       }
       catch (XmlBlasterException e) {
          // !!!! TODO: producing dead letters
-         Log.error(ME, "Sorry, flushing of tailback messages failed, they are lost: " + e.toString());
+         log.error(ME, "Sorry, flushing of tailback messages failed, they are lost: " + e.toString());
       }
    }
 
@@ -350,7 +350,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
       log.warn(ME, "Receiving unexpected update of message oid=" + updateKey.getUniqueKey() + " from xmlBlaster node '" + getId() + "'");
       if (!this.cbSessionId.equals(cbSessionId)) {
-         Log.warn(ME+".AccessDenied", "The callback sessionId '" + cbSessionId + "' is invalid, no access to " + glob.getId());
+         log.warn(ME+".AccessDenied", "The callback sessionId '" + cbSessionId + "' is invalid, no access to " + glob.getId());
          throw new XmlBlasterException("AccessDenied", "Your callback sessionId is invalid, no access to " + glob.getId());
       }
       return "";
@@ -369,12 +369,12 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
          buf.append(Constants.SESSIONID_PRAEFIX).append(ip).append("-").append(glob.getId()).append("-");
          buf.append(System.currentTimeMillis()).append("-").append(ran.nextInt()).append("-").append((counter++));
          String sessionId = buf.toString();
-         if (Log.TRACE) Log.trace(ME, "Created sessionId='" + sessionId + "'");
+         if (log.TRACE) log.trace(ME, "Created sessionId='" + sessionId + "'");
          return sessionId;
       }
       catch (Exception e) {
          String text = "Can't generate a unique sessionId: " + e.toString();
-         Log.error(ME, text);
+         log.error(ME, text);
          throw new XmlBlasterException("NoSessionId", text);
       }
    }

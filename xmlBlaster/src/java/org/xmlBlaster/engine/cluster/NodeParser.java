@@ -10,7 +10,6 @@ package org.xmlBlaster.engine.cluster;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.helper.Destination;
 import org.xmlBlaster.engine.helper.Constants;
-import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.SaxHandlerBase;
 
@@ -95,14 +94,13 @@ public class NodeParser extends SaxHandlerBase
     * @param xml  The XML based ASCII string
     */
    public NodeParser(Global glob, ClusterManager clusterManager, String xml) throws XmlBlasterException {
-      // if (Log.TRACE) Log.trace(ME, "\n"+xml);
       this.glob = glob;
       this.clusterManager = clusterManager;
       init(xml);  // use SAX parser to parse it (is slow)
    }
 
    private final String getId() {
-      if (id == null) glob.getLog().warn(ME, "cluster node id is null");
+      if (id == null) glob.getLog("cluster").warn(ME, "cluster node id is null");
       return id;
    }
 
@@ -121,7 +119,7 @@ public class NodeParser extends SaxHandlerBase
     */
    public final void startElement(String uri, String localName, String name, Attributes attrs)
    {
-      // glob.getLog().info(ME, "startElement: name=" + name + " character='" + character.toString() + "' inClusternode=" + inClusternode);
+      // glob.getLog("cluster").info(ME, "startElement: name=" + name + " character='" + character.toString() + "' inClusternode=" + inClusternode);
 
       if (name.equalsIgnoreCase("clusternode")) {
          inClusternode++;
@@ -129,7 +127,7 @@ public class NodeParser extends SaxHandlerBase
             if (attrs != null) {
                id = attrs.getValue("id");
                if (id == null) {
-                  glob.getLog().error(ME, "<clusternode> attribute 'id' is missing, ignoring message");
+                  glob.getLog("cluster").error(ME, "<clusternode> attribute 'id' is missing, ignoring message");
                   throw new RuntimeException("NodeParser: <clusternode> attribute 'id' is missing, ignoring message");
                }
                id = id.trim();
@@ -144,7 +142,7 @@ public class NodeParser extends SaxHandlerBase
       }
 
       if (inMaster) { // delegate master internal tags
-         if (tmpMaster == null) { glob.getLog().error(ME, "Internal problem in <master> section"); return; }
+         if (tmpMaster == null) { glob.getLog("cluster").error(ME, "Internal problem in <master> section"); return; }
          tmpMaster.startElement(uri, localName, name, character, attrs);
          return;
       }
@@ -172,7 +170,7 @@ public class NodeParser extends SaxHandlerBase
          if (tmpState.startElement(uri, localName, name, character, attrs) == true)
             tmpClusterNode.setNodeStateInfo(tmpState);
          else {
-            glob.getLog().error(ME, "Internal problem in <state> section");
+            glob.getLog("cluster").error(ME, "Internal problem in <state> section");
             tmpState = null;
          }
          character.setLength(0);
@@ -191,14 +189,14 @@ public class NodeParser extends SaxHandlerBase
          if (tmpNodeInfo.startElement(uri, localName, name, character, attrs) == true)
             tmpClusterNode.setNodeInfo(tmpNodeInfo);
          else {
-            glob.getLog().error(ME, "Internal problem in <info> section");
+            glob.getLog("cluster").error(ME, "Internal problem in <info> section");
             tmpNodeInfo = null;
          }
          character.setLength(0);
          return;
       }
 
-      glob.getLog().warn(ME, "startElement: Ignoring unknown name=" + name + " character='" + character.toString() + "' inClusternode=" + inClusternode);
+      glob.getLog("cluster").warn(ME, "startElement: Ignoring unknown name=" + name + " character='" + character.toString() + "' inClusternode=" + inClusternode);
    }
 
 
@@ -209,7 +207,7 @@ public class NodeParser extends SaxHandlerBase
     */
    public void endElement(String uri, String localName, String name)
    {
-      // glob.getLog().info(ME, "endElement: name=" + name + " character='" + character.toString() + "'");
+      // glob.getLog("cluster").info(ME, "endElement: name=" + name + " character='" + character.toString() + "'");
 
       if (name.equalsIgnoreCase("clusternode")) {
          inClusternode--;
@@ -250,16 +248,15 @@ public class NodeParser extends SaxHandlerBase
          return;
       }
 
-      glob.getLog().warn(ME, "endElement: Ignoring unknown name=" + name + " character='" + character.toString() + "' inClusternode=" + inClusternode);
+      glob.getLog("cluster").warn(ME, "endElement: Ignoring unknown name=" + name + " character='" + character.toString() + "' inClusternode=" + inClusternode);
    }
 
 
    /** For testing: java org.xmlBlaster.engine.cluster.NodeParser */
    public static void main(String[] args)
    {
+      Global glob = new Global(args);
       try {
-         Global glob = new Global(args);
-
          String xml =
             "<clusternode id='heron.mycomp.com'> <!-- original xml markup -->\n" +
             "   <info>\n" +
@@ -330,7 +327,7 @@ public class NodeParser extends SaxHandlerBase
       }
       catch(Throwable e) {
          e.printStackTrace();
-         Log.error("TestFailed", e.toString());
+         glob.getLog(null).error("TestFailed", e.toString());
       }
    }
 }

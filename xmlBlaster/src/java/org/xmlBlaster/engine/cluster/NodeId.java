@@ -7,7 +7,6 @@ Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.cluster;
 
-import org.xmlBlaster.util.Log;
 
 /**
  * Holds the unique name of an xmlBlaster server instance (= cluster node)
@@ -29,7 +28,7 @@ public final class NodeId implements Comparable
 
    public final void setId(String id) {
       if (id == null || id.length() < 1) {
-         Log.error(ME, "Cluster node has no name");
+         org.xmlBlaster.util.Global.instance().getLog("cluster").error(ME, "Cluster node has no name");
          id = "NoNameNode";
       }
       this.id = id;

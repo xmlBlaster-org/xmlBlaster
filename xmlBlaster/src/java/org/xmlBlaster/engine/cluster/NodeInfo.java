@@ -180,7 +180,7 @@ public final class NodeInfo
     * @return true if ok, false on error
     */
    public final boolean startElement(String uri, String localName, String name, StringBuffer character, Attributes attrs) {
-      // glob.getLog().info(ME, "startElement: name=" + name + " character='" + character.toString() + "'");
+      // glob.getLog("cluster").info(ME, "startElement: name=" + name + " character='" + character.toString() + "'");
 
       if (name.equalsIgnoreCase("info")) {
          return true;
@@ -213,7 +213,7 @@ public final class NodeInfo
          if (attrs != null) {
             String tmp = attrs.getValue("id");
             if (tmp == null) {
-               glob.getLog().error(ME, "<backupnode><clusternode> attribute 'id' is missing, ignoring message");
+               glob.getLog("cluster").error(ME, "<backupnode><clusternode> attribute 'id' is missing, ignoring message");
                throw new RuntimeException("NodeParser: <backupnode><clusternode> attribute 'id' is missing, ignoring message");
             }
             addBackupnode(new NodeId(tmp.trim()));

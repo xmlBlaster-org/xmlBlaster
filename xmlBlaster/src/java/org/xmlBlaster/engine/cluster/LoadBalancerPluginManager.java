@@ -3,12 +3,12 @@ Name:      LoadBalancerPluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for load balancing
-Version:   $Id: LoadBalancerPluginManager.java,v 1.8 2002/05/11 09:36:25 ruff Exp $
+Version:   $Id: LoadBalancerPluginManager.java,v 1.9 2002/05/13 09:38:21 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.cluster;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.PluginManagerBase;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
@@ -32,13 +32,13 @@ public class LoadBalancerPluginManager extends PluginManagerBase {
    public static final String pluginPropertyName = "LoadBalancerPlugin";
 
    private final Global glob;
-   private final Log log;
+   private final LogChannel log;
    private final ClusterManager clusterManager;
 
    public LoadBalancerPluginManager(Global glob, ClusterManager clusterManager) {
       super(glob);
       this.glob = glob;
-      this.log = this.glob.getLog();
+      this.log = this.glob.getLog("cluster");
       this.clusterManager = clusterManager;
    }
 
@@ -50,7 +50,7 @@ public class LoadBalancerPluginManager extends PluginManagerBase {
     * @return The load balancer for this type and version or null if none is specified
     */
    public I_LoadBalancer getPlugin(String type, String version) throws XmlBlasterException {
-      if (Log.CALL) Log.call(ME+".getPlugin()", "Loading " + getPluginPropertyName(type, version));
+      if (log.CALL) log.call(ME+".getPlugin()", "Loading " + getPluginPropertyName(type, version));
       I_LoadBalancer filterPlugin = null;
       String[] pluginNameAndParam = null;
 

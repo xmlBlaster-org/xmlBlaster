@@ -90,12 +90,12 @@ public class NodeStateInfo {
             int id = 0;
             String tmp = attrs.getValue("id");
             if (tmp != null) {
-               try { id = Integer.parseInt(tmp.trim()); } catch(NumberFormatException e) { glob.getLog().error(ME, "Invalid <cpu id='" + tmp + "'"); };
+               try { id = Integer.parseInt(tmp.trim()); } catch(NumberFormatException e) { glob.getLog("cluster").error(ME, "Invalid <cpu id='" + tmp + "'"); };
             }
             int idle = 50;
             tmp = attrs.getValue("idle");
             if (tmp != null) {
-               try { idle = Integer.parseInt(tmp.trim()); } catch(NumberFormatException e) { glob.getLog().error(ME, "Invalid <cpu idle='" + tmp + "'"); };
+               try { idle = Integer.parseInt(tmp.trim()); } catch(NumberFormatException e) { glob.getLog("cluster").error(ME, "Invalid <cpu idle='" + tmp + "'"); };
             }
             setCpu(id, idle);
          }
@@ -107,7 +107,7 @@ public class NodeStateInfo {
          if (attrs != null) {
             String tmp = attrs.getValue("free");
             if (tmp != null) {
-               try { setFreeRam(Integer.parseInt(tmp.trim())); } catch(NumberFormatException e) { glob.getLog().error(ME, "Invalid <ram free='" + tmp + "'"); };
+               try { setFreeRam(Integer.parseInt(tmp.trim())); } catch(NumberFormatException e) { glob.getLog("cluster").error(ME, "Invalid <ram free='" + tmp + "'"); };
             }
          }
          character.setLength(0);

@@ -7,7 +7,7 @@ Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.cluster.simpledomain;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.I_Plugin;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
@@ -30,7 +30,7 @@ final public class RoundRobin implements I_LoadBalancer, I_Plugin {
 
    private final String ME = "RoundRobin";
    private Global glob = null;
-   private Log log = null;
+   private LogChannel log = null;
    private ClusterManager clusterManager = null;
    private int counter = 0;
 
@@ -40,7 +40,7 @@ final public class RoundRobin implements I_LoadBalancer, I_Plugin {
     */
    public void initialize(Global glob, ClusterManager clusterManager) {
       this.glob = glob;
-      this.log = glob.getLog();
+      this.log = this.glob.getLog("cluster");
       this.clusterManager = clusterManager;
       log.info(ME, "Round robin load balancer is initialized");
    }

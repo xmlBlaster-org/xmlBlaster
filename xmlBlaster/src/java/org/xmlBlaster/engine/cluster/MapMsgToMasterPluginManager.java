@@ -3,12 +3,12 @@ Name:      MapMsgToMasterPluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for persistence
-Version:   $Id: MapMsgToMasterPluginManager.java,v 1.8 2002/05/11 09:36:25 ruff Exp $
+Version:   $Id: MapMsgToMasterPluginManager.java,v 1.9 2002/05/13 09:38:21 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.cluster;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.PluginManagerBase;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.Global;
@@ -38,7 +38,7 @@ public class MapMsgToMasterPluginManager extends PluginManagerBase {
    public static final String pluginPropertyName = "MapMsgToMasterPlugin";
 
    private final Global glob;
-   private final Log log;
+   private final LogChannel log;
    private final ClusterManager clusterManager;
 
    private final Map mapMsgToMasterIdMap = Collections.synchronizedMap(new HashMap());
@@ -46,7 +46,7 @@ public class MapMsgToMasterPluginManager extends PluginManagerBase {
    public MapMsgToMasterPluginManager(Global glob, ClusterManager clusterManager) {
       super(glob);
       this.glob = glob;
-      this.log = this.glob.getLog();
+      this.log = this.glob.getLog("cluster");
       this.clusterManager = clusterManager;
    }
 
