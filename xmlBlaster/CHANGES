@@ -2,6 +2,20 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.8x [xxx, xx 200x]
 ===============================
+ o Perl: Renamed MessageUnit to MsgUnit (to be similar to Java)
+
+ o <readonly/> is now an attribute of the qos-topic tag.
+
+ o PtP messages are now subscribeable as well.
+   So take care which keyOid you choose for PtP messages.
+   In past releases PtP messages were completely invisible for subscribes.
+   Should a future release provide some QoS flags to support
+   hiding PtP messages?
+
+ o Renamed
+      org.xmlBlaster.engine.MessageUnit
+   to
+      org.xmlBlaster.util.MsgUnit
 
  o Introduced SessionName.java for unified naming of clients, see
    http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.failsave.html
@@ -52,7 +66,7 @@ Changes for 0.8x [xxx, xx 200x]
    - Now also problems before the message is put into the callback queue
      and exceptions from the access filter plugin are handled like this
 
- o Bugfix: ConcurrentModificationException in MessageUnitHandler 
+ o Bugfix: ConcurrentModificationException in MsgUnitHandler 
    is resolved by not working on the Iterator directly any more
 
  o Added redesigned framework seperating the QoS data from
@@ -86,9 +100,9 @@ Changes for 0.8x [xxx, xx 200x]
    Incompatible subscribe XML QoS change for forced subscriptionId:
     *  <qos><subscribe id='_subId:1'/></qos>
 
- o Made key/content/qos in MessageUnit.java private,
+ o Made key/content/qos in MsgUnit.java private,
    use the corresponding get() methods to access the data.
-   The MessageUnit object is now immutable
+   The MsgUnit object is now immutable
 
  o Added MsgErrorHandler.java as a central point of error handling
    for lost messages
@@ -158,7 +172,7 @@ Changes for 0.80 [Sep, 25 2002]
 
   - SOCKET protocol
     * The protocol specification changed to allow SOCKET messages without a
-      MessageUnit
+      MsgUnit
     * Bugfix: Distinguish between empty get() return and empty QoS as
       update return
     * Bugfix: Fail save mode of SOCKET did not callback client
@@ -222,7 +236,7 @@ Changes for 0.80 [Sep, 25 2002]
     in some cases.
 
   - Some minor, incompatible changes to the C++ xmlBlaster client lib
-    * There is now a CORBA independend util::MessageUnit
+    * There is now a CORBA independend util::MsgUnit
     * CorbaConnection.cpp has now CORBA independend method variants
       which are based on STL
     * Fixed memory leaks (in the client C++ libs) 
@@ -429,7 +443,7 @@ Changes for 0.79f [Jun, 17 2002]
     mico 2.3.7 and xerces 1.7.0
     Removed 'loginName' parameter in update() method
 
-  - A get() which doesn't find a message returns now a MessageUnit[]
+  - A get() which doesn't find a message returns now a MsgUnit[]
     of length 0.
     In older releases there was thrown an XmlBlasterException.
 
@@ -497,7 +511,7 @@ Changes for 0.79e [Mar, 27 2002]
     
     The xmlBlaster server:
      Added:
-       oneway void publishOneway(in MessageUnitArr msgUnitArr);
+       oneway void publishOneway(in MsgUnitArr msgUnitArr);
        string ping(in string qos);
      Removed:
        boolean ping()
@@ -508,7 +522,7 @@ Changes for 0.79e [Mar, 27 2002]
   
     The callback server:
      Added:
-       oneway void updateOneway(in string sessionId, in serverIdl::MessageUnitArr msgUnitArr);
+       oneway void updateOneway(in string sessionId, in serverIdl::MsgUnitArr msgUnitArr);
        string ping(in string qos);
      Changed:
        The update() is changed to receive a cbSessionId and to return a String[]
@@ -961,16 +975,16 @@ Changes for 0.78 [Jul, 14 2000]
   - Changed package names:
     org.xmlBlaster.engine.persistence.I_PersistenceDriver -> org.xmlBlaster.engine.I_PersistenceDriver
     org.xmlBlaster.engine.persistence.FileDriver          -> org.xmlBlaster.engine.FileDriver
-    org.xmlBlaster.util.MessageUnit                       -> org.xmlBlaster.engine.helper.MessageUnit
+    org.xmlBlaster.util.MsgUnit                       -> org.xmlBlaster.util.MsgUnit
     org.xmlBlaster.util.Destination                       -> org.xmlBlaster.engine.helper.Destination
     org.xmlBlaster.util.CallbackAddress                   -> org.xmlBlaster.engine.helper.CallbackAddress
     NOTE: You need to replace your xmlBlaster.properties
     with the new xmlBlaster.properties.template!
 
   - Changed classes:
-    MessageUnit now contains the qos
-    MessageUnitContainer is removed.
-    Note that there is a CORBA MessageUnit and a engine.helper.MessageUnit
+    MsgUnit now contains the qos
+    MsgUnitContainer is removed.
+    Note that there is a CORBA MsgUnit and a engine.helper.MsgUnit
     class (same name, same members).
 
   - xmlBlaster.properties allows variables ${...} replacement.
