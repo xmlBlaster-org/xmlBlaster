@@ -419,17 +419,6 @@ public final class TopicHandler implements I_Timeout
    }
 
    /**
-    * Triggered by persistent store, administrative message to configure this topic
-    *
-   public PublishReturnQos publish(SessionInfo publisherSessionInfo, MsgUnit msgUnit, PublishQosServer publishQosServer) throws XmlBlasterException
-      this.topicEntry = topicEntry;
-      MsgUnit msgUnit = topicEntry.getMsgUnit();
-      log.info(ME, "Restoring topic '" + msgUnit.getKeyOid() + "' from persistency.");
-      publish(publisherSessionInfo, msgUnit, publishQosServer);
-   }
-   */
-   
-   /**
     * A new publish event (PubSub or PtP) arrives. 
     * <br />
     * Publish filter plugin checks are done already<br />
@@ -1156,6 +1145,7 @@ public final class TopicHandler implements I_Timeout
       if (this.historyQueue == null)
          return new MsgUnitWrapper[0];
       ArrayList historyList = this.historyQueue.peek(num, -1);
+      if (log.TRACE) log.trace(ME, "getMsgUnitWrapperArr("+num+","+reverseOrdered+"), found " + historyList.size() + " historyList entries");
       ArrayList aliveMsgUnitWrapperList = new ArrayList();
       ArrayList historyDestroyList = null;
       int n = historyList.size();
@@ -1179,6 +1169,8 @@ public final class TopicHandler implements I_Timeout
                   ((this.historyQueue != null) ? this.historyQueue.toXml("") : "")
                   );
                Thread.currentThread().dumpStack();
+               if (historyDestroyList == null) historyDestroyList = new ArrayList();
+               historyDestroyList.add(entry);
             }
          }
       }
