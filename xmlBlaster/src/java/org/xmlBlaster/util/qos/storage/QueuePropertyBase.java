@@ -45,7 +45,7 @@ public abstract class QueuePropertyBase implements Cloneable
    protected long maxEntriesCacheDefault = DEFAULT_maxEntriesCacheDefault;
 
    /** The max setting allowed for queue max size in bytes is adjustable with property "queue.maxBytes=4194304" (10 MBytes is default) */
-   public static final long DEFAULT_bytesDefault = 10485760L; // 10 MB
+   public static final long DEFAULT_bytesDefault = 10485760L; // 10 MB (MsgUnitStore and client side queue increases it to Integer.MAX_VAULE)
    protected long maxBytesDefault = DEFAULT_bytesDefault;
 
    /** The max setting allowed for queue max size of cache in bytes is adjustable with property "queue.maxBytesCache=4000000" (4 MBytes is default) */
