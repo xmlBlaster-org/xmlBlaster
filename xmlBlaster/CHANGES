@@ -8,6 +8,7 @@ Changes for 0.xxx [xxxx-xx-xx] (cvs only)
    garbage collected frequently enough by the JVM
 
  o Updated Perl support, see
+   http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.perl.html
 
  o Bugfix for topics with a destroy delay of 0 msec.
    Reported by Dominique Petitpierre
