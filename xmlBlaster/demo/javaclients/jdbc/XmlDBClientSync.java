@@ -16,6 +16,9 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  * Example code how to access the xmlBlaster JDBC service
  * synchronous with the get() method.
  *
+ * get() requests on key oid="__sys__jdbc" are handled by xmlBlaster (see RequestBroker.java)
+ * directly and the result set is delivered as the return value of the get() request.
+ *
  * See README for usage
  *
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.service.rdbms.html">Requirement engine.service.rdbms</a>
