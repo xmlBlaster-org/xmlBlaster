@@ -25,6 +25,7 @@ PACKGS = org.xmlBlaster \
 			org.xmlBlaster.engine.cluster.simpledomain \
 			org.xmlBlaster.engine.queue \
 			org.xmlBlaster.engine.mime \
+			org.xmlBlaster.engine.mime.regex \
 			org.xmlBlaster.engine.mime.demo \
 			org.xmlBlaster.engine.persistence \
 			org.xmlBlaster.engine.persistence.xmldb \
