@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='security.framework.howto' type='NEW' prio='HIGH' status='CLOSED'>
-   <topic>HOWTO: xmlBlaster Security Framework</topic>
+<requirement id='security.introduction' type='NEW' prio='HIGH' status='CLOSED'>
+   <topic>HOWTO: xmlBlaster Security Introduction</topic>
    <description>
       <h1>Introduction</h1>
       
