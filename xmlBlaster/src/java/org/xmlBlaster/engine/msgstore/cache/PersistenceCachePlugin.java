@@ -750,6 +750,7 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
     * @see I_Map#change(I_MapEntry, I_ChangeCallback)
     */
    public I_MapEntry change(I_MapEntry entry, I_ChangeCallback callback) throws XmlBlasterException {
+      if (entry == null) return null;
       synchronized(this) { // is this the correct synchronization ??
          long oldSizeInBytes = entry.getSizeInBytes(); // must be here since newEntry could reference same obj.
          I_MapEntry newEntry = entry;
@@ -759,12 +760,22 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
          } 
 
          I_MapEntry retEntry = this.transientStore.change(newEntry, null);
-         // TODO: In case we changed from persistent to transient it should be removed from the 
-         // persistence. In case it changed from transient to persistent it should be stored on the
-         // persistence too.
-         boolean forcePersistentWrite = false; // we currently do not write (this is done when swapping)
-         if (forcePersistentWrite && newEntry.isPersistent() && this.persistentStore != null && this.isConnected) {
-            retEntry = this.persistentStore.change(newEntry, null);
+         
+         if (entry.isPersistent() != retEntry.isPersistent()) {
+            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "Changing of persistence flag of '" + entry.getLogId() + "' to persistent=" + retEntry.isPersistent() + " is not implemented");
+            // TODO: In case we changed the entry flag from persistent to transient it should be removed from the 
+            // persistence. In case it changed from transient to persistent it should be stored on the
+            // persistence too.
+         }
+         
+         if (newEntry.isPersistent()) {
+            if (this.persistentStore != null && this.isConnected) {
+               retEntry = this.persistentStore.change(newEntry, null);
+            }
+            else {
+               if (log.TRACE) log.trace(ME, "Can't update entry '" + entry.getLogId() + "' on persistence");
+               //throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME, "Can't update entry '" + entry.getLogId() + "' on persistence");
+            }
          }
          return retEntry;
       }
