@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.47 2000/06/26 17:18:22 ruff Exp $
+Version:   $Id: Main.java,v 1.48 2000/07/02 17:19:35 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -91,8 +91,9 @@ public class Main
    private void init(String args[])
    {
       this.args = args;
+      boolean showUsage = false;
       try {
-         XmlBlasterProperty.init(args);
+         showUsage = XmlBlasterProperty.init(args);
       } catch(org.jutils.JUtilsException e) {
          usage();
          Log.panic(ME, e.toString());
@@ -104,7 +105,7 @@ public class Main
 
          loadDrivers();
 
-         if (Args.getArg(args, "-?") == true || Args.getArg(args, "-h") == true || Args.getArg(args, "-help") == true || Args.getArg(args, "--help") == true) {
+         if (showUsage) {
             usage();  // Now we can display the complete usage of all loaded drivers
             Log.exit(ME, "Good bye.");
          }
