@@ -3,7 +3,7 @@ Name:      TestSubMulti.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubMulti.java,v 1.3 2002/03/13 16:41:38 ruff Exp $
+Version:   $Id: TestSubMulti.java,v 1.4 2002/03/13 19:26:09 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -98,7 +98,7 @@ public class TestSubMulti extends TestCase implements I_Callback
     */
    protected void tearDown()
    {
-      String[] strArr = null;
+      String[] strArr = new String[0];
       try {
          strArr = con.erase("<key oid='"+publishOid+"'/>", "<qos></qos>");
       } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
@@ -165,12 +165,10 @@ public class TestSubMulti extends TestCase implements I_Callback
    public void testPublishAfterSubscribeXPath()
    {
       testSubscribeXPath();
-      Util.delay(1000L);                                            // Wait some time for callback to arrive ...
-      assertEquals("numReceived after subscribe", 0, numReceived);  // there should be no Callback
+      waitOnUpdate(1000L, 0); // Wait some time for callback to arrive ... there should be no Callback
 
       testPublish();
-      waitOnUpdate(5000L);
-      assertEquals("numReceived after publishing", 2, numReceived); // messages arrived?
+      waitOnUpdate(4000L, 2);
    }
 
 
@@ -194,6 +192,7 @@ public class TestSubMulti extends TestCase implements I_Callback
 
       assertEquals("Wrong receveiver", receiverName, loginName);
       assertEquals("Wrong sender", senderName, updateQoS.getSender());
+      try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {} // Sleep to assure that publish() is returned with publishOid
       assertEquals("Wrong oid of message returned", publishOid, updateKey.getUniqueKey());
       assertEquals("Message content is corrupted", new String(senderContent), new String(content));
       assertEquals("Message contentMime is corrupted", contentMime, updateKey.getContentMime());
@@ -205,31 +204,31 @@ public class TestSubMulti extends TestCase implements I_Callback
              (sentTimestamp.getMillis()+1000) > updateQoS.getRcvTimestamp().getMillis());
    }
 
-
    /**
-    * Little helper, waits until the variable 'numReceived==2' is set
-    * to true, or returns when the given timeout occurs.
+    * Little helper, waits until the wanted number of messages are arrived
+    * or returns when the given timeout occurs.
+    * <p />
     * @param timeout in milliseconds
+    * @param numWait how many messages to wait
     */
-   private void waitOnUpdate(final long timeout)
+   private void waitOnUpdate(final long timeout, final int numWait)
    {
       long pollingInterval = 50L;  // check every 0.05 seconds
       if (timeout < 50)  pollingInterval = timeout / 10L;
       long sum = 0L;
-      while (numReceived < 2) {
-         try {
-            Thread.currentThread().sleep(pollingInterval);
-         }
-         catch( InterruptedException i)
-         {}
+      // check if too few are arriving
+      while (numReceived < numWait) {
+         try { Thread.currentThread().sleep(pollingInterval); } catch( InterruptedException i) {}
          sum += pollingInterval;
-         if (sum > timeout) {
-            Log.warn(ME, "Timeout of " + timeout + " occurred");
-            break;
-         }
+         assert("Timeout of " + timeout + " occurred without update", sum <= timeout);
       }
-   }
 
+      // check if too many are arriving
+      try { Thread.currentThread().sleep(timeout); } catch( InterruptedException i) {}
+      assertEquals("Wrong number of messages arrived", numWait, numReceived);
+
+      numReceived = 0;
+   }
 
    /**
     * Method is used by TestRunner to load these tests
