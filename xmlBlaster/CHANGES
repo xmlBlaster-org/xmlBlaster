@@ -2,6 +2,16 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.8x [xxx, xx 200x]
 ===============================
+ o Added configuration option to delay deletion of a topic.
+   As a default a topic is deleted 60 sec delayed after reaching
+   state UNREFERENCED. This is for better performance (e.g. not reparsing
+   the DOM tree) for volatile messages (e.g. for dead messages).
+   See <topic destroyDelay='60000'/>
+      http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.message.lifecycle.html
+
+ o Added configuration option to suppress DOM entry of a topic.
+   This topic is then invisible to XPATH and better performing (e.g. for PtP messages)
+   See <topic createDomEntry='false'/>
 
  o __sys__UserList event messages have changed the format.
    The clients are now separated by ',' and not '\n' anymore
