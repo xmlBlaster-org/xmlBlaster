@@ -12,8 +12,11 @@ Comment:   Syntax for Query:
               http://www.246.ne.jp/~kamiya/pub/omquery.zip
 
 Compile:   jikes *.java  (put local directory into CLASSPATH)
-Invoke:    java DomQueryTest AgentBig.xml xmlBlaster/key/AGENT[@id=\"192.168.124.10\"] xmlBlaster/key/AGENT/DRIVER[@id=\"FileProof\"] xmlBlaster/key[@oid=\"2\"]
-Version:   $Id: DomQueryTest.java,v 1.9 2002/09/13 23:17:45 ruff Exp $
+Invoke:    With key oid:
+             java DomQueryTest AgentBig.xml xmlBlaster/key/AGENT[@id=\"192.168.124.10\"] xmlBlaster/key/AGENT/DRIVER[@id=\"FileProof\"] xmlBlaster/key[@oid=\"2\"]
+           Normal XPath checks:
+             java -DtestAgentNavigation=false DomQueryTest Qos.xml /qos/expiration
+Version:   $Id: DomQueryTest.java,v 1.10 2003/11/04 20:05:29 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 import com.jclark.xsl.om.*;
@@ -42,11 +45,14 @@ import com.fujitsu.xml.omquery.DomQueryMgr;
 class DomQueryTest
 {
    final String ME = "DomQueryTester";
-   final boolean testAgentNavigation = true;  // only to be true with Agent.xml or AgentBig.xml
+   boolean testAgentNavigation = true;  // only to be true with Agent.xml or AgentBig.xml
 
    public DomQueryTest(String argv[])
    {
-
+      Object tmp = System.getProperty("testAgentNavigation");
+      if (tmp != null) {
+         testAgentNavigation = (Boolean.valueOf((String)tmp)).booleanValue();
+      }
       if (argv.length < 2) {
          System.out.println("Usage:\n\n   java DomQueryTest <XML-file> <Query-String>\n\nExample:\n   java DomQueryTest Agent.xml xmlBlaster/key/AGENT[@id=\\\"192.168.124.10\\\"]\n");
          System.exit(1);
