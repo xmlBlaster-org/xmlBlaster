@@ -101,12 +101,6 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    #a2Blaster - authentication and authorisation service
    CLASSPATH=${XMLBLASTER_HOME}/lib/a2Blaster.jar:${CLASSPATH}
 
-   #jdbc
-   CLASSPATH=${XMLBLASTER_HOME}/lib/mysql-connector-java-3.0.8-stable-bin.jar:${CLASSPATH}
-   CLASSPATH=${XMLBLASTER_HOME}/lib/jdbc7.2dev-1.2.jar:${CLASSPATH}
-   CLASSPATH=${XMLBLASTER_HOME}/lib/classes12.zip:${CLASSPATH}
-   CLASSPATH=${XMLBLASTER_HOME}/lib/nls_charset12.zip:${CLASSPATH}
-
    #CLASSPATH=/home/a2blaster/a2Blaster/lib/a2Blaster.jar:${CLASSPATH}
    CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/ant/xerces.jar
    # jutils.jar is now included in xmlBlaster.jar
@@ -159,12 +153,25 @@ if [ -d ${XMLBLASTER_HOME} ]; then
       fi
    fi
 
+   #jdbc
+   CLASSPATH=${XMLBLASTER_HOME}/lib/mysql-connector-java-3.0.8-stable-bin.jar:${CLASSPATH}
+   CLASSPATH=${XMLBLASTER_HOME}/lib/jdbc7.2dev-1.2.jar:${CLASSPATH}
+   CLASSPATH=${XMLBLASTER_HOME}/lib/classes12.zip:${CLASSPATH}
+   CLASSPATH=${XMLBLASTER_HOME}/lib/nls_charset12.zip:${CLASSPATH}
+
+   if [ -f ${XMLBLASTER_HOME}/lib/postgresql.jar ]; then
+      CLASSPATH=${XMLBLASTER_HOME}/lib/postgresql.jar:${CLASSPATH}
+   fi
+
    #CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/soap/jdom.jar
    #CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/soap/saw.jar
    #CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/soap/soap.jar
 
    # jmx reference implementation
    CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/jmxri.jar:${XMLBLASTER_HOME}/lib/jmxtools.jar
+
+   # apache's embedded jndi naming service
+   CLASSPATH=$CLASSPATH:${XMLBLASTER_HOME}/lib/naming-common.jar
 
    if [ -d ${XMLBLASTER_HOME}/src/java ]; then
       CLASSPATH=${XMLBLASTER_HOME}/src/java:${CLASSPATH}
@@ -262,6 +269,7 @@ fi
 # Conflicts with JacORBs idl.jar because both use java_cup
 # (tinySQL has modified parser.java)
 #CLASSPATH=${XMLBLASTER_HOME}/lib/tinySQL.jar:${CLASSPATH}
+
 
 #-------- Checking jikes version -
 # use jikes 1.06 or better
