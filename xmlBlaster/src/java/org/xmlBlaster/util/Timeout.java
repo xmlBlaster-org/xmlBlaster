@@ -51,6 +51,17 @@ import java.util.*;
  *   ...
  * }
  * </pre>
+ * Or a short form:
+ * <pre>
+ *  Timeout timeout = new Timeout("TestTimer");
+ *  Timestamp timeoutHandle = timeout.addTimeoutListener(new I_Timeout() {
+ *        public void timeout(Object userData) {
+ *           System.out.println("Timeout happened");
+ *           System.exit(0);
+ *        }
+ *     },
+ *     2000L, null);
+ * </pre>
  *
  * JDK 1.2 or higher only.
  *
@@ -350,10 +361,24 @@ public class Timeout extends Thread
 
    /**
     * Method for testing only.<p />
-    * 
+    *
     * Invoke: java -Djava.compiler= org.xmlBlaster.util.Timeout
     */
    public static void main(String args[]) throws Exception {
+
+      Timeout timeout = new Timeout("TestTimer");
+      Timestamp timeoutHandle = timeout.addTimeoutListener(new I_Timeout() {
+            public void timeout(Object userData) {
+               System.out.println("Timeout happened");
+               System.exit(0);
+            }
+         },
+         2000L, null);
+
+      try { Thread.currentThread().sleep(4000); } catch (InterruptedException e) {}
+      System.err.println("ERROR: Timeout not occurred.");
+      System.exit(1);
+
      /*
       String ME = "Timeout-Tester";
       Timeout timeout = new Timeout();
