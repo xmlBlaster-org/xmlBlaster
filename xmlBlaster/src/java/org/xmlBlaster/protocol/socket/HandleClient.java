@@ -10,6 +10,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
+import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
 import org.xmlBlaster.protocol.I_Authenticate;
@@ -55,7 +56,7 @@ public class HandleClient extends Executor implements Runnable
       this.authenticate = driver.getAuthenticate();
       this.ME = driver.getType()+"-HandleClient";
 
-      Thread t = new Thread(this, "XmlBlaster."+this.driver.getType());
+      Thread t = new Thread(this, "XmlBlaster."+this.driver.getType() + (this.driver.isSSL()?".SSL":""));
       int threadPrio = driver.getAddressServer().getEnv("threadPrio", Thread.NORM_PRIORITY).getValue();
       try {
          t.setPriority(threadPrio);
@@ -204,7 +205,7 @@ public class HandleClient extends Executor implements Runnable
             if (MethodName.CONNECT == receiver.getMethodName()) {
                ConnectQosServer conQos = new ConnectQosServer(driver.getGlobal(), receiver.getQos());
                setLoginName(conQos.getUserId());
-               Thread.currentThread().setName("XmlBlaster." + this.driver.getType() + ".tcpListener-" + conQos.getUserId());
+               Thread.currentThread().setName("XmlBlaster." + this.driver.getType() + (this.driver.isSSL()?".SSL":"") + ".tcpListener-" + conQos.getUserId());
                this.ME = this.driver.getType() + "-HandleClient-" + this.loginName;
                log.info(ME, "Client connected, coming from host=" + sock.getInetAddress().toString() + " port=" + sock.getPort());
 
@@ -238,15 +239,15 @@ public class HandleClient extends Executor implements Runnable
                ConnectReturnQosServer retQos = authenticate.connect(conQos);
                this.sessionId = retQos.getSecretSessionId();
                receiver.setSecretSessionId(retQos.getSecretSessionId()); // executeResponse needs it
-               executeResponse(receiver, retQos.toXml(), false);
+               executeResponse(receiver, retQos.toXml(), SOCKET_TCP);
                driver.addClient(sessionId, this);
              }
             else if (MethodName.DISCONNECT == receiver.getMethodName()) {
                this.sessionId = null;
-               // Note: the diconnect will call over the CbInfo our shutdown as well
+               executeResponse(receiver, Constants.RET_OK, SOCKET_TCP);   // ACK the disconnect to the client and then proceed to the server core
+               // Note: the disconnect will call over the CbInfo our shutdown as well
                // setting sessionId = null prevents that our shutdown calls disconnect() again.
                authenticate.disconnect(receiver.getSecretSessionId(), receiver.getQos());
-               //executeResponse(receiver, qos);   // The socket is closed already
                shutdown();
             }
          }
@@ -256,6 +257,8 @@ public class HandleClient extends Executor implements Runnable
          try {
             if (receiver.getMethodName() != MethodName.PUBLISH_ONEWAY)
                executeException(receiver, e, false);
+            else
+               log.warn(ME, "Can't handle publishOneway message, ignoring exception: " + e.toString());
          }
          catch (Throwable e2) {
             log.error(ME, "Lost connection, can't deliver exception message: " + e.toString() + " Reason is: " + e2.toString());
