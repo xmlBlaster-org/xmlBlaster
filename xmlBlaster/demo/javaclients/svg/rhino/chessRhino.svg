@@ -23,6 +23,11 @@ var currentElement;
 var xmlBlaster;
 
 
+function getUser() {
+  return System.getProperty("user.name") + System.currentTimeMillis();
+}
+   
+
 // hack to force to update the screen in batik (2002-03-26)
 function fireClickEvent() {
   var evt = doc.createEvent("MouseEvents");
@@ -83,7 +88,7 @@ function doInit(evt) {
    args[1] = new String("localhost");
    xmlBlaster = new XmlBlasterConnection(args);
 
-   xmlBlaster.login("michele", "secret", new ConnectQos(), new JavascriptCallback(this));
+   xmlBlaster.login(getUser(), "secret", new ConnectQos(), new JavascriptCallback(this));
    xmlBlaster.subscribe(key, "<qos></qos>");
 }  
         
