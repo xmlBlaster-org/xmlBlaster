@@ -80,6 +80,16 @@ public final class SubscribeQosServer
    }
 
    /**
+    * Are multiple subscribes allowed?
+    * Defaults to true. 
+    * @return true Multiple subscribes deliver multiple updates
+    *         false Ignore more than one subscribes on same oid
+    */
+   public boolean getMultiSubscribe() {
+      return this.queryQosData.getMultiSubscribe();
+   }
+
+   /**
     * false Inhibit the delivery of messages to myself if i have published it.
     */
    public boolean getWantLocal() {

@@ -121,6 +121,20 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
       return subs;
    }
 
+   /**
+    * Access all subscriptions of a client
+    * @return never null
+    */
+   public SubscriptionInfo[] getSubscriptions(SessionInfo sessionInfo) {
+      synchronized(clientSubscriptionMap) {
+         Object obj = clientSubscriptionMap.get(sessionInfo.getSessionName().getRelativeName());
+         if (obj == null)
+            return new SubscriptionInfo[0];
+         java.util.Collection c = ((Map)obj).values();
+         return (SubscriptionInfo[])c.toArray(new SubscriptionInfo[c.size()]);
+      }
+   }
+
 
    /*
     * If you have the key oid of a message and a session it belongs to, you may access the
@@ -185,7 +199,7 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
     * @param keyOid The unique message oid
     * @param exact true Access only EXACT subscription objects through this method.<br />
     *              false All subscriptions
-    * @return Vector containing corresponding subscriptionInfo objects
+    * @return Vector containing corresponding subscriptionInfo objects or null
     */
    public Vector getSubscriptionByOid(String keyOid, boolean exactOnly) throws XmlBlasterException {
       Vector vec = null;
