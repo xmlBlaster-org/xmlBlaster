@@ -16,7 +16,6 @@ import org.xmlBlaster.engine.qos.GetQosServer;
 import org.xmlBlaster.engine.qos.EraseQosServer;
 import org.xmlBlaster.engine.qos.SubscribeQosServer;
 import org.xmlBlaster.engine.qos.UnSubscribeQosServer;
-import org.xmlBlaster.engine.qos.PublishQosServer;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
