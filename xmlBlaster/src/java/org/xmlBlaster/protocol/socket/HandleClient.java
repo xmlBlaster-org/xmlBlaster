@@ -37,7 +37,7 @@ import java.io.OutputStream;
  */
 public class HandleClient extends Executor implements Runnable
 {
-   private String ME = "HandleClientRequest";
+   private String ME = "SOCKET-HandleClientRequest";
    private final LogChannel log;
    private SocketDriver driver;
    /** The singleton handle for this authentication server */
@@ -208,8 +208,8 @@ public class HandleClient extends Executor implements Runnable
                      ConnectQosServer conQos = new ConnectQosServer(driver.getGlobal(), receiver.getQos());
                      setLoginName(conQos.getUserId());
                      Thread.currentThread().setName("XmlBlaster.SOCKET.HandleClient.BlockOnInputStreamForMessageFromClient-" + conQos.getUserId());
-                     this.ME = "HandleClientRequest-" + this.loginName;
-                     log.info(ME, "Client accepted, coming from host=" + sock.getInetAddress().toString() + " port=" + sock.getPort());
+                     this.ME = "SOCKET-HandleClientRequest-" + this.loginName;
+                     log.info(ME, "SOCKET client connected, coming from host=" + sock.getInetAddress().toString() + " port=" + sock.getPort());
 
                      CallbackAddress[] cbArr = conQos.getSessionCbQueueProperty().getCallbackAddresses();
                      for (int ii=0; cbArr!=null && ii<cbArr.length; ii++) {
@@ -265,7 +265,7 @@ public class HandleClient extends Executor implements Runnable
             }
             catch (IOException e) {
                if (running != false) { // Only if not triggered by our shutdown:sock.close()
-                  log.warn(ME, "Lost connection to client: " + e.toString());
+                  if (log.TRACE) log.trace(ME, "Lost connection to client: " + e.toString());
                   shutdown();
                }
             }

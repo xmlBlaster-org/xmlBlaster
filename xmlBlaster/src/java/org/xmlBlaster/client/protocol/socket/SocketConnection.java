@@ -198,7 +198,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
                                        "XmlBlaster server is unknown, '-dispatch/connection/plugin/socket/hostname=<ip>'", e);
       }
       catch (java.io.IOException e) {
-         String str = "Connection to xmlBlaster server failed: " + e.toString();
+         String str = "Connection to xmlBlaster server failed local=" + this.localSocketUrl + " remote=" + this.socketUrl + ": " + e.toString();
          if (log.TRACE) log.trace(ME+".constructor", str);
          //e.printStackTrace(); 
          throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, str);
