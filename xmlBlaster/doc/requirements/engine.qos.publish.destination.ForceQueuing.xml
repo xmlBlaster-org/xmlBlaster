@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='engine.qos.publish.ForceQueuing' type='NEW' prio='LOW' status="CLOSED">
+<requirement id='engine.qos.publish.destination.ForceQueuing' type='NEW' prio='LOW' status="CLOSED">
    <topic>Published messages can be queued by xmlBlaster if the receiver is not logged in</topic>
    <description>
       If you publish a message and the receiver is not online, you get an exception
@@ -22,7 +22,7 @@
    <see>engine.qos.destination.offline</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 02 02</date>
-   <revision>$Revision: 1.6 $</revision>
+   <revision>$Revision: 1.1 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
