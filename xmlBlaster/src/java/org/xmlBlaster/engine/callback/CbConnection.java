@@ -3,7 +3,7 @@ Name:      CbConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: CbConnection.java,v 1.7 2002/08/10 19:31:53 ruff Exp $
+Version:   $Id: CbConnection.java,v 1.8 2002/08/23 21:29:25 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.callback;
@@ -84,14 +84,12 @@ public class CbConnection implements I_Timeout
          return;
       }
 
-      cbDriver = glob.getProtocolManager().getNewCbProtocolDriverInstance(cbAddress.getType());
+      cbDriver = glob.getProtocolManager().getCbProtocolManager().getNewCbProtocolDriverInstance(cbAddress.getType());
 
-      /*
       if (cbDriver == null) {
-         log.error(ME+".UnknownCallbackProtocol", "Sorry, callback type='" + cbAddress.getType() + "' is not supported, try setting it in xmlBlaster.properties");
+         log.error(ME+".UnknownCallbackProtocol", "Sorry, callback type='" + cbAddress.getType() + "' is not supported, try setting 'CbProtocolPlugin["+cbAddress.getType()+"][1.0]=' in xmlBlaster.properties");
          throw new XmlBlasterException("UnknownCallbackProtocol", "Sorry, callback type='" + cbAddress.getType() + "' is not supported");
       }
-      */
 
       try {
          cbDriver.init(glob, cbAddress);
