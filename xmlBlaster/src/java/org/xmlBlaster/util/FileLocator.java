@@ -184,7 +184,9 @@ public class FileLocator
       URL ret = null;
       path = this.glob.getProperty().get(propertyName, (String)null);
       if (path != null) {
-         ret = findFileInSinglePath(path, filename);
+         if (this.log.TRACE) this.log.trace(ME, "findFileInXmlBlasterSearchPath: the path: '" + path + "' and the filename to search: '" + filename + "'");
+//         ret = findFileInSinglePath(path, filename);
+         ret = findFileInSinglePath(null, path);
          if (ret != null) return ret;
       }
       // user.dir
