@@ -2,7 +2,7 @@ package org.xmlBlaster.authentication.plugins.htpasswd;
 
 import org.xmlBlaster.authentication.plugins.I_Manager;
 import org.xmlBlaster.authentication.plugins.I_Session;
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import java.util.Hashtable;
@@ -20,6 +20,7 @@ import java.util.Hashtable;
 public class Manager implements I_Manager {
 
    private Global glob = null;
+   private LogChannel log = null;
 
    private static final String ME = "PasswdManager";
    private static final String TYPE = "htpasswd";
@@ -30,7 +31,6 @@ public class Manager implements I_Manager {
    private Hashtable sessions = new Hashtable();
 
    public Manager() {
-      if (Log.CALL) Log.call(ME, "Constructor");
    }
 
    /**
@@ -38,11 +38,12 @@ public class Manager implements I_Manager {
     */
    public void init(Global glob, String[] options) throws org.xmlBlaster.util.XmlBlasterException {
       this.glob = glob;
-      if (Log.TRACE) Log.trace(ME+".init()", "Entering init");
+      this.log = glob.getLog("auth");
+      if (log.TRACE) log.trace(ME+".init()", "Entering init");
       if (options.length>0) {
-         Log.warn(ME+".init()", "Got unexpected options! Check xmlBlasters configuration!");
+         log.warn(ME+".init()", "Got unexpected options! Check xmlBlasters configuration!");
       }
-      if (Log.TRACE) Log.trace(ME+".init()", "Leaving init");
+      if (log.TRACE) log.trace(ME+".init()", "Leaving init");
    }
 
    public final Global getGlobal() {
@@ -59,7 +60,7 @@ public class Manager implements I_Manager {
 
 
    public I_Session reserveSession(String sessionId) throws XmlBlasterException {
-      if (Log.CALL) Log.call(ME, "reserveSession(sessionId="+sessionId+")");
+      if (log.CALL) log.call(ME, "reserveSession(sessionId="+sessionId+")");
       Session session = new Session(this, sessionId);
       synchronized(sessions) {
          sessions.put(sessionId, session);

@@ -1,7 +1,7 @@
 package org.xmlBlaster.authentication.plugins;
 
 import org.xmlBlaster.util.PluginManagerBase;
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.plugins.I_Manager;
@@ -23,14 +23,16 @@ public class PluginManager extends PluginManagerBase {
    private static final String defaultPluginName = "org.xmlBlaster.authentication.plugins.htpasswd.Manager"; //"org.xmlBlaster.authentication.plugins.simple.Manager";
    private              Authenticate        auth = null;
    private final Global glob;
+   private final LogChannel log;
 
    public PluginManager(Global glob) {
       super(glob);
       this.glob = glob;
+      this.log = glob.getLog("auth");
       if (glob.getProperty().get("Security.Server.allowSimpleDriver", false)) {
          // Print a warning, because the old, unsecure xmlBlaster behavior is enabled!
-         Log.warn(ME, "* * * Security risk * * * : Security.Server.allowSimpleDriver=true");
-         Log.warn(ME, "The Simple security plugin is available, this is not save and can be misused by untrusted clients.");
+         log.warn(ME, "* * * Security risk * * * : Security.Server.allowSimpleDriver=true");
+         log.warn(ME, "The Simple security plugin is available, this is not save and can be misused by untrusted clients.");
       }
    }
 
@@ -52,7 +54,7 @@ public class PluginManager extends PluginManagerBase {
     * @exception XmlBlasterException Thrown if to suitable security manager has been found.
     */
    public I_Manager getManager(String type, String version) throws XmlBlasterException {
-      if (Log.CALL) Log.call(ME+".getManager()", "Loading SecurityManager type=" + type + " version=" + version);
+      if (log.CALL) log.call(ME+".getManager()", "Loading SecurityManager type=" + type + " version=" + version);
       I_Manager securityManager = null;
       String[] pluginNameAndParam = null;
 
@@ -85,7 +87,7 @@ public class PluginManager extends PluginManagerBase {
    public I_Manager getManager(String sessionId) throws XmlBlasterException {
       SessionInfo sessionInfo = auth.check(sessionId);
       if (sessionInfo==null) { // Should never be null, if access is denied an XmlBlasterException is thrown
-         Log.error(ME, "Authentication internal error, access denied");
+         log.error(ME, "Authentication internal error, access denied");
          throw new XmlBlasterException(ME+".NoAccess","Unknown session!");
       }
       I_Session sessionSecCtx = sessionInfo.getSecuritySession();
