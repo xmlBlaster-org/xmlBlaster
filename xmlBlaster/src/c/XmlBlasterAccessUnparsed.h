@@ -30,7 +30,7 @@ extern "C" {
 #include <XmlBlasterConnectionUnparsed.h>
 #include <CallbackServerUnparsed.h>
 
-#if XB_USE_PTHREADS
+#ifdef XB_USE_PTHREADS
 #  ifdef _WINDOWS
 #    include <pthreads/pthread.h> /* Our pthreads.h: For logging output of thread ID, for Windows and WinCE downloaded from http://sources.redhat.com/pthreads-win32 */
 #  else
