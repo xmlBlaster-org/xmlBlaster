@@ -22,24 +22,27 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 
 #ifdef _WINDOWS
 #  include <Winsock2.h>       /* gethostbyname() */
+#  if XB_USE_PTHREADS
+#    include <pthreads/pthread.h> /* Our pthreads.h: For logging output of thread ID, for Windows and WinCE downloaded from http://sources.redhat.com/pthreads-win32 */
+#  endif
 #else
 #  include <unistd.h>         /* sleep(), only used in main */
 #  include <netdb.h>          /* gethostbyname_re() */
 #  include <errno.h>          /* gethostbyname_re() */
 #  include <sys/time.h>       /* sleep with select(), gettimeofday() */
 #  include <sys/types.h>      /* sleep with select() */
+#  if XB_USE_PTHREADS
+#    include <pthread.h>      /* The original pthreads.h from the OS */
+#  endif
 #endif
 
-#if XB_USE_PTHREADS
-#  include <pthreads/pthread.h> /* For logging output of thread ID, for Windows and WinCE downloaded from http://sources.redhat.com/pthreads-win32 */
-#endif
 
 #if defined(__GNUC__) || defined(__ICC)
    /* To support query state with 'ident libxmlBlasterClientC.so' or 'what libxmlBlasterClientC.so'
       or 'strings libxmlBlasterClientC.so  | grep msgUtil.c' */
-   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: msgUtil.c,v 1.18 2003/12/04 18:50:06 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: msgUtil.c,v 1.19 2003/12/07 13:26:41 ruff Exp $ xmlBlaster @version@";
 #elif defined(__SUNPRO_CC)
-   static const char *rcsid_GlobalCpp  =  "@(#) $Id: msgUtil.c,v 1.18 2003/12/04 18:50:06 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  =  "@(#) $Id: msgUtil.c,v 1.19 2003/12/07 13:26:41 ruff Exp $ xmlBlaster @version@";
 #endif
 
 #define  MICRO_SECS_PER_SECOND 1000000
