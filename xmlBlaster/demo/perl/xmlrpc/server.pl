@@ -9,7 +9,7 @@ use Frontier::Client;
 use xmlBlaster::Exception ;
 use xmlBlaster::XmlBlaster ;
 use xmlBlaster::MsgUnit ;
-use xmlBlaster::EraseRetQos ;
+use xmlBlaster::EraseReturnQos ;
 
 
 sub do_update {
