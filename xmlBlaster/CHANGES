@@ -24,6 +24,9 @@ BUGS:
 
 
 DONE:
+  - You can automatically build an xmlBlaster distribution, see:
+    http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.deploy.html
+
   - Incompatible changes:
     publish() returns now XML string instead of the plain oid
 	 Introduced PublishRetQos, see
