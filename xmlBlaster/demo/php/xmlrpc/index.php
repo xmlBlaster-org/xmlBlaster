@@ -30,7 +30,9 @@ $port = getHttpVar('port');
 $user = getHttpVar('user');
 $password = getHttpVar('password');
 $xpathQuery = getHttpVar('xpathQuery');
-
+if ($xpathQuery != "") { 
+    $xpathQuery = preg_replace("/\\\'/", "'", $xpathQuery);
+}
 /*
  *	Create a xmlBlaster object and connect it to xmlBlaster server
  */

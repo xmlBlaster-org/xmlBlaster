@@ -12,8 +12,16 @@ Then,
 	- On the same computer, or on another one, you'll need a http server with PHP langage activated.
 	- copy php/xmlrpc demo files into a folder,
 	- call http://your.httpd.server/the.php.folder.demo/index.php
-	- fill some fields, then click "connect" button ...
-
+	- fill some fields, Server, usually machine_name.domain_name,
+	  Port, 8080, User and Password, Using the default config/xmlBlaster.htpasswd file
+	  guest & secret (Make sure xmlBlaster is configured to use the htpasswd file).
+	- click "connect" button ...
+	- Enter an XPATH Query such as //key once you are logged in.
+	  Some example XPATH Queries...
+	  //key[starts-with(@oid, '__sys__UserList')]
+	  //key[starts-with(@oid, '__sys__Login')]
+	  //key[starts-with(@oid, '__sys__Logout')]
+		
 nice & easy, isn't it ?
 
 xmlrpc.inc : xmlrpc for php by Edd Dumbill (C) 1999-2001 <edd@usefulinc.com>
@@ -34,4 +42,8 @@ CHANGES :
 2003-02-28 bencom@bencom.co.nz
 	- Fixed dirty reg exp for new sessionId layout. 
 	- Fixed file permissions. PB
-	
+2003-05-03 bencom@bencom.co.nz
+	- Fixed $xpathQuery character escaping. The form field adds
+	\ to the single quotes this must be removed.
+	- Clarified the README a little (needs more work) based on the
+	  shortcomings I noticed. PB
