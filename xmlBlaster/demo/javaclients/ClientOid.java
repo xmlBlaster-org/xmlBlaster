@@ -3,14 +3,15 @@ Name:      ClientOid.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientOid.java,v 1.8 2000/05/16 20:57:33 ruff Exp $
+Version:   $Id: ClientOid.java,v 1.9 2000/06/13 13:03:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
 import org.xmlBlaster.util.*;
 import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.client.LoginQosWrapper;
-import org.xmlBlaster.protocol.corba.serverIdl.*;
+import org.xmlBlaster.protocol.corba.serverIdl.Server;
+import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
 import org.xmlBlaster.protocol.corba.clientIdl.*;
 
 
@@ -66,7 +67,7 @@ public class ClientOid
                          "<key oid=\"KEY_FOR_SMILEY\" queryType='EXACT'></key>";
          try {
             xmlBlaster.subscribe(xmlKey, "<qos></qos>");
-         } catch(XmlBlasterException e) {
+         } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
             Log.error(ME, "XmlBlasterException: " + e.reason);
          }
          Log.trace(ME, "Subscribed to Smiley data ..." + stop.nice());
@@ -76,7 +77,7 @@ public class ClientOid
          // subscribing twice: this second subscribe is ignored
          try {
             xmlBlaster.subscribe(xmlKey, "<qos></qos>");
-         } catch(XmlBlasterException e) {
+         } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
             Log.error(ME, "XmlBlasterException: " + e.reason);
          }
          Log.trace(ME, "Subscribed to Smiley data ..." + stop.nice());
@@ -90,7 +91,7 @@ public class ClientOid
          Log.trace(ME, "Sending some new Smiley data ...");
          try {
             xmlBlaster.publish(msg, "");
-         } catch(XmlBlasterException e) {
+         } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
             Log.error(ME, "XmlBlasterException: " + e.reason);
          }
          Log.info(ME, "Sending done, waiting for response ..." + stop.nice());
@@ -105,7 +106,7 @@ public class ClientOid
          stop.restart();
          try {
             xmlBlaster.unSubscribe(xmlKey, "<qos></qos>");
-         } catch(XmlBlasterException e) {
+         } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
             Log.error(ME, "XmlBlasterException: " + e.reason);
          }
          Log.info(ME, "Unsubscribe done" + stop.nice());
@@ -121,7 +122,7 @@ public class ClientOid
             for (int ii=0; ii<returnArr.length; ii++) {
                Log.info(ME, "   Returned oid=" + returnArr[ii]);
             }
-         } catch(XmlBlasterException e) {
+         } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
             Log.error(ME, "XmlBlasterException: " + e.reason);
          }
          Log.info(ME, "Sending done, there shouldn't be a callback anymore ..." + stop.nice());
@@ -135,7 +136,7 @@ public class ClientOid
          Log.trace(ME, "Sending some new Smiley data after logout ...");
          try {
             xmlBlaster.publishArr(marr, qarr);
-         } catch(XmlBlasterException e) {
+         } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
             Log.info(ME, "XmlBlasterException: " + e.reason);
          }
 

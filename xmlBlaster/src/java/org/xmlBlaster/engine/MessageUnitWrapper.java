@@ -3,7 +3,7 @@ Name:      MessageUnitWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping the CORBA MessageUnit to allow some nicer usage
-Version:   $Id: MessageUnitWrapper.java,v 1.16 2000/06/05 10:46:31 ruff Exp $
+Version:   $Id: MessageUnitWrapper.java,v 1.17 2000/06/13 13:03:59 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -11,7 +11,7 @@ package org.xmlBlaster.engine;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.engine.xml2java.PublishQoS;
 import org.xmlBlaster.util.Log;
-import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
 import org.xmlBlaster.engine.persistence.I_PersistenceDriver;
 import java.util.*;

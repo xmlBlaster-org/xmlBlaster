@@ -3,7 +3,7 @@ Name:      PublishFile.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a client to publish files to xmlBlaster
-Version:   $Id: PublishFile.java,v 1.8 2000/05/16 20:57:36 ruff Exp $
+Version:   $Id: PublishFile.java,v 1.9 2000/06/13 13:03:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.feeder;
 
@@ -14,7 +14,9 @@ import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Args;
 import org.xmlBlaster.util.FileUtil;
 import org.xmlBlaster.util.StopWatch;
-import org.xmlBlaster.protocol.corba.serverIdl.*;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
+import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.protocol.corba.clientIdl.*;
 import java.io.File;
 
@@ -199,7 +201,7 @@ public class PublishFile
          StopWatch stop = new StopWatch();
          String publishOid = xmlBlaster.publish(msgUnit, qos);
          Log.info(ME, "Success: Publishing done, returned message oid=" + publishOid + stop.nice());
-      } catch(XmlBlasterException e) {
+      } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
          Log.warning(ME, "XmlBlasterException: " + e.reason);
       }
    }

@@ -3,12 +3,11 @@ Name:      Queue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Queue for client messages
-Version:   $Id: Queue.java,v 1.4 2000/05/18 17:16:26 ruff Exp $
+Version:   $Id: Queue.java,v 1.5 2000/06/13 13:04:02 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
-import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.ListIterator;
@@ -22,7 +21,7 @@ import java.util.NoSuchElementException;
  * It is based on a linked list.
  * <p />
  * TODO: Allow persistence store e.g. via JDBC bridge into Orcale with some smart caching
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  * @author $Author: ruff $
  */
 public class Queue

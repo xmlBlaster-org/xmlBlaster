@@ -3,12 +3,12 @@ Name:      UpdateQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: UpdateQoS.java,v 1.10 2000/05/13 20:10:14 ruff Exp $
+Version:   $Id: UpdateQoS.java,v 1.11 2000/06/13 13:03:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
 import org.xmlBlaster.util.Log;
-import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xml.sax.AttributeList;
 
 

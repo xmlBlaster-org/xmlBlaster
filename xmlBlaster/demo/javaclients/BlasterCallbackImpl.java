@@ -4,14 +4,14 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client callback
            YOU MAY USE THIS AS YOUR Callback implementation, JUST TAKE A COPY OF IT
-Version:   $Id: BlasterCallbackImpl.java,v 1.5 2000/02/24 22:19:50 ruff Exp $
+Version:   $Id: BlasterCallbackImpl.java,v 1.6 2000/06/13 13:03:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
 import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlKeyBase;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
-import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
 import org.xmlBlaster.protocol.corba.clientIdl.*;
 
 

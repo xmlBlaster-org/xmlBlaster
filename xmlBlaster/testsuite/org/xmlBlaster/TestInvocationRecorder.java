@@ -3,14 +3,23 @@ Name:      TestInvocationRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing the InvocationRecorder
-Version:   $Id: TestInvocationRecorder.java,v 1.5 2000/02/29 16:54:20 ruff Exp $
+Version:   $Id: TestInvocationRecorder.java,v 1.6 2000/06/13 13:04:03 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
-import org.xmlBlaster.client.*;
-import org.xmlBlaster.util.*;
-import org.xmlBlaster.protocol.corba.serverIdl.*;
-import org.xmlBlaster.protocol.corba.clientIdl.*;
+import org.xmlBlaster.client.CorbaConnection;
+import org.xmlBlaster.client.LoginQosWrapper;
+import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.client.UpdateKey;
+import org.xmlBlaster.client.UpdateQoS;
+import org.xmlBlaster.client.PublishQosWrapper;
+import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.InvocationRecorder;
+import org.xmlBlaster.util.I_InvocationRecorder;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
+import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
+import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackOperations;
 import test.framework.*;
 
 
@@ -27,9 +36,8 @@ import test.framework.*;
  *    jaco test.ui.TestRunner testsuite.org.xmlBlaster.TestInvocationRecorder
  * </pre>
  */
-public class TestInvocationRecorder extends TestCase implements ServerOperations, BlasterCallbackOperations
+public class TestInvocationRecorder extends TestCase implements I_InvocationRecorder, BlasterCallbackOperations
 {
-   private Server xmlBlaster = null;
    private static String ME = "TestInvocationRecorder";
 
    private InvocationRecorder recorder = null;
@@ -135,7 +143,7 @@ public class TestInvocationRecorder extends TestCase implements ServerOperations
 
 
    /**
-    * @return dummy to match ServerOperations interface
+    * @return dummy to match I_InvocationRecorder interface
     * @see xmlBlaster.idl
     */
    public String subscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
@@ -149,7 +157,7 @@ public class TestInvocationRecorder extends TestCase implements ServerOperations
 
 
    /**
-    * For ServerOperations interface
+    * For I_InvocationRecorder interface
     * @see xmlBlaster.idl
     */
    public void unSubscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
@@ -160,7 +168,7 @@ public class TestInvocationRecorder extends TestCase implements ServerOperations
 
 
    /**
-    * @return dummy to match ServerOperations interface
+    * @return dummy to match I_InvocationRecorder interface
     * @see xmlBlaster.idl
     */
    public String publish(MessageUnit msgUnit, String qos_literal) throws XmlBlasterException
@@ -172,7 +180,7 @@ public class TestInvocationRecorder extends TestCase implements ServerOperations
 
 
    /**
-    * @return dummy to match ServerOperations interface
+    * @return dummy to match I_InvocationRecorder interface
     * @see xmlBlaster.idl
     */
    public String[] publishArr(MessageUnit [] msgUnitArr, String [] qos_literal_Arr) throws XmlBlasterException
@@ -184,7 +192,7 @@ public class TestInvocationRecorder extends TestCase implements ServerOperations
 
 
    /**
-    * @return dummy to match ServerOperations interface
+    * @return dummy to match I_InvocationRecorder interface
     * @see xmlBlaster.idl
     */
    public String[] erase(String xmlKey_literal, String qos_literal) throws XmlBlasterException
@@ -196,7 +204,7 @@ public class TestInvocationRecorder extends TestCase implements ServerOperations
 
 
    /**
-    * @return dummy to match ServerOperations interface
+    * @return dummy to match I_InvocationRecorder interface
     * @see xmlBlaster.idl
     */
    public MessageUnitContainer[] get(String xmlKey_literal, String qos_literal) throws XmlBlasterException
@@ -210,7 +218,7 @@ public class TestInvocationRecorder extends TestCase implements ServerOperations
 
 
    /**
-    * For ServerOperations interface
+    * For I_InvocationRecorder interface
     * @see xmlBlaster.idl
     */
    public void setClientAttributes(String clientName, String xmlAttr_literal, String qos_literal) throws XmlBlasterException
@@ -221,7 +229,7 @@ public class TestInvocationRecorder extends TestCase implements ServerOperations
 
 
    /**
-    * Enforced by ServerOperations interface
+    * Enforced by I_InvocationRecorder interface
     * @see xmlBlaster.idl
     */
    public void ping() {}

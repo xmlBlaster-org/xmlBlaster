@@ -3,12 +3,12 @@ Name:      HttpIORServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Delivering the Authentication Service IOR over HTTP
-Version:   $Id: HttpIORServer.java,v 1.5 2000/02/28 18:39:50 ruff Exp $
+Version:   $Id: HttpIORServer.java,v 1.6 2000/06/13 13:03:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
 import org.xmlBlaster.util.Log;
-import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterException;
 import java.util.*;
 import java.net.*;
 import java.io.*;
@@ -22,7 +22,7 @@ import java.io.*;
  * Clients may access through this port the AuthServer IOR if they
  * don't want to use a naming service
  *
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  * @author $Author: ruff $
  */
 public class HttpIORServer extends Thread

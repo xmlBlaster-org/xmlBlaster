@@ -3,12 +3,13 @@ Name:      InvocationRecorder.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   InvocationRecorder for client messages
-Version:   $Id: InvocationRecorder.java,v 1.5 2000/05/18 17:16:26 ruff Exp $
+Version:   $Id: InvocationRecorder.java,v 1.6 2000/06/13 13:04:02 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
-import org.xmlBlaster.protocol.corba.serverIdl.*;
+import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
+import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackOperations;
 import java.util.*;
 
@@ -20,10 +21,10 @@ import java.util.*;
  * Every method invocation is timestamped and wrapped into an InvocationContainer object,
  * and pushed into the queue.
  *
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  * @author $Author: ruff $
  */
-public class InvocationRecorder implements ServerOperations, BlasterCallbackOperations
+public class InvocationRecorder implements I_InvocationRecorder, BlasterCallbackOperations
 {
    private String ME = "InvocationRecorder";
 
@@ -37,7 +38,7 @@ public class InvocationRecorder implements ServerOperations, BlasterCallbackOper
     * Callback which the client must implement.
     * The recorder calls these methods when doing a playback
     */
-   private ServerOperations serverCallback = null;
+   private I_InvocationRecorder serverCallback = null;
    private BlasterCallbackOperations clientCallback = null;
 
    private MessageUnitContainer[] dummyMArr = new MessageUnitContainer[0];
@@ -47,12 +48,12 @@ public class InvocationRecorder implements ServerOperations, BlasterCallbackOper
 
    /**
     * @param maxEntries The maximum number of invocations to store
-    * @param serverCallback You need to implement serverIdl.ServerOperations to receive the invocations on playback
+    * @param serverCallback You need to implement I_InvocationRecorder to receive the invocations on playback
     *                       null if you are not interested in those
     * @param serverCallback You need to implement clientIdl.BlasterCallbackOperations to receive the invocations on playback
     *                       null if you are not interested in those
     */
-   public InvocationRecorder(int maxEntries, ServerOperations serverCallback,
+   public InvocationRecorder(int maxEntries, I_InvocationRecorder serverCallback,
                               BlasterCallbackOperations clientCallback)
    {
       init(maxEntries, serverCallback, clientCallback);
@@ -62,7 +63,7 @@ public class InvocationRecorder implements ServerOperations, BlasterCallbackOper
    /**
     * @param maxEntries The maximum number of invocations to store
     */
-   private void init(int maxEntries, ServerOperations serverCallback,
+   private void init(int maxEntries, I_InvocationRecorder serverCallback,
                               BlasterCallbackOperations clientCallback)
    {
       if (Log.CALLS) Log.calls(ME, "Creating new InvocationRecorder(" + maxEntries + ") ...");
@@ -226,8 +227,9 @@ public class InvocationRecorder implements ServerOperations, BlasterCallbackOper
       throw new XmlBlasterException(ME, "Internal error: Method '" + cont.method + "' is unknown");
    }
 
+
    /**
-    * @return dummy to match ServerOperations interface
+    * @return dummy to match I_InvocationRecorder interface
     * @see xmlBlaster.idl
     */
    public String subscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
@@ -242,7 +244,7 @@ public class InvocationRecorder implements ServerOperations, BlasterCallbackOper
 
 
    /**
-    * For ServerOperations interface
+    * For I_InvocationRecorder interface
     * @see xmlBlaster.idl
     */
    public void unSubscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
@@ -256,7 +258,7 @@ public class InvocationRecorder implements ServerOperations, BlasterCallbackOper
 
 
    /**
-    * @return dummy to match ServerOperations interface
+    * @return dummy to match I_InvocationRecorder interface
     * @see xmlBlaster.idl
     */
    public String publish(MessageUnit msgUnit, String qos_literal) throws XmlBlasterException
@@ -271,7 +273,7 @@ public class InvocationRecorder implements ServerOperations, BlasterCallbackOper
 
 
    /**
-    * @return dummy to match ServerOperations interface
+    * @return dummy to match I_InvocationRecorder interface
     * @see xmlBlaster.idl
     */
    public String[] publishArr(MessageUnit [] msgUnitArr, String [] qos_literal_Arr) throws XmlBlasterException
@@ -286,7 +288,7 @@ public class InvocationRecorder implements ServerOperations, BlasterCallbackOper
 
 
    /**
-    * @return dummy to match ServerOperations interface
+    * @return dummy to match I_InvocationRecorder interface
     * @see xmlBlaster.idl
     */
    public String[] erase(String xmlKey_literal, String qos_literal) throws XmlBlasterException
@@ -301,7 +303,7 @@ public class InvocationRecorder implements ServerOperations, BlasterCallbackOper
 
 
    /**
-    * @return dummy to match ServerOperations interface
+    * @return dummy to match I_InvocationRecorder interface
     * @see xmlBlaster.idl
     */
    public MessageUnitContainer[] get(String xmlKey_literal, String qos_literal) throws XmlBlasterException
@@ -316,7 +318,7 @@ public class InvocationRecorder implements ServerOperations, BlasterCallbackOper
 
 
    /**
-    * For ServerOperations interface
+    * For I_InvocationRecorder interface
     * @see xmlBlaster.idl
     */
    public void setClientAttributes(String clientName, String xmlAttr_literal,
@@ -332,7 +334,7 @@ public class InvocationRecorder implements ServerOperations, BlasterCallbackOper
 
 
    /**
-    * For ServerOperations interface
+    * For I_InvocationRecorder interface
     * @see xmlBlaster.idl
     */
    public void ping() {}

@@ -3,14 +3,9 @@ Name:      I_ProxyInterceptor.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to easy get the callback messages
-Version:   $Id: I_ProxyInterceptor.java,v 1.1 2000/05/03 17:14:31 ruff Exp $
+Version:   $Id: I_ProxyInterceptor.java,v 1.2 2000/06/13 13:04:01 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
-
-import org.xmlBlaster.util.*;
-import org.xmlBlaster.client.*;
-import org.xmlBlaster.protocol.corba.serverIdl.*;
-import org.xmlBlaster.protocol.corba.clientIdl.*;
 
 
 /**
@@ -19,7 +14,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
  * before sended to the Browser.
  * <p>
  *
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  * @author $Author: ruff $
  */
 public interface I_ProxyInterceptor

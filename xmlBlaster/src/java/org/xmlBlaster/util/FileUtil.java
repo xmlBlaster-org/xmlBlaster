@@ -3,12 +3,11 @@ Name:      FileUtil.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: FileUtil.java,v 1.11 2000/02/20 17:38:54 ruff Exp $
+Version:   $Id: FileUtil.java,v 1.12 2000/06/13 13:04:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
 import java.io.*;
-import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
 
 
 /**

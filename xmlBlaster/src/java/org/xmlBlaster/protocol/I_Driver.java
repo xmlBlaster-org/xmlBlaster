@@ -3,12 +3,12 @@ Name:      I_Driver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface hiding the real callback protocol
-Version:   $Id: I_Driver.java,v 1.2 2000/06/05 10:46:31 ruff Exp $
+Version:   $Id: I_Driver.java,v 1.3 2000/06/13 13:04:00 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol;
 
-import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.Authenticate;
 
 
@@ -16,7 +16,7 @@ import org.xmlBlaster.authentication.Authenticate;
  * This interface hides the real protocol used to invoke xmlBlaster.
  * <p>
  *
- * @version $Revision: 1.2 $
+ * @version $Revision: 1.3 $
  * @author ruff@swand.lake.de
  */
 public interface I_Driver
@@ -42,14 +42,14 @@ public interface I_Driver
 
 
    /**
-    * Shut down the driver. 
+    * Shut down the driver.
     * <p />
     */
    public void shutdown();
 
 
    /**
-    * The startup usage text. 
+    * The startup usage text.
     * <p />
     */
    public String usage();

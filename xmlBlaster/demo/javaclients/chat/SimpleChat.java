@@ -3,14 +3,17 @@ Name:      SimpleChat.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo of a simple chat client for xmlBlaster as java application
-Version:   $Id: SimpleChat.java,v 1.6 2000/05/16 20:57:34 ruff Exp $
+Version:   $Id: SimpleChat.java,v 1.7 2000/06/13 13:03:57 ruff Exp $
 ------------------------------------------------------------------------------*/
-
 package javaclients.chat;
 
 import org.xmlBlaster.util.*;
-import org.xmlBlaster.protocol.corba.serverIdl.*;
-import org.xmlBlaster.protocol.corba.clientIdl.*;
+import org.xmlBlaster.protocol.corba.serverIdl.Server;
+import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
+import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
+import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackOperations;
+import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackPOATie;
+import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackHelper;
 import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.client.LoginQosWrapper;
 import org.omg.CosNaming.*;
@@ -20,10 +23,12 @@ import java.awt.*;
 
 
 /**
- * This client is a simple chat application using xmlBlaster
+ * This client is a simple chat application using xmlBlaster. 
  * <p>
+ * It demonstrates 'raw' Corba access.
  * Usage:
  *    ${JacORB_HOME}/bin/jaco javaclients.chat.SimpleChat -name "nickname"
+ * @author Mike Groezinger
  */
 
 public class SimpleChat extends Frame implements BlasterCallbackOperations, ActionListener{
@@ -130,7 +135,7 @@ public class SimpleChat extends Frame implements BlasterCallbackOperations, Acti
          Log.trace(ME, "Publishing ...");
          try {
             String str = xmlBlaster.publish(msgUnit, "");
-         } catch(XmlBlasterException e) {
+         } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
             Log.warning(ME, "XmlBlasterException: " + e.reason);
          }
          Log.trace(ME, "Publishing done");
@@ -197,7 +202,7 @@ public class SimpleChat extends Frame implements BlasterCallbackOperations, Acti
                          "</key>";
          try {
             xmlBlaster.subscribe(xmlKey, "<qos></qos>");
-         } catch(XmlBlasterException e) {
+         } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
             Log.warning(ME, "XmlBlasterException: " + e.reason);
          }
          Log.trace(ME, "Subscribed to '" + publishOid + "' ...");
@@ -214,7 +219,7 @@ public class SimpleChat extends Frame implements BlasterCallbackOperations, Acti
       Log.trace(ME, "Unsubscribe ...");
       try {
          xmlBlaster.unSubscribe(xmlKey, qos);
-      } catch(XmlBlasterException e) {
+      } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
          Log.warning(ME, "XmlBlasterException: " + e.reason);
       }
       Log.info(ME, "Unsubscribe done");

@@ -3,7 +3,7 @@ Name:      Log.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.java,v 1.47 2000/06/03 13:26:55 ruff Exp $
+Version:   $Id: Log.java,v 1.48 2000/06/13 13:04:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 import java.io.*;
@@ -562,7 +562,7 @@ public class Log
       }
    }
    /*
-   public static final void warningThrow(String instance, String text) throws org.xmlBlaster.XmlBlasterException
+   public static final void warningThrow(String instance, String text) throws XmlBlasterException
    {
       warning(instance, text);
       throw new org.xmlBlaster.XmlBlasterException(instance, text);
@@ -581,7 +581,7 @@ public class Log
       }
    }
    /*
-   public static final void errorThrow(String instance, String text) throws org.xmlBlaster.XmlBlasterException
+   public static final void errorThrow(String instance, String text) throws XmlBlasterException
    {
       error(instance, text);
       throw new org.xmlBlaster.XmlBlasterException(instance, text);

@@ -3,7 +3,7 @@ Name:      XmlBlasterImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native Interface to xmlBlaster
-Version:   $Id: XmlBlasterImpl.java,v 1.1 2000/06/04 21:13:29 ruff Exp $
+Version:   $Id: XmlBlasterImpl.java,v 1.2 2000/06/13 13:04:00 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -11,14 +11,14 @@ package org.xmlBlaster.engine;
 import org.xmlBlaster.engine.xml2java.*;
 import org.xmlBlaster.engine.RequestBroker;
 import org.xmlBlaster.util.Log;
-import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
 import org.xmlBlaster.authentication.Authenticate;
 
 
 /**
- * This is the native implementation of the xmlBlaster interface. 
+ * This is the native implementation of the xmlBlaster interface.
  * <p />
  * All protocol drivers access xmlBlaster through these methods.
  * <br />
@@ -46,7 +46,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.I_XmlBlaster
       this.authenticate = authenticate;
       this.requestBroker = new RequestBroker(authenticate);
    }
-   
+
    /**
     * Subscribe to messages.
     * <p />

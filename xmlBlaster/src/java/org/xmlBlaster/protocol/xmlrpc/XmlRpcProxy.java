@@ -3,13 +3,14 @@ Name:      XmlRpcProxy.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code to subscribe from command line for a message
-Version:   $Id: XmlRpcProxy.java,v 1.2 2000/05/16 20:57:38 ruff Exp $
+Version:   $Id: XmlRpcProxy.java,v 1.3 2000/06/13 13:04:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
 import org.xmlBlaster.client.*;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Args;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlKeyBase;
 import org.xmlBlaster.protocol.corba.serverIdl.*;
 import org.xmlBlaster.protocol.corba.clientIdl.*;

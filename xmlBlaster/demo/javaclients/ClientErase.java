@@ -3,15 +3,21 @@ Name:      ClientErase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientErase.java,v 1.9 2000/05/16 20:57:33 ruff Exp $
+Version:   $Id: ClientErase.java,v 1.10 2000/06/13 13:03:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
-import org.xmlBlaster.util.*;
+import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Args;
+import org.xmlBlaster.util.StopWatch;
+import org.xmlBlaster.util.CallbackAddress;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.CorbaConnection;
-import org.xmlBlaster.protocol.corba.serverIdl.*;
-import org.xmlBlaster.protocol.corba.clientIdl.*;
-// import jacorb.naming.NameServer;
+import org.xmlBlaster.protocol.corba.serverIdl.Server;
+import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
+import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
+import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
+import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackOperations;
 import org.omg.CosNaming.*;
 
 
@@ -66,7 +72,7 @@ public class ClientErase
             try {
                publishOid = xmlBlaster.publish(msgUnit, "<qos></qos>");
                Log.info(ME, "   Returned oid=" + publishOid);
-            } catch(XmlBlasterException e) {
+            } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
                Log.warning(ME, "XmlBlasterException: " + e.reason);
             }
             Log.trace(ME, "Publishing done" + stop.nice());
@@ -83,7 +89,7 @@ public class ClientErase
             String[] strArr = null;
             try {
                strArr = xmlBlaster.erase(xmlKey, "<qos></qos>");
-            } catch(XmlBlasterException e) {
+            } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
                Log.error(ME, "XmlBlasterException: " + e.reason);
             }
 

@@ -3,7 +3,7 @@ Name:      XmlKey.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKey.java,v 1.3 2000/05/25 13:40:01 ruff Exp $
+Version:   $Id: XmlKey.java,v 1.4 2000/06/13 13:04:00 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -11,7 +11,7 @@ package org.xmlBlaster.engine.xml2java;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlToDom;
 import org.xmlBlaster.util.StringHelper;
-import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterException;
 
 import java.util.*;
 
@@ -78,7 +78,7 @@ public class XmlKey extends org.xmlBlaster.util.XmlKeyBase
 
 
    /**
-    * Construct a handler object for this xml message key. 
+    * Construct a handler object for this xml message key.
     * @param xmlKey_literal The xml based message meta data
     */
    public XmlKey(String xmlKey_literal) throws XmlBlasterException
@@ -88,7 +88,7 @@ public class XmlKey extends org.xmlBlaster.util.XmlKeyBase
 
 
    /**
-    * Construct a handler object for this xml message key. 
+    * Construct a handler object for this xml message key.
     * @param xmlKey_literal The xml based message meta data
     * @param isPublish Invoked from a client publish()
     */
@@ -109,7 +109,7 @@ public class XmlKey extends org.xmlBlaster.util.XmlKeyBase
          try {
             if (Log.TRACE) Log.trace(ME, "Creating tiny DOM tree and a query manager ...");
             // Add the <xmlBlaster> root element ...
-            String tmp = StringHelper.replace(xmlKey_literal, "<key", "<xmlBlaster><key") + "</xmlBlaster>"; 
+            String tmp = StringHelper.replace(xmlKey_literal, "<key", "<xmlBlaster><key") + "</xmlBlaster>";
             XmlToDom tinyDomHandle = new XmlToDom(tmp);
             xmlKeyDoc = tinyDomHandle.getXmlDoc();
             queryMgr = new com.fujitsu.xml.omquery.DomQueryMgr(xmlKeyDoc);
@@ -140,7 +140,7 @@ public class XmlKey extends org.xmlBlaster.util.XmlKeyBase
 
    /**
     * After the existing XPath subscriptions have queried this message
-    * we should release the DOM tree. 
+    * we should release the DOM tree.
     */
    public void cleanupMatch()
    {

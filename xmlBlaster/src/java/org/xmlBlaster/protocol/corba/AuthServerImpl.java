@@ -3,7 +3,7 @@ Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: AuthServerImpl.java,v 1.7 2000/06/05 11:39:20 ruff Exp $
+Version:   $Id: AuthServerImpl.java,v 1.8 2000/06/13 13:04:00 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -153,18 +153,23 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
          throw new XmlBlasterException("LoginFailed.Corba", "login failed: " + e.toString());
       }
 
-      String tmpSessionId = authenticate.login(loginName, passwd, qos_literal, sessionId);
-      if (tmpSessionId == null || !tmpSessionId.equals(sessionId)) {
-         Log.warning(ME+".AccessDenied", "Login for " + loginName + " failed.");
-         throw new XmlBlasterException("LoginFailed.AccessDenied", "Sorry, access denied");
+      try {
+         String tmpSessionId = authenticate.login(loginName, passwd, qos_literal, sessionId);
+         if (tmpSessionId == null || !tmpSessionId.equals(sessionId)) {
+            Log.warning(ME+".AccessDenied", "Login for " + loginName + " failed.");
+            throw new XmlBlasterException("LoginFailed.AccessDenied", "Sorry, access denied");
+         }
+
+         org.xmlBlaster.protocol.corba.serverIdl.Server xmlBlaster = org.xmlBlaster.protocol.corba.serverIdl.ServerHelper.narrow(certificatedServerRef);
+         ClientQoS xmlQoS = new ClientQoS(qos_literal);
+
+         if (Log.TIME) Log.time(ME, "Elapsed time in login()" + stop.nice());
+
+         return xmlBlaster;
       }
-
-      org.xmlBlaster.protocol.corba.serverIdl.Server xmlBlaster = org.xmlBlaster.protocol.corba.serverIdl.ServerHelper.narrow(certificatedServerRef);
-      ClientQoS xmlQoS = new ClientQoS(qos_literal);
-
-      if (Log.TIME) Log.time(ME, "Elapsed time in login()" + stop.nice());
-
-      return xmlBlaster;
+      catch (org.xmlBlaster.util.XmlBlasterException e) {
+         throw new XmlBlasterException(e.id, e.reason); // transform native exception to Corba exception
+      }
    }
 
 
@@ -175,8 +180,12 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
    public void logout(org.xmlBlaster.protocol.corba.serverIdl.Server xmlServer) throws XmlBlasterException
    {
       if (Log.CALLS) Log.calls(ME, "Entering logout()");
-
-      authenticate.logout(getSessionId(xmlServer));
+      try {
+         authenticate.logout(getSessionId(xmlServer));
+      }
+      catch (org.xmlBlaster.util.XmlBlasterException e) {
+         throw new XmlBlasterException(e.id, e.reason); // transform native exception to Corba exception
+      }
    }
 
 

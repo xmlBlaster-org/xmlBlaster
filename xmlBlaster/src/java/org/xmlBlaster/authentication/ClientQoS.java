@@ -3,14 +3,14 @@ Name:      ClientQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling login QoS (quality of service), knows how to parse with SAX
-Version:   $Id: ClientQoS.java,v 1.4 2000/06/04 19:13:23 ruff Exp $
+Version:   $Id: ClientQoS.java,v 1.5 2000/06/13 13:03:57 ruff Exp $
 Author:    ruff@swand.lake.de
 -----------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.CallbackAddress;
-import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xml.sax.AttributeList;
 import java.util.Vector;
 

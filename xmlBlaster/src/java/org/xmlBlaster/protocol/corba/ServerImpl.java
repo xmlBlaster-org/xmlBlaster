@@ -3,7 +3,7 @@ Name:      ServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: ServerImpl.java,v 1.8 2000/06/04 21:13:29 ruff Exp $
+Version:   $Id: ServerImpl.java,v 1.9 2000/06/13 13:04:01 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -56,16 +56,21 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
     */
    public String subscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "Entering subscribe() xmlKey=\n" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
-      if (Log.DUMP) Log.dump(ME, "-------START-subscribe()---------\n" + blaster.toXml());
-      StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
+      try {
+         if (Log.CALLS) Log.calls(ME, "Entering subscribe() xmlKey=\n" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
+         if (Log.DUMP) Log.dump(ME, "-------START-subscribe()---------\n" + blaster.toXml());
+         StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
 
-      String oid = blaster.subscribe(getSessionId(), xmlKey_literal, qos_literal);
+         String oid = blaster.subscribe(getSessionId(), xmlKey_literal, qos_literal);
 
-      if (Log.TIME) Log.time(ME, "Elapsed time in subscribe()" + stop.nice());
-      if (Log.DUMP) Log.dump(ME, "-------END-subscribe()---------\n" + blaster.toXml());
+         if (Log.TIME) Log.time(ME, "Elapsed time in subscribe()" + stop.nice());
+         if (Log.DUMP) Log.dump(ME, "-------END-subscribe()---------\n" + blaster.toXml());
 
-      return oid;
+         return oid;
+      }
+      catch (org.xmlBlaster.util.XmlBlasterException e) {
+         throw new XmlBlasterException(e.id, e.reason); // transform native exception to Corba exception
+      }
    }
 
 
@@ -74,14 +79,19 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
     */
    public void unSubscribe(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "Entering unSubscribe() xmlKey=\n" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
-      if (Log.DUMP) Log.dump(ME, "-------START-unSubscribe()---------\n" + blaster.toXml());
-      StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
+      try {
+         if (Log.CALLS) Log.calls(ME, "Entering unSubscribe() xmlKey=\n" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
+         if (Log.DUMP) Log.dump(ME, "-------START-unSubscribe()---------\n" + blaster.toXml());
+         StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
 
-      blaster.unSubscribe(getSessionId(), xmlKey_literal, qos_literal);
+         blaster.unSubscribe(getSessionId(), xmlKey_literal, qos_literal);
 
-      if (Log.TIME) Log.time(ME, "Elapsed time in unSubscribe()" + stop.nice());
-      if (Log.DUMP) Log.dump(ME, "-------END-unSubscribe()---------\n" + blaster.toXml());
+         if (Log.TIME) Log.time(ME, "Elapsed time in unSubscribe()" + stop.nice());
+         if (Log.DUMP) Log.dump(ME, "-------END-unSubscribe()---------\n" + blaster.toXml());
+      }
+      catch (org.xmlBlaster.util.XmlBlasterException e) {
+         throw new XmlBlasterException(e.id, e.reason); // transform native exception to Corba exception
+      }
    }
 
 
@@ -90,14 +100,19 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
     */
    public String publish(MessageUnit msgUnit, String qos_literal) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "Entering publish() ...");
-      if (Log.DUMP) Log.dump(ME, "-------START-publish()---------\n" + blaster.toXml());
+      try {
+         if (Log.CALLS) Log.calls(ME, "Entering publish() ...");
+         if (Log.DUMP) Log.dump(ME, "-------START-publish()---------\n" + blaster.toXml());
 
-      String retVal = blaster.publish(getSessionId(), msgUnit, qos_literal);
+         String retVal = blaster.publish(getSessionId(), msgUnit, qos_literal);
 
-      if (Log.DUMP) Log.dump(ME, "-------END-publish()---------\n" + blaster.toXml());
+         if (Log.DUMP) Log.dump(ME, "-------END-publish()---------\n" + blaster.toXml());
 
-      return retVal;
+         return retVal;
+      }
+      catch (org.xmlBlaster.util.XmlBlasterException e) {
+         throw new XmlBlasterException(e.id, e.reason); // transform native exception to Corba exception
+      }
    }
 
 
@@ -106,21 +121,26 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
     */
    public String[] publishArr(MessageUnit [] msgUnitArr, String [] qos_literal_Arr) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "Entering publish() ...");
-      if (Log.DUMP) Log.dump(ME, "-------START-publishArr()---------\n" + blaster.toXml());
+      try {
+         if (Log.CALLS) Log.calls(ME, "Entering publish() ...");
+         if (Log.DUMP) Log.dump(ME, "-------START-publishArr()---------\n" + blaster.toXml());
 
-      String[] returnArr = new String[0];
+         String[] returnArr = new String[0];
 
-      if (msgUnitArr.length < 1) {
-         if (Log.TRACE) Log.trace(ME, "Entering xmlBlaster.publish(), nothing to do, zero msgUnits sent");
-         return returnArr;
+         if (msgUnitArr.length < 1) {
+            if (Log.TRACE) Log.trace(ME, "Entering xmlBlaster.publish(), nothing to do, zero msgUnits sent");
+            return returnArr;
+         }
+         if (Log.CALLS) Log.trace(ME, "Entering xmlBlaster.publish() for " + msgUnitArr.length + " Messages");
+
+         String[] strArr = blaster.publishArr(getSessionId(), msgUnitArr, qos_literal_Arr);
+
+         if (Log.DUMP) Log.dump(ME, "-------END-publishArr()---------\n" + blaster.toXml());
+         return strArr;
       }
-      if (Log.CALLS) Log.trace(ME, "Entering xmlBlaster.publish() for " + msgUnitArr.length + " Messages");
-
-      String[] strArr = blaster.publishArr(getSessionId(), msgUnitArr, qos_literal_Arr);
-
-      if (Log.DUMP) Log.dump(ME, "-------END-publishArr()---------\n" + blaster.toXml());
-      return strArr;
+      catch (org.xmlBlaster.util.XmlBlasterException e) {
+         throw new XmlBlasterException(e.id, e.reason); // transform native exception to Corba exception
+      }
    }
 
 
@@ -129,14 +149,19 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
     */
    public String[] erase(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "Entering erase() xmlKey=\n" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
-      if (Log.DUMP) Log.dump(ME, "-------START-erase()---------\n" + blaster.toXml());
+      try {
+         if (Log.CALLS) Log.calls(ME, "Entering erase() xmlKey=\n" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
+         if (Log.DUMP) Log.dump(ME, "-------START-erase()---------\n" + blaster.toXml());
 
-      String [] retArr = blaster.erase(getSessionId(), xmlKey_literal, qos_literal);
+         String [] retArr = blaster.erase(getSessionId(), xmlKey_literal, qos_literal);
 
-      if (Log.DUMP) Log.dump(ME, "-------END-erase()---------\n" + blaster.toXml());
+         if (Log.DUMP) Log.dump(ME, "-------END-erase()---------\n" + blaster.toXml());
 
-      return retArr;
+         return retArr;
+      }
+      catch (org.xmlBlaster.util.XmlBlasterException e) {
+         throw new XmlBlasterException(e.id, e.reason); // transform native exception to Corba exception
+      }
    }
 
 
@@ -147,16 +172,21 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
     */
    public MessageUnitContainer[] get(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "Entering get() xmlKey=\n" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
-      if (Log.DUMP) Log.dump(ME, "-------START-get()---------\n" + blaster.toXml());
-      StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
+      try {
+         if (Log.CALLS) Log.calls(ME, "Entering get() xmlKey=\n" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
+         if (Log.DUMP) Log.dump(ME, "-------START-get()---------\n" + blaster.toXml());
+         StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
 
-      MessageUnitContainer[] msgUnitContainerArr = blaster.get(getSessionId(), xmlKey_literal, qos_literal);
+         MessageUnitContainer[] msgUnitContainerArr = blaster.get(getSessionId(), xmlKey_literal, qos_literal);
 
-      if (Log.TIME) Log.time(ME, "Elapsed time in get()" + stop.nice());
-      if (Log.DUMP) Log.dump(ME, "-------END-get()---------\n" + blaster.toXml());
+         if (Log.TIME) Log.time(ME, "Elapsed time in get()" + stop.nice());
+         if (Log.DUMP) Log.dump(ME, "-------END-get()---------\n" + blaster.toXml());
 
-      return msgUnitContainerArr;
+         return msgUnitContainerArr;
+      }
+      catch (org.xmlBlaster.util.XmlBlasterException e) {
+         throw new XmlBlasterException(e.id, e.reason); // transform native exception to Corba exception
+      }
    }
 
 

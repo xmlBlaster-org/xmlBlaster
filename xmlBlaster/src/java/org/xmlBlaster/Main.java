@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.40 2000/06/05 11:39:20 ruff Exp $
+Version:   $Id: Main.java,v 1.41 2000/06/13 13:03:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -11,7 +11,6 @@ import org.xmlBlaster.util.*;
 import org.xmlBlaster.engine.*;
 import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.protocol.I_Driver;
-import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
 import org.xmlBlaster.authentication.Authenticate;
 import java.io.*;
 import java.util.*;

@@ -3,7 +3,7 @@ Name:      ClientXml.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientXml.java,v 1.10 2000/05/16 20:57:33 ruff Exp $
+Version:   $Id: ClientXml.java,v 1.11 2000/06/13 13:03:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -11,9 +11,13 @@ import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
-import org.xmlBlaster.util.*;
-import org.xmlBlaster.protocol.corba.serverIdl.*;
-import org.xmlBlaster.protocol.corba.clientIdl.*;
+import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Args;
+import org.xmlBlaster.util.StopWatch;
+//import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.protocol.corba.serverIdl.Server;
+import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
+import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
 
 
 /**
@@ -71,7 +75,7 @@ public class ClientXml implements I_Callback
                publishOid = xmlBlaster.publish(msgUnit, "<qos></qos>");
                Log.info(ME, "   Returned oid=" + publishOid);
                Log.trace(ME, "Publishing done" + stop.nice());
-            } catch(XmlBlasterException e) {
+            } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
                Log.error(ME, "Punlishing failed, XmlBlasterException: " + e.reason);
             }
          }
@@ -86,7 +90,7 @@ public class ClientXml implements I_Callback
          try {
             publishOid = xmlBlaster.subscribe(xmlKey, "<qos></qos>");
             Log.trace(ME, "Subscribed to '" + publishOid + "' ..." + stop.nice());
-         } catch(XmlBlasterException e) {
+         } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
             Log.error(ME, "Subscribe failed, XmlBlasterException: " + e.reason);
          }
 
@@ -99,7 +103,7 @@ public class ClientXml implements I_Callback
          try {
             xmlBlaster.unSubscribe(xmlKey, "<qos></qos>");
             Log.info(ME, "Unsubscribe done" + stop.nice());
-         } catch(XmlBlasterException e) {
+         } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
             Log.error(ME, "Unsubscribe failed, XmlBlasterException: " + e.reason);
          }
 
@@ -114,7 +118,7 @@ public class ClientXml implements I_Callback
          try {
             xmlBlaster.subscribe(xmlKey, "<qos></qos>");
             Log.trace(ME, "Subscribe done, there should be a Callback");
-         } catch(XmlBlasterException e) {
+         } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
             Log.error(ME, "subscribe failed, XmlBlasterException: " + e.reason);
          }
 
@@ -135,7 +139,7 @@ public class ClientXml implements I_Callback
                try {
                   String str = xmlBlaster.publish(msgUnit, "");
                   Log.trace(ME, "Publishing done" + stop.nice());
-               } catch(XmlBlasterException e) {
+               } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
                   Log.error(ME, "Publishing failed, XmlBlasterException: " + e.reason);
                }
             }

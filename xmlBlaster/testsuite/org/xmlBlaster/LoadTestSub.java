@@ -3,7 +3,7 @@ Name:      LoadTestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: LoadTestSub.java,v 1.13 2000/05/16 20:57:38 ruff Exp $
+Version:   $Id: LoadTestSub.java,v 1.14 2000/06/13 13:04:03 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -43,7 +43,7 @@ public class LoadTestSub extends TestCase implements I_Callback
    private String senderContent;
    private String receiverName;         // sender/receiver is here the same client
 
-   private final int NUM_PUBLISH = 1000;
+   private final int NUM_PUBLISH = 5000;
    private int numReceived = 0;         // error checking
    private final String contentMime = "text/plain";
    private final String contentMimeExtended = "1.0";

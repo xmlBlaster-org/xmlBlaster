@@ -3,7 +3,7 @@ Name:      TestPtDQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtDQueue.java,v 1.11 2000/05/16 20:57:39 ruff Exp $
+Version:   $Id: TestPtDQueue.java,v 1.12 2000/06/13 13:04:04 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -13,10 +13,9 @@ import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
 import org.xmlBlaster.util.Log;
-import org.xmlBlaster.util.Args;
-import org.xmlBlaster.util.StopWatch;
-import org.xmlBlaster.protocol.corba.serverIdl.*;
-import org.xmlBlaster.protocol.corba.clientIdl.*;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
+import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
 import test.framework.*;
 
 
@@ -39,7 +38,6 @@ import test.framework.*;
  */
 public class TestPtDQueue extends TestCase implements I_Callback
 {
-   private Server senderXmlBlaster = null;
    private final static String ME = "TestPtDQueue";
 
    private final String senderName = "Manuel";
@@ -49,7 +47,6 @@ public class TestPtDQueue extends TestCase implements I_Callback
 
    private final String receiverName = "Ulrike";
    private CorbaConnection receiverConnection = null;
-   private Server receiverXmlBlaster = null;
 
    private String passwd = "secret";
 
@@ -79,7 +76,7 @@ public class TestPtDQueue extends TestCase implements I_Callback
    {
       try {
          senderConnection = new CorbaConnection();
-         senderXmlBlaster = senderConnection.login(senderName, passwd, new LoginQosWrapper(), this);
+         senderConnection.login(senderName, passwd, new LoginQosWrapper(), this);
       }
       catch (XmlBlasterException e) {
           Log.error(ME, e.toString());
@@ -126,7 +123,7 @@ public class TestPtDQueue extends TestCase implements I_Callback
          senderContent = "Hi " + receiverName + ", who are you? " + senderName;
          MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes());
          try {
-            publishOid = senderXmlBlaster.publish(msgUnit, qos);
+            publishOid = senderConnection.publish(msgUnit, qos);
             Log.error(ME, "Publishing to a not logged in client should throw an exception");
             assert("Publishing to a not logged in client should throw an exception", false);
          } catch(XmlBlasterException e) {
@@ -155,7 +152,7 @@ public class TestPtDQueue extends TestCase implements I_Callback
          senderContent = "Hi " + receiverName + ", who are you? " + senderName;
          MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes());
          try {
-            publishOid = senderXmlBlaster.publish(msgUnit, qos);
+            publishOid = senderConnection.publish(msgUnit, qos);
             Log.info(ME, "Sending done, returned oid=" + publishOid);
          } catch(XmlBlasterException e) {
             Log.error(ME, "publish() XmlBlasterException: " + e.reason);
@@ -169,7 +166,7 @@ public class TestPtDQueue extends TestCase implements I_Callback
          // Now the receiver logs in, and should get the message from the xmlBlaster queue ...
          try {
             receiverConnection = new CorbaConnection();
-            receiverXmlBlaster = receiverConnection.login(receiverName, passwd, new LoginQosWrapper(), this);
+            receiverConnection.login(receiverName, passwd, new LoginQosWrapper(), this);
          } catch (XmlBlasterException e) {
              Log.error(ME, e.toString());
              e.printStackTrace();

@@ -3,17 +3,17 @@ Name:      SystemInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Servlet to monitor system load on web server
-Version:   $Id: SystemInfo.java,v 1.11 2000/05/31 20:49:16 ruff Exp $
+Version:   $Id: SystemInfo.java,v 1.12 2000/06/13 13:03:56 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package html.systemInfo;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.StopWatch;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.http.Util;
 import org.xmlBlaster.protocol.http.BlasterHttpProxy;
 import org.xmlBlaster.protocol.http.HttpPushHandler;
-import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
 import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
 import org.xmlBlaster.client.*;
 

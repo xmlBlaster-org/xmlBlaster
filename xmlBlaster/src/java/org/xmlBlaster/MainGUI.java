@@ -3,7 +3,7 @@ Name:      MainGUI.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: MainGUI.java,v 1.30 2000/06/04 21:13:28 ruff Exp $
+Version:   $Id: MainGUI.java,v 1.31 2000/06/13 13:03:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -13,8 +13,8 @@ import org.xmlBlaster.engine.RequestBroker;
 import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.authentication.Authenticate;
-import org.xmlBlaster.protocol.corba.serverIdl.*;
-import org.xmlBlaster.protocol.corba.clientIdl.*;
+import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
+import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
 
 import java.util.Vector;
 import java.awt.*;
@@ -676,7 +676,8 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
     */
    private class ClientQuery
    {
-      private Server xmlBlaster = null;
+      // !!! change to native access !!!
+      private org.xmlBlaster.protocol.corba.serverIdl.Server xmlBlaster = null;
       private CorbaConnection corbaConnection = null;
       private final String ME = "ClientQuery";
       private String queryType = "XPATH";
@@ -713,7 +714,7 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
             MessageUnitContainer[] msgArr = xmlBlaster.get(xmlKey, qos);
             Log.info(ME, "Got " + msgArr.length + " messages for query '" + queryString + "'" + stop.nice());
             return msgArr;
-         } catch(XmlBlasterException e) {
+         } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
             Log.error(ME, "XmlBlasterException: " + e.reason);
             return new MessageUnitContainer[0];
          }

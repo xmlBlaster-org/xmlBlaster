@@ -3,14 +3,17 @@ Name:      TestGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestGet.java,v 1.7 2000/05/16 20:57:39 ruff Exp $
+Version:   $Id: TestGet.java,v 1.8 2000/06/13 13:04:03 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
-import org.xmlBlaster.client.*;
-import org.xmlBlaster.util.*;
-import org.xmlBlaster.protocol.corba.serverIdl.*;
-import org.xmlBlaster.protocol.corba.clientIdl.*;
+import org.xmlBlaster.client.CorbaConnection;
+import org.xmlBlaster.client.LoginQosWrapper;
+import org.xmlBlaster.client.PublishQosWrapper;
+import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
+import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
 import test.framework.*;
 
 
@@ -28,7 +31,6 @@ import test.framework.*;
  */
 public class TestGet extends TestCase
 {
-   private Server xmlBlaster = null;
    private static String ME = "Tim";
 
    private String publishOid = "TestGet";
@@ -64,7 +66,7 @@ public class TestGet extends TestCase
          corbaConnection = new CorbaConnection(); // Find orb
          String passwd = "secret";
          LoginQosWrapper qos = new LoginQosWrapper(); // == "<qos></qos>";
-         xmlBlaster = corbaConnection.login(loginName, passwd, qos); // Login to xmlBlaster
+         corbaConnection.login(loginName, passwd, qos); // Login to xmlBlaster
       }
       catch (Exception e) {
           Log.error(ME, e.toString());
@@ -85,7 +87,7 @@ public class TestGet extends TestCase
       String qos = "<qos></qos>";
       String[] strArr = null;
       try {
-         strArr = xmlBlaster.erase(xmlKey, qos);
+         strArr = corbaConnection.erase(xmlKey, qos);
          Log.info(ME, "Success, erased a message");
       } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
       if (strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " messages:");
@@ -108,7 +110,7 @@ public class TestGet extends TestCase
       try {
          String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'></key>";
          String qos = "<qos></qos>";
-         MessageUnitContainer[] msgArr = xmlBlaster.get(xmlKey, qos);
+         MessageUnitContainer[] msgArr = corbaConnection.get(xmlKey, qos);
          assert("get of not existing message is not possible", false);
       } catch(XmlBlasterException e) {
          Log.info(ME, "Success, got XmlBlasterException for trying to get unknown message: " + e.reason);
@@ -119,7 +121,7 @@ public class TestGet extends TestCase
          String xmlKey = "<key oid='" + publishOid + "' contentMime='text/plain'>\n</key>";
          MessageUnit msgUnit = new MessageUnit(xmlKey, senderContent.getBytes());
          PublishQosWrapper qosWrapper = new PublishQosWrapper(); // the same as "<qos></qos>"
-         xmlBlaster.publish(msgUnit, qosWrapper.toXml());
+         corbaConnection.publish(msgUnit, qosWrapper.toXml());
          Log.info(ME, "Success, published a message");
       } catch(XmlBlasterException e) {
          assert("publish - XmlBlasterException: " + e.reason, false);
@@ -129,7 +131,7 @@ public class TestGet extends TestCase
       try {
          String xmlKey = "<key oid='" + publishOid + "' queryType='EXACT'></key>";
          String qos = "<qos></qos>";
-         MessageUnitContainer[] msgArr = xmlBlaster.get(xmlKey, qos);
+         MessageUnitContainer[] msgArr = corbaConnection.get(xmlKey, qos);
          Log.info(ME, "Success, got the message");
          assertEquals("Corrupted content", senderContent, new String(msgArr[0].msgUnit.content));
       } catch(XmlBlasterException e) {
@@ -150,7 +152,7 @@ public class TestGet extends TestCase
       String qos = "<qos></qos>";
       for (int ii=0; ii<num; ii++) {
          try {
-            MessageUnitContainer[] msgArr = xmlBlaster.get(xmlKey, qos);
+            MessageUnitContainer[] msgArr = corbaConnection.get(xmlKey, qos);
             assert("get of not existing message is not possible", false);
          } catch(XmlBlasterException e) {
             // Log.info(ME, "Success, got XmlBlasterException for trying to get unknown message: " + e.reason);

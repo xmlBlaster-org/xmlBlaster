@@ -3,14 +3,20 @@ Name:      TestPub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestPub.java,v 1.6 2000/05/16 20:57:39 ruff Exp $
+Version:   $Id: TestPub.java,v 1.7 2000/06/13 13:04:04 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
-import org.xmlBlaster.client.*;
-import org.xmlBlaster.util.*;
-import org.xmlBlaster.protocol.corba.serverIdl.*;
-import org.xmlBlaster.protocol.corba.clientIdl.*;
+import org.xmlBlaster.client.CorbaConnection;
+import org.xmlBlaster.client.LoginQosWrapper;
+import org.xmlBlaster.client.I_Callback;
+import org.xmlBlaster.client.UpdateKey;
+import org.xmlBlaster.client.UpdateQoS;
+import org.xmlBlaster.client.PublishQosWrapper;
+import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
+import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
 import test.framework.*;
 
 
@@ -29,7 +35,6 @@ import test.framework.*;
  */
 public class TestPub extends TestCase implements I_Callback
 {
-   private Server xmlBlaster = null;
    private static String ME = "Tim";
    private boolean messageArrived = false;
 
@@ -69,7 +74,7 @@ public class TestPub extends TestCase implements I_Callback
          senderConnection = new CorbaConnection(); // Find orb
          String passwd = "secret";
          LoginQosWrapper qos = new LoginQosWrapper(); // == "<qos></qos>";
-         xmlBlaster = senderConnection.login(senderName, passwd, qos, this); // Login to xmlBlaster
+         senderConnection.login(senderName, passwd, qos, this); // Login to xmlBlaster
       }
       catch (Exception e) {
           Log.error(ME, e.toString());
@@ -91,7 +96,7 @@ public class TestPub extends TestCase implements I_Callback
       String qos = "<qos></qos>";
       String[] strArr = null;
       try {
-         strArr = xmlBlaster.erase(xmlKey, qos);
+         strArr = senderConnection.erase(xmlKey, qos);
       } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
       if (strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " messages:");
 
@@ -113,7 +118,7 @@ public class TestPub extends TestCase implements I_Callback
       numReceived = 0;
       subscribeOid = null;
       try {
-         subscribeOid = xmlBlaster.subscribe(xmlKey, qos);
+         subscribeOid = senderConnection.subscribe(xmlKey, qos);
          Log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
       } catch(XmlBlasterException e) {
          Log.warning(ME, "XmlBlasterException: " + e.reason);
@@ -145,7 +150,7 @@ public class TestPub extends TestCase implements I_Callback
 
       if (first) {
          try {
-            publishOid = xmlBlaster.publish(msgUnit, qos);
+            publishOid = senderConnection.publish(msgUnit, qos);
             Log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
          } catch(XmlBlasterException e) {
             Log.warning(ME, "XmlBlasterException: " + e.reason);
@@ -156,7 +161,7 @@ public class TestPub extends TestCase implements I_Callback
       }
       else {
          try {
-            publishOid = xmlBlaster.publish(msgUnit, qos);
+            publishOid = senderConnection.publish(msgUnit, qos);
             assert("Publishing readonly protected message again should not be possible", false);
          } catch(XmlBlasterException e) {
             Log.info(ME, "Success: Publishing again throws an exception");

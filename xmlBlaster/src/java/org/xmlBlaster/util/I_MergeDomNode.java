@@ -3,20 +3,9 @@ Name:      I_MergeDomNode.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface to delegate the merging of a node into an existing DOM tree
-Version:   $Id: I_MergeDomNode.java,v 1.3 2000/02/20 17:38:54 ruff Exp $
+Version:   $Id: I_MergeDomNode.java,v 1.4 2000/06/13 13:04:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
-
-import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
-import org.xmlBlaster.engine.RequestBroker;
-
-import org.xml.sax.InputSource;
-
-import org.w3c.dom.Document;
-import org.w3c.dom.NamedNodeMap;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Node;
-import org.w3c.dom.Attr;
 
 
 /**

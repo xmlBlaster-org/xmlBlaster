@@ -3,7 +3,7 @@ Name:      BlasterHttpProxyServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxyServlet.java,v 1.33 2000/06/05 09:28:48 ruff Exp $
+Version:   $Id: BlasterHttpProxyServlet.java,v 1.34 2000/06/13 13:04:01 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -15,8 +15,8 @@ import javax.servlet.*;
 import javax.servlet.http.*;
 import org.xmlBlaster.client.*;
 import org.xmlBlaster.util.*;
-import org.xmlBlaster.protocol.corba.serverIdl.*;
-import org.xmlBlaster.protocol.corba.clientIdl.*;
+import org.xmlBlaster.protocol.corba.serverIdl.Server;
+import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
 
 
 /**
@@ -33,7 +33,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
  * Invoke for testing:<br />
  *    http://localhost/servlet/BlasterHttpProxyServlet?ActionType=login&xmlBlaster.loginName=martin&xmlBlaster.passwd=secret
  * @author Marcel Ruff ruff@swand.lake.de
- * @version $Revision: 1.33 $
+ * @version $Revision: 1.34 $
  */
 public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlaster.util.LogListener
 {
@@ -133,7 +133,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
                           "', referer='" + req.getHeader("Referer") +
                           "'.");
 
-            if (Log.TRACE) Log.trace(ME, 
+            if (Log.TRACE) Log.trace(ME,
                           "user='" + req.getRemoteUser() +
                           "', serverPort='" + req.getServerPort() +
                           "', query='" + req.getQueryString() +
@@ -318,7 +318,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
             try {
                String subscribeOid = xmlBlaster.subscribe(xmlKey, qos);
                Log.trace(ME, "Success: Subscribe on " + subscribeOid + " done");
-            } catch(XmlBlasterException e) {
+            } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
                Log.warning(ME, "XmlBlasterException: " + e.reason);
             }
          }
@@ -342,7 +342,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
             try {
                String publishOid = xmlBlaster.publish(msgUnit, qos);
                Log.trace(ME, "Success: Publishing done, returned oid=" + publishOid);
-            } catch(XmlBlasterException e) {
+            } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
                Log.warning(ME, "XmlBlasterException: " + e.reason);
             }
          }

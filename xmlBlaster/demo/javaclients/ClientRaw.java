@@ -3,15 +3,26 @@ Name:      ClientRaw.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code how to access xmlBlaster using CORBA
-Version:   $Id: ClientRaw.java,v 1.10 2000/05/24 14:41:55 ruff Exp $
+Version:   $Id: ClientRaw.java,v 1.11 2000/06/13 13:03:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
-import org.xmlBlaster.util.*;
-import org.xmlBlaster.protocol.corba.authenticateIdl.*;
-import org.xmlBlaster.protocol.corba.serverIdl.*;
-import org.xmlBlaster.protocol.corba.clientIdl.*;
-// import jacorb.naming.NameServer;
+import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Args;
+import org.xmlBlaster.util.StopWatch;
+import org.xmlBlaster.util.XmlKeyBase;
+import org.xmlBlaster.util.XmlBlasterException;
+
+import org.xmlBlaster.protocol.corba.authenticateIdl.AuthServer;
+import org.xmlBlaster.protocol.corba.authenticateIdl.AuthServerHelper;
+import org.xmlBlaster.protocol.corba.serverIdl.Server;
+import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
+import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
+import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
+import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackOperations;
+import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackPOATie;
+import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackHelper;
+
 import org.omg.CosNaming.*;
 
 
@@ -99,7 +110,7 @@ public class ClientRaw
 
             xmlBlaster = authServer.login(loginName, passwd, qos);
             Log.info(ME, "Login done");
-         } catch(XmlBlasterException e) {
+         } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
             Log.warning(ME, "XmlBlasterException: " + e.reason);
          }
 
@@ -114,7 +125,7 @@ public class ClientRaw
             stop.restart();
             try {
                xmlBlaster.subscribe(xmlKey, "<qos></qos>");
-            } catch(XmlBlasterException e) {
+            } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
                Log.warning(ME, "XmlBlasterException: " + e.reason);
             }
             Log.info(ME, "Subscribe done, there should be no Callback" + stop.nice());
@@ -140,7 +151,7 @@ public class ClientRaw
             try {
                String publishOid = xmlBlaster.publish(msgUnit, "<qos></qos>");
                Log.trace(ME, "Returned oid=" + publishOid);
-            } catch(XmlBlasterException e) {
+            } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
                Log.warning(ME, "XmlBlasterException: " + e.reason);
             }
             Log.info(ME, "Publishing done, there should be a callback now" + stop.nice());
@@ -156,7 +167,7 @@ public class ClientRaw
          Log.info(ME, "Logout ...");
          try {
             authServer.logout(xmlBlaster);
-         } catch(XmlBlasterException e) {
+         } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
             Log.warning(ME, "XmlBlasterException: " + e.reason);
          }
 

@@ -3,7 +3,7 @@ Name:      ClientSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSub.java,v 1.11 2000/05/16 20:57:33 ruff Exp $
+Version:   $Id: ClientSub.java,v 1.12 2000/06/13 13:03:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -15,8 +15,12 @@ import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Args;
 import org.xmlBlaster.util.StopWatch;
 import org.xmlBlaster.util.CallbackAddress;
-import org.xmlBlaster.protocol.corba.serverIdl.*;
-import org.xmlBlaster.protocol.corba.clientIdl.*;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.protocol.corba.serverIdl.Server;
+import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
+import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
+import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
+import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackOperations;
 
 
 /**
@@ -79,7 +83,7 @@ public class ClientSub
             try {
                xmlBlaster.subscribe(xmlKey, "<qos></qos>");
                Log.trace(ME, "Subscribe done, there should be no Callback" + stop.nice());
-            } catch(XmlBlasterException e) {
+            } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
                Log.warning(ME, "XmlBlasterException: " + e.reason);
             }
          }
@@ -109,7 +113,7 @@ public class ClientSub
             try {
                publishOid = xmlBlaster.publish(msgUnit, "<qos></qos>");
                Log.info(ME, "Publishing done, returned oid=" + publishOid + stop.nice());
-            } catch(XmlBlasterException e) {
+            } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
                Log.warning(ME, "XmlBlasterException: " + e.reason);
             }
          }
@@ -130,7 +134,7 @@ public class ClientSub
             String[] strArr = null;
             try {
                strArr = xmlBlaster.erase(xmlKey, "<qos></qos>");
-            } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
+            } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
             if (strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " messages:");
          }
 

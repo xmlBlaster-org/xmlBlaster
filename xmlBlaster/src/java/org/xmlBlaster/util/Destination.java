@@ -3,12 +3,9 @@ Name:      Destination.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding destination address attributes
-Version:   $Id: Destination.java,v 1.4 2000/05/26 20:46:17 ruff Exp $
+Version:   $Id: Destination.java,v 1.5 2000/06/13 13:04:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
-
-import org.xmlBlaster.util.Log;
-import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
 
 
 /**

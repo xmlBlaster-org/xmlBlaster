@@ -3,13 +3,13 @@ Name:      ClientUpdateQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Queue for client messages
-Version:   $Id: ClientUpdateQueue.java,v 1.8 2000/02/24 22:19:52 ruff Exp $
+Version:   $Id: ClientUpdateQueue.java,v 1.9 2000/06/13 13:03:59 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
 import org.xmlBlaster.util.Log;
-import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterException;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.Collections;
@@ -24,7 +24,7 @@ import java.util.NoSuchElementException;
  * with the distinction that the consumer is not polling but
  * notified asynchronous.
  *
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  * @author $Author: ruff $
  */
 public class ClientUpdateQueue

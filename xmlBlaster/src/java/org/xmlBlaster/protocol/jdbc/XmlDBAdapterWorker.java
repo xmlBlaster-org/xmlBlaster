@@ -6,7 +6,7 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   The thread that does the actual connection and interaction
- * Version:   $Id: XmlDBAdapterWorker.java,v 1.3 2000/06/03 12:32:36 ruff Exp $
+ * Version:   $Id: XmlDBAdapterWorker.java,v 1.4 2000/06/13 13:04:02 ruff Exp $
  * ------------------------------------------------------------------------------
  */
 
@@ -14,10 +14,9 @@ package org.xmlBlaster.protocol.jdbc;
 
 import org.xmlBlaster.util.*;
 import org.xmlBlaster.util.pool.jdbc.*;
-import org.xmlBlaster.protocol.corba.serverIdl.*;
-import org.xmlBlaster.protocol.corba.clientIdl.*;
+import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
+import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.client.CorbaConnection;
-import org.omg.CosNaming.*;
 import org.xmlBlaster.client.UpdateQoS;
 import java.io.*;
 
@@ -240,7 +239,7 @@ public class XmlDBAdapterWorker extends Thread {
 
          System.out.println("Delivered Results...");
       }
-      catch (XmlBlasterException e) {
+      catch (org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
          System.out.println("Exception in notify: " + e.reason);
       }
       catch (Exception e) {

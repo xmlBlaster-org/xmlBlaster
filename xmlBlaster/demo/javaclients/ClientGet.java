@@ -3,14 +3,14 @@ Name:      ClientGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientGet.java,v 1.9 2000/05/16 20:57:33 ruff Exp $
+Version:   $Id: ClientGet.java,v 1.10 2000/06/13 13:03:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
 import org.xmlBlaster.util.*;
 import org.xmlBlaster.client.CorbaConnection;
-import org.xmlBlaster.protocol.corba.serverIdl.*;
-import org.xmlBlaster.protocol.corba.clientIdl.*;
+import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
+import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
 
 
 /**
@@ -28,7 +28,6 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
  */
 public class ClientGet
 {
-   private Server xmlBlaster = null;
    private static String ME = "Heidi";
 
    public ClientGet(String args[])
@@ -43,7 +42,7 @@ public class ClientGet
 
          //----------- Login to xmlBlaster -----------------------
          String passwd = "some";
-         xmlBlaster = corbaConnection.login(loginName, passwd, null);
+         corbaConnection.login(loginName, passwd, null);
 
          String publishOid = "";
          StopWatch stop = new StopWatch();
@@ -62,7 +61,7 @@ public class ClientGet
             Log.trace(ME, "Publishing ...");
             stop.restart();
             try {
-               publishOid = xmlBlaster.publish(msgUnit, "<qos></qos>");
+               publishOid = corbaConnection.publish(msgUnit, "<qos></qos>");
                Log.info(ME, "   Returned oid=" + publishOid);
             } catch(XmlBlasterException e) {
                Log.warning(ME, "XmlBlasterException: " + e.reason);
@@ -80,7 +79,7 @@ public class ClientGet
             stop.restart();
             MessageUnitContainer[] msgArr = null;
             try {
-               msgArr = xmlBlaster.get(xmlKey, "<qos></qos>");
+               msgArr = corbaConnection.get(xmlKey, "<qos></qos>");
             } catch(XmlBlasterException e) {
                Log.error(ME, "XmlBlasterException: " + e.reason);
             }
@@ -111,7 +110,7 @@ public class ClientGet
             Log.trace(ME, "Publishing ...");
             stop.restart();
             try {
-               publishOid = xmlBlaster.publish(msgUnit, "<qos></qos>");
+               publishOid = corbaConnection.publish(msgUnit, "<qos></qos>");
                Log.info(ME, "   Returned oid=" + publishOid);
             } catch(XmlBlasterException e) {
                Log.warning(ME, "XmlBlasterException: " + e.reason);
@@ -129,7 +128,7 @@ public class ClientGet
          stop.restart();
          MessageUnitContainer[] msgArr = null;
          try {
-            msgArr = xmlBlaster.get(xmlKey, "<qos></qos>");
+            msgArr = corbaConnection.get(xmlKey, "<qos></qos>");
          } catch(XmlBlasterException e) {
             Log.error(ME, "XmlBlasterException: " + e.reason);
          }

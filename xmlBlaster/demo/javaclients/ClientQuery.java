@@ -3,15 +3,16 @@ Name:      ClientGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientQuery.java,v 1.9 2000/05/16 20:57:33 ruff Exp $
+Version:   $Id: ClientQuery.java,v 1.10 2000/06/13 13:03:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
-import org.xmlBlaster.util.*;
+import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Args;
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.client.UpdateKey;
-import org.xmlBlaster.protocol.corba.serverIdl.*;
-import org.xmlBlaster.protocol.corba.clientIdl.*;
+import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
 
 
 /**
@@ -27,7 +28,6 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
  */
 public class ClientQuery
 {
-   private Server xmlBlaster = null;
    private static String ME = "Heidi";
    private String queryString;
    private String queryType = "XPATH";
@@ -47,7 +47,7 @@ public class ClientQuery
 
          CorbaConnection corbaConnection = new CorbaConnection(args);
          String passwd = "some";
-         xmlBlaster = corbaConnection.login(loginName, passwd, null);
+         corbaConnection.login(loginName, passwd, null);
 
 
          String xmlKey = "<key oid='' queryType='" + queryType + "'>\n" +
@@ -55,7 +55,7 @@ public class ClientQuery
                          "</key>";
          MessageUnitContainer[] msgArr = null;
          try {
-            msgArr = xmlBlaster.get(xmlKey, "<qos></qos>");
+            msgArr = corbaConnection.get(xmlKey, "<qos></qos>");
             Log.info(ME, "Got " + msgArr.length + " messages for query '" + queryString + "':");
             for (int ii=0; ii<msgArr.length; ii++) {
                UpdateKey updateKey = new UpdateKey();

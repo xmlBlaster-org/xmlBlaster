@@ -3,7 +3,7 @@ Name:      TestLoginLogoutEvent.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout event test for xmlBlaster
-Version:   $Id: TestLoginLogoutEvent.java,v 1.2 2000/05/16 20:57:39 ruff Exp $
+Version:   $Id: TestLoginLogoutEvent.java,v 1.3 2000/06/13 13:04:04 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -13,10 +13,10 @@ import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
 import org.xmlBlaster.util.Log;
-import org.xmlBlaster.util.Args;
-import org.xmlBlaster.util.StopWatch;
-import org.xmlBlaster.protocol.corba.serverIdl.*;
-import org.xmlBlaster.protocol.corba.clientIdl.*;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.protocol.corba.serverIdl.Server;
+import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
+import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
 import test.framework.*;
 
 
@@ -104,7 +104,7 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
       numReceived = 0;
       try {
          xmlBlaster.unSubscribe(xmlKey, qos);
-      } catch(XmlBlasterException e) {
+      } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
          Log.warning(ME+"-subscribe", "XmlBlasterException: " + e.reason);
          assert("unSubscribe - XmlBlasterException: " + e.reason, false);
       }
@@ -126,7 +126,7 @@ public class TestLoginLogoutEvent extends TestCase implements I_Callback
       try {
          subscribeOid = xmlBlaster.subscribe(xmlKey, qos);
          Log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
-      } catch(XmlBlasterException e) {
+      } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
          Log.warning(ME+"-subscribe", "XmlBlasterException: " + e.reason);
          assert("subscribe - XmlBlasterException: " + e.reason, false);
       }

@@ -5,7 +5,7 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   Main class for xml database adapter
- * Version:   $Id: XmlDBAdapter.java,v 1.4 2000/06/03 12:33:07 ruff Exp $
+ * Version:   $Id: XmlDBAdapter.java,v 1.5 2000/06/13 13:04:02 ruff Exp $
  * ------------------------------------------------------------------------------
  */
 
@@ -13,11 +13,10 @@ package org.xmlBlaster.protocol.jdbc;
 
 import org.xmlBlaster.util.*;
 import org.xmlBlaster.util.pool.jdbc.*;
-import org.xmlBlaster.protocol.corba.serverIdl.*;
-import org.xmlBlaster.protocol.corba.clientIdl.*;
 import org.xmlBlaster.client.*;
-import org.omg.CosNaming.*;
 import org.xmlBlaster.client.UpdateQoS;
+import org.xmlBlaster.protocol.corba.serverIdl.Server;
+import org.omg.CosNaming.*;
 import java.io.*;
 import java.util.*;
 

@@ -2,6 +2,14 @@
 
 Changes for 0.78 [???     2000]
 ==============================
+  - Added XmlBlasterException.java in org.xmlBlaster.util package.
+    This allows Corba independend Exception handling.
+    The xmlBlaster.idl defined XmlBlasterException
+    is not removed and still resides in package
+       org.xmlBlaster.protocol.corba.serverIdl
+    NOTE: You need to change the package of XmlBlasterException
+    in your code as well (if not thrown from Corba).
+
   - Added new package org.jutils to the xmlBlaster distribution.
     This replace org.xmlBlaster.util over the time.
     You need to set the environment variable JUTILS_HOME to:

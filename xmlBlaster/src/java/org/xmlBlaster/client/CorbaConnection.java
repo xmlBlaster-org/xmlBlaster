@@ -3,13 +3,17 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.54 2000/06/04 23:44:45 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.55 2000/06/13 13:03:58 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
 import org.xmlBlaster.util.*;
-import org.xmlBlaster.protocol.corba.serverIdl.*;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.I_InvocationRecorder;
+import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
+import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
+import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.protocol.corba.clientIdl.*;
 import org.xmlBlaster.protocol.corba.authenticateIdl.AuthServer;
 import org.xmlBlaster.protocol.corba.authenticateIdl.AuthServerHelper;
@@ -26,6 +30,11 @@ import java.util.Properties;
  * Please note that you don't need to use this wrapper, you can use the raw CORBA
  * interface as well. You can also hack your own little wrapper, which does exactly
  * what you want.
+ * <p>
+ * This class converts the Corba based exception<br /> 
+ *    org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException<br />
+ * to<br />
+ *    org.xmlBlaster.util.XmlBlasterException
  * <p>
  * There is a constructor for applets, and standalone Java clients.
  * <p />
@@ -61,10 +70,10 @@ import java.util.Properties;
  * first time the ORB is created.<br />
  * This will be fixed as soon as possible.
  *
- * @version $Revision: 1.54 $
+ * @version $Revision: 1.55 $
  * @author $Author: ruff $
  */
-public class CorbaConnection implements ServerOperations
+public class CorbaConnection implements I_InvocationRecorder
 {
    private static final String ME = "CorbaConnection";
    protected String[] args = null;
@@ -90,7 +99,7 @@ public class CorbaConnection implements ServerOperations
    private String passwd = null;
    protected LoginQosWrapper loginQos = null;
 
-   /** queue all the messages, and play them back through interface ServerOperations */
+   /** queue all the messages, and play them back through interface I_InvocationRecorder */
    private InvocationRecorder recorder = null;
 
    /** This interface needs to be implemented by the client in fail save mode
@@ -546,11 +555,11 @@ public class CorbaConnection implements ServerOperations
          numLogins++;
          if (Log.TRACE) Log.trace(ME, "Success, login for " + loginName);
          if (Log.DUMP) Log.dump(ME, loginQos.toXml());
-      } catch(XmlBlasterException e) {
+      } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
          if (Log.TRACE) Log.trace(ME, "Login failed for " + loginName + ", numLogins=" + numLogins);
          if (numLogins == 0)
             startPinging();
-         throw e;
+         throw new XmlBlasterException(e.id, e.reason);
       }
       if (isReconnectPolling && numLogins > 0)
          clientCallback.reConnected();
@@ -662,7 +671,7 @@ public class CorbaConnection implements ServerOperations
          // orb = null;
          xmlBlaster = null;
          return true;
-      } catch(XmlBlasterException e) {
+      } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
          Log.warning(ME, "XmlBlasterException: [" + e.id + "]" + " " + e.reason);
       } catch(Exception e) {
          Log.warning(ME, e.toString());
@@ -777,7 +786,7 @@ public class CorbaConnection implements ServerOperations
 
 
    /**
-    * Enforced by ServerOperations interface (fail save mode).
+    * Enforced by I_InvocationRecorder interface (fail save mode).
     * see explanations of publish() method.
     * @see xmlBlaster.idl
     */
@@ -786,8 +795,8 @@ public class CorbaConnection implements ServerOperations
       if (Log.CALLS) Log.calls(ME, "subscribe() ...");
       try {
          return getXmlBlaster().subscribe(xmlKey, qos);
-      } catch(XmlBlasterException e) {
-         throw e;
+      } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
+         throw new XmlBlasterException(e.id, e.reason); // transform Corba exception to native exception
       } catch(Exception e) {
          if (recorder != null) recorder.subscribe(xmlKey, qos);
          handleConnectionException(e);
@@ -797,7 +806,7 @@ public class CorbaConnection implements ServerOperations
 
 
    /**
-    * Enforced by ServerOperations interface (fail save mode)
+    * Enforced by I_InvocationRecorder interface (fail save mode)
     * @see xmlBlaster.idl
     */
    public final void unSubscribe(String xmlKey, String qos) throws XmlBlasterException
@@ -805,8 +814,8 @@ public class CorbaConnection implements ServerOperations
       if (Log.CALLS) Log.calls(ME, "unSubscribe() ...");
       try {
          getXmlBlaster().unSubscribe(xmlKey, qos);
-      } catch(XmlBlasterException e) {
-         throw e;
+      } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
+         throw new XmlBlasterException(e.id, e.reason); // transform Corba exception to native exception
       } catch(Exception e) {
          if (recorder != null) recorder.unSubscribe(xmlKey, qos);
          handleConnectionException(e);
@@ -821,7 +830,7 @@ public class CorbaConnection implements ServerOperations
     * If the server disappears you get an exception.
     * This call will not block.
     * <p />
-    * Enforced by ServerOperations interface (fail save mode)
+    * Enforced by I_InvocationRecorder interface (fail save mode)
     * @see xmlBlaster.idl
     */
    public final String publish(MessageUnit msgUnit, String qos) throws XmlBlasterException
@@ -829,9 +838,9 @@ public class CorbaConnection implements ServerOperations
       if (Log.TRACE) Log.trace(ME, "Publishing ...");
       try {
          return getXmlBlaster().publish(msgUnit, qos);
-      } catch(XmlBlasterException e) {
+      } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
          if (Log.TRACE) Log.trace(ME, "XmlBlasterException: " + e.reason);
-         throw e;
+         throw new XmlBlasterException(e.id, e.reason); // transform Corba exception to native exception
       } catch(Exception e) { // org.omg.CORBA.COMM_FAILURE (others as well??)
                              // NullPointerException the following calls, because of xmlBlaster is set to null
          if (recorder != null) recorder.publish(msgUnit, qos);
@@ -842,7 +851,7 @@ public class CorbaConnection implements ServerOperations
 
 
    /**
-    * Enforced by ServerOperations interface (fail save mode)
+    * Enforced by I_InvocationRecorder interface (fail save mode)
     * @see xmlBlaster.idl
     */
    public String[] publishArr(MessageUnit [] msgUnitArr, String [] qosArr) throws XmlBlasterException
@@ -850,9 +859,9 @@ public class CorbaConnection implements ServerOperations
       if (Log.CALLS) Log.calls(ME, "publishArr() ...");
       try {
          return getXmlBlaster().publishArr(msgUnitArr, qosArr);
-      } catch(XmlBlasterException e) {
+      } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
          if (Log.TRACE) Log.trace(ME, "XmlBlasterException: " + e.reason);
-         throw e;
+         throw new XmlBlasterException(e.id, e.reason); // transform Corba exception to native exception
       } catch(Exception e) {
          if (recorder != null) recorder.publishArr(msgUnitArr, qosArr);
          handleConnectionException(e);
@@ -862,7 +871,7 @@ public class CorbaConnection implements ServerOperations
 
 
    /**
-    * Enforced by ServerOperations interface (fail save mode)
+    * Enforced by I_InvocationRecorder interface (fail save mode)
     * @see xmlBlaster.idl
     */
    public final String[] erase(String xmlKey, String qos) throws XmlBlasterException
@@ -870,8 +879,8 @@ public class CorbaConnection implements ServerOperations
       if (Log.CALLS) Log.calls(ME, "erase() ...");
       try {
          return getXmlBlaster().erase(xmlKey, qos);
-      } catch(XmlBlasterException e) {
-         throw e;
+      } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
+         throw new XmlBlasterException(e.id, e.reason); // transform Corba exception to native exception
       } catch(Exception e) {
          if (recorder != null) recorder.erase(xmlKey, qos);
          handleConnectionException(e);
@@ -881,7 +890,7 @@ public class CorbaConnection implements ServerOperations
 
 
    /**
-    * Enforced by ServerOperations interface (fail save mode)
+    * Enforced by I_InvocationRecorder interface (fail save mode)
     * @see xmlBlaster.idl
     */
    public final MessageUnitContainer[] get(String xmlKey, String qos) throws XmlBlasterException
@@ -903,8 +912,8 @@ public class CorbaConnection implements ServerOperations
          else
             units = getXmlBlaster().get(xmlKey, qos);
          return units;
-      } catch(XmlBlasterException e) {
-         throw e;
+      } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
+         throw new XmlBlasterException(e.id, e.reason); // transform Corba exception to native exception
       } catch(Exception e) {
          if (recorder != null) recorder.get(xmlKey, qos);
          e.printStackTrace();
@@ -915,7 +924,7 @@ public class CorbaConnection implements ServerOperations
 
 
    /**
-    * Enforced by ServerOperations interface (fail save mode)
+    * Enforced by I_InvocationRecorder interface (fail save mode)
     * @see xmlBlaster.idl
     */
    public final void setClientAttributes(String clientName, String xmlAttr, String qos) throws XmlBlasterException
@@ -923,8 +932,8 @@ public class CorbaConnection implements ServerOperations
       if (Log.CALLS) Log.calls(ME, "setClientAttributes() ...");
       try {
          getXmlBlaster().setClientAttributes(clientName, xmlAttr, qos);
-      } catch(XmlBlasterException e) {
-         throw e;
+      } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
+         throw new XmlBlasterException(e.id, e.reason); // transform Corba exception to native exception
       } catch(Exception e) {
          if (recorder != null) recorder.setClientAttributes(clientName, xmlAttr, qos);
          handleConnectionException(e);
@@ -933,7 +942,7 @@ public class CorbaConnection implements ServerOperations
 
 
    /**
-    * Enforced by ServerOperations interface (fail save mode)
+    * Check server.
     * @see xmlBlaster.idl
     */
    public void ping()

@@ -3,17 +3,23 @@ Name:      ClientPubDestination.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster and publishing to destinations
-Version:   $Id: ClientPubDestination.java,v 1.8 2000/05/16 20:57:33 ruff Exp $
+Version:   $Id: ClientPubDestination.java,v 1.9 2000/06/13 13:03:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
-import org.xmlBlaster.util.*;
 import org.xmlBlaster.client.CorbaConnection;
 import org.xmlBlaster.client.LoginQosWrapper;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQoS;
-import org.xmlBlaster.protocol.corba.serverIdl.*;
-import org.xmlBlaster.protocol.corba.clientIdl.*;
+import org.xmlBlaster.util.Log;
+import org.xmlBlaster.util.Args;
+import org.xmlBlaster.util.CallbackAddress;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.protocol.corba.serverIdl.Server;
+import org.xmlBlaster.protocol.corba.serverIdl.MessageUnit;
+import org.xmlBlaster.protocol.corba.serverIdl.MessageUnitContainer;
+import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
+import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackOperations;
 
 
 /**
@@ -136,7 +142,7 @@ public class ClientPubDestination
             try {
                publishOid = xmlBlaster.publish(msgUnit, qos);
                Log.info(ME, "Sending done, returned oid=" + publishOid);
-            } catch(XmlBlasterException e) {
+            } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
                Log.error(ME, "publish() XmlBlasterException: " + e.reason);
                retVal = false;
             }
