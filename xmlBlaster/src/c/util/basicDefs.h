@@ -3,6 +3,7 @@ Name:      basicDefs.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
+Note:      The gcc and icc (>=8) both define __GNUC__
 -----------------------------------------------------------------------------*/
 #ifndef XMLBLASTER_basicDefs_H
 #define XMLBLASTER_basicDefs_H
