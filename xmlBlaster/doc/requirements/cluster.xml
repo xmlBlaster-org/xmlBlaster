@@ -67,6 +67,11 @@
       Note that the publisher does not need to be connected to the master node, the client in the
       down left edge of the picture is publishing as well.
       </p>
+      <p>
+      We introduce the term <i>stratum</i> as the distance of a node from the master. This is done
+      in analogy to the network time protocol (NTP). A stratum of 0 is the master itself,
+      1 is the first slave and stratum=2 would be bilbo in the above picture.
+      </p>
       </li>
       <li><h4>Availability (Failover):</h4><br />
       An xmlBlaster slave may adopt the master role for selective message types
@@ -85,7 +90,7 @@
       This is the example in the above picture.
       </li>
       <li>Slave failure:<br />
-      frodo dies, bilbo needs to rearrange.
+      frodo dies, bilbo needs to rearrange (see figure 1).
       Bilbo needs to know the current cluster situation.
       </li>
       <li>Client reconnect:<br />
@@ -138,7 +143,7 @@
          <li><h4>Find out who is the master of a message</h4><br />
          We have a message and need to map it to a master.
          The decision can be based on any information in the message.
-         As a default we supply a domain based approach:
+         As a default we supply a simple key attribute based approach:
          An XML attribute <i>domain</i> is used with the
          message &lt;key> tag, for example:<br />
          <pre>&lt;key domain='STOCK_EXCHANGE'/></pre>
@@ -181,7 +186,8 @@
 
       <li>Routing of published messages<br />
       If a message is published from a data source to a slave server, the message is routed directly
-      to the master server (which may be a slave as well, forwarding the message to the real master).
+      to the master server (which may be a slave as well, forwarding the message to the real master
+      with stratum level equals zero).
       If the master server is currently offline, it is queued
       for this 'client' until it logs in.<br />
 
@@ -225,6 +231,9 @@
       it is based on the URL naming synstax and allows addressing
       any client at any node.
       The routing setup for such messages is not specified yet.
+      Clustering applies for Publish/Subscribe messages only, PtP messages
+      are just routed to their destination using the cluster node as hops
+      to find the goal.
       </li>
 
       <li>Multiple masters for same domain<br />
@@ -392,7 +401,8 @@
          <td> </td>
          </tr>
          <tr><td>content</td><td><pre>
-   // The master is determined with a customer plugin (no explicit domain)
+   // The master is determined with a customer plugin
+   // (no explicit domain)
    &lt;clusternode id='heron'>
       &lt;master>
          Java plugin (implements I_MapMsgToMasterId)
@@ -427,9 +437,9 @@
          <tr><td>content</td><td><pre>
    &lt;clusternode id='heron'>
       &lt;state>
-         &lt;cpu id='0' idle='40'/>            &lt;!-- currently 60% load on first CPU -->
+         &lt;cpu id='0' idle='40'/>    &lt;!-- currently 60% load on first CPU -->
          &lt;cpu id='1' idle='44'/>
-         &lt;ram free='12000'/>                &lt;!-- xmlBlaster server instance has 12 MB free memory -->
+         &lt;ram free='12000'/>        &lt;!-- xmlBlaster server instance has 12 MB free memory -->
          &lt;performance bogomips='1205.86' idleIndex='20'/>
       &lt;/state>
    &lt;/clusternode>
@@ -438,13 +448,35 @@
       We need to investigate how other clusters communicate their
       current load in a standardized way.
       </p>
+
+
+      <br />
+
+      <p>
+      <table border="1">
+         <tr><td> </td><td>Quality of Service (QoS) of a message traversing a cluster</td><td>Comments</td></tr>
+         <tr><td>qos</td><td><pre>
+   &lt;qos>
+      &lt;sender>joe&lt;/sender>
+      &lt;route>
+         &lt;node id='bilbo' stratum='2'/>
+         &lt;node id='frodo' stratum='1'/>
+         &lt;node id='heron' stratum='0'/>
+      &lt;/route>
+   &lt;/qos>
+         </pre></td>
+         <td>A message published to <i>bilbo</i> found its way over <i>frodo</i> to the master <i>heron</i>.
+         </td>
+         </tr>
+      </table>
+      </p>
    </example>
 
 
    <author>ruff@swand.lake.de</author>
    <author>Heinrich.Goetzger@exploding-systems.de</author>
    <date>2000 04 10</date>
-   <revision>$Revision: 1.14 $</revision>
+   <revision>$Revision: 1.15 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
