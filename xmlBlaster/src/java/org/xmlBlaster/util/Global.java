@@ -249,7 +249,7 @@ public class Global implements Cloneable
          counter++;
          if (this.firstInstance != null) {
             System.out.println("######Global args constructor invoked again, try Global.instance()");
-            // Thread.currentThread().dumpStack();
+            Thread.currentThread().dumpStack();
          }
       }
       synchronized (Global.class) {
@@ -816,45 +816,14 @@ public class Global implements Cloneable
    }
 
    /**
-    * Get a clone, it is a mixture between shallow and deep copy.
+    * Get a deep clone (everything is independent from the origin).
     * <p />
-    * All immutable elements are a shallow clone.<br />
     * The properties and log channels are copied with a deep copy
     * manipulating these will not affect the original Global.<br />
     * All other attributes are initialized as on startup.
     */
    protected Object clone() {
-      Property p = (Property)this.property.clone();
-      Global g = new Global(p.getProperties());
-      return g;
-      // Changed 2003-03-24 Marcel
-      /*
-      try {
-         Global g = (Global)super.clone();
-         g.errorText = null;
-         g.property = (Property)this.property.clone();
-         //g.logDefault =
-         g.logChannels = (Hashtable)this.logChannels.clone();
-         g.nativeCallbackDriverMap = Collections.synchronizedMap(new HashMap()); // (HashMap)((HashMap)this.nativeCallbackDriverMap).clone();
-         g.objectMap = Collections.synchronizedMap(new HashMap());
-         g.bootstrapAddress = null;
-         g.clientSecurityLoader = null;
-         g.recorderPluginManager = null;
-         g.connectQosFactory = this.connectQosFactory;
-         g.msgQosFactory = this.msgQosFactory;
-         g.queryQosFactory = this.queryQosFactory;
-         g.statusQosFactory = this.statusQosFactory;
-         g.dispatchPluginManager = null; // Force a new instance of DispatchPluginManager (which has its separate cache of plugins)
-
-         if (g.id != this.id)
-            getLog("core").error(ME, "g.id=" + g.id + " and id=" + this.id);
-         return g;
-      }
-      catch (CloneNotSupportedException e) {
-         logDefault.error(ME, "Global clone failed: " + e.toString());
-         return null;
-      }
-      */
+      return new Global(Property.propsToArgs(this.property.getProperties()), false, false);
    }
 
    /**
