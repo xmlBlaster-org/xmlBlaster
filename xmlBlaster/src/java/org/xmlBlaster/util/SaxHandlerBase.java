@@ -3,7 +3,7 @@ Name:      SaxHandlerBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Default handling of Sax callbacks
-Version:   $Id: SaxHandlerBase.java,v 1.12 2002/04/25 06:14:47 ruff Exp $
+Version:   $Id: SaxHandlerBase.java,v 1.13 2002/05/06 07:34:14 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -139,7 +139,8 @@ public class SaxHandlerBase implements ContentHandler, ErrorHandler
     */
    public void characters(char ch[], int start, int length)
    {
-      character.append(new String(ch, start, length));
+      //character.append(new String(ch, start, length));
+      character.append(ch, start, length);
    }
 
    /** End document. */
