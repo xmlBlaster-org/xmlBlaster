@@ -2,6 +2,10 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes cvs
 ===========
+ o J2ME:
+   - Ported String concat with '+' to StringBuffer.append()
+   - Fixed compilation for JDK 1.5 (forcing target 1.4)
+
  o Added administrative access to a subscription dump for a client.
    Try something like
      java javaclients.HelloWorldSubscribe -session.name joe/1 -xpath //key
