@@ -3,7 +3,7 @@ Name:      ConnectQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: ConnectQos.java,v 1.6 2002/03/13 16:41:34 ruff Exp $
+Version:   $Id: ConnectQos.java,v 1.7 2002/03/17 07:28:06 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -38,10 +38,10 @@ import java.io.Serializable;
  *          &lt;passwd>secret&lt;/passwd>
  *          ]]>
  *        &lt;/securityService>
- *        &lt;session timeout='3600000' maxSessions='10' clearSessions='false'>
+ *        &lt;session timeout='3600000' maxSessions='10' clearSessions='false' sessionId='4e56890ghdFzj0'>
  *        &lt;/session>
  *        &lt;ptp>true&lt;/ptp>
- *        &lt;callback type='IOR'>
+ *        &lt;callback type='IOR' sessionId='4e56890ghdFzj0'>
  *           IOR:10000010033200000099000010....
  *           &lt;burstMode collectTime='400' />
  *        &lt;/callback>
@@ -86,7 +86,7 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
    protected transient String tmpSecurityPluginVersion = null;
 
    /** Hack to transport callback driver for socket driver (as we have no seperate callback server) */
-   protected I_CallbackDriver cbDriver = null;
+   // DELETE protected I_CallbackDriver cbDriver = null;
 
 
    /**
@@ -321,20 +321,23 @@ public class ConnectQos extends org.xmlBlaster.util.XmlQoSBase implements Serial
     * Deliver the driver object to be reused on callback
     * @param cbDriver    If protocolServer driver shall be reused for protocolCallback driver (native/SOCKET)
     */
+    /* DELETE
    public void setCallbackDriver(I_CallbackDriver cbDriver)
    {
       this.cbDriver = cbDriver;
    }
-
+*/
 
    /**
     * Deliver the driver object to be reused on callback
     * @param cbDriver    If protocolServer driver shall be reused for protocolCallback driver (native/SOCKET)
     */
+    /* DELETE
    public I_CallbackDriver getCallbackDriver()
    {
       return this.cbDriver;
    }
+   */
 
    /**
     * Allows to set session specific informations. 
