@@ -1168,6 +1168,8 @@ doxygen Doxyfile
 
       <li> Integrate Base64 support, for example from <a href="http://wbxmllib.sourceforge.net/html/group__wbxml__base64.html" target='others'>WBXML</a></li>
 
+      <li> I18N internationalization with gettext <a href="http://oriya.sarovar.org/docs/gettext/" target='others'>tutorial</a></li>
+
       </ul>
       </p>
       <h2>C++ remark</h2>
