@@ -2406,7 +2406,7 @@ TODO
             <libset dir="${CORBACPP_HOME}/lib" libs="${ORBACUS_LIBS}" if="ORBACUS" />
 
             <!-- XERCES XML parser -->
-            <libset dir="${XMLCPP_HOME}/lib" libs="xerces-c${XMLCPP_VER}" if="windows" />
+            <libset dir="${XMLCPP_HOME}/lib" libs="xerces-c${XMLCPP_VER}${CPP_DEBUG_POSTFIX}" if="windows" />
 
             <!-- xmlBlasterClientC.so -->
             <libset dir="${lib.dir}" libs="${c.lib.name}" if="COMPILE_SOCKET_DEFINE" />
