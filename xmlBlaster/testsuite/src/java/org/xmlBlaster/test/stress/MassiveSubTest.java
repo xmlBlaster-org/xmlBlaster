@@ -26,11 +26,12 @@ import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
+import org.xmlBlaster.j2ee.util.GlobalUtil;
 
 import org.xmlBlaster.test.Util;
 import org.xmlBlaster.test.MsgInterceptor;
 import junit.framework.*;
-
+import org.jutils.runtime.ThreadLister;
 /**
  * Test differents scenarios for a massive ammount of subscibers.
  *
@@ -69,6 +70,7 @@ public class MassiveSubTest extends TestCase implements I_Callback {
    private int numReceived = 0;         // error checking
    private final String contentMime = "text/xml";
    private final String contentMimeExtended = "1.0";
+   private GlobalUtil globalUtil;
 
    class Client {
       String loginName;
@@ -114,6 +116,7 @@ public class MassiveSubTest extends TestCase implements I_Callback {
       ME = ME+":"+clientProtocol+(useOneConnection ? ":oneCon":":manyCon")+":"+numSubscribers + (maxSubPerCon>0?"/"+maxSubPerCon:"");
 
       numToRec = numSubscribers * noToPub;
+
    }
    
    /**
@@ -123,12 +126,26 @@ public class MassiveSubTest extends TestCase implements I_Callback {
     */
    protected void setUp()
    {
+      String[] args = {
+         "-ClientProtocolPlugin[LOCAL][1.0]",
+         "org.xmlBlaster.client.protocol.local.LocalConnection",
+         "-ClientCbServerProtocolPlugin[LOCAL][1.0]",
+         "org.xmlBlaster.client.protocol.local.LocalCallbackImpl",
+         "-CbProtocolPlugin[LOCAL][1.0]",
+         "org.xmlBlaster.protocol.local.CallbackLocalDriver"
+      };
+      glob.init(args);
+
       log.info(ME, "Setting up test ...");
       if (withEmbedded) {
          glob.init(Util.getOtherServerPorts(serverPort));
          serverThread = EmbeddedXmlBlaster.startXmlBlaster(glob);
          log.info(ME, "XmlBlaster is ready for testing a lots of subscribers");
-      }
+         globalUtil = new GlobalUtil( serverThread.getMain().getGlobal() );
+      } else {
+         globalUtil = new GlobalUtil( );
+      } // end of else
+      glob = globalUtil.getClone(glob);
 
 
       numReceived = 0;
@@ -232,112 +249,121 @@ public class MassiveSubTest extends TestCase implements I_Callback {
     */
    public void subcribeMany()
    {
+      int ci=-1;
       try {
 
-      if (log.TRACE) log.trace(ME, "Subscribing ...");
-
-      String passwd = "secret";
-
-      SubscribeKey subKeyW = new SubscribeKey(glob, publishOid1);
-      String subKey = subKeyW.toXml(); // "<key oid='" + publishOid1 + "' queryType='EXACT'></key>";
-
-      SubscribeQos subQosW = new SubscribeQos(glob); // "<qos></qos>";
-      String subQos = subQosW.toXml();
-
-      manyClients = new Client[numSubscribers];
-      if (maxSubPerCon >0 ) {
-         // Check if reasonably
-          if (  numSubscribers %  maxSubPerCon!= 0) {
-             assertTrue("numSubscribers not divadable by breakpoint", false);
-          }
-
-          manyConnections = new I_XmlBlasterAccess[numSubscribers/maxSubPerCon];
-      } // end of if ()
-      
+         if (log.TRACE) log.trace(ME, "Subscribing ...");
          
-      long usedBefore = getUsedServerMemory();
-
-      log.info(ME, "Setting up " + numSubscribers + " subscriber clients ...");
-      log.removeLogLevel("INFO");
-      stopWatch = new StopWatch();
-      for (int ii=0,ci=-1; ii<numSubscribers; ii++) {
-         Client sub = new Client();
-         sub.loginName = "Joe-" + ii;
-         sub.oneConnection = useOneConnection;
-         if (useOneConnection) {
-            // Should we distribute among a few connections
-            if (maxSubPerCon >0) {
-               if (  ii % maxSubPerCon == 0) {
-                  ci++;
-                  try {
-                     log.trace(ME,"Creating connection no: " +ci);
-                     Global gg = glob.getClone(null);
-                     // Try to reuse the same ORB to avoid too many threads:
-                     if ("IOR".equals(gg.getProperty().get("protocol","IOR")) && ci > 0) {
-                        gg.addObjectEntry(Constants.RELATING_CLIENT+":org.xmlBlaster.protocol.corba.OrbInstanceWrapper",
-                                          (org.xmlBlaster.protocol.corba.OrbInstanceWrapper)manyConnections[ci-1].getGlobal().getObjectEntry(Constants.RELATING_CLIENT+":org.xmlBlaster.protocol.corba.OrbInstanceWrapper"));
+         String passwd = "secret";
+         
+         SubscribeKey subKeyW = new SubscribeKey(glob, publishOid1);
+         String subKey = subKeyW.toXml(); // "<key oid='" + publishOid1 + "' queryType='EXACT'></key>";
+         
+         SubscribeQos subQosW = new SubscribeQos(glob); // "<qos></qos>";
+         String subQos = subQosW.toXml();
+         
+         manyClients = new Client[numSubscribers];
+         if (maxSubPerCon >0 ) {
+            // Check if reasonably
+            if (  numSubscribers %  maxSubPerCon!= 0) {
+             assertTrue("numSubscribers not divadable by breakpoint", false);
+            }
+            
+            manyConnections = new I_XmlBlasterAccess[numSubscribers/maxSubPerCon];
+         } // end of if ()
+         
+         
+         long usedBefore = getUsedServerMemory();
+         
+         log.info(ME, "Setting up " + numSubscribers + " subscriber clients ...");
+         log.removeLogLevel("INFO");
+         int startNoThreads = ThreadLister.countThreads();
+         //ThreadLister.listAllThreads(System.out);
+         stopWatch = new StopWatch();
+         for (int ii=0; ii<numSubscribers; ii++) {
+            Client sub = new Client();
+            sub.loginName = "Joe-" + ii;
+            sub.oneConnection = useOneConnection;
+            if (useOneConnection) {
+               // Should we distribute among a few connections
+               if (maxSubPerCon >0) {
+                  if (  ii % maxSubPerCon == 0) {
+                     ci++;
+                     try {
+                        log.trace(ME,"Creating connection no: " +ci);
+                        Global gg = globalUtil.getClone(glob);
+                        // Try to reuse the same ORB to avoid too many threads:
+                        if ("IOR".equals(gg.getProperty().get("protocol","IOR")) && ci > 0) {
+                           gg.addObjectEntry(Constants.RELATING_CLIENT+":org.xmlBlaster.protocol.corba.OrbInstanceWrapper",
+                                             (org.xmlBlaster.protocol.corba.OrbInstanceWrapper)manyConnections[ci-1].getGlobal().getObjectEntry(Constants.RELATING_CLIENT+":org.xmlBlaster.protocol.corba.OrbInstanceWrapper"));
+                        }
+                        manyConnections[ci] = gg.getXmlBlasterAccess();
+                        ConnectQos connectQos = new ConnectQos(gg, sub.loginName, passwd); // "<qos></qos>"; During login this is manipulated (callback address added)
+                        // If we have many subs on one con, we must raise the max size of the callback queue!
+                        CbQueueProperty cbProp =connectQos.getSessionCbQueueProperty();
+                        // algo is maxSubPerCon*4
+                        cbProp.setMaxEntries(maxSubPerCon*1000);//This means we have a backlog of 1000 messages per subscriber as i normal when each con only have one subscriber!
+                        //cbProp.setMaxBytes(4000);
+                        //cbProp.setOnOverflow(Constants.ONOVERFLOW_BLOCK);
+                        //connectQos.setSubjectQueueProperty(cbProp);
+                        log.trace(ME,"Login qos: " +  connectQos.toXml());
+                        ConnectReturnQos connectReturnQos = manyConnections[ci].connect(connectQos, this);
+                        log.info(ME, "Connected maxSubPerCon=" + maxSubPerCon + " : " + connectReturnQos.toXml());
                      }
-                     manyConnections[ci] = gg.getXmlBlasterAccess();
-                     ConnectQos connectQos = new ConnectQos(gg, sub.loginName, passwd); // "<qos></qos>"; During login this is manipulated (callback address added)
-                     // If we have many subs on one con, we must raise the max size of the callback queue!
-                     CbQueueProperty cbProp =connectQos.getSessionCbQueueProperty();
-                     // algo is maxSubPerCon*4
-                     cbProp.setMaxEntries(maxSubPerCon*1000);//This means we have a backlog of 1000 messages per subscriber as i normal when each con only have one subscriber!
-                     //cbProp.setMaxBytes(4000);
-                     //cbProp.setOnOverflow(Constants.ONOVERFLOW_BLOCK);
-                     //connectQos.setSubjectQueueProperty(cbProp);
-                     log.trace(ME,"Login qos: " +  connectQos.toXml());
-                     ConnectReturnQos connectReturnQos = manyConnections[ci].connect(connectQos, this);
-                     log.info(ME, "Connected maxSubPerCon=" + maxSubPerCon + " : " + connectReturnQos.toXml());
-                  }
-                  catch (Exception e) {
-                     log.error(ME, "Login failed: " + e.toString());
-                     assertTrue("Login failed: " + e.toString(), false);
-                  }
-
-               } // end of if ()
-               sub.connection = manyConnections[ci];
-            } else {
-               sub.connection = oneConnection;
+                     catch (Exception e) {
+                        log.error(ME, "Login failed: " + e.toString());
+                        assertTrue("Login failed: " + e.toString(), false);
+                     }
+                     
+                  } // end of if ()
+                  sub.connection = manyConnections[ci];
+               } else {
+                  sub.connection = oneConnection;
+               }
+            }else {
+               try {
+                  Global gg = globalUtil.getClone(glob);
+                  sub.connection = gg.getXmlBlasterAccess();
+                  ConnectQos connectQos = new ConnectQos(gg, sub.loginName, passwd); // "<qos></qos>"; During login this is manipulated (callback address added)
+                  ConnectReturnQos connectReturnQos = sub.connection.connect(connectQos, this);
+                  log.info(ME, "Connected: " + connectReturnQos.toXml());
+               }
+               catch (Exception e) {
+                  log.error(ME, "Login failed: " + e.toString());
+                  assertTrue("Login failed: " + e.toString(), false);
+               }                                                        
             }
-         }else {
             try {
-               Global gg = glob.getClone(null);
-               sub.connection = gg.getXmlBlasterAccess();
-               ConnectQos connectQos = new ConnectQos(gg, sub.loginName, passwd); // "<qos></qos>"; During login this is manipulated (callback address added)
-               ConnectReturnQos connectReturnQos = sub.connection.connect(connectQos, this);
-               log.info(ME, "Connected: " + connectReturnQos.toXml());
-            }
-            catch (Exception e) {
-               log.error(ME, "Login failed: " + e.toString());
-               assertTrue("Login failed: " + e.toString(), false);
-            }                                                        
-         }
-         try {
             sub.subscribeOid = sub.connection.subscribe(subKey, subQos).getSubscriptionId();
             log.trace(ME, "Client " + sub.loginName + " subscribed to " + subKeyW.getOid());
-         } catch(XmlBlasterException e) {
-            log.warn(ME, "XmlBlasterException: " + e.getMessage());
-            assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
+            } catch(XmlBlasterException e) {
+               log.warn(ME, "XmlBlasterException: " + e.getMessage());
+               assertTrue("subscribe - XmlBlasterException: " + e.getMessage(), false);
+            }
+            
+            manyClients[ii] = sub;
          }
+         double timeForLogins = (double)stopWatch.elapsed()/1000.; // msec -> sec
+         log.addLogLevel("INFO");
          
-         manyClients[ii] = sub;
-      }
-      double timeForLogins = (double)stopWatch.elapsed()/1000.; // msec -> sec
-      log.addLogLevel("INFO");
-      
-      long usedAfter = getUsedServerMemory();
-      long memPerLogin = (usedAfter - usedBefore)/numSubscribers;
-      
-      log.info(ME, numSubscribers + " subscriber clients are ready.");
-      log.info(ME, "Server memory per login consumed=" + memPerLogin);
-      log.info(ME, "Time " + (long)(numSubscribers/timeForLogins) + " logins/sec");
-          
-      //try { Thread.currentThread().sleep(5000000L); } catch( InterruptedException i) {}
-
+         long usedAfter = getUsedServerMemory();
+         long memPerLogin = (usedAfter - usedBefore)/numSubscribers;
+         int noThreads = ThreadLister.countThreads();
+         int tDiff = noThreads - startNoThreads;
+         int tPerConn = ((ci == 0|| ci == -1) ? tDiff :tDiff/(ci+1));
+         int subPerT = tDiff != 0 ? numSubscribers/tDiff:0;
+         
+         log.info(ME, numSubscribers + " subscriber clients are ready.");
+         log.info(ME, "Server memory per login consumed=" + memPerLogin);
+         log.info(ME, "Time " + (long)(numSubscribers/timeForLogins) + " logins/sec");
+         log.info(ME, "Threads created " + tDiff + ", threads per connection " + tPerConn + ", sub  per thread " + subPerT);
+         //ThreadLister.listAllThreads(System.out);
+         //try { Thread.currentThread().sleep(5000000L); } catch( InterruptedException i) {}
+         
       } catch (Error e) {
          e.printStackTrace();
          log.error(ME,"Could not set up subscribers: " +e);
+         log.error(ME,"No of threads " + ThreadLister.countThreads() + " for connection no " + ci);
          throw e;
       } // end of try-catch
       
@@ -499,7 +525,7 @@ public class MassiveSubTest extends TestCase implements I_Callback {
    public static void main(String[] args) {
       Global glob = new Global(args);
       setProtoMax(glob, "IOR", "500");
-      MassiveSubTest m = new MassiveSubTest(glob, "testManyClients", "testManyClients", true);
+      MassiveSubTest m = new MassiveSubTest(glob, "testManyClients", "testManyClients", false);
       m.setUp();
       m.testManyClients();
       m.tearDown();

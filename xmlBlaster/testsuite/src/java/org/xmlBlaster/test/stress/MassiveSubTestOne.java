@@ -3,7 +3,7 @@ Name:      MassiveSubTestOne.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Load test for xmlBlaster
-Version:   $Id: MassiveSubTestOne.java,v 1.1 2002/09/27 12:23:51 antman Exp $
+Version:   $Id: MassiveSubTestOne.java,v 1.2 2003/10/07 08:51:46 antman Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.stress;
 import org.xmlBlaster.util.Global;
@@ -17,12 +17,12 @@ numSubscribers=2500
 maxSubPerCon=500
 withEmbedded=false
 noToPub=4
-client.protocol=IOR
+protocol=IOR
 </pre>
  *
  *
  * @author Peter Antman
- * @version $Revision: 1.1 $ $Date: 2002/09/27 12:23:51 $
+ * @version $Revision: 1.2 $ $Date: 2003/10/07 08:51:46 $
  */
 
 public class MassiveSubTestOne extends MassiveSubTest {
@@ -42,5 +42,16 @@ public class MassiveSubTestOne extends MassiveSubTest {
       
       return suite;
    }
-   
+   /**
+    * An example of how to run it:
+    java  -Xms18M -Xmx256M -classpath lib/junit.jar:lib/testsuite.jar:lib/xmlBlaster.jar -Dtrace=false org.xmlBlaster.test.stress.MassiveSubTestOne -numSubscribers 2500 -maxSubPerCon 500 -protocol LOCAL -withEmbedded true > log 2>&1
+    * tail -f log | egrep 'Threads created|messages updated'
+    */
+   public static void main(String[] args) {
+      Global glob = new Global(args);
+      MassiveSubTestOne m = new MassiveSubTestOne(glob, "testManyClients", "testManyClients", true);
+      m.setUp();
+      m.testManyClients();
+      m.tearDown();
+   }
 }
