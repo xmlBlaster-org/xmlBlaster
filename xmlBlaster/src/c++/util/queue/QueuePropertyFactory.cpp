@@ -3,11 +3,12 @@ Name:      QueuePropertyFactory.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Factory which creates objects holding queue properties
-Version:   $Id: QueuePropertyFactory.cpp,v 1.3 2002/12/10 18:45:42 laghi Exp $
+Version:   $Id: QueuePropertyFactory.cpp,v 1.4 2002/12/17 19:09:13 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 #include <util/queue/QueuePropertyFactory.h>
 #include <boost/lexical_cast.hpp>
+#include <util/Global.h>
 
 using namespace org::xmlBlaster::util;
 using namespace org::xmlBlaster::util::cfg;
@@ -93,23 +94,23 @@ void QueuePropertyFactory::startElement(const XMLCh* const name, AttributeList& 
          else if (SaxHandlerBase::caseCompare(attrs.getName(i), "maxMsgCache")) {
                prop_.setMaxMsgCache(SaxHandlerBase::getLongValue(attrs.getValue(i)));
          }
-         else if (SaxHandlerBase::caseCompare(attrs.getName(i), "maxMsgSize")) {
-               prop_.setMaxSize(SaxHandlerBase::getLongValue(attrs.getValue(i)));
+         else if (SaxHandlerBase::caseCompare(attrs.getName(i), "maxMsgBytes")) {
+               prop_.setMaxBytes(SaxHandlerBase::getLongValue(attrs.getValue(i)));
          }
-         else if (SaxHandlerBase::caseCompare(attrs.getName(i), "maxSizeCache")) {
-               prop_.setMaxSizeCache(SaxHandlerBase::getLongValue(attrs.getValue(i)));
+         else if (SaxHandlerBase::caseCompare(attrs.getName(i), "maxBytesCache")) {
+               prop_.setMaxBytesCache(SaxHandlerBase::getLongValue(attrs.getValue(i)));
          }
          else if (SaxHandlerBase::caseCompare(attrs.getName(i), "storeSwapLevel")) {
                prop_.setStoreSwapLevel(SaxHandlerBase::getLongValue(attrs.getValue(i)));
          }
-         else if (SaxHandlerBase::caseCompare(attrs.getName(i), "storeSwapSize")) {
-               prop_.setStoreSwapSize(SaxHandlerBase::getLongValue(attrs.getValue(i)));
+         else if (SaxHandlerBase::caseCompare(attrs.getName(i), "storeSwapBytes")) {
+               prop_.setStoreSwapBytes(SaxHandlerBase::getLongValue(attrs.getValue(i)));
          }
          else if (SaxHandlerBase::caseCompare(attrs.getName(i), "reloadSwapLevel")) {
                prop_.setReloadSwapLevel(SaxHandlerBase::getLongValue(attrs.getValue(i)));
          }
-         else if (SaxHandlerBase::caseCompare(attrs.getName(i), "reloadSwapSize")) {
-               prop_.setReloadSwapSize(SaxHandlerBase::getLongValue(attrs.getValue(i)));
+         else if (SaxHandlerBase::caseCompare(attrs.getName(i), "reloadSwapBytes")) {
+               prop_.setReloadSwapBytes(SaxHandlerBase::getLongValue(attrs.getValue(i)));
          }
          else if (SaxHandlerBase::caseCompare(attrs.getName(i), "expires")) {
                prop_.setExpires(SaxHandlerBase::getTimestampValue(attrs.getValue(i)));

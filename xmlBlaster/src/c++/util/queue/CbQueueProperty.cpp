@@ -3,7 +3,7 @@ Name:      CbQueueProperty.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: CbQueueProperty.cpp,v 1.5 2002/12/16 14:26:56 laghi Exp $
+Version:   $Id: CbQueueProperty.cpp,v 1.6 2002/12/17 19:09:13 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -27,17 +27,18 @@ namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
    inline void CbQueueProperty::initialize()
    {
-      QueuePropertyBase::initialize();
+      QueuePropertyBase::initialize("cb");
 
       // Set the queue properties
+/*
       setMaxMsg(global_.getProperty().getLongProperty("cb.queue.maxMsg", DEFAULT_maxMsgDefault));
-      setMaxSize(global_.getProperty().getLongProperty("cb.queue.maxSize", DEFAULT_sizeDefault));
+      setMaxBytes(global_.getProperty().getLongProperty("cb.queue.maxBytes", DEFAULT_bytesDefault));
       setMaxMsgCache(global_.getProperty().getLongProperty("cb.queue.maxMsgCache", DEFAULT_maxMsgCacheDefault));
-      setMaxSizeCache(global_.getProperty().getLongProperty("cb.queue.maxSizeCache", DEFAULT_sizeCacheDefault));
-      setStoreSwapLevel(global_.getProperty().getLongProperty("cb.queue.storeSwapLevel", (long)(DEFAULT_storeSwapLevelRatio * maxSizeCache_)));
-      setStoreSwapSize(global_.getProperty().getLongProperty("cb.queue.storeSwapSize", (long)(DEFAULT_storeSwapSizeRatio * maxSizeCache_)));
-      setReloadSwapLevel(global_.getProperty().getLongProperty("cb.queue.reloadSwapLevel", (long)(DEFAULT_reloadSwapLevelRatio * maxSizeCache_)));
-      setReloadSwapSize(global_.getProperty().getLongProperty("cb.queue.reloadSwapSize", (long)(DEFAULT_reloadSwapSizeRatio * maxSizeCache_)));
+      setMaxBytesCache(global_.getProperty().getLongProperty("cb.queue.maxBytesCache", DEFAULT_bytesCacheDefault));
+      setStoreSwapLevel(global_.getProperty().getLongProperty("cb.queue.storeSwapLevel", (long)(DEFAULT_storeSwapLevelRatio * maxBytesCache_)));
+      setStoreSwapBytes(global_.getProperty().getLongProperty("cb.queue.storeSwapBytes", (long)(DEFAULT_storeSwapBytesRatio * maxBytesCache_)));
+      setReloadSwapLevel(global_.getProperty().getLongProperty("cb.queue.reloadSwapLevel", (long)(DEFAULT_reloadSwapLevelRatio * maxBytesCache_)));
+      setReloadSwapBytes(global_.getProperty().getLongProperty("cb.queue.reloadSwapBytes", (long)(DEFAULT_reloadSwapBytesRatio * maxBytesCache_)));
       setExpires(global_.getProperty().getTimestampProperty("cb.queue.expires", DEFAULT_maxExpires));
       setOnOverflow(global_.getProperty().getStringProperty("cb.queue.onOverflow", DEFAULT_onOverflow));
       setOnFailure(global_.getProperty().getStringProperty("cb.queue.onFailure", DEFAULT_onFailure));
@@ -45,13 +46,14 @@ namespace org { namespace xmlBlaster { namespace util { namespace queue {
       setVersion(global_.getProperty().getStringProperty("cb.queue.version", DEFAULT_version));
       if (nodeId_ != "") {
          setMaxMsg(global_.getProperty().getLongProperty(string("cb.queue.maxMsg[")+nodeId_+string("]"), getMaxMsg()));
-         setMaxSize(global_.getProperty().getLongProperty(string("cb.queue.maxSize[")+nodeId_+string("]"), getMaxSize()));
+         setMaxBytes(global_.getProperty().getLongProperty(string("cb.queue.maxBytes[")+nodeId_+string("]"), getMaxBytes()));
          setExpires(global_.getProperty().getTimestampProperty(string("cb.queue.expires[")+nodeId_+string("]"), getExpires()));
          setOnOverflow(global_.getProperty().getStringProperty(string("cb.queue.onOverflow[")+nodeId_+string("]"), getOnOverflow()));
          setOnFailure(global_.getProperty().getStringProperty(string("cb.queue.onFailure[")+nodeId_+string("]"), getOnFailure()));
          setType(global_.getProperty().getStringProperty(string("cb.queue.type[")+nodeId_+string("]"), getType()));
          setVersion(global_.getProperty().getStringProperty(string("cb.queue.version[")+nodeId_+string("]"), getVersion()));
       }
+*/
    }
 
    CbQueueProperty::CbQueueProperty(Global& global,
@@ -189,8 +191,8 @@ namespace org { namespace xmlBlaster { namespace util { namespace queue {
       text += string("Control the callback queue properties:\n");
       text += string("   -cb.queue.maxMsg       The maximum allowed number of messages in this queue [") + lexical_cast<string>(DEFAULT_maxMsgDefault) + string("].\n");
       text += string("   -cb.queue.maxMsgCache  The maximum allowed number of messages in the cache of this queue [") + lexical_cast<string>(DEFAULT_maxMsgDefault) + string("].\n");
-      text += string("   -cb.queue.maxSize      The maximum size in kBytes of this queue [") + lexical_cast<string>(DEFAULT_sizeDefault) + string("].\n");
-      text += string("   -cb.queue.maxSizeCache The maximum size in kBytes in the cache of this queue [") + lexical_cast<string>(DEFAULT_sizeDefault) + string("].\n");
+      text += string("   -cb.queue.maxBytes      The maximum size in kBytes of this queue [") + lexical_cast<string>(DEFAULT_bytesDefault) + string("].\n");
+      text += string("   -cb.queue.maxBytesCache The maximum size in kBytes in the cache of this queue [") + lexical_cast<string>(DEFAULT_bytesDefault) + string("].\n");
     //text += "   -cb.queue.expires  If not otherwise noted a queue dies after these milliseconds [" + DEFAULT_expiresDefault + "].\n";
     //text += "   -cb.queue.onOverflow What happens if queue is full. " + Constants.ONOVERFLOW_BLOCK + " | " + Constants.ONOVERFLOW_DEADMESSAGE + " [" + DEFAULT_onOverflow + "]\n";
       text += string("   -cb.queue.onOverflow What happens if queue is full [") + DEFAULT_onOverflow + string("]\n");

@@ -18,11 +18,10 @@ namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
    inline void QueueProperty::initialize()
    {
-      QueuePropertyBase::initialize();
-
-      // Set the queue properties
+      QueuePropertyBase::initialize("");
+/*
       setMaxMsg(global_.getProperty().getLongProperty("queue.maxMsg", DEFAULT_maxMsgDefault));
-      setMaxSize(global_.getProperty().getLongProperty("queue.maxSize", DEFAULT_sizeDefault));
+      setMaxBytes(global_.getProperty().getLongProperty("queue.maxBytes", DEFAULT_bytesDefault));
       setExpires(global_.getProperty().getTimestampProperty("queue.expires", DEFAULT_maxExpires));
       setOnOverflow(global_.getProperty().getStringProperty("queue.onOverflow", DEFAULT_onOverflow));
       setOnFailure(global_.getProperty().getStringProperty("queue.onFailure", DEFAULT_onFailure));
@@ -30,13 +29,14 @@ namespace org { namespace xmlBlaster { namespace util { namespace queue {
       setVersion(global_.getProperty().getStringProperty("queue.version", DEFAULT_version));
       if (nodeId_ != "") {
          setMaxMsg(global_.getProperty().getLongProperty(string("queue.maxMsg[")+nodeId_+string("]"), getMaxMsg()));
-         setMaxSize(global_.getProperty().getLongProperty(string("queue.maxSize[")+nodeId_+string("]"), getMaxSize()));
+         setMaxBytes(global_.getProperty().getLongProperty(string("queue.maxBytes[")+nodeId_+string("]"), getMaxBytes()));
          setExpires(global_.getProperty().getTimestampProperty(string("queue.expires[")+nodeId_+string("]"), getExpires()));
          setOnOverflow(global_.getProperty().getStringProperty(string("queue.onOverflow[")+nodeId_+string("]"), getOnOverflow()));
          setOnFailure(global_.getProperty().getStringProperty(string("queue.onFailure[")+nodeId_+string("]"), getOnFailure()));
          setType(global_.getProperty().getStringProperty(string("queue.type[")+nodeId_+string("]"), getType()));
          setVersion(global_.getProperty().getStringProperty(string("queue.version[")+nodeId_+string("]"), getVersion()));
       }
+*/
    }
 
    QueueProperty::QueueProperty(Global& global, const string& nodeId) :
@@ -125,7 +125,7 @@ namespace org { namespace xmlBlaster { namespace util { namespace queue {
       text += string("   -recorder.fn        The file name (without path) for the file for FileRecorder [<is generated unique>]\n");
       text += string("   -recorder.rate      The playback rate in msg/sec on reconnect e.g. 200 is 200 msg/sec, -1 is as fast as possible [-1]\n");
       text += string("   -recorder.mode      The on-overflow mode: ") + string(Constants::ONOVERFLOW_EXCEPTION) + string(" | ") + string(Constants::ONOVERFLOW_DISCARD) + string(" | )" + string(Constants::ONOVERFLOW_DISCARDOLDEST) + string(" [") + string(Constants::ONOVERFLOW_EXCEPTION) + string("]\n"));
-    //text += string("   -queue.maxSize      The maximum size in kBytes of this queue [" + DEFAULT_sizeDefault + "].\n";
+    //text += string("   -queue.maxBytes      The maximum size in kBytes of this queue [" + DEFAULT_bytesDefault + "].\n";
     //text += string("   -queue.expires      If not otherwise noted a queue dies after these milliseconds [" + DEFAULT_expiresDefault + "].\n";
     //text += string("   -queue.onOverflow   What happens if queue is full. " + Constants.ONOVERFLOW_BLOCK + " | " + Constants.ONOVERFLOW_DEADMESSAGE + " [" + DEFAULT_onOverflow + "]\n";
     //text += string("   -queue.onFailure    What happens if the data sink connection has a failure [" + DEFAULT_onFailure + "]\n";

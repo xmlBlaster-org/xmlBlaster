@@ -3,7 +3,7 @@ Name:      QueuePropertyBase.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.h,v 1.5 2002/12/16 14:26:56 laghi Exp $
+Version:   $Id: QueuePropertyBase.h,v 1.6 2002/12/17 19:09:13 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -31,16 +31,16 @@ namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
 extern Dll_Export  const long DEFAULT_maxMsgDefault;
 extern Dll_Export  const long DEFAULT_maxMsgCacheDefault;
-extern Dll_Export  const long DEFAULT_sizeDefault;
-extern Dll_Export  const long DEFAULT_sizeCacheDefault;
-/** The default settings (as a ratio relative to the maxSizeCache) for the storeSwapLevel */
+extern Dll_Export  const long DEFAULT_bytesDefault;
+extern Dll_Export  const long DEFAULT_bytesCacheDefault;
+/** The default settings (as a ratio relative to the maxBytesCache) for the storeSwapLevel */
 extern Dll_Export  const double DEFAULT_storeSwapLevelRatio;
-/** The default settings (as a ratio relative to the maxSizeCache) for the storeSwapSize */
-extern Dll_Export  const double DEFAULT_storeSwapSizeRatio;
-/** The default settings (as a ratio relative to the maxSizeCache) for the storeSwapLevel */
+/** The default settings (as a ratio relative to the maxBytesCache) for the storeSwapBytes */
+extern Dll_Export  const double DEFAULT_storeSwapBytesRatio;
+/** The default settings (as a ratio relative to the maxBytesCache) for the storeSwapLevel */
 extern Dll_Export  const double DEFAULT_reloadSwapLevelRatio;
-/** The default settings (as a ratio relative to the maxSizeCache) for the storeSwapSize */
-extern Dll_Export  const double DEFAULT_reloadSwapSizeRatio;
+/** The default settings (as a ratio relative to the maxBytesCache) for the storeSwapBytes */
+extern Dll_Export  const double DEFAULT_reloadSwapBytesRatio;
 extern Dll_Export  const Timestamp DEFAULT_minExpires;
 extern Dll_Export  const Timestamp DEFAULT_maxExpires;
 extern Dll_Export  const string DEFAULT_onOverflow;
@@ -74,11 +74,11 @@ protected:
    /** The max setting allowed for queue maxMsgCache is adjustable with property "queue.maxMsgCache=1000" (1000 messages is default) */
    long maxMsgCacheDefault_;
 
-   /** The max setting allowed for queue maxSize in Bytes is adjustable with property "queue.maxSize=4194304" (4 MBytes is default) */
-   long maxSizeDefault_;
+   /** The max setting allowed for queue maxBytes in Bytes is adjustable with property "queue.maxBytes=4194304" (4 MBytes is default) */
+   long maxBytesDefault_;
 
-   /** The max setting allowed for queue maxSizeCache in Bytes is adjustable with property "queue.maxSizeCache=4000" (4 MBytes is default) */
-   long maxSizeCacheDefault_;
+   /** The max setting allowed for queue maxBytesCache in Bytes is adjustable with property "queue.maxBytesCache=4000" (4 MBytes is default) */
+   long maxBytesCacheDefault_;
 
    /** The min span of life is one second, changeable with property e.g. "queue.expires.min=2000" milliseconds */
    Timestamp minExpires_;
@@ -94,24 +94,24 @@ protected:
    /** The max. capacity of the queue in number of entries */
    long maxMsg_;
    /** The max. capacity of the queue in Bytes */
-   long maxSize_;
+   long maxBytes_;
    /** The max. capacity of the cache of the queue in number of entries */
    long maxMsgCache_;
 
    /** The settings for the storeSwapLevel */
    long storeSwapLevel_;
 
-   /** The settings for the storeSwapSize */
-   long storeSwapSize_;
+   /** The settings for the storeSwapBytes */
+   long storeSwapBytes_;
 
    /** The settings for the storeSwapLevel */
    long reloadSwapLevel_;
 
-   /** The settings for the storeSwapSize */
-   long reloadSwapSize_;
+   /** The settings for the storeSwapBytes */
+   long reloadSwapBytes_;
 
    /** The max. capacity of the queue in Bytes for the cache */
-   long maxSizeCache_;
+   long maxBytesCache_;
 
    /** Error handling when queue is full: Constants.ONOVERFLOW_DEADMESSAGE | Constants.ONOVERFLOW_DISCARDOLDEST */
    string onOverflow_;
@@ -125,6 +125,10 @@ protected:
    /** To allow specific configuration parameters for specific cluster nodes */
    string nodeId_; // = null;
 
+   string propertyPrefix_;
+   bool isCacheQueue_;
+
+   string rootTagName_;
 
    void copy(const QueuePropertyBase& prop)
    {
@@ -132,29 +136,32 @@ protected:
       version_             = prop.version_;
       maxMsgDefault_       = prop.maxMsgDefault_;
       maxMsgCacheDefault_  = prop.maxMsgCacheDefault_;
-      maxSizeDefault_      = prop.maxSizeDefault_;
-      maxSizeCacheDefault_ = prop.maxSizeCacheDefault_;
+      maxBytesDefault_      = prop.maxBytesDefault_;
+      maxBytesCacheDefault_ = prop.maxBytesCacheDefault_;
       minExpires_          = prop.maxExpires_;
       relating_            = prop.relating_;
       expires_             = prop.expires_;
       maxMsg_              = prop.maxMsg_;
-      maxSize_             = prop.maxSize_;
+      maxBytes_             = prop.maxBytes_;
       maxMsgCache_         = prop.maxMsgCache_;
       storeSwapLevel_      = prop.storeSwapLevel_;
-      storeSwapSize_       = prop.storeSwapSize_;
+      storeSwapBytes_       = prop.storeSwapBytes_;
       reloadSwapLevel_     = prop.reloadSwapLevel_;
-      reloadSwapSize_      = prop.reloadSwapSize_;
-      maxSizeCache_        = prop.maxSizeCache_;
+      reloadSwapBytes_      = prop.reloadSwapBytes_;
+      maxBytesCache_        = prop.maxBytesCache_;
       onOverflow_          = prop.onOverflow_;
       onFailure_           = prop.onFailure_;
       addressArr_          = prop.addressArr_;
       nodeId_              = prop.nodeId_;
+      propertyPrefix_      = prop.propertyPrefix_;
+      isCacheQueue_        = prop.isCacheQueue_;
+      rootTagName_         = prop.rootTagName_;
    }
 
    /**
     * Configure property settings, add your own defaults in the derived class
     */
-   inline void initialize();
+   inline void initialize(const string propertyPrefix);
 
    void setMaxExpires(Timestamp maxExpires)
    {
@@ -274,21 +281,21 @@ public:
     * <br />
     * @return Get max. message queue size in Bytes
     */
-   long getMaxSize() const;
+   long getMaxBytes() const;
 
    /**
     * Max message queue size.
     * <br />
     * @return Set max. message queue size in Bytes
     */
-   void setMaxSize(long maxSize);
+   void setMaxBytes(long maxBytes);
 
    /**
     * Max message queue size for the cache of this queue.
     * <br />
     * @return Get max. message queue size in Bytes
     */
-   long getMaxSizeCache() const;
+   long getMaxBytesCache() const;
 
    /**
     * Gets the storeSwapLevel for the queue (only used on cache queues).
@@ -305,18 +312,18 @@ public:
    void setStoreSwapLevel(long storeSwapLevel);
 
    /**
-    * Gets the storeSwapSize for the queue (only used on cache queues).
+    * Gets the storeSwapBytes for the queue (only used on cache queues).
     * <br />
-    * @return Get storeSwapSize in bytes.
+    * @return Get storeSwapBytes in bytes.
     */
-   long getStoreSwapSize() const;
+   long getStoreSwapBytes() const;
 
    /**
-    * Sets the storeSwapSize for the queue (only used on cache queues).
+    * Sets the storeSwapBytes for the queue (only used on cache queues).
     * <br />
-    * @param Set storeSwapSize in bytes.
+    * @param Set storeSwapBytes in bytes.
     */
-   void setStoreSwapSize(long storeSwapSize);
+   void setStoreSwapBytes(long storeSwapBytes);
 
    /**
     * Gets the reloadSwapLevel for the queue (only used on cache queues).
@@ -333,25 +340,25 @@ public:
    void setReloadSwapLevel(long reloadSwapLevel);
 
    /**
-    * Gets the reloadSwapSize for the queue (only used on cache queues).
+    * Gets the reloadSwapBytes for the queue (only used on cache queues).
     * <br />
-    * @return Get reloadSwapSize in bytes.
+    * @return Get reloadSwapBytes in bytes.
     */
-   long getReloadSwapSize() const;
+   long getReloadSwapBytes() const;
 
    /**
-    * Sets the reloadSwapSize for the queue (only used on cache queues).
+    * Sets the reloadSwapBytes for the queue (only used on cache queues).
     * <br />
-    * @param Set reloadSwapSize in bytes.
+    * @param Set reloadSwapBytes in bytes.
     */
-   void setReloadSwapSize(long reloadSwapSize);
+   void setReloadSwapBytes(long reloadSwapBytes);
 
    /**
     * Max message queue size for the cache of this queue.
     * <br />
     * @return Set max. message queue size in Bytes
     */
-   void setMaxSizeCache(long maxSizeCache);
+   void setMaxBytesCache(long maxBytesCache);
 
    /**
     * Set the callback onOverflow, it should fit to the protocol-relating.
@@ -413,6 +420,27 @@ public:
    Global& getGlobal();
 
 //   void cleanupAddresses();
+
+   string getPropertyPrefix() const;
+   void setpropertyPrefix(const string& prefix);
+
+   bool isCacheQueue() const;
+   void setCacheQueue(bool cacheQueue);
+
+   /**
+    * The command line prefix to configure the queue or msgstore
+    * @return e.g. "topic." or "history.queue."
+    */
+   string getPrefix();
+
+   /**
+    * Helper for logging output, creates the property key for configuration (the command line property).
+    * @param prop e.g. "maxMsg"
+    * @return e.g. "-history.queue.maxMsg" or "-history.queue.maxMsgCache"
+    */
+   string getPropName(const string& token);
+
+   string getRootTagName() const;
 
 };
 

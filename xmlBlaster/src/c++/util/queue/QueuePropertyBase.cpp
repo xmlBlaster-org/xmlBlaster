@@ -3,7 +3,7 @@ Name:      QueuePropertyBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.cpp,v 1.6 2002/12/16 14:26:56 laghi Exp $
+Version:   $Id: QueuePropertyBase.cpp,v 1.7 2002/12/17 19:09:13 laghi Exp $
 ------------------------------------------------------------------------------*/
 
 
@@ -26,16 +26,16 @@ namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
 Dll_Export const long DEFAULT_maxMsgDefault = 1000l;
 Dll_Export const long DEFAULT_maxMsgCacheDefault = 1000l;
-Dll_Export const long DEFAULT_sizeDefault = 10485760l; // 10 MB
-Dll_Export const long DEFAULT_sizeCacheDefault = 2097152l; // 2 MB
-/** The default settings (as a ratio relative to the maxSizeCache) for the storeSwapLevel */
+Dll_Export const long DEFAULT_bytesDefault = 10485760l; // 10 MB
+Dll_Export const long DEFAULT_bytesCacheDefault = 2097152l; // 2 MB
+/** The default settings (as a ratio relative to the maxBytesCache) for the storeSwapLevel */
 Dll_Export const double DEFAULT_storeSwapLevelRatio = 0.70;
-/** The default settings (as a ratio relative to the maxSizeCache) for the storeSwapSize */
-Dll_Export const double DEFAULT_storeSwapSizeRatio = 0.25;
-/** The default settings (as a ratio relative to the maxSizeCache) for the storeSwapLevel */
+/** The default settings (as a ratio relative to the maxBytesCache) for the storeSwapBytes */
+Dll_Export const double DEFAULT_storeSwapBytesRatio = 0.25;
+/** The default settings (as a ratio relative to the maxBytesCache) for the storeSwapLevel */
 Dll_Export const double DEFAULT_reloadSwapLevelRatio = 0.30;
-/** The default settings (as a ratio relative to the maxSizeCache) for the storeSwapSize */
-Dll_Export const double DEFAULT_reloadSwapSizeRatio = 0.25;
+/** The default settings (as a ratio relative to the maxBytesCache) for the storeSwapBytes */
+Dll_Export const double DEFAULT_reloadSwapBytesRatio = 0.25;
 Dll_Export const Timestamp DEFAULT_minExpires = 1000;
 Dll_Export const Timestamp DEFAULT_maxExpires = 0;
 Dll_Export const string DEFAULT_onOverflow = Constants::ONOVERFLOW_DEADMESSAGE;
@@ -48,6 +48,54 @@ Dll_Export string DEFAULT_version = "1.0";
 Dll_Export long DEFAULT_expires;
 
 
+/**
+ * Configure property settings, add your own defaults in the derived class
+ * @param propertyPrefix e.g. "history" or "cb"
+ */
+void QueuePropertyBase::initialize(const string propertyPrefix)
+{
+   string prefix = getPrefix();
+
+   // Do we need this range settings?
+   setMinExpires(global_.getProperty().getTimestampProperty("queue.expires.min", DEFAULT_minExpires));
+   setMaxExpires(global_.getProperty().getTimestampProperty("queue.expires.max", DEFAULT_maxExpires)); // Long.MAX_VALUE);
+   if (nodeId_ != "") {
+      setMinExpires(global_.getProperty().getTimestampProperty("queue.expires.min["+nodeId_+"]", getMinExpires()));
+      setMaxExpires(global_.getProperty().getTimestampProperty("queue.expires.max["+nodeId_+"]", getMaxExpires())); // Long.MAX_VALUE);
+   }
+
+   // prefix is e.g. "cb.queue." or "topic"
+   setMaxMsg(global_.getProperty().getLongProperty(prefix+"maxMsg", DEFAULT_maxMsgDefault));
+   setMaxMsgCache(global_.getProperty().getLongProperty(prefix+"maxMsgCache", DEFAULT_maxMsgCacheDefault));
+   setMaxBytes(global_.getProperty().getLongProperty(prefix+"maxBytes", DEFAULT_bytesDefault));
+   setMaxBytesCache(global_.getProperty().getLongProperty(prefix+"maxBytesCache", DEFAULT_bytesCacheDefault));
+   setStoreSwapLevel(global_.getProperty().getLongProperty(prefix+"storeSwapLevel", (long)(DEFAULT_storeSwapLevelRatio*maxBytesCache_)));
+   setStoreSwapBytes(global_.getProperty().getLongProperty(prefix+"storeSwapBytes", (long)(DEFAULT_storeSwapBytesRatio*maxBytesCache_)));
+   setReloadSwapLevel(global_.getProperty().getLongProperty(prefix+"reloadSwapLevel", (long)(DEFAULT_reloadSwapLevelRatio*maxBytesCache_)));
+   setReloadSwapBytes(global_.getProperty().getLongProperty(prefix+"reloadSwapBytes", (long)(DEFAULT_reloadSwapBytesRatio*maxBytesCache_)));
+   setExpires(global_.getProperty().getTimestampProperty(prefix+"expires", DEFAULT_maxExpires));
+   setOnOverflow(global_.getProperty().getStringProperty(prefix+"onOverflow", DEFAULT_onOverflow));
+   setOnFailure(global_.getProperty().getStringProperty(prefix+"onFailure", DEFAULT_onFailure));
+   setType(global_.getProperty().getStringProperty(prefix+"type", DEFAULT_type));
+   setVersion(global_.getProperty().getStringProperty(prefix+"version", DEFAULT_version));
+   if (nodeId_ != "") {
+      setMaxMsg(global_.getProperty().getLongProperty(prefix+"maxMsg["+nodeId_+"]", getMaxMsg()));
+      setMaxMsgCache(global_.getProperty().getLongProperty(prefix+"maxMsgCache["+nodeId_+"]", getMaxMsgCache()));
+      setMaxBytes(global_.getProperty().getLongProperty(prefix+"maxBytes["+nodeId_+"]", getMaxBytes()));
+      setMaxBytesCache(global_.getProperty().getLongProperty(prefix+"maxBytesCache["+nodeId_+"]", getMaxBytesCache()));
+      setStoreSwapLevel(global_.getProperty().getLongProperty(prefix+"storeSwapLevel["+nodeId_+"]", getStoreSwapLevel()));
+      setStoreSwapBytes(global_.getProperty().getLongProperty(prefix+"storeSwapBytes["+nodeId_+"]", getStoreSwapBytes()));
+      setReloadSwapLevel(global_.getProperty().getLongProperty(prefix+"reloadSwapLevel["+nodeId_+"]", getReloadSwapLevel()));
+      setReloadSwapBytes(global_.getProperty().getLongProperty(prefix+"reloadSwapBytes["+nodeId_+"]", getReloadSwapBytes()));
+      setExpires(global_.getProperty().getTimestampProperty(prefix+"expires["+nodeId_+"]", getExpires()));
+      setOnOverflow(global_.getProperty().getStringProperty(prefix+"onOverflow["+nodeId_+"]", getOnOverflow()));
+      setOnFailure(global_.getProperty().getStringProperty(prefix+"onFailure["+nodeId_+"]", getOnFailure()));
+      setType(global_.getProperty().getStringProperty(prefix+"type["+nodeId_+"]", getType()));
+      setVersion(global_.getProperty().getStringProperty(prefix+"version["+nodeId_+"]", getVersion()));
+   }
+}
+
+/*
    void QueuePropertyBase::initialize()
    {
       // Do we need this range settings?
@@ -62,7 +110,7 @@ Dll_Export long DEFAULT_expires;
 //         DEFAULT_type = pluginInfo.getType();
 //         DEFAULT_version = pluginInfo.getVersion();
    }
-
+*/
 
 
    QueuePropertyBase::QueuePropertyBase(Global& global, const string& nodeId)
@@ -70,6 +118,9 @@ Dll_Export long DEFAULT_expires;
         addressArr_()
    {
       nodeId_ = nodeId;
+      propertyPrefix_ = "";
+      isCacheQueue_ = false;
+      rootTagName_ = "queue";
    }
 
    QueuePropertyBase::QueuePropertyBase(const QueuePropertyBase& prop)
@@ -231,9 +282,9 @@ Dll_Export long DEFAULT_expires;
     * <br />
     * @return Get max. message queue size in Bytes
     */
-   long QueuePropertyBase::getMaxSize() const
+   long QueuePropertyBase::getMaxBytes() const
    {
-      return maxSize_;
+      return maxBytes_;
    }
 
    /**
@@ -241,9 +292,9 @@ Dll_Export long DEFAULT_expires;
     * <br />
     * @return Set max. message queue size in Bytes
     */
-   void QueuePropertyBase::setMaxSize(long maxSize)
+   void QueuePropertyBase::setMaxBytes(long maxBytes)
    {
-      maxSize_ = maxSize;
+      maxBytes_ = maxBytes;
    }
 
 
@@ -252,9 +303,9 @@ Dll_Export long DEFAULT_expires;
     * <br />
     * @return Get max. message queue size in Bytes
     */
-   long QueuePropertyBase::getMaxSizeCache() const
+   long QueuePropertyBase::getMaxBytesCache() const
    {
-      return maxSizeCache_;
+      return maxBytesCache_;
    }
 
 
@@ -279,23 +330,23 @@ Dll_Export long DEFAULT_expires;
    }
 
    /**
-    * Gets the storeSwapSize for the queue (only used on cache queues).
+    * Gets the storeSwapBytes for the queue (only used on cache queues).
     * <br />
-    * @return Get storeSwapSize in bytes.
+    * @return Get storeSwapBytes in bytes.
     */
-   long QueuePropertyBase::getStoreSwapSize() const
+   long QueuePropertyBase::getStoreSwapBytes() const
    {
-      return storeSwapSize_;
+      return storeSwapBytes_;
    }
 
    /**
-    * Sets the storeSwapSize for the queue (only used on cache queues).
+    * Sets the storeSwapBytes for the queue (only used on cache queues).
     * <br />
-    * @param Set storeSwapSize in bytes.
+    * @param Set storeSwapBytes in bytes.
     */
-   void QueuePropertyBase::setStoreSwapSize(long storeSwapSize)
+   void QueuePropertyBase::setStoreSwapBytes(long storeSwapBytes)
    {
-      storeSwapSize_ = storeSwapSize;
+      storeSwapBytes_ = storeSwapBytes;
    }
 
    /**
@@ -319,23 +370,23 @@ Dll_Export long DEFAULT_expires;
    }
 
    /**
-    * Gets the reloadSwapSize for the queue (only used on cache queues).
+    * Gets the reloadSwapBytes for the queue (only used on cache queues).
     * <br />
-    * @return Get reloadSwapSize in bytes.
+    * @return Get reloadSwapBytes in bytes.
     */
-   long QueuePropertyBase::getReloadSwapSize() const
+   long QueuePropertyBase::getReloadSwapBytes() const
    {
-      return reloadSwapSize_;
+      return reloadSwapBytes_;
    }
 
    /**
-    * Sets the reloadSwapSize for the queue (only used on cache queues).
+    * Sets the reloadSwapBytes for the queue (only used on cache queues).
     * <br />
-    * @param Set reloadSwapSize in bytes.
+    * @param Set reloadSwapBytes in bytes.
     */
-   void QueuePropertyBase::setReloadSwapSize(long reloadSwapSize)
+   void QueuePropertyBase::setReloadSwapBytes(long reloadSwapBytes)
    {
-      reloadSwapSize_ = reloadSwapSize;
+      reloadSwapBytes_ = reloadSwapBytes;
    }
 
    /**
@@ -343,9 +394,9 @@ Dll_Export long DEFAULT_expires;
     * <br />
     * @return Set max. message queue size in Bytes
     */
-   void QueuePropertyBase::setMaxSizeCache(long maxSizeCache)
+   void QueuePropertyBase::setMaxBytesCache(long maxBytesCache)
    {
-      maxSizeCache_ = maxSizeCache;
+      maxBytesCache_ = maxBytesCache;
    }
 
 
@@ -458,14 +509,14 @@ Dll_Export long DEFAULT_expires;
          ret += string("' maxMsg='") + lexical_cast<string>(getMaxMsg());
       if (DEFAULT_maxMsgCacheDefault != getMaxMsgCache())
          ret += string("' maxMsgCache='") + lexical_cast<string>(getMaxMsgCache());
-      if (DEFAULT_sizeDefault != getMaxSize())
-         ret += string("' maxSize='") + lexical_cast<string>(getMaxSize());
-      if (DEFAULT_sizeCacheDefault != getMaxSizeCache())
-         ret += string("' maxSizeCache='") + lexical_cast<string>(getMaxSizeCache());
+      if (DEFAULT_bytesDefault != getMaxBytes())
+         ret += string("' maxBytes='") + lexical_cast<string>(getMaxBytes());
+      if (DEFAULT_bytesCacheDefault != getMaxBytesCache())
+         ret += string("' maxBytesCache='") + lexical_cast<string>(getMaxBytesCache());
       ret += string("' storeSwapLevel='") + lexical_cast<string>(getStoreSwapLevel());
-      ret += string("' storeSwapSize='") + lexical_cast<string>(getStoreSwapSize());
+      ret += string("' storeSwapBytes='") + lexical_cast<string>(getStoreSwapBytes());
       ret += string("' reloadSwapLevel='") + lexical_cast<string>(getReloadSwapLevel());
-      ret += string("' reloadSwapSize='") + lexical_cast<string>(getReloadSwapSize());
+      ret += string("' reloadSwapBytes='") + lexical_cast<string>(getReloadSwapBytes());
       if (DEFAULT_expires != getExpires())
          ret += string("' expires='") + lexical_cast<string>(getExpires());
       if (DEFAULT_onOverflow != getOnOverflow())
@@ -508,6 +559,55 @@ Dll_Export long DEFAULT_expires;
       }
    }
 */
+
+   string QueuePropertyBase::getPropertyPrefix() const
+   {
+      return propertyPrefix_;
+   }
+
+   void QueuePropertyBase::setpropertyPrefix(const string& prefix)
+   {
+      propertyPrefix_ = prefix;
+   }
+
+   bool QueuePropertyBase::isCacheQueue() const
+   {
+      return isCacheQueue_;
+   }
+
+   void QueuePropertyBase::setCacheQueue(bool cacheQueue)
+   {
+      isCacheQueue_ = cacheQueue;
+   }
+
+   /**
+    * The command line prefix to configure the queue or msgstore
+    * @return e.g. "topic." or "history.queue."
+    */
+   string QueuePropertyBase::getPrefix()
+   {
+      string prefix = (propertyPrefix_.length() > 0) ? propertyPrefix_ + ".queue." : "queue.";
+      if (prefix == "topic.queue.") { // we use this class for msgstore as well (which is in fact no queue)
+         prefix = "topic.";
+      }
+      return prefix;
+   }
+
+   /**
+    * Helper for logging output, creates the property key for configuration (the command line property).
+    * @param prop e.g. "maxMsg"
+    * @return e.g. "-history.queue.maxMsg" or "-history.queue.maxMsgCache"
+    */
+   string QueuePropertyBase::getPropName(const string& token)
+   {
+      return "-" + getPrefix() + token + (isCacheQueue() ? "Cache" : "");
+   }
+
+   string QueuePropertyBase::getRootTagName() const
+   {
+      return rootTagName_;
+   }
+
 
 }}}} // namespaces
 
