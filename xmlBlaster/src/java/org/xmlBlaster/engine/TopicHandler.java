@@ -59,7 +59,7 @@ import java.util.*;
  * This handler has the state UNCONFIGURED | UNREFERENCED | ALIVE | DEAD, see
  * the boolean state access methods for a description
  * </p>
- * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.message.lifecylce.html">The engine.message.lifecylce requirement</a>
+ * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.message.lifecycle.html">The engine.message.lifecylce requirement</a>
  * @see org.xmlBlaster.test.topic.TestTopicLifeCycle
  * @author xmlBlaster@marcelruff.info
  */
@@ -216,8 +216,8 @@ public final class TopicHandler implements I_Timeout
     */
    private synchronized void administrativeInitialize(MsgKeyData msgKeyData, MsgQosData publishQos,
                              PublishQosServer publishQosServer) throws XmlBlasterException {
-      if (!isUnconfigured()) {
-         log.error(ME, "Sorry, reconfiguring TopicHandler is not yet supported, we ignore the request");
+      if (!isUnconfigured() && !isSoftErased()) {
+         log.error(ME, "Sorry we are in state '" + getStateStr() + "', reconfiguring TopicHandler is not yet supported, we ignore the request");
          return;
       }
 
@@ -434,56 +434,61 @@ public final class TopicHandler implements I_Timeout
    {
       if (log.TRACE) log.trace(ME, "Setting content");
 
-      StatusQosData qos = new StatusQosData(glob);
-      qos.setKeyOid(this.uniqueKey);
-      qos.setState(Constants.STATE_OK);
-      qos.setRcvTimestamp(publishQosServer.getRcvTimestamp());
-      PublishReturnQos publishReturnQos = new PublishReturnQos(glob, qos);
+      PublishReturnQos publishReturnQos = null;
+      MsgQosData msgQosData = null;
 
-      MsgKeyData msgKeyData = (MsgKeyData)msgUnit.getKeyData();
-      MsgQosData msgQosData = (MsgQosData)msgUnit.getQosData();
-      /* Happens in RequestBroker already
-      if (msgQosData.getSender() == null) {
-         msgQosData.setSender(publisherSessionInfo.getSessionName());
-      }
-      */
+      synchronized (this) {
+         StatusQosData qos = new StatusQosData(glob);
+         qos.setKeyOid(this.uniqueKey);
+         qos.setState(Constants.STATE_OK);
+         qos.setRcvTimestamp(publishQosServer.getRcvTimestamp());
+         publishReturnQos = new PublishReturnQos(glob, qos);
 
-      //if (this.msgKeyData == null) { // If TopicHandler existed because of a subscription: remember on first publish
-      //   this.msgKeyData = msgKeyData;
-      //}
+         MsgKeyData msgKeyData = (MsgKeyData)msgUnit.getKeyData();
+         msgQosData = (MsgQosData)msgUnit.getQosData();
+         /* Happens in RequestBroker already
+         if (msgQosData.getSender() == null) {
+            msgQosData.setSender(publisherSessionInfo.getSessionName());
+         }
+         */
 
-      if (msgQosData.isAdministrative()) {
-         synchronized (this.ADMIN_MONITOR) {
-            administrativeInitialize(msgKeyData, msgQosData, publishQosServer);
-            if (this.handlerIsNewCreated) {
-               this.handlerIsNewCreated = false;
-               // Check all known query subscriptions if the new message fits as well (does it only if TopicHandler is new)
-               glob.getRequestBroker().checkExistingSubscriptions(publisherSessionInfo, this, publishQosServer);
-            }
-            if (msgQosData.isFromPersistenceStore()) {
-               log.info(ME, "Topic is successfully recovered from persistency to state " + getStateStr() +
-                        //((requestBroker.getTopicStore()!=null) ? (" '" + requestBroker.getTopicStore().getStorageId() + "'") : "") +
-                        " with " + getNumOfHistoryEntries() + " history entries (" + getNumOfCacheEntries() + " currently referenced msgUnits are loaded).");
-            }
-            else {
-               log.info(ME, "Topic is successfully configured by administrative message.");
-            }
-            publishReturnQos.getData().setStateInfo("Administrative configuration request handled");
-            return publishReturnQos;
-         } // synchronized
-      }
+         //if (this.msgKeyData == null) { // If TopicHandler existed because of a subscription: remember on first publish
+         //   this.msgKeyData = msgKeyData;
+         //}
 
-      if (isUnconfigured()) {
-         synchronized (this) {
-            if (isUnconfigured()) {
-              administrativeInitialize(msgKeyData, msgQosData, publishQosServer);
+         if (msgQosData.isAdministrative()) {
+            synchronized (this.ADMIN_MONITOR) {
+               administrativeInitialize(msgKeyData, msgQosData, publishQosServer);
+               if (this.handlerIsNewCreated) {
+                  this.handlerIsNewCreated = false;
+                  // Check all known query subscriptions if the new message fits as well (does it only if TopicHandler is new)
+                  glob.getRequestBroker().checkExistingSubscriptions(publisherSessionInfo, this, publishQosServer);
+               }
+               if (msgQosData.isFromPersistenceStore()) {
+                  log.info(ME, "Topic is successfully recovered from persistency to state " + getStateStr() +
+                           //((requestBroker.getTopicStore()!=null) ? (" '" + requestBroker.getTopicStore().getStorageId() + "'") : "") +
+                           " with " + getNumOfHistoryEntries() + " history entries (" + getNumOfCacheEntries() + " currently referenced msgUnits are loaded).");
+               }
+               else {
+                  log.info(ME, "Topic is successfully configured by administrative message.");
+               }
+               publishReturnQos.getData().setStateInfo("Administrative configuration request handled");
+               return publishReturnQos;
+            } // synchronized
+         }
+
+         if (isUnconfigured() || isDead() || isSoftErased()) {
+            synchronized (this) {
+               if (isUnconfigured() || isDead() || isSoftErased()) {
+                 administrativeInitialize(msgKeyData, msgQosData, publishQosServer);
+               }
             }
          }
-      }
 
-      if (!isAlive()) {
-         toAlive();
-      }
+         if (!isAlive()) {
+            toAlive();
+         }
+      } // sync
 
       if (this.handlerIsNewCreated) {
          synchronized (this.ADMIN_MONITOR) {
@@ -1410,6 +1415,7 @@ public final class TopicHandler implements I_Timeout
 
          this.state = SOFT_ERASED;
          removeFromBigDom();
+         this.handlerIsNewCreated = true;
       }
    }
 
@@ -1518,7 +1524,9 @@ public final class TopicHandler implements I_Timeout
             this.destroyTimer.removeTimeoutListener(this.timerKey);
             this.timerKey = null;
          }
-      }
+
+         this.handlerIsNewCreated = true;
+      } // sync
       log.info(ME, "Topic reached state " + getStateStr() + ". " + numHistory + " history entries are destroyed.");
    }
 
@@ -1635,7 +1643,7 @@ public final class TopicHandler implements I_Timeout
                }
                else {
                   log.info(ME, "Erase not possible, we are still referenced by " + numMsgUnitStore +
-                  " callback queue entries, transition to topic state " + getStateStr());
+                  " callback queue entries, transition to topic state " + getStateStr() + ", all subscribers are removed.");
                }
             }
          }
