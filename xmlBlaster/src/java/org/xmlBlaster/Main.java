@@ -403,6 +403,7 @@ public class Main implements I_RunlevelListener, I_Main
          if (to == RunlevelManager.RUNLEVEL_HALTED) {
             if (signalCatcher != null)
                signalCatcher.removeSignalCatcher();
+               signalCatcher = null;
          }
       }
    }
