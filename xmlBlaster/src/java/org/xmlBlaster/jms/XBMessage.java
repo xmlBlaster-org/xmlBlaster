@@ -246,7 +246,7 @@ public class XBMessage implements Message {
    }
 
    public Object getObjectProperty(String key) throws JMSException {
-      return this.qos.getClientProperties().get(key);
+      return this.qos.getClientProperty(key).getObjectValue();
    }
 
    public Enumeration getPropertyNames() throws JMSException {
@@ -426,9 +426,9 @@ public class XBMessage implements Message {
       this.qos.addClientProperty(key, value);   
    }
 
-   public void setStringProperty(String key, String value)
-      throws JMSException {
-         this.qos.addClientProperty(key, value);   
+   public void setStringProperty(String key, String value) throws JMSException {
+      checkPropertiesReadOnly("setStringProperty", key);
+      this.qos.addClientProperty(key, value);   
    }
 
    // own package protected helper methods

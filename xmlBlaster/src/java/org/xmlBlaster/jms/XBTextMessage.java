@@ -27,6 +27,7 @@ public class XBTextMessage extends XBMessage implements TextMessage {
    }
    
    public String getText() throws JMSException {
+      if (this.content == null) return null;
       return new String(this.content);
    }
 

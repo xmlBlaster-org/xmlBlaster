@@ -32,10 +32,12 @@ public class XBConnectionFactory implements TopicConnectionFactory, Externalizab
    private final static String ME = "XBConnectionFactory";
    private final static long SER_VERSION = 1L;
    // private Global global;
+   /** the arguments passed on construction: they should never be null */
    String[] args;
 
    public XBConnectionFactory(String[] args) {
-      this.args = args;
+      if (args == null) this.args = new String[0];
+      else this.args = args;
    }
 
    public XBConnectionFactory() {
