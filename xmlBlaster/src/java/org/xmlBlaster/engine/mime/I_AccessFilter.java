@@ -3,14 +3,14 @@ Name:      I_AccessFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface for access plugins
-Version:   $Id: I_AccessFilter.java,v 1.7 2002/11/26 12:38:47 ruff Exp $
-Author:    ruff@swand.lake.de
+Version:   $Id: I_AccessFilter.java,v 1.8 2002/12/18 10:56:22 ruff Exp $
+Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.SessionInfo;
-import org.xmlBlaster.engine.MessageUnitWrapper;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.mime.Query;
 
@@ -35,7 +35,7 @@ import org.xmlBlaster.engine.mime.Query;
  *    <li>Code the plugin.<br />
  *        Code a plugin which inherits from this interface.
  *        In the match() method code your specific filter rule.
- *        You get passed the MessageUnitWrapper object, which contains the content
+ *        You get passed the MsgUnit object, which contains the content
  *        of a message. You look into the content and decide if the
  *        message matches your rule or not.
  *    </li>
@@ -45,8 +45,8 @@ import org.xmlBlaster.engine.mime.Query;
  *    </li>
  * </ul>
  *
- * @version $Revision: 1.7 $
- * @author ruff@swand.lake.de
+ * @version $Revision: 1.8 $
+ * @author xmlBlaster@marcelruff.info
  */
 public interface I_AccessFilter
 {
@@ -82,7 +82,7 @@ public interface I_AccessFilter
     * </p>
     * @param publisher The session object describing the publisher
     * @param receiver The session object describing the receiver
-    * @param msgUnitWrapper  The message to check (access the raw message with msgUnitWrapper.getMessageUnit())
+    * @param msgUnit  The message to check
     * @param query   The query containing the filter rule on subscribe/get usually
     *                the client defines his own rule which is passed here.<br />
     *                null: If for a subscribe() or get() no rule is given, your plugin
@@ -97,14 +97,14 @@ public interface I_AccessFilter
     *            (or whatever the current error handler has implemented).
     *            Probably it is best to return 'false' instead and log the situation.
     */
-   public boolean match(SessionInfo publisher, SessionInfo receiver, MessageUnitWrapper msgUnitWrapper, Query query) throws XmlBlasterException;
+   public boolean match(SessionInfo publisher, SessionInfo receiver, MsgUnit msgUnit, Query query) throws XmlBlasterException;
 
    // TODO: have a match() variant for synchronous get() access:
-   //   boolean match(SessionInfo session, MessageUnitWrapper msgUnitWrapper, Query query)
+   //   boolean match(SessionInfo session, MsgUnit msgUnit, Query query)
    // and one for subscriptions:
    //   boolean match(SessionInfo session, SubscriptionInfo sub, Query query)
    //        SessionInfo receiver = sub.getSessionInfo()
-   //        MessageUnitWrapper w = sub.getMessageUnitWrapper();
+   //        MsgUnit w = sub.getMsgUnit();
 
    public void shutdown();
 }

@@ -13,8 +13,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.engine.helper.Constants;
-import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.engine.MessageUnitWrapper;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.mime.I_AccessFilter;
 import org.xmlBlaster.engine.mime.Query;
 import org.xmlBlaster.engine.Global;
@@ -139,8 +138,8 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
     * @return true   The filter xpath expression matches the message content.
     * @exception see I_AccessFilter#match()
     */
-   public boolean match(SessionInfo publisher, SessionInfo receiver, MessageUnitWrapper msgUnitWrapper, Query query) throws XmlBlasterException {
-      if (msgUnitWrapper == null) {
+   public boolean match(SessionInfo publisher, SessionInfo receiver, MsgUnit msgUnit, Query query) throws XmlBlasterException {
+      if (msgUnit == null) {
          Thread.currentThread().dumpStack();
          throw new XmlBlasterException(ME, "Illegal argument in xpath match() call");
       }
@@ -158,11 +157,11 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
       else
          expression = (DOMXPath)query.getPreparedQuery();
       
-      Document doc = getDocument(msgUnitWrapper);
+      Document doc = getDocument(msgUnit);
       
       try {
          if ( log.DUMP)
-            log.dump(ME,"Matching query " + query.getQuery() + " against document: " + msgUnitWrapper.getMessageUnit().getContentStr());
+            log.dump(ME,"Matching query " + query.getQuery() + " against document: " + msgUnit.getContentStr());
          
          boolean match = expression.booleanValueOf(doc);
          if (log.TRACE )
@@ -182,16 +181,16 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
     * Get a dom document for message, from cache or create a new one.
     */
    
-   private synchronized Document getDocument(MessageUnitWrapper msg) throws XmlBlasterException {
+   private synchronized Document getDocument(MsgUnit msgUnit) throws XmlBlasterException {
       /*
-      log.trace(ME,"Number of times qued: " + msg.getEnqueueCounter());
-      log.trace(ME,"Timestamp: " +msg.getRcvTimestamp());
-      log.trace(ME,"Unique key: " +msg.getUniqueKey());
-      log.trace(ME,"Key: " +msg.getXmlKey().toXml());
-      log.trace(ME,"Message: "+msg.getMessageUnit().getContentStr());
+      log.trace(ME,"Number of times qued: " + msgUnit.getEnqueueCounter());
+      log.trace(ME,"Timestamp: " +msgUnit.getRcvTimestamp());
+      log.trace(ME,"Unique key: " +msgUnit.getKeyOid());
+      log.trace(ME,"Key: " +msgUnit.getXmlKey().toXml());
+      log.trace(ME,"Message: "+msgUnit.getContentStr());
       */
       Document doc = null;
-      String key = msg.getUniqueKey()+":"+msg.getRcvTimestamp().getTimestamp();
+      String key = msgUnit.getKeyOid()+":"+msgUnit.getQosData().getRcvTimestamp().getTimestamp();
       // try get document from cache
       int index = domCache.indexOf(new Entry(key,null));
       if ( index != -1) {
@@ -200,7 +199,7 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
          doc =  e.doc;
       } else {
          if (log.TRACE )log.trace(ME,"Constructing new doc from with key: " +key);
-         doc = getDocument(msg.getMessageUnit().getContentStr());
+         doc = getDocument(msgUnit.getContentStr());
          
          // Put into cache and check size
          Entry e = new Entry(key,doc);

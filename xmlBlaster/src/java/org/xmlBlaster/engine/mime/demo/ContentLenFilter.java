@@ -3,8 +3,6 @@ Name:      ContentLenFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface hiding the real callback protocol
-Version:   $Id: ContentLenFilter.java,v 1.17 2002/11/26 12:38:48 ruff Exp $
-Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime.demo;
 
@@ -15,8 +13,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.engine.helper.Constants;
-import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.engine.MessageUnitWrapper;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.mime.Query;
 import org.xmlBlaster.engine.mime.I_AccessFilter;
 import org.xmlBlaster.engine.Global;
@@ -35,7 +32,7 @@ import org.xmlBlaster.engine.Global;
  * </pre>
  * Plugins must implement the I_Plugin interface to be loadable by the PluginManager
  * and must implement the I_AccessFilter interface to be usable as a filter.
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public class ContentLenFilter implements I_Plugin, I_AccessFilter
 {
@@ -131,13 +128,11 @@ public class ContentLenFilter implements I_Plugin, I_AccessFilter
     * @return true   If message is not too long
     * @exception see I_AccessFilter#match()
     */
-   public boolean match(SessionInfo publisher, SessionInfo receiver, MessageUnitWrapper msgUnitWrapper, Query query) throws XmlBlasterException {
-      if (msgUnitWrapper == null) {
+   public boolean match(SessionInfo publisher, SessionInfo receiver, MsgUnit msgUnit, Query query) throws XmlBlasterException {
+      if (msgUnit == null) {
          Thread.currentThread().dumpStack();
          throw new XmlBlasterException(ME, "Illegal argument in match() call");
       }
-
-      MessageUnit msgUnit = msgUnitWrapper.getMessageUnit();
 
       try {
          long maxLen;
@@ -149,12 +144,12 @@ public class ContentLenFilter implements I_Plugin, I_AccessFilter
             maxLen = DEFAULT_MAX_LEN;
 
          if (msgUnit.getContent().length == THROW_EXCEPTION_FOR_LEN) {
-            if (Constants.OID_DEAD_LETTER.equals(msgUnitWrapper.getUniqueKey())) {
+            if (Constants.OID_DEAD_LETTER.equals(msgUnit.getKeyOid())) {
                log.info(ME, "Dead messages pass through");
                return true;  // message will be delivered
             }
-            if (Constants.STATE_ERASED.equals(msgUnitWrapper.getPublishQos().getState())) {
-               log.info(ME, "Messages with state=" + Constants.STATE_ERASED + " pass through");
+            if (msgUnit.getQosData().isErased()) {
+               log.info(ME, "Messages with state=" + msgUnit.getQosData().getState() + " pass through");
                return true;  // message will be delivered
             }
             log.info(ME, "Test what happens if we throw an exception");

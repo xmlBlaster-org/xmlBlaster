@@ -3,8 +3,8 @@ Name:      PublishLenChecker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface hiding the real callback protocol
-Version:   $Id: PublishLenChecker.java,v 1.11 2002/11/26 12:38:48 ruff Exp $
-Author:    ruff@swand.lake.de
+Version:   $Id: PublishLenChecker.java,v 1.12 2002/12/18 10:56:22 ruff Exp $
+Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime.demo;
 
@@ -14,8 +14,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.SubjectInfo;
 import org.xmlBlaster.engine.helper.Constants;
-import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.engine.MessageUnitWrapper;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.mime.I_PublishFilter;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.Global;
@@ -32,7 +31,7 @@ import org.xmlBlaster.engine.Global;
  * </pre>
  * Plugins must implement the I_Plugin interface to be loadable by the PluginManager
  * and must implement the I_PublishFilter interface to be usable as a filter.
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public class PublishLenChecker implements I_Plugin, I_PublishFilter
 {
@@ -129,20 +128,18 @@ public class PublishLenChecker implements I_Plugin, I_PublishFilter
     *            does not fit to message content.<br />
     *            Take care throwing an exception, as the
     *            exception is routed back to the publisher.
-    *            If the publish() had many messages (a MessageUnit[]), all other messages are lost
+    *            If the publish() had many messages (a MsgUnit[]), all other messages are lost
     *            as well.
     *            Probably it is best to return 'ERROR' instead and log the situation.
     */
-   public String intercept(SubjectInfo publisher, MessageUnitWrapper msgUnitWrapper) throws XmlBlasterException {
-      if (msgUnitWrapper == null) {
+   public String intercept(SubjectInfo publisher, MsgUnit msgUnit) throws XmlBlasterException {
+      if (msgUnit == null) {
          Thread.currentThread().dumpStack();
-         throw new XmlBlasterException(ME, "Illegal argument in intercept() call - msgUnitWrapper is null");
+         throw new XmlBlasterException(ME, "Illegal argument in intercept() call - msgUnit is null");
       }
 
-      if (msgUnitWrapper.getXmlKey().isInternal())
+      if (msgUnit.getKeyData().isInternal())
          return "";  // ignore internal messages
-
-      MessageUnit msgUnit = msgUnitWrapper.getMessageUnit();
 
       try {
          long maxLen = DEFAULT_MAX_LEN;  // Use default max length

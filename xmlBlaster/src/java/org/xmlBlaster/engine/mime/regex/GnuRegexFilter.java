@@ -12,8 +12,7 @@ import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.engine.helper.Constants;
-import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.engine.MessageUnitWrapper;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.mime.I_AccessFilter;
 import org.xmlBlaster.engine.mime.Query;
 import org.xmlBlaster.engine.Global;
@@ -48,7 +47,7 @@ import gnu.regexp.RE;
  *   Matcher m = preparedQuery.matcher(msgUnit.getContentStr());
  *   return  m.matches();
  * </pre>
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  * @see <a href="http://www.cacas.org/java/gnu/regexp/" target="others">The GNU regex package</a>
  */
 public class GnuRegexFilter implements I_Plugin, I_AccessFilter
@@ -129,8 +128,8 @@ public class GnuRegexFilter implements I_Plugin, I_AccessFilter
     * @return true   The filter regex expression matches the message content.
     * @exception see I_AccessFilter#match()
     */
-   public boolean match(SessionInfo publisher, SessionInfo receiver, MessageUnitWrapper msgUnitWrapper, Query query) throws XmlBlasterException {
-      if (msgUnitWrapper == null) {
+   public boolean match(SessionInfo publisher, SessionInfo receiver, MsgUnit msgUnit, Query query) throws XmlBlasterException {
+      if (msgUnit == null) {
          Thread.currentThread().dumpStack();
          throw new XmlBlasterException(ME, "Illegal argument in regex match() call");
       }
@@ -148,7 +147,6 @@ public class GnuRegexFilter implements I_Plugin, I_AccessFilter
       else
          expression = (RE)query.getPreparedQuery();
 
-      MessageUnit msgUnit = msgUnitWrapper.getMessageUnit();
       return expression.isMatch(msgUnit.getContentStr());
    }
 

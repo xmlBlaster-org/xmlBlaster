@@ -3,14 +3,12 @@ Name:      I_PublishFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface to plugin a publish filter
-Version:   $Id: I_PublishFilter.java,v 1.3 2002/06/15 16:05:31 ruff Exp $
-Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.SubjectInfo;
-import org.xmlBlaster.engine.MessageUnitWrapper;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.Global;
 
 
@@ -31,7 +29,7 @@ import org.xmlBlaster.engine.Global;
  *    <li>Code the plugin.<br />
  *        Code a plugin which inherits from this interface.
  *        In the intercept() method code your specific filter rule.
- *        You get passed the MessageUnitWrapper object, which contains the content
+ *        You get passed the MsgUnit object, which contains the content
  *        of a message. You look into the content and decide if you
  *        accept or reject a message. You may manipulate accepted messages.
  *    </li>
@@ -41,8 +39,8 @@ import org.xmlBlaster.engine.Global;
  *    </li>
  * </ul>
  *
- * @version $Revision: 1.3 $
- * @author ruff@swand.lake.de
+ * @version $Revision: 1.4 $
+ * @author xmlBlaster@marcelruff.info
  */
 public interface I_PublishFilter
 {
@@ -73,20 +71,20 @@ public interface I_PublishFilter
     * Add your business code with your implementation of inercept(). 
     * <p />
     * You may manipulate the content of the message, but not the key and qos or other attributes
-    * of the MessageUnitWrapper object.
+    * of the MsgUnit object.
     * @param publisher The subject object describing the publisher
-    * @param msgUnitWrapper  The message to check (access the raw message with msgUnitWrapper.getMessageUnit())
+    * @param msgUnit  The message to check
     * @return "" or "OK": The message is accepted<br />
     *         Any other string: The message is rejected and your string is passed back to the publisher.
     * @exception XmlBlasterException Is thrown on problems, for example if the MIME type
     *            does not fit to message content.<br />
     *            Take care throwing an exception, as the
     *            exception is routed back to the publisher.
-    *            If the publish() had many messages (a MessageUnit[]), all other messages are lost
+    *            If the publish() had many messages (a MsgUnit[]), all other messages are lost
     *            as well.
     *            Probably it is best to return 'ERROR' instead and log the situation.
     */
-   public String intercept(SubjectInfo publisher, MessageUnitWrapper msgUnitWrapper) throws XmlBlasterException;
+   public String intercept(SubjectInfo publisher, MsgUnit msgUnit) throws XmlBlasterException;
 
    public void shutdown();
 }
