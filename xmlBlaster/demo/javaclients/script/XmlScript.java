@@ -3,7 +3,7 @@ Name:      XmlScript.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: XmlScript.java,v 1.2 2004/02/10 08:13:55 laghi Exp $
+Version:   $Id: XmlScript.java,v 1.3 2004/04/26 10:23:15 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.script;
 
@@ -24,7 +24,7 @@ import org.xmlBlaster.client.script.XmlScriptInterpreter;
  * <p>
  * Invocation examples:<br />
  * <pre>
- *    java -cp ../../lib/xmlBlaster.jar javaclients.script.XmlScript
+ *    java -cp ../../../lib/xmlBlaster.jar javaclients.script.XmlScript
  *
  *    java javaclients.script.XmlScript -requestFile inFile.xml -responseFile outFile.xml -updateFile updFile.xml
  *
