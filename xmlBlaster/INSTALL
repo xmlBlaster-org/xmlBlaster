@@ -44,8 +44,8 @@ Unpack the distribution to some location ($HOME/xmlBlaster is a good spot).
    a) If you use sh, ksh or bash, you may chose to source the
       $XMLBLASTER_HOME/.bashrc into your environment.
 
-      export JDK_HOME=/usr/local/jdk
-      export PATH=${JDK_HOME}/bin:$PATH
+      export JAVA_HOME=/usr/local/jdk
+      export PATH=${JAVA_HOME}/bin:$PATH
       export XMLBLASTER_HOME=${HOME}/xmlBlaster 
       export JUTILS_HOME=${XMLBLASTER_HOME}
       . ${XMLBLASTER_HOME}/.bashrc
@@ -60,8 +60,8 @@ Unpack the distribution to some location ($HOME/xmlBlaster is a good spot).
    b) If you did not follow step a), here is how to setup
       your environment manually (examples for csh or tcsh):
 
-     setenv JDK_HOME /usr/local/jdk
-     setenv PATH ${JDK_HOME}/bin:$PATH
+     setenv JAVA_HOME /usr/local/jdk
+     setenv PATH ${JAVA_HOME}/bin:$PATH
 
      setenv XMLBLASTER_HOME ${HOME}/xmlBlaster
      setenv JUTILS_HOME ${XMLBLASTER_HOME}

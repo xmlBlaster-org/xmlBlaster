@@ -6,7 +6,7 @@ export JAVA_WRAP=${XMLBLASTER_HOME}/config/java_orbacus.sh
 # change this if you want different settings for java and c++
 #
 export ORBACUS_CONFIG=${XMLBLASTER_HOME}/config/orbacus.cfg
-#export CLASSPATH=$ORBACUS_HOME/lib/OB.jar:$ORBACUS_HOME/lib/OBNaming.jar:$JDK_HOME/jre/lib/rt.jar:$(CLASSPATH):.
+#export CLASSPATH=$ORBACUS_HOME/lib/OB.jar:$ORBACUS_HOME/lib/OBNaming.jar:$JAVA_HOME/jre/lib/rt.jar:$(CLASSPATH):.
 export CLASSPATH=${ORBACUS_HOME}/lib/OB.jar:$ORBACUS_HOME/lib/OBNaming.jar:${CLASSPATH}:.
 
 # check if the mico library really exists

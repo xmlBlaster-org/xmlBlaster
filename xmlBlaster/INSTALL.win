@@ -51,8 +51,8 @@ Unpack the distribution to some location ($HOME/xmlBlaster is a good spot).
     	 +- jdk
     	 +- xmlBlaster
     	 
-     set JDK_HOME=C:/jdk
-     set PATH=%JDK_HOME%/bin;%PATH%
+     set JAVA_HOME=C:/jdk
+     set PATH=%JAVA_HOME%/bin;%PATH%
      set XMLBLASTER_HOME=C:/xmlBlaster
      set JUTILS_HOME=%XMLBLASTER_HOME%
      set JacORB_HOME=%XMLBLASTER_HOME%

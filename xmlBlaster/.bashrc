@@ -4,7 +4,7 @@
 # You may use this script to source into your sh, ksh, bash
 #
 # Example (copy this into your .profile or .bashrc):
-#   export JDK_HOME=/usr/local/jdk
+#   export JAVA_HOME=/usr/local/jdk
 #   export XMLBLASTER_HOME=${HOME}/xmlBlaster
 #
 #   These are optional:
@@ -22,7 +22,7 @@
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash.
 # Thanks to Heinrich Goetzger
-# $Revision: 1.71 $
+# $Revision: 1.72 $
 #-----------------------------------------------------------
 
 
@@ -134,16 +134,20 @@ fi
 
 
 #-------- Checking JDK version -
-if [ ${JDK_HOME:=""} != "" ] ; then
-   if [ -d ${JDK_HOME} ] ; then
-      if [ -f ${JDK_HOME}/lib/classes.zip ]; then
+if [ ${JAVA_HOME:=""} = "" ] ; then
+   # xmlBlaster release < 0.78 used JDK_HOME, try this variable:
+   JAVA_HOME=$JDK_HOME
+fi
+if [ ${JAVA_HOME:=""} != "" ] ; then
+   if [ -d ${JAVA_HOME} ] ; then
+      if [ -f ${JAVA_HOME}/lib/classes.zip ]; then
          # JDK 1.1.x
          JDK_1_1=true
          export JDK_1_1
          CLASSPATH=${XMLBLASTER_HOME}/lib/collections.jar:${CLASSPATH}
       else
          # JDK 1.2
-         ORB_PROPS=${JDK_HOME}/jre/lib/orb.properties
+         ORB_PROPS=${JAVA_HOME}/jre/lib/orb.properties
          if [ ! -f ${ORB_PROPS} ]; then
             cp ${XMLBLASTER_HOME}/orb.properties ${ORB_PROPS}
             ${ECHO} "$BLACK_RED   Created ${ORB_PROPS} to switch off default JDK-ORB$ESC"
@@ -151,24 +155,22 @@ if [ ${JDK_HOME:=""} != "" ] ; then
          # If copy failed (missing permissions?)
          # if [ $? -ne 0 ] ;  then
          if [ ! -f ${ORB_PROPS} ]; then
-            CLASSPATH=${JDK_HOME}/jre/lib/rt.jar:${CLASSPATH}
+            CLASSPATH=${JAVA_HOME}/jre/lib/rt.jar:${CLASSPATH}
             export CLASSPATH
          fi
       fi
-      PATH=${JDK_HOME}/bin:${PATH}
+      PATH=${JAVA_HOME}/bin:${PATH}
       export PATH
-      # set JAVA_HOME for ANT:
-      JAVA_HOME=$JDK_HOME
-      export JAVA_HOME
    else
-      ${ECHO} "$BLACK_RED   The directory JDK_HOME=$JDK_HOME doesn't exist   $ESC"
+      ${ECHO} "$BLACK_RED   The directory JAVA_HOME=$JAVA_HOME doesn't exist   $ESC"
    fi
 else
-   ${ECHO} "$BLACK_LTGREEN      NOTE: You need JDK 1.2 to compile xmlBlaster            $ESC"
-   ${ECHO} "$BLACK_LTGREEN            and your CLASSPATH setting needs at least         $ESC"
-   ${ECHO} "$BLACK_LTGREEN               export CLASSPATH=\${JDK_HOME}/jre/lib/rt.jar    $ESC"
-   ${ECHO} "$BLACK_LTGREEN            Or set JDK_HOME, and we will do the rest for you  $ESC"
-   ${ECHO} "$BLACK_LTGREEN               Example: 'export JDK_HOME=/usr/local/jdk'      $ESC"
+   ${ECHO} "$BLACK_RED      NOTE: You need JDK 1.2 or 1.3 to compile xmlBlaster      $ESC"
+   ${ECHO} "$BLACK_RED            and your CLASSPATH setting needs at least          $ESC"
+   ${ECHO} "$BLACK_RED               export CLASSPATH=\${JAVA_HOME}/jre/lib/rt.jar    $ESC"
+   ${ECHO} "$BLACK_RED            Or set JAVA_HOME, and we will do the rest for you  $ESC"
+   ${ECHO} "$BLACK_RED               Example: 'export JAVA_HOME=/usr/local/jdk'      $ESC"
+	return 1
 fi
 
 if [ ${#1} == 0 ]; then
@@ -277,7 +279,7 @@ if [ ${JIKES_HOME:=""} != "" ] ; then
 	      JIKESPATH=${CLASSPATH}
    	   export JIKESPATH
 		else
-         JIKESPATH=${CLASSPATH}:${JDK_HOME}/jre/lib/rt.jar:${JDK_HOME}/jre/lib/i18n.jar
+         JIKESPATH=${CLASSPATH}:${JAVA_HOME}/jre/lib/rt.jar:${JAVA_HOME}/jre/lib/i18n.jar
          export JIKESPATH
 		fi
       ${ECHO} "$BLACK_LTGREEN      Using JIKES_HOME=${JIKES_HOME}  $ESC"
@@ -306,7 +308,7 @@ TOWERJ=/opt/TowerJ
 export TOWERJ
 if [ ${TOWERJ:=""} != "" ] ; then
    if [ -d ${TOWERJ} ] ; then
-      TOWERJ_JAVA_HOME=${JDK_HOME}
+      TOWERJ_JAVA_HOME=${JAVA_HOME}
       export TOWERJ_JAVA_HOME
       PATH=${PATH}:${TOWERJ}/bin/x86-linux
       export PATH

@@ -10,6 +10,7 @@ Changes for 0.79 [?, ? 2000]
 
   - Michele completed xml-rpc support
 
+  - Using now JAVA_HOME instead of JDK_HOME
 
 Changes for 0.78 [Jul, 14 2000]
 ==============================
