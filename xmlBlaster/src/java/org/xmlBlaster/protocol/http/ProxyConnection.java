@@ -3,7 +3,7 @@ Name:      ProxyConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: ProxyConnection.java,v 1.4 2000/03/15 22:18:25 kkrafft2 Exp $
+Version:   $Id: ProxyConnection.java,v 1.5 2000/03/16 17:49:56 kkrafft2 Exp $
 Author:    Marcel Ruff ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
@@ -31,7 +31,7 @@ import java.util.Properties;
  * you need to specify environment variables in the servlet configuration file,<br />
  * for JServ see /etc/httpd/conf/jserv/zone.properties,<br />
  * for jrun see jrun/jsm-default/services/jse/properties/servlets.properties.<br />
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  * @author ruff@swand.lake.de
  */
 public class ProxyConnection implements I_Callback
@@ -41,7 +41,7 @@ public class ProxyConnection implements I_Callback
    private CorbaConnection corbaConnection              = null;
    private Server       xmlBlaster                      = null;
    private Hashtable httpConnections                    = null;
-   private ProxyInterceptor interceptor                 = null;										
+   private ProxyInterceptor interceptor                 = null;
 
 
    /**
@@ -74,14 +74,16 @@ public class ProxyConnection implements I_Callback
     */
    public void update(String loginName, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
    {
-      String content_s = "";
+      String[] s_arr = new String[3];
+      s_arr[0] = new String(updateKey.toString());
+      s_arr[1] = new String(content);
+      s_arr[2] = new String(updateQoS.toString());
       if(interceptor != null) {
-         content_s = new String(content);
-         interceptor.update(updateKey, content_s, updateQoS);
+         s_arr = interceptor.update(s_arr[0], s_arr[1], s_arr[2]);
       }
-Log.plain(ME,"-------------------------httpConnections.size()="+httpConnections.size()+"content_s="+content_s);
+
       for( Enumeration e = httpConnections.elements(); e.hasMoreElements() ; )
-        ((HttpPushHandler)e.nextElement()).update( updateKey.toString(), content_s, updateQoS.toString() );
+        ((HttpPushHandler)e.nextElement()).update(	s_arr[0], s_arr[1], s_arr[2] );
    }
 
    /**

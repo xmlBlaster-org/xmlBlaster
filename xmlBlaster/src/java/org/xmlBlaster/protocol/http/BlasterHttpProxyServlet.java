@@ -3,7 +3,7 @@ Name:      BlasterHttpProxyServlet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxyServlet.java,v 1.3 2000/03/15 22:18:25 kkrafft2 Exp $
+Version:   $Id: BlasterHttpProxyServlet.java,v 1.4 2000/03/16 17:49:56 kkrafft2 Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -37,7 +37,7 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
  *   HTTP 1.1 specifies rfc2616 that the connection stays open as the
  *   default case. How must this code be changed?
  * @author Marcel Ruff ruff@swand.lake.de
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  */
 public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlaster.util.LogListener
 {
@@ -76,7 +76,7 @@ public class BlasterHttpProxyServlet extends HttpServlet implements org.xmlBlast
       String errorText="";
 
       HttpSession session = req.getSession(true);
-      String sessionId = req.getRequestedSessionId();
+      String sessionId = session.getId();
 
       HttpPushHandler pushHandler = new HttpPushHandler(req, res);
 

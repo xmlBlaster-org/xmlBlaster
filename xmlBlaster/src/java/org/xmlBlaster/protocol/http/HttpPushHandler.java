@@ -3,7 +3,7 @@ Name:      HttpPushHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: HttpPushHandler.java,v 1.5 2000/03/15 22:18:25 kkrafft2 Exp $
+Version:   $Id: HttpPushHandler.java,v 1.6 2000/03/16 17:49:56 kkrafft2 Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -195,7 +195,7 @@ public class HttpPushHandler
 
          // This newline forces a refresh everytime,
          // only necessary if the str fills less then one line in the netscape browser window
-         outPlain.println("<P />");
+         //outPlain.println("<P />");
 
          outPlain.println(tail);
 
@@ -213,7 +213,7 @@ public class HttpPushHandler
    {
       try {
          String codedKey               = URLEncoder.encode( updateKey );
-         String codedContent    			= URLEncoder.encode( content );
+         String codedContent                            = URLEncoder.encode( content );
          String codedQos               = URLEncoder.encode( updateQos );
 
          String pushStr = "if (parent.update != null) parent.update('"+codedKey+"','"+codedContent+"','"+codedQos+"');\n";
