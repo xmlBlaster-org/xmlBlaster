@@ -3,7 +3,7 @@ Name:      Transceiver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a svg client using batik
-Version:   $Id: Transceiver.java,v 1.1 2002/01/04 01:05:38 laghi Exp $
+Version:   $Id: Transceiver.java,v 1.2 2002/03/20 16:39:42 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.svg.batik;
 
@@ -42,7 +42,7 @@ import org.apache.batik.dom.svg.SVGDocumentFactory;
 import java.util.StringTokenizer;
 
 /**
- * @author $Author: laghi $ (laghi@swissinfo.org)
+ * @author $Author: ruff $ (laghi@swissinfo.org)
  */
 
 public class Transceiver implements I_Callback
@@ -216,7 +216,7 @@ public class Transceiver implements I_Callback
 
 
 
-   public void update(java.lang.String loginName, UpdateKey updateKey,
+   public String update(java.lang.String loginName, UpdateKey updateKey,
                    byte[] content, UpdateQoS updateQoS) throws XmlBlasterException
    {
       Log.trace(ME, "update called, content: " + new String(content));
@@ -240,6 +240,7 @@ public class Transceiver implements I_Callback
          else updateElement(content, id);
       }
       else throw new XmlBlasterException(ME, "update: svg node is not an element");
+      return "";
    }
 
 
