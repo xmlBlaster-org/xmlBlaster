@@ -304,7 +304,7 @@ Dll_Export char *strcpyRealloc(char **dest, const char *src)
 }
 
 /**
- * Allocates the string with malloc for you. 
+ * Allocates the string with malloc for you, it is always ended with 0. 
  * NOTE: If your given blob or len is 0 an empty string of size 1 is returned
  * @return The string, never null.
  *         You need to free it with free()
@@ -659,6 +659,62 @@ Dll_Export bool strToInt64(int64_t *val, const char * const str)
    if (str == 0 || val == 0) return false;
    /*str[INT64_STRLEN_MAX-1] = 0; sscanf should be safe enough to handle overflow */
    return (sscanf(str, "%lld", val) == 1) ? true : false;
+}
+
+/**
+ * Allocates the string with malloc for you. 
+ * You need to free it with free()
+ * @param blob If null it is malloc()'d for you, else the given blob is used to be filled. 
+ * @return The given blob (or a new malloc()'d if blob was NULL), the data is 0 terminated.
+ *         We return NULL on out of memory.
+ */
+Dll_Export BlobHolder *blobcpyAlloc(BlobHolder *blob, const char *data, size_t dataLen)
+{
+   if (blob == 0) {
+      blob = (BlobHolder *)calloc(1, sizeof(BlobHolder));
+      if (blob == 0) return blob;
+   }
+   blob->dataLen = dataLen;
+   blob->data = (char *)malloc((dataLen+1)*sizeof(char));
+   if (blob->data == 0) {
+      free(blob);
+      return (BlobHolder *)0;
+   }
+   *(blob->data + dataLen) = 0;
+   memcpy(blob->data, data, dataLen);
+   return blob;
+}
+
+/**
+ * free()'s the data in the given blob, does not free the blob itself. 
+ * @param blob if NULL we return NULL
+ * @return The given blob
+ */
+Dll_Export BlobHolder *freeBlobHolderContent(BlobHolder *blob)
+{
+   if (blob == 0) return 0;
+   if (blob->data != 0) {
+      free(blob->data);
+      blob->data = 0;
+      blob->dataLen = 0;
+   }
+   return blob;
+}
+
+/**
+ * Converts the given binary data to a more readable string,
+ * the '\0' are replaced by '*'
+ * @param blob The binary data
+ * @return readable is returned, it must be free()'d
+ */
+Dll_Export char *blobDump(BlobHolder *blob)
+{
+   return toReadableDump(blob->data, blob->dataLen);
+}
+
+Dll_Export void freeBlobDump(char *blobDump)
+{
+   free(blobDump);
 }
 
 # ifdef HELPER_UTIL_MAIN

@@ -82,6 +82,10 @@ Dll_Export extern void trimEnd(char *s);
 Dll_Export extern char *toReadableDump(char *data, size_t len);
 Dll_Export extern const char* int64ToStr(char * const buf, int64_t val);
 Dll_Export extern bool strToInt64(int64_t *val, const char * const str);
+Dll_Export extern BlobHolder *blobcpyAlloc(BlobHolder *blob, const char *data, size_t dataLen);
+Dll_Export extern BlobHolder *freeBlobHolderContent(BlobHolder *blob);
+Dll_Export extern char *blobDump(BlobHolder *blob);
+Dll_Export extern void freeBlobDump(char *blobDump); /* deprecated: use xmlBlasterFree() */
 
 #ifdef __cplusplus
 #ifndef XMLBLASTER_C_COMPILE_AS_CPP
