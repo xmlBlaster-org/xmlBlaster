@@ -1,7 +1,7 @@
 Salute,
 
-the new release 0.84 is out.
-(We wait with 0.85 until we got feedback about 0.84)
+the new release 0.841 is out (Jan, 23. 2003).
+(We wait with 0.85 until we got feedback about 0.841)
 
 XmlBlaster is maturing to industrial strength.
 
@@ -20,7 +20,7 @@ IMPORTANT NOTE:
   Use the new files from directory xmlBlaster/config.
 
 2. Backward compatibility:
-  * xmlBlaster 0.84 has got changes to the client API (Java and C++)
+  * xmlBlaster 0.841 has got changes to the client API (Java and C++)
     Please read 
       xmlBlaster/CHANGES
     and study
@@ -109,7 +109,8 @@ Please read the CHANGES file for more informations.
 KNOWN BUGS:
 -----------
 
-  * Not known
+1. telnet/remoteconsole loops forever after shutdown of embeeded xmlBlaster
+   (switch off in such a case with -admin.remoteconsole.port 0)
 
 
 NEXT RELEASES:
