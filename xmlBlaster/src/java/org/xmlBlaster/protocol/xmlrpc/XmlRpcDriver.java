@@ -3,7 +3,7 @@ Name:      XmlRpcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   XmlRpcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: XmlRpcDriver.java,v 1.17 2001/08/23 11:14:09 ruff Exp $
+Version:   $Id: XmlRpcDriver.java,v 1.18 2001/08/23 11:34:09 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
@@ -88,16 +88,14 @@ public class XmlRpcDriver implements I_Driver
       this.xmlBlasterImpl = xmlBlasterImpl;
 
       xmlPort = XmlBlasterProperty.get("xmlrpc.port", 8080);
-      boolean debugXmlRpc = XmlBlasterProperty.get("xmlrpc.debug", false);
-      if (debugXmlRpc)
-         XmlRpc.setDebug(true);
-
-
 
       if (xmlPort < 1) {
          Log.info(ME, "Option xmlrpc.port set to " + xmlPort + ", xmlRpc server not started");
          return;
       }
+
+      if (XmlBlasterProperty.get("xmlrpc.debug", false) == true)
+         XmlRpc.setDebug(true);
 
       String hostname;
       try  {
