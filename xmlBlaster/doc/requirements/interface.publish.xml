@@ -127,6 +127,12 @@ string time = TimestampFactory::getTimeAsString(Timestamp timestamp); // C++
    &lt;!-- The message is saved to harddisk to be recoverable after a server crash -->
    &lt;persistent/>
 
+   &lt;!-- Don't update messages with identical content as the predecessor -->
+   &lt;forceUpdate>false&lt;/forceUpdate>
+
+   &lt;!-- Control life cycle of still referenced message on message expiry -->
+   &lt;forceDestroy>false&lt;/forceDestroy>
+
    &lt;clientProperty name='transactionId'>0x23345&lt;/clientProperty>
    &lt;clientProperty name='myName'>jack&lt;/clientProperty>
    &lt;clientProperty name='myAge' type='int'>12&lt;/clientProperty>
@@ -161,7 +167,7 @@ string time = TimestampFactory::getTimeAsString(Timestamp timestamp); // C++
    &lt;priority>MAX&lt;/priority>
 
    &lt;!-- false to make PtP message invisible for subscribes -->
-   &lt;subscribeable>false&lt;/subscribeable>
+   &lt;subscribable>false&lt;/subscribable>
 
    &lt;expiration lifeTime='129595811'/>
 
@@ -204,7 +210,7 @@ string time = TimestampFactory::getTimeAsString(Timestamp timestamp); // C++
      </p>
      <p>
      If we want to hide the PtP message from other subscribers of this topic
-     we add the <b>subscribeable</b> tag and set it to false.
+     we add the <b>subscribable</b> tag and set it to false.
      </p>
      <p>
      If a destination client is offline the publisher gets thrown back an exception
