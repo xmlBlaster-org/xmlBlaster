@@ -82,7 +82,7 @@ Else add it manually.
 
 
   <property name="xmlblaster_home" value="."/>
-  <property name="classpath" value="./lib/jacorb.jar:./lib/omquery.jar:./lib/xml.jar:./lib/test.jar:./lib/xtdash.jar:./lib/servlet-2.0.jar:"/>
+  <property name="classpath" value="./lib/jacorb.jar:./lib/omquery.jar:./lib/parser.jar:./lib/xmlrpc.jar:./lib/jaxp.jar:./lib/test.jar:./lib/xtdash.jar:./lib/servlet-2.0.jar:"/>
 
   <!-- =================================================================== -->
   <!-- Help on usage                                                       -->
