@@ -32,7 +32,7 @@ public final class MapPlugin implements I_Map, I_Plugin
    private String ME = "MapPlugin";
    private StorageId mapId;
    private HashMap storage;
-   private QueuePropertyBase property; // org.xmlBlaster.util.qos.storage.TopicCacheProperty;
+   private QueuePropertyBase property; // org.xmlBlaster.util.qos.storage.MsgUnitStoreProperty;
    private Global glob;
    private LogChannel log;
    private boolean isShutdown = false;
@@ -281,8 +281,8 @@ public final class MapPlugin implements I_Map, I_Plugin
       try {
          Global glob = new Global(args);
          MapPlugin pl = new MapPlugin();
-         StorageId mapId = new StorageId("topic", "/node/unknown");
-         pl.initialize(mapId, new org.xmlBlaster.util.qos.storage.TopicCacheProperty(glob, glob.getId()));
+         StorageId mapId = new StorageId("msgUnitStore", "/node/unknown");
+         pl.initialize(mapId, new org.xmlBlaster.util.qos.storage.MsgUnitStoreProperty(glob, glob.getId()));
       }
       catch (XmlBlasterException e) {
          System.out.println("ERROR: " + e.getMessage());
