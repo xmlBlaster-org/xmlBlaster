@@ -157,7 +157,9 @@ StoragePlugin[CACHE][1.0]=org.xmlBlaster.engine.msgstore.cache.PersistenceCacheP
    </configuration>
 
    <see type="REQ">queue</see>
-   <see type="REQ">queue.jdbc</see>
+   <see type="REQ">queue.jdbc.commontable</see>
+   <see type="REQ">queue.jdbc.oracle</see>
+   <see type="REQ">queue.jdbc.postgres</see>
    <see type="REQ">queue.ram</see>
    <see type="API">org.xmlBlaster.util.queue.I_Queue</see>
    <see type="API">org.xmlBlaster.util.queue.jdbc.CacheQueuePlugin</see>
@@ -170,7 +172,7 @@ StoragePlugin[CACHE][1.0]=org.xmlBlaster.engine.msgstore.cache.PersistenceCacheP
 <!--   <see type="REQ">cluster</see> -->
    <author>laghi@swissinfo.org</author>
    <date>2002 11 17</date>
-   <revision>$Revision: 1.10 $</revision>
+   <revision>$Revision: 1.11 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
