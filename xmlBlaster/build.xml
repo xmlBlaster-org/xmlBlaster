@@ -2576,7 +2576,7 @@ TODO
    </target>
 
    <target name="cpp-demo" depends="prepare-cpp" description="Create C++ demo clients">
-      <foreach list="HelloWorld2,PublishDemo,SubscribeDemo,MultiConnectDemo,Leak,ExternOrb,TestEmptyContent"
+      <foreach list="HelloWorld2,PublishDemo,SubscribeDemo,ExternOrb,TestEmptyContent"
                target="compileCppExe" param="exeName" delimiter="," inheritAll="true">
          <param name="compileCppSourcePath" value="${demo.dir}/c++" />
       </foreach>
