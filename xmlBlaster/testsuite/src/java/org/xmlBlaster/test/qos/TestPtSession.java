@@ -32,7 +32,6 @@ import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.test.Util;
 import org.xmlBlaster.test.Msg;
-import org.xmlBlaster.test.Msgs;
 import org.xmlBlaster.test.MsgInterceptor;
 
 import junit.framework.*;
@@ -127,7 +126,7 @@ public class TestPtSession extends TestCase
       }
 
       for(int ii=0; ii<conHolderArr.length; ii++) {
-         this.conHolderArr[ii].update.getMsgs().clear();
+         this.conHolderArr[ii].update.clear();
       }
    }
 
@@ -166,7 +165,7 @@ public class TestPtSession extends TestCase
          publish(this.conHolderArr[0], this.msgOid, sessionNameArr);
          for(int ii=0; ii<this.conHolderArr.length; ii++) {
             assertEquals("", 1, this.conHolderArr[ii].update.waitOnUpdate(sleep, msgOid, Constants.STATE_OK));
-            this.conHolderArr[ii].update.getMsgs().clear();
+            this.conHolderArr[ii].update.clear();
          }
       }
 
@@ -178,7 +177,7 @@ public class TestPtSession extends TestCase
          for(int ii=0; ii<this.conHolderArr.length; ii++) {
             int numExpected = (ii==3) ? 1 : 0;
             assertEquals("ii="+ii, numExpected, this.conHolderArr[ii].update.waitOnUpdate(sleep, msgOid, Constants.STATE_OK));
-            this.conHolderArr[ii].update.getMsgs().clear();
+            this.conHolderArr[ii].update.clear();
          }
       }
 
@@ -191,7 +190,7 @@ public class TestPtSession extends TestCase
          for(int ii=0; ii<this.conHolderArr.length; ii++) {
             int numExpected = (ii==1 || ii==3) ? 1 : 0;
             assertEquals("ii="+ii, numExpected, this.conHolderArr[ii].update.waitOnUpdate(sleep, msgOid, Constants.STATE_OK));
-            this.conHolderArr[ii].update.getMsgs().clear();
+            this.conHolderArr[ii].update.clear();
          }
       }
 

@@ -20,7 +20,6 @@ import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.test.Msg;
-import org.xmlBlaster.test.Msgs;
 import org.xmlBlaster.test.MsgInterceptor;
 
 import junit.framework.*;
@@ -88,7 +87,7 @@ public class TestSubXPath extends TestCase
           e.printStackTrace();
           assertTrue("Login failed: " + e.toString(), false);
       }
-      this.updateInterceptor.getMsgs().clear();
+      this.updateInterceptor.clear();
    }
 
    /**
@@ -164,7 +163,7 @@ public class TestSubXPath extends TestCase
 
       subscribeXPath("//demo");
       assertEquals("numReceived after subscribe", 0, this.updateInterceptor.waitOnUpdate(1000L, null, null));
-      this.updateInterceptor.getMsgs().clear();
+      this.updateInterceptor.clear();
 
       try {
          PublishKey pk = new PublishKey(glob, oid, "text/xml", "1.0");
@@ -174,7 +173,7 @@ public class TestSubXPath extends TestCase
          PublishReturnQos tmp = senderConnection.publish(msgUnit);
          assertEquals("returned oid", oid, tmp.getKeyOid());
          assertEquals("numReceived after publishing", 1, this.updateInterceptor.waitOnUpdate(2000L, oid, Constants.STATE_OK));
-         assertEquals("", 1, this.updateInterceptor.getMsgs().getMsgs().length);
+         assertEquals("", 1, this.updateInterceptor.getMsgs().length);
       }
       catch (XmlBlasterException e) {
          log.error(ME, e.getMessage());
@@ -197,20 +196,20 @@ public class TestSubXPath extends TestCase
       subscribeXPath("/xmlBlaster/key/AGENT[@id='message_3']");
       // there should be no Callback
       assertEquals("numReceived after subscribe", 0, this.updateInterceptor.waitOnUpdate(1000L, null, null));
-      this.updateInterceptor.getMsgs().clear();
+      this.updateInterceptor.clear();
 
       int n = 4;
       for(int i=0; i<n; i++) {
          log.info(ME, "TEST " + (i+1) + " - publishing 5 messages, expecting No.3");
          doPublish();
          assertEquals("numReceived after publishing", 1, this.updateInterceptor.waitOnUpdate(2000L, "3", Constants.STATE_OK));
-         assertEquals("", 1, this.updateInterceptor.getMsgs().getMsgs().length);
-         Msg msg = this.updateInterceptor.getMsgs().getMsgs()[0];
+         assertEquals("", 1, this.updateInterceptor.getMsgs().length);
+         Msg msg = this.updateInterceptor.getMsgs()[0];
          assertEquals("Corrupt content", senderName, msg.getUpdateQos().getSender().getLoginName());
          assertEquals("Corrupt content", "Content: message_3", msg.getContentStr());
          assertEquals("Message contentMime is corrupted", contentMime, msg.getUpdateKey().getContentMime());
          assertEquals("engine.qos.update.subscriptionId: Wrong subscriptionId", subscribeOid, msg.getUpdateQos().getSubscriptionId());
-         this.updateInterceptor.getMsgs().clear();
+         this.updateInterceptor.clear();
       }
 
       String xmlKey = "<key oid='' queryType='XPATH'>\n" +

@@ -38,7 +38,6 @@ import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.test.Util;
 import org.xmlBlaster.test.Msg;
-import org.xmlBlaster.test.Msgs;
 import org.xmlBlaster.test.MsgInterceptor;
 import org.xmlBlaster.client.protocol.xmlrpc.XmlRpcCallbackServer;
 
@@ -78,7 +77,7 @@ public class TestPriorizedDeliveryWithLostCallback extends TestCase
    private EmbeddedXmlBlaster serverThread;
    private int serverPort = 9660;
    private MsgInterceptor updateInterceptor;
-   private Msgs updateMsgs = new Msgs();
+   private MsgInterceptor updateMsgs; // just used as message container, class scope to be usable in inner update class
 
    private final String msgOid = "dispatchTestMessage";
 
@@ -154,7 +153,7 @@ public class TestPriorizedDeliveryWithLostCallback extends TestCase
          log.error(ME, "Can't connect to xmlBlaster: " + e.getMessage());
       }
 
-      this.updateInterceptor.getMsgs().clear();
+      this.updateInterceptor.clear();
    }
 
    /**
@@ -264,7 +263,7 @@ public class TestPriorizedDeliveryWithLostCallback extends TestCase
       //changeStatus(statusOid, NORMAL_LINE);
       publish(msgOid, 1);
       assertEquals(text, 1, this.updateInterceptor.waitOnUpdate(sleep, msgOid, Constants.STATE_OK));
-      this.updateInterceptor.getMsgs().clear();
+      this.updateInterceptor.clear();
 
       // Now kill our callback server
       try {
@@ -275,7 +274,7 @@ public class TestPriorizedDeliveryWithLostCallback extends TestCase
          log.error(ME, "Shutdown of callback failed: "  + e.toString());
          fail(e.toString());
       }
-      this.updateInterceptor.getMsgs().clear();
+      this.updateInterceptor.clear();
 
       // These messages are depending on the priority queued or destroyed
       // as the callback connection is polling ...
@@ -283,15 +282,14 @@ public class TestPriorizedDeliveryWithLostCallback extends TestCase
          publish(msgOid, priority);
       }
       assertEquals(text, 0, this.updateInterceptor.waitOnUpdate(sleep, msgOid, Constants.STATE_OK));
-      this.updateInterceptor.getMsgs().clear();
+      this.updateInterceptor.clear();
 
 
       // Now reestablish the callback server ...
       I_CallbackServer cbServer = null;
       try {
-         updateMsgs = new Msgs();
-         updateMsgs.clear();
-         this.updateInterceptor.getMsgs().clear();
+         updateMsgs = new MsgInterceptor(glob, log, null); // just used as message container
+         this.updateInterceptor.clear();
          try {
             cbServer = new XmlRpcCallbackServer();
             cbServer.initialize(this.glob, name, new AbstractCallbackExtended(glob) {
@@ -323,7 +321,7 @@ public class TestPriorizedDeliveryWithLostCallback extends TestCase
 
          log.info(ME, "Waiting long enough that xmlBlaster reconnected to us and expecting the 6 queued messages ...");
          try { Thread.currentThread().sleep(3000L); } catch( InterruptedException i) {}
-         assertEquals(text, 0, this.updateInterceptor.getMsgs().getMsgs().length);
+         assertEquals(text, 0, this.updateInterceptor.getMsgs().length);
          assertEquals(text, 6, updateMsgs.getMsgs(msgOid, Constants.STATE_OK).length);
          Msg[] msgArr = updateMsgs.getMsgs();
          assertEquals(text, 6, msgArr.length);
@@ -340,7 +338,7 @@ public class TestPriorizedDeliveryWithLostCallback extends TestCase
          assertEquals("", PriorityEnum.MAX_PRIORITY, msgArr[0].getUpdateQos().getPriority());
          assertEquals("", 4, msgArr[5].getUpdateQos().getPriority().getInt());
          updateMsgs.clear();
-         this.updateInterceptor.getMsgs().clear();
+         this.updateInterceptor.clear();
       }
       finally {
          if (cbServer != null) {

@@ -30,7 +30,6 @@ import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.test.Util;
 import org.xmlBlaster.test.Msg;
-import org.xmlBlaster.test.Msgs;
 import org.xmlBlaster.test.MsgInterceptor;
 
 import junit.framework.*;
@@ -146,7 +145,7 @@ public class TestPriorizedDeliveryPlugin extends TestCase
          log.error(ME, "Can't connect to xmlBlaster: " + e.toString());
       }
 
-      this.update.getMsgs().clear();
+      this.update.clear();
    }
 
    /**
@@ -226,10 +225,10 @@ public class TestPriorizedDeliveryPlugin extends TestCase
                   publish(msgOid, priority);
                   assertEquals(text, 1, this.update.waitOnUpdate(sleep, msgOid, Constants.STATE_OK));
                   int count = expectsNotify ? 2 : 1;
-                  assertEquals(text, count, this.update.getMsgs().count());
+                  assertEquals(text, count, this.update.count());
                   if (expectsNotify) {
                      String expectedState = "send,notifySender";
-                     Msg msg = this.update.getMsgs().getMsg(msgOid, expectedState); // PtP notification
+                     Msg msg = this.update.getMsg(msgOid, expectedState); // PtP notification
                      assertTrue("send,notifySender PtP not arrived", msg != null);
                   }
                }
@@ -238,9 +237,9 @@ public class TestPriorizedDeliveryPlugin extends TestCase
                   queueCounter++;
                   assertEquals(text, 0, this.update.waitOnUpdate(sleep, msgOid, Constants.STATE_OK));
                   int count = expectsNotify ? 1 : 0;
-                  assertEquals(text, count, this.update.getMsgs().count());
+                  assertEquals(text, count, this.update.count());
                   if (expectsNotify) {
-                     assertEquals(text, "_PriorizedDeliveryPlugin", this.update.getMsgs().getMsgs()[0].getUpdateQos().getSender().getLoginName()); // PtP notification
+                     assertEquals(text, "_PriorizedDeliveryPlugin", this.update.getMsgs()[0].getUpdateQos().getSender().getLoginName()); // PtP notification
                   }
                }
                else if (action.startsWith("destroy")) {
@@ -248,9 +247,9 @@ public class TestPriorizedDeliveryPlugin extends TestCase
                   destroyCounter++;
                   assertEquals(text, 0, this.update.waitOnUpdate(sleep, msgOid, Constants.STATE_OK));
                   int count = expectsNotify ? 1 : 0;
-                  assertEquals(text, count, this.update.getMsgs().count());
+                  assertEquals(text, count, this.update.count());
                   if (expectsNotify) {
-                     assertEquals(text, "_PriorizedDeliveryPlugin", this.update.getMsgs().getMsgs()[0].getUpdateQos().getSender().getLoginName()); // PtP notification
+                     assertEquals(text, "_PriorizedDeliveryPlugin", this.update.getMsgs()[0].getUpdateQos().getSender().getLoginName()); // PtP notification
                   }
                }
                else {
@@ -258,16 +257,16 @@ public class TestPriorizedDeliveryPlugin extends TestCase
                   fail(text + ": Action is not supported");
                }
 
-               this.update.getMsgs().clear();
+               this.update.clear();
             }
          } // for
 
          text = "Checking ascending sequence of flushed " + queueCounter + " messages which where hold back";
-         this.update.getMsgs().clear();
+         this.update.clear();
          changeStatus(statusOid, NORMAL_LINE);
          assertEquals(text, queueCounter, this.update.waitOnUpdate(2000L, msgOid, Constants.STATE_OK));
-         assertEquals(text, queueCounter, this.update.getMsgs().count());
-         Msg[] msgArr = this.update.getMsgs().getMsgs();
+         assertEquals(text, queueCounter, this.update.count());
+         Msg[] msgArr = this.update.getMsgs();
          assertEquals(text, queueCounter, msgArr.length);
          int lastNum = -1;
          int lastPrio = PriorityEnum.MAX_PRIORITY.getInt() + 1;
@@ -285,7 +284,7 @@ public class TestPriorizedDeliveryPlugin extends TestCase
             lastNum = currNum;
             lastPrio = currPrio;
          }
-         this.update.getMsgs().clear();
+         this.update.clear();
       }
       catch (XmlBlasterException e) {
          fail(e.toString());
@@ -327,7 +326,7 @@ public class TestPriorizedDeliveryPlugin extends TestCase
          }
          assertEquals(text, maxPrio, this.update.waitOnUpdate(sleep, msgOid, Constants.STATE_OK));
          log.info(ME, "SUCCESS, state=GO");
-         this.update.getMsgs().clear();
+         this.update.clear();
 
          // queue messages
          changeStatus(statusOid2, BACKUP_LINE);
@@ -336,13 +335,13 @@ public class TestPriorizedDeliveryPlugin extends TestCase
          }
          assertEquals(text, 0, this.update.waitOnUpdate(sleep, msgOid, Constants.STATE_OK));
          log.info(ME, "SUCCESS, state=" + BACKUP_LINE);
-         this.update.getMsgs().clear();
+         this.update.clear();
 
          // flush the before queued messages
          changeStatus(statusOid, "GO");
          assertEquals(text, maxPrio, this.update.waitOnUpdate(sleep, msgOid, Constants.STATE_OK));
          log.info(ME, "SUCCESS, state=GO");
-         this.update.getMsgs().clear();
+         this.update.clear();
 
          // check unkown message content
          changeStatus(statusOid, "??YYXX");
@@ -351,7 +350,7 @@ public class TestPriorizedDeliveryPlugin extends TestCase
          }
          assertEquals(text, maxPrio, this.update.waitOnUpdate(sleep, msgOid, Constants.STATE_OK));
          log.info(ME, "SUCCESS, state=GO");
-         this.update.getMsgs().clear();
+         this.update.clear();
          /*
       }
       catch (XmlBlasterException e) {
@@ -410,13 +409,13 @@ public class TestPriorizedDeliveryPlugin extends TestCase
       int priority = 6;
       log.info(ME, text + ": Expecting notify");
 
-      this.update.getMsgs().clear();
+      this.update.clear();
       publish(msgOid, priority);
       assertEquals(text, 0, this.update.waitOnUpdate(sleep, msgOid, Constants.STATE_OK));
-      assertEquals(text, 1, this.update.getMsgs().count());
-      assertEquals(text, "_PriorizedDeliveryPlugin", this.update.getMsgs().getMsgs()[0].getUpdateQos().getSender().getLoginName()); // PtP notification
+      assertEquals(text, 1, this.update.count());
+      assertEquals(text, "_PriorizedDeliveryPlugin", this.update.getMsgs()[0].getUpdateQos().getSender().getLoginName()); // PtP notification
 
-      this.update.getMsgs().clear();
+      this.update.clear();
 
       changeStatus(statusOid, NORMAL_LINE);
       log.info(ME, text + ": Expecting queued message");

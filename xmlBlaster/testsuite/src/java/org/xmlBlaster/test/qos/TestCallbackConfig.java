@@ -3,7 +3,7 @@ Name:      TestCallbackConfig.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestCallbackConfig.java,v 1.9 2003/01/18 17:18:38 ruff Exp $
+Version:   $Id: TestCallbackConfig.java,v 1.10 2003/01/19 21:56:55 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -25,7 +25,6 @@ import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.test.Msg;
-import org.xmlBlaster.test.Msgs;
 import org.xmlBlaster.test.MsgInterceptor;
 
 import org.xmlBlaster.test.Util;
@@ -94,7 +93,7 @@ public class TestCallbackConfig extends TestCase
          e.printStackTrace();
          assertTrue(e.toString(), false);
       }
-      this.updateInterceptor.getMsgs().clear();
+      this.updateInterceptor.clear();
    }
 
    /**
@@ -129,8 +128,8 @@ public class TestCallbackConfig extends TestCase
 
          assertEquals("returned oid", "testCallbackMsg", publishOid);
          assertEquals("numReceived after publishing", 1, this.updateInterceptor.waitOnUpdate(2000L, publishOid, Constants.STATE_OK));
-         assertEquals("", 1, this.updateInterceptor.getMsgs().getMsgs().length);
-         assertEquals("", this.cbSessionId, this.updateInterceptor.getMsgs().getMsgs()[0].getCbSessionId());
+         assertEquals("", 1, this.updateInterceptor.getMsgs().length);
+         assertEquals("", this.cbSessionId, this.updateInterceptor.getMsgs()[0].getCbSessionId());
       }
       catch (Exception e) {
          log.error(ME, e.toString());

@@ -21,7 +21,6 @@ import org.xmlBlaster.util.enum.Constants;
 
 import org.xmlBlaster.test.Util;
 import org.xmlBlaster.test.Msg;
-import org.xmlBlaster.test.Msgs;
 import org.xmlBlaster.test.MsgInterceptor;
 
 import junit.framework.*;
@@ -104,7 +103,7 @@ public class TestLoginLogoutEvent extends TestCase
           e.printStackTrace();
       }
 
-      this.updateInterceptFirst.getMsgs().clear();
+      this.updateInterceptFirst.clear();
    }
 
 
@@ -170,17 +169,17 @@ public class TestLoginLogoutEvent extends TestCase
       // expecting a login event message (the login event message exists from my own login)
       assertEquals("Missing my login event", 1, this.updateInterceptFirst.waitOnUpdate(sleep, "__sys__Login", Constants.STATE_OK));
       {
-         String content = this.updateInterceptFirst.getMsgs().getMsgs()[0].getContentStr();
+         String content = this.updateInterceptFirst.getMsgs()[0].getContentStr();
          log.info(ME, "Received login event for " + content);
          assertEquals("Wrong login name", expectedName, content);
-         this.updateInterceptFirst.getMsgs().clear();
+         this.updateInterceptFirst.clear();
       }
 
       numReceived = 0;
       expectedName = null;        // no check (the logout event exists with AllTests but not when this test is run alone
       subscribe("__sys__Logout");
       try { Thread.currentThread().sleep(1000L); } catch( InterruptedException i) {}          // no check
-      this.updateInterceptFirst.getMsgs().clear();
+      this.updateInterceptFirst.clear();
 
       numReceived = 0;
       expectedName = secondName; // second name should be returned on this login
@@ -192,13 +191,13 @@ public class TestLoginLogoutEvent extends TestCase
          
          // login event arrived?
          assertEquals("Missing my login event", 1, this.updateInterceptFirst.waitOnUpdate(sleep, "__sys__Login", Constants.STATE_OK));
-         String content = this.updateInterceptFirst.getMsgs().getMsgs()[0].getContentStr();
+         String content = this.updateInterceptFirst.getMsgs()[0].getContentStr();
          log.info(ME, "Received login event for " + content);
          assertEquals("Wrong login name", expectedName, content);
-         this.updateInterceptFirst.getMsgs().clear();
+         this.updateInterceptFirst.clear();
 
          assertEquals("Not expected update for second con", 0, this.updateInterceptSecond.waitOnUpdate(500L));
-         this.updateInterceptSecond.getMsgs().clear();
+         this.updateInterceptSecond.clear();
 
          // Test the '__sys__UserList' feature:
          MsgUnit[] msgArr = secondConnection.get(
@@ -234,14 +233,14 @@ public class TestLoginLogoutEvent extends TestCase
       // expecting a logout event message
       {
          assertEquals("Missing my logout event", 1, this.updateInterceptFirst.waitOnUpdate(sleep, "__sys__Logout", Constants.STATE_OK));
-         String content = this.updateInterceptFirst.getMsgs().getMsgs()[0].getContentStr();
+         String content = this.updateInterceptFirst.getMsgs()[0].getContentStr();
          log.info(ME, "Received logout event for " + content);
          assertEquals("Wrong logout name", expectedName, content);
-         this.updateInterceptFirst.getMsgs().clear();
+         this.updateInterceptFirst.clear();
       }
 
       assertEquals("Not expected update for second con", 0, this.updateInterceptSecond.waitOnUpdate(500L));
-      this.updateInterceptSecond.getMsgs().clear();
+      this.updateInterceptSecond.clear();
    }
 
    /** ----> see this.updateInterceptFirst
