@@ -26,6 +26,7 @@ import org.xmlBlaster.engine.mime.I_AccessFilter;
 import org.xmlBlaster.engine.mime.AccessPluginManager;
 import org.xmlBlaster.engine.mime.I_PublishFilter;
 import org.xmlBlaster.engine.mime.PublishPluginManager;
+import org.xmlBlaster.engine.cluster.RouteInfo;
 import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.authentication.I_ClientListener;
 import org.xmlBlaster.authentication.ClientEvent;
@@ -909,8 +910,19 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
 
          String retVal = xmlKey.getUniqueKey(); // if <key oid=""> was empty, there was a new oid generated
 
-         if (! publishQos.isFromPersistenceStore())
+         if (! publishQos.isFromPersistenceStore()) {
+
             publishQos.setSender(sessionInfo.getLoginName());
+
+            int hopCount = publishQos.count(getGlobal().getNodeId());
+            if (hopCount > 0) {
+               getGlobal().getLog().warn(ME, "Warning, message oid='" + xmlKey.getKeyOid()
+                  + "' passed my node id='" + getGlobal().getId() + "' " + hopCount + " times before, we have a circular routing problem");
+            }
+            int stratum = -1; // not known yet, addRouteInfo() sets my stratum to one closer to the master,
+                              // this needs to be checked here as soon as we know which stratum we are!!!
+            publishQos.addRouteInfo(new RouteInfo(getGlobal().getNodeId(), stratum, publishQos.getRcvTimestamp()));
+         }
 
          if (publishQos.isPubSubStyle()) {
             if (Log.TRACE) Log.trace(ME, "Doing publish() in Pub/Sub style");
@@ -1414,6 +1426,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
       }
       sb.append(bigXmlKeyDOM.printOn(extraOffset + "   ").toString());
       sb.append(clientSubscriptions.toXml(extraOffset + "   "));
+      sb.append(getGlobal().getClusterManager().toXml(extraOffset + "   "));
       sb.append(offset + "</RequestBroker>\n");
 
       return sb.toString();
