@@ -23,7 +23,14 @@
 all: clientBOA clientPOA
 
 DIR_PREFIX=${MICO_HOME}/
+
+ifneq ($(wildcard $(DIR_PREFIX)/doc/mico/examples/MakeVars),)
 include $(DIR_PREFIX)doc/mico/examples/MakeVars
+endif
+
+ifneq ($(wildcard $(DIR_PREFIX)/MakeVars),)
+include $(DIR_PREFIX)/MakeVars
+endif
 
 LD = $(CXX)
 
