@@ -1480,8 +1480,8 @@ TODO
    <!-- Please use JDK 1.5 or higher for this                               -->
    <!-- build -DJRE_HOME=C:\PROGRA~1\Java\j2re1.5.0 -DJVM.target=1.4 activex -->
    <!-- =================================================================== -->
-   <target name="activex" depends="dist-client,activex-plain" description="Creates a ActiveX Bridge (for use with C# and VisualBasic.Net)"/>
-   <target name="activex-plain" depends="" description="Creates a ActiveX Bridge (for use with C# and VisualBasic.Net)">
+   <target name="activex" depends="dist-client,activex-deploy" description="Creates a ActiveX Bridge (for use with C# and VisualBasic.Net)"/>
+   <target name="activex-deploy" depends="" description="Creates a ActiveX Bridge (for use with C# and VisualBasic.Net)">
       <property name="JAVA_HOME" value="${env.JAVA_HOME}" />
       <property name="JRE_HOME" value="${env.JRE_HOME}" />
       <property name="CLSID" value="D824B185-AE3C-11D6-ABF5-00B0D07B8581" />
