@@ -17,6 +17,9 @@ export CLASSPATH=$CLASSPATH:classes
 
 javac -g -sourcepath src -d classes src/examples/MathClient.java
 
+cd saw_0.995/bin
+./saw_server.sh start
+
 java examples.MathClient
 
 
