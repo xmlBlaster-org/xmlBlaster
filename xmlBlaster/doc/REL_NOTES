@@ -1,21 +1,27 @@
    Release notes for xmlBlaster (http://www.xmlBlaster.org)
 
-Changes for 0.73 [xxx.x, 2000]
+Changes for 0.73 [Feb.20, 2000]
 ==============================
+   - Use the -P option to check out, so old directories won't show up any more:
+     cvs checkout -P xmlBlaster
    
-	- Migrated to JacORB 1.0 beta 15
+   - Migrated to JacORB 1.0 beta 15
 
-	- Reorganized package structure
-	  org.xmlBlaster.authenticateIdl  -> org.xmlBlaster.protocol.corba.authenticateIdl
-	  org.xmlBlaster.serverIdl        -> org.xmlBlaster.protocol.corba.serverIdl
-	  org.xmlBlaster.clientIdl        -> org.xmlBlaster.protocol.corba.clientIdl
-	  org.xmlBlaster.client.filestore -> org.xmlBlaster.protocol.corba.client.feeder
-	  org.xmlBlaster.engine.xml2java  -> new added
+   - Reorganized package structure
+     org.xmlBlaster.authenticateIdl  -> org.xmlBlaster.protocol.corba.authenticateIdl
+     org.xmlBlaster.serverIdl        -> org.xmlBlaster.protocol.corba.serverIdl
+     org.xmlBlaster.clientIdl        -> org.xmlBlaster.protocol.corba.clientIdl
+     org.xmlBlaster.client.filestore -> org.xmlBlaster.protocol.corba.client.feeder
+     org.xmlBlaster.engine.xml2java  -> new added
 
-	- Introduced DocBook schema
-	  Documentation is written in xml, and converted
-	  to html/pdf etc. with XSL style sheets.
-	  See example in xmlBlaster/doc/whitepaper/README
+   - Improved client / server connection negotiation (IOR bootstrapping)
+
+   - Introduced DocBook schema
+     Documentation is written in xml, and converted
+     to html/pdf etc. with XSL style sheets.
+     See example in xmlBlaster/doc/whitepaper/README
+
+   - Further minor changes (see cvs log or cvsweb if you really want to know it)
 
 
 Changes for 0.72 [Feb.1, 2000]
