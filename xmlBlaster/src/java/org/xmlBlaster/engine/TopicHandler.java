@@ -944,7 +944,8 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
       if (subscribeQosServer.getWantInitialUpdate() == true || calleeIsXPathMatchCheck) { // wantInitial==false is only checked if this is a subcribe() thread of a client
          MsgUnitWrapper[] wrappers = null;
          if (hasHistoryEntries())
-            wrappers = getMsgUnitWrapperArr(subscribeQosServer.getData().getHistoryQos().getNumEntries(), false);
+            wrappers = getMsgUnitWrapperArr(subscribeQosServer.getData().getHistoryQos().getNumEntries(),
+                                            subscribeQosServer.getData().getHistoryQos().getNewestFirst());
 
          if (wrappers != null && wrappers.length > 0) {
             int count = 0, currentCount = 0;
@@ -1409,14 +1410,14 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
     * Returns a snapshot of all entries in the history
     * @param num Number of entries wanted, not more than size of history queue are returned.<br />
     *            If -1 all entries in history queue are returned
-    * @param reverseOrdered false is the normal case (the latest message is returned first)
+    * @param newestFirst true is the normal case (the latest message is returned first)
     * @return Checked MsgUnitWrapper entries (destroyed and expired ones are removed), never null
     */
-   public MsgUnitWrapper[] getMsgUnitWrapperArr(int num, boolean reverseOrdered) throws XmlBlasterException {
+   public MsgUnitWrapper[] getMsgUnitWrapperArr(int num, boolean newestFirst) throws XmlBlasterException {
       if (this.historyQueue == null)
          return new MsgUnitWrapper[0];
       ArrayList historyList = this.historyQueue.peek(num, -1);
-      if (log.TRACE) log.trace(ME, "getMsgUnitWrapperArr("+num+","+reverseOrdered+"), found " + historyList.size() + " historyList entries");
+      if (log.TRACE) log.trace(ME, "getMsgUnitWrapperArr("+num+","+newestFirst+"), found " + historyList.size() + " historyList entries");
       ArrayList aliveMsgUnitWrapperList = new ArrayList();
       ArrayList historyDestroyList = null;
       int n = historyList.size();
@@ -1455,15 +1456,15 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
          this.historyQueue.removeRandom((I_Entry[])historyDestroyList.toArray(new I_Entry[historyDestroyList.size()]));
       }
 
-      if (reverseOrdered) {
+      if (newestFirst) {
+         return (MsgUnitWrapper[])aliveMsgUnitWrapperList.toArray(new MsgUnitWrapper[aliveMsgUnitWrapperList.size()]);
+      }
+      else {
          MsgUnitWrapper[] arr = new MsgUnitWrapper[aliveMsgUnitWrapperList.size()];
          int size = aliveMsgUnitWrapperList.size();
          for(int i=0; i<size; i++)
             arr[i] = (MsgUnitWrapper)aliveMsgUnitWrapperList.get(size-i-1);
          return arr;
-      }
-      else {
-         return (MsgUnitWrapper[])aliveMsgUnitWrapperList.toArray(new MsgUnitWrapper[aliveMsgUnitWrapperList.size()]);
       }
    }
 
@@ -1471,11 +1472,11 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
     * Returns a snapshot of all entries in the history
     * @param num Number of entries wanted, not more than size of history queue are returned.<br />
     *            If -1 all entries in history queue are returned
-    * @param reverseOrdered false is the normal case (the latest message is returned first)
+    * @param newestFirst true is the normal case (the latest message is returned first)
     * @return Checked entries (destroyed and expired ones are removed), never null
     */
-   public MsgUnit[] getHistoryMsgUnitArr(int num, boolean reverseOrdered) throws XmlBlasterException {
-      MsgUnitWrapper[] msgUnitWrapper = getMsgUnitWrapperArr(num, reverseOrdered);
+   public MsgUnit[] getHistoryMsgUnitArr(int num, boolean newestFirst) throws XmlBlasterException {
+      MsgUnitWrapper[] msgUnitWrapper = getMsgUnitWrapperArr(num, newestFirst);
       MsgUnit[] msgUnitArr = new MsgUnit[msgUnitWrapper.length];
       for (int i=0; i<msgUnitWrapper.length; i++) {
          msgUnitArr[i] = msgUnitWrapper[i].getMsgUnit();

@@ -973,7 +973,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
             if (topicHandler.isAlive()) {
 
                int numEntries = getQos.getHistoryQos().getNumEntries();
-               MsgUnitWrapper[] msgUnitWrapperArr = topicHandler.getMsgUnitWrapperArr(numEntries, false);
+               MsgUnitWrapper[] msgUnitWrapperArr = topicHandler.getMsgUnitWrapperArr(numEntries, getQos.getHistoryQos().getNewestFirst());
 
                NEXT_HISTORY:
                for(int kk=0; kk<msgUnitWrapperArr.length; kk++) {
