@@ -59,7 +59,7 @@ public class DirectoryManager {
       this.maximumFileSize = maximumFileSize; 
       this.delaySinceLastFileChange = delaySinceLastFileChange;
       this.directoryEntries = new HashMap();
-      this.directory = initDirectory(null, "directory", directoryName);
+      this.directory = initDirectory(null, "directoryName", directoryName);
       if (this.directory == null)
          throw new XmlBlasterException(this.global, ErrorCode.INTERNAL_NULLPOINTER, ME + ".constructor", "the directory '" + directoryName + "' is null");
       this.sentDirectory = initDirectory(this.directory, "sent", sent);
@@ -346,7 +346,13 @@ public class DirectoryManager {
       
       String relativeName = FileInfo.getRelativeName(file.getName());
       try {
-         file.renameTo(new File(destinationDirectory, relativeName));
+         File destinationFile = new File(destinationDirectory, relativeName);
+         if (destinationFile.exists()) {
+            boolean ret = destinationFile.delete();
+            if (!ret)
+               throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_FILEIO, ME + ".moveTo", "could not delete the existing file '" + destinationFile.getCanonicalPath() + "' to '" + destinationDirectory.getName() + "' before moving avay '" + relativeName + "' after processing");
+         }
+         file.renameTo(destinationFile);
       }
       catch (Throwable ex) {
          throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_FILEIO, ME + ".moveTo", "could not move the file '" + relativeName + "' to '" + destinationDirectory.getName() + "' reason: ", ex); 

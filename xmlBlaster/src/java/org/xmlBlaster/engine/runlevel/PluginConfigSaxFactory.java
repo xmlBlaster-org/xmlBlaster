@@ -161,7 +161,9 @@ public class PluginConfigSaxFactory extends SaxHandlerBase
          this.subTagCounter++;
          this.attributeValue.append("<").append(name);
          for (int i=0; i<attrs.getLength(); i++) {
-            this.attributeValue.append(" ").append(attrs.getLocalName(i)).append("='").append(attrs.getValue(i)).append("'");
+            String qName = attrs.getQName(i);
+            String val = attrs.getValue(i);
+            this.attributeValue.append(" ").append(qName).append("='").append(val).append("'");
          }
          this.attributeValue.append(">");
       }
@@ -208,7 +210,9 @@ public class PluginConfigSaxFactory extends SaxHandlerBase
          this.subTagCounter = 0;
          if (this.attributeKey != null && this.attributeValue != null) {
             String val = this.attributeValue.toString();
-            if (val.startsWith("<![CDATA[")) {  //if (this.wrappedInCDATA) {
+
+            /*if (val.startsWith("<![CDATA[")) {*/  //if (this.wrappedInCDATA) {
+            if (false) { // currently bypassed since we don't want to strip &lt;![CDATA[ 
                // Strip CDATA if ampersand '&lt;![CDATA[' was used instead of '<![CDATA[':
                int pos = val.indexOf("<![CDATA[");
                if (pos >= 0) {

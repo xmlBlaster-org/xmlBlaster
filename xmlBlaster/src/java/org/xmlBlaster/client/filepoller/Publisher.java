@@ -105,13 +105,17 @@ public class Publisher implements I_Timeout {
       if (directoryName == null)
          throw new XmlBlasterException(this.global, ErrorCode.USER_CONFIGURATION, ME, "constructor: 'directoryName' is mandatory");
       
-      this.maximumFileSize = this.global.get("maximumFileSize", -1L, null, pluginConfig);
+      this.maximumFileSize = this.global.get("maximumFileSize", 10000000L, null, pluginConfig);
       long delaySinceLastFileChange = this.global.get("delaySinceLastFileChange", 10000L, null, pluginConfig);
       this.pollInterval = this.global.get("pollInterval", 2000L, null, pluginConfig);
 
       String sent =  this.global.get("sent", (String)null, null, pluginConfig);
       String discarded =  this.global.get("discarded", (String)null, null, pluginConfig);
       String lockExtention =  this.global.get("lockExtention", (String)null, null, pluginConfig);
+     
+      // this would throw an exception and act as a validation if something is not OK in configuration
+      MsgUnit msgUnit = new MsgUnit(this.publishKey, (byte[])null, this.publishQos);
+
       
       this.directoryManager = new DirectoryManager(this.global, name, directoryName, maximumFileSize, delaySinceLastFileChange, fileFilter, sent, discarded, lockExtention);
       
@@ -184,12 +188,10 @@ public class Publisher implements I_Timeout {
             }
             else {
                byte[] content = this.directoryManager.getContent(infos[i]);
-               if (content != null) {
-                  MsgUnit msgUnit = new MsgUnit(this.publishKey, content, this.publishQos);
-                  msgUnit.getQosData().addClientProperty("_fileName", infos[i].getRelativeName());
-                  msgUnit.getQosData().addClientProperty("_fileDate", infos[i].getTimestamp());
-                  this.access.publish(msgUnit);
-               }
+               MsgUnit msgUnit = new MsgUnit(this.publishKey, content, this.publishQos);
+               msgUnit.getQosData().addClientProperty("_fileName", infos[i].getRelativeName());
+               msgUnit.getQosData().addClientProperty("_fileDate", infos[i].getTimestamp());
+               this.access.publish(msgUnit);
             }
 
             while (true) { // must repeat until it works or until shut down

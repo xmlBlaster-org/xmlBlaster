@@ -1,66 +1,75 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='client.filepoller' type='NEW' prio='HIGH' status="INWORK">
+<requirement id='client.filepoller' type='NEW' prio='HIGH' status="CLOSED">
    <topic>
       You can publish messages by putting files on a certain location in the file system.
    </topic>
+
    <description>
+      This is a native plugin which is listening on a certain directory in the file system. 
+      It detects by polling on the directory if a new file has arrived. Once the plugin assumes it has
+      completely written, it will read its contents and publish them.
+      
       <ul>
          <li>The Poller is running as a native xmlBlaster plugin</li>
-         <li>Every registered Poller is listening on exactly one directory</li>
+         <li>Every registered Poller is listening on exactly one single directory</li>
          <li>The polling interval is expressed in ms and is configurable</li>
-         <li>All files in a directory are published on a configurable topic.</li>
+         <li>All files in a directory on which a Poller instance is listening, are published on 
+	     a single configurable topic.</li>
          <li>It is possible to specify a filter for the file name, then only the files matching the filter
-             will be processed by the current plugin
+             will be processed by the current plugin instance. 
          </li>
-         <li>It is possible to have several plugins polling for the same directory provided they both have
-             a filter specified. Filters must be choosed in such a way to avoid that the same file will 
+         <li>It is possible to have several plugins polling for the same directory provided they all have
+             a filter specified. The choice of the filters must be such to avoid that the same file will 
              match more than one filter. If the user does not ensure that, unpredicted behavior will result. 
          </li>
 
          <li>After a successful publish of the content of a file, the file is removed from the file system.
-              or, if a 'sent' directory is specified, files will be moved to that destination.
+              Alternatively, if a 'sent' directory is specified in the configuration, processed
+	      files will be moved to that destination. If for some reason it is not possible to 
+	      move the file to that direction (for example if necessary rights are missing), then the
+	      plugin will continue to poll but will not process any file anymore until the problem has
+	      been manually removed.
          </li>
          <li>It is possible to configure a maximum file size. Files bigger than the specified size are not
              published. If a 'discarded' directory is specified in the properties, then the file will be 
              moved to that directory, otherwise it will be deleted.
          </li>
+	 <li>
+	    When moving files, wether to the 'sent' or 'discarded' directories, if a file with the same
+	    relative name already exists, it is overwritten.
+	 </li>
          <li>
-            Detection of 'file ready for publishing': There are two mechanisms:
-            <ul>
-               <li>
-                  locking: If 'lockExtention' is specified in the plugin configuration, then this mechanism
-                  will be activated. To be used correctly before putting a file into the directory on which
-                  the poller is listening, you have to put a file with the same name but ending with what
-                  has been specified in 'lockExtention'. Suppose <i>lockExtention='*.lck'</i> and you want to 
-                  publish the content of a file called <i>someFile.gif</i>. Then you first must put a file
-                  called <i>someFile.gif.lck</i> on the directory, thereafter you can put <i>someFile.gif</i>
-                  and when you want to make it publish just remove <i>someFile.gif.lck</i>. At that point the
-                  poller will publish the file.
-               </li>
-               <li>
-                  If 'lockExtention' is not specified, the <i>optimistic</i> approach is choosed. Note that 
-                  while simple to be used, there is no guarantee that the published messages really are 
-                  completed. The process is the following: 
-                  Somebody starts putting a file on the filesystem. This operation could take some time. Meanwhile
-                  the poller detects a new file in the directory. If the file is valid (i.e. not exceeding the 
-                  maximum file size), the size and the timestamp did not change since the last 
-                  'delaySinceLastFileChange' milliseconds (if nothing specified here, a default is taken),
-                  then the file will be published.
-               </li>
-            </ul>
-         </li>
-
-         <li>If permissions to read the directory are missing or xmlBlaster has no read rights on a 
-             specific file, or if an IO exception occurs when reading a file or trying to delete or move
-             a file, an error is reported (logged) and the plugin does temporarly stop working.
-             (to ensure correct sequence). The plugin continues however to poll and when the rights are 
-             manually fixed, it continues working again.
+            Detection of 'file ready for publishing': 
+	    <p>
+            If <i>lockExtention</i> is specified in the plugin configuration, then publishing of a file is
+	    controlled by a <i>lock</i> file. 
+	    This means that if you specified <i>*.lck</i> as the <i>lockExtention</i>, and want to publish
+	    a file called <i>someFile.gif</i>, then the publishing of the file will be inhibited until a 
+	    file <i>someFile.gif.lck</i> will be present in the directory.
+	    </p>
+	    <p>
+	    The plugin will wait <i>delaySinceLastFileChange</i> milliseconds since 
+	    the last modification of the file to be published (date and size are checked) before 
+	    processing anyway. This way, by choosing a sufficiently long <i>delaySinceLastFileChange</i>
+	    it is possible to work in an <i>optimistic</i> way without any lock file. 
+	    </p>
+	    <p>
+	    Note however that this <i>optimistic</i> publishing is not to 100% safe. Suppose the writing of
+	    the file to be published is stalled for a time which is longer than what specified in
+	    <i>delaySinceLastFileChange</i>, then the file will be published in its incomplete state.
+	    </p>	
          </li>
          <li>
-           To be able to track the message origin, filename, filesize and file timestamp are sent in the
-           client properties as:
+	   If permissions to read the directory are missing or xmlBlaster has no read rights on a 
+           specific file, or if an IO exception occurs when reading a file or trying to delete or move
+           a file, an error is reported (logged) and the plugin does temporarly stop working.
+           (to ensure correct sequence). The plugin continues however to poll and when the rights are 
+           manually fixed, it continues working again.
+         </li>
+         <li>
+           To be able to track the message origin, filename and date are sent in the client properties as:
            <ul>
               <li><i>_fileName</i></li> (the relative file name as a String)
               <li><i>_fileDate</i></li> (the timestamp of the file in ms as a long)
@@ -79,32 +88,204 @@
 
      <plugin id='FilePollerPlugin' className='org.xmlBlaster.client.filesystem.FilePollerPlugin'>
         <attribute id='directoryName'>/tmp/filePoller</attribute>
-        <!-- has no effect if publishKey defined: <attribute id='topicName'>poller.test</attribute> -->
-        <attribute id='publishKey'>&gt;![CDATA[<key oid='poller.test'><poller><test/></poller></key>]]&lt;</attribute>
-        <attribute id='publishQos'>&gt;![CDATA[<qos/>]]&lt;</attribute>
+        <attribute id='topicName'>poller.test</attribute>
+        <attribute id='publishKey'>&lt;![CDATA[<key oid='poller.test'><poller><test/></poller></key>]]&gt;</attribute>
+        <attribute id='publishQos'>&lt;![CDATA[<qos><expiration lifeTime='4000'/></qos>]]&gt;</attribute>
         <attribute id='connectQos'></attribute>
-        <attribute id='maximumFileSize'>-1</attribute>
+        <attribute id='maximumFileSize'>10000000</attribute>
         <attribute id='delaySinceLastFileChange'>10000</attribute>
         <attribute id='pollInterval'>2000</attribute>
-        <attribute id='loginName'></attribute>
-        <attribute id='password'></attribute>
-        <attribute id='sent'></attribute>
-        <attribute id='discarded'></attribute>
+
+        <attribute id='loginName'>fritz</attribute>
+        <attribute id='password'>secret</attribute>
+        <attribute id='sent'>Sent</attribute>
+        <attribute id='discarded'>Discarded</attribute>
         <attribute id='fileFilter'></attribute>
         <attribute id='lockExtention'>*.lck</attribute>
+
         <action do='LOAD' onStartupRunlevel='9' sequence='6' onFail='resource.configuration.pluginFailed'/>
         <action do='STOP' onShutdownRunlevel='6' sequence='5'/>
      </plugin>
    ...
 
  </xmlBlaster>
-
-
 ]]>
 </pre>
+and here a minimalistic one:
 
-      </p>
+<pre>
+<![CDATA[
+  <xmlBlaster>
+    ...
 
+     <plugin id='FilePollerPlugin' className='org.xmlBlaster.client.filesystem.FilePollerPlugin'>
+        <attribute id='directoryName'>/tmp/filePoller</attribute>
+        <attribute id='topicName'>poller.test</attribute>
+     </plugin>
+   ...
+
+ </xmlBlaster>
+]]>
+</pre>
+ </p>
+
+ and here a more detailed description about each attribute:
+
+    <table border="1">
+       <tr>
+         <th>id (name)</th>
+         <th>type</th>
+         <th>default value</th>
+         <th>Comment</th>
+       </tr>
+       <tr>
+         <td>directoryName</td>
+         <td>String</td>
+         <td>null</td>
+         <td><b>mandatory</b>: The name of the directory on which this plugin instance will listen.
+	    If the directory does not exist, one will be created. You can specify an absolute name or
+	    a relative one. A relative one is based on the <i>${user.home}</i>.
+	 </td>
+       </tr>
+
+       <tr>
+         <td>topicName</td>
+         <td>String</td>
+         <td>null</td>
+         <td><b>mandatory unless <i>publishKey</i> defined</b>. If both are specified this attribute is
+	 ignored and a warning is logged. This is the name of the topic on which to publish (the oid). 
+	 </td>
+       </tr>
+
+       <tr>
+         <td>publishKey</td>
+         <td>String</td>
+         <td>null</td>
+         <td><b>optional</b> unless <i>topicName</i> has not been specified in which case it is mandatory.
+	 If you need to specify a more complex <a href="interface.publish.html">key</a> for the publishing 
+	 (for example to make it searcheable)
+	 of the messages you can specify it here. Note that you can only specify one single key which will
+	 be used for all messages published by this plugin. If you need to differentiate you can use
+	 more plugins.
+	 </td>
+       </tr>
+
+       <tr>
+         <td>publishQos</td>
+         <td>String</td>
+         <td>null</td>
+         <td><b>optional</b>.
+	 If you need to specify a more complex <a href="interface.publish.html">qos</a> for the publishing 
+	 you can specify it here. Note that you can only specify one single qos which will
+	 be used for all messages published by this plugin. If you need to differentiate you can use
+	 more plugins.
+	 </td>
+       </tr>
+
+       <tr>
+         <td>connectQos</td>
+         <td>String</td>
+         <td>null</td>
+         <td><b>optional</b>. If you need to specify more complex 
+	 <a href="interface.connect.html">connection behavior</a> you can do it here. Note however that
+	 this is a plugin which per default uses the <a href="protocol.local.html">local protocol</a>.
+	 </td>
+       </tr>
+       <tr>
+         <td>loginName</td>
+         <td>String</td>
+         <td>'_' + id of plugin</td>
+         <td><b>optional</b>. If the id of the plugin is <i>poller1</i>, then the default <i>loginName</i>
+	 is <i>_poller1</i>. If you specify a <i>connectQos</i>, then this attribute is ignored.
+	 </td>
+       </tr>
+       <tr>
+         <td>password</td>
+         <td>String</td>
+         <td>null</td>
+         <td><b>optional</b>. This is the password to be used to authenticate the <i>loginName</i>.
+	 If you specify a <i>connectQos</i>, then this attribute is ignored.
+	 </td>
+       </tr>
+       <tr>
+         <td>pollInterval</td>
+         <td>long</td>
+         <td>2000</td>
+         <td><b>optional</b>:  The time in milliseconds the plugin sleeps between each poll sweep. This
+	 time is also the one used to retry an action which has failed (reading, deleting or moving a 
+	 file).
+	 </td>
+       </tr>
+       <tr>
+         <td>delaySinceLastFileChange</td>
+         <td>long</td>
+         <td>10000</td>
+         <td><b>optional</b>: This is the time expressed in milliseconds which the plugin will wait
+	 before publishing a file after its latest detected change. The plugin detects changes on
+	 discrete times (every time it polls), so the acurancy is never better than what specified in
+	 <i>pollInterval</i>. A file is considered to have changed either if its size has changed or 
+	 its date. The plugin always waits what specified here even when using a lock file. So if you 
+	 always control your publishes with a locking file you can set this attribute to zero to
+	 avoid delay.
+	 </td>
+       </tr>
+
+
+       <tr>
+         <td>maximumFileSize</td>
+         <td>long</td>
+         <td>10000000</td>
+         <td><b>optional</b>: The maximum file size expressed in bytes to be allowed to be published. If
+	 the file exceeds this size, then it is not published. It is either deleted or moved to the 
+	 directory specified in the <i>discarded</i> attribute.
+	 </td>
+       </tr>
+
+       <tr>
+         <td>fileFilter</td>
+         <td>String</td>
+         <td>null</td>
+         <td><b>optional</b>: If you want this plugin to be listening only on a specified filename extention
+	 you can specify it here. Let's say you only want files with the gif extention to be sent, then you 
+	 specify <i>*.gif</i>. If something is specified here, files on the directory not matching this
+	 pattern are left untouched and are not published.
+	 </td>
+       </tr>
+
+       <tr>
+         <td>lockExtention</td>
+         <td>String</td>
+         <td>null</td>
+         <td><b>optional</b>: If you want to use the locking approach you need to specify here the extention
+	 of the lock files. The syntax is of the kind <i>*.lck</i>, i.e. the first character is a '*'.
+	 </td>
+       </tr>
+
+       <tr>
+         <td>sent</td>
+         <td>String</td>
+         <td>null</td>
+         <td><b>optional</b>: If nothing is specified here, files are deleted after having been published.
+	 If something is specified here it is assumed to be a directory and files published are moved to this
+	 location. If the directory does not exist, one is created once the plugin is initialized. 
+	 You can either specify an absolute or a relative directory name. Relative names are put in the
+	 directory specified in the <i>directoryName</i> attribute.
+	 </td>
+       </tr>
+       <tr>
+         <td>discarded</td>
+         <td>String</td>
+         <td>null</td>
+         <td><b>optional</b>: If nothing is specified here, files which are too big to be 
+	 published are deleted.
+	 If something is specified it is assumed to be a directory and the files which are too bif are 
+	 moved to this location. 
+	 If the directory does not exist, one is created once the plugin is initialized. 
+	 You can either specify an absolute or a relative directory name. Relative names are put in the
+	 directory specified in the <i>directoryName</i> attribute.
+	 </td>
+       </tr>
+     </table>	
 
    </configuration>
 
@@ -113,15 +294,16 @@
       <![CDATA[
       ]]>
    </example>
-   <see>org.xmlBlaster.client.qos.SubscribeQos</see>
-   <author>xmlBlaster@marcelruff.info</author>
-   <hacker>xmlBlaster@marcelruff.info</hacker>
-   <date>2002 06 26</date>
+   <see type="REQ">engine.runlevel</see>
+   <author>laghi@swissinfo.org</author>
+   <author>mr@marcelruff.info</author>
+   <hacker>laghi@swissinfo.org</hacker>
+   <date>2004 12 12</date>
    <revision>$Revision: 1.7 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
-      <test tool="SUITE">org.xmlBlaster.test.qos.TestSubId</test>
+      <test tool="SUITE">org.xmlBlaster.test.client.TestFilePollerPlugin</test>
    </testcase>
 </requirement>
 

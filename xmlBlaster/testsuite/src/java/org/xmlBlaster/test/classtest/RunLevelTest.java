@@ -1,15 +1,18 @@
 package org.xmlBlaster.test.classtest;
 
+import java.util.Properties;
+
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.def.Constants;
 
 import junit.framework.*;
 import org.xmlBlaster.engine.runlevel.RunLevelActionSaxFactory;
 import org.xmlBlaster.engine.runlevel.RunLevelAction;
 import org.xmlBlaster.engine.runlevel.PluginConfig;
 import org.xmlBlaster.util.def.ErrorCode;
+import org.xmlBlaster.util.qos.MsgQosData;
+import org.xmlBlaster.util.qos.MsgQosSaxFactory;
 import org.xmlBlaster.engine.runlevel.PluginConfigSaxFactory;
 import org.xmlBlaster.engine.runlevel.PluginHolderSaxFactory;
 import org.xmlBlaster.engine.runlevel.PluginHolder;
@@ -153,6 +156,67 @@ public class RunLevelTest extends TestCase {
          fail(ME + " failed: " + e.toString());
       }
       this.log.info(me, "successfully ended");
+   }
+
+   private MsgQosData getQosData(String attrVal) throws XmlBlasterException {
+      PluginConfigSaxFactory factory = new PluginConfigSaxFactory(this.glob);
+      String xml = "<plugin id='FilePollerPlugin' className='org.xmlBlaster.client.filepoller.FilePollerPlugin'>\n" +
+                   "  <attribute id='qosTest'>" + attrVal + "</attribute>\n" + 
+                   "  <action do='LOAD' onStartupRunlevel='9' sequence='6' onFail='resource.configuration.pluginFailed'/>\n" +
+                   "  <action do='STOP' onShutdownRunlevel='6' sequence='5'/>\n" + 
+                   "</plugin>\n";
+      PluginConfig config = factory.readObject(xml);
+      Properties prop = config.getPluginInfo().getParameters();
+      String txt = prop.getProperty("qosTest", null);
+      if (txt == null) {
+         prop.list(System.err);
+         assertTrue("the qosTest is null when it should not", false);
+      }
+      MsgQosSaxFactory msgFactory = new MsgQosSaxFactory(this.glob);
+      return msgFactory.readObject(txt);
+   }
+
+   public void testPluginConfigParser() {
+      String me = ME + "-testPluginConfigParser";
+      this.log.info(ME, "start");
+      String xml = "<![CDATA[<qos><expiration lifeTime='4000'/></qos>]]>";
+      try {
+         MsgQosData data = getQosData(xml);
+         assertEquals("Wrong lifetime", 4000L, data.getLifeTime()); 
+      }
+      catch (XmlBlasterException e) {
+         assertTrue(ME + " parsing failed for '" + xml + "'", false);
+      }
+      /*
+      xml = "&lt;![CDATA[<qos><expiration lifeTime='4000'/></qos>]]&gt;";
+      try {
+         MsgQosData data = getQosData(xml);
+         assertEquals("Wrong lifetime", 4000L, data.getLifeTime()); 
+      }
+      catch (XmlBlasterException e) {
+         assertTrue(ME + " parsing failed for '" + xml + "'", false);
+      }
+      */
+
+      xml = "<qos><expiration lifeTime='4000'/></qos>";
+      try {
+         MsgQosData data = getQosData(xml);
+         assertEquals("Wrong lifetime", 4000L, data.getLifeTime()); 
+      }
+      catch (XmlBlasterException e) {
+         assertTrue(ME + " parsing failed for '" + xml + "'", false);
+      }
+
+      xml = "<qos><![CDATA[<expiration lifeTime='4000'/>]]></qos>";
+      try {
+         MsgQosData data = getQosData(xml);
+         // unless you change the parsing in MsgQosData
+         assertEquals("Wrong lifetime", -1L, data.getLifeTime()); 
+      }
+      catch (XmlBlasterException e) {
+         assertTrue(ME + " parsing failed for '" + xml + "'", false);
+      }
+      
    }
 
 
@@ -396,6 +460,10 @@ public class RunLevelTest extends TestCase {
 
       testSub.setUp();
       testSub.testPluginConfig();
+      testSub.tearDown();
+
+      testSub.setUp();
+      testSub.testPluginConfigParser();
       testSub.tearDown();
 
       testSub.setUp();

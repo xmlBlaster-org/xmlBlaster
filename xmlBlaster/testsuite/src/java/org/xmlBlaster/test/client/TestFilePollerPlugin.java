@@ -330,8 +330,8 @@ public class TestFilePollerPlugin extends TestCase implements I_Callback {
       prop.put("directoryName", this.dirName);
 
       int maximumSize = 10000;
-      long delaySinceLastChange = 400L;
-      long pollInterval = 200L;
+      long delaySinceLastChange = 1000L;
+      long pollInterval = 600L;
       prop.put("maximumFileSize", "" + maximumSize);
       prop.put("delaySinceLastFileChange", "" + delaySinceLastChange);
       prop.put("pollInterval", "" + pollInterval);
