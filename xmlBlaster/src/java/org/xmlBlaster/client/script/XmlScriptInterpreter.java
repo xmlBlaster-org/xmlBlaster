@@ -136,6 +136,7 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
    private String currentCommand;
    private ConnectQosSaxFactory connectQosFactory;
    private DisconnectQosSaxFactory disconnectQosFactory;
+
    /**
     * This constructor is the most generic one (more degrees of freedom)
     * @param glob the global to use
@@ -344,6 +345,30 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
             catch (Throwable e) {
             }
          }
+         return;
+      }
+
+      if ("input".equals(qName)) { // User input from console <input message="Hit a key: " delay="100"/>
+         String inputMessage = atts.getValue("message");
+         if (inputMessage == null) {
+            inputMessage = "Hit a key to continue> ";
+         }
+         // this.validargs = atts.getValue("validargs"); "y/n"
+         {  // Wait a bit to have updates processed
+            String tmp = atts.getValue("delay");
+            if (tmp == null) {
+               tmp = "500";
+            }
+            if (tmp != null && tmp.trim().length() > 0) {
+               try {
+                  long delay = Long.parseLong(tmp);
+                  Thread.sleep(delay);
+               }
+               catch (Throwable e) {
+               }
+            }
+         }
+         int ret = Global.waitOnKeyboardHit(inputMessage);
          return;
       }
 
