@@ -68,7 +68,6 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    export PATH
 
    alias cdx='cd $XMLBLASTER_HOME'
-   alias cdxr='cd $XMLBLASTER_HOME'
    alias cdxs='cd $XMLBLASTER_HOME/src'
    alias cdxi='cd $XMLBLASTER_HOME/src/idl'
    alias cdxj='cd $XMLBLASTER_HOME/src/java/org/xmlBlaster'
