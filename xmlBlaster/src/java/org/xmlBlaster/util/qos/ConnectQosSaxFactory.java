@@ -343,6 +343,12 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
          return;
       }
 
+      if (name.equalsIgnoreCase("refreshSession")) {
+         this.connectQosData.setRefreshSession(true);
+         character.setLength(0);
+         return;
+      }
+
       if (name.equalsIgnoreCase("duplicateUpdates")) {
          this.connectQosData.setDuplicateUpdates(true);
          character.setLength(0);
@@ -439,6 +445,13 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
          String tmp = character.toString().trim();
          if (tmp.length() > 0)
             this.connectQosData.setClusterNode(new Boolean(tmp).booleanValue());
+         return;
+      }
+
+      if (name.equalsIgnoreCase("refreshSession")) {
+         String tmp = character.toString().trim();
+         if (tmp.length() > 0)
+            this.connectQosData.setRefreshSession(new Boolean(tmp).booleanValue());
          return;
       }
 
@@ -544,6 +557,13 @@ public final class ConnectQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase i
             sb.append(offset).append(" <clusterNode/>");
          else
             sb.append(offset).append(" <clusterNode>false</clusterNode>");
+      }
+
+      if (data.getRefreshSessionProp().isModified()) {
+         if (data.getRefreshSession())
+            sb.append(offset).append(" <refreshSession/>");
+         else
+            sb.append(offset).append(" <refreshSession>false</refreshSession>");
       }
 
       if (data.duplicateUpdatesProp().isModified()) {

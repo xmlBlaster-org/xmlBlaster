@@ -58,6 +58,12 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
    protected PropBoolean clusterNode = new PropBoolean(false);
 
    /**
+    * If the client automatically notifies xmlBlaster that it is alive
+    * and the login session is extended
+    */
+   protected PropBoolean refreshSession = new PropBoolean(false);
+
+   /**
     * If duplicateUpdates=false we will send only one update, even if
     * the same client subscribed multiple times on the same message.
     * Defaults to true.
@@ -299,6 +305,13 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
    }
 
    /**
+    * Set our unique SessionName. 
+    */
+   public void setSessionName(SessionName sessionName) {
+      this.sessionQos.setSessionName(sessionName, true);
+   }
+
+   /**
     * Accessing the ServerRef addresses of the xmlBlaster server
     * this may be a CORBA-IOR or email or URL ...
     * <p />
@@ -402,6 +415,29 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
     */
    public PropBoolean getClusterNodeProp() {
       return this.clusterNode;
+   }
+
+   /**
+    * @return refreshSession is true if the client automatically notifies xmlBlaster that it is alive
+    * and the login session is extended
+    */
+   public final boolean getRefreshSession() {
+      return this.refreshSession.getValue();
+   }
+
+   /**
+    * @param refreshSession true: The client automatically notifies xmlBlaster that it is alive
+    * and the login session is extended
+    */
+   public final void setRefreshSession(boolean refreshSession) {
+      this.refreshSession.setValue(refreshSession);
+   }
+
+   /**
+    * @return The isClusterNode flag object
+    */
+   public PropBoolean getRefreshSessionProp() {
+      return this.refreshSession;
    }
 
    /**
@@ -739,6 +775,7 @@ public final class ConnectQosData extends QosData implements java.io.Serializabl
       synchronized(this) {
          newOne.ptpAllowed = (PropBoolean)this.ptpAllowed.clone();
          newOne.clusterNode = (PropBoolean)this.clusterNode.clone();
+         newOne.refreshSession = (PropBoolean)this.refreshSession.clone();
          newOne.duplicateUpdates = (PropBoolean)this.duplicateUpdates.clone();
          newOne.reconnected = (PropBoolean)this.reconnected.clone();
          //newOne.sessionQos = (SessionQos)this.sessionQos.clone();

@@ -136,6 +136,22 @@ public final class ConnectQos
    }
 
    /**
+    * @return refreshSession is true if the client automatically notifies xmlBlaster that it is alive
+    * and the login session is extended
+    */
+   public final boolean getRefreshSession() {
+      return this.connectQosData.getRefreshSession();
+   }
+
+   /**
+    * @param refreshSession true: The client automatically notifies xmlBlaster that it is alive
+    * and the login session is extended
+    */
+   public final void setRefreshSession(boolean refreshSession) {
+      this.connectQosData.setRefreshSession(refreshSession);
+   }
+
+   /**
     * Allows to set or overwrite the login name for I_SecurityQos. 
     * <p>
     * This will call setSessionName() as well if sessionName is not set yet.
