@@ -3,7 +3,7 @@ Name:      Destination.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding destination address attributes
-Version:   $Id: Destination.java,v 1.3 2001/03/11 10:56:59 goetzger Exp $
+Version:   $Id: Destination.java,v 1.4 2002/01/17 17:05:17 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -37,7 +37,8 @@ public class Destination
 
    /**
     * Constructs the specialized quality of service destination object.
-    * @param address The destination address (EXACT)
+    * @param address The destination address (EXACT),
+    *                this is typically the login name of another client
     */
    public Destination(String address)
    {
