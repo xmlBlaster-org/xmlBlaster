@@ -3,7 +3,7 @@ Name:      TestAll.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Start all tests
-Version:   $Id: TestAll.java,v 1.31 2002/01/29 19:22:44 ruff Exp $
+Version:   $Id: TestAll.java,v 1.32 2002/02/16 17:41:43 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -31,6 +31,7 @@ public class TestAll
       TestSuite suite= new TestSuite();
 
       //System.out.println("\n\n========= TESTING CORBA ==========\n");
+      //try { XmlBlasterProperty.set("client.protocol", "SOCKET"); } catch(JUtilsException e) { Log.error("TestAll", e.toString()); }
       //try { XmlBlasterProperty.set("client.protocol", "IOR"); } catch(JUtilsException e) { Log.error("TestAll", e.toString()); }
       //try { XmlBlasterProperty.set("client.protocol", "RMI"); } catch(JUtilsException e) { Log.error("TestAll", e.toString()); }
       //try { XmlBlasterProperty.set("client.protocol", "XML-RPC"); } catch(JUtilsException e) { Log.error("TestAll", e.toString()); }
