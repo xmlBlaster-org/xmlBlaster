@@ -101,6 +101,7 @@ public final class TopicProperty implements java.io.Serializable
 
    /**
     * The life time of the message topic in state UNREFERENCED
+    * @param The destroy delay in milliseconds
     */
    public long getDestroyDelay() {
       return this.destroyDelay.getValue();
@@ -108,6 +109,9 @@ public final class TopicProperty implements java.io.Serializable
 
    /**
     * The life time of the message topic in state UNREFERENCED
+    * @param destroyDelay: > 0 The topic is automatically destroyed after the given millis in state UNREFERENCED<br />
+    *        < 0 The topic is only erased by an explicit erase() invocation<br />
+    *        == 0 The topic is destroyed immediately when reaching state==UNREFERENCED
     */
    public void setDestroyDelay(long destroyDelay) {
       this.destroyDelay.setValue(destroyDelay);

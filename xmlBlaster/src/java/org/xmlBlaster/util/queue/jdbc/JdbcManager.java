@@ -1598,7 +1598,7 @@ public class JdbcManager implements I_StorageProblemListener, I_StorageProblemNo
     * 
     * IMPORTANT: caution must be used to avoid to delete the wrong data.
     * <pre>
-    * java org.xmlBlaster.util.queue.jdbc.JdbcManager
+    * java org.xmlBlaster.util.queue.jdbc.JdbcManager -tableNamePrefix  XB
     * and enter XMLBLASTER or TEST
     * </pre>
     */
