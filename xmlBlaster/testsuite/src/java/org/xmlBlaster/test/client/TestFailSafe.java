@@ -127,7 +127,7 @@ public class TestFailSafe extends TestCase implements I_ConnectionStateListener
       String xmlKey = "<key oid='' queryType='XPATH'>\n" +
                       "   //TestFailSafe-AGENT" +
                       "</key>";
-      String qos = "<qos></qos>";
+      String qos = "<qos><forceDestroy>true</forceDestroy></qos>";
       try {
          EraseReturnQos[] arr = con.erase(xmlKey, qos);
 

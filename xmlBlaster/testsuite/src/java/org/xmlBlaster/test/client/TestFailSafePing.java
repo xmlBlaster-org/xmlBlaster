@@ -15,6 +15,7 @@ import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.qos.PublishQos;
+import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.I_ConnectionStateListener;
@@ -129,6 +130,18 @@ public class TestFailSafePing extends TestCase implements I_ConnectionStateListe
     */
    protected void tearDown() {
       log.info(ME, "Entering tearDown(), test is finished");
+
+      String xmlKey = "<key oid='' queryType='XPATH'>\n" +
+                      "   //TestFailSafe-AGENT" +
+                      "</key>";
+      String qos = "<qos><forceDestroy>true</forceDestroy></qos>";
+      try {
+         EraseReturnQos[] arr = con.erase(xmlKey, qos);
+      }
+      catch(XmlBlasterException e) {
+         log.error(ME, "XmlBlasterException: " + e.getMessage());
+      }
+
       con.disconnect(null);
       con = null;
 
@@ -171,7 +184,7 @@ public class TestFailSafePing extends TestCase implements I_ConnectionStateListe
       counter++;
       if (log.TRACE) log.trace(ME, "Publishing a message " + counter + " ...");
 
-      String oid = "Message" + "-" + counter;
+      String oid = "MyMessage-" + counter;
       String xmlKey = "<key oid='" + oid + "' contentMime='" + contentMime + "'>\n" +
                       "   <TestFailSafePing-AGENT id='192.168.124.10' subId='1' type='generic'>" +
                       "   </TestFailSafePing-AGENT>" +

@@ -172,7 +172,6 @@ public class TestFailSafeAsync extends TestCase implements I_Callback, I_Connect
                       "</key>";
       //String eraseQos = "<qos><notify>false</notify></qos>";
       EraseQos eraseQos = new EraseQos(glob);
-      eraseQos.setWantNotify(false);
       eraseQos.setForceDestroy(true);
       try {
          try {
@@ -239,7 +238,7 @@ public class TestFailSafeAsync extends TestCase implements I_Callback, I_Connect
       if (log.TRACE) log.trace(ME, "Publishing a message ...");
 
       long publishDelay = 1000/publishRate;  // 20 msg/sec -> send every 50 milli one
-      String oid = "Message-" + counter;
+      String oid = "MSG-" + counter;
       try {
          publishKeyWrapper.setOid(oid);
          String content = "" + counter;
@@ -297,12 +296,12 @@ public class TestFailSafeAsync extends TestCase implements I_Callback, I_Connect
    }
 
    public void reachedPolling(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-      log.warn(ME, "I_ConnectionStateListener: Lost connection to xmlBlaster");
+      if (log != null) log.warn(ME, "I_ConnectionStateListener: Lost connection to xmlBlaster");
       allTailbackAreFlushed = false;
    }
 
    public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-      log.error(ME, "DEBUG ONLY: Changed from connection state " + oldState + " to " + ConnectionStateEnum.DEAD);
+      if (log != null) log.error(ME, "DEBUG ONLY: Changed from connection state " + oldState + " to " + ConnectionStateEnum.DEAD);
    }
 
    /**
@@ -326,7 +325,7 @@ public class TestFailSafeAsync extends TestCase implements I_Callback, I_Connect
 
          int ii = 0;
          try {
-            ii = Integer.parseInt(oid.substring("Message-".length()));
+            ii = Integer.parseInt(oid.substring("MSG-".length()));
          } catch(NumberFormatException e) {
             log.error(ME, "Can't extract message number " + oid);
             fail("Can't extract message number " + oid);
