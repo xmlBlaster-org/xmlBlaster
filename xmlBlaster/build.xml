@@ -264,7 +264,9 @@ TODO
       <echo message="   html-delete --> remove the above"/>
       <echo message="   requirements--> generates html files for all xml requirements"/>
       <echo message="   requirements-delete --> remove the above"/>
-      <echo message="   docs        --> does javadoc, source-html and requirements"/>
+      <echo message="   whitepaper  --> generates html and pdf files for our xml whitepaper"/>
+      <echo message="   whitepaper-delete --> remove the above"/>
+      <echo message="   docs        --> does javadoc, source-html, requirements and whitepaper"/>
       <echo message="   docs-delete --> remove the above"/>
       <echo message=""/>
       <echo message=" See the comments inside the build.xml file for more details."/>
@@ -567,7 +569,7 @@ TODO
    <!-- =================================================================== -->
    <target name="docs" depends="xmlBlaster,javadocs,html,requirements,whitepaper" description="Creates the complete documentation (javadoc, source-html, requirements>">
    </target>
-   <target name="docs-delete" depends="javadocs-delete,html-delete,requirements-delete" description="Remoces all documentation (javadoc, source-html, requirements>">
+   <target name="docs-delete" depends="javadocs-delete,html-delete,requirements-delete,whitepaper-delete" description="Remoces all documentation (javadoc, source-html, requirements>">
    </target>
 
    <!-- =================================================================== -->
@@ -694,6 +696,16 @@ TODO
          <sysproperty key="org.xml.sax.parser" value="com.sun.xml.parser.Parser"/>
          <arg line="whitepaper.fo whitepaper.pdf"/>
       </java>
+   </target>
+   <target name="whitepaper-delete" description="Removes html whitepaper">
+      <echo message="Deleting whitepaper"/>
+      <delete>
+         <fileset dir="doc/whitepaper">
+            <patternset>
+               <include name="**/*.html,**/*.fo,**/*.pdf"/>
+            </patternset>
+         </fileset>
+      </delete>
    </target>
 
    <!-- =================================================================== -->
