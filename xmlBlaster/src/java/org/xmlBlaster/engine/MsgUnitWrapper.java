@@ -74,12 +74,15 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
    private final static int ALIVE = 0;
    private final static int EXPIRED = 1;
    private final static int DESTROYED = 2;
+   private final static int PRE_DESTROYED = 3;
    private transient int state = UNDEF;
 
    private MsgUnit msgUnit;
    private final long immutableSizeInBytes;
 
    private boolean stored = false;
+   private transient boolean swapped = false;
+
 
    /**
     * Testsuite
@@ -133,16 +136,46 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
       // this.ME = "MsgUnitWrapper-" + getLogId();
       this.destroyTimer = this.glob.getMessageTimer();  // holds weak references only
 
-      // Estimated calculation of used memory by one MsgUnitWrapper instance
-      // = Object memory + payload
-      // Where following objects need to be created:
-      // 5 PropBoolean
-      // 1 PropLong
-      // 1 RcvTimestamp
-      // 1 MsgQosData
-      // 1 MsgKeyData
-      // 1 MsgUnit
-      // 1 MsgUnitWrapper
+         /*
+            Estimation in database (here postgres(oracle):
+
+            1. the columns
+               JdbcDriver.mapping[Oracle]=string=VARCHAR(128),longint=NUMBER(19),int=NUMBER(10),blob=BLOB,boolean=CHAR(1)
+
+                             Postg      Oracle
+               -----------------------------
+               dataid    int   8          19
+               nodeid    text  variable  128
+               queuename text  variable  128
+               prio      int   4          10
+               flag      text  1           1
+               durable   text  1           1
+               bytesize  int   8          19
+               -----------------------------
+               SUM                       306
+               +
+               blob      blob  variable   variable
+
+             2) blob = MsgUnit + Integer + Integer
+                     =  38 + this.qosData.size() + this.keyData.size() + this.content.length + 38 + 38
+
+                Postgres example:
+                  1077011447218000001     xmlBlaster_192_168_1_4_3412     msgUnitStore_xmlBlaster_192_168_1_4_3412myMessage       5       MSG_XML T       3833    ¬í\\000\\005ur\\000\\023[Ljava.lang.Object;\\220ÎX\\237\\020s)l\\002\\000\\000xp\\000\\000\\000\\005t\\002\\026\\012 <qos>\\012  <subscribable>false</subscribable>\\012  <destination forceQueuing='true'>/node/xmlBlaster_192_168_1_4_3412/client/Subscriber</destination>\\012  <sender>/node/xmlBlaster_192_168_1_4_3412/client/Publisher/1</sender>\\012  <priority>MAX</priority>\\012  <expiration lifeTime='360000' remainingLife='271805' forceDestroy='false'/>\\012  <rcvTimestamp nanos='1077011447218000001'/>\\012  <persistent/>\\012  <route>\\012   <node id='xmlBlaster_192_168_1_4_3412' stratum='0' timestamp='1077011447218000001' dirtyRead='false'/>\\012  </route>\\012  <isPublish/>\\012 </qos>t\\000.\\012 <key oid='myMessage' contentMime='txt/xml'/>ur\\000\\002[B¬ó\\027ø\\006\\010Tà\\002\\000\\000xp\\000\\000\\0005I'm message B-376 of type myMessage sent in a PtP waysr\\000\\021java.lang.Integer\\022â ¤÷\\201\\2078\\002\\000\\001I\\000\\005valuexr\\000\\020java.lang.Number\\206¬\\225\\035\\013\\224à\\213\\002\\000\\000xp\\000\\000\\000\\001sq\\000~\\000\\006\\000\\000\\000\\000
+             
+             => 382 + msgUnit.size()
+
+         In RAM:
+         // Estimated calculation of used memory by one MsgUnitWrapper instance
+         // = Object memory + payload
+         // Where following objects need to be created:
+         // 5 PropBoolean
+         // 1 PropLong
+         // 1 RcvTimestamp
+         // 1 MsgQosData
+         // 1 MsgKeyData
+         // 1 MsgUnit
+         // 1 MsgUnitWrapper
+      */
       this.immutableSizeInBytes = (sizeInBytes >= 0) ? sizeInBytes : (3200 + this.msgUnit.size());
 
       if (log.TRACE) log.trace(ME+getLogId(), "Created new MsgUnitWrapper instance '" + this + "' " + ((this.ownerCache==null) ? " from persistence store" : ""));
@@ -161,6 +194,27 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
       if (this.destroyTimer != null && this.timerKey != null) {
          this.destroyTimer.removeTimeoutListener(this.timerKey);
       }
+   }
+
+   /**
+    * The cache sets it to true when the entry is swapped
+    * away. 
+    * You should not write on a swapped away entry as those
+    * changes are lost.
+    * Enforced by I_Map
+    * @see I_Map#isSwapped()
+    */
+   public boolean isSwapped() {
+      return this.swapped;
+   }
+
+   /**
+    * Used by the cache implementation to mark entries which will
+    * be swapped to the persistent store. 
+    * Enforced by I_Map
+    */
+   public void isSwapped(boolean swapped) {
+      this.swapped = swapped;
    }
 
    private I_Map getOwnerCache() throws XmlBlasterException {
@@ -185,41 +239,68 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
    /**
     * Invoked by ReferenceEntry.java to support reference counting
     * @param storageId
+    * @return false if the entry is outdated (is swapped away)
     */
-   public void incrementReferenceCounter(int count, StorageId storageId) throws XmlBlasterException {
+   public boolean incrementReferenceCounter(int count, StorageId storageId) throws XmlBlasterException {
       
-      //log.error(ME, "DEBUG ONLY " + getSizeInBytes() + " \n" + toXml());
-
-      boolean isHistoryReference = (storageId != null && storageId.getPrefix().equals("history"));
-      synchronized (uniqueIdStr) { // use an arbitrary local attribute as monitor
-         if (isHistoryReference) {
-            this.historyReferenceCounter += count;
+      I_Map cache = getOwnerCache();
+      synchronized (cache) {
+         if (isSwapped()) {
+            return false;
          }
-         this.referenceCounter += count;
-      }
+         boolean isHistoryReference = (storageId != null && storageId.getPrefix().equals("history"));
+         synchronized (uniqueIdStr) { // use an arbitrary local attribute as monitor
+            if (isHistoryReference) {
+               this.historyReferenceCounter += count;
+            }
+            this.referenceCounter += count;
+         }
 
-      // TODO: Remove the logging
-      if (log.TRACE && !isInternal()) {
-         log.trace(ME+getLogId(), "Reference count changed from " +
-             (this.referenceCounter-count) + " to " + this.referenceCounter + 
-             ", new historyEntries=" + this.historyReferenceCounter + " this='" + this + "' storageId='" + storageId + "'");
-      }
+         // TODO: Remove the logging
+         if (log.TRACE && !isInternal()) {
+            log.trace(ME+getLogId(), "Reference count changed from " +
+                (this.referenceCounter-count) + " to " + this.referenceCounter + 
+                ", new historyEntries=" + this.historyReferenceCounter + " this='" + this + "' storageId='" + storageId + "'");
+         }
 
-      if (this.referenceCounter <= 0L) {
-         toDestroyed();
-      }
-      else {
-         if (ReferenceEntry.STRICT_REFERENCE_COUNTING) {
-            // Update persistence store
-            if (count != 0) {
-               I_MapEntry ret = getOwnerCache().change(this, null);
-               //I_MapEntry ret = getOwnerCache().change(this.getUniqueId(), this);  // I_ChangeCallback
-               if (ret != this) {
-                  log.error(ME+getLogId(), "Expected to be identical in change(): old=" + this + " new=" + ret);
+         if (this.referenceCounter > 0L) {
+            if (ReferenceEntry.STRICT_REFERENCE_COUNTING) {
+               // Update persistence store
+               if (count != 0) {
+                  I_MapEntry ret = cache.change(this, null);
+                  //I_MapEntry ret = getOwnerCache().change(this.getUniqueId(), this);  // I_ChangeCallback
+                  if (ret != this) {
+                     log.error(ME+getLogId(), "Expected to be identical in change(): old=" + this + " new=" + ret);
+                  }
                }
             }
          }
+         else {
+            if (!isDestroyed()) {
+               this.state = PRE_DESTROYED; // Invalidate inside synchronize
+            }
+         }
+      } // sync cache                               isDestroyed()
+      if (this.state == PRE_DESTROYED) //this.referenceCounter <= 0L)
+         toDestroyed();
+      return true;
+   }
+
+   /**
+    * Internal use for TopicHandler
+    */
+   void setReferenceCounter(int count) {
+      synchronized (uniqueIdStr) { // use an arbitrary local attribute as monitor
+         this.referenceCounter += count;
       }
+
+      if (log.TRACE && !isInternal()) {
+         log.trace(ME+getLogId(), "Reference count changed from " +
+             (this.referenceCounter-count) + " to " + this.referenceCounter + ", this='" + this + "'");
+      }
+
+      if (this.referenceCounter <= 0L)
+         toDestroyed();
    }
 
    /**
@@ -463,7 +544,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
    /**
     */
    public boolean isDestroyed() {
-      return this.state == DESTROYED;
+      return this.state == DESTROYED || this.state == PRE_DESTROYED;
    }
 
    private void toDestroyed() {
@@ -473,7 +554,7 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout, I_ChangeCall
             this.destroyTimer.removeTimeoutListener(this.timerKey);
             this.timerKey = null;
          }
-         if (isDestroyed()) {
+         if (this.state == DESTROYED) {
             return;
          }
          this.state = DESTROYED;
