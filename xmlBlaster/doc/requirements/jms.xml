@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='j2ee.jms' type='NEW' prio='LOW' status="OPEN">
+<requirement id='jms' type='NEW' prio='LOW' status="OPEN">
    <topic>
       xmlBlaster provides an implementation of the JMS API.
    </topic>
@@ -18,7 +18,7 @@
    <example>
    <p>This demo can be found in demo/javaclients/j2ee/jms</p>
      <pre>
-package javaclients.j2ee.jms;
+package javaclients.jms;
 import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.MessageListener;
@@ -32,8 +32,8 @@ import javax.jms.TopicSession;
 import javax.jms.TopicSubscriber;
 
 import org.jutils.log.LogChannel;
-import org.xmlBlaster.j2ee.jms.XBConnectionFactory;
-import org.xmlBlaster.j2ee.jms.XBTopic;
+import org.xmlBlaster.jms.XBConnectionFactory;
+import org.xmlBlaster.jms.XBTopic;
 import org.xmlBlaster.util.Global;
 
 /**
@@ -105,6 +105,30 @@ public class SimpleJmsDemo implements MessageListener {
 }
      </pre>
    </example>
+
+   <todo type="RAW">
+Decisions have to be taken regarding the following:
+- how to separate queues from ptp clients
+- sessions and session pools: how to deal with persistent subscriptions
+  and how to handle reconnection to an anonymous session (i.e. such one which 
+  was assigned by the server side: negative public session Id).
+  
+
+Tasks to be done in the near future:
+- implement client properties of type object in the qos
+- check if the mapping for priorities is correct (message)
+- check if the timestamp mapping is correct (are we using x1000000 ?)
+- checking the naming for queues and topics
+- add key client tags for the topics
+- clear up what is the sense of having a setRedelivered in the message (should
+  it overwrite the serverside retries ?)
+- setJMSReplyTo: should it be allowed to reply to topics, does the sender
+  really work or is it overwritten by the client library ?
+- in messsage add in setters and getters for properties the xmlBlaster specific ones too.
+- check if the settings of the publisher are stronger or weaker from the ones
+  set in the message.
+
+   </todo>
 
 
 <!--
