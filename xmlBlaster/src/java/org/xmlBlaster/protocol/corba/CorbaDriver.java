@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.55 2003/03/04 16:44:08 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.56 2003/03/05 11:34:24 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -477,7 +477,7 @@ public class CorbaDriver implements I_Driver
       if (glob.getProperty().get("ORBInitRef.NameService", (String)null) != null) {
          JdkCompatible.setSystemProperty("ORBInitRef.NameService", glob.getProperty().get("ORBInitRef.NameService", "corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root"));
          if (log.TRACE) log.trace(ME, "Using corbaloc ORBInitRef.NameService="+glob.getProperty().get("ORBInitRef.NameService",(String)null)+" to find a naming service");
-         log.error(ME, "DEBUG ONLY: Using corbaloc ORBInitRef.NameService="+glob.getProperty().get("ORBInitRef.NameService",(String)null)+" to find a naming service");
+         //log.error(ME, "DEBUG ONLY: Using corbaloc ORBInitRef.NameService="+glob.getProperty().get("ORBInitRef.NameService",(String)null)+" to find a naming service");
       }
       return hostname;
    }
@@ -576,7 +576,7 @@ public class CorbaDriver implements I_Driver
       }
       catch (Exception e) {
          if (log.TRACE) log.trace(ME + ".NoNameService", e.toString() + ": " + e.getMessage());
-         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME + ".NoNameService", "No CORBA naming service found - start <xmlBlaster/bin/ns ns.ior> and specify <ORBInitRef.NameService=...> if you want one.", e);
+         throw XmlBlasterException.convert(glob, ErrorCode.RESOURCE_CONFIGURATION, ME + ".NoNameService", "No CORBA naming service found - start <xmlBlaster/bin/ns ns.ior> and specify <ORBInitRef.NameService=...> if you want one.", e);
          //throw new XmlBlasterException(ME + ".NoNameService", "No CORBA naming service found - read docu at <http://www.jacorb.org> if you want one.");
       }
    }
