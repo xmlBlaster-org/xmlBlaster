@@ -686,8 +686,6 @@ int main(int argc, char** argv)
            get all the nice fail safe features for the C lib and to
            make the C++ lib smaller (the CORBA plugin is quite big).</li>
 
-      <li> Add ant task c-lib</li>
-
       <li> Add some demo in xmlBlaster/demo/c</li>
 
       <li> Add testsuite (with ant)</li>
@@ -707,6 +705,6 @@ int main(int argc, char** argv)
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2003 05 29</date>
-   <revision>$Revision: 1.13 $</revision>
+   <revision>$Revision: 1.14 $</revision>
 </requirement>
 
