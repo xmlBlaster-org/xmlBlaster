@@ -226,6 +226,7 @@ int main(int args, char ** argv)
        <th>OS</th>
        <th>Compiler</th>
        <th>xmlBlaster</th>
+       <th>Thread library</th>
        <th>Protocol library</th>
        <th>XML library</th>
        <th>Date</th>
@@ -238,8 +239,9 @@ int main(int args, char ** argv)
        <td>WindowsXP</td>
        <td>VC++ 7</td>
        <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.842</a></td>
-       <td>CORBA: <a href="http://www.cs.wustl.edu/~schmidt/TAO.html">ACE/TAO 1.2.2 or ACE 5.3/TAO 1.3</a></td>
-       <td><a href="http://xml.apache.org">XERCES C++ 2.2</a></td>
+       <td><a href="http://omniorb.sourceforge.net" target="others">omnithread</a>, <a href="http://www.boost.org" target="others">boost</a></td>
+       <td>CORBA: <a href="http://www.cs.wustl.edu/~schmidt/TAO.html" target="others">ACE/TAO 1.2.2 or ACE 5.3/TAO 1.3</a></td>
+       <td><a href="http://xml.apache.org" target="others">XERCES C++ 2.2</a></td>
        <td>2003-02-14</td>
        <td><a href="mailto:mjhn@bigpond.net.au">Martin</a>, <a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
        <td>Edit <a href="http://www.xmlBlaster.org/xmlBlaster/build.properties">build.properties</a> and use <a href="http://www.xmlBlaster.org/xmlBlaster/build.xml">xmlBlaster/build.xml</a> to compile</td>
@@ -250,8 +252,9 @@ int main(int args, char ** argv)
        <td>WindowsXP</td>
        <td>VC++ 7</td>
        <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.842</a></td>
-       <td>CORBA: <a href="http://www.mico.org">mico 2.3.8</a></td>
-       <td><a href="http://xml.apache.org">XERCES C++ 1.7</a></td>
+       <td><a href="http://omniorb.sourceforge.net" target="others">omnithread</a>, <a href="http://www.boost.org" target="others">boost</a></td>
+       <td>CORBA: <a href="http://www.mico.org" target="others">mico 2.3.8</a></td>
+       <td><a href="http://xml.apache.org" target="others">XERCES C++ 1.7</a></td>
        <td>2003-02-14</td>
        <td><a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
        <td>Edit <a href="http://www.xmlBlaster.org/xmlBlaster/build.properties">build.properties</a> and use <a href="http://www.xmlBlaster.org/xmlBlaster/build.xml">xmlBlaster/build.xml</a> to compile</td>
@@ -262,20 +265,22 @@ int main(int args, char ** argv)
        <td>Linux 2.4.18</td>
        <td><a href="http://www.gnu.org/software/gcc/gcc.html">g++</a> 3.2</td>
        <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.842</a></td>
-       <td>CORBA: <a href="http://www.cs.wustl.edu/~schmidt/TAO.html">ACE 5.3 and TAO 1.3</a></td>
-       <td><a href="http://xml.apache.org">XERCES C++ 2.2</a></td>
+       <td><a href="http://omniorb.sourceforge.net" target="others">omnithread</a>, <a href="http://www.boost.org" target="others">boost</a></td>
+       <td>CORBA: <a href="http://www.cs.wustl.edu/~schmidt/TAO.html" target="others">ACE 5.3 and TAO 1.3</a></td>
+       <td><a href="http://xml.apache.org" target="others">XERCES C++ 2.2</a></td>
        <td>2003-02-14</td>
        <td><a href="mailto:laghi@swissinfo.org">Michele</a>, <a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
        <td>Edit <a href="http://www.xmlBlaster.org/xmlBlaster/build.properties">build.properties</a> and use <a href="http://www.xmlBlaster.org/xmlBlaster/build.xml">xmlBlaster/build.xml</a> to compile</td>
        </tr>
 
        <tr>
-       <td>3</td>
+       <td>4</td>
        <td>Linux 2.4.4 and 2.4.18</td>
        <td><a href="http://www.gnu.org/software/gcc/gcc.html">g++</a> 2.95.2 and 3.2</td>
        <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.842</a></td>
-       <td>CORBA: <a href="http://www.mico.org/">mico 2.3.7</a></td>
-       <td><a href="http://xml.apache.org">XERCES C++ 2.2</a></td>
+       <td><a href="http://omniorb.sourceforge.net" target="others">omnithread</a>, <a href="http://www.boost.org" target="others">boost</a></td>
+       <td>CORBA: <a href="http://www.mico.org/" target="others">mico 2.3.7</a></td>
+       <td><a href="http://xml.apache.org" target="others">XERCES C++ 2.2</a></td>
        <td>2003-02-14</td>
        <td><a href="mailto:laghi@swissinfo.org">Michele</a>, <a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
        <td>Edit <a href="http://www.xmlBlaster.org/xmlBlaster/build.properties">build.properties</a> and use <a href="http://www.xmlBlaster.org/xmlBlaster/build.xml">xmlBlaster/build.xml</a> to compile</td>
@@ -322,6 +327,6 @@ Particularly interesting it would be the INTEL compiler on Linux and Windows and
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
    <date>2003 01 15</date>
-   <revision>$Revision: 1.7 $</revision>
+   <revision>$Revision: 1.8 $</revision>
 </requirement>
 
