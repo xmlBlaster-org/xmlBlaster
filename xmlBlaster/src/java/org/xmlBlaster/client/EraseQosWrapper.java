@@ -24,11 +24,6 @@ public class EraseQosWrapper
 
    public EraseQosWrapper(boolean notify) {
       this();
-      this.eraseQos.setWantNotify(notify);
-   }
-
-   public void setNotify(boolean notify) {
-      this.eraseQos.setWantNotify(notify);
    }
 
    public String toString() {
