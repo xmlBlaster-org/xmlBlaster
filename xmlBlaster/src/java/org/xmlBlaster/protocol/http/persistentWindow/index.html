@@ -40,8 +40,8 @@
                // Sending the state is for debugging and for proxies to let it through (not a similar request)
                self.frames["pingFrame"].location.href="/servlet/BlasterHttpProxyServlet?ActionType=pong&state=" + state;
             }
-            if ((typeof pingTimeoutHandler) != "undefined")
-               window.clearTimeout(pingTimeoutHandler);
+            // if ((typeof pingTimeoutHandler) != "undefined")
+            window.clearTimeout(pingTimeoutHandler);
 
             // Check for ping every 15 seconds, this value needs to
             // be bigger than the HttpPushHandler.java  PING_INTERVAL value
