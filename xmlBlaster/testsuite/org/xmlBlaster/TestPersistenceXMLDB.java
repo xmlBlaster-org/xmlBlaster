@@ -3,7 +3,7 @@ Name:      TestPersistenceXMLDB.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing durable messages using dbXMLDriver Persistence
-Version:   $Id: TestPersistenceXMLDB.java,v 1.12 2002/07/13 14:58:05 goetzger Exp $
+Version:   $Id: TestPersistenceXMLDB.java,v 1.13 2002/07/13 20:59:09 goetzger Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -59,7 +59,7 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
    /**
     * Constructs the TestPersistenceXMLDB object.
     * <p />
-    * @param glob		 Keeps global args and parameters.
+    * @param glob                Keeps global args and parameters.
     * @param testName The name used in the test suite.
     */
    public TestPersistenceXMLDB(Global glob, String testName)
@@ -75,6 +75,23 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
    protected ServerThread startServer() {
       ServerThread st;
       glob.init(Util.getOtherServerPorts(serverPort));
+      /*
+      How to get the PersistenceDriver switched on fromrunning xmlBlaster embedded?
+      Example:
+
+       String[] args = {
+                         "-isRelease", "false",
+                         "-logConsole", "true",
+                         "-hostname", "localhost",
+                         "-socket.subscriptions", "ATD,VDM",
+                         "-mom.username", "shInt",
+                         "-mom.password", "xx",
+                         "-appServ.username", "momusr",
+                         "-appServ.password", "xx"
+                       };
+       glob.init(args);
+       serverThread = ServerThread.startXmlBlaster(glob);
+      */
 
       st = ServerThread.startXmlBlaster(Util.getOtherServerPorts(serverPort));
       Log.info(ME, "XmlBlaster is ready for testing on port " + serverPort);
@@ -95,8 +112,8 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
 
    /**
     * Connects a client at the server.
-    * @param name		The loginname.
-    * @param passwd	The loginpassword.
+    * @param name               The loginname.
+    * @param passwd     The loginpassword.
     * @return The sender connection.
     */
    protected XmlBlasterConnection connectClient(String name, String passwd) {
@@ -157,7 +174,7 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
     * @param sc A connection of a client to xmlBlaster.
     */
    public void sendDurable(XmlBlasterConnection sc) {
-   	if (Log.CALL) Log.call(ME, "sendDurable");
+        if (Log.CALL) Log.call(ME, "sendDurable");
       if (Log.TRACE) Log.trace(ME, "Testing a durable message ...");
 
       String xmlKey = "<key oid='" + publishOid + "' contentMime='text/plain'>\n" +
@@ -185,7 +202,7 @@ public class TestPersistenceXMLDB extends TestCase implements I_Callback {
     * @param sc A connection of a client to xmlBlaster.
     */
    protected void subscribe(XmlBlasterConnection sc) {
-   	if (Log.CALL) Log.call(ME, "subscribe");
+        if (Log.CALL) Log.call(ME, "subscribe");
 
       String xmlKeySub = "<key oid='' queryType='XPATH'>\n" + "/xmlBlaster/key/" + subscribeString + " </key>";
       Log.info(ME, "Subscribe to '" + xmlKeySub + "' ...");
