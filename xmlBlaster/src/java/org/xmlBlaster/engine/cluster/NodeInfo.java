@@ -7,129 +7,273 @@ Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.cluster;
 
+import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.helper.Address;
+import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 
 import java.util.Map;
+import java.util.TreeMap;
+import java.util.Iterator;
+
+import org.xml.sax.Attributes;
 
 /**
- * This class holds the informations about an xmlBlaster server instance (=cluster node). 
+ * This class holds the address informations about an
+ * xmlBlaster server instance (=cluster node). 
  */
 public final class NodeInfo
 {
-   private NodeId id;
-   private Address address = new Address();
-   private Address[] addresses = new Address[0];
-   private Address[] cbAddresses = new Address[0];
+   private final String ME;
+   private final Global glob;
+
+   private NodeId nodeId;
+
+   private Address address = new Address(); // ?? current address
+
+   private Address tmpAddress = null; // Helper for SAX parsing
+   private Map addressMap = null;
+
+   private CallbackAddress tmpCbAddress = null; // Helper for SAX parsing
+   private Map cbAddressMap = null;
+
+   private Map backupnodeMap = null;
+
    private boolean nameService = false;
-   private NodeId[] backupIds = new NodeId[0];
-   private NodeStateInfo state = new NodeStateInfo();
-   private XmlBlasterConnection xmlBlasterConnection = null;
+
+   private boolean inAddress = false; // parsing inside <address> ?
+   private boolean inCallback = false; // parsing inside <callback> ?
+   private boolean inBackupnode = false; // parsing inside <backupnode> ?
 
    /**
-    * @link aggregation
-    * @associates <{%Dst%}>
+    * Holds the addresses of a node. 
     */
-   private Map masterMap;
-   private boolean available;
-
-   public NodeInfo(NodeId nodeId) {
-      setNodeId(nodeId);
+   public NodeInfo(Global glob, NodeId nodeId) {
+      this.glob = glob;
+      this.setNodeId(nodeId);
+      this.ME = "NodeInfo." + getId();
    }
 
    /**
-    *
-    * @return The unique name of this xmlBlaster instance
+    * @return The unique name of the managed xmlBlaster instance e.g. "bilbo.mycompany.com"
     */
    public String getId(){
-     return id.getId();
+     return nodeId.getId();
    }
 
-   public NodeId getNodeId(){
-     return id;
+   /**
+    * @return The unique name of the managed xmlBlaster instance.
+    */
+   public NodeId getNodeId() {
+     return nodeId;
    }
 
-   public void setNodeId(NodeId id){
-      this.id = id;
+   /**
+    * @param The unique name of the managed xmlBlaster instance
+    */
+   public void setNodeId(NodeId nodeId) {
+      if (nodeId == null) throw new IllegalArgumentException("NodeInfo.setNodeId(): NodeId argument is null");
+      this.nodeId = nodeId;
    }
 
-   public XmlBlasterConnection getXmlBlasterConnection() {
-      return xmlBlasterConnection;
-   }
-
-   public void setXmlBlasterConnection(XmlBlasterConnection xmlBlasterConnection) {
-      this.xmlBlasterConnection = xmlBlasterConnection;
-   }
-
-   public void resetXmlBlasterConnection() {
-      if (this.xmlBlasterConnection != null) {
-         this.xmlBlasterConnection.disconnect(null);
-         this.xmlBlasterConnection = null;
-      }
-   }
-
+   /**
+    * Access the currently used address to access the node
+    */
    public Address getAddress(){
       return address;
    }
 
-   public void setAddress(Address address){
-      this.address = address;
+   /**
+    * Add another address for this cluster node. 
+    */
+   public void addAddress(Address address){
+      if (addressMap == null) addressMap = new TreeMap();
+      this.addressMap.put(address.getAddress(), address);
    }
 
-   public Address[] getAddresses(){
-      return addresses;
+   /**
+    * Access all addresses of a node, please handle as readonly. 
+    */
+   public Map getAddressMap() {
+      return addressMap;
    }
 
-   public void setAddresses(Address[] addresses){
-      this.addresses = addresses;
+   /**
+    * Currently not used. 
+    */
+   public Map getCbAddressMap() {
+      return cbAddressMap;
    }
 
-   public Address[] getCbAddresses(){
-      return cbAddresses;
+   /**
+    * Add another callback address for this cluster node. 
+    */
+   public void addCbAddress(CallbackAddress cbAddress) {
+      if (cbAddressMap == null) cbAddressMap = new TreeMap();
+      this.cbAddressMap.put(cbAddress.getAddress(), cbAddress);
    }
 
-   public void setCbAddresses(Address[] cbAddresses){
-      this.cbAddresses = cbAddresses;
-   }
-
-   public boolean isNameService(){
+   /**
+    * Is the node acting as a preferred cluster naming service. 
+    * <p />
+    * NOTE: This mode is currently not supported
+    */
+   public boolean isNameService() {
       return nameService;
    }
 
-   public void setNameService(boolean nameService){
+   /**
+    * Tag this node as a cluster naming service. 
+    * <p />
+    * NOTE: This mode is currently not supported
+    */
+   public void setNameService(boolean nameService) {
       this.nameService = nameService;
    }
 
-   public NodeId[] getBackupIds(){
-      return backupIds;
+   /**
+    * If this node is not accessible, we can use its backup nodes. 
+    * @return a Map containing NodeId objects
+    */
+   public Map getBackupnodeMap() {
+      return backupnodeMap;
    }
 
-   public void setBackupIds(NodeId[] backupIds){
-      this.backupIds = backupIds;
+   /**
+    * Set backup nodes. 
+    */
+   public void addBackupnode(NodeId backupId) {
+      if (backupnodeMap == null) backupnodeMap = new TreeMap();
+      glob.getLog().info(ME, "Adding backupId=" +  backupId);
+      backupnodeMap.put(backupId.getId(), backupId);
+      glob.getLog().info(ME, "Added backupId=" +  backupId);
    }
 
-   public NodeStateInfo getState(){
-      return state;
+   /**
+    * Called for SAX master start tag
+    * @return true if ok, false on error
+    */
+   public final boolean startElement(String uri, String localName, String name, StringBuffer character, Attributes attrs) {
+      glob.getLog().info(ME, "startElement: name=" + name + " character='" + character.toString() + "'");
+      if (name.equalsIgnoreCase("info")) {
+         return true;
+      }
+
+      if (inAddress) { // delegate internal tags
+         if (tmpAddress == null) return false;
+         tmpAddress.startElement(uri, localName, name, character, attrs);
+         return true;
+      }
+      if (name.equalsIgnoreCase("address")) {
+         inAddress = true;
+         tmpAddress = new Address();
+         tmpAddress.startElement(uri, localName, name, character, attrs);
+         return true;
+      }
+
+      if (name.equalsIgnoreCase("callback")) {
+         inCallback = true;
+         tmpCbAddress = new CallbackAddress();
+         tmpCbAddress.startElement(uri, localName, name, character, attrs);
+         return true;
+      }
+
+      if (name.equalsIgnoreCase("backupnode")) {
+         inBackupnode = true;
+         return true;
+      }
+      if (inBackupnode && name.equalsIgnoreCase("clusternode")) {
+         if (attrs != null) {
+            String tmp = attrs.getValue("id");
+            if (tmp == null) {
+               glob.getLog().error(ME, "<backupnode><clusternode> attribute 'id' is missing, ignoring message");
+               throw new RuntimeException("NodeParser: <backupnode><clusternode> attribute 'id' is missing, ignoring message");
+            }
+            addBackupnode(new NodeId(tmp.trim()));
+         }
+         return true;
+      }
+
+      return false;
    }
 
-   public void setState(NodeStateInfo state){
-      this.state = state;
+   /**
+    * Handle SAX parsed end element
+    */
+   public final void endElement(String uri, String localName, String name, StringBuffer character) {
+      if (inAddress) { // delegate address internal tags
+         tmpAddress.endElement(uri, localName, name, character);
+         if (name.equalsIgnoreCase("address")) {
+            inAddress = false;
+            addAddress(tmpAddress);
+         }
+         return;
+      }
+
+      if (inCallback) { // delegate address internal tags
+         tmpCbAddress.endElement(uri, localName, name, character);
+         if (name.equalsIgnoreCase("callback")) {
+            inCallback = false;
+            addCbAddress(tmpCbAddress);
+         }
+         return;
+      }
+
+      if (name.equalsIgnoreCase("backupnode")) {
+         inBackupnode = false;
+         character.setLength(0);
+         return;
+      }
+
+      character.setLength(0);
+      return;
    }
 
-   public Map getMasterMap(){
-      return masterMap;
+   /**
+    * Dump state of this object into a XML ASCII string.
+    */
+   public final String toXml() {
+      return toXml((String)null);
    }
 
-   public void setMasterMap(Map masterMap){
-      this.masterMap = masterMap;
-   }
+   /**
+    * Dump state of this object into a XML ASCII string.
+    * @param extraOffset indenting of tags for nice output
+    */
+   public final String toXml(String extraOffset) {
+      StringBuffer sb = new StringBuffer(512);
+      String offset = "\n   ";
+      if (extraOffset == null) extraOffset = "";
+      offset += extraOffset;
 
-   public boolean isAvailable(){
-      return available;
-   }
+      sb.append(offset).append("<info>");
+      if (getAddressMap() != null && getAddressMap().size() > 0) {
+         Iterator it = getAddressMap().values().iterator();
+         while (it.hasNext()) {
+            Address info = (Address)it.next();
+            sb.append(info.toXml(extraOffset + "   "));
+         }
+      }
+ 
+      if (getCbAddressMap() != null && getCbAddressMap().size() > 0) {
+         Iterator it = getCbAddressMap().values().iterator();
+         while (it.hasNext()) {
+            CallbackAddress info = (CallbackAddress)it.next();
+            sb.append(info.toXml(extraOffset + "   "));
+         }
+      }
 
-   public void setAvailable(boolean available){
-      this.available = available;
-   }
+      if (getBackupnodeMap() != null && getBackupnodeMap().size() > 0) {
+         Iterator it = getBackupnodeMap().values().iterator();
+         sb.append(offset).append("   <backupnode>");
+         while (it.hasNext()) {
+            NodeId info = (NodeId)it.next();
+            sb.append(offset).append("      <clusternode id='").append(info.getId()).append("'/>");
+         }
+         sb.append(offset).append("   </backupnode>");
+      }
+      sb.append(offset).append("</info>");
 
+      return sb.toString();
+   }
 }

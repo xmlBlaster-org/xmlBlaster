@@ -5,23 +5,21 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   XML parsing cluster node specific messages
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
-package org.xmlBlaster.engine.xml2java;
+package org.xmlBlaster.engine.cluster;
 
-import org.xmlBlaster.util.Log;
-import org.xmlBlaster.util.Timestamp;
-import org.xmlBlaster.util.RcvTimestamp;
-
+import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.engine.helper.Destination;
 import org.xmlBlaster.engine.helper.Constants;
+import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
-
-import org.xml.sax.*;
-import org.xml.sax.helpers.*;
+import org.xmlBlaster.util.SaxHandlerBase;
 
 import java.util.Vector;
-import java.io.*;
+import java.util.Map;
+import java.util.Iterator;
 
+import org.xml.sax.Attributes;
 
 /**
  * XML parsing cluster node specific messages. 
@@ -31,380 +29,89 @@ import java.io.*;
  *  &lt;clusternode id='heron' maxConnections='800'> &lt;!-- NodeParser -->
  *
  *     &lt;!-- Messages of type "__sys__cluster.node:heron": -->
+ *     &lt;!-- Parsed by NodeInfo.java -->
  *
- *     &lt;address type='IOR'>IOR:09456087000lt;/address>
- *     &lt;address type='XML-RPC'>http://www.mars.universe:8080/RPC2;/address>
- *     &lt;callbakc type='XML-RPC'>http://www.mars.universe:8080/RPC2;/callback>
- *     &lt;backupnode>
- *        &lt;clusternode id='avalon'/>
- *        &lt;clusternode id='golan'/>
- *     &lt;/backupnode>
- *     &lt;nameservice>true&lt;/nameservice>
+ *     &lt;info>
+ *        &lt;address type='IOR'>IOR:09456087000&lt;/address>
+ *        &lt;address type='XML-RPC'>http://www.mars.universe:8080/RPC2&lt;/address>
+ *        &lt;callback type='XML-RPC'>http://www.mars.universe:8080/RPC2&lt;/callback>
+ *        &lt;backupnode>
+ *           &lt;clusternode id='avalon'/>
+ *           &lt;clusternode id='golan'/>
+ *        &lt;/backupnode>
+ *        &lt;nameservice>true&lt;/nameservice>
+ *     &lt;/info>
  *
  *
  *     &lt;!-- Messages of type "__sys__cluster.node.domainmapping:heron": -->
+ *     &lt;!-- Parsed by NodeDomainInfo.java -->
  *
- *     &lt;master stratum='0'>
+ *     &lt;master stratum='0' type='DomainToMaster'> <!-- Specify your plugin -->
  *        &lt;key domain=''/>
  *        &lt;key domain='rugby'/>
  *     &lt;/master>
  *
  *
  *     &lt;!-- Messages of type "__sys__cluster.node.state:heron": -->
+ *     &lt;!-- Parsed by NodeStateInfo.java -->
  *
  *     &lt;state>
  *        &lt;cpu id='0' idle='40'/>
  *        &lt;ram free='12000'/>
  *     &lt;/state>
  *
- *  &lt;/qos>
+ *  &lt;/clusternode>
  * </pre>
  * Note that maxConnections is specific to message types "__sys__cluster.node:heron"
+ * <p />
+ * The parsed data is directly written into the ClusterManager attributes
  */
-public class NodeParser extends org.xmlBlaster.util.XmlQoSBase implements Serializable
+public class NodeParser extends SaxHandlerBase
 {
    private String ME = "NodeParser";
 
-   /**
-    * A message lease lasts forever if not otherwise specified. <p />
-    * The default message life cycle can be modified in xmlBlaster.properties:<br />
-    * <code>message.lease.maxRemainingLife=3600000 # One hour lease</code><br />
-    * Every message can set the remainingLife value between 1 and maxRemainingLife, 
-    * 0 sets the life cycle on forever.
-    */
-   private static final long maxRemainingLife = XmlBlasterProperty.get("message.maxRemainingLife", 0L);
-   //private static final long maxRemainingLife = XmlBlasterProperty.get("message.maxRemainingLife", 36L*60*60*1000);
+   private final Global glob;
 
-   // helper flags for SAX parsing
-   private boolean inDestination = false; // parsing inside <destination> ?
-   private boolean inSender = false; // parsing inside <sender> ?
-   private boolean inPriority = false; // parsing inside <priority> ?
-   private boolean inExpiration = false; // parsing inside <expiration> ?
-   private boolean inRcvTimestamp = false; // parsing inside <rcvTimestamp> ?
-   private boolean inIsVolatile = false; // parsing inside <isVolatile> ?
-   private boolean inIsDurable = false; // parsing inside <isDurable> ?
-   private boolean inReadonly = false; // parsing inside <readonly> ?
+   /** The unique node id */
+   private String id = null;
 
-   /** Internal use only, is this message sent from the persistence layer? */
-   private boolean fromPersistenceStore = false;
+   private int inClusternode = 0; // parsing inside <clusternode>, we use the nested level depth here
+   private ClusterNode tmpClusterNode = null;
 
-   // flags for QoS state
-   private boolean usesXPathQuery = false;
-   
-   public static boolean DEFAULT_isVolatile = false;
-   private boolean isVolatile = DEFAULT_isVolatile;
+   // "__sys__cluster.node:heron"
+   private boolean inInfo = false; // parsing inside <info> ?
+   private NodeInfo tmpNodeInfo = null;
 
-   public static boolean DEFAULT_isDurable = false;
-   private boolean isDurable = DEFAULT_isDurable;
+   // "__sys__cluster.node.domainmapping:heron"
+   private boolean inMaster = false; // parsing inside <master> ?
+   private NodeDomainInfo tmpMaster = null;
 
-   /**
-    * Send message to subscriber even the content is the same as the previous?
-    * <br />
-    * Default is that xmlBlaster does send messages to subscribed clients, even the content didn't change.
-    */
-   public static boolean DEFAULT_forceUpdate = true;
-   private boolean forceUpdate = DEFAULT_forceUpdate;
-
-   public static boolean DEFAULT_readonly = false;
-   private boolean readonly = DEFAULT_readonly;
-
-   /** 
-    * The receive timestamp (UTC time),
-    * when message arrived in requestBroker.publish() method.<br />
-    * In nanoseconds elapsed since midnight, January 1, 1970 UTC
-    */
-   private Timestamp rcvTimestamp;
-   private boolean rcvTimestampFound = false;
-
-   /** 
-    * A message expires after some time and will be discarded.
-    * Clients will get a notify about expiration.
-    * This value is the elapsed milliseconds since UTC 1970 ...
-    */
-   private long expirationTimestamp = Long.MAX_VALUE;
-
-   /** the sender (publisher) of this message (unique loginName) */
-   private String sender = null;
-
-   /** The priority of the message */
-   private int priority = Constants.NORM_PRIORITY;
-
-   /**
-    * Vector for loginQoS, holding all destination addresses (Destination objects)
-    */
-   protected Vector destinationVec = null;
-   protected Destination destination = null;
-
-   public long size = 0L;
+   // "__sys__cluster.node.state:heron"
+   private boolean inState = false; // parsing inside <state> ?
+   private NodeStateInfo tmpState = null; // Helper variable
 
 
    /**
     * Constructs the specialized quality of service object for a publish() call.
-    * @param the XML based ASCII string
+    * @param xml  The XML based ASCII string
     */
-   public NodeParser(String xmlQoS_literal) throws XmlBlasterException
-   {
-      // if (Log.TRACE) Log.trace(ME, "\n"+xmlQoS_literal);
-      touchRcvTimestamp();
-      setRemainingLife(getMaxRemainingLife());
-      parseQos(xmlQoS_literal);
-      size = xmlQoS_literal.length();
+   public NodeParser(Global glob, String xml) throws XmlBlasterException {
+      // if (Log.TRACE) Log.trace(ME, "\n"+xml);
+      this.glob = glob;
+      init(xml);  // use SAX parser to parse it (is slow)
    }
 
-
-   /**
-    * Constructs the specialized quality of service object for a publish() call.
-    * For internal use only, this message is sent from the persistence layer
-    * @param the XML based ASCII string
-    * @param true
-    */
-   public NodeParser(String xmlQoS_literal, boolean fromPersistenceStore) throws XmlBlasterException
-   {
-      if (!fromPersistenceStore) {
-         touchRcvTimestamp();
-         setRemainingLife(getMaxRemainingLife());
-      }
-      this.fromPersistenceStore = fromPersistenceStore;
-      parseQos(xmlQoS_literal);
-      size = xmlQoS_literal.length();
-      if (fromPersistenceStore && !rcvTimestampFound) {
-         Log.error(ME, "Message from persistent store is missing rcvTimestamp");
-      }
-   }
-
-
-   /**
-    */
-   private final void parseQos(String xmlQoS_literal) throws XmlBlasterException
-   {
-      if (!isEmpty(xmlQoS_literal)) // if possible avoid expensive SAX parsing
-         init(xmlQoS_literal);  // use SAX parser to parse it (is slow)
-      else xmlLiteral = "<qos></qos>";
-      size = xmlQoS_literal.length();
-   }
-
-
-   /**
-    * Test if Publish/Subscribe style is used.
-    *
-    * @return true if Publish/Subscribe style is used
-    *         false if addressing of the destination is used
-    */
-   public final boolean isPubSubStyle()
-   {
-      return destinationVec == null;
-   }
-
-
-   /**
-    * Test if Point to Point addressing style is used.
-    *
-    * @return true if addressing of the destination is used
-    *         false if Publish/Subscribe style is used
-    */
-   public final boolean isPTP_Style()
-   {
-      return !isPubSubStyle();
-   }
-
-
-   /**
-    * Mark a message to be volatile or not.
-    * <br />
-    * A non-volatile messages stays in memory as long as the server runs<br />
-    * A volatile messages exists only during publish and processing it (doing the updates).<br />
-    * Defaults to false.
-    * @return true/false
-    */
-   public final boolean usesXPathQuery()
-   {
-      return usesXPathQuery;
-   }
-
-
-   /**
-    * @return true/false
-    */
-   public final boolean isVolatile()
-   {
-      return isVolatile;
-   }
-
-
-   /**
-    * @return true/false
-    */
-   public final boolean isDurable()
-   {
-      return isDurable;
-   }
-
-
-   /**
-    * @return true/false
-    */
-   public final boolean forceUpdate()
-   {
-      return forceUpdate;
-   }
-
-
-   /**
-    * @return true/false
-    */
-   public final boolean readonly()
-   {
-      return readonly;
-   }
-
-
-   /**
-    * Access sender name.
-    * @return loginName of sender
-    */
-   public final String getSender()
-   {
-      return sender;
-   }
-
-
-   /**
-    * Access sender name.
-    * @return loginName of sender
-    */
-   public final void setSender(String sender)
-   {
-      this.sender = sender;
-   }
-
-
-   /**
-    * Message priority.
-    * @return priority 0-9
-    * @see org.xmlBlaster.engine.helper.Constants
-    */
-   public final int getPriority()
-   {
-      return priority;
-   }
-
-
-   /**
-    * Set message priority value, Constants.NORM_PRIORITY (5) is default. 
-    * Constants.MIN_PRIORITY (0) is slowest
-    * whereas Constants.MAX_PRIORITY (9) is highest priority.
-    * @see org.xmlBlaster.engine.helper.Constants
-    */
-   public final void setPriority(int priority)
-   {
-      if (priority < Constants.MIN_PRIORITY || priority > Constants.MAX_PRIORITY)
-         throw new IllegalArgumentException("Message priority must be in range 0-9");
-      this.priority = priority;
-   }
-
-
-   /**
-    * Internal use only, is this message sent from the persistence layer?
-    * @return true/false
-    */
-   public final boolean isFromPersistenceStore()
-   {
-      return fromPersistenceStore;
+   private final String getId() {
+      if (id == null) glob.getLog().warn(ME, "cluster node id is null");
+      return id;
    }
 
    /**
-    * Internal use only, set if this message sent from the persistence layer
-    * @param true/false
+    * Access the parsed ClusterNode object
     */
-   public final void setFromPersistenceStore(boolean fromPersistenceStore)
-   {
-      this.fromPersistenceStore = fromPersistenceStore;
+   public ClusterNode getClusterNode() {
+      return tmpClusterNode;
    }
-
-   /**
-    * Shall we queue PtP messages if destination is not online?
-    * @see org.xmlBlaster.engine.helper.Destination
-    */
-   public final boolean forceQueuing()
-   {
-      return this.destination.forceQueuing();
-   }
-
-   /**
-    * @return Milliseconds until message expiration (from now) or 0L if forever
-    */
-   public final long getRemainingLife()
-   {
-      if (expirationTimestamp < Long.MAX_VALUE)
-         return expirationTimestamp - System.currentTimeMillis();
-      else
-         return 0L;
-   }
-
-   /**
-    * @param remainingLife in milliseconds
-    */
-   public final void setRemainingLife(long remainingLife)
-   {
-      if (remainingLife <= 0L && getMaxRemainingLife() <= 0L)
-         this.expirationTimestamp = Long.MAX_VALUE;
-      else if (remainingLife > 0L && getMaxRemainingLife() <= 0L)
-         this.expirationTimestamp = getRcvTimestamp().getMillis() + remainingLife;
-      else if (remainingLife <= 0L && getMaxRemainingLife() > 0L)
-         this.expirationTimestamp = getRcvTimestamp().getMillis() + getMaxRemainingLife();
-      else if (remainingLife > 0L && getMaxRemainingLife() > 0L) {
-         if (remainingLife <= getMaxRemainingLife())
-            this.expirationTimestamp = getRcvTimestamp().getMillis() + remainingLife;
-         else
-            this.expirationTimestamp = getRcvTimestamp().getMillis() + getMaxRemainingLife();
-      }
-   }
-
-   /**
-    * The server default for max. span of life,
-    * adjustable with property "message.maxRemainingLife"
-    * @return max span of life for a message
-    */
-   public static final long getMaxRemainingLife()
-   {
-      return maxRemainingLife;
-   }
-
-   /** 
-    * The approximate receive timestamp (UTC time),
-    * when message arrived in requestBroker.publish() method.<br />
-    * In milliseconds elapsed since midnight, January 1, 1970 UTC
-    */
-   public final Timestamp getRcvTimestamp()
-   {
-      if (rcvTimestamp == null) {
-         Log.error(ME, "rcvTimestamp is not set, setting it to current");
-         touchRcvTimestamp();
-      }
-      return rcvTimestamp;
-   }
-
-   /**
-    * Set timestamp to current time.
-    */
-   public final void touchRcvTimestamp()
-   {
-      rcvTimestamp = new RcvTimestamp();
-   }
-
-   /**
-    * Get all the destinations of this message.
-    * This should only be used with PTP style messaging<br />
-    * Check <code>if (isPTP_Style()) ...</code> before calling this method
-    *
-    * @return a valid Vector containing 0 - n Strings with destination names (loginName of clients)<br />
-    *         null if Publish/Subscribe style is used
-    */
-   public final Vector getDestinations()
-   {
-      return destinationVec;
-   }
-
 
    /**
     * Start element, event from SAX parser.
@@ -414,150 +121,83 @@ public class NodeParser extends org.xmlBlaster.util.XmlQoSBase implements Serial
     */
    public final void startElement(String uri, String localName, String name, Attributes attrs)
    {
-      if (super.startElementBase(uri, localName, name, attrs) == true)
-         return;
+      glob.getLog().info(ME, "startElement: name=" + name + " character='" + character.toString() + "' inClusternode=" + inClusternode);
 
-      if (name.equalsIgnoreCase("destination")) {
-         if (!inQos)
-            return;
-         inDestination = true;
-         if (destinationVec == null) destinationVec = new Vector();
-         destination = new Destination();
-         if (attrs != null) {
-            int len = attrs.getLength();
-            for (int i = 0; i < len; i++) {
-               if( attrs.getQName(i).equalsIgnoreCase("queryType") ) {
-                  String queryType = attrs.getValue(i).trim();
-                  if (queryType.equalsIgnoreCase("EXACT")) {
-                     destination.setQueryType(queryType);
-                  }
-                  else if (queryType.equalsIgnoreCase("XPATH")) {
-                     destination.setQueryType(queryType);
-                  }
-                  else
-                     Log.error(ME, "Sorry, destination queryType='" + queryType + "' is not supported");
+      if (name.equalsIgnoreCase("clusternode")) {
+         inClusternode++;
+         if (inClusternode == 1) { // Handle the top level <clusternode>
+            if (attrs != null) {
+               id = attrs.getValue("id");
+               if (id == null) {
+                  glob.getLog().error(ME, "<clusternode> attribute 'id' is missing, ignoring message");
+                  throw new RuntimeException("NodeParser: <clusternode> attribute 'id' is missing, ignoring message");
                }
-               else if( attrs.getQName(i).equalsIgnoreCase("forceQueuing") ) {
-                  String tmp = attrs.getValue(i).trim();
-                  if (tmp.length() > 0)
-                     destination.forceQueuing(new Boolean(tmp).booleanValue());
+               id = id.trim();
+               tmpClusterNode = glob.getClusterManager().getClusterNode(id);
+               if (tmpClusterNode == null) {
+                  tmpClusterNode = new ClusterNode(glob, new NodeId(id));
+                  glob.getClusterManager().addClusterNode(tmpClusterNode);
                }
             }
+            return;
          }
-         String tmp = character.toString().trim(); // The address or XPath query string
-         if (tmp.length() > 0) {
-            destination.setDestination(tmp); // set address or XPath query string if it is before the ForceQueuing tag
-            character.setLength(0);
+      }
+
+      if (inMaster) { // delegate master internal tags
+         if (tmpMaster == null) { glob.getLog().error(ME, "Internal problem in <master> section"); return; }
+         tmpMaster.startElement(uri, localName, name, character, attrs);
+         return;
+      }
+      if (name.equalsIgnoreCase("master")) {
+         if (inClusternode != 1) return;
+         inMaster = true;
+         tmpMaster = new NodeDomainInfo(glob);
+         if (tmpMaster.startElement(uri, localName, name, character, attrs) == true)
+            tmpClusterNode.addDomainInfo(tmpMaster);
+         else
+            tmpMaster = null;
+         return;
+      }
+
+      if (inState) { // delegate state internal tags
+         if (tmpState == null) return;
+         tmpState.startElement(uri, localName, name, character, attrs);
+         return;
+      }
+      if (name.equalsIgnoreCase("state")) {
+         if (inClusternode != 1) return;
+         inState = true;
+         tmpState = new NodeStateInfo(glob);
+         if (tmpState.startElement(uri, localName, name, character, attrs) == true)
+            tmpClusterNode.setNodeStateInfo(tmpState);
+         else {
+            glob.getLog().error(ME, "Internal problem in <state> section");
+            tmpState = null;
          }
+         character.setLength(0);
          return;
       }
 
-      if (name.equalsIgnoreCase("sender")) {
-         if (!inQos)
-            return;
-         inSender = true;
-         if (attrs != null) {
-            int len = attrs.getLength();
-            for (int i = 0; i < len; i++) {
-               Log.warn(ME, "Ignoring sent <sender> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
-            }
-            // if (Log.TRACE) Log.trace(ME, "Found sender tag");
+      if (inInfo) { // delegate info internal tags
+         if (tmpNodeInfo == null) return;
+         tmpNodeInfo.startElement(uri, localName, name, character, attrs);
+         return;
+      }
+      if (name.equalsIgnoreCase("info")) {
+         if (inClusternode != 1) return;
+         inInfo = true;
+         tmpNodeInfo = new NodeInfo(glob, tmpClusterNode.getNodeId());
+         if (tmpNodeInfo.startElement(uri, localName, name, character, attrs) == true)
+            tmpClusterNode.setNodeInfo(tmpNodeInfo);
+         else {
+            glob.getLog().error(ME, "Internal problem in <info> section");
+            tmpNodeInfo = null;
          }
+         character.setLength(0);
          return;
       }
 
-      if (name.equalsIgnoreCase("priority")) {
-         if (!inQos)
-            return;
-         inPriority = true;
-         if (attrs != null) {
-            int len = attrs.getLength();
-            for (int i = 0; i < len; i++) {
-               Log.warn(ME, "Ignoring sent <priority> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
-            }
-            // if (Log.TRACE) Log.trace(ME, "Found priority tag");
-         }
-         return;
-      }
-
-      if (name.equalsIgnoreCase("expiration")) {
-         if (!inQos)
-            return;
-         inExpiration = true;
-         if (attrs != null) {
-            int len = attrs.getLength();
-            String tmp = attrs.getValue("remainingLife");
-            if (tmp != null) {
-               try { setRemainingLife(Long.parseLong(tmp.trim())); } catch(NumberFormatException e) { Log.error(ME, "Invalid remainingLife - millis =" + tmp); };
-            }
-            else {
-               Log.warn(ME, "QoS <expiration> misses remainingLife attribute, setting default of " + getMaxRemainingLife());
-               setRemainingLife(getMaxRemainingLife());
-            }
-            // if (Log.TRACE) Log.trace(ME, "Found expiration tag");
-         }
-         return;
-      }
-
-      if (name.equalsIgnoreCase("rcvTimestamp")) {
-         if (!inQos)
-            return;
-         if (attrs != null) {
-            int len = attrs.getLength();
-            if (fromPersistenceStore) {  // First we need the rcvTimestamp:
-               String tmp = attrs.getValue("nanos");
-               if (tmp != null) {
-                  try { rcvTimestamp = new RcvTimestamp(Long.parseLong(tmp.trim())); rcvTimestampFound = true; } catch(NumberFormatException e) { Log.error(ME, "Invalid rcvTimestamp - millis =" + tmp); };
-               }
-            }
-         }
-         inRcvTimestamp = true;
-         return;
-      }
-
-      // deprecated
-      if (name.equalsIgnoreCase("forceQueuing")) {
-         if (!inDestination)
-            return;
-         destination.forceQueuing(true);
-         Log.warn(ME, "forceQuening is an attribute of destination - change your code");
-         return;
-      }
-
-      if (name.equalsIgnoreCase("isVolatile")) {
-         if (!inQos)
-            return;
-         inIsVolatile = true;
-         if (attrs != null) {
-            int len = attrs.getLength();
-            for (int i = 0; i < len; i++) {
-               Log.warn(ME, "Ignoring sent <isVolatile> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
-            }
-            // if (Log.TRACE) Log.trace(ME, "Found isVolatile tag");
-         }
-         return;
-      }
-
-      if (name.equalsIgnoreCase("isDurable")) {
-         if (!inQos)
-            return;
-         isDurable = true;
-         return;
-      }
-
-      if (name.equalsIgnoreCase("forceUpdate")) {
-         if (!inQos)
-            return;
-         forceUpdate = true;
-         return;
-      }
-
-      if (name.equalsIgnoreCase("readonly")) {
-         if (!inQos)
-            return;
-         readonly = true;
-         return;
-      }
+      glob.getLog().warn(ME, "startElement: Ignoring unknown name=" + name + " character='" + character.toString() + "' inClusternode=" + inClusternode);
    }
 
 
@@ -568,216 +208,117 @@ public class NodeParser extends org.xmlBlaster.util.XmlQoSBase implements Serial
     */
    public void endElement(String uri, String localName, String name)
    {
-      if (super.endElementBase(uri, localName, name) == true)
-         return;
+      glob.getLog().info(ME, "endElement: name=" + name + " character='" + character.toString() + "'");
 
-      if( name.equalsIgnoreCase("destination") ) {
-         inDestination = false;
-         String tmp = character.toString().trim(); // The address or XPath query string
-         if (tmp.length() > 0) {
-            destination.setDestination(tmp); // set address or XPath query string if it is before the forceQueuing tag
-            character.setLength(0);
-         }
-         destinationVec.addElement(destination);
+      if (name.equalsIgnoreCase("clusternode")) {
+         inClusternode--;
+         if (inClusternode == 0) return; // Ignore the top level <clusternode>
+      }
+
+      if (name.equalsIgnoreCase("master") && inClusternode == 1) {
+         inMaster = false;
+         tmpMaster.endElement(uri, localName, name, character);
+         return;
+      }
+      if (inMaster) { // delegate master internal tags
+         tmpMaster.endElement(uri, localName, name, character);
          return;
       }
 
-      if(name.equalsIgnoreCase("sender")) {
-         inSender = false;
-         sender = character.toString().trim();
-         // if (Log.TRACE) Log.trace(ME, "Found message sender login name = " + sender);
-         character.setLength(0);
+      if (name.equalsIgnoreCase("state") ) {
+         inState = false;
+         if (tmpState == null) return;
+         tmpState.endElement(uri, localName, name, character);
+         return;
+      }
+      if (inState) {
+         if (tmpState == null) return;
+         tmpState.endElement(uri, localName, name, character);
          return;
       }
 
-      if(name.equalsIgnoreCase("priority")) {
-         inPriority = false;
-         priority = Constants.getPriority(character.toString(), Constants.NORM_PRIORITY);
-         // if (Log.TRACE) Log.trace(ME, "Found priority = " + priority);
-         character.setLength(0);
+      if (name.equalsIgnoreCase("info") ) {
+         inInfo = false;
+         if (tmpNodeInfo == null) return;
+         tmpNodeInfo.endElement(uri, localName, name, character);
+         return;
+      }
+      if (inInfo) {
+         if (tmpNodeInfo == null) return;
+         tmpNodeInfo.endElement(uri, localName, name, character);
          return;
       }
 
-      if(name.equalsIgnoreCase("expiration")) {
-         inExpiration = false;
-         character.setLength(0);
-         return;
-      }
-
-      if(name.equalsIgnoreCase("rcvTimestamp")) {
-         inRcvTimestamp = false;
-         character.setLength(0);
-         return;
-      }
-
-      if(name.equalsIgnoreCase("forceUpdate")) {
-         inIsVolatile = false;
-         String tmp = character.toString().trim();
-         if (tmp.length() > 0)
-            forceUpdate = new Boolean(tmp).booleanValue();
-         // if (Log.TRACE) Log.trace(ME, "Found forceUpdate = " + forceUpdate);
-         character.setLength(0);
-         return;
-      }
-
-      if(name.equalsIgnoreCase("isVolatile")) {
-         inIsVolatile = false;
-         String tmp = character.toString().trim();
-         if (tmp.length() > 0)
-            isVolatile = new Boolean(tmp).booleanValue();
-         // if (Log.TRACE) Log.trace(ME, "Found isVolatile = " + isVolatile);
-         character.setLength(0);
-         return;
-      }
-
-      if(name.equalsIgnoreCase("isDurable")) {
-         inIsDurable = false;
-         String tmp = character.toString().trim();
-         if (tmp.length() > 0)
-            isDurable = new Boolean(tmp).booleanValue();
-         // if (Log.TRACE) Log.trace(ME, "Found isDurable = " + isDurable);
-         character.setLength(0);
-         return;
-      }
-
-      if(name.equalsIgnoreCase("readonly")) {
-         inReadonly = false;
-         String tmp = character.toString().trim();
-         if (tmp.length() > 0)
-            readonly = new Boolean(tmp).booleanValue();
-         // if (Log.TRACE) Log.trace(ME, "Found readonly = " + readonly);
-         character.setLength(0);
-         return;
-      }
-
-      character.setLength(0); // reset data from unknown tags
+      glob.getLog().warn(ME, "endElement: Ignoring unknown name=" + name + " character='" + character.toString() + "' inClusternode=" + inClusternode);
    }
 
 
-   /**
-    * Dump state of this object into a XML ASCII string.
-    * <br>
-    * @return internal state of the RequestBroker as a XML ASCII string
-    */
-   public final String toXml()
-   {
-      return toXml((String)null);
-   }
-
-
-   /**
-    * Dump state of this object into a XML ASCII string.
-    * <br>
-    * @param extraOffset indenting of tags for nice output
-    * @return internal state of the RequestBroker as a XML ASCII string
-    */
-   public final String toXml(String extraOffset)
-   {
-      StringBuffer sb = new StringBuffer();
-      String offset = "\n   ";
-      if (extraOffset == null) extraOffset = "";
-      offset += extraOffset;
-
-      // WARNING: This dump must be valid, as it is used by the
-      //          persistent store
-      sb.append(offset + "<qos> <!-- " + ME + " -->");
-
-      if (destinationVec == null) {
-         sb.append(offset + "   <Pub_Sub_style />");
-      }
-      else {
-         for (int ii=0; ii<destinationVec.size(); ii++) {
-            Destination destination = (Destination)destinationVec.elementAt(ii);
-            sb.append(destination.toXml(extraOffset + "   "));
-         }
-      }
-      if (sender != null) {
-         sb.append(offset).append("   <sender>");
-         sb.append(offset).append("      ").append(sender);
-         sb.append(offset).append("   </sender>");
-      }
-
-      if (Constants.NORM_PRIORITY != priority)
-         sb.append(offset).append("   <priority>").append(priority).append("</priority>");
-
-      sb.append(rcvTimestamp.toXml(extraOffset + "   ", false));
-      if (getRemainingLife() > 0L)
-         sb.append(offset).append("   <expiration remainingLife='").append(getRemainingLife()).append("'/>");
-
-      if (DEFAULT_isVolatile != isVolatile)
-         sb.append(offset).append("   <isVolatile>").append(isVolatile).append("</isVolatile>");
-
-      if (isDurable())
-         sb.append(offset).append("   <isDurable/>");
-
-      if (DEFAULT_forceUpdate != forceUpdate())
-         sb.append(offset).append("   <forceUpdate>").append(forceUpdate()).append("</forceUpdate>");
-
-      if (readonly())
-         sb.append(offset).append("   <readonly/>");
-
-      sb.append(offset).append("</qos>\n");
-
-      return sb.toString();
-   }
-
-
-   /** For testing: java org.xmlBlaster.engine.xml2java.NodeParser */
+   /** For testing: java org.xmlBlaster.engine.cluster.NodeParser */
    public static void main(String[] args)
    {
       try {
+         Global glob = new Global(args);
+
          XmlBlasterProperty.init(args);
          String xml =
-            "<qos>\n" +
-            "   <destination queryType='EXACT' forceQueuing='true'>\n" +
-            "      Tim\n" +
-            "   </destination>\n" +
-            "   <destination queryType='EXACT'>\n" +
-            "      Ben\n" +
-            "   </destination>\n" +
-            "   <destination queryType='XPATH'>\n" +
-            "      //[GROUP='Manager']\n" +
-            "   </destination>\n" +
-            "   <destination queryType='XPATH'>\n" +
-            "      //ROLE/[@id='Developer']\n" +
-            "   </destination>\n" +
-            "   <sender>\n" +
-            "      Gesa\n" +
-            "   </sender>\n" +
-            "   <priority>7</priority>\n" +
-            "   <rcvTimestamp nanos='1007771081626000000'/>\n" + // if from persistent store
-            "   <expiration remainingLife='12000'/>\n" +            // if from persistent store
-            "   <isVolatile>false</isVolatile>\n" +
-            "   <isDurable/>\n" +
-            "   <forceUpdate>false</forceUpdate>\n" +
-            "   <readonly/>\n" +
-            /*
-            "   <defaultContent>\n" +
-            "      Empty\n" +
-            "   </defaultContent>\n" +
-            */
-            "</qos>\n";
+            "<clusternode id='heron.mycomp.com'> <!-- original xml markup -->\n" +
+            "   <info>\n" +
+            "     <address type='IOR'>IOR:09456087000</address>\n" +
+            "     <address type='XML-RPC'>http://www.mycomp.com/XMLRPC/</address>\n" +
+            "     <callback type='RMI'>rmi://mycomp.com</callback>\n" +
+            "     <backupnode>\n" +
+            "        <clusternode id='bilbo.mycomp.com'/>\n" +
+            "        <clusternode id='aragon.mycomp.com'/>\n" +
+            "     </backupnode>\n" +
+            "   </info>\n" +
+            "   <master type='DOMAIN'>\n" +
+            "     <![CDATA[\n" +
+            "     <key domain='RUGBY'/>\n" +
+            "     <key type='XPATH'>//STOCK</key>\n" +
+            "     ]]>\n" +
+            "   </master>\n" +
+            "   <state>\n" +
+            "     <cpu id='0' idle='40'/>\n" +
+            "     <cpu id='1' idle='44'/>\n" +
+            "     <ram free='12000'/>\n" +
+            "   </state>\n" +
+            "</clusternode>\n";
 
          {
             System.out.println("\nFull Message from client ...");
-            NodeParser qos = new NodeParser(xml);
-            System.out.println(qos.toXml());
+            NodeParser nodeParser = new NodeParser(glob, xml);
+            System.out.println(nodeParser.getClusterNode().toXml());
          }
  
-         {
-            System.out.println("\nFrom persistent store ...");
-            NodeParser qos = new NodeParser(xml, true);
-            System.out.println(qos.toXml());
-         }
+         xml =
+            "<clusternode id='heron.mycomp.com'>\n" +
+            "   <master stratum='1' refid='frodo' type='DomainPlugin' version='2.0'>\n" +
+            "     My own rule\n" +
+            "   </master>\n" +
+            "   <state>\n" +
+            "     <cpu id='0' idle='40'/>\n" +
+            "     <cpu id='1' idle='44'/>\n" +
+            "     <ram free='12000'/>\n" +
+            "   </state>\n" +
+            "</clusternode>\n";
          
-         xml = "<qos></qos>";
+         
+         {
+            System.out.println("\nFull Message from client ...");
+            NodeParser nodeParser = new NodeParser(glob, xml);
+            System.out.println(nodeParser.getClusterNode().toXml());
+         }
+         /*
+         xml = "<clusternode></clusternode>";
          {
             System.out.println("\nEmpty message from client ...");
-            NodeParser qos = new NodeParser(xml);
-            System.out.println(qos.toXml());
+            NodeParser nodeParser = new NodeParser(glob, xml);
+            System.out.println(nodeParser.getClusterNode().toXml());
          }
+         */
       }
       catch(Throwable e) {
+         e.printStackTrace();
          Log.error("TestFailed", e.toString());
       }
    }

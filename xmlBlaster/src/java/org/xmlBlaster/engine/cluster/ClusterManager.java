@@ -49,11 +49,11 @@ public final class ClusterManager
    public final String pluginLoadBalancerType;
    public final String pluginLoadBalancerVersion;
 
-   /**  Map containing NodeInfo objects, the key is a 'node Id' */
-   private Map nodeInfoMap;
+   /**  Map containing ClusterNode objects, the key is a 'node Id' */
+   private Map clusterNodeMap;
 
    /** Info about myself */
-   private NodeInfo myNodeInfo = null;
+   private ClusterNode myClusterNode = null;
 
    public ClusterManager(Global glob) {
       this.glob = glob;
@@ -63,36 +63,33 @@ public final class ClusterManager
       this.pluginDomainMapperVersion = this.glob.getProperty().get("cluster.domainMapper.version", "1.0");
       this.pluginLoadBalancerType = this.glob.getProperty().get("cluster.loadBalancer.type", "RoundRobin");
       this.pluginLoadBalancerVersion = this.glob.getProperty().get("cluster.loadBalancer.version", "1.0");
-      this.nodeInfoMap = new HashMap();
+      this.clusterNodeMap = new HashMap();
       this.mapMsgToMasterPluginManager = new MapMsgToMasterPluginManager(glob);
       this.loadBalancerPluginManager = new LoadBalancerPluginManager(glob);
 
       if (this.glob.getNodeId() == null)
          this.log.error(ME, "Node ID is still unknown");
       else
-         initNodeInfo();
+         initClusterNode();
       this.log.info(ME, "Initialized and ready");
    }
 
    /**
-    * Initialize NodeInfo object, containing all informations about myself. 
+    * Initialize ClusterNode object, containing all informations about myself. 
     */
-   private void initNodeInfo() {
-      this.myNodeInfo = new NodeInfo(this.glob.getNodeId());
-      this.addNodeInfo(this.myNodeInfo);
-      Vector protocols = glob.getProtocolDrivers();
-      if (protocols.size() > 0) {
-         Address[] addresses = new Address[protocols.size()];
-         for (int ii=0; ii<protocols.size(); ii++) {
-            I_Driver driver = (I_Driver)protocols.elementAt(ii);
-            addresses[ii] = new Address(driver.getProtocolId(), driver.getRawAddress());
-         }
-         this.myNodeInfo.setAddresses(addresses);
-         log.info(ME, "Setting " + addresses.length + " addresses for cluster node '" + getNodeName() + "'");
+   private void initClusterNode() {
+      this.myClusterNode = new ClusterNode(this.glob, this.glob.getNodeId());
+      this.addClusterNode(this.myClusterNode);
+      I_Driver[] drivers = glob.getPublicProtocolDrivers();
+      for (int ii=0; ii<drivers.length; ii++) {
+         I_Driver driver = drivers[ii];
+         this.myClusterNode.getNodeInfo().addAddress(new Address(driver.getProtocolId(), driver.getRawAddress()));
       }
-      else {
-         log.error(ME, "NodeInfo is not properly initialized, no local xmlBlaster address available");
-      }
+
+      if (drivers.length > 0)
+         log.info(ME, "Setting " + drivers.length + " addresses for cluster node '" + getId() + "'");
+      else
+         log.error(ME, "ClusterNode is not properly initialized, no local xmlBlaster address available");
    }
 
    /**
@@ -104,9 +101,10 @@ public final class ClusterManager
 
    /**
     * Access the unique cluster node id (as a String). 
+    * @return The name of this xmlBlaster instance, e.g. "heron.mycompany.com"
     */
-   public final String getNodeName() {
-      return getNodeId().getId();
+   public final String getId() {
+      return glob.getId();
    }
 
    /**
@@ -141,35 +139,44 @@ public final class ClusterManager
 
    /**
     * Add a new node info object or overwrite an existing one. 
-    * @param The NodeInfo instance
+    * @param The ClusterNode instance
     * @exception  IllegalArgumentException
     */
-   public final void addNodeInfo(NodeInfo nodeInfo) {
-      if (nodeInfo == null || nodeInfo.getNodeId() == null) {
+   public final void addClusterNode(ClusterNode clusterNode) {
+      if (clusterNode == null || clusterNode.getNodeId() == null) {
          Thread.currentThread().dumpStack();
-         log.error(ME, "Illegal argument in addNodeInfo()");
-         throw new IllegalArgumentException("Illegal argument in addNodeInfo()");
+         log.error(ME, "Illegal argument in addClusterNode()");
+         throw new IllegalArgumentException("Illegal argument in addClusterNode()");
       }
-      this.nodeInfoMap.put(nodeInfo.getNodeId().getId(), nodeInfo);
+      this.clusterNodeMap.put(clusterNode.getId(), clusterNode);
    }
 
    /**
     * Access the informations belonging to a node id
-    * @return The NodeInfo instance or null if unknown
+    * @return The ClusterNode instance or null if unknown
     */
-   public final NodeInfo getNodeInfo(NodeId nodeId) {
-      return (NodeInfo)this.nodeInfoMap.get(nodeId.getId());
+   public final ClusterNode getClusterNode(NodeId nodeId) {
+      return getClusterNode(nodeId.getId());
+   }
+
+   /**
+    * Access the informations belonging to a node id
+    * @param The cluster node id as a string
+    * @return The ClusterNode instance or null if unknown
+    */
+   public final ClusterNode getClusterNode(String id) {
+      return (ClusterNode)this.clusterNodeMap.get(id);
    }
 
    public final void addConnection(NodeId nodeId, XmlBlasterConnection connection) throws XmlBlasterException {
-      NodeInfo info = getNodeInfo(nodeId);
+      ClusterNode info = getClusterNode(nodeId);
       if (info == null)
          throw new XmlBlasterException(ME, "Unknown node id = " + nodeId.toString() + ", can't add xmlBlasterConnection");
       info.setXmlBlasterConnection(connection);
    }
 
    public final void removeConnection(NodeId nodeId) {
-      NodeInfo info = getNodeInfo(nodeId);
+      ClusterNode info = getClusterNode(nodeId);
       if (info == null) {
          Log.error(ME, "Unknown node id = " + nodeId.toString() + ", can't remove xmlBlasterConnection");
          return;
@@ -191,7 +198,7 @@ public final class ClusterManager
       }
 
       NodeId nodeId = domainMapper.getMasterId(msgUnitWrapper);
-      NodeInfo nodeInfo = getNodeInfo(nodeId);
+      ClusterNode clusterNode = getClusterNode(nodeId);
 
       I_LoadBalancer balancer = loadBalancerPluginManager.getPlugin(
                 this.pluginLoadBalancerType, this.pluginLoadBalancerVersion); // "RoundRobin", "1.0"
@@ -201,7 +208,7 @@ public final class ClusterManager
       }
 
       /* !!!
-      XmlBlasterConnection con = balancer.getConnection(nodeInfo);
+      XmlBlasterConnection con = balancer.getConnection(clusterNode);
       XmlBlasterConnection con = (XmlBlasterConnection)connectionMap.get(nodeId.getId());
       if (con != null)
          return con;
@@ -213,7 +220,7 @@ public final class ClusterManager
       Log.error(ME, "getConnection() is not implemented");
       return null;
       /*
-      NodeInfo nodeInfo = getNodeInfo(nodeId);
+      ClusterNode clusterNode = getClusterNode(nodeId);
       return (XmlBlasterConnection)connectionMap.get(nodeId.getId());
       */
    }

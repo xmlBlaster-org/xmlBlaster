@@ -7,23 +7,160 @@ Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.cluster;
 
+import org.xmlBlaster.util.Global;
+
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.Iterator;
+
+import org.xml.sax.Attributes;
+
+/**
+ * Holds performance data of a node. 
+ * <p />
+ * This is a demo code only, we need to change it to handle
+ * some performance index which is comparable between
+ * different nodes.
+ */
 public class NodeStateInfo {
-   public int getRamFree(){
-         return ramFree;
+   private static final String ME = "NodeStateInfo";
+   private final Global glob;
+
+   /** Free RAM memory in kBytes */
+   private int freeRam;
+
+   /** Holds Cpu info objects */
+   private Map cpuMap = new TreeMap();
+
+   /** Average idle of all CPUs of the node */
+   private int avgCpuIdle = 0;
+
+   public NodeStateInfo(Global glob) {
+      this.glob = glob;
+   }
+
+   /** @return Free RAM memory in kBytes */
+   public int getFreeRam() {
+      return freeRam;
+   }
+
+   /** Free RAM memory in kBytes */
+   public void setFreeRam(int freeRam) {
+      this.freeRam = freeRam;
+   }
+
+   /** @return Average idle of all CPUs of the node in percent, e.g. 40 is 40% idle */
+   public int getAvgCpuIdle() {
+      return avgCpuIdle;
+   }
+
+   /** Add or change the current CPU idle value */
+   public void setCpu(int id, int idle) {
+      Cpu cpu = (Cpu)cpuMap.get(""+id);
+      if (cpu == null)
+         cpuMap.put(""+id, new Cpu(id, idle));
+      else
+         cpu.idle = idle;
+
+      // update average value
+      if (cpuMap.size() == 1) {
+         avgCpuIdle = idle;
+      }
+      else {
+         int sum=0;
+         Iterator it = cpuMap.values().iterator();
+         while (it.hasNext()) {
+            cpu = (Cpu)it.next();
+            sum += cpu.idle;
+         }
+         avgCpuIdle = sum/cpuMap.size();
+      }
+   }
+
+   /**
+    * Called for SAX master start tag
+    * @return true if ok, false on error
+    */
+   public final boolean startElement(String uri, String localName, String name, StringBuffer character, Attributes attrs) {
+      if (name.equalsIgnoreCase("state"))
+         return true;
+
+      if (name.equalsIgnoreCase("cpu")) {
+         if (attrs != null) {
+            int id = 0;
+            String tmp = attrs.getValue("id");
+            if (tmp != null) {
+               try { id = Integer.parseInt(tmp.trim()); } catch(NumberFormatException e) { glob.getLog().error(ME, "Invalid <cpu id='" + tmp + "'"); };
+            }
+            int idle = 50;
+            tmp = attrs.getValue("idle");
+            if (tmp != null) {
+               try { idle = Integer.parseInt(tmp.trim()); } catch(NumberFormatException e) { glob.getLog().error(ME, "Invalid <cpu idle='" + tmp + "'"); };
+            }
+            setCpu(id, idle);
+         }
+         character.setLength(0);
+         return true;
       }
 
-   public void setRamFree(int ramFree){
-         this.ramFree = ramFree;
+      if (name.equalsIgnoreCase("ram")) {
+         if (attrs != null) {
+            String tmp = attrs.getValue("free");
+            if (tmp != null) {
+               try { setFreeRam(Integer.parseInt(tmp.trim())); } catch(NumberFormatException e) { glob.getLog().error(ME, "Invalid <ram free='" + tmp + "'"); };
+            }
+         }
+         character.setLength(0);
+         return true;
       }
 
-   public int getAvgCpuIdl(){
-         return avgCpuIdl;
-      }
+      return false;
+   }
 
-   public void setAvgCpuIdl(int avgCpuIdl){
-         this.avgCpuIdl = avgCpuIdl;
-      }
+   /**
+    * Handle SAX parsed end element
+    */
+   public final void endElement(String uri, String localName, String name, StringBuffer character) {
+      character.setLength(0);
+      return;
+   }
 
-   private int ramFree;
-   private int avgCpuIdl;
+   /**
+    * Dump state of this object into a XML ASCII string.
+    */
+   public final String toXml() {
+      return toXml((String)null);
+   }
+
+   /**
+    * Dump state of this object into a XML ASCII string.
+    * @param extraOffset indenting of tags for nice output
+    */
+   public final String toXml(String extraOffset) {
+      StringBuffer sb = new StringBuffer();
+      String offset = "\n   ";
+      if (extraOffset == null) extraOffset = "";
+      offset += extraOffset;
+
+      sb.append(offset).append("<state>");
+      Iterator it = cpuMap.values().iterator();
+      while (it.hasNext()) {
+         Cpu cpu = (Cpu)it.next();
+         sb.append(offset).append("   <cpu id='").append(cpu.id).append("' idle='").append(cpu.idle).append("'/>");
+      }
+      sb.append(offset).append("   <ram free='").append(getFreeRam()).append("'/>");
+      sb.append(offset).append("</state>");
+      return sb.toString();
+   }
+
+   class Cpu
+   {
+      int id;
+      int idle;
+      public Cpu(int id, int idle) {
+         this.id = id;
+         this.idle = idle;
+      }
+   }
 }
+
