@@ -3,19 +3,20 @@ Name:      NodeDomainInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Mapping from domain informations to master id
-Author:    ruff@swand.lake.de
+Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.cluster;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.key.QueryKeyData;
 import org.xmlBlaster.engine.Global;
-import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.engine.helper.AccessFilterQos;
+import org.xmlBlaster.engine.helper.Constants;
 
 import org.xml.sax.Attributes;
 
-import java.util.Vector;
+import java.util.ArrayList;
 
 /**
  * Here we have the rules to find out who is the master of a message. 
@@ -67,13 +68,13 @@ public final class NodeDomainInfo implements Comparable
    private int inMaster = 0;
 
    private transient AccessFilterQos tmpFilter = null;
-   protected Vector filterVec = null;                      // To collect the <filter> when sax parsing
+   protected ArrayList filterList = null;                   // To collect the <filter> when sax parsing
    protected transient AccessFilterQos[] filterArr = null; // To cache the filters in an array
    private transient boolean inFilter = false;
 
-   private transient XmlKey tmpKey = null;
-   protected Vector keyVec = null;                      // To collect the <key> when sax parsing
-   private XmlKey[] keyArr;
+   private transient QueryKeyData tmpKey = null;
+   protected ArrayList keyList = null;                      // To collect the <key> when sax parsing
+   private QueryKeyData[] keyArr;
    private transient boolean inKey = false;
 
    /**
@@ -125,21 +126,21 @@ public final class NodeDomainInfo implements Comparable
    /**
     * Get the key based rules
     */
-   public XmlKey[] getKeyMappings() {
-      if (keyArr != null || keyVec == null || keyVec.size() < 1)
-         return keyArr;
+   public QueryKeyData[] getKeyMappings() {
+      if (this.keyArr != null || this.keyList == null || this.keyList.size() < 1)
+         return this.keyArr;
 
-      keyArr = new XmlKey[keyVec.size()];
-      keyVec.toArray(keyArr);
-      return keyArr;
+      this.keyArr = new QueryKeyData[this.keyList.size()];
+      this.keyList.toArray(this.keyArr);
+      return this.keyArr;
    }
 
    /**
     * Set a key based rule
-    * @parameter XmlKey, e.g.<pre>
+    * @parameter QueryKeyData, e.g.<pre>
     *            &lt;key domain='rugby'/>
     */
-   public void setKeyMappings(XmlKey[] keyArr){
+   public void setKeyMappings(QueryKeyData[] keyArr){
          this.keyArr = keyArr;
    }
 
@@ -148,25 +149,12 @@ public final class NodeDomainInfo implements Comparable
     */
    public final AccessFilterQos[] getAccessFilterArr()
    {
-      if (filterArr != null || filterVec == null || filterVec.size() < 1)
-         return filterArr;
+      if (this.filterArr != null || this.filterList == null || this.filterList.size() < 1)
+         return this.filterArr;
 
-      filterArr = new AccessFilterQos[filterVec.size()];
-      filterVec.toArray(filterArr);
-      return filterArr;
-   }
-
-   /**
-    * Return the XmlKey master filters or null if none is specified. 
-    */
-   public final XmlKey[] getXmlKeyFilters()
-   {
-      if (keyArr != null || keyVec == null || keyVec.size() < 1)
-         return keyArr;
-
-      keyArr = new XmlKey[keyVec.size()];
-      keyVec.toArray(keyArr);
-      return keyArr;
+      this.filterArr = new AccessFilterQos[filterList.size()];
+      this.filterList.toArray(filterArr);
+      return this.filterArr;
    }
 
    /**
@@ -311,8 +299,11 @@ public final class NodeDomainInfo implements Comparable
          tmpFilter = new AccessFilterQos(glob);
          boolean ok = tmpFilter.startElement(uri, localName, name, character, attrs);
          if (ok) {
-            if (filterVec == null) filterVec = new Vector();
-            filterVec.addElement(tmpFilter);
+            if (this.filterList == null) {
+               this.filterList = new ArrayList();
+               this.filterArr = null;
+            }
+            filterList.add(tmpFilter);
          }
          else
             tmpFilter = null;
@@ -353,9 +344,9 @@ public final class NodeDomainInfo implements Comparable
          inKey = false;
          if (log.TRACE) log.trace(ME, "Parsing filter xmlKey=" + character.toString());
          try {
-            tmpKey = new XmlKey(glob, character.toString()); // Do a DOM parse on the collected tags
-            if (keyVec == null) keyVec = new Vector();
-            keyVec.addElement(tmpKey);
+            tmpKey = glob.getQueryKeyFactory().readObject(character.toString()); // Parse it
+            if (keyList == null) keyList = new ArrayList();
+            keyList.add(tmpKey);
          }
          catch (XmlBlasterException e) {
             log.warn(ME, "Parsing <master>" + character.toString() + " failed, ignoring this rule: " + e.toString());
@@ -389,9 +380,8 @@ public final class NodeDomainInfo implements Comparable
     */
    public final String toXml(String extraOffset) {
       StringBuffer sb = new StringBuffer(300);
-      String offset = "\n   ";
       if (extraOffset == null) extraOffset = "";
-      offset += extraOffset;
+      String offset = Constants.OFFSET + extraOffset;
 
       sb.append(offset).append("<master");
       if (getStratum() > 0)
@@ -409,13 +399,13 @@ public final class NodeDomainInfo implements Comparable
           sb.append(" dirtyRead='").append(getDirtyRead()).append("'");
       sb.append(">");
 
-      XmlKey[] keyArr = getXmlKeyFilters();
+      QueryKeyData[] keyArr = getKeyMappings();
       for (int ii=0; keyArr != null && ii<keyArr.length; ii++)
-         sb.append(offset).append("   ").append(keyArr[ii].literal());
+         sb.append(offset).append(keyArr[ii].toXml());
 
       AccessFilterQos[] filterArr = getAccessFilterArr();
       for (int ii=0; filterArr != null && ii<filterArr.length; ii++)
-         sb.append(filterArr[ii].toXml(extraOffset+"   "));
+         sb.append(filterArr[ii].toXml(extraOffset+Constants.INDENT));
 
       sb.append(offset).append("</master>");
 
