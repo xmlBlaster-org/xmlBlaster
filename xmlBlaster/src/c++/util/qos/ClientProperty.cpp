@@ -20,7 +20,7 @@ using namespace std;
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
-ClientProperty::ClientProperty(bool dummy,
+ClientProperty::ClientProperty(bool /*dummy*/,
                   const std::string& name,
                   const std::string& type,
                   const std::string& encoding
