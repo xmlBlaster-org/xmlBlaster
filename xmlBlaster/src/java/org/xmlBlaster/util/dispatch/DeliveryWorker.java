@@ -143,8 +143,9 @@ public final class DeliveryWorker implements Runnable
    }
 
    void shutdown() {
-      this.deliveryManager = null;
-      this.msgQueue = null;
+      // Commented out to avoid NPE
+      //this.deliveryManager = null;
+      //this.msgQueue = null;
    }
 }
 
