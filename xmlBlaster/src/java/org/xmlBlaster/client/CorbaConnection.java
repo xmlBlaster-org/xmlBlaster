@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.62 2000/07/11 13:59:47 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.63 2000/07/12 12:48:04 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
@@ -78,12 +78,12 @@ import java.applet.Applet;
  * first time the ORB is created.<br />
  * This will be fixed as soon as possible.
  *
- * @version $Revision: 1.62 $
+ * @version $Revision: 1.63 $
  * @author $Author: ruff $
  */
 public class CorbaConnection implements I_InvocationRecorder
 {
-   private static final String ME = "CorbaConnection";
+   private String ME = "CorbaConnection";
    protected String[] args = null;
 
    // HACK May,24 2000 !!! (search 'Thread leak' in this file to remove the hack again and remove the two 'static' qualifiers below.)
@@ -499,7 +499,8 @@ public class CorbaConnection implements I_InvocationRecorder
     */
    public synchronized Server login(String loginName, String passwd, LoginQosWrapper qos, I_Callback client) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "login(" + loginName + ") ...");
+      this.ME = "CorbaConnection-" + loginName;
+      if (Log.CALLS) Log.calls(ME, "login() ...");
       if (xmlBlaster != null) {
          Log.warning(ME, "You are already logged in, returning cached handle on xmlBlaster");
          return xmlBlaster;
@@ -1053,6 +1054,7 @@ public class CorbaConnection implements I_InvocationRecorder
     */
    public static void usage()
    {
+      String ME="CorbaConnection";
       Log.plain(ME, "");
       Log.plain(ME, "Client connection options:");
       Log.plain(ME, "   -ior                The IOR string.");
