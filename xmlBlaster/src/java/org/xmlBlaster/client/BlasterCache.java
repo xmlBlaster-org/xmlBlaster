@@ -24,6 +24,7 @@ import java.util.*;
  * a get() automatically makes a subscribe() behind the scenes as well
  * and subsequent get()s are high performing local calls.
  * @author konrad.krafft@doubleslash.de
+ * @deprecated Please use SynchronousCache instead
  */
 public class BlasterCache
 {
