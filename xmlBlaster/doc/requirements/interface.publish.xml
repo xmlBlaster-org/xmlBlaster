@@ -78,7 +78,7 @@
    
    &lt;!-- Administration: configure the topic on first publish -->
    &lt;topic readonly='false' destroyDelay='60000' createDomEntry='true'>
-      &lt;msgstore relating='topic' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='deadMessage'/>
+      &lt;msgUnitStore type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='deadMessage'/>
       &lt;queue relating='history' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='exception'/>
    &lt;/topic>
 &lt;/qos>
@@ -117,7 +117,7 @@
 
    &lt;!-- Administration: configure the topic on first publish -->
    &lt;topic readonly='false' destroyDelay='60000' createDomEntry='false'>
-      &lt;msgstore relating='topic' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='deadMessage'/>
+      &lt;msgUnitStore type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='deadMessage'/>
       &lt;queue relating='history' type='CACHE' version='1.0' maxMsg='1000' maxBytes='4000' onOverflow='exception'/>
    &lt;/topic>
 &lt;/qos>
@@ -263,7 +263,7 @@ print "\nLogout done, bye.\n";
  
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 01</date>
-   <revision>$Revision: 1.13 $</revision>
+   <revision>$Revision: 1.14 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the publish method invocation</comment>

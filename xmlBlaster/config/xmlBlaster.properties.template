@@ -87,8 +87,8 @@ cb.queue.maxMsgCache = 1000
 cb.queue.maxMsg = ${cb.queue.maxMsgCache}
 
 # How big is the topic cache for messages of same oid (here your message content occupies the memory)
-msgstore.maxMsgCache = 10000
-msgstore.maxMsg = 100000000
+msgUnitStore.maxMsgCache = 10000
+msgUnitStore.maxMsg = 100000000
 
 
 # Tail back queue on client side (contains the real data of all message types)
@@ -123,14 +123,15 @@ PriorizedDeliveryPlugin.config=<msgDispatch defaultStatus='64k' defaultAction='s
 #------------------------------------------------------------------------------
 # Declare existing queue implementation plugins
 # SEE: http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.message.lifecycle.html
-MsgStorePlugin[JDBC][1.0]=org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin
-MsgStorePlugin[RAM][1.0]=org.xmlBlaster.engine.msgstore.ram.MapPlugin
-MsgStorePlugin[CACHE][1.0]=org.xmlBlaster.engine.msgstore.cache.MsgStoreCachePlugin
+MsgUnitStorePlugin[JDBC][1.0]=org.xmlBlaster.util.queue.jdbc.JdbcQueuePlugin
+MsgUnitStorePlugin[RAM][1.0]=org.xmlBlaster.engine.msgstore.ram.MapPlugin
+MsgUnitStorePlugin[CACHE][1.0]=org.xmlBlaster.engine.msgstore.cache.MsgUnitStoreCachePlugin
 
 # Choose the plugin (each publisher can overwrite this in its publish topic-QoS)
-msgstore.defaultPlugin=CACHE,1.0
-msgstore.cache.persistentQueue=JDBC,1.0
-msgstore.cache.transientQueue=RAM,1.0
+msgUnitStore.defaultPlugin=CACHE,1.0
+# If you choose CACHE as defaultPlugin configure the CACHE plugin:
+msgUnitStore.cache.persistentQueue=JDBC,1.0
+msgUnitStore.cache.transientQueue=RAM,1.0
 #------------------------------------------------------------------------------
 
 

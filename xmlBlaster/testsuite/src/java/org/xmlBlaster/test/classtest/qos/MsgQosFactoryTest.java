@@ -12,7 +12,7 @@ import org.xmlBlaster.client.qos.GetReturnQos;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.qos.address.Destination;
 import org.xmlBlaster.util.qos.storage.HistoryQueueProperty;
-import org.xmlBlaster.util.qos.storage.TopicCacheProperty;
+import org.xmlBlaster.util.qos.storage.MsgUnitStoreProperty;
 import org.xmlBlaster.engine.qos.PublishQosServer;
 
 import junit.framework.*;
@@ -162,7 +162,7 @@ public class MsgQosFactoryTest extends TestCase {
             "      <node id='heron' stratum='0' timestamp='9408630564'/>\n" +
             "   </route>\n" +
             "   <topic readonly='true' destroyDelay='120000' createDomEntry='true'>\n" +
-            "      <msgstore relating='topic' type='TO' version='3.0' maxMsg='4' maxBytes='40' onOverflow='deadMessage'/>\n" +
+            "      <msgUnitStore type='TO' version='3.0' maxMsg='4' maxBytes='40' onOverflow='deadMessage'/>\n" +
             "      <queue relating='history' type='HI' version='2.0' maxMsg='3' maxBytes='30' onOverflow='deadMessage'/>\n" +
             "   </topic>\n" +
             "</qos>\n";
@@ -214,9 +214,9 @@ public class MsgQosFactoryTest extends TestCase {
          assertEquals("", 120000, topicProperty.getDestroyDelay());
          assertEquals("", true, topicProperty.createDomEntry());
 
-         assertEquals("", true, topicProperty.hasTopicCacheProperty());
-         TopicCacheProperty cache = topicProperty.getTopicCacheProperty();
-         assertEquals("", "topic", cache.getRelating());
+         assertEquals("", true, topicProperty.hasMsgUnitStoreProperty());
+         MsgUnitStoreProperty cache = topicProperty.getMsgUnitStoreProperty();
+         assertEquals("", "msgUnitStore", cache.getRelating());
          assertEquals("", "TO", cache.getType());
          assertEquals("", "3.0", cache.getVersion());
          assertEquals("", 4L, cache.getMaxMsg());
