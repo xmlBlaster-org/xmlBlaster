@@ -3,7 +3,7 @@ Name:      XmlBlasterException.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Basic xmlBlaster exception.
-Version:   $Id: XmlBlasterException.java,v 1.18 2003/03/08 00:30:21 ruff Exp $
+Version:   $Id: XmlBlasterException.java,v 1.19 2003/03/10 12:57:07 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -192,7 +192,7 @@ public class XmlBlasterException extends Exception implements java.io.Serializab
                               lang,          // {3}
                               getRawMessage(), // {4}
                               versionInfo,   // {5}
-                              timestamp.toString(),  // {6}
+                              (timestamp==null) ? "" : timestamp.toString(),  // {6}
                               stackTrace,    // {7}
                               embeddedMessage, // {8}
                               transactionInfo }; // {9}
