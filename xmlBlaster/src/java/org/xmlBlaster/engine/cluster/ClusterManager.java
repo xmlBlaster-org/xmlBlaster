@@ -28,8 +28,14 @@ import org.xmlBlaster.engine.qos.GetQosServer;
 import org.xmlBlaster.engine.qos.EraseQosServer;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.protocol.I_Driver;
+import org.xmlBlaster.client.key.GetKey;
+import org.xmlBlaster.client.qos.GetQos;
+import org.xmlBlaster.client.key.SubscribeKey;
+import org.xmlBlaster.client.qos.SubscribeQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
+import org.xmlBlaster.client.key.EraseKey;
+import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.authentication.SessionInfo;
@@ -404,7 +410,7 @@ public final class ClusterManager implements I_RunlevelListener
          return null;
       }
 
-      return con.subscribe(xmlKey.toXml(), subscribeQos.toXml());
+      return con.subscribe(new SubscribeKey(glob, xmlKey), new SubscribeQos(glob, subscribeQos.getData()));
    }
 
    /**
@@ -428,7 +434,7 @@ public final class ClusterManager implements I_RunlevelListener
          return null;
       }
 
-      return con.get(xmlKey.toXml(), getQos.toXml());
+      return con.get(new GetKey(glob, xmlKey), new GetQos(glob, getQos.getData()));
    }
 
    /**
@@ -452,7 +458,7 @@ public final class ClusterManager implements I_RunlevelListener
          return null;
       }
 
-      return con.erase(xmlKey.toXml(), eraseQos.toXml());
+      return con.erase(new EraseKey(glob, xmlKey), new EraseQos(glob, eraseQos.getData()));
    }
 
    /**
