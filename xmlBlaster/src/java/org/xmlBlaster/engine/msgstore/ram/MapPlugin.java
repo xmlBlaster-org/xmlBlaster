@@ -17,21 +17,21 @@ import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.engine.msgstore.I_Map;
 import org.xmlBlaster.engine.msgstore.I_MapEntry;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Iterator;
+import java.util.TreeMap;
+import java.util.Map;
 
 
 /**
  * Mapping messages in RAM only. 
  * Please refer to I_Map for Javadoc comments.
+ * @see org.xmlBlaster.test.classtest.msgstore.I_MapTest 
  * @author xmlBlaster@marcelruff.info
  */
 public final class MapPlugin implements I_Map, I_Plugin
 {
    private String ME = "MapPlugin";
    private StorageId mapId;
-   private HashMap storage;
+   private Map storage;
    private QueuePropertyBase property; // org.xmlBlaster.util.qos.storage.MsgUnitStoreProperty;
    private Global glob;
    private LogChannel log;
@@ -60,7 +60,7 @@ public final class MapPlugin implements I_Map, I_Plugin
 
       if (property.getMaxMsg() > Integer.MAX_VALUE) throw new XmlBlasterException(ME, "initialize: The maximum number of messages is too big");
       
-      this.storage = new HashMap();
+      this.storage = new TreeMap(); // Note: A HashMap works fine as well, but then there is no sorting with getAll() -> do we need it?
       this.isShutdown = false;
    }
 
@@ -89,6 +89,9 @@ public final class MapPlugin implements I_Map, I_Plugin
       if (log.TRACE) log.trace(ME, "finalize - garbage collected");
    }
 
+   /**
+    * @see I_Map#get(long)
+    */
    public I_MapEntry get(final long uniqueId) throws XmlBlasterException {
       final String key = ""+uniqueId;
       synchronized (this.storage) {
@@ -96,6 +99,18 @@ public final class MapPlugin implements I_Map, I_Plugin
       }
    }
 
+   /**
+    * @see I_Map#getAll()
+    */
+   public I_MapEntry[] getAll() throws XmlBlasterException {
+      synchronized (this.storage) {
+         return (I_MapEntry[])this.storage.values().toArray(new I_MapEntry[this.storage.size()]);
+      }
+   }
+
+   /**
+    * @see I_Map#put(I_MapEntry)
+    */
    public int put(I_MapEntry entry) throws XmlBlasterException {
       if (entry == null) {
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "put(I_MapEntry="+entry+")");
@@ -117,6 +132,19 @@ public final class MapPlugin implements I_Map, I_Plugin
       String key = entry.getUniqueIdStr();
       synchronized (this.storage) {
          Object old = this.storage.put(key, entry);
+
+         if (old != null) { // I_Map#put(I_MapEntry) spec says that the old entry is not updated!
+            this.storage.put(key, old);
+            return 0;
+            /*
+            this.sizeInBytes -= old.getSizeInBytes();
+            if (old.isDurable()) {
+               this.numOfDurableEntries--;
+               this.durableSizeInBytes -= old.getSizeInBytes();
+            }
+            */
+         }
+         
          this.sizeInBytes += entry.getSizeInBytes();
          if (entry.isDurable()) {
             this.numOfDurableEntries++;
