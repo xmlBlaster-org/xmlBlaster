@@ -26,7 +26,7 @@ Property::Property(int args, const char * const argv[]) : properties_() {
 Property::Property(MapType propMap) : properties_(propMap)
 {
    initializeDefaultProperties();
-	replaceVariables(true);
+        replaceVariables(true);
 }
 
 void Property::initializeDefaultProperties()
@@ -86,8 +86,8 @@ void Property::initializeDefaultProperties()
 
    // XMLBLASTER_HOME
 
-   setProperty("file.separator", FILE_SEP, overwrite);
-   setProperty("path.separator", PATH_SEP, overwrite);
+   setProperty("file.separator", FILE_SEP, overwrite);  // '/' on UNIX
+   setProperty("path.separator", PATH_SEP, overwrite);  // ':' on UNIX
 
    // _WINDOWS:
    // COMPUTERNAME=myserver
