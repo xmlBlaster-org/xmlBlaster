@@ -3,7 +3,7 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   The thread that does the actual connection and interaction
- * Version:   $Id: XmlDBAdapter.java,v 1.28 2002/12/20 16:32:37 ruff Exp $
+ * Version:   $Id: XmlDBAdapter.java,v 1.29 2003/01/03 17:16:34 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
@@ -131,7 +131,7 @@ public class XmlDBAdapter
       }
       catch (Exception e) {
          log.exception(ME+".SqlInitError", e);
-         log.warn(ME+".SqlInitError", new String(content));
+         log.warn(ME+".SqlInitError", "Problems with request: " + new String(content));
          XmlBlasterException ex = new XmlBlasterException(ME+".SqlInitError", e.getMessage());
          return getResponseMessage(ex.toXml().getBytes(), "XmlBlasterException");
       }
@@ -169,7 +169,7 @@ public class XmlDBAdapter
       //dbf.setValidating(false);
       //dbf.setIgnoringComments(true);
       DocumentBuilder db = dbf.newDocumentBuilder();
-      //log.info(ME, "Tracing " + new String(content));
+      if (log.TRACE) log.trace(ME, "Tracing " + new String(content));
       ByteArrayInputStream inputStream = new ByteArrayInputStream(content);
       Document doc = db.parse(inputStream);
       return doc;

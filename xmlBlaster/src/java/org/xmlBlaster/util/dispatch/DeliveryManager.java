@@ -238,7 +238,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
 
       if (throwable instanceof XmlBlasterException) {
          XmlBlasterException ex = (XmlBlasterException)throwable;
-         if (log.TRACE) log.trace(ME, "Callback failed: " + ex.getMessage());
+         if (log.TRACE) log.trace(ME, "Invocation or callback failed: " + ex.getMessage());
          if (ex.isUser()) {
             // Exception from remote client from update(), pass it to error handler and carry on ...
             MsgQueueEntry[] entries = (MsgQueueEntry[])entryList.toArray(new MsgQueueEntry[entryList.size()]);
