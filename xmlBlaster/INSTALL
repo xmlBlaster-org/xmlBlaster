@@ -162,7 +162,7 @@ One important note:
 
    and a testclient
     
-     jaco javaclients.ClientGet
+     jaco javaclients.corba.ClientSub
 
 
 
@@ -172,7 +172,7 @@ One important note:
 
    and a testclient
 
-     jaco javaclients.ClientGet -iorHost localhost -iorPort 7609
+     jaco javaclients.corba.ClientSub -iorHost localhost -iorPort 7609
 
 
 
@@ -182,7 +182,7 @@ One important note:
 
    and a testclient
 
-     jaco javaclients.ClientGet -iorFile /tmp/Blaster_Ref
+     jaco javaclients.corba.ClientSub -iorFile /tmp/Blaster_Ref
 
 
 
@@ -200,7 +200,7 @@ One important note:
    This client looks into jacorb.properties to find the URL with the naming service IOR.
    Edit ${HOME}/jacorb.properties accordingly e.g. jacorb.NameServerURL=http://localhost:80/NS_Ref
 
-     jaco javaclients.ClientXml -iorPort 0
+     jaco javaclients.corba.ClientXml -iorPort 0
 
    If you have problems, check your web server:
 
@@ -257,7 +257,7 @@ It´s a pretty basic kind of chat-application but worth a try.
 
 Compile it (make all) and start it like that:
 
-   jaco javaclients.chat.SimpleChat -name "Nickname"
+   jaco javaclients.corba.chat.SimpleChat -name "Nickname"
 
 where "Nickname" should be different for each client you start.
 Don´t forget to start the server (jaco org.xmlBlaster.Main) first.
