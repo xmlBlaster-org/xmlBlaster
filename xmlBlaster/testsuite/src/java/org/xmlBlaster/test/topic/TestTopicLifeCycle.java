@@ -265,7 +265,7 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
          String dump = getDump();
          log.trace(ME, dump);
          // Expecting something like:
-         // <TopicHandler id='http_192_168_1_4_3412/msg/TestTopicLifeCycleMsg' state='ALIVE'>
+         // <TopicHandler id='http_192_168_1_4_3412/topic/TestTopicLifeCycleMsg' state='ALIVE'>
          //  <uniqueKey>TestTopicLifeCycleMsg</uniqueKey>
          assertTrue("Missing topic", dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") != -1);
          assertTrue("Topic in wrong state:" + dump, dump.indexOf("TestTopicLifeCycleMsg' state='ALIVE'") != -1);
@@ -276,7 +276,7 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
          try { Thread.currentThread().sleep(3500L); } catch( InterruptedException i) {}
          String dump = getDump();
          // Expecting something like:
-         // <TopicHandler id='http_192_168_1_4_3412/msg/TestTopicLifeCycleMsg' state='UNREFERENCED'>
+         // <TopicHandler id='http_192_168_1_4_3412/topic/TestTopicLifeCycleMsg' state='UNREFERENCED'>
          //  <uniqueKey>TestTopicLifeCycleMsg</uniqueKey>
          assertTrue("Missing topic", dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") != -1);
          assertTrue("Topic in wrong state:" + dump, dump.indexOf("TestTopicLifeCycleMsg' state='UNREFERENCED'") != -1);
@@ -322,7 +322,7 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
          String dump = getDump();
          log.trace(ME, dump);
          // Expecting something like:
-         // <TopicHandler id='http_192_168_1_4_3412/msg/TestTopicLifeCycleMsg' state='ALIVE'>
+         // <TopicHandler id='http_192_168_1_4_3412/topic/TestTopicLifeCycleMsg' state='ALIVE'>
          //  <uniqueKey>TestTopicLifeCycleMsg</uniqueKey>
          assertTrue("Missing topic", dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") != -1);
          assertTrue("Topic in wrong state:" + dump, dump.indexOf("TestTopicLifeCycleMsg' state='ALIVE'") != -1);
@@ -332,7 +332,7 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
          try { Thread.currentThread().sleep(3500L); } catch( InterruptedException i) {}
          String dump = getDump();
          // Expecting something like:
-         // <TopicHandler id='http_192_168_1_4_3412/msg/TestTopicLifeCycleMsg' state='UNREFERENCED'>
+         // <TopicHandler id='http_192_168_1_4_3412/topic/TestTopicLifeCycleMsg' state='UNREFERENCED'>
          //  <uniqueKey>TestTopicLifeCycleMsg</uniqueKey>
          assertTrue("Missing topic", dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") != -1);
          assertTrue("Topic in wrong state:" + dump, dump.indexOf("TestTopicLifeCycleMsg' state='UNREFERENCED'") != -1);
@@ -346,7 +346,7 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
          String dump = getDump();
          log.trace(ME, dump);
          // Expecting something like:
-         // <TopicHandler id='http_192_168_1_4_3412/msg/TestTopicLifeCycleMsg' state='ALIVE'>
+         // <TopicHandler id='http_192_168_1_4_3412/topic/TestTopicLifeCycleMsg' state='ALIVE'>
          //  <uniqueKey>TestTopicLifeCycleMsg</uniqueKey>
          assertTrue("Missing topic", dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") != -1);
          assertTrue("Topic in wrong state:" + dump, dump.indexOf("TestTopicLifeCycleMsg' state='ALIVE'") != -1);
@@ -406,7 +406,7 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
          String dump = getDump();
          log.trace(ME, dump);
          // Expecting something like:
-         // <TopicHandler id='http_192_168_1_4_3412/msg/TestTopicLifeCycleMsg' state='UNCONFIGURED'>
+         // <TopicHandler id='http_192_168_1_4_3412/topic/TestTopicLifeCycleMsg' state='UNCONFIGURED'>
          //  <uniqueKey>TestTopicLifeCycleMsg</uniqueKey>
          assertTrue("Missing topic", dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") != -1);
          assertTrue("Topic in wrong state:" + dump, dump.indexOf("TestTopicLifeCycleMsg' state='UNCONFIGURED'") != -1);
@@ -453,7 +453,7 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
          String dump = getDump();
          log.trace(ME, dump);
          // Expecting something like:
-         // <TopicHandler id='http_192_168_1_4_3412/msg/TestTopicLifeCycleMsg' state='UNCONFIGURED'>
+         // <TopicHandler id='http_192_168_1_4_3412/topic/TestTopicLifeCycleMsg' state='UNCONFIGURED'>
          //  <uniqueKey>TestTopicLifeCycleMsg</uniqueKey>
          assertTrue("Missing topic", dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") != -1);
          assertTrue("Topic in wrong state:" + dump, dump.indexOf("TestTopicLifeCycleMsg' state='UNCONFIGURED'") != -1);
@@ -464,7 +464,7 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
          String dump = getDump();
          log.trace(ME, dump);
          // Expecting something like:
-         // <TopicHandler id='http_192_168_1_4_3412/msg/TestTopicLifeCycleMsg' state='UNCONFIGURED'>
+         // <TopicHandler id='http_192_168_1_4_3412/topic/TestTopicLifeCycleMsg' state='UNCONFIGURED'>
          //  <uniqueKey>TestTopicLifeCycleMsg</uniqueKey>
          assertTrue("Missing topic", dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") != -1);
          assertTrue("Topic in wrong state:" + dump, dump.indexOf("TestTopicLifeCycleMsg' state='UNCONFIGURED'") != -1);
@@ -560,7 +560,7 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
          String dump = getDump();
          log.trace(ME, dump);
          // Expecting something like:
-         // <TopicHandler id='http_192_168_1_4_3412/msg/TestTopicLifeCycleMsg' state='UNCONFIGURED'>
+         // <TopicHandler id='http_192_168_1_4_3412/topic/TestTopicLifeCycleMsg' state='UNCONFIGURED'>
          //  <uniqueKey>TestTopicLifeCycleMsg</uniqueKey>
          assertTrue("Missing topic", dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") != -1);
          assertTrue("Topic in wrong state:" + dump, dump.indexOf("TestTopicLifeCycleMsg' state='UNCONFIGURED'") != -1);
@@ -576,7 +576,7 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
          String dump = getDump();
          log.trace(ME, dump);
          // Expecting something like:
-         // <TopicHandler id='http_192_168_1_4_3412/msg/TestTopicLifeCycleMsg' state='ALIVE'>
+         // <TopicHandler id='http_192_168_1_4_3412/topic/TestTopicLifeCycleMsg' state='ALIVE'>
          //  <uniqueKey>TestTopicLifeCycleMsg</uniqueKey>
          assertTrue("Missing topic", dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") != -1);
          assertTrue("Topic in wrong state:" + dump, dump.indexOf("TestTopicLifeCycleMsg' state='ALIVE'") != -1);
@@ -607,7 +607,7 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
          String dump = getDump();
          log.trace(ME, dump);
          // Expecting something like:
-         // <TopicHandler id='http_192_168_1_4_3412/msg/TestTopicLifeCycleMsg' state='UNCONFIGURED'>
+         // <TopicHandler id='http_192_168_1_4_3412/topic/TestTopicLifeCycleMsg' state='UNCONFIGURED'>
          //  <uniqueKey>TestTopicLifeCycleMsg</uniqueKey>
          assertTrue("Missing topic", dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") != -1);
          assertTrue("Topic in wrong state:" + dump, dump.indexOf("TestTopicLifeCycleMsg' state='UNCONFIGURED'") != -1);
@@ -640,7 +640,7 @@ public class TestTopicLifeCycle extends TestCase implements I_Callback {
          String dump = getDump();
          log.trace(ME, dump);
          // Expecting something like:
-         // <TopicHandler id='http_192_168_1_4_3412/msg/TestTopicLifeCycleMsg' state='UNCONFIGURED'>
+         // <TopicHandler id='http_192_168_1_4_3412/topic/TestTopicLifeCycleMsg' state='UNCONFIGURED'>
          //  <uniqueKey>TestTopicLifeCycleMsg</uniqueKey>
          assertTrue("Missing topic", dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") != -1);
          assertTrue("Topic in wrong state:" + dump, dump.indexOf("TestTopicLifeCycleMsg' state='UNCONFIGURED'") != -1);

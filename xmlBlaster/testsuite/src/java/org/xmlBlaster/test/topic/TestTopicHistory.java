@@ -281,7 +281,7 @@ public class TestTopicHistory extends TestCase implements I_Callback {
          String dump = getDump();
          log.trace(ME, dump);
          // Expecting something like:
-         // <TopicHandler id='http_192_168_1_4_3412/msg/TestTopicHistoryMsg' state='ALIVE'>
+         // <TopicHandler id='http_192_168_1_4_3412/topic/TestTopicHistoryMsg' state='ALIVE'>
          //  <uniqueKey>TestTopicHistoryMsg</uniqueKey>
          assertTrue("Missing topic", dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") != -1);
          assertTrue("Topic in wrong state:" + dump, dump.indexOf("TestTopicHistoryMsg' state='ALIVE'") != -1);
@@ -292,7 +292,7 @@ public class TestTopicHistory extends TestCase implements I_Callback {
          try { Thread.currentThread().sleep(3500L); } catch( InterruptedException i) {}
          String dump = getDump();
          // Expecting something like:
-         // <TopicHandler id='http_192_168_1_4_3412/msg/TestTopicHistoryMsg' state='UNREFERENCED'>
+         // <TopicHandler id='http_192_168_1_4_3412/topic/TestTopicHistoryMsg' state='UNREFERENCED'>
          //  <uniqueKey>TestTopicHistoryMsg</uniqueKey>
          assertTrue("Missing topic", dump.indexOf("<uniqueKey>"+publishOid+"</uniqueKey>") != -1);
          assertTrue("Topic in wrong state:" + dump, dump.indexOf("TestTopicHistoryMsg' state='UNREFERENCED'") != -1);

@@ -103,9 +103,9 @@
       </sysprop>
 
       <!-- xmlBlaster messages -->
-      <numMsgs>7140</numMsgs>
-      <msgList>hello,radar.track,myMessage,...</msgList>
-      <msg>
+      <numTopics>7140</numTopics>
+      <topicList>hello,radar.track,myMessage,...</topicList>
+      <topic>
          <hello>
             <key oid='hello' contentMime='text/plain'/>
             <content>Hi world</content>
@@ -115,7 +115,7 @@
          <radar.track>
             ...
          </radar.track>
-      </msg>
+      </topic>
    </heron>
 
    <avalon>
@@ -141,7 +141,7 @@
       <ol>
         <li><i>client</i> Allows you to survey the logged in clients</li>
         <li><i>sysprop</i> Inspect the system properties, xmlBlaster.properties and command line arguments</li>
-        <li><i>msg</i> Examine or manipulate the messages in xmlBlaster</li>
+        <li><i>topic</i> Examine or manipulate the messages in xmlBlaster</li>
       </ol>
       <p>
          The <i>cb</i> in for example <i>cbQueueMaxMsg</i> is the abbreviation for <i>callback</i>.
@@ -292,32 +292,32 @@
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>/node/heron/?numMsgs</td>
+            <td>/node/heron/?numTopics</td>
             <td>How many messages are currently in heron</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>/node/heron/msg/?Hello</td>
+            <td>/node/heron/topic/?Hello</td>
             <td>Return the complete message (oid=Hello)</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>/node/heron/msg/Hello/?content</td>
+            <td>/node/heron/topic/Hello/?content</td>
             <td>Access the message content of the message with key-oid="Hello"</td>
             <td><img src="no.gif" border="0" alt="no" /></td>
          </tr>
          <tr>
-            <td>/node/heron/msg/Hello/?content=How are you</td>
+            <td>/node/heron/topic/Hello/?content=How are you</td>
             <td>Change the message content of the message with key-oid="Hello" to "How are you"</td>
             <td><img src="no.gif" border="0" alt="no" /></td>
          </tr>
          <tr>
-            <td>/node/heron/msg/Hello/?key</td>
+            <td>/node/heron/topic/Hello/?key</td>
             <td>Return the complete key of this message</td>
             <td><img src="no.gif" border="0" alt="no" /></td>
          </tr>
          <tr>
-            <td>/node/heron/msg/Hello/?key.contentMime</td>
+            <td>/node/heron/topic/Hello/?key.contentMime</td>
             <td>Return the MIME type of this message</td>
             <td><img src="no.gif" border="0" alt="no" /></td>
          </tr>
@@ -534,7 +534,7 @@ UserInfo: joe:mypasswd
    <author>Michele.Laghi@swisscom.com</author>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.33 $</revision>
+   <revision>$Revision: 1.34 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>

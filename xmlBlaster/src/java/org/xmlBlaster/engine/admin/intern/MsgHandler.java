@@ -9,6 +9,7 @@ package org.xmlBlaster.engine.admin.intern;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.engine.Global;
 import org.xmlBlaster.util.plugin.I_Plugin;
+import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.MsgUnit;
@@ -47,7 +48,7 @@ final public class MsgHandler implements I_CommandHandler, I_Plugin {
       this.log = this.glob.getLog("admin");
       this.commandManager = commandManager;
       this.ME = "MsgHandler" + this.glob.getLogPrefixDashed();
-      this.commandManager.register("msg", this);
+      this.commandManager.register(ContextNode.TOPIC_MARKER_TAG, this);
       log.info(ME, "Message administration plugin is initialized");
    }
 
@@ -100,8 +101,8 @@ final public class MsgHandler implements I_CommandHandler, I_Plugin {
 
       I_XmlBlaster xmlBlaster = glob.getAuthenticate().getXmlBlaster();
 
-      //  /node/heron/msg/?hello
-      //  /node/heron/msg/hello/?content
+      //  /node/heron/topic/?hello
+      //  /node/heron/topic/hello/?content
       String oidTmp = cmd.getUserNameLevel();
       if (oidTmp == null || oidTmp.length() < 1)
          throw new XmlBlasterException(ME, "Please pass a command which has a valid message oid added, '" + cmd.getCommand() + "' is too short, aborted request.");
@@ -129,7 +130,7 @@ final public class MsgHandler implements I_CommandHandler, I_Plugin {
    /**
     * Set a value. 
     * @param sessionId Is null if not logged in
-    * @param cmd "/node/heron/msg/HelloMsgOid/?content=World"
+    * @param cmd "/node/heron/topic/HelloMsgOid/?content=World"
     * @return null if not set
     */
    public String set(String sessionId, CommandWrapper cmd) throws XmlBlasterException {
@@ -141,14 +142,14 @@ final public class MsgHandler implements I_CommandHandler, I_Plugin {
          throw new XmlBlasterException(ME, "Please pass a command which has a valid message oid added, '" + cmd.getCommand() + "' is too short, aborted request.");
 
       if (client.startsWith("?")) {
-         // for example "/node/heron/msg/Hello/?content=World!"
+         // for example "/node/heron/topic/Hello/?content=World!"
          throw new XmlBlasterException(ME, "Please pass a command which has a valid message oid added, '" + cmd.getCommand() + "' is too short, aborted request.");
       }
 
       I_XmlBlaster xmlBlaster = glob.getAuthenticate().getXmlBlaster();
 
-      //  /node/heron/msg/?hello
-      //  /node/heron/msg/hello/?content=Hello world
+      //  /node/heron/topic/?hello
+      //  /node/heron/topic/hello/?content=Hello world
       String oidTmp = cmd.getUserNameLevel();
       if (oidTmp == null || oidTmp.length() < 1)
          throw new XmlBlasterException(ME, "Please pass a command which has a valid message oid added, '" + cmd.getCommand() + "' is too short, aborted request.");
@@ -168,7 +169,7 @@ final public class MsgHandler implements I_CommandHandler, I_Plugin {
          return null;
       }
          
-      //  /node/heron/msg/hello/?content=Hello world
+      //  /node/heron/topic/hello/?content=Hello world
       String key = cmd.getKey();     // -> "content"
       String value = cmd.getValue(); // -> "Hello world"
 

@@ -70,7 +70,7 @@
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>get msg/?Hello</td>
+            <td>get topic/?Hello</td>
             <td>
                <pre><![CDATA[
 <xmlBlaster>
@@ -85,7 +85,7 @@
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>get msg/?__sys__UserList</td>
+            <td>get topic/?__sys__UserList</td>
             <td>
                <pre><![CDATA[
 <xmlBlaster>
@@ -306,7 +306,7 @@ org.xmlBlaster.engine.admin.extern.TelnetGateway >>
    
    <date>2002 05 09</date>
    
-   <revision>$Revision: 1.20 $</revision>
+   <revision>$Revision: 1.21 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>

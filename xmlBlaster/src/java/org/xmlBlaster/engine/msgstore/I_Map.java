@@ -24,7 +24,7 @@ public interface I_Map
    /**
     * Is called after the instance is created.
     * @param uniqueMapId A unique name, allowing to create a unique name for a persistent store (e.g. file name)
-    *                "history:/node/heron/msg/<oid>"
+    *                "history:/node/heron/topic/<oid>"
     * @param userData For example a Properties object or a String[] args object passing the configuration data
     */
    void initialize(StorageId uniqueMapId, Object userData)

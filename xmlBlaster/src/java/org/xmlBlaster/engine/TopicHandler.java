@@ -8,6 +8,7 @@ package org.xmlBlaster.engine;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.context.ContextNode;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.I_Entry;
@@ -71,7 +72,7 @@ public final class TopicHandler implements I_Timeout
 
    private boolean dyingInProgress = false;
 
-   /** The unique identifier of this topic e.g. "/node/heron/msg/Hello" */
+   /** The unique identifier of this topic e.g. "/node/heron/topic/Hello" */
    private final String id;
 
    /** The broker which manages me */
@@ -154,8 +155,8 @@ public final class TopicHandler implements I_Timeout
          throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Invalid constructor parameters");
 
       this.log = glob.getLog("core");
-      this.id = this.glob.getNodeId() + "/msg/" + uniqueKey;
-      this.ME += this.glob.getLogPrefixDashed() + "/msg/" + uniqueKey;
+      this.id = this.glob.getNodeId() + "/" + ContextNode.TOPIC_MARKER_TAG + "/" + uniqueKey;
+      this.ME += this.glob.getLogPrefixDashed() + "/" + ContextNode.TOPIC_MARKER_TAG + "/" + uniqueKey;
       this.requestBroker = requestBroker;
       this.uniqueKey = uniqueKey;
       this.destroyTimer = requestBroker.getGlobal().getTopicTimer();
@@ -187,8 +188,8 @@ public final class TopicHandler implements I_Timeout
       this.log = glob.getLog("core");
       this.requestBroker = requestBroker;
       this.uniqueKey = keyOid;
-      this.id = this.glob.getNodeId() + "/msg/" + keyOid;
-      this.ME += this.glob.getLogPrefixDashed() + "/msg/" + keyOid;
+      this.id = this.glob.getNodeId() + "/" + ContextNode.TOPIC_MARKER_TAG + "/" + keyOid;
+      this.ME += this.glob.getLogPrefixDashed() + "/" + ContextNode.TOPIC_MARKER_TAG + "/" + keyOid;
       this.destroyTimer = requestBroker.getGlobal().getTopicTimer();
       this.msgErrorHandler = new MsgTopicErrorHandler(glob, this);
       
@@ -205,7 +206,7 @@ public final class TopicHandler implements I_Timeout
    }
 
    /**
-    * The unique identifier of this topic e.g. "/node/heron/msg/Hello"
+    * The unique identifier of this topic e.g. "/node/heron/topic/Hello"
     */
    public String getId() {
       return this.id;

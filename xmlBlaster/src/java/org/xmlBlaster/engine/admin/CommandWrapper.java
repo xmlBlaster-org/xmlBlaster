@@ -43,7 +43,7 @@ public final class CommandWrapper
    String root = null;
    /** The second level -> "heron" */
    String clusterNodeId = null;
-   /** The third level -> "?freeMem" or "sysprop" or "client" or "msg" */
+   /** The third level -> "?freeMem" or "sysprop" or "client" or "topic" */
    String third = null;
    /** The fourth level -> "client/joe" */
    String fourth = null;
@@ -149,7 +149,7 @@ public final class CommandWrapper
 
    /**
     * /node/heron/client/joe/ses17/?cb.queue.maxMsg
-    * @return The third level of a command like "client", "sysprop", "msg", "?uptime"
+    * @return The third level of a command like "client", "sysprop", "topic", "?uptime"
     */
    public final String getThirdLevel() {
       return third;
@@ -158,7 +158,7 @@ public final class CommandWrapper
    /**
     * <pre>
     * /node/heron/client/joe/ses17/?cb.queue.maxMsg
-    * /node/heron/msg/?hello
+    * /node/heron/topic/?hello
     * </pre>
     * @return "joe" or "?hello" in the above example
     */
