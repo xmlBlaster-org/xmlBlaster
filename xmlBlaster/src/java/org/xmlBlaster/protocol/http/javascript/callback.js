@@ -268,7 +268,7 @@ function sendMessageQueue(queueName)
                str += fmq.messageQueue[i].key.oid;
                if (i<fmq.messageQueue.lengt-1) str += "<br />";
             }
-            Log.trace("Queue["+fmq.frame.name+"]: "+str);
+            if (Log.TRACE) Log.trace("Queue["+fmq.frame.name+"]: "+str);
          }
       }
       else {
@@ -279,9 +279,9 @@ function sendMessageQueue(queueName)
       return;
    }
    else {
-      Log.warning("Frame "+fmq.frame.name+" is not ready. Try it again.");
+      Log.info("Frame "+fmq.frame.name+" is not ready. Try it again.");
       if( fmq.retries > 200 ) {                            //more than 200*100ms = 20 sec. not availible
-         Log.warning("Maximum number of retries reached for frame ["+fmq.frame.name+"].");
+         Log.warning("Maximum number of retries reached for frame ["+fmq.frame.name+"], can't flush update queue.");
          fmq.messageQueue.length = 0;
          if (fmq.timeOutHandle != null)
             window.clearTimeout( fmq.timeOutHandle );
