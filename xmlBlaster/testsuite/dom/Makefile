@@ -16,8 +16,7 @@ SRC_JAVA_DIR = $(SRC_TESTSUITE_TOP_DIR)/dom
 LOCAL_FILES = \
 			$(CLASS_DIR)/DOMParserWrapper.class \
 			$(CLASS_DIR)/DOMCount.class \
-			$(CLASS_DIR)/DOMFilter.class \
-			$(CLASS_DIR)/DOMWriter.class
+			$(CLASS_DIR)/DOMFilter.class
 #------------------------------------------------------------------------------
 
 
