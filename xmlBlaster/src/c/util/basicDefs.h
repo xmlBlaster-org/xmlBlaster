@@ -81,6 +81,8 @@ Note:      The gcc and icc (>=8) both define __GNUC__
 #else
 #  ifdef __cplusplus
 #    define _INLINE_FUNC      /* 'inline' does not compile with g++ */
+#  elif __GNUC__
+#    define _INLINE_FUNC __inline__ /* http://gcc.gnu.org/onlinedocs/gcc/Alternate-Keywords.html */
 #  else
 #    define _INLINE_FUNC inline /* C99 allows to declare functions as 'inline', it has internal linkage -> code to be in same file as call */
 #  endif
