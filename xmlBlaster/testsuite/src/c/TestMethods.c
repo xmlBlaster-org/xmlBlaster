@@ -206,7 +206,7 @@ static const char * test_methods()
       for (i=0; i<msgUnitArr->len; i++) {
          char *contentStr = strFromBlobAlloc(msgUnitArr->msgUnitArr[i].content,
                                           msgUnitArr->msgUnitArr[i].contentLen);
-         printf("[client] Received message#%u/%u\n", i+1, msgUnitArr->len);
+         printf("[client] Received message#%lu/%lu\n", (unsigned long)(i+1), (unsigned long)msgUnitArr->len);
          free(contentStr);
       }
       freeMsgUnitArr(msgUnitArr);

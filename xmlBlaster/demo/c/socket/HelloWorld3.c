@@ -228,11 +228,11 @@ int main(int argc, char** argv)
                                              msgUnitArr->msgUnitArr[i].contentLen);
             const char *dots = (msgUnitArr->msgUnitArr[i].contentLen > 96) ?
                                  " ..." : "";
-            printf("\n[client] Received message#%u/%u:\n"
+            printf("\n[client] Received message#%lu/%lu:\n"
                      "-------------------------------------"
                      "%s\n <content>%.100s%s</content>%s\n"
                      "-------------------------------------\n",
-                     i+1, msgUnitArr->len,
+                     (unsigned long)(i+1), (unsigned long)msgUnitArr->len,
                      msgUnitArr->msgUnitArr[i].key,
                      contentStr, dots,
                      msgUnitArr->msgUnitArr[i].qos);
