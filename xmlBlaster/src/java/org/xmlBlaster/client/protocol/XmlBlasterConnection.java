@@ -697,11 +697,6 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       if (log.DUMP) log.dump(ME, "connect() " + (client==null?"with":"without") + " callback qos=\n" + connectQos.toXml());
 
       Address address = connectQos.getAddress();
-      if (address == null) {
-         address = glob.getBootstrapAddress();
-         connectQos.setAddress(address);
-      }
-
       if (this.addressFailSaveSettings != null) { // user called initFailSave(I_ConnectionProblems,,,,) before?
          address.setDelay(addressFailSaveSettings.getDelay());
          address.setRetries(addressFailSaveSettings.getRetries());
@@ -1253,6 +1248,9 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    public synchronized boolean shutdown(boolean flush)
    {
       if (log.CALL) log.call(ME, "shutdown(" + flush + ") ...");
+
+      killPing();
+      killLoginThread();
 
       try {
          if (isLoggedIn() && !disconnectInProgress) {
@@ -1975,6 +1973,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
                }
             } catch(Exception e) {
                log.error(ME, "Unexpected exception while login polling: " + e.toString());
+               //Thread.currentThread().dumpStack();
                if ((counter % logInterval) == 0)
                   log.warn(ME, "No connection established, " + getServerNodeId() + " still seems to be down after " + (counter+1) + " login retries.");
                counter++;
