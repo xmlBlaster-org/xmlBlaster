@@ -3,7 +3,7 @@ Name:      XmlRpcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   XmlRpcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: XmlRpcDriver.java,v 1.10 2000/10/26 09:50:47 ruff Exp $
+Version:   $Id: XmlRpcDriver.java,v 1.11 2000/10/26 10:00:05 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
@@ -87,9 +87,27 @@ public class XmlRpcDriver implements I_Driver
 
       // similar to -Dsax.driver=com.sun.xml.parser.Parser
       System.setProperty("sax.driver", XmlBlasterProperty.get("sax.driver", "com.sun.xml.parser.Parser"));
+
       xmlPort = XmlBlasterProperty.get("xmlrpc.port", 8080);
+
+      String hostname;
+      try  {
+         java.net.InetAddress addr = java.net.InetAddress.getLocalHost();
+         hostname = addr.getHostName();
+      } catch (Exception e) {
+         Log.info(ME, "Can't determine your hostname");
+         // Use the xmlBlaster-server xmlrpcRegistry as a fallback:
+         hostname = XmlBlasterProperty.get("xmlrpc.hostname", "localhost");
+      }
+      java.net.InetAddress inetAddr = null;
       try {
-         webServer = new WebServer(xmlPort);
+         inetAddr = java.net.InetAddress.getByName(hostname);
+      } catch(java.net.UnknownHostException e) {
+         throw new XmlBlasterException("InitXmlRpcFailed", "The host [" + hostname + "] is invalid, try '-xmlrpc.hostname=<ip>': " + e.toString());
+      }
+
+      try {
+         webServer = new WebServer(xmlPort, inetAddr);
          // publish the public methods to the XmlRpc web server:
          webServer.addHandler("authenticate", new AuthenticateImpl(authenticate));
          webServer.addHandler("xmlBlaster", new XmlBlasterImpl(xmlBlasterImpl));
@@ -127,6 +145,8 @@ public class XmlRpcDriver implements I_Driver
       String text = "\n";
       text += "XmlRpcDriver options:\n";
       text += "   -xmlrpc.port        The XML-RPC web server port [8080].\n";
+      text += "   -xmlrpc.hostname    Specify a hostname where the XML-RPC web server runs.\n";
+      text += "                       Default is the localhost.\n";
       text += "   java -Dsax.driver=  JVM property [com.sun.xml.parser.Parser].\n";
       text += "\n";
       return text;
