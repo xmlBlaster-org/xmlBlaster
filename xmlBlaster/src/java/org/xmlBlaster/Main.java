@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.96 2002/06/19 10:26:49 ruff Exp $
+Version:   $Id: Main.java,v 1.97 2002/06/25 07:38:56 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -63,6 +63,8 @@ public class Main implements I_RunlevelListener
    private RunlevelManager runlevelManager = null;
 
    private boolean showUsage = false;
+
+   private boolean inShutdownProcess = false;
 
 
    /**
@@ -157,6 +159,11 @@ public class Main implements I_RunlevelListener
     */
    public void shutdown()
    {
+      if (inShutdownProcess)
+         return;
+      
+      inShutdownProcess = true;
+
       int errors = 0;
       try {
          errors = runlevelManager.changeRunlevel(RunlevelManager.RUNLEVEL_HALTED, true);
@@ -369,6 +376,7 @@ public class Main implements I_RunlevelListener
                glob.setUniqueNodeIdName(createNodeId());
             if (showUsage) {
                usage();  // Now we can display the complete usage of all loaded drivers
+               shutdown();
                System.exit(0);
             }
          }
@@ -427,13 +435,12 @@ public class Main implements I_RunlevelListener
       log.plain(ME, "");
       log.plain(ME, org.xmlBlaster.engine.cluster.ClusterManager.usage());
       log.plain(ME, "");
-      log.plain(ME, org.xmlBlaster.util.Global.usage());
+      log.plain(ME, glob.usage());
       log.plain(ME, "");
       log.plain(ME, "Other stuff:");
       log.plain(ME, "   -useKeyboard false  Switch off keyboard input, to allow xmlBlaster running in background.");
-      log.plain(ME, "   -useKeyboard false  Switch off keyboard input, to allow xmlBlaster running in background.");
       log.plain(ME, "   -doBlocking  false  Switch off blocking, the main method is by default never returning.");
-      log.plain(ME, "   -admin.remoteconsole.port If given port > 1000 (e.g. 2702), a server is started which is available with telnet [0].");
+      log.plain(ME, "   -admin.remoteconsole.port If port > 1000 a server is started which is available with telnet [2702].");
       log.plain(ME, "----------------------------------------------------------");
       log.plain(ME, "Example:");
       log.plain(ME, "   java org.xmlBlaster.Main -port 3412");
