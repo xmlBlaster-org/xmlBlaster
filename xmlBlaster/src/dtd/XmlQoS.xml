@@ -128,17 +128,24 @@
    <!-- QoS with login -->
    <client>
       <qos>
-         <compress type='gzip'>
-            1000
-         </compress>
-         <queue>
-            <size>
-               1000
-            </size>
-            <timeout>
-               3600
-            </timeout>
-         </queue>
+         <compress type='gzip' minSize='1000' />
+                   <!-- compress messages bigger 1000 bytes before sending them to me -->
+
+         <burstMode collectTime='400' /> <!-- Collect messages for 400 milliseconds and update
+                    them in one callback (burst mode) -->
+
+
+         <NoPtP /> <!-- Set this flag if you don't want to receive any PtP messages -->
+                   <!-- prevents 'spamming' -->
+
+         <OfflineQueuing timeout='3600' /> <!-- Messages older than timeout seconds
+                            (the time the client is offline) are discarded -->
+
+         <OfflineQueuing maxMsg="36" /> <!-- Queue not more than 36 messages, older are discarded
+                            off the end -->
+
+         <OfflineQueuing maxSize="2000" /> <!-- Max queue size in kByte, if exceeded, the
+                             oldest are discarded -->
       </qos>
    </client>
 
