@@ -45,6 +45,7 @@ for $i (0 .. $#msgUnits) {
    }
 }
 
+# Try publishing a message:
 $returnQos = $server->call('xmlBlaster.publish', $sessionId, "<key oid='MyMessage'></key>", "Hello world", "<qos><forceUpdate /></qos>");
 print "\nResult for a publish():\n----------------", $returnQos, "\n----------------\n";
 
