@@ -3,7 +3,7 @@ Name:      CallbackAddress.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback address string and protocol string
-Version:   $Id: CallbackAddress.java,v 1.15 2002/05/16 15:35:36 ruff Exp $
+Version:   $Id: CallbackAddress.java,v 1.16 2002/05/17 13:19:41 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -76,6 +76,7 @@ public class CallbackAddress extends AddressBase
     * Configure property settings
     */
    private void initialize() {
+      setPort(glob.getProperty().get("cb.port", getPort()));
       setType(glob.getProperty().get("cb.protocol", getType()));
       setCollectTime(glob.getProperty().get("cb.burstMode.collectTime", DEFAULT_collectTime)); // sync update()
       setCollectTimeOneway(glob.getProperty().get("cb.burstMode.collectTimeOneway", DEFAULT_collectTimeOneway)); // oneway update()
@@ -89,6 +90,7 @@ public class CallbackAddress extends AddressBase
       setPtpAllowed(glob.getProperty().get("cb.ptpAllowed", DEFAULT_ptpAllowed));
       setSessionId(glob.getProperty().get("cb.sessionId", DEFAULT_sessionId));
       if (nodeId != null) {
+         setPort(glob.getProperty().get("cb.port["+nodeId+"]", getPort()));
          setType(glob.getProperty().get("cb.protocol["+nodeId+"]", getType()));
          setCollectTime(glob.getProperty().get("cb.burstMode.collectTime["+nodeId+"]", collectTime));
          setCollectTimeOneway(glob.getProperty().get("cb.burstMode.collectTimeOneway["+nodeId+"]", collectTimeOneway));

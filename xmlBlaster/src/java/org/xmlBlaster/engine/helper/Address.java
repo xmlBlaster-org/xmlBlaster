@@ -3,7 +3,7 @@ Name:      Address.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding address string and protocol string
-Version:   $Id: Address.java,v 1.8 2002/05/16 15:35:22 ruff Exp $
+Version:   $Id: Address.java,v 1.9 2002/05/17 13:19:41 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -94,6 +94,7 @@ public class Address extends AddressBase
     */
    private void initialize()
    {
+      setPort(glob.getProperty().get("client.port", getPort()));
       setType(glob.getProperty().get("client.protocol", getType()));
       setCollectTime(glob.getProperty().get("burstMode.collectTime", DEFAULT_collectTime));
       setCollectTimeOneway(glob.getProperty().get("burstMode.collectTimeOneway", DEFAULT_collectTimeOneway));
@@ -106,6 +107,7 @@ public class Address extends AddressBase
       setPtpAllowed(glob.getProperty().get("ptpAllowed", DEFAULT_ptpAllowed));
       setSessionId(glob.getProperty().get("sessionId", DEFAULT_sessionId));
       if (nodeId != null) {
+         setPort(glob.getProperty().get("client.port["+nodeId+"]", getPort()));
          setType(glob.getProperty().get("client.protocol["+nodeId+"]", getType()));
          setCollectTime(glob.getProperty().get("burstMode.collectTime["+nodeId+"]", getCollectTime()));
          setCollectTimeOneway(glob.getProperty().get("burstMode.collectTimeOneway["+nodeId+"]", getCollectTimeOneway()));
