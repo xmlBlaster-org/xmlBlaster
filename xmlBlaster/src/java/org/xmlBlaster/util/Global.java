@@ -725,7 +725,9 @@ public class Global implements Cloneable
    }
 
    /**
-    * Access the id (as a String) currently used on server side.
+    * Access the unique local id (as a String), 
+    * on client side typically the loginName with the public sessionId,
+    * on server side the server instance unique id.
     * @return ""
     */
    public String getId() {
