@@ -54,7 +54,7 @@ void XmlHandlerBase::parse(const string &xmlData)
    I_Parser *parser = NULL;
    try {
       log_.trace(ME, "parse entrering try/catch block");
-      parser = ParserFactory::createParser(global_, this);
+      parser = ParserFactory::getFactory(global_).createParser(this);
       parser->parse(xmlData);
       delete parser;
       parser = NULL;
@@ -102,7 +102,7 @@ void XmlHandlerBase::characters(const string &ch)
       character_ += trimmer_.trim(ch);
    }
    else character_ += ch;
-   if (log_.trace()) log_.trace(ME, string("characters, character:'") + character_ + string("'"));
+   //if (log_.trace()) log_.trace(ME, string("characters, character:'") + character_ + string("'"));
 }
 
 void XmlHandlerBase::endCDATA()
