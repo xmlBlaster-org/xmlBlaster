@@ -8,12 +8,15 @@ import java.util.Vector;
 import java.util.StringTokenizer;
 
 /**
- * Title: PluginManagerBase
- * Description: Baseclass to load plugins
+ * Baseclass to load plugins. 
+ * <p />
+ * A typical syntax in the xmlBlaster.properties file is:
+ * <pre>
+ *   MimeSubscribePlugin[ContentLenFilter][1.0]=org.xmlBlaster.engine.mime.demo.ContentLenFilter,DEFAULT_MAX_LEN=200,DEFAULT_MIN_LEN=20
+ * </pre>
  * @author W. Kleinertz (wkl) H. Goetzger
  * @version 1.0
  */
-
 abstract public class PluginManagerBase {
 
    private static String ME = "PluginManagerBase";
@@ -122,7 +125,7 @@ abstract public class PluginManagerBase {
          }
          if(rawString!=null) {
             Vector tmp = new Vector();
-            StringTokenizer st = new StringTokenizer(rawString, ",");
+            StringTokenizer st = new StringTokenizer(rawString, ",=");
             while(st.hasMoreTokens()) {
                tmp.addElement(st.nextToken());
             }
@@ -132,8 +135,10 @@ abstract public class PluginManagerBase {
                pluginData[i]=(String)tmp.elementAt(i);
             }
          }
+         //else
+         //   Log.warn(ME, "Accessing " + getPluginPropertyName()+"["+type+"]["+version+"] failed, no such entry found in xmlBlaster.properties");
       }
-      if (pluginData[0].equalsIgnoreCase("")) pluginData = null;
+      if (pluginData != null && pluginData[0].equalsIgnoreCase("")) pluginData = null;
 
       return pluginData;
    }
