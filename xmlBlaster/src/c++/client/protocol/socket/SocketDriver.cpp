@@ -190,7 +190,8 @@ SocketDriver::SocketDriver(const SocketDriver& socketDriver)
    // no instantiation of these since this should never be invoked (just to make it private)
    connection_      = NULL;
    argsStructP_ = new ArgsStruct_T;
-   memset(argsStructP_, '\0', sizeof(ArgsStruct_T));
+   //memset(argsStructP_, '\0', sizeof(ArgsStruct_T));
+   global_.fillArgs(*argsStructP_);
    if (log_.call()) log_.call("SocketDriver", string("Constructor"));
 }
 
@@ -240,12 +241,19 @@ void SocketDriver::reconnect(void)
 
    freeResources(true); // Cleanup if old connection exists
 
-   int argc = global_.getArgs();
-   const char * const*argv = global_.getArgc();
+	// Give a chance to new configuration settings
+   if (argsStructP_ != 0) {
+      global_.freeArgs(*argsStructP_);
+      delete argsStructP_;
+      argsStructP_ = 0;
+   }
+   argsStructP_ = new ArgsStruct_T;
+   global_.fillArgs(*argsStructP_);
+
    ::ExceptionStruct socketException;
 
    try {
-      connection_ = getXmlBlasterAccessUnparsed(argc, argv);
+      connection_ = getXmlBlasterAccessUnparsed(argsStructP_->argc, argsStructP_->argv);
       connection_->userObject = this; // Transports us to the myUpdate() method
    } catch_MACRO("::Constructor", true)
    
