@@ -321,32 +321,34 @@ public class PersistenceCachePlugin implements I_StoragePlugin, I_StorageProblem
    private I_MapEntry getTransientSpace(I_MapEntry mapEntry) throws XmlBlasterException {
       I_MapEntry oldest = this.transientStore.removeOldest();
       if (oldest == null) {
-         throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".put", "The RAM queue is full, entry '" + mapEntry.getUniqueId() + "' rejected");
+         if (log.TRACE) log.trace(ME + ".getTransientSpace", "The RAM queue is full, new entry '" + mapEntry.getUniqueId() + "' seems to be the first and only one, so we accept it");
+         return null;
       }
+      if (log.CALL) log.call(ME+".getTransientSpace", "Swapping '" + oldest.getLogId() + "' to HD ...");
       try {
          if (!oldest.isPersistent()) { // if entry is marked as persistent it is already in persistentStore (see code above)
             // swap away the oldest cache entry to harddisk ...
-            if (this.log.TRACE) this.log.trace(ME+"-put("+mapEntry.getLogId()+")", "Swapping '" + oldest.getLogId() + "'. Exceeding size state: " + toXml(""));
+            if (this.log.TRACE) this.log.trace(ME+"-getTransientSpace("+mapEntry.getLogId()+")", "Swapping '" + oldest.getLogId() + "'. Exceeding size state: " + toXml(""));
             if (this.persistentStore == null)
                throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME,
-                     "put: no persistent queue configured, needed for swapping, entry " + mapEntry.getLogId() + " is not handled");
+                     "getTransientSpace: no persistent queue configured, needed for swapping, entry " + mapEntry.getLogId() + " is not handled");
             if (!this.isConnected)
                throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME,
-                     "put: The DB is currently disconnected, entry " + mapEntry.getLogId() + " is not handled");
+                     "getTransientSpace: The DB is currently disconnected, entry " + mapEntry.getLogId() + " is not handled");
 
             if (spaceLeft(oldest, this.persistentStore)) {
                try {
                   this.persistentStore.put(oldest);
                }
                catch (XmlBlasterException ex) {
-                  this.log.error(ME, "put: an error occured when writing to the persistent queue, transient entry " +  oldest.getLogId() + 
+                  this.log.error(ME, "getTransientSpace: an error occured when writing to the persistent queue, transient entry " +  oldest.getLogId() + 
                         " is not swapped, new entry '" + mapEntry.getLogId() + "' is rejected. Is the DB up and running ? " + ex.getMessage() + " state: " + toXml(""));
                   throw ex;
                }
             }
             else
                throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_BYTES, ME,
-                           "put: maximum size in bytes for the persistent queue exceeded when swapping, entry " + mapEntry.getLogId() + " not handled . State: " + toXml(""));
+                           "getTransientSpace: maximum size in bytes for the persistent queue exceeded when swapping, entry " + mapEntry.getLogId() + " not handled . State: " + toXml(""));
          }
       }
       catch(XmlBlasterException ex2) {
