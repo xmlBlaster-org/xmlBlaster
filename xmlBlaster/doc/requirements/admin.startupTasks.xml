@@ -23,11 +23,15 @@
    &lt;action do='STOP' onShutdownRunlevel='6' sequence='5'/>
    &lt;attribute id='loginName'>_StartupTasks&lt;/attribute>
    &lt;attribute id='password'>secret&lt;/attribute>
-   &lt;attribute id='directoryName'>${user.home}&lt;/attribute>
+   &lt;attribute id='directoryName'>&lt;/attribute>
    &lt;attribute id='scriptFileName'>xmlBlasterStartup.xml&lt;/attribute>
    &lt;attribute id='outFileName'>${java.io.tmpdir}${file.separator}xmlBlasterStartupOut.txt&lt;/attribute>
 &lt;/plugin>
      </pre>
+     <p>If the <tt>directoryName</tt> is missing or empty the classical xmlBlaster
+     file lookup strategy is used, including looking into the CLASSPATH. For details read the
+     <tt>util.property</tt> requirement.
+     </p>
      <p>
      The scripting file <tt>xmlBlasterStartup.xml</tt> must conform to the xmlBlaster scripting
      framework as described in requirement <tt>client.script</tt>, here is an example:
@@ -60,8 +64,11 @@
 
          <tr>
             <td>directoryName</td>
-            <td>${user.home}</td>
-            <td>The directory containing the scrip file
+            <td>-</td>
+            <td>The directory containing the script file given with <tt>scriptFileName</tt>.
+            If <tt>directoryName</tt> is missing or empty the classical xmlBlaster
+            file lookup strategy is used, including looking into the CLASSPATH. For details read the
+            <tt>util.property</tt> requirement.
             </td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
@@ -93,6 +100,7 @@
    
    <see type="API">org.xmlBlaster.engine.StartupTasks</see>
    <see type="REQ">client.script</see>
+   <see type="REQ">util.property</see>
    
    <author>xmlBlaster@marcelruff.info</author>
    
