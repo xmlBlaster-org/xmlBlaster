@@ -101,6 +101,7 @@ public:
       }
    }
 
+   // Using the vector seems to leak memory -> this issue is not yet resolved!
    void checkConnection2()
    {
       log_.info(ME, "checkConnection2()");
