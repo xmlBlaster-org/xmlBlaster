@@ -171,6 +171,7 @@ public class TimestampChangeDetector implements I_ChangeDetector
 
    /**
     * Check the observed data for changes. 
+    * @param attrMap Currently "oldTimestamp" can be passed to force a specific scan
     * @return true if the observed data has changed
     * @see org.xmlBlaster.contrib.dbwatcher.detector.I_ChangeDetector#checkAgain
     */
@@ -181,6 +182,11 @@ public class TimestampChangeDetector implements I_ChangeDetector
       // We need the connection for detection and in the same transaction to the queryMeat
       Connection conn = null;
       boolean reported = false;
+
+      if (attrMap != null && attrMap.containsKey("oldTimestamp")) {
+         this.oldTimestamp = (String)attrMap.get("oldTimestamp");
+         log.info("Reconfigured oldTimestamp to '" +this.oldTimestamp + "' as given by attrMap");
+      }
 
       try {
          conn = this.dbPool.select(conn, this.changeDetectStatement, new I_ResultCb() {
