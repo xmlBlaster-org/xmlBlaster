@@ -23,7 +23,7 @@ import org.xmlBlaster.util.dispatch.DeliveryConnectionsHandler;
 import org.xmlBlaster.engine.dispatch.CbDeliveryConnectionsHandler;
 import org.xmlBlaster.util.queue.I_EntryFactory;
 import org.xmlBlaster.engine.queuemsg.ServerEntryFactory;
-import org.xmlBlaster.engine.msgstore.MsgStorePluginManager;
+import org.xmlBlaster.engine.msgstore.MsgUnitStorePluginManager;
 import org.xmlBlaster.engine.persistence.MsgFileDumper;
 
 
@@ -54,7 +54,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
 
    private ProtocolManager protocolManager;
 
-   private MsgStorePluginManager msgStorePluginManager;
+   private MsgUnitStorePluginManager msgStorePluginManager;
 
    private CommandManager commandManager;
    private boolean useAdminManager = true;
@@ -282,11 +282,11 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
       return this.protocolManager;
    }
 
-   public final MsgStorePluginManager getMsgStorePluginManager() {
+   public final MsgUnitStorePluginManager getMsgUnitStorePluginManager() {
       if (msgStorePluginManager == null) {
-         synchronized (MsgStorePluginManager.class) {
+         synchronized (MsgUnitStorePluginManager.class) {
             if (msgStorePluginManager == null)
-               msgStorePluginManager = new MsgStorePluginManager(this);
+               msgStorePluginManager = new MsgUnitStorePluginManager(this);
          }
       }
       return msgStorePluginManager;
@@ -351,7 +351,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    }
 
    /**
-    * The factory creating queue or msgstore entries from persistent store. 
+    * The factory creating queue or msgUnitStore entries from persistent store. 
     * Is derived from util.Global
     * @param name A name identifying this plugin.
     */
