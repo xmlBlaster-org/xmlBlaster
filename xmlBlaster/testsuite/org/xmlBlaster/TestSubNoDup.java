@@ -22,7 +22,7 @@ import junit.framework.*;
 
 /**
  * This client tests multiple subscribe() on same message oid
- * and setting duplicateUpdates=false.
+ * and setting duplicateUpdates=false (requirement engine.qos.subscribe.duplicate).
  * <br />
  * The subscribe() should be recognized for the later arriving publish()
  * but only one update should arrive. For example cluster slave nodes
@@ -36,6 +36,7 @@ import junit.framework.*;
  *    java junit.textui.TestRunner testsuite.org.xmlBlaster.TestSubNoDup
  *    java junit.ui.TestRunner testsuite.org.xmlBlaster.TestSubNoDup
  * </pre>
+ * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.subscribe.duplicate.html" target="others">duplicate subscribe requirement</a>
  */
 public class TestSubNoDup extends TestCase implements I_Callback
 {
@@ -43,9 +44,9 @@ public class TestSubNoDup extends TestCase implements I_Callback
    private final Global glob;
    private final LogChannel log;
 
-   private String subscribeOid1;
-   private String subscribeOid2;
-   private String subscribeOid3;
+   private String subscribeId1;
+   private String subscribeId2;
+   private String subscribeId3;
    private String oidExact = "HelloMessage";
    private String publishOid = null;
    private XmlBlasterConnection senderConnection;
@@ -98,7 +99,7 @@ public class TestSubNoDup extends TestCase implements I_Callback
    /**
     * Subscribe three times to same message. 
     * <p />
-    * The returned subscribeOid1 is checked
+    * The returned subscribeId1 is checked
     */
    public void subscribe() {
       if (log.TRACE) log.trace(ME, "Subscribing ...");
@@ -106,32 +107,32 @@ public class TestSubNoDup extends TestCase implements I_Callback
       String xmlKey = "<key oid='" + oidExact + "' queryType='EXACT'/>";
       String qos = "<qos/>";
       numReceived = 0;
-      subscribeOid1 = null;
-      subscribeOid2 = null;
-      subscribeOid3 = null;
+      subscribeId1 = null;
+      subscribeId2 = null;
+      subscribeId3 = null;
       try {
          // if duplicate updates are suppressed, every subscribe gets the same subscription ID
 
-         subscribeOid1 = senderConnection.subscribe(xmlKey, qos).getSubscriptionId();
-         assertTrue("returned null subscribeOid1", subscribeOid1 != null);
-         assertTrue("returned subscribeOid1 is empty", 0 != subscribeOid1.length());
-         log.info(ME, "Success: Subscribe 1 on " + subscribeOid1 + " done");
+         subscribeId1 = senderConnection.subscribe(xmlKey, qos).getSubscriptionId();
+         assertTrue("returned null subscribeId1", subscribeId1 != null);
+         assertTrue("returned subscribeId1 is empty", 0 != subscribeId1.length());
+         log.info(ME, "Success: Subscribe 1 on " + subscribeId1 + " done");
 
-         subscribeOid2 = senderConnection.subscribe(xmlKey, qos).getSubscriptionId();
-         assertTrue("returned subscribeOid2 is empty", 0 != subscribeOid2.length());
+         subscribeId2 = senderConnection.subscribe(xmlKey, qos).getSubscriptionId();
+         assertTrue("returned subscribeId2 is empty", 0 != subscribeId2.length());
          if (duplicates)
-            assertTrue("Wrong subscriptionId", !subscribeOid1.equals(subscribeOid2));
+            assertTrue("Wrong subscriptionId", !subscribeId1.equals(subscribeId2));
          else
-            assertEquals("Wrong subscriptionId", subscribeOid1, subscribeOid2);
-         log.info(ME, "Success: Subscribe 2 on " + subscribeOid2 + " done");
+            assertEquals("Wrong subscriptionId", subscribeId1, subscribeId2);
+         log.info(ME, "Success: Subscribe 2 on " + subscribeId2 + " done");
 
-         subscribeOid3 = senderConnection.subscribe(xmlKey, qos).getSubscriptionId();
-         assertTrue("returned subscribeOid3 is empty", 0 != subscribeOid3.length());
+         subscribeId3 = senderConnection.subscribe(xmlKey, qos).getSubscriptionId();
+         assertTrue("returned subscribeId3 is empty", 0 != subscribeId3.length());
          if (duplicates)
-            assertTrue("Wrong subscriptionId", !subscribeOid1.equals(subscribeOid2));
+            assertTrue("Wrong subscriptionId", !subscribeId1.equals(subscribeId2));
          else
-            assertEquals("Wrong subscriptionId", subscribeOid1, subscribeOid3);
-         log.info(ME, "Success: Subscribe 3 on " + subscribeOid3 + " done");
+            assertEquals("Wrong subscriptionId", subscribeId1, subscribeId3);
+         log.info(ME, "Success: Subscribe 3 on " + subscribeId3 + " done");
 
       } catch(XmlBlasterException e) {
          log.warn(ME, "XmlBlasterException: " + e.reason);
@@ -173,14 +174,14 @@ public class TestSubNoDup extends TestCase implements I_Callback
       String qos = "<qos/>";
       numReceived = 0;
       try {
-         senderConnection.unSubscribe("<key oid='" + subscribeOid1 + "'/>", qos);
-         log.info(ME, "Success: unSubscribe 1 on " + subscribeOid1 + " done");
+         senderConnection.unSubscribe("<key oid='" + subscribeId1 + "'/>", qos);
+         log.info(ME, "Success: unSubscribe 1 on " + subscribeId1 + " done");
 
-         senderConnection.unSubscribe("<key oid='" + subscribeOid2 + "'/>", qos);
-         log.info(ME, "Success: unSubscribe 2 on " + subscribeOid2 + " done");
+         senderConnection.unSubscribe("<key oid='" + subscribeId2 + "'/>", qos);
+         log.info(ME, "Success: unSubscribe 2 on " + subscribeId2 + " done");
 
-         senderConnection.unSubscribe("<key oid='" + subscribeOid3 + "'/>", qos);
-         log.info(ME, "Success: unSubscribe 3 on " + subscribeOid3 + " done");
+         senderConnection.unSubscribe("<key oid='" + subscribeId3 + "'/>", qos);
+         log.info(ME, "Success: unSubscribe 3 on " + subscribeId3 + " done");
       } catch(XmlBlasterException e) {
          log.warn(ME, "XmlBlasterException: " + e.reason);
          assertTrue("unSubscribe - XmlBlasterException: " + e.reason, false);
@@ -269,7 +270,7 @@ public class TestSubNoDup extends TestCase implements I_Callback
       try { Thread.currentThread().sleep(200); } catch( InterruptedException i) {}
 
       if (!duplicates)
-         assertEquals("engine.qos.update.subscriptionId: Wrong subscriptionId", subscribeOid1, updateQos.getSubscriptionId());
+         assertEquals("engine.qos.update.subscriptionId: Wrong subscriptionId", subscribeId1, updateQos.getSubscriptionId());
       assertEquals("Wrong oid of message returned", publishOid, updateKey.getUniqueKey());
       assertEquals("Message content is corrupted", new String(senderContent), new String(content));
       assertEquals("Message contentMime is corrupted", contentMime, updateKey.getContentMime());
