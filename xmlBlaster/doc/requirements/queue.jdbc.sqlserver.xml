@@ -71,6 +71,39 @@ osql -E
 2> go
     </pre>
    </example>
+
+   <example lang="Java" type="HTML">
+   <p>
+   Before the first usage you have to create a database <i>'xmlBlaster'</i> in SQL Server.
+   You can use the <i>SQL Server Enterprise Manager</i> GUI tool or start
+   this script file <tt>'xmlBlaster.sql'</tt> from a MS-DOS box:
+   </p>
+   <pre>
+-- File:    xmlBlaster.sql
+--
+-- Create 'xmlBlaster' database for MS-SQLServer
+--
+-- Invoke:  osql -E -i xmlBlaster.sql
+--
+
+use master 
+
+if exists (select * from sysdatabases where name='xmlBlaster')
+begin
+  raiserror('Dropping existing xmlBlaster database ....',0,1)
+  DROP database xmlBlaster
+end
+go
+
+create database xmlBlaster on default
+go
+
+   </pre>
+   <p>The final step is to create a user with a password and add this
+   to xmlBlaster.properties.
+   </p>
+   </example>
+
    <configuration where="server">
 
       <p>
@@ -152,7 +185,7 @@ osql -E
 
    <author>zzwzyz@163.com</author>
    <date>2003 06 09</date>
-   <revision>$Revision: 1.6 $</revision>
+   <revision>$Revision: 1.7 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
