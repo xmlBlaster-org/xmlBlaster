@@ -16,7 +16,7 @@
          <li>Every registered Poller is listening on exactly one single directory</li>
          <li>The polling interval is expressed in ms and is configurable</li>
          <li>All files in a directory on which a Poller instance is listening, are published on 
-	     a single configurable topic.</li>
+             a single configurable topic.</li>
          <li>It is possible to specify a filter for the file name, then only the files matching the filter
              will be processed by the current plugin instance. 
          </li>
@@ -27,42 +27,42 @@
 
          <li>After a successful publish of the content of a file, the file is removed from the file system.
               Alternatively, if a 'sent' directory is specified in the configuration, processed
-	      files will be moved to that destination. If for some reason it is not possible to 
-	      move the file to that direction (for example if necessary rights are missing), then the
-	      plugin will continue to poll but will not process any file anymore until the problem has
-	      been manually removed.
+              files will be moved to that destination. If for some reason it is not possible to 
+              move the file to that direction (for example if necessary rights are missing), then the
+              plugin will continue to poll but will not process any file anymore until the problem has
+              been manually removed.
          </li>
          <li>It is possible to configure a maximum file size. Files bigger than the specified size are not
              published. If a 'discarded' directory is specified in the properties, then the file will be 
              moved to that directory, otherwise it will be deleted.
          </li>
-	 <li>
-	    When moving files, wether to the 'sent' or 'discarded' directories, if a file with the same
-	    relative name already exists, it is overwritten.
-	 </li>
          <li>
-            Detection of 'file ready for publishing': 
-	    <p>
-            If <i>lockExtention</i> is specified in the plugin configuration, then publishing of a file is
-	    controlled by a <i>lock</i> file. 
-	    This means that if you specified <i>*.lck</i> as the <i>lockExtention</i>, and want to publish
-	    a file called <i>someFile.gif</i>, then the publishing of the file will be inhibited until a 
-	    file <i>someFile.gif.lck</i> will be present in the directory.
-	    </p>
-	    <p>
-	    The plugin will wait <i>delaySinceLastFileChange</i> milliseconds since 
-	    the last modification of the file to be published (date and size are checked) before 
-	    processing anyway. This way, by choosing a sufficiently long <i>delaySinceLastFileChange</i>
-	    it is possible to work in an <i>optimistic</i> way without any lock file. 
-	    </p>
-	    <p>
-	    Note however that this <i>optimistic</i> publishing is not to 100% safe. Suppose the writing of
-	    the file to be published is stalled for a time which is longer than what specified in
-	    <i>delaySinceLastFileChange</i>, then the file will be published in its incomplete state.
-	    </p>	
+            When moving files, wether to the 'sent' or 'discarded' directories, if a file with the same
+            relative name already exists, it is overwritten.
          </li>
          <li>
-	   If permissions to read the directory are missing or xmlBlaster has no read rights on a 
+            Detection of 'file ready for publishing': 
+            <p>
+            If <i>lockExtention</i> is specified in the plugin configuration, then publishing of a file is
+            controlled by a <i>lock</i> file. 
+            This means that if you specified <i>*.lck</i> as the <i>lockExtention</i>, and want to publish
+            a file called <i>someFile.gif</i>, then the publishing of the file will be inhibited until a 
+            file <i>someFile.gif.lck</i> will be present in the directory.
+            </p>
+            <p>
+            The plugin will wait <i>delaySinceLastFileChange</i> milliseconds since 
+            the last modification of the file to be published (date and size are checked) before 
+            processing anyway. This way, by choosing a sufficiently long <i>delaySinceLastFileChange</i>
+            it is possible to work in an <i>optimistic</i> way without any lock file. 
+            </p>
+            <p>
+            Note however that this <i>optimistic</i> publishing is not to 100% safe. Suppose the writing of
+            the file to be published is stalled for a time which is longer than what specified in
+            <i>delaySinceLastFileChange</i>, then the file will be published in its incomplete state.
+            </p>        
+         </li>
+         <li>
+           If permissions to read the directory are missing or xmlBlaster has no read rights on a 
            specific file, or if an IO exception occurs when reading a file or trying to delete or move
            a file, an error is reported (logged) and the plugin does temporarly stop working.
            (to ensure correct sequence). The plugin continues however to poll and when the rights are 
@@ -89,8 +89,8 @@
      <plugin id='FilePollerPlugin' className='org.xmlBlaster.client.filepoller.FilePollerPlugin'>
         <attribute id='directoryName'>/tmp/filePoller</attribute>
         <attribute id='topicName'>poller.test</attribute>
-        <attribute id='publishKey'>&lt;![CDATA[<key oid='poller.test'><poller><test/></poller></key>]]&gt;</attribute>
-        <attribute id='publishQos'>&lt;![CDATA[<qos><expiration lifeTime='4000'/></qos>]]&gt;</attribute>
+        <attribute id='publishKey'><key oid='poller.test'><poller><test/></poller></key></attribute>
+        <attribute id='publishQos'><qos><expiration lifeTime='4000'/></qos></attribute>
         <attribute id='connectQos'></attribute>
         <attribute id='maximumFileSize'>10000000</attribute>
         <attribute id='delaySinceLastFileChange'>10000</attribute>
@@ -146,9 +146,9 @@ and here a minimalistic one:
          <td>String</td>
          <td>null</td>
          <td><b>mandatory</b>: The name of the directory on which this plugin instance will listen.
-	    If the directory does not exist, one will be created. You can specify an absolute name or
-	    a relative one. A relative one is based on the <i>${user.home}</i>.
-	 </td>
+            If the directory does not exist, one will be created. You can specify an absolute name or
+            a relative one. A relative one is based on the <i>${user.home}</i>.
+         </td>
        </tr>
 
        <tr>
@@ -156,8 +156,8 @@ and here a minimalistic one:
          <td>String</td>
          <td>null</td>
          <td><b>mandatory unless <i>publishKey</i> defined</b>. If both are specified this attribute is
-	 ignored and a warning is logged. This is the name of the topic on which to publish (the oid). 
-	 </td>
+         ignored and a warning is logged. This is the name of the topic on which to publish (the oid). 
+         </td>
        </tr>
 
        <tr>
@@ -165,12 +165,12 @@ and here a minimalistic one:
          <td>String</td>
          <td>null</td>
          <td><b>optional</b> unless <i>topicName</i> has not been specified in which case it is mandatory.
-	 If you need to specify a more complex <a href="interface.publish.html">key</a> for the publishing 
-	 (for example to make it searcheable)
-	 of the messages you can specify it here. Note that you can only specify one single key which will
-	 be used for all messages published by this plugin. If you need to differentiate you can use
-	 more plugins.
-	 </td>
+         If you need to specify a more complex <a href="interface.publish.html">key</a> for the publishing 
+         (for example to make it searcheable)
+         of the messages you can specify it here. Note that you can only specify one single key which will
+         be used for all messages published by this plugin. If you need to differentiate you can use
+         more plugins.
+         </td>
        </tr>
 
        <tr>
@@ -178,11 +178,11 @@ and here a minimalistic one:
          <td>String</td>
          <td>null</td>
          <td><b>optional</b>.
-	 If you need to specify a more complex <a href="interface.publish.html">qos</a> for the publishing 
-	 you can specify it here. Note that you can only specify one single qos which will
-	 be used for all messages published by this plugin. If you need to differentiate you can use
-	 more plugins.
-	 </td>
+         If you need to specify a more complex <a href="interface.publish.html">qos</a> for the publishing 
+         you can specify it here. Note that you can only specify one single qos which will
+         be used for all messages published by this plugin. If you need to differentiate you can use
+         more plugins.
+         </td>
        </tr>
 
        <tr>
@@ -190,47 +190,47 @@ and here a minimalistic one:
          <td>String</td>
          <td>null</td>
          <td><b>optional</b>. If you need to specify more complex 
-	 <a href="interface.connect.html">connection behavior</a> you can do it here. Note however that
-	 this is a plugin which per default uses the <a href="protocol.local.html">local protocol</a>.
-	 </td>
+         <a href="interface.connect.html">connection behavior</a> you can do it here. Note however that
+         this is a plugin which per default uses the <a href="protocol.local.html">local protocol</a>.
+         </td>
        </tr>
        <tr>
          <td>loginName</td>
          <td>String</td>
          <td>'_' + id of plugin</td>
          <td><b>optional</b>. If the id of the plugin is <i>poller1</i>, then the default <i>loginName</i>
-	 is <i>_poller1</i>. If you specify a <i>connectQos</i>, then this attribute is ignored.
-	 </td>
+         is <i>_poller1</i>. If you specify a <i>connectQos</i>, then this attribute is ignored.
+         </td>
        </tr>
        <tr>
          <td>password</td>
          <td>String</td>
          <td>null</td>
          <td><b>optional</b>. This is the password to be used to authenticate the <i>loginName</i>.
-	 If you specify a <i>connectQos</i>, then this attribute is ignored.
-	 </td>
+         If you specify a <i>connectQos</i>, then this attribute is ignored.
+         </td>
        </tr>
        <tr>
          <td>pollInterval</td>
          <td>long</td>
          <td>2000</td>
          <td><b>optional</b>:  The time in milliseconds the plugin sleeps between each poll sweep. This
-	 time is also the one used to retry an action which has failed (reading, deleting or moving a 
-	 file).
-	 </td>
+         time is also the one used to retry an action which has failed (reading, deleting or moving a 
+         file).
+         </td>
        </tr>
        <tr>
          <td>delaySinceLastFileChange</td>
          <td>long</td>
          <td>10000</td>
          <td><b>optional</b>: This is the time expressed in milliseconds which the plugin will wait
-	 before publishing a file after its latest detected change. The plugin detects changes on
-	 discrete times (every time it polls), so the acurancy is never better than what specified in
-	 <i>pollInterval</i>. A file is considered to have changed either if its size has changed or 
-	 its date. The plugin always waits what specified here even when using a lock file. So if you 
-	 always control your publishes with a locking file you can set this attribute to zero to
-	 avoid delay.
-	 </td>
+         before publishing a file after its latest detected change. The plugin detects changes on
+         discrete times (every time it polls), so the acurancy is never better than what specified in
+         <i>pollInterval</i>. A file is considered to have changed either if its size has changed or 
+         its date. The plugin always waits what specified here even when using a lock file. So if you 
+         always control your publishes with a locking file you can set this attribute to zero to
+         avoid delay.
+         </td>
        </tr>
 
 
@@ -239,9 +239,9 @@ and here a minimalistic one:
          <td>long</td>
          <td>10000000</td>
          <td><b>optional</b>: The maximum file size expressed in bytes to be allowed to be published. If
-	 the file exceeds this size, then it is not published. It is either deleted or moved to the 
-	 directory specified in the <i>discarded</i> attribute.
-	 </td>
+         the file exceeds this size, then it is not published. It is either deleted or moved to the 
+         directory specified in the <i>discarded</i> attribute.
+         </td>
        </tr>
 
        <tr>
@@ -249,10 +249,10 @@ and here a minimalistic one:
          <td>String</td>
          <td>null</td>
          <td><b>optional</b>: If you want this plugin to be listening only on a specified filename extention
-	 you can specify it here. Let's say you only want files with the gif extention to be sent, then you 
-	 specify <i>*.gif</i>. If something is specified here, files on the directory not matching this
-	 pattern are left untouched and are not published.
-	 </td>
+         you can specify it here. Let's say you only want files with the gif extention to be sent, then you 
+         specify <i>*.gif</i>. If something is specified here, files on the directory not matching this
+         pattern are left untouched and are not published.
+         </td>
        </tr>
 
        <tr>
@@ -260,8 +260,8 @@ and here a minimalistic one:
          <td>String</td>
          <td>null</td>
          <td><b>optional</b>: If you want to use the locking approach you need to specify here the extention
-	 of the lock files. The syntax is of the kind <i>*.lck</i>, i.e. the first character is a '*'.
-	 </td>
+         of the lock files. The syntax is of the kind <i>*.lck</i>, i.e. the first character is a '*'.
+         </td>
        </tr>
 
        <tr>
@@ -269,26 +269,26 @@ and here a minimalistic one:
          <td>String</td>
          <td>null</td>
          <td><b>optional</b>: If nothing is specified here, files are deleted after having been published.
-	 If something is specified here it is assumed to be a directory and files published are moved to this
-	 location. If the directory does not exist, one is created once the plugin is initialized. 
-	 You can either specify an absolute or a relative directory name. Relative names are put in the
-	 directory specified in the <i>directoryName</i> attribute.
-	 </td>
+         If something is specified here it is assumed to be a directory and files published are moved to this
+         location. If the directory does not exist, one is created once the plugin is initialized. 
+         You can either specify an absolute or a relative directory name. Relative names are put in the
+         directory specified in the <i>directoryName</i> attribute.
+         </td>
        </tr>
        <tr>
          <td>discarded</td>
          <td>String</td>
          <td>null</td>
          <td><b>optional</b>: If nothing is specified here, files which are too big to be 
-	 published are deleted.
-	 If something is specified it is assumed to be a directory and the files which are too bif are 
-	 moved to this location. 
-	 If the directory does not exist, one is created once the plugin is initialized. 
-	 You can either specify an absolute or a relative directory name. Relative names are put in the
-	 directory specified in the <i>directoryName</i> attribute.
-	 </td>
+         published are deleted.
+         If something is specified it is assumed to be a directory and the files which are too bif are 
+         moved to this location. 
+         If the directory does not exist, one is created once the plugin is initialized. 
+         You can either specify an absolute or a relative directory name. Relative names are put in the
+         directory specified in the <i>directoryName</i> attribute.
+         </td>
        </tr>
-     </table>	
+     </table>   
 
    </configuration>
 

@@ -4,8 +4,8 @@ The "#99999" numbers are Subversion revision numbers.
 Changes in current subversion repository (svn)
 ==============================================
 
- o C++ client library
-   - Bugfix for SAX parsing of ClientProperties: encoding of received message was ignored
+ o C++ client library:
+   - #13045 Bugfix for SAX parsing of ClientProperties: encoding of received message was ignored
 
  o #13043 SOCKET SSL communication: Added property 'needClientAuth' to support
    authentication of connecting clients as well, see
@@ -76,7 +76,7 @@ Changes for 1.RC2 [2004-12-01] #12978
    See: http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.subscribe.multiSubscribe.html
 
  o C++ client library:
-   - C++ Xerces must be newer 2.x (?), it must include xercesc/util/TransService.hpp
+   - C++ Xerces must be newer 2.4 (?), it must include xercesc/util/TransService.hpp
    - #12958 duplicateUpdates defaults now to true to have identical behaviour for Java and C++
    - #12937 FreeBSD port, support for BOOST added again, thanks to Viner, David <dviner@yahoo-inc.com>
    - #12877 Added xerces initialization from main thread, as on Windows it crashed sometimes if initialized from callback thread
