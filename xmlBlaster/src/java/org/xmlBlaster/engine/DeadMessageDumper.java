@@ -7,6 +7,7 @@ package org.xmlBlaster.engine;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOException;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
@@ -55,7 +56,8 @@ import org.xmlBlaster.client.qos.UpdateQos;
  *  &lt;/plugin>
  * </pre>
  * <p>The <tt>directorName</tt> defaults to <tt>$HOME/tmp</tt> and <tt>foceBase64=false</tt> tries to dump
- * the message content in human readable form (if the message dump xml syntax allows it).</p>
+ * the message content in human readable form (if the message dump xml syntax allows it).
+ * If the directory does not exist, it is created automatically.</p>
  * <p>
  * We use the <tt>LOCAL</tt> protocol driver to talk to xmlBlaster, therefor this
  * plugin works only if the client and server is in the same virtual machine (JVM).
@@ -85,6 +87,8 @@ public class DeadMessageDumper implements I_Plugin {
               "-protocol", "LOCAL",
               "-dispatch/connection/pingInterval", "0",
               "-dispatch/connection/burstMode/collectTime", "0",
+              "-dispatch/callback/pingInterval", "0",
+              "-dispatch/callback/burstMode/collectTime", "0",
               "-queue/defaultPlugin", "RAM,1.0"
            };
    
@@ -102,14 +106,14 @@ public class DeadMessageDumper implements I_Plugin {
 
       String defaultPath = (String)System.getProperty("user.home") + (String)System.getProperty("file.separator") + "tmp";
 
-      this.directoryName = this.pluginInfo.getParameters().getProperty("directoryName",
-                           this.global.getProperty().get("plugin/"+getType()+"/directoryName", defaultPath));
+      this.directoryName = this.global.get("directoryName", defaultPath, null, this.pluginInfo);
+      initDirectory(null, "directoryName", this.directoryName);
       
       log.info(ME, "Dumping occurrences of topic '" + Constants.OID_DEAD_LETTER + "' to directory " + this.directoryName);
 
-      this.loginName = this.pluginInfo.getParameters().getProperty("loginName", ME);
-      this.password = this.pluginInfo.getParameters().getProperty("password", this.password);
-      this.forceBase64 = new Boolean(this.pluginInfo.getParameters().getProperty("forceBase64", ""+this.forceBase64)).booleanValue();
+      this.loginName = this.global.get("loginName", ME, null, this.pluginInfo);
+      this.password = this.global.get("password", this.password, null, this.pluginInfo);
+      this.forceBase64 = this.global.get("forceBase64", this.forceBase64, null, this.pluginInfo);
 
       subscribeToDeadMessages();
    }
@@ -199,7 +203,9 @@ public class DeadMessageDumper implements I_Plugin {
          fn = Global.getStrippedString(fn); // Strip chars like ":" so that fn is usable as a file name
          fn = fn + ".xml";
 
+         initDirectory(null, "directoryName", this.directoryName); // In case somebody has removed it
          File to_file = new File(this.directoryName, fn);
+
          FileOutputStream to = new FileOutputStream(to_file);
          log.info(ME, "Dumping dead message to  '" + to_file.toString() + "'" );
 
@@ -261,5 +267,50 @@ public class DeadMessageDumper implements I_Plugin {
       catch (Throwable e) {
          log.error(ME, "Dumping of message failed: " + updateQos.toXml() + updateKey.toXml() + new String(content));
       }
+   }
+
+   /**
+    * Returns the specified directory or null or if needed it will create one
+    * @param parent
+    * @param propName For logging only
+    * @param dirName
+    * @return
+    * @throws XmlBlasterException
+    */
+   private File initDirectory(File parent, String propName, String dirName) throws XmlBlasterException {
+      File dir = null;
+      if (dirName != null) {
+         File tmp = new File(dirName);
+         if (tmp.isAbsolute() || parent == null) {
+            dir = new File(dirName);
+         }
+         else {
+            dir = new File(parent, dirName);
+         }
+         if (!dir.exists()) {
+            String absDirName  = null; 
+            try {
+               absDirName = dir.getCanonicalPath();
+            }
+            catch (IOException ex) {
+               absDirName = dir.getAbsolutePath();
+            }
+            this.log.info(ME, "Constructor: directory '" + absDirName + "' does not yet exist. I will create it");
+            boolean ret = dir.mkdir();
+            if (!ret)
+               throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_FILEIO, ME, "could not create directory '" + absDirName + "'");
+         }
+         if (!dir.isDirectory()) {
+            throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_FILEIO, ME, "'" + dir.getAbsolutePath() + "' is not a directory");
+         }
+         if (!dir.canRead())
+            throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_FILEIO, ME + ".constructor", "no rights to read from the directory '" + dir.getAbsolutePath() + "'");
+         if (!dir.canWrite())
+            throw new XmlBlasterException(this.global, ErrorCode.RESOURCE_FILEIO, ME + ".constructor", "no rights to write to the directory '" + dir.getAbsolutePath() + "'");
+      }
+      else {
+         this.log.info(ME, "Constructor: the '" + propName + "' property is not set. Instead of moving concerned entries they will be deleted");
+      }
+      return dir;
    }
 }
