@@ -1076,7 +1076,6 @@ public class Global implements Cloneable
                this.bootstrapAddress = new Address(this);
                this.bootstrapAddress.setHostname(getBootstrapHostname());
                this.bootstrapAddress.setPort(getBootstrapPort());
-               this.bootstrapAddress.setAddress("http://" + this.bootstrapAddress.getHostname() + ":" + this.bootstrapAddress.getPort());
                if (log.TRACE) log.trace(ME, "Initialized bootstrapAddress to host=" + this.bootstrapAddress.getHostname() +
                               " port=" + this.bootstrapAddress.getPort() + ": " + this.bootstrapAddress.getAddress());
             }
