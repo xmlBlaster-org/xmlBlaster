@@ -1,0 +1,8 @@
+build.sh cpp-precompile
+
+
+
+grep "#" /tmp/xmlBlaster-boost.dat | grep boost | awk -F\" ' { print $2 } ' | sort -u | grep -v ^\< | grep -v ^@ | awk ' { print  "cp " $0 " /tmp/src/c++" $0 } '
+
+mv /tmp/src/c++/$XMLBLASTER_HOME/src/c++/boost $XMLBLASTER_HOME/src/c++/boost
+
