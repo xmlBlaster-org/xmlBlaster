@@ -2661,6 +2661,7 @@ TODO
           <!-- fileset dir="${req.dir}" includes="*.class"/ -->
        </delete>
        <delete file="${demo.dir}/j2me/SystemInfo.jar"/>
+       <delete file="${demo.dir}/j2me/SystemInfo.jad"/>
     </target>
 
     <target name="java-delete" depends="java-clean,docs-delete" description="Remove all generated ditribution Java and documentation files">
