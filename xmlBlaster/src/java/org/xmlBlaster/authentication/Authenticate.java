@@ -270,6 +270,9 @@ final public class Authenticate implements I_Authenticate
 
          I_Manager securityMgr = plgnLdr.getManager(sessionId);
          I_Session sessionSecCtx = securityMgr.getSessionById(sessionId);
+         if (sessionSecCtx == null) {
+            throw new XmlBlasterException("Authenticate.disconnect", "You are not connected, your sessionId is invalid.");
+         }
          securityMgr.releaseSession(sessionId, sessionSecCtx.importMessage(qos_literal));
 
          DisconnectQos disconnectQos = new DisconnectQos(qos_literal);
