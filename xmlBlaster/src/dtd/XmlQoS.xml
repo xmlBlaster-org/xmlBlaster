@@ -113,6 +113,9 @@
          <state>          <!-- Server state -->
             EXPIRED       <!-- OK | EXPIRED | ERASED -->
          </state>
+         <sender>         <!-- The publisher login name of this message -->
+            Phillipe
+         </sender>
       </qos>
    </update>
 
