@@ -492,7 +492,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
     * Called by I_Queue.putPost()
     */
    public void notifyAboutNewEntry() {
-      if (log.CALL) log.call(ME, "Entering notifyAboutNewEntry()");
+      if (log.CALL) log.call(ME, "Entering notifyAboutNewEntry("+this.notifyCounter+")");
       this.notifyCounter++;
       activateDeliveryWorker();
    }
@@ -555,7 +555,9 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
     */
    private void startWorkerThread(boolean fromTimeout) {
       if (this.deliveryWorkerIsActive == false) {
+         //if (log.TRACE) log.trace(ME, "Doing startWorkerThread("+fromTimeout+")");
          synchronized (this) {
+            //if (log.TRACE) log.trace(ME, "Doing startWorkerThread(isShutdown="+this.isShutdown+", deliveryWorkerIsActive="+this.deliveryWorkerIsActive+") inside sync");
             if (this.isShutdown) return;
             if (this.deliveryWorkerIsActive == false) { // send message directly
                this.deliveryWorkerIsActive = true;
@@ -591,7 +593,10 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
     * @return true is status is OK and we can try to send a message
     */
    private boolean checkSending() {
-      if (this.isShutdown) return false; // assert
+      if (this.isShutdown) {
+         if (log.TRACE) log.trace(ME, "The dispatcher is shutdown, can't activate callback worker thread.");
+         return false; // assert
+      }
 
       if (msgQueue.isShutdown()) { // assert
          if (log.TRACE) log.trace(ME, "The queue is shutdown, can't activate callback worker thread.");
@@ -603,15 +608,19 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
 
       if (deliveryConnectionsHandler.isDead()) {
          String text = "No recoverable remote connection available, giving up queue " + msgQueue.getStorageId() + ".";
+         if (log.TRACE) log.trace(ME, text);
          givingUpDelivery(new XmlBlasterException(glob,ErrorCode.COMMUNICATION_NOCONNECTION_DEAD, ME, text)); 
          return false;
       }
 
-      if (msgQueue.getNumOfEntries() == 0L)
+      if (msgQueue.getNumOfEntries() == 0L) {
+         //if (log.TRACE) log.trace(ME, "numOfEntries==0");
          return false;
+      }
 
       if (this.msgInterceptor != null) {
          if (this.msgInterceptor.doActivate(this) == false) {
+            if (log.TRACE) log.trace(ME, "this.msgInterceptor.doActivate==false");
             return false; // A plugin told us to suppress sending the message
          }
          return true;
@@ -622,6 +631,7 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
          return false;
       }
 
+      //if (log.TRACE) log.trace(ME, "Check sending is OK");
       return true;
    }
 
@@ -718,7 +728,12 @@ public final class DeliveryManager implements I_Timeout, I_QueuePutListener
          //this.msgQueue = null;
          //this.failureListener = null;
          //this.securityInterceptor = null;
-         //this.deliveryWorkerPool = null;
+
+         //if (this.deliveryWorkerPool != null) {
+         //   this.deliveryWorkerPool.shutdown(); NO: not here, is the scope and duty of Global
+         //   this.deliveryWorkerPool = null;
+         //}
+
          if (this.syncDeliveryWorker != null)
             this.syncDeliveryWorker.shutdown();
       }
