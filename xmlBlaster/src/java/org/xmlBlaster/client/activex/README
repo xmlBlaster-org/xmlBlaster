@@ -49,8 +49,20 @@ TODO:
 
 - Finish the work
 
-- Fix HSQLDB driver loading problem
+- Fix HSQLDB driver and CORBA loading problem
+  There seems to be a CLASSLOADER problem which we need to solve
 
-- Implement callback events
+- Callback events don't work: They are fired in the Java bean
+  but never arrive in C#/VB
+
+- How are XmlScriptAccess exceptions passed back to the VB/C# layer?
+  RuntimeExceptions arrive as expected
+
+LINKS:
+
+http://java.sun.com/products/javabeans/software/bridge/
+http://www.reallyusefulcomputing.com/tutorials.php
+http://j-integra.intrinsyc.com/j-integra/info/
+http://staff.develop.com/halloway/JavaWin32.html
 
 Marcel Ruff
