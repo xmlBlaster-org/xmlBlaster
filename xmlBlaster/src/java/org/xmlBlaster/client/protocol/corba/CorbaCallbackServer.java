@@ -3,7 +3,7 @@ Name:      CorbaCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaCallbackServer.java,v 1.30 2002/12/20 16:32:02 ruff Exp $
+Version:   $Id: CorbaCallbackServer.java,v 1.31 2003/01/03 17:17:58 ruff Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -205,7 +205,7 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
          boss.updateOneway(cbSessionId, localMsgUnitRawArr);
       }
       catch (Throwable e) {
-         log.error(ME, "updateOneway() failed, exception is not sent to xmlBlaster: " + e.toString());
+         log.warn(ME, "updateOneway() failed in client code, exception is not sent to xmlBlaster: " + e.toString());
          e.printStackTrace();
       }
    }
@@ -237,17 +237,18 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
       try {
          // convert Corba to internal MsgUnitRaw and call update() ...
          MsgUnitRaw[] localMsgUnitRawArr = CorbaDriver.convert(glob, msgUnitArr);
+         //log.error(ME, "DEBUG ONLY: " + localMsgUnitRawArr[0].toXml());
          return boss.update(cbSessionId, localMsgUnitRawArr);
       }
       catch(XmlBlasterException e) {
-         log.error(ME, "Delivering message to client failed, message is lost: " + e.toString());
+         log.warn(ME, "Delivering message to client failed, message is not handled by client: " + e.toString());
          throw CorbaDriver.convert(e); // convert to org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException
       }
       catch (Throwable e) {
-         log.error(ME, "Delivering message to client failed, message is lost: " + e.toString());
+         log.warn(ME, "Delivering message to client failed, message is not handled by client: " + e.toString());
          e.printStackTrace();
          throw CorbaDriver.convert(new XmlBlasterException(glob, ErrorCode.USER_UPDATE_ERROR, ME,
-                                   "Delivering message to client failed, message is lost: " + e.toString()));
+                                   "Delivering message to client failed, message is not handled by client: " + e.toString()));
       }
    }
 
