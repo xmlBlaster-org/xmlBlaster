@@ -3,7 +3,7 @@ Name:      Parser.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Parser class for raw socket messages
-Version:   $Id: Parser.java,v 1.5 2002/02/13 17:50:56 ruff Exp $
+Version:   $Id: Parser.java,v 1.6 2002/02/13 22:11:12 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -66,6 +66,8 @@ import java.util.Vector;
  *  Testing a QoS return value
  *  |        59**R**17711*get***<qos><state>OK</state></qos>**0*|
  *
+ *  Testing two qos/key/content
+ *  |       100**I**17711*publish*oxf6hZs**<qos/>*<key oid='x1'/>*6*Hello1<qos/>*<key oid='x2'/>*6*Hello2|
  * </pre>
  * @author ruff@swand.lake.de
  */
@@ -520,6 +522,38 @@ public class Parser extends Converter
                System.out.println(testName + ": FAILURE");
          }
 
+         testName = "Testing many qos/key/content";
+         System.out.println("\n----------------------\n"+testName);
+         {
+            Parser parser = new Parser();
+            parser.setType(Parser.INVOKE_TYPE);
+            parser.setRequestId("7711");
+            parser.setMethodName(XmlBlasterImpl.PUBLISH);
+            parser.setSessionId("oxf6hZs");
+            parser.setChecksum(false);
+            parser.setCompressed(false);
+            parser.addMessage(new MessageUnit("<key oid='x1'/>", "Hello1".getBytes(), "<qos/>"));
+            parser.addMessage(new MessageUnit("<key oid='x2'/>", "Hello2".getBytes(), "<qos/>"));
+            //parser.addMessage(new MessageUnit("<key oid='x3'/>", "Hello3".getBytes(), "<qos/>"));
+            //parser.addMessage(new MessageUnit("<key oid='x4'/>", "Hello4".getBytes(), "<qos/>"));
+
+            rawMsg = parser.createRawMsg();
+            String send = toLiteral(rawMsg);
+            System.out.println(testName + ": Created and ready to send: \n|" + send + "|");
+         }
+         {
+            Parser receiver = new Parser();
+            ByteArrayInputStream in = new ByteArrayInputStream(rawMsg);
+            receiver.parse(in);
+            //System.out.println("\nReceived: \n" + receiver.dump());
+            String receive = toLiteral(receiver.createRawMsg());
+            System.out.println("Received: \n|" + receive + "|");
+            if (toLiteral(rawMsg).equals(receive))
+               System.out.println(testName + ": SUCCESS");
+            else
+               System.out.println(testName + ": FAILURE");
+         }
+
          testName = "Testing qos/key";
          System.out.println("\n----------------------\n"+testName);
          {
@@ -554,13 +588,13 @@ public class Parser extends Converter
          System.out.println("\n----------------------\n"+testName);
          {
             Parser parser = new Parser();
-            parser.setType(Parser.INVOKE_TYPE);
+            parser.setType(Parser.RESPONSE_TYPE);
             parser.setRequestId("7711");
-            parser.setMethodName(XmlBlasterImpl.GET);
+            parser.setMethodName(XmlBlasterImpl.PUBLISH);
             parser.setSessionId("oxf6hZs");
             parser.setChecksum(false);
             parser.setCompressed(false);
-            parser.addQos("<qos></qos>");
+            parser.addQos("<qos/>");
 
             rawMsg = parser.createRawMsg();
             String send = toLiteral(rawMsg);
@@ -635,11 +669,11 @@ public class Parser extends Converter
             Parser parser = new Parser();
             parser.setType(Parser.EXCEPTION_TYPE);
             parser.setRequestId("7711");
-            parser.setMethodName(XmlBlasterImpl.GET);
+            parser.setMethodName(XmlBlasterImpl.PUBLISH);
             parser.setSessionId("oxf6hZs");
             parser.setChecksum(false);
             parser.setCompressed(false);
-            XmlBlasterException ex = new XmlBlasterException(ME, "An XmlBlasterException test only");
+            XmlBlasterException ex = new XmlBlasterException("QueueOverflow", "The destination queue is full");
             parser.addException(ex);
 
             rawMsg = parser.createRawMsg();
