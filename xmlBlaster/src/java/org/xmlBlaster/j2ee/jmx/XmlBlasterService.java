@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2002 Peter Antman, Teknik i Media  <peter.antman@tim.se>
+ * Copyright (c) 2002,2003 Peter Antman, Teknik i Media  <peter.antman@tim.se>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,9 +23,16 @@ import java.io.File;
 import java.net.URL;
 import java.rmi.RMISecurityManager;
 
+import javax.naming.InitialContext;
+import javax.naming.Context;
+import javax.naming.Name;
+import javax.naming.NameNotFoundException;
+import javax.naming.NamingException;
+
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.EmbeddedXmlBlaster;
 import org.xmlBlaster.j2ee.util.JacorbUtil;
+import org.xmlBlaster.j2ee.util.GlobalUtil;
 import org.jutils.init.Property;
 import org.jutils.init.Property.FileInfo;
 import org.jutils.JUtilsException;
@@ -40,30 +47,32 @@ that's embedded in the sar has had its xmlBlaster.properties and xmlBlasterPlugi
 
 <h3>Requirements</h3>
 <p>.You need to copy the file concurrent.jar from xmlBlaster/lib to the system lib directory of JBoss, overwriting the older version distributed with JBoss.</p><p>When using the RMIDriver JBoss must be run with a security policy file specified, eg, sh run.sh -Djava.security.policy=../server/default/conf/server.policy.</p>
+<h3>Local clients</h3>
+<p>It is possible to use local client (in vm) clients by specifying a jndiName
+where a @link { org.xmlBlaster.j2ee.util.GlobalLookup} will be bound. If a client in the same VM looks this object upp through jndi, it will have access to the server engine.Global, and it is therefore possible to use the in vm client protocol.</p>
+
 
  *
  *
  * @author Peter Antman
- * @version $Revision: 1.7 $ $Date: 2003/09/10 08:04:05 $
+ * @version $Revision: 1.8 $ $Date: 2003/09/18 14:30:57 $
  */
 
 public class XmlBlasterService implements XmlBlasterServiceMBean {
+   private static final String ME = "XmlBlasterService";
    private EmbeddedXmlBlaster blaster = null;
    private Global glob;
    private String propFile;
    private LogChannel log;
-   private static final String ME = "XmlBlasterService";
+   private String jndiName;
+   private Properties args = new Properties();
+   private GlobalUtil globalUtil;
 
    public XmlBlasterService() {
-      // Create a global wothout loading the xmlBlaster.properties file but check it's instance
-      glob= new Global(new String[]{},false,false);
-      try {
-         glob.getProperty().set("trace", "true");//DEBUG 
-      } catch (Exception e) {
-   
-      } // end of try-catch
+   }
 
-   }    
+
+
    /**
     * Set the name of a propertyfile to read settings from.
     *
@@ -83,71 +92,84 @@ public class XmlBlasterService implements XmlBlasterServiceMBean {
     * @param port Default bootstrapPort is 3412
     */
    public void setPort(String port) {
-      try {
-         glob.getProperty().set("bootstrapPort", port);
-      }catch(org.jutils.JUtilsException ex) {
-         IllegalStateException x = new IllegalStateException("Could not set: " + port + "-" + ex);
-         throw x;
-      }
+      args.setProperty("bootstrapPort", port);
    }
 
    public String getPort() {
-      return glob.getProperty().get("bootstrapPort", (String)null);
+      return args.getProperty("bootstrapPort");
    }
 
    /**
-    * Start the embeddeb XmlBlaster.
+    * Set a JNDI name where a GlobalUtil will be bound.
     */
-   public void start() throws Exception {
-      log = glob.getLog(null);
-      //Get all properties
-      loadJacorbProperties();
-      loadPropertyFile();
-      setupSecurityManager();
-
-      // Since we relly on external configuration, we need to do this
-      // for global to really get correct logging information.
-      Global runglob = new Global(Property.propsToArgs( glob.getProperty().getProperties()),false , false );
-
-      runglob.getProperty().set("xmlBlaster.isEmbedded", "true");
-      runglob.getProperty().set("useSignalCatcher","false");
-      runglob.getProperty().set("classLoaderFactory","org.xmlBlaster.util.classloader.ContextClassLoaderFactory");
-      
-      log = runglob.getLog("XmlBlasterService");
-      log.info(ME,"Starting XmlBlasterService");
-
-      blaster = EmbeddedXmlBlaster.startXmlBlaster(runglob);
+   public void setJNDIName(String jndiName) {
+      this.jndiName = jndiName;
    }
 
+   public String getJNDIName() {
+      return jndiName;
+   }
+   
+   /**
+    * Start the embedded XmlBlaster.
+    */
+   public void start() throws Exception {
+      globalUtil = new GlobalUtil();
+      glob = globalUtil.newGlobal(propFile,args );
+
+      loadJacorbProperties();
+      globalUtil.setupSecurityManager(glob);
+
+      log = glob.getLog("XmlBlasterService");
+      log.info(ME,"Starting XmlBlasterService");
+
+      blaster = EmbeddedXmlBlaster.startXmlBlaster(glob);
+
+      if ( jndiName != null) {
+         bind( blaster.getMain().getGlobal() );
+      } // end of if ()
+   }
+   
    public void stop() throws Exception {
       log.info(ME,"Stopping XmlBlaster service");
       if (blaster != null ) {
          EmbeddedXmlBlaster.stopXmlBlaster(blaster);
       } // end of if ()
-
+      if ( jndiName != null) {
+         new InitialContext().unbind(jndiName);
+      } // end of if ()
+      
    }
 
    public String dumpProperties() {
+      if ( glob == null) {
+         return "";
+      } // end of if ()
+      
       return glob.getProperty().toXml();
    }
 
-   private void setupSecurityManager() throws Exception {
-      // This is really only interesting if we are loading an RMIDriver
-      if (glob.getProperty().get("ProtocolPlugin[RMI][1.0]",(String)null) == null) {
-         return;// We only care about this if the RMI driver should be loaded
-
+   /**
+    * Bind a GlobalLookup into jndi.
+    */
+   private void bind(org.xmlBlaster.engine.Global engineGlobal) throws Exception{
+      if ( jndiName == null) {
+         return;
       } // end of if ()
+      
+      // Do we have JNDI at all?
+      Context ctx = null;
+      try {
+         ctx =  new InitialContext();
+      } catch (NamingException e) {
+         throw new IllegalStateException("No NamingContext available, trying to run with a jndiName in a server withouth jndi is not valid: "+e);
+      } // end of try-catch
+      
+      GlobalUtil gu = new GlobalUtil(engineGlobal);
+      bind(ctx,jndiName,gu);
 
-
-      if (System.getSecurityManager() == null) {
-         String exist = System.getProperty("java.security.policy");
-         if (exist == null) {
-            throw new Exception("You must specify a -Djava.security.policy when starting the server to be able to use the RMI driver");
-         }else {
-            System.setSecurityManager(new RMISecurityManager());
-         } // end of else
-      }
    }
+
 
    /**
     * Jacorb is not capable of finding its jacorb.properties in the
@@ -158,53 +180,26 @@ public class XmlBlasterService implements XmlBlasterServiceMBean {
       JacorbUtil.loadJacorbProperties("jacorb.properties",glob);
    }
 
-   /**
-    * If propertyFile is not null, try load it first from the context class loader, then using the standard xmlBlaster algoritm.
-    */
-   private void loadPropertyFile() throws IllegalStateException{
-      //Only of not null
-      if (propFile== null )
-         return;
-      try {
 
-
-         Property p = glob.getProperty();
-         URL url = Thread.currentThread().getContextClassLoader().getResource(propFile);
-         InputStream is = null;
-         try {
-            is= url.openStream();
-         }catch(java.io.IOException ex) {
-            is = null;
+   public void  bind(Context ctx, String name, Object val) throws NamingException
+   {
+      // Bind val to name in ctx, and make sure that all intermediate contexts exist
+      Name n = ctx.getNameParser("").parse(name);
+      while (n.size() > 1)
+      {
+         String ctxName = n.get(0);
+         try
+         {
+            ctx = (Context)ctx.lookup(ctxName);
+         } catch (NameNotFoundException e)
+         {
+            ctx = ctx.createSubcontext(ctxName);
          }
-            //Thread.currentThread().getContextClassLoader().getResourceAsStream(propFile);
-         if ( is == null) {
-            // Use xmlBlaster way of searching
-            FileInfo i = p.findPath(propFile);
-            is = i.getInputStream();
-         } // end of if ()
+         n = n.getSuffix(1);
+      }
 
-         if ( is != null) {
-            log.info(ME,"Loading properties from " + url);
-            Properties prop = new Properties();
-            prop.load(is);
-            String[] args = Property.propsToArgs(prop);
-            p.addArgs2Props( args != null ? args : new String[0] );
-         } // end of if ()
-
-         log.trace(ME,"Setting properties: " + p.toXml());
-
-      } catch (IOException e) {
-         IllegalStateException x = x = new IllegalStateException("Could not load properties from file " + propFile + " :"+e);
-         throw x;
-
-      } catch (JUtilsException e) {
-         IllegalStateException x = x = new IllegalStateException("Could not load properties into Property: " + e);
-         throw x;
-      } // end of try-catch
-
+      ctx.bind(n.get(0), val);
    }
-
-
-
+   
 }
 

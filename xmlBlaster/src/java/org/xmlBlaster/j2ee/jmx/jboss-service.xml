@@ -2,5 +2,6 @@
    <mbean code="org.xmlBlaster.j2ee.jmx.XmlBlasterService" name="xmlBlaster:service=XmlBlasterServer,name=Default">
     <attribute name="PropertyFileName">xmlBlaster.properties</attribute>
     <attribute name="Port">3412</attribute>
+    <attribute name="JNDIName">xmlBlaster/globalUtil</attribute>
    </mbean>
 </server>

@@ -131,8 +131,8 @@ public class BlasterManagedConnection implements ManagedConnection {
             
         // Set up physical pipe
             // physicalPipe = new I_XmlBlasterAccess(orbEnv);
-        // From XmlBlasterAccess: You must use a cloned Global for each XmlBlasterAccess created.
-        clonedGlob = mcf.getConfig().getClone(null);
+        // From XmlBlasterAccess: You must use a cloned Global for each XmlBlasterAccess created, cloning is done in getConfig()
+        clonedGlob = mcf.getConfig();
         physicalPipe = clonedGlob.getXmlBlasterAccess();
         System.out.println("Physical pipe: " + physicalPipe + " set up");
         doLogin();
@@ -395,11 +395,4 @@ public class BlasterManagedConnection implements ManagedConnection {
    }
    
 } // BlasterManagedConnection
-
-
-
-
-
-
-
 

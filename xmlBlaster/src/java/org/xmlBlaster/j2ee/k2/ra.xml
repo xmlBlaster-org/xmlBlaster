@@ -55,6 +55,11 @@
             <config-property-type>java.lang.String</config-property-type>
             <config-property-value>true</config-property-value>
         </config-property>
+        <config-property>
+            <config-property-name>JNDIName</config-property-name>
+            <config-property-type>java.lang.String</config-property-type>
+            <config-property-value>xmlBlaster/globalUtil</config-property-value>
+        </config-property>
         <auth-mechanism>
             <auth-mech-type>BasicPassword</auth-mech-type>
             <credential-interface>javax.resource.security.PasswordCredential</credential-interface>

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2001 Peter Antman, Teknik i Media  <peter.antman@tim.se>
+ * Copyright (c) 2001,2003 Peter Antman, Teknik i Media  <peter.antman@tim.se>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -23,6 +23,9 @@ import java.util.Properties;
 import java.io.PrintWriter;
 import java.io.InputStream;
 import java.io.IOException;
+
+import javax.naming.InitialContext;
+import javax.naming.NamingException;
 import javax.security.auth.Subject;
 
 import javax.resource.ResourceException;
@@ -30,6 +33,7 @@ import javax.resource.ResourceException;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.j2ee.util.JacorbUtil;
+import org.xmlBlaster.j2ee.util.GlobalUtil;
 import org.jutils.init.Property;
 import org.jutils.init.Property.FileInfo;
 import org.jutils.JUtilsException;
@@ -46,7 +50,8 @@ import javax.resource.spi.security.PasswordCredential;
 /**
  * Factory for a specific XmlBlaster instance. 
  *
- * <p>Set the configuration up in ra.xml. <b>OBS</b> At least in JBoss this is not possible, you have to configure all properties in the *-service.xml file.</p>
+ * <p>Set the configuration up in ra.xml. <b>OBS</b> At least in JBoss this is not possible, you have to configure all properties in the *-service.xml file.</p> * <p>if given a jndiName, the connector will try to lookup a GlobalUtil wich contains the serverside engine.Global. This way, the in vm LOCAL protocol is possible to use.</p>
+ * <p>The loading order of properties is: engine.Global, propertyFile, arguments set on the resource adapter.</p>
  * <p>if the protocol used is IOR, a jacorb.properties file will be loaded through the context classloader if found. This is beacuse jacorb tries to load the file from the system classloader, and its not available there when embedding xmlBlaster in JBoss.</p>
  * @author Peter Antman
  */
@@ -55,23 +60,20 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
    // Id from my global instance.
    public String myName ="Blaster";
    private Global glob;
-
+   private GlobalUtil globalUtil;
+   
    private String propFile = "xmlBlaster.properties";
+   private String jndiName;
    private PrintWriter logWriter = null;
-
+   private Properties props;
    private BlasterLogger logger;
-    
+   private boolean isLogging;
+   
    public BlasterManagedConnectionFactory() throws ResourceException{
+      props = new Properties();
+      // We use the global to get an Id and then we throw it away
       glob = new Global(new String[]{},false,false);
-      try {
-         glob.getProperty().set("classLoaderFactory","org.xmlBlaster.util.classloader.ContextClassLoaderFactory");
-      } catch (JUtilsException e) {
-         throw new ResourceException("Could not set ContextClassLoader factory property " + e);
-      } // end of try-catch
-
       this.myName = this.myName + "[" + glob.getId() + "]";
-      // Start logger, will be turned of by default
-      logger = new BlasterLogger(glob);
    }
    
    /**
@@ -149,7 +151,10 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
    public void setLogWriter(PrintWriter out)
       throws ResourceException {
       this.logWriter = out;
-      logger.setLogWriter(out);
+      if ( logger != null) {
+         logger.setLogWriter(out);
+      } // end of if ()
+ 
    }
    /**
     * 
@@ -188,256 +193,178 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
    /**
     * Set a default user name.
     */
-   public void setUserName(String arg)throws IllegalStateException {
-      try {
-         glob.getProperty().set("j2ee.k2.username", arg);
-      }catch(org.jutils.JUtilsException ex) {
-         IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
-         x.setLinkedException(ex);
-         throw x;
-      }
+   public void setUserName(String arg){
+      props.setProperty("j2ee.k2.username", arg);
    }
 
    public String getUserName() {
-      return glob.getProperty().get("j2ee.k2.username", (String)null);
+      return props.getProperty("j2ee.k2.username");
    }
 
    /**
     * Set a default password name.
     */
-   public void setPassword(String arg)throws IllegalStateException {
-      try {
-         glob.getProperty().set("j2ee.k2.password", arg);
-      }catch(org.jutils.JUtilsException ex) {
-         IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
-         x.setLinkedException(ex);
-         throw x;
-      }
+   public void setPassword(String arg){
+      props.setProperty("j2ee.k2.password", arg);
    }
 
    public String getPassword() {
-      return glob.getProperty().get("j2ee.k2.password", (String)null);
+      return props.getProperty("j2ee.k2.password");
    }
    /**
-    * The driver to use: IOR | RMI
+    * The driver to use: IOR | RMI | LOCAL
      
     * Have to verify the others to. Don't forget to configure the server.
     */
-   public void setClientProtocol(String arg) throws IllegalStateException {
-      try {
-         glob.getProperty().set("client.protocol", arg);
-      }catch(org.jutils.JUtilsException ex) {
-         IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
-         x.setLinkedException(ex);
-         throw x;
-      }
+   public void setClientProtocol(String arg){
+      props.setProperty("protocol", arg);
    }
     
    /**
     * Null if not
     */
    public String getClientProtocol() {
-      return glob.getProperty().get("client.protocol", (String)null);
+      return props.getProperty("protocol");
    }
 
    /**
       Set the rmi hostname. Only when driver RMI.
    */
-   public void setRmiHostname(String arg) throws IllegalStateException {
-      try {
-         glob.getProperty().set("dispatch/clientside/plugin/rmi/hostname", arg);
-      }catch(org.jutils.JUtilsException ex) {
-         IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
-         x.setLinkedException(ex);
-         throw x;
-      }
+   public void setRmiHostname(String arg) {
+      props.setProperty("dispatch/clientside/plugin/rmi/hostname", arg);
    }
     
    /**
     * Null if not
     */
    public String getRmiHostname() {
-      return glob.getProperty().get("dispatch/clientside/plugin/rmi/hostname", (String)null);
+      return props.getProperty("dispatch/clientside/plugin/rmi/hostname");
    }
 
    /**
       Set the rmi registry port. Only when driver RMI.
    */
-   public void setRmiRegistryPort(String arg) throws IllegalStateException {
-      try {
-         glob.getProperty().set("dispatch/connection/plugin/rmi/registryPort", arg);
-      }catch(org.jutils.JUtilsException ex) {
-         IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
-         x.setLinkedException(ex);
-         throw x;
-      }
+   public void setRmiRegistryPort(String arg){
+      props.setProperty("dispatch/connection/plugin/rmi/registryPort", arg);
    }
     
    /**
     * Null if not
     */
    public String getRmiRegistryPort() {
-      return glob.getProperty().get("dispatch/connection/plugin/rmi/registryPort", (String)null);
+      return props.getProperty("dispatch/connection/plugin/rmi/registryPort");
    }
 
 
    /**
       Set the rmi registry port. Only when driver RMI.
    */
-   public void setRmiAuthserverUrl(String arg) throws IllegalStateException {
-      try {
-         glob.getProperty().set("dispatch/connection/plugin/rmi/AuthServerUrl", arg);
-      }catch(org.jutils.JUtilsException ex) {
-         IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
-         x.setLinkedException(ex);
-         throw x;
-      }
+   public void setRmiAuthserverUrl(String arg)  {
+      props.setProperty("dispatch/connection/plugin/rmi/AuthServerUrl",arg);
    }
     
    /**
     * Null if not
     */
    public String getRmiAuthserverUrl() {
-      return glob.getProperty().get("dispatch/connection/plugin/rmi/AuthServerUrl", (String)null);
+      return props.getProperty("dispatch/connection/plugin/rmi/AuthServerUrl");
    }
 
    /**
       Set the ior string. Only when driver IOR
    */
-   public void setIor(String arg) throws IllegalStateException {
-      try {
-         glob.getProperty().set("dispatch/callback/plugin/ior/iorString", arg);
-      }catch(org.jutils.JUtilsException ex) {
-         IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
-         x.setLinkedException(ex);
-         throw x;
-      }
+   public void setIor(String arg) {
+      props.setProperty("dispatch/callback/plugin/ior/iorString",arg);
    }
     
    /**
     * Null if not
     */
    public String getIor() {
-      return glob.getProperty().get("dispatch/callback/plugin/ior/iorString", (String)null);
+      return props.getProperty("dispatch/callback/plugin/ior/iorString");
    }
 
    /**
       Set the ior string through a file. Only when driver IOR
    */
-   public void setIorFile(String arg) throws IllegalStateException {
-      try {
-         glob.getProperty().set("dispatch/connection/plugin/ior/iorFile", arg);
-      }catch(org.jutils.JUtilsException ex) {
-         IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
-         x.setLinkedException(ex);
-         throw x;
-      }
+   public void setIorFile(String arg) {
+      props.setProperty("dispatch/connection/plugin/ior/iorFile", arg);
    }
 
    /**
       Set the hostName or IP where xmlBlaster is running. Only when driver IOR
    */
-   public void setIorHost(String arg) throws IllegalStateException {
-      try {
-         glob.getProperty().set("bootstrapHostname", arg);
-      }catch(org.jutils.JUtilsException ex) {
-         IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
-         x.setLinkedException(ex);
-         throw x;
-      }
+   public void setIorHost(String arg) {
+      props.setProperty("bootstrapHostname", arg);
    }
     
    /**
     * Null if not
     */
    public String getIorHost() {
-      return glob.getProperty().get("bootstrapHostname", (String)null);
+      return props.getProperty("bootstrapHostname");
    }
 
    /**
       Set bootstrapPort where the internal xmlBlaster-http server publishes its Ior. Only when driver IOR
    */
-   public void setIorPort(String arg) throws IllegalStateException {
-      try {
-         glob.getProperty().set("bootstrapPort", arg);
-      }catch(org.jutils.JUtilsException ex) {
-         IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
-         x.setLinkedException(ex);
-         throw x;
-      }
+   public void setIorPort(String arg) {
+      props.setProperty("bootstrapPort", arg);
    }
     
    /**
     * Null if not
     */
    public String getIorPort() {
-      return glob.getProperty().get("bootstrapPort", (String)null);
+      return props.getProperty("bootstrapPort");
    }
     
    /**
     * Null if not
     */
    public String getIorFile() {
-      return glob.getProperty().get("dispatch/connection/plugin/ior/iorFile", (String)null);
+      return props.getProperty("dispatch/connection/plugin/ior/iorFile");
    }
    /**
     * Set the security plugin to use, see {@link org.xmlBlaster.authentication.plugins}.
     */
-   public void setSecurityPlugin(String arg) throws IllegalStateException{
-      try {
-         glob.getProperty().set("Security.Client.DefaultPlugin", arg);
-      }catch(org.jutils.JUtilsException ex) {
-         IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
-         x.setLinkedException(ex);
-         throw x;
-      }
+   public void setSecurityPlugin(String arg) {
+      props.setProperty("Security.Client.DefaultPlugin", arg);
    }
 
    /**
     * Null if not.
     */
    public String getSecurityPlugin() {
-      return glob.getProperty().get("Security.Client.DefaultPlugin", (String)null);
+      return props.getProperty("Security.Client.DefaultPlugin");
    }
    
    /**
     * Set the session login timeout.
     */
-   public void setSessionTimeout(String arg) throws IllegalStateException{
-      try {
-         glob.getProperty().set("session.timeout", arg);
-      }catch(org.jutils.JUtilsException ex) {
-         IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
-         x.setLinkedException(ex);
-         throw x;
-      }
+   public void setSessionTimeout(String arg) {
+      props.setProperty("session.timeout", arg);
    }
 
    /**
     * Null if not.
     */
    public String getSessionTimeout() {
-      return glob.getProperty().get("session.timeout", (String)null);
+      return props.getProperty("session.timeout");
    }
    
    /**
     * Set the maximum number of sessions a user is allowed to have opened. This must be coordinated with the JCA pooling settings.
     */
-   public void setMaxSessions(String arg) throws IllegalStateException{
-      try {
-         glob.getProperty().set("session.maxSessions", arg);
-      }catch(org.jutils.JUtilsException ex) {
-         IllegalStateException x = new IllegalStateException("Could not set: " + arg + "-" + ex);
-         x.setLinkedException(ex);
-         throw x;
-      }
+   public void setMaxSessions(String arg){
+      props.setProperty("session.maxSessions", arg);
    }
    
    /**
     * Null if not.
     */
    public String getMaxSession() {
-      return glob.getProperty().get("session.maxSessions", (String)null);
+      return props.getProperty("session.maxSessions");
    }
    
 
@@ -454,7 +381,16 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
    public String getPropertyFileName() {
       return propFile;
    }
+   /**
+    * Set a JNDI name where a GlobalUtil will be lookedup.
+    */
+   public void setJNDIName(String jndiName) {
+      this.jndiName = jndiName;
+   }
 
+   public String getJNDIName() {
+      return jndiName;
+   }
    /**
       <p>
       Decides if logging should be done at al. Cant set log levels for now.
@@ -467,13 +403,27 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
      
    */
    public void setLogging(String loggingOn) {
-      logger.setLogging(new Boolean(loggingOn).booleanValue());
+      isLogging = new Boolean(loggingOn).booleanValue();
+      if ( logger != null) {
+         logger.setLogging(isLogging);
+      } // end of if ()
+
    }
 
 
    private void loadPropertyFile() throws IllegalStateException{
+      globalUtil = new GlobalUtil();
+      if ( jndiName != null) {
+         try {
+            globalUtil = (GlobalUtil)new InitialContext().lookup(jndiName);
+         } catch (NamingException e) {
+            throw new IllegalStateException("Could not lookup GlobalUtil with JNDI " + jndiName + ": "+e);
+         } // end of try-catch
+      } // end of if ()
 
-      if ( "IOR".equals(glob.getProperty().get("client.protocol", "IOR")) ) {
+      glob = globalUtil.newGlobal( propFile, props );
+      
+      if ( "IOR".equals(glob.getProperty().get("protocol", "IOR")) ) {
          //Start by loading jacorb.properties, without it corba protocol does
          // not work well.
          try {
@@ -483,61 +433,30 @@ public class BlasterManagedConnectionFactory implements ManagedConnectionFactory
             x.setLinkedException(e);
             throw x;
          } // end of try-catch
-
+         
       } // end of if ()
-
-
-      //Only if not null
-      if (propFile== null ) 
-         return;
+      
       try {
-
-         
-         Property p = glob.getProperty();
-         InputStream is = Thread.currentThread().getContextClassLoader().getResourceAsStream(propFile);
-         if ( is == null) {
-            // Use xmlBlaster way of searching
-            FileInfo i = p.findPath(propFile);
-            is = i != null ?i.getInputStream(): null;
-         } // end of if ()
-         
-         if ( is != null) {
-            Properties prop = new Properties();
-            prop.load(is);
-            String[] args = Property.propsToArgs(prop);
-            p.addArgs2Props( args != null ? args : new String[0] ); 
-
-            // To really be able to effect XmlBlaster we must create a new 
-            // Global
-            glob = new Global(Property.propsToArgs( glob.getProperty().getProperties()),false , false );
-            
-            logger = new BlasterLogger(glob);
-            logger.setLogWriter(logWriter);
-
-         } // end of if ()
-         
-      } catch (IOException e) {
-         IllegalStateException x = new IllegalStateException("Could not load properties from file " + propFile + " :"+e);
-         x.setLinkedException(e);
-         throw x;
-         
-      } catch (JUtilsException e) {
+         logger = new BlasterLogger(glob);
+         logger.setLogWriter(logWriter);
+         logger.setLogging(isLogging);
+      } catch (ResourceException e) {
          IllegalStateException x = new IllegalStateException("Could not load properties into Property: " + e);
          x.setLinkedException(e);
          throw x;
-      } catch ( ResourceException e) {
-         IllegalStateException x = new IllegalStateException("Could not load properties into Property: " + e);
-         x.setLinkedException(e);
-         throw x;
-      } // end of catch
-      
-      
+      } // end of try-catch
+
    }
+
+   
 
    //--- Api betwen mcf and mc
 
+   /**
+    * Return a clone of the Global, so that new XmlBlasterAccess instances may be created.
+    */
    Global getConfig() {
-      return glob;
+      return globalUtil.getClone( glob );
    }
 } // BlasterManagedConnectionFactory
 
