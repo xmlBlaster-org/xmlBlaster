@@ -118,14 +118,14 @@ function UpdateKey(xml)
 {
    this.oid = null;                 // value from attribute <key oid="...">
    this.contentMime = null;         // value from attribute <key oid="" contentMime="...">
-   this.contentMimeExtended = null; // value from attribute <key oid="" contentMimeExtended="...">
+   this.contentMimeExtended = "";   // value from attribute <key oid="" contentMimeExtended="...">
 
    //  Analyzing e.g. <key oid='1234' contentMime='text/plain'>...</key>
 
    this.root = top.Xparse(xml);     // The Javascript DOM tree
    var keyNode = this.root.contents[0];
    if (keyNode.name != "key") {
-      Log.warning('Key tag is missing in new arrvied message, received an unknown tag &lt;' + keyNode.name + '>');
+      if(Log.DEBUG) Log.warning('Key tag is missing in new arrvied message, received an unknown tag &lt;' + keyNode.name + '>');
       return;
    }
    for(attrib in keyNode.attributes) {
@@ -151,7 +151,7 @@ function UpdateQos(xml)
          break;
    }
    if (qosNode.name != "qos") {
-      Log.warning('Qos tag is missing in new arrvied message, received only unknown tags.');
+      if(Log.DEBUG) Log.warning('Qos tag is missing in new arrvied message, received only unknown tags.');
       return;
    }
 
@@ -377,7 +377,7 @@ function fireMessageUpdateEvent( message )
 {
    for( var i = 0; i < listenerList.length;  ) {
       if (listenerList[i].frame.closed ) {
-         Log.warning("Frame has been closed, removing it ...");
+         if(Log.DEBUG) Log.warning("Frame has been closed, removing it ...");
          removeUpdateListenerAtPos( i );
          continue;
       }
