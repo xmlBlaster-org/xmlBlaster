@@ -3,7 +3,7 @@ Name:      PublishQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: PublishQoS.java,v 1.16 2001/01/30 14:02:04 ruff Exp $
+Version:   $Id: PublishQoS.java,v 1.17 2001/01/30 14:24:45 freidlin Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -436,6 +436,8 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
 
+      // WARNING: This dump must be valid, as it is used by the
+      //          persistent store
       sb.append(offset + "<qos> <!-- " + ME + " -->");
 
       if (destinationVec == null) {
@@ -448,21 +450,21 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
          }
       }
       if (sender != null) {
-         sb.append(offset + "   <sender>");
-         sb.append(offset + "      " + sender);
-         sb.append(offset + "   </sender>");
+         sb.append(offset).append("   <sender>");
+         sb.append(offset).append("      ").append(sender);
+         sb.append(offset).append("   </sender>");
       }
-      sb.append(offset + "   <expires>").append(getExpires()).append("</expires>");
-      sb.append(offset + "   <erase>").append(getEraseTimeout()).append("</erase>");
+      sb.append(offset).append("   <expires>").append(getExpires()).append("</expires>");
+      sb.append(offset).append("   <erase>").append(getEraseTimeout()).append("</erase>");
 
       if (isDurable())
-         sb.append(offset + "   <isDurable />");
+         sb.append(offset).append("   <isDurable />");
       if (forceUpdate())
-         sb.append(offset + "   <forceUpdate />");
+         sb.append(offset).append("   <forceUpdate />");
       if (readonly())
-         sb.append(offset + "   <readonly />");
+         sb.append(offset).append("   <readonly />");
 
-      sb.append(offset + "</qos>\n");
+      sb.append(offset).append("</qos>\n");
 
       return sb.toString();
    }
@@ -473,7 +475,7 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
    {
       try {
          XmlBlasterProperty.init(args);
-         String xml = 
+         String xml =
             "<qos>\n" +
             "   <destination queryType='EXACT'>\n" +
             "      Tim\n" +
