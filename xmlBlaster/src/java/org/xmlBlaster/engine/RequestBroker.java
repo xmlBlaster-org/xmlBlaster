@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.82 2000/10/24 09:44:45 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.83 2000/11/14 17:38:14 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -32,7 +32,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.82 $
+ * @version $Revision: 1.83 $
  * @author ruff@swand.lake.de
  */
 public class RequestBroker implements I_ClientListener, MessageEraseListener
@@ -136,7 +136,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
       persistenceDriver = getPersistenceDriver(); // Load persistence driver
       if (persistenceDriver == null) return;
       try {
-         boolean lazyRecovery = XmlBlasterProperty.get("Persistence.LazyRecovery", false);
+         boolean lazyRecovery = XmlBlasterProperty.get("Persistence.LazyRecovery", true);
          if(Log.TRACE) Log.trace(ME,"LazyRecovery is switched="+lazyRecovery);
 
          if (lazyRecovery)
