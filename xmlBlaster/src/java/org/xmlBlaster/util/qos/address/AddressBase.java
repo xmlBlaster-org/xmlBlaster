@@ -114,7 +114,7 @@ public abstract class AddressBase
     * </p>
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/delivery.control.plugin.html">The delivery.control.plugin requirement</a>
     */
-   public String DEFAULT_dispatchPlugin = null;
+   public String DEFAULT_dispatchPlugin = "undef";
    protected PropString dispatchPlugin = new PropString(DEFAULT_dispatchPlugin);
 
 
