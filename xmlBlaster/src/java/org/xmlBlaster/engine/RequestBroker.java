@@ -192,11 +192,12 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
    private static final int ALIVE = 0;
    private int state = UNDEF;
 
+
    /**
     * One instance of this represents one xmlBlaster server.
     * @param authenticate The authentication service
     */
-   RequestBroker(Authenticate authenticate) throws XmlBlasterException
+   public RequestBroker(Authenticate authenticate) throws XmlBlasterException
    {
       this.authenticate = authenticate;
       this.glob = this.authenticate.getGlobal();
@@ -249,7 +250,8 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
          JmxWrapper wr = this.glob.getJmxWrapper();
          if (wr != null) {
             this.log.info(ME, "Registering the RequestBroker into the jmx server");
-            wr.register(this, this.glob.getStrippedId());
+//            wr.register(this, this.glob.getStrippedId());
+            wr.register(this, "requestBroker");
             // unregister from the jmx server is done in Global
          }
       }
@@ -2001,6 +2003,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
    public void setGc(String dummy) {
       System.gc();
    }
+
    public String getExit() throws XmlBlasterException {
 //      setExit("0");
       return "OK";
