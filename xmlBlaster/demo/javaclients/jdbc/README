@@ -1,6 +1,7 @@
-Please read the requirement
+Please read the requirements
 
    http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.service.rdbms.html
+   http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.service.rdbms.jdbcpool.html
 
 for an explanation and an example how to use.
 

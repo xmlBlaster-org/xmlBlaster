@@ -22,6 +22,8 @@ import org.xmlBlaster.client.UpdateQoS;
  * The publishing of the query is not blocking.
  *
  * @see README for usage
+ * @see http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.service.rdbms.html
+ * @see http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.service.rdbms.jdbcpool.html
  */
 public class XmlDBClient implements I_Callback
  {
