@@ -1,9 +1,9 @@
 /*------------------------------------------------------------------------------
 Name:      XmlBlasterProperty.java
-Project:   jutils.org
-Copyright: jutils.org, see jutils-LICENSE file
-Comment:   Properties for jutils, see jutils.property
-Version:   $Id: XmlBlasterProperty.java,v 1.8 2000/07/27 19:17:59 ruff Exp $
+Project:   xmlBlaster.org
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+Comment:   Properties for xmlBlaster, using org.jutils
+Version:   $Id: XmlBlasterProperty.java,v 1.9 2000/09/13 14:41:32 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
