@@ -863,7 +863,9 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
     * Invoked by a client, to access one/many MsgUnit.
     * <p />
     * Synchronous read-access method.
-    * <p>
+    * <p />
+    * In the cluster environment all messages are accessed from the master cluster node,
+    * tuning with XmlBlasterAccess.synchronousCache is not yet implemented.
     *
     * @param xmlKey  Key allowing XPath or exact selection<br>
     *                See XmlKey.dtd for a description
@@ -907,9 +909,13 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
 
          KeyData[] keyDataArr = queryMatchingKeys(sessionInfo, xmlKey, getQos.getData());
          ArrayList msgUnitList = new ArrayList(keyDataArr.length);
+
+         if (log.TRACE) log.trace(ME, "get(): " + ((keyDataArr!=null&&keyDataArr.length>0&&keyDataArr[0]!=null)?"Found local match "+keyDataArr[0].toXml():"No local match"));
          
          // Always forward the get request to the master
          // even if there are no matching keys
+         // In the cluster environment all messages are accessed from the master cluster node,
+         // tuning with XmlBlasterAccess.synchronousCache is not yet implemented.
          if (useCluster) { // cluster support - forward erase to master
            try {
                MsgUnit tmp[] = glob.getClusterManager().forwardGet(sessionInfo, xmlKey, getQos);
@@ -931,6 +937,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
                    throw e;
                }
            }
+           if (log.TRACE) log.trace(ME, "get(): Found " + msgUnitList.size() + " remote matches for " + xmlKey.toXml());
          }
 
          NEXT_MSG: for (int ii=0; ii<keyDataArr.length; ii++) {
@@ -941,7 +948,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
             TopicHandler topicHandler = getMessageHandlerFromOid(xmlKeyExact.getOid());
 
             if( topicHandler == null ) {
-
+               /*
                if (useCluster) { // cluster support - forward erase to master
                   try {
                      MsgUnit tmp[] = glob.getClusterManager().forwardGet(sessionInfo, xmlKey, getQos);
@@ -965,8 +972,8 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
                      }
                   }
                }
-
-               log.warn(ME, "get(): The key '"+xmlKeyExact.getOid()+"' is not available.");
+               */
+               if (log.TRACE) log.trace(ME, "get(): The key '"+xmlKeyExact.getOid()+"' is not available.");
                continue NEXT_MSG;
 
             } // topicHandler==null
@@ -981,6 +988,11 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
 
                   MsgUnitWrapper msgUnitWrapper = msgUnitWrapperArr[kk];
                   if (msgUnitWrapper == null) {
+                     continue NEXT_HISTORY;
+                  }
+
+                  if (useCluster && !msgUnitWrapper.getMsgQosData().isAtMaster()) {
+                     if (log.TRACE) log.trace(ME, "get(): Ignore message as we are not the master: " + msgUnitWrapper.toXml());
                      continue NEXT_HISTORY;
                   }
 
@@ -1001,9 +1013,10 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
                      }
                   }
 
-                  if (msgUnitWrapper == null || msgUnitWrapper.isExpired()) {
+                  if (msgUnitWrapper.isExpired()) {
                      continue NEXT_HISTORY;
                   }
+
                   MsgUnit mm = msgUnitWrapper.getMsgUnit();
                   if (mm == null) {
                      continue NEXT_HISTORY; // WeakReference to cache lost and lookup failed
