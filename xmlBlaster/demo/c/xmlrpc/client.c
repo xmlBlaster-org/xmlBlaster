@@ -57,7 +57,7 @@ int main (int argc, char** argv)
         destination = argv[++iarg];
      else if (strcmp(argv[iarg], "-msgFile") == 0)
         msgFile = argv[++iarg];
-     else if (strcmp(argv[iarg], "-name") == 0)
+     else if (strcmp(argv[iarg], "-loginName") == 0)
         loginName = argv[++iarg];
      else if (strcmp(argv[iarg], "-passwd") == 0)
         passwd = argv[++iarg];
@@ -221,9 +221,9 @@ void usage()
    fprintf(stderr,
     "--------------------------------------------------\n"
     "Usage:\n"
-    "   client -xmlrpc.serverUrl <serverURL> -xmlrpc.cbUrl <myCallbackServerURL> -name <loginName> -passwd <Password> -dest <loginName> -msgFile <xmlFile>\n"
+    "   client -xmlrpc.serverUrl <serverURL> -xmlrpc.cbUrl <myCallbackServerURL> -loginName <loginName> -passwd <Password> -dest <loginName> -msgFile <xmlFile>\n"
     "Example:\n"
-    "   client -xmlrpc.serverUrl http://anotherHost:8080/ -xmlrpc.cbUrl http://myHost:8080/RPC2 -name gesa -passwd secret -dest gesa -msgFile hello.xml\n"
+    "   client -xmlrpc.serverUrl http://anotherHost:8080/ -xmlrpc.cbUrl http://myHost:8080/RPC2 -loginName gesa -passwd secret -dest gesa -msgFile hello.xml\n"
     "   This sends a message to myself, we have to start the callbackServer first\n"
     "--------------------------------------------------\n");
 }

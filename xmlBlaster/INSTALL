@@ -299,7 +299,7 @@ It´s a pretty basic kind of chat-application but worth a try.
 
 Compile it (or use '-cp lib/xmlBlaster.jar') and start it like that:
 
-   java javaclients.chat.SimpleChat -name Nickname
+   java javaclients.chat.SimpleChat -loginName Nickname
 
 where "Nickname" should be different for each client you start.
 Don´t forget to start the server (java org.xmlBlaster.Main) first.

@@ -1,4 +1,4 @@
-$Id: README,v 1.9 2002/05/01 21:40:08 ruff Exp $
+$Id: README,v 1.10 2002/05/11 10:50:05 ruff Exp $
 
 Integration of Xindice (former dbXML) into xmlBlaster as persistence plugin
 ---------------------------------------------------------------------------
@@ -207,7 +207,7 @@ See another example here:
 
         cd $XMLBLASTER_HOME/src/java/org/xmlBlaster/client/reader
 
-        java org.xmlBlaster.client.reader.SubscribeMessage -name Tim -passwd secret -oid Hello.txt
+        java org.xmlBlaster.client.reader.SubscribeMessage -loginName Tim -passwd secret -oid Hello.txt
 
         ============= START Hello.txt =======================
         [Feb 7, 2002 10:55:50 PM INFO  SubscribeMessage] Receiving update of a message ...

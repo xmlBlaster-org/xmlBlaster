@@ -76,7 +76,7 @@ Run it:
 
 3. Start this client:
 
-        client -xmlrpc.serverUrl http://myHost:8080/ -xmlrpc.cbUrl http://myHost:8081/RPC2 -name ben -passwd secret -dest ben -msgFile hello.xml
+        client -xmlrpc.serverUrl http://myHost:8080/ -xmlrpc.cbUrl http://myHost:8081/RPC2 -loginName ben -passwd secret -dest ben -msgFile hello.xml
 
   the -msgFile allows to send any file (binary data as well).
 
@@ -84,7 +84,7 @@ Run it:
 
 
 (You may also want to start a Java client to receive the messages like:
-  java org.xmlBlaster.client.reader.SubscribeMessage  -name ben  -passwd secret  -oid __sys__TotalMem
+  java org.xmlBlaster.client.reader.SubscribeMessage  -loginName ben  -passwd secret  -oid __sys__TotalMem
 ) 
 
 

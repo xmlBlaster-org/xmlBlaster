@@ -223,6 +223,9 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
    public XmlBlasterConnection(Global glob) throws XmlBlasterException {
       this.glob = glob;
+      if (glob.showUsage()) {
+         usage();
+      }
    }
 
    /**

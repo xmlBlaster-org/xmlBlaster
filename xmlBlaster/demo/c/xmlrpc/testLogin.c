@@ -21,9 +21,9 @@ void usage()
    fprintf(stderr,
     "--------------------------------------------------\n"
     "Usage:\n"
-    "   testLogin -xmlrpc.serverUrl <serverURL> -xmlrpc.cbUrl <myCallbackServerURL> -name <loginName> -passwd <Password> -dest <loginName> -msgFile <xmlFile>\n"
+    "   testLogin -xmlrpc.serverUrl <serverURL> -xmlrpc.cbUrl <myCallbackServerURL> -loginName <loginName> -passwd <Password> -dest <loginName> -msgFile <xmlFile>\n"
     "Example:\n"
-    "   testLogin -xmlrpc.serverUrl http://anotherHost:8080/ -xmlrpc.cbUrl http://myHost:8080/ -name ben -passwd secret -dest gesa -msgFile xy.xml\n"
+    "   testLogin -xmlrpc.serverUrl http://anotherHost:8080/ -xmlrpc.cbUrl http://myHost:8080/ -loginName ben -passwd secret -dest gesa -msgFile xy.xml\n"
     "--------------------------------------------------\n");
 }
 
@@ -61,7 +61,7 @@ int main (int argc, char** argv)
         destination = argv[++iarg];
      else if (strcmp(argv[iarg], "-msgFile") == 0)
         msgFile = argv[++iarg];
-     else if (strcmp(argv[iarg], "-name") == 0)
+     else if (strcmp(argv[iarg], "-loginName") == 0)
         loginName = argv[++iarg];
      else if (strcmp(argv[iarg], "-passwd") == 0)
         passwd = argv[++iarg];
