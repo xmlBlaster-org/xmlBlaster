@@ -8,6 +8,7 @@ package org.xmlBlaster.util.qos;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Timestamp;
+import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.RcvTimestamp;
 import org.xmlBlaster.util.cluster.NodeId;
 import org.xmlBlaster.util.cluster.RouteInfo;
@@ -38,6 +39,12 @@ public abstract class QosData implements java.io.Serializable, Cloneable
    /** Human readable information */
    private String stateInfo;
 
+   /**
+    * Marker if message comes from persistent store and is recovered after a server restart. 
+    * NOTE: This information is for server side usage only and is NOT dumped to XML!
+    */
+   private boolean fromPersistenceRecovery = false;
+
    /** 
     * The receive timestamp (UTC time),
     * when message arrived in requestBroker.publish() method.<br />
@@ -47,6 +54,12 @@ public abstract class QosData implements java.io.Serializable, Cloneable
 
    public transient final static boolean DEFAULT_persistent = false;
    private PropBoolean persistent = new PropBoolean(DEFAULT_persistent);
+
+   /**
+    * The sender (publisher) of this message (unique loginName),
+    * is set by server on arrival, and delivered with UpdateQos (with XML). 
+    */
+   private SessionName sender;
 
    /**
     * ArrayList containing RouteInfo objects
@@ -139,6 +152,41 @@ public abstract class QosData implements java.io.Serializable, Cloneable
     */
    public final boolean isForwardError() {
       return Constants.STATE_FORWARD_ERROR.equals(this.state);
+   }
+
+   /**
+    * Marker if the message comes from persistent store after recovery. 
+    * NOTE: This information is not saved in to XML and is lost after a XML dump.
+    */
+   public void isFromPersistenceRecovery(boolean fromPersistenceRecovery) {
+      this.fromPersistenceRecovery = fromPersistenceRecovery;
+   }
+
+   /**
+    * Flag if the message comes from persistent store after recovery. 
+    */
+   public boolean isFromPersistenceRecovery() {
+      return this.fromPersistenceRecovery;
+   }
+
+   /**
+    * Access sender unified naming object. 
+    *
+    * The sender (publisher) of this message (unique loginName),
+    * is set by server on arrival, and delivered with UpdateQos (with XML). 
+    * @return sessionName of sender or null if not known
+    * @todo Pass it with QueryQos XML to have more info in cluster environment
+    */
+   public SessionName getSender() {
+      return sender;
+   }
+
+   /**
+    * Access sender name.
+    * @param loginName of sender
+    */
+   public void setSender(SessionName senderSessionName) {
+      this.sender = senderSessionName;
    }
 
    /** 
