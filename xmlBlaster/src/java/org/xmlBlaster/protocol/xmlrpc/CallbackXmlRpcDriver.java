@@ -3,7 +3,7 @@ Name:      CallbackXmlRpcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using XML-RPC interface.
-Version:   $Id: CallbackXmlRpcDriver.java,v 1.6 2000/10/26 17:22:18 ruff Exp $
+Version:   $Id: CallbackXmlRpcDriver.java,v 1.7 2000/10/29 20:23:51 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
@@ -108,10 +108,14 @@ public class CallbackXmlRpcDriver implements I_CallbackDriver
 
 
    /**
-    * This method shuts down the driver.
+    * This method shuts down the driver. 
     * <p />
     */
    public void shutdown()
    {
+      //if (xmlRpcClient != null) xmlRpcClient.shutdown(); method is missing in XmlRpc package !!!
+      callbackAddress = null;
+      xmlRpcClient = null;
+      if (Log.TRACE) Log.trace(ME, "Shutdown implementation is missing");
    }
 }
