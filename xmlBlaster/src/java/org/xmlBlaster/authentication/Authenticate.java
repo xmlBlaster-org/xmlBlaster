@@ -318,11 +318,12 @@ final public class Authenticate implements I_RunlevelListener
             subjectInfo = (SubjectInfo)this.loginNameSubjectInfoMap.get(subjectName.getLoginName());
             //log.error(ME, "DEBUG ONLY, subjectName=" + subjectName.toString() + " loginName=" + subjectName.getLoginName() + " state=" + toXml());
             if (subjectInfo == null) {
-               subjectInfo = new SubjectInfo(getGlobal(), this, subjectName); // registers itself in loginNameSubjectInfoMap
+               subjectInfo = new SubjectInfo(getGlobal(), this, subjectName);
             }
 
             subjectIsAlive = subjectInfo.isAlive();
             if (!subjectInfo.isAlive()) {
+               // registers itself in loginNameSubjectInfoMap
                subjectInfo.toAlive(subjectCtx, connectQos.getSubjectQueueProperty());
             }
          } // synchronized(this.loginNameSubjectInfoMap)
