@@ -3,7 +3,7 @@ Name:      MsgQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: MsgQueue.java,v 1.12 2002/05/03 13:46:09 ruff Exp $
+Version:   $Id: MsgQueue.java,v 1.13 2002/05/17 19:02:48 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queue;
@@ -300,7 +300,12 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
          //synchronized (this) {
             if (msg.length + size() > property.getMaxMsg()) {
                if (property.onOverflowBlock()) {
-                  log.warn(ME, "Adding " + msg.length + " messages, queue will block since max capacity " + property.getMaxMsg() + " reached");
+                  if (this instanceof SessionMsgQueue) {
+                     SessionMsgQueue q = (SessionMsgQueue)this;
+                     log.warn(ME, "Adding " + msg.length + " messages, queue of client " + q.getSessionInfo().getLoginName() + " will block since max capacity " + property.getMaxMsg() + " reached");
+                  }
+                  else
+                     log.warn(ME, "Adding " + msg.length + " messages, queue will block since max capacity " + property.getMaxMsg() + " reached");
                }
                else if (property.onOverflowDeadLetter()) { // not tested yet!!!
                   glob.getRequestBroker().deadLetter(msg);
