@@ -121,7 +121,7 @@ FULL_PATH_NAMES        = YES
 # If left blank the directory from which doxygen is run is used as the 
 # path to strip.
 
-STRIP_FROM_PATH        = $(XMLBLASTER_HOME)/src/c++/ $(XMLBLASTER_HOME)/src/c/ $(XMLBLASTER_HOME)/src/java/org/xmlBlaster/ $(XMLBLASTER_HOME)/ /var/www/xmlBlaster/homepage/xmlBlaster/src/c++/
+STRIP_FROM_PATH        = $(XMLBLASTER_HOME)/src/c++/ $(XMLBLASTER_HOME)/src/c/ $(XMLBLASTER_HOME)/src/java/org/xmlBlaster/ $(XMLBLASTER_HOME)/ /var/www/xmlBlaster/homepage/xmlBlaster/src/c++/ var/www/xmlBlaster/homepage/xmlBlaster/src/c++/
 
 # The STRIP_FROM_INC_PATH tag can be used to strip a user-defined part of 
 # the path mentioned in the documentation of a class, which tells 
