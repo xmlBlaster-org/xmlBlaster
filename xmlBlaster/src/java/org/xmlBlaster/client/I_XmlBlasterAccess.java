@@ -94,8 +94,22 @@ public interface I_XmlBlasterAccess extends I_XmlBlaster, I_ConnectionHandler
     *  cbAddress.setPingInterval(4000L); // ping every 4 seconds
     *  connectQos.addCallbackAddress(cbAddress);
     *  
-    *  xmlBlasterAccess.connect(connectQos);
+    *  xmlBlasterAccess.connect(connectQos, new I_Callback() {
     *
+    *     public String update(String cbSessionId, UpdateKey updateKey, byte[] content,
+    *                          UpdateQos updateQos) {
+    *        if (updateKey.isInternal()) {
+    *           return "";
+    *        }
+    *        if (updateQos.isErased()) {
+    *           return "";
+    *        }
+    *        log.info(ME, "Receiving asynchronous message '" + updateKey.getOid() +
+    *                     "' state=" + updateQos.getState() + " in default handler");
+    *        return "";
+    *     }
+    *
+    *  });  // Login to xmlBlaster, default handler for updates;
     * </pre>
     * @param qos Your configuration desire
     * @param updateListener If not null a callback server will be created and 
