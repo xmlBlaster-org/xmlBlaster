@@ -18,6 +18,7 @@ SUB_DIRS = query
 LOCAL_FILES = \
     $(CLASS_DIR)/Util.class \
     $(CLASS_DIR)/ThreadLister.class \
+    $(CLASS_DIR)/TestCorbaThreads.class \
     $(CLASS_DIR)/ServerThread.class \
     $(CLASS_DIR)/LoadTestSub.class \
     $(CLASS_DIR)/RamTest.class \
