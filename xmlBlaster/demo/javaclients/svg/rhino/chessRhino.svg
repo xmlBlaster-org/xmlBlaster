@@ -67,7 +67,7 @@ importPackage(Packages.org.xmlBlaster.util);
       var transform = element.contents[1].contents[0].value;
       var el = doc.getElementById(id);
       el.setAttribute("transform", transform);
-      log.info(ME, "Handled chess move from server!!");
+      log.info(ME, "Handled chess move " + transform + " from server");
       return "";
    }
   
@@ -91,7 +91,6 @@ importPackage(Packages.org.xmlBlaster.util);
          y += parseInt(A[1], 10);
       }
       var result = "translate(" + x + "," + y + ")";
-      log.info(ME, "createTranslateAttribute() '" + buf + "' -> '" + result + "'");
       return result;
    }
   
