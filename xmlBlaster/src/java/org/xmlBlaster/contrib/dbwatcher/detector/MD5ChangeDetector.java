@@ -367,159 +367,163 @@ public class MD5ChangeDetector implements I_ChangeDetector
       String newGroupColValue = null;
       boolean first = true;
       
-      while (rs.next()) {
-         newGroupColValue = rs.getString(groupColName);
-         if (rs.wasNull())
-            newGroupColValue = "__NULL__";
-         touchSet.add(newGroupColValue);
-         if (rowCount == 0) {
-            touchSet.add(groupColValue); // Add the CREATE table name: ${ICAO_ID} itself
-            if (!this.tableExists) {
-               if (this.queryMeatStatement != null) { // delegate processing of message meat ...
-                   ChangeEvent changeEvent = new ChangeEvent(groupColName, groupColValue, null, "CREATE");
-                   String stmt = org.xmlBlaster.contrib.dbwatcher.DbWatcher.replaceVariable(this.queryMeatStatement, groupColValue);
-                   count = changeListener.publishMessagesFromStmt(stmt, true, changeEvent, conn);
-               }
-               else { // send message directly
-                  if (dataConverter != null && bout == null) {
-                     bout = new ByteArrayOutputStream();
-                     out = new BufferedOutputStream(bout);
-                     dataConverter.setOutputStream(out, "CREATE", groupColValue);
-                     dataConverter.done();
-                     resultXml = bout.toString();
-                     bout = null;
+      try {
+         while (rs.next()) {
+            newGroupColValue = rs.getString(groupColName);
+            if (rs.wasNull())
+               newGroupColValue = "__NULL__";
+            touchSet.add(newGroupColValue);
+            if (rowCount == 0) {
+               touchSet.add(groupColValue); // Add the CREATE table name: ${ICAO_ID} itself
+               if (!this.tableExists) {
+                  if (this.queryMeatStatement != null) { // delegate processing of message meat ...
+                      ChangeEvent changeEvent = new ChangeEvent(groupColName, groupColValue, null, "CREATE");
+                      String stmt = org.xmlBlaster.contrib.dbwatcher.DbWatcher.replaceVariable(this.queryMeatStatement, groupColValue);
+                      count = changeListener.publishMessagesFromStmt(stmt, true, changeEvent, conn);
                   }
-                  changeListener.hasChanged(
-                        new ChangeEvent(groupColName, groupColValue,
-                                          resultXml, "CREATE"));
-               }
-               this.tableExists = true;
-            }
-         }
-
-         rowCount++;
-         if (dataConverter != null && bout == null) {
-            bout = new ByteArrayOutputStream();
-            out = new BufferedOutputStream(bout);
-            command = (md5Map.get(newGroupColValue) != null) ? "UPDATE" : "INSERT";
-            dataConverter.setOutputStream(out, command, newGroupColValue);
-         }
-
-         if (!first && !groupColValue.equals(newGroupColValue)) {
-            first = false;
-            if (log.isLoggable(Level.FINE)) log.fine("Processing " + groupColName + "=" +
-               groupColValue + " has changed to '" +
-               newGroupColValue + "'");
-            String newMD5 = getMD5(buf.toString());
-            String old = (String)md5Map.get(groupColValue);
-            if (old == null || !old.equals(newMD5)) {
-               if (this.queryMeatStatement != null) { // delegate processing of message meat ...
-                   ChangeEvent changeEvent = new ChangeEvent(groupColName, groupColValue, null, command);
-                   String stmt = org.xmlBlaster.contrib.dbwatcher.DbWatcher.replaceVariable(this.queryMeatStatement, groupColValue);
-                   count += changeListener.publishMessagesFromStmt(stmt, true, changeEvent, conn);
-               }
-               else { // send message directly
-                  if (dataConverter != null) {
-                     dataConverter.done();
-                     resultXml = bout.toString();
+                  else { // send message directly
+                     if (dataConverter != null && bout == null) {
+                        bout = new ByteArrayOutputStream();
+                        out = new BufferedOutputStream(bout);
+                        dataConverter.setOutputStream(out, "CREATE", groupColValue);
+                        dataConverter.done();
+                        resultXml = bout.toString();
+                        bout = null;
+                     }
+                     changeListener.hasChanged(
+                           new ChangeEvent(groupColName, groupColValue,
+                                             resultXml, "CREATE"));
                   }
-                  changeListener.hasChanged(
-                        new ChangeEvent(groupColName, groupColValue,
-                                          resultXml, command));
-                  count++;
+                  this.tableExists = true;
                }
             }
-            md5Map.put(groupColValue, newMD5);
-            buf.setLength(0);
-            if (dataConverter != null) {
+
+            rowCount++;
+            if (dataConverter != null && bout == null) {
                bout = new ByteArrayOutputStream();
                out = new BufferedOutputStream(bout);
-               command = (md5Map.get(newGroupColValue) != null) ?
-                        "UPDATE" : "INSERT";
+               command = (md5Map.get(newGroupColValue) != null) ? "UPDATE" : "INSERT";
                dataConverter.setOutputStream(out, command, newGroupColValue);
             }
-         }
-         groupColValue = newGroupColValue;
 
-         for (int i=1; i<=cols; i++) { // Add cols for later MD5 calculation
-            buf.append(rs.getObject(i));
-         }
-         
-         if (dataConverter != null) { // Create XML dump on demand
-            dataConverter.addInfo(rs, I_DataConverter.ALL);
-         }
-         first = false;
-      }
-
-      String newMD5 = getMD5(buf.toString());
-      String old = (String)md5Map.get(groupColValue);
-      
-      
-      if (old == null || !old.equals(newMD5)) {
-         if (!this.tableExists) {
-            command = "CREATE";
-            this.tableExists = true;
-         }
-         else if (old == null)
-            command = "INSERT";
-         else
-            command = "UPDATE";
-         
-         if (this.queryMeatStatement != null) { // delegate processing of message meat ...
-            ChangeEvent changeEvent = new ChangeEvent(groupColName, groupColValue, null, command);
-            String stmt = org.xmlBlaster.contrib.dbwatcher.DbWatcher.replaceVariable(this.queryMeatStatement, groupColValue);
-            count += changeListener.publishMessagesFromStmt(stmt, true, changeEvent, conn);
-         }
-         else { // send message directly
-             if (dataConverter != null) {
-                if (bout == null) {
-                   bout = new ByteArrayOutputStream();
-                   out = new BufferedOutputStream(bout);
-                   dataConverter.setOutputStream(out, command, newGroupColValue);
-                   dataConverter.addInfo(rs, I_DataConverter.META_ONLY); // Add the meta info for a CREATE
-                }
-                dataConverter.done();
-                resultXml = bout.toString();
-             }
-             changeListener.hasChanged(
-                new ChangeEvent(groupColName, groupColValue, resultXml, command));
-             count++;
-         }
-      }
-      touchSet.add(groupColValue);
-      md5Map.put(groupColValue, newMD5);
-      buf.setLength(0);
-      
-      // Check for DELETEd entries ...
-      String[] arr = (String[])md5Map.keySet().toArray(new String[md5Map.size()]);
-      for (int i=0; i<arr.length; i++) {
-         if (!touchSet.contains(arr[i])) {
-            String key = arr[i];
-            md5Map.remove(key);
-            command = "DELETE";
-            if (this.queryMeatStatement != null) { // delegate processing of message meat ...
-               ChangeEvent changeEvent = new ChangeEvent(groupColName, key, null, command);
-               String stmt = org.xmlBlaster.contrib.dbwatcher.DbWatcher.replaceVariable(this.queryMeatStatement, key);
-               count += changeListener.publishMessagesFromStmt(stmt, true, changeEvent, conn);
-            }
-            else { // send message directly
+            if (!first && !groupColValue.equals(newGroupColValue)) {
+               first = false;
+               if (log.isLoggable(Level.FINE)) log.fine("Processing " + groupColName + "=" +
+                  groupColValue + " has changed to '" +
+                  newGroupColValue + "'");
+               String newMD5 = getMD5(buf.toString());
+               String old = (String)md5Map.get(groupColValue);
+               if (old == null || !old.equals(newMD5)) {
+                  if (this.queryMeatStatement != null) { // delegate processing of message meat ...
+                      ChangeEvent changeEvent = new ChangeEvent(groupColName, groupColValue, null, command);
+                      String stmt = org.xmlBlaster.contrib.dbwatcher.DbWatcher.replaceVariable(this.queryMeatStatement, groupColValue);
+                      count += changeListener.publishMessagesFromStmt(stmt, true, changeEvent, conn);
+                  }
+                  else { // send message directly
+                     if (dataConverter != null) {
+                        dataConverter.done();
+                        resultXml = bout.toString();
+                     }
+                     changeListener.hasChanged(
+                           new ChangeEvent(groupColName, groupColValue,
+                                             resultXml, command));
+                     count++;
+                  }
+               }
+               md5Map.put(groupColValue, newMD5);
+               buf.setLength(0);
                if (dataConverter != null) {
                   bout = new ByteArrayOutputStream();
                   out = new BufferedOutputStream(bout);
-                  dataConverter.setOutputStream(out, command, key);
-                  dataConverter.done();
-                  resultXml = bout.toString();
+                  command = (md5Map.get(newGroupColValue) != null) ?
+                           "UPDATE" : "INSERT";
+                  dataConverter.setOutputStream(out, command, newGroupColValue);
                }
-               changeListener.hasChanged(
-                  new ChangeEvent(groupColName, key,
-                                 resultXml, command));
             }
-            count++;
+            groupColValue = newGroupColValue;
+
+            for (int i=1; i<=cols; i++) { // Add cols for later MD5 calculation
+               buf.append(rs.getObject(i));
+            }
+            
+            if (dataConverter != null) { // Create XML dump on demand
+               dataConverter.addInfo(rs, I_DataConverter.ALL);
+            }
+            first = false;
          }
+
+         String newMD5 = getMD5(buf.toString());
+         String old = (String)md5Map.get(groupColValue);
+         
+         
+         if (old == null || !old.equals(newMD5)) {
+            if (!this.tableExists) {
+               command = "CREATE";
+               this.tableExists = true;
+            }
+            else if (old == null)
+               command = "INSERT";
+            else
+               command = "UPDATE";
+            
+            if (this.queryMeatStatement != null) { // delegate processing of message meat ...
+               ChangeEvent changeEvent = new ChangeEvent(groupColName, groupColValue, null, command);
+               String stmt = org.xmlBlaster.contrib.dbwatcher.DbWatcher.replaceVariable(this.queryMeatStatement, groupColValue);
+               count += changeListener.publishMessagesFromStmt(stmt, true, changeEvent, conn);
+            }
+            else { // send message directly
+                if (dataConverter != null) {
+                   if (bout == null) {
+                      bout = new ByteArrayOutputStream();
+                      out = new BufferedOutputStream(bout);
+                      dataConverter.setOutputStream(out, command, newGroupColValue);
+                      dataConverter.addInfo(rs, I_DataConverter.META_ONLY); // Add the meta info for a CREATE
+                   }
+                   dataConverter.done();
+                   resultXml = bout.toString();
+                }
+                changeListener.hasChanged(
+                   new ChangeEvent(groupColName, groupColValue, resultXml, command));
+                count++;
+            }
+         }
+         touchSet.add(groupColValue);
+         md5Map.put(groupColValue, newMD5);
+         buf.setLength(0);
+         
+         // Check for DELETEd entries ...
+         String[] arr = (String[])md5Map.keySet().toArray(new String[md5Map.size()]);
+         for (int i=0; i<arr.length; i++) {
+            if (!touchSet.contains(arr[i])) {
+               String key = arr[i];
+               md5Map.remove(key);
+               command = "DELETE";
+               if (this.queryMeatStatement != null) { // delegate processing of message meat ...
+                  ChangeEvent changeEvent = new ChangeEvent(groupColName, key, null, command);
+                  String stmt = org.xmlBlaster.contrib.dbwatcher.DbWatcher.replaceVariable(this.queryMeatStatement, key);
+                  count += changeListener.publishMessagesFromStmt(stmt, true, changeEvent, conn);
+               }
+               else { // send message directly
+                  if (dataConverter != null) {
+                     bout = new ByteArrayOutputStream();
+                     out = new BufferedOutputStream(bout);
+                     dataConverter.setOutputStream(out, command, key);
+                     dataConverter.done();
+                     resultXml = bout.toString();
+                  }
+                  changeListener.hasChanged(
+                     new ChangeEvent(groupColName, key,
+                                    resultXml, command));
+               }
+               count++;
+            }
+         }
+         //if (md5Map.size() == 0)
+         //   this.tableExists = false;
       }
-      //if (md5Map.size() == 0)
-      //   this.tableExists = false;
-      touchSet.clear();
+      finally {
+         touchSet.clear();
+      }
       return count;
    }
 

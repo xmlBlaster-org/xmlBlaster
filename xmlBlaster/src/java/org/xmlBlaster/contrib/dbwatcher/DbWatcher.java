@@ -315,6 +315,7 @@ public class DbWatcher implements I_ChangeListener {
                    changeCount++;
                 }
                 catch (Exception e) {
+                   e.printStackTrace();
                    log.severe("Can't publish change event meat for groupColName='" +
                        groupColName + "': " + e.toString() + " Query was: " + stmt);
                 }
