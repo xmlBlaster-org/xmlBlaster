@@ -78,13 +78,14 @@ public class FileIO
 
 
    /**
+    * @param maxEntries < 0 sets it to unlimited
     * @param filename An absolute or relative path including the fileName, missing directories will be created
     * @param userDataHandler Your implementation of your data format marshalling
     */
    public FileIO(Global glob, String fileName, I_UserDataHandler userDataHandler, long maxEntries, boolean useSync) throws IOException {
       this.glob = glob;
       this.fileName = fileName;
-      if (maxEntries < 1)
+      if (maxEntries < 0)
          this.maxEntries = Long.MAX_VALUE;
       else
          this.maxEntries = maxEntries;
@@ -229,7 +230,9 @@ public class FileIO
             return;
          }
          else {
-            throw new XmlBlasterException("FileRecorder.MaxSize", "Maximun size=" + maxEntries + " of '" + fileName + "' reached");
+            String text = "Maximun size=" + maxEntries + " of '" + fileName + "' reached, message rejected.";
+            glob.getLog("recorder").warn("FileRecorder.MaxSize", text);
+            throw new XmlBlasterException("FileRecorder.MaxSize", text);
          }
       }
 
