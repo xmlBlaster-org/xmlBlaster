@@ -1619,7 +1619,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     */
    private class LoginThread extends Thread
    {
-      private final String ME = "LoginThread";
+      private final String ME;
       private XmlBlasterConnection con;
       private final long RETRY_INTERVAL; // would this be smarter? glob.getProperty().get("Failsave.retryInterval", 4000L);
       private final int RETRIES;         // -1 = forever
@@ -1633,6 +1633,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
        */
       LoginThread(XmlBlasterConnection con, long retryInterval, int retries) {
          this.con = con;
+         this.ME = "LoginThread-" + con.getServerNodeId();
          this.RETRY_INTERVAL = retryInterval;
          this.RETRIES = retries;
          if (retryInterval > 30000)  // millisec
