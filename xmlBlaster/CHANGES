@@ -4,6 +4,15 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes for 0.x [200x-xx-xx]
 ============================
 
+ o Added two new requirements:
+    http://www.xmlblaster.org/xmlBlaster/doc/requirements/security.ldap.html
+    http://www.xmlblaster.org/xmlBlaster/doc/requirements/security.htpasswd.html
+
+ o Fixed htpasswd plugin to trim CR/LF
+   Thanks to zzwzyz@hotmail.com
+
+ o Added support for C and C++ based persistent queue based on http://www.sqlite.org
+
  o Added possibility to activate/inhibit dispatch of callback entries (SessionInfo.activateDispatcher)
 
  o Added support for primitive and buildin types such as Boolean, Short, Integer, Float and Double
