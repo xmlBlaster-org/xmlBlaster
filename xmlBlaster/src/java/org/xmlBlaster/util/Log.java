@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.java,v 1.13 1999/11/23 10:44:13 ruff Exp $
+Version:   $Id: Log.java,v 1.14 1999/11/23 13:33:50 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -54,6 +54,7 @@ public class Log
    private final static String WHITE_RED    = "\033[37;41m";
    private final static String BLACK_RED    = "\033[30;41m";
    private final static String BLACK_LTGREEN= "\033[40;46m";
+   private final static String BLACK_PINK   = "\033[40;45m";
 
 
    /**
@@ -130,30 +131,6 @@ public class Log
 
 
    /**
-    * Display some statistic on exit
-    */
-   public final static void displayStatistics()
-   {
-      if (withXtermEscapeColor)
-      {
-         if (numErrorInvocations>0)
-            Log.info(ME, "\033[31;40mThere were " + numErrorInvocations + " ERRORS and " + numWarnInvocations + " WARNINGS\033[0m");
-         else if (numWarnInvocations>0)
-            Log.info(ME, "\033[33;40mThere were " + numErrorInvocations + " ERRORS and " + numWarnInvocations + " WARNINGS\033[0m");
-         else
-            Log.info(ME, "\033[32;40mNo errors/warnings were reported\033[0m");
-      }
-      else
-      {
-         if (numErrorInvocations>0 || numWarnInvocations>0)
-            Log.info(ME, "There were " + numErrorInvocations + " ERRORS and " + numWarnInvocations + " WARNINGS");
-         else
-            Log.info(ME, "No errors/warnings were reported");
-         }
-   }
-
-
-   /**
     * The only way to stop the server
     * @param val exit code for operating system
     */
@@ -171,6 +148,7 @@ public class Log
    public final static void panic(String instance, String text)
    {
       log((withXtermEscapeColor) ? panicE : panicX, instance, text);
+      displayStatistics();
       exitLow(1);
    }
 
@@ -181,6 +159,7 @@ public class Log
    public final static void exit(String instance, String text)
    {
       log((withXtermEscapeColor) ? exitE : exitX, instance, text);
+      displayStatistics();
       exitLow(0);
    }
 
@@ -256,6 +235,28 @@ public class Log
    {
       log((withXtermEscapeColor) ? timeE : timeX, instance, text);
    }
+
+   /**
+    * Display some statistic on exit
+    */
+   public final static void displayStatistics()
+   {
+      if (withXtermEscapeColor) {
+         if (numErrorInvocations>0)
+            Log.info(ME, BLACK_PINK + "There were " + numErrorInvocations + " ERRORS and " + numWarnInvocations + " WARNINGS" + ESC);
+         else if (numWarnInvocations>0)
+            Log.info(ME, BLACK_PINK + "There were " + numErrorInvocations + " ERRORS and " + numWarnInvocations + " WARNINGS" + ESC);
+         else
+            Log.info(ME, BLACK_PINK + "No errors/warnings were reported" + ESC);
+      }
+      else {
+         if (numErrorInvocations>0 || numWarnInvocations>0)
+            Log.info(ME, "There were " + numErrorInvocations + " ERRORS and " + numWarnInvocations + " WARNINGS");
+         else
+            Log.info(ME, "No errors/warnings were reported");
+      }
+   }
+
 
    /**
     * Only for testing
