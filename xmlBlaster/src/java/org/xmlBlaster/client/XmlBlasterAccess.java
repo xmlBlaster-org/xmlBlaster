@@ -476,6 +476,8 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
       this.disconnectInProgress = false;
       this.msgErrorHandler = null;
       this.updateListener = null;
+
+      super.glob.shutdown();
       return true;
    }
 
@@ -814,7 +816,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
          return;
       }
 
-      if (!this.connectReturnQos.isReconnected()) {
+      if (this.connectReturnQos == null || !this.connectReturnQos.isReconnected()) {
          cleanupForNewServer();
       }
 
