@@ -72,6 +72,7 @@ public class HelloWorldSubscribe implements I_Callback
    private String updateExceptionRuntime;
    private int maxContentLength;
    boolean dumpContent;
+   private String fileExtension;
 
    public HelloWorldSubscribe(Global glob) {
       this.glob = glob;
@@ -98,6 +99,7 @@ public class HelloWorldSubscribe implements I_Callback
          boolean updateOneway = glob.getProperty().get("updateOneway", false);
          boolean wantContent = glob.getProperty().get("wantContent", true);
          this.dumpContent = glob.getProperty().get("dumpContent", false);
+         this.fileExtension = glob.getProperty().get("fileExtension", ""); // only IF dumpContent==true: for example ".jpg"
          int historyNumUpdates = glob.getProperty().get("historyNumUpdates", 1);
          boolean historyNewestFirst = glob.getProperty().get("historyNewestFirst", true);
          String filterType = glob.getProperty().get("filter.type", "GnuRegexFilter");// XPathFilter | ContentLenFilter
@@ -154,6 +156,7 @@ public class HelloWorldSubscribe implements I_Callback
          log.info(ME, "   -historyNewestFirst " + historyNewestFirst);
          log.info(ME, "   -wantContent       " + wantContent);
          log.info(ME, "   -dumpContent       " + dumpContent);
+         log.info(ME, "   -fileExtension     " + fileExtension);
          log.info(ME, "   -unSubscribe       " + unSubscribe);
          log.info(ME, "   -disconnect        " + disconnect);
          log.info(ME, "   -filter.type       " + filterType);
@@ -297,6 +300,9 @@ public class HelloWorldSubscribe implements I_Callback
 
       if (dumpContent) {
          String fileName = updateKey.getOid() + "-" + updateQos.getRcvTimestamp().getTimestamp();
+         if (fileExtension != null && fileExtension.length() > 0) {
+            fileName += fileExtension;
+         }
          try {
             org.jutils.io.FileUtil.writeFile(fileName, content);
             System.out.println("Dumped content to file '" + fileName + "'");
