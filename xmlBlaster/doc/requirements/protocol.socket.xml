@@ -499,13 +499,14 @@ ConnectQos qos = new ConnectQos(glob);
    </todo>
    <see type="REQ">protocol</see>
    <see type="REQ">client.c.socket</see>
+   <see type="REQ">client.cpp.socket</see>
    <see type="API">org.xmlBlaster.protocol.socket.Parser</see>
    <see type="API">org.xmlBlaster.protocol.socket.SocketDriver</see>
    <see type="API">org.xmlBlaster.protocol.socket.SocketUrl</see>
    <see type="CODE" lang="C">socket/XmlBlasterAccessUnparsed.c</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 02 12</date>
-   <revision>$Revision: 1.37 $</revision>
+   <revision>$Revision: 1.38 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
