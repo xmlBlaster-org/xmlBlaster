@@ -167,6 +167,39 @@ successful login:
 
       ]]>
    </example>
+   <configuration where="server">
+      <p>
+      All xmlBlaster parameters (client side) allow to configure the servlet behavior.
+      Invoke 
+      </p>
+      <pre>
+      java HelloWorld3 -help
+      </pre>
+      <p>
+      to get a full listing of available parameters.
+      </p>
+      <p>
+      To set the parameters for our servlets, add them to <code>WEB-INF/web.xml</code>, for
+      example to configure the servlets to look for xmlBlaster on another host try:
+      </p>
+      <pre>
+   &lt;init-param>
+      &lt;param-name>iorHost&lt;/param-name>
+      &lt;param-value>192.168.1.5&lt;/param-value>
+      &lt;description>IP where xmlBlaster is running (for CORBA protocol)&lt;/description>
+   &lt;/init-param>
+      </pre>
+      <p>
+      To switch on more logging edit <code>WEB-INF/web.xml</code>:
+      </p>
+      <pre>
+   &lt;init-param>
+      &lt;param-name>trace&lt;/param-name>
+      &lt;param-value>true&lt;/param-value>
+      &lt;description>sets the logging level to trace&lt;/description>
+   &lt;/init-param>
+      </pre>
+   </configuration>
    <todo>
       The framework allows to directly subscribe from Javascript,
       these requests are routed over the doPost() method of BlasterHttpProxyServlet.
@@ -179,7 +212,7 @@ successful login:
    <hacker>ruff@swand.lake.de</hacker>
    <effort>12</effort>
    <date>2000 05 06</date>
-   <revision>$Revision: 1.8 $</revision>
+   <revision>$Revision: 1.9 $</revision>
    <testcase status="INWORK">
       <name>-</name>
       <comment>It is not simple to provide a fully automated testsuite for this case</comment>
