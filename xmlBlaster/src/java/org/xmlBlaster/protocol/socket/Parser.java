@@ -3,7 +3,7 @@ Name:      Parser.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Parser class for raw socket messages
-Version:   $Id: Parser.java,v 1.33 2002/09/14 23:10:54 ruff Exp $
+Version:   $Id: Parser.java,v 1.34 2002/09/15 11:17:22 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -72,6 +72,7 @@ import java.util.Vector;
  * </pre>
  *
  * @author ruff@swand.lake.de
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/protocol.socket.html">The protocol.socket requirement</a>
  */
 public class Parser
 {
