@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.java,v 1.14 1999/11/23 13:33:50 ruff Exp $
+Version:   $Id: Log.java,v 1.15 1999/11/23 13:36:45 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -53,8 +53,9 @@ public class Log
 
    private final static String WHITE_RED    = "\033[37;41m";
    private final static String BLACK_RED    = "\033[30;41m";
-   private final static String BLACK_LTGREEN= "\033[40;46m";
+   private final static String BLACK_GREEN  = "\033[40;42m";
    private final static String BLACK_PINK   = "\033[40;45m";
+   private final static String BLACK_LTGREEN= "\033[40;46m";
 
 
    /**
@@ -243,11 +244,11 @@ public class Log
    {
       if (withXtermEscapeColor) {
          if (numErrorInvocations>0)
-            Log.info(ME, BLACK_PINK + "There were " + numErrorInvocations + " ERRORS and " + numWarnInvocations + " WARNINGS" + ESC);
+            Log.info(ME, BLACK_RED + "There were " + numErrorInvocations + " ERRORS and " + numWarnInvocations + " WARNINGS" + ESC);
          else if (numWarnInvocations>0)
             Log.info(ME, BLACK_PINK + "There were " + numErrorInvocations + " ERRORS and " + numWarnInvocations + " WARNINGS" + ESC);
          else
-            Log.info(ME, BLACK_PINK + "No errors/warnings were reported" + ESC);
+            Log.info(ME, BLACK_GREEN + "No errors/warnings were reported" + ESC);
       }
       else {
          if (numErrorInvocations>0 || numWarnInvocations>0)
