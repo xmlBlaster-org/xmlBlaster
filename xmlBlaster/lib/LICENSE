@@ -262,3 +262,13 @@ only the SNMP subagent module jax.jar is GPL only!
    xmlBlaster/src/c/socket/pthreadVC.lib and dll
    http://sources.redhat.com/pthreads-win32
    for C SOCKET client on Windows only (pthreads-2003-05-10)
+
+28) hsqldb database
+===================
+   http://hsqldb.sourceforge.net/
+   Used for persistence as the default (embedded) java database. You find the license 
+   terms in hsqldb_lic.txt and hypersonic_lic.txt.
+   This is an own compilation of the 1.7.2 code checked out from cvs (hsqldb-dev) on
+   2003-06-27.
+
+
