@@ -10,7 +10,7 @@
 
 1) omquery.jar
 ==============
-   XPath Version 0.85 from Takuki Kamiya, Fujitsu Limited, 1999/11/15
+   XPath Version 0.92.2 from Takuki Kamiya, Fujitsu Limited, 2000-april
    
    Download http://www.246.ne.jp/~kamiya/pub/omquery.zip
 
@@ -66,6 +66,14 @@
    This is the JacORB CORBA library, on which xmlBlaster is based.
 
    Download http://www.inf.fu-berlin.de/~brose/jacorb
+
+	jacorb.jar is stripped with:
+		org.omg.CosCollection
+		org.omg.CosTrading
+		org.omg.CosTradingDynamic
+		org.omg.CosTradingRepos
+		jacorb.events
+		jacorb.trading
 
 
 7) xmlBlaster/bin/code2html
