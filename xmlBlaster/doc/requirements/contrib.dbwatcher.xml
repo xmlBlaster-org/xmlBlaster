@@ -219,7 +219,7 @@ trace[org.xmlBlaster.contrib.dbwatcher.DbWatcher] true
    </pre>
 
 
-   <h2>Limitations</h2>
+   <h2 id="Limitations">Limitations</h2>
    <p>Every change detector has pro and cons and limitations, the following table
    gives an overview for the currently supplied detector plugins.</p>
    <table border="1">
@@ -267,7 +267,7 @@ trace[org.xmlBlaster.contrib.dbwatcher.DbWatcher] true
 
 
    <example lang="any" type="HTML">
-   <h2>Timestamp based polling example</h2>
+   <h2 id="exampleTimestamp">Timestamp based polling example</h2>
 
    <p>
       Lets create a database table <tt>TEST_POLL</tt> which contains
@@ -292,39 +292,40 @@ SELECT * FROM TEST_POLL ORDER BY CAR;
    </p>
 
   <pre>
-&lt;plugin id='DbWatcherPlugin.testPoll' 
+<font color="gray">&lt;plugin id='DbWatcherPlugin.testPoll' 
            className='org.xmlBlaster.contrib.dbwatcher.plugin.DbWatcherPlugin'>
-   &lt;attribute id='jdbc.drivers'>oracle.jdbc.driver.OracleDriver&lt;/attribute>
+   <font color="blue">&lt;attribute id='jdbc.drivers'>oracle.jdbc.driver.OracleDriver&lt;/attribute>
    &lt;attribute id='db.url'>jdbc:oracle:thin:@localhost:1521:orcl&lt;/attribute>
    &lt;attribute id='db.user'>system&lt;/attribute>
-   &lt;attribute id='db.password'>secret&lt;/attribute>
-   &lt;attribute id='db.queryMeatStatement'>
-      SELECT * FROM TEST_POLL WHERE TO_CHAR(TS, 'YYYY-MM-DD HH24:MI:SSXFF') > '${oldTimestamp}' ORDER BY CAR
-   &lt;/attribute>
-   &lt;attribute id='mom.loginName'>DbWatcherPlugin.testPoll/1&lt;/attribute>
-   &lt;attribute id='mom.topicName'>db.test_poll.event.${groupColValue}&lt;/attribute>
-   &lt;attribute id='alertScheduler.pollInterval'>10000&lt;/attribute>
-   &lt;attribute id='changeDetector.class'>
+   &lt;attribute id='db.password'>secret&lt;/attribute></font>
+   <font color="green">&lt;attribute id='mom.loginName'>DbWatcherPlugin.testPoll/1&lt;/attribute>
+   &lt;attribute id='mom.topicName'>db.test_poll.event.${groupColValue}&lt;/attribute></font>
+   <font color="orange">&lt;attribute id='alertScheduler.pollInterval'>10000&lt;/attribute></font>
+   <font color="red">&lt;attribute id='changeDetector.class'>
       org.xmlBlaster.contrib.dbwatcher.detector.TimestampChangeDetector
    &lt;/attribute>
    &lt;attribute id='changeDetector.groupColName'>CAR&lt;/attribute>
    &lt;attribute id='changeDetector.detectStatement'>
       SELECT MAX(TO_CHAR(TS, 'YYYY-MM-DD HH24:MI:SSXFF')) from TEST_POLL
    &lt;/attribute>
+   &lt;attribute id='db.queryMeatStatement'>
+      SELECT * FROM TEST_POLL WHERE TO_CHAR(TS, 'YYYY-MM-DD HH24:MI:SSXFF') > '${oldTimestamp}' ORDER BY CAR
+   &lt;/attribute></font>
    &lt;action do='LOAD' onStartupRunlevel='9' sequence='6'
               onFail='resource.configuration.pluginFailed'/>
    &lt;action do='STOP' onShutdownRunlevel='6' sequence='5'/>
-&lt;/plugin>
+&lt;/plugin></font>
   </pre>
   <p>
-  We need to setup the database access and the xmlBlaster access.
+  We register the plugin with the <tt>plugin</tt> tag and give it a unique name <font color="gray">(gray)</font>.<br />
+  Further we need to setup the database access <font color="blue">(blue)</font> and the xmlBlaster access <font color="green">(green)</font>.
   In this case we want a separate topic for each CAR entry (<tt>changeDetector.groupColName=CAR</tt>),
   we detect a change on table <tt>TEST_POLL</tt> with the query
   <tt>SELECT MAX(TO_CHAR(TS, 'YYYY-MM-DD HH24:MI:SSXFF')) from TEST_POLL</tt>
   and all changed rows since the last query are processed with
   <tt>SELECT * FROM TEST_POLL WHERE TO_CHAR(TS, 'YYYY-MM-DD HH24:MI:SSXFF') > '${oldTimestamp}' ORDER BY CAR</tt>
-  and published to topics depending on the current car, for example <tt>db.test_poll.event.Fiat</tt>.
-  The plugin is configured to poll every 10 seconds (<tt>alertScheduler.pollInterval=10000</tt>).
+  and published to topics depending on the current car, for example <tt>db.test_poll.event.Fiat</tt> <font color="red">(red)</font>.<br />
+  The plugin is configured to poll every 10 seconds with <tt>alertScheduler.pollInterval=10000</tt> <font color="orange">(orange)</font>.
   </p>
 
   <p>To see what messages are published start a client<br />
@@ -431,7 +432,7 @@ UPDATE TEST_POLL SET COLOR='yellow', TS=CURRENT_TIMESTAMP WHERE CAR='BMW';
    </example>
 
    <example lang="any" type="HTML">
-   <h2>MD5 based polling example</h2>
+   <h2 id="exampleMD5">MD5 based polling example</h2>
 
    <p>The same table used in the previous example can be polled with MD5 comparison as well:
    </p>
@@ -442,19 +443,19 @@ UPDATE TEST_POLL SET COLOR='yellow', TS=CURRENT_TIMESTAMP WHERE CAR='BMW';
    &lt;attribute id='db.url'>jdbc:oracle:thin:@localhost:1521:orcl&lt;/attribute>
    &lt;attribute id='db.user'>system&lt;/attribute>
    &lt;attribute id='db.password'>secret&lt;/attribute>
-   &lt;attribute id='db.queryMeatStatement'>
-      SELECT * FROM TEST_POLL WHERE CAR = '${groupColValue}'
-   &lt;/attribute>
    &lt;attribute id='mom.loginName'>DbWatcherPlugin.testPoll/2&lt;/attribute>
    &lt;attribute id='mom.topicName'>db.test_poll.event.${groupColValue}&lt;/attribute>
    &lt;attribute id='alertScheduler.pollInterval'>2000&lt;/attribute>
-   &lt;attribute id='changeDetector.class'>
+   <font color="red">&lt;attribute id='changeDetector.class'>
       org.xmlBlaster.contrib.dbwatcher.detector.MD5ChangeDetector
    &lt;/attribute>
    &lt;attribute id='changeDetector.groupColName'>CAR&lt;/attribute>
    &lt;attribute id='changeDetector.detectStatement'>
       SELECT color, car from TEST_POLL order by CAR
    &lt;/attribute>
+      &lt;attribute id='db.queryMeatStatement'>
+      SELECT * FROM TEST_POLL WHERE CAR = '${groupColValue}'
+   &lt;/attribute></font>
    &lt;action do='LOAD' onStartupRunlevel='9' sequence='6'
               onFail='resource.configuration.pluginFailed'/>
    &lt;action do='STOP' onShutdownRunlevel='6' sequence='5'/>
@@ -485,6 +486,59 @@ DELETE FROM TEST_POLL WHERE CAR='BMW';
    </pre>
 
    </example>
+
+   <example lang="any" type="HTML">
+   <h2 id="exampleTriggerMsg">Trigger the polling with xmlBlaster messages</h2>
+
+   <p>The alert scheduler plugin typically polls for changes on the database.
+   There is also support to poll the database after getting a kick by a 
+   xmlBlaster message send by some client. Here is an example setup:
+   </p>
+  <pre>
+&lt;plugin id='DbWatcherPlugin.testPoll-MsgTriggered' 
+           className='org.xmlBlaster.contrib.dbwatcher.plugin.DbWatcherPlugin'>
+   &lt;attribute id='jdbc.drivers'>oracle.jdbc.driver.OracleDriver&lt;/attribute>
+   &lt;attribute id='db.url'>jdbc:oracle:thin:@localhost:1521:orcl&lt;/attribute>
+   &lt;attribute id='db.user'>system&lt;/attribute>
+   &lt;attribute id='db.password'>secret&lt;/attribute>
+   &lt;attribute id='db.queryMeatStatement'>
+      SELECT * FROM TEST_POLL WHERE TO_CHAR(TS, 'YYYY-MM-DD HH24:MI:SSXFF') > '${oldTimestamp}' ORDER BY CAR
+   &lt;/attribute>
+   &lt;attribute id='mom.loginName'>DbWatcherPlugin.testPoll/1&lt;/attribute>
+   &lt;attribute id='mom.topicName'>db.test_poll.event.${groupColValue}&lt;/attribute>
+   <font color="orange">&lt;attribute id='alertProducer.class'>org.xmlBlaster.contrib.dbwatcher.mom.XmlBlasterPublisher&lt;/attribute>
+   &lt;attribute id='mom.alertSubscribeKey'>&lt;key oid='checkDb'/>&lt;/attribute>
+   &lt;attribute id='mom.alertSubscribeQos'>&lt;qos/>&lt;/attribute></font>
+   &lt;attribute id='changeDetector.class'>
+      org.xmlBlaster.contrib.dbwatcher.detector.TimestampChangeDetector
+   &lt;/attribute>
+   &lt;attribute id='changeDetector.groupColName'>CAR&lt;/attribute>
+   &lt;attribute id='changeDetector.detectStatement'>
+      SELECT MAX(TO_CHAR(TS, 'YYYY-MM-DD HH24:MI:SSXFF')) from TEST_POLL
+   &lt;/attribute>
+   &lt;action do='LOAD' onStartupRunlevel='9' sequence='6'
+              onFail='resource.configuration.pluginFailed'/>
+   &lt;action do='STOP' onShutdownRunlevel='6' sequence='5'/>
+&lt;/plugin>
+   </pre>
+
+   <p>You can now test a poll with a command line publish, first start a subscriber
+   so we can see what happens:</p>
+   <tt>java javaclients.HelloWorldSubscribe -xpath //key -session.name subscriber/1 -maxContentLength 1000</tt>
+   <p>and then publish an alert message which triggers a database poll:</p>
+   <tt>java javaclients.HelloWorldPublish -oid checkDb -numPublish 10 -erase false</tt>
+
+   <p>An additional feature of the <tt>TimestampChangeDetector</tt> plugin
+   allows you to send the <tt>oldTimestamp</tt> and
+   the change detector will send all messages newer than your supplied timestamp,
+   for example:</p>
+   <tt>java javaclients.HelloWorldPublish -oid checkDb -clientProperty[oldTimestamp] "2005-02-01 11:59:24.639575" -erase false</tt>
+   <p>You can also <i>misuse</i> this feature to send an <tt>oldTimestamp</tt>
+   far in the future and like this set the DbWatcher on standby.</p>
+
+   </example>
+
+
 
    <example lang="any" type="HTML">
 
