@@ -3,7 +3,7 @@ Name:      BlasterCache.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to cache messages from xmlBlaster.
-Version:   $Id: BlasterCache.java,v 1.3 2000/05/03 17:42:18 ruff Exp $
+Version:   $Id: BlasterCache.java,v 1.4 2000/05/13 20:10:48 ruff Exp $
 Author:    konrad.krafft@doubleslash.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
@@ -15,13 +15,13 @@ import org.xmlBlaster.protocol.corba.serverIdl.*;
 import java.util.*;
 
 /**
- * Caches the messages updated from xmlBlaster. 
+ * Caches the messages updated from xmlBlaster.
  * <p />
  * It is used to allow local (client side) cached messages
  * which you can access with the <strong>synchronous</strong>
  * get() method.
  * <p />
- * If the CorbaConnection has swithced this cache on,
+ * If the CorbaConnection has switched this cache on,
  * a get() automatically makes a subscribe() behind the scenes as well
  * and subsequent get()s are high performing local calls.
  */
