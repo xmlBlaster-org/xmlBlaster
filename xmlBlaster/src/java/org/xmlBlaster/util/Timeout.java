@@ -3,7 +3,7 @@ Name:      Timeout.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Allows you be called back after a given delay.
-Version:   $Id: Timeout.java,v 1.4 2000/05/27 22:32:12 ruff Exp $
+Version:   $Id: Timeout.java,v 1.5 2000/05/27 23:31:48 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -99,14 +99,12 @@ public class Timeout extends Thread
             try {
                Long nextWakeup = (Long)map.firstKey();
                long next = nextWakeup.longValue();
-               Date date = new Date();
-               long current = date.getTime();
+               long current = System.currentTimeMillis();
                delay = next - current;
                if (delay <= 0) {
                   Container container = (Container)map.remove(nextWakeup);
                   if (Log.TRACE) {
-                     Date tmp = new Date();
-                     long time = tmp.getTime();
+                     long time = System.currentTimeMillis();
                      long diff = time - nextWakeup.longValue();
                      Log.trace(ME, "Timeout occurred, calling listener with real time error of " + diff + " millis");
                   }
@@ -131,6 +129,9 @@ public class Timeout extends Thread
    /**
     * Add a listener which gets informed after 'delay' milliseconds.
     * <p />
+    * After the timeout happened, you are not registered any more. If you want to
+    * cycle timeouts, you need to register again.
+    *
     * @param listener Your callback handle (you need to implement this interface)
     * @param delay The timeout in milliseconds
     * @param userData Some arbitrary data you supply, it will be routed back to you when the timeout occurs through method I_Timeout.timeout()
@@ -142,8 +143,7 @@ public class Timeout extends Thread
       Long key = null;
       synchronized(map) {
          while (true) {
-            Date date = new Date();
-            key = new Long(date.getTime() + delay);
+            key = new Long(System.currentTimeMillis() + delay);
             Object obj = map.get(key);
             if (obj == null) {
                map.put(key, new Container(listener, userData));
@@ -185,13 +185,12 @@ public class Timeout extends Thread
             throw new XmlBlasterException(ME, "The timeout handle '" + key + "' is unknown, no timeout refresh done");
          }
          while (true) {
-            Date date = new Date();
-            newKey = new Long(date.getTime() + delay);
+            newKey = new Long(System.currentTimeMillis() + delay);
             Object obj = map.get(newKey);
             if (obj == null) {
                map.put(newKey, container);
                break;
-            } 
+            }
             // We loop to avoid two similar keys, this should happen very seldom
          }
       }
@@ -217,6 +216,50 @@ public class Timeout extends Thread
             container = null;
          }
       }
+   }
+
+
+   /**
+    * Is this handle expired?
+    * <p />
+    * @param key The timeout handle you received by a previous addTimeoutListener() call<br />
+    * @return true/false
+    */
+   public final boolean isExpired(Long key)
+   {
+      synchronized(map) {
+         return map.get(key) == null;
+      }
+   }
+
+
+   /**
+    * How long to my death. 
+    *
+    * @param key The timeout handle you received by a previous addTimeoutListener() call
+    * @return Milliseconds to timeout, or -1 if not known
+    */
+   public final long spanOfTimeToDeath(Long key)
+   {
+      synchronized(map) {
+         Container container = (Container)map.get(key);
+         if (container == null) {
+            return -1;
+         }
+         // We know that the key contains the timeout date
+         return getTimeout(key) - System.currentTimeMillis();
+      }
+   }
+
+
+   /**
+    * Access the end of life span. 
+    * @param key The timeout handle you received by a previous addTimeoutListener() call
+    * @return Time in milliseconds since midnight, January 1, 1970 UTC
+    */
+   public final long getTimeout(Long key)
+   {
+      return key.longValue();
    }
 
 
@@ -289,8 +332,7 @@ public class Timeout extends Thread
          private int counter = 0;
          public void timeout(Object userData)
          {
-            Date date = new Date();
-            long time = date.getTime();
+            long time = System.currentTimeMillis();
             long diff = time - keyArr[counter].longValue();
             if (Math.abs(diff) < 40) // Allow 40 millis wrong notification (for code execution etc.) ...
                Log.info(ME, "Timeout occurred for " + userData.toString() + " at " + time + " millis, real time failure=" + diff + " millis.");
@@ -306,18 +348,35 @@ public class Timeout extends Thread
       keyArr[3] = timeout.refreshTimeoutListener(keyArr[3], 5500L);
       keyArr[0] = timeout.addTimeoutListener(dummy, 1000L, "timer-1000");
       keyArr[1] = timeout.addTimeoutListener(dummy, 1000L, "timer-1000");
-      
+
+      long span = 0;
+      if ((span = timeout.spanOfTimeToDeath(keyArr[2])) < 3000L)
+         Log.error(ME, "This short span to timeout = " + span + " is probably wrong, or you have a very slow computer.");
+      else
+         Log.info(ME, "Span to life of " + span + " is reasonable");
+
+
       Long key = timeout.addTimeoutListener(dummy, 1000L, "timer-1000");
       timeout.removeTimeoutListener(key);
 
       try {
-         timeout.refreshTimeoutListener(key, 1500L);
+         key = timeout.refreshTimeoutListener(key, 1500L);
       }
       catch (XmlBlasterException e) {
          Log.info(ME, "Refresh failed which is OK (it is a test): " + e.reason);
       }
 
+      if (timeout.isExpired(keyArr[2]))
+         Log.error(ME, "Should not be expired");
+      else
+         Log.info(ME, "Correct, is not expired");
+
       try { Thread.currentThread().sleep(7000L); } catch (Exception e) { Log.panic(ME, "main interrupt: " + e.toString());}
+
+      if (!timeout.isExpired(keyArr[2]))
+         Log.error(ME, "Should be expired");
+      else
+         Log.info(ME, "Correct, is expired");
 
 
       //===== 2. We test a big load:
@@ -332,13 +391,12 @@ public class Timeout extends Thread
          private long start = 0L;
          public void timeout(Object userData)
          {
-            if (counter == 0) { Date dd = new Date(); start = dd.getTime(); }
+            if (counter == 0) { start = System.currentTimeMillis(); }
 
             counter++;
 
             if (counter == numTimers) {
-               Date dd = new Date();
-               long diff = dd.getTime() - start;
+               long diff = System.currentTimeMillis() - start;
                if (diff < 2000L)
                   Log.exit(ME, "Success, tested " + numTimers + " timers, all updates came in " + diff + " millis");
                else
