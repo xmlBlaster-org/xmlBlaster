@@ -1,0 +1,109 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='admin.startupTasks' type='NEW' prio='LOW' status="CLOSED">
+   <topic>On xmlBlaster startup you can execute a script for administrative tasks</topic>
+   <description>
+    <p>
+      The xmlBlaster plugin <tt>StartupTasks</tt> starts a given scripting file
+      on xmlBlaster startup. You can for example register predefined topics
+      on startup.
+    </p>
+   </description>
+
+   <example lang="ANY" type="HTML">
+     <h2>StartupTasks</h2>
+     <p>
+     First activate the <tt>StartupTasks</tt> plugin in <tt>xmlBlasterPlugins.xml</tt>:
+     </p>
+     <pre>
+&lt;plugin id='StartupTasks' className='org.xmlBlaster.engine.StartupTasks'>
+   &lt;action do='LOAD' onStartupRunlevel='7' sequence='5'
+                        onFail='resource.configuration.pluginFailed'/>
+   &lt;action do='STOP' onShutdownRunlevel='6' sequence='5'/>
+   &lt;attribute id='loginName'>_StartupTasks&lt;/attribute>
+   &lt;attribute id='password'>secret&lt;/attribute>
+   &lt;attribute id='directoryName'>${user.home}&lt;/attribute>
+   &lt;attribute id='scriptFileName'>xmlBlasterStartup.xml&lt;/attribute>
+   &lt;attribute id='outFileName'>${java.io.tmpdir}${file.separator}xmlBlasterStartupOut.txt&lt;/attribute>
+&lt;/plugin>
+     </pre>
+     <p>
+     The scripting file <tt>xmlBlasterStartup.xml</tt> must conform to the xmlBlaster scripting
+     framework as described in requirement <tt>client.script</tt>, here is an example:
+     </p>
+     <pre>
+&lt;xmlBlaster>
+  &lt;publish>
+    &lt;key oid="test">&lt;airport name="london" />&lt;/key>
+    &lt;content>This is a simple script test&lt;/content>
+    &lt;qos/>
+  &lt;/publish>
+&lt;/xmlBlaster>
+   </pre>
+   <p>Note that you don't need to connect or disconnect explicitly as this
+   is done by the plugin already.
+   </p>
+   </example>
+
+   <configuration where="server">
+      <p>
+      These parameters allow to configure the error handling.
+      </p>
+      <table border="1">
+         <tr>
+            <th>Property</th>
+            <th>Default</th>
+            <th>Description</th>
+            <th>Impl</th>
+         </tr>
+
+         <tr>
+            <td>directoryName</td>
+            <td>${user.home}</td>
+            <td>The directory containing the scrip file
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>scriptFileName</td>
+            <td>xmlBlasterStartup.xml</td>
+            <td>
+            The script to be executed
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>outFileName</td>
+            <td>-</td>
+            <td>
+            If specified the output of the script is dumped to this file.
+            If empty, the output is send to System.out.
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+      </table>
+   </configuration>
+
+   <todo type='HTML'>
+   </todo>
+   
+   <see type="API">org.xmlBlaster.engine.StartupTasks</see>
+   <see type="REQ">client.script</see>
+   
+   <author>xmlBlaster@marcelruff.info</author>
+   
+   <date>2005 02 05</date>
+   
+   <revision>$Revision: 1.26 $</revision>
+
+   <testcase status="OPEN">
+      <name>-</name>
+      <comment>Currently not available</comment>
+      <test tool="SUITE"></test>
+   </testcase>
+</requirement>
+
