@@ -3,7 +3,7 @@ Name:      QueuePropertyBase.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.h,v 1.6 2003/01/12 00:47:47 laghi Exp $
+Version:   $Id: QueuePropertyBase.h,v 1.7 2003/01/16 14:20:57 johnson Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -24,7 +24,7 @@ Version:   $Id: QueuePropertyBase.h,v 1.6 2003/01/12 00:47:47 laghi Exp $
 #include <string>
 #include <vector>
 
-using namespace org::xmlBlaster::util;
+//using namespace org::xmlBlaster::util; <-- VC CRASH
 using namespace org::xmlBlaster::util::qos::address;
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace storage {

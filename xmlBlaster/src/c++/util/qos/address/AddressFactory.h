@@ -3,7 +3,7 @@ Name:      AddressFactory.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Factory Object for parsing Address objects.
-Version:   $Id: AddressFactory.h,v 1.1 2002/12/20 19:43:27 laghi Exp $
+Version:   $Id: AddressFactory.h,v 1.2 2003/01/16 14:20:55 johnson Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -22,7 +22,7 @@ Version:   $Id: AddressFactory.h,v 1.1 2002/12/20 19:43:27 laghi Exp $
 #include <util/SaxHandlerBase.h>
 #include <util/qos/address/AddressBase.h>
 
-using namespace org::xmlBlaster::util;
+//using namespace org::xmlBlaster::util; <-- VC CRASH
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace address {
 

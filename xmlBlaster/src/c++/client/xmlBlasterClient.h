@@ -31,7 +31,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <client/key/UnSubscribeKey.h>
 #include <client/key/UpdateKey.h>
 
-using namespace org::xmlBlaster::util::qos;
+//using namespace org::xmlBlaster::util::qos;<-- VC CRASH
 using namespace org::xmlBlaster::client::qos;
 using namespace org::xmlBlaster::client::key;
 

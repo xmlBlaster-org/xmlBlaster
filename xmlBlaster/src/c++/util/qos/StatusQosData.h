@@ -30,7 +30,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/Constants.h>
 #include <string>
 
-using namespace org::xmlBlaster::util;
+//using namespace org::xmlBlaster::util; <-- VC CRASH
 using namespace std;
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos {

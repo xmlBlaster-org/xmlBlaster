@@ -25,7 +25,7 @@ Comment:   Holding callback queue properties
 #include <string>
 #include <vector>
 
-using namespace org::xmlBlaster::util;
+//using namespace org::xmlBlaster::util; <-- VC CRASH
 using namespace org::xmlBlaster::util::qos::address;
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos { namespace storage {

@@ -27,7 +27,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 # include <util/Property.h>
 
 using namespace std;
-using namespace org::xmlBlaster::util;
+//using namespace org::xmlBlaster::util; <-- VC CRASH
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 

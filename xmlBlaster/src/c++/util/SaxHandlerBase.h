@@ -22,7 +22,7 @@ Comment:   Default handling of Sax callbacks
 #include <util/Log.h>
 #include <util/StopParseException.h>
 #include <util/StringTrim.h>
-
+#include <util/Global.h>
 #include <stdlib.h>
 
 using namespace std;

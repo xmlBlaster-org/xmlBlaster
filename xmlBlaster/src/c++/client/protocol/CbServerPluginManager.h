@@ -24,7 +24,7 @@ Comment:   Manager to retrieve the correct callback protocol implementation
 #include <string>
 // #include <map>
 
-using namespace org::xmlBlaster::util;
+//using namespace org::xmlBlaster::util;<-- VC CRASH
 
 namespace org { namespace xmlBlaster { namespace client { namespace protocol {
 

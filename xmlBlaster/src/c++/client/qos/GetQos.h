@@ -28,8 +28,8 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <client/qos/UnSubscribeQos.h>
 
 using namespace std;
-using namespace org::xmlBlaster::util;
-using namespace org::xmlBlaster::util::qos;
+//using namespace org::xmlBlaster::util; <-- VC CRASH
+//using namespace org::xmlBlaster::util::qos; <-- VC CRASH
 
 namespace org { namespace xmlBlaster { namespace client { namespace qos {
 

@@ -20,7 +20,7 @@ using namespace std;
 using namespace org::xmlBlaster::client::qos;
 using namespace org::xmlBlaster::client::key;
 using namespace org::xmlBlaster::util::key;
-using namespace org::xmlBlaster::util::qos;
+//using namespace org::xmlBlaster::util::qos; <-- VC CRASH
 
 namespace org { namespace xmlBlaster { namespace util {
    

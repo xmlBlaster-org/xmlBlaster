@@ -34,7 +34,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <vector>
 #include <string>
 
-using namespace org::xmlBlaster::util;
+// using namespace org::xmlBlaster::util; <-- VC CRASH
 using namespace org::xmlBlaster::util::cluster;
 
 using namespace std;

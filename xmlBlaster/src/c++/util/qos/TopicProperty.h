@@ -29,7 +29,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/qos/storage/MsgUnitStoreProperty.h>
 #include <util/qos/storage/HistoryQueueProperty.h>
 
-using namespace org::xmlBlaster::util;
+//using namespace org::xmlBlaster::util; <-- VC CRASH
 using namespace org::xmlBlaster::util::qos::storage;
 
 using namespace std;
