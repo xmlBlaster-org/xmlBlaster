@@ -407,6 +407,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
       if (shutdownCb && this.cbServer != null) {
          try {
             this.cbServer.shutdown();
+            this.cbServer = null;
          } catch (Throwable e) {
             e.printStackTrace();
             log.warn(ME+".disconnect()", e.toString());
