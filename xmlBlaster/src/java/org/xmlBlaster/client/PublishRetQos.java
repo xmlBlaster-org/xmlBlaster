@@ -30,7 +30,7 @@ import org.xml.sax.Attributes;
  * @see classtest.PublishRetQosTest
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.publish.html" target="others">the interface.publish requirement</a>
  */
-public class PublishRetQos extends org.xmlBlaster.util.XmlQoSBase implements I_RetQos
+public final class PublishRetQos /*extends org.xmlBlaster.util.XmlQoSBase*/ implements I_RetQos
 {
    private String ME = "PublishRetQos";
    private final LogChannel log;
@@ -46,20 +46,57 @@ public class PublishRetQos extends org.xmlBlaster.util.XmlQoSBase implements I_R
 
    /**
     */
-   public PublishRetQos(Global glob, String xmlQoS_literal) throws XmlBlasterException
-   {
+   public PublishRetQos(Global glob, String xmlQos_literal) throws XmlBlasterException {
       this.log = glob.getLog(null);
       if (log.CALL) log.call(ME, "Entering PublishRetQos() (a message arrived)");
-      if (log.DUMP) log.dump(ME, "PublishRetQos: " + xmlQoS_literal);
-      init(xmlQoS_literal);
+      if (log.DUMP) log.dump(ME, "PublishRetQos: " + xmlQos_literal);
+      
+      // init(xmlQos_literal);  // SAX parser is too slow
+
+      if (xmlQos_literal != null && xmlQos_literal.length() > 0) {
+         setStateId(parseOurself(xmlQos_literal, "<state id="));
+         stateInfo = parseOurself(xmlQos_literal, "info=");
+         oid = parseOurself(xmlQos_literal, "<key oid=");
+      }
+   }
+
+   /**
+    */
+   public PublishRetQos(Global glob, String stateId, String stateInfo) {
+      this.log = glob.getLog(null);
+      setStateId(stateId);
+      setStateInfo(stateInfo);
+   }
+
+   /**
+    * Parse xml ourself, to gain performance
+    */
+   private final String parseOurself(String str, String token) {
+      int index = str.indexOf(token);
+      if (index >= 0) {
+         int from = index+token.length();
+         char apo = str.charAt(from);
+         int end = str.indexOf(apo, from+1);
+         if (end > 0) {
+            return str.substring(from+1, end);
+         }
+      }
+      return null;
    }
 
    /**
     * Access the state of message. 
     * @return OK (Other values are not yet supported)
     */
-   public String getStateId() {
+   public final String getStateId() {
       return stateId;
+   }
+
+   public final void setStateId(String id) {
+      if (id == null)
+         this.stateId = Constants.STATE_OK;
+      else
+         this.stateId = id;
    }
 
    /**
@@ -67,8 +104,12 @@ public class PublishRetQos extends org.xmlBlaster.util.XmlQoSBase implements I_R
     * @return "QUEUED" or "QUEUED[bilbo]"
     * @see org.xmlBlaster.engine.helper.Constants
     */
-   public String getStateInfo() {
+   public final String getStateInfo() {
       return this.stateInfo;
+   }
+
+   public final void setStateInfo(String stateInfo) {
+      this.stateInfo = stateInfo;
    }
 
    /**
@@ -78,14 +119,16 @@ public class PublishRetQos extends org.xmlBlaster.util.XmlQoSBase implements I_R
       return this.oid;
    }
 
-   /**
+   public final void setOid(String oid) {
+      this.oid = oid;
+   }
+
+   /*
     * Start element, event from SAX parser.
     * <p />
     * @param name Tag name
     * @param attrs the attributes of the tag
-    */
-   public void startElement(String uri, String localName, String name, Attributes attrs)
-   {
+   public final void startElement(String uri, String localName, String name, Attributes attrs) {
       super.startElement(uri, localName, name, attrs);
 
       //if (log.TRACE) log.trace(ME, "Entering startElement for " + name);
@@ -99,7 +142,7 @@ public class PublishRetQos extends org.xmlBlaster.util.XmlQoSBase implements I_R
             if (tmp == null)
                log.error(ME, "<qos><state id is missing");
             else
-               this.stateId = tmp;
+               this.setStateId(tmp);
             this.stateInfo = attrs.getValue("info");
          }
          return;
@@ -117,13 +160,13 @@ public class PublishRetQos extends org.xmlBlaster.util.XmlQoSBase implements I_R
          return;
       }
    }
+    */
 
-   /**
+   /*
     * End element, event from SAX parser.
     * <p />
     * @param name Tag name
-    */
-   public void endElement(String uri, String localName, String name) {
+   public final void endElement(String uri, String localName, String name) {
       super.endElement(uri, localName, name);
 
       // if (log.TRACE) log.trace(ME, "Entering endElement for " + name);
@@ -140,6 +183,7 @@ public class PublishRetQos extends org.xmlBlaster.util.XmlQoSBase implements I_R
          return;
       }
    }
+    */
 
    /**
     * @see #toXml(String)
@@ -160,7 +204,7 @@ public class PublishRetQos extends org.xmlBlaster.util.XmlQoSBase implements I_R
       offset += extraOffset;
 
       sb.append(offset).append("<qos>"); // <!-- PublishRetQos -->");
-      if (stateId != null) {
+      if (getStateId().length() > 0) {
          sb.append(offset).append("   <state id='").append(stateId);
          if (stateInfo != null)
             sb.append(offset).append("' info='").append(stateInfo);
