@@ -31,7 +31,7 @@ public class HelloWorld
          con.disconnect(null);
       }
       catch (Exception e) {
-         System.err.println("We have a problem: " + e.getMessage());
+         System.err.println("HelloWorld: We have a problem: " + e.toString());
       }
    }
 
