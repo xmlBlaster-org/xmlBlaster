@@ -38,3 +38,10 @@
    Download http://members.pingnet.ch/gamma/junit.htm
 
 
+5) collections.jar
+==================
+	Corresponds to Collections of Java2 API, for use in JDK 1.1x
+	This jar is not yet used, but may be included if a JDK 1.1x version
+	of xmlBlaster is necessary for some special environments
+
+	Download http://java.sun.com/beans/infobus/#DOWNLOAD_COLLECTIONS
