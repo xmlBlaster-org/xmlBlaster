@@ -699,16 +699,20 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
          sb.append(offset).append(" <subscriptionId>").append(msgQosData.getSubscriptionId()).append("</subscriptionId>");
       }
 
-      if (msgQosData.getLifeTime() != MsgQosData.DEFAULT_lifeTime) {
-         sb.append(offset).append(" <expiration lifeTime='").append(msgQosData.getLifeTime());
+      if (msgQosData.getLifeTimeProp().isModified() || msgQosData.getForceDestroyProp().isModified()) {
+         sb.append(offset).append(" <expiration");
+         if (msgQosData.getLifeTimeProp().isModified())
+            sb.append(offset).append(" lifeTime='").append(msgQosData.getLifeTime()).append("'");
          if (sendRemainingLife()) {
             long remainCached = msgQosData.getRemainingLife();
             if (remainCached > 0)
-               sb.append("' remainingLife='").append(remainCached);
+               sb.append(" remainingLife='").append(remainCached).append("'");
             else if (msgQosData.getRemainingLifeStatic() >= 0)
-               sb.append("' remainingLife='").append(msgQosData.getRemainingLifeStatic());
+               sb.append(" remainingLife='").append(msgQosData.getRemainingLifeStatic()).append("'");
          }
-         sb.append("'/>");
+         if (msgQosData.getForceDestroyProp().isModified())
+            sb.append(" forceDestroy='").append(msgQosData.isForceDestroy()).append("'");
+         sb.append("/>");
       }
 
       if (msgQosData.getRcvTimestamp() != null)
@@ -720,11 +724,19 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
       //if (!msgQosData.isVolatileDefault())
       //   sb.append(offset).append(" <isVolatile>").append(msgQosData.isVolatile()).append("</isVolatile>");
 
-      if (msgQosData.isDurable())
-         sb.append(offset).append(" <isDurable/>");
+      if (msgQosData.getDurableProp().isModified()) {
+         if (msgQosData.isDurable())
+            sb.append(offset).append(" <isDurable/>");
+         else
+            sb.append(offset).append(" <isDurable>false</isDurable>");
+      }
 
-      if (!msgQosData.isForceUpdateDefault())
-         sb.append(offset).append(" <forceUpdate>").append(msgQosData.isForceUpdate()).append("</forceUpdate>");
+      if (msgQosData.getForceUpdateProp().isModified()) {
+         if (msgQosData.isForceUpdate())
+           sb.append(offset).append(" <forceUpdate/>");
+         else
+           sb.append(offset).append(" <forceUpdate>false</forceUpdate>");
+      }
 
       //if (msgQosData.isReadonly()) -> see topic attribute
       //   sb.append(offset).append(" <readonly/>");

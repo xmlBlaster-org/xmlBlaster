@@ -11,6 +11,9 @@ import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.PriorityEnum;
 import org.xmlBlaster.util.SessionName;
+import org.xmlBlaster.util.property.PropEntry;
+import org.xmlBlaster.util.property.PropLong;
+import org.xmlBlaster.util.property.PropBoolean;
 
 import org.xmlBlaster.engine.helper.Destination;
 import org.xmlBlaster.engine.helper.Constants;
@@ -49,7 +52,7 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
    private TopicProperty topicProperty;
 
    /**
-    * A message lease lasts forever if not otherwise specified. <p />
+    * A PubSub message lease lasts forever if not otherwise specified. <p />
     * The default message life cycle can be modified in xmlBlaster.properties:<br />
     * <code>message.lease.maxLifeTime=3600000 # One hour lease</code><br />
     * Every message can set the lifeTime value between 1 and maxLifeTime, 
@@ -72,7 +75,7 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
    //private boolean volatileFlag = DEFAULT_isVolatile;
 
    public transient final static boolean DEFAULT_isDurable = false;
-   private boolean durable = DEFAULT_isDurable;
+   private PropBoolean durable = new PropBoolean(DEFAULT_isDurable);
 
    /**
     * Send message to subscriber even the content is the same as the previous?
@@ -80,7 +83,7 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
     * Default is that xmlBlaster does send messages to subscribed clients, even the content didn't change.
     */
    public transient final static boolean DEFAULT_forceUpdate = true;
-   private boolean forceUpdate = DEFAULT_forceUpdate;
+   private PropBoolean forceUpdate = new PropBoolean(DEFAULT_forceUpdate);
 
    public final static long DEFAULT_lifeTime = maxLifeTime;
    /** 
@@ -89,12 +92,12 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
     * This is the configured lifeTime in millis of the message.
     * It defaults to -1L (== forever).
     */
-   private long lifeTime = DEFAULT_lifeTime;
+   private PropLong lifeTime = new PropLong(DEFAULT_lifeTime);
 
    private long remainingLifeStatic = -1L;
 
    public transient final static boolean DEFAULT_forceDestroy = false;
-   private boolean forceDestroy = DEFAULT_forceDestroy;
+   private PropBoolean forceDestroy = new PropBoolean(DEFAULT_forceDestroy);
 
    /** the sender (publisher) of this message (unique loginName) */
    private SessionName sender;
@@ -217,13 +220,17 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
     * @param isDurable mark a message as persistent
     */
    public void setDurable(boolean durable) {
-      this.durable = durable;
+      this.durable.setValue(durable);
    }
 
    /**
     * @return true/false
     */
    public boolean isDurable() {
+      return this.durable.getValue();
+   }
+
+   public PropBoolean getDurableProp() {
       return this.durable;
    }
 
@@ -231,21 +238,18 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
     * @param forceUpdate Mark a PtP message to be queued if receiver is not available. 
     */
    public void setForceUpdate(boolean forceUpdate) {
-      this.forceUpdate = forceUpdate;
+      this.forceUpdate.setValue(forceUpdate);
    }
 
    /**
     * @return true/false
     */
    public boolean isForceUpdate() {
-      return this.forceUpdate;
+      return this.forceUpdate.getValue();
    }
 
-   /**
-    * @return true if we have default setting
-    */
-   public boolean isForceUpdateDefault() {
-      return DEFAULT_forceUpdate == forceUpdate;
+   public PropBoolean getForceUpdateProp() {
+      return this.forceUpdate;
    }
 
    /**
@@ -388,6 +392,10 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
     * The life time of the message or -1L if forever
     */
    public long getLifeTime() {
+      return this.lifeTime.getValue();
+   }
+
+   public PropLong getLifeTimeProp() {
       return this.lifeTime;
    }
 
@@ -395,7 +403,7 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
     * The life time of the message or -1L if forever
     */
    public void setLifeTime(long lifeTime) {
-      this.lifeTime = lifeTime;
+      this.lifeTime.setValue(lifeTime);
    }
 
    /**
@@ -403,7 +411,7 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
     *         if 0L the message is expired
     */
    public long getRemainingLife() {
-      if (this.lifeTime > 0L && this.lifeTime < Long.MAX_VALUE && getRcvTimestamp() != null) {
+      if (getLifeTime() > 0L && getLifeTime() < Long.MAX_VALUE && getRcvTimestamp() != null) {
          long ttl = getRcvTimestamp().getMillis() + getLifeTime() - System.currentTimeMillis();
          return ( ttl < 0L ) ? 0L : ttl;
       }
@@ -431,7 +439,7 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
     * Calculates if we are expired
     */
    public boolean isExpired() {
-      if (lifeTime == Long.MAX_VALUE || lifeTime <= 0L) {
+      if (getLifeTime() == Long.MAX_VALUE || getLifeTime() <= 0L) {
          return false; // lifes forever
       }
       if (getRcvTimestamp() == null) {
@@ -497,13 +505,17 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
     *        false On message expiry messages which are already in callback queues are delivered.
     */
    public void setForceDestroy(boolean forceDestroy) {
-      this.forceDestroy = forceDestroy;
+      this.forceDestroy.setValue(forceDestroy);
    }
 
    /**
     * @return true/false, defaults to false
     */
    public boolean isForceDestroy() {
+      return this.forceDestroy.getValue();
+   }
+
+   public PropBoolean getForceDestroyProp() {
       return this.forceDestroy;
    }
 
@@ -543,12 +555,17 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
 
    /**
     * Add a destination. 
+    * Note that the default lifeTime is set to 0 (PtP are volatile as default)
     */
    public void addDestination(Destination destination) {
       if (destination == null) return;
       if (this.destinationList == null) this.destinationList = new ArrayList();
       this.destinationArrCache = null;
       this.destinationList.add(destination);
+      if (!this.lifeTime.isModified()) {
+         // Change default setting for PtP to 'volatile'
+         this.lifeTime.setValue(0L, PropEntry.CREATED_BY_DEFAULT);
+      }
    }
 
    /**
