@@ -786,12 +786,12 @@ TODO
    <!-- starts xmlBlaster JMX GUI                                           -->
    <!-- =================================================================== -->
    <target name="runJmxGUI" description="Run GUI that connects to jmx Server">
-   	<echo message="Starting the Controller GUI"/>
+        <echo message="Starting the Controller GUI"/>
         <java classname="org.xmlBlaster.jmxgui.Main" classpath="lib/xmlBlaster.jar" dir="." failonerror="true" fork="true">
-	        <sysproperty key="java.compiler" value="NONE"/>
+                <sysproperty key="java.compiler" value="NONE"/>
         </java>
    </target>
-	 
+         
    <!-- =================================================================== -->
    <!-- Creates a test report with junit                                    -->
    <!-- =================================================================== -->
@@ -1657,6 +1657,8 @@ TODO
            <!--define name="_WINDLL" value="1" if="windows" /-->  <!-- Regular DLLs that statically link to MFC only -->
            <!-- undefine name="UNWANTEDDEF" / -->                 <!-- example only -->
 
+           <define name="__linux" value="1" if="linux" />
+
            <define name="__sunos__" value="1" if="sun" />
            <define name="__sparc__" value="1" if="sun" />
            <define name="__OSVERSION__" value="5" if="sun" />
@@ -1958,11 +1960,13 @@ TODO
          <includepath location="${src.c.dir}/pthreads" if="windows" />
 
          <defineset> <!-- See compiler id="base-msvc" at top of file -->
+           <define name="__linux" value="1" if="linux" />
            <define name="__sunos__" value="1" if="sun" />
            <define name="__sparc__" value="1" if="sun" />
            <define name="UsePthread" value="1" if="sun" />
            <define name="_REENTRANT" value="1" if="sun" />
            <define name="PthreadDraftVersion" value="10" if="sun" />
+           <define name="XMLBLASTER_C_COMPILE_AS_CPP" value="1" if="sun" /> <!-- Compile lib as C++ until somebody adds a 'cc' task to our build.xml -->
          </defineset>
 
          <linker name="gcc"  if="use-gcc" />
