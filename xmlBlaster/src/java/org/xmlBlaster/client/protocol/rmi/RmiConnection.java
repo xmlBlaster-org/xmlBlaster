@@ -3,7 +3,7 @@ Name:      RmiConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: RmiConnection.java,v 1.5 2000/10/22 13:58:26 ruff Exp $
+Version:   $Id: RmiConnection.java,v 1.6 2000/10/22 16:40:35 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.rmi;
@@ -49,7 +49,7 @@ import java.applet.Applet;
  * <p />
  * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http
  *
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.6 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class RmiConnection implements I_XmlBlasterConnection
@@ -283,7 +283,8 @@ public class RmiConnection implements I_XmlBlasterConnection
 
 
    /**
-    * Logout from the server.
+    * Logout from the server. 
+    * <p />
     * The callback server is removed as well, releasing all RMI threads.
     * Note that this kills the server ping thread as well (if in fail save mode)
     * @return true successfully logged out
@@ -361,7 +362,7 @@ public class RmiConnection implements I_XmlBlasterConnection
 
 
    /**
-    * Enforced by I_XmlBlasterConnection interface (fail save mode).
+    * Enforced by I_XmlBlasterConnection interface (fail save mode). 
     * see explanations of publish() method.
     * @see xmlBlaster.idl
     */
@@ -371,7 +372,7 @@ public class RmiConnection implements I_XmlBlasterConnection
       try {
          return getXmlBlaster().subscribe(sessionId, xmlKey, qos);
       } catch(XmlBlasterException e) {
-         throw new XmlBlasterException(e.id, e.reason); // transform Rmi exception to native exception
+         throw new XmlBlasterException(e.id, e.reason);
       } catch(Exception e) {
          throw new ConnectionException(ME+".InvokeError", e.toString());
       }
@@ -388,7 +389,7 @@ public class RmiConnection implements I_XmlBlasterConnection
       try {
          getXmlBlaster().unSubscribe(sessionId, xmlKey, qos);
       } catch(XmlBlasterException e) {
-         throw new XmlBlasterException(e.id, e.reason); // transform Rmi exception to native exception
+         throw new XmlBlasterException(e.id, e.reason);
       } catch(Exception e) {
          throw new ConnectionException(ME+".InvokeError", e.toString());
       }
@@ -412,7 +413,7 @@ public class RmiConnection implements I_XmlBlasterConnection
          return getXmlBlaster().publish(sessionId, msgUnit);
       } catch(XmlBlasterException e) {
          if (Log.TRACE) Log.trace(ME, "XmlBlasterException: " + e.reason);
-         throw new XmlBlasterException(e.id, e.reason); // transform Rmi exception to native exception
+         throw new XmlBlasterException(e.id, e.reason);
       } catch(Exception e) {
          throw new ConnectionException(ME+".InvokeError", e.toString());
       }
@@ -429,7 +430,7 @@ public class RmiConnection implements I_XmlBlasterConnection
          return getXmlBlaster().publishArr(sessionId, msgUnitArr);
       } catch(XmlBlasterException e) {
          if (Log.TRACE) Log.trace(ME, "XmlBlasterException: " + e.reason);
-         throw new XmlBlasterException(e.id, e.reason); // transform Rmi exception to native exception
+         throw new XmlBlasterException(e.id, e.reason);
       } catch(Exception e) {
          throw new ConnectionException(ME+".InvokeError", e.toString());
       }
@@ -445,7 +446,7 @@ public class RmiConnection implements I_XmlBlasterConnection
       try {
          return getXmlBlaster().erase(sessionId, xmlKey, qos);
       } catch(XmlBlasterException e) {
-         throw new XmlBlasterException(e.id, e.reason); // transform Rmi exception to native exception
+         throw new XmlBlasterException(e.id, e.reason);
       } catch(Exception e) {
          throw new ConnectionException(ME+".InvokeError", e.toString());
       }
@@ -461,7 +462,7 @@ public class RmiConnection implements I_XmlBlasterConnection
       try {
          return getXmlBlaster().get(sessionId, xmlKey, qos);
       } catch(XmlBlasterException e) {
-         throw new XmlBlasterException(e.id, e.reason); // transform Rmi exception to native exception
+         throw new XmlBlasterException(e.id, e.reason);
       } catch(Exception e) {
          e.printStackTrace();
          throw new ConnectionException(ME+".InvokeError", e.toString());
@@ -501,7 +502,7 @@ public class RmiConnection implements I_XmlBlasterConnection
       text += "   -rmi.registryPortCB Specify a port number where rmiregistry for the callback server listens.\n";
       text += "                       Default is port "+DEFAULT_REGISTRY_PORT+", the port 0 switches this feature off.\n";
       text += "   -rmi.hostnameCB     Specify a hostname where rmiregistry for the callback server runs.\n";
-      text += "                       Default is the localhost.\n";
+      text += "                       Default is the localhost (useful for multi homed hosts).\n";
       text += "\n";
       return text;
    }

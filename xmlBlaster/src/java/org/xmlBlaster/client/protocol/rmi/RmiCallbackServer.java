@@ -1,9 +1,9 @@
 /*------------------------------------------------------------------------------
-Name:      RmiConnection.java
+Name:      RmiCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: RmiCallbackServer.java,v 1.3 2000/10/22 13:50:02 ruff Exp $
+Version:   $Id: RmiCallbackServer.java,v 1.4 2000/10/22 16:40:35 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.rmi;
