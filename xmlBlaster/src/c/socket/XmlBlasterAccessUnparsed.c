@@ -128,14 +128,6 @@ Dll_Export void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xa)
       return;
    }
 
-   rc = pthread_mutex_destroy(&xa->writenMutex); /* On Linux this does nothing, but returns an error code EBUSY if the mutex was locked */
-   if (rc != 0) /* EBUSY */
-      xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, "pthread_mutex_destroy(writenMutex) returned %d, we ignore it", rc);
-
-   rc = pthread_mutex_destroy(&xa->readnMutex);
-   if (rc != 0) /* EBUSY */
-      xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, "pthread_mutex_destroy(readnMutex) returned %d, we ignore it", rc);
-
    freeProperties(xa->props);
 
    if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, "freeXmlBlasterAccessUnparsed()");
@@ -174,6 +166,15 @@ Dll_Export void freeXmlBlasterAccessUnparsed(XmlBlasterAccessUnparsed *xa)
              "freeXmlBlasterAccessUnparsed(): Sleeping %d millis for update thread to join. %d/%d", interval, i, num);
       }
    }
+
+   rc = pthread_mutex_destroy(&xa->writenMutex); /* On Linux this does nothing, but returns an error code EBUSY if the mutex was locked */
+   if (rc != 0) /* EBUSY */
+      xa->log(xa->logUserP, xa->logLevel, LOG_WARN, __FILE__, "pthread_mutex_destroy(writenMutex) returned %d, we ignore it", rc);
+
+   rc = pthread_mutex_destroy(&xa->readnMutex);
+   if (rc != 0) /* EBUSY */
+      xa->log(xa->logUserP, xa->logLevel, LOG_WARN, __FILE__, "pthread_mutex_destroy(readnMutex) returned %d, we ignore it", rc);
+
    free(xa);
 }
 
