@@ -3,7 +3,7 @@ Name:      Queue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Queue for client messages
-Version:   $Id: Queue.java,v 1.3 2000/03/27 13:52:28 ruff Exp $
+Version:   $Id: Queue.java,v 1.4 2000/05/18 17:16:26 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
@@ -22,12 +22,13 @@ import java.util.NoSuchElementException;
  * It is based on a linked list.
  * <p />
  * TODO: Allow persistence store e.g. via JDBC bridge into Orcale with some smart caching
- * @version $Revision: 1.3 $
+ * @version $Revision: 1.4 $
  * @author $Author: ruff $
  */
 public class Queue
 {
    private String ME = "Queue";
+   private String name = "";
    private final int MAX_ENTRIES;
    /** Default is false, and you get an Exception if queue is full */
    private boolean discardOldest = false;
@@ -41,10 +42,12 @@ public class Queue
 
    /**
     * Constructs an empty FIFO queue.
+    * @param name  A nice name, for error reporting only
     * @param maxEtnries The maximum number of nodes for this queue
     */
-   public Queue(int maxEntries)
+   public Queue(String name, int maxEntries)
    {
+      this.name = name;
       this.MAX_ENTRIES = maxEntries;
       if (Log.CALLS) Log.calls(ME, "Creating new Queue(" + MAX_ENTRIES + ") ...");
       init();
@@ -84,8 +87,10 @@ public class Queue
          if (queueList.size() >= MAX_ENTRIES) {
             if (discardOldest)
                pull();  // Discard oldest
-            else
-               throw new  XmlBlasterException(ME+".MaxSize", "Maximun size of queue reached");
+            else {
+               Log.error(ME+".MaxSize", "Maximun size=" + MAX_ENTRIES + " of queue '" + name + "' reached");
+               throw new  XmlBlasterException(ME+".MaxSize", "Maximun size=" + MAX_ENTRIES + " of queue '" + name + "' reached");
+            }
          }
          queueList.addFirst(obj);
       }
@@ -158,7 +163,7 @@ public class Queue
    {
       String me = "Queue-Tester";
       int size = 3;
-      Queue queue = new Queue(size);
+      Queue queue = new Queue("Test", size);
       queue.setModeToDiscardOldest();
       try {
          queue.push("Hello ");
