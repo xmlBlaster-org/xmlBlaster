@@ -6,6 +6,13 @@
 #                                                               #  
 #################################################################
 
+Welcome!
+
+We hope these hints are useful to get you running with xmlBlaster.
+If you have problems, don't hesitate to contact the maintainers
+through the mailing list (see http://www.xmlBlaster.org).
+
+
 +--------------------+
 | REQUIRED           |
 +--------------------+
@@ -17,8 +24,11 @@
 
 
 +--------------------+
-| ENVIRONMENT        |
+| INSTALLATION       |
 +--------------------+
+
+XmlBlaster comes compiled and ready to go.
+Unpack the distribution to some location ($HOME/xmlBlaster is a good spot).
 
 1. Extend your CLASSPATH and PATH environment variable. 
 
@@ -34,7 +44,7 @@
     source all enhancements of new xmlBlaster releases.
 
     Now the installation is finished.
-    After a new login you are ready to start the xmlBlaster (see below).
+    After a new login you are ready to start xmlBlaster (see below).
 
 
    b) If you didn't follow step a), here is how to setup
