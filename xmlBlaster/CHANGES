@@ -27,6 +27,10 @@ DONE:
     and in future other informations.
     Port 7609 is not used as a default any more.
 
+  - Incompatible change:
+     Removed XmlKeyBase.java, use XmlKey.java instead
+     XmlKeyBase.DEFAULT_contentMimeExtended -> Constantes.DEFAULT_CONTENT_MIME_EXTENDED
+
   - Incompatible change of file name:
      UpdateQoS.java -> UpdateQos.java
 
