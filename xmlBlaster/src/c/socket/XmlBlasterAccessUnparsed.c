@@ -328,25 +328,6 @@ static MsgRequestInfo *preSendEvent(MsgRequestInfo *msgRequestInfoP, XmlBlasterE
 
    /* ======== Initialize threading ====== */
    msgRequestInfoP->responseMutexIsLocked = false; /* Only to remember if the client thread holds the lock */
-#  ifdef _WINDOWS
-   msgRequestInfoP->responseMutex = PTHREAD_MUTEX_INITIALIZER;
-   msgRequestInfoP->responseCond = PTHREAD_COND_INITIALIZER;
-#  else
-   /* On Linux gcc & SUN CC:
-        "parse error before '{' token"
-      when initializing directly, so we do a hack here:
-      (NOTE: using pthread_cond_init() would be the choice to
-      initialize but this only works with dynamic conds)
-   */
-   {
-      pthread_mutex_t mutex = PTHREAD_MUTEX_INITIALIZER;
-      msgRequestInfoP->responseMutex = mutex;
-   }
-   {
-      pthread_cond_t cond = PTHREAD_COND_INITIALIZER;
-      msgRequestInfoP->responseCond = cond;
-   }
-#  endif
 
    if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__,
                                 "preSendEvent(%s) occurred", msgRequestInfoP->methodName);
@@ -362,6 +343,7 @@ static MsgRequestInfo *preSendEvent(MsgRequestInfo *msgRequestInfoP, XmlBlasterE
    if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__,
                   "preSendEvent(requestId=%s, msgRequestInfoP->responseBlob.dataLen=%d), entering lock",
                   msgRequestInfoP->requestIdStr, msgRequestInfoP->responseBlob.dataLen);
+   pthread_mutex_init(&msgRequestInfoP->responseMutex, NULL); /* returns always 0 */
    if ((retVal = pthread_mutex_lock(&msgRequestInfoP->responseMutex)) != 0) {
       strncpy0(exception->errorCode, "user.internal", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN,
@@ -425,6 +407,7 @@ static MsgRequestInfo *postSendEvent(MsgRequestInfo *msgRequestInfoP, XmlBlaster
    XmlBlasterAccessUnparsed *xa = (XmlBlasterAccessUnparsed *)msgRequestInfoP->xa;
    struct timespec abstime;
    bool useTimeout = false;
+   int retVal;
 
    if (msgRequestInfoP->rollback) {
       mutexUnlock(msgRequestInfoP, exception);
@@ -436,6 +419,16 @@ static MsgRequestInfo *postSendEvent(MsgRequestInfo *msgRequestInfoP, XmlBlaster
    }
 
    if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, "postSendEvent(requestId=%s) responseMutex is LOCKED, entering wait ...", msgRequestInfoP->requestIdStr);
+   
+   if ((retVal = pthread_cond_init(&msgRequestInfoP->responseCond, NULL)) != 0) {
+      xa->callbackP->removeResponseListener(xa->callbackP, msgRequestInfoP->requestIdStr);
+      strncpy0(exception->errorCode, "resource.exhaust", XMLBLASTEREXCEPTION_ERRORCODE_LEN); /* ErrorCode.RESOURCE_EXHAUST */
+      SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%.100s:%d] pthread_cond_init() for '%s()' with requestId=%s returned %d.",
+               __FILE__, __LINE__, msgRequestInfoP->methodName, msgRequestInfoP->requestIdStr, retVal);
+      if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, exception->message);
+      return (MsgRequestInfo *)0;
+   }
+
    /* Wait for response, the callback server delivers it */
    while (msgRequestInfoP->responseType == 0) { /* Protect for spurious wake ups (e.g. by SIGUSR1) */
       if (useTimeout == true) {
@@ -454,6 +447,11 @@ static MsgRequestInfo *postSendEvent(MsgRequestInfo *msgRequestInfoP, XmlBlaster
          if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__,
             "Wake up tread, response of length %d arrived", msgRequestInfoP->responseBlob.dataLen);
       }
+   }
+
+   if ((retVal = pthread_cond_destroy(&msgRequestInfoP->responseCond)) != 0) {
+      xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__, "pthread_cond_destroy() for '%s()' with requestId=%s returned %d, we ignore it.",
+                 msgRequestInfoP->methodName, msgRequestInfoP->requestIdStr, retVal);
    }
 
    msgRequestInfoP->blob.dataLen = msgRequestInfoP->responseBlob.dataLen;
@@ -496,6 +494,10 @@ static bool mutexUnlock(MsgRequestInfo *msgRequestInfoP, XmlBlasterException *ex
    if ((retVal = pthread_mutex_unlock(&msgRequestInfoP->responseMutex)) != 0) {
       char embeddedText[XMLBLASTEREXCEPTION_MESSAGE_LEN];
       if (exception == 0) {
+         if ((retVal = pthread_mutex_destroy(&msgRequestInfoP->responseMutex)) != 0) {
+            xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__, "pthread_mutex_destroy() for '%s()' with requestId=%s returned %d, we ignore it.",
+                       msgRequestInfoP->methodName, msgRequestInfoP->requestIdStr, retVal);
+         }
          return false;
       }
       if (*exception->errorCode != 0) {
@@ -507,9 +509,19 @@ static bool mutexUnlock(MsgRequestInfo *msgRequestInfoP, XmlBlasterException *ex
       strncpy0(exception->errorCode, "user.internal", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       SNPRINTF(exception->message, XMLBLASTEREXCEPTION_MESSAGE_LEN, "[%.100s:%d] ERROR trying to unlock responseMutex, return=%d. Embedded %s", __FILE__, __LINE__, retVal, embeddedText);
       if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, exception->message);
+
+      if ((retVal = pthread_mutex_destroy(&msgRequestInfoP->responseMutex)) != 0) {
+         xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__, "pthread_mutex_destroy() for '%s()' with requestId=%s returned %d, we ignore it.",
+                    msgRequestInfoP->methodName, msgRequestInfoP->requestIdStr, retVal);
+      }
       return false;
    }
    if (xa->logLevel>=LOG_TRACE) xa->log(xa->logUserP, xa->logLevel, LOG_TRACE, __FILE__, "postSendEvent() responseMutex is UNLOCKED");
+
+   if ((retVal = pthread_mutex_destroy(&msgRequestInfoP->responseMutex)) != 0) {
+      xa->log(xa->logUserP, xa->logLevel, LOG_ERROR, __FILE__, "pthread_mutex_destroy() for '%s()' with requestId=%s returned %d, we ignore it.",
+                 msgRequestInfoP->methodName, msgRequestInfoP->requestIdStr, retVal);
+   }
    return true;
 }
 
