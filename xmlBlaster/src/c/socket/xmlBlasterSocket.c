@@ -281,6 +281,8 @@ char *encodeSocketMessage(
  * @param fpHolder Struct containing the function pointer which access the socket to read from (if necessary decompressing on the fly)
  * @param socketDataHolder The struct to put the parsed message into (needs to be allocated by you or on your stack)
  * @param exception The struct to put exceptions into (needs to be allocated by you or to be on your stack)
+ * @param stopP The *stopP may change to 'true' during receiv() blocking
+ * @param udp true if it is a UDP connection
  * @param debug Set to true to have debugging output on console
  * @return true: A messages is parsed and put into your socketDataHolder,
  *         you need to free(socketDataHolder->data) after working with it.
@@ -288,7 +290,7 @@ char *encodeSocketMessage(
  *         false: The socket is closed (EOF)
  */
 bool parseSocketData(int xmlBlasterSocket, const XmlBlasterReadFromSocketFuncHolder *fpHolder,
-       SocketDataHolder *socketDataHolder, XmlBlasterException *exception, bool udp, bool debug)
+       SocketDataHolder *socketDataHolder, XmlBlasterException *exception, bool *stopP, bool udp, bool debug)
 {
    char msgLenPtr[MSG_LEN_FIELD_LEN+1];
    char *rawMsg = 0;
@@ -310,7 +312,7 @@ bool parseSocketData(int xmlBlasterSocket, const XmlBlasterReadFromSocketFuncHol
    else
       /* read the first 10 bytes to determine the length */
       numRead = fpHolder->funcP(fpHolder->userP, xmlBlasterSocket, msgLenPtr, MSG_LEN_FIELD_LEN);
-   if (numRead <= 0) {
+   if (numRead <= 0 || *stopP == true) {
       return false; /* EOF on socket */
    }
    if ((!udp && numRead != MSG_LEN_FIELD_LEN) ||
@@ -354,7 +356,8 @@ bool parseSocketData(int xmlBlasterSocket, const XmlBlasterReadFromSocketFuncHol
    }
    else
       numRead = fpHolder->funcP(fpHolder->userP, xmlBlasterSocket, rawMsg+MSG_LEN_FIELD_LEN, (int)socketDataHolder->msgLen-MSG_LEN_FIELD_LEN);
-   if (numRead <= 0) {
+   if (numRead <= 0 || *stopP == true) {
+      free(rawMsg);
       return false; /* EOF on socket */
    }
    if ((size_t)numRead != (socketDataHolder->msgLen-MSG_LEN_FIELD_LEN)) {

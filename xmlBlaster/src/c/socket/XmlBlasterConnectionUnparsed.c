@@ -506,11 +506,11 @@ const char *xmlBlasterConnectionUnparsedUsage()
 static void xmlBlasterConnectionShutdown(XmlBlasterConnectionUnparsed *xb)
 {
    if (xb->isConnected(xb)) {
-      shutdown(xb->socketToXmlBlaster, 2);
+      shutdown(xb->socketToXmlBlaster, SHUT_RDWR); /* enum SHUT_RDWR = 2 */
       closeSocket(xb->socketToXmlBlaster);
       xb->socketToXmlBlaster = -1;
       if (xb->socketToXmlBlasterUdp != -1) {
-         shutdown(xb->socketToXmlBlasterUdp, 2);
+         shutdown(xb->socketToXmlBlasterUdp, SHUT_RDWR);
          closeSocket(xb->socketToXmlBlasterUdp);
          xb->socketToXmlBlasterUdp = -1;
       }
@@ -733,7 +733,8 @@ static bool sendData(XmlBlasterConnectionUnparsed *xb,
  */
 static bool getResponse(XmlBlasterConnectionUnparsed *xb, SocketDataHolder *responseSocketDataHolder, XmlBlasterException *exception, bool udp)
 {
-   return parseSocketData(xb->socketToXmlBlaster, &xb->readFromSocket, responseSocketDataHolder, exception, udp, xb->logLevel >= LOG_DUMP);
+   bool stopListenLoop = false;
+   return parseSocketData(xb->socketToXmlBlaster, &xb->readFromSocket, responseSocketDataHolder, exception, &stopListenLoop, udp, xb->logLevel >= LOG_DUMP);
 }
 
 /**

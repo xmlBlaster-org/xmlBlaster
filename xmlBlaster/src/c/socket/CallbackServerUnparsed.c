@@ -379,9 +379,13 @@ static int runCallbackServer(CallbackServerUnparsed *cb)
       rc = pthread_create(&udpListenThread, NULL, (void * (*)(void *))listenLoop, udpLoop);
    }
 
+   if (cb->logLevel>=LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__,
+         "Waiting to join tcpListenThread ...");
    pthread_join(tcpListenThread, NULL);
    free(tcpLoop);
    if (useUdpForOneway) {
+      if (cb->logLevel>=LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__,
+         "Waiting to join udpListenThread ...");
       pthread_join(udpListenThread, NULL);
       free(udpLoop);
    }
@@ -390,6 +394,8 @@ static int runCallbackServer(CallbackServerUnparsed *cb)
       cb->log(cb->logUserP, cb->logLevel, LOG_ERROR, __FILE__, "pthread_mutex_destroy() returned %d, we ignore it", rc);
 
    cb->isShutdown = true;
+   if (cb->logLevel>=LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__,
+         "Callbackserver thread is dying now ...");
    return 0;
 }
 
@@ -500,7 +506,8 @@ static bool isListening(CallbackServerUnparsed *cb)
  */
 static bool readMessage(CallbackServerUnparsed *cb, SocketDataHolder *socketDataHolder, XmlBlasterException *exception, bool udp)
 {
-   return parseSocketData(udp ? cb->socketUdp : cb->acceptSocket, &cb->readFromSocket, socketDataHolder, exception, udp, cb->logLevel >= LOG_DUMP);
+   return parseSocketData(udp ? cb->socketUdp : cb->acceptSocket, &cb->readFromSocket, socketDataHolder,
+                          exception, &cb->stopListenLoop, udp, cb->logLevel >= LOG_DUMP);
 }
 
 /** A helper to cast to SocketDataHolder */

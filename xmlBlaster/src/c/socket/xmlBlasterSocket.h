@@ -92,7 +92,7 @@ extern char *encodeSocketMessage(
               size_t *rawMsgLen);
 Dll_Export BlobHolder encodeMsgUnit(MsgUnit *msgUnit, bool debug);  /* export for C++ embedding */
 Dll_Export BlobHolder encodeMsgUnitArr(MsgUnitArr *msgUnitArr, bool debug);
-Dll_Export bool parseSocketData(int xmlBlasterSocket, const XmlBlasterReadFromSocketFuncHolder *fpHolder, SocketDataHolder *socketDataHolder, XmlBlasterException *exception, bool udp, bool debug);
+Dll_Export bool parseSocketData(int xmlBlasterSocket, const XmlBlasterReadFromSocketFuncHolder *fpHolder, SocketDataHolder *socketDataHolder, XmlBlasterException *exception, bool *stopP, bool udp, bool debug);
 Dll_Export void convertToXmlBlasterException(const XmlBlasterBlob *blob, XmlBlasterException *exception, bool debug);
 Dll_Export void encodeXmlBlasterException(XmlBlasterBlob *blob, const XmlBlasterException *exception, bool debug);
 Dll_Export MsgUnitArr *parseMsgUnitArr(size_t dataLen, char *data);
