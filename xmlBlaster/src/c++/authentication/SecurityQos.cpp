@@ -109,15 +109,15 @@ string SecurityQos::getCredential() const
 string SecurityQos::toXml(const string& extraOffset)
 {
    string ret;
-   string offset = "\n   ";
-   offset += extraOffset;
+   string offset = Constants::OFFSET + extraOffset;
+   string offset2 = offset + Constants::INDENT;
 
    ret += offset + "<securityService type=\"";
    ret += getPluginType() + "\" version=\"" + getPluginVersion()  + "\">";
-   ret += offset + "   <![CDATA[";
-   ret += offset + "   <user>" + user_ + "</user>";
-   ret += offset + "   <passwd>" + passwd_ + "</passwd>";
-   ret += offset + "   ]]>";
+   ret += offset2 + "<![CDATA[";
+   ret += offset2 + "<user>" + user_ + "</user>";
+   ret += offset2 + "<passwd>" + passwd_ + "</passwd>";
+   ret += offset2 + "]]>";
    ret += offset + "</securityService>";
    return ret;
 }
