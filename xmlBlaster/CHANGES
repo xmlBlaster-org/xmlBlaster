@@ -4,7 +4,7 @@ The "#99999" numbers are Subversion revision numbers.
 Changes in current subversion repository (svn)
 ==============================================
 
- o #12937 login- and logout events now return the public session id in the "__sessionId" client property as a long 
+ o #12938 login- and logout events now return the public session id in the "__sessionId" client property as a long 
  
  o #12936 Added subversion property "svn:eol-style=native" to resolve CRLF (Win) and LF (UNIX) problems
    Thanks to David Viner dviner@yahoo-inc.com
