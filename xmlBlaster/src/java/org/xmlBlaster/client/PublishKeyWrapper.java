@@ -3,7 +3,7 @@ Name:      PublishKeyWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey
-Version:   $Id: PublishKeyWrapper.java,v 1.12 2002/04/23 08:07:29 ruff Exp $
+Version:   $Id: PublishKeyWrapper.java,v 1.13 2002/04/23 15:03:17 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -44,7 +44,7 @@ public class PublishKeyWrapper extends KeyWrapper
    private String contentMimeExtended = null;
    /** value from attribute <key oid="" domain="..."> */
    private String domain = null;
-   private String clientTags = "";
+   private String clientTags = null;
 
 
    /**
@@ -97,6 +97,16 @@ public class PublishKeyWrapper extends KeyWrapper
 
 
    /**
+    * Access the domain setting
+    * @return A domain string or null
+    */
+   public String getDomain()
+   {
+      return this.domain;
+   }
+
+
+   /**
     * Converts the data in XML ASCII string.
     * @return An XML ASCII string
     */
@@ -132,9 +142,13 @@ public class PublishKeyWrapper extends KeyWrapper
          sb.append(" contentMimeExtended='").append(contentMimeExtended).append("'");
       if (domain != null && domain.length() > 0)
          sb.append(" domain='").append(domain).append("'");
-      sb.append(">\n");
-      sb.append(clientTags);
-      sb.append("\n</key>");
+      if (clientTags != null && clientTags.trim().length() > 0) {
+         sb.append(">\n");
+         sb.append(clientTags.trim());
+         sb.append("\n</key>");
+      }
+      else
+         sb.append("/>");
       return sb.toString();
    }
 }
