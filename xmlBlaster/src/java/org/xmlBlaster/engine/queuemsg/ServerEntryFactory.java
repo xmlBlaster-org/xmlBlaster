@@ -255,7 +255,7 @@ public class ServerEntryFactory implements I_EntryFactory
             Object[] obj = (Object[])objStream.readObject();
             if (obj.length != 3) {
                throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME,
-                         "Expected 1 entry in serialized object stream but got " + obj.length + " for priority=" + priority + " timestamp=" + timestamp);
+                         "Expected 3 entries in serialized object stream but got " + obj.length + " for priority=" + priority + " timestamp=" + timestamp);
             }
             String keyLiteral = (String)obj[0];
             String qosLiteral = (String)obj[1];

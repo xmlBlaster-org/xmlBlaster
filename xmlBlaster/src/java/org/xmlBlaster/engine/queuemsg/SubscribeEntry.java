@@ -104,7 +104,7 @@ public class SubscribeEntry implements I_MapEntry {
     * @see org.xmlBlaster.util.queue.I_Entry#getEmbeddedType()
     */
    public String getEmbeddedType() {
-      return ServerEntryFactory.ENTRY_TYPE_SESSION;
+      return ServerEntryFactory.ENTRY_TYPE_SUBSCRIBE;
    }
 
    /**
