@@ -138,4 +138,15 @@ public final class MsgKeyData extends KeyData implements java.io.Serializable, C
    public Object clone() {
       return super.clone();
    }
+
+   /** java org.xmlBlaster.util.key.MsgKeyData */
+   public static void main(String[] args) {
+      MsgKeyData key = new MsgKeyData(null);
+      String clientTags = "<agent>\n" +
+                          " Hello\n" +
+                          " world\n" +
+                          "</agent>";
+      key.setClientTags(clientTags);
+      System.out.println(key.getClientTags());
+   }
 }
