@@ -72,7 +72,7 @@ You have three options to start the xmlBlaster-Server.
 
    and a testclient
     
-     jaco testsuite.org.xmlBlaster.ClientGet
+     jaco javaclients.ClientGet
 
 
 
@@ -82,7 +82,7 @@ You have three options to start the xmlBlaster-Server.
 
    and a testclient
 
-     jaco testsuite.org.xmlBlaster.ClientGet -iorHost localhost -iorPort 7609
+     jaco javaclients.ClientGet -iorHost localhost -iorPort 7609
 
 
 
@@ -92,7 +92,7 @@ You have three options to start the xmlBlaster-Server.
 
    and a testclient
 
-     jaco testsuite.org.xmlBlaster.ClientGet -iorFile /tmp/NS_Ref
+     jaco javaclients.ClientGet -iorFile /tmp/NS_Ref
 
 
 
@@ -103,7 +103,7 @@ You have three options to start the xmlBlaster-Server.
 
      jaco org.xmlBlaster.Main
 
-     jaco testsuite.org.xmlBlaster.ClientXml
+     jaco javaclients.ClientXml
 
 
 
