@@ -150,6 +150,7 @@ int main(int argc, char** argv)
       bool notifyOnErase = xa->props->getBool(xa->props, "notifyOnErase", true);
       bool local = xa->props->getBool(xa->props, "local", true);
       bool initialUpdate = xa->props->getBool(xa->props, "initialUpdate", true);
+      bool updateOneway = xa->props->getBool(xa->props, "updateOneway", false);
       int historyNumUpdates = xa->props->getInt(xa->props, "historyNumUpdates", 1);
       bool historyNewestFirst = xa->props->getBool(xa->props, "historyNewestFirst", true);
       bool wantContent = xa->props->getBool(xa->props, "wantContent", true);
@@ -183,6 +184,7 @@ int main(int argc, char** argv)
                    " <persistent>%.20s</persistent>"
                    " <local>%.20s</local>"
                    " <initialUpdate>%.20s</initialUpdate>"
+                   " <updateOneway>%.20s</updateOneway>"
                    " <notify>%.20s</notify>"
                    "%.2048s"
                    " <history numEntries='%d' newestFirst='%.20s'/>"
@@ -192,6 +194,7 @@ int main(int argc, char** argv)
                    persistentSubscribe?"true":"false",
                    local?"true":"false",
                    initialUpdate?"true":"false",
+                   updateOneway?"true":"false",
                    notifyOnErase?"true":"false",
                    filterQos,
                    historyNumUpdates,
