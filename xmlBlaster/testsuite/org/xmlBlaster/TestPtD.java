@@ -4,7 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster and publishing to destinations
 Comment:   Testing PtP (point to point) messages
-Version:   $Id: TestPtD.java,v 1.2 1999/12/13 12:20:09 ruff Exp $
+Version:   $Id: TestPtD.java,v 1.3 1999/12/13 12:35:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -36,7 +36,6 @@ public class TestPtD extends TestCase implements I_Callback
 {
    private Server senderXmlBlaster = null;
    private final static String ME = "TestPtD";
-   private final String[] args;
 
    private final String senderName = "Manuel";
    private String publishOid = "";
@@ -56,12 +55,10 @@ public class TestPtD extends TestCase implements I_Callback
     * <p />
     * @param testName  The name used in the test suite
     * @param loginName The name to login to the xmlBlaster
-    * @param args      Array of command line start parameters
     */
-   public TestPtD(String testName, String[] args)
+   public TestPtD(String testName)
    {
        super(testName);
-       this.args = args;
    }
 
 
@@ -77,10 +74,10 @@ public class TestPtD extends TestCase implements I_Callback
       try {
          String passwd = "secret";
 
-         receiverConnection = new CorbaConnection(args);
+         receiverConnection = new CorbaConnection();
          receiverXmlBlaster = receiverConnection.login(receiverName, passwd, "<qos></qos>", this);
 
-         senderConnection = new CorbaConnection(args);
+         senderConnection = new CorbaConnection();
          senderXmlBlaster = senderConnection.login(senderName, passwd, "<qos></qos>", this);
       }
       catch (Exception e) {
@@ -139,7 +136,7 @@ public class TestPtD extends TestCase implements I_Callback
 
    /**
     * This is the callback method (I_Callback) invoked from CorbaConnection
-    * informing the client in an asynchronous mode about a new message. 
+    * informing the client in an asynchronous mode about a new message.
     * <p />
     * The raw CORBA-BlasterCallback.update() is unpacked and for each arrived message
     * this update is called.
@@ -197,11 +194,7 @@ public class TestPtD extends TestCase implements I_Callback
    public static Test suite()
    {
        TestSuite suite= new TestSuite();
-
-       String[] args = new String[0];  // dummy
-
-       suite.addTest(new TestPtD("testPtOneDestination", args));
-
+       suite.addTest(new TestPtD("testPtOneDestination"));
        return suite;
    }
 
@@ -217,7 +210,7 @@ public class TestPtD extends TestCase implements I_Callback
     */
    public static void main(String args[])
    {
-      TestPtD testSub = new TestPtD("TestPtD", args);
+      TestPtD testSub = new TestPtD("TestPtD");
       testSub.setUp();
       testSub.testPtOneDestination();
       testSub.tearDown();

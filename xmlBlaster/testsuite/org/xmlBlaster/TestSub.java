@@ -3,7 +3,7 @@ Name:      TestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.java,v 1.7 1999/12/13 12:20:09 ruff Exp $
+Version:   $Id: TestSub.java,v 1.8 1999/12/13 12:35:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -37,7 +37,6 @@ public class TestSub extends TestCase implements I_Callback
 {
    private Server xmlBlaster = null;
    private static String ME = "Tim";
-   private String[] args;
    private boolean messageArrived = false;
 
    private String subscribeOid;
@@ -54,14 +53,12 @@ public class TestSub extends TestCase implements I_Callback
     * <p />
     * @param testName  The name used in the test suite
     * @param loginName The name to login to the xmlBlaster
-    * @param args      Array of command line start parameters
     */
-   public TestSub(String testName, String loginName, String[] args)
+   public TestSub(String testName, String loginName)
    {
        super(testName);
        this.senderName = loginName;
        this.receiverName = loginName;
-       this.args = args;
    }
 
 
@@ -73,7 +70,7 @@ public class TestSub extends TestCase implements I_Callback
    protected void setUp()
    {
       try {
-         senderConnection = new CorbaConnection(args); // Find orb
+         senderConnection = new CorbaConnection(); // Find orb
          String passwd = "secret";
          String qos = "<qos></qos>";
          xmlBlaster = senderConnection.login(senderName, passwd, qos, this); // Login to xmlBlaster
@@ -93,8 +90,8 @@ public class TestSub extends TestCase implements I_Callback
    protected void tearDown()
    {
       String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
-                        "<key oid='" + publishOid + "' queryType='EXACT'>\n" +
-                        "</key>";
+                      "<key oid='" + publishOid + "' queryType='EXACT'>\n" +
+                      "</key>";
       String qos = "<qos></qos>";
       String[] strArr = null;
       try {
@@ -145,12 +142,12 @@ public class TestSub extends TestCase implements I_Callback
 
       numReceived = 0;
       String xmlKey = "<?xml version='1.0' encoding='ISO-8859-1' ?>\n" +
-                        "<key oid='' contentMime='text/xml'>\n" +
-                        "   <TestSub-AGENT id='192.168.124.10' subId='1' type='generic'>" +
-                        "      <TestSub-DRIVER id='FileProof' pollingFreq='10'>" +
-                        "      </TestSub-DRIVER>"+
-                        "   </TestSub-AGENT>" +
-                        "</key>";
+                      "<key oid='' contentMime='text/xml'>\n" +
+                      "   <TestSub-AGENT id='192.168.124.10' subId='1' type='generic'>" +
+                      "      <TestSub-DRIVER id='FileProof' pollingFreq='10'>" +
+                      "      </TestSub-DRIVER>"+
+                      "   </TestSub-AGENT>" +
+                      "</key>";
       senderContent = "Yeahh, i'm the new content";
       MessageUnit messageUnit = new MessageUnit(xmlKey, senderContent.getBytes());
       try {
@@ -184,7 +181,7 @@ public class TestSub extends TestCase implements I_Callback
 
    /**
     * This is the callback method (I_Callback) invoked from CorbaConnection
-    * informing the client in an asynchronous mode about a new message. 
+    * informing the client in an asynchronous mode about a new message.
     * <p />
     * The raw CORBA-BlasterCallback.update() is unpacked and for each arrived message
     * this update is called.
@@ -242,9 +239,8 @@ public class TestSub extends TestCase implements I_Callback
    public static Test suite()
    {
        TestSuite suite= new TestSuite();
-       String[] args = new String[0];  // dummy
        String loginName = "Tim";
-       suite.addTest(new TestSub("testPublishAfterSubscribeXPath", loginName, args));
+       suite.addTest(new TestSub("testPublishAfterSubscribeXPath", loginName));
        return suite;
    }
 
@@ -260,9 +256,7 @@ public class TestSub extends TestCase implements I_Callback
     */
    public static void main(String args[])
    {
-      // check if parameter -name <userName> is given at startup of client
-      String senderName = Args.getArg(args, "-name", TestSub.ME);
-      TestSub testSub = new TestSub("TestSub", senderName, args);
+      TestSub testSub = new TestSub("TestSub", "Tim");
       testSub.setUp();
       testSub.testPublishAfterSubscribeXPath();
       testSub.tearDown();
