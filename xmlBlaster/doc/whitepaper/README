@@ -1,7 +1,7 @@
 To generate a HTML version from the xml file download from
 
    http://www.nwalsh.com/docbook/xsl/index.html
-	(http://www.jtauber.com/fop/)
+   (http://www.jtauber.com/fop/)
 
    dbx106.zip
 
@@ -11,7 +11,7 @@ your installation path.
 
 Generate HTML output:
 =====================
-	I added our css into /opt/docbook/html/docbook.xsl (how to include it into the xml file?)
+   I added our css into /opt/docbook/html/docbook.xsl (how to include it into the xml file?)
       <link REL="stylesheet" type="text/css" href="xmlBlaster.css"/>
 
    java -Dcom.jclark.xsl.sax.parser=com.jclark.xsl.dom.SunXMLProcessorImpl com.jclark.xsl.sax.Driver whitepaper.xml /opt/docbook/html/docbook.xsl whitepaper.html
@@ -41,16 +41,19 @@ Generate pdf output:
 
    export CLASSPATH=$CLASSPATH:/opt/fop_bin_0_12_0.jar
 
-	java -Dorg.xml.sax.parser=com.sun.xml.parser.Parser org.apache.fop.apps.CommandLine whitepaper.fo whitepaper.pdf
+   java -Dorg.xml.sax.parser=com.sun.xml.parser.Parser org.apache.fop.apps.CommandLine whitepaper.fo whitepaper.pdf
 
 
 Other pdf generators:
 =====================
+   Rendering Engine from XML/XSL to PDF format (REXP), Open source
+      http://www.esng.dibe.unige.it/REXP/
+   
 
    FO to PDF (Latex based)
-   	http://users.ox.ac.uk/~rahtz/passivetex/
-	   Converts FO to TeX to PDF. Has direct support for MathML. Need a
-	   pdftex installed.
+      http://users.ox.ac.uk/~rahtz/passivetex/
+      Converts FO to TeX to PDF. Has direct support for MathML. Need a
+      pdftex installed.
 
 
    FO2PDF (commercial, no demo version)
