@@ -11,6 +11,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.enum.Constants;
 import org.xml.sax.Attributes;
 
+import org.xmlBlaster.util.property.PropEntry;
 import org.xmlBlaster.util.property.PropString;
 import org.xmlBlaster.util.property.PropInt;
 import org.xmlBlaster.util.property.PropLong;
@@ -24,6 +25,7 @@ import org.xmlBlaster.util.property.PropBoolean;
  * See examples in the implementing classes
  * @see Address
  * @see CallbackAddress
+ * @see org.xmlBlaster.test.classtest.qos.AddressBaseTest
  */
 public abstract class AddressBase
 {
@@ -37,7 +39,7 @@ public abstract class AddressBase
    protected String instanceName;
 
    /** The unique address, e.g. the CORBA IOR string */
-   private String address;
+   private PropString address = new PropString(null);
 
    private String hostname;
    protected boolean isHardcodedHostname = false; // set to true if setHostname() was explicitly called by user
@@ -216,7 +218,6 @@ public abstract class AddressBase
 
    protected final void initHostname(String hostname) {
       this.hostname = hostname;
-      this.address = null; // reset cache
    }
 
    /**
@@ -240,7 +241,6 @@ public abstract class AddressBase
    public final String getHostname() {
       if (this.hostname == null || this.hostname.length() < 1) {
          this.hostname = glob.getBootstrapHostname();
-         this.address = null; // reset cache
       }
       return this.hostname;
    }
@@ -251,7 +251,6 @@ public abstract class AddressBase
     */
    public final void setPort(int port) {
       this.port.setValue(port);
-      this.address = null; // reset cache
    }
 
    public final int getPort() {
@@ -265,7 +264,7 @@ public abstract class AddressBase
     */
    public final void setAddress(String address) {
       if (address == null) { Thread.currentThread().dumpStack(); throw new IllegalArgumentException("AddressBase.setAddress(null) null argument is not allowed"); }
-      this.address = address;
+      this.address.setValue(address);
    }
 
    /**
@@ -273,12 +272,13 @@ public abstract class AddressBase
     * @return e.g. "IOR:00001100022...." or "et@universe.com" or ""
     */
    public final String getAddress() {
-      if (this.address == null) {
-         this.address = "http://" + getHostname();
+      if (!this.address.isModified()) {
+         String ad = "http://" + getHostname();
          if (getPort() > 0)
-            this.address += ":" + getPort();
+            ad += ":" + getPort();
+         this.address.setValue(ad, PropEntry.CREATED_BY_DEFAULT);
       }
-      return address;
+      return this.address.getValue();
    }
 
    /**
@@ -721,10 +721,9 @@ public abstract class AddressBase
       if (this.dispatchPlugin.isModified())
           sb.append(" dispatchPlugin='").append(this.dispatchPlugin).append("'");
       sb.append(">");
-      if (getAddress() != null)
-         sb.append(offset).append("   ").append(getAddress());
+      sb.append(offset).append(" ").append(getAddress());
       if (this.collectTime.isModified() || this.collectTime.isModified()) {
-         sb.append(offset).append("   ").append("<burstMode");
+         sb.append(offset).append(" ").append("<burstMode");
          if (this.collectTime.isModified())
             sb.append(" collectTime='").append(getCollectTime()).append("'");
          if (this.collectTimeOneway.isModified())

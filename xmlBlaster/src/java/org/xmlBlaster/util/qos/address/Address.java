@@ -96,6 +96,8 @@ public class Address extends AddressBase
             Global glob = new Global(argsDefault);
             Address a = new Address(glob);
             a.setType("SOCKET");
+            a.setHostname("oioihost");
+            a.setAddress("9999");
             a.setAddress("127.0.0.1:7600");
             a.setCollectTime(12345L);
             a.setPingInterval(54321L);
