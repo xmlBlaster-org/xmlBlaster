@@ -3,7 +3,7 @@ Name:      FileDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a very simple, file based, persistence manager
-Author:    ruff@swand.lake.de
+Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence.filestore;
 
@@ -15,9 +15,10 @@ import org.jutils.JUtilsException;
 import org.xmlBlaster.util.XmlBlasterException;
 
 import org.xmlBlaster.engine.xml2java.XmlKey;
-import org.xmlBlaster.engine.qos.PublishQosServer;
-import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.engine.MessageUnitWrapper;
+import org.xmlBlaster.util.key.MsgKeyData;
+import org.xmlBlaster.util.qos.MsgQosData;
+import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.engine.MsgUnitWrapper;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.engine.RequestBroker;
 
@@ -122,17 +123,17 @@ public class FileDriver implements I_PersistenceDriver
     * The other store() method is called for following messages, to store only message-content.
     * @param messageWrapper The container with all necessary message info.
     */
-   public final void store(MessageUnitWrapper messageWrapper) throws XmlBlasterException
+   public final void store(MsgUnitWrapper messageWrapper) throws XmlBlasterException
    {
-      XmlKey xmlKey = messageWrapper.getXmlKey();
-      PublishQosServer qos = messageWrapper.getPublishQos();
+      MsgKeyData xmlKey = messageWrapper.getMsgKeyData();
+      MsgQosData qos = messageWrapper.getMsgQosData();
       String mime = messageWrapper.getContentMime();
-      byte[] content = messageWrapper.getMessageUnit().getContent();
+      byte[] content = messageWrapper.getMsgUnit().getContent();
 
-      String oid = xmlKey.getKeyOid(); // The file name
+      String oid = xmlKey.getOid(); // The file name
 
       try {
-         FileUtil.writeFile(path, oid + XMLKEY_TOKEN, xmlKey.literal());
+         FileUtil.writeFile(path, oid + XMLKEY_TOKEN, xmlKey.toXml());
          FileUtil.writeFile(path, oid, content);
          FileUtil.writeFile(path, oid + XMLQOS_TOKEN, qos.toXml());
       } catch (JUtilsException e) {
@@ -151,19 +152,19 @@ public class FileDriver implements I_PersistenceDriver
     * @param content The data to store
     * @param qos The quality of service, may contain another publisher name
     */
-   public final void update(MessageUnitWrapper messageWrapper)throws XmlBlasterException
+   public final void update(MsgUnitWrapper messageWrapper)throws XmlBlasterException
    {
 
       try {
-         String oid = messageWrapper.getUniqueKey();
-         FileUtil.writeFile(path, oid, messageWrapper.getMessageUnit().getContent());
+         String oid = messageWrapper.getKeyOid();
+         FileUtil.writeFile(path, oid, messageWrapper.getMsgUnit().getContent());
          // Store the sender as well:
-         FileUtil.writeFile(path, oid + XMLQOS_TOKEN, messageWrapper.getPublishQos().toXml());
+         FileUtil.writeFile(path, oid + XMLQOS_TOKEN, messageWrapper.getMsgQosData().toXml());
       } catch (JUtilsException e) {
          throw new XmlBlasterException(e);
       }
 
-      if (log.TRACE) log.trace(ME, "Successfully updated store " + messageWrapper.getUniqueKey());
+      if (log.TRACE) log.trace(ME, "Successfully updated store " + messageWrapper.getKeyOid());
    }
 
 
@@ -171,11 +172,11 @@ public class FileDriver implements I_PersistenceDriver
     * Allows to fetch one message by oid from the persistence.
     * <p />
     * @param   oid   The message oid (key oid="...")
-    * @return the MessageUnit, which is persistent.
+    * @return the MsgUnit, which is persistent.
     */
-   public MessageUnit fetch(String oid) throws XmlBlasterException
+   public MsgUnit fetch(String oid) throws XmlBlasterException
    {
-      MessageUnit msgUnit = null;
+      MsgUnit msgUnit = null;
 
       try {
          String xmlKey_literal = FileUtil.readAsciiFile(path, oid + XMLKEY_TOKEN);
@@ -184,7 +185,7 @@ public class FileDriver implements I_PersistenceDriver
 
          String xmlQos_literal = FileUtil.readAsciiFile(path, oid + XMLQOS_TOKEN);
 
-         msgUnit = new MessageUnit(glob, xmlKey_literal, content, xmlQos_literal);
+         msgUnit = new MsgUnit(glob, xmlKey_literal, content, xmlQos_literal);
 
          if (log.TRACE) log.trace(ME, "Successfully fetched message " + oid);
          if (log.DUMP) log.dump(ME, "Successfully fetched message\n" + msgUnit.toXml());
@@ -200,7 +201,7 @@ public class FileDriver implements I_PersistenceDriver
     * Fetches all oid's of the messages from the persistence.
     * <p />
     * It is a helper method to invoke 'fetch(String oid)'.
-    * @return a Enumeration of oids of all persistent MessageUnits. The oid is a String-Type.
+    * @return a Enumeration of oids of all persistent MsgUnits. The oid is a String-Type.
     */
     public Enumeration fetchAllOids() throws XmlBlasterException
     {

@@ -12,8 +12,8 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 
 import org.xmlBlaster.engine.xml2java.XmlKey;
-import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.engine.MessageUnitWrapper;
+import org.xmlBlaster.util.MsgUnit;
+import org.xmlBlaster.engine.MsgUnitWrapper;
 import org.xmlBlaster.engine.persistence.I_PersistenceDriver;
 import org.xmlBlaster.engine.persistence.xmldb.xindice.XindiceProxy;
 
@@ -111,7 +111,7 @@ public class XMLDBPlugin implements I_PersistenceDriver
     * It only stores the xml-form of the message, using KeyOid as key.
     * @param messageWrapper The container with all necessary message info.
     */
-   public final void store(MessageUnitWrapper messageWrapper) throws XmlBlasterException
+   public final void store(MsgUnitWrapper messageWrapper) throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "store");
 
@@ -119,21 +119,21 @@ public class XMLDBPlugin implements I_PersistenceDriver
       XmlKey xmlKey = messageWrapper.getXmlKey();
       PublishQosServer qos = messageWrapper.getPublishQos();
       String mime = messageWrapper.getContentMime();
-      byte[] content = messageWrapper.getMessageUnit().getContent();
+      byte[] content = messageWrapper.getMsgUnit().getContent();
       */
 
-      // TODO is getMessageUnit().key more performant, but is it complete ???
+      // TODO is getMsgUnit().key more performant, but is it complete ???
       // qos as well
 
-      String oid = messageWrapper.getXmlKey().getKeyOid();
-      String key = messageWrapper.getXmlKey().toXml();
+      String oid = messageWrapper.getKeyOid();
+      String key = messageWrapper.getMsgKeyData().toXml();
 
       db.addDocument(key, oid + XMLKEY_TOKEN);
-      db.addDocument(BEGCON_TOKEN + new String(messageWrapper.getMessageUnit().getContent()) + ENDCON_TOKEN, oid + XMLCON_TOKEN);
-      db.addDocument(messageWrapper.getPublishQos().toXml(), oid + XMLQOS_TOKEN);
+      db.addDocument(BEGCON_TOKEN + new String(messageWrapper.getMsgUnit().getContent()) + ENDCON_TOKEN, oid + XMLCON_TOKEN);
+      db.addDocument(messageWrapper.getMsgQosData().toXml(), oid + XMLQOS_TOKEN);
 
-      // log.trace(ME, "<content><![CDATA["+ new String(messageWrapper.getMessageUnit().getContent())+"]]></content>");
-      //        log.trace(ME, new String(messageWrapper.getMessageUnit().getContent()));
+      // log.trace(ME, "<content><![CDATA["+ new String(messageWrapper.getMsgUnit().getContent())+"]]></content>");
+      //        log.trace(ME, new String(messageWrapper.getMsgUnit().getContent()));
 
       if (log.TRACE) log.trace(ME, "Successfully stored; oid= " + oid + "key= " + key );
    }
@@ -146,16 +146,16 @@ public class XMLDBPlugin implements I_PersistenceDriver
     * first if this message is new.
     * @param messageWrapper The container with all necessary message info.
     */
-   public final void update(MessageUnitWrapper messageWrapper) throws XmlBlasterException
+   public final void update(MsgUnitWrapper messageWrapper) throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "update");
 
-      String oid = messageWrapper.getXmlKey().getKeyOid();
-      db.addDocument(BEGCON_TOKEN + new String(messageWrapper.getMessageUnit().getContent()) + ENDCON_TOKEN, oid + XMLCON_TOKEN);
+      String oid = messageWrapper.getKeyOid();
+      db.addDocument(BEGCON_TOKEN + new String(messageWrapper.getMsgUnit().getContent()) + ENDCON_TOKEN, oid + XMLCON_TOKEN);
       // Store the sender as well:
-      db.addDocument(messageWrapper.getPublishQos().toXml(), oid + XMLQOS_TOKEN);
+      db.addDocument(messageWrapper.getMsgQosData().toXml(), oid + XMLQOS_TOKEN);
 
-      if (log.TRACE) log.trace(ME, "Successfully updated store " + messageWrapper.getUniqueKey());
+      if (log.TRACE) log.trace(ME, "Successfully updated store " + messageWrapper.getKeyOid());
    }
 
 
@@ -163,12 +163,12 @@ public class XMLDBPlugin implements I_PersistenceDriver
     * Allows to fetch one message by oid from the persistence Layer.
     * <p />
     * @param   oid   The message oid (key oid="...")
-    * @return The MessageUnit, which is persistent.
+    * @return The MsgUnit, which is persistent.
     */
-   public final MessageUnit fetch(String oid) throws XmlBlasterException
+   public final MsgUnit fetch(String oid) throws XmlBlasterException
    {
       if (log.CALL) log.call(ME, "fetch");
-      MessageUnit msgUnit = null;
+      MsgUnit msgUnit = null;
 
       String xmlKey_literal = db.retrieveDocument(oid + XMLKEY_TOKEN);
       String xmlQos_literal = db.retrieveDocument(oid + XMLQOS_TOKEN);
@@ -199,7 +199,7 @@ public class XMLDBPlugin implements I_PersistenceDriver
          con.substring( XML_PI_TOKEN.length() + 1 + BEGCON_TOKEN.length(),
          con.length() - ENDCON_TOKEN.length() ).getBytes();
 
-      msgUnit = new MessageUnit(xmlKey_literal, content, xmlQos_literal);
+      msgUnit = new MsgUnit(glob, xmlKey_literal, content, xmlQos_literal);
 
       if (log.TRACE) log.trace(ME, "Successfully fetched message " + oid);
       if (log.TRACE) log.trace(ME, "    content '" + content + "'");
@@ -214,7 +214,7 @@ public class XMLDBPlugin implements I_PersistenceDriver
     * Fetches all oid's of the messages from the persistence.
     * <p />
     * It is a helper method to invoke 'fetch(String oid)'.
-    * @return a Enumeration of oids of all persistent MessageUnits. The oid is a String-Type.
+    * @return a Enumeration of oids of all persistent MsgUnits. The oid is a String-Type.
     */
     public final Enumeration fetchAllOids() throws XmlBlasterException
     {

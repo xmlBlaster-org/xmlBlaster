@@ -9,10 +9,10 @@ package org.xmlBlaster.engine.persistence;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.engine.xml2java.XmlKey;
-import org.xmlBlaster.engine.MessageUnitWrapper;
+import org.xmlBlaster.engine.MsgUnitWrapper;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.engine.RequestBroker;
-import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.util.MsgUnit;
 
 import java.util.Enumeration;
 
@@ -50,7 +50,7 @@ public interface I_PersistenceDriver extends I_Plugin
     * The protocol for storing is implemented in the derived class
     * @param messageWrapper The container with all necessary message info.
     */
-   public void store(MessageUnitWrapper messageWrapper) throws XmlBlasterException;
+   public void store(MsgUnitWrapper messageWrapper) throws XmlBlasterException;
 
 
    /**
@@ -63,22 +63,22 @@ public interface I_PersistenceDriver extends I_Plugin
     * @param content The data to store
     * @param qos The quality of service, may contain another publisher name
     */
-   public void update(MessageUnitWrapper messageWrapper) throws XmlBlasterException;
+   public void update(MsgUnitWrapper messageWrapper) throws XmlBlasterException;
 
    /**
     * Fetches one message by oid from the persistence.
     * <p />
     * This method needs the RequestBroker for recovery.
     * @param   oid   The messages name (key oid="...")
-    * @return the MessageUnit, which is persistent
+    * @return the MsgUnit, which is persistent
     */
-   public MessageUnit fetch(String oid) throws XmlBlasterException;
+   public MsgUnit fetch(String oid) throws XmlBlasterException;
 
    /**
     * Fetches all oid's of the messages from the persistence.
     * <p />
     * It is a helper method to invoke 'fetch(String oid)'.
-    * @return a Enumeration of oids of all persistent MessageUnits. The oid is a String-Type.
+    * @return a Enumeration of oids of all persistent MsgUnits. The oid is a String-Type.
     */
     public Enumeration fetchAllOids() throws XmlBlasterException;
 
