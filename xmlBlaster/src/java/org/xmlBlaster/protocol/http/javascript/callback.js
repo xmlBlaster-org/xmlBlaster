@@ -8,36 +8,18 @@ Author:    konrad.krafft@doubleslash.de ruff@swand.lake.de
 // First define the usual xmlBlaster access methods
 // @see xmlBlaster.idl
 
-var loginName = "";
-var isLoggedIn = false;
 
 /**
- * Called from controlFrame when the user clicks on Login button
- * @deprecated
+ * Logout the nice way.
  */
-function login(login, passwd)
+function xmlBlasterLogout()
 {
-   loginName = login;
-   top.target = "callbackFrame";
-   top.location.href = "/servlet/BlasterHttpProxyServlet?ActionType=login&loginName=" + loginName + "&passwd=" + passwd;
-   Log.info("Leaving login...");
-   return true;
+   top.location.href = "/servlet/BlasterHttpProxyServlet?ActionType=logout";
 }
-
 
 /**
- * @deprecated
+ * @param message An instance of MessageWrapper
  */
-function logout()
-{
-   loginName = "";
-   isLoggedIn = false;
-   // self.onerror = default???;
-   self.close();
-   self = null;
-}
-
-// @param message An instance of MessageWrapper
 function publish(message)
 {
    Log.error("Publish implementation to xmlBlaster is missing");
@@ -212,7 +194,7 @@ var listenerList = new Array();
 
 
 /*
- * Object holding necessary variables for a queue. 
+ * Object holding necessary variables for a queue.
  * Every registered frame has one such object to handle
  * its private update queue.
  */
@@ -252,7 +234,7 @@ function queue_( message )
 }
 
 /*
- * Sending an update to exactly one frame. 
+ * Sending an update to exactly one frame.
  * @param queueName - The queue associated with the frame
  */
 function sendMessageQueue(queueName)
@@ -308,7 +290,7 @@ function sendMessageQueue(queueName)
 
 
 /*
- * Setting a frame to be ready. 
+ * Setting a frame to be ready.
  */
 function setReady( frame, ready )
 {
@@ -357,7 +339,7 @@ function addUpdateListener( listenerFrame )
 
 
 /*
- * If a frame doesn't want any updates any more. 
+ * If a frame doesn't want any updates any more.
  */
 function removeUpdateListener( listenerFrame ) {
    var i;
@@ -379,7 +361,7 @@ function removeUpdateListener( listenerFrame ) {
 }
 
 /*
- * If a frame doesn't want any updates any more. 
+ * If a frame doesn't want any updates any more.
  */
 function removeUpdateListenerAtPos( index ) {
    if(index >= listenerList.length)
@@ -477,9 +459,6 @@ function update( updateKey, content, updateQoS)
       var message = new MessageWrapperDom( key, content, qos );
       fireMessageUpdateEvent(message);
    }
-
-   if(ping != null) ping();
-
 }
 
 
