@@ -527,7 +527,7 @@ Private Sub XmlScriptAccess_update(ByVal msg As Object) _
    </example>
 
    <example lang="VisualBasic" type="HTML">
-      <h3><a NAME="example"></a>VisualBasic 6 example</h3>
+      <h3><a NAME="VisualBasic6"></a>VisualBasic 6 example</h3>
       <p>Note: The synchronous invocations like <code>connect</code> or
       <code>publish</code> work fine. The asynchronous callbacks
       into the function <code>XmlScriptAccess_update</code> don't arrive,
