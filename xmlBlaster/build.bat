@@ -8,9 +8,11 @@ if "%JAVA_HOME%" == "" goto error
 if "%XMLBLASTER_HOME%" == ""  set XMLBLASTER_HOME="."
 REM  a missing XMLBLASTER_HOME is not problem if the bat file is started in the root directory
 
+set CLASSPATH=%CLASSPATH%;%JAVA_HOME%\lib\tools.jar
 set LOCALCLASSPATH=%CLASSPATH%
 for %%i in ("lib\ant\*.jar") do call "bin\lcp.bat" %%i
 
+set LOCALCLASSPATH=%LOCALCLASSPATH%;lib\batik\js.jar
 echo Building with classpath %LOCALCLASSPATH%
 
 echo Starting Ant...
