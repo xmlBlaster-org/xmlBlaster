@@ -91,7 +91,9 @@ final public class AuthenticateProtector implements I_Authenticate
     * @deprecated Security hole, currently need by MainGUI.java
     */
    public SessionInfo unsecureCreateSession(SessionName loginName) throws XmlBlasterException {
-      return this.authenticate.unsecureCreateSession(loginName);
+      org.xmlBlaster.client.qos.ConnectQos connectQos = new org.xmlBlaster.client.qos.ConnectQos(glob);
+      connectQos.setSessionName(loginName);
+      return this.authenticate.unsecureCreateSession(connectQos);
    }
 
    public String toXml() throws XmlBlasterException {
