@@ -3,6 +3,7 @@ package javaclients;
 
 import java.util.Map;
 import java.util.Iterator;
+import java.util.Random;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
@@ -276,9 +277,12 @@ public class HelloWorldPublish
             byte[] content;
             if (contentSize >= 0) {
                content = new byte[contentSize];
-               for (int j=0; j<content.length; j++)
-                  content[j] = (byte)('X');
+               Random random = new Random();
+               for (int j=0; j<content.length; j++) {
+                  content[j] = (byte)(random.nextInt(96)+32);
+                  //content[j] = (byte)('X');
                   //content[j] = (byte)(j % 255);
+               }
             }
             else {
                content = org.jutils.text.StringHelper.replaceAll(contentStr, "%counter", ""+(i+1)).getBytes();
