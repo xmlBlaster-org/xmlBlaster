@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.java,v 1.18 1999/12/01 22:17:28 ruff Exp $
+Version:   $Id: Log.java,v 1.19 1999/12/06 16:17:38 kron Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -25,6 +25,19 @@ public class Log
    public final static boolean DUMP  = true;  // dump internal state
 
    /**
+    * Loglevels
+    */
+   private static final int L_NOLOG = 0;
+   private static final int L_PANIC = 10;  // Abbruch der Aktion
+   private static final int L_ERROR = 20;  // Fehler ohne Abbruch
+   private static final int L_WARN  = 30;  // Warung
+   private static final int L_INFO  = 40;  // reine Information
+   private static final int L_DEBUG = 50;  // für Werte zum Testen
+   private static final int L_TRACE = 60;  // ganz feiner Log
+
+   private static int LOGLEVEL = 60;
+
+   /**
     * Adjust her your local look and feel
     */
    private final static int lookAndFeelDate = java.text.DateFormat.MEDIUM;
@@ -32,7 +45,7 @@ public class Log
    private final static java.util.Locale country = java.util.Locale.US;
 
    /**
-    * Counter for occurred warnings/errors
+    * Counter for occured warnings/errors
     */
    private static int numWarnInvocations = 0;
    private static int numErrorInvocations = 0;
@@ -99,6 +112,22 @@ public class Log
    }
 
    /**
+    * Sets the loglevel 
+    */
+   public final static void setLogLevel(int LEVEL)
+   {
+    LOGLEVEL = LEVEL;
+   } 
+
+  /**
+   * gets the loglevel 0,10,20,30,40,50,60
+   */
+  public final static int getLogLevel()
+  {
+    return LOGLEVEL;
+  }
+
+   /**
     * Create the Date/Time informations
     *
     * @return example: 1999-11-01 10:41:03 INFO
@@ -148,10 +177,13 @@ public class Log
     */
    public final static void panic(String instance, String text)
    {
-      log((withXtermEscapeColor) ? panicE : panicX, instance, text);
-      numErrorInvocations++;
-      displayStatistics();
-      exitLow(1);
+      if(LOGLEVEL >= L_PANIC)
+      {
+         log((withXtermEscapeColor) ? panicE : panicX, instance, text);
+         numErrorInvocations++;
+         displayStatistics();
+         exitLow(1);
+      }
    }
 
 
@@ -168,14 +200,20 @@ public class Log
 
    public final static void info(String instance, String text)
    {
-      log((withXtermEscapeColor) ? infoE : infoX, instance, text);
+      if(LOGLEVEL >= L_INFO)
+      {
+         log((withXtermEscapeColor) ? infoE : infoX, instance, text);
+      }
    }
 
 
    public final static void warning(String instance, String text)
    {
-      numWarnInvocations++;
-      log((withXtermEscapeColor) ? warnE : warnX, instance, text);
+      if(LOGLEVEL >= L_WARN)
+      {
+         numWarnInvocations++;
+         log((withXtermEscapeColor) ? warnE : warnX, instance, text);
+      }
    }
    /*
    public final static void warningThrow(String instance, String text) throws org.xmlBlaster.XmlBlasterException
@@ -187,8 +225,11 @@ public class Log
 
    public final static void error(String instance, String text)
    {
-      numErrorInvocations++;
-      log((withXtermEscapeColor) ? errorE : errorX, instance, text);
+      if(LOGLEVEL >= L_ERROR)
+      {
+         numErrorInvocations++;
+         log((withXtermEscapeColor) ? errorE : errorX, instance, text);
+      }
    }
    /*
    public final static void errorThrow(String instance, String text) throws org.xmlBlaster.XmlBlasterException
@@ -219,7 +260,10 @@ public class Log
     */
    public final static void trace(String instance, String text)
    {
-      log((withXtermEscapeColor) ? traceE : traceX, instance, text);
+      if(LOGLEVEL >= L_TRACE)
+      {
+         log((withXtermEscapeColor) ? traceE : traceX, instance, text);
+      }
    }
 
    /**
@@ -231,7 +275,7 @@ public class Log
    }
 
    /**
-    * Output of performance measurements (elapsed milliseconds)
+    * Output of performant measurements (elapsed milliseconds)
     */
    public final static void time(String instance, String text)
    {
@@ -259,6 +303,8 @@ public class Log
       }
    }
 
+	
+
 
    /**
     * Only for testing
@@ -267,7 +313,12 @@ public class Log
    public static void main(String args[]) throws Exception
    {
       String me = "Log-Tester";
-
+			System.out.println("LOGLEVEL : "+getLogLevel());
+      setLogLevel(20);
+			System.out.println("LOGLEVEL : "+getLogLevel());
+         Log.panic(me, "Panic is not shown");
+         Log.error(me, "Error ...");
+      setLogLevel(60);
       Log.calls(me, "Entering method main()");
       Log.time(me, "Elapsed time = 34 milli seconds");
       Log.trace(me, "TRACE: Entering method xy");
