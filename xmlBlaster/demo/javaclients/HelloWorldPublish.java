@@ -36,8 +36,13 @@ import org.xmlBlaster.client.protocol.XmlBlasterConnection;
  * This is a nice client to experiment and play with xmlBlaster as there are many
  * command line options to specify the type and amount of messages published.
  * </p>
+ * <p>
+ * Try using 'java javaclients.HelloWorldSubscribe' in another window to subscribe to
+ * our messages.
+ * Further you can type 'd' in the window running xmlBlaster to get a server dump.
+ * </p>
  *
- * Invoke:
+ * Invoke (after starting the xmlBlaster server):
  * <pre>
  * java javaclients.HelloWorldPublish -interactive true -numPublish 10 -oid Hello -persistent true -erase true
  *
@@ -51,6 +56,7 @@ import org.xmlBlaster.client.protocol.XmlBlasterConnection;
  * <p>
  * If erase=false the message is not erase at the end, if disconnect=false we don't logout at the end.
  * </p>
+ * @see javaclients.HelloWorldSubscribe
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.html" target="others">xmlBlaster interface</a>
  */
 public class HelloWorldPublish
@@ -106,7 +112,7 @@ public class HelloWorldPublish
          for(int i=0; i<numPublish; i++) {
 
             if (interactive) {
-               log.info(ME, "Hit a key to publish'" + oid + "' #" + i + "/" + numPublish);
+               log.info(ME, "Hit a key to publish '" + oid + "' #" + i + "/" + numPublish);
                try { System.in.read(); } catch(java.io.IOException e) {}
             }
             else {
@@ -143,7 +149,7 @@ public class HelloWorldPublish
                try { System.in.read(); } catch(java.io.IOException e) {}
             }
 
-            EraseKey ek = new EraseKey(glob, "HelloWorldPublish");
+            EraseKey ek = new EraseKey(glob, oid);
             EraseQos eq = new EraseQos(glob);
             EraseReturnQos[] eraseArr = con.erase(ek.toXml(), eq.toXml());
             log.info(ME, "Erase success");
