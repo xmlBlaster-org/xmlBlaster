@@ -1,0 +1,856 @@
+#This file was created by <prog> Sun Nov 21 15:15:09 1999
+#LyX 1.0 (C) 1995-1999 Matthias Ettrich and the LyX Team
+\lyxformat 2.15
+\textclass book
+\language default
+\inputencoding latin1
+\fontscheme default
+\graphics default
+\paperfontsize 12
+\spacing single 
+\papersize Default
+\paperpackage a4
+\use_geometry 0
+\use_amsmath 0
+\paperorientation portrait
+\secnumdepth 2
+\tocdepth 2
+\paragraph_separation indent
+\defskip medskip
+\quotes_language english
+\quotes_times 2
+\papercolumns 1
+\papersides 1
+\paperpagestyle headings
+
+\layout Title
+
+The xmlBlaster 1.0 Programming Guide
+\layout Author
+
+by Marcel Ruff and Manuel Kron
+\begin_float footnote 
+\layout Standard
+
+ruff@swand.lake.de, manuel.kron@gmx.net
+\end_float 
+\layout Standard
+
+
+\begin_inset LatexCommand \tableofcontents{}
+
+\end_inset 
+
+
+\layout Chapter
+
+Introduction
+\layout Section
+
+Status of this document
+\layout Standard
+
+This document gives a introduction to programming distributed applications
+ with xmlBlaster, a LGPL message orientate middleware.
+ 
+\layout Section
+
+Application area of xmlBlaster
+\layout Standard
+
+XmlBlaster is a pure Java message orientated middleware (MOM) to support
+ instantaneous delivery of message objects via IIOP, TCP, SSL or HTTP.
+ XmlBlaster offers a very generic solution for wide range of applications,
+ such e-commerce, Client/Server applications, enterprise applicaions integration
+, groupware applications, and information distribution among embedded systems.
+\layout Chapter
+
+Installing xmlBlaster
+\layout Standard
+
+In this chapter we explain how to obtain and install the xmlBlaster and
+ give an overview of the package content.
+\layout Section
+
+Obtaining xmlBlaster
+\layout Standard
+
+The xmlBlaster can be obtained as agzipped tar-achive or as a zp-archive
+ from the xmlBlaster home page at 
+\family typewriter 
+http://www.xmlBlaster.org/xmlBlaster.html.
+ 
+\newline 
+
+\family default 
+To install xmlBlaster, just gun-zip and make untar the archive somewhere.
+ This will be the result durectory 
+\family typewriter 
+xmlBlasterX.X
+\family default 
+.
+ Make sure your CLASSPATH environment varivale contains 
+\family typewriter 
+xmlBlasterX.X/classes
+\family default 
+.
+ 
+\layout Section
+
+Installation
+\layout Subsection
+
+Make and Makefiles
+\layout Subsection
+
+Configuration
+\layout Chapter
+
+Architecture
+\layout Section
+
+xmlBlaster development overview
+\layout Section
+
+IDL specifications
+\layout LyX-Code
+
+module serverIdl 
+\layout LyX-Code
+
+{ 
+\layout LyX-Code
+
+
+\protected_separator 
+ 
+\protected_separator 
+typedef string XmlType; 
+\layout LyX-Code
+
+
+\protected_separator 
+ 
+\protected_separator 
+typedef sequence<XmlType> XmlTypeArr;
+\layout LyX-Code
+
+
+\protected_separator 
+ 
+\protected_separator 
+typedef sequence<octet> ContentType; 
+\layout LyX-Code
+
+
+\protected_separator 
+ 
+\protected_separator 
+typedef sequence<string> StringArr; 
+\layout LyX-Code
+
+
+\protected_separator 
+ 
+\protected_separator 
+typedef string ExceptionIdType;
+\newline 
+
+\layout LyX-Code
+
+
+\protected_separator 
+ 
+\protected_separator 
+struct MessageUnit 
+\layout LyX-Code
+
+
+\protected_separator 
+ 
+\protected_separator 
+{ 
+\layout LyX-Code
+
+
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ XmlType xmlKey; 
+\layout LyX-Code
+
+
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ ContentType content; 
+\layout LyX-Code
+
+
+\protected_separator 
+ 
+\protected_separator 
+}; 
+\layout LyX-Code
+
+
+\protected_separator 
+ 
+\protected_separator 
+typedef sequence<MessageUnit> MessageUnitArr;
+\layout LyX-Code
+
+}; 
+\family roman 
+\emph on 
+// org::xmlBlaster::serverIdl
+\emph default 
+
+\newline 
+
+\newline 
+
+\layout LyX-Code
+
+module clientIdl 
+\layout LyX-Code
+
+{ 
+\layout LyX-Code
+
+
+\protected_separator 
+ 
+\protected_separator 
+interface BlasterCallback 
+\layout LyX-Code
+
+
+\protected_separator 
+ 
+\protected_separator 
+{ 
+\layout LyX-Code
+
+
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ oneway void update(in serverIdl::MessageUnitArr messageUnitArr, 
+\layout LyX-Code
+
+
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ in serverIdl::XmlTypeArr qosArr)
+\layout LyX-Code
+
+
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+raises(serverIdl::XmlBlasterException); 
+\layout LyX-Code
+
+
+\protected_separator 
+ 
+\protected_separator 
+};
+\layout LyX-Code
+
+}; 
+\family roman 
+\emph on 
+// org::xmlBlaster::clientIdl
+\emph default 
+
+\newline 
+k
+\layout LyX-Code
+
+module serverIdl 
+\layout LyX-Code
+
+{ 
+\layout LyX-Code
+
+
+\protected_separator 
+ 
+\protected_separator 
+exception XmlBlasterException 
+\layout LyX-Code
+
+
+\protected_separator 
+ 
+\protected_separator 
+{ 
+\layout LyX-Code
+
+
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ ExceptionIdType id; 
+\family roman 
+\emph on 
+// unique error code: "Modulname.ReasonID"
+\emph default 
+ 
+\layout LyX-Code
+
+
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ string reason; 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+
+\family roman 
+\emph on 
+// in english
+\family default 
+\emph default 
+ 
+\layout LyX-Code
+
+
+\protected_separator 
+ 
+\protected_separator 
+};
+\layout LyX-Code
+
+
+\protected_separator 
+ 
+\protected_separator 
+void subscribe(in XmlType xmlKey, in XmlType qos) 
+\layout LyX-Code
+
+
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ raises(XmlBlasterException);
+\layout LyX-Code
+
+
+\protected_separator 
+ 
+\protected_separator 
+MessageUnitArr get(in XmlType xmlKey, in XmlType qos) 
+\layout LyX-Code
+
+
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ raises(XmlBlasterException);
+\layout LyX-Code
+
+
+\protected_separator 
+ 
+\protected_separator 
+void unSubscribe(in XmlType xmlKey, in XmlType qos) 
+\layout LyX-Code
+
+
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ raises(XmlBlasterException);
+\layout LyX-Code
+
+
+\protected_separator 
+ 
+\protected_separator 
+StringArr publish(in MessageUnitArr messageUnitArr, 
+\layout LyX-Code
+
+
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+in XmlTypeArr qosArr) 
+\layout LyX-Code
+
+
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ raises(XmlBlasterException);
+\layout LyX-Code
+
+
+\protected_separator 
+ 
+\protected_separator 
+long erase(in XmlType xmlKey, in XmlType qos) 
+\layout LyX-Code
+
+
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ raises(XmlBlasterException); 
+\layout LyX-Code
+
+
+\protected_separator 
+};
+\layout LyX-Code
+
+}; 
+\family roman 
+\emph on 
+// org::xmlBlaster::serverIdl
+\newline 
+
+\newline 
+
+\layout LyX-Code
+
+module authenticateIdl 
+\layout LyX-Code
+
+{ 
+\layout LyX-Code
+
+
+\protected_separator 
+ 
+\protected_separator 
+interface AuthServer 
+\layout LyX-Code
+
+
+\protected_separator 
+ 
+\protected_separator 
+{ 
+\layout LyX-Code
+
+
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ serverIdl::Server login(in string loginName, in string passwd, 
+\layout LyX-Code
+
+
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ in clientIdl::BlasterCallback cb, 
+\layout LyX-Code
+
+
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ in serverIdl::XmlType qosClient) 
+\layout LyX-Code
+
+
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+
+\protected_separator 
+raises (serverIdl::XmlBlasterException);
+\layout LyX-Code
+
+
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ void logout(in serverIdl::Server xmlBlaster) 
+\layout LyX-Code
+
+
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ 
+\protected_separator 
+ raises (serverIdl::XmlBlasterException); 
+\layout LyX-Code
+
+
+\protected_separator 
+ 
+\protected_separator 
+};
+\layout LyX-Code
+
+}; 
+\family roman 
+// org::xmlBlaster::AuthenticateIdl
+\layout Subsection
+
+xmlBlaster Exceptions
+\layout Section
+
+DTD specifications
+\layout Subsection
+
+DTD for xmlBlaster server
+\layout Subsection
+
+DTD for xmlBlaster client
+\layout Section
+
+Message protocoll
+\layout Subsection
+
+Message content
+\layout Subsection
+
+Message key
+\layout Subsection
+
+Message QoS
+\layout Section
+
+QoS (Quality of Service)
+\layout Standard
+
+A distinctive feature of xmlBlaster is its Quality-of-Servive (QoS).
+ A buisness-application provides the server any objects, that server with
+ a QoS administrated.
+\layout Subsection
+
+Authentication
+\layout Subsection
+
+MIME-Type
+\layout Subsection
+
+Time to Live
+\layout Subsection
+
+Priority
+\layout Subsection
+
+Timestamp
+\layout Subsection
+
+Expiration
+\layout Section
+
+Publish/Subscribe Model
+\layout Section
+
+XmlBlaster Application Server Facilities
+\layout Chapter
+
+Writing a client application for xmlBlaster
+\layout Section
+
+Message
+\layout Subsection
+
+Subscribe
+\layout Subsection
+
+Publish
+\layout Section
+
+Java-Client
+\layout Section
+
+Perl-Client
+\layout Chapter
+
+XmlBlaster service
+\layout Section
+
+Running JacOrb
+\layout Section
+
+Running xmlBlaster
+\layout Section
+
+Running a Client application
+\layout Chapter
+
+Writing a server plugin for xmlBlaster
+\layout Chapter
+
+XmlBlaster utilities
+\layout Chapter
+
+Feedback, LGPL, Standards, Weblinks
+\layout Section
+
+Feedback
+\layout Section
+
+LGPL and Limitations
+\layout Section
+
+Standards
+\layout Section
+
+Weblinks
+\layout Bibliography
+\bibitem {1}
+
+[Orf98] Robert Orfali, Client/Server Programming with JAVA and CORBA .
+ Second Edition.
+ Wiley, 1998
+\the_end
