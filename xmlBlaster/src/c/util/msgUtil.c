@@ -169,6 +169,24 @@ Dll_Export void sleepMillis(long millisecs)
 }
 
 /**
+ * Frees the pointer with free(). 
+ * <p> 
+ * Users of this library can use xmlBlasterFree() instead of free().
+ * This can be helpful on Windows and if this client library is a DLL and compiled with /MT
+ * but the client code is not (or vice versa).
+ * In such a case the executable uses different runtime libraries
+ * with different instances of malloc/free.
+ * </p>
+ * On UNIX we don't need this function but it doesn't harm either.
+ */
+Dll_Export void xmlBlasterFree(char *p)
+{
+   if (p != (char *)0) {
+      free(p);
+   }
+}
+
+/**
  * Frees everything inside MsgUnitArr and the struct MsgUnitArr itself
  */
 Dll_Export void freeMsgUnitArr(MsgUnitArr *msgUnitArr)
