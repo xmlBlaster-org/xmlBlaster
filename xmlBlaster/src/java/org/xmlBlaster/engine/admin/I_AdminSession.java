@@ -30,6 +30,8 @@ public interface I_AdminSession {
    public long getCbQueueMaxMsgs();
    /** Comma separated list of all subscriptionId of this login session */
    public String getSubscriptionList() throws XmlBlasterException;
+   /** An XML dump of all subscriptions of this login session */
+   public String getSubscriptionDump() throws XmlBlasterException;
    /** Destroy the session (force logout) */
    public String getKillSession() throws XmlBlasterException;
    /** activates/inhibits the dispatch of messages to this session */
