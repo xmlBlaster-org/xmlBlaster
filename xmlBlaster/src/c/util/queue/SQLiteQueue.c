@@ -33,8 +33,10 @@ Testsuite: xmlBlaster/testsuite/src/c/TestQueue.c
 #include <stdio.h>
 #include <string.h>
 #include <malloc.h>
-#include <unistd.h>   /* unlink() */
-#include <errno.h>    /* unlink() */
+#if !defined(_WINDOWS)
+# include <unistd.h>   /* unlink() */
+# include <errno.h>    /* unlink() */
+#endif
 #include "util/queue/I_Queue.h"
 #include "sqlite.h"
 
