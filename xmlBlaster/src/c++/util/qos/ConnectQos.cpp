@@ -38,6 +38,9 @@ ConnectQosData::ConnectQosData(Global& global, const string& user, const string&
    clusterNode_      = false;
    duplicateUpdates_ = false;
    persistent_       = false;
+   if (user=="") { // Copy env setting to SecurityQos
+      securityQos_.setUserId(sessionQos_->getSessionName()->getSubjectId());
+   }
    getAddress();      // Force creation, to read environment, Note: The CB address is only read if a callback server is created
 }
 
