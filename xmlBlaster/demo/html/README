@@ -45,8 +45,8 @@ Start it in the background on Linux:
    java html.systemInfo.SystemInfoPublisher -info false > /tmp/SystemInfoPublisher.log 2>&1 &
 
 
-Using tomcat 4.0 serlvet enginge:
-=================================
+Using tomcat 4.0 serlvet enginge (http:jakarta.apache.org):
+===========================================================
 
 export CATALINA_HOME=$HOME/jakarta-tomcat-4.0
 export PATH=$CATALINA_HOME/bin:$PATH
