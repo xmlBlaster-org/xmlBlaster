@@ -121,6 +121,8 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
    protected int recorderCounter = 0;
 
+   protected int subscribeUniqueCounter = 0;
+
    private boolean firstConnect = true;
 
    private boolean disconnectInProgress = false;
@@ -1443,6 +1445,17 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       } catch(ConnectionException e) {
          SubscribeRetQos retQos = null;
          if (recorder != null) {
+            if (qos == null || qos.indexOf("<id>") == -1) { // Add a subscription ID on client side
+               org.xmlBlaster.engine.xml2java.SubscribeQoS sq = new org.xmlBlaster.engine.xml2java.SubscribeQoS(glob, qos);
+               subscribeUniqueCounter++;
+               String subId = Constants.SUBSCRIPTIONID_CLIENT_PRAEFIX + getServerNodeId() +
+                        "/client/" + getLoginName() +
+                        "/" + connectReturnQos.getPublicSessionId() +
+                        "/" + subscribeUniqueCounter;
+               sq.setSubscriptionId(subId);
+               if (log.TRACE) log.trace(ME, "Adding client side subscriptionId='" + subId + "'");
+               qos = sq.toXml();
+            }
             recorder.subscribe(xmlKey, qos);
             retQos = new SubscribeRetQos(glob, Constants.STATE_OK, getQueuedInfo());
             // TODO: Generate a unique subscritpionId -> pass to client and later to server as well
