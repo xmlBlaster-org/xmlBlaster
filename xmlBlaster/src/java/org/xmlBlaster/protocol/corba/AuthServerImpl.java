@@ -3,12 +3,12 @@ Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: AuthServerImpl.java,v 1.20 2002/04/26 21:31:53 ruff Exp $
+Version:   $Id: AuthServerImpl.java,v 1.21 2002/05/16 19:58:34 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.jutils.time.StopWatch;
 import org.xmlBlaster.protocol.I_Authenticate;
@@ -36,6 +36,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
 
    private final static String ME = "AuthServerImpl";
    private final Global glob;
+   private final LogChannel log;
    private final org.omg.CORBA.ORB orb;
    private final I_Authenticate authenticate;
    /**  This specialized POA controlles the xmlBlaster server */
@@ -69,10 +70,11 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
     */
    public AuthServerImpl(Global glob, org.omg.CORBA.ORB orb, I_Authenticate authenticate, I_XmlBlaster blaster)
    {
-      if (Log.CALL) Log.call(ME, "Entering constructor with ORB argument");
       this.glob = glob;
+      this.log = glob.getLog("corba");
       this.orb = orb;
       this.authenticate = authenticate;
+      if (log.CALL) log.call(ME, "Entering constructor with ORB argument");
 
       try {
          rootPOA = org.omg.PortableServer.POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
@@ -96,23 +98,23 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
          // This single servant handles all requests (with the policies from above)
 
          // USING TIE:
-         // xmlBlasterServant = new ServerPOATie(new ServerImpl(orb, this));
+         // xmlBlasterServant = new ServerPOATie(new ServerImpl(glob, orb, this));
          // NOT TIE:
-         xmlBlasterServant = new ServerImpl(orb, blaster);
+         xmlBlasterServant = new ServerImpl(glob, orb, blaster);
 
          xmlBlasterPOA.set_servant(xmlBlasterServant); // set as default servant
          poaMgr.activate();
 
          // orb.run();
-         // Log.info(ME, "Default Active Object Map ID=" + default_oid);
-         if (Log.TRACE) Log.trace(ME, "Default xmlBlasterServant activated");
+         // log.info(ME, "Default Active Object Map ID=" + default_oid);
+         if (log.TRACE) log.trace(ME, "Default xmlBlasterServant activated");
       }
       catch ( Exception e ) {
          e.printStackTrace();
-         Log.error(ME, e.toString());
+         log.error(ME, e.toString());
       }
 
-      if (Log.CALL) Log.trace(ME, "Leaving constructor");
+      if (log.CALL) log.trace(ME, "Leaving constructor");
    }
 
 
@@ -135,11 +137,11 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
    public org.xmlBlaster.protocol.corba.serverIdl.Server login(String loginName, String passwd,
                        String qos_literal) throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "Entering login(loginName=" + loginName/* + ", qos=" + qos_literal */ + ")");
+      if (log.CALL) log.call(ME, "Entering login(loginName=" + loginName/* + ", qos=" + qos_literal */ + ")");
 
       if (loginName==null || passwd==null || qos_literal==null) {
-         Log.error(ME+"InvalidArguments", "login failed: please use no null arguments for login()");
-         throw new XmlBlasterException("LoginFailed.InvalidArguments", "login failed: please use no null arguments for login()");
+         log.error(ME+"InvalidArguments", "login failed: please use no null arguments for login()");
+         throw new XmlBlasterException("loginFailed.InvalidArguments", "login failed: please use no null arguments for login()");
       }
 
       try {
@@ -184,7 +186,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
     */
    public String ping(String qos)
    {
-      if (Log.CALL) Log.call(ME, "Entering ping() ...");
+      if (log.CALL) log.call(ME, "Entering ping() ...");
       return "";
    }
 
@@ -193,7 +195,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
       ConnectReturnQos returnQos = null;
       String sessionId = null;
 
-      StopWatch stop = null; if (Log.TIME) stop = new StopWatch();
+      StopWatch stop = null; if (log.TIME) stop = new StopWatch();
 
       org.omg.CORBA.Object certificatedServerRef = null;
       try {
@@ -204,7 +206,7 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
          // The bytes at IOR position 234 and 378 are increased (there must be the object_id)
       } catch (Exception e) {
          e.printStackTrace();
-         Log.error(ME+".Corba", e.toString());
+         log.error(ME+".Corba", e.toString());
          throw new XmlBlasterException(ME + ".Corba.connectFailed", "connect failed: " + e.toString());
       }
 
@@ -219,30 +221,30 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
          throw new XmlBlasterException(e.id, e.reason); // transform native exception to Corba exception
       }
 
-      if (Log.TIME) Log.time(ME, "Elapsed time in connect()" + stop.nice());
-      if (Log.DUMP) Log.dump(ME, "Returning from login-connect()" + returnQos.toXml());
+      if (log.TIME) log.time(ME, "Elapsed time in connect()" + stop.nice());
+      if (log.DUMP) log.dump(ME, "Returning from login-connect()" + returnQos.toXml());
 
       return returnQos;
    }
 
    public void disconnect(String sessionId, String qos_literal) throws XmlBlasterException {
-      if (Log.CALL) Log.call(ME, "Entering disconnect()");
+      if (log.CALL) log.call(ME, "Entering disconnect()");
       try {
          authenticate.disconnect(sessionId, qos_literal); // throws XmlBlasterException (eg if not connected (init not called, timeout etc.) or someone else than the session owner called disconnect!)
       }
       catch (org.xmlBlaster.util.XmlBlasterException e) {
          throw new XmlBlasterException(e.id, e.reason); // transform native exception to Corba exception
       }
-      if (Log.CALL) Log.call(ME, "Exiting disconnect()");
+      if (log.CALL) log.call(ME, "Exiting disconnect()");
    }
 
    /**
-    * Logout of a client.
+    * logout of a client.
     * @param xmlServer The handle you got from the login call
     */
    public void logout(org.xmlBlaster.protocol.corba.serverIdl.Server xmlServer) throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "Entering logout()");
+      if (log.CALL) log.call(ME, "Entering logout()");
       disconnect(getSessionId(xmlServer), (new DisconnectQos()).toXml());
    }
 
@@ -256,9 +258,9 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
       try {
          byte[] oid = xmlBlasterPOA.reference_to_id(xmlServer);
          sessionId = ServerImpl.convert(oid);
-         if (Log.TRACE) Log.trace(ME, "POA oid=<" + sessionId + ">");
+         if (log.TRACE) log.trace(ME, "POA oid=<" + sessionId + ">");
       } catch (Exception e) {
-         Log.error(ME+".Unknown", "Sorry, you are unknown. No logout possible.");
+         log.error(ME+".Unknown", "Sorry, you are unknown. No logout possible.");
          throw new XmlBlasterException("CorbaUnknown", "Sorry, you are not known with CORBA");
       }
       return sessionId;

@@ -3,11 +3,11 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.30 2002/05/11 09:36:32 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.31 2002/05/16 19:58:34 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.JdkCompatible;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
@@ -52,6 +52,7 @@ public class CorbaDriver implements I_Driver
    private static final String ME = "CorbaDriver";
    private static org.omg.CORBA.ORB orb = null;
    private Global glob = null;
+   private LogChannel log;
    private HttpIORServer httpIORServer = null;  // xmlBlaster publishes his AuthServer IOR
    private NamingContextExt nc = null;
    private NameComponent [] name = null;
@@ -99,6 +100,7 @@ public class CorbaDriver implements I_Driver
    public void init(Global glob, I_Authenticate authenticate, I_XmlBlaster xmlBlasterImpl) throws XmlBlasterException
    {
       this.glob = glob;
+      this.log = glob.getLog("corba");
       this.authenticate = authenticate;
       this.xmlBlasterImpl = xmlBlasterImpl;
 
@@ -126,14 +128,14 @@ public class CorbaDriver implements I_Driver
             PrintWriter ps = new PrintWriter(new FileOutputStream(new File(iorFile)));
             ps.println(orb.object_to_string(authRef));
             ps.close();
-            Log.info(ME, "Published AuthServer IOR to file " + iorFile);
+            log.info(ME, "Published AuthServer IOR to file " + iorFile);
          }
 
          // 2) Publish IOR on given port (switch off this feature with '-port 0'
          if (glob.getBootstrapAddress().getPort() > 0) {
             // TODO: Start this HTTP server in engine.Global and not in the corba driver!!!
             httpIORServer = new HttpIORServer(glob, glob.getBootstrapAddress().getHostname(), glob.getBootstrapAddress().getPort(), orb.object_to_string(authRef));
-            Log.info(ME, "Published AuthServer IOR on " + glob.getBootstrapAddress().getAddress());
+            log.info(ME, "Published AuthServer IOR on " + glob.getBootstrapAddress().getAddress());
          }
 
          // 3) Publish IOR to a naming service
@@ -156,13 +158,13 @@ public class CorbaDriver implements I_Driver
                         aa[0] = "/home/ruff/xmlBlaster/demo/html/NS_Ref";
                         // !!! using reflection in future to avoid JacORB dependency (nameServer. Method main):
                         jacorb.naming.NameServer.main(aa);
-                        Log.info(ME, "Created Name server");
+                        log.info(ME, "Created Name server");
                      }
                   }
                   MyNameServer thr = new MyNameServer();
                   thr.start();
                   org.jutils.runtime.Sleeper.sleep(500);
-                  Log.info(ME, "Started CORBA naming service");
+                  log.info(ME, "Started CORBA naming service");
                }
             }
             */
@@ -176,38 +178,38 @@ public class CorbaDriver implements I_Driver
                name[0].kind = "MOM";
 
                nc.bind(name, authRef);
-               Log.info(ME, "Published AuthServer IOR to naming service on " + System.getProperty("ORBInitRef.NameService"));
+               log.info(ME, "Published AuthServer IOR to naming service on " + System.getProperty("ORBInitRef.NameService"));
             }
             catch (XmlBlasterException e) {
-               Log.warn(ME + ".NoNameService", e.reason);
+               log.warn(ME + ".NoNameService", e.reason);
                nc = null;
                if (glob.getBootstrapAddress().getPort() > 0) {
-                  Log.info(ME, "You don't need the naming service, i'll switch to builtin http IOR download");
+                  log.info(ME, "You don't need the naming service, i'll switch to builtin http IOR download");
                }
                else if (iorFile != null) {
-                  Log.info(ME, "You don't need the naming service, i'll switch to ior.file = " + iorFile);
+                  log.info(ME, "You don't need the naming service, i'll switch to ior.file = " + iorFile);
                }
                else {
                   usage();
-                  Log.panic(ME, "You switched off the internal http server and you didn't specify a file name for IOR dump! Sorry - good bye.");
+                  log.error(ME, "You switched off the internal http server and you didn't specify a file name for IOR dump!");
                }
             } catch (org.omg.CORBA.COMM_FAILURE e) {
                nc = null;
                if (glob.getBootstrapAddress().getPort() > 0) {
-                  Log.info(ME, "Can't publish AuthServer to naming service, is your naming service really running?\n" +
+                  log.info(ME, "Can't publish AuthServer to naming service, is your naming service really running?\n" +
                                e.toString() +
                                "\nYou don't need the naming service, i'll switch to builtin http IOR download");
                }
                else if (iorFile != null) {
-                  Log.info(ME, "Can't publish AuthServer to naming service, is your naming service really running?\n" +
+                  log.info(ME, "Can't publish AuthServer to naming service, is your naming service really running?\n" +
                                e.toString() +
                                "\nYou don't need the naming service, i'll switch to ior.file = " + iorFile);
                }
                else {
                   usage();
-                  Log.panic(ME, "Can't publish AuthServer to naming service, is your naming service really running?\n" +
+                  log.error(ME, "Can't publish AuthServer to naming service, is your naming service really running?\n" +
                                e.toString() +
-                               "\nYou switched off the internal http server and you didn't specify a file name for IOR dump! Sorry - good bye.");
+                               "\nYou switched off the internal http server and you didn't specify a file name for IOR dump!");
                }
             }
          } // if useNameService
@@ -240,6 +242,8 @@ public class CorbaDriver implements I_Driver
     */
    public static void initializeOrbEnv(Global glob)
    {
+      LogChannel log = glob.getLog("corba");
+
       /*
       # orb.properties file for JacORB, copy to JAVA_HOME/lib
       #
@@ -269,23 +273,23 @@ public class CorbaDriver implements I_Driver
          String hostname = glob.getProperty().get("ior.hostname", (String)null);
          if (hostname != null) {
             JdkCompatible.setSystemProperty("OAIAddr", hostname);
-            if (Log.TRACE) Log.trace(ME, "Using ior.hostname=" + System.getProperty("OAIAddr"));
+            if (log.TRACE) log.trace(ME, "Using ior.hostname=" + System.getProperty("OAIAddr"));
          }
          
          int port = glob.getProperty().get("ior.port", 0);
          if (port > 0) {
             JdkCompatible.setSystemProperty("OAPort", ""+port);
-            if (Log.TRACE) Log.trace(ME, "Using ior.port=" + System.getProperty("OAPort"));
+            if (log.TRACE) log.trace(ME, "Using ior.port=" + System.getProperty("OAPort"));
          }
 
          int verbose = glob.getProperty().get("jacorb.verbosity", -1);
          if (verbose >= 0) {
             JdkCompatible.setSystemProperty("jacorb.verbosity", ""+verbose);
-            if (Log.TRACE) Log.trace(ME, "Using jacorb.verbosity=" + System.getProperty("jacorb.verbosity"));
+            if (log.TRACE) log.trace(ME, "Using jacorb.verbosity=" + System.getProperty("jacorb.verbosity"));
          }
       }
-      if (Log.TRACE) Log.trace(ME, "Using org.omg.CORBA.ORBClass=" + System.getProperty("org.omg.CORBA.ORBClass"));
-      if (Log.TRACE) Log.trace(ME, "Using org.omg.CORBA.ORBSingletonClass=" + System.getProperty("org.omg.CORBA.ORBSingletonClass"));
+      if (log.TRACE) log.trace(ME, "Using org.omg.CORBA.ORBClass=" + System.getProperty("org.omg.CORBA.ORBClass"));
+      if (log.TRACE) log.trace(ME, "Using org.omg.CORBA.ORBSingletonClass=" + System.getProperty("org.omg.CORBA.ORBSingletonClass"));
 
       // We use default Port 7608 for naming service to listen ...
       // Start Naming service
@@ -293,7 +297,7 @@ public class CorbaDriver implements I_Driver
       // and xmlBlaster will find it automatically if on same host
       if (System.getProperty("ORBInitRef.NameService") == null) {
          JdkCompatible.setSystemProperty("ORBInitRef.NameService", glob.getProperty().get("ORBInitRef.NameService", "corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root"));
-         Log.trace(ME, "Using corbaloc ORBInitRef.NameService=corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root to find a naming service");
+         log.trace(ME, "Using corbaloc ORBInitRef.NameService=corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root to find a naming service");
       }
    }
 
@@ -316,14 +320,14 @@ public class CorbaDriver implements I_Driver
     */
    public void shutdown()
    {
-      if (Log.CALL) Log.call(ME, "Shutting down ...");
+      if (log.CALL) log.call(ME, "Shutting down ...");
       boolean wait_for_completion = true;
 
       try {
          if (httpIORServer != null) httpIORServer.shutdown();
       }
       catch (Throwable e) {
-         Log.warn(ME, "Problems during ORB cleanup: " + e.toString());
+         log.warn(ME, "Problems during ORB cleanup: " + e.toString());
          e.printStackTrace();
       }
 
@@ -331,7 +335,7 @@ public class CorbaDriver implements I_Driver
          if (nc != null) nc.unbind(name);
       }
       catch (Throwable e) {
-         Log.warn(ME, "Problems during ORB cleanup: " + e.toString());
+         log.warn(ME, "Problems during ORB cleanup: " + e.toString());
          e.printStackTrace();
       }
 
@@ -339,23 +343,23 @@ public class CorbaDriver implements I_Driver
          if (iorFile != null) FileUtil.deleteFile(null, iorFile);
       }
       catch (Throwable e) {
-         Log.warn(ME, "Problems during ORB cleanup: " + e.toString());
+         log.warn(ME, "Problems during ORB cleanup: " + e.toString());
       }
 
       if (rootPOA != null && authRef != null) {
          try {
-            Log.trace(ME, "Deactivate POA ...");
+            log.trace(ME, "Deactivate POA ...");
             authRef._release();
             // poa.deactivate_object(poa.servant_to_id(authRef));
             rootPOA.deactivate_object(rootPOA.reference_to_id(authRef));
-         } catch(Exception e) { Log.warn(ME, "POA deactivate authentication servant failed"); }
+         } catch(Exception e) { log.warn(ME, "POA deactivate authentication servant failed"); }
       }
 
       if (rootPOA != null) {
          try {
-            Log.trace(ME, "Deactivate POA Manager ...");
+            log.trace(ME, "Deactivate POA Manager ...");
             rootPOA.the_POAManager().deactivate(false, true);
-         } catch(Exception e) { Log.warn(ME, "POA deactivate failed"); }
+         } catch(Exception e) { log.warn(ME, "POA deactivate failed"); }
          rootPOA = null;
       }
 
@@ -363,7 +367,7 @@ public class CorbaDriver implements I_Driver
 
       orb.shutdown(wait_for_completion);
 
-      Log.info(ME, "POA and ORB are down, CORBA resources released.");
+      log.info(ME, "POA and ORB are down, CORBA resources released.");
    }
 
 
@@ -378,7 +382,7 @@ public class CorbaDriver implements I_Driver
     */
    private NamingContextExt getNamingService() throws XmlBlasterException
    {
-      if (Log.CALL) Log.call(ME, "getNamingService() ...");
+      if (log.CALL) log.call(ME, "getNamingService() ...");
       if (nc != null)
          return nc;
 
@@ -387,17 +391,17 @@ public class CorbaDriver implements I_Driver
          // Get a reference to the Name Service, CORBA compliant:
          org.omg.CORBA.Object nameServiceObj = orb.resolve_initial_references("NameService");
          if (nameServiceObj == null) {
-            //Log.warn(ME + ".NoNameService", "Can't access naming service, is there any running?");
+            //log.warn(ME + ".NoNameService", "Can't access naming service, is there any running?");
             throw new XmlBlasterException(ME + ".NoNameService", "Can't access naming service, is there any running?");
          }
-         if (Log.TRACE) Log.trace(ME, "Successfully accessed initial orb references for naming service (IOR)");
+         if (log.TRACE) log.trace(ME, "Successfully accessed initial orb references for naming service (IOR)");
 
          nameService = org.omg.CosNaming.NamingContextExtHelper.narrow(nameServiceObj);
          if (nameService == null) {
-            Log.error(ME + ".NoNameService", "Can't access naming service == null");
+            log.error(ME + ".NoNameService", "Can't access naming service == null");
             throw new XmlBlasterException(ME + ".NoNameService", "Can't access naming service (narrow problem)");
          }
-         if (Log.TRACE) Log.trace(ME, "Successfully narrowed handle for naming service");
+         if (log.TRACE) log.trace(ME, "Successfully narrowed handle for naming service");
 
          return nameService; // Note: the naming service IOR is successfully evaluated (from a IOR),
                              // but it is not sure that the naming service is really running
@@ -406,7 +410,7 @@ public class CorbaDriver implements I_Driver
          throw e;
       }
       catch (Exception e) {
-         if (Log.TRACE) Log.trace(ME + ".NoNameService", e.toString());
+         if (log.TRACE) log.trace(ME + ".NoNameService", e.toString());
          throw new XmlBlasterException(ME + ".NoNameService", "No CORBA naming service found - start <xmlBlaster/bin/ns ns.ior> if you want one.");
          //throw new XmlBlasterException(ME + ".NoNameService", "No CORBA naming service found - read docu at <http://www.jacorb.org> if you want one.");
       }
@@ -420,7 +424,7 @@ public class CorbaDriver implements I_Driver
    {
       if (orb != null)
          return orb;
-      Log.warn(ME, "orb was not initialized");
+      Global.instance().getLog("corba").warn(ME, "orb was not initialized");
       return org.omg.CORBA.ORB.init(new String[0], null);
    }
 

@@ -3,12 +3,12 @@ Name:      CallbackCorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   This singleton sends messages to clients using CORBA
-Version:   $Id: CallbackCorbaDriver.java,v 1.22 2002/05/11 08:08:54 ruff Exp $
+Version:   $Id: CallbackCorbaDriver.java,v 1.23 2002/05/16 19:58:34 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
-import org.xmlBlaster.util.Log;
+import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.queue.MsgQueueEntry;
@@ -23,13 +23,14 @@ import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackHelper;
  * <p>
  * The BlasterCallback.update() method of the client will be invoked
  *
- * @version $Revision: 1.22 $
+ * @version $Revision: 1.23 $
  * @author $Author: ruff $
  */
 public class CallbackCorbaDriver implements I_CallbackDriver
 {
    private String ME = "CallbackCorbaDriver";
    private Global glob = null;
+   private LogChannel log;
    private BlasterCallback cb = null;
    private CallbackAddress callbackAddress = null;
 
@@ -48,14 +49,15 @@ public class CallbackCorbaDriver implements I_CallbackDriver
    public void init(Global glob, CallbackAddress callbackAddress) throws XmlBlasterException
    {
       this.glob = glob;
+      this.log = glob.getLog("corba");
       this.callbackAddress = callbackAddress;
       String callbackIOR = callbackAddress.getAddress();
       try {
          cb = BlasterCallbackHelper.narrow(CorbaDriver.getOrb().string_to_object(callbackIOR));
-         if (Log.TRACE) Log.trace(ME, "Accessing client callback reference using given IOR string");
+         if (log.TRACE) log.trace(ME, "Accessing client callback reference using given IOR string");
       }
       catch (Exception e) {
-         Log.error(ME, "The given callback IOR ='" + callbackIOR + "' is invalid: " + e.toString());
+         log.error(ME, "The given callback IOR ='" + callbackIOR + "' is invalid: " + e.toString());
          throw new XmlBlasterException("CallbackHandleInvalid", "The given callback IOR is invalid: " + e.toString());
       }
    }
@@ -68,8 +70,8 @@ public class CallbackCorbaDriver implements I_CallbackDriver
    public final String[] sendUpdate(MsgQueueEntry[] msg) throws XmlBlasterException
    {
       if (msg == null || msg.length < 1) throw new XmlBlasterException(ME, "Illegal update argument");
-      if (Log.TRACE) Log.trace(ME, "xmlBlaster.update(" + msg[0].getUniqueKey() + ") to " + callbackAddress.getAddress());
-      //Log.info(ME, "xmlBlaster.update(" + msg.length + ")");
+      if (log.TRACE) log.trace(ME, "xmlBlaster.update(" + msg[0].getUniqueKey() + ") to " + callbackAddress.getAddress());
+      //log.info(ME, "xmlBlaster.update(" + msg.length + ")");
 
       org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] updateArr = new org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[msg.length];
       for (int ii=0; ii<msg.length; ii++) {
@@ -92,8 +94,8 @@ public class CallbackCorbaDriver implements I_CallbackDriver
    public void sendUpdateOneway(MsgQueueEntry[] msg) throws XmlBlasterException
    {
       if (msg == null || msg.length < 1) throw new XmlBlasterException(ME, "Illegal updateOneway argument");
-      if (Log.TRACE) Log.trace(ME, "xmlBlaster.updateOneway(" + msg[0].getUniqueKey() + ") to " + callbackAddress.getAddress());
-      //Log.info(ME, "xmlBlaster.updateOneway(" + msg.length + ")");
+      if (log.TRACE) log.trace(ME, "xmlBlaster.updateOneway(" + msg[0].getUniqueKey() + ") to " + callbackAddress.getAddress());
+      //log.info(ME, "xmlBlaster.updateOneway(" + msg.length + ")");
 
       org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[] updateArr = new org.xmlBlaster.protocol.corba.serverIdl.MessageUnit[msg.length];
       for (int ii=0; ii<msg.length; ii++) {
@@ -116,6 +118,7 @@ public class CallbackCorbaDriver implements I_CallbackDriver
     */
    public final String ping(String qos) throws XmlBlasterException
    {
+      if (log.CALL) log.call(ME, "ping client");
       try {
          return cb.ping(qos);
       } catch (Throwable e) {
@@ -143,6 +146,6 @@ public class CallbackCorbaDriver implements I_CallbackDriver
       //cbfactory.releaseCb(cb);
       cb = null;
       callbackAddress = null;
-      Log.info(ME, "Shutdown of CORBA callback client done.");
+      log.info(ME, "Shutdown of CORBA callback client done.");
    }
 }
