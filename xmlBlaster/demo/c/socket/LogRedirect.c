@@ -72,7 +72,7 @@ int main(int argc, char** argv)
       freeXmlBlasterAccessUnparsed(xa);
       exit(EXIT_FAILURE);
    }
-   free(response);
+   xmlBlasterFree(response);
    printf("[client] Connected to xmlBlaster, do some tests ...\n");
 
    /* ping */
@@ -82,7 +82,7 @@ int main(int argc, char** argv)
    }
    else {
       printf("[client] Pinging a connected server, response=%s\n", response);
-      free(response);
+      xmlBlasterFree(response);
    }
 
    /* disconnect */

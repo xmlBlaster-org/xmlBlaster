@@ -63,7 +63,8 @@ int main(int argc, char** argv)
    XmlBlasterException xmlBlasterException;
    XmlBlasterAccessUnparsed *xa = 0;
 
-   printf("[client] Try option '-help' if you need usage informations\n");
+   printf("[client] XmlBlaster %s C SOCKET client, try option '-help' if you need usage informations\n",
+          getXmlBlasterVersion());
 
    for (iarg=0; iarg < argc; iarg++) {
       if (strcmp(argv[iarg], "-help") == 0 || strcmp(argv[iarg], "--help") == 0) {
@@ -115,7 +116,7 @@ int main(int argc, char** argv)
          freeXmlBlasterAccessUnparsed(xa);
          exit(EXIT_FAILURE);
       }
-      free(response);
+      xmlBlasterFree(response);
       printf("[client] Connected to xmlBlaster, do some tests ...\n");
    }
 
@@ -125,7 +126,7 @@ int main(int argc, char** argv)
    }
    else {
       printf("[client] Pinging a connected server, response=%s\n", response);
-      free(response);
+      xmlBlasterFree(response);
    }
 
    { /* subscribe ... */
@@ -141,7 +142,7 @@ int main(int argc, char** argv)
          exit(EXIT_FAILURE);
       }
       printf("[client] Subscribe success, returned status is '%s'\n", response);
-      free(response);
+      xmlBlasterFree(response);
    }
 
    {  /* publish ... */
@@ -161,7 +162,7 @@ int main(int argc, char** argv)
          exit(EXIT_FAILURE);
       }
       printf("[client] Publish success, returned status is '%s'\n", response);
-      free(response);
+      xmlBlasterFree(response);
    }
 
    {  /* unSubscribe ... */
@@ -171,7 +172,7 @@ int main(int argc, char** argv)
       response = xa->unSubscribe(xa, key, qos, &xmlBlasterException);
       if (response) {
          printf("[client] Unsubscribe success, returned status is '%s'\n", response);
-         free(response);
+         xmlBlasterFree(response);
       }
       else {
          printf("[client] Caught exception in unSubscribe errorCode=%s, message=%s\n",
@@ -210,7 +211,7 @@ int main(int argc, char** argv)
                      msgUnitArr->msgUnitArr[i].key,
                      contentStr, dots,
                      msgUnitArr->msgUnitArr[i].qos);
-            free(contentStr);
+            xmlBlasterFree(contentStr);
          }
          freeMsgUnitArr(msgUnitArr);
       }
@@ -237,7 +238,7 @@ int main(int argc, char** argv)
          exit(EXIT_FAILURE);
       }
       printf("[client] Erase success, returned status is '%s'\n", response);
-      free(response);
+      xmlBlasterFree(response);
    }
 
    if (xa->disconnect(xa, 0, &xmlBlasterException) == false) {
