@@ -373,7 +373,7 @@ abstract public class DispatchConnection implements I_Timeout
             if (log.TRACE) log.trace(ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString() +
                       " for " + myId + ": We ignore it: " + ((throwable == null) ? "No throwable" : throwable.toString()));
             if (throwable == null) {
-               throw XmlBlasterException(glob, ErrorHandler.INTERNAL_ILLEGALSTATE, ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString());
+               throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALSTATE, ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString());
             }
             //Thread.currentThread().dumpStack();
             throw XmlBlasterException.convert(glob, ME, "Connection transition " + oldState.toString() + " -> " + this.state.toString(), throwable);
