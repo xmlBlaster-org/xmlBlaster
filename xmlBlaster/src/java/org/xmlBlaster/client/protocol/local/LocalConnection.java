@@ -26,6 +26,9 @@ import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
 import org.xmlBlaster.util.qos.address.Address;
 
+import org.xmlBlaster.protocol.I_Authenticate;
+import org.xmlBlaster.protocol.I_XmlBlaster;
+
 /**
  * A local connections.
  * <p>This driver may be used to get in vm direct calls into XmlBlaster. Some sutiations this may be used is to write a plgin for the client that gets started in the standalone XmlBlaster, or to be used when XMlBlaster is access in the same embedded anvironment, such as JBoss.</p>
@@ -46,8 +49,8 @@ public class LocalConnection implements I_XmlBlasterConnection
    private String sessionId;
    protected ConnectReturnQos connectReturnQos;
    protected Address clientAddress;
-   private org.xmlBlaster.authentication.Authenticate authenticate;
-   private org.xmlBlaster.protocol.I_XmlBlaster xmlBlasterImpl;
+   private I_Authenticate authenticate;
+   private I_XmlBlaster xmlBlasterImpl;
 
    /**
     * Called by plugin loader which calls init(Global, PluginInfo) thereafter. 
@@ -70,10 +73,10 @@ public class LocalConnection implements I_XmlBlasterConnection
     * <p>The given global must contain the serverside org.xmlBlaster.engine.Global in its ObjectEntry "ServerNodeScope"</p>
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
     */
-   public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) throws XmlBlasterException {
-      this.glob = (glob == null) ? Global.instance() : glob;
+   public void init(org.xmlBlaster.util.Global glob_, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) throws XmlBlasterException {
+      this.glob = (glob_ == null) ? Global.instance() : glob_;
       this.log = this.glob.getLog("local");
-      org.xmlBlaster.engine.Global engineGlob = (org.xmlBlaster.engine.Global)glob.getObjectEntry("ServerNodeScope");
+      org.xmlBlaster.engine.Global engineGlob = (org.xmlBlaster.engine.Global)this.glob.getObjectEntry("ServerNodeScope");
       if (engineGlob == null)
          throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "could not retreive the ServerNodeScope. Am I really on the server side ?");
       try {
@@ -81,7 +84,7 @@ public class LocalConnection implements I_XmlBlasterConnection
          if (this.authenticate == null) {
             throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "authenticate object is null");
          }
-         this.xmlBlasterImpl = authenticate.getXmlBlaster();
+         this.xmlBlasterImpl = this.authenticate.getXmlBlaster();
          if (xmlBlasterImpl == null) {
             throw new XmlBlasterException(this.glob, ErrorCode.INTERNAL_UNKNOWN, ME + ".init", "xmlBlasterImpl object is null");
          }
@@ -108,10 +111,11 @@ public class LocalConnection implements I_XmlBlasterConnection
     * @see I_XmlBlasterConnection#connectLowlevel(Address)
     */
    public void connectLowlevel(Address address) throws XmlBlasterException {
+      if (log.TRACE) log.trace(ME, "Entering connectLowlevel("+address.getRawAddress()+")");
    }
 
    public void resetConnection() {
-      log.trace(ME, "LocalCLient is initialized, no connection available");
+      if (log.TRACE) log.trace(ME, "LocalCLient is initialized, no connection available");
       this.sessionId = null;
    }
 
@@ -130,15 +134,13 @@ public class LocalConnection implements I_XmlBlasterConnection
          log.warn(ME, "You are already logged in, no relogin possible.");
          return "";
       }
+      String retQos_literal = this.authenticate.connect(connectQos);
 
-      org.xmlBlaster.engine.qos.ConnectQosServer qosServer =
-          new org.xmlBlaster.engine.qos.ConnectQosServer(this.glob, connectQos);
-
-      org.xmlBlaster.engine.qos.ConnectReturnQosServer ret = this.authenticate.connect(qosServer);
-      this.connectReturnQos = new ConnectReturnQos(this.glob, ret.getData());
+      this.connectReturnQos = new ConnectReturnQos(this.glob, retQos_literal);
       this.sessionId = this.connectReturnQos.getSecretSessionId();
 
-      return this.connectReturnQos.toXml("");
+      if (log.TRACE) log.trace(ME, "connect("+this.connectReturnQos.getData().getAddress().getType()+")" + this.connectReturnQos.getSessionName().toString());
+      return retQos_literal;
    }
 
    /**
@@ -168,6 +170,7 @@ public class LocalConnection implements I_XmlBlasterConnection
          log.error(ME, e.getMessage());
       }
 
+      if (log.TRACE) log.trace(ME, "disconnect() done");
       return true;
    }
 
@@ -265,7 +268,7 @@ public class LocalConnection implements I_XmlBlasterConnection
     */
    public final MsgUnitRaw[] get(String xmlKey_literal,
                                   String qos_literal) throws XmlBlasterException {
-      if (log.CALL) log.call(ME, "Entering get() xmlKey=\n" + xmlKey_literal + ") ...");
+      if (log.CALL) log.call(ME, "Entering get() xmlKey=" + xmlKey_literal.trim() + ") ...");
       return this.xmlBlasterImpl.get(this.sessionId, xmlKey_literal, qos_literal);
    }
 
