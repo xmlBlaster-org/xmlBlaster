@@ -29,6 +29,8 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/protocol.socket
 
 #ifdef _WINDOWS
 #  define ssize_t signed int
+#else
+#  include <pthread.h>  /* The original pthreads.h from the OS, only need for gcc 2.9x: I don't know why, it is in XmlBlasterAccessUnparsed.h already */
 #endif
 
 /**
