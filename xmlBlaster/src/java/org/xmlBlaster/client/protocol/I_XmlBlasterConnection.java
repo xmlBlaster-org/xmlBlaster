@@ -31,7 +31,7 @@ import org.xmlBlaster.util.ConnectReturnQos;
  *
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
-public interface I_XmlBlasterConnection extends I_XmlBlaster
+public interface I_XmlBlasterConnection
 {
    /**
     * connect() is a login or authentication as well, the authentication schema
@@ -82,5 +82,19 @@ public interface I_XmlBlasterConnection extends I_XmlBlaster
    // NOTE: All methods from I_XmlBlaster like publish()/subscribe() can throw the ConnectionException as well!
 
    //public static void usage();
+
+   public java.lang.String subscribe(java.lang.String xmlKey, java.lang.String qos) throws XmlBlasterException;
+
+   public org.xmlBlaster.engine.helper.MessageUnit[] get(java.lang.String xmlKey, java.lang.String qos) throws XmlBlasterException;
+
+   public void unSubscribe(java.lang.String xmlKey, java.lang.String qos) throws XmlBlasterException;
+
+   public String publish(org.xmlBlaster.engine.helper.MessageUnit msgUnit) throws XmlBlasterException;
+
+   public void publishOneway(org.xmlBlaster.engine.helper.MessageUnit [] msgUnitArr) throws XmlBlasterException;
+
+   public String[] publishArr(org.xmlBlaster.engine.helper.MessageUnit[] msgUnitArr) throws XmlBlasterException;
+
+   public java.lang.String[] erase(java.lang.String xmlKey, java.lang.String qos) throws XmlBlasterException;
 }
 
