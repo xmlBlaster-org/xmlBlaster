@@ -3,9 +3,9 @@ Name:      SystemInfoPublisher.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a client to publish system infos to xmlBlaster
-Version:   $Id: SystemInfoPublisher.java,v 1.3 2001/12/16 20:32:45 ruff Exp $
+Version:   $Id: SystemInfoPublisher.java,v 1.4 2002/01/25 18:37:16 ruff Exp $
 ------------------------------------------------------------------------------*/
-package html.systemInfo;
+package http.dhtml.systemInfo;
 
 import org.xmlBlaster.util.Log;
 import org.jutils.init.Args;

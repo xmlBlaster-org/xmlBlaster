@@ -4,7 +4,7 @@ Howto run the html examples with persistent http connection:
 NOTE: http callbacks are tested with tomcat 3.2.x only.
       tomcat 4.x is not known to run.
       Download tomcat from http://jakarta.apache.org
-      (jserv was OK as well
+      (jserv was OK as well)
 
 1. Run
       'build.bat deploy_war'  (Windows)
@@ -26,7 +26,7 @@ NOTE: http callbacks are tested with tomcat 3.2.x only.
 
 3. Start a publisher, so that we have some dynamic data:
 
-   java html.systemInfo.SystemInfoPublisher
+   java http.dhtml.systemInfo.SystemInfoPublisher
 
 
 4. Start tomcat
