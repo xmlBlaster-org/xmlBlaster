@@ -49,8 +49,10 @@ public abstract class KeyData implements java.io.Serializable, Cloneable
    public transient static final String CONTENTMIME_DEFAULT = "text/plain";
    /** value from attribute <key oid="" contentMime="..."> */
    private String contentMime = CONTENTMIME_DEFAULT;
+   /** The default content MIME extended type is null */
+   public transient static final String CONTENTMIMEEXTENDED_DEFAULT = null;
    /** value from attribute <key oid="" contentMimeExtended="..."> */
-   private String contentMimeExtended;
+   private String contentMimeExtended = CONTENTMIMEEXTENDED_DEFAULT;
    /** is "" */
    public transient static final String DEFAULT_DOMAIN = null;
    /** value from attribute <key oid="" domain="..."> */

@@ -229,7 +229,7 @@ public final class QueryKeySaxFactory extends SaxHandlerBase implements I_QueryK
       sb.append(offset).append("<key oid='").append(queryKeyData.getOid()).append("'");
       if (queryKeyData.getContentMime() != null && !queryKeyData.getContentMime().equals(KeyData.CONTENTMIME_DEFAULT))
          sb.append(" contentMime='").append(queryKeyData.getContentMime()).append("'");
-      if (queryKeyData.getContentMimeExtended() != null)
+      if (queryKeyData.getContentMimeExtended() != null && !queryKeyData.getContentMimeExtended().equals(KeyData.CONTENTMIMEEXTENDED_DEFAULT))
          sb.append(" contentMimeExtended='").append(queryKeyData.getContentMimeExtended()).append("'");
       if (queryKeyData.getDomain() != null && queryKeyData.getDomain().length() > 0)
          sb.append(" domain='").append(queryKeyData.getDomain()).append("'");
