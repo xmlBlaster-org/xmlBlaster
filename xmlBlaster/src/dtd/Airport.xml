@@ -2,6 +2,8 @@
 
 <!-- Test Syntax:
         java sax.SAXCount Airport.xml -->
+<!-- Sample query:
+        java DomQueryTest Airport.xml \*/\*/Airport -->
 
 <subscribe>
    <key oid="EDDI-A">
@@ -31,7 +33,7 @@
       </Airport>
    </key>
 
-   <key oid="EDDI-C">
+   <key oid="EDDI-D">
       <Airport icao="EDDI">
          <Runway id="2">
            <WindVeloc w_id="1">
