@@ -111,6 +111,14 @@ JdbcDriver.drivers=sun.jdbc.odbc.JdbcOdbcDriver
 
 
 #------------------------------------------------------------------------------
+# Customize clustering, see
+# http://www.xmlBlaster.org/xmlBlaster/doc/requirements/cluster.html
+LoadBalancerPlugin[RoundRobin][1.0]=org.xmlBlaster.engine.cluster.simpledomain.RoundRobin
+MapMsgToMasterPlugin[DomainToMaster][1.0]=org.xmlBlaster.engine.cluster.simpledomain.DomainToMaster,DEFAULT_DOMAIN=dummy
+#------------------------------------------------------------------------------
+
+
+#------------------------------------------------------------------------------
 # When an XmlBlasterException is thrown, log it to console
 Log.exception=false
 
