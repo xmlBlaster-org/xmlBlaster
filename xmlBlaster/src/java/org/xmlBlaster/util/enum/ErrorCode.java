@@ -162,6 +162,12 @@ public final class ErrorCode implements java.io.Serializable
          }
       );
 
+   public static final ErrorCode RESOURCE_UNAVAILABLE = new ErrorCode("resource.unavailable",
+         "The resource is not available (e.g. it is shutdown)",
+         new ResourceInfo[] {
+         }
+      );
+
    public static final ErrorCode RESOURCE_DB_UNAVAILABLE = new ErrorCode("resource.db.unavailable",
          "There is no connection to a backend database using JDBC",
          new ResourceInfo[] {
