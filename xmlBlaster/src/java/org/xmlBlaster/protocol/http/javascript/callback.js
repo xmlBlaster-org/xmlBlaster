@@ -207,21 +207,24 @@ function MessageWrapperDom(key, content, qos)
 
 
 var queueing     = false;
+/** Contains FrameMessageQueue objects, one for each frame */
 var listenerList = new Array();
 
 
 /*
- *
+ * Object holding necessary variables for a queue. 
+ * Every registered frame has one such object to handle
+ * its private update queue.
  */
 function FrameMessageQueue( frameHandle )
 {
-   this.queueTime               = 100;
-   this.retries                 = 0;
-   this.ready                   = false;
-   this.timeOutHandle           = null;
-   this.frame                   = frameHandle;
-   this.messageQueue            = new Array(); // array of MessageWrapperDom objects
-   this.queue                   = queue_;
+   this.queueTime               = 100; // How long should we collect until we update the frame
+   this.retries                 = 0;   // If frame is not ready after num retries, it will be deleted from the listener list
+   this.ready                   = false; // Is the frame ready to receive updates?
+   this.timeOutHandle           = null;  // The Timer handle from queueTime
+   this.frame                   = frameHandle; // The JS-Window object of the frame
+   this.messageQueue            = new Array(); // array of MessageWrapperDom objects (key,content,qos)
+   this.queue                   = queue_; // method to enter a new message (=MessageWrapperDom object) to the queue
 }
 
 /*
@@ -229,7 +232,7 @@ function FrameMessageQueue( frameHandle )
  */
 function queue_( message )
 {
-   Log.trace("Queueing message oid='"+message.key.oid+"' in queue "+this.frame.name);
+   Log.trace("Queueing message oid='"+message.key.oid+"' in queue "+this.frame.name + ", is msg-no=" + this.messageQueue.length);
    this.messageQueue[this.messageQueue.length] = message;
 
    if( !queueing ) {
@@ -237,7 +240,8 @@ function queue_( message )
    }
 
    if( this.messageQueue.length < 10 ) {
-      window.clearTimeout( this.timeOutHandle );
+      if (this.timeOutHandle != null)
+         window.clearTimeout( this.timeOutHandle );
       var call = "sendMessageQueue('"+this.frame.name+"')";
       this.timeOutHandle = window.setTimeout( call, this.queueTime );
    }
@@ -248,7 +252,8 @@ function queue_( message )
 }
 
 /*
- *
+ * Sending an update to exactly one frame. 
+ * @param queueName - The queue associated with the frame
  */
 function sendMessageQueue(queueName)
 {
@@ -288,11 +293,13 @@ function sendMessageQueue(queueName)
       if( fmq.retries > 200 ) {                            //more than 200*100ms = 20 sec. not availible
          Log.warning("Maximum number of retries reached for frame ["+fmq.frame.name+"].");
          fmq.messageQueue.length = 0;
-         window.clearTimeout( fmq.timeOutHandle );
+         if (fmq.timeOutHandle != null)
+            window.clearTimeout( fmq.timeOutHandle );
          removeUpdateListener( fmq.frame );
          return;
       }
-      window.clearTimeout( fmq.timeOutHandle );
+      if (fmq.timeOutHandle != null)
+         window.clearTimeout( fmq.timeOutHandle );
       fmq.timeOutHandle = window.setTimeout( "sendMessageQueue('"+queueName+"')", fmq.queueTime );
       fmq.retries++;
    }
@@ -301,7 +308,7 @@ function sendMessageQueue(queueName)
 
 
 /*
- *
+ * Setting a frame to be ready. 
  */
 function setReady( frame, ready )
 {
@@ -350,7 +357,7 @@ function addUpdateListener( listenerFrame )
 
 
 /*
- *
+ * If a frame doesn't want any updates any more. 
  */
 function removeUpdateListener( listenerFrame ) {
    var i;
@@ -372,7 +379,7 @@ function removeUpdateListener( listenerFrame ) {
 }
 
 /*
- *
+ * If a frame doesn't want any updates any more. 
  */
 function removeUpdateListenerAtPos( index ) {
    if(index >= listenerList.length)
