@@ -24,6 +24,9 @@ BUGS:
 
 
 DONE:
+ - Changed default security plugin from 'simple' to Cyrilles 'htpasswd'
+   http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/authentication/plugins/htpasswd/README
+
  - Added support for dirty reads in clusters
    http://www.xmlBlaster.org/xmlBlaster/doc/requirements/cluster.dirtyRead.html
 
