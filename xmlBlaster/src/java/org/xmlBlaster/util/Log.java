@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org (LGPL)
 Comment:   Handling the Client data
-           $Revision: 1.1 $  $Date: 1999/11/08 12:57:18 $
+           $Revision: 1.2 $  $Date: 1999/11/08 14:32:54 $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -17,9 +17,9 @@ public class Log
 
    /**
     * Switch DEBUG mode on or of for performance reasons
-    * if (Log.DEBUG) Log.trace(....); -> dead code elimination
+    * if (Log.CALLS) Log.trace(....); -> dead code elimination
     */
-   public final static boolean DEBUG = false;
+   public final static boolean CALLS = false;  // trace method calls
 
    /**
     * Adjust her your local look and feel

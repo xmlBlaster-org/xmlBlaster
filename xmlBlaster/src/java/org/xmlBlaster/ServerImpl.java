@@ -55,12 +55,16 @@ package org.xmlBlaster;
 </pre>
 </p>
 */
-public class ServerImpl extends ServerPOA {
+//public class ServerImpl extends ServerPOA {
+public class ServerImpl implements ServerOperations {
   private String name;
+  private org.omg.CORBA.ORB orb;
+  private RequestBroker broker;
 
   /** Construct a persistently named object. */
-  public ServerImpl(java.lang.String name) {
-    this.name = name;
+  public ServerImpl(org.omg.CORBA.ORB orb) {
+    this.orb = orb;
+    this.broker = RequestBroker.getInstance(this);
   }
   /** Construct a transient object. */
   public ServerImpl() {
@@ -198,4 +202,10 @@ public class ServerImpl extends ServerPOA {
     // IMPLEMENT: Operation
     return 0;
   }
+
+
+   public BlasterCallback getBlasterCallback(String callbackIOR)
+   {
+      return BlasterCallbackHelper.narrow(orb.string_to_object(callbackIOR));
+   }
 }
