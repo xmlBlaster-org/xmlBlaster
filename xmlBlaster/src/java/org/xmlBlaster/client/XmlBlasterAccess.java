@@ -267,7 +267,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          if (this.connectionListener != null) {
             this.connectionListener.reachedAlive(ConnectionStateEnum.UNDEF, this);
          }
-         log.info(ME, "Successful " + this.connectQos.getAddress().getType() + " login as " + getId());
+         log.info(ME, glob.getReleaseId() + ": Successful " + this.connectQos.getAddress().getType() + " login as " + getId());
 
          if (this.clientQueue.getNumOfEntries() > 0) {
             long num = this.clientQueue.getNumOfEntries();
@@ -284,7 +284,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
          if (this.connectionListener != null) {
             this.connectionListener.reachedPolling(ConnectionStateEnum.UNDEF, this);
          }
-         log.info(ME, "Login request as " + getId() + " is queued");
+         log.info(ME, glob.getReleaseId() + ": Login request as " + getId() + " is queued");
       }
 
       return this.connectReturnQos; // new ConnectReturnQos(glob, "");
