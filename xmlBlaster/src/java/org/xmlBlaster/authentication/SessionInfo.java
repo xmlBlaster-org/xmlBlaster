@@ -322,21 +322,29 @@ public class SessionInfo implements I_Timeout
    }
 
    public final void updateConnectQos(ConnectQosServer newConnectQos) throws XmlBlasterException {
-      //this.securityCtx = newConnectQos.getSecurityCtx();
+      boolean wantsCallbacks = (newConnectQos.getSessionCbQueueProperty().getCallbackAddresses().length > 0);
+
       CbQueueProperty cbQueueProperty = newConnectQos.getSessionCbQueueProperty();
       this.sessionQueue.setProperties(cbQueueProperty);
-      if (hasCallback()) {
+      if (wantsCallbacks && hasCallback()) {
          this.dispatchManager.updateProperty(cbQueueProperty.getCallbackAddresses());
          log.info(ME, "Successfully reconfigured callback address with new settings, other reconfigurations are not yet implemented");
          this.dispatchManager.notifyAboutNewEntry();
       }
-      else {
-         if (newConnectQos.getSessionCbQueueProperty().getCallbackAddresses().length > 0) {
-            log.info(ME, "Successfully reconfigured and created dispatch manager with given callback address");
-            this.dispatchManager = new DispatchManager(glob, this.msgErrorHandler,
-                                this.securityCtx, this.sessionQueue, (I_ConnectionStatusListener)null,
-                                newConnectQos.getSessionCbQueueProperty().getCallbackAddresses());
-         }
+      else if (wantsCallbacks && !hasCallback()) {
+         log.info(ME, "Successfully reconfigured and created dispatch manager with given callback address");
+         this.dispatchManager = new DispatchManager(glob, this.msgErrorHandler,
+                              this.securityCtx, this.sessionQueue, (I_ConnectionStatusListener)null,
+                              newConnectQos.getSessionCbQueueProperty().getCallbackAddresses());
+      }
+      else if (!wantsCallbacks && hasCallback()) {
+         this.dispatchManager.shutdown();
+         this.dispatchManager = null;
+         log.info(ME, "Successfully shutdown dispatch manager as no callback address is configured");
+      }
+      else if (!wantsCallbacks && !hasCallback()) {
+         if (log.TRACE) log.trace(ME, "No callback exists and no callback is desired");
+         // nothing to do
       }
       this.connectQos = newConnectQos; // Replaces ConnectQosServer settings like bypassCredentialCheck
    }
