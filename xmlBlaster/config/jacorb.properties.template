@@ -102,7 +102,9 @@ ORBInitRef.NameService=corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_r
 
 # if on, the ORB's version number and a copyright statement is printed
 # any time the ORB is initialized 
-jacorb.orb.print_version=on
+#jacorb.orb.print_version=on
+# xmlBlaster:
+jacorb.orb.print_version=off
 
 ##################################
 #                                #
@@ -125,6 +127,10 @@ jacorb.orb.print_version=on
 # 4 = debug-level output (DEBUG) (may confuse the unaware user :-)
 # NOTE: the name of this property has changed from jacorb.verbosity!!
 jacorb.log.default.verbosity=0
+
+# xmlBlaster (as this only helps with 'java -Djacorb.poa.log.verbosity=0 ...'
+# we have forced it in org.xmlBlaster.protocol.corba.OrbInstanceFactory.java as well:
+jacorb.poa.log.verbosity=0
 
 # where does output go? Terminal is default
 #jacorb.logfile=LOGFILEPATH
@@ -164,7 +170,7 @@ jacorb.util.tpool.log.verbosity=0
 jacorb.giop_minor_version=2
 
 # number of retries if connection cannot directly be established
-#xmlBlaster 5 -> 0 
+# xmlBlaster 5 -> 0 
 jacorb.retries=0
 
 # how many msecs. do we wait between retries
@@ -217,7 +223,7 @@ jacorb.maxManagedBufSize=18
 # (infinitely) retry all pending requests, or propagate a COMM_FAILURE
 # back into the client code. Default is "off", i.e. throw a
 # COMM_FAILURE
-# xmlBlaster:
+# xmlBlaster (needed to suppress duplicates on shutdown):
 jacorb.connection.client.retry_on_failure=off
 
 # max time (msecs) a server keeps a connection open if nothing happens
