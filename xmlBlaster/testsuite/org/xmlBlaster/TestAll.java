@@ -27,7 +27,7 @@ public class TestAll
 {
    public static Test suite()
    {
-      TestSuite suite= new TestSuite();
+      TestSuite suite= new TestSuite("Test complete xmlBlaster");
 
       //System.out.println("\n\n========= TESTING CORBA ==========\n");
       //try { glob.getProperty().set("client.protocol", "SOCKET"); } catch(JUtilsException e) { Log.error("TestAll", e.toString()); }

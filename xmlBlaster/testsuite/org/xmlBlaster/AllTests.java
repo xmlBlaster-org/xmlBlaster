@@ -19,7 +19,7 @@ public class AllTests extends TestCase
   }
 
   public static Test suite() {
-    TestSuite suite = new TestSuite();
+    TestSuite suite = new TestSuite("All xmlBlaster core tests");
     suite.addTest(classtest.AllTests.suite());
     suite.addTest(testsuite.org.xmlBlaster.TestAll.suite());
     suite.addTest(authentication.AllTests.suite());
