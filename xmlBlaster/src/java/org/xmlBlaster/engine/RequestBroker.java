@@ -294,9 +294,11 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
     *      &lt;oid>aMessage&lt;/oid>
     *   &lt;key>
     * </pre>
+    * @param entries The message to send as dead letters
+    * @param reason A human readable text describing the problem
     * @return State information returned from the publish call (is never null)
     */
-   public String[] deadLetter(MsgQueueEntry[] entries)
+   public String[] deadLetter(MsgQueueEntry[] entries, String reason)
    {
       if (log.CALL) log.call(ME, "Publishing " + entries.length + " dead letters.");
       if (entries == null) {
@@ -314,13 +316,18 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
             MessageUnit msgUnit = entry.getMessageUnitWrapper().getMessageUnitClone();
             try {
                if (entry.getMessageUnitWrapper().getXmlKey().isDeadLetter()) {  // Check for recursion of dead letters
-                  log.error(ME, "PANIC: Recursive dead letter is lost, no recovery possible - dumping to file not yet coded: " + msgUnit.toXml());
+                  log.error(ME, "PANIC: Recursive dead letter is lost, no recovery possible - dumping to file not yet coded: " +
+                                msgUnit.toXml() + ": " +
+                                ((reason != null) ? (": " + reason) : "") );
                   retArr[ii] = entry.getMessageUnitWrapper().getXmlKey().getUniqueKey();
                   continue;
                }
 
-               log.warn(ME, "Generating dead letter oid=" + entry.getMessageUnitWrapper().getUniqueKey() + " from publisher=" + entry.getPublisherName() +
-                            " because delivery to '" + entry.getReceiverName() + "' cbQueue=" + entry.getMsgQueue().getName() + " failed.");
+               log.warn(ME, "Generating dead letter oid=" + entry.getMessageUnitWrapper().getUniqueKey() +
+                            " from publisher=" + entry.getPublisherName() +
+                            " because delivery to '" + entry.getReceiverName() +
+                            "' cbQueue=" + ((entry.getMsgQueue() == null) ? "null" : entry.getMsgQueue().getName()) + " failed" +
+                            ((reason != null) ? (": " + reason) : "") );
                StringBuffer buf = new StringBuffer(256);
                buf.append("<key oid='").append(Constants.OID_DEAD_LETTER).append("'><oid>").append(entry.getMessageUnitWrapper().getUniqueKey()).append("</oid></key>");
                msgUnit.setKey(buf.toString());
@@ -330,6 +337,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
             }
             catch(Throwable e) {
                log.error(ME, "PANIC: " + entry.getMessageUnitWrapper().getUniqueKey() + " dead letter is lost, no recovery possible - dumping to file not yet coded: " + e.toString() + "\n" + msgUnit.toXml());
+               e.printStackTrace();
                retArr[ii] = entry.getMessageUnitWrapper().getXmlKey().getUniqueKey();
             }
          }

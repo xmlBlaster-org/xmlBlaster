@@ -3,7 +3,7 @@ Name:      MsgQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: MsgQueue.java,v 1.23 2002/08/04 17:11:16 ruff Exp $
+Version:   $Id: MsgQueue.java,v 1.24 2002/08/21 22:35:05 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queue;
@@ -135,7 +135,7 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
       synchronized (this) {
          if (super.size() > 0) {
             log.warn(ME, "Shutting down queue which contains " + super.size() + " messages");
-            handleFailure(null);
+            handleFailure(null, null);
          }
          isShutdown = true;
       }
@@ -161,15 +161,16 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
 
    /**
     * @param msg The messages to handle, if null we take all messages from queue to recover. 
+    * @param reason An error text or null
     * @return true failure handled
     */
-   private final boolean handleFailure(MsgQueueEntry[] msg)
+   private final boolean handleFailure(MsgQueueEntry[] msg, String reason)
    {
       if (property != null) {
          if (property.onFailureDeadLetter()) {
             if (msg == null)
                msg = takeMsgs();
-            glob.getRequestBroker().deadLetter(msg);
+            glob.getRequestBroker().deadLetter(msg, reason);
             checkForVolatileErase(msg);
             return true;
          }
@@ -382,7 +383,7 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
       if (isShutdown) {
          log.warn(ME, "The queue is shutdown, putMsgs() of " + msg.length + " messages failed, starting error handling ...");
          //Thread.currentThread().dumpStack();
-         handleFailure(msg);
+         handleFailure(msg, null);
          return;
       }
 
@@ -398,7 +399,8 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
                      log.warn(ME, "Adding " + msg.length + " messages, queue will block since max capacity " + property.getMaxMsg() + " reached");
                }
                else {
-                  boolean handled = handleFailure(msg);
+                  String reason = ME + ": Callback queue overflow, " + property.getMaxMsg() + " messages are in queue, try increasing '-cb.queue.maxMsg' on client login.";
+                  boolean handled = handleFailure(msg, reason);
                   if (!handled) {
                      Thread.currentThread().dumpStack();
                      log.error(ME, "PANIC: onOverflow='" + property.getOnOverflow() + "' is not implemented, messages are lost.");
@@ -439,7 +441,7 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
             log.warn(ME, "Giving up after " + addr.getRetries() + " retries to send message back to client " +
                           getLoginName() + ", producing now dead letters.");
 
-            handleFailure(null);
+            handleFailure(null, null);
 
             onExhaust(cbConnection);
 
@@ -461,7 +463,7 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
          burstModeTimer.removeTimeoutListener(timerKey);
          log.warn(ME, "Can't send message back to client " + getLoginName() + ", producing now dead letters.");
 
-         handleFailure(null);
+         handleFailure(null, null);
 
          shutdown();
          return;
