@@ -64,10 +64,10 @@ public class HtPasswd {
    public HtPasswd(Global glob) throws XmlBlasterException {
       log = glob.getLog("auth");
       htpasswdFilename = glob.getProperty().get("Security.Server.Plugin.htpasswd.secretfile", "NONE" );
-      boolean allowPartialUsername = glob.getProperty().get("Security.Server.Plugin.htpasswd.allowPartialUsername", true);
+      boolean allowPartialUsername = glob.getProperty().get("Security.Server.Plugin.htpasswd.allowPartialUsername", false);
       if ( allowPartialUsername ) {
          useFullUsername = ALLOW_PARTIAL_USERNAME;
-         log.info(ME, "Login names are searched with 'startswith' mode in '" + htpasswdFilename + "'.");
+         if (log.TRACE) log.trace(ME, "Login names are searched with 'startswith' mode in '" + htpasswdFilename + "'.");
       }
       else {
           useFullUsername = FULL_USERNAME;
