@@ -3,7 +3,7 @@ Name:      MsgQueue.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: MsgQueue.java,v 1.26 2002/09/15 18:52:21 ruff Exp $
+Version:   $Id: MsgQueue.java,v 1.27 2002/09/24 21:31:16 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.queue;
@@ -114,6 +114,16 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
          }
       }
       return loginName;
+   }
+
+   /**
+    * @return "" if no session
+    */
+   public final String getPublicSessionId() {
+      if (this instanceof SessionMsgQueue) {
+         return ((SessionMsgQueue)this).getSessionInfo().getPublicSessionId();
+      }
+      return "";
    }
 
    public final void incrNumUpdate(int count) {
@@ -310,6 +320,44 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
    }
 
    /**
+    * Remove given number of messages
+    */
+   public final void removeMsgs(int num)
+   {
+      for (int jj=0; jj<num; jj++) {
+         try {
+            super.take();
+         }
+         catch(InterruptedException e) {
+            log.error(ME, "Caught unexpected InterruptedException in removeMsgs - take(): " + e);
+            jj--;
+         }
+      }
+   }
+
+   /**
+    * Access all messages in queue without removing them
+    */
+   public final MsgQueueEntry[] accessMsgs() throws XmlBlasterException
+   {
+      MsgQueueEntry[] entries = null;
+      synchronized (getMonitor()) {
+         entries = takeMsgs();
+         if (entries != null && entries.length > 0) {
+            /*
+            for (int ii=0; ii<msg.length; ii++) {
+               msg[ii].getMessageUnitWrapper().addEnqueueCounter(1);
+               super.put(msg[ii]);
+            }
+            */
+            putMsgs(entries); // put them back in, we remove them on successful deliver
+                              // TODO: We need a peek(int num) method allowing to access without removing
+         }
+      }
+      return entries;
+   }
+
+   /**
     * takes the next message and blocks if none available
     * check with size() if any is available
     * @return null on error
@@ -469,9 +517,15 @@ public class MsgQueue extends BoundedPriorityQueue implements I_Timeout
          return;
       }
       else if (cbConnection != null) { // Unexpected dead addresses
-         log.error(ME, "Internal problem errorCounter=" + this.errorCounter + " addr=" + ((cbConnection==null)?"null":cbConnection.getCbAddress().getName()) +
+         log.error(ME, "The callback connection addr=" + ((cbConnection==null)?"null":cbConnection.getCbAddress().getName()) +
+                       " is null, client is not reachable, producing now dead letters.");
+         log.trace(ME, "Internal problem errorCounter=" + this.errorCounter + " addr=" + ((cbConnection==null)?"null":cbConnection.getCbAddress().getName()) +
                        " the callback connection is null, client is not reachable");
-         Thread.currentThread().dumpStack();
+         //Thread.currentThread().dumpStack();
+         handleFailure(null, null);
+
+         shutdown();
+         return;
       }
 
       CallbackAddress addr = cbManager.getAliveCbAddress();
