@@ -3,7 +3,7 @@ Name:      ClientSubscriptions.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling subscriptions, collected for each Client
-Version:   $Id: ClientSubscriptions.java,v 1.28 2002/06/20 21:25:25 ruff Exp $
+Version:   $Id: ClientSubscriptions.java,v 1.29 2002/06/27 11:13:12 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -29,7 +29,7 @@ import java.io.*;
  * the instance is handled by RequestBroker.
  * <p />
  * The interface SubscriptionListener informs about subscribe/unsubscribe events
- * @version: $Id: ClientSubscriptions.java,v 1.28 2002/06/20 21:25:25 ruff Exp $
+ * @version: $Id: ClientSubscriptions.java,v 1.29 2002/06/27 11:13:12 ruff Exp $
  * @author Marcel Ruff
  */
 public class ClientSubscriptions implements I_ClientListener, SubscriptionListener, MessageEraseListener
@@ -233,8 +233,12 @@ public class ClientSubscriptions implements I_ClientListener, SubscriptionListen
       SessionInfo sessionInfo = e.getSessionInfo();
       MessageUnitHandler msgUnitHandler = e.getMessageUnitHandler();
       String uniqueKey = msgUnitHandler.getUniqueKey();
-      if (log.TRACE) log.trace(ME, "Erase event for oid=" + uniqueKey + "', client=" + sessionInfo.toString() + ", we do nothing here");
-      // The subscription reservation remains even on deleted messages
+
+      //msgUnitHandler.setIsNotPublishedWithData(); happens in MessageUnitHandler.java
+      //Vector vec = getSubscriptionByOid(sessionInfo, uniqueKey);
+
+      if (log.TRACE) log.trace(ME, "Erase event for oid=" + uniqueKey + "', client=" + sessionInfo.toString() +
+        ", we do nothing here as subscription reservation remains even on deleted messages");
    }
 
 
