@@ -78,7 +78,7 @@ void Timeout::join()
 
 Timestamp Timeout::addTimeoutListener(I_Timeout *listener, long delay, void *userData) 
 {
-   if (log_.call()) log_.call(ME, " addTimeoutListener");
+   //if (log_.call()) log_.call(ME, " addTimeoutListener");
    Timestamp key = 0;
    if (delay < 1) log_.error(ME, ": addTimeoutListener with delay = " + lexical_cast<std::string>(delay));
 
@@ -101,7 +101,7 @@ Timestamp Timeout::addTimeoutListener(I_Timeout *listener, long delay, void *use
    if (log_.trace()) log_.trace(ME, "addTimeoutListener, going to notify");
    Lock waitForTimeoutLock(waitForTimeoutMutex_);
    waitForTimeoutCondition_.notify();
-   if (log_.trace()) log_.trace(ME, "addTimeoutListener, successfully notified");
+   //if (log_.trace()) log_.trace(ME, "addTimeoutListener, successfully notified");
    return key;
 }
 
@@ -243,7 +243,7 @@ void Timeout::run()
          if (!mapHasNewEntry_) {
             isReady_ = true;
             waitForTimeoutCondition_.wait(waitForTimeoutLock, (long)milliDelay);
-            if (log_.trace()) log_.trace(ME, "waking up ... ");
+            //if (log_.trace()) log_.trace(ME, "waking up ... ");
          }
       }
    }

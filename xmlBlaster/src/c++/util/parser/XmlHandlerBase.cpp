@@ -34,7 +34,7 @@ XmlHandlerBase::XmlHandlerBase(Global& global) :
             invocationMutex_()
 {
    doTrimStrings_ = true;
-   if (log_.call()) log_.trace(ME, "Creating new XmlHandlerBase");
+   //if (log_.call()) log_.trace(ME, "Creating new XmlHandlerBase");
 }
 
 void XmlHandlerBase::init(const string &xmlLiteral)
@@ -52,9 +52,8 @@ void XmlHandlerBase::init(const string &xmlLiteral)
 void XmlHandlerBase::parse(const string &xmlData)
 {
    log_.call(ME, "parse");
-   if (log_.trace()) {
-      log_.trace(ME, string("parse content:'") + xmlData + string("'"));
-   }
+   //if (log_.trace()) log_.trace(ME, string("parse content:'") + xmlData + string("'"));
+
    StopWatch stopWatch;
    I_Parser *parser = NULL;
    try {

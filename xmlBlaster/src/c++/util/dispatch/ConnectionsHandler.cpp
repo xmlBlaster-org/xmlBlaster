@@ -146,9 +146,6 @@ ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
    log_.info(ME, string("successfully connected with sessionId = '") + connectReturnQos_->getSessionQos().getSecretSessionId() + "'");
    connectQos_->getSessionQos().setSecretSessionId(connectReturnQos_->getSessionQos().getSecretSessionId());
 
-   if (log_.trace()) {
-      log_.trace(ME, string("return qos after connection: ") + connectReturnQos_->toXml());
-   }
    enum States oldState = status_;
    status_ = CONNECTED;
    if (connectionProblemsListener_) connectionProblemsListener_->reachedAlive(oldState, this);
@@ -433,7 +430,7 @@ void ConnectionsHandler::timeout(void * /*userData*/)
    pingIsStarted_ = false;
    timestamp_ = 0;
    if (doStopPing_) return; // then it must stop
-   if ( log_.call() ) log_.call(ME, string("ping timeout occured with status '") + lexical_cast<std::string>(status_) + "'" );
+   if ( log_.call() ) log_.call(ME, string("ping timeout occured with status '") + getStatusString() + "'" );
    if (status_ == CONNECTED) { // then I am pinging
       if ( log_.trace() ) log_.trace(ME, "ping timeout: status is 'CONNECTED'");
       try {

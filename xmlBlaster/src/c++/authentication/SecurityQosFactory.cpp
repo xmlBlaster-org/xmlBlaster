@@ -25,7 +25,6 @@ SecurityQosFactory::SecurityQosFactory(Global& global)
 
 SecurityQos SecurityQosFactory::parse(const string& xmlQoS_literal)
 {
-   log_.call(ME, "parse");
    // Strip CDATA tags that we are able to parse it:
    string ret = xmlQoS_literal;
 
@@ -58,7 +57,7 @@ SecurityQos SecurityQosFactory::parse(const string& xmlQoS_literal)
  */
 void SecurityQosFactory::startElement(const string &name, const AttributeMap& attrs)
 {
-   if (log_.call()) log_.call(ME, "startElement: " + getStartElementAsString(name, attrs));
+   // if (log_.call()) log_.call(ME, "startElement: " + getStartElementAsString(name, attrs));
    if (name.compare("securityService") == 0) {
       inSecurityService_ = true;
       AttributeMap::const_iterator iter = attrs.begin();
@@ -94,7 +93,7 @@ void SecurityQosFactory::startElement(const string &name, const AttributeMap& at
  */
  void SecurityQosFactory::endElement(const string &name)
 {
-   log_.call(ME, "endElement");
+   // log_.call(ME, "endElement");
    if (name.compare("user") == 0) {
       inUser_ = false;
       StringTrim::trim(character_);

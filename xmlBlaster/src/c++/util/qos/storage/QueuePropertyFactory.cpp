@@ -3,7 +3,7 @@ Name:      QueuePropertyFactory.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Factory which creates objects holding queue properties
-Version:   $Id: QueuePropertyFactory.cpp,v 1.15 2004/05/02 19:02:18 ruff Exp $
+Version:   $Id: QueuePropertyFactory.cpp,v 1.16 2004/09/27 12:54:31 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #include <util/qos/storage/QueuePropertyFactory.h>
@@ -52,7 +52,7 @@ QueuePropertyBase QueuePropertyFactory::getQueueProperty()
  */
 void QueuePropertyFactory::startElement(const string &name, const AttributeMap& attrs)
 {
-   if (log_.call()) log_.call(ME, "startElement: " + getStartElementAsString(name, attrs));
+   //if (log_.call()) log_.call(ME, "startElement: " + getStartElementAsString(name, attrs));
 
    // in case it is inside or entering an 'address' or 'callbackAddress'
    if (name.compare("address") == 0) {
@@ -80,12 +80,12 @@ void QueuePropertyFactory::startElement(const string &name, const AttributeMap& 
 
    // not inside any of the sub-elements (the root element)
    prop_ = QueuePropertyBase(global_, "");
-   if (log_.trace()) log_.trace(ME, "queue properties are created");
+   //if (log_.trace()) log_.trace(ME, "queue properties are created");
 
 
    string relating;
    if (getStringAttr(attrs, RELATING, relating)) {
-      if (log_.trace()) log_.trace(ME, "attribute 'relating' found. it is '" + relating + "'");
+      //if (log_.trace()) log_.trace(ME, "attribute 'relating' found. it is '" + relating + "'");
       if (relating == "callback") prop_.initialize("callback");
       else prop_.initialize("");
       prop_.setRelating(relating);
@@ -120,7 +120,6 @@ void QueuePropertyFactory::startElement(const string &name, const AttributeMap& 
             prop_.setMaxBytes(XmlHandlerBase::getLongValue(tmpValue));
       }
       else if (tmpName.compare("maxBytesCache") == 0) {
-            log_.trace(ME, "maxBytesCache found");
             prop_.setMaxBytesCache(XmlHandlerBase::getLongValue(tmpValue));
       }
       else if (tmpName.compare("storeSwapLevel") == 0) {

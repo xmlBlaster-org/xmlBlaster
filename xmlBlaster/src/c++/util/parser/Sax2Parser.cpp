@@ -46,15 +46,12 @@ void Sax2Parser::init(const string &xmlLiteral)
  */
 void Sax2Parser::parse(const string &xmlData) 
 {
-   if (log_.call()) log_.call(ME, "parse");
-   if (log_.trace()) {
-      log_.trace(ME, string("parse content:'") + xmlData + string("'"));
-   }
+   //if (log_.call()) log_.call(ME, "parse");
+   //if (log_.trace()) log_.trace(ME, string("parse content:'") + xmlData + string("'"));
  
    SAX2XMLReader *parser = NULL;
    try {
       parser = XMLReaderFactory::createXMLReader();
-      if (log_.trace()) log_.trace(ME, "parser successfully created");
       parser->setContentHandler(this);
       parser->setErrorHandler(this);
       parser->setLexicalHandler(this);
@@ -103,7 +100,7 @@ void Sax2Parser::endElement(const XMLCh *const /*uri*/, const XMLCh *const /*loc
 /** Receive notification of the beginning of the document. */
 void Sax2Parser::startDocument()
 {
-   if (log_.call()) log_.call(ME, string("startDocument"));
+   //if (log_.call()) log_.call(ME, string("startDocument"));
    handler_->startDocument();
 }
 
@@ -118,14 +115,14 @@ void Sax2Parser::startElement(const XMLCh *const /*uri*/, const XMLCh *const /*l
 /** Receive notification of the end of a CDATA section. */
 void Sax2Parser::endCDATA()
 {
-   if (log_.call()) log_.call(ME, string("endCDATA"));
+   //if (log_.call()) log_.call(ME, string("endCDATA"));
    handler_->endCDATA();
 }
 
 /** Receive notification of the start of a CDATA section. */
 void Sax2Parser::startCDATA()
 {
-   if (log_.call()) log_.call(ME, string("startCDATA"));
+   //if (log_.call()) log_.call(ME, string("startCDATA"));
    handler_->startCDATA();
 }
 

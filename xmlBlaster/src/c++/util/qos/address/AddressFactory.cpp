@@ -3,7 +3,7 @@ Name:      AddressFactory.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Factory Object for parsing Address objects.
-Version:   $Id: AddressFactory.cpp,v 1.17 2004/05/12 19:38:33 ruff Exp $
+Version:   $Id: AddressFactory.cpp,v 1.18 2004/09/27 12:54:30 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -49,7 +49,7 @@ AddressBase& AddressFactory::getAddress()
 // void startElement(const string& uri, const string& localName, const string& name, const string& character, Attributes attrs)
 void AddressFactory::startElement(const string &name, const AttributeMap& attrs)
 {
-   if (log_.call()) log_.call(ME, "startElement: " + getStartElementAsString(name, attrs));
+   //if (log_.call()) log_.call(ME, "startElement: " + getStartElementAsString(name, attrs));
 
    if (character_.length() > 0) {
       StringTrim::trim(character_);
@@ -163,10 +163,7 @@ void AddressFactory::startElement(const string &name, const AttributeMap& attrs)
 // public final void endElement(String uri, String localName, String name, StringBuffer character) {
 void AddressFactory::endElement(const string &name)
 {
-   if (log_.call()) log_.call(ME, "::endElement");
-   if (log_.trace()) {
-     log_.trace(ME, string("::endElement: '") + name + string("'"));
-   }
+   // if (log_.trace()) log_.trace(ME, string("::endElement: '") + name + string("'"));
    if (name.compare(address_->rootTag_) == 0) { // callback
       StringTrim::trim(character_);
       if (!character_.empty()) address_->setAddress(character_);

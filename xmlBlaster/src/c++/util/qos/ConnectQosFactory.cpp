@@ -68,7 +68,7 @@ void ConnectQosFactory::characters(const string &ch)
 }
 
 void ConnectQosFactory::startElement(const string& name, const AttributeMap& attrs) {
-   if (log_.call()) log_.call(ME, "startElement: " + getStartElementAsString(name, attrs));
+   //if (log_.call()) log_.call(ME, "startElement: " + getStartElementAsString(name, attrs));
 
    if (name.compare("qos") == 0) {
      connectQos_ = ConnectQos(global_); // kind of reset
@@ -143,10 +143,8 @@ void ConnectQosFactory::startElement(const string& name, const AttributeMap& att
 }
 
 void ConnectQosFactory::endElement(const string &name) {
-   log_.trace(ME, "endElement");
-   if (log_.trace()) {
-      log_.trace(ME, string("endElement. name:'") + name + string("' character: '") + character_ + string("'"));   
-   }
+   //if (log_.call()) log_.call(ME, "endElement");
+   //if (log_.trace()) log_.trace(ME, string("endElement. name:'") + name + string("' character: '") + character_ + string("'"));   
 
    if (subFactory_) {
       subFactory_->endElement(name);
