@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.6 2000/10/23 22:04:46 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.7 2000/10/27 13:20:48 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -62,7 +62,7 @@ import java.applet.Applet;
  * first time the ORB is created.<br />
  * This will be fixed as soon as possible.
  *
- * @version $Revision: 1.6 $
+ * @version $Revision: 1.7 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class CorbaConnection implements I_XmlBlasterConnection
@@ -171,10 +171,11 @@ public class CorbaConnection implements I_XmlBlasterConnection
     * We use this for similar handling as org.omg exceptions.
     * @return Server
     */
-   private Server getXmlBlaster() throws Exception
+   private Server getXmlBlaster() throws ConnectionException
    {
       if (xmlBlaster == null) {
-         throw new Exception("The xmlBlaster handle is null, no connection available");
+         if (Log.TRACE) Log.trace(ME, "No CORBA connection available.");
+         throw new ConnectionException(ME+".init", "The CORBA xmlBlaster handle is null, no connection available");
       }
       return xmlBlaster;
    }

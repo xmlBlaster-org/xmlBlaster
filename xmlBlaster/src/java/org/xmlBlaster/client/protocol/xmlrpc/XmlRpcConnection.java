@@ -3,7 +3,7 @@ Name:      XmlRpcConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native xmlBlaster Proxy. Can be called by the client in the same VM
-Version:   $Id: XmlRpcConnection.java,v 1.5 2000/10/27 13:04:07 ruff Exp $
+Version:   $Id: XmlRpcConnection.java,v 1.6 2000/10/27 13:20:49 ruff Exp $
 Author:    michele.laghi@attglobal.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.xmlrpc;
@@ -97,10 +97,11 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
       this.xmlRpcClient = null;
    }
 
-   private XmlRpcClient getXmlRpcClient() throws XmlBlasterException
+   private XmlRpcClient getXmlRpcClient() throws ConnectionException
    {
       if (this.xmlRpcClient == null) {
-         throw new XmlBlasterException(ME+".init", "No XML-RPC connection available.");
+         if (Log.TRACE) Log.trace(ME, "No XML-RPC connection available.");
+         throw new ConnectionException(ME+".init", "No XML-RPC connection available.");
       }
       return this.xmlRpcClient;
    }
@@ -539,18 +540,21 @@ public class XmlRpcConnection implements I_XmlBlasterConnection
    }
 
 
-   public String toXml () throws XmlBlasterException
+   public String toXml() throws XmlBlasterException
    {
       return toXml("");
    }
 
-
-   public String toXml (String extraOffset) throws XmlBlasterException
+   /**
+    * Dump of the server, remove in future. 
+    */
+   public String toXml(String extraOffset) throws XmlBlasterException
    {
+      if (this.xmlRpcClient == null) return "<noConnection />";
       try {
          Vector args = new Vector();
          args.addElement(extraOffset);
-         return (String)getXmlRpcClient().execute("xmlBlaster.toXml", args);
+         return (String)this.xmlRpcClient.execute("xmlBlaster.toXml", args);
       }
       catch (ClassCastException e) {
          Log.error(ME+".toXml", "not a valid Vector: " + e.toString());

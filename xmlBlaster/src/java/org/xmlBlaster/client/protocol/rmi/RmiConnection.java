@@ -3,7 +3,7 @@ Name:      RmiConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: RmiConnection.java,v 1.8 2000/10/22 19:36:30 ruff Exp $
+Version:   $Id: RmiConnection.java,v 1.9 2000/10/27 13:20:49 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.rmi;
@@ -50,7 +50,7 @@ import java.applet.Applet;
  * <p />
  * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http
  *
- * @version $Revision: 1.8 $
+ * @version $Revision: 1.9 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class RmiConnection implements I_XmlBlasterConnection
@@ -179,10 +179,11 @@ public class RmiConnection implements I_XmlBlasterConnection
     * We use this for similar handling as org.omg exceptions.
     * @return Server
     */
-   private I_XmlBlaster getXmlBlaster() throws Exception
+   private I_XmlBlaster getXmlBlaster() throws ConnectionException
    {
       if (blasterServer == null) {
-         throw new Exception("The xmlBlaster handle is null, no connection available");
+         if (Log.TRACE) Log.trace(ME, "No RMI connection available.");
+         throw new ConnectionException(ME+".init", "The RMI xmlBlaster handle is null, no connection available");
       }
       return blasterServer;
    }
