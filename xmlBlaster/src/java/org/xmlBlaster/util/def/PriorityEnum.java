@@ -220,7 +220,7 @@ public final class PriorityEnum implements java.io.Serializable
    }
    ///////////////END
 
-   /** java org.xmlBlaster.util.enum.PriorityEnum */
+   /** java org.xmlBlaster.util.def.PriorityEnum */
    public static void main(String[] args) {
       // Verifiy serialization:
       String fileName = "PriorityEnum.ser";

@@ -175,7 +175,7 @@ public final class MethodName implements java.io.Serializable
 
    /**
     * <pre>
-    *  java org.xmlBlaster.util.enum.MethodName
+    *  java org.xmlBlaster.util.def.MethodName
     * </pre>
     */
    public static void main (String [] args) {

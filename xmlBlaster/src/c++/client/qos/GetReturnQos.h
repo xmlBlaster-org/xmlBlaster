@@ -77,7 +77,7 @@ public:
    /**
     * Message priority.
     * @return priority 0-9
-    * @see org.xmlBlaster.util.enum.PriorityEnum
+    * @see org.xmlBlaster.util.def.PriorityEnum
     */
    org::xmlBlaster::util::PriorityEnum getPriority() const;
 

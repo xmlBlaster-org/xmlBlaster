@@ -211,7 +211,7 @@
    import org.xmlBlaster.client.key.SubscribeKey;
    import org.xmlBlaster.client.qos.SubscribeQos;
    import org.xmlBlaster.client.qos.SubscribeReturnQos;
-   import org.xmlBlaster.util.enum.Constants;
+   import org.xmlBlaster.util.def.Constants;
 
    ...
 
@@ -269,7 +269,7 @@
 
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 01</date>
-   <revision>$Revision: 1.19 $</revision>
+   <revision>$Revision: 1.20 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests the subscribe method invocation</comment>

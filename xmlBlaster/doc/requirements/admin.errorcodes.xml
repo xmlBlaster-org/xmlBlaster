@@ -168,7 +168,7 @@ XmlBlasterException.toXml():
 
 // Example showing how to convert an Exception (as a server developer)
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.util.def.ErrorCode;
 
 try {
 
@@ -329,7 +329,7 @@ errorCode description=A null pointer is an xmlBlaster internal programming error
    <todo type='HTML'>
    </todo>
    
-   <see type="API">org.xmlBlaster.util.enum.ErrorCode</see>
+   <see type="API">org.xmlBlaster.util.def.ErrorCode</see>
    <see type="API">org.xmlBlaster.util.XmlBlasterException</see>
    <!-- see type="REQ">admin.commands</see -->
    
@@ -339,7 +339,7 @@ errorCode description=A null pointer is an xmlBlaster internal programming error
    
    <date>2002 09 24</date>
    
-   <revision>$Revision: 1.25 $</revision>
+   <revision>$Revision: 1.26 $</revision>
 
    <testcase status="OPEN">
       <name>-</name>

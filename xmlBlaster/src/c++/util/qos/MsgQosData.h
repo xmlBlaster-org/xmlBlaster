@@ -257,7 +257,7 @@ public:
    /**
     * Message priority.
     * @return priority 0-9
-    * @see org.xmlBlaster.util.enum.PriorityEnum
+    * @see org.xmlBlaster.util.def.PriorityEnum
     */
    org::xmlBlaster::util::PriorityEnum getPriority() const;
 
@@ -265,7 +265,7 @@ public:
     * Set message priority value, org::xmlBlaster::util::PriorityEnum.NORM_PRIORITY (5) is default. 
     * org::xmlBlaster::util::PriorityEnum.MIN_PRIORITY (0) is slowest
     * whereas org::xmlBlaster::util::PriorityEnum.MAX_PRIORITY (9) is highest priority.
-    * @see org.xmlBlaster.util.enum.PriorityEnum
+    * @see org.xmlBlaster.util.def.PriorityEnum
     */
    void setPriority(org::xmlBlaster::util::PriorityEnum priority);
 

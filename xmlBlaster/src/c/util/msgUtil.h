@@ -21,7 +21,7 @@ extern "C" {
 #define MAX_SECRETSESSIONID_LEN 256
 #define MAX_SESSIONID_LEN 256
 
-/* See org.xmlBlaster.util.enum.MethodName.java */
+/* See org.xmlBlaster.util.def.MethodName.java */
 #define MAX_METHODNAME_LEN 20
 #define XMLBLASTER_CONNECT "connect"
 #define XMLBLASTER_DISCONNECT "disconnect"

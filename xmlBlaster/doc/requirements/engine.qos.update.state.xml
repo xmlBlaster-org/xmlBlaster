@@ -46,10 +46,10 @@
    </example>
    <see type="API">org.xmlBlaster.client.qos.UpdateQos</see>
    <see type="API">org.xmlBlaster.client.key.UpdateKey</see>
-   <see type="API">org.xmlBlaster.util.enum.Constants</see>
+   <see type="API">org.xmlBlaster.util.def.Constants</see>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 11</date>
-   <revision>$Revision: 1.16 $</revision>
+   <revision>$Revision: 1.17 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
