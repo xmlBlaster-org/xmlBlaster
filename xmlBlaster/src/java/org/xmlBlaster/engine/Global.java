@@ -24,6 +24,7 @@ import org.xmlBlaster.engine.dispatch.CbDeliveryConnectionsHandler;
 import org.xmlBlaster.util.queue.I_EntryFactory;
 import org.xmlBlaster.engine.queuemsg.ServerEntryFactory;
 import org.xmlBlaster.engine.msgstore.MsgStorePluginManager;
+import org.xmlBlaster.engine.persistence.MsgFileDumper;
 
 
 import java.util.*;
@@ -59,6 +60,8 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    private boolean useAdminManager = true;
    private boolean firstUseAdminManager = true; // to allow caching
    private MomClientGateway momClientGateway = null;
+
+   private MsgFileDumper msgFileDumper;
 
 
    public void shutdown() { 
@@ -287,6 +290,21 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
          }
       }
       return msgStorePluginManager;
+   }
+
+   /**
+    * A helper to dump a message to a file. 
+    */
+   public final MsgFileDumper getMsgFileDumper() throws XmlBlasterException {
+      if (this.msgFileDumper == null) {
+         synchronized(this) {
+            if (this.msgFileDumper == null) {
+               this.msgFileDumper = new MsgFileDumper();
+               this.msgFileDumper.init(this);
+            }
+         }
+      }
+      return this.msgFileDumper;
    }
 
    /**
