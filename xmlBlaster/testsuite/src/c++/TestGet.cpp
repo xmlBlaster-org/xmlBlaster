@@ -131,7 +131,7 @@ public:
          assert(msgVec.size() == 0);
       }
       catch(XmlBlasterException &e) {
-         log_.error(ME, "get of not existing message " + publishOid_);
+         log_.error(ME, "get of not existing message " + publishOid_ + ": " + e.getMessage());
          usage();
          assert(0);
       }
