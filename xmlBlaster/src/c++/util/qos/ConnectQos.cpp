@@ -201,7 +201,7 @@ CbQueueProperty& ConnectQosData::getSessionCbQueueProperty()
    return sessionCbQueueProperty_;
 }
 
-void ConnectQosData::setClientProperty(const std::string& key, const std::string& value)
+void ConnectQosData::addClientProperty(const std::string& key, const std::string& value)
 {
    clientProperties_.insert(ClientPropertyMap::value_type(key, value));   
 }

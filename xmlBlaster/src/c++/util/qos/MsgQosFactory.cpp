@@ -25,7 +25,8 @@ MsgQosFactory::MsgQosFactory(Global& global)
      msgQosData_(global), 
      destination_(global), 
      routeInfo_(global),
-     queuePropertyFactory_(global)
+     queuePropertyFactory_(global),
+     clientProperty_(0)
 {
    ME                 = string("MsgQosFactory");
    LIFE_TIME          = string("lifeTime");
@@ -61,6 +62,9 @@ MsgQosFactory::MsgQosFactory(Global& global)
 
 MsgQosFactory::~MsgQosFactory() 
 {
+   if (clientProperty_ != 0) {
+      delete(clientProperty_);
+   }
 }                
 
 MsgQosData MsgQosFactory::readObject(const string& xmlQos)
@@ -228,8 +232,16 @@ void MsgQosFactory::startElement(const string &name, const AttributeMap& attrs)
    if (name.compare("clientProperty") == 0) {
       if (!inQos_) return;
       character_.erase();
+      string name;
       AttributeMap::const_iterator iter = attrs.find("name");
-      if (iter != attrs.end()) clientPropertyKey_ = (*iter).second;
+      if (iter != attrs.end()) name = (*iter).second;
+      string encoding;
+      iter = attrs.find("encoding");
+      if (iter != attrs.end()) encoding = (*iter).second;
+      string type;
+      iter = attrs.find("type");
+      if (iter != attrs.end()) type = (*iter).second;
+      clientProperty_ = new ClientProperty(name, encoding, type);
    }
       
 }
@@ -384,7 +396,10 @@ void MsgQosFactory::endElement(const string &name)
    }
 
    if (name.compare("clientProperty") == 0) {
-      msgQosData_.setClientProperty(clientPropertyKey_, character_);
+      clientProperty_->setValueRaw(character_);
+      msgQosData_.addClientProperty(*clientProperty_);
+      delete clientProperty_;
+      clientProperty_ = 0;
       character_.erase();
    }
 

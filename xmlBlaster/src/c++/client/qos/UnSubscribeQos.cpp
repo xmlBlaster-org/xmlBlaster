@@ -43,7 +43,6 @@ UnSubscribeQos::UnSubscribeQos(Global& global, const QueryQosData& data)
 {
 }
 
-
 UnSubscribeQos::UnSubscribeQos(const UnSubscribeQos& qos)
    : ME(qos.ME), global_(qos.global_), data_(qos.data_)
 {
@@ -63,14 +62,5 @@ QueryQosData UnSubscribeQos::getData() const
 {
    return data_;
 }
-
-/**
- * Sets a client property to the given value.
- */	
-void UnSubscribeQos::setClientProperty(const std::string& key, const std::string& value) 
-{
-	data_.setClientProperty(key, value);
-}
-
 
 }}}}

@@ -138,6 +138,25 @@ public:
 
    std::string getRcvTime() const;
 
+   /**
+    * Get a map containing all send client properties
+    */
+   const org::xmlBlaster::util::qos::QosData::ClientPropertyMap& getClientProperties() const;
+
+   bool hasClientProperty(const std::string& name) const {
+      return data_.hasClientProperty(name);
+   }
+
+   /**
+    * Access the value for the given name, if not found returns the defaultValue. 
+    * @return A copy of the given defaultValue if none was found
+    */
+   template <typename T_VALUE> T_VALUE getClientProperty(
+            const std::string& name,
+            const T_VALUE& defaultValue) {
+      return data_.getClientProperty(name, defaultValue);
+   }
+
 };
 
 }}}}

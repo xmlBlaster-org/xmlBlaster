@@ -506,6 +506,10 @@ string MsgQosData::toXml(const string& extraOffset) const
    if (forceDestroy_.isModified())
       ret += offset + " <forceDestroy>" + Global::getBoolAsString(forceDestroy_.getValue()) + "</forceDestroy>";
 
+   if (topicProperty_ != NULL) {
+      ret += topicProperty_->toXml(extraOffset1);
+   }
+
    RouteVector::const_iterator routeIter = routeNodeList_.begin();
    ret += offset + " <route>";
    while (routeIter != routeNodeList_.end()) {
@@ -520,7 +524,6 @@ string MsgQosData::toXml(const string& extraOffset) const
 
    return ret;
 }
-
 
 void MsgQosData::setTopicProperty(const TopicProperty& prop)
 {

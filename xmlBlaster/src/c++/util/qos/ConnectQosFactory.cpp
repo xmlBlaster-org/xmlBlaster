@@ -207,7 +207,7 @@ void ConnectQosFactory::endElement(const string &name) {
    }
 
    if (name.compare("clientProperty") == 0) {
-      connectQos_.setClientProperty(clientPropertyKey_, character_);
+      connectQos_.addClientProperty(clientPropertyKey_, character_);
       character_.erase();
    }
 

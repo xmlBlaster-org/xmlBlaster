@@ -155,7 +155,7 @@ public:
    void setSessionCbQueueProperty(const org::xmlBlaster::util::qos::storage::CbQueueProperty& prop);
    org::xmlBlaster::util::qos::storage::CbQueueProperty& getSessionCbQueueProperty();
 
-   void setClientProperty(const std::string& key, const std::string& value);
+   void addClientProperty(const std::string& key, const std::string& value);
    const ClientPropertyMap& getClientProperties() const;
 
 };

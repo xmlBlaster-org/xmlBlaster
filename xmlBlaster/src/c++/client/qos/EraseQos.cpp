@@ -47,23 +47,14 @@ EraseQos& EraseQos::operator =(const EraseQos& qos)
    return *this;
 }
 
-/**
+/*
  * NOT IMPLEMENTED
  * @param notify true - notify subscribers that message is erased (default is true)
- */
 void EraseQos::setWantNotify(bool notify) 
 {
    data_.setWantNotify(notify);
 }
-
-
-/**
- * Sets a client property to the given value.
- */	
-void EraseQos::setClientProperty(const std::string& key, const std::string& value) {
-	data_.setClientProperty(key, value);
-}
-
+*/
 
 }}}} // namespace
 

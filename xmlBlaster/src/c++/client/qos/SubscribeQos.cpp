@@ -88,13 +88,5 @@ void SubscribeQos::setSubscriptionId(const string& subscriptionId)
    data_.setSubscriptionId(subscriptionId);
 }
 
-/**
- * Sets a client property to the given value.
- */	
-void SubscribeQos::setClientProperty(const std::string& key, const std::string& value) {
-	data_.setClientProperty(key, value);
-}
-
-
 }}}} // namespace
 

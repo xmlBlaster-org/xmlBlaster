@@ -366,6 +366,7 @@ public:
 
    /**
     * Add a destination. 
+    * The destination is copied into a list - your instance can be savly disappear
     */
    void addDestination(const Destination& destination);
 

@@ -38,13 +38,39 @@ public:
 
    EraseQos& operator =(const EraseQos& qos);
 
-   void setClientProperty(const std::string& key, const std::string& value);
+   /**
+    * Add a client property key and value. 
+    * @param name The unique key, a duplicate key will overwrite the old setting
+    * @param value "vector<unsigned char>" and "unsigned char *" types are treated as a blob
+    * @see ClientProperty::#ClientProperty
+    */
+   template <typename T_VALUE> void addClientProperty(
+            const std::string& name,
+            const T_VALUE& value) {
+      data_.addClientProperty(key, value);
+   }
 
    /**
+    * Defaults to false: If a topic is still referenced by callback messages
+    * it will be not erased immediately but we wait until all pending messages are delivered. 
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.message.lifecycle.html">engine.message.lifecycle requirement</a>
+    */
+   void setForceDestroy(bool forceDestroy);
+
+   /*
+    * Mark the erase request to be persistent. 
+    * <p>
+    * NOTE: The request is only persistent in the client side
+    * queue if we are polling for xmlBlaster.
+    * </p>
+   void setPersistent(bool persistent);
+   */
+
+   /*
     * NOT IMPLEMENTED
     * @param notify true - notify subscribers that message is erased (default is true)
-    */
    void setWantNotify(bool notify);
+   */
 };
 
 }}}} // namespace

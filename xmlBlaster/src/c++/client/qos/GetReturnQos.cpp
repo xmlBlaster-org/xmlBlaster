@@ -99,5 +99,9 @@ string GetReturnQos::getRcvTime() const
    return TimestampFactory::toXml(data_.getRcvTimestamp());
 }
 
+const QosData::ClientPropertyMap& GetReturnQos::getClientProperties() const
+{
+   return data_.getClientProperties();
+}
 
 }}}}

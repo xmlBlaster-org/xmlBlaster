@@ -33,6 +33,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 #include <util/xmlBlasterDef.h>
 #include <util/cluster/RouteInfo.h>
+#include <util/qos/ClientProperty.h>
 #include <vector>
 #include <map>
 #include <string>
@@ -79,8 +80,9 @@ protected:
     */
    RouteVector routeNodeList_;
 
-   typedef std::map<std::string, std::string> ClientPropertyMap;
-   ClientPropertyMap clientProperties_;	
+public:   typedef std::map<std::string, org::xmlBlaster::util::qos::ClientProperty> ClientPropertyMap;
+protected:
+   ClientPropertyMap clientProperties_; 
 
    void copy(const QosData& data);
 
@@ -187,9 +189,34 @@ public:
     */
    void touchRcvTimestamp();
 
-   void setClientProperty(const std::string& key, const std::string& value);
-	
+   /**
+    * Add a client property. 
+    * @param clientProperty
+    * @see ClientProperty
+    */
+   void addClientProperty(const ClientProperty& clientProperty);
+
+   /**
+    * Add a client property key and value
+    * @param name
+    * @param value "vector<unsigned char>" and "unsigned char *" is treated as a blob
+    * @see ClientProperty::#ClientProperty
+    */
+   template <typename T_VALUE> void addClientProperty(
+            const std::string& name,
+            const T_VALUE& value);
+
+   /**
+    * Access the value for the given name, if not found returns the defaultValue. 
+    * @return A copy of the given defaultValue if none was found
+    */
+   template <typename T_VALUE> T_VALUE getClientProperty(
+            const std::string& name,
+            const T_VALUE& defaultValue);
+        
+   bool hasClientProperty(const std::string& name) const;
    const ClientPropertyMap& getClientProperties() const;
+   void setClientProperties(const ClientPropertyMap& cm);
 
    /**
     * Dump state of this object into a XML ASCII std::string.
@@ -212,6 +239,25 @@ public:
 
 };
 
+template <typename T_VALUE> void QosData::addClientProperty(
+             const std::string& name, const T_VALUE& value)
+{
+   org::xmlBlaster::util::qos::ClientProperty clientProperty(name, value);
+   clientProperties_.insert(ClientPropertyMap::value_type(name, clientProperty));   
+}
+
+template <typename T_VALUE> T_VALUE QosData::getClientProperty(
+             const std::string& name, const T_VALUE& defaultValue)
+{
+   ClientPropertyMap::const_iterator iter = clientProperties_.find(name);
+   if (iter != clientProperties_.end()) {
+      T_VALUE tmp;
+      (*iter).second.getValue(tmp);
+      return tmp;
+   }
+   return defaultValue;
+}
+        
 }}}}
 
 #endif

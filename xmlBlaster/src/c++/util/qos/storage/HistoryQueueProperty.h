@@ -24,7 +24,7 @@ class Dll_Export HistoryQueueProperty : public QueuePropertyBase
 public:
 
    /**
-    * @param nodeId    If not null, the command line properties will look for prop[nodeId] as well,
+    * @param nodeId    If not "", the command line properties will look for prop[nodeId] as well,
     * e.g. -queue/history/maxEntries and -queue/history/maxEntries[heron] will be searched
     */
    HistoryQueueProperty(org::xmlBlaster::util::Global& global, const std::string& nodeId);

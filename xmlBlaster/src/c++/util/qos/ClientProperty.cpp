@@ -157,6 +157,14 @@ std::string ClientProperty::toXml(std::string extraOffset) const {
    if (val == "")
       sb += "/>";
    else {
+      //if (encoding_ == Constants.ENCODING_NONE &&
+      //    (
+      //     val.find("%") != std::string::npos ||
+      //     val.find(">") != std::string::npos ||
+      //     val.find("&") != std::string::npos
+      //    )
+      //   sb += "><![CDATA [" + val + "]]></clientProperty>";
+      //else
       sb += ">" + val + "</clientProperty>";
    }
 
@@ -170,6 +178,7 @@ std::string ClientProperty::toXml(std::string extraOffset) const {
 # include <iostream>
 int main(int argc, char **argv) {
    try {
+      /*
       {
          ClientProperty cp("key", string("string"));
          cout << "name=" << cp.getName() 
@@ -180,74 +189,7 @@ int main(int argc, char **argv) {
               << cp.toXml("")
               << endl << endl;
       }
-      {
-         ClientProperty cp("key", string("str]]>ing"));
-         cout << "name=" << cp.getName() 
-              << ", valueB64=" << cp.getValueRaw()
-              << ", value=" << cp.getStringValue()
-              << ", type=" << cp.getType()
-              << ", isBase64=" << cp.isBase64()
-              << cp.toXml("")
-              << endl << endl;
-      }
-      {
-         ClientProperty cp("key", string("str<<<ing"));
-         cout << "name=" << cp.getName() 
-              << ", valueB64=" << cp.getValueRaw()
-              << ", value=" << cp.getStringValue()
-              << ", type=" << cp.getType()
-              << ", isBase64=" << cp.isBase64()
-              << cp.toXml("")
-              << endl << endl;
-      }
-      {
-         ClientProperty cp("key", "const char *");
-         cout << "name=" << cp.getName() 
-              << ", valueB64=" << cp.getValueRaw()
-              << ", value=" << cp.getStringValue()
-              << ", type=" << cp.getType()
-              << ", isBase64=" << cp.isBase64()
-              << cp.toXml("")
-              << endl << endl;
-      }
-      {
-         long f=10L;
-         ClientProperty cp("key", f);
-         cout << "name=" << cp.getName() 
-              << ", valueB64=" << cp.getValueRaw()
-              << ", value=" << cp.getStringValue()
-              << ", type=" << cp.getType()
-              << ", isBase64=" << cp.isBase64()
-              << cp.toXml("")
-              << endl << endl;
-         float ff = lexical_cast<float>(cp.getStringValue());
-      }
-      {
-         float f=10.5;
-         ClientProperty cp("key", f);
-         cout << "name=" << cp.getName() 
-              << ", valueB64=" << cp.getValueRaw()
-              << ", value=" << cp.getStringValue()
-              << ", type=" << cp.getType()
-              << ", isBase64=" << cp.isBase64()
-              << cp.toXml("")
-              << endl << endl;
-      }
-      {
-         double f=20.6;
-         ClientProperty cp("key", f);
-         cout << "name=" << cp.getName() 
-              << ", valueB64=" << cp.getValueRaw()
-              << ", value=" << cp.getStringValue()
-              << ", type=" << cp.getType()
-              << ", encoding=" << cp.getEncoding()
-              << ", isBase64=" << cp.isBase64()
-              << cp.toXml("")
-              << endl;
-         cp.getValue(f);
-         cout << "getValue()=" << f
-              << endl << endl;
-      }
+      */
       {
          vector<unsigned char> v;
          v.push_back('H');
@@ -275,6 +217,11 @@ int main(int argc, char **argv) {
    catch(bad_cast b) {
       cout << "EXCEPTION: " << b.what() << endl;
    }
+   
+   ClientProperty cp1("A", 1);
+   ClientProperty cp2("B", 2);
+   cp1 = cp2;
+   //clientPropertyMap[clientPropertyKey] = cp1;
    return 0;
 }
 #endif

@@ -77,7 +77,10 @@ public:
     */
    PublishQos(org::xmlBlaster::util::Global& global, bool persistent);
 
-   org::xmlBlaster::util::qos::MsgQosData getData() const;
+   /**
+    * Returns the internal data holder, please modify with care. 
+    */
+   org::xmlBlaster::util::qos::MsgQosData& getData();
 
    /**
     * Message priority.
@@ -177,9 +180,21 @@ public:
    void setTopicProperty(const org::xmlBlaster::util::qos::TopicProperty& topicProperty);
 
    /**
-    * Sets a client property to the given value.
-    */	
-   void setClientProperty(const std::string& key, const std::string& value);
+    * Add a client property key and value. 
+    * @param name The unique key, a duplicate key will overwrite the old setting
+    * @param value "vector<unsigned char>" and "unsigned char *" types are treated as a blob
+    * @see ClientProperty::#ClientProperty
+    */
+   template <typename T_VALUE> void addClientProperty(
+            const std::string& name,
+            const T_VALUE& value) {
+      msgQosData_.addClientProperty(key, value);
+   }
+
+   /**
+    * Get a map containing all send client properties
+    */
+   const org::xmlBlaster::util::qos::QosData::ClientPropertyMap& getClientProperties() const;
 
    /**
     * Converts the data into a valid XML ASCII std::string.

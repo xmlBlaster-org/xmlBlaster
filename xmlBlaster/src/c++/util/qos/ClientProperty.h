@@ -14,6 +14,7 @@ Comment:   Handling one client property of QosData
 #include <typeinfo>
 #include <vector>
 #include <string>
+#include <iostream> // temporary for cerr
 
 namespace org { namespace xmlBlaster { namespace util { namespace qos {
 
@@ -43,7 +44,8 @@ class Dll_Export bad_clientProperty_cast : public std::bad_cast
 class Dll_Export ClientProperty
 {
 private:
-   const std::string name_;
+   /** The unique key */
+   std::string name_;  // Can't be const because of: operator=() error: non-static const member `const std::string name_', can't use default assignment operator
    /** The value encoded as specified with encoding_ */
    std::string value_;
    std::string encoding_;

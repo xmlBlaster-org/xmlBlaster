@@ -194,14 +194,24 @@ void QosData::touchRcvTimestamp()
    rcvTimestamp_ = TimestampFactory::getInstance().getTimestamp();
 }
 
-void QosData::setClientProperty(const std::string& key, const std::string& value)
+void QosData::addClientProperty(const ClientProperty& clientProperty)
 {
-   clientProperties_.insert(ClientPropertyMap::value_type(key, value));   
+   clientProperties_.insert(ClientPropertyMap::value_type(clientProperty.getName(), clientProperty));   
 }
-	
+
+bool QosData::hasClientProperty(const string& name) const
+{
+   return clientProperties_.count(name) > 0;
+}
+
 const QosData::ClientPropertyMap& QosData::getClientProperties() const
 {
    return clientProperties_;
+}
+
+void QosData::setClientProperties(const QosData::ClientPropertyMap& cm)
+{
+   clientProperties_ = cm;
 }
 
 RouteVector QosData::getRouteNodes() const
@@ -224,7 +234,8 @@ string QosData::dumpClientProperties(const string& extraOffset) const
    string ret = "";
    QosData::ClientPropertyMap::const_iterator iter = clientProperties_.begin();
    while (iter != clientProperties_.end()) {
-      ret += extraOffset + "   <clientProperty name='" + (*iter).first + "'><![CDATA [" + (*iter).second + "]]></clientProperty>";
+      const ClientProperty& cp = (*iter).second;
+      ret += cp.toXml(extraOffset);
       iter++;
    }
    return ret;

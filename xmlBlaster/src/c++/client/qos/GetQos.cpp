@@ -77,13 +77,5 @@ void GetQos::setHistoryQos(const HistoryQos& historyQos)
    data_.setHistoryQos(historyQos);
 }
 
-/**
- * Sets a client property to the given value.
- */	
-void GetQos::setClientProperty(const std::string& key, const std::string& value) {
-	data_.setClientProperty(key, value);
-}
-
-
 }}}} // namespace
 

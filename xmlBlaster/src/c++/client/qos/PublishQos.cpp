@@ -31,7 +31,7 @@ namespace org { namespace xmlBlaster { namespace client { namespace qos {
       setPersistent(persistent);
    }
 
-   MsgQosData PublishQos::getData() const
+   MsgQosData& PublishQos::getData()
    {
       return msgQosData_;
    }
@@ -177,11 +177,9 @@ namespace org { namespace xmlBlaster { namespace client { namespace qos {
       msgQosData_.setTopicProperty(topicProperty);
    }
 
-   /**
-    * Sets a client property to the given value.
-    */  
-   void PublishQos::setClientProperty(const std::string& key, const std::string& value) {
-      msgQosData_.setClientProperty(key, value);
+   const QosData::ClientPropertyMap& PublishQos::getClientProperties() const
+   {
+      return msgQosData_.getClientProperties();
    }
 
    /**

@@ -73,7 +73,7 @@ private:
    std::string INDEX;
    std::string SIZE;
 
-   std::string clientPropertyKey_;
+   ClientProperty* clientProperty_;
 
 public:
    /**

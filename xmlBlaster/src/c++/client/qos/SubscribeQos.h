@@ -76,9 +76,16 @@ public:
    void setSubscriptionId(const std::string& subscriptionId);
 
    /**
-    * Sets a client property to the given value.
-    */	
-   void setClientProperty(const std::string& key, const std::string& value);
+    * Add a client property key and value. 
+    * @param name The unique key, a duplicate key will overwrite the old setting
+    * @param value "vector<unsigned char>" and "unsigned char *" types are treated as a blob
+    * @see ClientProperty::#ClientProperty
+    */
+   template <typename T_VALUE> void addClientProperty(
+            const std::string& name,
+            const T_VALUE& value) {
+      data.addClientProperty(key, value);
+   }
 
 };
 
