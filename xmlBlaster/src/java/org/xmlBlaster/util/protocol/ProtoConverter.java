@@ -9,6 +9,8 @@ package org.xmlBlaster.util.protocol;
 import java.util.Vector;
 import java.util.Enumeration;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.MsgUnitRaw;
 
 
@@ -44,20 +46,31 @@ public class ProtoConverter {
       MsgUnitRaw ret = null;
       int size = vec.size();
       if (size != 3) {
-         throw new XmlBlasterException("Not a valid Message Unit", "Wrong size");
+         throw new XmlBlasterException(Global.instance(), ErrorCode.USER_WRONG_API_USAGE, ME, "Can't create a MessageUnit from " + size + " tokens");
       }
 
       try {
          Enumeration enumeration = vec.elements();
          String xmlKey = (String)enumeration.nextElement();
-         byte[] content = (byte[])enumeration.nextElement();
+         Object obj = enumeration.nextElement();
+         byte[] content = null;
+         if (obj instanceof byte[]) {
+            content = (byte[])obj;
+         }
+         else {
+            String str = (String)obj;
+            content = str.getBytes();
+         }
          String qos = (String)enumeration.nextElement();
          ret = new MsgUnitRaw(xmlKey, content, qos);
 
       }
 
       catch (ClassCastException e) {
-         throw new XmlBlasterException("Not a valid Message Unit", "Class Cast Exception");
+         for (int i=0; i<vec.size(); i++) {
+            System.out.println(ME + ": Vector #" + i + " = " + vec.elementAt(i).getClass().getName());
+         }
+         throw new XmlBlasterException(Global.instance(), ErrorCode.USER_WRONG_API_USAGE, ME, "Can't create a MessageUnit", e);
       }
 
       return ret;
@@ -106,7 +119,7 @@ public class ProtoConverter {
       }
 
       catch (ClassCastException e) {
-         throw new XmlBlasterException("Not a valid MsgUnitRaw[]", "Class Cast Exception");
+         throw new XmlBlasterException(Global.instance(), ErrorCode.USER_WRONG_API_USAGE, ME, "Can't create a MessageUnit[]", e);
       }
 
 
@@ -151,7 +164,7 @@ public class ProtoConverter {
       }
 
       catch (ClassCastException e) {
-         throw new XmlBlasterException("Not a valid String", "Class Cast Exception");
+         throw new XmlBlasterException(Global.instance(), ErrorCode.USER_WRONG_API_USAGE, ME, "Can't create a String[]", e);
       }
 
       return ret;
@@ -169,7 +182,7 @@ public class ProtoConverter {
    {
       int size = vec.size();
       if (size == 0)
-         throw new XmlBlasterException(ME+"vector2String", "There is no string in the vector");
+         throw new XmlBlasterException(Global.instance(), ErrorCode.USER_WRONG_API_USAGE, ME, "Can't create a String from the given Vector");
       if (size > 1)
          org.xmlBlaster.util.Global.instance().getLog("core").error("ProtoConvertor.vector2String", "There are too many strings in the vector");
 
@@ -177,7 +190,7 @@ public class ProtoConverter {
          return (String)vec.elementAt(0);
       }
       catch (ClassCastException e) {
-         throw new XmlBlasterException(ME + ".vector2String", "Class Cast Exception, not a valid String");
+         throw new XmlBlasterException(Global.instance(), ErrorCode.USER_WRONG_API_USAGE, ME, "Can't create a String", e);
       }
    }
 
