@@ -209,6 +209,7 @@ public class ReferenceEntry extends MsgQueueEntry
       }
    }
 
+   // TODO? make sender persistent?
    public final SessionName getSender() {
       try {
          return getMsgQosData().getSender();
