@@ -122,6 +122,11 @@ namespace util {
          NameServerControl(CORBA::ORB_ptr orb, string sep1="/", 
                            string sep2=".", bool keepBindingsAfterDeath=false) :
             stripper_(sep1,sep2), nameList_() {
+	    /*
+	    //CORBA::Object_var myserv = orb->string_to_object ("corbaname::localhost:7608#xmlBlaster-Authenticate.MOM");
+	    CORBA::Object_var myserv = orb->string_to_object ("corbaname::localhost:7608/NameService#xmlBlaster-Authenticate.MOM");
+	    cout << "SUCCESS for corbaname::localhost:7608#xmlBlaster-Authenticate.MOM" << endl;
+	    */
             orb_ = CORBA::ORB::_duplicate(orb);
             keepBindingsAfterDeath = true;
             // Get naming service
@@ -131,7 +136,7 @@ namespace util {
             }
 
             catch(const CORBA::ORB::InvalidName ex) {
-               cerr << "Thrown invalid name exception" << endl;
+               cerr << "Thrown invalid name exception: " << ex << endl;
 //             throw NSControlException(1, "can't resolve `NameService'");
                string txt = me() + ".NameServerControl()";
                string msg = "can't resolve the NameService";
@@ -167,7 +172,6 @@ namespace util {
                string msg = "NameService is not a NamingContext reference";
                throw serverIdl::XmlBlasterException(txt.c_str(), msg.c_str());
             }
-    
          }
 
 /**
