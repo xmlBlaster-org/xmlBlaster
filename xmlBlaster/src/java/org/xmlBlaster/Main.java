@@ -356,6 +356,11 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
          return;
 
       if (to > from) { // startup
+         //if (to == RunlevelManager.RUNLEVEL_HALTED) {
+         //   log.error(ME, "DEBUG ONLY ........");
+         //   if (glob.getNodeId() == null)
+         //      glob.setUniqueNodeIdName(createNodeId());
+         //}
          if (to == RunlevelManager.RUNLEVEL_STANDBY_PRE) {
             boolean useSignalCatcher = glob.getProperty().get("useSignalCatcher", true);
             if (useSignalCatcher) {
@@ -366,8 +371,6 @@ public class Main implements I_RunlevelListener, I_Main, I_SignalListener
          if (to == RunlevelManager.RUNLEVEL_STANDBY) {
          }
          if (to == RunlevelManager.RUNLEVEL_STANDBY_POST) {
-            if (glob.getNodeId() == null)
-               glob.setUniqueNodeIdName(createNodeId());
             if (showUsage) {
                usage();  // Now we can display the complete usage of all loaded drivers
                shutdown();
