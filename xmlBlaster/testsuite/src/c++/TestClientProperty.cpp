@@ -241,6 +241,26 @@ public:
             assertEquals(log_, ME, true, cp.isBase64(), "isBase64");
             assertEquals(log_, ME, "SGFsbG8=", cp.getValueRaw(), "encoded value");
          }
+         {
+            bool b=true;
+            ClientProperty cp("key", b);
+            cout << "name=" << cp.getName() 
+                 << ", valueB64=" << cp.getValueRaw()
+                 << ", value=" << cp.getStringValue()
+                 << ", type=" << cp.getType()
+                 << ", encoding=" << cp.getEncoding()
+                 << ", isBase64=" << cp.isBase64()
+                 << cp.toXml("")
+                 << endl;
+            bool ret;
+            cp.getValue(ret);
+            assertEquals(log_, ME, "key", cp.getName(), "name");
+            //assertEquals(log_, ME, f, ret, "value");
+            assertEquals(log_, ME, "true", cp.getValueRaw(), "encoded value");
+            assertEquals(log_, ME, "boolean", cp.getType(), "type");
+            assertEquals(log_, ME, "", cp.getEncoding(), "encoding");
+            assertEquals(log_, ME, false, cp.isBase64(), "isBase64");
+         }
       }
       catch(bad_cast b) {
          cout << "EXCEPTION: " << b.what() << endl;
