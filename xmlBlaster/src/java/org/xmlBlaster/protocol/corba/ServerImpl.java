@@ -3,7 +3,7 @@ Name:      ServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: ServerImpl.java,v 1.23 2003/03/27 17:10:38 ruff Exp $
+Version:   $Id: ServerImpl.java,v 1.24 2003/03/31 14:22:00 ruff Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -162,7 +162,6 @@ public class ServerImpl implements ServerOperations {    // TIE approach
             return;
          }
          if (log.CALL) log.call(ME, "Entering publishOneway(" + msgUnitArr.length + ") ...");
-         log.info(ME, "Entering publishOneway(" + msgUnitArr.length + ") ...");
 
          org.xmlBlaster.util.MsgUnitRaw[] internalUnitArr = CorbaDriver.convert(glob, msgUnitArr);   // convert Corba to internal ...
          blaster.publishOneway(getSecretSessionId(), internalUnitArr);
