@@ -135,7 +135,11 @@ public class Constants
    /** message queue onOverflow handling */
    public final static String ONOVERFLOW_DEADLETTER = "deadLetter";
    /** message queue onOverflow handling */
+   public final static String ONOVERFLOW_DISCARD = "discard";
+   /** message queue onOverflow handling */
    public final static String ONOVERFLOW_DISCARDOLDEST = "discardOldest";
+   /** message queue onOverflow handling */
+   public final static String ONOVERFLOW_EXCEPTION = "exception";
 
    /** Praefix to create a sessionId */
    public final static String SESSIONID_PRAEFIX = "sessionId:";
