@@ -294,7 +294,6 @@ public class Cache
 //      SoftReference sr = new SoftReference(pmu);
 //      _cacheMap.put(pmu.oid,sr);
       _cacheMap.put(pmu.oid,pmu);
-
       Log.trace(ME,"COPY-BACK "+" OID : "+pmu.oid);
    }
 
@@ -320,6 +319,11 @@ public class Cache
       {
          // Read miss
          pmu = readMiss(oid);
+
+         if(pmu==null){
+            return pmu;
+         }
+
          /** Write-Back to Cache and set LRU */
          write(pmu);
 
@@ -337,8 +341,8 @@ public class Cache
    {
       PMessageUnit pmu = null;
 
-      if(!_fileDb.recordExists(pmu.oid)){
-         Log.warning(ME,"Can't read pmu with oid : "+pmu.oid+" from filedb by read-miss.");
+      if(!_fileDb.recordExists(oid)){
+         Log.warning(ME,"Can't read pmu with oid : "+oid+" from filedb by read-miss.");
          return null;
       }
 
