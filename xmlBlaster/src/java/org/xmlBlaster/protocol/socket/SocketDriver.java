@@ -3,7 +3,7 @@ Name:      SocketDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   SocketDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: SocketDriver.java,v 1.18 2002/06/15 16:01:59 ruff Exp $
+Version:   $Id: SocketDriver.java,v 1.19 2002/06/15 16:44:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -134,9 +134,9 @@ public class SocketDriver extends Thread implements I_Driver
    public void init(Global glob, I_Authenticate authenticate, I_XmlBlaster xmlBlasterImpl)
       throws XmlBlasterException
    {
-      if (log.CALL) log.call(ME, "Entering init()");
       this.glob = glob;
       this.log = glob.getLog("socket");
+      if (log.CALL) log.call(ME, "Entering init()");
       this.authenticate = authenticate;
       this.xmlBlasterImpl = xmlBlasterImpl;
 
