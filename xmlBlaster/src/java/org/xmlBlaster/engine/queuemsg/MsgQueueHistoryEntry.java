@@ -36,7 +36,7 @@ public final class MsgQueueHistoryEntry extends ReferenceEntry
     */
    public MsgQueueHistoryEntry(Global glob, PriorityEnum priority, StorageId storageId, Timestamp updateEntryTimestamp,
                               String keyOid, long msgUnitWrapperUniqueId, boolean persistent) {
-      super(ME, glob, ServerEntryFactory.ENTRY_TYPE_UPDATE_REF, priority, storageId,
+      super(ME, glob, ServerEntryFactory.ENTRY_TYPE_HISTORY_REF, priority, storageId,
             updateEntryTimestamp, keyOid, msgUnitWrapperUniqueId, persistent, (SessionName)null);
    }
 
