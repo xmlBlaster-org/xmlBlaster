@@ -389,8 +389,8 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
 
          QueueProperty[] props = subscribeQos.getQueueProperties();
          if (props.length > 1) {         // WE NEED TO RETURN A STRING[] (currently wer return a simple String!!
-            Log.warn(ME, "subcribe for more than one queue is currently not supported");
-            throw new XmlBlasterException(ME, "subcribe for more than one queue is currently not supported");
+            Log.warn(ME, "subscribe for more than one queue is currently not supported");
+            throw new XmlBlasterException(ME, "subscribe for more than one queue is currently not supported");
          }
          String[] returnOid = new String[props.length];
 
