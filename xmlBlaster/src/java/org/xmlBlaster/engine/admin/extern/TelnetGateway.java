@@ -1,0 +1,199 @@
+/*------------------------------------------------------------------------------
+Name:      TelnetGateway.java
+Project:   xmlBlaster.org
+Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+Comment:   Main manager class for administrative commands
+------------------------------------------------------------------------------*/
+package org.xmlBlaster.engine.admin.extern;
+
+import org.jutils.log.LogChannel;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.MessageUnitWrapper;
+import org.xmlBlaster.engine.admin.CommandManager;
+import org.xmlBlaster.authentication.SessionInfo;
+
+import remotecons.RemoteServer;
+import remotecons.ifc.CommandHandlerIfc;
+
+import java.util.LinkedList;
+import java.util.StringTokenizer;
+import java.io.IOException;
+
+/**
+ * The gateway from outside telnet connections to inside CommandManager. 
+ * <p />
+ * @author ruff@swand.lake.de
+ * @since 0.79f
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.telnet.html">admin.telnet requirement</a>
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.command.html">admin.command requirement</a>
+ */
+public final class TelnetGateway implements CommandHandlerIfc
+{
+   private String ME;
+
+   // The following 3 declarations are 'final' but the SUN JDK 1.3.1 does not like it
+   private final Global glob;
+   private final LogChannel log;
+   private final CommandManager manager;
+   private final int port;
+   private RemoteServer rs = null;
+
+
+   /**
+    * You need to call postInit() after all drivers are loaded.
+    *
+    * @param sessionInfo Internal handle to be used directly with RequestBroker
+    *                    NOTE: We (the command code) are responsible for security checks
+    *                    as we directly write into RequestBroker.
+    */
+   public TelnetGateway(Global glob, CommandManager manager, int port) throws XmlBlasterException {
+      this.glob = glob;
+      this.log = this.glob.getLog("admin");
+      this.ME = "TelnetGateway-" + this.glob.getId();
+      this.manager = manager;
+      this.port = port;
+      createRemoteConsole(port);
+      log.info(ME, "Started remote console server for administration, try 'telnet " + glob.getLocalIP() + " " + port + "' to access it and type 'help'.");
+   }
+
+   /**
+    * Creates a server which is accessible with telnet. 
+    * This allows you to access xmlBlaster and query for example the free memory:
+    * <pre>
+    *  telnet 192.168.1.2 2702
+    *  mem
+    * </pre>
+    * Enter 'help' for all available commands.
+    */
+   private void createRemoteConsole(int port) throws XmlBlasterException {
+      if (port > 1000) {
+         rs = new RemoteServer();
+         rs.setServer_port(port);
+         rs.setAs_daemon(true);
+         LinkedList ll = new LinkedList();
+         ll.add(this);
+         try {
+           rs.initialize(ll);
+         } catch (IOException e) {
+           e.printStackTrace();
+           log.error(ME, "Initializing of remote console failed:" + e.toString());
+           throw new XmlBlasterException(ME, "Initializing of remote telnet console failed:" + e.toString());
+         }
+      }
+   }
+
+   /**
+    * Enforced by "remotecons.CommandHandlerIfc"
+    */
+   public String handleCommand(String cmd) {
+      try {
+         if (cmd == null || cmd.length() < 1) {
+            return getErrorText("Ignoring your empty command.");
+         }
+         cmd = cmd.trim();
+         if (cmd.length() < 1) {
+            return getErrorText("Ignoring your empty command.");
+         }
+
+         StringTokenizer st = new StringTokenizer(cmd, " ");
+         if (!st.hasMoreTokens()) {
+            return getErrorText("Ignoring your empty command.");
+         }
+         String cmdType = (String)st.nextToken();
+
+         if (!st.hasMoreTokens()) {
+            if (cmdType.trim().equalsIgnoreCase("HELP")) {
+               return help();
+            }
+            else if (cmdType.trim().equalsIgnoreCase("GET")) {
+               return getErrorText("Ignoring your empty command '" + cmd + "'");
+            }
+            else
+               return null;
+         }
+
+         String query = cmd.substring(cmdType.length()).trim();
+
+         log.info(ME, "Invoking cmdType=" + cmdType + " query=" + query + " from '" + cmd + "'");
+
+         if (cmdType.trim().equalsIgnoreCase("GET")) {
+            return manager.get(query) + "\r\n";
+         }
+         else if (cmdType.trim().equalsIgnoreCase("HELP")) {
+            return help(query);
+         }
+         else {
+            return null;
+            //return getErrorText("Ignoring unknown command '" + cmdType + "' of '" + cmd + "'\r\n");
+         }
+      }
+      catch (XmlBlasterException e) {
+         if (log.TRACE) log.trace(ME+".telnet", e.toString());
+         return e.toString();
+      }
+   }
+
+   private final String getErrorText(String error) {
+      String text = "ERROR-XmlBlaster telnet server: " + error + "\r\nTry a 'get sysprop/?user.home' or just 'help'\r\n\r\nCMD>";
+      log.info(ME, error);
+      return text;
+   }
+
+   /**
+    * Enforced by "remotecons.CommandHandlerIfc"
+    */
+   public String help() {
+      return "\r\nXmlBlaster telnet administration, see http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.telnet.html\r\n";
+   }
+   /**
+    * Enforced by "remotecons.CommandHandlerIfc"
+    */
+   public String help(String cmd) {
+      return help();
+   }
+
+   public CommandHandlerIfc getInstance() {
+      log.warn(ME, "getInstance() is not supported");
+      return this;
+      /*
+      try {
+         return new TelnetGateway(glob, manager, port);
+      } catch(XmlBlasterException e) {
+         log.error(ME, "Can't create new instance: " + e.toString());
+         throw new IllegalArgumentException(e.toString());
+      }
+      */
+   }
+
+   public void shutdown() {
+      if (rs != null) {
+         rs.disable();
+         rs = null;
+      }
+   }
+
+   /**
+    * Dump state of this object into a XML ASCII string.
+    */
+   public final String toXml() {
+      return toXml((String)null);
+   }
+
+   /**
+    * Dump state of this object into a XML ASCII string.
+    * @param extraOffset indenting of tags for nice output
+    */
+   public synchronized final String toXml(String extraOffset) {
+      StringBuffer sb = new StringBuffer(1024);
+      String offset = "\n   ";
+      if (extraOffset == null) extraOffset = "";
+      offset += extraOffset;
+
+      sb.append(offset).append("<telnetGateway>");
+      sb.append(offset).append("</telnetGateway>");
+
+      return sb.toString();
+   }
+}
+
