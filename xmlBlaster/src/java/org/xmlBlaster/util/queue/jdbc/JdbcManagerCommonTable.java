@@ -904,7 +904,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             }
          }
          try {
-            preStatement.close();
+            if (preStatement != null) preStatement.close();
          }
          catch (Throwable ex1) {
             this.log.error(ME, "exception when closing statement: " + ex1.toString());
