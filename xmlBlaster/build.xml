@@ -279,6 +279,11 @@ TODO
       <compilerarg value="c++" if="XMLBLASTER_C_COMPILE_AS_CPP" /> <!-- (follow up of above -x, to avoid quotes) Compile lib as C++ -->
    </compiler>
 
+   <!-- Compile C++ -->
+   <compiler id="g++" extends="gcc" if="use-gcc">
+      <compilerarg value="-ftemplate-depth-20" /> <!-- needed for cpp templates in boost -->
+   </compiler>
+
    <!-- Compile Intel C++ -->
    <compiler id="icc" name="icc" if="use-icc">
       <compilerarg value="-Wall" />
@@ -2309,12 +2314,15 @@ TODO
          <compiler refid="msvc"/> <!-- MS VC++ 7 -->
          <compiler refid="bcc"/>  <!-- Borland -->
          <compiler refid="CC"/>   <!-- SunOS C++ 5.3 -->
+         <compiler refid="g++"/>  <!-- GCC -->
          <fileset dir="${build.src.cpp.dir}/generated" includes="**/*.cpp"/>
          <fileset dir="${build.src.cpp.dir}/util" includes="**/*.cpp" excludes="**/SQLiteQueuePlugin.*"/>
          <fileset dir="${build.src.cpp.dir}/client" includes="**/*.cpp"
                   excludes="${COMPILE_SOCKET_EXCLUDES},${COMPILE_CORBA_EXCLUDES}" />
          <fileset dir="${build.src.cpp.dir}/authentication" includes="**/*.cpp" />
+         <!-- i don't think we need these libs. Boost 1.30 comes with all the classes defined here
          <fileset dir="${build.src.cpp.dir}/libs/thread/src" includes="*.cpp" if="BOOST" />
+         -->
          <fileset dir="${build.src.cpp.dir}/omnithread" includes="*.cpp" if="OMNITHREAD" />
          <fileset dir="${build.src.cpp.dir}/log4cplus" includes="**/*.cxx"
                   excludes="${COMPILE_LOG4CPLUS_EXCLUDES},${LOG4CPLUS_OS_EXCLUDES}" />
@@ -2340,6 +2348,7 @@ TODO
          <includepath location="${build.src.c.dir}" />   <!-- Using the C SOCKET client library -->
          
          <defineset> <!-- See compiler id="base-msvc" at top of file -->
+
            <define name="COMPILE_CORBA_PLUGIN" value="1" if="COMPILE_CORBA_DEFINE" />   <!-- Add the Corba protocol plugin? -->
            <define name="COMPILE_SOCKET_PLUGIN" value="1" if="COMPILE_SOCKET_DEFINE" />   <!-- Add the C socket library wrapper plugin? -->
            <define name="XMLBLASTER_${corba.product}" value="1" />   <!-- "XMLBLASTER_TAO" or "XMLBLASTER_MICO" or "XMLBLASTER_ORBIX" etc., see client/protocol/corba/CompatibleCorba.h -->
@@ -2378,6 +2387,7 @@ TODO
            <define name="PthreadDraftVersion" value="10" if="sun" />
 
            <define name="BOOST_ASSERT_CONFIG" value="1" if="BOOST" /> <!-- To get error if compiler etc is not supported -->
+           <define name="BOOST" value="1" if="BOOST" /> <!-- ThreadImpl.cpp looks for BOOST -->
          </defineset>
 
          <linker name="gcc"  if="use-gcc" />

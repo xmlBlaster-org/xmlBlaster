@@ -22,7 +22,7 @@ using namespace std;
 /*---------------------------- SessionQosData --------------------------------*/
 
 SessionQosData::SessionQosData(Global& global, const string& defaultUserName, long publicSessionId)
-    : ReferenceCounterBase(), ME("SessionQosData"), global_(global), sessionName_(0)
+  : ReferenceCounterBase(), ME("SessionQosData"), sessionName_(0), global_(global)
 {
    initialize();   
    SessionName *p = new SessionName(global, defaultUserName, publicSessionId);
@@ -31,7 +31,7 @@ SessionQosData::SessionQosData(Global& global, const string& defaultUserName, lo
 }
 
 SessionQosData::SessionQosData(Global& global, const string& absoluteName)
-    : ReferenceCounterBase(), ME("SessionQosData"), global_(global), sessionName_(0)
+  : ReferenceCounterBase(), ME("SessionQosData"), sessionName_(0), global_(global)
 {
    initialize();
    SessionName *p = new SessionName(global, absoluteName);
@@ -65,7 +65,7 @@ void SessionQosData::initialize()
 
 
 SessionQosData::SessionQosData(const SessionQosData& data) :
-         ReferenceCounterBase(), ME(data.ME), global_(data.global_), sessionName_(0)
+  ReferenceCounterBase(), ME(data.ME), sessionName_(0), global_(data.global_)
 {
    copy(data);
 }

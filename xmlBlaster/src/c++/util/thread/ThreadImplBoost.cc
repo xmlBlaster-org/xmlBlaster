@@ -100,12 +100,20 @@ runner_ = NULL;
 */
 }
 
-bool Thread::start()
+bool Thread::start(bool detached)
 {
    if (isStarted_) return false;
    isStarted_ = true;
    if (!runner_) runner_ = new ThreadRunner(*this);
    if (!thread_) thread_ = new ThreadImpl(*runner_);
+   /* OmniOrd has this too... do we care???
+      but, start(void) and start_undetatched(void)
+      aren't defined in the ThreadImpl class.  so, i'm not sure what to do.
+   if (detached)
+      thread_->start();
+   else
+      thread_->start_undetached();
+   */
    return true;
 }
 

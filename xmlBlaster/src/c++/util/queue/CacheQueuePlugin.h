@@ -50,7 +50,7 @@ private:
     * NOTE: This must be called from inside a synchronization lock.
     * @return Number of entries loaded
     */
-   long CacheQueuePlugin::reloadFromPersistentStore() const;
+   long reloadFromPersistentStore() const;
 
 protected:
    std::string ME;
