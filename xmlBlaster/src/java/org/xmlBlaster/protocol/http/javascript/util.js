@@ -114,6 +114,14 @@ levelColor["TRACE"] = "white";
  */
 function logObject(level_, codePos_, text_)
 {
+   var d = new Date();
+   var hour = d.getHours();
+   var min = new String(d.getMinutes() + 1);
+   if (min.length == 1) min = "0" + min;
+   var sec = new String(d.getSeconds());
+   if (sec.length == 1) sec = "0" + sec;
+
+   this.time = hour + ":" + min + ":" + sec;
    this.level = level_;
    this.codePos = codePos_;
    this.text = text_;
@@ -309,30 +317,38 @@ function displayLogs(caller)
    var tableStr =
          "<TABLE NAME='ChatTable' BORDER='2' WIDTH='100%'>\n" +
          "   <TR>" +
+         "      <TD WIDTH='8%'>" +
+         "Time" +
+         "      </TD>" +
          "      <TD WIDTH='10%'>" +
          "Level" +
          "      </TD>" +
-         "      <TD WIDTH='10%'>" +
+         "      <TD WIDTH='12%'>" +
          "Where" +
          "      </TD>" +
-         "      <TD WIDTH='80%'>" +
+         "      <TD WIDTH='70%'>" +
          "Logging text" +
          "      </TD>" +
          "   </TR>\n";
    for (var ii=0; ii<logEntries.length; ii++) {
       tableStr +=
          "   <TR>" +
+         "      <TD BGCOLOR='white'>" +
+         "         <FONT size=2>" +
+         logEntries[ii].time +
+         "         </FONT>" +
+         "      &nbsp;</TD>" +
          "      <TD BGCOLOR='" + levelColor[logEntries[ii].level] + "'>" +
          "         <FONT size=2>" +
          logEntries[ii].level +
          "         </FONT>" +
          "      &nbsp;</TD>" +
-         "      <TD>" +
+         "      <TD BGCOLOR='white'>" +
          "         <FONT size=2>" +
          logEntries[ii].codePos +
          "         </FONT>" +
          "      &nbsp;</TD>" +
-         "      <TD>" +
+         "      <TD BGCOLOR='white'>" +
          "         <FONT size=2>" +
          logEntries[ii].text +
          "         </FONT>" +
