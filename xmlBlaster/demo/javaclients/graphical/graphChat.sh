@@ -1,2 +1,1 @@
-java javaclients.graphical.GraphicChat -publishDelay 30 -protocol SOCKET -dispatch/connection/plugin/socket/port 9455 -dispatch/connection/plugin/socket/hostname server.xmlBlaster.org
-
+java javaclients.graphical.GraphicChat -publishDelay 30 -protocol SOCKET -dispatch/plugin/connection/socket/port 9456 -dispatch/plugin/callback/socket/port 9456 -dispatch/connection/plugin/socket/hostname server.xmlBlaster.org
