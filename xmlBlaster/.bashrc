@@ -22,7 +22,7 @@
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash.
 # Thanks to Heinrich Goetzger
-# $Revision: 1.62 $
+# $Revision: 1.63 $
 #-----------------------------------------------------------
 
 
@@ -107,6 +107,7 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    PATH=$PATH:$XMLBLASTER_HOME/bin:$XMLBLASTER_HOME/testsuite/bin
    export PATH
 
+   alias cdx='cd $JUTILS_HOME'
    alias cdx='cd $XMLBLASTER_HOME'
    alias cdxs='cd $XMLBLASTER_HOME/src'
    alias cdxi='cd $XMLBLASTER_HOME/src/idl'
