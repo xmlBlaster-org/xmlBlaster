@@ -119,6 +119,17 @@ public final class SubscribeQos
    }
 
    /**
+    * If set to true (which is default) an erase notification message is sent
+    * to the subscriber when the topic is erased.
+    * <br />
+    * The <i>state</i> in the message QoS is set to Constants.STATE_ERASED="ERASED"
+    * @param notify true - notify subscriber when the topic is erased (default is true)
+    */
+   public void setWantNotify(boolean notify) {
+      this.queryQosData.setWantNotify(notify);
+   }
+
+   /**
     * Adds your supplied subscribe filter. 
     * <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/mime.plugin.accessfilter.html">The access filter plugin requirement</a>
     */
