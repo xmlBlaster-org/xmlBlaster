@@ -50,6 +50,10 @@
         <li> The callback messages reuse the synchronous socket connection to tunnel
              messages back to the client. This makes possible a simple fire wall tunneling.
           </li>
+
+        <li> The code is tested on memory leaks with valgrind and partially statically
+             checked with splint.
+          </li>
     </ul>
 
      <h3>Functionality</h3>
@@ -667,7 +671,7 @@ int main(int argc, char** argv)
    </configuration>
 
    <todo type='HTML'>
-      <h3>This is a first alpha release, we need to:</h3>
+      <h3>This is beta release is considered stable, but we need to:</h3>
       <p>
       <ul>
       <li> Adding mutex to every function call</li>
@@ -681,6 +685,8 @@ int main(int argc, char** argv)
       <li> Add extended property support (parsing command line and getenv())</li>
 
       <li> Add another layer which parses the QoS with Expat</li>
+
+      <li> Add client persistent queue with <a href="http://www.sqlite.org" target='others'>SQLite</a></li>
 
       <li> Use it as a SOCKET protocol plugin for our C++ client library to 
            get all the nice fail safe features for the C lib and to
@@ -705,6 +711,6 @@ int main(int argc, char** argv)
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2003 05 29</date>
-   <revision>$Revision: 1.15 $</revision>
+   <revision>$Revision: 1.16 $</revision>
 </requirement>
 
