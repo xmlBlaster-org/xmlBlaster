@@ -63,6 +63,10 @@ public class HelloWorld4
                                 "' in default handler");
                   return "";
                }
+               if (updateQos.isErased()) {
+                  log.info(ME, "Message '" + updateKey.getOid() + "' is erased");
+                  return "";
+               }
                if (updateKey.getOid().equals("SomeOtherMessage"))
                   log.info(ME, "Receiving asynchronous message '" + updateKey.getOid() +
                                "' state=" + updateQos.getState() + " in default handler");
