@@ -2,6 +2,12 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.xxx [xx, xx 2003]
 ===============================
+ o Fixed and updated cluster demo
+
+ o BUGFIX: Setting ORB environment for different orb instances
+
+ o BUGFIX: In CORBA NameService lookup
+
  o BUGFIX: Fixed two synchronize gaps which could lead to
    "The timeout handle is null, no timeout refresh done" exception
 
