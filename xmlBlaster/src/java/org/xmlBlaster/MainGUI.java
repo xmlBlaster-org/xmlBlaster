@@ -3,7 +3,7 @@ Name:      MainGUI.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: MainGUI.java,v 1.43 2002/04/18 15:23:18 ruff Exp $
+Version:   $Id: MainGUI.java,v 1.44 2002/04/21 18:07:24 www Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -59,7 +59,7 @@ public class MainGUI extends Frame implements Runnable, org.jutils.log.LogableDe
     * The login name "__sys__GuiQuery" is reserved!<br />
     * TODO: security discussion
     */
-   private final SessionInfo unsecureSessionInfo = null;
+   private SessionInfo unsecureSessionInfo = null;
 
    /** TextArea with scroll bars for logging output. */
    private TextArea logOutput = null;
