@@ -2,6 +2,11 @@
   
 Changes for 0.77 [?, 2000]
 ===============================
+   - browser callback enhancement:
+     It is now possible to pass the loginname and the password 
+     through the session object of the servlet (cookie).
+     This allows you to use your own authentication.
+
    - Bugfix for XPath subscription match errors.
 	  Thanks to "Brett Palmer" <plum001@hotmail.com>
 	  for finding and describing this bug.
