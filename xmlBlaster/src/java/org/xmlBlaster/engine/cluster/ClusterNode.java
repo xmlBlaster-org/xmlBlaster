@@ -11,8 +11,6 @@ import org.xmlBlaster.engine.Global;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.qos.ConnectQosServer;
-import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.ConnectQos;
@@ -23,19 +21,14 @@ import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.util.def.Constants;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.qos.ConnectQosData;
-import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.address.Address;
-import org.xmlBlaster.util.qos.address.CallbackAddress;
-import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.cluster.NodeId;
-import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.Iterator;
-import java.util.Vector;
 
 /**
  * This class holds the informations about an xmlBlaster server instance (=cluster node). 
@@ -120,8 +113,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
     *   <li>pingInterval[heron] defaults to 10 * 1000L</li>
     *   <li>retries[heron] defaults to -1 == forever</li>
     *   <li>queue/CACHE/maxEntries[heron] defaults to 100000</li>
-    *   <li>security.plugin.type[heron] defaults to "htpasswd"</li>
-    *   <li>security.plugin.version[heron] defaults to "1.0"</li>
+    *   <li>Security.Client.DefaultPlugin defaults to "htpasswd,1.0"
     *   <li>name[heron] the login name defaults to our local node id</li>
     *   <li>passwd[heron] defaults to secret</li>
     * </ul>
@@ -356,7 +348,7 @@ public final class ClusterNode implements java.lang.Comparable, I_Callback, I_Co
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos) throws XmlBlasterException {
       if (isLocalNode()) {
          log.error(ME, "Receiving unexpected update of message oid=" + updateKey.getOid() + " from xmlBlaster node '" + getId() + "' sessionId=" + cbSessionId);
-         Thread.currentThread().dumpStack();
+         Thread.dumpStack();
       }
       else {
          if (log.CALL) log.call(ME, "Receiving update of message oid=" + updateKey.getOid() + " from xmlBlaster node '" + getId() + "' sessionId=" + cbSessionId);
