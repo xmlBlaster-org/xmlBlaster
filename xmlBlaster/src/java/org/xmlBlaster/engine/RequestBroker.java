@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.45 2000/01/20 19:42:30 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.46 2000/01/21 08:19:04 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -31,7 +31,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.45 $
+ * @version $Revision: 1.46 $
  * @author $Author: ruff $
  */
 public class RequestBroker implements ClientListener, MessageEraseListener
@@ -56,6 +56,14 @@ public class RequestBroker implements ClientListener, MessageEraseListener
     * value = MessageUnitHandler object
     */
    private final Map messageContainerMap = Collections.synchronizedMap(new HashMap());
+
+   /**
+    * This client is only for internal use, it is un secure to pass it outside because
+    * there is no authentication.<br />
+    * The login name "__RequestBroker_internal" is reserved!<br />
+    * TODO: security discussion
+    */ 
+   private final ClientInfo unsecureClientInfo = new ClientInfo("__RequestBroker_internal__");
 
    /**
     * Helper to handle the subscriptions
@@ -94,6 +102,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
       synchronized (RequestBroker.class) {
          if (requestBroker == null) {
             requestBroker = new RequestBroker(authenticate);
+            requestBroker.loadPersistentMessages();
          }
       }
       return requestBroker;
@@ -103,6 +112,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
    /**
     * Access to RequestBroker singleton
     */
+    /*
    public static RequestBroker getInstance()
    {
       synchronized (RequestBroker.class) {
@@ -112,7 +122,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
       }
       return requestBroker;
    }
-
+      */
 
    /**
     * private Constructor for Singleton Pattern
@@ -127,8 +137,23 @@ public class RequestBroker implements ClientListener, MessageEraseListener
 
       authenticate.addClientListener(this);
       addMessageEraseListener(this);
+   }
 
-      getPersistenceDriver().recover(this);
+
+   /**
+    * Try to load all persistent stored messages. 
+    */
+   private void loadPersistentMessages()
+   {
+      this.persistenceDriver = getPersistenceDriver(); // Load persistence driver
+      try {
+         boolean lazyRecovery = Property.getProperty("Persistence.LazyRecovery", false);
+         if (!lazyRecovery)
+            persistenceDriver.recover(unsecureClientInfo, this); // recover all messages now
+      }
+      catch (Exception e) {
+         Log.error(ME, "Complete recover from persistence store failed: " + e.toString());
+      }
    }
 
 
@@ -606,13 +631,13 @@ public class RequestBroker implements ClientListener, MessageEraseListener
          String publisherName = clientInfo.getLoginName();
          boolean contentChanged = true;
          {
-            if (Log.TRACE) Log.trace(ME, "Store the new arrived message ...");
+            if (Log.TRACE) Log.trace(ME, "Handle the new arrived Pub/Sub message ...");
             boolean messageExisted = false; // to shorten the synchronize block
 
             synchronized(messageContainerMap) {
                Object obj = messageContainerMap.get(xmlKey.getUniqueKey());
                if (obj == null) {
-                  messageUnitHandler = new MessageUnitHandler(requestBroker, new MessageUnitWrapper(xmlKey, messageUnit, publishQoS, publisherName));
+                  messageUnitHandler = new MessageUnitHandler(requestBroker, new MessageUnitWrapper(this, xmlKey, messageUnit, publishQoS, publisherName));
                   messageContainerMap.put(xmlKey.getUniqueKey(), messageUnitHandler);
                }
                else {
@@ -649,7 +674,7 @@ public class RequestBroker implements ClientListener, MessageEraseListener
          if (Log.TRACE) Log.trace(ME, "Doing publish() in PtP or broadcast style");
          if (Log.DUMP) Log.dump(ME, publishQoS.printOn().toString());
 
-         MessageUnitWrapper messageUnitWrapper = new MessageUnitWrapper(xmlKey, messageUnit, publishQoS, clientInfo.getLoginName());
+         MessageUnitWrapper messageUnitWrapper = new MessageUnitWrapper(this, xmlKey, messageUnit, publishQoS, clientInfo.getLoginName());
          Vector destinations = publishQoS.getDestinations(); // !!! add XPath client query here !!!
 
          //-----    Send message to every destination client

@@ -3,7 +3,7 @@ Name:      PublishQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: PublishQoS.java,v 1.9 2000/01/20 19:42:30 ruff Exp $
+Version:   $Id: PublishQoS.java,v 1.10 2000/01/21 08:19:04 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -29,6 +29,9 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase
    // helper flags for SAX parsing
    private boolean inDestination = false; // parsing inside <destination> ?
 
+   /** Internal use only, is this message sent from the persistence layer? */
+   private boolean fromPersistenceStore = false;
+
    // flags for QoS state
    private boolean usesXPathQuery = false;
    private boolean isDurable = false;
@@ -44,9 +47,23 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase
 
    /**
     * Constructs the specialized quality of service object for a publish() call.
+    * @param the XML based ASCII string
     */
    public PublishQoS(String xmlQoS_literal) throws XmlBlasterException
    {
+      init(xmlQoS_literal);
+   }
+
+
+   /**
+    * Constructs the specialized quality of service object for a publish() call.
+    * For internal use only, this message is sent from the persistence layer
+    * @param the XML based ASCII string
+    * @param true
+    */
+   public PublishQoS(String xmlQoS_literal, boolean fromPersistenceStore) throws XmlBlasterException
+   {
+      this.fromPersistenceStore = fromPersistenceStore;
       init(xmlQoS_literal);
    }
 
@@ -108,6 +125,16 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase
    public boolean readonly()
    {
       return readonly;
+   }
+
+
+   /**
+    * Internal use only, is this message sent from the persistence layer?
+    * @return true/false
+    */
+   public boolean fromPersistenceStore()
+   {
+      return fromPersistenceStore;
    }
 
 

@@ -1,4 +1,4 @@
-#This file was created by <ruff> Mon Jan 10 23:04:02 2000
+#This file was created by <ruff> Thu Jan 20 11:12:52 2000
 #LyX 0.12 (C) 1995-1998 Matthias Ettrich and the LyX Team
 \lyxformat 2.15
 \textclass book
@@ -114,8 +114,133 @@ Only GNU make is supported.
 Configuration
 \layout Standard
 
-For the moment there is no xmlBlaster specific configuration file.
- The only configuration file delivered is for the CORBA library JacORB.
+There are two configuration files which you should know.
+\layout Standard
+
+1.
+ The xmlBlaster configuration file is called xmlBlaster.properties.
+ Copy manually the 
+\family typewriter 
+$HOME/xmlBlaster/xmlBlaster.properties.template 
+\family default 
+file to 
+\family typewriter 
+$HOME/xmlBlaster.properties.
+
+\family default 
+ If you use the delivered 
+\family typewriter 
+.bashrc
+\family default 
+ file you don't need to copy it, it is done automatically.
+\layout Standard
+
+These are the settings you should be aware of.
+\layout Standard
+\added_space_top 0.3cm \added_space_bottom 0.3cm \align center \LyXTable
+multicol5
+4 3 0 0 -1 -1 -1 -1
+1 1 0 0
+1 1 0 0
+0 1 0 0
+0 1 0 0
+8 1 0 "" ""
+8 1 1 "" ""
+8 1 1 "" ""
+0 8 0 1 0 0 0 "" ""
+0 8 0 1 0 0 0 "" ""
+0 8 0 1 0 0 0 "" ""
+0 8 0 1 0 0 0 "" ""
+0 8 0 1 0 0 0 "" ""
+0 8 0 1 0 0 0 "" ""
+0 8 0 1 0 0 0 "" ""
+0 8 0 1 0 0 0 "" ""
+0 8 0 1 0 0 0 "" ""
+0 8 0 1 0 0 0 "" ""
+0 8 0 1 0 0 0 "" ""
+0 8 0 1 0 0 0 "" ""
+
+Konfiguration Parameter
+\newline 
+Default
+\newline 
+Description
+\newline 
+Persistence.Driver
+\newline 
+org.xmlBlaster.engine.persistence.FileDriver
+\newline 
+The driver which handles the persistency of the messages.
+\newline 
+Persistence.Path
+\newline 
+$user.home/tmp
+\newline 
+The directory into which the messages are stored
+\newline 
+Persistence.LazyRecovery
+\newline 
+false
+\newline 
+Only false is supported in the moment
+\layout Standard
+
+The variables 
+\layout Standard
+
+
+\protected_separator 
+
+\protected_separator 
+ $user.dir
+\layout Standard
+
+
+\protected_separator 
+
+\protected_separator 
+ $user.home
+\layout Standard
+
+may be used and will be replaced to the current directory and the users
+ home directory respectively.
+\layout Standard
+
+
+\protected_separator 
+
+\layout Standard
+
+You may set $XMLBLASTER_HOME in your JVM environment 
+\layout Standard
+
+
+\protected_separator 
+
+\protected_separator 
+ java -DXMLBLASTER_HOME=/home/joe/xmlBlaster ...
+\layout Standard
+
+or int this file
+\layout Standard
+
+
+\protected_separator 
+
+\protected_separator 
+ $XMLBLASTER_HOME=$user.home/xmlBlaster
+\layout Standard
+
+and then use it as a variable in this file.
+\layout Standard
+
+2.
+ The configuration file delivered for the CORBA library JacORB is called
+ 
+\family typewriter 
+.jacorb_properties
+\family default 
+.
  Copy manually the 
 \family typewriter 
 $HOME/xmlBlaster/jacorb_properties.templateINSTALL 
@@ -923,6 +1048,40 @@ Publish/Subscribe Model
 \layout Section
 
 XmlBlaster Application Server Facilities
+\layout Subsection
+
+The Persitence Layer
+\layout Standard
+
+To store messages from xmlBlaster torestore them again after a new startup
+ of the server there is a lightweight interface, called I_PersitenceDriver,
+ available.
+\layout Standard
+
+You may supply your own persistence layer, which for example stores the
+ messages in a database like Oracle or PostgreSQL, or where ever you like.
+ 
+\layout Standard
+
+Currently we only provide very simple file based store, called FileDriver,
+ which may be used as a reference implementation to your own persitency.
+\layout Standard
+
+Writing an own persitence layer is very easy:
+\layout Standard
+
+1.
+ Implement the I_PersitenceDriver interface (look into FileDriver how you
+ could do it).
+\layout Standard
+
+2.
+ Register the driver with xmlBlaster through the xmlBlaster.properties file
+ with the Persistence.* variables.
+\layout Standard
+
+Note that this interface is very likely to change in one of the next xmlBlaster
+ releases, since it is to simple to support caching.
 \layout Chapter
 
 Writing a client application for xmlBlaster

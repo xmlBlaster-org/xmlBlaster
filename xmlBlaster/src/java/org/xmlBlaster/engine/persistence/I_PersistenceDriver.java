@@ -3,7 +3,7 @@ Name:      I_PersistenceDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface hiding the real callback protocol
-Version:   $Id: I_PersistenceDriver.java,v 1.1 2000/01/20 19:34:07 ruff Exp $
+Version:   $Id: I_PersistenceDriver.java,v 1.2 2000/01/21 08:19:05 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.persistence;
 
@@ -11,6 +11,7 @@ import org.xmlBlaster.serverIdl.XmlBlasterException;
 import org.xmlBlaster.engine.MessageUnitWrapper;
 import org.xmlBlaster.engine.RequestBroker;
 import org.xmlBlaster.engine.XmlKey;
+import org.xmlBlaster.engine.ClientInfo;
 
 
 /**
@@ -23,33 +24,56 @@ import org.xmlBlaster.engine.XmlKey;
  * <br />
  * FileDriver.java is a very simple reference implementation,
  * storing the messages to files.
+ * <br />
+ * TODO: Extend interface to support caching!<br />
  *
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  * @author $Author: ruff $
  */
 public interface I_PersistenceDriver
 {
    /**
-    * This method allows a message to be stored.
+    * Allows a message to be stored.
+    * <p />
+    * It only stores the xmlKey, content and qos.
+    * The other store() method is called for following messages, to store only message-content.
     * <p />
     * The protocol for storing is implemented in the derived class
+    * @param messageWrapper The container with all necessary message info.
     */
    public void store(MessageUnitWrapper messageWrapper) throws XmlBlasterException;
 
 
    /**
-    * This method allows a stored message content to be updated.
+    * Allows a stored message content to be updated.
+    * <p />
+    * It only stores the content, so the other store() method needs to be called first if this message is new.
     * <p />
     * The protocol for storing is implemented in the derived class
+    * @param xmlKey  To identify the message
+    * @param content The data to store
     */
    public void store(XmlKey xmlKey, byte[] content) throws XmlBlasterException;
 
 
    /**
-    * This method allows a message to be stored.
+    * Gets all messages from the store. 
     * <p />
-    * The protocol for storing is implemented in the derived class
+    * The protocol for recovery is implemented in the derived class
+    * @param clientInfo    Needed to publish
+    * @param requestBroker Needed to publish
     */
-   public void recover(RequestBroker requestBroker) throws XmlBlasterException;
+   public void recover(ClientInfo clientInfo, RequestBroker requestBroker) throws XmlBlasterException;
+
+
+   /**
+    * Allows a message to be fetched from the store.
+    * <p />
+    * The protocol for recovery is implemented in the derived class
+    * @param oid           The message name (key oid="...")
+    * @param clientInfo    Needed to publish
+    * @param requestBroker Needed to publish
+    */
+   public void recover(String oid, ClientInfo clientInfo, RequestBroker requestBroker) throws XmlBlasterException;
 }
 

@@ -3,7 +3,7 @@ Name:      MessageUnitWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Wrapping the CORBA MessageUnit to allow some nicer usage
-Version:   $Id: MessageUnitWrapper.java,v 1.8 2000/01/20 19:42:30 ruff Exp $
+Version:   $Id: MessageUnitWrapper.java,v 1.9 2000/01/21 08:19:04 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -27,6 +27,9 @@ public class MessageUnitWrapper
 {
    private final static String ME = "MessageUnitWrapper";
 
+   /** The broker which manages me */
+   private RequestBroker requestBroker;
+
    private MessageUnit messageUnit;  // The CORBA MessageUnit (raw struct)
    private XmlKey xmlKey;            // the meta data describing this message
    private PublishQoS publishQoS;    // the flags from the publisher
@@ -43,7 +46,7 @@ public class MessageUnitWrapper
     * @param publishQoS the quality of service
     * @param publisherName the unique loginName of the publisher
     */
-   public MessageUnitWrapper(XmlKey xmlKey, MessageUnit messageUnit, PublishQoS publishQoS, String publisherName) throws XmlBlasterException
+   public MessageUnitWrapper(RequestBroker requestBroker, XmlKey xmlKey, MessageUnit messageUnit, PublishQoS publishQoS, String publisherName) throws XmlBlasterException
    {
       if (xmlKey == null || messageUnit == null || publishQoS == null) {
          Log.error(ME, "Invalid constructor parameter");
@@ -54,7 +57,7 @@ public class MessageUnitWrapper
       this.uniqueKey = this.xmlKey.getUniqueKey();
       this.publishQoS = publishQoS;
       this.publisherName = publisherName;
-      this.persistenceDriver = RequestBroker.getInstance().getPersistenceDriver();
+      this.persistenceDriver = requestBroker.getPersistenceDriver();
 
       if (publisherName == null)
          publisherName = "";
@@ -65,7 +68,7 @@ public class MessageUnitWrapper
       if (this.xmlKey.isGeneratedOid())  // if the oid is generated, we need to update the messageUnit.xmlKey as well
          this.messageUnit.xmlKey = xmlKey.literal();
 
-      if (persistenceDriver != null && publishQoS.isDurable())
+      if (persistenceDriver != null && publishQoS.isDurable() && !publishQoS.fromPersistenceStore())
          persistenceDriver.store(this);
 
       if (Log.CALLS) Log.trace(ME, "Creating new MessageUnitWrapper for published message, key oid=" + uniqueKey);
@@ -113,7 +116,7 @@ public class MessageUnitWrapper
 
       if (changed) {  // new content is not the same as old one
          this.messageUnit.content = content;
-         if (persistenceDriver != null && publishQoS.isDurable())
+         if (persistenceDriver != null && publishQoS.isDurable() && !publishQoS.fromPersistenceStore())
             persistenceDriver.store(xmlKey, content);
          return true;
       }
@@ -195,7 +198,7 @@ public class MessageUnitWrapper
     */
    public MessageUnitWrapper cloneContent() throws XmlBlasterException
    {
-      MessageUnitWrapper newWrapper = new MessageUnitWrapper(xmlKey, messageUnit, publishQoS, publisherName);
+      MessageUnitWrapper newWrapper = new MessageUnitWrapper(requestBroker, xmlKey, messageUnit, publishQoS, publisherName);
 
       byte[] oldContent = this.messageUnit.content;
       byte[] newContent = new byte[oldContent.length];
