@@ -3,7 +3,7 @@ Name:      TestSubManyClients.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubManyClients.java,v 1.1 2000/11/05 13:25:58 ruff Exp $
+Version:   $Id: TestSubManyClients.java,v 1.2 2000/11/05 19:17:57 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -61,7 +61,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
    private int numClients;
    private Subscriber[] subscribers;
 
-   private StopWatch stopWatch = null;
+   private StopWatch stopWatch = new StopWatch();
 
    /**
     * Constructs the TestSubManyClients object.
@@ -104,6 +104,11 @@ public class TestSubManyClients extends TestCase implements I_Callback
     */
    protected void tearDown()
    {
+      if (numReceived != numClients) {
+         Log.error(ME, "numClients=" + numClients + " but numReceived=" + numReceived);
+         assertEquals("numClients=" + numClients + " but numReceived=" + numReceived, numClients, numReceived);
+      }
+
       Log.removeLogLevel("INFO");
       if (subscribers != null) {
          for (int ii=0; ii<numClients; ii++) {
@@ -120,8 +125,8 @@ public class TestSubManyClients extends TestCase implements I_Callback
       String[] strArr = null;
       try {
          strArr = senderConnection.erase(xmlKey, qos);
+         if (strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " messages:");
       } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
-      if (strArr.length != 1) Log.error(ME, "Erased " + strArr.length + " messages:");
 
       senderConnection.logout();
       Log.info(ME, "Logout done");
@@ -215,7 +220,7 @@ public class TestSubManyClients extends TestCase implements I_Callback
       assertEquals("numReceived after subscribe", 0, numReceived);  // there should be no Callback
 
       publish();
-      Util.delay(20 * numClients);                                 // Wait some time for callback to arrive ...
+      Util.delay(2000L + 10 * numClients);                          // Wait some time for callback to arrive ...
       //assertEquals("numReceived after publishing", numClients, numReceived); // message arrived?
    }
 
