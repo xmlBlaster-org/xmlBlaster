@@ -27,13 +27,16 @@ import java.util.HashMap;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
 import org.xmlBlaster.client.qos.ConnectQos;
+import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
+import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.DisconnectQosServer;
 import org.xmlBlaster.util.Global;
+import org.xmlBlaster.util.qos.ConnectQosData;
 
 /**
  * Parse email body. 
@@ -308,8 +311,11 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
                ret = this.access.connect(connectQos, this.callback).toXml();
             }
             else {
-               ConnectQosServer connectQos = new ConnectQosServer(this.glob, this.qos.toString());
-               ret = this.access.connect(new ConnectQos(this.glob, connectQos.getData()), this.callback).toXml("  ");
+               // ConnectQosData data = new ConnectQosData(this.glob, new ConnectQosSaxFactory(this.glob), this.qos.toString(), this.glob.getNodeId());
+               ConnectQosData data = new ConnectQosServer(this.glob, this.qos.toString()).getData();
+               ConnectReturnQos tmp = this.access.connect(new ConnectQos(this.glob, data), this.callback);
+               if (tmp != null) ret = tmp.toXml("  ");
+               else ret = "";
             }
             this.response.append("\n<!-- -- -- -- -- -- -- -- -- -- -- -- -- connect -- -- -- -- -- -- -- -- -- -- -- -- -->");
             this.response.append("\n<connect>");
@@ -368,11 +374,11 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
             if (this.log.TRACE) this.log.trace(ME, "appendEndOfElement subscribe: " + this.key.toString() + " " + this.qos.toString());
             if (this.qos.length() < 1) this.qos.append("<qos />");
             if (this.key.length() < 1) this.key.append("<key />");
-            String ret = this.access.subscribe(this.key.toString(), this.qos.toString()).toXml("  ");
+            SubscribeReturnQos ret = this.access.subscribe(this.key.toString(), this.qos.toString());
             this.response.append("\n<!-- -- -- -- -- -- -- -- -- -- -- -- -- subscribe -- -- -- -- -- -- -- -- -- -- -- -->");
             this.response.append("\n<subscribe>");
             // this.response.append("  <subscribeId>");
-            this.response.append(ret);
+            if (ret != null) this.response.append(ret.toXml("    "));
             // this.response.append("  </subscribeId>\n");
             this.response.append("\n</subscribe>\n");
             flushResponse();
@@ -474,27 +480,25 @@ public class XmlScriptInterpreter extends SaxHandlerBase {
    }
 
    public void endElement(String namespaceURI, String localName, String qName) {
-      if (this.inQos) appendEndOfElement(this.qos, qName);
-      if (this.inKey) appendEndOfElement(this.key, qName);
-
-      if ("xmlBlaster".equals(qName)) {
-         this.response = new StringBuffer("\n</xmlBlasterResponse>\n");
-         flushResponse();
-      }  
-
+      if (this.inQos) {
+         appendEndOfElement(this.qos, qName);
+         if ("qos".equals(qName)) this.inQos = false;
+         return;
+      }
+      if (this.inKey) {
+         appendEndOfElement(this.key, qName);
+         if ("key".equals(qName)) this.inKey = false;
+         return;
+      }
       if ("content".equals(qName)) {
          this.inContent = false;
          this.contentData.setValueRaw(this.content.toString());
          return;
       }
-      if ("key".equals(qName)) {
-         this.inKey = false;
-         return;
-      }
-      if ("qos".equals(qName)) {
-         this.inQos = false;
-         return;
-      }
+      if ("xmlBlaster".equals(qName)) {
+         this.response = new StringBuffer("\n</xmlBlasterResponse>\n");
+         flushResponse();
+      }  
       if ("message".equals(qName)) {
          try {
             this.messageList.add(buildMsgUnit());

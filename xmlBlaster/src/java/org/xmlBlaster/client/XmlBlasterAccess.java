@@ -61,7 +61,7 @@ import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
  * The interface I_CallbackRaw/I_Callback/I_CallbackExtenden are enforced by AbstractCallbackExtended.
  * </p>
  */
-public final class XmlBlasterAccess extends AbstractCallbackExtended
+public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
                    implements I_XmlBlasterAccess, I_ConnectionStatusListener
 {
    private String ME = "XmlBlasterAccess";
