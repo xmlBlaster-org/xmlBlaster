@@ -2,6 +2,7 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for xxx [xxx, xx 2003]
 ================================
+ o Bugfix of cursor leak in jdbc persistence
  o Bugfix of deadlock in JDBC protocol driver which used
    the buggy org.jutils.time.Timeout
    Ported org.jutils.pool to org.xmlBlaster.util.pool
