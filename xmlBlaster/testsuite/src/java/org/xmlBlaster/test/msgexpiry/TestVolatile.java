@@ -9,15 +9,14 @@ package org.xmlBlaster.test.msgexpiry;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 
-import org.xmlBlaster.client.protocol.XmlBlasterConnection;
+import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.ConnectQos;
+import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
-import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.MsgUnit;
-import org.xmlBlaster.protocol.corba.serverIdl.Server;
 
 import junit.framework.*;
 
@@ -27,9 +26,9 @@ import junit.framework.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    java junit.textui.TestRunner org.xmlBlaster.test.qos.TestVolatile
+ *    java junit.textui.TestRunner org.xmlBlaster.test.msgexpiry.TestVolatile
  *
- *    java junit.swingui.TestRunner org.xmlBlaster.test.qos.TestVolatile
+ *    java junit.swingui.TestRunner org.xmlBlaster.test.msgexpiry.TestVolatile
  * </pre>
  */
 public class TestVolatile extends TestCase implements I_Callback {
@@ -112,7 +111,7 @@ public class TestVolatile extends TestCase implements I_Callback {
       try {
          MsgUnit msgUnit = new MsgUnit(xmlKey, senderContent.getBytes(), qos);
          String returnedOid = senderConnection.publish(msgUnit).getKeyOid();
-         assertEquals("Retunred oid is invalid", publishOid, returnedOid);
+         assertEquals("Returned oid is invalid", publishOid, returnedOid);
          log.info(ME, "Sending of '" + senderContent + "' done, returned oid=" + publishOid);
       } catch(XmlBlasterException e) {
          log.error(ME, "publish() XmlBlasterException: " + e.getMessage());
@@ -212,9 +211,9 @@ public class TestVolatile extends TestCase implements I_Callback {
    }
 
    /**
-    * Invoke: java org.xmlBlaster.test.qos.TestVolatile
+    * Invoke: java org.xmlBlaster.test.msgexpiry.TestVolatile
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <pre>   java -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.qos.TestVolatile</pre>
+    * <pre>   java -Djava.compiler= junit.textui.TestRunner org.xmlBlaster.test.msgexpiry.TestVolatile</pre>
     */
    public static void main(String args[]) {
       TestVolatile testSub = new TestVolatile(new Global(args), "TestVolatile");
