@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, using org.jutils
-Version:   $Id: Global.java,v 1.36 2002/06/23 10:44:19 ruff Exp $
+Version:   $Id: Global.java,v 1.37 2002/06/25 07:39:42 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -909,7 +909,7 @@ public class Global implements Cloneable
     * java org.xmlBlaster.Main -property.verbose 2
     * </pre>
     */
-   public static String usage()
+   public String usage()
    {
       StringBuffer sb = new StringBuffer(512);
       sb.append("Logging options:\n");
@@ -921,13 +921,7 @@ public class Global implements Cloneable
       sb.append("   -logFile <fileName> Log to given file.\n");
       sb.append("   -logConsole false   Supress logging to console.\n");
       sb.append("\n");
-      sb.append("  There are fine grained logging possibilities like:\n");
-      sb.append("   -trace[corba]       Switch on trace mode only for IOR driver.\n");
-      sb.append("   -call[cluster]      Show method calls in the cluster module.\n");
-      sb.append("   -trace[mime]        Trace code in mime based filter plugins.\n");
-      sb.append("    Supported is [core], [auth], [cb], [mime], [corba], [xmlrpc] [admin]\n");
-      sb.append("\n");
-      sb.append("  Control logging of properties framework:\n");
+      sb.append("Control logging of properties framework:\n");
       sb.append("   -property.verbose   0 switches logging off, 2 is most verbose when loading properties on startup [" + Property.DEFAULT_VERBOSE + "].\n");
       return sb.toString();
    }
