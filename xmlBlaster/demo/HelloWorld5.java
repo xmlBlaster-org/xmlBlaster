@@ -108,7 +108,7 @@ public class HelloWorld5
       }
       finally {
          // Wait a second for messages to arrive before we logout
-         try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {}
+         try { Thread.sleep(1000); } catch( InterruptedException i) {}
          Global.waitOnKeyboardHit("Success, hit a key to exit");
          
          if (sender != null && sender.isConnected()) { sender.disconnect(new DisconnectQos(sender.getGlobal())); }

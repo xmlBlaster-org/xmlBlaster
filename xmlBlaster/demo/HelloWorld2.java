@@ -1,8 +1,6 @@
 // xmlBlaster/demo/HelloWorld2.java
-import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.client.qos.ConnectQos;
-import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.client.qos.UpdateQos;
@@ -36,11 +34,11 @@ public class HelloWorld2 implements I_Callback
                                      "<qos/>"));
 
          // wait a second
-         try { Thread.currentThread().sleep(1000); } catch(Exception e) { }
+         try { Thread.sleep(1000); } catch(Exception e) { }
          Global.waitOnKeyboardHit("\nHit a key to logout and terminate ...");
 
          con.erase("<key oid='HelloWorld2'/>", null);
-         try { Thread.currentThread().sleep(100); } catch(Exception e) { }  // To process erase event
+         try { Thread.sleep(100); } catch(Exception e) { }  // To process erase event
          con.disconnect(null);
       }
       catch (Exception e) {

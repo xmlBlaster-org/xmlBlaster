@@ -6,8 +6,6 @@ import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
 import org.xmlBlaster.util.error.I_MsgErrorHandler;
 import org.xmlBlaster.util.error.I_MsgErrorInfo;
-import org.xmlBlaster.util.queue.I_QueueEntry;
-import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
@@ -192,7 +190,7 @@ public class HelloWorld4
                   er = con.erase(ek, eq);
 
                   // Wait on message erase events
-                  try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {}
+                  try { Thread.sleep(1000); } catch( InterruptedException i) {}
                }
                catch (XmlBlasterException e) {
                   log.error(ME, "Houston, we have a problem: " + e.getMessage());
@@ -259,7 +257,7 @@ public class HelloWorld4
          log.info(ME, "Published message '" + pk.getOid() + "'");
 
          // Wait a second for messages to arrive before we logout
-         try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {}
+         try { Thread.sleep(1000); } catch( InterruptedException i) {}
          Global.waitOnKeyboardHit("Success, hit a key to exit");
       }
       catch (XmlBlasterException e) {

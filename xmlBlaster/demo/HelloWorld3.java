@@ -4,7 +4,6 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.qos.ConnectQos;
-import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.client.I_Callback;
 import org.xmlBlaster.client.key.UpdateKey;
@@ -93,7 +92,7 @@ public class HelloWorld3 implements I_Callback
 
          log.info("", "Got status='" + prq.getState() + "' for published message '" + prq.getKeyOid());
 
-         try { Thread.currentThread().sleep(1000); } 
+         try { Thread.sleep(1000); } 
          catch( InterruptedException i) {} // wait a second to receive update()
 
 

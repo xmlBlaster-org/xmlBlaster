@@ -184,7 +184,7 @@ public class HelloWorld6
       }
       finally {
          // Wait a second for messages to arrive before we logout
-         try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {}
+         try { Thread.sleep(1000); } catch( InterruptedException i) {}
          Global.waitOnKeyboardHit("Success, hit a key to exit");
 
          if (con != null && con.isConnected()) {
@@ -198,7 +198,7 @@ public class HelloWorld6
                er = con.erase(ek, eq);
 
                // Wait on message erase events
-               try { Thread.currentThread().sleep(1000); } catch( InterruptedException i) {}
+               try { Thread.sleep(1000); } catch( InterruptedException i) {}
             }
             catch (XmlBlasterException e) {
                log.error(ME, "Houston, we have a problem: " + e.toString());
