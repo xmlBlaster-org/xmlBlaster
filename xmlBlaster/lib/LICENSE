@@ -284,3 +284,8 @@ only the SNMP subagent module jax.jar is GPL only!
    Used as an embedded naming service for testing (particularly the jms implementation)
    tomcat 5.0.12 and commons-logging 1.0.3
 
+31) JHotdraw
+============
+   http://jhotdraw.sourceforge.net/
+   Is used for the graphical chat only, see
+   xmlBlaster/demo/javaclients/graphical/README
