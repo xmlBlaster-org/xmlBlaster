@@ -9,7 +9,7 @@
    <description>
       <![CDATA[
       The Java CorbaConnection class has a built in cache. If you activate this
-      cache with the initCache() method, the corbaConnection.get() method accesses 
+      cache with the initCache() method, the corbaConnection.get() method accesses
       a message on the first call synchronously and returns it to you.<br />
       Behind the scenes, a subscribe() is done as well, and incoming updates
       of this messages are put into the cache.<br />
@@ -36,7 +36,7 @@
 
          // This get() is only on the first call a write through to xmlBlaster
          // Following calls retrieve the up to date data from the local cache:
-         MessageUnitContainer[] msgUnitArr = 
+         MessageUnitContainer[] msgUnitArr =
                corbaConnection.get(xmlKey.toXml(), xmlQos.toXml());
       }
       catch (XmlBlasterException e) {
@@ -44,14 +44,15 @@
       }
       ]]>
    </example>
-   <todo>Rename corbaConnection.get() to getCached()</todo>
+   <todo>Rename corbaConnection.get() to getCached(), which automatically initializes the cache</todo>
    <todo>Add a test case to the testsuite</todo>
+   <todo>How to unsubscribe?</todo>
    <see>org.xmlBlaster.client.CorbaConnection</see>
    <see>org.xmlBlaster.client.BlasterCache</see>
    <author>Konrad.Krafft@doubleSlash.de</author>
    <hacker>Konrad.Krafft@doubleSlash.de</hacker>
    <date>2000 04 15</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
