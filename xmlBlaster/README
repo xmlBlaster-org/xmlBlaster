@@ -1,9 +1,9 @@
 #################################################################
 #                                                               #
 #                        xmlBlaster                             #
-#           Free Message Oriented Middleware (MOM)					 #
+#           Free Message Oriented Middleware (MOM)              #
 #                 http://www.xmlBlaster.org                     #
-#                                                               #  
+#                                                               #
 #################################################################
 
 XmlBlaster is a pure Java publish/subscribe MOM server
@@ -12,7 +12,7 @@ messages between publishers and subscribers.
 
 Communication with the server is based on CORBA (using JacORB), and
 subscribers can use XPath expressions to filter the messages they
-wish to receive. 
+wish to receive.
 
 xmlBlaster uses the Sun XML parser for XML parsing, and XT from
 James Clark for XSL parsing.
@@ -32,7 +32,7 @@ You find examples for XPath (to play with) in the following file:
 Examples of Java clients accessing xmlBlaster you find in directory:
 
   xmlBlaster/demo/javaclients
- and
+and
   xmlBlaster/testsuite/org/xmlBlaster
 
 
