@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.15 2001/02/15 21:11:24 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.16 2001/03/11 18:31:10 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -177,12 +177,12 @@ public class CorbaDriver implements I_Driver
                if (iorPort > 0) {
                   Log.info(ME, "Can't publish AuthServer to naming service, is your naming service really running?\n" +
                                e.toString() +
-                               "You don't need the naming service, i'll switch to builtin http IOR download");
+                               "\nYou don't need the naming service, i'll switch to builtin http IOR download");
                }
                else if (iorFile != null) {
                   Log.info(ME, "Can't publish AuthServer to naming service, is your naming service really running?\n" +
                                e.toString() +
-                               "You don't need the naming service, i'll switch to iorFile = " + iorFile);
+                               "\nYou don't need the naming service, i'll switch to iorFile = " + iorFile);
                }
                else {
                   usage();
