@@ -1,7 +1,7 @@
 Release notes for xmlBlaster    (http://www.xmlBlaster.org)
 
 
-Changes for 0.79 [?, ? 2000]
+Changes for 0.79 [Nov, 3 2000]
 ==============================
   - Bugfix for CORBA client/server running on multi homed hosts:
        java -DOAIAddr=198.197.24.129 javaclients.chat.SimpleChat
