@@ -6,8 +6,9 @@ EVERYTHING= $(BIN_DIR)/TestGet \
 	 $(BIN_DIR)/TestSub \
 	 $(BIN_DIR)/RamTest \
 	 $(BIN_DIR)/TestLogin \
-	 $(BIN_DIR)/clientPOA \
-    $(BIN_DIR)/clientBOA 
+	 $(BIN_DIR)/clientPOA
+
+#    $(BIN_DIR)/clientBOA 
 
 ifeq ($(CORBA_CPP),mico)
 ALL=$(EVERYTHING) $(BIN_DIR)/clientPOA	
@@ -52,12 +53,13 @@ ifeq ($(USE_CPP),true)
 	$(CC) clientPOA.o $(CLIENT_OBJ) $(CORBA_OBJ) -o$(BIN_DIR)/clientPOA $(XMLCPP_LIB) $(CORBA_LIB) $(COS_LIB) -lstdc++
 endif
 
-$(BIN_DIR)/clientBOA: clientBOA.o
-ifeq ($(USE_CPP),true) 
-ifeq ($(CORBA_CPP),mico)
-	$(CC) clientBOA.o $(CLIENT_OBJ) $(CORBA_OBJ) -o$(BIN_DIR)/clientBOA $(XMLCPP_LIB) $(CORBA_LIB) $(COS_LIB) -lstdc++
-endif
-endif
+# Does not compile ruff@swand.lake.de 2001-09-03
+#$(BIN_DIR)/clientBOA: clientBOA.o
+#ifeq ($(USE_CPP),true) 
+#ifeq ($(CORBA_CPP),mico)
+#	$(CC) clientBOA.o $(CLIENT_OBJ) $(CORBA_OBJ) -o$(BIN_DIR)/clientBOA $(XMLCPP_LIB) $(CORBA_LIB) $(COS_LIB) -lstdc++
+#endif
+#endif
 
 clean: 
 	$(RM) *.o $(ALL)
