@@ -3,7 +3,7 @@ Name:      HandleClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   HandleClient class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: HandleClient.java,v 1.27 2002/09/15 18:54:59 ruff Exp $
+Version:   $Id: HandleClient.java,v 1.28 2002/09/24 21:29:25 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -105,8 +105,8 @@ public class HandleClient extends Executor implements Runnable
    }
 
    private synchronized void closeSocket() {
-      try { if (iStream != null) { iStream.close(); iStream=null; } } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }
-      try { if (oStream != null) { oStream.close(); oStream=null; } } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }
+      try { if (iStream != null) { iStream.close(); /*iStream=null;*/ } } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }
+      try { if (oStream != null) { oStream.close(); /*oStream=null;*/ } } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }
       try { if (sock != null) { sock.close(); sock=null; } } catch (IOException e) { log.warn(ME+".shutdown", e.toString()); }
       if (log.TRACE) log.trace(ME, "Closed socket for '" + loginName + "'.");
    }
@@ -146,7 +146,7 @@ public class HandleClient extends Executor implements Runnable
          }
       }
       catch (IOException e1) {
-         log.error(ME+".update", "IO exception: " + e1.toString());
+         if (log.TRACE) log.trace(ME+".update", "IO exception: " + e1.toString());
          throw new ConnectionException(ME+".update", e1.toString());
       }
    }
@@ -204,6 +204,13 @@ public class HandleClient extends Executor implements Runnable
                      CallbackAddress[] cbArr = conQos.getSessionCbQueueProperty().getCallbackAddresses();
                      for (int ii=0; cbArr!=null && ii<cbArr.length; ii++) {
                         cbKey = cbArr[ii].getType() + cbArr[ii].getAddress();
+                        org.xmlBlaster.protocol.I_CallbackDriver oldCallback = driver.getGlobal().getNativeCallbackDriver(cbKey);
+                        if (oldCallback != null) { // Remove old and lost login of client with same callback address
+                           log.warn(ME, "Destroying old callback driver '" + cbKey + "' ...");
+                           //oldCallback.shutdown(); don't destroy socket, is done by others
+                           driver.getGlobal().removeNativeCallbackDriver(cbKey);
+                           oldCallback = null;
+                        }
                         driver.getGlobal().addNativeCallbackDriver(cbKey, callback); // tell that we are the callback driver as well
                      }
 
