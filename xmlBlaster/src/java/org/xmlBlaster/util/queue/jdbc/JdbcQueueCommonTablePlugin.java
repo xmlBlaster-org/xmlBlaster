@@ -347,32 +347,35 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
                    " Number of entries=" + getNumOfEntries_() + ", maxmimum number of entries=" + getMaxNumOfEntries() + " status: " + this.toXml(""));
       }
 */        
-
-      synchronized (this.modificationMonitor) {
-         String exTxt = null;
-         if ((exTxt=spaceLeft(1, entry.getSizeInBytes())) != null)
-            throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, exTxt);
-         if (getNumOfBytes_() > getMaxNumOfBytes()) {
-            throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_BYTES, ME, "put: the maximum number of bytes reached." +
-                   " Number of bytes=" + this.numOfBytes + " maxmimum number of bytes=" + getMaxNumOfBytes() + " status: " + this.toXml(""));
-         }
-         try {
-            if (this.manager.addEntry(this.storageId.getStrippedId(), this.glob.getStrippedId(), entry)) {
-               this.numOfEntries++;
-               this.numOfBytes += entry.getSizeInBytes();
-               if (entry.isPersistent()) {
-                  this.numOfPersistentEntries++;
-                  this.numOfPersistentBytes += entry.getSizeInBytes();
+      try {
+         synchronized (this.modificationMonitor) {
+            String exTxt = null;
+            if ((exTxt=spaceLeft(1, entry.getSizeInBytes())) != null)
+               throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME, exTxt);
+            if (getNumOfBytes_() > getMaxNumOfBytes()) {
+               throw new XmlBlasterException(glob, ErrorCode.RESOURCE_OVERFLOW_QUEUE_BYTES, ME, "put: the maximum number of bytes reached." +
+                      " Number of bytes=" + this.numOfBytes + " maxmimum number of bytes=" + getMaxNumOfBytes() + " status: " + this.toXml(""));
+            }
+            try {
+               if (this.manager.addEntry(this.storageId.getStrippedId(), this.glob.getStrippedId(), entry)) {
+                  this.numOfEntries++;
+                  this.numOfBytes += entry.getSizeInBytes();
+                  if (entry.isPersistent()) {
+                     this.numOfPersistentEntries++;
+                     this.numOfPersistentBytes += entry.getSizeInBytes();
+                  }
+                  return true;
                }
-               return true;
+            }
+            catch (XmlBlasterException ex) {
+               resetCounters();
+               throw ex;
             }
          }
-         catch (XmlBlasterException ex) {
-            resetCounters();
-            throw ex;
-         }
       }
-      if (this.queueSizeListener != null) invokeQueueSizeListener();
+      finally {
+         if (this.queueSizeListener != null) invokeQueueSizeListener();
+      }
       return false;
    }
 
@@ -475,9 +478,9 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     */
    public ArrayList take(int numOfEntries, long numOfBytes) throws XmlBlasterException {
       if (numOfEntries == 0) return new ArrayList();
-      try {
-         ArrayList ret = null;
-         synchronized(this.modificationMonitor) {
+      ArrayList ret = null;
+      synchronized(this.modificationMonitor) {
+         try {
             ret = this.manager.getEntries(getStorageId(), this.glob.getStrippedId(), numOfEntries, numOfBytes);
 
             long ids[] = new long[ret.size()];
@@ -489,12 +492,12 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
                if (tmp[i]) this.numOfEntries--;
             }
          }
-         if (this.queueSizeListener != null) invokeQueueSizeListener();
-         return ret;
+         finally {
+            resetCounters();
+         }
       }
-      finally {
-         resetCounters();
-      }
+      if (this.queueSizeListener != null) invokeQueueSizeListener();
+      return ret;
    }
 
 
@@ -516,9 +519,9 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
          maxPriority = limitEntry.getPriority();
       }
 
-      try {
-         ReturnDataHolder ret = null;
-         synchronized(this.modificationMonitor) {
+      ReturnDataHolder ret = null;
+      synchronized(this.modificationMonitor) {
+         try {
             ret = this.manager.getAndDeleteLowest(getStorageId(), this.glob.getStrippedId(), numOfEntries, numOfBytes, maxPriority, minUniqueId, leaveOne, true);
             this.numOfBytes -= ret.countBytes;
             this.numOfEntries -= ret.countEntries;
@@ -529,13 +532,14 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
             this.numOfPersistentEntries = -999L;
             this.numOfPersistentEntries = getNumOfPersistentEntries_(true);
          }
-         if (this.queueSizeListener != null) invokeQueueSizeListener();
-         return ret.list;
+         catch (XmlBlasterException ex) {
+            resetCounters();
+            throw ex;
+         }
       }
-      catch (XmlBlasterException ex) {
-         resetCounters();
-         throw ex;
-      }
+      if (this.queueSizeListener != null) invokeQueueSizeListener();
+      if (ret == null) return null;
+      return ret.list;
    }
 
 
@@ -612,23 +616,22 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
    public long removeWithLimitEntry(I_QueueEntry limitEntry, boolean inclusive) throws XmlBlasterException {
       if (this.log.CALL) this.log.call(ME, "removeWithLimitEntry called");
       if (limitEntry == null) return 0L;
-      try {
-         long ret = 0L;
-         synchronized(this.modificationMonitor) {
+      long ret = 0L;
+      synchronized(this.modificationMonitor) {
+         try {
             ret = this.manager.removeEntriesWithLimit(getStorageId(), this.glob.getStrippedId(), limitEntry, inclusive);
             if (ret != 0) { // since we are not able to calculate the size in the cache we have to recalculate it
                resetCounters();
             }
          }
-         if (this.queueSizeListener != null) invokeQueueSizeListener();
-         return ret;
+         catch (XmlBlasterException ex) {
+            resetCounters();
+            throw ex;
+         }
       }
-      catch (XmlBlasterException ex) {
-         resetCounters();
-         throw ex;
-      }
+      if (this.queueSizeListener != null) invokeQueueSizeListener();
+      return ret;
    }
-
 
 
    /**
@@ -638,9 +641,9 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     * @throws XmlBlasterException if the underlying implementation gets an exception.
     */
    public int remove() throws XmlBlasterException {
-      try {
-         ReturnDataHolder ret = null;
-         synchronized(this.modificationMonitor) {
+      ReturnDataHolder ret = null;
+      synchronized(this.modificationMonitor) {
+         try {
             ret = this.manager.deleteFirstEntries(getStorageId().getStrippedId(), this.glob.getStrippedId(), 1, -1L);
             this.numOfEntries -= (int)ret.countEntries;
             this.numOfBytes -= ret.countBytes;
@@ -650,13 +653,14 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
             this.numOfPersistentEntries = -999L;
             this.numOfPersistentEntries = getNumOfPersistentEntries_(true);
          }
-         if (this.queueSizeListener != null) invokeQueueSizeListener();
-         return (int)ret.countEntries;
+         catch (XmlBlasterException ex) {
+            resetCounters();
+            throw ex;
+         }
       }
-      catch (XmlBlasterException ex) {
-         resetCounters();
-         throw ex;
-      }
+      if (this.queueSizeListener != null) invokeQueueSizeListener();
+      if (ret == null) return 0;
+      return (int)ret.countEntries;
    }
 
 
@@ -669,9 +673,9 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     */
    public long remove(long numOfEntries, long numOfBytes) throws XmlBlasterException {
       if (numOfEntries == 0) return 0L;
-      try {
-         ReturnDataHolder ret = null;
-         synchronized(this.modificationMonitor) {
+      ReturnDataHolder ret = null;
+      synchronized(this.modificationMonitor) {
+         try {
             ret = this.manager.deleteFirstEntries(getStorageId().getStrippedId(), this.glob.getStrippedId(), numOfEntries, numOfBytes);
             this.numOfEntries -= (int)ret.countEntries;
             this.numOfBytes -= ret.countBytes;
@@ -681,13 +685,14 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
             this.numOfPersistentEntries = -999L;
             this.numOfPersistentEntries = getNumOfPersistentEntries_(true);
          }
-         if (this.queueSizeListener != null) invokeQueueSizeListener();
-         return ret.countEntries;
+         catch (XmlBlasterException ex) {
+            resetCounters();
+            throw ex;
+         }
       }
-      catch (XmlBlasterException ex) {
-         resetCounters();
-         throw ex;
-      }
+      if (this.queueSizeListener != null) invokeQueueSizeListener();
+      if (ret == null) return 0L;
+      return ret.countEntries;
    }
 
 
@@ -751,23 +756,24 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
    public boolean[] removeRandom(I_Entry[] queueEntries) throws XmlBlasterException {
       if (queueEntries == null || queueEntries.length == 0) return new boolean[0];
       boolean ret[] = new boolean[queueEntries.length];
-      try {
-         long[] ids = new long[queueEntries.length];
 
-         long currentAmount = 0L;
-         long currentPersistentSize = 0L;
-         long currentPersistentEntries = 0L;
-         for (int i=0; i < ids.length; i++) {
-            ids[i] = queueEntries[i].getUniqueId();
-            currentAmount += queueEntries[i].getSizeInBytes();
-            if (queueEntries[i].isPersistent()) {
-               currentPersistentSize += queueEntries[i].getSizeInBytes();
-               currentPersistentEntries++;
-            }
+      long[] ids = new long[queueEntries.length];
+
+      long currentAmount = 0L;
+      long currentPersistentSize = 0L;
+      long currentPersistentEntries = 0L;
+      for (int i=0; i < ids.length; i++) {
+         ids[i] = queueEntries[i].getUniqueId();
+         currentAmount += queueEntries[i].getSizeInBytes();
+         if (queueEntries[i].isPersistent()) {
+            currentPersistentSize += queueEntries[i].getSizeInBytes();
+            currentPersistentEntries++;
          }
+      }
 
-         boolean[] tmp = null; 
-         synchronized(this.modificationMonitor) {
+      boolean[] tmp = null; 
+      synchronized(this.modificationMonitor) {
+         try {
 /*
             int[] tmp = this.manager.deleteEntriesBatch(getStorageId().getStrippedId(), this.glob.getStrippedId(), ids);
             long sum = 0;
@@ -795,13 +801,13 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
                this.numOfPersistentEntries -= currentPersistentEntries;
             }
          }
-         if (this.queueSizeListener != null) invokeQueueSizeListener();
-         return tmp;
+         catch (XmlBlasterException ex) {
+            resetCounters();
+            throw ex;
+         }
       }
-      catch (XmlBlasterException ex) {
-         resetCounters();
-         throw ex;
-      }
+      if (this.queueSizeListener != null) invokeQueueSizeListener();
+      return tmp;
    }
 
 
@@ -822,22 +828,22 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     */
    public int removeTransient() throws XmlBlasterException {
 
-      try {
-         int ret = 0; 
-         synchronized(this.modificationMonitor) {
+      int ret = 0; 
+      synchronized(this.modificationMonitor) {
+         try {
             ret = this.manager.deleteAllTransient(getStorageId().getStrippedId(), glob.getStrippedId());
             this.numOfEntries -= ret;
             // not so performant but only called on init
             this.numOfBytes = -999L;
             this.numOfBytes = getNumOfBytes_();
          }
-         if (this.queueSizeListener != null) invokeQueueSizeListener();
-         return ret;
+         catch (XmlBlasterException ex) {
+            resetCounters();
+            throw ex;
+         }
       }
-      catch (XmlBlasterException ex) {
-         resetCounters();
-         throw ex;
-      }
+      if (this.queueSizeListener != null) invokeQueueSizeListener();
+      return ret;
    }
 
 
