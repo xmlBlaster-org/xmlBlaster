@@ -22,7 +22,7 @@ import java.util.ArrayList;
  */
 public interface I_MsgDeliveryInterceptor extends I_ConnectionStatusListener
 {
-   //public void initClientAccess(Global glob, I_XmlBlasterConnection con, I_CallbackDriver driver) throws XmlBlasterException;
+   //public void initClientAccess(Global glob, I_XmlBlasterAccess con, I_CallbackDriver driver) throws XmlBlasterException;
 
    /**
     * Is called once only after the instance is created. 
