@@ -3,7 +3,7 @@ Name:      ClientXml.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientXml.java,v 1.19 2002/05/11 09:36:54 ruff Exp $
+Version:   $Id: ClientXml.java,v 1.20 2002/05/11 10:38:45 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -45,12 +45,9 @@ public class ClientXml implements I_Callback
       // Initialize command line argument handling (this is optional)
       Global glob = new Global();
       if (glob.init(args) != 0) {
-         Log.plain("\nAvailable options:");
-         Log.plain("   -name               The login name [" + ME + "].");
-         Log.plain("   -passwd             The password [secret].");
          XmlBlasterConnection.usage();
          Log.usage();
-         Log.exit(ME,"Example: java javaclients.ClientXml -name Jeff\n");
+         Log.exit(ME,"Example: java javaclients.ClientXml -loginName Jeff\n");
       }
 
       StopWatch stop = new StopWatch();

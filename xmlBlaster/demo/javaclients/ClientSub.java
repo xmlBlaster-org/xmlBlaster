@@ -3,22 +3,19 @@ Name:      ClientSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSub.java,v 1.31 2002/05/11 09:36:54 ruff Exp $
+Version:   $Id: ClientSub.java,v 1.32 2002/05/11 10:38:45 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.Global;
-import org.jutils.init.Args;
-
+import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
-import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.client.UpdateKey;
 import org.xmlBlaster.client.UpdateQos;
 import org.xmlBlaster.client.SubscribeKeyWrapper;
 import org.xmlBlaster.client.SubscribeQosWrapper;
-import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.engine.helper.MessageUnit;
 
 
@@ -39,7 +36,7 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  * <pre>
  *    java -cp ../../lib/xmlBlaster.jar javaclients.ClientSub
  *
- *    java javaclients.ClientSub -name Jeff -client.protocol RMI
+ *    java javaclients.ClientSub -loginName Jeff -client.protocol RMI
  *
  *    java javaclients.ClientSub -help
  * </pre>
@@ -52,21 +49,14 @@ public class ClientSub implements I_Callback
    public static long startTime;
    public static long elapsed;
 
-   public ClientSub(String args[])
-   {
-      initArgs(args); // Initialize command line argument handling (this is optional)
-
+   public ClientSub(Global glob) {
+      this.glob = glob;
       try {
-         // check if parameter -name <userName> is given at startup of client
-         String loginName = Args.getArg(args, "-name", ME);
-         String passwd = Args.getArg(args, "-passwd", "secret");
-         ConnectQos loginQos = new ConnectQos(glob); // creates "<qos></qos>" string
-
-         XmlBlasterConnection blasterConnection = new XmlBlasterConnection(args);
-         blasterConnection.login(loginName, passwd, loginQos, this);
+         XmlBlasterConnection blasterConnection = new XmlBlasterConnection(glob);
+         blasterConnection.connect(null, this);
          // Now we are connected to xmlBlaster MOM server.
 
-         int numTests = Args.getArg(args, "-numTests", 1);
+         int numTests = glob.getProperty().get("numTests", 1);
          for (int i=0; i<numTests; i++)
             sendSomeMessages(blasterConnection);
 
@@ -205,27 +195,16 @@ public class ClientSub implements I_Callback
       return "";
    }
 
-
-   /**
-    * Initialize command line argument handling (this is optional)
-    */
-   private void initArgs(String args[])
-   {
-      glob = new Global();
-      if (glob.init(args) != 0) {
-         Log.plain("\nAvailable options:");
-         Log.plain("   -name               The login name [ClientSub].");
-         Log.plain("   -passwd             The login name [secret].");
-         XmlBlasterConnection.usage();
-         Log.usage();
-         Log.exit(ME, "Example: java javaclients.ClientSub -name Jeff\n");
-      }
-   }
-
-
    public static void main(String args[])
    {
-      new ClientSub(args);
+      Global glob = new Global();
+      if (glob.init(args) != 0) {
+         XmlBlasterConnection.usage();
+         Log.usage();
+         Log.info(ME, "Get help: java javaclients.ClientSub -help\n");
+         Log.exit(ME, "Example: java javaclients.ClientSub -loginName Jeff\n");
+      }
+      new ClientSub(glob);
       Log.exit(ClientSub.ME, "Good bye");
    }
 } // ClientSub

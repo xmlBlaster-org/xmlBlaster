@@ -3,7 +3,7 @@ Name:      ClientSubEmail.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientSubEmail.java,v 1.10 2002/05/11 09:36:54 ruff Exp $
+Version:   $Id: ClientSubEmail.java,v 1.11 2002/05/11 10:38:45 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -77,8 +77,8 @@ public class ClientSubEmail implements I_Callback
       Global glob = initArgs(args); // Initialize command line argument handling (this is optional)
 
       try {
-         // check if parameter -name <userName> is given at startup of client
-         String loginName = Args.getArg(args, "-name", ME);
+         // check if parameter -loginName <userName> is given at startup of client
+         String loginName = Args.getArg(args, "-loginName", ME);
          String passwd = Args.getArg(args, "-passwd", "secret");
          ConnectQos loginQos = new ConnectQos(glob); // creates "<qos></qos>" string
 
@@ -204,7 +204,7 @@ public class ClientSubEmail implements I_Callback
       Global glob = new Global();
       if (glob.init(args) != 0) {
          Log.plain("\nAvailable options:");
-         Log.plain("   -name               The login name [ClientSubEmail].");
+         Log.plain("   -loginName          The login name [ClientSubEmail].");
          Log.plain("   -passwd             The login name [secret].");
          Log.plain("   -email              An email address to send updates [ruff@swand.lake.de].");
          Log.plain("   -email.content      The content of the email [Hello world].");
@@ -216,7 +216,7 @@ public class ClientSubEmail implements I_Callback
          Log.plain("   EmailDriver.from=xmlblast@localhost");
          XmlBlasterConnection.usage();
          Log.usage();
-         Log.exit(ME, "Example: java javaclients.ClientSubEmail -name Jeff -email et@universe.xy\n");
+         Log.exit(ME, "Example: java javaclients.ClientSubEmail -loginName Jeff -email et@universe.xy\n");
       }
       return glob;
    }

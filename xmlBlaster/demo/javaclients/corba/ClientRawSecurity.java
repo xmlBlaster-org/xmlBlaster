@@ -3,7 +3,7 @@ Name:      ClientRawSecurity.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code how to access xmlBlaster using CORBA
-Version:   $Id: ClientRawSecurity.java,v 1.9 2002/05/01 21:39:52 ruff Exp $
+Version:   $Id: ClientRawSecurity.java,v 1.10 2002/05/11 10:38:45 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.corba;
 
@@ -43,7 +43,7 @@ import org.omg.CosNaming.*;
  *
  *    ${JacORB_HOME}/bin/jaco javaclients.corba.ClientRawSecurity -ior `cat /tmp/NS_Ref`
  *
- *    ${JacORB_HOME}/bin/jaco javaclients.corba.ClientRawSecurity -name "Jeff" `cat /tmp/NS_Ref`
+ *    ${JacORB_HOME}/bin/jaco javaclients.corba.ClientRawSecurity -loginName "Jeff" `cat /tmp/NS_Ref`
  * </pre>
  * NOTE: You need to use 'jaco' to switch off the native JDK library (or use
  *       any other way as described in INSTALL file).
@@ -63,7 +63,7 @@ public class ClientRawSecurity
       orb = org.omg.CORBA.ORB.init(args,null);
       try {
          AuthServer authServer;
-         ME = Args.getArg(args, "-name", ME);
+         ME = Args.getArg(args, "-loginName", ME);
          String loginName = ME;
 
          String fileName = Args.getArg(args, "-ior.file", (String)null); // a file with the IOR string
@@ -246,7 +246,7 @@ public class ClientRawSecurity
    static void usage()
    {
       Log.plain("\nAvailable options:");
-      Log.plain("   -name               The login name [ClientRawSecurity].");
+      Log.plain("   -loginName          The login name [ClientRawSecurity].");
       Log.plain("   -ior.file           File with the IOR string from xmlBlaster.");
       Log.plain("   -ior                The raw IOR string from xmlBlaster.");
       Log.usage();

@@ -25,23 +25,16 @@
    <%
       XmlBlasterConnection blasterConnection = null;
       String ME = "ClientSub";
-      String args[] = new String[0];
+      Global glob = new Global();
       {
-         // Initialize command line argument handling (this is optional)
          try {
-            XmlBlasterProperty.init(args);
-         } catch(org.jutils.JUtilsException e) {
-            Log.error(ME, e.toString());
-         }
+            // check if parameter -loginName <userName> is given at startup of client
+            String loginName = glob.getProperty().get("loginName", ME);
+            String passwd = glob.getProperty().get("passwd", "secret");
+            ConnectQos loginQos = new ConnectQos(glob, loginName, passwd); // creates "<qos>...</qos>" string
 
-         try {
-            // check if parameter -name <userName> is given at startup of client
-            String loginName = Args.getArg(args, "-name", ME);
-            String passwd = Args.getArg(args, "-passwd", "secret");
-            ConnectQos loginQos = new ConnectQos(); // creates "<qos></qos>" string
-
-            blasterConnection = new XmlBlasterConnection(args);
-            blasterConnection.login(loginName, passwd, loginQos);
+            blasterConnection = new XmlBlasterConnection(glob);
+            blasterConnection.connect(loginQos);
             Log.info(ME, "Now we are connected to xmlBlaster MOM server");
 
             Log.info(ME, "Getting a message - checking free memory in server ...");

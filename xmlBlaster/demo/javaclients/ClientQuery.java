@@ -3,7 +3,7 @@ Name:      ClientGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientQuery.java,v 1.19 2002/05/11 09:36:54 ruff Exp $
+Version:   $Id: ClientQuery.java,v 1.20 2002/05/11 10:38:45 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -25,7 +25,7 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  * <p>
  * Invoke example:<br />
  * <pre>
- *    jaco javaclients.ClientQuery -queryXpath "//key"
+ *    java javaclients.ClientQuery -queryXpath "//key"
  * </pre>
  */
 public class ClientQuery
@@ -41,7 +41,7 @@ public class ClientQuery
       if (glob.init(args) != 0) usage("Aborted");
 
       try {
-         String loginName = Args.getArg(args, "-name", ME); // check if parameter -name <userName> is given at startup of client
+         String loginName = Args.getArg(args, "-loginName", ME); // check if parameter -loginName <userName> is given at startup of client
          String passwd = Args.getArg(args, "-passwd", "secret");
 
          queryString = Args.getArg(args, "-queryXpath", (String)null);
@@ -85,12 +85,10 @@ public class ClientQuery
    private void usage(String text)
    {
       Log.plain("\nAvailable options:");
-      Log.plain("   -name               The login name [ClientQuery].");
-      Log.plain("   -passwd             The password [secret].");
       Log.plain("   -queryXpath         \"//key\"");
       XmlBlasterConnection.usage();
       Log.usage();
-      Log.plain("Example: jaco javaclients.ClientQuery -queryXpath //key\n");
+      Log.plain("Example: java javaclients.ClientQuery -queryXpath //key\n");
       Log.panic(ME, text);
    }
 

@@ -3,7 +3,7 @@ Name:      XmlRpcHttpClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code to post a xml-rpc message thru the HTTP protocol
-Version:   $Id: XmlRpcHttpClient.java,v 1.11 2002/05/11 09:36:55 ruff Exp $
+Version:   $Id: XmlRpcHttpClient.java,v 1.12 2002/05/11 10:38:45 ruff Exp $
 Author:    "Michele Laghi" <michele.laghi@attglobal.net>
 ------------------------------------------------------------------------------*/
 
@@ -135,8 +135,6 @@ public class XmlRpcHttpClient
       Log.plain(ME, "----------------------------------------------------------");
       Log.plain(ME, "java javaclients.xmlrpc.XmlRpcHttpClient < demo.xml <options>");
       Log.plain(ME, "----------------------------------------------------------");
-      Log.plain("\nAvailable options:");
-      Log.plain("   -name               The login name [LunaMia].");
       XmlBlasterConnection.usage();
       Log.usage();
       Log.plain(ME, "----------------------------------------------------------");

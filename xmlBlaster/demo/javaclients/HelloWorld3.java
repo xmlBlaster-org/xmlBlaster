@@ -19,7 +19,7 @@ import org.xmlBlaster.engine.helper.MessageUnit;
  *
  * Invoke: java HelloWorld3
  * <p />
- * Invoke: java HelloWorld3 -name joe -passwd secret
+ * Invoke: java HelloWorld3 -loginName joe -passwd secret
  */
 public class HelloWorld3 implements I_Callback
 {
@@ -96,12 +96,9 @@ public class HelloWorld3 implements I_Callback
       Global glob = new Global();
       
       if (glob.init(args) != 0) { // Get help with -help
-         Log.plain("\nAvailable options:");
-         Log.plain("   -name               The login name [HelloWorld3].");
-         Log.plain("   -passwd             The login name [secret].");
          XmlBlasterConnection.usage();
          Log.usage();
-         Log.exit("", "Example: java HelloWorld3 -name Jeff\n");
+         Log.exit("", "Example: java HelloWorld3 -loginName Jeff\n");
       }
 
       new HelloWorld3(glob);
