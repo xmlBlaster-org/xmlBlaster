@@ -53,7 +53,7 @@ public class PublishToSlave implements I_Callback
 
          PublishKeyWrapper pk = new PublishKeyWrapper("PublishToSlave", "text/xml", "1.0", domain);
          PublishQosWrapper pq = new PublishQosWrapper();
-         pq.setPriority(Constants.MIN_PRIORITY);
+         pq.setPriority(Constants.LOW_PRIORITY);
          for (int i=0; i<numPublish; i++) {
             if (interactivePublish) {
                System.out.println("Hit a key to publish ...");
