@@ -54,11 +54,11 @@ public class Publisher implements I_Timeout {
    
    private I_PluginConfig pluginConfig;
    
-   public Publisher(Global global, String name, I_PluginConfig pluginConfig) throws XmlBlasterException {
+   public Publisher(Global globOrig, String name, I_PluginConfig pluginConfig) throws XmlBlasterException {
       ME += "-" + name;
       this.name = name;
       this.isShutdown = false;
-      this.global = global.getClone(null);
+      this.global = globOrig.getClone(globOrig.getNativeConnectArgs()); // sets session.timeout to 0 etc.
       this.pluginConfig = pluginConfig;
       this.log = this.global.getLog("filepoller");
       if (this.log.CALL) 
@@ -90,14 +90,7 @@ public class Publisher implements I_Timeout {
          String userId = this.global.get("loginName", "_" + this.name, null, pluginConfig);
          String password = this.global.get("password", (String)null, null, pluginConfig);
          this.connectQos = new ConnectQos(this.global, userId, password);
-         this.connectQos.setMaxSessions(100);
-         Address address = this.connectQos.getAddress();
-         this.global.addObjectEntry("ServerNodeScope", global.getObjectEntry("ServerNodeScope"));
-         address.setType("LOCAL");
-         address.setPingInterval(0L);
-         address.setCollectTime(0L);
-         this.connectQos.getClientQueueProperty().setType("RAM");
-         this.connectQos.getClientQueueProperty().setVersion("1.0");
+         this.global.addObjectEntry("ServerNodeScope", globOrig.getObjectEntry("ServerNodeScope"));
       }
 
       String fileFilter =  this.global.get("fileFilter", (String)null, null, pluginConfig);
@@ -144,7 +137,7 @@ public class Publisher implements I_Timeout {
     * If an exception occurs it means it could not publish the entry
     * @throws XmlBlasterException
     */
-   public synchronized void shutdown() throws XmlBlasterException {
+   public void shutdown() throws XmlBlasterException {
       if (this.log.CALL) 
          this.log.call(ME, "shutdown");
       timeout.removeTimeoutListener(this.timeoutHandle);
