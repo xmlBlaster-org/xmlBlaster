@@ -182,6 +182,7 @@
             </dispatch>
 
             <subscriptionList>__subId:3,__subId:XPATH2</subscriptionList>
+            <subscriptionDump>[The XML dump of all subscription informations]</subscriptionDump>
             
          </session> <!-- -3 -->
 
@@ -712,7 +713,7 @@ UserInfo: joe:mypasswd
    <author>laghi@swissinfo.org</author>
    <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.55 $</revision>
+   <revision>$Revision: 1.56 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
