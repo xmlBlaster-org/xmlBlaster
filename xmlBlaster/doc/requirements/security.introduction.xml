@@ -1,0 +1,127 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='security.framework.howto' type='NEW' prio='HIGH' status='CLOSED'>
+   <topic>HOWTO: xmlBlaster Security Framework</topic>
+   <description>
+      <h1>Introduction</h1>
+      
+      <h2>Why Security?</h2>
+      <p>
+         Information security became over the years a more and more important 
+         topic. First, it was of interest only for military and secret service 
+         organisations. But the more information systems like computers concern 
+         everybodies life and these systems become interconnected, the higher is
+         the importance of security for everyone. It doesn't matter if it is
+         the army, a commercial organisation or even a private user, security is
+         an essential topic.
+      </p>
+              
+      <h2>What is Security?</h2>
+      <p>
+         After the dozens of books written on the subject, it's hard to 
+         understand that a common definition of security doesn't exist.<br />
+      
+      
+         The attempt to find a definition including all aspect of security
+         results in quiet woolly definition like the following, which we
+         will use now:
+      </p>
+      <p>
+      <ul>
+         Security refers to the possibility of a system, to protect its
+         objects regarding <i>confidentiality</i> and <i>integrity</i>.
+      </ul>
+      </p>
+      <p>
+         In this context confidentiality and integrity are defined as:
+      </p>
+      
+         <ul>
+            <li>
+               <b>Confidentiality:</b><br />
+               "The property that information is not made available or disclosed
+                to unauthorized individuals, entities, or processes." [RFC2828]
+            </li>     
+            <li>
+               <b>Integrity:</b><br />
+               "The property that data have not been changed, destroyed, or
+                lost in an unauthorized or accidental manner." [RFC2828]
+            </li>
+         </ul>
+      
+      <p>
+         Both are the <i>primary goals</i> of security. To reach them, it is often
+         necessary to reach subsequent goals. These additional goals are often
+         called <i>secondary goals</i>. Examples are:
+      </p>
+      <p>
+         <ul>
+            <li>accountability</li>
+            <li>non-repudiation</li>
+            <li>privacy</li>
+            <li>anonymity</li>
+            <li>and many more.</li>
+         </ul>
+      </p>
+      <p>
+      Some of them seem to be incompatible (e.g. accountability and anonymity),
+      but all are more or less important for a secure system. This shows two 
+      things:
+      </p>
+      <p>
+         <ol>
+            <li>
+               The meaning of security can differ from case to case, because the goals
+               may have a different weight.
+            </li>
+            <li>
+               A 100% secure system is impossible. 
+            </li>
+         </ol>
+      </p>
+      <p>
+      <b>An example:</b><br/>
+      In an electronic voting system each voter can vote for something /
+      somebody. In this case the voter has the following understanding of
+      security:
+      </p> 
+      <ul>
+         <li>
+            The system must ensure that the vote is counted correctly
+            (nothing/nobody else should be able to generate a vote with a wrong
+            identity, to change or hold back a correct vote) [integrity]
+         </li>
+         <li>   
+            Nothing and nobody (even not the voting system) must be able
+            to determine who voted for whom/what. [-> confidentiality (+ anonymity)]
+         </li>
+      </ul>
+      <p>
+         The voting system has a slightly different understanding of security.
+         In addition, it must ensure that everybody has only a single vote. 
+         Everybody must be accountable for its actions. But this collides
+         with the voters desire of anonymity. Both are not compatible without
+         lowering one's sights.
+      </p>
+<!--   <h1>Threads</h1>
+      <p>   
+         ===
+      </p>
+-->
+   <h1>Goals</h1>
+      <p>
+         The xmlBlaster security system should address the main aspects of security as mentioned above. 
+         But because of the fact that a 100% secure system, covering all issues won't be me more than a nice 
+         illusion. A security serving system for the xmlBlaster cannot be more than model and a framework.
+         Its main goal is to support all actions (in general: intercepting the flow of actions and information)
+         required by the real implementation of software components (called 'plugins') to enforce the 
+         respective meaning of security.
+       </p>
+   <h1>Terms</h1>
+   <p>(Session, Subject, Right, Role, Group, Security, Identity, Authentication, Authorization, Access Control (AC), Message Protection, ...)</p>
+</description>
+<see type='REQ'>security.development.serverPlugin.howto</see>
+<see type='REQ'>security.development.clientPlugin.howto</see>
+<see type='REQ'>security.administration.howto</see>
+</requirement>
