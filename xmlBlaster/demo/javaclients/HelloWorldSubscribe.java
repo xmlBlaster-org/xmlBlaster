@@ -156,9 +156,10 @@ public class HelloWorldSubscribe implements I_Callback
 
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content,
                         UpdateQos updateQos) {
+      ++updateCounter;
       System.out.println("");
-      System.out.println("============= START " + updateKey.getOid() + " =======================");
-      log.info(ME, "Receiving update #" + (++updateCounter) + " of a message ...");
+      System.out.println("============= START #" + updateCounter + " '" + updateKey.getOid() + "' =======================");
+      log.info(ME, "Receiving update #" + updateCounter + " of a message ...");
       System.out.println("<xmlBlaster>");
       System.out.println(updateKey.toXml());
       System.out.println("");
@@ -167,7 +168,7 @@ public class HelloWorldSubscribe implements I_Callback
       System.out.println("</content>");
       System.out.println(updateQos.toXml());
       System.out.println("</xmlBlaster>");
-      System.out.println("============= END " + updateKey.getOid() + " =========================");
+      System.out.println("============= END #" + updateCounter + " '" + updateKey.getOid() + "' =========================");
       System.out.println("");
       return Constants.RET_OK; // "<qos><state id='OK'/></qos>";
    }
