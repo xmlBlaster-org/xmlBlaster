@@ -13,7 +13,7 @@ import org.xmlBlaster.util.MsgUnitRaw;
  * <p />
  * The reason is for clients to access xmlBlaster
  * transparently from the authentication method
- * <p />                                      g
+ * <p />
  * For every plugin type you need, you need on instance of this class.
  */
 public interface I_MsgSecurityInterceptor {
