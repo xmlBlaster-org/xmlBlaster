@@ -401,7 +401,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
          if (!nodesTableExists) {
             log.info(getLogId(null, null, "tablesCheckAndSetup"), "adding table '" + this.nodesTableName + "' as the 'nodes' table");
-            req = "CREATE TABLE " + this.nodesTableName.toUpperCase() + " (nodeId " + this.stringTxt + this.keyAttr + ", PRIMARY KEY (nodeId))";
+            req = "CREATE TABLE " + this.nodesTableName.toUpperCase() + " (nodeId " + this.stringTxt + " " + this.keyAttr + ", PRIMARY KEY (nodeId))";
             if (this.log.TRACE) 
                this.log.trace(getLogId(null, null, "tablesCheckAndSetup"), "Request: '" + req + "'");
             update(req, conn);
@@ -409,8 +409,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
          if (!queuesTableExists) {
             log.info(getLogId(null, null, "tablesCheckAndSetup"), "adding table '" + this.queuesTableName + "' as the 'queues' table");
-            req = "CREATE TABLE " + this.queuesTableName.toUpperCase() + " (queueName " + this.stringTxt + this.keyAttr +
-                  ", nodeId " + this.stringTxt + this.keyAttr +
+            req = "CREATE TABLE " + this.queuesTableName.toUpperCase() + " (queueName " + this.stringTxt + " " + this.keyAttr +
+                  ", nodeId " + this.stringTxt + " " + this.keyAttr +
                   ", numOfBytes " + this.longintTxt +
                   ", numOfEntries " + this.longintTxt +
                   ", PRIMARY KEY (queueName, nodeId)" + 
@@ -422,9 +422,9 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
          if (!entriesTableExists) {
             log.info(getLogId(null, null, "tablesCheckAndSetup"), "adding table '" + this.entriesTableName + "' as the 'entries' table");
-            req = "CREATE TABLE " + this.entriesTableName.toUpperCase() + " (dataId " + this.longintTxt + this.keyAttr +
-                  ", nodeId " + this.stringTxt + this.keyAttr +
-                  ", queueName " + this.stringTxt + this.keyAttr +
+            req = "CREATE TABLE " + this.entriesTableName.toUpperCase() + " (dataId " + this.longintTxt + " " + this.keyAttr +
+                  ", nodeId " + this.stringTxt + " " + this.keyAttr +
+                  ", queueName " + this.stringTxt + " " + this.keyAttr +
                   ", prio " + this.intTxt +
                   ", flag " + this.stringTxt +
                   ", durable " + this.booleanTxt +
