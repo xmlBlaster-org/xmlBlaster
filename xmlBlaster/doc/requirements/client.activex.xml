@@ -471,133 +471,169 @@ Catch e As SystemException
       Note that the VisualBasic.net example works fine with exactly the same
       ActiveX component
       </p>
-   <pre><![CDATA[
-'---------------------------------------------------------------------------
-' This method is called asynchronously from java delivering a message.
-' As events from java into ActiveX can't deliver a return value
-' or an exception back we need to call either
-'    setUpdateReturn()        -> passes a return value to the server
-' or
-'    setUpdateException()     -> throws an XmlBlasterException
-' If you forget this the update thread of the java bean will block forever
-'---------------------------------------------------------------------------
-Public Sub XmlScriptAccess_update(ByVal msg As Object)
-   On Error GoTo UpdateErrorHandler
-      Dim age As String
-      age = msg.getQos().getClientProperty("myAge").getStringValue()
-      log ("SUCCESS: Update arrived: " & msg.getCbSessionId() & _
-              ", oid=" & msg.getKey().getOid() & _
-              ", content=" & msg.getContentStr() & _
-              ", myAge=" & age)
-      MsgBox ("Success, message arrived:" & Str)
-      xmlBlaster.setUpdateReturn ("<qos><state id='OK'/></qos>")
-   Exit Sub
+   <pre><style type="text/css"><!--
+              .LINE_NO {color: #000000; background: #ffffff}
+              .Unknown {color: #ffffff; background: #ffffff}
+              .NOTHING {color: #000000; background: #ffffff}
+               .STRING {color: red; background: #ffffff}
+              .COMMENT {color: #000000; background: #b1b1b1}
+              .SYMBOL1 {color: #000000; background: #ffffff}
+              .SYMBOL2 {color: #000000; background: #ffffff}
+              .SYMBOL3 {color: #000000; background: #ffffff}
+              .SYMBOL4 {color: #000000; background: #ffffff}
+              .SYMBOL5 {color: #000000; background: #ffffff}
+              .SYMBOL6 {color: #000000; background: #ffffff}
+              .SYMBOL7 {color: #000000; background: #ffffff}
+              .SYMBOL8 {color: #000000; background: #ffffff}
+              .SYMBOL9 {color: #000000; background: #ffffff}
+              .KEYWORD {color: green; background: #ffffff}
+             .OPERATOR {color: #000000; background: #ffffff}
+                .LABEL {color: #000000; background: #ffffff}
+               .NUMBER {color: #ff005a; background: #ffffff}
+        .CHAR_CONSTANT {color: #000000; background: #ffffff}
+            .DIRECTIVE {color: #ff00ff; background: #ffffff}
+              .NUMBER2 {color: #ff005a; background: #ffffff}
+                 .TYPE {color: #4e4eff; background: #ffffff}
+             .FUNCTION {color: #4e4eff; background: #ffffff}
+              .COMMAND {color: #4e4eff; background: #ffffff}
+               .OBJECT {color: #4e4eff; background: #ffffff}
+             .CONSTANT {color: #4e4eff; background: #ffffff}
+                .CLASS {color: #4e4eff; background: #ffffff}
+             .INSTANCE {color: #4e4eff; background: #ffffff}
+               .METHOD {color: #4e4eff; background: #ffffff}
+            .ATTRIBUTE {color: #000000; background: #ffffff}
+                .VALUE {color: #4e4eff; background: #ffffff}
+-->
+</style>
+<font face="Terminal,10,Regular,1,Lucida Console,Fixed"/>
+<span class="COMMENT">'---------------------------------------------------------------------------</span>
+<span class="COMMENT">' This method is called asynchronously from java delivering a message.</span>
+<span class="COMMENT">' As events from java into ActiveX can't deliver a return value</span>
+<span class="COMMENT">' or an exception back we need to call either</span>
+<span class="COMMENT">'    setUpdateReturn()        -&gt; passes a return value to the server</span>
+<span class="COMMENT">' or</span>
+<span class="COMMENT">'    setUpdateException()     -&gt; throws an XmlBlasterException</span>
+<span class="COMMENT">' If you forget this the update thread of the java bean will block forever</span>
+<span class="COMMENT">'---------------------------------------------------------------------------</span>
+<span class="KEYWORD">Public</span><span class="NOTHING"> </span><span class="KEYWORD">Sub</span><span class="NOTHING"> XmlScriptAccess_update(</span><span class="KEYWORD">ByVal</span><span class="NOTHING"> msg </span><span class="KEYWORD">As</span><span class="NOTHING"> </span><span class="KEYWORD">Object</span><span class="NOTHING">)</span>
+<span class="NOTHING">   </span><span class="KEYWORD">On</span><span class="NOTHING"> </span><span class="KEYWORD">Error</span><span class="NOTHING"> </span><span class="KEYWORD">GoTo</span><span class="NOTHING"> UpdateErrorHandler</span>
+<span class="NOTHING">      </span><span class="KEYWORD">Dim</span><span class="NOTHING"> age </span><span class="KEYWORD">As</span><span class="NOTHING"> </span><span class="KEYWORD">String</span>
+<span class="NOTHING">      age = msg.getQos().getClientProperty(</span><span class="STRING">"myAge"</span><span class="NOTHING">).getStringValue()</span>
+<span class="NOTHING">      </span><span class="KEYWORD">log</span><span class="NOTHING"> (</span><span class="STRING">"SUCCESS: Update arrived: "</span><span class="NOTHING"> &amp; msg.getCbSessionId() &amp; _</span>
+<span class="NOTHING">              </span><span class="STRING">", oid="</span><span class="NOTHING"> &amp; msg.getKey().getOid() &amp; _</span>
+<span class="NOTHING">              </span><span class="STRING">", content="</span><span class="NOTHING"> &amp; msg.getContentStr() &amp; _</span>
+<span class="NOTHING">              </span><span class="STRING">", myAge="</span><span class="NOTHING"> &amp; age)</span>
+<span class="NOTHING">      </span><span class="KEYWORD">MsgBox</span><span class="NOTHING"> (</span><span class="STRING">"Success, message arrived:"</span><span class="NOTHING"> &amp; </span><span class="KEYWORD">Str</span><span class="NOTHING">)</span>
+<span class="NOTHING">      xmlBlaster.setUpdateReturn (</span><span class="STRING">"&lt;qos&gt;&lt;state id='OK'/&gt;&lt;/qos&gt;"</span><span class="NOTHING">)</span>
+<span class="NOTHING">   </span><span class="KEYWORD">Exit</span><span class="NOTHING"> </span><span class="KEYWORD">Sub</span>
 
-UpdateErrorHandler:
-   log (Err.Number & ": " & Err.Description)
-   xmlBlaster.setUpdateException "user.update.internalError", Err.Description
-   Exit Sub
-End Sub
+<span class="NOTHING">UpdateErrorHandler:</span>
+<span class="NOTHING">   </span><span class="KEYWORD">log</span><span class="NOTHING"> (</span><span class="KEYWORD">Err</span><span class="NOTHING">.Number &amp; </span><span class="STRING">": "</span><span class="NOTHING"> &amp; </span><span class="KEYWORD">Err</span><span class="NOTHING">.Description)</span>
+<span class="NOTHING">   xmlBlaster.setUpdateException </span><span class="STRING">"user.update.internalError"</span><span class="NOTHING">, </span><span class="KEYWORD">Err</span><span class="NOTHING">.Description</span>
+<span class="NOTHING">   </span><span class="KEYWORD">Exit</span><span class="NOTHING"> </span><span class="KEYWORD">Sub</span>
+<span class="KEYWORD">End</span><span class="NOTHING"> </span><span class="KEYWORD">Sub</span>
 
-'---------------------------------------------------------------------------
-' Connect to xmlBlaster and try all possible methods
-'---------------------------------------------------------------------------
-Private Sub xmlBlasterDemo()
-   On Error GoTo ErrorHandler
-      Set xmlBlaster = CreateObject("XmlScriptAccess.Bean")
-      
-      Set prop = xmlBlaster.createPropertiesInstance()
-      Rem CallByName(prop, "setProperty", vbLet, "protocol","SOCKET")
-      Rem prop.setProperty("protocol", "SOCKET")
-      Rem prop.setProperty("trace", "false")
-      xmlBlaster.Initialize (prop)
-      
-      Dim argArr(3) As String
-      argArr(0) = "-protocol"
-      argArr(1) = "SOCKET"
-      argArr(2) = "-trace"
-      argArr(3) = "false"
-      xmlBlaster.initArgs (argArr)
-      
-      ' Connect to the server
-      qos = "<qos>" & _
-            "  <securityService type='htpasswd' version='1.0'>" & _
-            "   <user>HelloWorld3</user>" & _
-            "   <passwd>secret</passwd>" & _
-            "  </securityService>" & _
-            "</qos>"
-      Dim connectReturnQos As Object
-      
-      Set connectReturnQos = xmlBlaster.Connect(qos)
-            
-      sessionId = connectReturnQos.getSecretSessionId()
-      log ("Connected to xmlBlaster, sessionId=" & sessionId)
-      
-      ' Publish a message
-      Key = "<key oid='HelloWorld3' contentMime='text/xml'>" & _
-            "  <org.xmlBlaster><demo/></org.xmlBlaster>" & _
-            "</key>"
-      contentStr = "Hi"
-      qos = "<qos>" & _
-            "<clientProperty name='myAge' type='int'>18</clientProperty>" & _
-            "</qos>"
-      Set publishReturnQos = xmlBlaster.publishStr(Key, contentStr, qos)
-      log ("Published message id=" & publishReturnQos.getRcvTimestamp().toXml("", True))
-   
-      ' Get synchronous the above message
-      getMsgArr = xmlBlaster.get("<key oid='HelloWorld3'/>", "<qos/>")
-      For Each msg In getMsgArr
-         log ("Get returned:" & msg.toXml())
-      Next
-   
-      ' Subscribe
-      Set subscribeReturnQos = xmlBlaster.subscribe("<key oid='HelloWorld3'/>", "<qos/>")
-      log ("Got subscribe response:" & subscribeReturnQos.getSubscriptionId())
-   
-      Call loopEvents
-      
-      ' Publish again, message arrives asynchronously in
-      ' Sub XmlScriptAccess_update() (see above)
-      Set publishReturnQos = xmlBlaster.publishStr(Key, "Ho", qos)
-      log ("Got publish response:" & publishReturnQos.toXml())
-      
-      Call loopEvents
-            
-      ' UnSubscribe
-      k = "<key oid='" & subscribeReturnQos.getSubscriptionId() & "'/>"
-      unSubscribeReturnQos = xmlBlaster.unSubscribe(k, "<qos/>")
-   
-      ' Destroy the topic "HelloWorld3"
-      eraseReturnQos = xmlBlaster.erase("<key oid='HelloWorld3'/>", "<qos/>")
-   
-      
-      Call loopEvents
-      
-      xmlBlaster.disconnect ("<qos/>")
-      Set xmlBlaster = Nothing
-      Rem MsgBox ("Hit a key to continue ...")
-   Exit Sub
-   
-ErrorHandler:
-   log (Err.Number & ": " & Err.Description)
-   MsgBox ("Error, giving up: " & Err.Description)
-   Exit Sub
-End Sub
+<span class="COMMENT">'---------------------------------------------------------------------------</span>
+<span class="COMMENT">' Connect to xmlBlaster and try all possible methods</span>
+<span class="COMMENT">'---------------------------------------------------------------------------</span>
+<span class="KEYWORD">Private</span><span class="NOTHING"> </span><span class="KEYWORD">Sub</span><span class="NOTHING"> xmlBlasterDemo()</span>
+<span class="NOTHING">   </span><span class="KEYWORD">On</span><span class="NOTHING"> </span><span class="KEYWORD">Error</span><span class="NOTHING"> </span><span class="KEYWORD">GoTo</span><span class="NOTHING"> ErrorHandler</span>
+<span class="NOTHING">      </span><span class="KEYWORD">Set</span><span class="NOTHING"> xmlBlaster = CreateObject(</span><span class="STRING">"XmlScriptAccess.Bean"</span><span class="NOTHING">)</span>
+<span class="NOTHING">      </span>
+<span class="NOTHING">      </span><span class="KEYWORD">Set</span><span class="NOTHING"> prop = xmlBlaster.createPropertiesInstance()</span>
+<span class="NOTHING">      </span><span class="KEYWORD">Rem</span><span class="NOTHING"> CallByName(prop, </span><span class="STRING">"setProperty"</span><span class="NOTHING">, vbLet, </span><span class="STRING">"protocol"</span><span class="NOTHING">,</span><span class="STRING">"SOCKET"</span><span class="NOTHING">)</span>
+<span class="NOTHING">      </span><span class="KEYWORD">Rem</span><span class="NOTHING"> prop.setProperty(</span><span class="STRING">"protocol"</span><span class="NOTHING">, </span><span class="STRING">"SOCKET"</span><span class="NOTHING">)</span>
+<span class="NOTHING">      </span><span class="KEYWORD">Rem</span><span class="NOTHING"> prop.setProperty(</span><span class="STRING">"trace"</span><span class="NOTHING">, </span><span class="STRING">"false"</span><span class="NOTHING">)</span>
+<span class="NOTHING">      xmlBlaster.Initialize (prop)</span>
+<span class="NOTHING">      </span>
+<span class="NOTHING">      </span><span class="KEYWORD">Dim</span><span class="NOTHING"> argArr(</span><span class="NUMBER">3</span><span class="NOTHING">) </span><span class="KEYWORD">As</span><span class="NOTHING"> </span><span class="KEYWORD">String</span>
+<span class="NOTHING">      argArr(</span><span class="NUMBER">0</span><span class="NOTHING">) = </span><span class="STRING">"-protocol"</span>
+<span class="NOTHING">      argArr(</span><span class="NUMBER">1</span><span class="NOTHING">) = </span><span class="STRING">"SOCKET"</span>
+<span class="NOTHING">      argArr(</span><span class="NUMBER">2</span><span class="NOTHING">) = </span><span class="STRING">"-trace"</span>
+<span class="NOTHING">      argArr(</span><span class="NUMBER">3</span><span class="NOTHING">) = </span><span class="STRING">"false"</span>
+<span class="NOTHING">      xmlBlaster.initArgs (argArr)</span>
+<span class="NOTHING">      </span>
+<span class="NOTHING">      </span><span class="COMMENT">' Connect to the server</span>
+<span class="NOTHING">      qos = </span><span class="STRING">"&lt;qos&gt;"</span><span class="NOTHING"> &amp; _</span>
+<span class="NOTHING">            </span><span class="STRING">"  &lt;securityService type='htpasswd' version='1.0'&gt;"</span><span class="NOTHING"> &amp; _</span>
+<span class="NOTHING">            </span><span class="STRING">"   &lt;user&gt;HelloWorld3&lt;/user&gt;"</span><span class="NOTHING"> &amp; _</span>
+<span class="NOTHING">            </span><span class="STRING">"   &lt;passwd&gt;secret&lt;/passwd&gt;"</span><span class="NOTHING"> &amp; _</span>
+<span class="NOTHING">            </span><span class="STRING">"  &lt;/securityService&gt;"</span><span class="NOTHING"> &amp; _</span>
+<span class="NOTHING">            </span><span class="STRING">"&lt;/qos&gt;"</span>
+<span class="NOTHING">      </span><span class="KEYWORD">Dim</span><span class="NOTHING"> connectReturnQos </span><span class="KEYWORD">As</span><span class="NOTHING"> </span><span class="KEYWORD">Object</span>
+<span class="NOTHING">      </span>
+<span class="NOTHING">      </span><span class="KEYWORD">Set</span><span class="NOTHING"> connectReturnQos = xmlBlaster.Connect(qos)</span>
+<span class="NOTHING">            </span>
+<span class="NOTHING">      sessionId = connectReturnQos.getSecretSessionId()</span>
+<span class="NOTHING">      </span><span class="KEYWORD">log</span><span class="NOTHING"> (</span><span class="STRING">"Connected to xmlBlaster, sessionId="</span><span class="NOTHING"> &amp; sessionId)</span>
+<span class="NOTHING">      </span>
+<span class="NOTHING">      </span><span class="COMMENT">' Publish a message</span>
+<span class="NOTHING">      Key = </span><span class="STRING">"&lt;key oid='HelloWorld3' contentMime='text/xml'&gt;"</span><span class="NOTHING"> &amp; _</span>
+<span class="NOTHING">            </span><span class="STRING">"  &lt;org.xmlBlaster&gt;&lt;demo/&gt;&lt;/org.xmlBlaster&gt;"</span><span class="NOTHING"> &amp; _</span>
+<span class="NOTHING">            </span><span class="STRING">"&lt;/key&gt;"</span>
+<span class="NOTHING">      contentStr = </span><span class="STRING">"Hi"</span>
+<span class="NOTHING">      qos = </span><span class="STRING">"&lt;qos&gt;"</span><span class="NOTHING"> &amp; _</span>
+<span class="NOTHING">            </span><span class="STRING">"&lt;clientProperty name='myAge' type='int'&gt;18&lt;/clientProperty&gt;"</span><span class="NOTHING"> &amp; _</span>
+<span class="NOTHING">            </span><span class="STRING">"&lt;/qos&gt;"</span>
+<span class="NOTHING">      </span><span class="KEYWORD">Set</span><span class="NOTHING"> publishReturnQos = xmlBlaster.publishStr(Key, contentStr, qos)</span>
+<span class="NOTHING">      </span><span class="KEYWORD">log</span><span class="NOTHING"> (</span><span class="STRING">"Published message id="</span><span class="NOTHING"> &amp; publishReturnQos.getRcvTimestamp().toXml(</span><span class="STRING">""</span><span class="NOTHING">, </span><span class="KEYWORD">True</span><span class="NOTHING">))</span>
+<span class="NOTHING">   </span>
+<span class="NOTHING">      </span><span class="COMMENT">' Get synchronous the above message</span>
+<span class="NOTHING">      getMsgArr = xmlBlaster.</span><span class="KEYWORD">get</span><span class="NOTHING">(</span><span class="STRING">"&lt;key oid='HelloWorld3'/&gt;"</span><span class="NOTHING">, </span><span class="STRING">"&lt;qos/&gt;"</span><span class="NOTHING">)</span>
+<span class="NOTHING">      </span><span class="KEYWORD">For</span><span class="NOTHING"> Each msg In getMsgArr</span>
+<span class="NOTHING">         </span><span class="KEYWORD">log</span><span class="NOTHING"> (</span><span class="STRING">"Get returned:"</span><span class="NOTHING"> &amp; msg.toXml())</span>
+<span class="NOTHING">      </span><span class="KEYWORD">Next</span>
+<span class="NOTHING">   </span>
+<span class="NOTHING">      </span><span class="COMMENT">' Subscribe</span>
+<span class="NOTHING">      </span><span class="KEYWORD">Set</span><span class="NOTHING"> subscribeReturnQos = xmlBlaster.subscribe(</span><span class="STRING">"&lt;key oid='HelloWorld3'/&gt;"</span><span class="NOTHING">, </span><span class="STRING">"&lt;qos/&gt;"</span><span class="NOTHING">)</span>
+<span class="NOTHING">      </span><span class="KEYWORD">log</span><span class="NOTHING"> (</span><span class="STRING">"Got subscribe response:"</span><span class="NOTHING"> &amp; subscribeReturnQos.getSubscriptionId())</span>
+<span class="NOTHING">   </span>
+<span class="NOTHING">      </span><span class="KEYWORD">Call</span><span class="NOTHING"> loopEvents</span>
+<span class="NOTHING">      </span>
+<span class="NOTHING">      </span><span class="COMMENT">' Publish again, message arrives asynchronously in</span>
+<span class="NOTHING">      </span><span class="COMMENT">' Sub XmlScriptAccess_update() (see above)</span>
+<span class="NOTHING">      </span><span class="KEYWORD">Set</span><span class="NOTHING"> publishReturnQos = xmlBlaster.publishStr(Key, </span><span class="STRING">"Ho"</span><span class="NOTHING">, qos)</span>
+<span class="NOTHING">      </span><span class="KEYWORD">log</span><span class="NOTHING"> (</span><span class="STRING">"Got publish response:"</span><span class="NOTHING"> &amp; publishReturnQos.toXml())</span>
+<span class="NOTHING">      </span>
+<span class="NOTHING">      </span><span class="KEYWORD">Call</span><span class="NOTHING"> loopEvents</span>
+<span class="NOTHING">            </span>
+<span class="NOTHING">      </span><span class="COMMENT">' UnSubscribe</span>
+<span class="NOTHING">      k = </span><span class="STRING">"&lt;key oid='"</span><span class="NOTHING"> &amp; subscribeReturnQos.getSubscriptionId() &amp; </span><span class="STRING">"'/&gt;"</span>
+<span class="NOTHING">      unSubscribeReturnQos = xmlBlaster.unSubscribe(k, </span><span class="STRING">"&lt;qos/&gt;"</span><span class="NOTHING">)</span>
+<span class="NOTHING">   </span>
+<span class="NOTHING">      </span><span class="COMMENT">' Destroy the topic "HelloWorld3"</span>
+<span class="NOTHING">      eraseReturnQos = xmlBlaster.</span><span class="KEYWORD">erase</span><span class="NOTHING">(</span><span class="STRING">"&lt;key oid='HelloWorld3'/&gt;"</span><span class="NOTHING">, </span><span class="STRING">"&lt;qos/&gt;"</span><span class="NOTHING">)</span>
+<span class="NOTHING">   </span>
+<span class="NOTHING">      </span>
+<span class="NOTHING">      </span><span class="KEYWORD">Call</span><span class="NOTHING"> loopEvents</span>
+<span class="NOTHING">      </span>
+<span class="NOTHING">      xmlBlaster.disconnect (</span><span class="STRING">"&lt;qos/&gt;"</span><span class="NOTHING">)</span>
+<span class="NOTHING">      </span><span class="KEYWORD">Set</span><span class="NOTHING"> xmlBlaster = </span><span class="KEYWORD">Nothing</span>
+<span class="NOTHING">      </span><span class="KEYWORD">Rem</span><span class="NOTHING"> </span><span class="KEYWORD">MsgBox</span><span class="NOTHING"> (</span><span class="STRING">"Hit a key to continue ..."</span><span class="NOTHING">)</span>
+<span class="NOTHING">   </span><span class="KEYWORD">Exit</span><span class="NOTHING"> </span><span class="KEYWORD">Sub</span>
+<span class="NOTHING">   </span>
+<span class="NOTHING">ErrorHandler:</span>
+<span class="NOTHING">   </span><span class="KEYWORD">log</span><span class="NOTHING"> (</span><span class="KEYWORD">Err</span><span class="NOTHING">.Number &amp; </span><span class="STRING">": "</span><span class="NOTHING"> &amp; </span><span class="KEYWORD">Err</span><span class="NOTHING">.Description)</span>
+<span class="NOTHING">   </span><span class="KEYWORD">MsgBox</span><span class="NOTHING"> (</span><span class="STRING">"Error, giving up: "</span><span class="NOTHING"> &amp; </span><span class="KEYWORD">Err</span><span class="NOTHING">.Description)</span>
+<span class="NOTHING">   </span><span class="KEYWORD">Exit</span><span class="NOTHING"> </span><span class="KEYWORD">Sub</span>
+<span class="KEYWORD">End</span><span class="NOTHING"> </span><span class="KEYWORD">Sub</span>
 
-Private Sub loopEvents()
-   ' Give control to the main loop to receive the update event
-   'System.Windows.Forms.Application.DoEvents()
-   MsgBox ("Hit a key to continue ...")
-End Sub
+<span class="KEYWORD">Private</span><span class="NOTHING"> </span><span class="KEYWORD">Sub</span><span class="NOTHING"> loopEvents()</span>
+<span class="NOTHING">   </span><span class="COMMENT">' Give control to the main loop to receive the update event</span>
+<span class="NOTHING">   </span><span class="COMMENT">'System.Windows.Forms.Application.DoEvents()</span>
+<span class="NOTHING">   </span><span class="KEYWORD">MsgBox</span><span class="NOTHING"> (</span><span class="STRING">"Hit a key to continue ..."</span><span class="NOTHING">)</span>
+<span class="KEYWORD">End</span><span class="NOTHING"> </span><span class="KEYWORD">Sub</span>
 
-Private Sub log(text)
-   Logger.text = Logger.text & vbCrLf & text
-End Sub
+<span class="COMMENT">' Log into the GUI text area</span>
+<span class="KEYWORD">Private</span><span class="NOTHING"> </span><span class="KEYWORD">Sub</span><span class="NOTHING"> </span><span class="KEYWORD">log</span><span class="NOTHING">(</span><span class="KEYWORD">text</span><span class="NOTHING">)</span>
+<span class="NOTHING">   Logger.</span><span class="KEYWORD">text</span><span class="NOTHING"> = Logger.</span><span class="KEYWORD">text</span><span class="NOTHING"> &amp; vbCrLf &amp; </span><span class="KEYWORD">text</span>
+<span class="KEYWORD">End</span><span class="NOTHING"> </span><span class="KEYWORD">Sub</span>
 
-Private Sub Start_Click()
-    Call xmlBlasterDemo
-End Sub
-]]></pre>
+<span class="COMMENT">' GUI button to start the demo</span>
+<span class="KEYWORD">Private</span><span class="NOTHING"> </span><span class="KEYWORD">Sub</span><span class="NOTHING"> Start_Click()</span>
+<span class="NOTHING">    </span><span class="KEYWORD">Call</span><span class="NOTHING"> xmlBlasterDemo</span>
+<span class="KEYWORD">End</span><span class="NOTHING"> </span><span class="KEYWORD">Sub</span>
+   </pre>
    </example>
 
 
@@ -645,6 +681,6 @@ End Sub
 
    <author><a href="mailto:xmlblaster@marcelruff.info">Marcel Ruff</a></author>
    <date>2004 03 12</date>
-   <revision>$Revision: 1.11 $</revision>
+   <revision>$Revision: 1.12 $</revision>
 </requirement>
 
