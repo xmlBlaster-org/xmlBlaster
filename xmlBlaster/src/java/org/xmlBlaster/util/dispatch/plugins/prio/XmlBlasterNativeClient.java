@@ -163,6 +163,7 @@ public final class XmlBlasterNativeClient implements I_Callback
       PublishQos pq = new PublishQos(glob);
       pq.addDestination(new Destination(receiver)); 
       pq.setSender(new SessionName(glob, getLoginName())); // Set ourself as sender
+      pq.setIsPubSub(false); // For the time being we don't allow others to subscribe on the PtP notification
       pq.setState(action);
       pq.setStateInfo("Notification about special message treatment in plugin " + pluginName + ", dispatcher state=" + currStatus);
       MsgUnit msgUnit = new MsgUnit(glob, "<key oid='" + entry.getKeyOid() + "'/>", "", pq.toXml());
