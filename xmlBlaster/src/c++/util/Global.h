@@ -3,7 +3,7 @@ Name:      Global.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The global object (a stack for all pseudo static stuff).
-Version:   $Id: Global.h,v 1.19 2003/05/04 21:33:19 laghi Exp $
+Version:   $Id: Global.h,v 1.20 2003/05/28 11:45:01 johnson Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_GLOBAL_H
@@ -44,7 +44,7 @@ typedef map<string, Log> LogMap;
 
 friend Global& getInstance(const string &instanceName);
 
-// added fot the managed objects
+// required for managed objects
 template <class TYPE> friend class ManagedObject;
 friend class Object_Lifetime_Manager;
 
