@@ -48,8 +48,7 @@ static bool myUpdate(MsgUnitArr *msgUnitArr, void *userData,
    }
 
    if (xa->callbackMultiThreaded == true) {
-      /* publish from inside the update thread is not supported,
-         the multi threaded update() delivery pool implementation is not finished,
+      /* publish from inside the update thread,
          see -plugin/socket/multiThreaded true */
       char *response = (char *)0;
       MsgUnit msgUnit;
