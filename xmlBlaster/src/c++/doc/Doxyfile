@@ -2,6 +2,11 @@
 
 # Create C++ documentation for http://www.xmlBlaster.org C++ client library
 
+# Add to your MANPATH for example:
+#   export MANPATH=:$XMLBLASTER_HOME/doc/doxygen/cpp/man
+# and try
+#   man XmlBlasterAccess
+
 # This file describes the settings to be used by the documentation system
 # doxygen (www.doxygen.org) for a project
 #
