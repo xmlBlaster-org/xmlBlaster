@@ -1,20 +1,21 @@
 #!/usr/bin/perl -w
-my $vernr = "0.8.9a";
-my $monthshort = "Mar";
-my $monthlong = "March";
+my $vernr = "0.9.1";
+my $monthshort = "Jan";
+my $monthlong = "Jan";
+my $year = "2002";
 ########################################################################
 #                                                                      #
 # Code2HTML                                                            #
 # ---------                                                            #
 #                                                                      #
-# Code2Html, ppalfrad@cosy.sbg.ac.at                                   #
+# Code2Html, peter@palfrader.org                                       #
 #                                                                      #
-# $Date: 2000/03/24 23:58:03 $
-# $Revision: 1.1 $
+# $Date: 2002/09/13 11:00:41 $
+# $Revision: 1.2 $
+# $Id: code2html,v 1.2 2002/09/13 11:00:41 ruff Exp $
 #                                                                      #
 # AUTHOR                                                               #
-#        Peter  Palfrader,  computer   science   student   at   the    #
-#        University  of Salzburg/Austria. Written in 1999.             #
+#        Peter  Palfrader. Written in 1999, 2000, 2001, 2002.          #
 #        A lot of other people. See CREDITS file.                      #
 #                                                                      #
 # DESCRIPTION                                                          #
@@ -55,7 +56,7 @@ undef $/;
 
 
 
-my $pure_version_message = "Code2Html, version $vernr, $monthshort 2000, ppalfrad\@cosy.sbg.ac.at";
+my $pure_version_message = "Code2Html, version $vernr, $monthshort $year, peter\@palfrader.org";
 my $version_message = "$pure_version_message\n";
 
 my $short_short_help = "Try `code2html --help' for more information.\n";
@@ -70,6 +71,7 @@ or any other  format for wich rules are defined.
     --fallback LANG   fallback language mode
 -v, --verbose         prints progress information to STDER
 -n, --linenumbers     print out the source code with line numbers
+-P, --prefix          optional prefix to use for linenumber anchors
 -N, --linknumbers     linenumbers will link to themselves
 -t, --replace-tabs[=TABSTOP-WIDTH] 
                       replace <tabs> with spaces
@@ -83,6 +85,9 @@ or any other  format for wich rules are defined.
 -H, --no-header       don't use the template
     --template=FILE   override template
 -T, --title           set title
+
+-w, --linewidth       max characters per line
+-b, --linebreakprefix prefix of the new lines
 
 see the man-page code2html for further help
 ";
@@ -263,7 +268,8 @@ sub patch_html
 
 
 		  undef $new_params{'outfile'};
-		  $new_params{'line_number_prefix'} = ++$counter;
+		  ++$counter;
+		  $new_params{'line_number_prefix'} = $counter unless (defined $new_params{'line_number_prefix'});
 
 		  $new_params{'verbose'} = $params{'verbose'};
 
@@ -455,78 +461,91 @@ sub parse_params
 	    my $no_header         = 0;
 	    my $outputformat      = $DEFAULT_OUTPUTFORMAT;
 	    my $template          = '';
-	    my $title             = '__NOTHING__'; # some magix ;(
+	    my $title             = "__NOTHING__$$"; # some magix ;(
+	    my $prefix            = undef;
+            my $linewidth         = undef;
+            my $linebreakprefix   = undef;
+            my $linebreakprefixdefault = '» ';
 
 	    my $patch_html;
 
 
-	    my @ARGV_copy = grep { /^(-$|[^-])/} @ARGV; # parameters
-    	       @ARGV      = grep { /^-.+/ } @ARGV; # options
-	    # Get Options does not like - as a parameters (use for STDIN and STDOUT)
+	    # Get Options does not like - as a parameters (used for STDIN and STDOUT)
+	    # So we're using a stupid magix again
+	    @ARGV      = map { $_ eq '-' ? "__STD__$$" : $_ } @ARGV; 
 
 	    Getopt::Long::config('bundling');
-	    if (! GetOptions( 
-			      "--verbose"               , \$verbose              , 
-		              "-v"                      , \$verbose            ,
+	    unless ( GetOptions( 
+				"--verbose"               , \$verbose              , 
+				"-v"                      , \$verbose            ,
 			      
-			      "--linenumbers"           , \$linenumbers          , 
-			      "-n"                      , \$linenumbers        , 
+				"--linenumbers"           , \$linenumbers          , 
+				"-n"                      , \$linenumbers        , 
 			      
-			      "--linknumbers"           , \$linknumbers          , 
-			      "-N"                      , \$linknumbers        , 
-			      
-			      "--replace-tabs=i"        , \$replace_tabs         , 
-			      "--replace_tabs=i"        , \$replace_tabs         , 
-			      "-t=i"                    , \$replace_tabs       , 
-			      
-			      "--language-file=s"       , \$language_file        , 
-			      "--language_file=s"       , \$language_file        , 
-			      "-L=s"                    , \$language_file        , 
+				"--linknumbers"           , \$linknumbers          , 
+				"-N"                      , \$linknumbers        , 
 
-			      "--language-mode=s"       , \$language_mode        , 
-			      "--language_mode=s"       , \$language_mode        , 
-			      "-l=s"                    , \$language_mode        ,
- 
-			      "--title=s"               , \$title                , 
-			      "-T=s"                    , \$title                ,
- 
-			      "--modes"                 , \$modes                , 
-			      "-m"                      , \$modes                , 
+				"--prefix=s"              , \$prefix               ,
+				"-P=s"                    , \$prefix               ,
+			      
+				"--replace-tabs=i"        , \$replace_tabs         , 
+				"--replace_tabs=i"        , \$replace_tabs         , 
+				"-t=i"                    , \$replace_tabs       , 
+				
+				"--language-file=s"       , \$language_file        , 
+				"--language_file=s"       , \$language_file        , 
+				"-L=s"                    , \$language_file        , 
+				
+				"--language-mode=s"       , \$language_mode        , 
+				"--language_mode=s"       , \$language_mode        , 
+				"-l=s"                    , \$language_mode        ,
+				
+				"--title=s"               , \$title                , 
+				"-T=s"                    , \$title                ,
+				
+				"--modes"                 , \$modes                , 
+				"-m"                      , \$modes                , 
+				
+				"--fallback=s"            , \$fallback             , 
+				
+				"--output=s"              , \$outputformat         , 
+				"-o=s"                    , \$outputformat         , 
+			      
+				"--template=s"            , \$template             ,
+			      
+				"--help"                  , \$help                 , 
+				"-h"                      , \$help                 , 
 
-			      "--fallback=s"            , \$fallback             , 
+				"--version"               , \$version              , 
+				"-V"                      , \$version              , 
 			      
-			      "--output=s"              , \$outputformat         , 
-			      "--o=s"                   , \$outputformat         , 
-			      
-			      "--template=s"            , \$template             ,
-			      
-			      "--help"                  , \$help                 , 
-			      "-h"                      , \$help                 , 
-
-			      "--version"               , \$version              , 
-			      "-V"                      , \$version              , 
-			      
-			      "--content-type"          , \$content_type         , 
-			      "--content_type"          , \$content_type         , 
-			      "-c"                      , \$content_type         , 
-			      
-			      "--no-header"             , \$no_header            ,
-			      "--no_header"             , \$no_header            ,
-			      "-H"                      , \$no_header            ,
+				"--content-type"          , \$content_type         , 
+				"--content_type"          , \$content_type         , 
+				"-c"                      , \$content_type         , 
+				
+				"--no-header"             , \$no_header            ,
+				"--no_header"             , \$no_header            ,
+				"-H"                      , \$no_header            ,
 
 			    
-			      "--patch-html"            , \$patch_html           ,
-			      "--patch_html"            , \$patch_html           ,
-			      "-p"                      , \$patch_html           )
-	         )
-	        {
-	 	    print STDERR $short_short_help;
-		    exit 1;
-	        }
+				"--patch-html"            , \$patch_html           ,
+				"--patch_html"            , \$patch_html           ,
+				"-p"                      , \$patch_html           ,
 
-	    # added JL, 1999/08/05, get built-in doc parsed; downside: pod2text generates a lot of warnings
-	    # update PP, 1999/08/14, warnings by pod2text no longer get displayed
-	    # update BS/PP, 1999/09/23, requiring speeds this up in most cases
+				"--linewidth=i"           , \$linewidth            ,
+				"-w=i"                    , \$linewidth            ,
+				"--linebreakprefix=s"     , \$linebreakprefix      ,
+				"-b=s"                    , \$linebreakprefix      ,
+			       )
+		   )
+	      {
+		  print STDERR $short_short_help;
+		  exit 1;
+	      }
+
+	    #reversing magix
+	    @ARGV      = map { $_ eq "__STD__$$" ? '-' : $_ } @ARGV; 
+
 	    if ($help)              { print STDERR $short_help;    exit 0; };
 	    if ($version)           { print $version_message;      exit 0; };
 
@@ -535,8 +554,12 @@ sub parse_params
 		  $RESULT{'what_to_do'} = 'patch_html';
 		  $RESULT{'verbose'}    = $verbose;
 
-		  if (!defined ($RESULT{'infile'}        = shift(@ARGV_copy))) { $RESULT{'infile'} = '-' };
-		  if (!defined ($RESULT{'outfile'}       = shift(@ARGV_copy))) { $RESULT{'outfile'} = $RESULT{'infile'}};
+		  if (!defined ($RESULT{'infile'}        = shift(@ARGV))) { $RESULT{'infile'} = '-' };
+		  if (!defined ($RESULT{'outfile'}       = shift(@ARGV))) { $RESULT{'outfile'} = $RESULT{'infile'}};
+		  if (defined (shift(@ARGV))) { print STDERR  "too many parameters!\n";
+						print STDERR $short_help;
+						exit 1;
+					    };
 	      }
 	    else
 	      {
@@ -546,6 +569,7 @@ sub parse_params
 		  if    ($linknumbers) { $RESULT{'linenumbers'}    = 'linked' }
 		  elsif ($linenumbers) { $RESULT{'linenumbers'}    = 'normal' }
 		  else                 { $RESULT{'linenumbers'}    = 'none' };
+		  $RESULT{'line_number_prefix'} = $prefix;
 		  $RESULT{'replacetabs'}    = $replace_tabs;
 		  $RESULT{'langfile'}       = $language_file;
 		  $RESULT{'modes'}          = $modes;
@@ -555,16 +579,35 @@ sub parse_params
 		  $RESULT{'langmode'}       = $language_mode;
 		  $RESULT{'template'}       = $template;
 		  $RESULT{'outputformat'}   = $outputformat;
+		  $RESULT{'linewidth'}      = $linewidth;
+		  $RESULT{'linebreakprefix'}= $linebreakprefix;
 
-		  if (!defined ($RESULT{'infile'}          = shift(@ARGV_copy))) { $RESULT{'infile'} = '-'};
-		  if (!defined ($RESULT{'outfile'}         = shift(@ARGV_copy))) { $RESULT{'outfile'} = '-'};
-		  if (defined (shift(@ARGV_copy))) { print STDERR  "too many parameters!\n";
-						     print STDERR $short_help;
-						     exit 1;
-					           };
+		  if (defined ($RESULT{'linebreakprefix'}) &&
+		      !defined ($RESULT{'linewidth'})) {
+		      printf (STDERR "--linebreakprefix|-b does not make sense without --linewidth|-w!\n");
+		      print STDERR $short_help;
+		      exit 1;
+		  }
+		  if (defined ($RESULT{'linewidth'})) {
+		      if ($RESULT{'linewidth'} <= 0) {
+			  printf (STDERR "linewidth must be greater then 0!\n");
+			  print STDERR $short_help;
+			  exit 1;
+		      }
+		      if (!defined ($RESULT{'linebreakprefix'})) {
+			  $RESULT{'linebreakprefix'} = $linebreakprefixdefault;
+		      }
+		  }
+
+		  if (!defined ($RESULT{'infile'}          = shift(@ARGV))) { $RESULT{'infile'} = '-'};
+		  if (!defined ($RESULT{'outfile'}         = shift(@ARGV))) { $RESULT{'outfile'} = '-'};
+		  if (defined (shift(@ARGV))) { print STDERR  "too many parameters!\n";
+						print STDERR $short_help;
+						exit 1;
+					    };
 	      };
 	      #the magix again
-	    $RESULT{'title'} = $title eq  '__NOTHING__' ? ($RESULT{'infile'} eq '-' ? 'STDIN' : $RESULT{'infile'}) : $title;
+	    $RESULT{'title'} = $title eq  "__NOTHING__$$" ? ($RESULT{'infile'} eq '-' ? 'STDIN' : $RESULT{'infile'}) : $title;
 	};
 
 
@@ -584,6 +627,33 @@ sub checkTabulator
 	  my $cnt = ($TABSTOP - ($at % $TABSTOP));
 	  my $replace_with = ' ' x $cnt if ($cnt);
 	  $line =~ s/\t/$replace_with/;
+      };
+
+    return $line;
+}
+
+################################################################################
+####################### splitLine ##############################################
+################################################################################
+sub splitLine
+{
+    my ($line, $linewidth, $prefix) = @_;
+    
+    my $length = length ($line);
+    my $pos = 0;
+
+    while ($length - $pos > $linewidth)
+      {
+          my $maxoff = ($pos + $linewidth > $length) ? ($length - 1)
+                                                     : ($pos + $linewidth);
+          my $newpos = rindex ($line, " ", $maxoff);
+	  if ($newpos > $pos) {
+	      $pos = $newpos;
+	      $line = substr ($line, 0, $pos)."\0$prefix".substr ($line, $pos + 1, $length);
+	  } else {
+	      $pos = $pos + $linewidth + 1;
+	      $line = substr ($line, 0, $pos)."\0$prefix".substr ($line, $pos, $length);
+	  }
       };
 
     return $line;
@@ -630,13 +700,27 @@ sub get_input_file
 			  my @dummy = split(/\n/, $code)
 			 );
 	};
+
+
+
+      if (defined ($PARAMS{'linewidth'}))
+	{
+	    $code = join (
+			  "\n",
+			  map{
+			      &splitLine($_, $PARAMS{'linewidth'},
+					 $PARAMS{'linebreakprefix'})
+			  }
+			  my @dummy = split(/\n/, $code)
+			 );
+	};
       
 
       
       if ((!defined($langmode)) || ($langmode eq ''))
 	{
 	    my $test_code = substr($code, 0, $LANG_TEST_LENGTH);
-	    warn("language mode not given. guessing...\n");
+	    #warn("language mode not given. guessing...\n");
 
 	    $langmode = '';
 
@@ -665,7 +749,7 @@ sub get_input_file
 	      }
 	    else
 	      {
-		  warn("using '$langmode'\n");
+		  #warn("using '$langmode'\n");
 	      };
 	};
       
@@ -716,9 +800,16 @@ sub apply_stylesheets_to_rules
       my ( $regexps_ref, $style_ref ) = @_;
 
       for ( @$regexps_ref ) {
-	  warn ("Style '".$_->{style}."' not defined in stylesheet.\n") unless defined $ { $$style_ref{'tags'} } { $_->{style} };
-	  $_->{'starttag'} = $ { $ { $$style_ref{'tags'} } { $_->{style} } } { 'start' };
-	  $_->{'endtag'}   = $ { $ { $$style_ref{'tags'} } { $_->{style} } } { 'stop' };
+#	  warn ("Style '".$_->{style}."' not defined in stylesheet.\n") unless defined $ { $$style_ref{'tags'} } { $_->{style} };
+	  if (defined ($ { $$style_ref{'tags'} } { $_->{style} })) {
+	      $_->{'starttag'} = $ { $ { $$style_ref{'tags'} } { $_->{style} } } { 'start' };
+	      $_->{'endtag'}   = $ { $ { $$style_ref{'tags'} } { $_->{style} } } { 'stop' };
+	  } else {
+	      # no style no formating; if style == '' formating is done by childregex
+	      warn ("Style '".$_->{style}."' not defined in stylesheet.\n") if ($_->{style} ne '');
+	      $_->{'starttag'} = ''; #$ { $ { $$style_ref{'tags'} } { $_->{style} } } { 'start' };
+	      $_->{'endtag'}   = ''; #$ { $ { $$style_ref{'tags'} } { $_->{style} } } { 'stop' };	      
+	  }
 	  apply_stylesheets_to_rules( $_->{childregex}, $style_ref ) if $_->{childregex};
       };
   };
@@ -1194,14 +1285,19 @@ sub put_output {
     $prefix = $params->{'line_number_prefix'}.'_'  if defined $params->{'line_number_prefix'};
     $result = & { $ { $$STYLE_REF{'linenumbers'} }{$params->{'linenumbers'}} } (join ('', @$snippetlist_ref), $prefix);
 
+    if (defined ($params{'linewidth'})) {
+	$result =~ tr=\0=\n=;
+    }
 
     print FILEHANDLE $result unless (defined $params->{'dont_print_output'} && $params->{'dont_print_output'});
     print FILEHANDLE $$STYLE_REF{'footer'}  unless $params->{'noheader'};
     
-    unless ($params->{'outfile'} eq '-'){
-	close (FILEHANDLE);
-	close (STDOUT);
-	open (STDOUT, ">&SAVEOUT");
+    if (defined($params->{'outfile'})) {
+        unless ($params->{'outfile'} eq '-'){
+	    close (FILEHANDLE);
+	    close (STDOUT);
+	    open (STDOUT, ">&SAVEOUT");
+	};
     };
     return $result;
 };
@@ -1236,7 +1332,7 @@ $STYLESHEET{'html-light'} =  { 'template'       =>
 %%code%%
 </pre>
 <hr>
-syntax highlighted by <a href="http://www.cosy.sbg.ac.at/~ppalfrad/code2html">Code2HTML</a>, v. %%version%%
+syntax highlighted by <a href="http://www.palfrader.org/code2html">Code2HTML</a>, v. %%version%%
 </body>
 </html>
 ',
@@ -1318,7 +1414,7 @@ syntax highlighted by <a href="http://www.cosy.sbg.ac.at/~ppalfrad/code2html">Co
 							 	  	  'stop'  => '</font>' },
 
 					    'function header'        => { 'start' => '<strong>',
-									  'stop'  => '</font>' },
+									  'stop'  => '</strong>' },
 					    'function header name'   => { 'start' => '<font color="ff0000">',
 									  'stop'  => '</font>' },
 					    'function header args'   => { 'start' => '<font color="2040a0">',
@@ -1350,7 +1446,18 @@ syntax highlighted by <a href="http://www.cosy.sbg.ac.at/~ppalfrad/code2html">Co
 					    'int macro'              => { 'start' => '<font color="4080ff">',
 									  'stop'  => '</font>' },
 					    'esc $$$'                => { 'start' => '<font color="444444">',
-							                  'stop'  => '</font>' }
+                                                                          'stop'  => '</font>' },
+
+                                            # PATCH
+                                            'separator'              => { 'start' => '<font color="00A040"><strong>',
+                                                                          'stop'  => '</strong></font>' },
+                                            'line spec'              => { 'start' => '<font color="A0A000"><strong>',
+                                                                          'stop'  => '</strong></font>' },
+                                            'deletion'               => { 'start' => '<font color="FF0000"><strong>',
+                                                                          'stop'  => '</strong></font>' },
+                                            'insertion'              => { 'start' => '<font color="0000FF"><strong>',
+                                                                          'stop'  => '</strong></font>' }
+
 				     }
                        };
 # html-light is also called html
@@ -1373,7 +1480,7 @@ ${ $STYLESHEET{'html-nobg'}} {'template'} = '<html>
 %%code%%
 </pre>
 <hr>
-syntax highlighted by <a href="http://www.cosy.sbg.ac.at/~ppalfrad/code2html">Code2HTML</a>, v. %%version%%
+syntax highlighted by <a href="http://www.palfrader.org/code2html">Code2HTML</a>, v. %%version%%
 </body>
 </html>
 ';
@@ -1393,7 +1500,7 @@ ${ $STYLESHEET{'html-dark'}} {'template'} = '<html>
 %%code%%
 </pre>
 <hr>
-syntax highlighted by <a href="http://www.cosy.sbg.ac.at/~ppalfrad/code2html">Code2HTML</a>, v. %%version%%
+syntax highlighted by <a href="http://www.palfrader.org/code2html">Code2HTML</a>, v. %%version%%
 </body>
 </html>
 ';
@@ -1439,7 +1546,7 @@ ${ $STYLESHEET{'html-dark'}} {'tags'} = {
                                                                           'stop'  => '</font>' },
 
                                             'function header'        => { 'start' => '<strong>',
-                                                                          'stop'  => '</font>' },
+                                                                          'stop'  => '</strong>' },
                                             'function header name'   => { 'start' => '<font color="ff0000">',
                                                                           'stop'  => '</font>' },
                                             'function header args'   => { 'start' => '<font color="2040a0">',
@@ -1471,7 +1578,298 @@ ${ $STYLESHEET{'html-dark'}} {'tags'} = {
                                             'int macro'              => { 'start' => '<font color="4080ff">',
                                                                           'stop'  => '</font>' },
                                             'esc $$$'                => { 'start' => '<font color="444444">',
-                                                                          'stop'  => '</font>' }
+                                                                          'stop'  => '</font>' },
+
+                                            # PATCH
+                                            'separator'              => { 'start' => '<font color="00FF00"><strong>',
+                                                                          'stop'  => '</strong></font>' },
+                                            'line spec'              => { 'start' => '<font color="FFFF00"><strong>',
+                                                                          'stop'  => '</strong></font>' },
+                                            'deletion'               => { 'start' => '<font color="FF0000"><strong>',
+                                                                          'stop'  => '</strong></font>' },
+                                            'insertion'              => { 'start' => '<font color="0000FF"><strong>',
+                                                                          'stop'  => '</strong></font>' }
+                                     };
+
+#####
+#
+# nocolor
+#
+%{$STYLESHEET{'html-nocolor'}} = %{$STYLESHEET{'html-nobg'}};
+${ $STYLESHEET{'html-nocolor'}} {'tags'} = {
+	'comment' => {
+		'start' => '<I>',
+		'stop'  => '</I>'
+	},
+	'doc comment' => {
+		'start' => '',
+		'stop'  => ''
+	},
+	'string' => {
+		'start' => '<I>',
+		'stop'  => '</I>'
+	},
+	'esc string' => {
+		'start' => '',
+		'stop'  => ''
+	},
+	'character' => {
+		'start' => '',
+		'stop'  => ''
+	},
+	'esc character' => {
+		'start' => '',
+		'stop'  => ''
+	},
+	'numeric' => {
+		'start' => '',
+		'stop'  => ''
+	},
+	'identifier' => {
+		'start' => '<B>',
+		'stop'  => '</B>'
+	},
+	'predefined identifier' => {
+		'start' => '<U>',
+		'stop'  => '</U>'
+	},
+	'type' => {
+		'start' => '',
+		'stop'  => ''
+	},
+	'predefined type' => {
+		'start' => '<U>',
+		'stop'  => '</U>'
+	},
+	'reserved word' => {
+		'start' => '',
+		'stop'  => ''
+	},
+	'library function' => {
+		'start' => '',
+		'stop'  => ''
+	},
+	'include' => {
+		'start' => '',
+		'stop'  => ''
+	},
+	'preprocessor' => {
+		'start' => '<B>',
+		'stop'  => '</B>'
+	},
+	'braces' => {
+		'start' => '',
+		'stop'  => ''
+	},
+	'symbol' => {
+		'start' => '',
+		'stop'  => ''
+	},
+	'function header' => {
+		'start' => '',
+		'stop'  => ''
+	},
+	'function header name' => {
+		'start' => '',
+		'stop'  => ''
+	},
+	'function header args' => {
+		'start' => '',
+		'stop'  => ''
+	},
+	'regex' => {
+		'start' => '',
+		'stop'  => ''
+	},
+	'text' => {
+		'start' => '',
+		'stop'  => ''
+	},
+	# HTML
+	'entity' => {
+		'start' => '',
+		'stop'  => ''
+	},
+	# MAKEFILE
+	'assignment' => {
+		'start' => '<B>',
+		'stop'  => '</B>'
+	},
+	'dependency line' => {
+		'start' => '',
+		'stop'  => ''
+	},
+	'dependency target' => {
+		'start' => '<B>',
+		'stop'  => '</B>'
+	},
+	'dependency continuation' => {
+		'start' => '',
+		'stop'  => ''
+	},
+	'continuation' => {
+		'start' => '',
+		'stop'  => ''
+	},
+	'macro' => {
+		'start' => '<B>',
+		'stop'  => '</B>'
+	},
+	'int macro' => {
+		'start' => '<B>',
+		'stop'  => '</B>'
+	},
+	'esc $$$' => {
+		'start' => '',
+		'stop'  => ''
+	},
+	# PATCH
+	'separator'              => { 
+		'start' => '<B>',
+		'stop'  => '</B>' },
+	'line spec'              => {
+		'start' => '',
+		'stop'  => ''
+	},
+	'deletion'               => {
+		'start' => '',
+		'stop'  => ''
+	},
+	'insertion'              => { 
+		'start' => '',
+		'stop'  => ''
+	}
+};
+
+
+
+#####
+#
+# simple
+#
+%{$STYLESHEET{'html-simple'}} = %{$STYLESHEET{'html-nocolor'}};
+${ $STYLESHEET{'html-simple'}} {'template'} = '<html>
+  <head>
+    <title>%%title%%</title>
+  </head>
+
+  <body>
+    <h2>%%title%%</h2>
+    <pre>
+%%code%%
+    </pre>
+  </body
+</html>';
+
+
+
+
+# Vincent Sanders <vince@trinity.fluff.org>
+# html-fntlck is a modification of html-light
+# in such a way, that the body tag does define
+# different colors and that the <font> colors are different.
+#it is supposed to be the colours i get from emacs default font-lock mode
+
+%{$STYLESHEET{'html-fntlck'}} = %{$STYLESHEET{'html-light'}};
+${ $STYLESHEET{'html-fntlck'}} {'template'} = '<html>
+<head>
+  <title>%%title%%</title>
+</head>
+<body bgcolor="#ffffff"  text="#000000" vlink="#0000ff" alink="#00FF00" link="#000000">
+<pre>
+%%code%%
+</pre>
+<hr>
+syntax highlighted by <a href="http://www.palfrader.org/code2html">Code2HTML</a>, v. %%version%%
+</body>
+</html>
+';
+${ $STYLESHEET{'html-fntlck'}} {'tags'} = {
+					    'comment'                => { 'start' => '<font color="bb0000">',
+									  'stop'  => '</font>' },
+					    'doc comment'            => { 'start' => '<font color="bb0000"><i>',
+									  'stop'  => '</i></font>' },
+					    'string'                 => { 'start' => '<font color="#bb7766">',
+									  'stop'  => '</font>' },
+					    'esc string'             => { 'start' => '<font color="#cc8877">',
+									  'stop'  => '</font>' },
+					    'character'              => { 'start' => '<font color="#bb7766">',
+									  'stop'  => '</font>' },
+					    'esc character'          => { 'start' => '<font color="#cc8877">',
+									  'stop'  => '</font>' },
+					    'numeric'                => { 'start' => '<font color="#FF0000">',
+									  'stop'  => '</font>' },
+
+					    'identifier'             => { 'start' => '<font color="#0000ff">',
+									  'stop'  => '</font>' },
+					    'predefined identifier'  => { 'start' => '<font color="#2040a0"><strong>',
+									  'stop'  => '</strong></font>' },
+
+					    'type'                   => { 'start' => '<font color="#2040a0"><strong>',
+									  'stop'  => '</strong></font>' },
+					    'predefined type'        => { 'start' => '<font color="#2040a0"><strong>',
+									  'stop'  => '</strong></font>' },
+
+					    'reserved word'          => { 'start' => '<font color="b000e0">',
+									  'stop'  => '</font>' },
+					    'library function'       => { 'start' => '<font color="a52a2a"><strong>',
+									  'stop'  => '</strong></font>' },
+
+					    'include'                => { 'start' => '<font color="0000ff"><strong>',
+									  'stop'  => '</strong></font>' },
+					    'preprocessor'           => { 'start' => '<font color="0000ff"><strong>',
+									  'stop'  => '</strong></font>' },
+
+					    'braces'                 => { 'start' => '<font color="4444FF"><strong>',
+									  'stop'  => '</strong></font>' },
+					    'symbol'                 => { 'start' => '<font color="000000">',
+							 	  	  'stop'  => '</font>' },
+
+					    'function header'        => { 'start' => '<strong>',
+									  'stop'  => '</strong>' },
+					    'function header name'   => { 'start' => '<font color="ff0000">',
+									  'stop'  => '</font>' },
+					    'function header args'   => { 'start' => '<font color="2040a0">',
+									  'stop'  => '</font>' },
+
+					    'regex'                  => { 'start' => '<font color="b000d0">',
+									  'stop'  => '</font>' },
+
+					    'text'                   => { 'start' => '<i>',
+									  'stop'  => '</i>'},
+
+					    # HTML
+					    'entity'                 => { 'start' => '<font color="ff0000">',
+									  'stop'  => '</font>' },
+
+					    # MAKEFILE
+					    'assignment'             => { 'start' => '<font color="2040a0">',
+									  'stop'  => '</font>' },
+					    'dependency line'        => { 'start' => '<font color="8b2252">',
+									  'stop'  => '</font>' },
+					    'dependency target'      => { 'start' => '<strong>',
+									  'stop'  => '</strong>' },
+					    'dependency continuation'=> { 'start' => '<font color="000000"><strong>',
+									  'stop'  => '</strong></font>' },
+					    'continuation'           => { 'start' => '<strong>',
+									  'stop'  => '</strong>' },
+					    'macro'                  => { 'start' => '<font color="2040a0">',
+									  'stop'  => '</font>' },
+					    'int macro'              => { 'start' => '<font color="4080ff">',
+									  'stop'  => '</font>' },
+					    'esc $$$'                => { 'start' => '<font color="444444">',
+							                  'stop'  => '</font>' },
+					    
+                                            # PATCH
+                                            'separator'              => { 'start' => '<font color="00A040"><strong>',
+                                                                          'stop'  => '</strong></font>' },
+                                            'line spec'              => { 'start' => '<font color="A0A000"><strong>',
+                                                                          'stop'  => '</strong></font>' },
+                                            'deletion'               => { 'start' => '<font color="FF0000"><strong>',
+                                                                          'stop'  => '</strong></font>' },
+                                            'insertion'              => { 'start' => '<font color="0000FF"><strong>',
+                                                                          'stop'  => '</strong></font>' }
+
                                      };
 
 
@@ -1610,7 +2008,7 @@ $LANGUAGE{'awk'}       =  {
                                               },
                                               {
                                                 'name'       => 'string',
-                                                'regex'      => '""|".*?([^\\\\](\\\\\\\\)*)"',
+                                                'regex'      => '""|".*?([^\\\\](\\\\\\\\)*)"|"\\\\\\\\"',
 #                                                'regex'      => '""|"\\\\\\\\"|"[^"\\\\]"|"[^"].*?[^\\\\]"',
 					        'style'      => 'string',
                                                 'childregex' => [
@@ -1624,7 +2022,7 @@ $LANGUAGE{'awk'}       =  {
                                               },
                                               {
                                                 'name'       => 'string',
-                                                'regex'      => '\'\'|\'.*?([^\\\\](\\\\\\\\)*)\'',
+                                                'regex'      => '\'\'|\'.*?([^\\\\](\\\\\\\\)*)\'|\'\\\\\\\\\'',
 #                                                'regex'      => '\'\'|\'\\\\\\\\\'|\'[^\'\\\\]\'|\'[^\'].*?[^\\\\]\'',
 					        'style'      => 'string',
                                                 'childregex' => [
@@ -1637,7 +2035,7 @@ $LANGUAGE{'awk'}       =  {
                                                                 ]
                                               },
                                               {
-                                                'name'       => 'fuction header',
+                                                'name'       => 'function header',
                                                 'regex'      => 'function[\\t ]+([a-zA-Z0-9_]+)[\\t \\n]*(\\{|\\n)',
 					        'style'      => 'function header',
                                                 'childregex' => [
@@ -1651,25 +2049,25 @@ $LANGUAGE{'awk'}       =  {
                                               },
                                               {
                                                 'name'       => 'regex matching I 1',
-                                                'regex'      => '(\\b| )?(/)(\\\\/|[^/\\n])*(/[gimsox]*)',
+                                                'regex'      => '(\\b| )?(/)(\\\\/|[^/\\n])*(/[gimesox]*)',
 					        'style'      => 'regex',
                                                 'childregex' => []
                                               },
                                               {
                                                 'name'       => 'regex matching I 2',
-                                                'regex'      => '(?:\\b| )(?:(?:m|q|qq)([!"#$%&\'*+-/]))(\\\\\\2|[^\\2\\n])*(\\2[gimsox]*)',
+                                                'regex'      => '(?:\\b| )(?:(?:m|q|qq)([!"#$%&\'*+-/]))(\\\\\\2|[^\\2\\n])*(\\2[gimesox]*)',
 					        'style'      => 'regex',
                                                 'childregex' => []
                                               },
                                               {
                                                 'name'       => 'regex matching II',
-                                                'regex'      => '(?:\\b| )?(?:s([!"#$%&\'*+-/]))(?:\\\\\\2|[^\\2\\n])*?(\\2)[^(\\2)\\n]*?(\\2[gimsox]*)',
+                                                'regex'      => '(?:\\b| )?(?:s([!"#$%&\'*+-/]))(?:\\\\\\2|[^\\2\\n])*?(\\2)[^(\\2)\\n]*?(\\2[gimesox]*)',
 					        'style'      => 'regex',
                                                 'childregex' => []
                                               },
                                               {
                                                 'name'       => 'translate',
-                                                'regex'      => '(?:\\b| )(?:(?:tr|y)([^\w\s]))(?:\\\\\\2|[^\\2\\n])*?(\\2)[^(\\2)\\n]*?(\\2[gimsox]*)',
+                                                'regex'      => '(?:\\b| )(?:(?:tr|y)([^\w\s]))(?:\\\\\\2|[^\\2\\n])*?(\\2)[^(\\2)\\n]*?(\\2[gimesox]*)',
 					        'style'      => 'regex',
                                                 'childregex' => []
                                               },
@@ -1733,6 +2131,12 @@ $LANGUAGE{'c'}          = {
                             'regex'      => '',
                             'patterns'   => [
                                               {
+                                                'name'       => 'doc comment',
+                                                'regex'      => '/\\*\\*.*?\\*/',
+					        'style'      => 'doc comment',
+                                                'childregex' => []
+                                              },
+                                              {
                                                 'name'       => 'comment',
                                                 'regex'      => '/\\*.*?\\*/',
 					        'style'      => 'comment',
@@ -1740,7 +2144,7 @@ $LANGUAGE{'c'}          = {
                                               },
                                               {
                                                 'name'       => 'string',
-                                                'regex'      => '""|".*?([^\\\\](\\\\\\\\)*)"',
+                                                'regex'      => '""|".*?([^\\\\](\\\\\\\\)*)"|"\\\\\\\\"',
 #                                                'regex'      => '""|"\\\\\\\\"|"[^"\\\\]"|"[^"].*?[^\\\\]"',
 					        'style'      => 'string',
                                                 'childregex' => [
@@ -1759,7 +2163,7 @@ $LANGUAGE{'c'}          = {
                                                 'childregex' => [
                                                                   {
                                                                     'name'       => 'string',
-                                                                    'regex'      => '""|".*?([^\\\\](\\\\\\\\)*)"',
+                                                                    'regex'      => '""|".*?([^\\\\](\\\\\\\\)*)"|"\\\\\\\\"',
 #                                                                    'regex'      => '""|"\\\\\\\\"|"[^"\\\\]"|"[^"].*?[^\\\\]"',
 					                            'style'      => 'string',
                                                                     'childregex' => [
@@ -1858,6 +2262,12 @@ $LANGUAGE{'c++'}        = {
                             'regex'      => '',
                             'patterns'   => [
                                               {
+                                                'name'       => 'doc comment',
+                                                'regex'      => '/\\*\\*.*?\\*/',
+					        'style'      => 'doc comment',
+                                                'childregex' => []
+                                              },
+                                              {
                                                 'name'       => 'comment',
                                                 'regex'      => '/\\*.*?\\*/',
 					        'style'      => 'comment',
@@ -1871,7 +2281,7 @@ $LANGUAGE{'c++'}        = {
                                               },
                                               {
                                                 'name'       => 'string',
-                                                'regex'      => '""|".*?([^\\\\](\\\\\\\\)*)"',
+                                                'regex'      => '""|"\\\\\\\\"|".*?([^\\\\](\\\\\\\\)*)"',
 #                                                'regex'      => '""|"\\\\\\\\"|"[^"\\\\]"|"[^"].*?[^\\\\]"',
 					        'style'      => 'string',
                                                 'childregex' => [
@@ -1890,7 +2300,7 @@ $LANGUAGE{'c++'}        = {
                                                 'childregex' => [
                                                                   {
                                                                     'name'       => 'string',
-                                                                    'regex'      => '""|".*?([^\\\\](\\\\\\\\)*)"',
+                                                                    'regex'      => '""|".*?([^\\\\](\\\\\\\\)*)"|"\\\\\\\\"',
 #                                                                    'regex'      => '""|"\\\\\\\\"|"[^"\\\\]"|"[^"].*?[^\\\\]"',
 					                            'style'      => 'string',
                                                                     'childregex' => [
@@ -1986,6 +2396,57 @@ $LANGUAGE{'cxx'}        = $LANGUAGE{'c++'};
 
 
 
+# written by VRS
+$LANGUAGE{'gpasm'}      = {
+                            'filename'   => '(?i)\\.(asm|inc)$',
+                            'regex'      => '',
+                            'patterns'   => [
+                                              {
+                                                'name'       => 'args',
+                                                'regex'      => '^.*$',
+					        'style'      => 'symbol',
+                                                'childregex' => [
+						 {
+						     'name'       => 'comment',
+						     'regex'      => ';.*?$',
+					             'style'      => 'comment',
+                                                     'childregex' => []
+                                                 },
+                                                 {
+                                                     'name'       => 'labels',
+                                                     'regex'      => '^[A-Za-z_][A-Za-z_0-9]*:?',
+					             'style'      => 'identifier',
+                                                     'childregex' => []
+                                                 },
+
+                                                 {
+                                                     'name'       => 'menonics',
+                                                     'regex'      => '^[ \t]+[A-Za-z_][A-Za-z_0-9]*',
+					             'style'      => 'reserved word',
+                                                     'childregex' => []
+                                                 },
+                                              {
+                                                'name'       => 'string',
+                                                'regex'      => '""|".*?([^\\\\](\\\\\\\\)*)"|"\\\\\\\\"',
+					        'style'      => 'string',
+                                                'childregex' => [
+                                                                  {
+                                                                    'name'       => 'esc character',
+                                                                    'regex'      => '\\\\.',
+					                            'style'      => 'esc character',
+                                                                    'childregex' => []
+                                                                  }
+                                                                ]
+                                              }
+
+
+                                                                 ]
+                                              }
+                                            ]
+                          };
+
+
+
 
 
 
@@ -2062,7 +2523,7 @@ $LANGUAGE{'html'}       = {
                                                                   },
                                                                   {
                                                                     'name'       => 'attribute',
-                                                                    'regex'      => '[^\'"]+?',
+                                                                    'regex'      => '[^\'" ]+(?=.)',
 					                            'style'      => 'identifier',
                                                                     'childregex' => []
                                                                   }
@@ -2111,7 +2572,7 @@ $LANGUAGE{'java'}       = {
                                               },
                                               {
                                                 'name'       => 'string',
-                                                'regex'      => '""|".*?([^\\\\](\\\\\\\\)*)"',
+                                                'regex'      => '""|".*?([^\\\\](\\\\\\\\)*)"|"\\\\\\\\"',
 #                                                'regex'      => '""|"\\\\\\\\"|"[^"\\\\]"|"[^"].*?[^\\\\]"',
 					        'style'      => 'string',
                                                 'childregex' => [
@@ -2125,7 +2586,7 @@ $LANGUAGE{'java'}       = {
                                               },
                                               {
                                                 'name'       => 'single quoted',
-                                                'regex'      => '\'\'|\'.*?([^\\\\](\\\\\\\\)*)\'',
+                                                'regex'      => '\'\'|\'.*?([^\\\\](\\\\\\\\)*)\'|\'\\\\\\\\\'',
 #                                                'regex'      => '\'\'|\'\\\\\\\\\'|\'[^\'\\\\]\'|\'[^\'].*?[^\\\\]\'',
 					        'style'      => 'string',
                                                 'childregex' => []
@@ -2326,6 +2787,54 @@ $LANGUAGE{'js'}         = $LANGUAGE{'javascript'};
 
 
 
+
+
+
+# written by Andreas Krennmair
+# extremely incomplete
+
+$LANGUAGE{'lisp'}       = {
+                            'filename' => '\\.(lsp|l)$',
+			    'regex' => '',
+                            'patterns' => [
+                               {
+                                 'name'       => 'parens',
+                                 'regex'      => '[()]',
+                                 'style'      => 'braces',
+                                 'childregex' => []
+                               },
+                               {
+                                 'name'       => 'comment',
+                                 'regex'      => ';.*?$',
+                                 'style'      => 'comment',
+                                 'childregex' => []
+                               },
+                               {
+                                 'name'       => 'string',
+                                 'regex'      => '".*?("|$)',
+                                 'style'      => 'string',
+                                 'childregex' => []
+                               },
+                               {
+                                 'name'       => 'keywords',
+                                 'regex'      => '\\b(defun |xyz)\\b',
+                                 'style'      => 'reserved word',
+                                 'childregex' => []
+                               },
+                               {
+                                 'name'       => 'numeric constant',
+                                 'regex'      => '(#\([0-9]+ [0-9]+\)|[0-9]+)',
+                                 'style'      => 'numeric',
+                                 'childregex' => []
+                               },
+                               {
+                                 'name'       => 'identifiers',
+                                 'regex'      => '([-a-zA-Z]+)',
+                                 'style'      => 'identifier',
+                                 'childregex' => []
+                               }
+                            ]
+                          };
 
 
 
@@ -2613,7 +3122,7 @@ $LANGUAGE{'perl'}       = {
                                               },
                                               {
                                                 'name'       => '"" string',
-                                                'regex'      => '""|".*?([^\\\\](\\\\\\\\)*)"',
+                                                'regex'      => '""|".*?([^\\\\](\\\\\\\\)*)"|"\\\\\\\\"',
 #                                                'regex'      => '""|"\\\\\\\\"|"[^"\\\\]"|"[^"].*?[^\\\\]"',
 					        'style'      => 'string',
                                                 'childregex' => [
@@ -2633,7 +3142,7 @@ $LANGUAGE{'perl'}       = {
                                               },
                                               {
                                                 'name'       => '\'\' string',
-                                                'regex'      => '\'\'|\'.*?([^\\\\](\\\\\\\\)*)\'',
+                                                'regex'      => '\'\'|\'.*?([^\\\\](\\\\\\\\)*)\'|\'\\\\\\\\\'',
 #                                                'regex'      => '\'\'|\'\\\\\\\\\'|\'[^\'\\\\]\'|\'[^\'].*?[^\\\\]\'',
 					        'style'      => 'string',
                                                 'childregex' => [
@@ -2692,13 +3201,13 @@ $LANGUAGE{'perl'}       = {
                                               },
                                               {
                                                 'name'       => 'regex matching I',
-                                                'regex'      => '(?:\\b| )?(?:/(?:\\\\/|[^/\\n])*(?:/[gimsox]*)|s([^\w\s])(?:\\\\\\2|[^\\2\\n])*?(\\2)[^(\\2)\\n]*?(\\2[gimsox]*))',
+                                                'regex'      => '(?:\\b| )?(?:/(?:\\\\/|[^/\\n])*(?:/[gimesox]*)|s([^\w\s])(?:\\\\\\2|[^\\2\\n])*?(\\2)[^(\\2)\\n]*?(\\2[gimesox]*))',
 					        'style'      => 'regex',
                                                 'childregex' => []
                                               },
                                               {
                                                 'name'       => 'regex matching II',
-                                                'regex'      => '(?:\\b| )(?:m|qq?|tr|y)([^\w\s])(?:\\\\\\2|[^\\2\\n])*(?:\\2[gimsox]*)',
+                                                'regex'      => '(?:\\b| )(?:m|qq?|tr|y)([^\w\s])(?:\\\\\\2|[^\\2\\n])*(?:\\2[gimesox]*)',
 					        'style'      => 'regex',
                                                 'childregex' => []
                                               },
@@ -2749,6 +3258,417 @@ $LANGUAGE{'perl'}       = {
 
 
 
+# Thanks to Matt Giwer <jull43@ij.net>
+$LANGUAGE{'pov'}        = {
+                            'filename'   => '(?i)\\.pov$',
+                            'regex'      => '',
+                            'patterns'   => [
+                                              {
+                                                'name'       => 'doc comment',
+                                                'regex'      => '/\\*\\*.*?\\*/',
+					        'style'      => 'doc comment',
+                                                'childregex' => []
+                                              },
+                                              {
+                                                'name'       => 'comment',
+                                                'regex'      => '/\\*.*?\\*/',
+					        'style'      => 'comment',
+                                                'childregex' => []
+                                              },
+                                              {
+                                                'name'       => 'cplus comment',
+                                                'regex'      => '//.*?$',
+					        'style'      => 'comment',
+                                                'childregex' => []
+                                              },
+                                              {
+                                                'name'       => 'string',
+                                                'regex'      => '""|".*?([^\\\\](\\\\\\\\)*)"|"\\\\\\\\"',
+#                                                'regex'      => '""|"\\\\\\\\"|"[^"\\\\]"|"[^"].*?[^\\\\]"',
+					        'style'      => 'string',
+                                                'childregex' => [
+                                                                  {
+                                                                    'name'       => 'esc character',
+                                                                    'regex'      => '\\\\.',
+					                            'style'      => 'esc character',
+                                                                    'childregex' => []
+                                                                  }
+                                                                ]
+                                              },
+                                              {
+                                                'name'       => 'preprocessor line',
+                                                'regex'      => '^[ \\t]*#.*?$',
+					        'style'      => 'preprocessor',
+                                                'childregex' => [
+                                                                  {
+                                                                    'name'       => 'string',
+                                                                    'regex'      => '""|".*?([^\\\\](\\\\\\\\)*)"|"\\\\\\\\"',
+#                                                                    'regex'      => '""|"\\\\\\\\"|"[^"\\\\]"|"[^"].*?[^\\\\]"',
+					                            'style'      => 'string',
+                                                                    'childregex' => [
+                                                                                      {
+                                                                                        'name'       => 'esc character',
+                                                                                        'regex'      => '\\\\.',
+					                                                'style'      => 'esc character',
+                                                                                        'childregex' => []
+                                                                                      }
+                                                                                    ]
+                                                                  },
+                                                                  {
+                                                                    'name'       => '<files>',
+                                                                    'regex'      => '<.*?>',
+					                            'style'      => 'string',
+                                                                    'childregex' => []
+                                                                  },
+                                                                  {
+                                                                    'name'       => 'comment',
+                                                                    'regex'      => '[^/]/\\*.*?\\*/',
+					                            'style'      => 'comment',
+                                                                    'childregex' => []
+                                                                  },
+                                                                  {
+                                                                    'name'       => 'cplus comment',
+                                                                    'regex'      => '//.*?$',
+				                    	        'style'      => 'comment',
+                                                                    'childregex' => []
+                                                                  }
+                                                                ]
+                                              },
+                                              {
+                                                'name'       => 'character constant',
+                                                'regex'      => '\'(\\\\)?.\'',
+					        'style'      => 'character',
+                                                'childregex' => [
+                                                                  {
+                                                                    'name'       => 'esc character',
+                                                                    'regex'      => '\\\\.',
+					                            'style'      => 'esc character', 
+                                                                    'childregex' => []
+                                                                  }
+                                                                ]
+                                              },
+                                              {
+                                                'name'       => 'numeric constant',
+                                                'regex'      => '\\b((0(x|X)[0-9a-fA-F]*)|(([0-9]+\\.?[0-9]*)|(\\.[0-9]+))((e|E)(\\+|-)?[0-9]+)?)(L|l|UL|ul|u|U|F|f)?\\b',
+					        'style'      => 'numeric',
+                                                'childregex' => []
+                                              },
+                                              {
+                                                'name'       => 'keyword',
+                                                'regex'      => '\\b(abs|absorption|acos|acosh|adaptive|adc_bailout|agate|agate_turb|all|alpha|ambient|ambient_light|angle|aperture|append|arc_angle|area_light|array|asc|asin|asinh|assumed_gamma|atan|atan2|atanh|average|background|bezier_spline|bicubic_patch|black_hole|blob|blue|blur_samples|bounded_by|box|boxed|bozo|break|brick|brick_size|brightness|brilliance|bumps|bump_map|bump_size|camera|case|caustics|ceil|checker|chr|clipped_by|clock|clock_delta|color|color_map|colour|colour_map|component|composite|concat|cone|confidence|conic_sweep|control0|control1|cos|cosh|count|crackle|crand|cube|cubic|cubic_spline|cubic_wave|cylinder|cylindrical|debug|declare|default|defined|degrees|density|density_file|density_map|dents|difference|diffuse|dimensions|dimension_size|direction|disc|distance|distance_maximum|div|eccentricity|else|emission|end|error|error_bound|exp|extinction|fade_distance|fade_power|falloff|falloff_angle|false|fclose|file_exists|filter|finish|fisheye|flatness|flip|floor|focal_point|fog|fog_alt|fog_offset|fog_type|fopen|frequency|gif|global_settings|gradient|granite|gray_threshold|green|height_field|hexagon|hf_gray_16|hierarchy|hollow|hypercomplex|if|ifdef|iff|ifndef|image_map|include|int|interior|interpolate|intersection|intervals|inverse|ior|irid|irid_wavelength|jitter|julia_fractal|lambda|lathe|leopard|light_source|linear_spline|linear_sweep|local|location|log|looks_like|look_at|low_error_factor|macro|mandel|map_type|marble|material|material_map|matrix|max|max_intersections|max_iteration|max_trace_level|media|media_attenuation|media_interaction|merge|mesh|metallic|min|minimum_reuse|mod|mortar|nearest_count|no|normal|normal_map|no_shadow|number_of_waves|object|octaves|off|offset|omega|omnimax|on|once|onion|open|orthographic|panoramic|perspective|pgm|phase|phong|phong_size|pi|pigment|pigment_map|planar|plane|png|point_at|poly|polygon|poly_wave|pot|pow|ppm|precision|prism|pwr|quadratic_spline|quadric|quartic|quaternion|quick_color|quick_colour|quilted|radial|radians|radiosity|radius|rainbow|ramp_wave|rand|range|ratio|read|reciprocal|recursion_limit|red|reflection|reflection_exponent|refraction|render|repeat|rgb|rgbf|rgbft|rgbt|right|ripples|rotate|roughness|samples|scale|scallop_wave|scattering|seed|shadowless|sin|sine_wave|sinh|sky|sky_sphere|slice|slope_map|smooth|smooth_triangle|sor|specular|sphere|spherical|spiral1|spiral2|spotlight|spotted|sqr|sqrt|statistics|str|strcmp|strength|strlen|strlwr|strupr|sturm|substr|superellipsoid|switch|sys|t|tan|tanh|text|texture|texture_map|tga|thickness|threshold|tightness|tile2|tiles|torus|track|transform|translate|transmit|triangle|triangle_wave|true|ttf|turbulence|turb_depth|type|u|ultra_wide_angle|undef|union|up|use_color|use_colour|use_index|u_steps|v|val|variance|vaxis_rotate|vcross|vdot|version|vlength|vnormalize|vrotate|v_steps|warning|warp|water_level|waves|while|width|wood|wrinkles|write|x|y|yes|z)\\b',
+					        'style'      => 'reserved word',
+                                                'childregex' => []
+                                              },
+                                              {
+                                                'name'       => 'braces',
+                                                'regex'      => '[\\{\\}]',
+					        'style'      => 'braces',
+                                                'childregex' => []
+                                              },
+                                              {
+                                                'name'       => 'symbols',
+                                                'regex'      => '([\\*\\-\\+=:;%&\\|<>\\(\\)\\[\\]!])',
+					        'style'      => 'symbol',
+                                                'childregex' => []
+                                              },
+                                              { 
+                                                'name'       => 'identifiers',
+                                                'regex'      => '([a-zA-Z_][a-zA-Z_0-9]*)',
+					        'style'      => 'identifier',
+                                                'childregex' => []
+                                              }
+                                            ]
+                            };
+$LANGUAGE{'povray'}     = $LANGUAGE{'pov'};
+   
+
+
+
+# by Tom Good 
+$LANGUAGE{'python'}        = {
+                            'filename'   => '(?i)\\.py$',
+                            'regex'      => '^\\s*#\\s*![^\\s]*python',
+                            'patterns'   => [
+                                              {
+                                                'name'       => 'python comment',
+                                                'regex'      => '#.*?$',
+					        'style'      => 'comment',
+                                                'childregex' => []
+                                              },
+					      {
+                                                'name'       => 'single quote string',
+                                                'regex'      => '\'.*?\'',
+					        'style'      => 'string',
+                                                'childregex' => []
+                                              },
+                                                            
+                                              {
+                                                'name'       => 'string',
+                                                'regex'      => '""|"\\\\\\\\"|".*?([^\\\\](\\\\\\\\)*)"',
+                                                'regex'      => '""|".*?([^\\\\](\\\\\\\\)*)"|"\\\\\\\\"',
+                                                'regex'      => '""|"\\\\\\\\"|"[^"\\\\]"|"[^"].*?[^\\\\]"',
+					        'style'      => 'string',
+                                                'childregex' => [
+                                                                  {
+                                                                    'name'       => 'esc character',
+                                                                    'regex'      => '\\\\.',
+					                            'style'      => 'esc character',
+                                                                    'childregex' => []
+                                                                  }
+                                                                ]
+                                              },
+                                              {
+                                                'name'       => 'character constant',
+                                                'regex'      => '\'(\\\\)?.\'',
+					        'style'      => 'character',
+                                                'childregex' => [
+                                                                  {
+                                                                    'name'       => 'esc character',
+                                                                    'regex'      => '\\\\.',
+					                            'style'      => 'esc character',
+                                                                    'childregex' => []
+                                                                  }
+                                                                ]
+                                              },
+                                              {
+                                                'name'       => 'numeric constant',
+                                                'regex'      => '\\b((0(x|X)[0-9a-fA-F]*)|(([0-9]+\\.?[0-9]*)|(\\.[0-9]+))((e|E)(\\+|-)?[0-9]+)?)(L|l|UL|ul|u|U|F|f)?\\b',
+					        'style'      => 'numeric',
+                                                'childregex' => []
+                                              },
+                                              {
+                                                'name'       => 'keyword',
+                                                'regex'      => '\\b(and|assert|break|class|continue|del|elif|else|except|exec|finally|for|from|global|if|import|in|is|lambda|not|or|pass|print|raise|return|try|while)\\b',
+					        'style'      => 'reserved word',
+                                                'childregex' => []
+                                              },
+                                              {
+                                                'name'       => 'braces',
+                                                'regex'      => '[\\{\\}]',
+					        'style'      => 'braces',
+                                                'childregex' => []
+                                              },
+                                              {
+                                                'name'       => 'symbols',
+                                                'regex'      => '([\\*\\-\\+=:;%&\\|<>\\(\\)\\[\\]!])',
+					        'style'      => 'symbol',
+                                                'childregex' => []
+                                              },
+                                              {
+                                                'name'       => 'identifiers',
+                                                'regex'      => '([a-zA-Z_][a-zA-Z_0-9]*)',
+					        'style'      => 'identifier',
+                                                'childregex' => []
+                                              },
+                                              {
+                                                'name'       => 'function',
+                                                'regex'      => '[\\t ]*def[\\t ]+([a-zA-Z0-9_]+)[\\t \\(]+.*?[\\n{]',
+					        'style'      => 'function header',
+                                                'childregex' => [
+                                                                  {
+                                                                    'name'       => 'function args',
+                                                                    'regex'      => '\\(.*?\\)',
+					                            'style'      => 'function header args',
+                                                                    'childregex' => []
+                                                                  },
+                                                                  {
+                                                                    'name'       => 'function name',
+                                                                    'regex'      => '[\\t ][a-zA-Z0-9_]+',
+					                            'style'      => 'function header name',
+                                                                    'childregex' => []
+                                                                  }
+                                                                ]
+                                              },  
+                                              {
+                                                'name'       => 'library functions',
+                                                'regex'      => '\\b(__import__|abs|apply|buffer|callable|chr|cmp|coerce|compile|complex|delatter|dir|divmod|eval|execfile|filter|float|getattr|globals|hasattr|hash|hex|id|input|int|intern|isinstance|issubclass|len|list|locals|long|map|max|min|oct|open|ord|pow|range|raw_input|reduce|reload|repr|round|setattr|slice|str|tuple|type|unichr|unicode|vars|xrange|zip)\\b',
+					        'style'      => 'library function',
+                                                'childregex' => []
+                                              },
+                                            ]
+                          };
+
+ 
+
+# by Joshua Swink <jswink@pacbell.net>
+$LANGUAGE{'ruby'}       = {
+                            'filename'   => '\\.rb$',
+                            'regex'      => '^\\s*#\\s*![^\\s]*\\bruby\\b',
+                            'patterns'   => [
+                                              {
+                                                'name'       => 'comment',
+                                                'regex'      => '(?:#.*?(?:\r?\n\s*)+)+',
+					        'style'      => 'comment',
+                                                'childregex' => []
+                                              },
+                                              {
+                                                'name'       => 'predefined variables',
+                                                'regex'      => '(?:\\$(?:[!@&`\'+\\d~=/\\\\,;.<>_*\\$?:"]|DEBUG|FILENAME|LOAD_PATH|stdin|stdout|stderr|VERBOSE|-[0adFiIlpv])|\\b(?:TRUE|FALSE|NIL|STDIN|STDOUT|STDERR|ENV|ARGF|ARGV|DATA|RUBY_VERSION|RUBY_RELEASE_DATE|RUBY_PLATFORM)\\b)',
+					        'style'      => 'predefined identifier',
+                                                'childregex' => []
+                                              },
+                                              {
+                                                'name'       => 'variables',
+                                                'regex'      => '[\\$@](?:{[^}]*}|[^\\w/\\t\\n\\.,\\\\[\\\\{\\\\(]|[0-9]+|[a-zA-Z_][\\w.]*)?',
+					        'style'      => 'identifier',
+                                                'childregex' => []
+                                              },
+                                              {
+                                                'name'       => '"" string',
+                                                'regex'      => '""|"(?:\\\\\\\\)+"|".*?(?:[^\\\\](?:\\\\\\\\)*)"|%[Qwx]?([^\\w\\[\\](){}<>])\\2|%[Qwx]?([^\\w\\[\\](){}<>]).*?(?:[^\\\\](?:\\\\\\\\)*)\\3|%[Qwx]?([^\\w\\[\\](){}<>])\\\\\\\\\\4|%[Qwx]?\\[\\]|%[Qwx]?\\[.*?([^\\\\](\\\\\\\\)*)\\]|%[Qwx]?\\[\\\\\\\\\\]|%[Qwx]?\\{\\}|%[Qwx]?\\{.*?([^\\\\](\\\\\\\\)*)\\}|%[Qwx]?\\{\\\\\\\\\\}|%[Qwx]?\\(\\)|%[Qwx]?\\(.*?([^\\\\](\\\\\\\\)*)\\)|%[Qwx]?\\(\\\\\\\\\\)|%[Qwx]?<>|%[Qwx]?<.*?([^\\\\](\\\\\\\\)*)>|%[Qwx]?<\\\\\\\\>',
+
+					        'style'      => 'string',
+                                                'childregex' => [
+                                                                  {
+                                                                    'name'       => 'esc character',
+                                                                    'regex',     => '\\\\(?:x[\\da-fA-F]{2}|\d\d\d|c.|M-\\\\C-.|M-.|C-.|.)',
+								    'style'      => 'esc character',
+                                                                    'childregex' => []
+                                                                  },
+                                                                  {
+                                                                    'name'       => 'string expression',
+                                                                    'regex'      => '#[\\$\\@][a-zA-Z_][\\w.]*|#\\{[\\$\\@]?[^\\}]*\\}',
+								    'style'      => 'identifier',
+                                                                    'childregex' => []
+                                                                  }
+                                                                ]
+                                              },
+                                              {
+                                                'name'       => '\'\' string',
+                                                'regex'      => '\'\'|\'(?:\\\\\\\\)+\'|\'.*?(?:[^\\\\](?:\\\\\\\\)*)\'|%q([^\\w\\[\\](){}<>])\\2|%q([^\\w\\[\\](){}<>]).*?(?:[^\\\\](?:\\\\\\\\)*)\\3|%q([^\\w\\[\\](){}<>])\\\\\\\\\\4|%q\\[\\]|%q\\[.*?([^\\\\](\\\\\\\\)*)\\]|%q\\[\\\\\\\\\\]|%q\\{\\}|%q\\{.*?([^\\\\](\\\\\\\\)*)\\}|%q\\{\\\\\\\\\\}|%q\\(\\)|%q\\(.*?([^\\\\](\\\\\\\\)*)\\)|%q\\(\\\\\\\\\\)|%q<>|%q<.*?([^\\\\](\\\\\\\\)*)>|%q<\\\\\\\\>',
+					        'style'      => 'string',
+                                                'childregex' => [
+                                                                  {
+                                                                    'name'       => 'esc character',
+                                                                    'regex'      => '(?:\\\\\'|\\\\\\\\)',
+								    'style'      => 'esc character',
+                                                                    'childregex' => []
+                                                                  }
+                                                                ]
+                                              },
+                                              {
+                                                'name'       => 'subroutine header',
+                                                'regex'      => 'def[\\t ]+\\w[\\w.]*(?:\\([^)]*\\))?',
+					        'style'      => 'function header',
+                                                'childregex' => [
+                                                                  {
+                                                                    'name'       => 'arg list',
+                                                                    'regex'      => '\\(.*\\)',
+                                                                    'style'      => 'function header args',
+                                                                    'childregex' => [
+                                                                         {
+                                                                         'name' => 'arg list parens',
+                                                                         'regex' => '[\\(\\)]',
+                                                                         'style' => 'symbol',
+                                                                         'childregex' => []
+                                                                         }
+                                                                                    ]
+                                                                  },
+                                                                  {
+                                                                    'name'       => 'subroutine header',
+                                                                    'regex'      => '[\\t ]\w+',
+								    'style'      => 'function header name',
+                                                                    'childregex' => []
+                                                                  }
+                                                                ]
+                                              },
+                                              {
+                                                'name'       => 'class header',
+                                                'regex'      => 'class[\\t ]+\\w+(?:\\s*<\\s*\\w+)?',
+					        'style'      => 'function header',
+                                                'childregex' => [
+                                                                  {
+                                                                    'name'       => 'class ancestor',
+                                                                    'regex'      => '<\\s*\\w+',
+                                                                    'style'      => 'include',
+                                                                    'childregex' => [
+                                                                             {
+                                                                             'name' => 'inheritance doohickey',
+                                                                             'regex' => '<',
+                                                                             'style' => 'symbol',
+                                                                             'childregex' => []
+                                                                             }
+                                                                                    ]
+                                                                  },
+                                                                  {
+                                                                    'name'       => 'class main',
+                                                                    'regex'      => '[\\t ]\\w+',
+								    'style'      => 'type',
+                                                                    'childregex' => []
+                                                                  }
+                                                                ]
+                                              },
+                                              {
+                                                'name'       => 'regex matching 0',
+                                                'regex'      => '(?:%r([^\\w\\[\\](){}<>])\\2|%r([^\\w\\[\\](){}<>]).*?(?:[^\\\\](?:\\\\\\\\)*)\\3|%r([^\\w\\[\\](){}<>])\\\\\\\\\\4|%r\\[\\]|%r\\[.*?([^\\\\](\\\\\\\\)*)\\]|%r\\[\\\\\\\\\\]|%r\\{\\}|%r\\{.*?([^\\\\](\\\\\\\\)*)\\}|%r\\{\\\\\\\\\\}|%r\\(\\)|%r\\(.*?([^\\\\](\\\\\\\\)*)\\)|%r\\(\\\\\\\\\\)|%r<>|%r<.*?([^\\\\](\\\\\\\\)*)>|%r<\\\\\\\\>)[ixpno]*',
+                                                'style'      => 'regex',
+                                                'childregex' => [
+                                                                  {
+                                                                    'name'       => 'string expression',
+                                                                    'regex'      => '#[\\$\\@][a-zA-Z_][\\w.]*|#\\{[\\$\\@]?[a-zA-Z_][^\\}]*\\}',
+								    'style'      => 'identifier',
+                                                                    'childregex' => []
+                                                                  }
+                                                                ]
+                                              },
+                                              {
+                                                'name'       => 'regex matching I',
+                                                'regex'      => '(?:\\b| )?(?:/(?:\\\\/|[^/\\n])*(?:/[ixpno]*))',
+					        'style'      => 'regex',
+                                                'childregex' => [
+                                                                  {
+                                                                    'name'       => 'string expression',
+                                                                    'regex'      => '#[\\$\\@][a-zA-Z_][\\w.]*|#\\{[\\$\\@]?[a-zA-Z_][^\\}]*\\}',
+								    'style'      => 'identifier',
+                                                                    'childregex' => []
+                                                                  }
+                                                                ]
+                                              },
+                                              {
+                                                'name'       => 'reserved words',
+                                                'regex'      => '\\b(BEGIN|class|ensure|nil|self|when|END|def|false|not|super|while|alias|defined|for|or|then|yield|and|do|if|redo|true|begin|else|in|rescue|undef|break|elsif|module|retry|unless|case|end|next|return|until)\\b',
+					        'style'      => 'reserved word',
+                                                'childregex' => []
+                                              },
+                                              {
+                                                'name'       => 'kernel module methods',
+                                                'regex',     => '\\b(Array|Float|Integer|String|at_exit|autoload|binding|caller|catch|chop|chomp|chomp!|eval|exec|exit|fail|fork|format|gets|global_variables|gsub|iterator|lambda|load|local_variables|loop|open|p|print|printf|proc|putc|puts|raise|rand|readline|readlines|require|select|sleep|split|sprintf|srand|sub|syscall|system|test|trace_var|trap|untrace_var)\\b',
+					        'style'      => 'library function',
+                                                'childregex' => []
+                                              },
+                                              {
+                                                'name'       => 'braces, parens and brakets',
+                                                'regex'      => '[\\[\\]\\{\\}\\(\\)]',
+					        'style'      => 'braces',
+                                                'childregex' => []
+                                              },
+                                              {
+                                                'name'       => '<< stuff',
+                                                'regex'      => '<<(?:("|\')([^\\n]*)\\2|\\w*).*?^\\3$',
+					        'style'      => 'text',
+                                                'childregex' => []
+                                              },
+                                              {
+                                                'name'       => 'symbols',
+                                                'regex'      => '(?:[:*-+<>=^!,/]+|\.\.+)',
+                                                'style'      => 'symbol',
+                                                'childregex' => []
+                                              },
+                                              {
+                                                'name'       => 'numbers',
+                                                'regex'      => '\d[\d.]*',
+                                                'style'      => 'numeric',
+                                                'childregex' => []
+                                              },
+                                              {
+                                                'name'       => 'embedded documentation',
+                                                'regex'      => '^=.*?^(?:=end|\\Z)',
+					        'style'      => 'doc comment',
+                                                'childregex' => []
+                                              }
+                                            ]
+                          };
+ 
 # taken from nedit
 # modified by PP
 # very inclomplete!
@@ -2776,7 +3696,7 @@ $LANGUAGE{'sql'}        = {
                                               },
                                               {
                                                 'name'       => 'string',
-                                                'regex'      => '\'\'|\'.*?([^\\\\](\\\\\\\\)*)\'',
+                                                'regex'      => '\'\'|\'.*?([^\\\\](\\\\\\\\)*)\'|\'\\\\\\\\\'',
 #                                                'regex'      => '(\'\'|\'[^\'\\\\]\'|\'[^\'].*?[^\\\\]\')',
 					        'style'      => 'string',
                                                 'childregex' => []
@@ -2810,7 +3730,87 @@ $LANGUAGE{'sql'}        = {
    
  
 
+$LANGUAGE{'patch'}        = {
+                            'filename'   => '(?i)\\.patch$|\\.diff$',
+                            'regex'      => '',
+                            'patterns'   => [
+                                              {
+                                                'name'       => 'header',
+                                                'regex'      => '^Index: .*?$|^===== .*?$|^diff .*?$|^--- .*?$|^\+\+\+ .*?$',
+                                                'style'      => 'separator',
+                                                'childregex' => []
+                                              },
+                                              {
+                                                'name'       => 'hunk',
+                                                'regex'      => '^@@ .*?$',
+                                                'style'      => 'line spec',
+                                                'childregex' => []
+                                              },
+                                              {
+                                                'name'       => 'from',
+                                                'regex'      => '^-.*?$',
+                                                'style'      => 'deletion',
+                                                'childregex' => []
+                                              },
+                                              {
+                                                'name'       => 'to',
+                                                'regex'      => '^\+.*?$',
+                                                'style'      => 'insertion',
+                                                'childregex' => []
+                                              }
+                                            ]
+                            };
 
+
+
+#####
+#
+# LANGUAGE: shell script
+#
+
+$LANGUAGE{'shellscript'} = {
+	'filename' => '\\.(sh|shell)$',
+	'regex' => '^\\s*#\\s*![^\\s]*(sh|bash|ash|zsh|ksh)',
+	'patterns' => [ {
+		'name' => 'comment',
+#		'regex' => '^[ \t]*[^$]?\#[^!]?.*?$',
+		'regex' => '(^| )#([^\\!].)*?$',
+		'style' => 'comment',
+		'childregex' => []
+	}, {
+		'name' => 'identifier',
+		'regex' => '[a-zA-Z][a-zA-Z0-9_]*=',
+		'style' => '',
+		'childregex' => [ {
+			'name' => 'identifier',
+			'regex' => '[a-zA-Z][a-zA-Z0-9_]*',
+			'style' => 'identifier',
+			'childregex' => []
+		} ]
+	}, {
+		'name' => 'identifier',
+		'regex' => '\\$([0-9#\\*]|[a-zA-Z][a-zA-Z0-9_]*)',
+		'style' => 'identifier',
+		'childregex' => []
+	}, {
+		'name' => 'interpreter line',
+		'regex' => '^[ \t]*#!.*?$',
+		'style' => 'preprocessor',
+		childregex => []
+	}, {
+		'name' => 'string',
+		'regex' => '""|"(\\\\"|[^\\"])*"',
+		'style' => 'string',
+		childregex => [ {
+			'name' => 'identifier',
+			'regex' => '\\$([0-9#\\*]|[a-zA-Z][a-zA-Z0-9_]*)',
+			'style' => 'identifier',
+			'childregex' => []
+		} ]
+	} ]
+};
+
+$LANGUAGE{'sh'} = $LANGUAGE{'shellscript'};
 return \%LANGUAGE;
 
 };
