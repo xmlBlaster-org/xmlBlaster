@@ -56,7 +56,7 @@ typedef bool (* IsListening)(CallbackServerUnparsed *cb);
  */
 typedef bool (*UpdateFp)(MsgUnitArr *msg, XmlBlasterException *xmlBlasterException);
 
-/* typedef void (* ShutdownCallbackServerRaw)(CallbackServerUnparsed *cb); */
+typedef void (* ShutdownCallbackServerRaw)(CallbackServerUnparsed *cb);
 
 
 #define MAX_RESPONSE_LISTENER_SIZE 100
@@ -66,10 +66,10 @@ typedef void (* ResponseFp)(void *userP, void /*SocketDataHolder*/ *socketDataHo
 typedef struct ResponseListenerStruct {
    void *userP;
    const char *requestId;
-   ResponseFp responseFp;
+   ResponseFp responseEventFp;
 } ResponseListener;
 
-typedef bool ( * AddResponseListener)(CallbackServerUnparsed *cb, void *userP, const char *requestId, ResponseFp responseFp);
+typedef bool ( * AddResponseListener)(CallbackServerUnparsed *cb, void *userP, const char *requestId, ResponseFp responseEventFp);
 
 
 /**
@@ -83,7 +83,7 @@ typedef bool ( * AddResponseListener)(CallbackServerUnparsed *cb, void *userP, c
 struct CallbackServerUnparsedStruct {
    int listenSocket;
    int acceptSocket;
-   const char *hostCB;
+   char *hostCB;
    int portCB;
    bool reusingConnectionSocket; /* is false if we tunnel callback through the client connection socket */
    bool debug;
@@ -95,11 +95,12 @@ struct CallbackServerUnparsedStruct {
    */
    InitCallbackServer initCallbackServer;
    IsListening isListening;
-   /* ShutdownCallbackServerRaw shutdown; */
+   ShutdownCallbackServerRaw shutdown; /* For internal use (multi thread) only */
    UpdateFp update;
    UseThisSocket useThisSocket;
    ResponseListener responseListener[MAX_RESPONSE_LISTENER_SIZE];
    AddResponseListener addResponseListener;
+   bool isShutdown;
 };
 
 /**
