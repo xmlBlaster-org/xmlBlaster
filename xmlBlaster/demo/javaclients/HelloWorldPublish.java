@@ -190,13 +190,12 @@ public class HelloWorldPublish
                }
                public void reachedPolling(ConnectionStateEnum oldState,
                                           I_XmlBlasterAccess connection) {
-                  log.warn(ME, "I_ConnectionStateListener: No connection to " +
-                          connection.getGlobal().getId() + ", we are polling ...");
+                  log.warn(ME, "I_ConnectionStateListener: No connection to xmlBlaster server, we are polling ...");
                }
                public void reachedDead(ConnectionStateEnum oldState,
                                        I_XmlBlasterAccess connection) {
-                  log.warn(ME, "I_ConnectionStateListener: Connection to " +
-                          connection.getGlobal().getId() + " is DEAD, doing exit.");
+                  log.warn(ME, "I_ConnectionStateListener: Connection from " +
+                          connection.getGlobal().getId() + " to xmlBlaster is DEAD, doing exit.");
                   System.exit(1);
                }
             });
