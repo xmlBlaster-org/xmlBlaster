@@ -34,8 +34,8 @@ namespace util {
  * Default xmlBlaster handling of Sax callbacks and errors.<p />
  * You may use this as a base class for your SAX handling.
  */
-class SaxHandlerBase : public DocumentHandler, public ErrorHandler,
-                       public DTDHandler {
+class Dll_Export SaxHandlerBase : public DocumentHandler, public ErrorHandler,
+                                  public DTDHandler {
    
 private:
    

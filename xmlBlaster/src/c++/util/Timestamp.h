@@ -6,7 +6,7 @@ Name:      Timestamp.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Timestamp.h,v 1.10 2002/12/31 16:03:44 laghi Exp $
+Version:   $Id: Timestamp.h,v 1.11 2003/01/13 11:57:43 johnson Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_TIMESTAMP_H
@@ -55,9 +55,12 @@ namespace org { namespace xmlBlaster { namespace util {
       TimestampFactory();
       TimestampFactory(const TimestampFactory &factory);
       TimestampFactory& operator =(const TimestampFactory &factory);
-      ~TimestampFactory();
+      
 
    public:
+
+      ~TimestampFactory();
+
       /**
        * The method to call to get the singleton Timestamp object.
        */

@@ -46,7 +46,7 @@ class Lock;
 
 /* -------------------------- ThreadRunner --------------------------*/
 
-struct ThreadRunner 
+class ThreadRunner 
 {
    Thread& owner_;
    ThreadRunner(Thread& owner);
@@ -56,7 +56,7 @@ struct ThreadRunner
 
 /* -------------------------- Thread --------------------------------*/
 
-class Thread 
+class Dll_Export Thread 
 {
    friend class ThreadRunner;
 private:
