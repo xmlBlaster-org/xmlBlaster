@@ -9,6 +9,8 @@ Author:    <Michele Laghi> laghi@swissinfo.org
 #ifndef _COMPATIBLECORBA_H
 #define _COMPATIBLECORBA_H
 
+#include <string>
+
 /*
  * Implementor specific macros (for includes etc.)
  * The invocation of this header is done maximum one time per compilation unit. Since the server side 
