@@ -3,6 +3,10 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes for 0.xxx [xx, xxx 2003]
 ================================
 
+ o BUGFIX: Fixed subject id to be without public sessionId in all cases.
+   Had severe impact on PtP messages as subject queue name was sometimes
+   identical to session queue name.
+
  o Fixed memory leak in JDBC layer (clear SQLWarnings)
    Has impact on persistent messages only
 
