@@ -1,5 +1,8 @@
    XMLBLASTER HTPASSWD HOWTO  11/2001 cyrille@ktaland.com
 
+
+  See http://www.xmlblaster.org/xmlBlaster/doc/requirements/security.htpasswd.html
+
 To get started with htpasswd authentication please
 setup a htpasswd file.
 
@@ -36,7 +39,7 @@ Then configure xmlBlaster for that htpasswd auth plugin :
 
 4/ Start a client (all in one line), e.g.
 
-      java javaclients.ClientSub -Security.Client.DefaultPlugin htpasswd,1.0 -loginName <username> -passwd <userpasswd>
+      java javaclients.ClientSub -Security.Client.DefaultPlugin htpasswd,1.0 -session.name <username> -passwd <userpasswd>
 
    In the log output of xmlBlaster server you should see something like:
 
