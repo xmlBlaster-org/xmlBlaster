@@ -134,8 +134,8 @@
    <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.errorHandling.html -->
    <!--
    <plugin id='DeadMessageDumper' className='org.xmlBlaster.engine.DeadMessageDumper'>
-      <action do='LOAD' onStartupRunlevel='7' sequence='1' onFail='resource.configuration.pluginFailed'/>
-      <action do='STOP' onShutdownRunlevel='6' sequence='1'/>
+      <action do='LOAD' onStartupRunlevel='5' sequence='4' onFail='resource.configuration.pluginFailed'/>
+      <action do='STOP' onShutdownRunlevel='4' sequence='4'/>
       <attribute id='loginName'>_DeadMessageDumper</attribute>
       <attribute id='directoryName'>${java.io.tmpdir}${file.separator}xmlBlaster-deadMessages</attribute>
       <attribute id='password'>secret</attribute>
@@ -146,9 +146,9 @@
    <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/admin.startupTasks.html -->
    <!--
    <plugin id='StartupTasks' className='org.xmlBlaster.engine.StartupTasks'>
-      <action do='LOAD' onStartupRunlevel='7' sequence='5'
+      <action do='LOAD' onStartupRunlevel='6' sequence='5'
                            onFail='resource.configuration.pluginFailed'/>
-      <action do='STOP' onShutdownRunlevel='6' sequence='5'/>
+      <action do='STOP' onShutdownRunlevel='5' sequence='5'/>
       <attribute id='loginName'>_StartupTasks</attribute>
       <attribute id='password'>secret</attribute>
       <attribute id='directoryName'></attribute>
@@ -176,7 +176,7 @@
    <!-- See http://www.xmlblaster.org/xmlBlaster/doc/requirements/contrib.dbwatcher.html -->
    <!-- 
    <plugin id='DbWatcherPlugin.testPollMD5' 
-              className='org.xmlBlaster.contrib.dbwatcher.plugin.DbWatcherPlugin'>
+           className='org.xmlBlaster.contrib.dbwatcher.plugin.DbWatcherPlugin'>
       <attribute id='jdbc.drivers'>oracle.jdbc.driver.OracleDriver</attribute>
       <attribute id='db.url'>jdbc:oracle:thin:@localhost:1521:orcl</attribute>
       <attribute id='db.user'>system</attribute>
@@ -196,9 +196,9 @@
       </attribute>
       <attribute id='mom.eraseOnDelete'>true</attribute>
       <attribute id='mom.eraseOnDrop'>true</attribute>
-      <action do='LOAD' onStartupRunlevel='9' sequence='6'
+      <action do='LOAD' onStartupRunlevel='6' sequence='6'
                  onFail='resource.configuration.pluginFailed'/>
-      <action do='STOP' onShutdownRunlevel='6' sequence='5'/>
+      <action do='STOP' onShutdownRunlevel='5' sequence='6'/>
    </plugin>
    -->
 
