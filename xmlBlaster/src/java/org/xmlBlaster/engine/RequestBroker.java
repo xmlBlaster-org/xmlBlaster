@@ -1764,7 +1764,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
          this.publishQosLogoutEvent.getData().setTopicProperty(null); // only the first publish needs to configure the topic
       }
 
-      if (log.TRACE) log.trace(ME, "Client '" + sessionInfo.getId() + "'");
+      if (log.TRACE) log.trace(ME, "Client session '" + sessionInfo.getId() + "' removed");
    }
 
 
