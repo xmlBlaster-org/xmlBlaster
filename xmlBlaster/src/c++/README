@@ -21,10 +21,10 @@ HOW TO BUILD THE CLIENT CLASSES:
 So if you use bash, an example would be:
 
 export XMLCPP_HOME=/usr/local/xerces
-export XMLCPP_VER="1_1"
+export XMLCPP_VER="1_5_1"
 export CORBA_CPP="mico"
 export MICO_HOME=/usr/local/mico
-export MICO_VER="2.3.1"
+export MICO_VER="2.3.5"
 
 Then you can run make from the $XMLBLASTER_HOME directory or from
 $XMLBLASTER_HOME/src/c++
