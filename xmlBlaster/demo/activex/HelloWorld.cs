@@ -24,12 +24,25 @@ namespace demo
          // See registry: 
          //   regedit -> HKEY_CLASSES_ROOT
          //           -> CLSID
-         //	         -> D824B185-AE3C-11D6-ABF5-00B0D07B8581
+         //           -> D824B185-AE3C-11D6-ABF5-00B0D07B8581
          //           -> XmlScriptAccess Bean Control
          // org.xmlBlaster.client.activex.XmlScriptAccess
+
          XmlScriptAccess.XmlScriptAccessClass xmlBlaster;
          xmlBlaster = new XmlScriptAccess.XmlScriptAccessClass();
-         string request = "<xmlBlaster><connect/></xmlBlaster>";
+
+         string[] argArr = { "-protocol", "SOCKET" };
+         xmlBlaster.initArgs(argArr);
+
+         string request = "<xmlBlaster>" +
+                          "   <connect/>" +
+                          "   <wait delay='1000' />" +
+                          "   <publish>" +
+                          "      <key oid='test'><airport name='london' /></key>" +
+                          "      <content>This is a simple script test</content>" +
+                          "      <qos/>" +
+                          "   </publish>" +
+                          "</xmlBlaster>";
          string response = xmlBlaster.sendRequest(request);
          Console.WriteLine("Got response from xmlBlaster: " + response);
       }
