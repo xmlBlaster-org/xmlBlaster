@@ -495,7 +495,6 @@ int main(int args, char* argv[])
           2001-12-07 23:31:45.862000002   <!-- The nanos from above but human readable -->
     </rcvTimestamp>
     <expiration lifeTime='129595811' forceDestroy='false'/> <!-- Only for persistence layer -->
-    <isVolatile>false</isVolatile> <!-- deprecated, use lifeTime==0&&forceDestroy==false instead-->
     <queue index='0' of='1'/> <!-- If queued messages are flushed on login -->
     <isDurable/>
     <redeliver>4</redeliver>             <!-- Only for updates -->

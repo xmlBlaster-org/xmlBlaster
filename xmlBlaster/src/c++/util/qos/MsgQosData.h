@@ -90,7 +90,6 @@ private:
    /** Internal use only, is this message sent from the persistence layer? */
    bool fromPersistenceStore_; // = false;
 
-   bool volatileFlag_; //  = DEFAULT_isVolatile;
    bool durable_; // = DEFAULT_isDurable;
 
    /**

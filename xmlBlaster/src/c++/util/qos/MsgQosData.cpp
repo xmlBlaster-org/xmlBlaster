@@ -51,7 +51,6 @@ void MsgQosData::init()
    queueIndex_ = -1;
    queueSize_ = -1;
    fromPersistenceStore_ = false;
-   volatileFlag_ = DEFAULT_isVolatile;
    durable_ = DEFAULT_isDurable;
    forceUpdate_= DEFAULT_forceUpdate;
    lifeTime_ = -1;
@@ -72,7 +71,6 @@ void MsgQosData::copy(const MsgQosData& data)
    queueIndex_ = data.queueIndex_;
    queueSize_ = data.queueSize_;
    fromPersistenceStore_ = data.fromPersistenceStore_;
-   volatileFlag_ = data.volatileFlag_;
    durable_ = data.durable_;
    forceUpdate_= data.forceUpdate_;
    lifeTime_ = data.lifeTime_;
@@ -159,7 +157,11 @@ bool MsgQosData::isReadonly() const
  */
 void MsgQosData::setVolatile(bool volatileFlag)
 {
-   volatileFlag_ = volatileFlag;
+   if (volatileFlag) {
+      setLifeTime(0L);
+      setForceDestroy(false);
+      setRemainingLifeStatic(0L); // not needed as server does set it
+   }
 }
 
 /**
@@ -167,15 +169,7 @@ void MsgQosData::setVolatile(bool volatileFlag)
  */
 bool MsgQosData::isVolatile() const
 {
-   return volatileFlag_;
-}
-
-/**
- * @return true If the default is the current setting. 
- */
-bool MsgQosData::isVolatileDefault() const
-{
-   return DEFAULT_isVolatile == volatileFlag_;
+   return getLifeTime()==0L && getForceDestroy()==false;
 }
 
 /**
@@ -484,9 +478,8 @@ string MsgQosData::toXml(const string& extraOffset) const
    if (NORM_PRIORITY != priority_)
       ret += offset + " <priority>" + lexical_cast<string>(priority_) + "</priority>";
 
-   if (subscriptionId_.empty()) {
-      ret += offset + " <subscriptionId>" + subscriptionId_ + "</subscriptionId>";
-   }
+   if (!subscriptionId_.empty())
+      ret += offset + " <subscribe id='" + subscriptionId_ + "'/>";
 
    if (getLifeTime() > 0) {
       ret += offset + " <expiration lifeTime='" + lexical_cast<string>(getLifeTime());
@@ -506,16 +499,12 @@ string MsgQosData::toXml(const string& extraOffset) const
       ret += offset + " <queue index='" + lexical_cast<string>(getQueueIndex()) + "' size='" + lexical_cast<string>(getQueueSize()) + "'/>";
    if (getRedeliver() > 0)
       ret += offset + " <redeliver>" + lexical_cast<string>(getRedeliver()) + "</redeliver>";
-   if (!isVolatileDefault())
-      ret += offset + " <isVolatile>" + Global::getBoolAsString(isVolatile()) + "</isVolatile>";
    if (isDurable())
       ret += offset + " <isDurable/>";
    if (!isForceUpdateDefault())
       ret += offset + " <forceUpdate>" + Global::getBoolAsString(isForceUpdate()) + "</forceUpdate>";
    if (forceDestroy_.isModified())
       ret += offset + " <forceDestroy>" + Global::getBoolAsString(forceDestroy_.getValue()) + "</forceDestroy>";
-   if (isReadonly())
-      ret += offset + " <readonly/>";
 
    RouteVector::const_iterator routeIter = routeNodeList_.begin();
    ret += offset + " <route>";
