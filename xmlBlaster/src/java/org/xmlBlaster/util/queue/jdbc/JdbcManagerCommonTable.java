@@ -184,10 +184,13 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
 
       this.nodesTableName = this.tableNamePrefix + 
                             (String)pool.getPluginProperties().getProperty("nodesTableName", "NODES");
+      this.nodesTableName = this.nodesTableName.toUpperCase();
       this.queuesTableName = this.tableNamePrefix + 
                             (String)pool.getPluginProperties().getProperty("queuesTableName", "QUEUES");
+      this.queuesTableName = this.queuesTableName.toUpperCase();
       this.entriesTableName = this.tableNamePrefix + 
                             (String)pool.getPluginProperties().getProperty("entriesTableName", "ENTRIES");
+      this.entriesTableName = this.entriesTableName.toUpperCase();
       this.nodesCache = new java.util.HashSet();
    }
 
