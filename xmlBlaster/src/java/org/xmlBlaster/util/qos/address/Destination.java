@@ -116,9 +116,12 @@ public class Destination implements java.io.Serializable
 
    /**
     * Set the destination address or the destination query string.
-    * @param destination The destination address or the query string
+    * @param destination The destination address or the query string, may not be null
     */
    public final void setDestination(SessionName destination) {
+      if (destination == null) {
+         throw new IllegalArgumentException("Destination.setDestination with null value");
+      }
       this.destination = destination;
    }
 
@@ -142,6 +145,10 @@ public class Destination implements java.io.Serializable
          //throw new IllegalArgumentException(ME+": Query type " + queryType + " is not implemented");
       else
          throw new IllegalArgumentException(ME+": Query type " + queryType + " is not implemented");
+   }
+
+   public final String toString() {
+      return destination.getAbsoluteName();
    }
 
    /**
