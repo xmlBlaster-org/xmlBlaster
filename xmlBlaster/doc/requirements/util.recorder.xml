@@ -5,19 +5,23 @@
    <topic>XmlBlaster provides a facility to record all message transfers with the possibility to play back this flow in slow/fast motion</topic>
    <description>
       The class InvocationRecorder can be plugged into a client or the server, to follow
-      all CORBA method invocations with exact timestamp. Every invocation is
+      all CORBA/RMI/XmlRpc method invocations with exact timestamp. Every invocation is
       stored and may be later played back.
+      The recorder is activated when a Java client uses the fail save xmlblaster access mode
+      -> see XmlBlasterConnection.initFailSave()
    </description>
    <see type="API">org.xmlBlaster.util.InvocationRecorder</see>
+   <see type="API">org.xmlBlaster.client.protocol.XmlBlasterConnection</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 02 24</date>
-   <revision>$Revision: 1.6 $</revision>
+   <revision>$Revision: 1.7 $</revision>
    <testcase status="CLOSED">
       <name>ruff@swand.lake.de</name>
       <comment>
          The current approach has the following drawback:
           see util.recorder.returnvalues.xml
       </comment>
+      <test tool="SUITE">testsuite.org.xmlBlaster.TestFailSave</test>
       <test tool="SUITE">testsuite.org.xmlBlaster.TestInvocationRecorder</test>
    </testcase>
 </requirement>

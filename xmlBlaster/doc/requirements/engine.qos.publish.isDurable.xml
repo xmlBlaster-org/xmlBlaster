@@ -4,10 +4,12 @@
 <requirement id='engine.qos.publish.isDurable' type='NEW' prio='LOW' status="CLOSED">
    <topic>XmlBlaster allows store messages in a persistent store</topic>
    <description>
+      <![CDATA[
       Using the QOS flag &lt;isDurable/&gt; allows to mark a published message
       as durable. It will be stored into the persistence store as specified in
       xmlBlaster.properties file. Default is a primitive file-system based driver org.xmlBlaster.engine.persistence.FileDriver.
       You may plug in other drivers to store the message into your own database.
+      ]]>
    </description>
    <example lang="Java">
       <![CDATA[
@@ -21,7 +23,7 @@
    <see type="API">org.xmlBlaster.client.PublishKeyWrapper</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 01 25</date>
-   <revision>$Revision: 1.2 $</revision>
+   <revision>$Revision: 1.3 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

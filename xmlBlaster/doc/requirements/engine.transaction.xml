@@ -8,6 +8,10 @@
       <strong>This is a collection of thoughts about MOM Transactions from our mailing list</strong>
 
       <p />
+      JINI transactions<br />
+      Possibly the JINI transactions are the most suitable framework for xmlBlaster.
+
+      <p />
       General transaction ability of xmlBlaster
       <ul>
          <li>2 phase commit</li>
@@ -15,13 +19,13 @@
          <li>commit, rollback, recovery etc mechanisms</li>
          <li>nested transactions (to complicated to use for everyday problems?)</li>
       </ul>
- 
-      XA-Support 
+
+      XA-Support
       <br />
       How to become an XA-ResourceManager?
       <br />
       Find several transaction monitors/managers with XA-Support to test with.
-  
+
       <p />
       OTS-support<br />
       How to become a transactional object?
@@ -50,7 +54,7 @@
    </description>
    <author>ruff@swand.lake.de</author>
    <date>2000 05 02</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
