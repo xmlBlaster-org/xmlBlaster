@@ -1012,7 +1012,9 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       sb.append("   -Security.Client.DefaultPlugin \"gui,1.0\"\n");
       sb.append("                       Force the given authentication schema, here the GUI is enforced\n");
       sb.append("                       Clients can overwrite this with ConnectQos.java\n");
+      try {
       sb.append(new org.xmlBlaster.client.qos.ConnectQos(glob).usage());
+      } catch (XmlBlasterException e) {}
       sb.append(new org.xmlBlaster.util.qos.address.Address(glob).usage());
       sb.append(new org.xmlBlaster.util.qos.storage.ClientQueueProperty(glob,null).usage());
       sb.append(new org.xmlBlaster.util.qos.address.CallbackAddress(glob).usage());
