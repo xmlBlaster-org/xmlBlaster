@@ -2,6 +2,12 @@ Release notes for xmlBlaster    (http://www.xmlBlaster.org)
 
 Changes for 0.xx [xx, xx 2001]
 ==============================
+ - Extended Java client helper class XmlBlasterConnection
+   to allow dispatching callback messages.
+   Every subcription may specify its dedicated callback handle.
+   See xmlBlaster/demo/javaclients/ClientSubDispatch.java as
+   an example.
+
  - Added Authentication and Authorization framework by Wolfgang Kleinertz
 
    xmlBlaster.idl has changed, new methods init() and disconnect()
