@@ -136,6 +136,7 @@
       <action do='LOAD' onStartupRunlevel='7' sequence='1' onFail='resource.configuration.pluginFailed'/>
       <action do='STOP' onShutdownRunlevel='6' sequence='1'/>
       <attribute id='loginName'>_DeadMessageDumper</attribute>
+      <attribute id='directoryName'>${java.io.tmpdir}${file.separator}xmlBlaster-deadMessages</attribute>
       <attribute id='password'>secret</attribute>
       <attribute id='forceBase64'>false</attribute>
    </plugin>
