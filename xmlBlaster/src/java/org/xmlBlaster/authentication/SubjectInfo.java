@@ -214,8 +214,14 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
 
       if (getSubjectQueue().getNumOfEntries() < 1)
          log.info(ME, "Destroying SubjectInfo " + getSubjectName() + ". Nobody is logged in and no queue entries available");
-      else
-         log.warn(ME, "Destroying SubjectInfo " + getSubjectName() + " as clearQueue is set to true. Lost " + getSubjectQueue().getNumOfEntries() + " messages");
+      else {
+         if (clearQueue)
+            log.warn(ME, "Destroying SubjectInfo " + getSubjectName() + ". Lost " + getSubjectQueue().getNumOfEntries() + " messages in the subject queue as clearQueue is set to true");
+         else
+            log.warn(ME, "Destroying SubjectInfo " + getSubjectName() +
+                         ". The subject queue still contains " + getSubjectQueue().getNumOfEntries() + " messages, " +
+                         getSubjectQueue().getNumOfPersistentEntries() + " persistent messages remain on disk, the transients are lost");
+      }
 
       this.authenticate.removeLoginName(this);  // deregister
 
@@ -531,7 +537,8 @@ public final class SubjectInfo /* implements I_AdminSubject -> is delegated to S
                           " to session queue " + sessionInfo.getSessionQueue().getStorageId() +
                           " size=" + sessionInfo.getSessionQueue().getNumOfEntries() + " ...");
             try {
-               sessionInfo.queueMessage(entry);
+               MsgQueueUpdateEntry entryCb = new MsgQueueUpdateEntry((MsgQueueUpdateEntry)entry);
+               sessionInfo.queueMessage(entryCb);
                countForwarded++;
             }
             catch (XmlBlasterException e) {
