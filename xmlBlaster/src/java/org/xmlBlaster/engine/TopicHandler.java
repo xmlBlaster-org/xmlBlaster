@@ -947,7 +947,7 @@ public final class TopicHandler implements I_Timeout
       if (log.TRACE) log.trace(ME, "Going to update dependent clients for " + msgUnitWrapper.getKeyOid() + ", subscriberMap.size() = " + this.subscriberMap.size());
 
       if (this.distributor != null) { // if there is a plugin
-         this.distributor.syncDistribution(msgUnitWrapper);
+         this.distributor.distribute(msgUnitWrapper);
          return;   
       }
       
@@ -1871,6 +1871,7 @@ public final class TopicHandler implements I_Timeout
     * @throws XmlBlasterException
     */
    private void initMsgDistributorPlugin() throws XmlBlasterException {
+      if (this.log.CALL) this.log.call(ME, "initMsgDistributorPlugin");
       if (this.distributor != null) return;
       String typeVersion = this.topicProperty.getMsgDistributor();
       // if (typeVersion == null) return; // no plugin has been configured for this topic
@@ -1884,6 +1885,7 @@ public final class TopicHandler implements I_Timeout
    }
    
    private void shutdownMsgDistributorPlugin() {
+      if (this.log.CALL) this.log.call(ME, "shutdownMsgDistributorPlugin");
       if (this.distributor == null) return;
       synchronized(this) {
          try {

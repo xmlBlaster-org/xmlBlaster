@@ -24,6 +24,6 @@ public interface I_MsgDistributor extends I_SubscriptionListener, I_Plugin {
     * 
     * @param msgUnitWrapper the entry to distribute
     */
-   void syncDistribution(MsgUnitWrapper msgUnitWrapper);
+   void distribute(MsgUnitWrapper msgUnitWrapper);
 
 }

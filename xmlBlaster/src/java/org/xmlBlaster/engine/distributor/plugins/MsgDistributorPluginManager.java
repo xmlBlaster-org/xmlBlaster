@@ -37,7 +37,9 @@ public class MsgDistributorPluginManager extends PluginManagerBase {
       public I_MsgDistributor getPlugin(String typeVersion, TopicHandler topicHandler) throws XmlBlasterException {
          PluginInfo pluginInfo = new PluginInfo(getGlobal(), this, typeVersion);
          pluginInfo.setUserData(topicHandler); // transport to init
-         return (I_MsgDistributor)getPluginObject(pluginInfo);
+         // return (I_MsgDistributor)getPluginObject(pluginInfo);
+         return (I_MsgDistributor)this.instantiatePlugin(pluginInfo);
+         
       }
 
       /**

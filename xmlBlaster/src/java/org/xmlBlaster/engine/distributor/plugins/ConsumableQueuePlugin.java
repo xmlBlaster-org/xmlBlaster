@@ -46,12 +46,17 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
       this.status = UNINITIALIZED;
    }
 
-   /* (non-Javadoc)
-    * @see org.xmlBlaster.engine.distributor.I_MsgDistributor#syncDistribution(org.xmlBlaster.engine.TopicHandler, org.xmlBlaster.authentication.SessionInfo, org.xmlBlaster.engine.MsgUnitWrapper)
+   /**
+    * @see org.xmlBlaster.engine.distributor.I_MsgDistributor#distribute(org.xmlBlaster.engine.TopicHandler, org.xmlBlaster.authentication.SessionInfo, org.xmlBlaster.engine.MsgUnitWrapper)
     */
-   synchronized public void syncDistribution(MsgUnitWrapper msgUnitWrapper) { 
+   synchronized public void distribute(MsgUnitWrapper msgUnitWrapper) { 
       try {
          if (this.log.CALL) this.log.call(ME, "distribute '" + msgUnitWrapper.getUniqueId() + "' '" + msgUnitWrapper.getKeyOid() + "'");
+         if (this.log.DUMP) {
+            this.log.dump(ME, "distribute");
+            Thread.dumpStack();
+         } 
+         this.status = WORKING;
          // Take a copy of the map entries (a current snapshot)
          // If we would iterate over the map directly we can risk a java.util.ConcurrentModificationException
          // when one of the callback fails and the entry is removed by the callback worker thread
@@ -85,11 +90,13 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
             } 
          }
          if (count == 1) this.topicHandler.removeFromHistory(msgUnitWrapper);
+         
       }
       catch (Throwable ex) {
          ex.printStackTrace();
          this.log.error(ME, "syncDistribution " + ex.getMessage());
       }
+      status = SLEEPING;
    }
 
    synchronized public void init(Global global, PluginInfo pluginInfo)
@@ -162,11 +169,13 @@ public class ConsumableQueuePlugin implements I_MsgDistributor, I_ConnectionStat
    synchronized public void toAlive(DispatchManager dispatchManager, ConnectionStateEnum oldState) {
       // TODO synchronization
       if (this.log.CALL) this.log.call(ME, "toAlive");
+      if (this.status != SLEEPING) return;
       try {
          ArrayList lst = this.topicHandler.peekFromHistory(-1, -1L);
          for (int i=0; i < lst.size(); i++) {
             MsgUnitWrapper msgUnitWrapper = ((MsgQueueHistoryEntry)lst.get(i)).getMsgUnitWrapper();
-            this.syncDistribution(msgUnitWrapper);
+            if (msgUnitWrapper != null) 
+               this.distribute(msgUnitWrapper);
          }  
       }
       catch (Throwable ex) {
