@@ -3,6 +3,8 @@ package org.xmlBlaster.util.plugin;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.property.PropString;
+import org.xmlBlaster.util.context.ContextNode;
 
 import java.util.Properties;
 import java.util.StringTokenizer;
@@ -42,8 +44,18 @@ public class PluginInfo {
     *             else: Load the given plugin or throw exception
     */
    public PluginInfo(Global glob, I_PluginManager manager, String typeVersion) throws XmlBlasterException {
+      this(glob, manager, typeVersion, (ContextNode)null);
+   }
+
+   /**
+    * @param manager can be null if you only want to parse typeVersion
+    * @param typeVersion null: Choose default plugin pluginManager.getDefaultPluginName() <br />
+    *             "undef": Don't load the plugin
+    *             else: Load the given plugin or throw exception
+    */
+   public PluginInfo(Global glob, I_PluginManager manager, String typeVersion, ContextNode contextNode) throws XmlBlasterException {
       if (typeVersion == null) {
-         init(glob, manager, null, null);
+         init(glob, manager, (String)null, (String)null, (ContextNode)null);
          return;
       }
       int i = typeVersion.indexOf(',');
@@ -57,7 +69,22 @@ public class PluginInfo {
          version_ = typeVersion.substring(i+1);
          type_ = typeVersion.substring(0,i);
       }
-      init(glob, manager, type_, version_);
+      init(glob, manager, type_, version_, contextNode);
+   }
+
+   /**
+    * From pluginEnvClass and instanceId we build a string to lookup the key in the environment
+    * e.g. "/xmlBlaster/node/heron/persistence/topicStore/PersistencePlugin[JDBC][1.0]"
+    * @param manager can be null if you only wanted to parse typeVersion
+    * @param type null: Choose default plugin pluginManager.getDefaultPluginName() <br />
+    *             "undef": Don't load the plugin
+    *             else: Load the given plugin or throw exception
+    * @param pluginEnvClass The classname for environment lookup e.g. "queue" or "persistence"
+    * @param instanceId The instance name of the plugin e.g. "history" or "topicStore"
+    */
+   public PluginInfo(Global glob, I_PluginManager manager, String type, String version, 
+                     ContextNode contextNode) throws XmlBlasterException {
+      init(glob, manager, type, version, contextNode);
    }
 
    /**
@@ -66,7 +93,7 @@ public class PluginInfo {
     *             else: Load the given plugin or throw exception
     */
    public PluginInfo(Global glob, I_PluginManager manager, String type, String version) throws XmlBlasterException {
-      init(glob, manager, type, version);
+      this(glob, manager, type, version, (ContextNode)null);
    }
 
    /**
@@ -82,12 +109,10 @@ public class PluginInfo {
    }
 
    /**
-    * @param manager can be null if you only wanted to parse typeVersion
-    * @param type null: Choose default plugin pluginManager.getDefaultPluginName() <br />
-    *             "undef": Don't load the plugin
-    *             else: Load the given plugin or throw exception
+    * see javadoc of constructor
     */
-   private void init(Global glob, I_PluginManager manager, String type_, String version_) throws XmlBlasterException {
+   private void init(Global glob, I_PluginManager manager, String type_, String version_,
+                     ContextNode contextNode) throws XmlBlasterException {
       log = glob.getLog("plugin");
       this.type = type_;
       this.version = (version_ == null) ? "1.0" : version_;
@@ -102,8 +127,17 @@ public class PluginInfo {
          return;
       }
 
-      propertyKey = manager.createPluginPropertyKey(type, version); // "ProtocolPlugin[IOR][1.0]"
-      String rawString = glob.getProperty().get(propertyKey, (String)null);// "org.xmlBlaster.protocol.soap.SoapDriver,classpath=xerces.jar:soap.jar,MAXSIZE=100"
+      // propertyKey="ProtocolPlugin[IOR][1.0]"
+      propertyKey = manager.createPluginPropertyKey(type, version);
+      
+      // Search for e.g. "ProtocolPlugin[IOR][1.0]" or "/xmlBlaster/node/heron/ProtocolPlugin[IOR][1.0]"
+      String defaultClass = (String)null;
+      PropString prop = new PropString(defaultClass);
+      String usedPropertyKey = prop.setFromEnv(glob, contextNode, propertyKey);
+      
+      //log.error(ME, "DEBUG ONLY: Trying contextNode=" + ((contextNode==null)?"null":contextNode.getRelativeName()) + " propertyKey=" + propertyKey);
+
+      String rawString = prop.getValue();// "org.xmlBlaster.protocol.soap.SoapDriver,classpath=xerces.jar:soap.jar,MAXSIZE=100"
 
       if (rawString==null) {
          if (this.type != null)
