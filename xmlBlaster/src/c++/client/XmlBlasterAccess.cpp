@@ -60,7 +60,7 @@ ConnectReturnQos XmlBlasterAccess::connect(const ConnectQos& qos, I_Callback *cl
    string version = "1.0";
    connection_ = &(deliveryManager_->getPlugin(type, version));
 */
-   connection_ = &(deliveryManager_->getConnectionsHandler());
+   connection_ = deliveryManager_->getConnectionsHandler();
 
    if (connectionProblems_) {
       connection_->initFailsafe(connectionProblems_);

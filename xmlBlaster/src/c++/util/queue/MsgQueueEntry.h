@@ -90,41 +90,41 @@ public:
 
        if (msgUnit_ != NULL) {
           delete msgUnit_;
-	  msgUnit_ = NULL; 
+          msgUnit_ = NULL;
        }
        if (entry.msgUnit_ != NULL) msgUnit_ = new MessageUnit(*entry.msgUnit_);
 
        if (connectReturnQos_ != NULL) {
           delete connectReturnQos_;
-	  connectReturnQos_ = NULL; 
+          connectReturnQos_ = NULL; 
        }
        if (entry.connectReturnQos_ != NULL) 
           connectReturnQos_ = new ConnectReturnQos(*entry.connectReturnQos_);
 
        if (publishReturnQos_ != NULL) {
           delete publishReturnQos_;
-	  publishReturnQos_ = NULL; 
+          publishReturnQos_ = NULL; 
        }
        if (entry.publishReturnQos_ != NULL) 
           publishReturnQos_ = new PublishReturnQos(*entry.publishReturnQos_);
 
        if (queryQosData_ != NULL) {
           delete queryQosData_;
-	  queryQosData_ = NULL; 
+          queryQosData_ = NULL; 
        }
-       if (entry.queryQosData_ != NULL) 
+       if (entry.queryQosData_ != NULL)
           queryQosData_ = new QueryQosData(*entry.queryQosData_);
 
        if (queryKeyData_ != NULL) {
           delete queryKeyData_;
-	  queryKeyData_ = NULL; 
+          queryKeyData_ = NULL; 
        }
        if (entry.queryKeyData_ != NULL) 
           queryKeyData_ = new QueryKeyData(*entry.queryKeyData_);
 
        if (statusQosData_ != NULL) {
           delete statusQosData_;
-	  statusQosData_ = NULL; 
+          statusQosData_ = NULL; 
        }
        if (entry.statusQosData_ != NULL) 
           statusQosData_ = new StatusQosData(*entry.statusQosData_);

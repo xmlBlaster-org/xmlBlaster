@@ -57,6 +57,9 @@ ConnectionsHandler::~ConnectionsHandler()
    adminQueue_ = NULL;
    delete connectQos_;
    delete connectReturnQos_;
+
+   delete connection_;
+   connection_ = NULL;
    status_ = END;
 } 
 
@@ -173,9 +176,9 @@ SubscribeReturnQos ConnectionsHandler::subscribe(const SubscribeKey& key, const 
    while (i < retries_ || retries_ < 0) {
       try {
          SubscribeReturnQos ret = connection_->subscribe(key, qos);
-	 SubscribeQueueEntry entry(global_, key, qos);
-	 adminQueue_->put(entry);
-	 return ret;
+         SubscribeQueueEntry entry(global_, key, qos);
+         adminQueue_->put(entry);
+         return ret;
       }
       catch (XmlBlasterException &ex) {
          i++;
@@ -299,7 +302,7 @@ vector<PublishReturnQos> ConnectionsHandler::publishArr(vector<MessageUnit> msgU
    if (status_ == POLLING) {
       vector<PublishReturnQos> retQos;
       for (size_t i=0; i < msgUnitArr.size(); i++) {
-	 retQos.insert(retQos.end(), queuePublish(msgUnitArr[i]));
+         retQos.insert(retQos.end(), queuePublish(msgUnitArr[i]));
       }
       return retQos;
    }
@@ -310,11 +313,11 @@ vector<PublishReturnQos> ConnectionsHandler::publishArr(vector<MessageUnit> msgU
    catch (XmlBlasterException& ex) {
       if ( ex.isCommunication() ) {
          toPollingOrDead(); 
-	 vector<PublishReturnQos> retQos;
-	 for (size_t i=0; i < msgUnitArr.size(); i++) {
-	    retQos.insert(retQos.end(), queuePublish(msgUnitArr[i]));
-	 }
-	 return retQos;
+         vector<PublishReturnQos> retQos;
+         for (size_t i=0; i < msgUnitArr.size(); i++) {
+            retQos.insert(retQos.end(), queuePublish(msgUnitArr[i]));
+         }
+         return retQos;
       }
       else throw ex;
    }
@@ -384,7 +387,7 @@ void ConnectionsHandler::timeout(void *userData)
      if ( log_.TRACE ) log_.trace(ME, "ping timeout: status is 'CONNECTED'");
      try {
         if (connection_) {
-	   connection_->ping("<qos/>");
+           connection_->ping("<qos/>");
            startPinger();
         }
      }
@@ -400,50 +403,50 @@ void ConnectionsHandler::timeout(void *userData)
         if ((connection_) && (connectQos_)) {
            if ( log_.TRACE ) log_.trace(ME, "ping timeout: going to retry a connection");
 
-	   ConnectReturnQos retQos = connection_->connect(*connectQos_);
-	   if (connectReturnQos_) delete connectReturnQos_;
+           ConnectReturnQos retQos = connection_->connect(*connectQos_);
+           if (connectReturnQos_) delete connectReturnQos_;
            connectReturnQos_ = new ConnectReturnQos(retQos);
-	   string sessionId = connectReturnQos_->getSessionQos().getSessionId();
-	   log_.info(ME, string("successfully re-connected with sessionId = '") + sessionId + "', the connectQos was: " + connectQos_->toXml());
+           string sessionId = connectReturnQos_->getSessionQos().getSessionId();
+           log_.info(ME, string("successfully re-connected with sessionId = '") + sessionId + "', the connectQos was: " + connectQos_->toXml());
 
            if ( log_.TRACE ) {
-	      log_.trace(ME, "ping timeout: re-connection was successful");
-	      log_.trace(ME, string("ping timeout: the new connect returnQos: ") + connectReturnQos_->toXml());
-	   }
+              log_.trace(ME, "ping timeout: re-connection was successful");
+              log_.trace(ME, string("ping timeout: the new connect returnQos: ") + connectReturnQos_->toXml());
+           }
 
-	   bool doFlush = true;
+           bool doFlush = true;
            if ( connectionProblems_ ) doFlush = connectionProblems_->reConnected();
-	   status_ = CONNECTED;
+           status_ = CONNECTED;
            if (sessionId != lastSessionId_) {
-	      log_.info(ME, string("when reconnecting the sessionId changed from '") + lastSessionId_ + "' to '" + sessionId + "'");
-	      lastSessionId_ = sessionId;
-	      MsgQueue tmpQueue = *adminQueue_;
-	      flushQueueUnlocked(&tmpQueue, true); // don't remove entries (in case of a future failure) 
-	   }
+              log_.info(ME, string("when reconnecting the sessionId changed from '") + lastSessionId_ + "' to '" + sessionId + "'");
+              lastSessionId_ = sessionId;
+              MsgQueue tmpQueue = *adminQueue_;
+              flushQueueUnlocked(&tmpQueue, true); // don't remove entries (in case of a future failure) 
+           }
 
-	   if (doFlush) {
-	      try {
-		 flushQueueUnlocked(queue_, true);
-	      }
-	      catch (...) {
-		 log_.warn(ME, "an exception occured when trying to asynchroneously flush the contents of the queue. Probably not all messages have been sent. These unsent messages are still in the queue");
-	      }
-	   }
-           startPinger();	
+           if (doFlush) {
+              try {
+                 flushQueueUnlocked(queue_, true);
+              }
+              catch (...) {
+                 log_.warn(ME, "an exception occured when trying to asynchroneously flush the contents of the queue. Probably not all messages have been sent. These unsent messages are still in the queue");
+              }
+           }
+           startPinger();       
         }
      }
      catch (XmlBlasterException ex) {
         currentRetry_++;
-	if ( currentRetry_ < retries_ || retries_ < 0) { // continue to poll
+        if ( currentRetry_ < retries_ || retries_ < 0) { // continue to poll
            startPinger();
-	}
-	else {
-	   status_ = DEAD;
-	   if ( connectionProblems_ ) {
-	      connectionProblems_->lostConnection();
-	      // stopping
-	   }
-	}
+        }
+        else {
+           status_ = DEAD;
+           if ( connectionProblems_ ) {
+              connectionProblems_->lostConnection();
+              // stopping
+           }
+        }
      }
      return;
   }
@@ -491,7 +494,7 @@ long ConnectionsHandler::flushQueue()
 long ConnectionsHandler::flushQueueUnlocked(MsgQueue *queueToFlush, bool doRemove)
 {
    if ( log_.CALL ) log_.call(ME, "flushQueueUnlocked");
-	   if (!queueToFlush || queueToFlush->empty()) return 0;
+           if (!queueToFlush || queueToFlush->empty()) return 0;
    if (status_ != CONNECTED || connection_ == NULL) return -1;
 
    long ret = 0;
@@ -500,14 +503,14 @@ long ConnectionsHandler::flushQueueUnlocked(MsgQueue *queueToFlush, bool doRemov
       vector<EntryType>::const_iterator iter = entries.begin();
       while (iter != entries.end()) {
          try {
-	    (*iter)->send(*connection_);
-	 }
-	 catch (XmlBlasterException &ex) {
-	   if (ex.isCommunication()) toPollingOrDead();
-	   if (doRemove) queueToFlush->randomRemove(entries.begin(), iter);
-	   throw ex;
-	 }
-	 iter++;
+            (*iter)->send(*connection_);
+         }
+         catch (XmlBlasterException &ex) {
+           if (ex.isCommunication()) toPollingOrDead();
+           if (doRemove) queueToFlush->randomRemove(entries.begin(), iter);
+           throw ex;
+         }
+         iter++;
       }
       if (doRemove) ret += queueToFlush->randomRemove(entries.begin(), entries.end());
    }

@@ -52,9 +52,9 @@ public:
    TestFailsafe(Global& glob) 
       : ME("TestFailsafe"), 
         global_(glob), 
-	log_(glob.getLog()),
-	embeddedServer_(glob, "", "-info false -warn false -error false"),
-	updateMutex_()
+        log_(glob.getLog()),
+        embeddedServer_(glob, "", "-info false -warn false -error false"),
+        updateMutex_()
    {
       connection_   = NULL;
       connQos_      = NULL;
@@ -98,32 +98,32 @@ public:
    {
       try {   
          if (embeddedServer_.isSomeServerResponding()) {
-	    log_.error(ME, "this test uses an embedded Server. There is already an external xmlBlaster running on this system, please shut it down first");
-	    assert(0);
-	 }
-	 embeddedServer_.start();
-	 Thread::sleepSecs(10);
+            log_.error(ME, "this test uses an embedded Server. There is already an external xmlBlaster running on this system, please shut it down first");
+            assert(0);
+         }
+         embeddedServer_.start();
+         Thread::sleepSecs(10);
 
-	 connection_ = new XmlBlasterAccess(global_);
-	 connection_->initFailsafe(this);
+         connection_ = new XmlBlasterAccess(global_);
+         connection_->initFailsafe(this);
 
-	 connQos_ = new ConnectQos(global_, "guy", "secret");
+         connQos_ = new ConnectQos(global_, "guy", "secret");
 
-	 log_.info(ME, string("connecting to xmlBlaster. Connect qos: ") + connQos_->toXml());
-	 connRetQos_ = new ConnectReturnQos(connection_->connect(*connQos_, this));  // Login to xmlBlaster, register for updates
-	 log_.info(ME, "successfully connected to xmlBlaster. Return qos: " + connRetQos_->toXml());
+         log_.info(ME, string("connecting to xmlBlaster. Connect qos: ") + connQos_->toXml());
+         connRetQos_ = new ConnectReturnQos(connection_->connect(*connQos_, this));  // Login to xmlBlaster, register for updates
+         log_.info(ME, "successfully connected to xmlBlaster. Return qos: " + connRetQos_->toXml());
 
-	 subKey_ = new SubscribeKey(global_);
-	 subKey_->setOid("TestFailsafe");
-	 subQos_ = new SubscribeQos(global_);
-	 log_.info(ME, string("subscribing to xmlBlaster with key: ") + subKey_->toXml() + " and qos: " + subQos_->toXml());
+         subKey_ = new SubscribeKey(global_);
+         subKey_->setOid("TestFailsafe");
+         subQos_ = new SubscribeQos(global_);
+         log_.info(ME, string("subscribing to xmlBlaster with key: ") + subKey_->toXml() + " and qos: " + subQos_->toXml());
 
-	 SubscribeReturnQos subRetQos = connection_->subscribe(*subKey_, *subQos_);
-	 log_.info(ME, string("successfully subscribed to xmlBlaster. Return qos: ") + subRetQos.toXml());
+         SubscribeReturnQos subRetQos = connection_->subscribe(*subKey_, *subQos_);
+         log_.info(ME, string("successfully subscribed to xmlBlaster. Return qos: ") + subRetQos.toXml());
       }
       catch (XmlBlasterException& ex) {
          log_.error(ME, string("exception occurred in setUp. ") + ex.toXml());
-	 assert(0);
+         assert(0);
       }
 
    }
@@ -156,28 +156,28 @@ public:
    {
       try {
          pubQos_ = new PublishQos(global_);
-	 pubKey_ = new PublishKey(global_);
-	 pubKey_->setOid("TestFailsafe");
+         pubKey_ = new PublishKey(global_);
+         pubKey_->setOid("TestFailsafe");
 
-	 for (int i=0; i < 120; i++) {
-	    string msg = lexical_cast<string>(i);
-	    MessageUnit msgUnit(*pubKey_, msg, *pubQos_);
+         for (int i=0; i < 120; i++) {
+            string msg = lexical_cast<string>(i);
+            MessageUnit msgUnit(*pubKey_, msg, *pubQos_);
             log_.info(ME, string("publishing msg '") + msg + "'");
-	    PublishReturnQos pubRetQos = connection_->publish(msgUnit);
+            PublishReturnQos pubRetQos = connection_->publish(msgUnit);
   	    if (i == 12 || i == 32) embeddedServer_.stop();
   	    if (i == 22 || i == 42) embeddedServer_.start();
-	    try {
-	       Thread::sleepSecs(1);
-	    }
-	    catch(XmlBlasterException e) {
-	       cout << e.toXml() << endl;
-	    }
+            try {
+               Thread::sleepSecs(1);
+            }
+            catch(XmlBlasterException e) {
+               cout << e.toXml() << endl;
+            }
 
-	 }
+         }
       }
       catch (XmlBlasterException& ex) {
          log_.error(ME, string("exception occurred in setFailSafe. ") + ex.toXml());
-	 assert(0);
+         assert(0);
       }
    }
 
@@ -186,23 +186,23 @@ public:
    {
       try {
          EraseKey eraseKey(global_);
-	 eraseKey.setOid("TestFailsafe");
-	 EraseQos eraseQos(global_);
+         eraseKey.setOid("TestFailsafe");
+         EraseQos eraseQos(global_);
          log_.info(ME, string("erasing the published message. Key: ") + eraseKey.toXml() + " qos: " + eraseQos.toXml());
-	 vector<EraseReturnQos> eraseRetQos = connection_->erase(eraseKey, eraseQos);
-	 for (size_t i=0; i < eraseRetQos.size(); i++ ) {
+         vector<EraseReturnQos> eraseRetQos = connection_->erase(eraseKey, eraseQos);
+         for (size_t i=0; i < eraseRetQos.size(); i++ ) {
             log_.info(ME, string("successfully erased the message. return qos: ") + eraseRetQos[i].toXml());
-	 }
+         }
 
-	 // log_.info(ME, "going to sleep for one minute");
-	 // org::xmlBlaster::util::thread::Thread::sleep(60000);
+         // log_.info(ME, "going to sleep for one minute");
+         // org::xmlBlaster::util::thread::Thread::sleep(60000);
 
-	 DisconnectQos disconnectQos(global_);
+         DisconnectQos disconnectQos(global_);
          connection_->disconnect(disconnectQos);
       }
       catch (XmlBlasterException& ex) {
          log_.error(ME, string("exception occurred in tearDown. ") + ex.toXml());
-	 assert(0);
+         assert(0);
       }
    }
 

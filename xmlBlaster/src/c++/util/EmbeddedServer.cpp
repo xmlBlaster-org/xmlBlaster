@@ -73,6 +73,10 @@ bool EmbeddedServer::stop(bool shutdownExternal)
       sessionQos.setAbsoluteName("embeddedKiller");
       ConnectQos connQos(global_, "embeddedKiller", "secret");
       connQos.setSessionQos(sessionQos);
+      // to be sure not to store the kill msg in a client queue ...
+      Address address(global_);
+      address.setDelay(0);
+      connQos.setAddress(address);
       conn.connect(connQos, NULL);
    }
    catch (XmlBlasterException& ex) {

@@ -31,15 +31,15 @@ DeliveryManager::DeliveryManager(Global& global)
      serverMap_()
 {
    if (log_.CALL) log_.call(ME, "::constructor");
-   connectionsHandler_ = NULL;
+//   connectionsHandler_ = NULL;
 }
 
 
 DeliveryManager::~DeliveryManager()
 {
    if (log_.CALL) log_.call(ME, "::destructor");
-   delete connectionsHandler_;
-   connectionsHandler_ = NULL;
+//   delete connectionsHandler_;
+//   connectionsHandler_ = NULL;
 
    // should be synchronized ...
    ServerMap::iterator iter = serverMap_.begin();
@@ -84,12 +84,16 @@ I_XmlBlasterConnection& DeliveryManager::getPlugin(const string& type, const str
 }
 
 
-ConnectionsHandler& DeliveryManager::getConnectionsHandler()
+ConnectionsHandler* DeliveryManager::getConnectionsHandler()
 {
+/*
    if (connectionsHandler_ == NULL) {
       connectionsHandler_ = new ConnectionsHandler(global_, *this);
    }
    return *connectionsHandler_;
+*/  
+   // it makes sense to have one per XmlBlasterAccess (must be destructed by the invoker of this method !!!)
+   return new ConnectionsHandler(global_, *this);
 }
 
 

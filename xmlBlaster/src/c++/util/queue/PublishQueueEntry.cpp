@@ -27,8 +27,6 @@ MsgQueueEntry& PublishQueueEntry::send(I_XmlBlasterConnection& connection)
       delete publishReturnQos_;
       publishReturnQos_ = NULL;
    }
-   std::cout << "PublishQueueEntry: " << msgUnit_->getContent() << std::endl;
-
    publishReturnQos_ = new PublishReturnQos(connection.publish(*msgUnit_));
    return *this;
 }

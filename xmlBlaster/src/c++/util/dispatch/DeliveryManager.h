@@ -42,7 +42,7 @@ private:
    Global&             global_;
    Log&                log_;
    ServerMap           serverMap_;
-   ConnectionsHandler* connectionsHandler_;
+//   ConnectionsHandler* connectionsHandler_;
 
 public:
    DeliveryManager(Global& global);
@@ -51,7 +51,7 @@ public:
 
    I_XmlBlasterConnection& getPlugin(const string& type, const string& version);
 
-   ConnectionsHandler& getConnectionsHandler();
+   ConnectionsHandler* getConnectionsHandler();
 };
 
 #define _DELIVERYMANAGER_CLASS
