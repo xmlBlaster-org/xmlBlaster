@@ -888,6 +888,10 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     */
    private void startPinging()
    {
+      if (this.clientProblemCallback == null) {
+         if (Log.TRACE) Log.trace(ME, "No ping initialized, we are not in fails save mode");
+         return;
+      }
       if (connectQos.getAddress().getPingInterval() > 0L && pingThread == null) {
          pingThread = new PingThread(this, connectQos.getAddress().getPingInterval());
          pingThread.start();
