@@ -2,7 +2,7 @@
   C based SOCKET access to xmlBlaster, May 2003
 ---------------------------------------------------------------------
 
-This is a first, tiny quick hack of a C based SOCKET client.
+This is the C based SOCKET client for xmlBlaster.
 It should compile on Linux, Windows (PocketPC, WinCE) and other UNIX OS.
 
 Please read 
@@ -11,153 +11,9 @@ Please read
 
 for more details.
 
-(See xmlBlaster/demo/c/socket/README for demo clients)
+o See xmlBlaster/demo/c/socket/README for demo clients
 
-Features:
-
-  o Support on many OS (Win, Win-CE, UNIX, Linux) and easy portable
-
-  o Compiles with C or with C++ compiler
-
-  o Object size only ~25 KBytes
-  
-  o Supports synchronous xmlBlaster access with
-    connect(), disconnect(), get(), publish(), erase(), ping()
-    See example: XmlBlasterConnectionUnparsedMain.c
-  
-  o Supports asynchronous access with client callback update()
-    See example: CallbackServerUnparsed.c
-
-  o Supports sync and async communications with pthreads
-    Tested on Linux, Solaris and Windows XP
-    See example: XmlBlasterAccessUnparsed.c
-
-    Posix threads DLL for Win, PocketPC, WinCE:
-       http://sources.redhat.com/pthreads-win32
-       (the lib is provided in our distribution, see:
-        xmlBlaster/src/c/socket/pthreadVC.lib)
-
-  o Reports exception nicely back to the client
-
-  o The client side xmlBlasterAccess structure has function pointers
-    for all methods to have object oriented like access,
-    see HelloWorld.c as a usage example
-
-  o The access library and the callback library is thread safe.
-    Multiple instances of client connections or callback servers
-    can run in parallel.
+o The testsuite is in xmlBlaster/testsuite/src/c
 
 
-COMPILE:
-========
-
-cd xmlBlaster/demo/c/socket   (see HelloWorld.c)
-
-Linux:    gcc -Wall -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c util/*.c socket/*.c -lpthread
-          g++ -Wall -g -D_REENTRANT -I. -o HelloWorld HelloWorld.c util/*.c socket/*.c -lpthread
-
-Windows:  cl -D_WINDOWS -I. HelloWorld.c util\msgUtil.c socket\XmlBlasterConnectionUnparsed.c socket\xmlBlasterSocket.c ws2_32.lib
-     or:  cl /MT /W4 /Wp64 /GZ /Ge /GS  /FeHelloWorld.exe /VxmlBlaster-0.848 -D_WINDOWS -I. HelloWorld.c util\msgUtil.c socket\XmlBlasterConnectionUnparsed.c socket\xmlBlasterSocket.c ws2_32.lib
-
-Solaris:  cc -Xc -g -I. -o HelloWorld HelloWorld.c util\msgUtil.c socket/XmlBlasterConnectionUnparsed.c socket/xmlBlasterSocket.c -lsocket -lnsl
-
-
-Note: Solaris CC has '__sun' defined.
-
-Now start xmlBlaster:
-=====================
-
-   java org.xmlBlaster.Main -dump[socket] true -trace[socket] true -call[socket] true  -call[core] true
-
-and the C client:
-
-   HelloWorld
-
-The client connects and does some invocations (see the main() in HelloWorld.c).
-
-
-
-How it works:
-=============
-
-If you want a client connection (without callback) you need
-to include 
-
-   #include <XmlBlasterConnectionUnparsed.h>
-
-in your client code, thats it. In this header is a structure which
-allows you complete synchronous access to xmlBlaster:
-
-   XmlBlasterException exception;
-
-   XmlBlasterConnectionUnparsed *xb = getXmlBlasterConnectionUnparsed(argc, argv);
-   ...
-   response = xb->connect(xb, connectQos, &exception);
-   ...
-   msgUnitArr = xb->get(xb, "<key oid='__cmd:?freeMem'/>", 0, &exception);
-   ...
-
-If you want to install a callback server you need to include the header
-CallbackServerUnparsed.h, here is a complete example:
-
-   #include <CallbackServerUnparsed.h>
-   int main(int argc, char** argv)
-   {
-      CallbackServerUnparsed *cb = getCallbackServerUnparsed(argc, argv, myUpdate, 0);
-      printf("[main] Created CallbackServerUnparsed instance, creating listener on socket://%s:%d...\n", cb->hostCB, cb->portCB);
-      cb->runCallbackServer(cb); // blocks on socket listener
-
-      // This code is reached only on socket EOF
-      cb->shutdown(cb);
-      printf("[main] Socket listener is shutdown\n");
-      freeCallbackServerUnparsed(cb);
-      return 0;
-   }
-
-
-Next steps:
-===========
-
-o Clean up the code
- - make a lib from it
-
-o Wrap it as a C++ protocol plugin to be independend of CORBA and
- use the C++ testsuite for this C implementation 
-
-
-C-SOCKET developers:
-====================
-
-You should check your code at least with:
-
-o UNIX gcc and g++ with and without the -ansi option
-  and with valgrind:
-  valgrind --leak-check=yes --leak-resolution=high --show-reachable=yes -v XmlBlasterAccessUnparsedMain
-
-o Windows cl
-
-
-Executable sizes on Linux gcc 3.3
-=================================
-
-   XmlBlasterAccessUnparsedMain  41 KBytes
-
-
-Open issues:
-============
-
-o On windows a response waiting timeout is not implemented
-  see XmlBlasterAccessUnparsed.c:getAbsoluteTime()
-
-o Adding mutex to every function call
-
-o Invoking xmlBlaster from within the callback thread (in update() function)
-  will deadlock (i believe so).
-  Probably we need to add a thread pool
-
-o XML parsing with expat
-
-o Write requirement documentation in xmlBlaster/doc/requirements/client.c.socket.xml
-
-
-mr@marcelruff.info 05/2003
+xmlblaster@marcelruff.info 05/2003
