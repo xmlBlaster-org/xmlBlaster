@@ -17,7 +17,7 @@ import org.xmlBlaster.engine.cluster.ClusterManager;
 import org.xmlBlaster.engine.admin.CommandManager;
 import org.xmlBlaster.engine.admin.extern.MomClientGateway;
 import org.xmlBlaster.protocol.CbProtocolManager;
-import org.xmlBlaster.authentication.Authenticate;
+import org.xmlBlaster.protocol.I_Authenticate;
 import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.dispatch.DeliveryManager;
 import org.xmlBlaster.util.dispatch.DeliveryConnectionsHandler;
@@ -47,8 +47,8 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    private RunlevelManager runlevelManager;
    private JmxWrapper jmxWrapper;
 
-   /** the authentication service */
-   private Authenticate authenticate;
+   /** the authentication service (a layer around it for security reasons) */
+   private I_Authenticate authenticate;
    /** the xmlBlaster core class */
    private RequestBroker requestBroker;
    private NodeId nodeId;
@@ -540,12 +540,12 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
     * under the name <i>"/xmlBlaster/I_Authenticate"</i> (see Constants.I_AUTHENTICATE_PROPERTY_KEY).<br />
     * This allows lookup similar to a naming service if we are in the same JVM.
     */
-   public void setAuthenticate(Authenticate auth) {
+   public void setAuthenticate(I_Authenticate auth) {
       this.authenticate = auth;
       addObjectEntry(Constants.I_AUTHENTICATE_PROPERTY_KEY, this.authenticate);
    }
 
-   public Authenticate getAuthenticate() {
+   public I_Authenticate getAuthenticate() {
       return this.authenticate;
    }
 
