@@ -312,8 +312,12 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
          }
 
          try {
+
+// this line has been added:
+int[] help = this.manager.addEntries(this.storageId.getStrippedId(), this.glob.getStrippedId(), queueEntries);
             for (int i=0; i < queueEntries.length; i++) {
-               boolean isProcessed = this.manager.addEntry(this.storageId.getStrippedId(), this.glob.getStrippedId(), queueEntries[i]);
+//               boolean isProcessed = this.manager.addEntry(this.storageId.getStrippedId(), this.glob.getStrippedId(), queueEntries[i]);
+               boolean isProcessed = help[i] > 0;
                if (isProcessed) {
                   this.numOfEntries++;
                   this.numOfBytes += queueEntries[i].getSizeInBytes();
@@ -619,9 +623,35 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
     */
    public int removeRandom(I_Entry entry) throws XmlBlasterException {
       if (entry == null) return 0;
-      I_Entry[] arr = new I_Entry[1];
-      arr[0] = entry;
-      return (int)removeRandom(arr);
+//      I_Entry[] arr = new I_Entry[1];
+//      arr[0] = entry;
+//      return (int)removeRandom(arr);
+
+      try {
+         long id = entry.getUniqueId();
+         long currentAmount = entry.getSizeInBytes();
+         long currentPersistentSize = 0L;
+         long currentPersistentEntries = 0L;
+
+         if (entry.isPersistent()) {
+            currentPersistentSize += entry.getSizeInBytes();
+            currentPersistentEntries = 1L;
+         }
+
+         synchronized(this.modificationMonitor) {
+            int ret = this.manager.deleteEntry(getStorageId().getStrippedId(), this.glob.getStrippedId(), id);
+            this.numOfEntries -= ret;
+            if (ret > 0) { // then we need to retrieve the values
+               this.numOfBytes -= currentAmount;
+               this.numOfPersistentBytes -= currentPersistentSize;
+               this.numOfPersistentEntries -= currentPersistentEntries;
+            }
+            return ret;
+         }
+      }
+      catch (SQLException ex) {
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME, "removeRandom(entry) caught sql exception, status is" + toXml(""), ex);
+      }
    }
 
    /**
@@ -668,7 +698,6 @@ public final class JdbcQueueCommonTablePlugin implements I_Queue, I_StoragePlugi
       catch (SQLException ex) {
          throw new XmlBlasterException(glob, ErrorCode.RESOURCE_DB_UNKNOWN, ME, "removeRandom(entry[]) caught sql exception, status is" + toXml(""), ex);
       }
-
    }
 
 

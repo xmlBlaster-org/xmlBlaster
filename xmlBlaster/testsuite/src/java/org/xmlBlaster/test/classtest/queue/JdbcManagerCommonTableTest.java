@@ -239,7 +239,7 @@ public class JdbcManagerCommonTableTest extends TestCase {
             this.log.info(ME, "going to ping");
             this.manager.ping();
             try {
-   	       Thread.sleep(200L);
+               Thread.sleep(200L);
             }
             catch (Exception ex) {
             }

@@ -292,6 +292,86 @@ public class JdbcQueueTest extends TestCase {
    }
 
 
+
+
+   public void testMultiplePut() {
+      try {
+         multiplePut();
+      }
+      catch (XmlBlasterException ex) {
+         fail("Exception when testing multiplePut probably due to failed initialization of the queue of type " + PLUGIN_TYPES[this.count] + " " + ex.getMessage() );
+         ex.printStackTrace();
+      }
+   }
+
+   public void multiplePut() throws XmlBlasterException {
+      // set up the queues ....
+      this.log.info(ME, "initialEntries test starts");
+      QueuePropertyBase cbProp = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
+      cbProp.setMaxEntries(10000L);
+      cbProp.setMaxBytes(200000L);
+      StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "initialEntries");
+
+      try {
+         String type = PLUGIN_TYPES[this.count];
+         this.glob.getProperty().set("cb.queue.persistent.tableNamePrefix", "TEST");
+         QueuePluginManager pluginManager = new QueuePluginManager(glob);
+         PluginInfo pluginInfo = new PluginInfo(glob, pluginManager, type, "1.0");
+         java.util.Properties prop = (java.util.Properties)pluginInfo.getParameters();
+         prop.put("tableNamePrefix", "TEST");
+         prop.put("nodesTableName", "_nodes");
+         prop.put("queuesTableName", "_queues");
+         prop.put("entriesTableName", "_entries");
+         I_Queue tmpQueue = pluginManager.getPlugin(pluginInfo, queueId, cbProp);
+         tmpQueue.clear();
+         // add some persistent entries and then shutdown ...
+         int nmax = 1;
+         int size = 100;
+
+         for (int j=0; j < 4; j++) {
+            DummyEntry[] entries = new DummyEntry[nmax];
+            for (int i=0; i < nmax; i++) {
+      	       entries[i] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), size, true);
+     	    }
+     	    long time1 = System.currentTimeMillis();
+            tmpQueue.put(entries, false);
+     	    long delta = System.currentTimeMillis() - time1;
+     	    this.log.info(ME, "multiple put '" + nmax + "' entries took '" + 0.001 * delta + "' seconds which is '" + 1.0 * delta / nmax + "' ms per entry");
+     	   
+     	    ArrayList list = tmpQueue.peek(-1, -1L);
+            assertEquals("Wrong number of entries in queue", nmax, list.size());
+     	   
+     	    time1 = System.currentTimeMillis();
+     	    tmpQueue.removeRandom(entries);
+     	    delta = System.currentTimeMillis() - time1;
+     	    this.log.info(ME, "multiple remove '" + nmax + "' entries took '" + 0.001 * delta + "' seconds which is '" + 1.0 * delta / nmax + "' ms per entry");
+     	    tmpQueue.clear();
+     	   
+     	    time1 = System.currentTimeMillis();
+     	    for (int i=0; i < nmax; i++) {
+     	       tmpQueue.put(entries[i], false);
+     	    }
+     	    delta = System.currentTimeMillis() - time1;
+     	    this.log.info(ME, "repeated single put '" + nmax + "' entries took '" + 0.001 * delta + "' seconds which is '" + 1.0 * delta / nmax + "' ms per entry");
+     	   
+     	    time1 = System.currentTimeMillis();
+     	    for (int i=0; i < nmax; i++) tmpQueue.removeRandom(entries[i]);
+     	    delta = System.currentTimeMillis() - time1;
+     	    this.log.info(ME, "repeated single remove '" + nmax + "' entries took '" + 0.001 * delta + "' seconds which is '" + 1.0 * delta / nmax + "' ms per entry");
+            nmax *= 10;
+         }
+         tmpQueue.shutdown(); // to allow to initialize again
+      }
+      catch (Exception ex) {
+         this.log.error(ME, "setUp: error when setting the property 'cb.queue.persistent.tableNamePrefix' to 'TEST'");
+         ex.printStackTrace();
+         assertTrue("exception occured when testing initialEntries", false);
+      }
+      this.log.info(ME, "initialEntries test successfully ended");
+   }
+
+
+
    /**
     * Method is used by TestRunner to load these tests
     */
@@ -299,6 +379,7 @@ public class JdbcQueueTest extends TestCase {
       TestSuite suite= new TestSuite();
       Global glob = new Global();
       for (int i=0; i < PLUGIN_TYPES.length; i++) {
+         suite.addTest(new JdbcQueueTest(glob, "testMultiplePut", i, true));
          suite.addTest(new JdbcQueueTest(glob, "testPutWithBreak", i, false));
          suite.addTest(new JdbcQueueTest(glob, "testInitialEntries", i, true));
       }
@@ -315,6 +396,11 @@ public class JdbcQueueTest extends TestCase {
 
       for (int i=0; i < PLUGIN_TYPES.length; i++) {
          JdbcQueueTest testSub = new JdbcQueueTest(glob, "JdbcQueueTest", i, true);
+
+         testSub.setUp();
+         testSub.testMultiplePut();
+         testSub.tearDown();
+/*
          testSub.setUp();
          testSub.testInitialEntries();
          testSub.tearDown();
@@ -322,6 +408,7 @@ public class JdbcQueueTest extends TestCase {
          testSub.setUp();
          testSub.testPutWithBreak();
          testSub.tearDown();
+*/
       }
    }
 }

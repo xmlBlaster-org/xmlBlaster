@@ -626,11 +626,8 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
    /**
     *
     * Adds a row to the specified queue table
-    * @param tableName The name of the table on which to perform the operation
-    * @param dataId The long specifying the unique Id of this entry in the queue
-    * @param prio The priority of this entry
-    * @param flag The flag which specifies which kind of object is stored in the blob
-    * @param blob An object (must be Serializable) to store in the DB.
+    * @param queueName The name of the queue on which to perform the operation
+    * @param entry the object to be stored.
     *
     * @return true on success
     *
@@ -720,6 +717,79 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
       return ret;
    }
 
+   /**
+    *
+    * Adds several rows to the specified queue table in batch mode to improve performance
+    * @param queueName The name of the queue on which to perform the operation
+    * @param nodeId the node id to which the queue belongs
+    * @param entries the entries to store
+    * @return array of boolean telling which entries where stored and which not.
+    *
+    * @throws SQLException if an error occured while adding the row
+    * @throws XmlBlasterException if an error occured when trying to get a connection
+    */
+   public int[] addEntries(String queueName, String nodeId, I_Entry[] entries)
+      throws SQLException, XmlBlasterException {
+
+      if (this.log.CALL) this.log.call(getLogId(queueName, nodeId, "addEntries"), "Entering");
+
+      if (!this.isConnected) {
+         if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "addEnties"), " for '" + entries.length + "' currently not possible. No connection to the DB");
+         throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".addEntries", " the connection to the DB is unavailable already before trying to add entries"); 
+// return false;
+      }
+
+      PreparedStatement preStatement = null;
+      boolean ret = false;
+      Connection conn = null;
+      try {
+         conn = this.pool.getConnection();
+         String req = "INSERT INTO " + this.entriesTableName + " VALUES ( ?, ?, ?, ?, ?, ?, ?, ?)";
+         if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "addEntries"), req);
+
+         preStatement = conn.prepareStatement(req);
+         preStatement.setQueryTimeout(this.pool.getQueryTimeout());
+
+         for (int i=0; i < entries.length; i++) {
+            I_Entry entry = entries[i];
+
+            long dataId = entry.getUniqueId();
+            int prio = entry.getPriority();
+            byte[] blob = this.factory.toBlob(entry);
+            String typeName = entry.getEmbeddedType();
+            boolean persistent = entry.isPersistent();
+            long sizeInBytes = entry.getSizeInBytes();
+            preStatement.setLong(1, dataId);
+            preStatement.setString(2, nodeId);
+            preStatement.setString(3, queueName);
+            preStatement.setInt(4, prio);
+            preStatement.setString(5, typeName);
+            if (persistent == true) preStatement.setString(6, "T");
+            else preStatement.setString(6, "F");
+            preStatement.setLong(7, sizeInBytes);
+            preStatement.setBytes(8, blob);
+            if (this.log.TRACE) this.log.trace(getLogId(queueName, nodeId, "addEntries"), preStatement.toString());
+            preStatement.addBatch();
+ 	 }
+         return preStatement.executeBatch();
+      }
+      catch (SQLException ex) {
+         this.log.warn(getLogId(queueName, nodeId, "addEntries"), "Could not insert entries: " +
+                  ex.toString());
+         if (handleSQLException(conn, getLogId(queueName, nodeId, "addEntries"), ex)) 
+            throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".addEntries", "", ex); 
+         else throw ex;
+      }
+      finally {
+         try {
+            if (preStatement != null) preStatement.close();
+         }
+         catch (Throwable ex) {
+            this.log.warn(ME, "addEntries: throwable when closing the connection: " + ex.toString());
+         }
+         if (conn != null) this.pool.releaseConnection(conn);
+      }
+   }
 
    /**
     * Cleans up the specified queue. It deletes the queue from the 'queues' table which implicitly deletes
@@ -1134,7 +1204,7 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
     * An example of prefix:
     * "delete from tableName where dataId in(";
     */
-   private ArrayList whereInStatement(String reqPrefix, long[] uniqueIds) {
+   private final ArrayList whereInStatement(String reqPrefix, long[] uniqueIds) {
       if (this.log.CALL) this.log.call(ME, "whereInStatement");
       final String reqPostfix = ")";
       boolean isFirst = true;
@@ -1323,6 +1393,54 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
             if (conn != null) this.pool.releaseConnection(conn);
          }
          throw ex;
+      }
+   }
+
+
+
+
+
+   /**
+    * Deletes the entry specified
+    *
+    * @param   tableName the name of the table on which to delete the entries
+    * @param   uniqueIds the array containing all the uniqueId for the entries to delete.
+    */
+   public int deleteEntry(String queueName, String nodeId, long uniqueId)
+      throws XmlBlasterException, SQLException {
+      if (this.log.CALL) this.log.call(getLogId(queueName, nodeId, "deleteEntry"), "Entering");
+
+      if (!this.isConnected) {
+         if (this.log.TRACE)
+            this.log.trace(getLogId(queueName, nodeId, "deleteEntry"), "Currently not possible. No connection to the DB");
+         return 0;
+      }
+
+      Connection conn = null;
+      PreparedStatement st = null;
+      try {
+         String req = "delete from " + this.entriesTableName + " where queueName=? AND nodeId=? AND dataId=?";
+//         String req = "update " + this.entriesTableName + " SET durable='X' where queueName=? AND nodeId=? AND dataId=?";
+         conn =  this.pool.getConnection();
+         st = conn.prepareStatement(req);
+         st.setString(1, queueName);
+         st.setString(2, nodeId);
+         st.setLong(3, uniqueId);
+         return st.executeUpdate();
+      }
+      catch (SQLException ex) {
+         if (handleSQLException(conn, getLogId(queueName, nodeId, "deleteEntry"), ex))
+            throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_DB_UNAVAILABLE, ME + ".deleteEntry", "", ex); 
+         else throw ex;
+      }
+      finally {
+         try {
+            if (st != null) st.close();
+         }
+         catch (Throwable ex) {
+            this.log.warn(ME, "deleteEntry: throwable when closing the connection: " + ex.toString());
+         }
+         if (conn != null) this.pool.releaseConnection(conn);
       }
    }
 
