@@ -19,6 +19,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.def.ErrorCode;
 import org.xmlBlaster.util.def.MethodName;
 import org.xmlBlaster.util.def.Constants;
+import org.xmlBlaster.util.plugin.PluginInfo;
 
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.util.qos.address.Address;
@@ -71,6 +72,13 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
    protected String loginName = "dummyLoginName";
    protected Address clientAddress;
    private I_CallbackExtended cbClient;
+   private PluginInfo pluginInfo;
+   /**
+    * Setting by plugin configuration, see xmlBlaster.properties, for example
+    * <br />
+    * ClientProtocolPlugin[SOCKET_UDP][1.0]=org.xmlBlaster.client.protocol.socket.SocketConnection,useUdpForOneway=true
+    */
+   private boolean useUdpForOneway = false;
 
    /**
     * Called by plugin loader which calls init(Global, PluginInfo) thereafter. 
@@ -105,17 +113,20 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
 
    /** Enforced by I_Plugin */
    public String getVersion() {
-      return "1.0";
+      return (this.pluginInfo == null) ? "1.0" : this.pluginInfo.getVersion();
    }
 
    /**
     * This method is called by the PluginManager (enforced by I_Plugin). 
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
     */
-   public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) throws XmlBlasterException {
+   public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo) throws XmlBlasterException {
       this.glob = (glob == null) ? Global.instance() : glob;
       this.log = this.glob.getLog("socket");
-      if (log.CALL) log.call(ME, "Entering init()");
+      this.pluginInfo = pluginInfo;
+      String tmp = pluginInfo.getParameters().getProperty("useUdpForOneway", ""+this.useUdpForOneway);
+      this.useUdpForOneway = Boolean.valueOf(tmp).booleanValue();
+      if (log.CALL) log.call(ME, "Entering init(useUdpForOneway="+this.useUdpForOneway+")");
       // Put this instance in the NameService, will be looked up by SocketCallbackImpl
       this.glob.addObjectEntry("org.xmlBlaster.client.protocol.socket.SocketConnection", this);
    }
@@ -166,9 +177,9 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          if (this.localSocketUrl.getPort() > -1) {
             this.sock = new Socket(this.socketUrl.getInetAddress(), this.socketUrl.getPort(),
                                    this.localSocketUrl.getInetAddress(), this.localSocketUrl.getPort());
-            log.info(ME, "Created SOCKET client connected to '" + this.socketUrl.getUrl() +
+            log.info(ME, getType() + " client connected to '" + this.socketUrl.getUrl() +
                          "', your configured local parameters are localHostname=" + this.localSocketUrl.getHostname() +
-                         " on localPort=" + this.localSocketUrl.getPort());
+                         " on localPort=" + this.localSocketUrl.getPort() + " useUdpForOneway=" + this.useUdpForOneway);
          }
          else {
             if (log.TRACE) log.trace(ME, "Trying socket connection to " + socketUrl.getUrl() + " ...");
@@ -176,7 +187,9 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
             this.clientAddress.setPluginProperty("localPort", ""+this.sock.getLocalPort());
             this.clientAddress.setPluginProperty("localHostname", this.sock.getLocalAddress().getHostAddress());
             this.localSocketUrl = new SocketUrl(glob, this.sock.getLocalAddress().getHostAddress(), this.sock.getLocalPort());
-            log.info(ME, "Created SOCKET client connected to '" + socketUrl.getUrl() + "', callback address is '" + this.localSocketUrl.getUrl() + "'");
+            log.info(ME, getType() + " client connected to '" + socketUrl.getUrl() +
+                         "', callback address is '" + this.localSocketUrl.getUrl() +
+                         "' useUdpForOneway=" + this.useUdpForOneway);
          }
          oStream = this.sock.getOutputStream();
          iStream = this.sock.getInputStream();
@@ -283,7 +296,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       try {
          Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.CONNECT, sessionId); // sessionId is usually null on login, on reconnect != null
          parser.addQos(connectQos);
-         return (String)getCbReceiver().execute(parser, WAIT_ON_RESPONSE);
+         return (String)getCbReceiver().execute(parser, WAIT_ON_RESPONSE, SOCKET_TCP);
       }
       catch (XmlBlasterException e) {
          throw e;
@@ -300,7 +313,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
     * @return "SOCKET"
     */
    public final String getProtocol() {
-      return "SOCKET";
+      return (this.pluginInfo == null) ? "SOCKET" : this.pluginInfo.getType();
    }
 
     /**
@@ -321,7 +334,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
          parser.addQos((qos==null)?"":qos);
          // We close first the callback thread, this could be a bit early ?
          getCbReceiver().running = false; // To avoid error messages as xmlBlaster closes the connection during disconnect()
-         getCbReceiver().execute(parser, ONEWAY);
+         getCbReceiver().execute(parser, ONEWAY, SOCKET_TCP);
          shutdown(); // the callback server
          sessionId = null;
          return true;
@@ -408,7 +421,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       try {
          Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.SUBSCRIBE, sessionId);
          parser.addKeyAndQos(xmlKey_literal, qos_literal);
-         Object response = getCbReceiver().execute(parser, WAIT_ON_RESPONSE);
+         Object response = getCbReceiver().execute(parser, WAIT_ON_RESPONSE, SOCKET_TCP);
          return (String)response; // return the QoS
       }
       catch (IOException e1) {
@@ -431,7 +444,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       try {
          Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.UNSUBSCRIBE, sessionId);
          parser.addKeyAndQos(xmlKey_literal, qos_literal);
-         Object response = getCbReceiver().execute(parser, WAIT_ON_RESPONSE);
+         Object response = getCbReceiver().execute(parser, WAIT_ON_RESPONSE, SOCKET_TCP);
          return (String[])response;
       }
       catch (IOException e1) {
@@ -451,7 +464,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       try {
          Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.PUBLISH, sessionId);
          parser.addMessage(msgUnit);
-         Object response = getCbReceiver().execute(parser, WAIT_ON_RESPONSE);
+         Object response = getCbReceiver().execute(parser, WAIT_ON_RESPONSE, SOCKET_TCP);
          String[] arr = (String[])response; // return the QoS
          return arr[0]; // return the QoS
       }
@@ -477,7 +490,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       try {
          Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.PUBLISH, sessionId);
          parser.addMessage(msgUnitArr);
-         Object response = getCbReceiver().execute(parser, WAIT_ON_RESPONSE);
+         Object response = getCbReceiver().execute(parser, WAIT_ON_RESPONSE, SOCKET_TCP);
          return (String[])response; // return the QoS
       }
       catch (IOException e1) {
@@ -502,7 +515,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       try {
          Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.PUBLISH_ONEWAY, sessionId);
          parser.addMessage(msgUnitArr);
-         getCbReceiver().execute(parser, ONEWAY);
+         getCbReceiver().execute(parser, ONEWAY, this.useUdpForOneway);
       }
       catch (Throwable e) {
          if (log.TRACE) log.trace(ME+".publishOneway", "Sending of oneway message failed: " + e.toString());
@@ -540,7 +553,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       try {
          Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.ERASE, sessionId);
          parser.addKeyAndQos(xmlKey_literal, qos_literal);
-         Object response = getCbReceiver().execute(parser, WAIT_ON_RESPONSE);
+         Object response = getCbReceiver().execute(parser, WAIT_ON_RESPONSE, SOCKET_TCP);
          return (String[])response; // return the QoS TODO
       }
       catch (IOException e1) {
@@ -575,7 +588,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       try {
          Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.GET, sessionId);
          parser.addKeyAndQos(xmlKey_literal, qos_literal);
-         Object response = getCbReceiver().execute(parser, WAIT_ON_RESPONSE);
+         Object response = getCbReceiver().execute(parser, WAIT_ON_RESPONSE, SOCKET_TCP);
          return (MsgUnitRaw[])response;
       }
       catch (IOException e1) {
@@ -606,7 +619,7 @@ public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
       try {
          Parser parser = new Parser(glob, Parser.INVOKE_BYTE, MethodName.PING, null); // sessionId not necessary
          parser.addQos(""); // ("<qos><state id='OK'/></qos>");
-         Object response = getCbReceiver().execute(parser, WAIT_ON_RESPONSE);
+         Object response = getCbReceiver().execute(parser, WAIT_ON_RESPONSE, SOCKET_TCP);
          return (String)response;
       }
       catch (IOException e1) {

@@ -16,7 +16,9 @@ import org.xmlBlaster.protocol.socket.Executor;
 import org.xmlBlaster.protocol.socket.SocketUrl;
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
 import org.xmlBlaster.client.protocol.I_CallbackServer;
+import org.xmlBlaster.util.plugin.PluginInfo;
 
+import java.net.DatagramSocket;
 import java.io.IOException;
 
 
@@ -39,6 +41,7 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
    /** A unique name for this client socket */
    private SocketUrl socketUrl;
    private CallbackAddress callbackAddress;
+   private PluginInfo pluginInfo;
 
    /** Stop the thread */
    boolean running = false;
@@ -57,14 +60,15 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
 
    /** Enforced by I_Plugin */
    public String getVersion() {
-      return "1.0";
+      return (this.pluginInfo == null) ? "1.0" : this.pluginInfo.getVersion();
    }
 
    /**
     * This method is called by the PluginManager (enforced by I_Plugin). 
     * @see org.xmlBlaster.util.plugin.I_Plugin#init(org.xmlBlaster.util.Global,org.xmlBlaster.util.plugin.PluginInfo)
     */
-   public void init(org.xmlBlaster.util.Global glob, org.xmlBlaster.util.plugin.PluginInfo pluginInfo) {
+   public void init(org.xmlBlaster.util.Global glob, PluginInfo pluginInfo) {
+      this.pluginInfo = pluginInfo;
    }
 
    /**
@@ -103,7 +107,8 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
 
 
          try { // Executor
-            super.initialize(this.sockCon.getGlobal(), this.callbackAddress, sock, null);
+            DatagramSocket sockUDP = null; // SOCKET_TCP: TODO for UDP
+            super.initialize(this.sockCon.getGlobal(), this.callbackAddress, sock, null, sockUDP);
          }
          catch (IOException e) {
             throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "Creation of SOCKET callback handler failed", e);
@@ -114,7 +119,7 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
          if (log.TRACE) log.trace(ME, "Callback uri=" + this.socketUrl.getUrl());
 
          this.running = true;
-         Thread t = new Thread(this, "XmlBlaster.SOCKET.callback-"+this.sockCon.getLoginName());
+         Thread t = new Thread(this, "XmlBlaster."+getType());
          t.setDaemon(true);
          int threadPrio = this.callbackAddress.getEnv("threadPrio", Thread.NORM_PRIORITY).getValue();
          try {
@@ -130,11 +135,11 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
 
    /**
     * Returns the protocol type. 
-    * @return "SOCKET"
+    * @return The configured [type] in xmlBlaster.properties, defaults to "SOCKET"
     */
    public final String getCbProtocol()
    {
-      return "SOCKET";
+      return (this.pluginInfo == null) ? "SOCKET" : this.pluginInfo.getType();
    }
 
    /**
@@ -178,7 +183,7 @@ public class SocketCallbackImpl extends Executor implements Runnable, I_Callback
                t.start();
             }
             else {                  
-               receive(receiver);    // Parse the message and invoke actions in same thread
+               receive(receiver, SOCKET_TCP);    // Parse the message and invoke actions in same thread
             }
          }
          catch(XmlBlasterException e) {
