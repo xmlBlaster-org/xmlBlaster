@@ -327,8 +327,7 @@ void MsgQosFactory::endElement(const string &name)
 
    if(name.compare("priority") == 0) {
       inPriority_ = false;
-      int prio = atoi(character_.c_str());
-      msgQosDataP_->setPriority(int2Priority(prio));
+      msgQosDataP_->setPriority(str2Priority(character_));
       character_.erase();
       return;
    }
