@@ -32,8 +32,8 @@ public class XmlBlasterClassLoader extends URLClassLoader {
 
    public Class loadClass(String name) throws ClassNotFoundException {
       ClassLoader parent = getClass().getClassLoader();
-      if (name.startsWith("java.") || name.startsWith("javax.") ) {
-         if (log.TRACE) log.trace(ME, "Using default JVM class loader for java and javax class " + name);
+      if ( name.startsWith("java.") ) {
+         if (log.TRACE) log.trace(ME, "Using default JVM class loader for java.* and javax.* class " + name);
          return parent.loadClass(name);
       }
 
