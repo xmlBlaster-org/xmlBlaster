@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Properties for xmlBlaster, using org.jutils
-Version:   $Id: Global.java,v 1.19 2002/05/19 12:55:55 ruff Exp $
+Version:   $Id: Global.java,v 1.20 2002/05/19 17:52:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -487,6 +487,7 @@ public class Global implements Cloneable
     * You can set "-port 0" to avoid starting the internal HTTP server
     */
    public final Address getBootstrapAddress() {
+      if (log.CALL) log.call(ME, "Entering getBootstrapAddress()");
       if (bootstrapAddress == null) {
          bootstrapAddress = new Address(this);
          boolean supportOldStyle = true; // for a while we support the old style -iorHost and -iorPort
@@ -501,6 +502,8 @@ public class Global implements Cloneable
             bootstrapAddress.setPort(getProperty().get("port", Constants.XMLBLASTER_PORT));
          }
          bootstrapAddress.setAddress("http://" + bootstrapAddress.getHostname() + ":" + bootstrapAddress.getPort());
+         if (log.TRACE) log.trace(ME, "Initialized bootstrapAddress to host=" + bootstrapAddress.getHostname() +
+                        " port=" + bootstrapAddress.getPort() + ": " + bootstrapAddress.getAddress());
       }
       return bootstrapAddress;
    }
@@ -519,6 +522,7 @@ public class Global implements Cloneable
     */
    public String accessFromInternalHttpServer(Address address, String urlPath, boolean verbose) throws XmlBlasterException
    {
+      if (logDefault.CALL) logDefault.call(ME, "Entering accessFromInternalHttpServer(" + ((address==null)?"null":address.getAddress()) + ") ...");
       Address addr = address;
       if (addr != null && addr.getPort() > 0) {
          if (addr.getHostname() == null || addr.getHostname().length() < 1) {
@@ -529,7 +533,7 @@ public class Global implements Cloneable
          addr = getBootstrapAddress();
       }
 
-      if (logDefault.CALL) logDefault.call(ME, "Trying internal http server on " + addr.getHostname() + ":" + addr.getPort());
+      if (logDefault.TRACE) logDefault.trace(ME, "Trying internal http server on " + addr.getHostname() + ":" + addr.getPort());
       try {
          if (urlPath != null && urlPath.startsWith("/") == false)
             urlPath = "/" + urlPath;
