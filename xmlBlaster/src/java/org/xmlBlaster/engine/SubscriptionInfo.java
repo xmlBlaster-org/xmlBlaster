@@ -8,6 +8,7 @@ Author:    xmlBlaster@marcelruff.info
 package org.xmlBlaster.engine;
 
 import org.jutils.log.LogChannel;
+import org.xmlBlaster.engine.admin.I_AdminSubscription;
 import org.xmlBlaster.engine.qos.SubscribeQosServer;
 import org.xmlBlaster.engine.qos.UnSubscribeQosServer;
 import org.xmlBlaster.util.enum.Constants;
@@ -27,7 +28,7 @@ import java.util.Vector;
  * concerning a subscription of exactly one MsgUnit of exactly one Client. 
  * <p />
  */
-public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
+public class SubscriptionInfo implements I_AdminSubscription /* implements Comparable see SORT_PROBLEM */
 {
    private String ME = "SubscriptionInfo";
 
@@ -440,7 +441,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
-      sb.append(offset).append("  <subscribe id='").append(getSubscriptionId()).append("'");
+      sb.append(offset).append("  <subscription id='").append(getSubscriptionId()).append("'");
       sb.append(" sessionName='").append(getSessionInfo().getSessionName()).append("'");
       if (this.topicHandler != null) {
          sb.append(" oid='").append(topicHandler.getUniqueKey()).append("'");
@@ -454,5 +455,35 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
       sb.append(" creationTime='" + TimeHelper.getDateTimeDump(this.creationTime) + "'");
       sb.append("/>");
       return sb.toString();
+   }
+
+//++++++++++ Enforced by I_AdminSubscription ++++++++++++++++
+   public String getId() {
+      try {
+         return getSubscriptionId();
+      }
+      catch (XmlBlasterException e) {
+         return "";
+      }
+   }
+   public String getSessionName() {
+      if (this.sessionInfo == null) return "";
+      return sessionInfo.getId();
+   }
+   public String getTopicId() {
+      if (this.topicHandler == null) return "";
+      return this.topicHandler.getId();
+   }
+   public String getParentSubscription() {
+      if (this.querySub == null) return "";
+      try {
+         return this.querySub.getSubscriptionId();
+      }
+      catch (XmlBlasterException e) {
+         return "";
+      }
+   }
+   public String getCreationTimestamp() {
+      return org.jutils.time.TimeHelper.getDateTimeDump(this.creationTime);
    }
 }
