@@ -53,6 +53,7 @@ public class MsgQosFactoryTest extends TestCase {
          String xml =
             "<qos>\n" +
             "   <state id='AA' info='SOMETHING'/>\n" +
+            "   <pubSub>true</pubSub>\n" +
             "   <destination queryType='EXACT' forceQueuing='true'>\n" +
             "      Tim\n" +
             "   </destination>\n" +
@@ -87,7 +88,6 @@ public class MsgQosFactoryTest extends TestCase {
 
          assertEquals("", "AA", qos.getState());
          assertEquals("", "SOMETHING", qos.getStateInfo());
-         assertEquals("", false, qos.isPubSubStyle());
          assertEquals("", true, qos.isPtp());
          assertEquals("", true, qos.isVolatile());
          assertEquals("", true, qos.isDurable());
@@ -109,6 +109,7 @@ public class MsgQosFactoryTest extends TestCase {
          assertEquals("", PriorityEnum.MIN_PRIORITY, qos.getPriority());
          assertEquals("", false, qos.isFromPersistenceStore());
          assertTrue("no receive timestamp expected", qos.getRcvTimestamp() == null);
+         assertEquals("", true, qos.isPubSubStyle());
          assertEquals("", 2, qos.getDestinations().size());
          assertEquals("", true, ((Destination)qos.getDestinations().get(0)).forceQueuing());
          assertEquals("", true, ((Destination)qos.getDestinations().get(0)).isExactAddress());
@@ -134,6 +135,7 @@ public class MsgQosFactoryTest extends TestCase {
          String xml =
             "<qos>\n" +
             "   <state id='AA' info='SOMETHING'/>\n" +
+            "   <pubSub>false</pubSub>\n" +
             "   <destination queryType='EXACT' forceQueuing='true'>\n" +
             "      Tim\n" +
             "   </destination>\n" +
@@ -177,7 +179,6 @@ public class MsgQosFactoryTest extends TestCase {
 
          assertEquals("", "AA", qos.getState());
          assertEquals("", "SOMETHING", qos.getStateInfo());
-         assertEquals("", false, qos.isPubSubStyle());
          assertEquals("", true, qos.isPtp());
          assertEquals("", false, qos.isVolatile());
          assertEquals("", true, qos.isDurable());
@@ -201,6 +202,7 @@ public class MsgQosFactoryTest extends TestCase {
 
          assertEquals("", PriorityEnum.MIN_PRIORITY, qos.getPriority());
          assertEquals("", false, qos.isFromPersistenceStore());
+         assertEquals("", false, qos.isPubSubStyle());
          assertEquals("", 2, qos.getDestinations().size());
          assertEquals("", true, ((Destination)qos.getDestinations().get(0)).forceQueuing());
          assertEquals("", true, ((Destination)qos.getDestinations().get(0)).isExactAddress());
@@ -280,7 +282,7 @@ public class MsgQosFactoryTest extends TestCase {
 
          PublishQosServer qos = new PublishQosServer(new org.xmlBlaster.engine.Global(), xml);
 
-         assertEquals("", false, qos.isPubSubStyle());
+         assertEquals("", true, qos.isPubSubStyle());
          assertEquals("", true, qos.isPtp());
          assertEquals("", false, qos.isVolatile());
          assertEquals("", true, qos.isDurable());
@@ -419,7 +421,7 @@ public class MsgQosFactoryTest extends TestCase {
 
          UpdateQos qos = new UpdateQos(glob, xml);
 
-         assertEquals("", false, qos.isPubSubStyle());
+         assertEquals("", true, qos.isPubSubStyle());
          assertEquals("", true, qos.isPtp());
          assertEquals("", false, qos.isVolatile());
          assertEquals("", true, qos.isDurable());
@@ -508,7 +510,7 @@ public class MsgQosFactoryTest extends TestCase {
    {
       MsgQosFactoryTest testSub = new MsgQosFactoryTest("MsgQosFactoryTest");
       testSub.setUp();
-      //testSub.testParse();
+      testSub.testParse();
       testSub.testToXml();
       testSub.testFromPersistentStore();
       testSub.testPublishQosServer();
