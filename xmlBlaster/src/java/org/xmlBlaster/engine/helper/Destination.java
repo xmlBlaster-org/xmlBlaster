@@ -12,7 +12,7 @@ import org.xmlBlaster.util.SessionName;
  * Holding destination address attributes.
  * <p />
  * This class corresponds to the QOS destination tag
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public class Destination implements java.io.Serializable
 {
