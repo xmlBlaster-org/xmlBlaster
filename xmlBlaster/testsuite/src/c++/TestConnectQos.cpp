@@ -89,8 +89,8 @@ public:
       data1 = SessionQosData(global_, "Franz", -3);
       assertEquals(log_, me, string("client/Franz/-3"), data1.getAbsoluteName(), "checking constructor with relative name");
 
-      global_.getProperty().setProperty("user", "PincoPallino");
-      name = global_.getProperty().getStringProperty("user", "");
+      global_.getProperty().setProperty("user.name", "PincoPallino");
+      name = global_.getProperty().getStringProperty("user.name", "");
       assertEquals(log_, me, string("PincoPallino"), name, "checking if property 'user' has been set correctly");
 
       data1 = SessionQosData(global_, "", 6);
