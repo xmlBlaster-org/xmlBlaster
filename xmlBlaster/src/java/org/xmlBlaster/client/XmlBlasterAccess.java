@@ -226,7 +226,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
                   createDefaultCbServer();
                }
 
-               MsgQueueConnectEntry entry = new MsgQueueConnectEntry(this.glob, this.clientQueue.getStorageId(), this.connectQos);
+               MsgQueueConnectEntry entry = new MsgQueueConnectEntry(this.glob, this.clientQueue.getStorageId(), this.connectQos.getData());
 
                // Try to connect to xmlBlaster ...
                this.connectReturnQos = (ConnectReturnQos)queueMessage(entry);
@@ -581,7 +581,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
    public SubscribeReturnQos subscribe(SubscribeKey subscribeKey, SubscribeQos subscribeQos) throws XmlBlasterException {
       if (!isConnected()) throw new XmlBlasterException(glob, ErrorCode.USER_NOT_CONNECTED, ME);
       MsgQueueSubscribeEntry entry  = new MsgQueueSubscribeEntry(glob,
-                                      this.clientQueue.getStorageId(), subscribeKey, subscribeQos);
+                                      this.clientQueue.getStorageId(), subscribeKey.getData(), subscribeQos.getData());
       return (SubscribeReturnQos)queueMessage(entry);
    }
 

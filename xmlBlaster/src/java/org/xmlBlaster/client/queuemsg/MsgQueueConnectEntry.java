@@ -6,12 +6,13 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.client.queuemsg;
 
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.client.qos.ConnectQos;
+// import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.PriorityEnum;
 import org.xmlBlaster.util.enum.MethodName;
+import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
@@ -24,7 +25,7 @@ import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 public final class MsgQueueConnectEntry extends MsgQueueEntry
 {
    private final static String ME = "ConnectQueueEntry";
-   private final ConnectQos connectQos;
+   private final ConnectQosData connectQosData;
    private SessionName receiver;
    private final long immutableSizeInBytes;
 
@@ -32,10 +33,10 @@ public final class MsgQueueConnectEntry extends MsgQueueEntry
     * Use this constructor if a new message object is fed by method connect(). 
     * <p />
     */
-   public MsgQueueConnectEntry(Global glob, StorageId storageId, ConnectQos connectQos)
+   public MsgQueueConnectEntry(Global glob, StorageId storageId, ConnectQosData connectQosData)
          throws XmlBlasterException {
-      super(glob, MethodName.CONNECT, PriorityEnum.MAX_PRIORITY, storageId, connectQos.getData().isPersistent());
-      this.connectQos = connectQos;
+      super(glob, MethodName.CONNECT, PriorityEnum.MAX_PRIORITY, storageId, connectQosData.isPersistent());
+      this.connectQosData = connectQosData;
       this.immutableSizeInBytes = 2400; // 126 + this.connectQos.getData().size();
    }
 
@@ -43,10 +44,10 @@ public final class MsgQueueConnectEntry extends MsgQueueEntry
     * For persistence recovery
     */
    public MsgQueueConnectEntry(Global glob, PriorityEnum priority, StorageId storageId,
-                               Timestamp timestamp, long sizeInBytes, ConnectQos connectQos) {
+                               Timestamp timestamp, long sizeInBytes, ConnectQosData connectQosData) {
       super(glob, MethodName.CONNECT.toString(), priority,
-            timestamp, storageId, connectQos.getData().isPersistent());
-      this.connectQos = connectQos;
+            timestamp, storageId, connectQosData.isPersistent());
+      this.connectQosData = connectQosData;
       this.immutableSizeInBytes = sizeInBytes;
    }
 
@@ -64,8 +65,8 @@ public final class MsgQueueConnectEntry extends MsgQueueEntry
       return false;
    }
 
-   public final ConnectQos getConnectQos() {
-      return this.connectQos;
+   public final ConnectQosData getConnectQosData() {
+      return this.connectQosData;
    }
 
    /**
@@ -112,7 +113,7 @@ public final class MsgQueueConnectEntry extends MsgQueueEntry
     * Object[0] = qos.toXml()
     */
    public Object getEmbeddedObject() {
-      Object[] obj = { this.connectQos.toXml() };
+      Object[] obj = { this.connectQosData.toXml() };
       return obj;
    }
 

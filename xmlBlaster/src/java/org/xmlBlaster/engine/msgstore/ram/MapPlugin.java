@@ -18,7 +18,6 @@ import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.engine.msgstore.I_Map;
 import org.xmlBlaster.engine.msgstore.I_MapEntry;
 import org.xmlBlaster.engine.msgstore.I_ChangeCallback;
-import org.xmlBlaster.util.queue.I_StorageProblemNotifier;
 import org.xmlBlaster.util.queue.I_StorageProblemListener;
 
 import java.util.TreeMap;
@@ -57,13 +56,13 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
 
       this.mapId = uniqueMapId;
       if (mapId == null || glob == null) {
-         Thread.currentThread().dumpStack();
+         Thread.dumpStack();
          throw new IllegalArgumentException("Illegal arguments in MapPlugin constructor: mapId=" + mapId);
       }
 
       this.ME = "MapPlugin-" + mapId;
 
-      if (property.getMaxEntries() > Integer.MAX_VALUE) throw new XmlBlasterException(ME, "initialize: The maximum number of messages is too big");
+      if (property.getMaxEntries() > Integer.MAX_VALUE) throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME + ".initialize: The maximum number of messages is too big");
       
       this.storage = new TreeMap(); // Note: A HashMap works fine as well, but then there is no sorting with getAll() -> do we need it?
       this.isShutdown = false;

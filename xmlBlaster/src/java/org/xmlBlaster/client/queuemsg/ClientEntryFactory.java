@@ -10,7 +10,6 @@ import org.jutils.log.LogChannel;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.ErrorCode;
-import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.enum.MethodName;
@@ -21,17 +20,14 @@ import org.xmlBlaster.util.queue.I_Entry;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.queuemsg.DummyEntry;
 import org.xmlBlaster.util.key.MsgKeyData;
+import org.xmlBlaster.util.qos.ConnectQosData;
 import org.xmlBlaster.util.qos.MsgQosData;
-import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
-import org.xmlBlaster.client.qos.SubscribeQos;
-import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.client.qos.UnSubscribeQos;
 import org.xmlBlaster.client.key.UnSubscribeKey;
 import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.key.EraseKey;
 
-import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ByteArrayOutputStream;
@@ -109,8 +105,8 @@ public class ClientEntryFactory implements I_EntryFactory
             String key = (String)obj[1];
             return new MsgQueueSubscribeEntry(glob, PriorityEnum.toPriorityEnum(priority), storageId,
                        new Timestamp(timestamp), sizeInBytes,
-                       new SubscribeKey(glob, glob.getQueryKeyFactory().readObject(key)),
-                       new SubscribeQos(glob, glob.getQueryQosFactory().readObject(qos)) );
+                       glob.getQueryKeyFactory().readObject(key),
+                       glob.getQueryQosFactory().readObject(qos));
 
          }
          else if (methodName == MethodName.UNSUBSCRIBE) {
@@ -148,9 +144,9 @@ public class ClientEntryFactory implements I_EntryFactory
                   "Expected 1 entries in serialized object '" + type + "' but got " + obj.length + " for priority=" + priority + " timestamp=" + timestamp + ". Could be a version incompatibility.");
             }
             String qos = (String)obj[0];
-            ConnectQos connectQos = new ConnectQos(glob, glob.getConnectQosFactory().readObject(qos));
+            ConnectQosData connectQosData = glob.getConnectQosFactory().readObject(qos);
             return new MsgQueueConnectEntry(glob, PriorityEnum.toPriorityEnum(priority), storageId,
-                                            new Timestamp(timestamp), sizeInBytes, connectQos);
+                                            new Timestamp(timestamp), sizeInBytes, connectQosData);
          }
          else if (methodName == MethodName.DISCONNECT) {
             if (obj.length != 1) {

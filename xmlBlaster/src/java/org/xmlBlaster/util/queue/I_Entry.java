@@ -5,8 +5,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util.queue;
 
-import org.xmlBlaster.util.XmlBlasterException;
-
 public interface I_Entry extends java.io.Serializable
 {
    /**

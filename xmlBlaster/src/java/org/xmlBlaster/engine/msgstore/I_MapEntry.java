@@ -5,7 +5,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.msgstore;
 
-import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.queue.I_Entry;
 
 public interface I_MapEntry extends I_Entry, java.io.Serializable

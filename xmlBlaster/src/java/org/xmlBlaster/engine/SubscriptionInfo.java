@@ -9,8 +9,6 @@ package org.xmlBlaster.engine;
 
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.engine.admin.I_AdminSubscription;
-import org.xmlBlaster.engine.qos.SubscribeQosServer;
-import org.xmlBlaster.engine.qos.UnSubscribeQosServer;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.qos.AccessFilterQos;
 import org.xmlBlaster.util.queue.I_Queue;
@@ -18,7 +16,6 @@ import org.xmlBlaster.util.key.KeyData;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.authentication.SessionInfo;
-import org.xmlBlaster.authentication.SubjectInfo;
 import org.jutils.time.TimeHelper;
 import java.util.Vector;
 
@@ -60,6 +57,10 @@ public final class SubscriptionInfo implements I_AdminSubscription /* implements
    private static long uniqueCounter = 1L;
 
    private long creationTime = System.currentTimeMillis();
+
+   /** uniqueId used to store this in queue */
+   private long persitenceId = -1L; 
+
 
    /**
     * Use this constructor for an exact subscription.
@@ -160,7 +161,7 @@ public final class SubscriptionInfo implements I_AdminSubscription /* implements
       
       if (!found) {
          log.error(ME, "Failed to remove XPATH children subscription " + uniqueKey);
-         Thread.currentThread().dumpStack();
+         Thread.dumpStack();
          return;
       }
 
@@ -207,7 +208,7 @@ public final class SubscriptionInfo implements I_AdminSubscription /* implements
     */
    public void addTopicHandler(TopicHandler topicHandler) {
       if (topicHandler == null) {
-         Thread.currentThread().dumpStack();
+         Thread.dumpStack();
          log.error(ME, "addTopicHandler with topicHandler==null seems to be strange");
       }
 
@@ -220,7 +221,7 @@ public final class SubscriptionInfo implements I_AdminSubscription /* implements
 
    public TopicHandler getTopicHandler() {
       if (topicHandler == null) {
-         Thread.currentThread().dumpStack();
+         Thread.dumpStack();
          log.error(ME, "addTopicHandler with topicHandler==null seems to be strange");
       }
       return topicHandler;
@@ -465,6 +466,25 @@ public final class SubscriptionInfo implements I_AdminSubscription /* implements
       return sb.toString();
    }
 
+   /**
+    * Gets the uniqueId for the persitence of this session.
+    * @return the uniqueId used to identify this session as an  entry
+    * in the queue where it is stored  (for persistent subscriptions).
+    * If the session is not persitent it returns -1L.
+    * 
+    */
+   public final long getPersistenceId() {
+      return this.persitenceId;
+   }
+   
+   /**
+    * Sets the uniqueId used to retrieve this session from the persitence
+    * @param persistenceId
+    */
+   public final void setPersistenceId(long persistenceId) {
+      this.persitenceId = persistenceId;
+   }
+   
 //++++++++++ Enforced by I_AdminSubscription ++++++++++++++++
    public String getId() {
       return getSubscriptionId();

@@ -230,6 +230,10 @@ public abstract class QueuePropertyBase implements Cloneable
          this.relating = Constants.RELATING_MSGUNITSTORE;
       else if (Constants.RELATING_TOPICSTORE.equalsIgnoreCase(relating))
          this.relating = Constants.RELATING_TOPICSTORE;
+      else if (Constants.RELATING_SUBSCRIBE.equalsIgnoreCase(relating))
+         this.relating = Constants.RELATING_SUBSCRIBE;
+      else if (Constants.RELATING_SESSION.equalsIgnoreCase(relating))
+         this.relating = Constants.RELATING_SESSION;
       else {
          this.log.warn(ME, "Ignoring relating='" + relating + "'");
          Thread.dumpStack();

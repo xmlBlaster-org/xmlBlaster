@@ -7,6 +7,7 @@ package org.xmlBlaster.util.queuemsg;
 
 import org.jutils.log.LogChannel;
 // import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.engine.msgstore.I_MapEntry;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.enum.PriorityEnum;
@@ -22,7 +23,7 @@ import org.xmlBlaster.util.queue.I_QueueEntry;
  * @author xmlBlaster@marcelruff.info
  * @author laghi@swissinfo.org
  */
-public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
+public abstract class MsgQueueEntry implements I_QueueEntry, I_MapEntry, Cloneable
 {
    private final static String ME = "MsgQueueEntry";
 
@@ -56,6 +57,9 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
 
    private boolean stored = false;
 
+   /** The queue to which this entry belongs (set in the constructors) */
+   protected final String uniqueIdString;
+
    /**
     * @param methodName use methodName as entryType
     */
@@ -80,6 +84,7 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
     */
    public MsgQueueEntry(Global glob, String entryType, PriorityEnum priority, Timestamp timestamp, StorageId storageId, boolean persistent) {
       this.uniqueIdTimestamp = (timestamp == null) ? new Timestamp() : timestamp;
+      this.uniqueIdString = "" + this.uniqueIdTimestamp.getTimestamp();
 
       if (entryType == null || priority == null || glob == null || storageId ==null) {
          glob.getLog("dispatch").error(ME, "Invalid constructor parameter");
@@ -438,6 +443,14 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
     */
    final public boolean isStored() {
       return this.stored;
+   }
+
+   /**
+    * Enforced by I_MapEntry
+    * @return The unique ID as a string (cached for performance)
+    */
+   public String getUniqueIdStr() {
+      return this.uniqueIdString;
    }
 
 }

@@ -18,15 +18,12 @@ import org.xmlBlaster.client.queuemsg.MsgQueueSubscribeEntry;
 import org.xmlBlaster.client.queuemsg.MsgQueueUnSubscribeEntry;
 import org.xmlBlaster.client.queuemsg.MsgQueueEraseEntry;
 import org.xmlBlaster.client.queuemsg.MsgQueueGetEntry;
-import org.xmlBlaster.util.qos.StatusQosData;
 import org.xmlBlaster.util.dispatch.DispatchConnection;
-import org.xmlBlaster.util.dispatch.DispatchManager;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
 import org.xmlBlaster.client.qos.PublishReturnQos;
 import org.xmlBlaster.client.qos.SubscribeReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeReturnQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
-import org.xmlBlaster.client.qos.GetReturnQos;
 import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
 import org.xmlBlaster.client.protocol.ProtocolPluginManager;
 import org.xmlBlaster.util.qos.address.Address;
@@ -34,8 +31,6 @@ import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.MsgUnitRaw;
 import org.xmlBlaster.authentication.plugins.I_MsgSecurityInterceptor;
-
-import java.io.IOException;
 
 
 /**
@@ -220,8 +215,8 @@ public final class ClientDispatchConnection extends DispatchConnection
    private void subscribe(MsgQueueEntry entry) throws XmlBlasterException {
       MsgQueueSubscribeEntry subscribeEntry = (MsgQueueSubscribeEntry)entry;
 
-      String key = subscribeEntry.getSubscribeKey().toXml();
-      String qos = subscribeEntry.getSubscribeQos().toXml();
+      String key = subscribeEntry.getSubscribeKeyData().toXml();
+      String qos = subscribeEntry.getSubscribeQosData().toXml();
       if (securityInterceptor != null) {  // We export/encrypt the message (call the interceptor)
          key = securityInterceptor.exportMessage(key);
          qos = securityInterceptor.exportMessage(qos);
@@ -375,7 +370,7 @@ public final class ClientDispatchConnection extends DispatchConnection
     */
    private void connect(MsgQueueEntry entry) throws XmlBlasterException {
       MsgQueueConnectEntry connectEntry = (MsgQueueConnectEntry)entry;
-      String qosOrig = connectEntry.getConnectQos().toXml();
+      String qosOrig = connectEntry.getConnectQosData().toXml();
       String qos;
       if (securityInterceptor != null) {  // We export/encrypt the message (call the interceptor)
          qos = securityInterceptor.exportMessage(qosOrig);

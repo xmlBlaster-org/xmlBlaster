@@ -124,6 +124,10 @@ public class Constants
    public final static String RELATING_CLIENT = "connection";
    /** Type of a history message queue containing references on messages */
    public final static String RELATING_HISTORY = "history";
+   /** Type of a subscription message queue containing subscriptions */
+   public final static String RELATING_SUBSCRIBE = "subscribe";
+   /** Type of a subscription message queue containing sessions */
+   public final static String RELATING_SESSION = "session";
    /** MessageUnit cache */
    public final static String RELATING_MSGUNITSTORE = "msgUnitStore";
    /** Topics persistence */

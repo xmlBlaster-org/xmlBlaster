@@ -475,4 +475,5 @@ public class SessionInfo implements I_Timeout
       glob.getAuthenticate().disconnect(securityCtx.getSecretSessionId(), "<qos/>");
       return getId() + " killed";
    }
+   
 }

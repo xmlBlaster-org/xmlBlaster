@@ -6,13 +6,13 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 package org.xmlBlaster.client.queuemsg;
 
 import org.xmlBlaster.util.Global;
-import org.xmlBlaster.client.qos.SubscribeQos;
-import org.xmlBlaster.client.key.SubscribeKey;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.PriorityEnum;
 import org.xmlBlaster.util.enum.MethodName;
+import org.xmlBlaster.util.key.QueryKeyData;
+import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 
@@ -24,8 +24,8 @@ import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 public final class MsgQueueSubscribeEntry extends MsgQueueEntry
 {
    private final static String ME = "SubscribeQueueEntry";
-   private final SubscribeQos subscribeQos;
-   private final SubscribeKey subscribeKey;
+   private final QueryQosData subscribeQosData;
+   private final QueryKeyData subscribeKeyData;
    private SessionName receiver;
    private final long immutableSizeInBytes;
 
@@ -34,13 +34,13 @@ public final class MsgQueueSubscribeEntry extends MsgQueueEntry
     * <p />
     */
    public MsgQueueSubscribeEntry(Global glob, StorageId storageId, 
-                                 SubscribeKey subscribeKey, SubscribeQos subscribeQos)
+                                 QueryKeyData subscribeKeyData, QueryQosData subscribeQosData)
          throws XmlBlasterException {
       super(glob, MethodName.SUBSCRIBE, PriorityEnum.NORM_PRIORITY, storageId,
-            (subscribeQos == null) ? false : subscribeQos.getData().isPersistent());
-      this.subscribeQos = (subscribeQos == null) ? new SubscribeQos(glob) : subscribeQos;
-      this.subscribeKey = subscribeKey;
-      this.immutableSizeInBytes = 567 + this.subscribeQos.getData().size() + this.subscribeKey.getData().size();
+            (subscribeQosData == null) ? false : subscribeQosData.isPersistent());
+      this.subscribeQosData = (subscribeQosData == null) ? new QueryQosData(glob, MethodName.SUBSCRIBE) : subscribeQosData;
+      this.subscribeKeyData = subscribeKeyData;
+      this.immutableSizeInBytes = 567 + this.subscribeQosData.size() + this.subscribeKeyData.size();
    }
 
    /**
@@ -48,11 +48,11 @@ public final class MsgQueueSubscribeEntry extends MsgQueueEntry
     */
    public MsgQueueSubscribeEntry(Global glob, PriorityEnum priority, StorageId storageId,
                                 Timestamp timestamp, long sizeInBytes,
-                                SubscribeKey subscribeKey, SubscribeQos subscribeQos) {
+                                QueryKeyData subscribeKeyData, QueryQosData subscribeQosData) {
       super(glob, MethodName.SUBSCRIBE.toString(), priority,
-            timestamp, storageId, subscribeQos.getData().isPersistent());
-      this.subscribeQos = subscribeQos;
-      this.subscribeKey = subscribeKey;
+            timestamp, storageId, subscribeQosData.isPersistent());
+      this.subscribeQosData = subscribeQosData;
+      this.subscribeKeyData = subscribeKeyData;
       this.immutableSizeInBytes = sizeInBytes;
    }
 
@@ -70,12 +70,12 @@ public final class MsgQueueSubscribeEntry extends MsgQueueEntry
       return false;
    }
 
-   public SubscribeQos getSubscribeQos() {
-      return this.subscribeQos;
+   public QueryQosData getSubscribeQosData() {
+      return this.subscribeQosData;
    }
 
-   public SubscribeKey getSubscribeKey() {
-      return this.subscribeKey;
+   public QueryKeyData getSubscribeKeyData() {
+      return this.subscribeKeyData;
    }
 
    /**
@@ -123,7 +123,7 @@ public final class MsgQueueSubscribeEntry extends MsgQueueEntry
     * Object[1] = key.toXml()
     */
    public Object getEmbeddedObject() {
-      Object[] obj = { this.subscribeQos.toXml(), this.subscribeKey.toXml() };
+      Object[] obj = { this.subscribeQosData.toXml(), this.subscribeKeyData.toXml() };
       return obj;
    }
 

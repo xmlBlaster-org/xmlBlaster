@@ -3,7 +3,7 @@ Name:      I_Authenticate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native Interface to xmlBlaster
-Version:   $Id: I_Authenticate.java,v 1.13 2003/10/05 17:33:31 ruff Exp $
+Version:   $Id: I_Authenticate.java,v 1.14 2004/02/01 13:30:31 laghi Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol;
@@ -14,7 +14,6 @@ import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
 import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.engine.admin.I_AdminSubject;
-import org.xmlBlaster.authentication.SessionInfo;
 
 /**
  * This is the native interface to xmlBlaster-authentication.
@@ -35,6 +34,7 @@ public interface I_Authenticate
    public I_XmlBlaster getXmlBlaster();
 
    /**
+    * @param doQueueSession true if you want to queue this session, false otherwise.
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.connect.html">The interface.connect requirement</a>
     */
    public ConnectReturnQosServer connect(ConnectQosServer qos) throws XmlBlasterException;

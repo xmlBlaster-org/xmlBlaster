@@ -5,7 +5,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.dispatch;
 
-import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.dispatch.DispatchManager;
@@ -14,7 +13,6 @@ import org.xmlBlaster.util.dispatch.DispatchConnectionsHandler;
 import org.xmlBlaster.util.queue.I_QueueEntry;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.client.queuemsg.MsgQueueConnectEntry;
-import org.xmlBlaster.client.queuemsg.MsgQueueDisconnectEntry;
 import org.xmlBlaster.client.queuemsg.MsgQueuePublishEntry;
 import org.xmlBlaster.client.queuemsg.MsgQueueSubscribeEntry;
 import org.xmlBlaster.client.queuemsg.MsgQueueUnSubscribeEntry;
@@ -96,11 +94,11 @@ public final class ClientDispatchConnectionsHandler extends DispatchConnectionsH
 
          else if (MethodName.SUBSCRIBE == msgQueueEntry.getMethodName()) {
             MsgQueueSubscribeEntry entry = (MsgQueueSubscribeEntry)msgQueueEntry;
-            if (entry.getSubscribeQos().getData().getSubscriptionId() == null) {
+            if (entry.getSubscribeQosData().getSubscriptionId() == null) {
                String subscriptionId = QueryKeyData.generateSubscriptionId(dispatchManager.getQueue().getStorageId().getPostfix());
-               entry.getSubscribeQos().setSubscriptionId(subscriptionId);
+               entry.getSubscribeQosData().setSubscriptionId(subscriptionId);
             }
-            statRetQos.setSubscriptionId(entry.getSubscribeQos().getData().getSubscriptionId());
+            statRetQos.setSubscriptionId(entry.getSubscribeQosData().getSubscriptionId());
             SubscribeReturnQos subscribeReturnQos = new SubscribeReturnQos(glob, statRetQos, true);
             entry.setReturnObj(subscribeReturnQos);
          }
@@ -135,7 +133,7 @@ public final class ClientDispatchConnectionsHandler extends DispatchConnectionsH
          }
 
          else if (MethodName.CONNECT == msgQueueEntry.getMethodName()) {
-            ConnectReturnQos connectReturnQos = new ConnectReturnQos(glob, ((MsgQueueConnectEntry)msgQueueEntry).getConnectQos().getData());
+            ConnectReturnQos connectReturnQos = new ConnectReturnQos(glob, ((MsgQueueConnectEntry)msgQueueEntry).getConnectQosData());
             if (!connectReturnQos.getSessionName().isPubSessionIdUser()) {
                throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME,
                   "Can't find an xmlBlaster server. Try to provide the server host/port as described in " +

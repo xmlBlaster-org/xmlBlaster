@@ -9,14 +9,11 @@ import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.engine.MsgUnitWrapper;
-import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.engine.queuemsg.MsgQueueUpdateEntry;
 import org.xmlBlaster.engine.queuemsg.MsgQueueHistoryEntry;
 import org.xmlBlaster.client.queuemsg.MsgQueueConnectEntry;
 import org.xmlBlaster.client.queuemsg.MsgQueuePublishEntry;
 import org.xmlBlaster.client.queuemsg.MsgQueueSubscribeEntry;
-import org.xmlBlaster.client.queuemsg.MsgQueueUnSubscribeEntry;
-import org.xmlBlaster.client.queuemsg.MsgQueueEraseEntry;
 import org.xmlBlaster.engine.qos.PublishQosServer;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.PublishQos;
@@ -266,7 +263,7 @@ public class EntrySize {
          for(int i=0; i<numCreate; i++) {
             SubscribeKey sk = new SubscribeKey(glob, "XX");
             SubscribeQos sq = new SubscribeQos(glob);
-            entryArr[i] = new MsgQueueSubscribeEntry(glob, storageId, sk, sq);
+            entryArr[i] = new MsgQueueSubscribeEntry(glob, storageId, sk.getData(), sq.getData());
             if (i > 0 && (i % step) == 0) {
                int loadSize = sk.toXml().length() + sq.toXml().length();
                log.info(ME, "Overall created #" + i + ": Created " + step + " new MsgQueueSubscribeEntry instances, key+qos size=" + loadSize + ", hit a key to create more ...");
@@ -316,7 +313,7 @@ public class EntrySize {
          try { System.in.read(); } catch(java.io.IOException e) {}
          for(int i=0; i<numCreate; i++) {
             ConnectQos connectQos = new ConnectQos(glob);
-            entryArr[i] = new MsgQueueConnectEntry(glob, storageId, connectQos);
+            entryArr[i] = new MsgQueueConnectEntry(glob, storageId, connectQos.getData());
             if (i > 0 && (i % step) == 0) {
                log.info(ME, "Overall created #" + i + ": Created " + step + " new MsgQueueConnectEntry instances, connectQosSize=" + connectQos.size() + ", hit a key to create more ...");
                try { System.in.read(); } catch(java.io.IOException e) {}
