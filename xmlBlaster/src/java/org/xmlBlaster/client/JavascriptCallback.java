@@ -119,8 +119,16 @@ public class JavascriptCallback implements I_Callback
    {
       //System.out.println("*****RECEIVING updateKey=" + updateKey.toXml());
       String key = org.jutils.text.StringHelper.replaceAll(updateKey.toXml(), "\n", " ");
+      //key = org.jutils.text.StringHelper.replaceAll(key, "\"", "\\\"");
       String con = org.jutils.text.StringHelper.replaceAll(new String(content), "\n", " ");
+      // This code escapes all quotation marks in the XML content.
+      // This is required to fix an error caused when the XML tags include
+      // attributes, which causes an exception to be thrown because of malformed
+      // javascript (in the 'script' variable).
+      // (Paul Wujek Xp2 Telecom Inc.)
+      con = org.jutils.text.StringHelper.replaceAll(con, "\"", "\\\"");
       String qos = org.jutils.text.StringHelper.replaceAll(updateQos.toXml(), "\n", " ");
+      //qos = org.jutils.text.StringHelper.replaceAll(qos, "\"", "\\\"");
       final String script =  "update(\"" + cbSessionId + "\", \"" + key + "\", \"" + con + "\", \"" + qos + "\");";
       //final String script =  "update(\"sdkfjs\", \"<key oid='11A'/>\", \"<chess><id>11A</id><transform>translate(166,210)</transform></chess>\", \"<qos/>\");";
 
