@@ -1423,7 +1423,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
                   if (log.TRACE) log.trace(ME, "Message " + msgKeyData.getOid() + " is forwarded to publish plugin");
                   String ret = plugin.intercept(sessionInfo.getSubjectInfo(), msgUnit);
                   if (ret == null || ret.length() == 0 || ret.equals(Constants.STATE_OK))
-                     break;
+                     continue;
                   else {
                      if (log.TRACE) log.trace(ME, "Message " + msgKeyData.getOid() + " is rejected by PublishPlugin");
                      return "<qos><state id='" + ret + "'/></qos>";  // Message is rejected by PublishPlugin
