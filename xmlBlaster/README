@@ -53,6 +53,11 @@ you find in directory:
  and
   xmlBlaster/testsuite
 
+If you want to access xmlBlaster with other languages, read
+this guide:
+
+  http://xmlrpc-c.sourceforge.net/xmlrpc-howto/xmlrpc-howto.html
+
 
 ---------------------------------
 ruff@swand.lake.de  (Marcel Ruff)
