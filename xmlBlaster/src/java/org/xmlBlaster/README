@@ -5,6 +5,8 @@ Overview of the xmlBlaster.org packages
 
    - authenticateIdl
      The CORBA interface to login and logout
+     All files in this directory are automatically generated
+     only AuthServerImpl.java is handcrafted
 
    - serverIdl
      The CORBA interface of the xmlBlaster server.
