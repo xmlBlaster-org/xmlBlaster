@@ -49,7 +49,8 @@ public final class TopicEntry implements I_MapEntry
    private MsgUnit msgUnit;
    private final long immutableSizeInBytes;
 
-   private boolean stored = false;
+   private transient boolean stored = false;
+   private transient boolean swapped = false;
 
    /**
     * Use this constructor if a new message object is fed by method publish(). 
@@ -258,6 +259,22 @@ public final class TopicEntry implements I_MapEntry
     */
    public final boolean isStored() {
       return this.stored;
+   }
+
+   /**
+    * Enforced by I_Map
+    * @see I_Map#isSwapped()
+    */
+   public boolean isSwapped() {
+      return this.swapped;
+   }
+
+   /**
+    * Enforced by I_Map
+    * @see I_Map#isSwapped(boolean)
+    */
+   public void isSwapped(boolean swapped) {
+      this.swapped = swapped;
    }
 
 

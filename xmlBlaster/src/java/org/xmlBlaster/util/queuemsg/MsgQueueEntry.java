@@ -55,7 +55,8 @@ public abstract class MsgQueueEntry implements I_QueueEntry, I_MapEntry, Cloneab
    /** Which method we invoke, e.g. "update" or "publish" */
    protected final String entryType;
 
-   private boolean stored = false;
+   private transient boolean stored = false;
+   private transient boolean swapped = false;
 
    /** The queue to which this entry belongs (set in the constructors) */
    protected final String uniqueIdString;
@@ -453,5 +454,20 @@ public abstract class MsgQueueEntry implements I_QueueEntry, I_MapEntry, Cloneab
       return this.uniqueIdString;
    }
 
+   /**
+    * Enforced by I_Map
+    * @see I_Map#isSwapped()
+    */
+   public boolean isSwapped() {
+      return this.swapped;
+   }
+
+   /**
+    * Enforced by I_Map
+    * @see I_Map#isSwapped(boolean)
+    */
+   public void isSwapped(boolean swapped) {
+      this.swapped = swapped;
+   }
 }
 

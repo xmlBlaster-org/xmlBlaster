@@ -24,6 +24,7 @@ public class SubscribeEntry implements I_MapEntry {
    private final long uniqueId;
    private final String uniqueIdStr;
    private final long size; 
+   private transient boolean swapped = false;
 
 
    /**
@@ -138,4 +139,19 @@ public class SubscribeEntry implements I_MapEntry {
       return this.stored;
    }
 
+   /**
+    * Enforced by I_Map
+    * @see I_Map#isSwapped()
+    */
+   public boolean isSwapped() {
+      return this.swapped;
+   }
+
+   /**
+    * Enforced by I_Map
+    * @see I_Map#isSwapped(boolean)
+    */
+   public void isSwapped(boolean swapped) {
+      this.swapped = swapped;
+   }
 }

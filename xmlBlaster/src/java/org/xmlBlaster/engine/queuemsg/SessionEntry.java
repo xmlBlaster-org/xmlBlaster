@@ -18,6 +18,7 @@ import org.xmlBlaster.util.queue.StorageId;
 public class SessionEntry implements I_MapEntry {
 
    private String qos;
+   private transient boolean swapped = false;
    private boolean stored;
    private long uniqueId;
    private String uniqueIdStr;
@@ -135,4 +136,19 @@ public class SessionEntry implements I_MapEntry {
       return this.stored;
    }
 
+   /**
+    * Enforced by I_Map
+    * @see I_Map#isSwapped()
+    */
+   public boolean isSwapped() {
+      return this.swapped;
+   }
+
+   /**
+    * Enforced by I_Map
+    * @see I_Map#isSwapped(boolean)
+    */
+   public void isSwapped(boolean swapped) {
+      this.swapped = swapped;
+   }
 }
