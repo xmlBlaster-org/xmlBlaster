@@ -16,7 +16,7 @@
          <author>Marcel Ruff</author>
       </authorgroup>
 
-      <pubdate>February 15th, 2000</pubdate>
+      <pubdate>March 22, 2000</pubdate>
 
    </artheader>
 
@@ -87,6 +87,7 @@ usual software pricing scale.
 <para>
 <itemizedlist>
 <listitem>Support ease of development </listitem>
+<listitem>Allow secure messaging (authentication, authorization, SSL) </listitem>
 <listitem>Extensible architecture for future enhancements </listitem>
 <listitem>Server-to-server infrastructure </listitem>
 <listitem>Legacy application integration </listitem>
