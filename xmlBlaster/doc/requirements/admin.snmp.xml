@@ -87,11 +87,11 @@
    
    <author>udo.thalmann@avitech.de</author>
    <author>Gregor.Novak@avitech.de</author>
-   <author>ruff@swand.lake.de</author>
+   <author>xmlBlaster@marcelruff.info</author>
    
    <date>2002 06 11</date>
    
-   <revision>$Revision: 1.6 $</revision>
+   <revision>$Revision: 1.7 $</revision>
 
    <testcase status="OPEN">
       <name>-</name>

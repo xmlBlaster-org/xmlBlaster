@@ -24,7 +24,7 @@
        These are example QoS of subscribe() invocations:
        <pre>
 &lt;qos>
-   &lt;queue maxCacheMsg='1000' maxCacheSize='4000'  maxMsg='10000' maxSize='1000000000' onOverflow='deadMessage'/>
+   &lt;queue maxMsgCache='1000' maxBytesCache='4000'  maxMsg='10000' maxBytes='1000000000' onOverflow='deadMessage'/>
 &lt;/qos>
 </pre>
    </example>
@@ -51,28 +51,14 @@
          <tr>
             <td>queue.maxMsg</td>
             <td>1000</td>
-            <td>specifies the maximum number of entries allowed in the ram portion of this queue</td>
-            <td><img src="ok.gif" border="0" alt="yes" /></td>
-            <td><img src="ok.gif" border="0" alt="yes" /></td>
-         </tr>
-         <tr>
-            <td>queue.maxSize</td>
-            <td>2097152</td>
-            <td>(2MB) specifies the maximum total size for the ram portion allowed in this queue</td>
-            <td><img src="ok.gif" border="0" alt="yes" /></td>
-            <td><img src="ok.gif" border="0" alt="yes" /></td>
-         </tr>
-         <tr>
-            <td>queue.persistent.maxMsg</td>
-            <td>1000</td>
             <td>specifies the maximum number of entries allowed in this queue</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>queue.persistent.maxSize</td>
-            <td>2097152</td>
-            <td>(2MB) specifies the maximum total size allowed in this queue</td>
+            <td>queue.maxBytes</td>
+            <td>10485760</td>
+            <td>(10MB) specifies the maximum total size allowed in this queue</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
@@ -114,7 +100,7 @@
 <!--   <see type="REQ">cluster</see> -->
    <author>laghi@swissinfo.org</author>
    <date>2002 11 17</date>
-   <revision>$Revision: 1.3 $</revision>
+   <revision>$Revision: 1.4 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

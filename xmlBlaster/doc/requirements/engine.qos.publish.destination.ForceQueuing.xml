@@ -36,9 +36,9 @@
    <see type="REQ">engine.qos.login.OfflineQueuing</see>
    <see type="REQ">interface.publish</see>
    <see type="API">org.xmlBlaster.client.qos.PublishQos</see>
-   <author>ruff@swand.lake.de</author>
+   <author>xmlBlaster@marcelruff.info</author>
    <date>2000 02 02</date>
-   <revision>$Revision: 1.10 $</revision>
+   <revision>$Revision: 1.11 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>

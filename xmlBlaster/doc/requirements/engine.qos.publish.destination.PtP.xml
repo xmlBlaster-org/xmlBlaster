@@ -110,8 +110,8 @@ try {
 
    String content = "Dinner is ready";
 
-   MessageUnit msgUnit = new MessageUnit("&lt;key oid='Dinner'/>",
-                                      content.getBytes(), pq.toXml());
+   MsgUnit msgUnit = new MsgUnit("&lt;key oid='Dinner'/>",
+                                  content, pq.toXml());
 
    PublishReturnQos rq = connection.publish(msgUnit);
    
@@ -132,9 +132,9 @@ catch(XmlBlasterException e) {
    <see type="API">org.xmlBlaster.client.qos.PublishQos</see>
    <see type="API">org.xmlBlaster.client.key.PublishKey</see>
    <see type="API">HelloWorld5</see>
-   <author>ruff@swand.lake.de</author>
+   <author>xmlBlaster@marcelruff.info</author>
    <date>2002 11 27</date>
-   <revision>$Revision: 1.6 $</revision>
+   <revision>$Revision: 1.7 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

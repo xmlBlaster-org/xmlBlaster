@@ -120,10 +120,10 @@
    <see type="REQ">util.property.args</see>
    <see type="REQ">util.property.env</see>
    <see type="API">org.xmlBlaster.util.ConnectQos</see>
-   <author>ruff@swand.lake.de</author>
+   <author>xmlBlaster@marcelruff.info</author>
    <author>krafft@doubleslash.de</author>
    <date>2002 03 11</date>
-   <revision>$Revision: 1.10 $</revision>
+   <revision>$Revision: 1.11 $</revision>
    <testcase status="CLOSED">
       <name>Marcel Ruff</name>
       <comment>All specified requirements are tested</comment>

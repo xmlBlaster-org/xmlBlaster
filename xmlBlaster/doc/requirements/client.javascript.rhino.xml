@@ -184,7 +184,7 @@ importPackage(Packages.org.xmlBlaster.util);
       var key = "<?xml version='1.0'?><key oid=\'" +  id + "\'><chess>some chess name</chess></key>";
       var qos = "<qos></qos>";
      
-      messageUnit = new MessageUnit(key, content, qos);
+      messageUnit = new MsgUnit(key, content, qos);
       xmlBlaster.publish(messageUnit);
    }
   
@@ -198,7 +198,7 @@ importPackage(Packages.org.xmlBlaster.util);
    <author>laghi@swissinfo.org</author>
    <effort>1</effort>
    <date>2001 04 06</date>
-   <revision>$Revision: 1.4 $</revision>
+   <revision>$Revision: 1.5 $</revision>
    <testcase status="INWORK">
       <name>-</name>
       <comment>Should even be tested with mozilla</comment>

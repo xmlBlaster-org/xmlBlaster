@@ -107,11 +107,11 @@ CbProtocolPlugin[NativeDemo][NATIVE]=org.xmlBlaster.protocol.nativ.CallbackNativ
    <see type="API">org.xmlBlaster.protocol.I_XmlBlaster</see>
    <see type="API">org.xmlBlaster.protocol.I_Driver</see>
    <see type="API">org.xmlBlaster.protocol.I_CallbackDriver</see>
-   <author>ruff@swand.lake.de</author>
-   <hacker>ruff@swand.lake.de</hacker>
+   <author>xmlBlaster@marcelruff.info</author>
+   <hacker>xmlBlaster@marcelruff.info</hacker>
    <effort>4</effort>
    <date>2000 06 06</date>
-   <revision>$Revision: 1.9 $</revision>
+   <revision>$Revision: 1.10 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>This is tested implicit by all testsuite tests</comment>

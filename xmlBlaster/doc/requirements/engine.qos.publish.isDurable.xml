@@ -19,9 +19,9 @@
    </example>
    <see type="API">org.xmlBlaster.client.qos.PublishQos</see>
    <see type="API">org.xmlBlaster.client.key.PublishKey</see>
-   <author>ruff@swand.lake.de</author>
+   <author>xmlBlaster@marcelruff.info</author>
    <date>2000 01 25</date>
-   <revision>$Revision: 1.6 $</revision>
+   <revision>$Revision: 1.7 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

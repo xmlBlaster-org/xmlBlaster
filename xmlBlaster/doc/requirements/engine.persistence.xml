@@ -37,9 +37,9 @@
    </description>
    <see type="REQ">engine.persistence.FileDriver</see>
    <see type="REQ">engine.qos.publish.isDurable</see>
-   <author>ruff@swand.lake.de</author>
+   <author>xmlBlaster@marcelruff.info</author>
    <date>2000 02 23</date>
-   <revision>$Revision: 1.7 $</revision>
+   <revision>$Revision: 1.8 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

@@ -48,7 +48,7 @@
                sessionId='4e56890ghdFzj0' publicSessionId='9'>
    &lt;/session>
    &lt;ptp>true&lt;/ptp>
-   &lt;queue relating='session' maxMsg='1000' maxSize='4000' onOverflow='deadMessage'>
+   &lt;queue relating='session' maxMsg='1000' maxBytes='4000000' onOverflow='deadMessage'>
       &lt;callback type='IOR' sessionId='4e56890ghdFzj0'>
          IOR:10000010033200000099000010....
          &lt;burstMode collectTime='400' />
@@ -120,9 +120,9 @@ ConnectReturnQos retQos = con.connect(qos, new I_Callback() {
    <see type="API">org.xmlBlaster.protocol.rmi.AuthServerImpl</see>
    <see type="INTERNET">http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl</see>
 
-   <author>ruff@swand.lake.de</author>
+   <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 26</date>
-   <revision>$Revision: 1.4 $</revision>
+   <revision>$Revision: 1.5 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>This uses the Disconnect but does not test it yet</comment>

@@ -41,11 +41,11 @@ The mapping is as follows:
       ]]>
    </example>
    <see type="REQ">protocol</see>
-   <author>ruff@swand.lake.de</author>
+   <author>xmlBlaster@marcelruff.info</author>
    <hacker></hacker>
    <effort>6</effort>
    <date>2002 01 22</date>
-   <revision>$Revision: 1.4 $</revision>
+   <revision>$Revision: 1.5 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>This is tested implicit by all testsuite tests</comment>

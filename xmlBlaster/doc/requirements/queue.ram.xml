@@ -16,9 +16,11 @@
        These are example QoS of subscribe() invocations:
        <pre>    
 &lt;qos>
-   &lt;queue maxCacheMsg='1000' maxCacheSize='4000' onOverflow='deadMessage'/>
+   &lt;queue maxMsg='1000' maxBytes='4000' onOverflow='deadMessage'/>
 &lt;/qos>
        </pre>
+       <p>In the context of a cache, the attributes <i>maxMsgCache</i> and <i>maxBytesCache</i> are used instead.
+       </p>
    </example>
    <configuration where="server">
 
@@ -48,7 +50,7 @@
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>queue.maxSize</td>
+            <td>queue.maxBytes</td>
             <td>2097152</td>
             <td>(2MB) specifies the maximum total size allowed in this queue</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
@@ -69,7 +71,7 @@
 <!--   <see type="REQ">cluster</see> -->
    <author>laghi@swissinfo.org</author>
    <date>2002 11 15</date>
-   <revision>$Revision: 1.4 $</revision>
+   <revision>$Revision: 1.5 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

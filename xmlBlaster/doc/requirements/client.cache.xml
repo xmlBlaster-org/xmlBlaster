@@ -22,20 +22,17 @@
    <example lang="Java">
       <![CDATA[
       try {
-         xmlBlasterConnection = new XmlBlasterConnection(); // Hides Corba stuff
+         xmlBlasterConnection = new XmlBlasterConnection(glob); // Hides Corba stuff
 
          // Setup cache ...
          xmlBlasterConnection.initCache(10);
 
          // and do the login ...
-         String loginName = "Gesa";
-         String passwd = "secret";
-         String qos = "<qos></qos>";
-         xmlBlasterConnection.login(loginName, passwd, qos, this); // Login to xmlBlaster
+         xmlBlasterConnection.connect(null, this);
 
          // This get() is only on the first call a write through to xmlBlaster
          // Following calls retrieve the up to date data from the local cache:
-         MessageUnitContainer[] msgUnitArr =
+         MsgUnit[] msgUnitArr =
                xmlBlasterConnection.get(xmlKey.toXml(), xmlQos.toXml());
       }
       catch (XmlBlasterException e) {
@@ -51,7 +48,7 @@
    <author>Konrad.Krafft@doubleSlash.de</author>
    <hacker>Konrad.Krafft@doubleSlash.de</hacker>
    <date>2000 04 15</date>
-   <revision>$Revision: 1.4 $</revision>
+   <revision>$Revision: 1.5 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>

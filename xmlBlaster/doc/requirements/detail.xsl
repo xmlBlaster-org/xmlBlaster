@@ -5,8 +5,8 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Generating a detailed html view for one requirement
 See:       xmlBlaster/doc/requirements/requirement.dtd
-Version:   $Id: detail.xsl,v 1.24 2002/11/19 16:07:23 ruff Exp $
-Author:    ruff@swand.lake.de
+Version:   $Id: detail.xsl,v 1.25 2002/12/18 14:42:17 ruff Exp $
+Author:    xmlBlaster@marcelruff.info
 -->
 
 <!DOCTYPE xsl:stylesheet [
@@ -35,7 +35,7 @@ Author:    ruff@swand.lake.de
 
    <body>
 
-   <!-- p class="sideend"> Last updated $Date: 2002/11/19 16:07:23 $ $Author: ruff $ </p -->
+   <!-- p class="sideend"> Last updated $Date: 2002/12/18 14:42:17 $ $Author: ruff $ </p -->
    <table width="700" border="1">
    <tr>
       <td>

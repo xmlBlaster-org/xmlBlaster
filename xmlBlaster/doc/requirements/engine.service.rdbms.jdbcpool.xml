@@ -112,11 +112,11 @@
 
    <see type="REQ">engine.service.rdbms</see>
    <see type="API">org.xmlBlaster.protocol.jdbc.NamedConnectionPool</see>
-   <author>ruff@swand.lake.de</author>
-   <hacker>ruff@swand.lake.de</hacker>
+   <author>xmlBlaster@marcelruff.info</author>
+   <hacker>xmlBlaster@marcelruff.info</hacker>
    <effort>2</effort>
    <date>2000 07 07</date>
-   <revision>$Revision: 1.7 $</revision>
+   <revision>$Revision: 1.8 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>The test is included in NamedConnectionPool.java main()</comment>

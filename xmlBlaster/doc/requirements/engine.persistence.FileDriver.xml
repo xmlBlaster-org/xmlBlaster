@@ -23,9 +23,9 @@
    </description>
    <see type="REQ">engine.qos.publish.isDurable</see>
    <see>org.xmlBlaster.engine.persistence.filestore.FileDriver</see>
-   <author>ruff@swand.lake.de</author>
+   <author>xmlBlaster@marcelruff.info</author>
    <date>2000 02 23</date>
-   <revision>$Revision: 1.8 $</revision>
+   <revision>$Revision: 1.9 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

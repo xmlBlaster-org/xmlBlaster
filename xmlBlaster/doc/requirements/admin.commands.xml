@@ -532,9 +532,9 @@ UserInfo: joe:mypasswd
 
    <author>Heinrich.Goetzger@exploding-systems.de</author>
    <author>Michele.Laghi@swisscom.com</author>
-   <author>ruff@swand.lake.de</author>
+   <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.29 $</revision>
+   <revision>$Revision: 1.30 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>

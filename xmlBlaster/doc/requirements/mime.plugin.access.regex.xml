@@ -81,7 +81,7 @@
       <pre>
       <![CDATA[
    import org.xmlBlaster.client.qos.GetQos;
-   import org.xmlBlaster.engine.helper.MessageUnit;
+   import org.xmlBlaster.util.MsgUnit;
    import org.xmlBlaster.engine.helper.AccessFilterQos;
 
    GetQos qos = new GetQos(glob);
@@ -89,7 +89,7 @@
    qos.addAccessFilter(new AccessFilterQos(glob,
             "GnuRegexFilter", "1.0", "a*b"));
 
-   MessageUnit[] msgUnits = con.get(
+   MsgUnit[] msgUnits = con.get(
             "<key queryType='XPATH'> //StockData </key>",
             qos.toXml());
       ]]>
@@ -139,9 +139,9 @@
    <see type="REQ">mime.plugin.accessfilter.howto</see>
    <see type="REQ">mime.plugin.accessfilter</see>
    <see type="REQ">cluster</see>
-   <author>ruff@swand.lake.de</author>
+   <author>xmlBlaster@marcelruff.info</author>
    <date>2002 05 05</date>
-   <revision>$Revision: 1.15 $</revision>
+   <revision>$Revision: 1.16 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

@@ -105,7 +105,7 @@
       This is the RMI server interface variant:
       </p>
       <pre>
-   public MessageUnit[] get(String sessionId, String xmlKey_literal, String qos_literal)
+   public MsgUnit[] get(String sessionId, String xmlKey_literal, String qos_literal)
                             throws RemoteException, XmlBlasterException
       </pre>
    </example>
@@ -117,14 +117,14 @@
       <pre>
    import org.xmlBlaster.client.key.GetKey;
    import org.xmlBlaster.client.qos.GetQos;
-   import org.xmlBlaster.engine.helper.MessageUnit;
+   import org.xmlBlaster.util.MsgUnit;
    ...
 
    GetKey sk = new GetKey(glob, "MyOid");
 
    GetQos sq = new GetQos(glob);
 
-   MessageUnit[] msgs = con.get(sk.toXml(), sq.toXml());
+   MsgUnit[] msgs = con.get(sk.toXml(), sq.toXml());
 
    System.out.println("Success, retrieved " + msgs.length + " messages.");
 
@@ -144,13 +144,13 @@
 
    GetQos sq = new GetQos(glob);
 
-   MessageUnit[] msgs = con.get(sk.toXml(), sq.toXml());
+   MsgUnit[] msgs = con.get(sk.toXml(), sq.toXml());
       </pre>
    <p>
    The same in raw XML notation:
    </p>
       <pre>
-   MessageUnit[] msgs = con.get("&lt;key oid=\"/xmlBlaster/key[@oid='radar.track']\" />", "&lt;qos/>");
+   MsgUnit[] msgs = con.get("&lt;key oid=\"/xmlBlaster/key[@oid='radar.track']\" />", "&lt;qos/>");
       </pre>
    </example>
 
@@ -165,7 +165,7 @@
    sk.setDomain("RUGBY_NEWS"); // Subscription is forwarded from slaves to master
    // without setting the domain the get would just be handled by the slave connected to
 
-   MessageUnit[] msgs = con.get(sk.toXml(), null);
+   MsgUnit[] msgs = con.get(sk.toXml(), null);
       </pre>
    </example>
 
@@ -177,13 +177,13 @@
 
    <see type="API">org.xmlBlaster.client.qos.GetQos</see>
    <see type="API">org.xmlBlaster.client.protocol.XmlBlasterConnection</see>
-   <see type="API">org.xmlBlaster.engine.helper.MessageUnit</see>
+   <see type="API">org.xmlBlaster.util.MsgUnit</see>
    <see type="API">org.xmlBlaster.protocol.xmlrpc.XmlBlasterImpl</see>
    <see type="API">org.xmlBlaster.protocol.rmi.XmlBlasterImpl</see>
 
-   <author>ruff@swand.lake.de</author>
+   <author>xmlBlaster@marcelruff.info</author>
    <date>2002 06 30</date>
-   <revision>$Revision: 1.4 $</revision>
+   <revision>$Revision: 1.5 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>Tests the get method invocation (cluster test is missing!)</comment>

@@ -302,12 +302,12 @@ catch (XmlBlasterException ex) {
    <!-- see type="REQ">admin.commands</see -->
    
    <author>konrad.krafft@doubleslash.de</author>
-   <author>ruff@swand.lake.de</author>
+   <author>xmlBlaster@marcelruff.info</author>
    <author>laghi@swissinfo.org</author>
    
    <date>2002 09 24</date>
    
-   <revision>$Revision: 1.16 $</revision>
+   <revision>$Revision: 1.17 $</revision>
 
    <testcase status="OPEN">
       <name>-</name>

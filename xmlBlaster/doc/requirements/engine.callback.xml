@@ -259,7 +259,7 @@ import org.xmlBlaster.engine.helper.CallbackAddress;
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>cb.recieveTimestampHumanReadable</td>
+            <td>cb.receiveTimestampHumanReadable</td>
             <td>false</td>
             <td>You can force a human readable timestamp in the QoS of received messages on update(), see API of UpdateQos below</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
@@ -284,9 +284,9 @@ import org.xmlBlaster.engine.helper.CallbackAddress;
    <see type="REQ">util.property</see>
    <see type="REQ">util.property.args</see>
    <see type="REQ">util.property.env</see>
-   <author>ruff@swand.lake.de</author>
+   <author>xmlBlaster@marcelruff.info</author>
    <date>2002 02 04</date>
-   <revision>$Revision: 1.23 $</revision>
+   <revision>$Revision: 1.24 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Check failure handling</comment>

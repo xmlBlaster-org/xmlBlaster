@@ -24,9 +24,9 @@
    <see type="REQ">mime.plugin.publishfilter</see>
    <see type="API">org.xmlBlaster.client.qos.PublishQos</see>
    <see type="API">org.xmlBlaster.client.key.PublishKey</see>
-   <author>ruff@swand.lake.de</author>
+   <author>xmlBlaster@marcelruff.info</author>
    <date>2000 01 02</date>
-   <revision>$Revision: 1.8 $</revision>
+   <revision>$Revision: 1.9 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>

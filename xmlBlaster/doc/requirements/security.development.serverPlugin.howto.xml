@@ -103,15 +103,15 @@
                    the id must be changed later. Therefore <code>I_Session</code> provides this method.</li>
                <li><pre>public String getSessionId()</pre>
                    Returns the id of this session.</li>
-               <li><pre>public MessageUnit importMessage(MessageUnit msg) throws XmlBlasterException</pre>
+               <li><pre>public MsgUnit importMessage(MsgUnit msg) throws XmlBlasterException</pre>
                    <pre>public String importMessage(String xmlMsg) throws XmlBlasterException</pre>
                    The job of both methods is the import of messages. Therefore all incomming messages and 
                    message components (like qos without key and content) will be routed through one of these methods.
                    In an implementation, they can be used to decrypt the information, verify a signature, log some
                    information, and so on.</li>
-               <li><pre>public MessageUnit exportMessage(MessageUnit msg) throws XmlBlasterException</pre>
+               <li><pre>public MsgUnit exportMessage(MsgUnit msg) throws XmlBlasterException</pre>
                    <pre>public String exportMessage(String xmlMsg) throws XmlBlasterException</pre>
-                   These are the counterparts of of <code>MessageUnit importMessage(MessageUnit msg)</code> and
+                   These are the counterparts of of <code>MsgUnit importMessage(MsgUnit msg)</code> and
                    <code>String importMessage(String xmlMsg)</code>. Thus, they are the right location to encrypt,
                    sign, log, etc. outgoing messages.</li>
             </ul>
@@ -348,7 +348,7 @@
    </p>
    <p>
    After the user has called the servers publish method, it imports (e.g. decrypts, unseals, logs, ...) the message and checks the permission. 
-   It does this by calling the local method <code>private MessageUnit checkMessage(SessionInfo sessionInfo, MessageUnit msgUnit, String action) throws XmlBlasterException</code>,
+   It does this by calling the local method <code>private MsgUnit checkMessage(SessionInfo sessionInfo, MsgUnit msgUnit, String action) throws XmlBlasterException</code>,
    which fetches the security session context (the responsible I_Session instance) from the xmlBlaster session, which will be determined by 
    the session id.<br />
    Now, the <code>I_Session</code> instance can be used to log, encrypt or unseal the message. In our implementation (PasswdSession) we don't

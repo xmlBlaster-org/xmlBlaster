@@ -76,14 +76,14 @@
       <pre>
       <![CDATA[
    import org.xmlBlaster.client.qos.GetQos;
-   import org.xmlBlaster.engine.helper.MessageUnit;
+   import org.xmlBlaster.util.MsgUnit;
    import org.xmlBlaster.engine.helper.AccessFilterQos;
 
    GetQos qos = new GetQos(glob);
 
    qos.addAccessFilter(new AccessFilterQos(glob, "XPathFilter", "1.0", "/news[@type='sport']"));
 
-   MessageUnit[] msgUnits = con.get(
+   MsgUnit[] msgUnits = con.get(
             "<key oid='News'/>",
             qos.toXml());
       ]]>
@@ -133,7 +133,7 @@
    <see type="REQ">cluster</see>
    <author>pra@tim.se</author>
    <date>2002 09 27</date>
-   <revision>$Revision: 1.5 $</revision>
+   <revision>$Revision: 1.6 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

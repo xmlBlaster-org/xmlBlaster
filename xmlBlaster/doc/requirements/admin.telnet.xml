@@ -302,11 +302,11 @@ org.xmlBlaster.engine.admin.extern.TelnetGateway >>
    <see type="REQ">admin</see>
    <see type="REQ">admin.commands</see>
    
-   <author>ruff@swand.lake.de</author>
+   <author>xmlBlaster@marcelruff.info</author>
    
    <date>2002 05 09</date>
    
-   <revision>$Revision: 1.19 $</revision>
+   <revision>$Revision: 1.20 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>

@@ -159,8 +159,7 @@ Any other queue overwrites session delivery:
 </qos>
 
 <qos>
-   <queue maxMsg='1000' maxSize='4000'
-          onOverflow='deadMessage'/>
+   <queue maxMsg='1000' maxBytes='4000000' onOverflow='deadMessage'/>
       <callback type='EMAIL'>
          et@mars.universe
          <!-- Sends messages to et with specified queue attributes -->
@@ -208,9 +207,9 @@ This is an example QoS of a disconnect() invocation:
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>queue.maxSize</td>
+            <td>queue.maxBytes</td>
             <td>4000 (4 MB)</td>
-            <td>The max setting allowed for queue maxSize in kBytes</td>
+            <td>The max setting allowed for queue max size in bytes</td>
             <td><img src="no.gif" border="0" alt="no" /></td>
          </tr>
          <tr>
@@ -256,9 +255,9 @@ This is an example QoS of a disconnect() invocation:
    <see type="REQ">util.property</see>
    <see type="REQ">util.property.args</see>
    <see type="REQ">util.property.env</see>
-   <author>ruff@swand.lake.de</author>
+   <author>xmlBlaster@marcelruff.info</author>
    <date>2002 02 04</date>
-   <revision>$Revision: 1.18 $</revision>
+   <revision>$Revision: 1.19 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>

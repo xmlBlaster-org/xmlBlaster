@@ -9,15 +9,15 @@
       try {
          String xmlKey = "<key oid='NotExistingMessage' queryType='EXACT'></key>";
          String qos = "<qos></qos>";
-         MessageUnitContainer[] msgArr = xmlBlaster.get(xmlKey, qos);
+         MsgUnit[] msgArr = xmlBlaster.get(xmlKey, qos);
       } catch(XmlBlasterException e) {
          System.out.println("Success, caught Exception for trying to get unknown message: "+e.reason);
       }
       ]]>
    </example>
-   <author>ruff@swand.lake.de</author>
+   <author>xmlBlaster@marcelruff.info</author>
    <date>2000 02 23</date>
-   <revision>$Revision: 1.9 $</revision>
+   <revision>$Revision: 1.10 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

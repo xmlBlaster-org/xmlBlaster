@@ -53,9 +53,9 @@
    <configuration where="server">
    </configuration>
    <see type="REQ">engine.qos.publish.PubSub</see>
-   <author>ruff@swand.lake.de</author>
+   <author>xmlBlaster@marcelruff.info</author>
    <date>2002 04 06</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>

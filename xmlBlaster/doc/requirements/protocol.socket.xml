@@ -96,7 +96,7 @@ msgLen[10] flag[6] requestId methodName sessionId  lenUnzipped  userData  checkS
    </pre>
    <p>
    len is the length of the content.<br />
-   This may be repeated multiple times if an array of MessageUnits is sent.<br />
+   This may be repeated multiple times if an array of MsgUnits is sent.<br />
    If for example only a qos is transmitted,
    the key consists only of the terminating null byte
    and the content len is set to 0 with a terminating null byte.
@@ -400,9 +400,9 @@ java -jar lib/xmlBlaster.jar -dump[socket] true -trace[socket] true
    <see type="REQ">protocol</see>
    <see type="API">org.xmlBlaster.protocol.socket.Parser</see>
    <see type="API">org.xmlBlaster.protocol.socket.SocketDriver</see>
-   <author>ruff@swand.lake.de</author>
+   <author>xmlBlaster@marcelruff.info</author>
    <date>2002 02 12</date>
-   <revision>$Revision: 1.26 $</revision>
+   <revision>$Revision: 1.27 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>

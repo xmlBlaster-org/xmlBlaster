@@ -153,9 +153,9 @@ content="veeerrrrrylongcooontenttttttt"
    <see type="REQ">mime.plugin.publishfilter.howto</see>
    <see type="REQ">util.property.env</see>
    <see type="REQ">mime.plugin.accessfilter</see>
-   <author>ruff@swand.lake.de</author>
+   <author>xmlBlaster@marcelruff.info</author>
    <date>2002 03 14</date>
-   <revision>$Revision: 1.12 $</revision>
+   <revision>$Revision: 1.13 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='cluster.dirtyRead' type='NEW' prio='HIGH' status="CLOSED">
+<requirement id='cluster.PtP' type='NEW' prio='HIGH' status="CLOSED">
    <topic>Point to point (PtP) routing of messages in a cluster environment</topic>
    <description>
       <p>
@@ -48,9 +48,9 @@
    <see type="REQ">cluster</see>
    <see type="REQ">engine.qos.publish.destination.PtP</see>
 
-   <author>ruff@swand.lake.de</author>
+   <author>xmlBlaster@marcelruff.info</author>
    <date>2002 11 27</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests a cluster setup as described in this requirement</comment>

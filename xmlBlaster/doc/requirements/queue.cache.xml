@@ -31,7 +31,7 @@
        These are example QoS of subscribe() invocations:
        <pre>
 &lt;qos>
-   &lt;queue maxCacheMsg='1000' maxCacheSize='4000'  maxMsg='10000' maxSize='1000000000' onOverflow='deadMessage'/>
+   &lt;queue maxMsgCache='1000' maxBytesCache='4000'  maxMsg='10000' maxBytes='1000000000' onOverflow='deadMessage'/>
 &lt;/qos>
        </pre>
    </example>
@@ -58,55 +58,55 @@
          <tr>
             <td>queue.maxMsg</td>
             <td>1000</td>
-            <td>specifies the maximum number of entries allowed in the ram portion of this queue</td>
+            <td>specifies the maximum number of entries allowed in the persistence portion of this queue</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>queue.maxSize</td>
-            <td>2097152</td>
-            <td>(2MB) specifies the maximum total size for the ram portion allowed in this queue</td>
+            <td>queue.maxBytes</td>
+            <td>10485760L</td>
+            <td>(10MB) specifies the maximum total size for the persistence portion allowed in this queue</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>queue.persistent.maxMsg</td>
+            <td>queue.maxMsgCache</td>
             <td>1000</td>
-            <td>specifies the maximum number of entries allowed in this queue</td>
+            <td>specifies the maximum number of entries allowed in the RAM portion of this queue</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
-            <td>queue.persistent.maxSize</td>
+            <td>queue.maxBytesCache</td>
             <td>2097152</td>
-            <td>(2MB) specifies the maximum total size allowed in this queue</td>
+            <td>(2MB) specifies the maximum total size for the RAM portion allowed in this queue</td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
             <td>queue.cache.storeSwapLevel</td>
-            <td>70 % of the cacheMaxSize in bytes</td>
+            <td>70 % of the cacheMaxBytes in bytes</td>
             <td>The level in bytes over which the cache queue starts swapping, i.e. it will start to take from the ram and put in jdbc storage.</td>
             <td><img src="no.gif" border="0" alt="no" /></td>
             <td><img src="no.gif" border="0" alt="no" /></td>
          </tr>
          <tr>
-            <td>queue.cache.storeSwapSize</td>
-            <td>25 % of the cacheMaxSize in bytes</td>
+            <td>queue.cache.storeSwapBytes</td>
+            <td>25 % of the cacheMaxBytes in bytes</td>
             <td>The amount in bytes to swap each time data must be moved from ram to jdbc storage.</td>
             <td><img src="no.gif" border="0" alt="no" /></td>
             <td><img src="no.gif" border="0" alt="no" /></td>
          </tr>
          <tr>
             <td>queue.cache.reloadSwapLevel</td>
-            <td>30 % of the cacheMaxSize in bytes</td>
+            <td>30 % of the cacheMaxBytes in bytes</td>
             <td>The level in bytes under which which the cache queue starts reloading data from the persistence and puts it in the ram queue.</td>
             <td><img src="no.gif" border="0" alt="no" /></td>
             <td><img src="no.gif" border="0" alt="no" /></td>
          </tr>
          <tr>
-            <td>queue.cache.reloadSwapSize</td>
-            <td>25 % of the cacheMaxSize in bytes</td>
+            <td>queue.cache.reloadSwapBytes</td>
+            <td>25 % of the cacheMaxBytes in bytes</td>
             <td>The amount in bytes to swap each time data must be moved from jdbc to ram storage.</td>
             <td><img src="no.gif" border="0" alt="no" /></td>
             <td><img src="no.gif" border="0" alt="no" /></td>
@@ -116,14 +116,21 @@
             <td>RAM,1.0</td>
             <td>The implementation to be used for the transient portion of the cache queue.</td>
             <td><img src="no.gif" border="0" alt="no" /></td>
-            <td><img src="no.gif" border="0" alt="no" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
             <td>queue.cache.persistentQueue</td>
             <td>JDBC,1.0</td>
             <td>The implementation to be used for the persistent portion of the cache queue.</td>
             <td><img src="no.gif" border="0" alt="no" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>queue.defaultPlugin</td>
+            <td>CACHE,1.0</td>
+            <td>The default implementation to be used for queues, it defaults to the here described cache plugin.</td>
             <td><img src="no.gif" border="0" alt="no" /></td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          
         </table>
@@ -144,7 +151,7 @@
 <!--   <see type="REQ">cluster</see> -->
    <author>laghi@swissinfo.org</author>
    <date>2002 11 17</date>
-   <revision>$Revision: 1.5 $</revision>
+   <revision>$Revision: 1.6 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

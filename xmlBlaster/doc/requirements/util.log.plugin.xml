@@ -135,6 +135,14 @@ public class Log4jDeviceFactory implements I_LogDeviceFactory {
       </pre>
    </configuration>
 
+   <configuration where="server">
+      <p>
+       Command line example:
+      </p>
+       <pre>
+ java org.xmlBlaster.Main -logFile test.log -logDevice file,console
+       </pre>
+   </configuration>
    <see type="API">org.xmlBlaster.util.log.LogDevicePluginManager</see>
    <see type="API">org.xmlBlaster.util.log.I_LogDeviceFactory</see>
    <see type="API">org.xmlBlaster.util.log.ConsoleLogDeviceFactory</see>
@@ -142,7 +150,7 @@ public class Log4jDeviceFactory implements I_LogDeviceFactory {
    <see type="API">org.xmlBlaster.util.plugin.I_Plugin</see>
    <author>pra@tim.se</author>
    <date>2002 11 07</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

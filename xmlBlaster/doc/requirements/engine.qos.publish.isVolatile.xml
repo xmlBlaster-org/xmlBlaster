@@ -38,7 +38,7 @@ PublishQos publishQos = new PublishQos(glob);
 
 publishQos.setVolatile(true);
 
-con.publish(new MessageUnit("<key oid='HelloWorld2'/>",
+con.publish(new MsgUnit("<key oid='HelloWorld2'/>",
                             "Hello World".getBytes(),
                             publishQos.toXml()));
 
@@ -48,9 +48,9 @@ con.publish(new MessageUnit("<key oid='HelloWorld2'/>",
    <see type="API">org.xmlBlaster.client.qos.PublishQos</see>
    <see type="API">org.xmlBlaster.client.key.PublishKey</see>
    <author>pra@mint.se</author>
-   <author>ruff@swand.lake.de</author>
+   <author>xmlBlaster@marcelruff.info</author>
    <date>2001 02 22</date>
-   <revision>$Revision: 1.6 $</revision>
+   <revision>$Revision: 1.7 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
