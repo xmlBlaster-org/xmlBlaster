@@ -1539,6 +1539,76 @@ public class I_QueueTest extends TestCase {
       }
    }
 
+// ---------------------------------------------------------------------
+
+   public void testOverflow() {
+      String queueType = "unknown";
+      try {
+         QueuePropertyBase prop = new CbQueueProperty(glob, Constants.RELATING_CALLBACK, "/node/test");
+         prop.setMaxEntries(1L);
+         prop.setMaxEntriesCache(1L);
+         
+         queueType = this.queue.toString();
+         StorageId queueId = new StorageId(Constants.RELATING_CALLBACK, "QueuePlugin/testOverflow");
+         this.queue.initialize(queueId, prop);
+         queue.clear();
+         assertEquals(ME + " wrong size before starting ", 0, queue.getNumOfEntries());
+         overflow(this.queue);
+      }
+      catch (XmlBlasterException ex) {
+         log.error(ME, "Exception when testing overflowCheck probably due to failed initialization of the queue " + queueType);
+      }
+   }
+
+
+   /**
+    * Test overflow(I_Queue)
+    * It tests if the overflow mechanism works OK
+    */
+   private void overflow(I_Queue queue) {
+      ME = "I_QueueTest.overflow(" + queue.getStorageId() + ")[" + queue.getClass().getName() + "]";
+      System.out.println("***" + ME);
+      try {
+         this.log.trace(ME, "start test");
+         int imax = 4; 
+         long msgSize = 100L;
+         boolean isPersistent = true;
+         DummyEntry[] entries = new DummyEntry[imax];
+
+         for (int i=0; i < imax; i++) {
+            entries[i] = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, queue.getStorageId(), msgSize, isPersistent);
+         }
+
+         queue.put(entries[0], false); // <-- OK
+         queue.put(entries[1], false); // <-- OK
+         try {
+            queue.put(entries[2], false); // <-- overflow
+            assertTrue("here we expect an overflow exception", false);
+         }
+         catch (XmlBlasterException ex) {
+            this.log.info(ME, "overflow: an exception here is OK since it was expected due to overflow of the queue");
+         }
+         try {
+            queue.put(entries[3], false); // <-- overflow
+            assertTrue("here we expect an overflow exception", false);
+         }
+         catch (XmlBlasterException ex) {
+            this.log.info(ME, "overflow: an exception here is OK since it was expected due to overflow of the queue");
+         }
+   
+         ArrayList ret = queue.peek(4, -1L);
+         assertEquals("the number of entries in the queue", 2, ret.size());
+         for (int i=0; i < 2; i++) {
+            assertEquals(ME + ".overflow: entry '" + i + "' in sequence is wrong", entries[i].getUniqueId(), ((I_QueueEntry)ret.get(i)).getUniqueId());
+         }
+      }
+      catch(XmlBlasterException e) {
+         fail(ME + ": Exception thrown: " + e.getMessage());
+      }
+   }
+
+// ---------------------------------------------------------------------
+
    public void tearDown() {
       try {
          this.queue.clear();
@@ -1569,6 +1639,7 @@ public class I_QueueTest extends TestCase {
          suite.addTest(new I_QueueTest("testPeekWithLimitEntry", i, glob));
          suite.addTest(new I_QueueTest("testSizesCheck", i, glob));
          suite.addTest(new I_QueueTest("testBigEntries", i, glob));
+         suite.addTest(new I_QueueTest("testOverflow", i, glob));
       }
       return suite;
    }
@@ -1591,7 +1662,7 @@ public class I_QueueTest extends TestCase {
          testSub.setUp();
          testSub.testConfig();
          testSub.tearDown();
-
+/*
          testSub.setUp();
          testSub.testSize1();
          testSub.tearDown();
@@ -1631,7 +1702,12 @@ public class I_QueueTest extends TestCase {
          testSub.setUp();
          testSub.testBigEntries();
          testSub.tearDown();
-         /*
+*/
+         testSub.setUp();
+         testSub.testOverflow();
+         testSub.tearDown();
+
+        /*
          */
          long usedTime = System.currentTimeMillis() - startTime;
          testSub.log.info(testSub.ME, "time used for tests: " + usedTime/1000 + " seconds");
