@@ -1,0 +1,87 @@
+====================
+The xmlrpclib module
+====================
+
+This kit contains a Python implementation for Userland's XMLRPC
+protocol.  It also includes a simple server implementation, based on
+Python's SocketServer class.
+
+</F>
+
+fredrik@pythonware.com
+http://www.pythonware.com
+
+
+release info
+------------
+
+This is version 0.9.8 of xmlrpclib.py.
+
+This version adds support for Secret Labs' fast sgmlop XML parser.
+When using sgmlop, XMLRPC unmarshalling is up to 20 times faster
+than earlier versions. Marshalling is also slightly faster than
+before.
+
+This version also makes it easier to plug in your own favourite XML
+parser, and to use other network transports.  See the new Parser and
+Transport classes for details.
+
+This is beta software.  There are no known bugs.
+
+The XMLRPC specification can be found at:
+
+        http://www.xml-rpc.com
+
+The sgmlop parser can be found at:
+
+        http://www.pythonware.com/madscientist
+
+Comments, bug reports, and patches are welcome.  Send them to:
+
+        fredrik@pythonware.com
+
+Note that this is free software, with limited support.  If you need
+commercial support on this module, please contact info@pythonware.com.
+
+
+contents
+--------
+
+README                  this file
+
+xmlrpclib.py            client library
+xmlrpcserver.py         a very simple server
+
+xmlrpc_handler.py       an XML RPC handler for Medusa
+                        (written by Sam Rushing).
+
+license
+-------
+
+The xmlrpclib client interface is
+
+Copyright (c) 1999 by Secret Labs AB
+Copyright (c) 1999 by Fredrik Lundh
+
+By obtaining, using, and/or copying this software and/or its
+associated documentation, you agree that you have read, understood,
+and will comply with the following terms and conditions:
+
+Permission to use, copy, modify, and distribute this software and its
+associated documentation for any purpose and without fee is hereby
+granted, provided that the above copyright notice appears in all
+copies, and that both that copyright notice and this permission notice
+appear in supporting documentation, and that the name of Secret Labs
+AB or the author not be used in advertising or publicity pertaining to
+distribution of the software without specific, written prior
+permission.
+
+SECRET LABS AB AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD TO
+THIS SOFTWARE, INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND
+FITNESS.  IN NO EVENT SHALL SECRET LABS AB OR THE AUTHOR BE LIABLE FOR
+ANY SPECIAL, INDIRECT OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT
+OF OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+
+
