@@ -164,7 +164,7 @@
             <td>get</td>
             <td>get</td>
             <td>getAttributes()</td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
             <td>SET</td>
@@ -173,7 +173,7 @@
             <td>set</td>
             <td>set</td>
             <td>setAttributes()</td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
             <td>SUBSCRIBE</td>
@@ -182,7 +182,7 @@
             <td>subscribe</td>
             <td>trap</td>
             <td>Notification</td>
-            <td>no</td>
+            <td><img src="no.gif" border="0" alt="no" /></td>
          </tr>
          <tr>
             <td>POLL</td>
@@ -192,7 +192,7 @@
             <td>poll</td>
             <td>trap</td>
             <td>Notification</td>
-            <td>no</td>
+            <td><img src="no.gif" border="0" alt="no" /></td>
          </tr>
          <tr>
             <td>SCHEDULE</td>
@@ -202,7 +202,7 @@
             <td>schedule</td>
             <td>trap</td>
             <td>Notification</td>
-            <td>no</td>
+            <td><img src="no.gif" border="0" alt="no" /></td>
          </tr>
       </table>
 
@@ -226,97 +226,97 @@
          <tr>
             <td>/node/?numNodes</td>
             <td>Query the number of xmlBlaster cluster nodes (running xmlBlaster instances)</td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
             <td>/node/heron/?freeMem</td>
             <td>Query the free memory in bytes</td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
             <td>/node/heron/?runlevel=3</td>
             <td>Switch run level of heron to 3 (STANDBY)</td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
             <td>/node/heron/?numClients</td>
             <td>How many clients are logged in to heron</td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
             <td>/node/heron/client/joe/?sessionList</td>
             <td>Retrieve the public session IDs of joe (if joe is logged in three times, there will be three entries)</td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
             <td>client/joe/?sessionList</td>
             <td>Same as above but relative addressed</td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
             <td>client/joe/ses17/?uptime</td>
             <td>How long is session ID 17 logged in (in seconds)</td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
             <td>client/*/?uptime</td>
             <td>The uptime of all users (in seconds). Wildcards are not implemented yet.</td>
-            <td>no</td>
+            <td><img src="no.gif" border="0" alt="no" /></td>
          </tr>
          <tr>
             <td>client/joe/ses17/?cbQueueMaxMsgs=30000</td>
             <td>Change max. callback queue size of client joe with login session ID 17 to 30 thousand messages</td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
             <td>/node/heron/sysprop/?java.vm.version</td>
             <td>Access the JDK version</td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
             <td>sysprop/?user.language=es</td>
             <td>Change the language to spanish (relative addressed)</td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
             <td>sysprop/?info=false</td>
             <td>Switch off logging of infos</td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
             <td>sysprop/?trace[corba]=true</td>
             <td>Switch on trace mode for the corba layer</td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
             <td>/node/heron/?numMsgs</td>
             <td>How many messages are currently in heron</td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
             <td>/node/heron/msg/?Hello</td>
             <td>Return the complete message (oid=Hello)</td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
             <td>/node/heron/msg/Hello/?content</td>
             <td>Access the message content of the message with key-oid="Hello"</td>
-            <td>no</td>
+            <td><img src="no.gif" border="0" alt="no" /></td>
          </tr>
          <tr>
             <td>/node/heron/msg/Hello/?content=How are you</td>
             <td>Change the message content of the message with key-oid="Hello" to "How are you"</td>
-            <td>no</td>
+            <td><img src="no.gif" border="0" alt="no" /></td>
          </tr>
          <tr>
             <td>/node/heron/msg/Hello/?key</td>
             <td>Return the complete key of this message</td>
-            <td>no</td>
+            <td><img src="no.gif" border="0" alt="no" /></td>
          </tr>
          <tr>
             <td>/node/heron/msg/Hello/?key.contentMime</td>
             <td>Return the MIME type of this message</td>
-            <td>no</td>
+            <td><img src="no.gif" border="0" alt="no" /></td>
          </tr>
       </table>
       <p>
@@ -369,7 +369,7 @@ java org.xmlBlaster.client.feeder.PublishFile
 java org.xmlBlaster.client.feeder.PublishFile
 -xmlKey "&lt;key oid='__cmd:?exit=9'/>"</pre>
             </td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
       
          <tr>
@@ -381,7 +381,7 @@ set sysprop/?trace[corba]=true
             </pre></td>
             <td>With telnet you give the command <i>get</i> or <i>set</i> followed by the query (separated with a blank)
             </td>
-            <td>yes</td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
 
          <tr>
@@ -398,7 +398,7 @@ set sysprop/?trace[corba]=true
  objects momTable momEntry uptime
             </pre>
             </td>
-            <td>no</td>
+            <td><img src="no.gif" border="0" alt="no" /></td>
          </tr>
 
          <tr>
@@ -406,7 +406,7 @@ set sysprop/?trace[corba]=true
             <td><pre>getAttribute(
 "/node/heron/?freeMem")</pre></td>
             <td>This is a method of DynamicMBean</td>
-            <td>no</td>
+            <td><img src="no.gif" border="0" alt="no" /></td>
          </tr>
 
       </table>
@@ -475,7 +475,7 @@ UserInfo: joe:mypasswd
             <td>R</td>
             <td>Get the number of seconds the user is logged in
             </td>
-            <td>yes (telnet)</td>
+            <td><img src="ok.gif" border="0" alt="yes" /> (telnet)</td>
          </tr>
       
          <tr>
@@ -485,7 +485,7 @@ UserInfo: joe:mypasswd
             <td>Monitor or change the <i>trace</i> log level, but
             only for authentication issues
             </td>
-            <td>no</td>
+            <td><img src="no.gif" border="0" alt="no" /></td>
          </tr>
 
          <tr>
@@ -526,7 +526,7 @@ UserInfo: joe:mypasswd
    <author>Michele.Laghi@swisscom.com</author>
    <author>ruff@swand.lake.de</author>
    <date>2002 06 12</date>
-   <revision>$Revision: 1.23 $</revision>
+   <revision>$Revision: 1.24 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
