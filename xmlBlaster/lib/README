@@ -168,8 +168,8 @@ All packages allow free use for both commercial and non-commercial applications.
   Based upon C source code written by Eric Young, eay@psych.uq.oz.au
 
 
-15) cpptasks.jar 2001-12-16
-===========================
+15) cpptasks.jar & ant-contrib.jar, cvs from Jan 10, 2002
+=========================================================
   ant supplement to compile C++ clients and shared library
   used in build.sh/build.bat for build.xml
   See http://sourceforge.net/projects/ant-contrib/
