@@ -3,7 +3,7 @@ Name:      XmlRpcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   XmlRpcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: XmlRpcDriver.java,v 1.43 2003/05/21 20:21:22 ruff Exp $
+Version:   $Id: XmlRpcDriver.java,v 1.44 2003/05/22 18:50:07 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
@@ -54,14 +54,10 @@ public class XmlRpcDriver implements I_Driver
    /** The singleton handle for this xmlBlaster server */
    private I_XmlBlaster xmlBlasterImpl = null;
    public static final int DEFAULT_HTTP_PORT = 8080;
-   /** The port for the xml-rpc web server */
-   private int xmlPort = DEFAULT_HTTP_PORT;
    /** The xml-rpc HTTP web server */
-   private WebServer webServer = null;
+   private WebServer webServer;
    /** The URL which clients need to use to access this server */
-   private String serverUrl = null;
-
-   private java.net.InetAddress inetAddr = null;
+   private XmlRpcUrl xmlRpcUrl;
 
 
    /**
@@ -127,7 +123,7 @@ public class XmlRpcDriver implements I_Driver
     * @return "http://server.mars.universe:8080/"
     */
    public String getRawAddress() {
-      return serverUrl;
+      return this.xmlRpcUrl.getUrl();
    }
 
    /**
@@ -148,33 +144,15 @@ public class XmlRpcDriver implements I_Driver
       this.authenticate = authenticate;
       this.xmlBlasterImpl = xmlBlasterImpl;
 
-      this.xmlPort = addressServer.getEnv("port", DEFAULT_HTTP_PORT).getValue();
-      if (this.xmlPort < 1) {
-         log.info(ME, "Option protocol/xmlrpc/port set to " + this.xmlPort + ", xmlRpc server not started");
+      this.xmlRpcUrl = new XmlRpcUrl(glob, addressServer); // e.g. "http://127.168.1.1:8080/"
+      if (this.xmlRpcUrl.getPort() < 1) {
+         log.info(ME, "Option protocol/xmlrpc/port set to " + this.xmlRpcUrl.getPort() + ", xmlRpc server not started");
          return;
       }
 
       // "-protocol/xmlrpc/debug true"
       if (addressServer.getEnv("debug", false).getValue() == true)
          XmlRpc.setDebug(true);
-
-      String hostname = addressServer.getEnv("hostname", glob.getLocalIP()).getValue();
-      if (hostname == null) {
-         try  {
-            java.net.InetAddress addr = java.net.InetAddress.getLocalHost();
-            hostname = addr.getHostName();
-         } catch (Exception e) {
-            log.info(ME, "Can't determine your hostname");
-            hostname = "localhost";
-         }
-      }
-      try {
-         this.inetAddr = java.net.InetAddress.getByName(hostname);
-      } catch(java.net.UnknownHostException e) {
-         throw new XmlBlasterException("InitXmlRpcFailed", "The host [" + hostname + "] is invalid, try '-protocol/xmlrpc/hostname=<ip>': " + e.toString());
-      }
-      serverUrl = "http://" + hostname + ":" + this.xmlPort + "/";
-      addressServer.setRawAddress(serverUrl); // e.g. "http://127.168.1.1:8080/"
    }
 
    /**
@@ -183,14 +161,13 @@ public class XmlRpcDriver implements I_Driver
    public synchronized void activate() throws XmlBlasterException {
       if (log.CALL) log.call(ME, "Entering activate");
       try {
-         webServer = new WebServer(this.xmlPort, this.inetAddr);
+         webServer = new WebServer(this.xmlRpcUrl.getPort(), this.xmlRpcUrl.getInetAddress());
          // publish the public methods to the XmlRpc web server:
          webServer.addHandler("authenticate", new AuthenticateImpl(glob, authenticate));
          webServer.addHandler("xmlBlaster", new XmlBlasterImpl(glob, xmlBlasterImpl));
-         //serverUrl = "http://" + hostname + ":" + this.xmlPort + "/";
-         log.info(ME, "Started successfully XMLRPC driver, access url=" + serverUrl);
+         log.info(ME, "Started successfully XMLRPC driver, access url=" + this.xmlRpcUrl.getUrl());
       } catch (IOException e) {
-         log.error(ME, "Error creating webServer on '" + this.inetAddr + ":" + this.xmlPort + "': " + e.toString());
+         log.error(ME, "Error creating webServer on '" + this.xmlRpcUrl.getUrl() + "': " + e.toString());
          //e.printStackTrace();
       }
    }
