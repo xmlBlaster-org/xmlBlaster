@@ -13,7 +13,7 @@ import org.xmlBlaster.engine.helper.Destination;
  * and the receiver responds with an ACK message.
  * <p />
  * Invoke: java HelloWorld5
- * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>" target="others">CORBA xmlBlaster.idl</a>
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl" target="others">CORBA xmlBlaster.idl</a>
  */
 public class HelloWorld5
 {
