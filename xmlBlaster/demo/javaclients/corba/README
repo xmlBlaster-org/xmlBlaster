@@ -23,3 +23,19 @@
       jaco javaclients.corba.ClientQuery -queryXpath "/xmlBlaster/key"
 
       jaco javaclients.corba.ClientQuery -queryXpath "//AGENT/DRIVER"
+
+
+Running a client with CORBA protocol (default):
+
+      jaco javaclients.corba.ClientSub -Client.Protocol IOR
+
+Running a client with RMI protocol:
+
+      jaco javaclients.corba.ClientSub -Client.Protocol RMI
+
+Running a client with XML-RPC protocol:
+
+      jaco javaclients.corba.ClientSub -Client.Protocol XML-RPC
+
+Note: To run these other protocols, the xmlBlaster server must
+      have switched the supporting driver on (see xmlBlaster.properties)
