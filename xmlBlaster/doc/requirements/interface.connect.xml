@@ -108,6 +108,7 @@ serverIdl::XmlType connect(in serverIdl::XmlType qos)
     <p>
     After <i>timeout=3600000</i> milliseconds (which is one day) of inactivity our login session dies
     automatically and all resources like the callback queue are garbage collected.
+    The session lasts forever if <tt>timeout</tt> is set to <tt>0</tt>.
     </p>
     <p>
     The user <i>joe</i> can login most ten times, as specified with <i>maxSessions='10'</i>.
