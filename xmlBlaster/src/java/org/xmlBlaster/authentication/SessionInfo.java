@@ -52,6 +52,7 @@ public class SessionInfo implements I_Timeout, I_AdminSession
 {
    public static long sentMessages = 0L;
    private String ME = "SessionInfo";
+   private final String id;
    private SubjectInfo subjectInfo = null; // all client informations
    private I_Session securityCtx = null;
    private static long instanceCounter = 0L;
@@ -89,21 +90,24 @@ public class SessionInfo implements I_Timeout, I_AdminSession
          log.error(ME+".illegalArgument", tmp);
          throw new XmlBlasterException(ME+".illegalArgument", tmp);
       }
-      
+
+      String prae = glob.getLogPraefix();
       subjectInfo.checkNumberOfSessions(connectQos);
 
       synchronized (SessionInfo.class) {
          instanceId = instanceCounter;
          instanceCounter++;
       }
-      this.ME = "SessionInfo" + glob.getLogPraefixDashed("client/") + subjectInfo.getLoginName() + "/" + getPublicSessionId();
+      this.id = (prae.length() < 1) ? "client/" : (prae+"/client/") + subjectInfo.getLoginName() + "/" + getPublicSessionId();
+      this.ME = "SessionInfo-" + id;
+
       if (log.CALL) log.call(ME, "Creating new SessionInfo " + instanceId + ": " + subjectInfo.toString());
       this.uptime = System.currentTimeMillis();
       this.subjectInfo = subjectInfo;
       this.securityCtx = securityCtx;
       this.connectQos = connectQos;
                                           // securityCtx.getSessionId()
-      this.sessionQueue = new SessionMsgQueue(glob.getLogPraefixDashed("client/") + subjectInfo.getLoginName() + "/" + getPublicSessionId(),
+      this.sessionQueue = new SessionMsgQueue("-" + this.id,
                                               this, connectQos.getSessionCbQueueProperty(), glob);
       this.expiryTimer = glob.getSessionTimer();
       if (connectQos.getSessionTimeout() > 0L) {
@@ -236,7 +240,7 @@ public class SessionInfo implements I_Timeout, I_AdminSession
       return getSessionId();
    }
 
-   public ConnectQos getConnectQos()
+   public final ConnectQos getConnectQos()
    {
       return this.connectQos;
    }
@@ -285,13 +289,23 @@ public class SessionInfo implements I_Timeout, I_AdminSession
    }
 
    /**
-    * The unique login name.
+    * Unique identifier: /node/heron/client/<loginName>/<publicSessionId>,
+    * e.g. for logging only
     * <p />
-    * @return the loginName
+    * @return e.g. "client/joe/2
+    */
+   public final String getId()
+   {
+      return this.id;
+   }
+
+
+   /**
+    * @see #getId
     */
    public final String toString()
    {
-      return getLoginName();
+      return getId();
    }
 
 
