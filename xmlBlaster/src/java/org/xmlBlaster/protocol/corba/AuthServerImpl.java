@@ -3,7 +3,7 @@ Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: AuthServerImpl.java,v 1.27 2003/01/18 17:07:10 ruff Exp $
+Version:   $Id: AuthServerImpl.java,v 1.28 2003/03/27 16:04:42 laghi Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -290,6 +290,31 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
       qos = qos.substring(0, qos.lastIndexOf("</qos>"));
       qos += add + "\n</qos>\n";
       return qos;
+   }
+
+   public void shutdown() {
+      this.log.error(ME, "shutdown has been invoked");
+      if (this.xmlBlasterPOA != null) {
+         this.log.error(ME, "shutdown has been invoked and servant is not null");
+//         xmlBlasterPOA.deactivate_object(xmlBlasterPOA.reference_to_id(xmlBlasterServant));
+         // deserialize object, wait for competion
+
+         try {
+            this.xmlBlasterPOA.deactivate_object(xmlBlasterPOA.servant_to_id(xmlBlasterServant));
+         }
+         catch (Exception ex) {
+            this.log.warn(ME, "shutdown:exception occured when deactivating the servant: " + ex.getMessage());
+         }
+
+         try {
+            xmlBlasterPOA.the_POAManager().deactivate(true, true);
+            this.xmlBlasterPOA._release();
+            this.xmlBlasterPOA = null;
+         }
+         catch (Exception ex) {
+            this.log.warn(ME, "shutdown:exception occured: " + ex.getMessage());
+         }
+      }
    }
 }
 
