@@ -9,15 +9,15 @@ using namespace org::xmlBlaster::client::protocol;
 using namespace org::xmlBlaster::util::dispatch;
 using namespace org::xmlBlaster::util;
 
-static int gObjectManagerState = 0;
+//static int gObjectManagerState = 0;
 // Cleanup routine for atexit
 extern "C" void object_manager_cleanup()
    { 
-	/*
+        /*
      if(gObjectManagerState != Object_Lifetime_Manager_Base::OBJ_MAN_SHUT_DOWN &&
         gObjectManagerState != Object_Lifetime_Manager_Base::OBJ_MAN_SHUTTING_DOWN)
        ;//Object_Lifetime_Manager::instance()->fini();
-	*/
+        */
    }
 
 namespace org { namespace xmlBlaster { namespace util {
@@ -102,7 +102,7 @@ int Object_Lifetime_Manager::shutdown ()
    // instance is being shut down.
    // This object manager should be the last one
    // to be shut down.
-   gObjectManagerState = object_manager_state_ = OBJ_MAN_SHUTTING_DOWN;
+   /*gObjectManagerState = */object_manager_state_ = OBJ_MAN_SHUTTING_DOWN;
 
    // Only clean up Pre-allocated Objects when
    // the singleton Instance is being destroyed.
@@ -127,7 +127,7 @@ int Object_Lifetime_Manager::shutdown ()
 
    // Indicate that this Object_Lifetime_Manager
    // instance has been shut down.
-   gObjectManagerState = object_manager_state_ = OBJ_MAN_SHUT_DOWN;
+   /*gObjectManagerState = */object_manager_state_ = OBJ_MAN_SHUT_DOWN;
    if (dynamically_allocated_)
       delete this;
    if (this == instance_)
