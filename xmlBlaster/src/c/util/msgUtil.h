@@ -9,6 +9,12 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 
 #include <util/basicDefs.h>
 
+#ifdef __cplusplus
+#ifndef XMLBLASTER_C_COMPILE_AS_CPP /* 'g++ -DXMLBLASTER_C_COMPILE_AS_CPP ...' allows to compile the lib as C++ code */
+extern "C" {
+#endif
+#endif
+
 #define MAX_ERRNO_LEN 256
 #define XMLBLASTER_MAX_USAGE_LEN 2048 /* Change XmlBlasterAccessUnparsed.c accordingly */
 #define MAX_REQUESTID_LEN 256
@@ -110,6 +116,12 @@ Dll_Export extern char *blobDump(XmlBlasterBlob *blob);
 Dll_Export extern char *toReadableDump(char *data, size_t len);
 Dll_Export extern struct hostent * gethostbyname_re (const char *host,struct hostent *hostbuf,char **tmphstbuf,size_t *hstbuflen);
 
+
+#ifdef __cplusplus
+#ifndef XMLBLASTER_C_COMPILE_AS_CPP
+}
+#endif
+#endif
 
 #endif /* XMLBLASTER_MSGUTIL_H */
 
