@@ -47,23 +47,24 @@ import java.util.Iterator;
  * We subscribe to a status message which describes the current connection to the remote side.
  * </p>
  * <p>
- * Exactly one instance of this class exists in the Global scope
+ * Exactly one instance of this class exists in the Global scope, the shutdown is
+ * triggered by util.Global using DispatchPluginManager.shutdown() 
  * </p>
  * @author xmlBlaster@marcelruff.info
  */
 public final class XmlBlasterNativeClient implements I_Callback
 {
    private String ME = "dispatch.plugins.prio.XmlBlasterNativeClient";
-   private final Global glob;
-   private final LogChannel log;
-   private final PriorizedDeliveryPlugin plugin;
+   private Global glob;
+   private LogChannel log;
+   private PriorizedDeliveryPlugin plugin;
    /* // Native xmlBlaster access currently not implemented, using remote client xmlBlasterConnection access instead
    private final I_Authenticate authenticate;
    private final I_XmlBlaster xmlBlasterImpl;
    private final String sessionId;
    */
    private I_XmlBlasterAccess xmlBlasterCon;
-   private final ConnectQos connectQos;
+   private ConnectQos connectQos;
    private ConnectReturnQos conRetQos;
    private boolean connected;
    private String loginName;
@@ -322,12 +323,18 @@ public final class XmlBlasterNativeClient implements I_Callback
       synchronized (subscriptionsByNotifierMap) {
          subscriptionsByNotifierMap.remove(callback);
       }
+      synchronized (this) {
+         if (subscriptionsByNotifierMap.size() < 1) {
+            shutdown();
+         }
+      }
    }
    
    /**
     * @see I_MsgDeliveryInterceptor#shutdown()
     */ 
    synchronized void shutdown() {
+      if (log.TRACE) log.trace(ME, "shutdown()");
       //unSubscribeStatusMessages(); -> disconnect() takes care
 
       synchronized (subscriptionsByNotifierMap) {
@@ -356,6 +363,16 @@ public final class XmlBlasterNativeClient implements I_Callback
          xmlBlasterCon = null;
       }
       log.info(ME, "Native xmlBlaster access stopped, resources released.");
+
+      this.glob = null;
+      this.log = null;
+      this.plugin = null;
+      //this.authenticate = null;
+      //this.xmlBlasterImpl = null;
+      this.connectQos = null;
+      this.conRetQos = null;
+      this.subscriptionsByNotifierMap = null;
+      this.oidListenerMap = null;
    }
 }
 

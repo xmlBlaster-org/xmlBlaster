@@ -525,7 +525,7 @@ public final class PriorizedDeliveryPlugin implements I_MsgDeliveryInterceptor, 
     * Deregister a delivery manager. 
     * @see I_MsgDeliveryInterceptor#shutdown(DeliveryManager)
     */ 
-   public void shutdown(DeliveryManager deliveryManager) {
+   public void shutdown(DeliveryManager deliveryManager) throws XmlBlasterException {
       DeliveryManagerEntry de = null;
       synchronized (this)  {
          de = (DeliveryManagerEntry)this.deliveryManagerEntryMap.remove(deliveryManager);
@@ -538,11 +538,16 @@ public final class PriorizedDeliveryPlugin implements I_MsgDeliveryInterceptor, 
             de.getHoldbackQueue().shutdown();
          }
       }
+      synchronized (this)  {
+         if (this.deliveryManagerEntryMap.size() == 0)
+            shutdown(); // Remove the whole plugin on last DeliveryManager
+      }
    }
 
    /**
-    */ 
+   */ 
    public void shutdown() throws XmlBlasterException {
+      if (log.TRACE) log.trace(ME, "shutdown()");
       synchronized (this) {
          if (isShutdown) return;
 
