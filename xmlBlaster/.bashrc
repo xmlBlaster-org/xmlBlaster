@@ -22,7 +22,7 @@
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash.
 # Thanks to Heinrich Goetzger
-# $Revision: 1.68 $
+# $Revision: 1.69 $
 #-----------------------------------------------------------
 
 
@@ -215,6 +215,7 @@ fi
 
 if [ ${USE_CPP:=""} = "true" ] ; then
   CPP_ERROR=false
+  export PATH=${PATH}:${XMLBLASTER_HOME}/testsuite/c++/bin
   #check if xerces is installed
   if [ ${XMLCPP_HOME:=""} = "" ] ; then
     ${ECHO} "$BLACK_RED set XMLCPP_CPP to the directory where the c++ XML is installed $ESC"
