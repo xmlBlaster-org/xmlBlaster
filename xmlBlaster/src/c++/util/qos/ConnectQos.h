@@ -108,7 +108,7 @@ public:
    void setPtp(bool ptp);
    void setSessionQos(const SessionQos& sessionQos);
    SessionQos getSessionQos() const;
-   string getSessionId() const;
+   string getSecretSessionId() const;
    string getUserId() const;
    string getCallbackType() const;
    void setSecurityQos(const SecurityQos& securityQos);

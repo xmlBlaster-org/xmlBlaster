@@ -198,12 +198,12 @@ void SessionQosData::setClearSessions(bool clearSessions)
    clearSessions_ = clearSessions;
 }
 
-string SessionQosData::getSessionId() const
+string SessionQosData::getSecretSessionId() const
 {
    return sessionId_;
 }
 
-void SessionQosData::setSessionId(const string& sessionId)
+void SessionQosData::setSecretSessionId(const string& sessionId)
 {
    sessionId_ = sessionId;
 }

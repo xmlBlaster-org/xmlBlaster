@@ -362,7 +362,7 @@ ConnectReturnQos CorbaConnection::connect(const ConnectQos& connectQos)
       ConnectQosFactory factory(global_);
       if (log_.DUMP) log_.dump(me(), "connect: the connect qos before parsing: " + retQos);
       connectReturnQos_ = factory.readObject(retQos);
-      sessionId_ = connectReturnQos_.getSessionId();
+      sessionId_ = connectReturnQos_.getSecretSessionId();
       xmlBlasterIOR_ = connectReturnQos_.getServerRef().getAddress();
 
       CORBA::Object_var obj = orb_->string_to_object(xmlBlasterIOR_.c_str());

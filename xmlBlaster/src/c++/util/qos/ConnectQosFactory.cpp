@@ -285,7 +285,7 @@ int main(int args, char* argv[])
        glob.initialize(args, argv);
        ConnectQosFactory factory(glob);
        ConnectQosData data = factory.readObject(qos);
-       cout << "sessionId    : " << data.getSessionId() << endl;
+       cout << "sessionId    : " << data.getSecretSessionId() << endl;
        cout << "userId       : " << data.getUserId() << endl;
        cout << " type: " << data.getCallbackType() << endl;
        cout << "is ptp       : " << data.getBoolAsString(data.getPtp()) << endl;

@@ -94,10 +94,10 @@ ConnectReturnQos ConnectionsHandler::connect(const ConnectQos& qos)
 
    ConnectReturnQos retQos = connection_->connect(*connectQos_);
    connectReturnQos_ = new ConnectReturnQos(retQos);
-   lastSessionId_ = connectReturnQos_->getSessionQos().getSessionId();
+   lastSessionId_ = connectReturnQos_->getSessionQos().getSecretSessionId();
    log_.info(ME, string("successfully connected with sessionId = '") + lastSessionId_ + "'");
    SessionQos tmp = connectQos_->getSessionQos();
-   tmp.setSessionId(lastSessionId_);
+   tmp.setSecretSessionId(lastSessionId_);
    connectQos_->setSessionQos(tmp);
    if (log_.TRACE) {
       log_.trace(ME, string("return qos after connection: ") + connectReturnQos_->toXml());
@@ -412,7 +412,7 @@ void ConnectionsHandler::timeout(void *userData)
            ConnectReturnQos retQos = connection_->connect(*connectQos_);
            if (connectReturnQos_) delete connectReturnQos_;
            connectReturnQos_ = new ConnectReturnQos(retQos);
-           string sessionId = connectReturnQos_->getSessionQos().getSessionId();
+           string sessionId = connectReturnQos_->getSessionQos().getSecretSessionId();
            log_.info(ME, string("successfully re-connected with sessionId = '") + sessionId + "', the connectQos was: " + connectQos_->toXml());
 
            if ( log_.TRACE ) {

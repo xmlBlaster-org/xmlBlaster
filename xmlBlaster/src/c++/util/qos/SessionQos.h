@@ -106,8 +106,8 @@ public:
    long getPubSessionId() const;
    void setPubSessionId(const long pubSessionId);
 
-   string getSessionId() const;
-   void setSessionId(const string& sessionId);
+   string getSecretSessionId() const;
+   void setSecretSessionId(const string& sessionId);
    string toXml(const string& extraOffset="") const;
 };
 

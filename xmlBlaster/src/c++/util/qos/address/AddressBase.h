@@ -3,7 +3,7 @@ Name:      AddressBase.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address string including protocol
-Version:   $Id: AddressBase.h,v 1.4 2003/01/16 18:03:56 laghi Exp $
+Version:   $Id: AddressBase.h,v 1.5 2003/01/18 17:14:39 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -371,10 +371,10 @@ public:
     * The identifier sent to the callback client, the client can decide if he trusts this invocation
     * @return never null
     */
-   string getSessionId() const;
+   string getSecretSessionId() const;
 
    /** The identifier sent to the callback client, the client can decide if he trusts this invocation */
-   void setSessionId(const string& sessionId);
+   void setSecretSessionId(const string& sessionId);
 
    /**
     * Get the compression method. 

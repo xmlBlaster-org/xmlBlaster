@@ -3,7 +3,7 @@ Name:      AddressFactory.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Factory Object for parsing Address objects.
-Version:   $Id: AddressFactory.cpp,v 1.2 2003/01/16 10:11:53 laghi Exp $
+Version:   $Id: AddressFactory.cpp,v 1.3 2003/01/18 17:14:39 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -86,7 +86,7 @@ void AddressFactory::startElement(const XMLCh* const name, AttributeList& attrs)
                address_->setPort(SaxHandlerBase::getIntValue(attrs.getValue(i)));
             }
             else if (SaxHandlerBase::caseCompare(attrs.getName(i), "sessionId")) {
-               address_->setSessionId(SaxHandlerBase::getStringValue(attrs.getValue(i)));
+               address_->setSecretSessionId(SaxHandlerBase::getStringValue(attrs.getValue(i)));
             }
             else if (SaxHandlerBase::caseCompare(attrs.getName(i), "pingInterval")) {
                address_->setPingInterval(SaxHandlerBase::getTimestampValue(attrs.getValue(i)));
@@ -124,7 +124,7 @@ void AddressFactory::startElement(const XMLCh* const name, AttributeList& attrs)
          address_->setType("IOR");
       }
 
-      if (address_->getSessionId() == "") {
+      if (address_->getSecretSessionId() == "") {
          log_.warn(ME, string("Missing '") + address_->rootTag_ + string("' attribute 'sessionId' QoS"));
       }
       return;
@@ -254,7 +254,7 @@ int main(int args, char* argv[])
          a.setRetries(17);
          a.setDelay(7890l);
          a.setOneway(true);
-         a.setSessionId("0x4546hwi89");
+         a.setSecretSessionId("0x4546hwi89");
          cout << a.toXml() << endl;
 
          AddressFactory factory(glob);

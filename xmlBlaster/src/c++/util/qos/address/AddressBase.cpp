@@ -3,7 +3,7 @@ Name:      AddressBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address string including protocol
-Version:   $Id: AddressBase.cpp,v 1.3 2003/01/16 10:11:53 laghi Exp $
+Version:   $Id: AddressBase.cpp,v 1.4 2003/01/18 17:14:39 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -396,13 +396,13 @@ void AddressBase::setCompressType(const string& compressType)
  * The identifier sent to the callback client, the client can decide if he trusts this invocation
  * @return never null
  */
-string AddressBase::getSessionId() const
+string AddressBase::getSecretSessionId() const
 {
    return sessionId_;
 }
 
 /** The identifier sent to the callback client, the client can decide if he trusts this invocation */
-void AddressBase::setSessionId(const string& sessionId)
+void AddressBase::setSecretSessionId(const string& sessionId)
 {
    sessionId_ = sessionId;
 }
@@ -488,8 +488,8 @@ string AddressBase::toXml(const string& extraOffset)
       ret += string(" hostname='") + getHostname() + string("'");
    if (DEFAULT_port != getPort())
        ret += string(" port='") + lexical_cast<string>(getPort()) + string("'");
-   if (DEFAULT_sessionId != getSessionId())
-       ret += string(" sessionId='") + getSessionId() + string("'");
+   if (DEFAULT_sessionId != getSecretSessionId())
+       ret += string(" sessionId='") + getSecretSessionId() + string("'");
    if (defaultPingInterval_ != getPingInterval())
        ret += string(" pingInterval='") + lexical_cast<string>(getPingInterval()) + string("'");
    if (defaultRetries_ != getRetries())

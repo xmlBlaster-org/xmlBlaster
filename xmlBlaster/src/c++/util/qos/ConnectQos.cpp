@@ -80,9 +80,9 @@ SessionQos ConnectQosData::getSessionQos() const
    return sessionQos_;
 }
 
-string ConnectQosData::getSessionId() const
+string ConnectQosData::getSecretSessionId() const
 {
-   return sessionQos_.getSessionId();
+   return sessionQos_.getSecretSessionId();
 }
 
 string ConnectQosData::getUserId() const
