@@ -3,7 +3,7 @@ Name:      Authenticate.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login for clients
-Version:   $Id: Authenticate.java,v 1.7 1999/11/16 18:44:49 ruff Exp $
+Version:   $Id: Authenticate.java,v 1.8 1999/11/16 18:57:44 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -240,8 +240,8 @@ public class Authenticate
       }
       ClientInfo clientInfo = (ClientInfo)obj;
 
-      if (Log.TRACE) Log.trace(ME, "Succesfully granted access for " + clientInfo.toString() + " oid=<" + uniqueClientKey + ">" + stop.nice());
       if (Log.TIME) Log.time(ME, "Elapsed time in check()" + stop.nice());
+      if (Log.TRACE) Log.trace(ME, "Succesfully granted access for " + clientInfo.toString() + " oid=<" + uniqueClientKey + ">" + stop.nice());
       return clientInfo;
    }
 }
