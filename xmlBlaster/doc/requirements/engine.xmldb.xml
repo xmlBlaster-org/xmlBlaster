@@ -8,7 +8,7 @@
       <![CDATA[
       <p>
       The xmldb is a transparent layer for the engine. MessageUnits
-      are stored in a file-database if the QoS-Tag &lt;isDurable&gt;
+      are stored in a file-database if the QoS-Tag &lt;isDurable /&gt;
       is set. MessageUnits are cached in the memory and mapped on the 
       disk with COPY-BACK-Caching. The xmldb contains of a memory-cache
       ,file-database and a DOM which contanis the XmlKey. The settings
@@ -22,8 +22,8 @@
       and file-database.<p>
 
       Persistence:<br>
-      If the Qos-Flag &lt;isDurable&gt; is set, the xmldb writes the Message-
-      Unit in a file with write-through-strategy. 
+      If the Qos-Flag &lt;isDurable/&gt; is set, the xmldb writes the MessageUnit
+      in a file with write-through-strategy. 
        ]]>     
    </description> 
 
@@ -64,5 +64,5 @@
    </example>
    <author>manuel.kron@gmx.net</author>
    <date>2000 07 16</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
 </requirement>
