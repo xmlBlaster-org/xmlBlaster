@@ -3,7 +3,7 @@ Name:      TestSub.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.java,v 1.27 2002/03/13 16:41:38 ruff Exp $
+Version:   $Id: TestSub.java,v 1.28 2002/03/17 07:31:19 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -13,6 +13,7 @@ import org.jutils.time.StopWatch;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
+import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.client.protocol.XmlBlasterConnection;
 import org.xmlBlaster.client.I_Callback;
@@ -122,11 +123,11 @@ public class TestSub extends TestCase implements I_Callback
                       "<key oid='' queryType='XPATH'>\n" +
                       "   //TestSub-AGENT" +
                       "</key>";
-      String qos = "<qos></qos>";
+      ConnectQos qos = new ConnectQos(); //    String qos = "<qos></qos>";
       numReceived = 0;
       subscribeOid = null;
       try {
-         subscribeOid = senderConnection.subscribe(xmlKey, qos);
+         subscribeOid = senderConnection.subscribe(xmlKey, qos.toString());
          Log.info(ME, "Success: Subscribe subscription-id=" + subscribeOid + " done");
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);
