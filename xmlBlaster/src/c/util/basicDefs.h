@@ -10,8 +10,10 @@ Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
 #if defined(_WINDOWS)
 # define Blaster_Export_Flag __declspec (dllexport)
 # define Blaster_Import_Flag __declspec (dllimport)
-#if defined(DLL_BUILD)
+# if defined(DLL_BUILD)
 #   define Dll_Export Blaster_Export_Flag
+# elif defined(DLL_IGNORE)
+#   define Dll_Export
 # else
 #   define Dll_Export Blaster_Import_Flag
 #endif
