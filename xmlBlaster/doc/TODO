@@ -2,6 +2,8 @@
   * Implementing of  XtOmQuery for oid access (minimal data in DOM tree)
     This is nonsense, the minimal DOM tree couldn't be parsed by XPath
   * Normalizing the DOM tree
+  * Profiling
+  * Use SML instead of XML? http://www.xml.com/pub/1999/11/sml/index.html
 
 - Integrate with Java API for XML Parsing 1.0 
   http://developer.java.sun.com/developer/earlyAccess/xml/   
@@ -60,6 +62,20 @@
   supports the Java(tm) Transaction API (JTA) 1.0 Specification.
   http://java.sun.com/products/jts/
 
+- Persistence of XmlKey and content:
+  - PDOM (Persistent DOM)
+    * http://devlinux.com/projects/reiserfs/content_table.html
+      A suitable file system for DOM persistence?
+    * XDBM free for not commercial use, see http://www.bowerbird.com.au/XDBM/
+    * IPSI XQL engine, free for not commercial use, see http://xml.darmstadt.gmd.de/xql/index.html
+    * LORE http://www-db.Stanford.edu/lore/
+    * DOM - RDBMS see http://www.alphaWorks.ibm.com/tech/databasedom
+    * OZONE Database see http://www.ozone-db.org/ozone_main.html
+  - Content
+    How should we store the data blobs?
+
+- Evaluate other query engines for better performance, see
+   http://www-db.research.bell-labs.com/user/simeon/xquery.html
 
 Clients
 -------
@@ -75,7 +91,7 @@ Clients
 
 - Phyton
   Python language: http://www.python.org
-  Python CORBA:    http://www.dstc.edu.au/Fnorb
+  Python CORBA:    http://www.dstc.edu.au/Fnorb (not free for commercial use!)
   Python XML:      http://www.python.org/sigs/xml-sig/
   Python XSL:      http://fourthought.com/4Suite/4XSLT  ftp://FourThought.com/pub/4Suite/4XSLT/
 
