@@ -18,12 +18,16 @@ See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/queue.html
 #include <stdarg.h> /* vsnprintf */
 #include <string.h>
 #include <malloc.h>
-#include <unistd.h> /* sleep */
+#if defined(_WINDOWS)
+#  include <Winsock2.h>         /* Sleep() */
+#  include <pthreads/pthread.h> /* Our pthreads.h: For timespec, for logging output of thread ID, for Windows and WinCE downloaded from http://sources.redhat.com/pthreads-win32 */
+#else
+# include <unistd.h> /* sleep */
+# include <pthread.h>
+# define XB_USE_PTHREADS 1
+#endif
 #include "util/queue/I_Queue.h"
 #include "sqlite.h"
-
-#include <pthread.h>
-#define XB_USE_PTHREADS 1
 
 #if defined(_WINDOWS)
 #  define SNPRINTF _snprintf
@@ -451,7 +455,11 @@ static bool compilePreparedQuery(I_Queue *queueP, const char *methodName,
                }
                if (queueP->log) queueP->log(queueP, __FILE__, "%s() Sleeping as other thread holds DB %s", methodName, (errMsg==0)?"":errMsg);
                if (errMsg != 0) { sqlite_freemem(errMsg); errMsg = 0; }
-               sleep(1);
+					#ifdef _WINDOWS
+					   Sleep(10); /* milli */
+					#else
+	               sleep(1);
+					#endif
                break;
             case SQLITE_OK:
                iRetry = numRetry; /* We're done */
@@ -595,7 +603,11 @@ static int32_t getResultRows(I_Queue *queueP, const char *methodName,
          break;
          case SQLITE_BUSY:
             if (queueP->log) queueP->log(queueP, __FILE__, "%s() Sleeping as other thread holds DB.", methodName);
-            sleep(1);
+				#ifdef _WINDOWS
+				   Sleep(10); /* milli */
+				#else
+               sleep(1);
+				#endif
          break;
          case SQLITE_ROW:
          {
@@ -716,7 +728,7 @@ static QueueEntryArr *persistentQueuePeekWithSamePriority(I_Queue *queueP, int32
          free(queueEntryArr->queueEntryArr);
          queueEntryArr->len = 0;
       }
-      else if (currIndex < queueEntryArr->len) {
+      else if ((size_t)currIndex < queueEntryArr->len) {
          queueEntryArr->queueEntryArr = (QueueEntry *)realloc(queueEntryArr->queueEntryArr, currIndex * sizeof(QueueEntry));
          queueEntryArr->len = currIndex; 
       }
@@ -745,7 +757,7 @@ static int32_t persistentQueueRandomRemove(I_Queue *queueP, QueueEntryArr *queue
    dbInfo = getDbInfo(queueP);
 
    {
-      int i;
+      size_t i;
       int qLen = 128 + 2 * ID_MAX + queueEntryArr->len * 24;
       char *queryString = calloc(qLen, sizeof(char));
       char tmpStr[56];
@@ -918,11 +930,18 @@ static void persistentQueueShutdown(I_Queue *queueP, QueueException *exception)
 }
 
 #ifdef _WINDOWS
+#  include <time.h>
+/*
+#  include <sys/types.h>
+#  include <sys/timeb.h>
+#  include <Windows.h>
+*/
 #else
 #  include <sys/time.h>       /* sleep with select(), gettimeofday() */
 #endif
 #define  NANO_SECS_PER_SECOND 1000000000LL
 static int64_t lastNanos=0;
+
 /**
  * Fills the given abstime with absolute time, using the given timeout relativeTimeFromNow in milliseconds
  * On Linux < 2.5.64 does not support high resolution timers clock_gettime(),

@@ -9,8 +9,13 @@ Note:      The gcc and icc (>=8) both define __GNUC__
 #ifndef I_QUEUE_I_Queue_h
 #define I_QUEUE_I_Queue_h
 
-#include<stdint.h>  /*-> C99:  uint64_t etc. */
-/*typedef long long int64_t */
+#if defined(_WINDOWS)
+  typedef long long int64_t;
+  typedef int int32_t;
+  typedef short int16_t;
+#else
+# include<stdint.h>  /*-> C99:  uint64_t etc. */
+#endif
 
 /**
  * Standard defines, copied from basicDefs.h
