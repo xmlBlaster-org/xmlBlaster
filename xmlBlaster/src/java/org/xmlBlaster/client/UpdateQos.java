@@ -3,7 +3,7 @@ Name:      UpdateQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: UpdateQos.java,v 1.1 2002/05/01 21:40:01 ruff Exp $
+Version:   $Id: UpdateQos.java,v 1.2 2002/05/16 15:42:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -12,12 +12,13 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.RcvTimestamp;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.engine.helper.Constants;
 import org.xml.sax.Attributes;
 
 
 /**
  * QoS (quality of service) informations sent from server to client<br />
- * via the update() method from the BlasterCallback interface.
+ * via the update() method from the I_Callback interface.
  * <p />
  * If you are a Java client you may use this class to parse the QoS argument.
  * <p />
@@ -26,6 +27,7 @@ import org.xml.sax.Attributes;
  *   &lt;qos> &lt;!-- UpdateQos -->
  *     &lt;state id='OK'/>
  *     &lt;sender>Tim&lt;/sender>
+ *     &lt;priority>5&lt;/priority>
  *     &lt;subscriptionId>subscriptionId:__sys__TotalMem&lt;/subscriptionId>
  *     &lt;rcvTimestamp nanos='1007764305862000002'> &lt;!-- UTC time when message was created in xmlBlaster server with a publish() call, in nanoseconds since 1970 -->
  *           2001-12-07 23:31:45.862000002   &lt;!-- The nanos from above but human readable -->
@@ -38,6 +40,15 @@ import org.xml.sax.Attributes;
  *     &lt;/route>
  *  &lt;/qos>
  * </pre>
+ * The receive timestamp can be delivered in human readable form as well
+ * by setting on server command line:
+ * <pre>
+ *   -cb.recieveTimestampHumanReadable true
+ *
+ *   &lt;rcvTimestamp nanos='1015959656372000000'>
+ *     2002-03-12 20:00:56.372
+ *   &lt;/rcvTimestamp>
+ * </pre>
  */
 public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
 {
@@ -47,6 +58,11 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
    private boolean inState = false;
    /** the state of the message */
    private String state = null;
+
+   /** helper flag for SAX parsing: parsing inside <priority> ? */
+   private boolean inPriority = false;
+   /** The priority of the message */
+   private int priority = Constants.NORM_PRIORITY;
 
    /** helper flag for SAX parsing: parsing inside <sender> ? */
    private boolean inSender = false;
@@ -98,6 +114,16 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
    public String getSender()
    {
       return sender;
+   }
+
+   /**
+    * Message priority.
+    * @return priority 0-9
+    * @see org.xmlBlaster.engine.helper.Constants
+    */
+   public int getPriority()
+   {
+      return priority;
    }
 
    /**
@@ -225,6 +251,20 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
                Log.warn(ME, "Ignoring sent <sender> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
             }
             // if (Log.TRACE) Log.trace(ME, "Found sender tag");
+         }
+         return;
+      }
+
+      if (name.equalsIgnoreCase("priority")) {
+         if (!inQos)
+            return;
+         inPriority = true;
+         if (attrs != null) {
+            int len = attrs.getLength();
+            for (int i = 0; i < len; i++) {
+               Log.warn(ME, "Ignoring sent <priority> attribute " + attrs.getQName(i) + "=" + attrs.getValue(i).trim());
+            }
+            // if (Log.TRACE) Log.trace(ME, "Found priority tag");
          }
          return;
       }
@@ -360,6 +400,14 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
          return;
       }
 
+      if(name.equalsIgnoreCase("priority")) {
+         inPriority = false;
+         priority = Constants.getPriority(character.toString(), Constants.NORM_PRIORITY);
+         // if (Log.TRACE) Log.trace(ME, "Found priority = " + priority);
+         character.setLength(0);
+         return;
+      }
+
       if(name.equalsIgnoreCase("redeliver")) {
          inRedeliver = false;
          String tmp = character.toString().trim();
@@ -441,6 +489,9 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
       if (sender != null) {
          sb.append(offset).append("   <sender>").append(sender).append("</sender>");
       }
+      if (priority != Constants.NORM_PRIORITY) {
+         sb.append(offset).append("   <priority>").append(priority).append("</priority>");
+      }
       if (subscriptionId != null) {
          sb.append(offset).append("   <subscriptionId>").append(subscriptionId).append("</subscriptionId>");
       }
@@ -471,27 +522,7 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
     * Used by the xmlBlaster server. 
     * Creates the callback QoS of the update() method. 
     * <p />
-    * It is usually a subset of this xml string:
-    * <pre>
-    *   &lt;qos>
-    *    &lt;state>ERROR&lt;/state>
-    *    &lt;sender>joe&lt;/sender>
-    *    &lt;subscriptionId>subscriptionId:12003&lt;/subscriptionId>
-    *    &lt;rcvTimestamp nanos='1015959656372000000'/>     
-    *    &lt;expiration remainingLife='20000'/>
-    *    &lt;queue index='3' size='12'/>
-    *    &lt;redeliver>4&lt;/redeliver>
-    *   &lt;/qos>
-    *
-    * The receive timestamp can be delivered in human readable form as well
-    * by setting on server command line
-    *
-    *   -cb.recieveTimestampHumanReadable true
-    *
-    *   &lt;rcvTimestamp nanos='1015959656372000000'>
-    *     2002-03-12 20:00:56.372
-    *   &lt;/rcvTimestamp>
-    * </pre>
+    * The XML syntax is described in the class description.
     * @param index Index of entry in queue
     * @param max Number of entries in queue
     * @param state One of Constants.STATE_OK | Constants.STATE_EXPIRED | Constants.STATE_ERASED
@@ -513,6 +544,7 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
          buf.append("\n <state id='").append(state).append("'/>");
 
       buf.append("\n <sender>").append(msgUnitWrapper.getPublisherName()).append("</sender>");
+      buf.append("\n <priority>").append(msgUnitWrapper.getPublishQos().getPriority()).append("</priority>");
 
       if (subscriptionId != null)
          buf.append("\n <subscriptionId>").append(subscriptionId).append("</subscriptionId>");
@@ -553,6 +585,7 @@ public class UpdateQos extends org.xmlBlaster.util.XmlQoSBase
                    "   <sender>\n" +
                    "      Joe\n" +
                    "   </sender>\n" +
+                   "   <priority>5</priority>\n" +
                    "   <subscriptionId>\n" +
                    "      1234567890\n" +
                    "   </subscriptionId>\n" +
