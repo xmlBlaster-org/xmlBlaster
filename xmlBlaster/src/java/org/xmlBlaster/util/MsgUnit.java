@@ -296,7 +296,7 @@ public final class MsgUnit implements java.io.Serializable
     * The number of bytes of qos+key+content
     */
    public long size() {
-      //glob.getLog("core").info("MsgUnit", "qosSize=" + this.qosData.size() + " keySize=" + this.keyData.size() + " contentSize=" + this.content.length + this.qosData.toXml());
+      //glob.getLog("core").info("MsgUnit", this.qosData.toXml() + "qosSize=" + this.qosData.size() + " keySize=" + this.keyData.size() + " contentSize=" + this.content.length + this.qosData.toXml());
       return this.qosData.size() + this.keyData.size() + this.content.length;
    }
 
