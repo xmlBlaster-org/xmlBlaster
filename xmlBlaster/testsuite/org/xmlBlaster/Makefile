@@ -51,7 +51,7 @@ LOCAL_FILES = \
 $(CLASS_DIR)/%.class: %.java
 	$(JAVAC) $<
 
-all: all_SUB_DIRS precond java
+all: precond java all_SUB_DIRS
 
 precond:
 	$(MKDIR_RECURSIVE) $(CLASS_DIR)
