@@ -3,7 +3,7 @@ Name:      XmlKeyBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKeyBase.java,v 1.29 2000/01/15 15:46:19 ruff Exp $
+Version:   $Id: XmlKeyBase.java,v 1.30 2000/01/20 19:42:00 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -172,6 +172,16 @@ public class XmlKeyBase
     * @return the literal ASCII xmlKey
     */
    public String toString()
+   {
+      return toXml();
+   }
+
+
+   /**
+    * Access the literal ASCII xmlKey.
+    * @return the literal ASCII xmlKey
+    */
+   public String toXml()
    {
       return xmlKey_literal;
    }
