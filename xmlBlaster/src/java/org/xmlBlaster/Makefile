@@ -32,8 +32,12 @@ java: $(LOCAL_FILES)
 	@echo -e "\033[1mDONE ............ \033[32;40mAll of $(SRC_JAVA_DIR)\033[0m";
 
 clean: clean_SUB_DIRS
-	@echo "Removing all in $(CLASS_DIR) ..."
+	@echo -e "Removing all in $(CLASS_DIR) ..."
 	$(RM) $(CLASS_DIR)/*.*
+
+xmlBlaster:
+	@echo -e "\nStarting xmlBlaster server ...\n"
+	jaco ${BlasterSystemProperties} ${BlasterServerMemory} org.xmlBlaster.MainGUI
 
 #doc:
 #	$(JAVADOC) -d $(THIS_JAVADOC_DIR) $(SRC_JAVA_DIR)/*.java
