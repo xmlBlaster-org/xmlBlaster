@@ -153,7 +153,7 @@ public class MsgQosFactoryTest extends TestCase {
             "      Gesa\n" +
             "   </sender>\n" +
             "   <priority>MIN</priority>\n" +
-            "   <expiration lifeTime='2400' remainingLife='12000'/>\n" +
+            "   <expiration lifeTime='2400' remainingLife='12000' forceDestroy='true'/>\n" +
             "   <rcvTimestamp nanos='1234'/>\n" +
             "   <isVolatile>false</isVolatile>\n" +
             "   <isDurable/>\n" +
@@ -172,6 +172,7 @@ public class MsgQosFactoryTest extends TestCase {
          MsgQosSaxFactory factory = new MsgQosSaxFactory(glob);
          MsgQosData qos = factory.readObject(xml);
          String newXml = qos.toXml();
+         log.info(ME, "lifeTime=" + qos.getLifeTimeProp().toXml());
          log.info(ME, "New XML=" + newXml);
          qos = factory.readObject(newXml);
 
@@ -188,6 +189,7 @@ public class MsgQosFactoryTest extends TestCase {
          assertEquals("", 2400L, qos.getLifeTime());
          assertEquals("", 12000L, qos.getRemainingLifeStatic());
          assertEquals("", 1234L, qos.getRcvTimestamp().getTimestamp());
+         assertEquals("", true, qos.isForceDestroy());
          //assertTrue("no receive timestamp expected", qos.getRcvTimestamp() == null);
 
          assertEquals("", 3, qos.getRouteNodes().length);
