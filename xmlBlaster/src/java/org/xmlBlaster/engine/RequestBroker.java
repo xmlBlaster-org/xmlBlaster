@@ -363,7 +363,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
     */
    private void startupTopicStore() throws XmlBlasterException   {
       if (log.CALL) log.call(ME, "Entering startupTopicStore(), looking for persisted topics");
-      
+
       boolean wipeOutJdbcDB = glob.getProperty().get("wipeOutJdbcDB", false);
       if (wipeOutJdbcDB) {
          String tableNamePrefix = "XMLBLASTER";
@@ -381,7 +381,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
 
       boolean useTopicStore = glob.getProperty().get("useTopicStore", true);
       if (!useTopicStore) {
-         log.warn(ME, "Persistent and recoverable topics are switched of with '-useTopicStore false', topics are handled RAM based only.");
+         log.warn(ME, "Persistent and recoverable topics are switched off with '-useTopicStore false', topics are handled RAM based only.");
          return;
       }
 
@@ -389,7 +389,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
          // TODO: get TopicStoreProperty from administrator
          //TopicStoreProperty topicStoreProperty = this.topicProperty.getTopicStoreProperty();
          TopicStoreProperty topicStoreProperty = new TopicStoreProperty(glob, glob.getStrippedId());
-         
+
          if (this.topicStore == null) {
             String type = topicStoreProperty.getType();
             String version = topicStoreProperty.getVersion();
@@ -1127,7 +1127,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
    }
 
    /**
-    * Make the topicHandler persistent for crash recovery and shutdown/startup cycle. 
+    * Make the topicHandler persistent for crash recovery and shutdown/startup cycle.
     * @return Number of new entries added: 0 if entry existed, 1 if new entry added
     */
    public final int addPersistentTopicHandler(TopicEntry topicEntry) throws XmlBlasterException {
@@ -1139,7 +1139,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
    }
 
    /**
-    * Remove the persistent TopicHandler entry. 
+    * Remove the persistent TopicHandler entry.
     * @return the number of elements erased.
     */
    public final int removePersistentTopicHandler(TopicEntry topicEntry) throws XmlBlasterException {
@@ -1461,7 +1461,7 @@ public final class RequestBroker implements I_ClientListener, I_AdminNode, I_Run
          if (useCluster) {
             if (!publishQos.isClusterUpdate()) { // updates from other nodes are arriving here in publish as well
                //if (!glob.getClusterManager().isReady())
-               //   glob.getClusterManager().blockUntilReady(); 
+               //   glob.getClusterManager().blockUntilReady();
                if (glob.getClusterManager().isReady()) {
                   if (publishQos.isPtp()) {  // is PtP message
                      Destination[] destinationArr = publishQos.getDestinationArr(); // !!! add XPath client query here !!!
