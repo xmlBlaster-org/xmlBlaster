@@ -240,6 +240,7 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
    /**
     * Send message to subscriber even if the content is the same as the previous. 
     * @param forceUpdate
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.publish.forceUpdate.html">The engine.qos.publish.forceUpdate requirement</a>
     */
    public void setForceUpdate(boolean forceUpdate) {
       this.forceUpdate.setValue(forceUpdate);
@@ -506,8 +507,10 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
    }
 
    /**
+    * Control message life cycle on message expiry. 
     * @param forceDestroy true Force message destroy on message expire<br />
     *        false On message expiry messages which are already in callback queues are delivered.
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.publish.isVolatile.html">The engine.qos.publish.isVolatile requirement</a>
     */
    public void setForceDestroy(boolean forceDestroy) {
       this.forceDestroy.setValue(forceDestroy);

@@ -123,6 +123,7 @@ public final class TopicProperty implements java.io.Serializable
    }
 
    /**
+    * Is the topic available in the internal DOM tree? 
     * @return true This is default and the topic is queryable with XPATH<br />
     *    false: No DOM tree is created for the topic and the topic is onvisible to XPATH queries
     */
@@ -131,6 +132,7 @@ public final class TopicProperty implements java.io.Serializable
    }
 
    /**
+    * Set if the topic is available in the internal DOM tree. 
     * @param true This is default and the topic is queryable with XPATH<br />
     *    false: No DOM tree is created for the topic and the topic is onvisible to XPATH queries
     */
