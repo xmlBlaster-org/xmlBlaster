@@ -5,9 +5,6 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
-import org.xmlBlaster.util.Global;
-import org.xmlBlaster.util.enum.MethodName;
-
 /**
  * Encapsulates the xmlKey, content and qos. 
  * <p />
@@ -20,7 +17,7 @@ public final class MsgUnitRaw implements java.io.Serializable
 {
    private transient static final byte[] EMPTY_BYTEARR = new byte[0];
    private transient static final String EMPTY_STRING = "";
-   private transient final MsgUnit msgUnit; // transport temporary the parsed instance as well
+   private transient final Object msgUnit; // transport temporary the parsed instance MsgUnit as well
    private final String qos;
    private final String key;
    private final byte[] content;
@@ -31,7 +28,7 @@ public final class MsgUnitRaw implements java.io.Serializable
     * @param content
     * @param qos
     */
-   public MsgUnitRaw(MsgUnit msgUnit, String key, byte[] content, String qos) {
+   public MsgUnitRaw(Object msgUnit, String key, byte[] content, String qos) {
       this.msgUnit = msgUnit;
       this.qos = (qos == null) ? EMPTY_STRING : qos;
       this.key = (key == null) ? EMPTY_STRING : key;
@@ -83,7 +80,7 @@ public final class MsgUnitRaw implements java.io.Serializable
     * You can decide to pass with the constructor a parsed MsgUnit
     * @return MsgUnit with holds the parsed information, please treat as immutable, or null
     */
-   public MsgUnit getMsgUnit() {
+   public Object getMsgUnit() {
       return this.msgUnit;
    }
 
