@@ -3,7 +3,7 @@ Name:      UpdateKey.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with DOM
-Version:   $Id: UpdateKey.java,v 1.9 1999/12/20 18:56:43 ruff Exp $
+Version:   $Id: UpdateKey.java,v 1.10 2000/01/21 19:06:53 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -33,7 +33,8 @@ import org.xml.sax.helpers.*;
  * A well designed xml hierarchy of your problem domain is essential for a proper working xmlBlaster
  * <p />
  * This is exactly the key how it was published from the data source.
- *
+ * <p />
+ * Call updateKey.init(xmlKey_literal); to start parsing the received key
  * @see org.xmlBlaster.util.UpdateKeyBase
  * <p />
  * see xmlBlaster/src/dtd/UpdateKey.xml
