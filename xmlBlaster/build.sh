@@ -19,6 +19,6 @@ done
 
 # -Dbuild.compiler=jikes  or  modern  or classic
 
-$JAVA_HOME/bin/java -Dbuild.compiler=jikes -Dant.home=$XMLBLASTER_HOME ${MY_DEF} -classpath $CLASSPATH org.apache.tools.ant.Main $@
-#$JAVA_HOME/bin/java -Dant.home=$XMLBLASTER_HOME ${MY_DEF} -classpath $CLASSPATH org.apache.tools.ant.Main $@
+#$JAVA_HOME/bin/java -Dbuild.compiler=jikes -Dant.home=$XMLBLASTER_HOME ${MY_DEF} -classpath $CLASSPATH org.apache.tools.ant.Main $@
+$JAVA_HOME/bin/java -Dant.home=$XMLBLASTER_HOME ${MY_DEF} -classpath $CLASSPATH org.apache.tools.ant.Main $@
 
