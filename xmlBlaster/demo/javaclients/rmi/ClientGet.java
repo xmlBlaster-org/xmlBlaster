@@ -3,7 +3,7 @@ Name:      ClientGet.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster with RMI
-Version:   $Id: ClientGet.java,v 1.5 2000/06/25 18:32:39 ruff Exp $
+Version:   $Id: ClientGet.java,v 1.6 2000/06/26 06:47:01 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients.rmi;
 
@@ -59,20 +59,23 @@ public class ClientGet
 
    public ClientGet(String args[])
    {
+      // Initialize command line argument handling (this is optional)
       try {
          XmlBlasterProperty.init(args);
       } catch(org.jutils.JUtilsException e) {
+         Log.plain("\nAvailable options:");
+         Log.plain("   -name               The login name [ClientSub].");
+         Log.plain("   -passwd             The password [secret].");
+         // !!! RmiConnection.usage();
+         Log.usage();
+         Log.plain("Example: jaco javaclients.ClientXml -name Jeff\n");
          Log.panic(ME, e.toString());
       }
+
       try {
-         try {
-            // check if parameter -name <userName> is given at startup of client
-            ME = Args.getArg(args, "-name", ME);
-         } catch (org.jutils.JUtilsException e) {
-            Log.error(ME, e.toString());
-         }
-         String loginName = ME;
-         String passwd = "some";
+         // check if parameter -name <userName> is given at startup of client
+         String loginName = Args.getArg(args, "-name", ME);
+         String passwd = Args.getArg(args, "-passwd", "secret");
 
          initRmi(args);
 
@@ -188,6 +191,9 @@ public class ClientGet
       catch (XmlBlasterException e) {
          Log.error(ME, "XmlBlaster error occurred: " + e.toString());
          e.printStackTrace();
+      }
+      catch (org.jutils.JUtilsException e) {
+         Log.error(ME, e.toString());
       }
    }
 
