@@ -81,6 +81,7 @@ public class TestSession extends TestCase implements I_Callback
       log.info(ME, "testZeroSessions() ...");
       try {
          log.info(ME, "Connecting ...");
+         Global glob = this.glob.getClone(null);
          I_XmlBlasterAccess con = glob.getXmlBlasterAccess();
          ConnectQos qos = new ConnectQos(glob, name, passwd);
          qos.setMaxSessions(-16);
@@ -128,7 +129,9 @@ public class TestSession extends TestCase implements I_Callback
          try {
             for (int ii=0; ii<maxSessions; ii++) {
                DisconnectQos disQos = null;
-               con[ii].disconnect(disQos);
+               if (con[ii] != null) {
+                  con[ii].disconnect(disQos);
+               }
             }
          }
          catch (Throwable e) {
@@ -148,6 +151,7 @@ public class TestSession extends TestCase implements I_Callback
       log.info(ME, "testSessionTimeout() ...");
       long timeout = 1000L;
       I_XmlBlasterAccess con = null;
+      Global glob = this.glob.getClone(null);
       try {
          try {
             con = glob.getXmlBlasterAccess();
@@ -184,6 +188,57 @@ public class TestSession extends TestCase implements I_Callback
 
 
    /**
+    * We login with session timeout 2 sec and let it automatically refresh. 
+    * A get() invocation should fail since the session is expired.
+    */
+   public void testSessionRefresh()
+   {
+      log.info(ME, "testSessionRefresh() ...");
+      long timeout = 2000L;
+      I_XmlBlasterAccess con = null;
+      Global glob = this.glob.getClone(null);
+      try {
+         try {
+            con = glob.getXmlBlasterAccess();
+            ConnectQos qos = new ConnectQos(glob, name, passwd);
+            qos.setRefreshSession(true);
+            qos.setSessionTimeout(timeout);
+            con.connect(qos, this);
+         }
+         catch (Exception e) {
+            log.error(ME, e.toString());
+            assertTrue("Login failed" + e.toString(), false);
+         }
+
+         log.info(ME, "Wait " + timeout*2 + " sec if session expires (because of inactivity)");
+         try { Thread.currentThread().sleep(timeout*2); } catch (Exception e) { }
+
+         try {
+            for (int ii=0; ii<1; ii++) {
+               try { Thread.currentThread().sleep(timeout/2); } catch (Exception e) { }
+               log.info(ME, "Check access #" + ii + " ...");
+               con.get("<key oid='__cmd:?freeMem'/>", null);
+               log.info(ME, "Check access #" + ii + " OK");
+            }
+         }
+         catch (Exception e) {
+            log.error(ME, "No access: " + e.toString());
+            assertTrue("Session is expired", false);
+         }
+      }
+      finally { // clean up
+         try {
+            con.disconnect(null);
+         }
+         catch (Throwable e) {
+            assertTrue(e.toString(), false);
+         }
+      }
+      log.info(ME, "Success in testSessionRefresh()");
+   }
+
+
+   /**
     * We login with session timeout 2 sec, call every 1000 millis get()
     * which should respan the session timeout. 
     * If this goes well for 8 sec, the refresh seems to work
@@ -193,6 +248,7 @@ public class TestSession extends TestCase implements I_Callback
       log.info(ME, "testSessionTimeoutRespan() ...");
       long timeout = 2000L;
       I_XmlBlasterAccess con = null;
+      Global glob = this.glob.getClone(null);
       try {
          try {
             con = glob.getXmlBlasterAccess();
@@ -275,7 +331,9 @@ public class TestSession extends TestCase implements I_Callback
       // clean up
       for (int ii=maxSessions; ii<numLogin; ii++) {
          DisconnectQos disQos = null;
-         con[ii].disconnect(disQos);
+         if (con[ii] != null) {
+            con[ii].disconnect(disQos);
+         }
       }
       log.info(ME, "***Success in testClearSession()");
    }
@@ -327,11 +385,12 @@ public class TestSession extends TestCase implements I_Callback
        TestSuite suite= new TestSuite();
        String loginName = "Tim";
        Global glob = new Global();
-       suite.addTest(new TestSession(glob, "testZeroSessions", "Tim"));
-       suite.addTest(new TestSession(glob, "testSessionOverflow", "Tim"));
-       suite.addTest(new TestSession(glob, "testSessionTimeout", "Tim"));
-       suite.addTest(new TestSession(glob, "testSessionTimeoutRespan", "Tim"));
-       suite.addTest(new TestSession(glob, "testClearSession", "Tim"));
+       suite.addTest(new TestSession(glob, "testZeroSessions", loginName));
+       suite.addTest(new TestSession(glob, "testSessionOverflow", loginName));
+       suite.addTest(new TestSession(glob, "testSessionTimeout", loginName));
+       suite.addTest(new TestSession(glob, "testSessionRefresh", loginName));
+       suite.addTest(new TestSession(glob, "testSessionTimeoutRespan", loginName));
+       suite.addTest(new TestSession(glob, "testClearSession", loginName));
        return suite;
    }
 
@@ -349,6 +408,7 @@ public class TestSession extends TestCase implements I_Callback
       testSub.testZeroSessions();
       testSub.testSessionOverflow();
       testSub.testSessionTimeout();
+      testSub.testSessionRefresh();
       testSub.testSessionTimeoutRespan();
       testSub.testClearSession();
       testSub.tearDown();
