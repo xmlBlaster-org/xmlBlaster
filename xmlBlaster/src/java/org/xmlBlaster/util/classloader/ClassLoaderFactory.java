@@ -9,6 +9,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.ErrorCode;
 
 import org.jutils.text.StringHelper;
 import java.io.File;
@@ -161,17 +162,18 @@ public class ClassLoaderFactory {
     * @exception On failure
     */
    public static LoaderInfo getLoaderInfo(Object caller, String plugin) throws XmlBlasterException {
+      String ME = "ClassLoaderFactory";
       //if (log.CALL) log.call(ME, "Entering getLoaderInfo");
       if (plugin == null || plugin.length() < 1) {
          Thread.currentThread().dumpStack();
-         throw new IllegalArgumentException("PluginClassLoaderFactory.getLoaderInfo() with plugin=null");
+         throw new XmlBlasterException(Global.instance(), ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "getLoaderInfo() with plugin=null");
       }
 
       String classResource = which(caller, plugin); // e.g. "/home/xmlblast/xmlBlaster/classes/org/xmlBlaster/protocol/corba/CorbaDriver.class"
       if (classResource == null) {
          String text = "Can't find class " + plugin + ", please check your plugin name and your CLASSPATH";
          //if (log.TRACE) log.trace(ME, text);
-         throw new XmlBlasterException("PluginClassLoaderFactory", text);
+         throw new XmlBlasterException(Global.instance(), ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME, text);
       }
       //if (log.TRACE) log.trace(ME, "plugin '" + plugin + "' has resource path " + classResource );
 
@@ -217,7 +219,7 @@ public class ClassLoaderFactory {
             url[ii] = new URL( "file", null, (String)stringUrls.get(ii) );
          }
       } catch (MalformedURLException e) {
-         throw new XmlBlasterException("Malformed Url Exception occured: ", e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "Malformed Url Exception occured: ", e);
       }
 
       if (log.TRACE) {
