@@ -3,7 +3,7 @@ Name:      UpdateKey.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with DOM
-Version:   $Id: UpdateKey.java,v 1.5 1999/12/16 11:29:51 ruff Exp $
+Version:   $Id: UpdateKey.java,v 1.6 1999/12/16 17:24:00 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
@@ -52,6 +52,9 @@ public class UpdateKey extends SaxHandlerBase
    /** value from attribute <key oid="" contentMime="..."> */
    protected String contentMime = null;
 
+   /** value from attribute <key oid="" contentMimeExtended="..."> */
+   protected String contentMimeExtended = null;
+
 
    /**
     * Constructs an un initialized UpdateKey object.
@@ -84,6 +87,21 @@ public class UpdateKey extends SaxHandlerBase
 
 
    /**
+    * Some further specifying information of the content. 
+    * <p />
+    * For example the application version number the document in the content.<br />
+    * You may use this attribute for you own purposes.
+    * @return The MIME-extended info, for example<br />
+    *         "Version 1.1" in &lt;key oid='' contentMime='text/xml' contentMimeExtended='Version 1.1'><br />
+    *         or null if not known
+    */
+   public String getContentMimeExtended()
+   {
+      return contentMimeExtended;
+   }
+
+
+   /**
     * Start element callback, does handling of tag &lt;key> and its attributes.
     * <p />
     * You may include this into your derived startElement() method like this:<br />
@@ -106,6 +124,9 @@ public class UpdateKey extends SaxHandlerBase
                }
                if( attrs.getName(i).equalsIgnoreCase("contentMime") ) {
                   contentMime = attrs.getValue(i).trim();
+               }
+               if( attrs.getName(i).equalsIgnoreCase("contentMimeExtended") ) {
+                  contentMimeExtended = attrs.getValue(i).trim();
                }
             }
             if (keyOid == null)
@@ -196,7 +217,13 @@ public class UpdateKey extends SaxHandlerBase
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
 
-      sb.append(offset + "<key oid='" + getUniqueKey() + "' contentType='" + getContentMime() + "'>");
+      sb.append(offset).append("<key oid='").append(getUniqueKey()).append("'");
+      if (contentMime != null)
+         sb.append(offset).append(" contentMime='").append(getContentMime()).append("'");
+      if (contentMimeExtended != null)
+         sb.append(offset).append(" contentMimeExtended='").append(getContentMimeExtended()).append("'");
+      sb.append(offset).append(">");
+
       sb.append(offset + "</key>\n");
       return sb;
    }
