@@ -13,7 +13,7 @@ import org.xmlBlaster.util.XmlBlasterException;
  * of a lost message. 
  * <p>
  * </p>
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public interface I_MsgErrorInfo
 {

@@ -7,7 +7,7 @@ import org.xmlBlaster.util.XmlBlasterException;
  *
  * @author W. Kleinertz (wkl) H. Goetzger
  * @author <a href="mailto:Konrad.Krafft@doubleslash.de">Konrad Krafft</a>
- * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
 public interface I_Plugin
 {

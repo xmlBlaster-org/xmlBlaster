@@ -12,7 +12,7 @@ import java.util.Enumeration;
  * Holds data about a plugin (immutable). 
  *
  * @author <a href="mailto:Konrad.Krafft@doubleslash.de">Konrad Krafft</a>
- * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
 public class PluginInfo {
 

@@ -19,7 +19,7 @@ import java.lang.reflect.Method;
  * <p />
  * Works only with JDK 1.3 and above, we check with reflection the availability
  * to still be JDK 1.2 compatible.
- * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
+ * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>.
  */
 public class SignalCatcher
 {

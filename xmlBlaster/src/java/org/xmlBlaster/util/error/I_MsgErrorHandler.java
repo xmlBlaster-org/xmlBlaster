@@ -13,7 +13,7 @@ import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
  * <p>
  * For example called by deliveryManager if a message is lost or the queue overflows
  *
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public interface I_MsgErrorHandler
 {

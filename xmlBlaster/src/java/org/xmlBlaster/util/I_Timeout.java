@@ -9,7 +9,7 @@ package org.xmlBlaster.util;
 /**
  * Interface you need to implement to receive timeout notifications
  *
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public interface I_Timeout
 {

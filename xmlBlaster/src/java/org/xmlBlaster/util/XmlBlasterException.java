@@ -3,7 +3,7 @@ Name:      XmlBlasterException.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Basic xmlBlaster exception.
-Version:   $Id: XmlBlasterException.java,v 1.9 2002/11/26 12:39:32 ruff Exp $
+Version:   $Id: XmlBlasterException.java,v 1.10 2002/12/18 11:50:11 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -47,7 +47,7 @@ import org.jutils.JUtilsException;
  *  {8} = embeddedMessage
  *  {9} = transactionInfo
  * </pre>
- * @author "Marcel Ruff" <ruff@swand.lake.de>
+ * @author "Marcel Ruff" <xmlBlaster@marcelruff.info>
  * @since 0.8+ with extended attributes
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/admin.errorcodes.html">The admin.errorcodes requirement</a>
  * @see org.xmlBlaster.test.classtest.XmlBlasterExceptionTest

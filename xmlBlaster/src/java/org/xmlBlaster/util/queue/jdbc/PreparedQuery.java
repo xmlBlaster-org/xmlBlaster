@@ -17,9 +17,7 @@ import org.jutils.log.LogChannel;
 
 
 /**
- * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>
  * @author <a href='mailto:laghi@swissinfo.org'>Michele Laghi</a>
- *
  */
 
 public class PreparedQuery {

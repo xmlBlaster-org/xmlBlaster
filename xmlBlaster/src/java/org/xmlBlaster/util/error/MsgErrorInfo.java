@@ -17,7 +17,7 @@ import org.xmlBlaster.util.enum.ErrorCode;
  * <p>
  * Instances of this class are immutable.
  * </p>
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public final class MsgErrorInfo implements I_MsgErrorInfo, java.io.Serializable
 {
