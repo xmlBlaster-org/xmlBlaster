@@ -1,14 +1,13 @@
-<svg width='400' height='400' onload="on_load(evt)">
+<svg width='200' height='200' onload="on_load(evt)">
+   <!-- To view it use embed.html -->
    <script><![CDATA[
       /*
       NOTE:
-      Mozilla with Adobe SVG plugin does not support:
+      Mozilla with Adobe SVG plugin does NOT support:
       ->  Exporting the svgdoc handle to the outer HTML
+      Only Mozilla 0.91 with Adobe SVG plugin does support:
       ->  Accessing the embeded SVG from out HTML with
           document.embeds["systemInfoSVGPlugin"].getSVGDocument()
-      ->  So Michele and Marcel are fucking frustrated giving up
-          for the moment!
-          But we'll come back soon :-)
       ->  Reported to bugzilla # 115528
       */
       var ii=20;
@@ -27,7 +26,7 @@
       function change_attribut(evt)
       {
          svgdoc=evt.getTarget().getOwnerDocument();
-         objet=svgdoc.getElementById('rectangle');
+         objet=svgdoc.getElementById('rectangle.CPU');
          objet.setAttribute('width',ii);
          objet.setAttribute('height','80');
          objet.getStyle().setProperty('fill','red')
@@ -41,9 +40,10 @@
             addit=true;
       }
    ]]></script>
-   <g id='affiche'>
-      <text id='texte' x='100' y='140' style='text-anchor:middle;font-size:12;font-family:Arial;fill:red'>Click:  To play manually ...</text>
-      <text id='texte' x='100' y='180' style='text-anchor:middle;font-size:12;font-family:Arial;fill:red'>Future: Receive xmlBlaster updates ...</text>
-      <rect id='rectangle' onclick='change_attribut(evt)' x='50' y='50' width='2' height='50' style='fill:blue'/>
+   <g id='systemInfoGroup'>
+      <text id='text.CPU' x='10' y='40' style='text-anchor:left;font-size:24;font-family:Arial;fill:red'>CPU</text>
+      <rect id='rectangle.CPU' onclick='change_attribut(evt)' x='80' y='20' width='100' height='20' style='fill:black'/>
+      <text id='text.RAM' x='10' y='80' style='text-anchor:left;font-size:24;font-family:Arial;fill:red'>RAM</text>
+      <rect id='rectangle.RAM' onclick='change_attribut(evt)' x='80' y='60' width='100' height='20' style='fill:black'/>
    </g>
 </svg>
