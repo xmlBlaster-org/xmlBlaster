@@ -3,6 +3,11 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes for 0.xxx [xxxxxxxxxx]
 ==============================
 
+ o Bugfix in Timeout.java
+   - userData is now correctly passed
+   - addOrRefreshTimeoutListener() acts now correctly on all situations
+   Reported by Xavier Roques, xRoques@infovista.com
+
  o Ported chess demo to batik 1.5, cleanup of event queue
 
  o Moved getJdbcQueueManagerCommonTable from util.Global to JdbcQueueCommonTablePlugin so that the 
