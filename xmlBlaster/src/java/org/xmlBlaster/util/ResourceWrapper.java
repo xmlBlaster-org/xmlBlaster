@@ -3,7 +3,7 @@ Name:      ResourceWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Container for your resource
-Version:   $Id: ResourceWrapper.java,v 1.5 2000/06/01 13:29:02 ruff Exp $
+Version:   $Id: ResourceWrapper.java,v 1.6 2000/06/01 14:01:27 ruff Exp $
            $Source: /opt/cvsroot/xmlBlaster/src/java/org/xmlBlaster/util/Attic/ResourceWrapper.java,v $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
@@ -19,7 +19,7 @@ import org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException;
  * @author ruff@swand.lake.de
  * @see org.xmlBlaster.util.PoolManager
  */
-public class ResourceWrapper
+public class ResourceWrapper implements I_Timeout
 {
    /** Nice, unique name for logging output */
    private String ME = "ResourceWrapper";
@@ -27,12 +27,16 @@ public class ResourceWrapper
    private String instanceId;
    /** The resource itself (not interpreted in this context). It is supplied by you. */
    private Object resource;
-   /** Max live span of instance since lastAccess in milliseconds */
-   private long timeout;
    /** Time in milliseconds since January 1, 1970 UTC. */
    private long creationTime;
-   /** timeout handle */
-   private Long timeoutHandle;
+   /** Constant to mark busy to idle timer events */
+   private static final String BUSY_TO_IDLE_TIMEOUT = "BI";
+   /** Constant to mark idle to erase timer events */
+   private static final String IDLE_TO_ERASE_TIMEOUT = "IE";
+   /** Max live span of instance since lastAccess in milliseconds */
+   private long busyToIdleTimeout;
+   /** busyToIdleTimeout handle */
+   private Long busyToIdleTimeoutHandle;
    /** My manager */
    private PoolManager poolManager;
 
@@ -46,12 +50,12 @@ public class ResourceWrapper
     * @param instanceId The unique ID<br />
     *                 If 'null': use ref.hashCode()
     * @param resource Your resource
-    * @param timeout  The max. life span for this resource
+    * @param busyToIdleTimeout  The max. life span for this resource
     */
-   ResourceWrapper(PoolManager poolManager, String instanceId, Object resource, long timeout)
+   ResourceWrapper(PoolManager poolManager, String instanceId, Object resource, long busyToIdleTimeout)
    {
       this.poolManager = poolManager;
-      init(instanceId, resource, timeout);
+      init(instanceId, resource, busyToIdleTimeout);
    }
 
 
@@ -74,26 +78,45 @@ public class ResourceWrapper
     * @param instanceId The unique identifier<br />
     *                   Resource.hashCode() is used if you pass null
     * @param resource   Your resource
-    * @param timeout    The max. life span.<br />
+    * @param busyToIdleTimeout    The max. life span.<br />
     *                   0: infinite life span
     */
-   void init(String instanceId, Object resource, long timeout)
+   void init(String instanceId, Object resource, long busyToIdleTimeout)
    {
       this.creationTime = System.currentTimeMillis();
       this.instanceId = instanceId;
       this.resource = resource;
-      if (timeout > 0 && timeout < 100) {
-         Log.warning(ME, "Setting minimum timeout from " + timeout + " to 100 milli seconds");
-         timeout = 100;
+      if (busyToIdleTimeout > 0 && busyToIdleTimeout < 100) {
+         Log.warning(ME, "Setting minimum busyToIdleTimeout from " + busyToIdleTimeout + " to 100 milli seconds");
+         busyToIdleTimeout = 100;
       }
-      this.timeout = timeout;
-      if (this.timeout <= 0)
-         timeoutHandle = null;
+      this.busyToIdleTimeout = busyToIdleTimeout;
+      if (this.busyToIdleTimeout <= 0)
+         busyToIdleTimeoutHandle = null;
       else
-         timeoutHandle = Timeout.getInstance().addTimeoutListener(poolManager, this.timeout, this);
+         busyToIdleTimeoutHandle = Timeout.getInstance().addTimeoutListener(this, this.busyToIdleTimeout, BUSY_TO_IDLE_TIMEOUT);
       if (this.instanceId == null || this.instanceId.length() < 1)
          if (resource != null)
             this.instanceId = "" + resource.hashCode();
+   }
+
+
+   /**
+    * A timeout occurred.
+    * <p />
+    * This method is a callback through interface I_Timeout.
+    * @parameter The timeout type, BUSY_TO_IDLE_TIMEOUT or IDLE_TO_ERASE_TIMEOUT
+    */
+   public void timeout(Object obj)
+   {
+      String type = (String)obj;
+      if (Log.CALLS) Log.calls(ME, "Entering timeout(" + type + ") ...");
+      if (type.equals(BUSY_TO_IDLE_TIMEOUT)) {
+         poolManager.timeoutBusyToIdle(this);
+      }
+      else if (type.equals(IDLE_TO_ERASE_TIMEOUT)) {
+         poolManager.timeoutIdleToErase(this);
+      }
    }
 
 
@@ -103,9 +126,9 @@ public class ResourceWrapper
     */
    public boolean isExpired()
    {
-      if (timeout <= 0) return false;
-      if (timeoutHandle == null) return false;
-      return Timeout.getInstance().isExpired(timeoutHandle);
+      if (busyToIdleTimeout <= 0) return false;
+      if (busyToIdleTimeoutHandle == null) return false;
+      return Timeout.getInstance().isExpired(busyToIdleTimeoutHandle);
    }
 
 
@@ -115,22 +138,22 @@ public class ResourceWrapper
     */
    public long elapsed()
    {
-      if (timeout <= 0) return -1;
+      if (busyToIdleTimeout <= 0) return -1;
       return System.currentTimeMillis() - creationTime;
    }
 
 
    /**
     * How long to my death.
-    * @return Milliseconds to timeout<br />
+    * @return Milliseconds to busyToIdleTimeout<br />
     *         0 for infinite life<br />
-    *         -1 if timeout occurred already
+    *         -1 if busyToIdleTimeout occurred already
     */
    public long spanOfTimeToDeath()
    {
-      if (timeout <= 0) return 0;
-      if (timeoutHandle == null) return 0;
-      return Timeout.getInstance().spanToTimeout(timeoutHandle);
+      if (busyToIdleTimeout <= 0) return 0;
+      if (busyToIdleTimeoutHandle == null) return 0;
+      return Timeout.getInstance().spanToTimeout(busyToIdleTimeoutHandle);
    }
 
 
@@ -140,7 +163,7 @@ public class ResourceWrapper
    public void touch()
    {
       try {
-         timeoutHandle = Timeout.getInstance().refreshTimeoutListener(timeoutHandle, timeout);
+         busyToIdleTimeoutHandle = Timeout.getInstance().refreshTimeoutListener(busyToIdleTimeoutHandle, busyToIdleTimeout);
       }
       catch (XmlBlasterException e) {
          Log.error(ME, e.reason);
@@ -195,7 +218,7 @@ public class ResourceWrapper
     */
    public long getTimeout()
    {
-      return Timeout.getInstance().getTimeout(timeoutHandle);
+      return Timeout.getInstance().getTimeout(busyToIdleTimeoutHandle);
    }
 
 
@@ -204,19 +227,19 @@ public class ResourceWrapper
     */
    public void cleanup()
    {
-      if (timeoutHandle != null)
-         Timeout.getInstance().removeTimeoutListener(timeoutHandle);
+      if (busyToIdleTimeoutHandle != null)
+         Timeout.getInstance().removeTimeoutListener(busyToIdleTimeoutHandle);
       resetInstanceId();
    }
 
 
    /**
-    * Set new life span timeout.
-    * @param timeout New timeout in milliseconds
+    * Set new life span busyToIdleTimeout.
+    * @param busyToIdleTimeout New busyToIdleTimeout in milliseconds
     */
-   public void setTimeout(long timeout)
+   public void setTimeout(long busyToIdleTimeout)
    {
-      this.timeout = timeout;
+      this.busyToIdleTimeout = busyToIdleTimeout;
       touch();
    }
 

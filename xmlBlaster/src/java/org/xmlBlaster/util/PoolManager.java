@@ -3,7 +3,7 @@ Name:      PoolManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Basic handling of a pool of limited resources
-Version:   $Id: PoolManager.java,v 1.5 2000/06/01 13:29:02 ruff Exp $
+Version:   $Id: PoolManager.java,v 1.6 2000/06/01 14:01:27 ruff Exp $
            $Source: /opt/cvsroot/xmlBlaster/src/java/org/xmlBlaster/util/Attic/PoolManager.java,v $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
@@ -45,11 +45,11 @@ import java.util.Enumeration;
  *      |  |  |   Explicit    | |  | | |   Explicit      | |  |  |
  *      |  |  +-- release() ->+ |  | | +-- erase() ----->+ |  |  |
  *      |  |                    |  | |                     |  |  |
- *      |  +-releaseTimeout() ->+  | +-idleEraseTimeout()->+  |  |
+ *      |  +-releaseTimeout() ->+  | +idleToEraseTimeout()>+  |  |
  *      |                          |                          |  |
  *      |                          +-- erase on max cycles -->+  |
  *      |                                                        |
- *      +----------- busyEraseTimeout() since creation --------->+
+ *      +--------- busyToEraseTimeout() since creation --------->+
  *
  * </pre>
  * There are three states:
@@ -75,7 +75,7 @@ import java.util.Enumeration;
  * <p>
  * If you want to pool JDBC connections, reserve() a connection before you do your query
  * and release() it immediately again. If you
- * want to close connections after peak usage, you could set a idleEraseTimeout,
+ * want to close connections after peak usage, you could set a idleToEraseTimeout,
  * to erase your JDBC connection after some time not used (reducing the current pool size).<br />
  * Not that in this example the connections are anonymous (all are logged in to the database
  * with the same user name), it is not important which you receive.
@@ -85,7 +85,7 @@ import java.util.Enumeration;
  * @author ruff@swand.lake.de
  * @see org.xmlBlaster.util.ResourceWrapper
  */
-public class PoolManager implements I_Timeout
+public class PoolManager
 {
    /** Nice, unique name for logging output */
    private String ME = "PoolManager";
@@ -101,8 +101,10 @@ public class PoolManager implements I_Timeout
    private int maxInstances = 100;
    /** Default maximum busy time of a resource, on timeout it changes state from 'busy' to 'idle' */
    private long releaseTimeout = 0;
-   /** Default maximum life span of a resource, on timeout it changes state from 'busy' to 'undef' (it is deleted) */
-   private long busyEraseTimeout = 0;
+   /* Default maximum life span of a resource, on timeout it changes state from 'busy' to 'undef' (it is deleted) */
+   //private long busyToEraseTimeout = 0;
+   /** Default maximum idle span of a resource, on timeout it changes state from 'idle' to 'undef' (it is deleted) */
+   private long idleToEraseTimeout = 0;
    /** Unique counter to generate IDs */
    private long counter = 1;
 
@@ -125,20 +127,19 @@ public class PoolManager implements I_Timeout
     *                       On timeout it changes state from 'busy' to 'idle'.<br />
     *                       You can overwrite this value for each resource instance<br />
     *                       0 switches it off
-    */
-   public PoolManager(String poolName, I_PoolManager callback, int maxInstances, long releaseTimeout/*, long busyEraseTimeout*/)
-   {/*
-    * @param busyEraseTimeout Max. life span of this resource in milli seconds<br />
-    *                     On timeout it changes state from 'busy' or 'idle' to 'undef' (it is deleted).<br />
+    * @param idleToEraseTimeout Max. idle time span of this resource in milli seconds<br />
+    *                     On timeout it changes state from 'idle' to 'undef' (it is deleted).<br />
     *                     You can overwrite this value for each resource instance<br />
     *                     0 switches it off
     */
+   public PoolManager(String poolName, I_PoolManager callback, int maxInstances, long releaseTimeout, long idleToEraseTimeout)
+   {
       this.poolName = poolName;  // e.g. "SessionId"
       this.callback = callback;
       this.ME = poolName + "-PoolManager"; // e.g. "SessionId-PoolManager"
       this.setMaxInstances(maxInstances);
       this.setReleaseTimeout(releaseTimeout);
-      //this.setBusyEraseTimeout(busyEraseTimeout);
+      this.setIdleToEraseTimeout(idleToEraseTimeout);
       this.busy = new java.util.Hashtable(maxInstances);
       this.idle = new java.util.Vector(maxInstances);
       if (releaseTimeout > 0)
@@ -180,26 +181,24 @@ public class PoolManager implements I_Timeout
 
    /**
     * Set the max. life span of the resources.
-    * @param busyEraseTimeout Max. busy time of this resource in milli seconds<br />
+    * @param idleToEraseTimeout Max. idle time of this resource in milli seconds<br />
     *                       You can overwrite this value for each resource instance<br />
     *                       0 switches it off
     */
-    /*
-   private void setBusyEraseTimeout(long busyEraseTimeout)
+   private void setIdleToEraseTimeout(long idleToEraseTimeout)
    {
-      if (busyEraseTimeout > 0 && busyEraseTimeout < 100) {
-         Log.warning(ME, "Setting minimum busyErase timeout from " + busyEraseTimeout + " to 100 milli seconds.");
-         this.busyEraseTimeout = 100;
+      if (idleToEraseTimeout > 0 && idleToEraseTimeout < 100) {
+         Log.warning(ME, "Setting minimum idleErase timeout from " + idleToEraseTimeout + " to 100 milli seconds.");
+         this.idleToEraseTimeout = 100;
       }
       else
-         this.busyEraseTimeout = busyEraseTimeout;
-      if (Log.TRACE) Log.trace(ME, "Set default life span to " + TimeHelper.millisToNice(this.busyEraseTimeout));
+         this.idleToEraseTimeout = idleToEraseTimeout;
+      if (Log.TRACE) Log.trace(ME, "Set default idle life span to " + TimeHelper.millisToNice(this.idleToEraseTimeout));
    }
-   */
 
 
    /**
-    * Get a new resource. 
+    * Get a new resource.
     * <p />
     * The life span is set to the default value of the pool.
     * <p />
@@ -400,7 +399,7 @@ public class PoolManager implements I_Timeout
 
 
    /**
-    * Test if the resource is busy. 
+    * Test if the resource is busy.
     *
     * @param instanceId The unique resource ID
     * @return true - is in 'busy' state<br />
@@ -414,7 +413,7 @@ public class PoolManager implements I_Timeout
 
 
    /**
-    * Restart countdown for resource life cycle. 
+    * Restart countdown for resource life cycle.
     * <p />
     * Rewind the timeout for 'busy' to 'idle' transition.
     * @param instanceId The unique resource ID
@@ -542,7 +541,7 @@ public class PoolManager implements I_Timeout
 
       buf.append(offset).append("<").append(ME).append(" maxInstances='").append(maxInstances);
       buf.append("' releaseTimeout='").append(releaseTimeout);
-      buf.append("' busyEraseTimeout='").append(busyEraseTimeout).append("'>");
+      buf.append("' idleToEraseTimeout='").append(idleToEraseTimeout).append("'>");
 
       buf.append(offset).append("   <busy num='").append(busy.size()).append(">");
       for (Enumeration e = busy.elements() ; e.hasMoreElements() ;) {
@@ -564,17 +563,32 @@ public class PoolManager implements I_Timeout
 
 
    /**
-    * Recycle resource after timeout.
+    * Recycle busy resource after timeout.
     * <p />
-    * This method is a callback through interface I_Timeout.
-    * @parameter userData The ResourceWrapper object or receycle
+    * This method is a callback from ResourceWrapper
+    * @parameter userData The ResourceWrapper object
     */
-   public void timeout(Object userData)
+   void timeoutBusyToIdle(ResourceWrapper rw)
    {
-      if (Log.CALLS) Log.calls(ME, "Entering timeout() ...");
-      ResourceWrapper rw = (ResourceWrapper)userData;
-      Log.warning(ME, "Resource '" + rw.getInstanceId() + "' is receycled, was not in use since " + TimeHelper.millisToNice(rw.elapsed()));
+      if (Log.CALLS) Log.calls(ME, "Entering 'busy' to 'idle' timeout() ...");
+      Log.warning(ME, "Resource '" + rw.getInstanceId() + "' is receycled from 'busy' state, was not in use since " + TimeHelper.millisToNice(rw.elapsed()));
       swap(rw, false);
+      dumpState(rw.getInstanceId());
+   }
+
+
+   /**
+    * Recycle idle resource after timeout.
+    * <p />
+    * This method is a callback from ResourceWrapper
+    * @parameter userData The ResourceWrapper object
+    */
+   void timeoutIdleToErase(ResourceWrapper rw)
+   {
+      if (Log.CALLS) Log.calls(ME, "Entering 'idle' to 'erase' timeout() ...");
+      Log.warning(ME, "Resource '" + rw.getInstanceId() + "' is erased from 'idle' state, was not in use since " + TimeHelper.millisToNice(rw.elapsed()));
+      idle.remove(rw);
+      callback.toErased(rw.getResource());
       dumpState(rw.getInstanceId());
    }
 
@@ -612,7 +626,7 @@ public class PoolManager implements I_Timeout
          private int counter=0;
          PoolManager poolManager;
          TestPool() {
-            poolManager = new PoolManager(ME, this, 3, 2000);
+            poolManager = new PoolManager(ME, this, 3, 2000, 0);
          }
 
          // These four methods are callbacks from PoolManager ...
