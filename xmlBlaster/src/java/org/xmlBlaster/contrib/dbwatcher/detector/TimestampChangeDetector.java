@@ -102,9 +102,18 @@ public class TimestampChangeDetector implements I_ChangeDetector
          throw new IllegalArgumentException("Please pass the JDBC index (starts with 1) of the column containing the timestamp, for example 'changeDetector.timestampColNum=1'");
       }
 
+      ClassLoader cl = this.getClass().getClassLoader();
+
       this.dbPool = (I_DbPool)this.info.getObject("db.pool");
       if (this.dbPool == null) {
-         this.dbPool = new DbPool(info);
+         String dbPoolClass = this.info.get("dbPool.class", "org.xmlBlaster.contrib.db.DbPool");
+         if (dbPoolClass.length() > 0) {
+            this.dbPool = (I_DbPool)cl.loadClass(dbPoolClass).newInstance();
+            this.dbPool.init(info);
+            if (log.isLoggable(Level.FINE)) log.fine(dbPoolClass + " created and initialized");
+         }
+         else
+            throw new IllegalArgumentException("Couldn't initialize I_DbPool, please configure 'dbPool.class' to provide a valid JDBC access.");
          this.poolOwner = true;
          this.info.putObject("db.pool", this.dbPool);
       }

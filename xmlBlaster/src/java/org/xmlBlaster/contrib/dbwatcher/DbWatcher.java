@@ -99,13 +99,23 @@ public class DbWatcher implements I_ChangeListener {
       this.info = info;
       //this.dataConverter = converter;
       //this.publisher = publisher;
+
+      ClassLoader cl = this.getClass().getClassLoader();
+
       this.queryMeatStatement = info.get("db.queryMeatStatement", (String)null);
       if (this.queryMeatStatement != null && this.queryMeatStatement.length() < 1)
          this.queryMeatStatement = null;
       if (this.queryMeatStatement != null) {
          this.dbPool = (I_DbPool)info.getObject("db.pool");
          if (this.dbPool == null) {
-            this.dbPool = new DbPool(info);
+            String dbPoolClass = this.info.get("dbPool.class", "org.xmlBlaster.contrib.db.DbPool");
+            if (dbPoolClass.length() > 0) {
+                this.dbPool = (I_DbPool)cl.loadClass(dbPoolClass).newInstance();
+                this.dbPool.init(info);
+                if (log.isLoggable(Level.FINE)) log.fine(dbPoolClass + " created and initialized");
+            }
+            else
+               throw new IllegalArgumentException("Couldn't initialize I_DbPool, please configure 'dbPool.class' to provide a valid JDBC access.");
             this.poolOwner = true;
             this.info.putObject("db.pool", this.dbPool);
          }
@@ -118,8 +128,6 @@ public class DbWatcher implements I_ChangeListener {
       String changeDetectorClass = this.info.get("changeDetector.class", "org.xmlBlaster.contrib.dbwatcher.detector.MD5ChangeDetector");
       String alerSchedulerClasses = this.info.get("alertProducer.class", "org.xmlBlaster.contrib.dbwatcher.detector.AlertScheduler"); // comma separated list
    
-      ClassLoader cl = this.getClass().getClassLoader();
-
       if (converterClass.length() > 0) {
           this.dataConverter = (I_DataConverter)cl.loadClass(converterClass).newInstance();
           this.dataConverter.init(info);
