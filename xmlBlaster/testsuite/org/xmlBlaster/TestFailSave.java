@@ -3,7 +3,7 @@ Name:      TestFailSave.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Testing publish()
-Version:   $Id: TestFailSave.java,v 1.26 2002/03/18 00:31:22 ruff Exp $
+Version:   $Id: TestFailSave.java,v 1.27 2002/04/26 21:34:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -33,9 +33,10 @@ import test.framework.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *   jaco test.textui.TestRunner testsuite.org.xmlBlaster.TestFailSave
- *   jaco test.ui.TestRunner testsuite.org.xmlBlaster.TestFailSave
+ *   java test.textui.TestRunner testsuite.org.xmlBlaster.TestFailSave
+ *   java test.ui.TestRunner testsuite.org.xmlBlaster.TestFailSave
  * </pre>
+ * @see org.xmlBlaster.client.protocol.XmlBlasterConnection
  */
 public class TestFailSave extends TestCase implements I_Callback, I_ConnectionProblems
 {
@@ -113,7 +114,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
                       "   //TestFailSave-AGENT" +
                       "</key>";
       String qos = "<qos></qos>";
-      String[] strArr = null;
+      String[] strArr = new String[0];
       try {
          strArr = corbaConnection.erase(xmlKey, qos);
       } catch(XmlBlasterException e) { Log.error(ME, "XmlBlasterException: " + e.reason); }
@@ -141,16 +142,16 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
                       "   //TestFailSave-AGENT" +
                       "</key>";
       String qos = "<qos></qos>";
-      String subscribeOid = null;
+      String subscriptionId = null;
       try {
-         subscribeOid = corbaConnection.subscribe(xmlKey, qos);
-         Log.info(ME, "Success: Subscribe on " + subscribeOid + " done");
+         subscriptionId = corbaConnection.subscribe(xmlKey, qos);
+         Log.info(ME, "Success: Subscribe on subscriptionId=" + subscriptionId + " done");
       } catch(XmlBlasterException e) {
          Log.warn(ME, "XmlBlasterException: " + e.reason);
          assert("subscribe - XmlBlasterException: " + e.reason, false);
       }
-      assert("returned null subscribeOid", subscribeOid != null);
-      // NOT FOR FAIL SAVE: assertNotEquals("returned subscribeOid is empty", 0, subscribeOid.length());
+      assert("returned null subscriptionId", subscriptionId != null);
+      // NOT FOR FAIL SAVE: assertNotEquals("returned subscriptionId is empty", 0, subscriptionId.length());
    }
 
 
@@ -194,7 +195,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
                waitOnUpdate(8000L);
             }
             testPublish(ii+1);
-            waitOnUpdate(2000L);
+            waitOnUpdate(4000L);
             //assertEquals("numReceived after publishing", ii+1, numReceived); // message arrived?
          }
          catch(XmlBlasterException e) {
@@ -209,6 +210,7 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
       }
 
       assertEquals("numReceived is wrong", numPublish, numReceived);
+      Util.delay(1000L);    // Wait some time
    }
 
 
@@ -249,9 +251,8 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
     */
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
    {
-      Log.info(ME, "Receiving update of message oid=" + updateKey.getUniqueKey() + " ...");
-
       numReceived += 1;
+      Log.info(ME, "Receiving update of message oid=" + updateKey.getUniqueKey() + " numReceived=" + numReceived + " ...");
 
       assertEquals("Wrong sender", senderName, updateQoS.getSender());
       assertEquals("Message contentMime is corrupted", contentMime, updateKey.getContentMime());
@@ -303,13 +304,10 @@ public class TestFailSave extends TestCase implements I_Callback, I_ConnectionPr
 
 
    /**
-    * Invoke: jaco testsuite.org.xmlBlaster.TestFailSave
+    * Invoke: java testsuite.org.xmlBlaster.TestFailSave
     * <p />
-    * Note you need 'jaco' instead of 'java' to start the TestRunner, otherwise the JDK ORB is used
-    * instead of the JacORB ORB, which won't work.
-    * <br />
     * @deprecated Use the TestRunner from the testsuite to run it:<p />
-    * <pre>   jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestFailSave</pre>
+    * <pre>   java -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestFailSave</pre>
     */
    public static void main(String args[])
    {
