@@ -4,7 +4,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Test C client library
 Author:    "Marcel Ruff" <xmlBlaster@marcelruff.info>
-Compile:   cd xmlBlaster; build c
+Compile:   cd xmlBlaster; build -DXMLBLASTER_PERSISTENT_QUEUE=1 c-test
 See:       http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.c.queue.html
 -----------------------------------------------------------------------------*/
 #include <stdio.h>
@@ -75,7 +75,7 @@ static bool destroy(const char *dbName)
 }
 
 /**
- * Invoke: TestQueue -logLevel TRACE
+ * Test illegal function call parameters. 
  */
 static const char * test_illegal()
 {
@@ -271,6 +271,9 @@ static const char * test_overflow()
    return 0;
 }
 
+/**
+ * Test invocation of all queue methods. 
+ */
 static const char * test_queue()
 {
    ExceptionStruct exception;
