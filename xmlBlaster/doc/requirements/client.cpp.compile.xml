@@ -36,10 +36,10 @@
         xmlBlaster distribution, so you don't need to download anything.
         </p>
         <p>
-        The default library used is boost but can be switched to omnithreads with an entry in build.properties:
+        The default library used is omnithread but can be switched to boost with an entry in build.properties:
         </p>
         <pre>
-   thread.impl=OMNITHREAD
+   thread.impl=BOOST
         </pre>
         <p>You may want to switch to use omnithreads if you have compilation problems with boost on your OS (like e.g. Solaris).
         </p>
@@ -153,6 +153,6 @@ thread.impl   = OMNITHREAD
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
    <date>2003 01 07</date>
-   <revision>$Revision: 1.6 $</revision>
+   <revision>$Revision: 1.7 $</revision>
 </requirement>
 
