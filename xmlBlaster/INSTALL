@@ -90,9 +90,9 @@ Unpack the distribution to some location ($HOME/xmlBlaster is a good spot).
    You may do this with setting following variables before you source
    ${XMLBLASTER_HOME}/.bashrc (Note this is optional):
 
-      export JacORB_HOME=/usr/local/JacORB       (to use your own JacORB installation)
-      export MICO_HOME=/usr/local/mico           (to use C++ demo clients with mico)
-      export JIKES_HOME=/usr/local/jikes         (to use your jikes instead of javac)
+      export JacORB_HOME=/usr/local/JacORB   (to use your own JacORB installation)
+      export MICO_HOME=/usr/local/mico       (to use C++ demo clients with mico)
+      export JIKES_HOME=/usr/local/jikes     (to use your jikes java compiler instead of javac, http://www.alphaworks.ibm.com/tech/jikes)
 
 
 +--------------------+
