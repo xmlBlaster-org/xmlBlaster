@@ -34,6 +34,7 @@ XmlBlasterAccess::XmlBlasterAccess(Global& global)
 
 XmlBlasterAccess::~XmlBlasterAccess()
 {
+   connection_->shutdown();
    // don't forget to implement ...
 }
 

@@ -36,8 +36,8 @@ using org::xmlBlaster::util::qos::storage::QueueProperty;
 
 namespace org { namespace xmlBlaster { namespace util { namespace queue {
 
-typedef ReferenceHolder<MsgQueueEntry> EntryType;
-typedef set<EntryType>                 StorageType;
+typedef ReferenceHolder<MsgQueueEntry>      EntryType;
+typedef set<EntryType, greater<EntryType> > StorageType;
 
 class Dll_Export MsgQueue
 {

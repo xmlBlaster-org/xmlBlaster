@@ -55,14 +55,12 @@ class Dll_Export XmlBlasterException
       const string node_;
       const string location_;
       const string lang_;
+      const string message_;
       const string versionInfo_;
-
       string timestamp_;
       string stackTrace_;
-
       string embeddedMessage_;
       const string transactionInfo_;
-      const string message_;
 
    public:
 
@@ -84,13 +82,17 @@ class Dll_Export XmlBlasterException
    XmlBlasterException(const ErrorCode &errorCode,
                        const string &node,
                        const string &location,
-                       const string &lang="en",
+                       const string &lang,
                        const string &versionInfo="client-c++",
 //                       Timestamp timestamp=0,
                        const string &timestampStr="",
                        const string &stackTrace="",
                        const string &embeddedMessage="",
                        const string &transactionInfo="<transactioninfo/>");
+
+   XmlBlasterException(const ErrorCode &errorCode,
+                       const string &node,
+                       const string &embeddedMessage);
 
    string getErrorCodeStr() const;
    string getNode() const;

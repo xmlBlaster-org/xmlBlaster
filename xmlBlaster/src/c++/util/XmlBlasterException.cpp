@@ -14,268 +14,261 @@ using boost::lexical_cast;
 
 namespace org { namespace xmlBlaster { namespace util {
 
-   XmlBlasterException::XmlBlasterException(const string &errorCodeStr,
-                       const string &node,
-                       const string &location,
-                       const string &lang,
-                       const string &message,
-                       const string &versionInfo,
-                       const string &timestampStr,
-                       const string &stackTrace,
-                       const string &embeddedMessage,
-                       const string &transactionInfo)
-      :                errorCodeStr_(errorCodeStr),
-                       node_(node),
-                       location_(location),
-                       lang_(lang),
-                       message_(message),
-                       versionInfo_(versionInfo),
-                       timestamp_(timestampStr),
-                       stackTrace_(stackTrace),
-                       embeddedMessage_(embeddedMessage),
-                       transactionInfo_(transactionInfo)
-   {
-      if (embeddedMessage_ == "") {
-         embeddedMessage_ = "Original errorCode=" + errorCodeStr_;
-      }
-      if (stackTrace_ == "") stackTrace_ = getStackTrace();
+XmlBlasterException::XmlBlasterException(const string &errorCodeStr,
+                    const string &node,
+                    const string &location,
+                    const string &lang,
+                    const string &message,
+                    const string &versionInfo,
+                    const string &timestampStr,
+                    const string &stackTrace,
+                    const string &embeddedMessage,
+                    const string &transactionInfo)
+   :                errorCodeStr_(errorCodeStr),
+                    node_(node),
+                    location_(location),
+                    lang_(lang),
+                    message_(message),
+                    versionInfo_(versionInfo),
+                    timestamp_(timestampStr),
+                    stackTrace_(stackTrace),
+                    embeddedMessage_(embeddedMessage),
+                    transactionInfo_(transactionInfo)
+{
+   if (embeddedMessage_ == "") {
+      embeddedMessage_ = "Original errorCode=" + errorCodeStr_;
    }
+   if (stackTrace_ == "") stackTrace_ = getStackTrace();
+}
 
 
-   XmlBlasterException::XmlBlasterException(const ErrorCode &errorCode,
-                       const string &node,
-                       const string &location,
-                       const string &lang,
-                       const string &versionInfo,
-                       const string &timestampStr,
-                       const string &stackTrace,
-                       const string &embeddedMessage,
-                       const string &transactionInfo)
-      :                errorCodeStr_(errorCode.errorCode),
-                       node_(node),
-                       location_(location),
-                       lang_(lang),
-                       message_(errorCode.description),
-                       versionInfo_(versionInfo),
-                       timestamp_(timestampStr),
-                       stackTrace_(stackTrace),
-                       embeddedMessage_(embeddedMessage),
-                       transactionInfo_(transactionInfo)
-   {
-      if (embeddedMessage_ == "") {
-         embeddedMessage_ = "Original errorCode=" + errorCodeStr_;
-      }
-      if (stackTrace_ == "") stackTrace_ = getStackTrace();
+XmlBlasterException::XmlBlasterException(const ErrorCode &errorCode,
+                    const string &node,
+                    const string &location,
+                    const string &lang,
+                    const string &versionInfo,
+                    const string &timestampStr,
+                    const string &stackTrace,
+                    const string &embeddedMessage,
+                    const string &transactionInfo)
+   :                errorCodeStr_(errorCode.errorCode),
+                    node_(node),
+                    location_(location),
+                    lang_(lang),
+                    message_(errorCode.description),
+                    versionInfo_(versionInfo),
+                    timestamp_(timestampStr),
+                    stackTrace_(stackTrace),
+                    embeddedMessage_(embeddedMessage),
+                    transactionInfo_(transactionInfo)
+{
+   if (embeddedMessage_ == "") {
+      embeddedMessage_ = "Original errorCode=" + errorCodeStr_;
    }
+   if (stackTrace_ == "") stackTrace_ = getStackTrace();
+}
 
-   string XmlBlasterException::getErrorCodeStr() const
-   {
-      return errorCodeStr_;
+
+XmlBlasterException::XmlBlasterException(const ErrorCode &errorCode,
+                    const string &node,
+                    const string &embeddedMessage)
+   :                errorCodeStr_(errorCode.errorCode),
+                    node_(node),
+                    location_(""),
+                    lang_("en"),
+                    message_(errorCode.description),
+                    versionInfo_(""),
+                    timestamp_(""),
+                    stackTrace_(""),
+                    embeddedMessage_(embeddedMessage),
+                    transactionInfo_("<transactioninfo/>")
+{
+   if (embeddedMessage_ == "") {
+      embeddedMessage_ = "Original errorCode=" + errorCodeStr_;
    }
+   if (stackTrace_ == "") stackTrace_ = getStackTrace();
+}
 
-   string XmlBlasterException::getNode() const
-   {
-      return node_;
+string XmlBlasterException::getErrorCodeStr() const
+{
+   return errorCodeStr_;
+}
+
+string XmlBlasterException::getNode() const
+{
+   return node_;
+}
+
+string XmlBlasterException::getLocation() const
+{
+   return location_;
+}
+
+string XmlBlasterException::getLang() const
+{
+   return lang_;
+}
+
+string XmlBlasterException::getMessage() const
+{
+   string ret = errorCodeStr_ + ", node=" + node_ +
+     ", location=" + location_ + ", lang=" + lang_ +
+     "versionInfo=" + versionInfo_ + ", timestamp=" +
+     timestamp_ + ", stackTrace=" + stackTrace_ +
+     ", embeddedMessage=" + embeddedMessage_ + ", transactionInfo=" +
+     transactionInfo_ + ", original message=" + message_;
+  return ret;
+}
+
+string XmlBlasterException::getRawMessage() const
+{
+   return message_;
+}
+
+string XmlBlasterException::getVersionInfo() const
+{
+   return versionInfo_;
+}
+
+string XmlBlasterException::getTimestamp()
+{
+   if (timestamp_ == "") {
+      timestamp_ = lexical_cast<string>(TimestampFactory::getInstance().getTimestamp());
    }
+   return timestamp_;
+}
 
-   string XmlBlasterException::getLocation() const
-   {
-      return location_;
-   }
+string XmlBlasterException::getStackTraceStr() const
+{
+   return stackTrace_;
+}
 
-   string XmlBlasterException::getLang() const
-   {
-      return lang_;
-   }
+string XmlBlasterException::getEmbeddedMessage() const
+{
+   return embeddedMessage_;
+}
 
+string XmlBlasterException::getTransactionInfo() const
+{
+   return transactionInfo_;
+}
 
-   string XmlBlasterException::getMessage() const
-   {
-      string ret = errorCodeStr_ + ", node=" + node_ +
-        ", location=" + location_ + ", lang=" + lang_ +
-        "versionInfo=" + versionInfo_ + ", timestamp=" +
-        timestamp_ + ", stackTrace=" + stackTrace_ +
-        ", embeddedMessage=" + embeddedMessage_ + ", transactionInfo=" +
-        transactionInfo_ + ", original message=" + message_;
-     return ret;
-   }
+bool XmlBlasterException::isInternal() const
+{
+   return (errorCodeStr_.find("internal") == 0);
+}
 
-   /**
-    * @return The original message text
-    */
-   string XmlBlasterException::getRawMessage() const
-   {
-      return message_;
-   }
+bool XmlBlasterException::isResource() const
+{
+   return (errorCodeStr_.find("resource") == 0);
+}
 
-   /**
-    * A comma separated list with key/values containing detailed
-    * information about the server environment
-    */
-   string XmlBlasterException::getVersionInfo() const
-   {
-      return versionInfo_;
-   }
+bool XmlBlasterException::isCommunication() const
+{
+   return (errorCodeStr_.find("communication") == 0);
+}
 
-   /**
-    * Timestamp when exception was thrown
-    */
-   string XmlBlasterException::getTimestamp()
-   {
-      if (timestamp_ == "") {
-         timestamp_ = lexical_cast<string>(TimestampFactory::getInstance().getTimestamp());
-      }
-      return timestamp_;
-   }
+bool XmlBlasterException::isUser() const
+{
+   return (errorCodeStr_.find("user") == 0);
+}
 
-   /**
-    * @return The stack trace or null, e.g.
-    * <pre>
-    *  stackTrace= errorCode=internal.unknown message=Bla bla
-    *    at org.xmlBlaster.util.XmlBlasterException.main(XmlBlasterException.java:488)
-    * </pre>
-    * The first line is the result from toString() and the following lines
-    * are the stackTrace
-    */
-   string XmlBlasterException::getStackTraceStr() const
-   {
-      return stackTrace_;
-   }
+bool XmlBlasterException::isTransaction() const
+{
+   return (errorCodeStr_.find("transaction") == 0);
+}
 
-   /**
-    * @return The toString() of the embedded exception which is <classname>:getMessage()<br />
-    *         or null if not applicable
-    */
-   string XmlBlasterException::getEmbeddedMessage() const
-   {
-      return embeddedMessage_;
-   }
+/**
+ * Returns a stringified version of the exception
+ */
+string XmlBlasterException::toString() const
+{
+   return "errorCode=" + getErrorCodeStr() + " message=" + getRawMessage();
+}
 
-   /**
-    * @return Not defined yet
-    */
-   string XmlBlasterException::getTransactionInfo() const
-   {
-      return transactionInfo_;
-   }
-
-   bool XmlBlasterException::isInternal() const
-   {
-      return (errorCodeStr_.find("internal") == 0);
-   }
-
-   bool XmlBlasterException::isResource() const
-   {
-      return (errorCodeStr_.find("resource") == 0);
-   }
-
-   bool XmlBlasterException::isCommunication() const
-   {
-      return (errorCodeStr_.find("communication") == 0);
-   }
-
-   bool XmlBlasterException::isUser() const
-   {
-      return (errorCodeStr_.find("user") == 0);
-   }
-
-   bool XmlBlasterException::isTransaction() const
-   {
-      return (errorCodeStr_.find("transaction") == 0);
-   }
-
-   /**
-    * Returns a stringified version of the exception
-    */
-   string XmlBlasterException::toString() const
-   {
-      return "errorCode=" + getErrorCodeStr() + " message=" + getRawMessage();
-   }
-
-   /**
-    * Parsing what toString() produced
-    */
-   XmlBlasterException XmlBlasterException::parseFromString(string fromString)
-   {
-      string errorCode = fromString;
-      string reason = fromString;
-      int start = fromString.find("errorCode=");
-      int end = fromString.find(" message=");
-      if (start != string::npos) {
-         if (end != string::npos) {
-            try {
-               errorCode = fromString.substr(start+(sizeof("errorCode=")/sizeof("e")), end);
-            }
-            catch(const out_of_range &e1) {
-            }
-         }
-         else {
-            try {
-               errorCode = fromString.substr(start+(sizeof("errorCode=")/sizeof("e")));
-            }
-            catch(out_of_range e2) {
-            }
-         }
-      }
-      if (end >= 0) {
+/**
+ * Parsing what toString() produced
+ */
+XmlBlasterException XmlBlasterException::parseFromString(string fromString)
+{
+   string errorCode = fromString;
+   string reason = fromString;
+   size_t start = fromString.find("errorCode=");
+   size_t end = fromString.find(" message=");
+   if (start != string::npos) {
+      if (end != string::npos) {
          try {
-            reason = fromString.substr(end+(sizeof(" message=")/sizeof("e")));
+            errorCode = fromString.substr(start+(sizeof("errorCode=")/sizeof("e")), end);
          }
-         catch(out_of_range e3) {
+         catch(const out_of_range &e1) {
          }
       }
+      else {
+         try {
+            errorCode = fromString.substr(start+(sizeof("errorCode=")/sizeof("e")));
+         }
+         catch(out_of_range e2) {
+         }
+      }
+   }
+   if (end != string::npos) {
       try {
-         return XmlBlasterException(errorCode, "XmlBlasterException", "en", reason);
+         reason = fromString.substr(end+(sizeof(" message=")/sizeof("e")));
       }
-      catch (...) {
-         return XmlBlasterException(INTERNAL_ILLEGALARGUMENT.errorCode, "XmlBlasterException", "en", fromString);
+      catch(out_of_range e3) {
       }
    }
-
-   /**
-    * Create a XML representation of the Exception.
-    * <pre>
-    *   &lt;exception errorCode='resource.outOfMemory'>
-    *      &lt;class>JavaClass&lt;/class>
-    *      &lt;message>&lt;![cdata[  bla bla ]]>&lt;/message>
-    *   &lt;/exception>
-    * </pre>
-    */
-   string XmlBlasterException::toXml()
-   {
-      string buf = "<exception errorCode='" + getErrorCodeStr() + "'>\n" +
-         "   <class>c++ client</class>\n" +
-      "   <node>" + getNode() + "</node>\n" +
-      "   <location>" + getLocation() + "</location>\n" +
-      "   <lang>" + getLang() + "</lang>\n" +
-      "   <message><![CDATA[" + getRawMessage() + "]]></message>\n" +
-      "   <versionInfo>" + getVersionInfo() + "</versionInfo>\n" +
-      "   <timestamp>" + getTimestamp() + "</timestamp>\n" +
-      "   <stackTrace><![CDATA[" + getStackTraceStr() + "]]></stackTrace>\n" +
-      "   <embeddedMessage><![CDATA[" + getEmbeddedMessage() + "]]></embeddedMessage>\n" +
-      //"   <transactionInfo><![CDATA[" + getTransactionInfo() + "]]></transactionInfo>\n" +
-      "</exception>";
-      return buf;
+   try {
+      return XmlBlasterException(errorCode, "XmlBlasterException", "en", reason);
    }
+   catch (...) {
+      return XmlBlasterException(INTERNAL_ILLEGALARGUMENT.errorCode, "XmlBlasterException", "en", fromString);
+   }
+}
 
-   string XmlBlasterException::getStackTrace(int maxNumOfLines)
-   {
+/**
+ * Create a XML representation of the Exception.
+ * <pre>
+ *   &lt;exception errorCode='resource.outOfMemory'>
+ *      &lt;class>JavaClass&lt;/class>
+ *      &lt;message>&lt;![cdata[  bla bla ]]>&lt;/message>
+ *   &lt;/exception>
+ * </pre>
+ */
+string XmlBlasterException::toXml()
+{
+   string buf = "<exception errorCode='" + getErrorCodeStr() + "'>\n" +
+      "   <class>c++ client</class>\n" +
+   "   <node>" + getNode() + "</node>\n" +
+   "   <location>" + getLocation() + "</location>\n" +
+   "   <lang>" + getLang() + "</lang>\n" +
+   "   <message><![CDATA[" + getRawMessage() + "]]></message>\n" +
+   "   <versionInfo>" + getVersionInfo() + "</versionInfo>\n" +
+   "   <timestamp>" + getTimestamp() + "</timestamp>\n" +
+   "   <stackTrace><![CDATA[" + getStackTraceStr() + "]]></stackTrace>\n" +
+   "   <embeddedMessage><![CDATA[" + getEmbeddedMessage() + "]]></embeddedMessage>\n" +
+   //"   <transactionInfo><![CDATA[" + getTransactionInfo() + "]]></transactionInfo>\n" +
+   "</exception>";
+   return buf;
+}
+
+string XmlBlasterException::getStackTrace(int maxNumOfLines)
+{
 #ifdef _ENABLE_STACK_TRACE_
-      void** arr = new void*[maxNumOfLines];
-      int bt = backtrace(arr, maxNumOfLines);
-      char** list = backtrace_symbols(arr, bt);
-      string ret;
-      for (int i=0; i<bt; i++) {
-          if (list[i] != NULL) ret += list[i] + string("\n");
-      }
-      delete list;
-      delete[] arr;
-      return ret;
-#else
-      return "no stack trace provided in this system";
-#endif
+   void** arr = new void*[maxNumOfLines];
+   int bt = backtrace(arr, maxNumOfLines);
+   char** list = backtrace_symbols(arr, bt);
+   string ret;
+   for (int i=0; i<bt; i++) {
+      if (list[i] != NULL) ret += list[i] + string("\n");
    }
-
+   delete list;
+   delete[] arr;
+   return ret;
+#else
+   return "no stack trace provided in this system";
+#endif
+}
 
 }}}; // namespaces
 

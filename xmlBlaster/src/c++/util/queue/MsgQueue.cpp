@@ -6,6 +6,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 
 #include <util/queue/MsgQueue.h>
 #include <util/Global.h>
+#include <util/XmlBlasterException.h>
 
 using namespace std;
 using namespace org::xmlBlaster::util;
@@ -53,22 +54,25 @@ MsgQueue::~MsgQueue()
 void MsgQueue::put(MsgQueueEntry *entry)
 {
    Lock lock(accessMutex_);
-   if (!entry) {
-      // throw an exception here
+   if (!entry) throw XmlBlasterException(INTERNAL_NULLPOINTER, ME + "::put", "the entry is NULL");
+   if (numOfBytes_+entry->getSizeInBytes() > ((size_t)property_.getMaxBytes()) ) {
+      throw XmlBlasterException(RESOURCE_OVERFLOW_QUEUE_BYTES, ME + "::put", "client queue");
    }
-   if (storage_.size() > ((size_t)property_.getMaxMsg()) ) {
-     // throw an exception
-   }
-   if (numOfBytes_ > property_.getMaxBytes() ) {
+
+   if (storage_.size() >= property_.getMaxMsg() ) {
+      throw XmlBlasterException(RESOURCE_OVERFLOW_QUEUE_ENTRIES, ME + "::put", "client queue");
    }
    try {
       storage_.insert(EntryType(*entry));
       numOfBytes_ += entry->getSizeInBytes();
       // add the sizeInBytes_ here ...
    }
-   catch (...) {
-      // throw an exception here
+   catch (exception& ex) {
+      throw XmlBlasterException(INTERNAL_UNKNOWN, ME + "::put", ex.what());
    }	  
+   catch (...) {
+      throw XmlBlasterException(INTERNAL_UNKNOWN, ME + "::put", "the original type of this exception is unknown");
+   }
 }
 
 
