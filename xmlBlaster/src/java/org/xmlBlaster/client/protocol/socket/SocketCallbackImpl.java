@@ -3,7 +3,7 @@ Name:      SocketCallbackImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: SocketCallbackImpl.java,v 1.5 2002/02/15 23:41:04 ruff Exp $
+Version:   $Id: SocketCallbackImpl.java,v 1.6 2002/02/16 11:24:10 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
@@ -11,21 +11,13 @@ package org.xmlBlaster.client.protocol.socket;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.util.XmlBlasterProperty;
-import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.protocol.socket.Parser;
 import org.xmlBlaster.protocol.socket.Executor;
-import org.xmlBlaster.protocol.socket.I_ResponseListener;
 import org.xmlBlaster.client.protocol.ConnectionException;
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
 
-import java.io.InputStream;
 import java.io.IOException;
-import java.util.Map;
-import java.util.HashMap;
-import java.util.Collections;
 
 
 /**
@@ -54,6 +46,7 @@ public class SocketCallbackImpl extends Executor implements Runnable
    SocketCallbackImpl(SocketConnection sockCon, I_CallbackExtended callback) throws XmlBlasterException, IOException
    {
       super(sockCon.getSocket(), null, callback);
+      setLoginName(sockCon.getLoginName());
       this.ME = "SocketCallbackImpl-" + sockCon.getLoginName();
       this.sockCon = sockCon;
       this.callback = callback;

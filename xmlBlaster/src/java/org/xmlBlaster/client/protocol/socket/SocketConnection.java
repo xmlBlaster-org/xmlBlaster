@@ -3,35 +3,31 @@ Name:      SocketConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native xmlBlaster Proxy. Can be called by the client in the same VM
-Version:   $Id: SocketConnection.java,v 1.7 2002/02/15 23:41:04 ruff Exp $
+Version:   $Id: SocketConnection.java,v 1.8 2002/02/16 11:24:10 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.socket;
 
 import java.io.IOException;
-import java.util.Vector;
 import java.net.Socket;
 import java.io.InputStream;
 import java.io.OutputStream;
 
 import org.xmlBlaster.util.Log;
-import org.jutils.text.StringHelper;
 
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.CallbackAddress;
-import org.xmlBlaster.engine.xml2java.*;
-import org.xmlBlaster.protocol.socket.I_ResponseListener;
-import org.xmlBlaster.protocol.socket.Executor;
-import org.xmlBlaster.client.UpdateQoS;
-import org.xmlBlaster.client.UpdateKey;
+import org.xmlBlaster.engine.xml2java.XmlKey;
+import org.xmlBlaster.engine.xml2java.EraseQoS;
+import org.xmlBlaster.engine.xml2java.GetQoS;
+import org.xmlBlaster.protocol.socket.ExecutorBase;
 import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
 import org.xmlBlaster.client.protocol.ConnectionException;
 import org.xmlBlaster.util.ConnectQos;
 import org.xmlBlaster.util.ConnectReturnQos;
-import org.xmlBlaster.util.protocol.ProtoConverter;
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
 
 import org.xmlBlaster.protocol.socket.Parser;
@@ -49,11 +45,9 @@ import org.xmlBlaster.protocol.socket.Parser;
  * <p />
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
-public class SocketConnection implements I_XmlBlasterConnection
+public class SocketConnection implements I_XmlBlasterConnection, ExecutorBase
 {
    private String ME = "SocketConnection";
-   /** Default port of xmlBlaster socket server is 7607 */
-   public static final int DEFAULT_SERVER_PORT = 7607;
    /** The port for the socket server */
    private int port = DEFAULT_SERVER_PORT;
    /** The port for our client side */
@@ -79,8 +73,6 @@ public class SocketConnection implements I_XmlBlasterConnection
    private String passwd = null;
    protected ConnectQos loginQos = null;
    protected ConnectReturnQos returnQos = null;
-   /** Praefix for requestId */
-   protected String praefix = null;
    /** The unique client sessionId */
    protected String sessionId = null;
    /** The client login name */
@@ -235,7 +227,6 @@ public class SocketConnection implements I_XmlBlasterConnection
       }
 
       this.loginName = loginName;
-      this.praefix = this.loginName + ":";
       this.passwd = passwd;
       this.client = client;
       if (qos == null)
@@ -261,7 +252,6 @@ public class SocketConnection implements I_XmlBlasterConnection
 
       this.loginQos = qos;
       this.loginName = qos.getUserId();
-      this.praefix = this.loginName + ":";
       this.passwd = null;
       this.client = client;
 
@@ -292,7 +282,7 @@ public class SocketConnection implements I_XmlBlasterConnection
             if (Log.TRACE) Log.trace(ME, "Executing authenticate.connect() via Socket with security plugin" + loginQos.toXml());
             Parser parser = new Parser(Parser.INVOKE_TYPE, Constants.CONNECT, sessionId); // sessionId is usually null on login, on reconnect != null
             parser.addQos(loginQos.toXml());
-            String resp = (String)cbReceiver.execute(parser, praefix, true);
+            String resp = (String)cbReceiver.execute(parser, WAIT_ON_RESPONSE);
             ConnectReturnQos response = new ConnectReturnQos(resp);
             this.sessionId = response.getSessionId();
             // return (String)response; // in future change to return QoS
@@ -335,7 +325,7 @@ public class SocketConnection implements I_XmlBlasterConnection
     */
    public boolean logout()
    {
-      if (Log.CALL) Log.call(ME, "Entering logout: id=" + sessionId);
+      if (Log.CALL) Log.call(ME, "Entering logout/disconnect: id=" + sessionId);
 
       if (!isLoggedIn()) {
          Log.warn(ME, "You are not logged in, no logout possible.");
@@ -344,7 +334,7 @@ public class SocketConnection implements I_XmlBlasterConnection
       try {
          Parser parser = new Parser(Parser.INVOKE_TYPE, Constants.DISCONNECT, sessionId);
          parser.addQos("<qos><state>OK</state></qos>");
-         cbReceiver.execute(parser, loginName, false);
+         cbReceiver.execute(parser, ONEWAY);
          shutdown(); // the callback server
          init();
          return true;
@@ -397,7 +387,7 @@ public class SocketConnection implements I_XmlBlasterConnection
       try {
          Parser parser = new Parser(Parser.INVOKE_TYPE, Constants.SUBSCRIBE, sessionId);
          parser.addKeyAndQos(xmlKey_literal, qos_literal);
-         Object response = cbReceiver.execute(parser, loginName, true);
+         Object response = cbReceiver.execute(parser, WAIT_ON_RESPONSE);
          Log.info(ME, "Got subscribe response " + response.toString());
          return (String)response; // return the QoS
       }
@@ -422,7 +412,7 @@ public class SocketConnection implements I_XmlBlasterConnection
       try {
          Parser parser = new Parser(Parser.INVOKE_TYPE, Constants.UNSUBSCRIBE, sessionId);
          parser.addKeyAndQos(xmlKey_literal, qos_literal);
-         Object response = cbReceiver.execute(parser, loginName, true);
+         Object response = cbReceiver.execute(parser, WAIT_ON_RESPONSE);
          Log.info(ME, "Got unSubscribe response " + response.toString());
          // return (String)response; // return the QoS TODO
          return;
@@ -446,7 +436,7 @@ public class SocketConnection implements I_XmlBlasterConnection
       try {
          Parser parser = new Parser(Parser.INVOKE_TYPE, Constants.PUBLISH, sessionId);
          parser.addMessage(msgUnit);
-         Object response = cbReceiver.execute(parser, loginName, true);
+         Object response = cbReceiver.execute(parser, WAIT_ON_RESPONSE);
          String[] arr = (String[])response; // return the QoS
          Log.info(ME, "Got publish response " + arr[0]);
          return arr[0]; // return the QoS
@@ -476,7 +466,7 @@ public class SocketConnection implements I_XmlBlasterConnection
       try {
          Parser parser = new Parser(Parser.INVOKE_TYPE, Constants.PUBLISH, sessionId);
          parser.addMessage(msgUnitArr);
-         Object response = cbReceiver.execute(parser, loginName, true);
+         Object response = cbReceiver.execute(parser, WAIT_ON_RESPONSE);
          Log.info(ME, "Got publishArr response " + response.toString());
          return (String[])response; // return the QoS
       }
@@ -487,34 +477,10 @@ public class SocketConnection implements I_XmlBlasterConnection
    }
 
 
-   /**
-    * Updating multiple messages in one sweep.
-    * <p />
-    * @see org.xmlBlaster.engine.RequestBroker
-    */
-    /* The client should not send an update
+   /*
    public final String[] sendUpdate(MessageUnit[] msgUnitArr)
       throws XmlBlasterException, ConnectionException
-   {
-      if (Log.CALL) Log.call(ME, "Entering update: id=" + sessionId);
-
-      if (msgUnitArr == null) {
-         Log.error(ME + ".InvalidArguments", "The argument of method update() are invalid");
-         throw new XmlBlasterException(ME + ".InvalidArguments",
-                                       "The argument of method update() are invalid");
-      }
-      try {
-         Parser parser = new Parser(Parser.INVOKE_TYPE, Constants.UPDATE, sessionId);
-         parser.addMessage(msgUnitArr);
-         Object response = cbReceiver.execute(parser, loginName, true);
-         Log.info(ME, "Got update response " + response.toString());
-         return (String[])response; // return the QoS
-      }
-      catch (IOException e1) {
-         Log.error(ME+".update", "IO exception: " + e1.toString());
-         throw new ConnectionException(ME+".update", e1.toString());
-      }
-   }
+      see HandleClient.java
    */
 
 
@@ -547,7 +513,7 @@ public class SocketConnection implements I_XmlBlasterConnection
       try {
          Parser parser = new Parser(Parser.INVOKE_TYPE, Constants.ERASE, sessionId);
          parser.addKeyAndQos(xmlKey_literal, qos_literal);
-         Object response = cbReceiver.execute(parser, loginName, true);
+         Object response = cbReceiver.execute(parser, WAIT_ON_RESPONSE);
          Log.info(ME, "Got erase response " + response.toString());
          return (String[])response; // return the QoS TODO
       }
@@ -585,7 +551,7 @@ public class SocketConnection implements I_XmlBlasterConnection
       try {
          Parser parser = new Parser(Parser.INVOKE_TYPE, Constants.GET, sessionId);
          parser.addKeyAndQos(xmlKey_literal, qos_literal);
-         Object response = cbReceiver.execute(parser, loginName, true);
+         Object response = cbReceiver.execute(parser, WAIT_ON_RESPONSE);
          Log.info(ME, "Got get response " + response.toString());
          return (MessageUnit[])response;
       }
@@ -605,7 +571,7 @@ public class SocketConnection implements I_XmlBlasterConnection
       try {
          Parser parser = new Parser(Parser.INVOKE_TYPE, Constants.PING, null); // sessionId not necessary
          parser.addQos("<qos><state>OK</state></qos>");
-         Object response = cbReceiver.execute(parser, loginName, true);
+         Object response = cbReceiver.execute(parser, WAIT_ON_RESPONSE);
          Log.info(ME, "Got ping response " + response.toString());
          // return (String)response; // return the QoS TODO
          return;
