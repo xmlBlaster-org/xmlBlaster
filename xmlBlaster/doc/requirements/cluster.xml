@@ -692,12 +692,12 @@
    <author>ruff@swand.lake.de</author>
    <author>Heinrich.Goetzger@exploding-systems.de</author>
    <author>Michele.Laghi@swisscom.com</author>
-   <date>2000 04 10</date>
-   <revision>$Revision: 1.28 $</revision>
-   <testcase status="OPEN">
+   <date>2002 05 12</date>
+   <revision>$Revision: 1.29 $</revision>
+   <testcase status="CLOSED">
       <name>-</name>
-      <comment>-</comment>
-      <test tool="SUITE"></test>
+      <comment>Tests a cluster setup as described in this requirement</comment>
+      <test tool="SUITE">clustertest.PublishTest</test>
    </testcase>
 </requirement>
 
