@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling global data
-Version:   $Id: Global.java,v 1.3 2002/04/16 12:12:01 ruff Exp $
+Version:   $Id: Global.java,v 1.4 2002/04/19 11:04:16 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -11,8 +11,12 @@ package org.xmlBlaster.engine;
 import org.xmlBlaster.util.Timeout;
 import org.xmlBlaster.engine.callback.CbWorkerPool;
 import org.xmlBlaster.engine.RequestBroker;
-import org.xmlBlaster.authentication.Authenticate;
+import org.xmlBlaster.engine.cluster.NodeId;
 import org.xmlBlaster.engine.cluster.ClusterManager;
+import org.xmlBlaster.protocol.I_Driver;
+import org.xmlBlaster.authentication.Authenticate;
+
+import java.util.Vector;
 
 
 /**
@@ -28,10 +32,14 @@ public final class Global extends org.xmlBlaster.util.Global
    private Authenticate authenticate = null;
    /** the xmlBlaster core class */
    private RequestBroker requestBroker = null;
+   private NodeId nodeId = null;
    private ClusterManager clusterManager;
    private Timeout burstModeTimer;
    private Timeout sessionTimer;
    private Timeout messageTimer;
+
+   /** Vector holding all protocol I_Driver.java implementations, e.g. CorbaDriver */
+   private Vector protocols = new Vector();
 
    private CbWorkerPool cbWorkerPool;
 
@@ -49,7 +57,71 @@ public final class Global extends org.xmlBlaster.util.Global
     */
    public Global(String[] args)
    {
-      super(args);
+      init(args);
+   }
+
+   /**
+    * Calls super.init and checks the environment for "cluster.node.id"
+    * @return 1 Show usage, 0 OK, -1 error
+    * @see org.xmlBlaster.Main#createNodeId()
+    */
+   public int init(String[] args)
+   {
+      int ret = super.init(args);
+      String id = getProperty().get("cluster.node.id", (String)null);
+      if (id != null) {
+         nodeId = new NodeId(id);
+         log.info(ME, "Setting xmlBlaster instance name (cluster node id) to '" + nodeId.toString() + "'");
+      }
+      return ret;
+   }
+
+   /**
+    * The unique name of this xmlBlaster server instance. 
+    * @return Can be null during startup
+    */
+   public NodeId getNodeId() {
+      return nodeId;
+   }
+
+   public void addProtocolDriver(I_Driver driver) {
+      protocols.addElement(driver);
+   }
+
+   public void shutdownProtocolDrivers() {
+      for (int ii=0; ii<protocols.size(); ii++) {
+         I_Driver driver = (I_Driver)protocols.elementAt(ii);
+         try {
+            driver.shutdown();
+         }
+         catch (Throwable e) {
+            log.error(ME, "Shutdown of driver " + driver.getName() + " failed: " + e.toString());
+         }
+      }
+      protocols.clear();
+   }
+
+   /**
+    * Stops the protocol specific driver (e.g. XML-RPC) and
+    * removes the handle from the list
+    */
+   public void shutdownProtocolDriver(I_Driver driver) {
+      try {
+         driver.shutdown();
+      }
+      catch (Throwable e) {
+         log.error(ME, "Shutdown of driver " + driver.getName() + " failed: " + e.toString());
+      }
+      protocols.removeElement(driver);
+   }
+
+   /**
+    * Access all known I_Driver instances. 
+    * NOTE: Please don't manipulate the returned Vector
+    * @return The vector with protocol drivers, to be handled as immutable objects.
+    */
+   public Vector getProtocolDrivers() {
+      return protocols;
    }
 
    /**
@@ -63,6 +135,20 @@ public final class Global extends org.xmlBlaster.util.Global
          }
       }
       return this.clusterManager;
+   }
+
+   /**
+    * Sets the unique node id of this xmlBlaster server instance (needed for clustering). 
+    * <p />
+    * The new node ID is only set if my current instance is null!
+    * @see org.xmlBlaster.Main#createNodeId()
+    */
+   public void setUniqueNodeIdName(String uniqueNodeIdName)
+   {
+      if (nodeId == null && uniqueNodeIdName != null) {
+         nodeId = new NodeId(uniqueNodeIdName);
+         log.info(ME, "Setting xmlBlaster instance name to '" + nodeId.toString() + "'");
+      }
    }
 
    /**
