@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='protocol.socket' type='NEW' prio='HIGH' status="INWORK">
+<requirement id='protocol.socket' type='NEW' prio='HIGH' status="CLOSED">
    <topic>XmlBlaster supports a bidirectional native communication protocol using exactly one socket connection</topic>
    <description>
       <p>
@@ -124,9 +124,9 @@
       <tr>
          <td>disconnect</td>
          <td>QoS{string}</td>
-         <td>QoS string</td>
+         <td>-</td>
          <td>yes</td>
-         <td></td>
+         <td>The socket is closed during logout by the server, no response is send</td>
       </tr>
       <tr>
          <td>ping</td>
@@ -145,16 +145,21 @@
       <tr>
          <td>update</td>
          <td>[QoS{string}, key{string}, content{binary}]*</td>
-         <td>QoS string</td>
+         <td>[QoS{string}]*</td>
          <td>yes</td>
-         <td>This is a callback message to the client, the QoS, key, content may be specified multiple times</td>
+         <td>This is a callback message to the client, the message unit (QoS, key, content) may be specified multiple times. 
+             Every message unit has a corresponding return QoS.
+         </td>
       </tr>
       <tr>
          <td>publish</td>
          <td>[QoS{string}, key{string}, content{binary}]*</td>
-         <td>QoS string</td>
+         <td>[QoS{string}]*</td>
          <td>yes</td>
-         <td>The QoS, key, content may be specified multiple times</td>
+         <td>The message unit [QoS, key, content] may be specified multiple times.
+             Every message unit has a corresponding return QoS.
+             This publish covers the CORBA publish() and the CORBA publishArr().
+         </td>
       </tr>
       <tr>
          <td>get</td>
@@ -180,7 +185,7 @@
       <tr>
          <td>erase</td>
          <td>QoS{string}, key{string}</td>
-         <td>QoS string</td>
+         <td>[QoS{string}]*</td>
          <td>yes</td>
          <td></td>
       </tr>
@@ -231,12 +236,24 @@ The content of a message, here for example 'Hello world' is binary data and has 
 The '"' is just to show the boundary, '"' is not part of the message.
       ]]>
    </example>
+   <todo>
+   <ol>
+      <li>
+      Different encodings on client and server side could be a problem, test with 
+      java -Dfile.encoding=ISO8859_1 ... or System.setProperty("file.encoding","Cp850");
+      </li>
+      <li>
+      The ping expecting a return string (synchronous block) is CPU expensive. To
+      test only the socket connection a oneway ping should be enough?
+      </li>
+   </ol>
+   </todo>
    <see type="REQ">protocol</see>
    <see type="API">org.xmlBlaster.protocol.socket.Parser</see>
    <see type="API">org.xmlBlaster.protocol.socket.SocketDriver</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 02 12</date>
-   <revision>$Revision: 1.4 $</revision>
+   <revision>$Revision: 1.5 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
