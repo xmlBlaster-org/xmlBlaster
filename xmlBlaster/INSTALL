@@ -112,6 +112,24 @@ There are two property files which you need to copy.
       A default setting is included in xmlBlaster.jar
 
 
++----------------------------+
+| PERSISTENCE CONFIGURATION  |
++----------------------------+
+
+
+To suppport server crash recovery and huge message
+amount to be queued (swapping) you need to start a
+database.
+
+Currently Oracle and Postgres are supported.
+Expect some 20 minutes to setup Postgres to run
+with xmlBlaster and one to two days if you decide
+to use Oracle.
+
+The details are described in
+  xmlBlaster/src/java/org/xmlBlaster/util/queue/jdbc/README
+
+
 +-----------------------------------------+
 | INSTALLATION FOR DEVELOPERS - USING ANT |
 +-----------------------------------------+
@@ -141,19 +159,30 @@ To see other compilation options (e.g. for C++) get the usage with:
 | RELATED LINKS      |
 +--------------------+
 
-   See ${XMLBLASTER_HOME}/lib/README
-   See ${XMLBLASTER_HOME}/src/java/org/xmlBlaster/README
-   See ${XMLBLASTER_HOME}/demo/javaclients/README
+The most detailed documentation are the requirements:
+
+ http://www.xmlBlaster.org/xmlBlaster/doc/requirements/
+
+You can build the requirement documentation locally with:
+
+  cd ${XMLBLASTER_HOME}
+  build.sh requirements  (UNIX)
+  build.bat requirements (WINDOWS)
+  -> xmlBlaster/doc/requirements/index.html
+
+Further description you find in the README files:
+
+   For Java see
+    ${XMLBLASTER_HOME}/src/java/org/xmlBlaster/README
+    ${XMLBLASTER_HOME}/demo/javaclients/README
+    ${XMLBLASTER_HOME}/lib/LICENSE
 
    For C++ see
-      ${XMLBLASTER_HOME}/src/c++/README
-      ${XMLBLASTER_HOME}/testsuite/src/c++/README
-
-   For an overview of QoS see
-      ${XMLBLASTER_HOME}/src/dtd/XmlQoS.xml
+    ${XMLBLASTER_HOME}/src/c++/README
+    ${XMLBLASTER_HOME}/testsuite/src/c++/README
 
    To play Micheles SVG internet chess see
-      ${XMLBLASTER_HOME}/demo/javaclients/svg/batik/README
+    ${XMLBLASTER_HOME}/demo/javaclients/svg/rhino/README
 
    Explore the other READMEs flying around.
 
@@ -191,7 +220,7 @@ instructions.
 
 3. A variant using a file to pass the server IOR:
 
-      java org.xmlBlaster.MainGUI -ior.file /tmp/Blaster_Ref
+     java org.xmlBlaster.MainGUI -ior.file /tmp/Blaster_Ref
 
    and a testclient
 
@@ -262,6 +291,10 @@ instructions.
 +-----------------------------------+
 | START XMLBLASTER AS A RMI SERVER  |
 +-----------------------------------+
+
+
+As a default xmlBlaster start automatically RMI support.
+If you want to know more here you go:
 
 1. Check if the driver is loaded in xmlBlaster.properties, this example starts
    the CORBA and the RMI server (RMI driver is active by default):
