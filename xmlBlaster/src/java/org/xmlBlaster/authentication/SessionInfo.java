@@ -98,7 +98,7 @@ public class SessionInfo implements I_Timeout, I_AdminSession
          instanceId = instanceCounter;
          instanceCounter++;
       }
-      this.id = (prae.length() < 1) ? "client/" : (prae+"/client/") + subjectInfo.getLoginName() + "/" + getPublicSessionId();
+      this.id = ((prae.length() < 1) ? "client/" : (prae+"/client/")) + subjectInfo.getLoginName() + "/" + getPublicSessionId();
       this.ME = "SessionInfo-" + id;
 
       if (log.CALL) log.call(ME, "Creating new SessionInfo " + instanceId + ": " + subjectInfo.toString());
@@ -106,6 +106,7 @@ public class SessionInfo implements I_Timeout, I_AdminSession
       this.subjectInfo = subjectInfo;
       this.securityCtx = securityCtx;
       this.connectQos = connectQos;
+
                                           // securityCtx.getSessionId()
       this.sessionQueue = new SessionMsgQueue("-" + this.id,
                                               this, connectQos.getSessionCbQueueProperty(), glob);
