@@ -79,7 +79,8 @@
      <p>
         You can download the xerces-c library from <a href="http://xml.apache.org/xerces-c/index.html">
         apache's homepage</a>. Please follow their instructions on how to install/build the xerces 
-        library for your platform. <b>The versions tested are 1.1.7, 2.1.0 and 2.2.0 (probably any xerces version will do)</b>.
+        library for your platform. <b>The versions tested are 2.6.0 (you need a version > 2.4 because of the used codeset,
+        on this is a problem you can comment out some code snippets to be backward compatible to 1.x)</b>.
         <br/>
         Now, when building with ant, the xerces-c library will be used. In build.properties make sure that
         the $XMLCPP_VER is set correctly (see examples there) and that the link to the directory for xerces is correct.
