@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.44 2000/05/03 17:42:01 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.45 2000/05/05 19:40:12 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
@@ -54,7 +54,7 @@ import java.util.Properties;
  * If the ping fails, the login polling is automatically activated.
  * <p />
  * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http
- * @version $Revision: 1.44 $
+ * @version $Revision: 1.45 $
  * @author $Author: ruff $
  */
 public class CorbaConnection implements ServerOperations
@@ -201,12 +201,17 @@ public class CorbaConnection implements ServerOperations
 
    /**
     * Setup the cache mode. 
+    * <p />
+    * Only the first call is used to setup the cache, following calls
+    * are ignored silently
     *
     * @param size Size of the cache. This number specifies the count of subscriptions the cache
     *             can hold. It specifies NOT the number of messages.
     */
    public void initCache(int size)
    {
+      if (cache != null)
+         return; // Is initialized already
       if (Log.CALLS) Log.calls(ME, "Initializing cache: size=" + size);
       cache = new BlasterCache( this, size );
       Log.info(ME,"BlasterCache has been initialized with size="+size);
