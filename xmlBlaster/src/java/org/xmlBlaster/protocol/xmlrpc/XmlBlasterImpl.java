@@ -3,7 +3,7 @@ Name:      XmlBlasterImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the xmlBlaster interface for xml-rpc.
-Version:   $Id: XmlBlasterImpl.java,v 1.5 2000/10/11 17:07:40 ruff Exp $
+Version:   $Id: XmlBlasterImpl.java,v 1.6 2000/10/11 20:47:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
@@ -34,7 +34,7 @@ import org.xmlBlaster.util.protocol.ProtoConverter;
  */
 public class XmlBlasterImpl implements org.xmlBlaster.protocol.xmlrpc.I_XmlBlaster
 {
-   private final String ME = "XML-RPC.XmlBlasterImpl";
+   private final String ME = "XmlRpc.XmlBlasterImpl";
    private org.xmlBlaster.protocol.I_XmlBlaster blasterNative;
 
 
@@ -73,7 +73,7 @@ public class XmlBlasterImpl implements org.xmlBlaster.protocol.xmlrpc.I_XmlBlast
    public void unSubscribe(String sessionId, String xmlKey_literal, String qos_literal)
       throws XmlBlasterException
    {
-      Log.call(ME, "Entering unSubscribe() xmlKey=\n" + xmlKey_literal + ") ...");
+      if (Log.CALL) Log.call(ME, "Entering unSubscribe() xmlKey=\n" + xmlKey_literal + ") ...");
       StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
 
       blasterNative.unSubscribe(sessionId, xmlKey_literal, qos_literal);

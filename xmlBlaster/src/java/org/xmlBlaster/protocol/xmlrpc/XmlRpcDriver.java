@@ -3,7 +3,7 @@ Name:      XmlRpcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   XmlRpcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: XmlRpcDriver.java,v 1.4 2000/09/15 17:16:20 ruff Exp $
+Version:   $Id: XmlRpcDriver.java,v 1.5 2000/10/11 20:47:37 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
@@ -36,6 +36,13 @@ import java.io.IOException;
  *                            RMI:org.xmlBlaster.protocol.rmi.CallbackRmiDriver,\
  *                            XML-RPC:org.xmlBlaster.protocol.xmlrpc.CallbackXmlRpcDriver
  * </pre>
+ *
+ * The variable xmlrpc.port (default 8080) sets the http web server port,
+ * you may change it in xmlBlaster.properties or on command line:
+ * <pre>
+ * java -jar lib/xmlBlaster.jar  -xmlrpc.port 9090
+ * </pre>
+ *
  * The interface I_Driver is needed by xmlBlaster to instantiate and shutdown
  * this driver implementation.
  * @author ruff@swand.lake.de
@@ -48,8 +55,6 @@ public class XmlRpcDriver implements I_Driver
    private Authenticate authenticate = null;
    /** The singleton handle for this xmlBlaster server */
    private I_XmlBlaster xmlBlasterImpl = null;
-   /** The authentication session identifier */
-   private String sessionId = null;
    /** The port for the xml-rpc web server */
    private int xmlPort = 8080;
    /** The xml-rpc HTTP web server */
@@ -75,10 +80,9 @@ public class XmlRpcDriver implements I_Driver
    public void init(String args[], Authenticate authenticate, I_XmlBlaster xmlBlasterImpl)
       throws XmlBlasterException
    {
-
+      if (Log.CALL) Log.call(ME, "Entering init()");
       this.authenticate = authenticate;
       this.xmlBlasterImpl = xmlBlasterImpl;
-      Log.info(ME, "Started successfully XML-RPC driver.");
 
       // similar to -Dsax.driver=com.sun.xml.parser.Parser
       String dr = System.getProperty("sax.driver");
@@ -88,8 +92,10 @@ public class XmlRpcDriver implements I_Driver
       xmlPort = XmlBlasterProperty.get("xmlrpc.port", 8080);
       try {
          webserver = new WebServer(xmlPort);
+         // publish the public methods to the XmlRpc web server:
          webserver.addHandler("authenticate", authenticate);
          webserver.addHandler("xmlBlaster", new XmlBlasterImpl(xmlBlasterImpl));
+         Log.info(ME, "Started successfully XML-RPC driver, the web server is listening on port " + xmlPort);
       } catch (IOException e) {
          Log.error(ME, "Error creating webserver: " + e.toString());
          e.printStackTrace();
@@ -104,8 +110,7 @@ public class XmlRpcDriver implements I_Driver
     */
    public void shutdown()
    {
-      Log.info(ME, "Shutting down XML-RPC driver ...");
-      try { authenticate.logout(sessionId); } catch(XmlBlasterException e) { }
+      Log.info(ME, "Shutting down ...");
    }
 
 
