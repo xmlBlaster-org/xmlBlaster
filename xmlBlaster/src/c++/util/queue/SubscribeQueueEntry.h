@@ -31,7 +31,12 @@ public:
    /**
     * Constructor suited for operations like subscribe and unSubscribe
     */
-   SubscribeQueueEntry(org::xmlBlaster::util::Global& global, const org::xmlBlaster::client::key::SubscribeKey& subscribeKey, const org::xmlBlaster::client::qos::SubscribeQos& subscribeQos, const std::string& type="subscribe", int priority=9, bool persistent=false);
+   SubscribeQueueEntry(org::xmlBlaster::util::Global& global,
+                       const org::xmlBlaster::client::key::SubscribeKey& subscribeKey,
+                       const org::xmlBlaster::client::qos::SubscribeQos& subscribeQos,
+                       const std::string& methodName=org::xmlBlaster::util::MethodName::SUBSCRIBE,
+                       int priority=9,
+                       bool persistent=false);
 
    MsgQueueEntry *getClone() const;
 
@@ -39,7 +44,7 @@ public:
     * gets the content of this queue entry (the embedded object). In
     * persistent queues this is the data which is stored as a blob.
     */
-   void* getEmbeddedObject();
+   const void* getEmbeddedObject() const;
 
    // this should actually be in another interface but since it is an only method we put it here.
    const org::xmlBlaster::util::queue::MsgQueueEntry& send(org::xmlBlaster::util::dispatch::I_ConnectionsHandler& connectionsHandler) const;

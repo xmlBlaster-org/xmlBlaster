@@ -23,7 +23,7 @@ MsgQueueEntry *ConnectQueueEntry::getClone() const
    return new ConnectQueueEntry(*this);
 }
 
-void* ConnectQueueEntry::getEmbeddedObject()
+const void* ConnectQueueEntry::getEmbeddedObject() const
 {
    return msgUnit_;
 }

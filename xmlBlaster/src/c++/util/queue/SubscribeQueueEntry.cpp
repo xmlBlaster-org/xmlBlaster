@@ -25,7 +25,7 @@ MsgQueueEntry *SubscribeQueueEntry::getClone() const
    return new SubscribeQueueEntry(*this);
 }
 
-void* SubscribeQueueEntry::getEmbeddedObject()
+const void* SubscribeQueueEntry::getEmbeddedObject() const
 {
    return queryKeyData_; // actually not used now otherwise we would need to return also the qos
 }
