@@ -1,9 +1,9 @@
 /*------------------------------------------------------------------------------
-Name:      CallbackServletDriver.java
+Name:      BlasterHttpProxy.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: BlasterHttpProxy.java,v 1.1 2000/03/12 19:30:29 kkrafft2 Exp $
+Version:   $Id: BlasterHttpProxy.java,v 1.2 2000/03/12 22:46:44 kkrafft2 Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -36,21 +36,18 @@ import org.xmlBlaster.protocol.corba.clientIdl.*;
  *   HTTP 1.1 specifies rfc2616 that the connection stays open as the
  *   default case. How must this code be changed?
  * @author Marcel Ruff ruff@swand.lake.de
- * @version $Revision: 1.1 $
+ * @version $Revision: 1.2 $
  */
-public class BlasterHttpProxy extends HttpServlet implements org.xmlBlaster.client.I_Callback, org.xmlBlaster.util.LogListener
+public class BlasterHttpProxy extends HttpServlet implements org.xmlBlaster.util.LogListener
 {
-   private final String ME 							= "CallbackServletDriver";
+   private final String ME 							= "BlasterHttpProxy";
    private static BlasterHttpProxy theInstance 	= new  BlasterHttpProxy();
 
    /** Mapping the sessionId to a ServletConnection instance */
-   private Hashtable sessionIdHash 					= new Hashtable();
-   /** Mapping the loginName to a ServletConnection instance */
-   private Hashtable loginNameHash 					= new Hashtable();
+   private Hashtable proxyConnections 				= new Hashtable();
 
-   private CorbaConnection theCorbaConnection 	= null;
-
-   private Hashtable    attributes              = new Hashtable();
+   /** Stores global Attributes for other Servlets */
+   private Hashtable attributes              	= new Hashtable();
 
 
    /**
@@ -68,7 +65,6 @@ public class BlasterHttpProxy extends HttpServlet implements org.xmlBlaster.clie
       Log.addLogLevel("TIME");
       Log.addLogListener(this);
       Log.info(ME, "Initialize ...");
-      theCorbaConnection = new CorbaConnection();
    }
 
 
@@ -100,9 +96,9 @@ public class BlasterHttpProxy extends HttpServlet implements org.xmlBlaster.clie
       //HttpSession session = req.getSession();
       HttpSession session = req.getSession(true);
       String sessionId = req.getRequestedSessionId();
-      Log.info(ME, "Entering CallbackServletDriver servlet for sessionId=" + sessionId);
-      ServletConnection servletConnection = (ServletConnection)sessionIdHash.get(sessionId);
-      Server xmlBlaster = servletConnection.getXmlBlaster();
+      Log.info(ME, "Entering BlasterHttpProxy.doPost() servlet for sessionId=" + sessionId);
+      ProxyConnection proxyConnection = (ProxyConnection)getProxyConnection(sessionId);
+      Server xmlBlaster = proxyConnection.getXmlBlaster();
 
       StringBuffer retStr = new StringBuffer();
       try {
@@ -110,9 +106,6 @@ public class BlasterHttpProxy extends HttpServlet implements org.xmlBlaster.clie
 
          if (actionType.equals("logout")) {
             Log.info(ME, "Logout ActionType arrived ...");
-            servletConnection.logout();
-            sessionIdHash.remove(sessionId);
-            loginNameHash.remove(servletConnection.getLoginName());
          }
 
          else if (actionType.equals("subscribe")) {
@@ -182,17 +175,15 @@ public class BlasterHttpProxy extends HttpServlet implements org.xmlBlaster.clie
       res.setContentType("text/html");
       StringBuffer retStr = new StringBuffer("");
       String errorText="";
-      HttpPushHandler pushHandler = new HttpPushHandler(req, res);
 
       HttpSession session = req.getSession(true);
-
       String sessionId = req.getRequestedSessionId();
+
+      HttpPushHandler pushHandler = new HttpPushHandler(req, res);
+
       String loginName = Util.getParameter(req, "loginName", null);    // "Joe";
       String passwd = Util.getParameter(req, "passwd", null);  // "secret";
       Log.info(ME, "Entering BlasterHttpProxy servlet for '" + loginName + "', sessionId=" + sessionId);
-
-      ServletConnection servletConnection = null;
-      Server xmlBlaster = null;
 
       try {
          String actionType = Util.getParameter(req, "ActionType", "NONE");
@@ -205,15 +196,15 @@ public class BlasterHttpProxy extends HttpServlet implements org.xmlBlaster.clie
             if (passwd == null || passwd.length() < 1)
                throw new Exception("Missing passwd");
 
-            // Find orb
-            CorbaConnection corbaConnection = new CorbaConnection();
+            // Find proxyConnection !!Attention, other browser can use an existing
+            //                        xmlBlaster connection. This is an security problem.
+            ProxyConnection proxyConnection = (ProxyConnection)proxyConnections.get( loginName );
+            if( proxyConnection == null ) {
+               proxyConnection = new ProxyConnection( loginName, passwd );
+               proxyConnections.put( loginName, proxyConnection );
+            }
+            proxyConnection.addHttpSession( sessionId, pushHandler );
 
-            // Login to xmlBlaster
-            String qos = "<qos></qos>";
-            xmlBlaster = corbaConnection.login(loginName, passwd, qos, this);
-
-            sessionIdHash.put(sessionId, corbaConnection);
-            loginNameHash.put(loginName, corbaConnection);
 
             // confirm successful login:
             pushHandler.push("/*if (top.loginSuccess != null) */top.loginSuccess(true);\n");
@@ -230,44 +221,13 @@ public class BlasterHttpProxy extends HttpServlet implements org.xmlBlaster.clie
          errorText = e.toString();
          e.printStackTrace();
       } finally {
+         
          Log.info(ME, "Entering finally of permanent connection");
 
-         if (servletConnection != null) {
-            if (Log.DUMP) Log.dump(ME, retStr.toString());
-            servletConnection.update(retStr.toString());
-         }
-         else {
-            retStr.append(alert("Sorry, login to XmlBlaster failed\n\n" + errorText));
-            if (Log.DUMP) Log.dump(ME, retStr.toString());
-            servletConnection.update(retStr.toString());
-         }
-         servletConnection.cleanup();
+         pushHandler.cleanup();
       }
    }
 
-
-   /**
-    * This is the callback method (I_Callback) invoked from ServletConnection
-    * informing the client in an asynchronous mode about a new message.<br />
-    * This message is then forwarded to the browser, using the permanent
-    * http connection in the doGet() method.
-    * <p />
-    * The raw CORBA-BlasterCallback.update() is unpacked and for each arrived message
-    * this update is called.
-    *
-    * @param loginName The name to whom the callback belongs
-    * @param updateKey The arrived key
-    * @param content   The arrived message content
-    * @param qos       Quality of Service of the MessageUnit
-    */
-   public void update(String loginName, UpdateKey updateKey, byte[] content, UpdateQoS updateQoS)
-   {
-      if (Log.CALLS) Log.calls(ME, "Receiving update of a message from xmlBlaster ...");
-      Log.info(ME, "Receiving update of a message from xmlBlaster ...");
-      ServletConnection servletConnection = (ServletConnection)sessionIdHash.get(loginName);
-      // updateQoS.getSender(), updateKey.getUniqueKey(), new String(content), updateKey.getContentMimeExtended()
-      // servletConnection.update();
-   }
 
 
    /**
@@ -334,20 +294,38 @@ public class BlasterHttpProxy extends HttpServlet implements org.xmlBlaster.clie
    }
 
    /**
-    * gives a corba connection by a given sessionId
+    * gives a proxy connection by a given sessionId
     *
     * @param sessionId HTTP sessionId
     * @return valid corbaConnection for valid HTTP sessionId.
     *               If the session is null the default CorbaConnection will
     *               be returned.
     */
-   public CorbaConnection getCorbaConnection( String sessionId ) 
+   public ProxyConnection getProxyConnection( String sessionId )
    {
-      if( sessionId == null ) {
-         return theCorbaConnection;
+      for( Enumeration e = proxyConnections.elements(); e.hasMoreElements() ; ) {
+         ProxyConnection pc = (ProxyConnection) e.nextElement();
+         HttpPushHandler hph = pc.getHttpPushHandler( sessionId );
+         if( hph != null )
+            return pc;
       }
-      else 
-         return null;
+      return null;
+   }
+
+   /**
+    * gives a corbaConnection by a given loginName
+    *
+    * @param loginName
+    */
+   public CorbaConnection getCorbaConnection( String loginName, String passwd ) throws XmlBlasterException
+   {
+      CorbaConnection cc = ((ProxyConnection)proxyConnections.get( loginName )).getCorbaConnection();
+      if( cc == null ) {
+         ProxyConnection pc = new ProxyConnection( loginName, passwd );
+         proxyConnections.put( loginName, pc );
+         cc = pc.getCorbaConnection();
+      }
+      return cc;
    }
 
 
