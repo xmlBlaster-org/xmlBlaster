@@ -138,17 +138,14 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    /** true if we are in fails save mode and polling for xmlBlaster */
    private boolean isReconnectPolling = false;
 
-   /** How many milli seconds sleeping before we retry a connection */
-   private long retryInterval;
+   /** Store the connection configuration and parameters */
+   private ConnectQos connectQos = null;
 
    /** Number of retries if connection cannot directly be established */
    private int retries = -1;
 
    /** communicate from LoginThread back to CorbaConnection that we give up */
    private boolean noConnect = false;
-
-   /** How many milli seconds sleeping between the pings */
-   private long pingInterval;
 
    /** Handle on the ever running ping thread.Only switched on in fail save mode */
    private PingThread pingThread = null;
@@ -178,6 +175,10 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    private Vector publishOnewayBurstModeVec = null;
    private Timeout publishOnewayTimer;
    private Timestamp publishOnewayTimerKey = null;
+
+   // Is initialized if a specific initFailSave() is called before connect()
+   private Address addressFailSaveSettings = null;
+
 
    /**
     * Client access to xmlBlaster for client applications.
@@ -225,46 +226,21 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    }
 
    /**
-    * Client access to xmlBlaster for <strong>normal client applications</strong>.
-    * <p />
-    * @param arg  parameters given on command line
-    * @param protocol e.g. "IOR", "RMI", "XML-RPC", "SOCKET"
-    *                 IOR is the CORBA driver.
-    */
-    /*
-   public XmlBlasterConnection(String[] args, String driverType) throws XmlBlasterException
-   {
-      initArgs(args);
-      initDriver(driverType);
-      initFailSave(null);
-      initBurstMode();
-   }
-
-   public XmlBlasterConnection(String[] args, String driverType, String driverClassName) throws XmlBlasterException
-   {
-      initArgs(args);
-      initDriver(driverType, driverClassName);
-      initFailSave(null);
-      initBurstMode();
-   }
-      */
-
-
-   /**
     * Initialize client side burst mode. 
     */
-   private void initBurstMode(Address address)
-   {
-      this.publishOnewayCollectTime = address.getCollectTime(); // XmlBlasterProperty.get("client.publishOneway.collectTime", 0L);
+   private void initBurstMode(Address address) {
+      this.publishOnewayCollectTime = address.getCollectTime(); // glob.getProperty().get("client.publishOneway.collectTime", 0L);
       if (this.publishOnewayCollectTime > 0L) {
          this.publishOnewayBurstModeVec = new Vector(1000);
          this.publishOnewayTimer = new Timeout("PublishOnewayTimer");
       }
    }
 
-   private void initArgs(String[] args)
-   {
-      this.glob = new Global(args);
+   private void initArgs(String[] args) {
+      this.glob = new Global();
+      if (this.glob.init(args) != 0) {
+         usage();
+      }
       this.serverNodeId = glob.getProperty().get("server.node.id", "xmlBlaster");
    }
 
@@ -275,8 +251,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * Is configurable with "-server.node.id golan"
     * @return e.g. "golan", defaults to "xmlBlaster"
     */
-   public String getServerNodeId() 
-   {
+   public String getServerNodeId() {
       return this.serverNodeId;
    }
 
@@ -352,8 +327,8 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     TODO: generic class loading -> use PluginManager
    private void initDriver(String driverType, String driverClassName) throws XmlBlasterException
    {
-      if (driverType == null) driverType = XmlBlasterProperty.get("client.protocol", "IOR");
-      if (driverClassName == null) driverClassName = XmlBlasterProperty.get("client.protocol.class",
+      if (driverType == null) driverType = glob.getProperty().get("client.protocol", "IOR");
+      if (driverClassName == null) driverClassName = glob.getProperty().get("client.protocol.class",
                                                                             "org.xmlBlaster.protocol.corba.CorbaConnection");
       Log.info(ME, "Using 'client.protocol=" + driverType + "' and 'client.protocol.class=" + driverClassName + "'to access " + getServerNodeId());
       try {
@@ -374,42 +349,29 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    */
 
    /**
-    * Initialize fail save mode.
+    * Initialize fail save mode. 
+    * <p />
+    * This switches fail save mode on, on lost connection we try every 5 sec a reconnect.<br />
+    *
     * Configured with command line or xmlBlaster.properties settings
     * <p />
     * For example:
     * <pre>
-    *   java javaclients.ClientSub -client.failSave.retryInterval 5000
+    *   java javaclients.ClientSub -delay 8000
     * </pre>
-    * switches fail save mode on, on lost connection we try every 5 sec a reconnect.<br />
-    * -1 switches it off, which is default.
+    * on lost connection we try every 8 sec a reconnect.<br />
     * @param connCallback Your implementation of I_ConnectionProblems, we initialize fail save mode with default settings<br />
     *                     If null, DummyConnectionProblemHandler is used and
-    *                     fail save mode is only switched on, if -client.failSave.retryInterval is set bigger 0
+    *                     fail save mode is only switched on, if -delay is set bigger 0
     * @see org.xmlBlaster.client.protocol.DummyConnectionProblemHandler
     */
    public void initFailSave(I_ConnectionProblems connCallback)
    {
-      int retryInterval = -1;
       if (connCallback == null)
-         retryInterval = XmlBlasterProperty.get("client.failSave.retryInterval", -1);
+         this.clientProblemCallback = new DummyConnectionProblemHandler(this);
       else
-         retryInterval = XmlBlasterProperty.get("client.failSave.retryInterval", 5000);
-
-      if (retryInterval > 0) {
-         if (connCallback == null)
-            this.clientProblemCallback = new DummyConnectionProblemHandler(this);
-         else
-            this.clientProblemCallback = connCallback;
-         this.retryInterval = retryInterval;
-         this.pingInterval = XmlBlasterProperty.get("client.failSave.pingInterval", 10 * 1000L);
-         this.retries = XmlBlasterProperty.get("client.failSave.retries", -1);
-         int maxInvocations = XmlBlasterProperty.get("client.failSave.maxInvocations", 10000);
-         this.recorder = new InvocationRecorder(maxInvocations, this, null);
-         Log.info(ME, "Initializing fail save mode: retryInterval=" + retryInterval +
-                      " msec, retries=" + retries + ", maxInvocations=" + maxInvocations +
-                      ", pingInterval=" + pingInterval + " msec");
-      }
+         this.clientProblemCallback = connCallback;
+      Log.info(ME, "Initializing fail save mode");
    }
 
 
@@ -468,15 +430,29 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * @param pingInterval How many milli seconds sleeping between the pings<br />
     *                     < 1 switches pinging off
     * @see org.xmlBlaster.util.InvocationRecorder
+    * @deprecated Use explicit Address settings, e.g.:
+    * <pre>
+    *  // Setup fail save handling ...
+    *  Address addressProp = new Address(glob);
+    *  addressProp.setDelay(4000L);      // retry connecting every 4 sec
+    *  addressProp.setRetries(-1);       // -1 == forever
+    *  addressProp.setPingInterval(0L);  // switched off
+    *  addressProp.setMaxMsg(1000);      // queue up to 1000 messages
+    *
+    *  con.initFailSave(this);           // We want to be informed about problems (interface I_ConnectionProblems)
+    *
+    *  connectQos.setAddress(addressProp);
+    * </pre>
     */
    public synchronized void initFailSave(I_ConnectionProblems connCallback, long retryInterval, int retries, int maxInvocations, long pingInterval)
    {
       if (Log.CALL) Log.call(ME, "Initializing fail save mode: retryInterval=" + retryInterval + ", retries=" + retries + ", maxInvocations=" + maxInvocations + ", pingInterval=" + pingInterval);
+      if (this.addressFailSaveSettings == null) this.addressFailSaveSettings = new Address(glob);
       this.clientProblemCallback = connCallback;
-      this.retryInterval = retryInterval;
-      this.pingInterval = pingInterval;
-      this.retries = retries;
-      this.recorder = new InvocationRecorder(maxInvocations, this, null);
+      this.addressFailSaveSettings.setDelay(retryInterval);
+      this.addressFailSaveSettings.setRetries(retries);
+      this.addressFailSaveSettings.setMaxMsg(maxInvocations);
+      this.addressFailSaveSettings.setPingInterval(pingInterval);
    }
 
 
@@ -570,10 +546,10 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
          // Create default security tags (as specified in xmlBlaster.properties) ...
          initSecuritySettings(null, null);
          securityQos = secPlgn.getSecurityQos();
-         securityQos.setUserId(loginName);
-         securityQos.setCredential(passwd);
          qos.setSecurityQos(securityQos);
       }
+      securityQos.setUserId(loginName);
+      securityQos.setCredential(passwd);
 
       connect(qos, client);
    }
@@ -665,26 +641,53 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     */
    private ConnectReturnQos connect(ConnectQos qos, I_Callback client, QueueProperty givenProp, CallbackAddress cbAddr, String cbSessionId) throws XmlBlasterException
    {
+      if (qos == null) qos = new ConnectQos(glob);
+
       if (qos.getSecurityPluginType() == null || qos.getSecurityPluginType().length() < 1)
          throw new XmlBlasterException(ME+".Authentication", "Please add your authentication in your login QoS");
 
-      String loginName = qos.getSecurityQos().getUserId();
+      this.connectQos = qos;
+
+      String loginName = connectQos.getSecurityQos().getUserId();
       this.ME = "XmlBlasterConnection-" + loginName;
       this.updateClient = client;
       if (Log.CALL) Log.call(ME, "connect() ...");
-      if (Log.DUMP) Log.dump(ME, "connect() " + (client==null?"with":"without") + " callback qos=\n" + qos.toXml());
+      if (Log.DUMP) Log.dump(ME, "connect() " + (client==null?"with":"without") + " callback qos=\n" + connectQos.toXml());
 
-      Address address = qos.getAddress();
+      Address address = connectQos.getAddress();
       if (address == null) {
          address = new Address(glob);
-         qos.setAddress(address);
+         connectQos.setAddress(address);
       }
+
+      if (this.addressFailSaveSettings != null) { // user called initFailSave(I_ConnectionProblems,,,,) before?
+         address.setDelay(addressFailSaveSettings.getDelay());
+         address.setRetries(addressFailSaveSettings.getRetries());
+         address.setPingInterval(addressFailSaveSettings.getPingInterval());
+         address.setMaxMsg(addressFailSaveSettings.getMaxMsg());
+      }
+      
       initDriver(address);
+      
       initBurstMode(address);
-      initFailSave(null);
+
+      // You should call initFailSave(I_ConnectionProblems) first
+      if (this.clientProblemCallback != null && address.getDelay() < 1) {
+         address.setDelay(5 * 5000L);
+         Log.warn(ME, "You have called initFailSave() but -delay is 0, setting ping delay to " + address.getDelay() + " millis");
+      }
+      if (this.clientProblemCallback == null && address.getDelay() > 0) {
+         Log.warn(ME, "You have set -delay " + address.getDelay() + ", but not called initFailSave(), using default error recovery on connection problems");
+         this.clientProblemCallback = new DummyConnectionProblemHandler(this);
+      }
+      if (this.clientProblemCallback != null) { // fail save mode:
+         //this.clientProblemCallback = new DummyConnectionProblemHandler(this);
+         this.recorder = new InvocationRecorder(address.getMaxMsg(), this, null);
+         Log.info(ME, "Avtivated fail save mode: " + address.getSettings());
+      }
 
       // Load the client helper to export/import messages:
-      initSecuritySettings(qos.getSecurityPluginType(), qos.getSecurityPluginVersion());
+      initSecuritySettings(connectQos.getSecurityPluginType(), connectQos.getSecurityPluginVersion());
 
       if (client != null) { // Start a default callback server using same protocol
          this.cbServer = initCbServer(loginName, null);
@@ -693,13 +696,13 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
          QueueProperty prop = givenProp; // Use user supplied property if != null
          if (prop == null)
-            prop = qos.getQueueProperty(); // Creates a default property for us if none is available
+            prop = connectQos.getQueueProperty(); // Creates a default property for us if none is available
          else
-            qos.addQueueProperty(prop);
+            connectQos.addQueueProperty(prop);
 
-         prop.setOnOverflow(XmlBlasterProperty.get("cb.queue.onOverflow", QueueProperty.DEFAULT_onOverflow));
-         prop.setOnFailure(XmlBlasterProperty.get("cb.queue.onFailure", QueueProperty.DEFAULT_onFailure));
-         prop.setMaxMsg(XmlBlasterProperty.get("cb.queue.maxMsg", QueueProperty.DEFAULT_maxMsgDefault));
+         prop.setOnOverflow(glob.getProperty().get("cb.queue.onOverflow", QueueProperty.DEFAULT_onOverflow));
+         prop.setOnFailure(glob.getProperty().get("cb.queue.onFailure", QueueProperty.DEFAULT_onFailure));
+         prop.setMaxMsg(glob.getProperty().get("cb.queue.maxMsg", QueueProperty.DEFAULT_maxMsgDefault));
 
          CallbackAddress addr = null;
          if (cbAddr != null) {
@@ -723,14 +726,14 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
          Log.info(ME, "Callback settings: " + prop.getSettings());
       } // Callback server configured and running
 
-      //Log.info(ME, "DUMP of ConnectQos\n"  + qos.toXml());
+      //Log.info(ME, "DUMP of ConnectQos\n"  + connectQos.toXml());
       try {
          // 'this' forces to invoke our update() method which we then delegate to the updateClient
-         this.connectReturnQos = driver.connect(qos);
+         this.connectReturnQos = driver.connect(connectQos);
          numLogins++;
       }
       catch(ConnectionException e) {
-         if (Log.TRACE) Log.trace(ME, "Login to " + getServerNodeId() + " failed, numLogins=" + numLogins + ". Authentication string is\n" + qos.toXml());
+         if (Log.TRACE) Log.trace(ME, "Login to " + getServerNodeId() + " failed, numLogins=" + numLogins + ". Authentication string is\n" + connectQos.toXml());
          if (numLogins == 0)
             startPinging();
          throw new XmlBlasterException(e);
@@ -760,7 +763,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     */
    public I_CallbackServer initCbServer(String loginName, String driverType) throws XmlBlasterException
    {
-      if (driverType == null) driverType = XmlBlasterProperty.get("client.cbProtocol", driver.getProtocol());
+      if (driverType == null) driverType = glob.getProperty().get("client.cbProtocol", driver.getProtocol());
       Log.info(ME, "Using 'client.cbProtocol=" + driverType + "' to be used by " + getServerNodeId() + ", trying to create the callback server ...");
 
       try {
@@ -872,9 +875,13 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     */
    private void doLoginPolling()
    {
+      if (connectQos == null || connectQos.getAddress() == null) {
+         Thread.currentThread().dumpStack();
+         throw new IllegalArgumentException("Address==null in XmlBlasterConnection");
+      }
       Log.info(ME, "Going to poll for " + getServerNodeId() + " and queue your messages ...");
       isReconnectPolling = true;
-      LoginThread lt = new LoginThread(this, retryInterval, retries);
+      LoginThread lt = new LoginThread(this, connectQos.getAddress().getDelay(), retries);
       lt.start();
    }
 
@@ -884,8 +891,8 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     */
    private void startPinging()
    {
-      if (pingInterval > 0L && pingThread == null) {
-         pingThread = new PingThread(this, pingInterval);
+      if (connectQos.getAddress().getPingInterval() > 0L && pingThread == null) {
+         pingThread = new PingThread(this, connectQos.getAddress().getPingInterval());
          pingThread.start();
       }
    }
@@ -1599,7 +1606,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    {
       private final String ME = "LoginThread";
       private XmlBlasterConnection con;
-      private final long RETRY_INTERVAL; // would this be smarter? XmlBlasterProperty.get("Failsave.retryInterval", 4000L);
+      private final long RETRY_INTERVAL; // would this be smarter? glob.getProperty().get("Failsave.retryInterval", 4000L);
       private final int RETRIES;         // -1 = forever
 
 
@@ -1655,7 +1662,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
          if (Log.CALL) Log.call(ME, "Entering constructor ping interval=" + pingInterval + " millis");
       }
       public void run() {
-         Log.info(ME, "Pinging " + getServerNodeId() + " server");
+         Log.info(ME, "Pinging " + getServerNodeId() + " server everey " + PING_INTERVAL + " millis.");
          while (pingRunning) {
             try {
                con.ping();
@@ -1675,7 +1682,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     * You can use this as fail save handling. Switch it on with command
     * line argument
     * <pre>
-    *   java javaclients.ClientSub -client.failSave.retryInterval 5000
+    *   java javaclients.ClientSub -delay 5000
     * </pre>
     * NOTE: Usually you should provide these two methods yourself,
     * and initialize your subscriptions etc. again.
@@ -1744,6 +1751,9 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       text += "                       Clients can overwrite this with ConnectQos.java\n";
 
       Log.plain(text);
+      try {
+         Log.plain(new ConnectQos(new Global()).usage());
+      } catch (XmlBlasterException e) {}
       Log.plain(new Address(new Global()).usage());
       Log.plain(new CallbackAddress(new Global()).usage());
       Log.plain(SocketConnection.usage());
