@@ -237,8 +237,8 @@ public class Global implements Cloneable
     */
    public Global(String[] args, boolean loadPropFile, boolean checkInstance)
    {
+      counter++;
       if (checkInstance == true) {
-         counter++;
          if (this.firstInstance != null) {
             System.out.println("######Global args constructor invoked again, try Global.instance()");
             Thread.currentThread().dumpStack();
