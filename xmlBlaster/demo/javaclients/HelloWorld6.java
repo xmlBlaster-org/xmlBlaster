@@ -108,7 +108,8 @@ public class HelloWorld6
                   log.warn(ME, "I_ConnectionStateListener: No connection to " + glob.getId() + ", we are polling ...");
                }
                public void reachedDead(ConnectionStateEnum oldState, I_XmlBlasterAccess connection) {
-                  log.warn(ME, "I_ConnectionStateListener: Connection to " + glob.getId() + " is DEAD");
+                  log.warn(ME, "I_ConnectionStateListener: Connection to " + glob.getId() + " is DEAD -> Good bye");
+                  System.exit(1);
                }
             });
 
