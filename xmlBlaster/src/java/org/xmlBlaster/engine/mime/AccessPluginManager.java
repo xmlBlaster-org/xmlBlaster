@@ -3,7 +3,7 @@ Name:      AccessPluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for persistence
-Version:   $Id: AccessPluginManager.java,v 1.6 2002/05/01 21:40:08 ruff Exp $
+Version:   $Id: AccessPluginManager.java,v 1.7 2002/05/06 14:41:39 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime;
@@ -29,7 +29,6 @@ import java.util.Collections;
 public class AccessPluginManager extends PluginManagerBase {
 
    private static final String ME = "AccessPluginManager";
-   private static final String defaultPluginName = null; // "org.xmlBlaster.engine.mime.demo.DemoFilter
    public static final String pluginPropertyName = "MimeAccessPlugin";
 
    private final Global glob;
@@ -79,8 +78,12 @@ public class AccessPluginManager extends PluginManagerBase {
    /**
     * @return please return your default plugin classname or null if not specified
     */
-   public String getDefaultPluginName() {
-      return defaultPluginName;
+   public String getDefaultPluginName(String type, String version) {
+      if (type != null) {
+         if (type.equals("GnuRegexFilter"))
+            return "org.xmlBlaster.engine.mime.regex.GnuRegexFilter";
+      }
+      return null;
    }
 
    /**
