@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.95 2002/06/17 15:17:51 ruff Exp $
+Version:   $Id: Main.java,v 1.96 2002/06/19 10:26:49 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -356,9 +356,6 @@ public class Main implements I_RunlevelListener
    public void runlevelChange(int from, int to, boolean force) throws org.xmlBlaster.util.XmlBlasterException {
       //if (log.CALL) log.call(ME, "Changing from run level=" + from + " to level=" + to + " with force=" + force);
       if (to == from)
-         return;
-
-      if (glob.useCluster() == false)
          return;
 
       if (to > from) { // startup
