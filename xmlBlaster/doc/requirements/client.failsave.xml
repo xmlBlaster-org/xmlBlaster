@@ -5,6 +5,7 @@
    <topic>
       XmlBlasterConnection is a helper class for Java clients which supports
       polling for xmlBlaster and record/playback of messages during lost connections.
+      <__sys__>XX</__sys__>
    </topic>
    <description>
       The protocol used (CORBA, RMI, XML-RPC) is transparently hidden.
@@ -61,7 +62,7 @@
    <author>ruff@swand.lake.de</author>
    <hacker>ruff@swand.lake.de</hacker>
    <date>2000 02 23</date>
-   <revision>$Revision: 1.7 $</revision>
+   <revision>$Revision: 1.8 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>

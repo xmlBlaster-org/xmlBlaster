@@ -113,9 +113,55 @@
       for this 'client' until it logs in.
       </p>
    </description>
+   <example lang="Java">
+      <![CDATA[
+      <key oid='__sys__clusternode:heron'>
+         <__sys__clusternode/>
+      </key>
+
+   content=
+      <clusternode id='heron'>
+         <address type='IOR'>IOR:00044550005...</address>
+         <address type='XML-RPC'>http:/www.mars.universe:8080/RPC2</address>
+         <callback type='XML-RPC'>http:/www.mars.universe:8081/RPC2</callback>
+      </clusternode>
+
+
+
+      <key oid='__sys__clusternodestate:heron'>
+         <__sys__clusternodestate/>
+      </key>
+ 
+   content=
+      <clusternode id='heron'>
+         <state>
+            <cpu id='0' idle='40'/>            <!-- currently 60% load on first CPU -->
+            <cpu id='1' idle='44'/>
+            <ram free='12000'/>                <!-- xmlBlaster server instance has 12 MB free memory -->
+         </state>
+      </clusternode>
+
+
+
+      <key oid='__sys__clusternodemaster:heron'>
+         <__sys__clusternodemaster/>
+      </key>
+ 
+   content=
+      <clusternode id='heron'>
+         <master>
+            <key oid='radar.track'/>
+            <key queryType='XPATH'>
+               //STOCK_EXCHANGE
+            </key>
+         </master>
+      </clusternode>
+
+      ]]>
+   </example>
    <author>ruff@swand.lake.de</author>
    <date>2000 04 03</date>
-   <revision>$Revision: 1.4 $</revision>
+   <revision>$Revision: 1.5 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
