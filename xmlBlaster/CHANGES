@@ -9,6 +9,7 @@ Changes in current subversion repository (svn)
    See: http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.qos.subscribe.multiSubscribe.html
 
  o C++ client library:
+   - #12864 SOCKET driver: Removed obsolet mutex and obsolete thread
    - #12846 Changed connection_==0 check to be thread safe, passing now logging states to C library
    - #12823,#12825
       Added sax configuration usage help
@@ -19,7 +20,7 @@ Changes in current subversion repository (svn)
       Fixed error message for SAX parse errors
    - #12820 Extending XmlBlasterException from std::exception to support catching by base class,
       added what() method, removed dummy stack trace output.
-   - #12799 Added leaveServer(), still buggy under certain multi threading states
+   - #12799 Added leaveServer() method
    See: http://www.xmlblaster.org/xmlBlaster/doc/doxygen/cpp/html/classorg_1_1xmlBlaster_1_1client_1_1XmlBlasterAccess.html#a28
 
  o C client library:
@@ -27,7 +28,7 @@ Changes in current subversion repository (svn)
             the mode is adjustable with -plugin/socket/detachCbThread=true/false (false will do a pthread_join())
    - #12845 Removed creating of two threads if UDP is switched off
    - #12842 Added stop flag for immediate shutdown detection, added free(rawMsg) in EOF case
-   - #12828 Fixed multithreading bug on shutdown, now we can savely leave the server without disconnect()
+   - #12828,#12861 Fixed multithreading bug on shutdown, now we can savely leave the server without disconnect()
    - #12781 Added missing pthread_cond_destroy() and pthread_mutex_destroy()
    - #12777 Memory leak fix for Udp return
    - #12778 Memory leak fix for calling connect() multiple times
@@ -106,7 +107,7 @@ Changes for 1.RC1 [2004-10-28] #12758
    SecurityPlugin fails
 
  o htpassed authentication:
-   - The password files are not trimmed (leading and trailing spaces are removed)
+   - The password files are now trimmed (leading and trailing spaces are removed)
    - We now support startWith() and endsWith() in mode 'Security.Server.Plugin.htpasswd.allowPartialUsername=true'
    - We now support '*:48fdja94jfd' entries which allow to set a wildcard password
      A matching specific user like 'joe:dfkj843f81' has precedence in password evaluation
@@ -166,6 +167,9 @@ Changes for 1.RC1 [2004-10-28] #12758
    Fixed memory leak on InterruptedIOException (very seldom case)
 
  o C client library:
+   - #12860 Timeout.cpp: Fixed shutdown with join(); Checking class state on method calls; Added catch(...) for error handling 
+   - #12858 Threading library: Added mode to start threads detached: start(bool detached)
+   - #12854 Changed from winsock.h to Winsock2.h to have SD_BOTH
    - #12750 Upgrade to pthreads-dll-2004-06-22
    - #12746 Windows flag '/YX' added for precompiled headers
    - #12710 Added subversion revision number, see getXmlBlasterVersion()
@@ -182,6 +186,7 @@ Changes for 1.RC1 [2004-10-28] #12758
    - Fixed callback ping return for SOCKET protocol
 
  o C++ client library:
+   - #12858 Threading lib: Added mode to start threads detached: start(bool detached)
    - #12755 "user.name" is used instead of "user" to find out the default user
    - #12746 Windows flag '/YX' added for precompiled headers
    - #12743 BUGIFX: lexical_cast from string (or char*) to bool is now handled on a special implementation
