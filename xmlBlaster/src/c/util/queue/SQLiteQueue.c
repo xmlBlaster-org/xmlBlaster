@@ -59,7 +59,6 @@ static bool execSilent(I_Queue *queueP, const char *sqlStatement, const char *co
 static bool compilePreparedQuery(I_Queue *queueP, const char *methodName, sqlite_vm **ppVm, const char *queryString, ExceptionStruct *exception);
 static bool fillCache(I_Queue *queueP, ExceptionStruct *exception);
 static void shutdownInternal(I_Queue **queuePP, ExceptionStruct *exception);
-static void freeQueueEntryArrInternal(QueueEntryArr *queueEntryArr);
 static void freeQueueEntryData(QueueEntry *queueEntry);
 
 /**
@@ -253,6 +252,16 @@ static bool persistentQueueInitialize(I_Queue *queueP, const QueueProperties *qu
    dbInfo->prop.nodeId[QUEUE_ID_MAX-1] = 0;
    dbInfo->prop.queueName[QUEUE_ID_MAX-1] = 0;
    dbInfo->prop.tablePrefix[QUEUE_PREFIX_MAX-1] = 0;
+
+   LOG __FILE__, "dbName          = %s", dbInfo->prop.dbName);
+   LOG __FILE__, "nodeId          = %s", dbInfo->prop.nodeId);
+   LOG __FILE__, "queueName       = %s", dbInfo->prop.queueName);
+   LOG __FILE__, "tablePrefix     = %s", dbInfo->prop.tablePrefix);
+   LOG __FILE__, "maxNumOfEntries = %ld",dbInfo->prop.maxNumOfEntries);
+   LOG __FILE__, "maxNumOfBytes   = %ld",(long)dbInfo->prop.maxNumOfBytes);
+   /*LOG __FILE__, "logFp           = %d", (int)dbInfo->prop.logFp);*/
+   LOG __FILE__, "logLevel        = %d", (int)dbInfo->prop.logLevel);
+   /*LOG __FILE__, "userObject      = %d", (void*)dbInfo->prop.userObject);*/
 
    db = sqlite_open(dbInfo->prop.dbName, OPEN_RW, &errMsg);
    dbInfo->db = db;
@@ -501,7 +510,7 @@ static void persistentQueuePut(I_Queue *queueP, const QueueEntry *queueEntry, Ex
 
    if (stateOk) {
       dbInfo->numOfEntries += 1;
-      dbInfo->numOfBytes += queueEntry->embeddedBlob.dataLen;
+      dbInfo->numOfBytes += ((queueEntry->sizeInBytes > 0) ? queueEntry->sizeInBytes : queueEntry->embeddedBlob.dataLen);
    }
 
    LOG __FILE__, "put(%s) %s", int64ToStr(int64Str, queueEntry->uniqueId), stateOk ? "done" : "failed");
@@ -858,7 +867,7 @@ static int32_t persistentQueueRandomRemove(I_Queue *queueP, const QueueEntryArr 
       for (i=0; i<queueEntryArr->len; i++) {
          strcat(queryString, int64ToStr(int64Str, queueEntryArr->queueEntryArr[i].uniqueId));
          if (i<(queueEntryArr->len-1)) strcat(queryString, ",");
-         numOfBytes += queueEntryArr->queueEntryArr[i].embeddedBlob.dataLen;
+         numOfBytes += ((queueEntryArr->queueEntryArr[i].sizeInBytes > 0) ? queueEntryArr->queueEntryArr[i].sizeInBytes : queueEntryArr->queueEntryArr[i].embeddedBlob.dataLen);
       }
       strcat(queryString, " )");
       stateOk = compilePreparedQuery(queueP, "randomRemove", &pVm, queryString, exception);
@@ -1121,7 +1130,7 @@ Dll_Export void freeQueueEntryArr(QueueEntryArr *queueEntryArr)
  * Frees everything inside QueueEntryArr but NOT the struct QueueEntryArr itself
  * @param queueEntryArr The struct internals to free, passing NULL is OK
  */
-static void freeQueueEntryArrInternal(QueueEntryArr *queueEntryArr)
+Dll_Export void freeQueueEntryArrInternal(QueueEntryArr *queueEntryArr)
 {
    size_t i;
    if (queueEntryArr == (QueueEntryArr *)0) return;
@@ -1157,7 +1166,7 @@ Dll_Export void freeQueueEntry(QueueEntry *queueEntry)
 }
 
 /**
- * NOTE: You need to free the returned pointer with free()!
+ * NOTE: You need to free the returned pointer with xmlBlasterFree() (which calls free())!
  *
  * @param maxContentDumpLen for -1 get the complete content, else limit the
  *        content to the given number of bytes
@@ -1191,6 +1200,11 @@ Dll_Export char *queueEntryToXml(QueueEntry *queueEntry, int maxContentDumpLen)
    free(contentStr);
    return xml;
    }
+}
+
+Dll_Export void freeEntryDump(char *entryDump)
+{
+   if (entryDump) free(entryDump);
 }
 
 /**
@@ -1276,6 +1290,7 @@ static void testRun(int argc, char **argv) {
       size_t i;
       for (i=0; i<sizeof(idArr)/sizeof(int64_t); i++) {
          QueueEntry queueEntry;
+         memset(&queueEntry, 0, sizeof(QueueEntry));
          queueEntry.priority = prioArr[i];
          queueEntry.isPersistent = true;
          queueEntry.uniqueId = idArr[i];

@@ -49,6 +49,7 @@ typedef struct {
    int64_t uniqueId;        /** The unique key, used for sorting, usually a time stamp [nano sec]. Is assumed to be ascending over time. */
    int16_t priority;        /** The priority of the queue entry, has higher sorting order than than the time stamp */
    bool isPersistent;       /** Mark an entry to be persistent, needed for cache implementations, 'T' is true, 'F' is false. 'F' in persistent queue is a swapped transient entry */
+   int64_t sizeInBytes;     /** The size of this entry which is given by the client and used to sum up queue->numOfBytes, if 0 we use the size of the blob */
    char embeddedType[QUEUE_ENTRY_EMBEDDEDTYPE_LEN]; /** A string describing this entry, for example the format of the blob. */
    BlobHolder embeddedBlob; /** blob.data is allocated with malloc, you need to free() it yourself, is compressed if marked as such */
 } QueueEntry;
@@ -103,6 +104,8 @@ struct I_QueueStruct {
     * reference to it has been processed. 
     * @param queueP The 'this' pointer (similar to the hidden C++ 'this' pointer)
     * @param queueEntry The data to put into the queue
+    *        Please initialize it with <code>memset(&queueEntry, 0, sizeof(QueueEntry));</code> before setting
+    *        your values so we can add new fields without breaking your code
     * @param exception Check *exception.errorCode!=0 for errors:
     *            "user.illegalArgument",
     *            "resource.db.unavailable", "resource.db.block", "resource.db.unknown"
@@ -130,6 +133,9 @@ struct I_QueueStruct {
     * Removes the given entries from persistence. 
     * @param queueP The 'this' pointer (similar to the hidden C++ 'this' pointer)
     * @param queueEntryArr The entries to remove
+    *        Please initialize each entry with <code>memset(&queueEntry, 0, sizeof(QueueEntry));</code>
+    *        (or use <code>calloc()</code>) before setting
+    *        your values so we can add new fields without breaking your code
     * @param exception Check *exception.errorCode!=0 for errors:
     *            "user.illegalArgument",
     *            "resource.db.unavailable", "resource.db.block", "resource.db.unknown"
@@ -256,6 +262,13 @@ Dll_Export extern I_Queue *createQueue(const QueueProperties *queueProperties, E
 extern Dll_Export void freeQueueEntryArr(QueueEntryArr *queueEntryArr);
 
 /**
+ * Frees everything inside QueueEntryArr but NOT the struct QueueEntryArr itself. 
+ * @param queueEntryArr The struct internals to free.
+ *                      Passing NULL is OK
+ */
+extern Dll_Export void freeQueueEntryArrInternal(QueueEntryArr *queueEntryArr);
+
+/**
  * Frees the internal blob and the queueEntry itself. 
  * @param queueEntry Its memory is freed, it is not usable anymore after this call.
  *                   Passing NULL is OK
@@ -263,13 +276,19 @@ extern Dll_Export void freeQueueEntryArr(QueueEntryArr *queueEntryArr);
 extern Dll_Export void freeQueueEntry(QueueEntry *queueEntry);
 
 /**
- * NOTE: You need to free the returned pointer with free()!
+ * NOTE: You need to free the returned pointer with freeEntryDump() (which calls free())!
  *
  * @param maxContentDumpLen for -1 get the complete content, else limit the
  *        content to the given number of bytes
  * @return A ASCII XML formatted entry or NULL if out of memory
  */
 extern Dll_Export char *queueEntryToXml(QueueEntry *queueEntry, int maxContentDumpLen);
+
+/**
+ * Free the memory allocated by queueEntryToXml()
+ * @param queueDump NULL is OK
+ */
+extern Dll_Export void freeEntryDump(char *queueDump);
 
 #ifdef __cplusplus
 #ifndef XMLBLASTER_C_COMPILE_AS_CPP
