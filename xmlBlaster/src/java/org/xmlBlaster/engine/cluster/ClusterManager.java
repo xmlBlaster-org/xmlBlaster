@@ -254,7 +254,7 @@ public final class ClusterManager
                                       /*!!! subscribeQos.toXml()*/ new PublishQos(glob, ""));
       XmlBlasterConnection con = getConnection(publisherSession, msgWrapper);
       if (con == null) {
-         if (log.TRACE) log.trace(ME, "Nothing to forward");
+         if (log.TRACE) log.trace(ME, "forwardSubscribe - Nothing to forward");
          return null;
       }
 
@@ -284,7 +284,7 @@ public final class ClusterManager
                                       /*!!! getQos.toXml()*/ new PublishQos(glob, ""));
       XmlBlasterConnection con = getConnection(publisherSession, msgWrapper);
       if (con == null) {
-         if (log.TRACE) log.trace(ME, "Nothing to forward");
+         if (log.TRACE) log.trace(ME, "forwardGet - Nothing to forward");
          return null;
       }
 
@@ -314,7 +314,7 @@ public final class ClusterManager
                                       /*!!! eraseQos.toXml()*/ new PublishQos(glob, ""));
       XmlBlasterConnection con = getConnection(publisherSession, msgWrapper);
       if (con == null) {
-         if (log.TRACE) log.trace(ME, "Nothing to forward");
+         if (log.TRACE) log.trace(ME, "forwardErase - Nothing to forward");
          return null;
       }
 
@@ -425,6 +425,8 @@ public final class ClusterManager
       // for each cluster node ...
       while (it.hasNext()) {
          ClusterNode clusterNode = (ClusterNode)it.next();
+         if (clusterNode.getDomainInfoMap().size() < 1)
+            continue;
          if (clusterNode.isAllowed() == false) {
             if (log.TRACE) log.trace(ME, "Ignoring master node id='" + clusterNode.getId() + "' because it is not available");
             continue;
@@ -435,18 +437,18 @@ public final class ClusterManager
             continue;
          }
          Iterator domains = clusterNode.getDomainInfoMap().values().iterator();
-         if (log.TRACE) log.trace(ME, "Testing " + clusterNode.getDomainInfoMap().size() + " domains rules of node " + clusterNode.getId());
+         if (log.TRACE) log.trace(ME, "Testing " + clusterNode.getDomainInfoMap().size() + " domains rules of node " + clusterNode.getId() + " for oid=" + msgWrapper.getUniqueKey());
          numRulesFound += clusterNode.getDomainInfoMap().size();
          // for each domain mapping rule ...
          while (domains.hasNext()) {
             NodeDomainInfo nodeDomainInfo = (NodeDomainInfo)domains.next();
             I_MapMsgToMasterId domainMapper = this.mapMsgToMasterPluginManager.getMapMsgToMasterId(
-                               nodeDomainInfo.getType(), nodeDomainInfo.getVersion(), // "DomainToMaster", "1.0"
-                               msgWrapper.getContentMime(), msgWrapper.getContentMimeExtended());
+                                 nodeDomainInfo.getType(), nodeDomainInfo.getVersion(), // "DomainToMaster", "1.0"
+                                 msgWrapper.getContentMime(), msgWrapper.getContentMimeExtended());
             if (domainMapper == null) {
                log.warn(ME, "No domain mapping plugin type='" + nodeDomainInfo.getType() + "' version='" + nodeDomainInfo.getVersion() +
-                            "' found for message mime='" + msgWrapper.getContentMime() + "' and '" + msgWrapper.getContentMimeExtended() +
-                            "' ignoring rules " + nodeDomainInfo.toXml());
+                              "' found for message mime='" + msgWrapper.getContentMime() + "' and '" + msgWrapper.getContentMimeExtended() +
+                              "' ignoring rules " + nodeDomainInfo.toXml());
                continue;
             }
 
