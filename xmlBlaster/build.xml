@@ -2051,6 +2051,8 @@ TODO
          <case value="windows">
             <echo message="Assure to add ${lib.dir.absolute} to your PATH to find xmlBlasterClientC.dll and pthreadVC.dll"/>
          </case>
+         <default>
+         </default>
       </switch>
    </target>  <!-- C lib -->
 
