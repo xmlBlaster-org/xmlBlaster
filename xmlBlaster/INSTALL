@@ -84,6 +84,9 @@ For developers
 
      export PATH=$PATH:$XMLBLASTER_HOME/testsuite/bin
 
+ 2.) To generate the javadoc API of xmlBlaster type in the xmlBlaster home directory:
+
+    make javadoc
 
 --------- C++ -----------------------------------------------------------
 C++ clients with MICO 2.3.0 (http://www.mico.org)
