@@ -30,7 +30,7 @@ XmlBlasterAccess::XmlBlasterAccess(Global& global)
      connectQos_(global), 
      connectReturnQos_(global),
      global_(global), 
-     log_(global.getLog("org.xmBlaster.client")),
+     log_(global.getLog("org.xmlBlaster.client")),
      subscriptionCallbackMap_(),
      updateMutex_(),
      invocationMutex_()
