@@ -3,7 +3,7 @@ Name:      SocketDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   SocketDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: SocketDriver.java,v 1.40 2004/08/24 15:18:52 ruff Exp $
+Version:   $Id: SocketDriver.java,v 1.41 2004/08/26 21:19:42 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.socket;
 
@@ -391,19 +391,19 @@ public class SocketDriver extends Thread implements I_Driver /* which extends I_
          }
       }
       */
-      try {
-         if (listen != null) {
+      if (listen != null) {
+         try {
             listen.close();
-            listen = null;
-            //log.info(ME, "Socket driver stopped, all resources released.");
+         } catch (java.io.IOException e) {
+            log.warn(ME, "TCP socket shutdown problem: " + e.toString());
          }
-         if (socketUDP != null) {
-            socketUDP.close();
-            socketUDP = null;
-            //log.info(ME, "Socket driver stopped, all resources released.");
-         }
-      } catch (java.io.IOException e) {
-         log.warn(ME, "Socket shutdown problem: " + e.toString());
+         listen = null;
+         //log.info(ME, "TCP socket driver stopped, all resources released.");
+      }
+      if (socketUDP != null) {
+         socketUDP.close();
+         socketUDP = null;
+         //log.info(ME, "UDP socket driver stopped, all resources released.");
       }
 
       // shutdown all clients connected
