@@ -3,7 +3,7 @@ Name:      EmbeddedXmlBlaster.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to create/start/stop a xmlBlaster server in a thread
-Version:   $Id: EmbeddedXmlBlaster.java,v 1.1 2002/09/09 13:32:56 ruff Exp $
+Version:   $Id: EmbeddedXmlBlaster.java,v 1.2 2002/09/11 16:38:05 kkrafft2 Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 
@@ -208,12 +208,7 @@ public class EmbeddedXmlBlaster
     */
    public static void main(String args[])
    {
-      Global glob = new Global();
-      if (glob.init(args) != 0) {
-         glob.getLog(null).error("EmbeddedXmlBlaster", "Initialization of property failed, bye!");
-         System.exit(1);
-      }
-      EmbeddedXmlBlaster xmlBlaster = EmbeddedXmlBlaster.startXmlBlaster(glob);
+      EmbeddedXmlBlaster xmlBlaster = EmbeddedXmlBlaster.startXmlBlaster(args);
       EmbeddedXmlBlaster.stopXmlBlaster(xmlBlaster);
    }
 } // class EmbeddedXmlBlaster
