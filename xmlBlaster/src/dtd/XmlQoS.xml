@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 
-<!DOCTYPE xmlBlaster SYSTEM "XmlKey.dtd">
+<!DOCTYPE xmlBlaster SYSTEM "XmlQoS.dtd">
 
 <!-- Example of possible XML QoS (quality of services) -->
 <!-- Note that the <demo> and <publish> etc. tags are NOT used when sending messages -->
