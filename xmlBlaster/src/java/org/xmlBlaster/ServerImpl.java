@@ -102,6 +102,7 @@ public class ServerImpl extends ServerPOA {
     java.lang.String qos
   ) throws
     org.xmlBlaster.XmlBlasterException {
+    System.out.println("Got subscribe request: xmlKey=" + xmlKey + ", qos=" + qos);
     // IMPLEMENT: Operation
   }
   /**
