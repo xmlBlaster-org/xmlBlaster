@@ -81,6 +81,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
     * TODO: security discussion
     */
    private final SessionInfo unsecureSessionInfo;
+   private final String myselfLoginName; // "__RequestBroker_internal[heron]";
 
    /**
     * Helper to handle the subscriptions
@@ -137,7 +138,8 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
 
       this.burstModeTimer = new Timeout("BurstmodeTimer");
 
-      unsecureSessionInfo = authenticate.unsecureCreateSession("__RequestBroker_internal__");
+      myselfLoginName = "__RequestBroker_internal[" + getGlobal().getId() + "]";
+      unsecureSessionInfo = authenticate.unsecureCreateSession(myselfLoginName);
 
       accessPluginManager = new AccessPluginManager(getGlobal());
 
@@ -417,7 +419,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
          if (Log.CALL) Log.call(ME, "Entering subscribe(oid='" + xmlKey.getKeyOid() + "', queryType='" + xmlKey.getQueryTypeStr() + "', query='" + xmlKey.getQueryString() + "') ...");
 
          if (xmlKey.isInternalStateQuery()) {
-            updateInternalStateInfo(sessionInfo); // TODO!!! only login/logout events, but mem not subscribeable
+            updateInternalStateInfo(unsecureSessionInfo); // TODO!!! only login/logout events, but mem not subscribeable
          }
 
          QueueProperty[] props = subscribeQos.getQueueProperties();
@@ -492,7 +494,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
 
          // Note: Internal messages are currently not checkable with the mime access filter
          if (xmlKey.isInternalStateQuery())
-            updateInternalStateInfo(sessionInfo);
+            updateInternalStateInfo(unsecureSessionInfo);
 
          if (xmlKey.getKeyOid().equals(Constants.JDBC_OID/*"__sys__jdbc"*/)) { // Query RDBMS !!! hack, we need a general service interface
             String query = xmlKey.toXml();
@@ -599,7 +601,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
     *       &lt;/key>
     * </pre>
     *
-    * @param sessionInfo The client who triggered the refresh
+    * @param sessionInfo unsecureSessionInfo (internal user)
     * @return A sequence of 0...n MessageUnit structs
     */
    private void updateInternalStateInfo(SessionInfo sessionInfo) throws XmlBlasterException
@@ -913,14 +915,16 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
 
             publishQos.setSender(sessionInfo.getLoginName());
 
-            int hopCount = publishQos.count(getGlobal().getNodeId());
-            if (hopCount > 0) {
-               getGlobal().getLog().warn(ME, "Warning, message oid='" + xmlKey.getKeyOid()
-                  + "' passed my node id='" + getGlobal().getId() + "' " + hopCount + " times before, we have a circular routing problem");
+            if (!myselfLoginName.equals(sessionInfo.getLoginName())) { // TODO: allow for cluster internal messages?
+               int hopCount = publishQos.count(getGlobal().getNodeId());
+               if (hopCount > 0) {
+                  getGlobal().getLog().warn(ME, "Warning, message oid='" + xmlKey.getKeyOid()
+                     + "' passed my node id='" + getGlobal().getId() + "' " + hopCount + " times before, we have a circular routing problem");
+               }
+               int stratum = -1; // not known yet, addRouteInfo() sets my stratum to one closer to the master,
+                                 // this needs to be checked here as soon as we know which stratum we are!!!
+               publishQos.addRouteInfo(new RouteInfo(getGlobal().getNodeId(), stratum, publishQos.getRcvTimestamp()));
             }
-            int stratum = -1; // not known yet, addRouteInfo() sets my stratum to one closer to the master,
-                              // this needs to be checked here as soon as we know which stratum we are!!!
-            publishQos.addRouteInfo(new RouteInfo(getGlobal().getNodeId(), stratum, publishQos.getRcvTimestamp()));
          }
 
          if (publishQos.isPubSubStyle()) {
@@ -1221,7 +1225,8 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
       if (Log.TRACE) Log.trace(ME, "Login event for client " + sessionInfo.toString());
       synchronized (msgUnitLoginEvent) {
          msgUnitLoginEvent.setContentRaw(sessionInfo.getLoginName().getBytes());
-         publish(sessionInfo, msgUnitLoginEvent.getXmlKey(), msgUnitLoginEvent.getMessageUnit(), msgUnitLoginEvent.getPublishQos()); // publish that this client logged in
+         publish(unsecureSessionInfo, msgUnitLoginEvent.getXmlKey(), msgUnitLoginEvent.getMessageUnit(),
+                 msgUnitLoginEvent.getPublishQos()); // publish that this client logged in
       }
 
       if (Log.TRACE) Log.trace(ME, " client added:"+sessionInfo.getLoginName());
@@ -1250,7 +1255,8 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
       if (Log.TRACE) Log.trace(ME, "Logout event for client " + sessionInfo.toString());
       synchronized (msgUnitLogoutEvent) {
          msgUnitLogoutEvent.setContentRaw(sessionInfo.getLoginName().getBytes());
-         publish(sessionInfo, msgUnitLogoutEvent.getXmlKey(), msgUnitLogoutEvent.getMessageUnit(), msgUnitLogoutEvent.getPublishQos()); // publish that this client logged out
+         publish(unsecureSessionInfo, msgUnitLogoutEvent.getXmlKey(), msgUnitLogoutEvent.getMessageUnit(),
+                 msgUnitLogoutEvent.getPublishQos()); // publish that this client logged out
       }
       if (Log.TRACE) Log.trace(ME, " client removed:"+sessionInfo.getLoginName());
       synchronized (loggedIn) {
