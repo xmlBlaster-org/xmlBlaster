@@ -689,10 +689,15 @@ final public class Authenticate implements I_Authenticate, I_RunlevelListener
    {
       // even the corba client should get a communication exception when the server is shutting down
       // (before this change he was getting "access denided" since the sessions were already killed).
-      if (glob.getRunlevelManager().getCurrentRunlevel() <= RunlevelManager.RUNLEVEL_STANDBY) {
-         log.warn(ME+".communication.noconnection", "The run level of xmlBlaster is not handling any communication anymore. " + glob.getId() + ".");
-         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, "The run level of xmlBlaster is not handling any communication anymore. " + glob.getId() + ".");
+      /* Removed check, Marcel 2003-03-26: This should be handled by loading specific plugins
+         in xmlBlasterPlugin.xml
+      if (glob.getRunlevelManager().getCurrentRunlevel() < RunlevelManager.RUNLEVEL_STANDBY) {
+         String text = "The run level " + RunlevelManager.toRunlevelStr(glob.getRunlevelManager().getCurrentRunlevel()) +
+                       " of xmlBlaster is not handling any communication anymore. " + glob.getId() + ".";
+         log.warn(ME+".communication.noconnection", text);
+         throw new XmlBlasterException(glob, ErrorCode.COMMUNICATION_NOCONNECTION, ME, text);
       }
+      */
 
       StopWatch stop=null; if (log.TIME) stop = new StopWatch();
 
