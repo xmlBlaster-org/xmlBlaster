@@ -689,7 +689,7 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
                                       this.clientQueue.getStorageId(), unSubscribeKey, unSubscribeQos);
       UnSubscribeReturnQos[] arr = (UnSubscribeReturnQos[])queueMessage(entry);
       this.updateDispatcher.removeCallback(unSubscribeKey.getOid());
-      return arr;
+      return (arr == null) ? new UnSubscribeReturnQos[0] : arr;
    }
 
    /**
@@ -750,7 +750,8 @@ public /*final*/ class XmlBlasterAccess extends AbstractCallbackExtended
       if (!isConnected()) throw new XmlBlasterException(glob, ErrorCode.USER_NOT_CONNECTED, ME);
       MsgQueueEraseEntry entry  = new MsgQueueEraseEntry(glob,
                                       this.clientQueue.getStorageId(), eraseKey, eraseQos);
-      return (EraseReturnQos[])queueMessage(entry);
+      EraseReturnQos[] arr = (EraseReturnQos[])queueMessage(entry);
+      return (arr == null) ? new EraseReturnQos[0] : arr;
    }
 
    /**
