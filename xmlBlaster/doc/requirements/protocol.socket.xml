@@ -34,7 +34,7 @@
    <p>
    Description:
    </p>
-   <table>
+   <table width="100%">
       <tr>
          <td>Field</td>
          <td>Description</td>
@@ -50,7 +50,7 @@
          <td>The flag defaults to zero (all bits are '\0', only version is set to one), possible settings of each byte are:
             <ol>
                <li>'A' Adler32 checksum is appended (see java.util.zip)</li>
-               <li>'Z' The userData is compressed with gzipped</li>
+               <li>'Z' The userData is compressed with gzip (see java.uti.zip)</li>
                <li>Type of message<ul><li>'\0' for request</li><li>'R' for return value</li><li>'E' for exception</li></ul></li>
                <li>'\0' Reserved</li>
                <li>'\0' Reserved</li>
@@ -85,7 +85,7 @@
          <td>10</td>
       </tr>
    </table>
-
+   <br />
    <p>
    The userData has the following typical layout.
    </p>
@@ -99,7 +99,7 @@
    Only the content is of type 'binary' which length can be calculated by the
    len field. Binary data is not zero terminated.
    </p>
-   <table>
+   <table width="100%">
       <tr>
          <td>Method</td>
          <td>Arguments</td>
@@ -191,7 +191,7 @@ The response:
 
 The response if an exception occured:
 
-   "        48  E  1        12publish            6QueueOverflow*The destination queue is full*"
+   "        90  E  1        12publish           44QueueOverflow*The destination queue is full*"
 
 The '*' is used as a symbol for a '\0' character (all zero bits) which terminates strings.
 The content of a message, here 'Hello world' is binary data and has no '\0', it is determined by len.
@@ -200,7 +200,7 @@ The content of a message, here 'Hello world' is binary data and has no '\0', it 
    <see type="REQ">protocol</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 02 12</date>
-   <revision>$Revision: 1.1 $</revision>
+   <revision>$Revision: 1.2 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>

@@ -76,7 +76,8 @@
       </li>
       <li>Zero or one callback address<br />
       Every message queue has zero or one callback addresses associated:
-      The SessionQueue and the UnrelatedQueue have exactly one, the SubjectQueue 
+      The SessionQueue and the UnrelatedQueue have exactly one for asynchronous
+      updates or zero when browsed synchronously. The SubjectQueue 
       has one or zero (if not logged in).
       </li>
       <li>Synchronous browsing<br />
@@ -180,7 +181,7 @@
    <see type="REQ">engine.qos.login.callback</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 02 04</date>
-   <revision>$Revision: 1.6 $</revision>
+   <revision>$Revision: 1.7 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
