@@ -1,0 +1,72 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='admin.jmx' type='NEW' prio='MEDIUM' status='INWORK'>
+
+   <topic>XmlBlaster provides an JMX-Interface for monitoring and controlling</topic>
+
+   <description>
+      JMX-support (Java Management Extension for J2EE) has been added to xmlBlaster.<br />
+      On startup a small JMX-Server is started.<p />
+      <b>What is JMX?</b><br />
+      JMX is a new Sun standard that allows Java developers to rapidly management
+      functionality into existing applications.<br />
+      JMX defines a standard for writing JMX objects, also called MBeans.
+      MBeans basically represent the state and the functionality of a managed ressource.
+      It is possible for a JMX client to invoke methods and access attributes on an MBean.
+      A JMX Agent enables manageability of these functionalities from local or remote,
+      allowing a system administrator to manage the components of the application.
+      <br />
+      In order to gain access to ressources from JMX-management,
+      it is neccessary to implement a JMX-compliant interface.
+      These interfaces are charatericed by the postposition "MBean" in the interface name.
+      <br />
+      Taken for example is org.xmlBlaster.engine.RequestBroker. A RequestBrokerMBean Interface has been
+      added. This MBean is loaded at startup.
+      When you point your browser to: http://hostname:8082 you will see the output of
+      a JMX-Http-Adaptor.
+      <p />
+      <b>Custom protocol adaptors</b><br />
+      The JMX framework allows to add protocol adaptors/connectors like the http-adaptor
+      to the framework without disturbing the instrumentation.
+      <br />
+      Such an adaptor is implemented too. It is a xmlBlaster-adaptor.
+      This adaptor is running on port 3424.
+      The adaptor enables the communication with the JMX-Server across the network.
+      Within the "normal" xmlBlaster-Instance another embedded xmlBlasterinstance is started
+      that handles the communication with clients.
+      <p />
+      <b>Administration-client</b>
+      <br />
+      An administration-client that uses this new feature has been added.
+      It can be found at org.xmlBlaster.jmxgui.<br />
+      The Userinterface is pluggable and new plugins, handling other MBeans, can be
+      added to the system.
+      To show the usage, two plugins have already been added.
+
+   </description>
+
+   <todo type="HTML">
+    <ol>
+      <li>Write some TestCase!</li>
+      <li>Strip down embedded XmlBlaster to minimum</li>
+      <li>Write some Plugins</li>
+    </ol>
+   </todo>
+
+   <see type="REQ">admin.commands</see>
+
+
+
+   <author>oliver.neubert@doubleslash.de</author>
+   <date>2003 06 10</date>
+   <revision>$Revision: 1.1 $</revision>
+
+   <testcase status="OPEN">
+      <name></name>
+      <comment>
+      </comment>
+      <test tool="SUITE"></test>
+   </testcase>
+
+</requirement>
