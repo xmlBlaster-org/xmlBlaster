@@ -101,7 +101,7 @@ public class Session implements I_Session, I_Subject {
     * a message under the key >>thisIsAMessageKey<<
     *
     * Known action keys:
-    *    publish, subscribe, get, erase, ... see XmlBlasterImpl.PUBLISH etc.
+    *    publish, subscribe, get, erase, ... see Constants.PUBLISH etc.
     */
    public boolean isAuthorized(String actionKey, String key)
    {

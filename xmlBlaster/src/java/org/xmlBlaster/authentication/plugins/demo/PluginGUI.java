@@ -3,7 +3,7 @@ package org.xmlBlaster.authentication.plugins.demo;
 import java.awt.*;
 import java.awt.event.*;
 import javax.swing.*;
-import org.xmlBlaster.engine.XmlBlasterImpl;
+import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.util.Log;
 
 public class PluginGUI extends JFrame {
@@ -185,23 +185,23 @@ public class PluginGUI extends JFrame {
          outQoS.setEditable(false);
          outContent.setText("");
          outContent.setEditable(false);
-      } else if(key.equals(XmlBlasterImpl.GET)) {
+      } else if(key.equals(Constants.GET)) {
          outKey.setEditable(true);
          outQoS.setEditable(true);
          outContent.setEditable(false);
-      } else if(key.equals(XmlBlasterImpl.ERASE)) {
+      } else if(key.equals(Constants.ERASE)) {
          outKey.setEditable(true);
          outQoS.setEditable(true);
          outContent.setEditable(false);
-      } else if(key.equals(XmlBlasterImpl.PUBLISH)) {
+      } else if(key.equals(Constants.PUBLISH)) {
          outKey.setEditable(true);
          outQoS.setEditable(true);
          outContent.setEditable(true);
-      } else if(key.equals(XmlBlasterImpl.SUBSCRIBE)) {
+      } else if(key.equals(Constants.SUBSCRIBE)) {
          outKey.setEditable(true);
          outQoS.setEditable(true);
          outContent.setEditable(false);
-      } else if(key.equals(XmlBlasterImpl.UNSUBSCRIBE)) {
+      } else if(key.equals(Constants.UNSUBSCRIBE)) {
          outKey.setEditable(true);
          outQoS.setEditable(true);
          outContent.setEditable(false);
