@@ -45,12 +45,18 @@ Example:
 /**
  * Helper for debugging. 
  */
-static void dumpZlib(const char *p, z_stream *zlibP) {
+static void dumpZlib(const char *p, XmlBlasterZlibReadBuffers *zlibReadBufP, XmlBlasterZlibWriteBuffers *zlibWriteBufP) {
+	z_stream *zlibP = (zlibReadBufP!=0) ? &zlibReadBufP->c_stream : &zlibWriteBufP->c_stream;
    printf("[%s:%d] %s\n", __FILE__, __LINE__, p);
    printf("{\n");
-   printf("  zlibP->next_in=%d\n", (int)zlibP->next_in);
-   printf("  zlibP->avail_in=%u\n", zlibP->avail_in);
-   printf("  zlibP->next_out=%d\n", (int)zlibP->next_out);
+	if (zlibReadBufP!=0) {
+	   printf("  compBufferP     =%d\n", (int)zlibReadBufP->compBuffer);
+	   printf("  currCompBufferP =%d\n", (int)zlibReadBufP->currCompBufferP);
+	   printf("  currCompBytes   =%d\n", (int)zlibReadBufP->currCompBytes);
+	}
+   printf("  zlibP->next_in  =%d\n", (int)zlibP->next_in);
+   printf("  zlibP->avail_in =%u\n", zlibP->avail_in);
+   printf("  zlibP->next_out =%d\n", (int)zlibP->next_out);
    printf("  zlibP->avail_out=%u\n", zlibP->avail_out);
    printf("}\n");
 }
@@ -100,13 +106,13 @@ ssize_t xmlBlaster_writenCompressed(XmlBlasterZlibWriteBuffers *zlibWriteBufP, c
       zlibP->next_out = zlibWriteBufP->compBuffer;
       zlibP->avail_out = XMLBLASTER_ZLIB_WRITE_COMPBUFFER_LEN;
 
-      if (zlibWriteBufP->debug) dumpZlib("writen(): Before while", &zlibWriteBufP->c_stream);
+      if (zlibWriteBufP->debug) dumpZlib("writen(): Before while", 0, zlibWriteBufP);
 
       /* Compress and write to socket */
 
       while (zlibP->avail_in > 0 || onceMore) {
          int status = deflate(zlibP, Z_SYNC_FLUSH);
-         if (zlibWriteBufP->debug) dumpZlib("writen(): In while after compress", &zlibWriteBufP->c_stream);
+         if (zlibWriteBufP->debug) dumpZlib("writen(): In while after compress", 0, zlibWriteBufP);
          if (status != Z_OK) {
             fprintf(stderr, "[%s:%d] deflate error during sending of %u bytes: %s\n", __FILE__, __LINE__, nbytes, zError(status));
             return -1;
@@ -121,7 +127,7 @@ ssize_t xmlBlaster_writenCompressed(XmlBlasterZlibWriteBuffers *zlibWriteBufP, c
             zlibP->avail_out = XMLBLASTER_ZLIB_WRITE_COMPBUFFER_LEN;
          }
       }
-      if (zlibWriteBufP->debug) dumpZlib("writen(): After compress", &zlibWriteBufP->c_stream);
+      if (zlibWriteBufP->debug) dumpZlib("writen(): After compress", 0, zlibWriteBufP);
       /*
       if ((XMLBLASTER_ZLIB_WRITE_COMPBUFFER_LEN - zlibP->avail_out) > 0) {
          ret = writen(fd, (char *)zlibWriteBufP->compBuffer, XMLBLASTER_ZLIB_WRITE_COMPBUFFER_LEN-zlibP->avail_out);
@@ -142,7 +148,7 @@ ssize_t xmlBlaster_writenCompressed(XmlBlasterZlibWriteBuffers *zlibWriteBufP, c
 int xmlBlaster_endZlibWriter(XmlBlasterZlibWriteBuffers *zlibWriteBufP) {
    int err;
    if (!zlibWriteBufP) return Z_BUF_ERROR;
-   if (zlibWriteBufP->debug) dumpZlib("writen(): After compress", &zlibWriteBufP->c_stream);
+   if (zlibWriteBufP->debug) dumpZlib("writen(): After compress", 0, zlibWriteBufP);
    err = deflateEnd(&zlibWriteBufP->c_stream);
    if (err != Z_OK) {
       /* TODO: Why does it return "-3 == data error"? Seems to be in BUSY_STATE */
@@ -205,12 +211,12 @@ ssize_t xmlBlaster_readnCompressed(XmlBlasterZlibReadBuffers *zlibReadBufP, int 
       zlibP->next_out = (Bytef*)ptr;
       zlibP->avail_out = nbytes;
 
-      if (zlibReadBufP->debug) dumpZlib("readn(): Before do", &zlibReadBufP->c_stream);
+      if (zlibReadBufP->debug) dumpZlib("readn(): Before do", zlibReadBufP, 0);
 
       /* Read from socket and uncompress */
       do {
          if (zlibP->avail_out == 0) {
-            if (zlibReadBufP->debug) printf("[%s:%d] readCompress() we are done with nbytes=%u\n", __FILE__, __LINE__, nbytes);
+            if (zlibReadBufP->debug) printf("[%s:%d] readCompress() we are done with nbytes=%u currCompBytes=%u\n", __FILE__, __LINE__, nbytes, zlibReadBufP->currCompBytes);
             return nbytes;
          }
 
@@ -227,7 +233,7 @@ ssize_t xmlBlaster_readnCompressed(XmlBlasterZlibReadBuffers *zlibReadBufP, int 
             zlibReadBufP->currCompBytes += nCompRead;
             zlibP->next_in  = zlibReadBufP->currCompBufferP;
             zlibP->avail_in = zlibReadBufP->currCompBytes;
-            if (zlibReadBufP->debug) dumpZlib("readn(): recv() returned", &zlibReadBufP->c_stream);
+            if (zlibReadBufP->debug) dumpZlib("readn(): recv() returned", zlibReadBufP, 0);
          }
 
          while (zlibP->avail_in > 0 && zlibP->avail_out > 0) {
@@ -238,7 +244,7 @@ ssize_t xmlBlaster_readnCompressed(XmlBlasterZlibReadBuffers *zlibReadBufP, int 
             }
             zlibReadBufP->currCompBufferP = zlibP->next_in;
             zlibReadBufP->currCompBytes = zlibP->avail_in;
-            if (zlibReadBufP->debug) dumpZlib("readn(): inflate() returned", &zlibReadBufP->c_stream);
+            if (zlibReadBufP->debug) dumpZlib("readn(): inflate() returned", zlibReadBufP, 0);
             if (zlibP->avail_out == 0) {
                if (zlibReadBufP->debug) printf("[%s:%d] readCompress() we are done with nbytes=%u\n", __FILE__, __LINE__, nbytes);
                return nbytes;
