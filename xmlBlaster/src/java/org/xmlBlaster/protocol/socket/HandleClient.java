@@ -52,7 +52,7 @@ public class HandleClient extends Executor implements Runnable
       this.log = glob.getLog("socket");
       this.driver = driver;
       this.authenticate = driver.getAuthenticate();
-      Thread t = new Thread(this, "XmlBlaster.SOCKET.HandleClient.BlockOnInputStreamForMessageFromClient");
+      Thread t = new Thread(this, "XmlBlaster.SOCKET");
       int threadPrio = driver.getAddressServer().getEnv("threadPrio", Thread.NORM_PRIORITY).getValue();
       try {
          t.setPriority(threadPrio);
@@ -208,7 +208,7 @@ public class HandleClient extends Executor implements Runnable
                   if (MethodName.CONNECT == receiver.getMethodName()) {
                      ConnectQosServer conQos = new ConnectQosServer(driver.getGlobal(), receiver.getQos());
                      setLoginName(conQos.getUserId());
-                     Thread.currentThread().setName("XmlBlaster.SOCKET.HandleClient.BlockOnInputStreamForMessageFromClient-" + conQos.getUserId());
+                     Thread.currentThread().setName("XmlBlaster.SOCKET.HandleClient-" + conQos.getUserId());
                      this.ME = "SOCKET-HandleClientRequest-" + this.loginName;
                      log.info(ME, "SOCKET client connected, coming from host=" + sock.getInetAddress().toString() + " port=" + sock.getPort());
 
