@@ -11,13 +11,14 @@ import org.xmlBlaster.util.Log;
 
 import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.authentication.SubjectInfo;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.engine.xml2java.PublishQos;
 import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.engine.helper.SubscribeFilterQos;
+import org.xmlBlaster.engine.helper.AccessFilterQos;
 import org.xmlBlaster.engine.queue.MsgQueueEntry;
-import org.xmlBlaster.engine.mime.I_SubscribeFilter;
+import org.xmlBlaster.engine.mime.I_AccessFilter;
 
 import java.util.*;
 
@@ -61,8 +62,6 @@ public class MessageUnitHandler
    private String uniqueKey;
 
    private boolean handlerIsNewCreated=true;  // a little helper for RequestBroker, showing if MessageUnit is new created
-
-   //private I_SubscribeFilter subscribeFilter = null;
 
 
    /**
@@ -395,13 +394,15 @@ public class MessageUnitHandler
          return true;
       }
 
-      SubscribeFilterQos[] filterQos = sub.getFilterQos();
+      AccessFilterQos[] filterQos = sub.getFilterQos();
       if (filterQos != null) {
+         SubjectInfo publisher = (publisherSessionInfo == null) ? null : publisherSessionInfo.getSubjectInfo();
+         SubjectInfo destination = (sub.getSessionInfo() == null) ? null : sub.getSessionInfo().getSubjectInfo();
          for (int ii=0; ii<filterQos.length; ii++) {
             XmlKey key = sub.getMessageUnitHandler().getXmlKey(); // This key is DOM parsed
-            I_SubscribeFilter filter = requestBroker.getSubcribeFilter(filterQos[ii].getType(), filterQos[ii].getVersion(), 
+            I_AccessFilter filter = requestBroker.getSubcribeFilter(filterQos[ii].getType(), filterQos[ii].getVersion(), 
                                          xmlKey.getContentMime(), xmlKey.getContentMimeExtended());
-            if (filter != null && filter.match(/*publisherSessionInfo,*/ msgUnitWrapper, filterQos[ii].getQuery()) == false)
+            if (filter != null && filter.match(publisher, destination, msgUnitWrapper, filterQos[ii].getQuery()) == false)
                return true; // filtered message is not send to client
          }
       }

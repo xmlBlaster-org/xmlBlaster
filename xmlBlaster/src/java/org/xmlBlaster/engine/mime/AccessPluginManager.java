@@ -1,9 +1,9 @@
 /*------------------------------------------------------------------------------
-Name:      SubscribePluginManager.java
+Name:      AccessPluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for persistence
-Version:   $Id: SubscribePluginManager.java,v 1.3 2002/03/15 13:04:33 ruff Exp $
+Version:   $Id: AccessPluginManager.java,v 1.1 2002/03/28 10:00:47 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime;
@@ -14,24 +14,24 @@ import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterException;
 
 /**
- * Loads subscribe filter plugin depending on message MIME type. 
+ * Loads subscribe()/get() filter plugin depending on message MIME type. 
  * Please register your plugins in xmlBlaster.properties, for example:
  * <pre>
- * MimeSubscribePlugin[text/xml][1.0]=com.mycompany.MyFilter
+ * MimeAccessPlugin[text/xml][1.0]=com.mycompany.MyFilter
  * </pre>
  */
-public class SubscribePluginManager extends PluginManagerBase {
+public class AccessPluginManager extends PluginManagerBase {
 
-   private static final String ME = "SubscribePluginManager";
+   private static final String ME = "AccessPluginManager";
    private static final String defaultPluginName = null; // "org.xmlBlaster.engine.mime.demo.DemoFilter
-   public static final String pluginPropertyName = "MimeSubscribePlugin";
+   public static final String pluginPropertyName = "MimeAccessPlugin";
 
-   private static SubscribePluginManager me = null;
+   private static AccessPluginManager me = null;
 
    /** To protect the singleton */
    private static final java.lang.Object SYNCHRONIZER = new java.lang.Object();
 
-   public SubscribePluginManager() throws XmlBlasterException
+   public AccessPluginManager() throws XmlBlasterException
    {
       // No default plugin to initialize
    }
@@ -39,13 +39,13 @@ public class SubscribePluginManager extends PluginManagerBase {
    /**
     * Return an instance of this singleton. 
     *
-    * @return SubscribePluginManager
+    * @return AccessPluginManager
     */
-   public static SubscribePluginManager getInstance() throws XmlBlasterException {
+   public static AccessPluginManager getInstance() throws XmlBlasterException {
       if (me == null) { // avoid 'expensive' synchronized
          synchronized (SYNCHRONIZER) {
             if (me == null)
-               me = new SubscribePluginManager();
+               me = new AccessPluginManager();
          }
       }
       return me;
@@ -56,17 +56,17 @@ public class SubscribePluginManager extends PluginManagerBase {
     * <p/>
     * @param String The type of the requested plugin.
     * @param String The version of the requested plugin.
-    * @return The SubscribeFilter for this type and version or null if none is specified
+    * @return The AccessFilter for this type and version or null if none is specified
     */
-   public I_SubscribeFilter getPlugin(String type, String version) throws XmlBlasterException {
+   public I_AccessFilter getPlugin(String type, String version) throws XmlBlasterException {
       if (Log.CALL) Log.call(ME+".getPlugin()", "Loading peristence plugin type[" + type + "] version[" + version +"]");
-      I_SubscribeFilter filterPlugin = null;
+      I_AccessFilter filterPlugin = null;
       String[] pluginNameAndParam = null;
 
       pluginNameAndParam = choosePlugin(type, version);
 
       if(pluginNameAndParam!=null && pluginNameAndParam[0]!=null && pluginNameAndParam[0].length()>1) {
-         filterPlugin = (I_SubscribeFilter)managers.get(pluginNameAndParam[0]);
+         filterPlugin = (I_AccessFilter)managers.get(pluginNameAndParam[0]);
          if (filterPlugin!=null) return filterPlugin;
          filterPlugin = loadPlugin(pluginNameAndParam);
       }
@@ -78,8 +78,8 @@ public class SubscribePluginManager extends PluginManagerBase {
    }
 
    /**
-   * @return The name of the property in xmlBlaster.property "MimeSubscribePlugin"
-   * for "MimeSubscribePlugin[demo][1.0]"
+   * @return The name of the property in xmlBlaster.property "MimeAccessPlugin"
+   * for "MimeAccessPlugin[demo][1.0]"
    */
    protected String getPluginPropertyName() {
       return pluginPropertyName;
@@ -117,11 +117,11 @@ public class SubscribePluginManager extends PluginManagerBase {
     * @param String[] The first element of this array contains the class name
     *                 e.g. org.xmlBlaster.engine.mime.demo.DemoFilter<br />
     *                 Following elements are arguments for the plugin. (Like in c/c++ the command-line arguments.)
-    * @return I_SubscribeFilter
+    * @return I_AccessFilter
     * @exception XmlBlasterException Thrown if loading or initializing failed.
     */
-   protected I_SubscribeFilter loadPlugin(String[] pluginNameAndParam) throws XmlBlasterException
+   protected I_AccessFilter loadPlugin(String[] pluginNameAndParam) throws XmlBlasterException
    {
-      return (I_SubscribeFilter)super.instantiatePlugin(pluginNameAndParam);
+      return (I_AccessFilter)super.instantiatePlugin(pluginNameAndParam);
    }
 }

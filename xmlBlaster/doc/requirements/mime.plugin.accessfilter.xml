@@ -1,8 +1,8 @@
 <?xml version='1.0' encoding='ISO-8859-1' ?>
 <!DOCTYPE requirement SYSTEM "requirement.dtd">
 
-<requirement id='mime.plugin.subscribe' type='NEW' prio='HIGH' status='CLOSED'>
-   <topic>XmlBlaster has a MIME based plugin interface to filter subscriptions</topic>
+<requirement id='mime.plugin.accessfilter' type='NEW' prio='HIGH' status='CLOSED'>
+   <topic>XmlBlaster has a MIME based plugin interface to filter message access</topic>
    <description>
       <p>
       XmlBlaster allows you to query messages based on their meta information with XPath.
@@ -32,9 +32,9 @@
       As a plugin coder, you have to implement two interfaces
       <ul>
          <li>I_Plugin: Which allows xmlBlaster to load the plugin</li>
-         <li>I_SubscribeFilter: Which forces you to implement the match() method</li>
+         <li>I_AccessFilter: Which forces you to implement the match() method</li>
       </ul>
-      This is simple and straight forward (see requirement mime.plugin.subscribe.howto).
+      This is simple and straight forward (see requirement mime.plugin.accessfilter.howto).
       </p>
       <p>
       Filter Features:
@@ -45,8 +45,22 @@
       mime type are directed to the plugin. The mime type "*" registers the plugin for
       all message MIME types.
       </li>
+      <li>Filter supports synchronous access with get() and asynchronous access with subscribe()<br />
+      You can specify the filter rules with two xmlBlaster methods:
+      <ol>
+         <li>Synchronous access with the get() invocation:<br />
+            Specify the filter rule in the QoS of the get() method to filter
+            the desired messages. The messages are returned as the get() return value.
+         </li>
+         <li>Asynchronous access with the subscribe() invocation<br />
+            Specify the filter rule in the QoS of the subscribe() method to filter
+            the desired messages. The messages are returned with the asynchronous
+            update() callback.
+         </li>
+      </ol>
+      </li>
       <li>Multiple filters per subscription<br />
-      Multiple filters can be specified in one subscribe invocation.
+      Multiple filters can be specified in one subscribe/get invocation.
       Each of them may address another plugin. The are sequentially executed and if
       one filter denies access (the match() method returns 'false') the message
       is not delivered. The filters are logically AND connected.
@@ -55,7 +69,7 @@
       On subscribe first the usual XPATH or exact subscription is checked.
       The client is added as subscriber to all matching message types.
       If now real messages arrive, the filter plugin is additionally filtering
-      messages away.
+      messages away. The same applies for get() invocations.
       </li>
       <li>The plugin can analyze the complete message<br />
       The plugin has access to the complete message, key, content and QoS.
@@ -100,21 +114,21 @@ have a content shorter then 8 kBytes.
    <configuration where="server">
       <p>
       For coding and configuration of plugins please read the
-      requirement mime.plugin.subscribe.howto (see link below)
+      requirement mime.plugin.a.howto (see link below)
       </p>
    </configuration>
-   <see type="API">org.xmlBlaster.engine.mime.I_SubscribeFilter</see>
+   <see type="API">org.xmlBlaster.engine.mime.I_AccessFilter</see>
    <see type="API">org.xmlBlaster.engine.mime.demo.ContentLenFilter</see>
    <see type="API">org.xmlBlaster.util.I_Plugin</see>
-   <see type="REQ">mime.plugin.subscribe.howto</see>
+   <see type="REQ">mime.plugin.accessfilter.howto</see>
    <see type="REQ">util.property.env</see>
    <author>ruff@swand.lake.de</author>
    <date>2002 03 14</date>
-   <revision>$Revision: 1.3 $</revision>
+   <revision>$Revision: 1.1 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
-      <test tool="SUITE">testsuite.org.xmlBlaster.TestSubscribeFilter</test>
+      <test tool="SUITE">testsuite.org.xmlBlaster.TestAccessFilter</test>
    </testcase>
 </requirement>
 

@@ -1,14 +1,15 @@
 /*------------------------------------------------------------------------------
-Name:      I_SubscribeFilter.java
+Name:      I_AccessFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface hiding the real callback protocol
-Version:   $Id: I_SubscribeFilter.java,v 1.5 2002/03/16 09:10:14 ruff Exp $
+Version:   $Id: I_AccessFilter.java,v 1.1 2002/03/28 10:00:47 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime;
 
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.authentication.SubjectInfo;
 import org.xmlBlaster.engine.MessageUnitWrapper;
 import org.xmlBlaster.engine.Global;
 
@@ -16,7 +17,7 @@ import org.xmlBlaster.engine.Global;
 /**
  * This interface hides the real protocol used to check messages. 
  * <p />
- * The interface may be used to filter subscribed messages.
+ * The interface may be used to filter messages on subscribe() or get() access.
  * Only messages where the match() method returns true
  * are sent via update() to the client
  * <p />
@@ -36,14 +37,14 @@ import org.xmlBlaster.engine.Global;
  *    </li>
  *    <li>Register the plugin.<br />
  *        Register the plugin in xmlBlaster.properties file, for example<br />
- *        MimeSubscribePlugin[ContentLenFilter][1.0]=org.xmlBlaster.engine.mime.demo.ContentLenFilter,DEFAULT_MAX_LEN=80000,VERBOSE=false
+ *        MimeAccessPlugin[ContentLenFilter][1.0]=org.xmlBlaster.engine.mime.demo.ContentLenFilter,DEFAULT_MAX_LEN=80000,VERBOSE=false
  *    </li>
  * </ul>
  *
- * @version $Revision: 1.5 $
+ * @version $Revision: 1.1 $
  * @author ruff@swand.lake.de
  */
-public interface I_SubscribeFilter
+public interface I_AccessFilter
 {
    /**
     * This is called after instantiation of the plugin 
@@ -73,12 +74,14 @@ public interface I_SubscribeFilter
     * <p />
     * You may manipulate the content of the message, but not the key and qos or other attributes
     * of the MessageUnitWrapper object.
-    * @return true If the filter matches this message, else false
+    * @param publisher The subject object describing the publisher
+    * @param receiver The subject object describing the receiver
     * @param msgUnitWrapper  The message to check (access the raw message with msgUnitWrapper.getMessageUnit())
-    * @param query   The query string containing the filter rule on subscribe usually
+    * @param query   The query string containing the filter rule on subscribe/get usually
     *                the client defines his own rule which is passed here.<br />
-    *                null: If for a subscribe() no rule is given, your plugin
+    *                null: If for a subscribe() or get() no rule is given, your plugin
     *                      needs to have its own general rule or react how it likes.
+    * @return true If the filter matches this message, else false
     * @exception XmlBlasterException Is thrown on problems, for example if the MIME type
     *            does not fit to message content.<br />
     *            Take care throwing an exception, as the
@@ -87,6 +90,6 @@ public interface I_SubscribeFilter
     *            For the publisher it looks as if the publish failed completely. Probably it is
     *            best to return 'false' instead and log the situation.
     */
-   public boolean match(MessageUnitWrapper msgUnitWrapper, String query) throws XmlBlasterException;
+   public boolean match(SubjectInfo publisher, SubjectInfo receiver, MessageUnitWrapper msgUnitWrapper, String query) throws XmlBlasterException;
 }
 

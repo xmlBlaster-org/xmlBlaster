@@ -3,14 +3,14 @@ Name:      SubscribeQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: SubscribeQoS.java,v 1.9 2002/03/15 13:06:27 ruff Exp $
+Version:   $Id: SubscribeQoS.java,v 1.10 2002/03/28 10:00:48 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.helper.SubscribeFilterQos;
+import org.xmlBlaster.engine.helper.AccessFilterQos;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.QueueProperty;
 import org.xmlBlaster.engine.helper.Constants;
@@ -37,9 +37,9 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
    /** <local>false</local>  Inhibit the delivery of messages to myself if i have published it */
    private boolean local = true;
 
-   private transient SubscribeFilterQos tmpFilter = null;
+   private transient AccessFilterQos tmpFilter = null;
    protected Vector filterVec = null;                         // To collect the filter when sax parsing
-   protected transient SubscribeFilterQos[] filterArr = null; // To cache the filters in an array
+   protected transient AccessFilterQos[] filterArr = null; // To cache the filters in an array
    private transient boolean inFilter = false;
 
    private transient QueueProperty tmpProp = null;
@@ -62,12 +62,12 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
    /**
     * Return the subscribe filters or null if none is specified. 
     */
-   public final SubscribeFilterQos[] getFilterQos()
+   public final AccessFilterQos[] getFilterQos()
    {
       if (filterArr != null || filterVec == null || filterVec.size() < 1)
          return filterArr;
 
-      filterArr = new SubscribeFilterQos[filterVec.size()];
+      filterArr = new AccessFilterQos[filterVec.size()];
       filterVec.toArray(filterArr);
       return filterArr;
    }
@@ -176,8 +176,8 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
       }
 
       if (name.equalsIgnoreCase("filter")) {
-         inQueue = true;
-         tmpFilter = new SubscribeFilterQos();
+         inFilter = true;
+         tmpFilter = new AccessFilterQos();
          boolean ok = tmpFilter.startElement(uri, localName, name, character, attrs);
          if (ok) {
             if (filterVec == null) filterVec = new Vector();
@@ -265,12 +265,12 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
     */
    public final String toXml(String extraOffset)
    {
-      StringBuffer sb = new StringBuffer();
+      StringBuffer sb = new StringBuffer(512);
       String offset = "\n   ";
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
 
-      sb.append(offset).append("<" + ME + ">");
+      sb.append(offset).append("<").append(ME).append(">");
       if (!meta)
          sb.append(offset).append("   <meta>false</meta>");
       if (!content)
@@ -278,7 +278,7 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
       if (!local)
          sb.append(offset).append("   <local>false</local>");
 
-      SubscribeFilterQos[] filterArr = getFilterQos();
+      AccessFilterQos[] filterArr = getFilterQos();
       for (int ii=0; filterArr != null && ii<filterArr.length; ii++)
          sb.append(filterArr[ii].toXml(extraOffset+"   "));
 
@@ -286,7 +286,7 @@ public class SubscribeQoS extends org.xmlBlaster.util.XmlQoSBase
          QueueProperty ad = (QueueProperty)queuePropertyVec.elementAt(ii);
          sb.append(ad.toXml(extraOffset+"   "));
       }
-      sb.append(offset + "</" + ME + ">\n");
+      sb.append(offset).append("</").append(ME).append(">");
 
       return sb.toString();
    }

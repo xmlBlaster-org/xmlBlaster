@@ -1,9 +1,9 @@
 /*------------------------------------------------------------------------------
-Name:      SubscribeFilterQos.java
+Name:      AccessFilterQos.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding filter address string and protocol string
-Version:   $Id: SubscribeFilterQos.java,v 1.2 2002/03/15 13:05:49 ruff Exp $
+Version:   $Id: AccessFilterQos.java,v 1.1 2002/03/28 10:00:47 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -22,12 +22,12 @@ import org.xml.sax.Attributes;
  * </pre>
  * This example addresses the plugin in xmlBlaster.properties file
  * <pre>
- *   MimeSubscribePlugin[ContentLenFilter][1.0]=org.xmlBlaster.engine.mime.demo.ContentLenFilter
+ *   MimeAccessPlugin[ContentLenFilter][1.0]=org.xmlBlaster.engine.mime.demo.ContentLenFilter
  * </pre>
  */
-public class SubscribeFilterQos
+public class AccessFilterQos
 {
-   private static final String ME = "SubscribeFilterQos";
+   private static final String ME = "AccessFilterQos";
 
    /** The filter rule */
    private String query;
@@ -37,11 +37,11 @@ public class SubscribeFilterQos
    
    /** The version of the plugin */
    public static final String DEFAULT_version = "1.0";
-   private String version = XmlBlasterProperty.get("subscribeFilter.version", DEFAULT_version);
+   private String version = XmlBlasterProperty.get("accessFilter.version", DEFAULT_version);
 
    /**
     */
-   public SubscribeFilterQos()
+   public AccessFilterQos()
    {
    }
 
@@ -50,7 +50,7 @@ public class SubscribeFilterQos
     * @param version The plugin version
     * @param query   Your filter rule
     */
-   public SubscribeFilterQos(String type, String version, String query)
+   public AccessFilterQos(String type, String version, String query)
    {
       setType(type);
       setVersion(version);

@@ -12,7 +12,7 @@ import org.xmlBlaster.engine.xml2java.SubscribeQoS;
 import org.xmlBlaster.engine.xml2java.UnSubscribeQoS;
 import org.xmlBlaster.engine.queue.MsgQueue;
 import org.xmlBlaster.engine.helper.Constants;
-import org.xmlBlaster.engine.helper.SubscribeFilterQos;
+import org.xmlBlaster.engine.helper.AccessFilterQos;
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlKeyBase;
 import org.xmlBlaster.util.XmlQoSBase;
@@ -43,9 +43,9 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
    /** reference to 'Quality of Service' base class */
    private XmlQoSBase xmlQoSBase = null;
    /** reference to 'Quality of Service' of subscription */
-   private SubscribeQoS subscribeQoS = null;
+   private SubscribeQoS subscribeQos = null;
    /** reference to 'Quality of Service' of unsubscription */
-   private UnSubscribeQoS unSubscribeQoS = null;
+   private UnSubscribeQoS unSubscribeQos = null;
    /** The unique key of a subscription, which is a function of f(msgQueue,xmlKey,xmlQoS). <br />
        This is the returned id of a subscribe() invocation */
    private String uniqueKey=null;
@@ -96,9 +96,9 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
 
       // very bad hack, needs redesign (SubscribeQoS or UnSubscribeQoS are handled here)
       if (qos instanceof SubscribeQoS) {
-         this.subscribeQoS = (SubscribeQoS)qos;
+         this.subscribeQos = (SubscribeQoS)qos;
 
-         SubscribeFilterQos[] filterQos = this.subscribeQoS.getFilterQos();
+         AccessFilterQos[] filterQos = this.subscribeQos.getFilterQos();
          if (filterQos != null) {
             for (int ii=0; ii<filterQos.length; ii++) {
                this.glob.getRequestBroker().addSubcribeFilterPlugin(filterQos[ii].getType(), filterQos[ii].getVersion());
@@ -106,7 +106,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
          }
       }
       else
-         this.unSubscribeQoS = (UnSubscribeQoS)qos;
+         this.unSubscribeQos = (UnSubscribeQoS)qos;
 
       if (Log.CALL) Log.trace(ME, "Created SubscriptionInfo " + xmlKey.getUniqueKey());
    }
@@ -141,9 +141,9 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
       if (Log.TRACE) Log.trace(ME, "finalize - garbage collect " + uniqueKey);
    }
 
-   public final SubscribeFilterQos[] getFilterQos()
+   public final AccessFilterQos[] getFilterQos()
    {
-      return subscribeQoS.getFilterQos();
+      return subscribeQos.getFilterQos();
    }
 
    /**
@@ -155,8 +155,8 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
       // msgQueue = null; not my business
       xmlKey = null;
       xmlQoSBase = null;
-      subscribeQoS = null;
-      unSubscribeQoS = null;
+      subscribeQos = null;
+      unSubscribeQos = null;
       uniqueKey = null;
    }
 
@@ -271,7 +271,7 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
     */
    public final SubscribeQoS getSubscribeQoS()
    {
-      return subscribeQoS;
+      return subscribeQos;
    }
 
    /**
@@ -354,12 +354,12 @@ public class SubscriptionInfo /* implements Comparable see SORT_PROBLEM */
       sb.append(offset + "<SubscriptionInfo id='" + getUniqueKey() + "'>");
       sb.append(offset + "   <msgQueue id='" + (msgQueue==null ? "null" : msgQueue.getName()) + "'/>");
       sb.append(offset + "   <xmlKey oid='" + (xmlKey==null ? "null" : xmlKey.getUniqueKey()) + "'/>");
-      if (subscribeQoS != null)
-         sb.append(subscribeQoS.toXml(extraOffset + "   ").toString());
+      if (subscribeQos != null)
+         sb.append(subscribeQos.toXml(extraOffset + "   ").toString());
       else
          sb.append(offset + "   <SubscribeQos></SubscribeQos>");
-      if (unSubscribeQoS != null)
-         sb.append(unSubscribeQoS.printOn(extraOffset + "   ").toString());
+      if (unSubscribeQos != null)
+         sb.append(unSubscribeQos.printOn(extraOffset + "   ").toString());
       else
          sb.append(offset + "   <UnSubscribeQos></UnSubscribeQos>");
       sb.append(offset + "   <msgUnitHandler id='" + (myHandler==null ? "null" : myHandler.getUniqueKey()) + "'/>");

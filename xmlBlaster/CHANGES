@@ -13,6 +13,11 @@ TODO:
 * Test: Perl client ...
 * Security demo with Bit Cypher: http://www.alphaworks.ibm.com/tech/abc?open
 
+DONE:
+  - Renamed SubscribeFilter to AccessFilter
+    Renamed SubscribePluginManager to AccessPluginManager
+    Added filter support to get() QoS
+
 
 Changes for 0.79e [Mar, 27 2002]
 ================================

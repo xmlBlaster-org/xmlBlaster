@@ -3,7 +3,7 @@ Name:      ContentLenFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface hiding the real callback protocol
-Version:   $Id: ContentLenFilter.java,v 1.5 2002/03/16 09:10:14 ruff Exp $
+Version:   $Id: ContentLenFilter.java,v 1.6 2002/03/28 10:00:47 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime.demo;
@@ -12,9 +12,10 @@ import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.I_Plugin;
 import org.xmlBlaster.util.XmlKeyBase;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.authentication.SubjectInfo;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.MessageUnitWrapper;
-import org.xmlBlaster.engine.mime.I_SubscribeFilter;
+import org.xmlBlaster.engine.mime.I_AccessFilter;
 import org.xmlBlaster.engine.Global;
 
 
@@ -22,24 +23,25 @@ import org.xmlBlaster.engine.Global;
  * This demo plugin filters away all messages having a content longer than the given filter length. 
  * <p />
  * Message which are longer then the max length are used to filter subscribed messages,
- * they are not send via updated() to the subscriber.
+ * they are not send via updated() to the subscriber. The same filter may be used
+ * for the synchronous get() access.
  * <p />
  * Please register this plugin in xmlBlaster.properties:
  * <pre>
- * MimeSubscribePlugin[ContentLenFilter][1.0]=org.xmlBlaster.engine.mime.demo.ContentLenFilter
+ * MimeAccessPlugin[ContentLenFilter][1.0]=org.xmlBlaster.engine.mime.demo.ContentLenFilter
  * </pre>
  * Plugins must implement the I_Plugin interface to be loadable by the PluginManager
- * and must implement the I_SubscribeFilter interface to be usable as a filter.
+ * and must implement the I_AccessFilter interface to be usable as a filter.
  * @author ruff@swand.lake.de
  */
-public class ContentLenFilter implements I_Plugin, I_SubscribeFilter
+public class ContentLenFilter implements I_Plugin, I_AccessFilter
 {
    private final String ME = "ContentLenFilter";
    private Global glob;
    private Log log;
    /** Limits max message size to 1 MB as a default */
    private long DEFAULT_MAX_LEN = 1000000;
-   /** For testsuite TestSubscribe.java only to force an XmlBlasterException */
+   /** For testsuite TestAccess.java only to force an XmlBlasterException */
    private int THROW_EXCEPTION_FOR_LEN = -1;
 
    /**
@@ -55,7 +57,7 @@ public class ContentLenFilter implements I_Plugin, I_SubscribeFilter
    /**
     * This method is called by the PluginManager.
     * <pre>
-    *   MimeSubscribePlugin[ContentLenFilter][1.0]=org.xmlBlaster.engine.mime.demo.ContentLenFilter,DEFAULT_MAX_LEN=200
+    *   MimeAccessPlugin[ContentLenFilter][1.0]=org.xmlBlaster.engine.mime.demo.ContentLenFilter,DEFAULT_MAX_LEN=200
     * </pre>
     * <p/>
     * @param String[] Some arguments from xmlBlaster.properties.
@@ -121,8 +123,10 @@ public class ContentLenFilter implements I_Plugin, I_SubscribeFilter
 
    /**
     * Check if the filter rule matches for this message. 
+    * @param publisher The subject object describing the publisher
+    * @param receiver The subject object describing the receiver
     * @param msgUnit The message to check
-    * @param query   The max. message length as given by the subscriber.<br />
+    * @param query   The max. message length as given by the subscriber/getter.<br />
     *                If null we use 1 MByte as max size
     * @return true   If message is not too long
     * @exception XmlBlasterException Is thrown on problems, for example if the MIME type
@@ -133,7 +137,7 @@ public class ContentLenFilter implements I_Plugin, I_SubscribeFilter
     *            For the publisher it looks as if the publish failed completely. Probably it is
     *            best to return 'false' instead and log the situation.
     */
-   public boolean match(MessageUnitWrapper msgUnitWrapper, String query) throws XmlBlasterException {
+   public boolean match(SubjectInfo publisher, SubjectInfo receiver, MessageUnitWrapper msgUnitWrapper, String query) throws XmlBlasterException {
       if (msgUnitWrapper == null) {
          Thread.currentThread().dumpStack();
          throw new XmlBlasterException(ME, "Illegal argument in match() call");
@@ -144,7 +148,7 @@ public class ContentLenFilter implements I_Plugin, I_SubscribeFilter
       try {
          long maxLen;
 
-         if (query != null) { // Subscriber has given own max length
+         if (query != null) { // Subscriber/getter has given own max length
             maxLen = new Long(query.trim()).longValue();
          }
          else                 // Use default max length

@@ -21,8 +21,8 @@ import org.xmlBlaster.engine.helper.Constants;
 import org.xmlBlaster.engine.helper.QueueProperty;
 import org.xmlBlaster.engine.queue.MsgQueue;
 import org.xmlBlaster.engine.queue.MsgQueueEntry;
-import org.xmlBlaster.engine.mime.I_SubscribeFilter;
-import org.xmlBlaster.engine.mime.SubscribePluginManager;
+import org.xmlBlaster.engine.mime.I_AccessFilter;
+import org.xmlBlaster.engine.mime.AccessPluginManager;
 import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.authentication.I_ClientListener;
 import org.xmlBlaster.authentication.ClientEvent;
@@ -117,7 +117,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
 
    private Timeout burstModeTimer;
 
-   private SubscribePluginManager subscribePluginManager = null;
+   private AccessPluginManager accessPluginManager = null;
    private final Map subscribeFilterMap = Collections.synchronizedMap(new HashMap());
 
 
@@ -168,24 +168,24 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
    /**
     * Get filter object from cache. 
     */
-   final I_SubscribeFilter getSubcribeFilter(String type, String version, String mime, String mimeExtended)
+   final I_AccessFilter getSubcribeFilter(String type, String version, String mime, String mimeExtended)
    {
       try {
          StringBuffer key = new StringBuffer(80);
          key.append(type).append(version).append(mime).append(mimeExtended);
          Object obj = subscribeFilterMap.get(key.toString());
          if (obj != null)
-            return (I_SubscribeFilter)obj;
+            return (I_AccessFilter)obj;
 
          // Check if the plugin is for all mime types
          key.setLength(0);
          key.append(type).append(version).append("*");
-         return (I_SubscribeFilter)subscribeFilterMap.get(key.toString());
+         return (I_AccessFilter)subscribeFilterMap.get(key.toString());
 
       } catch (Exception e) {
          Log.error(ME, "Problems accessing subcribe filter [" + type + "][" + version +"] mime=" + mime + " mimeExtended=" + mimeExtended + ": " + e.toString());
          e.printStackTrace();
-         return (I_SubscribeFilter)null;
+         return (I_AccessFilter)null;
       }
    }
 
@@ -203,10 +203,10 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
       }
 
       try {
-         subscribePluginManager = SubscribePluginManager.getInstance();
-         I_SubscribeFilter filter = subscribePluginManager.getPlugin(type, version);
+         accessPluginManager = AccessPluginManager.getInstance();
+         I_AccessFilter filter = accessPluginManager.getPlugin(type, version);
          if (filter == null) {
-            Log.error(ME, "Problems accessing plugin " + SubscribePluginManager.pluginPropertyName + "[" + type + "][" + version +"] please check your configuration");
+            Log.error(ME, "Problems accessing plugin " + AccessPluginManager.pluginPropertyName + "[" + type + "][" + version +"] please check your configuration");
             return;
          }
 
@@ -231,7 +231,7 @@ public final class RequestBroker implements I_ClientListener, MessageEraseListen
             key.setLength(0);
          }
       } catch (Throwable e) {
-         Log.error(ME, "Problems accessing subcribe plugin manager, can't instantiate " + SubscribePluginManager.pluginPropertyName + "[" + type + "][" + version +"]: " + e.toString());
+         Log.error(ME, "Problems accessing subcribe plugin manager, can't instantiate " + AccessPluginManager.pluginPropertyName + "[" + type + "][" + version +"]: " + e.toString());
          e.printStackTrace();
       }
    }

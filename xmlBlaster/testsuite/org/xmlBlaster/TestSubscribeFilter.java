@@ -3,7 +3,7 @@ Name:      TestSubscribeFilter.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestSubscribeFilter.java,v 1.4 2002/03/18 00:31:23 ruff Exp $
+Version:   $Id: TestSubscribeFilter.java,v 1.5 2002/03/28 10:00:48 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -22,7 +22,7 @@ import org.xmlBlaster.client.UpdateQoS;
 import org.xmlBlaster.client.SubscribeQosWrapper;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.engine.helper.MessageUnit;
-import org.xmlBlaster.engine.helper.SubscribeFilterQos;
+import org.xmlBlaster.engine.helper.AccessFilterQos;
 import org.xmlBlaster.util.ServerThread;
 
 import test.framework.*;
@@ -85,10 +85,10 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
       args[5] = "" + (serverPort-2);
       args[6] = "-xmlrpc.port";
       args[7] = "" + (serverPort-3);
-      args[8] = "-MimeSubscribePlugin[ContentLenFilter][1.0]";
+      args[8] = "-MimeAccessPlugin[ContentLenFilter][1.0]";
       args[9] = "org.xmlBlaster.engine.mime.demo.ContentLenFilter,DEFAULT_MAX_LEN=200,THROW_EXCEPTION_FOR_LEN=3";
       serverThread = ServerThread.startXmlBlaster(args);
-      try { Thread.currentThread().sleep(2000L); } catch( InterruptedException i) {}
+      try { Thread.currentThread().sleep(4000L); } catch( InterruptedException i) {}
       Log.info(ME, "XmlBlaster is ready for testing subscribe MIME filter");
 
       try {
@@ -105,7 +105,7 @@ public class TestSubscribeFilter extends TestCase implements I_Callback
       // Subscribe to a message with a supplied filter
       try {
          SubscribeQosWrapper qos = new SubscribeQosWrapper();
-         qos.addSubscribeFilter(new SubscribeFilterQos("ContentLenFilter", "1.0", ""+filterMessageContentBiggerAs));
+         qos.addAccessFilter(new AccessFilterQos("ContentLenFilter", "1.0", ""+filterMessageContentBiggerAs));
 
          String subscribeOid = con.subscribe("<key oid='MSG'/>", qos.toXml());
          Log.info(ME, "Success: Subscribe subscription-id=" + subscribeOid + " done");

@@ -3,13 +3,13 @@ Name:      SubscribeQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: SubscribeQosWrapper.java,v 1.8 2002/03/15 13:10:16 ruff Exp $
+Version:   $Id: SubscribeQosWrapper.java,v 1.9 2002/03/28 10:00:47 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
-import org.xmlBlaster.engine.helper.SubscribeFilterQos;
+import org.xmlBlaster.engine.helper.AccessFilterQos;
 import java.util.Vector;
 
 
@@ -83,7 +83,7 @@ public class SubscribeQosWrapper extends QosWrapper
    /**
     * Adds your subplied subscribe filter
     */
-   public void addSubscribeFilter(SubscribeFilterQos filter)
+   public void addAccessFilter(AccessFilterQos filter)
    {
       if (filterVec == null) filterVec = new Vector();
       this.filterVec.addElement(filter);
@@ -112,7 +112,7 @@ public class SubscribeQosWrapper extends QosWrapper
       if (!local) sb.append("\n   <local>false</local>");
       if (filterVec != null && filterVec.size() > 0) {
          for (int ii=0; ii<filterVec.size(); ii++) {
-            SubscribeFilterQos filter = (SubscribeFilterQos)filterVec.elementAt(ii);
+            AccessFilterQos filter = (AccessFilterQos)filterVec.elementAt(ii);
             sb.append(filter.toXml());
          }
       }
@@ -126,8 +126,8 @@ public class SubscribeQosWrapper extends QosWrapper
       try {
          SubscribeQosWrapper qos = new SubscribeQosWrapper();
          qos.setContent(false);
-         qos.addSubscribeFilter(new SubscribeFilterQos("ContentLenFilter", "1.0", "800"));
-         qos.addSubscribeFilter(new SubscribeFilterQos("ContentLenFilter", "3.2", "a<10"));
+         qos.addAccessFilter(new AccessFilterQos("ContentLenFilter", "1.0", "800"));
+         qos.addAccessFilter(new AccessFilterQos("ContentLenFilter", "3.2", "a<10"));
          System.out.println(qos.toXml());
       }
       catch (Throwable e) {

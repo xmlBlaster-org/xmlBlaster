@@ -3,13 +3,14 @@ Name:      GetQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: GetQoS.java,v 1.6 2001/02/12 00:05:53 ruff Exp $
+Version:   $Id: GetQoS.java,v 1.7 2002/03/28 10:00:47 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.engine.helper.AccessFilterQos;
 import org.xml.sax.Attributes;
 import java.util.Vector;
 
@@ -24,6 +25,10 @@ public class GetQoS extends org.xmlBlaster.util.XmlQoSBase
 {
    private static String ME = "GetQoS";
 
+   private transient AccessFilterQos tmpFilter = null;
+   protected Vector filterVec = null;                         // To collect the filter when sax parsing
+   protected transient AccessFilterQos[] filterArr = null; // To cache the filters in an array
+   private transient boolean inFilter = false;
 
    /**
     * Constructs the specialized quality of service object for a publish() call.
@@ -34,6 +39,18 @@ public class GetQoS extends org.xmlBlaster.util.XmlQoSBase
       init(xmlQoS_literal);
    }
 
+   /**
+    * Return the get filters or null if none is specified. 
+    */
+   public final AccessFilterQos[] getFilterQos()
+   {
+      if (filterArr != null || filterVec == null || filterVec.size() < 1)
+         return filterArr;
+
+      filterArr = new AccessFilterQos[filterVec.size()];
+      filterVec.toArray(filterArr);
+      return filterArr;
+   }
 
    /**
     * Start element, event from SAX parser.
@@ -49,6 +66,19 @@ public class GetQoS extends org.xmlBlaster.util.XmlQoSBase
       if (Log.TRACE) Log.trace(ME, "Entering startElement for " + name);
 
       if (!inQos) return;
+
+      if (name.equalsIgnoreCase("filter")) {
+         inFilter = true;
+         tmpFilter = new AccessFilterQos();
+         boolean ok = tmpFilter.startElement(uri, localName, name, character, attrs);
+         if (ok) {
+            if (filterVec == null) filterVec = new Vector();
+            filterVec.addElement(tmpFilter);
+         }
+         else
+            tmpFilter = null;
+         return;
+      }
    }
 
 
@@ -63,19 +93,24 @@ public class GetQoS extends org.xmlBlaster.util.XmlQoSBase
          return;
 
       if (Log.TRACE) Log.trace(ME, "Entering endElement for " + name);
+      
+      if (name.equalsIgnoreCase("filter")) {
+         inFilter = false;
+         if (tmpFilter != null)
+            tmpFilter.endElement(uri, localName, name, character);
+         return;
+      }
    }
-
 
    /**
     * Dump state of this object into a XML ASCII string.
     * <br>
     * @return internal state of the RequestBroker as a XML ASCII string
     */
-   public final StringBuffer printOn() throws XmlBlasterException
+   public final String toXml()
    {
-      return printOn((String)null);
+      return toXml((String)null);
    }
-
 
    /**
     * Dump state of this object into a XML ASCII string.
@@ -83,16 +118,53 @@ public class GetQoS extends org.xmlBlaster.util.XmlQoSBase
     * @param extraOffset indenting of tags for nice output
     * @return internal state of the RequestBroker as a XML ASCII string
     */
-   public final StringBuffer printOn(String extraOffset) throws XmlBlasterException
+   public final String toXml(String extraOffset)
    {
-      StringBuffer sb = new StringBuffer();
+      StringBuffer sb = new StringBuffer(256);
       String offset = "\n   ";
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
 
-      sb.append(offset + "<" + ME + ">");
-      sb.append(offset + "</" + ME + ">\n");
+      sb.append(offset).append("<").append(ME).append(">");
+      
+      AccessFilterQos[] filterArr = getFilterQos();
+      for (int ii=0; filterArr != null && ii<filterArr.length; ii++)
+         sb.append(filterArr[ii].toXml(extraOffset+"   "));
 
-      return sb;
+      sb.append(offset).append("</").append(ME).append(">");
+
+      return sb.toString();
+   }
+
+   /** For testing: java org.xmlBlaster.engine.xml2java.GetQoS */
+   public static void main(String[] args)
+   {
+      try {
+         GetQoS qos = null;
+         String xml =
+            "<qos>\n" +
+            "   <meta>false</meta>\n" +
+            "   <content>false</content>\n" +
+            "   <local>false</local>\n" +
+            "   <filter type='ContentLength' version='1.0'>\n" +
+            "      8000\n" +
+            "   </filter>\n" +
+            "   <filter type='ContainsChecker' version='7.1' xy='true'>\n" +
+            "      bug\n" +
+            "   </filter>\n" +
+            "   <filter>\n" +
+            "      invalid filter without type\n" +
+            "   </filter>\n" +
+            "</qos>\n";
+         System.out.println("=====Original XML========\n");
+         System.out.println(xml);
+         qos = new GetQoS(xml);
+         System.out.println("=====Parsed and dumped===\n");
+         System.out.println(qos.toXml());
+      }
+      catch(Throwable e) {
+         e.printStackTrace();
+         Log.error("TestFailed", e.toString());
+      }
    }
 }
