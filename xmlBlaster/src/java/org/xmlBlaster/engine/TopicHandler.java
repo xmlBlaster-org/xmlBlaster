@@ -304,6 +304,14 @@ public final class TopicHandler implements I_Timeout
    }
 
    /**
+    * Check if there is a valid DOM parsed XML key available
+    * @return false in state UNCONFIGURED
+    */
+   public final boolean hasXmlKey() {
+      return this.msgKeyData != null;
+   }
+
+   /**
     * Accessing the DOM parsed key of this message. 
     * @return Never null
     * @exception XmlBlasterException in state UNCONFIGURED or on DOM parse problems
