@@ -27,7 +27,7 @@ ConnectionsHandler::ConnectionsHandler(org::xmlBlaster::util::Global& global,
    : ME(string("ConnectionsHandler-") + instanceName), 
      status_(START), 
      global_(global), 
-     log_(global.getLog("dispatch")),
+     log_(global.getLog("org.xmlBlaster.util.dispatch")),
      connectMutex_(),
      publishMutex_(),
      instanceName_(instanceName)

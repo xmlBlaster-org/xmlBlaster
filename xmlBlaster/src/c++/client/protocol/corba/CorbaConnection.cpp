@@ -45,7 +45,7 @@ CorbaConnection::CorbaConnection(Global& global, CORBA::ORB_ptr orb)
     /* loginQos_(), */
     connectReturnQos_(global), 
     global_(global), 
-    log_(global.getLog("corba")),
+    log_(global.getLog("org.xmlBlaster.client.protocol.corba")),
     msgKeyFactory_(global),
     msgQosFactory_(global)
 {

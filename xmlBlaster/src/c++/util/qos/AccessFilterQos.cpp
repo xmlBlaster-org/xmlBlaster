@@ -44,7 +44,7 @@ Dll_Export const char* ACCESSFILTER_DEFAULT_type    = "";
    /**
     */
    AccessFilterQos::AccessFilterQos(Global& global) 
-      : ME("AccessFilterQos"), global_(global), log_(global.getLog("mime")), query_(global)
+      : ME("AccessFilterQos"), global_(global), log_(global.getLog("org.xmlBlaster.util.qos")), query_(global)
    {
       type_ = "";
       setVersion(global_.getProperty().getStringProperty("accessFilter.version", ACCESSFILTER_DEFAULT_version));
@@ -58,7 +58,7 @@ Dll_Export const char* ACCESSFILTER_DEFAULT_type    = "";
     * @param query   Your filter rule
     */
    AccessFilterQos::AccessFilterQos(Global& global, const string& type, const string& version, const string& query)
-      : ME("AccessFilterQos"), global_(global), log_(global.getLog("mime")), query_(global, query)
+      : ME("AccessFilterQos"), global_(global), log_(global.getLog("org.xmlBlaster.util.qos")), query_(global, query)
    {
       setType(type);
       setVersion(version);
@@ -71,7 +71,7 @@ Dll_Export const char* ACCESSFILTER_DEFAULT_type    = "";
     * @param query   Your filter rule
     */
    AccessFilterQos::AccessFilterQos(Global& global, const string& type, const string& version, const Query& query)
-      : ME("AccessFilterQos"), global_(global), log_(global.getLog("mime")), query_(query)
+      : ME("AccessFilterQos"), global_(global), log_(global.getLog("org.xmlBlaster.util.qos")), query_(query)
    {
       setType(type);
       setVersion(version);

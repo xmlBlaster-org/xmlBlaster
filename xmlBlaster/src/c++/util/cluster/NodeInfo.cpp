@@ -212,7 +212,7 @@ string NodeInfo::getId() const
          if (attrs != null) {
             String tmp = attrs.getValue("id");
             if (tmp == null) {
-               glob.getLog("cluster").error(ME, "<backupnode><clusternode> attribute 'id' is missing, ignoring message");
+               glob.getLog("org.xmlBlaster.cluster").error(ME, "<backupnode><clusternode> attribute 'id' is missing, ignoring message");
                throw RuntimeException("NodeParser: <backupnode><clusternode> attribute 'id' is missing, ignoring message");
             }
             addBackupnode(new NodeId(tmp.trim()));

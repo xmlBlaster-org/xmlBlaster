@@ -44,7 +44,7 @@ void KeyData::copy(const KeyData& key)
 }
 
 KeyData::KeyData(Global& global)
-   : ME("KeyData"), global_(global), log_(global.getLog("core"))
+   : ME("KeyData"), global_(global), log_(global.getLog("org.xmlBlaster.util.key"))
 {
 }
 

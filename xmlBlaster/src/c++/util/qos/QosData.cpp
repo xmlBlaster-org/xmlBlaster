@@ -73,7 +73,7 @@ void QosData::copy(const QosData& data)
 QosData::QosData(Global& global, const string& serialData)
    : ME("QosData"),
      global_(global),
-     log_(global.getLog("core")),
+     log_(global.getLog("org.xmlBlaster.util.qos")),
      routeNodeList_(),
      clientProperties_()     
 {

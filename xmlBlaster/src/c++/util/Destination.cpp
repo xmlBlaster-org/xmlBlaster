@@ -17,7 +17,7 @@ Destination::Destination(Global& global,
                          const string &queryType,
                          bool forceQueuing)
                        : global_(global),
-                         log_(global.getLog("core")),
+                         log_(global.getLog("org.xmlBlaster.util")),
                          sessionQos_(sessionQos)
 {
    queryType_     = queryType;
@@ -29,7 +29,7 @@ Destination::Destination(Global& global,
                          const string &queryType,
                          bool forceQueuing)
                        : global_(global),
-                         log_(global.getLog("core")),
+                         log_(global.getLog("org.xmlBlaster.util")),
                          sessionQos_(SessionQos(global, address))
 {
    queryType_     = queryType;

@@ -119,13 +119,13 @@ const int getPriority(string prio, int defaultPriority)
         else if (prio.startsWith("MAX"))
            return Constants.MAX_PRIORITY;
         else
-           Global.instance().getLog("core").warn(ME, "Wrong format of <priority>" + prio +
+           Global.instance().getLog("org.xmlBlaster").warn(ME, "Wrong format of <priority>" + prio +
                 "</priority>, expected a number between (inclusiv) 0 - 9, setting to message priority to "
                 + defaultPriority);
      }
   }
   if (defaultPriority < Constants.MIN_PRIORITY || defaultPriority > Constants.MAX_PRIORITY) {
-      Global.instance().getLog("core").warn(ME, "Wrong message defaultPriority=" + defaultPriority + " given, setting to NORM_PRIORITY");
+      Global.instance().getLog("org.xmlBlaster").warn(ME, "Wrong message defaultPriority=" + defaultPriority + " given, setting to NORM_PRIORITY");
       return Constants.NORM_PRIORITY;
   }
   return defaultPriority;

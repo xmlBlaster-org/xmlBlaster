@@ -30,7 +30,7 @@ XmlBlasterAccess::XmlBlasterAccess(Global& global)
      connectQos_(global), 
      connectReturnQos_(global),
      global_(global), 
-     log_(global.getLog("client"))
+     log_(global.getLog("org.xmBlaster.client"))
 {
    log_.call(ME, "::constructor");
    cbServer_           = NULL;
@@ -368,7 +368,7 @@ int main(int args, char* argv[])
     {
        Global& glob = Global::getInstance();
        glob.initialize(args, argv);
-       Log& log = glob.getLog("client");
+       Log& log = glob.getLog("org.xmlBlaster.client");
 
        XmlBlasterAccess xmlBlasterAccess(glob);
        ConnectQos connectQos(glob);

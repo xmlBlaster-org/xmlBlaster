@@ -39,7 +39,7 @@ ParserFactory& ParserFactory::getFactory(Global& global)
 ParserFactory::ParserFactory(Global& global) :
      ME("ParserFactory"), 
      global_(global), 
-     log_(global_.getLog("xml"))
+     log_(global_.getLog("org.xmlBlaster.util.xml"))
 {
    try {
       if (!global.isUsingXerces()) {

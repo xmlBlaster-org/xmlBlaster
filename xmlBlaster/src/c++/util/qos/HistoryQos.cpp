@@ -17,7 +17,7 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos {
 const long DEFAULT_numEntries = 1;
 
 HistoryQos::HistoryQos(Global& global, long numOfEntries) 
-   : ME("HistoryQos"), global_(global), log_(global.getLog("core"))
+   : ME("HistoryQos"), global_(global), log_(global.getLog("org.xmlBlaster.util.qos"))
 {
    if (numOfEntries < 0)
         setNumEntries(global_.getProperty().getLongProperty("history.numEntries", DEFAULT_numEntries));

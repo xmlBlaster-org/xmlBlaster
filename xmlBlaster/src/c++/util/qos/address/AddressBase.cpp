@@ -3,7 +3,7 @@ Name:      AddressBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address string including protocol
-Version:   $Id: AddressBase.cpp,v 1.18 2004/01/14 14:54:29 ruff Exp $
+Version:   $Id: AddressBase.cpp,v 1.19 2004/02/09 10:08:03 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -38,7 +38,7 @@ const bool   DEFAULT_useForSubjectQueue = true;
 
 
 AddressBase::AddressBase(Global& global, const string& rootTag)
-   : global_(global), log_(global.getLog("core"))
+   : global_(global), log_(global.getLog("org.xmlBlaster.util.qos"))
 {
 
    defaultPingInterval_ = 0L;

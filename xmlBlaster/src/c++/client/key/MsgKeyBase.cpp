@@ -14,12 +14,12 @@ using namespace org::xmlBlaster::util::key;
 namespace org { namespace xmlBlaster { namespace client { namespace key {
 
 MsgKeyBase::MsgKeyBase(Global& global) 
-   : ME("MsgKeyBase"), global_(global), log_(global_.getLog("client")), msgKeyData_(global_)
+   : ME("MsgKeyBase"), global_(global), log_(global_.getLog("org.xmlBlaster.client")), msgKeyData_(global_)
 {
 }
 
 MsgKeyBase::MsgKeyBase(Global& global, const MsgKeyData& data) 
-   : ME("MsgKeyBase"), global_(global), log_(global_.getLog("client")), msgKeyData_(data)
+   : ME("MsgKeyBase"), global_(global), log_(global_.getLog("org.xmlBlaster.client")), msgKeyData_(data)
 {
 }
 

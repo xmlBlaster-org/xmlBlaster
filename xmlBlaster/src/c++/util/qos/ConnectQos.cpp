@@ -23,7 +23,7 @@ using namespace org::xmlBlaster::util::qos::address;
 
 ConnectQosData::ConnectQosData(Global& global, const string& user, const string& passwd, long publicSessionId)
     : global_(global),
-      log_(global.getLog("core")),
+      log_(global.getLog("org.xmlBlaster.util.qos")),
       securityQos_(global, user, passwd),
       sessionQos_(global, user, publicSessionId),
       ptp_(true),

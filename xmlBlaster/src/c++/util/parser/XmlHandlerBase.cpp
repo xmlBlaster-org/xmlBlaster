@@ -30,7 +30,7 @@ using namespace org::xmlBlaster::util::thread;
 XmlHandlerBase::XmlHandlerBase(Global& global) :
             ME("XmlHandlerBase"),
             global_(global),
-            log_(global.getLog("util")),
+            log_(global.getLog("org.xmlBlaster.util.xml")),
             invocationMutex_()
 {
    doTrimStrings_ = true;

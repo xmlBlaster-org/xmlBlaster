@@ -89,12 +89,11 @@ class Dll_Export I_Log {
 
 
       /*
-       * Log without time/date/instance
-       * @param instance (not currently used)
+       * Log without time/date/instance (ignoring the header is not supported with all logging frameworks)
        * @param text the std::string to log
        * @deprecated
        */
-      virtual void plain(const std::string &instance, const std::string &text) { trace(instance, text); }
+      virtual void plain(const std::string &instance, const std::string &text) { info(instance, text); }
 
 
       /*

@@ -3,7 +3,7 @@ Name:      Global.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Global.cpp,v 1.56 2004/02/08 23:10:11 ruff Exp $
+Version:   $Id: Global.cpp,v 1.57 2004/02/09 10:07:59 ruff Exp $
 ------------------------------------------------------------------------------*/
 #include <client/protocol/CbServerPluginManager.h>
 #include <util/dispatch/DispatchManager.h>
@@ -31,9 +31,9 @@ Version:   $Id: Global.cpp,v 1.56 2004/02/08 23:10:11 ruff Exp $
 #if defined(__GNUC__) || defined(__ICC)
    // To support query state with 'ident libxmlBlasterClient.so' or 'what libxmlBlasterClient.so'
    // or 'strings libxmlBlasterClient.so  | grep Global.cpp'
-   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.56 2004/02/08 23:10:11 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.57 2004/02/09 10:07:59 ruff Exp $ xmlBlaster @version@";
 #elif defined(__SUNPRO_CC)
-   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.56 2004/02/08 23:10:11 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.57 2004/02/09 10:07:59 ruff Exp $ xmlBlaster @version@";
 #endif
 
 namespace org { namespace xmlBlaster { namespace util {
@@ -122,7 +122,7 @@ Global& Global::getInstance(const string&)
 Global& Global::initialize(int args, const char * const argv[])
 {
    if (isInitialized_) {
-      getLog("core").warn(ME, "::initialize: the global is already initialized. Ignoring this initialization");
+      getLog("org.xmlBlaster.util").warn(ME, "::initialize: the global is already initialized. Ignoring this initialization");
       return *this;
    }
    args_     = args;
@@ -195,7 +195,9 @@ string Global::usage()
 //#  endif
 #  ifdef COMPILE_SOCKET_PLUGIN
       sb += org::xmlBlaster::client::protocol::socket::SocketDriver::usage();
-      sb += "   -logLevel           ERROR | WARN | INFO | TRACE | DUMP [WARN]\n";
+      sb += "\n   -logLevel           ERROR | WARN | INFO | TRACE | DUMP [WARN]";
+      sb += "\n                       NOTE: Switch on C++ logging simultaneously to see the traces";
+      sb += "\n                             as the C logging is redirected to the C++ logging library\n";
       sb += "\n";
 #  endif
 #  ifdef COMPILE_CORBA_PLUGIN
@@ -303,7 +305,7 @@ Timeout& Global::getPingTimer()
    if (pingTimer_) return *pingTimer_;
    thread::Lock lock(pingerMutex_);
    { // this is synchronized. Test again if meanwhile it has been set ...
-      getLog("core").info(ME, "::getPingTimer: creating the singleton 'ping timer'");
+      getLog("org.xmlBlaster.util").info(ME, "::getPingTimer: creating the singleton 'ping timer'");
       if (pingTimer_) return *pingTimer_;
       pingTimer_ = new Timeout(*this, string("ping timer"));
       return *pingTimer_;

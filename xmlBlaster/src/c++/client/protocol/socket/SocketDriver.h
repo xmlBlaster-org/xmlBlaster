@@ -83,6 +83,9 @@ namespace org {
       void initialize(const std::string& name, org::xmlBlaster::client::I_Callback &client);
       std::string getCbProtocol();
       std::string getCbAddress();
+
+      org::xmlBlaster::util::I_Log& getLog() const { return log_; }
+
       /**
        * @return 0 if the client has not registered its update()
        */

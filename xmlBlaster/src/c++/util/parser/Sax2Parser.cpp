@@ -27,7 +27,8 @@ namespace org { namespace xmlBlaster { namespace util { namespace parser {
 
 using namespace std;
 
-Sax2Parser::Sax2Parser(org::xmlBlaster::util::Global& global, XmlHandlerBase *handler) : I_Parser(handler), ME("Sax2Parser"), global_(global), log_(global.getLog("util"))
+Sax2Parser::Sax2Parser(org::xmlBlaster::util::Global& global, XmlHandlerBase *handler) : 
+    I_Parser(handler), ME("Sax2Parser"), global_(global), log_(global.getLog("org.xmlBlaster.util.xml"))
 {
    if (log_.call()) log_.trace(ME, "Creating new Sax2Parser");
 }

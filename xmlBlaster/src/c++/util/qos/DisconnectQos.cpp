@@ -3,7 +3,7 @@ Name:      DisconnectQos.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: DisconnectQos.cpp,v 1.3 2004/01/19 18:31:53 ruff Exp $
+Version:   $Id: DisconnectQos.cpp,v 1.4 2004/02/09 10:08:02 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #include <util/qos/DisconnectQos.h>
@@ -17,7 +17,7 @@ namespace org { namespace xmlBlaster { namespace util { namespace qos {
 DisconnectQos::DisconnectQos(Global& global)
    : ME("DisconnectQos"), 
      global_(global), 
-     log_(global.getLog("core")),
+     log_(global.getLog("org.xmlBlaster.util.qos")),
      clientProperties_()
 {
    deleteSubjectQueue_ = true;

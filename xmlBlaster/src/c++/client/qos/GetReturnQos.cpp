@@ -15,7 +15,7 @@ using namespace std;
 namespace org { namespace xmlBlaster { namespace client { namespace qos {
 
 GetReturnQos::GetReturnQos(Global& global, const MsgQosData data)
-   : ME("GetReturnQos"), global_(global), log_(global.getLog("core")), data_(data)
+   : ME("GetReturnQos"), global_(global), log_(global.getLog("org.xmlBlaster.client")), data_(data)
 {
 }
 

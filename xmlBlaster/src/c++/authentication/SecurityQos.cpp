@@ -17,7 +17,7 @@ using namespace org::xmlBlaster::util;
 SecurityQos::SecurityQos(Global& global,
                          const string& loginName,
                          const string& password)
-   : ME("SecurityQos"), global_(global), log_(global.getLog("core"))
+   : ME("SecurityQos"), global_(global), log_(global.getLog("org.xmBlaster.authentication"))
 {
 
    string help = global_.getProperty().getStringProperty("Security.Client.DefaultPlugin", "htpasswd,1.0");

@@ -25,7 +25,7 @@ CorbaDriverFactory::CorbaDriverFactory(Global& global, CORBA::ORB_ptr orb)
    : Thread(), 
      ME("CorbaDriverFactory"), 
      global_(global), 
-     log_(global_.getLog("corba")),
+     log_(global_.getLog("org.xmlBlaster.client.protocol.corba")),
      drivers_(),
      mutex_(),
      getterMutex_(),

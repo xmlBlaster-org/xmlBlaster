@@ -143,7 +143,7 @@ CorbaDriver::CorbaDriver()
      count_(0),
      ME("CorbaDriver"), 
      global_(Global::getInstance()), 
-     log_(global_.getLog("client")),
+     log_(global_.getLog("org.xmlBlaster.client.protocol.corba")),
      statusQosFactory_(global_), 
 {
    connection_      = NULL;
@@ -178,7 +178,7 @@ CorbaDriver::CorbaDriver(Global& global, Mutex& mutex, const string instanceName
    : mutex_(mutex),
      ME(string("CorbaDriver-") + instanceName), 
      global_(global), 
-     log_(global.getLog("corba")),
+     log_(global.getLog("org.xmlBlaster.client.protocol.corba")),
      statusQosFactory_(global), 
      orbIsThreadSafe_(ORB_IS_THREAD_SAFE)
 {

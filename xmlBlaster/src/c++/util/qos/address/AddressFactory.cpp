@@ -3,7 +3,7 @@ Name:      AddressFactory.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Factory Object for parsing Address objects.
-Version:   $Id: AddressFactory.cpp,v 1.14 2004/01/14 14:54:29 ruff Exp $
+Version:   $Id: AddressFactory.cpp,v 1.15 2004/02/09 10:08:03 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -216,7 +216,7 @@ int main(int args, char* argv[])
    try {
       Global& glob = Global::getInstance();
       glob.initialize(args, argv);
-      Log& log = glob.getLog("core");
+      Log& log = glob.getLog("org.xmlBlaster.util.qos");
       log.info("main", "This is a simple info");
       Address a(glob);
       a.setType("SOCKET");

@@ -22,7 +22,7 @@ Timeout::Timeout(Global& global)
      timeoutMap_(), isRunning_(false), isReady_(false),
      mapHasNewEntry_(false), isActive_(true),
      isDebug_(false), timestampFactory_(TimestampFactory::getInstance()),
-     global_(global), log_(global.getLog("util")),
+     global_(global), log_(global.getLog("org.xmlBlaster.util")),
      invocationMutex_(), waitForTimeoutMutex_(), waitForTimeoutCondition_()
 {
    ME += "-Timeout-Thread-" + lexical_cast<std::string>(this);
@@ -38,7 +38,7 @@ Timeout::Timeout(Global& global, const string &name)
      timeoutMap_(), isRunning_(false), isReady_(false),
      mapHasNewEntry_(false), isActive_(true),
      isDebug_(false), timestampFactory_(TimestampFactory::getInstance()),
-     global_(global), log_(global.getLog("util")),
+     global_(global), log_(global.getLog("org.xmlBlaster.util")),
      invocationMutex_(), waitForTimeoutMutex_(), waitForTimeoutCondition_()
 {
    // the thread remains uninitialized ...

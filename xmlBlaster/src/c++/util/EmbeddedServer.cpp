@@ -65,7 +65,7 @@ void EmbeddedServerRunner::run()
 EmbeddedServer::EmbeddedServer(Global& glob, const string& jvmArguments, const string& applArguments, XmlBlasterAccess* externalAccess) 
    : ME("EmbeddedServer"), 
      global_(glob), 
-     log_(glob.getLog("core"))
+     log_(glob.getLog("org.xmlBlaster.util"))
 {
    isRunning_      = false;
    applArguments_  = applArguments;

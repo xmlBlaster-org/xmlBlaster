@@ -25,7 +25,7 @@ SocketDriverFactory::SocketDriverFactory(Global& global)
    : Thread(), 
      ME("SocketDriverFactory"), 
      global_(global), 
-     log_(global_.getLog("socket")),
+     log_(global_.getLog("org.xmlBlaster.client.protocol.socket")),
      drivers_(),
      mutex_(),
      getterMutex_()

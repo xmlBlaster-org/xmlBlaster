@@ -33,7 +33,7 @@ using namespace org::xmlBlaster::client::protocol;
 DispatchManager::DispatchManager(Global& global)
    : ME("DispatchManager"),
      global_(global),
-     log_(global.getLog("dispatch"))
+     log_(global.getLog("org.xmlBlaster.util.dispatch"))
 {
    if (log_.call()) log_.call(ME, "::constructor");
 }

@@ -18,7 +18,7 @@ namespace org { namespace xmlBlaster { namespace util { namespace queue {
 Queue::Queue(Global& global, const ClientQueueProperty& property)
    : ME("Queue"), 
      global_(global), 
-     log_(global.getLog("queue")), 
+     log_(global.getLog("org.xmlBlaster.util.queue")), 
      property_(property), 
      storage_(), 
      accessMutex_()

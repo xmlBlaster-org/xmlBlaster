@@ -25,7 +25,7 @@ StatusQosFactory::StatusQosFactory(Global& global)
    : XmlHandlerBase(global),
      ME("StatusQosFactory"),
      global_(global),
-     log_(global.getLog("core")),
+     log_(global.getLog("org.xmlBlaster.util.qos")),
      statusQosData_(global)
 {
    prep();

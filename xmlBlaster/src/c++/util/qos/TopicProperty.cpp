@@ -66,7 +66,7 @@ const bool DEFAULT_readonly = false;
 
 
    TopicProperty::TopicProperty(Global& global)
-      : ME("TopicProperty"), global_(global), log_(global.getLog("core")),
+      : ME("TopicProperty"), global_(global), log_(global.getLog("org.xmlBlaster.util.qos")),
         createDomEntry_(Prop<bool>(true))
    {
       msgUnitStoreProperty_  = NULL;

@@ -3,7 +3,7 @@ Name:      Global.h
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   The global object (a stack for all pseudo static stuff).
-Version:   $Id: Global.h,v 1.28 2004/02/08 23:10:12 ruff Exp $
+Version:   $Id: Global.h,v 1.29 2004/02/09 10:07:59 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _UTIL_GLOBAL_H
@@ -137,7 +137,7 @@ public:
    /**
     * If no log is found with that name, one is created. 
     */
-   org::xmlBlaster::util::I_Log& getLog(const std::string &logName="default");
+   org::xmlBlaster::util::I_Log& getLog(const std::string &logName="org.xmlBlaster");
 
    /**
     * Returns the property object associated to this global

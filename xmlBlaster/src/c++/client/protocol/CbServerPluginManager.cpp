@@ -31,7 +31,7 @@ using namespace org::xmlBlaster::util;
 CbServerPluginManager::CbServerPluginManager(Global& global)
    : ME("CbServerPluginManager"),
      global_(global),
-     log_(global.getLog("client"))
+     log_(global.getLog("org.xmlBlaster.client"))
 //     serverMap_()
 {
    if (log_.call()) log_.call(ME, "::constructor");

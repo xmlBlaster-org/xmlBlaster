@@ -24,7 +24,7 @@ using namespace std;
 using namespace org::xmlBlaster::util;
 
 NodeId::NodeId(Global& global, const string& id)
-: ME("NodeId"), global_(global), log_(global.getLog("cluster"))
+: ME("NodeId"), global_(global), log_(global.getLog("org.xmlBlaster.cluster"))
 {
    setId(id);
 }

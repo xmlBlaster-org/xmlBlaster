@@ -21,7 +21,7 @@ using namespace org::xmlBlaster::client::key;
 
 DefaultCallback::DefaultCallback(Global& global, const string &name, I_Callback *boss,
                 /*BlasterCache*/ void* /*cache*/) 
-:global_(global), log_(global.getLog("corba")), msgKeyFactory_(global), msgQosFactory_(global)
+:global_(global), log_(global.getLog("org.xmlBlaster.client.protocol.corba")), msgKeyFactory_(global), msgQosFactory_(global)
 {
    boss_         = boss;
    loginName_    = name;
@@ -112,7 +112,7 @@ serverIdl::XmlTypeArr* DefaultCallback::update(const char* sessionId,
       catch(...) {
          string tmp = "Exception caught in update() " + lexical_cast<std::string>(msgUnitArr.length()) + " messages are handled as not delivered";
          log_.error(me(), tmp);
-         throw serverIdl::XmlBlasterException("user.update.error", "client", 
+         throw serverIdl::XmlBlasterException("user.update.error", "org.xmlBlaster.client", 
                                               "client update failed", "en",
                                               tmp.c_str(), "", "", "", "", 
                                               "", "");

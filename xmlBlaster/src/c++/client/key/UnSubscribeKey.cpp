@@ -14,18 +14,18 @@ using namespace org::xmlBlaster::util::key;
 namespace org { namespace xmlBlaster { namespace client { namespace key {
 
 UnSubscribeKey::UnSubscribeKey(Global& global) 
-   : ME("UnSubscribeKey"), global_(global), log_(global_.getLog("client")), queryKeyData_(global_)
+   : ME("UnSubscribeKey"), global_(global), log_(global_.getLog("org.xmlBlaster.client")), queryKeyData_(global_)
 {
 }
 
 UnSubscribeKey::UnSubscribeKey(Global& global, const string& query, const string& queryType) 
-   : ME("UnSubscribeKey"), global_(global), log_(global_.getLog("client")),
+   : ME("UnSubscribeKey"), global_(global), log_(global_.getLog("org.xmlBlaster.client")),
      queryKeyData_(global_, query, queryType)
 {
 }
 
 UnSubscribeKey::UnSubscribeKey(Global& global, const QueryKeyData& data) 
-   : ME("UnSubscribeKey"), global_(global), log_(global_.getLog("client")), queryKeyData_(data)
+   : ME("UnSubscribeKey"), global_(global), log_(global_.getLog("org.xmlBlaster.client")), queryKeyData_(data)
 {
 }
 
