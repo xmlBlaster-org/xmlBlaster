@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling global data
-Version:   $Id: Global.java,v 1.8 2002/05/15 12:59:26 ruff Exp $
+Version:   $Id: Global.java,v 1.9 2002/05/15 16:54:13 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -49,6 +49,7 @@ public final class Global extends org.xmlBlaster.util.Global
     */
    public Global() {
       super();
+      initThis();
       //Thread.currentThread().dumpStack();
    }
 
@@ -63,10 +64,13 @@ public final class Global extends org.xmlBlaster.util.Global
 
    /**
     * If you have a util.Global and need a engine.Global. 
+    * <p />
+    * Note: The cluster node id of utilGlob is overwritten
     */
    public Global(org.xmlBlaster.util.Global utilGlob) {
       super(utilGlob);
       initThis();
+      utilGlob.setId(getId()); // Inherit backwards the cluster node id
       //Thread.currentThread().dumpStack();
    }
 
