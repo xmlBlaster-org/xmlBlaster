@@ -51,8 +51,8 @@
    Download http://java.sun.com/beans/infobus/#DOWNLOAD_COLLECTIONS
 
 
-6) jacorb.jar
-=============
+6) jacorb.jar and idl.jar
+=========================
    This is the JacORB CORBA library, on which xmlBlaster is based.
 
    Download http://www.inf.fu-berlin.de/~brose/jacorb

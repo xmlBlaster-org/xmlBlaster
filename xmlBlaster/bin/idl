@@ -1,5 +1,2 @@
 #!/bin/sh
-# JacORB 1.0 IDL compiler (Dec 1998)
-# Gerald Brose, Freie Universitaet Berlin
-# brose@inf.fu-berlin.de
-jaco jacorb.idl.parser "$@"
+java jacorb.idl.parser  "$@"

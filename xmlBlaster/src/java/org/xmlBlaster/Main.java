@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.20 2000/02/01 12:29:42 ruff Exp $
+Version:   $Id: Main.java,v 1.21 2000/02/11 22:51:23 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -68,7 +68,8 @@ public class Main
       orb = org.omg.CORBA.ORB.init(args, null);
       try {
          org.omg.PortableServer.POA rootPOA =
-         org.omg.PortableServer.POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
+             org.omg.PortableServer.POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
+         rootPOA.the_POAManager().activate();
 
          AuthServerImpl authServer = new AuthServerImpl(orb);
 
@@ -220,14 +221,14 @@ public class Main
          // Get a reference to the Name Service, CORBA compliant:
          org.omg.CORBA.Object nameServiceObj = orb.resolve_initial_references("NameService");
          if (nameServiceObj == null) {
-            Log.warning(ME + ".NoNameService", "Can't access naming service");
+            Log.warning(ME + ".NoNameService", "Can't access naming service, is there any running?");
             throw new XmlBlasterException(ME + ".NoNameService", "Can't access naming service, is there any running?");
          }
          if (Log.TRACE) Log.trace(ME, "Successfully accessed initial orb references for naming service (IOR)");
 
          nameService = org.omg.CosNaming.NamingContextHelper.narrow(nameServiceObj);
          if (nameService == null) {
-            Log.error(ME + ".NoNameService", "Can't access naming service");
+            Log.error(ME + ".NoNameService", "Can't access naming service == null");
             throw new XmlBlasterException(ME + ".NoNameService", "Can't access naming service (narrow problem)");
          }
          if (Log.TRACE) Log.trace(ME, "Successfully narrowed handle for naming service");
@@ -236,7 +237,7 @@ public class Main
                              // but it is not sure that the naming service is really running
       }
       catch (Exception e) {
-         Log.warning(ME + ".NoNameService", "Can't access naming service");
+         Log.warning(ME + ".NoNameService", "Can't access naming service" + e.toString());
          throw new XmlBlasterException(ME + ".NoNameService", e.toString());
       }
    }

@@ -121,11 +121,11 @@ See the ${XMLBLASTER_HOME}/src/java/org/xmlBlaster/README file for more instruct
 
 3. A variant using a file to pass the server IOR:
 
-      jaco org.xmlBlaster.MainGUI -iorFile /tmp/NS_Ref
+      jaco org.xmlBlaster.MainGUI -iorFile /tmp/Blaster_Ref
 
    and a testclient
 
-     jaco javaclients.ClientGet -iorFile /tmp/NS_Ref
+     jaco javaclients.ClientGet -iorFile /tmp/Blaster_Ref
 
 
 

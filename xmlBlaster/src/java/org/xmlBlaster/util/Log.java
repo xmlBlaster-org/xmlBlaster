@@ -3,9 +3,10 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.java,v 1.35 2000/01/30 18:24:46 ruff Exp $
+Version:   $Id: Log.java,v 1.36 2000/02/11 22:51:23 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
+import java.io.*;
 
 
 /**
@@ -348,7 +349,7 @@ public class Log
    /**
     * Log example:
     * <p />
-    *   1999-11-01 10:41:03 INFO : xmlBlaster is ready to blast
+    * Feb 11, 2000 3:44:48 PM INFO :  [Main]  xmlBlaster is ready for requests
     */
    public static final void log(final StringBuffer levelStr, String instance, String text)
    {
@@ -529,7 +530,8 @@ public class Log
 
 
    /**
-    * Display the current stack
+    * Display the current stack<br />
+    * Very slow and not filtered for usefulness
     */
    public static final void printStack()
    {
@@ -540,6 +542,16 @@ public class Log
          Log.info(ME, "Current stack trace:");
          e.printStackTrace();
       }
+      /* Another way to do it:
+         Throwable throwable = new Throwable();
+         StringWriter stringWriter = new StringWriter();
+         StringBuffer writerBuffer = stringWriter.getBuffer();
+         PrintWriter out = new PrintWriter(stringWriter,false);
+         throwable.fillInStackTrace();
+         throwable.printStackTrace(out);
+         out.flush();
+         System.out.println(writerBuffer.toString());
+      */
    }
 
 
@@ -591,7 +603,7 @@ public class Log
 
 
 /**
-   * Write log messages to file. 
+   * Write log messages to file.
    * <br />
    * Class which uses the LogListener interface to log to a file.<br />
    * You can specify to use this file logger instead of the default

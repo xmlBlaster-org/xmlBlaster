@@ -3,7 +3,7 @@ Name:      SimpleChat.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo of a simple chat client for xmlBlaster as java application
-Version:   $Id: SimpleChat.java,v 1.1 1999/12/13 20:07:31 groezinger Exp $ 
+Version:   $Id: SimpleChat.java,v 1.2 2000/02/11 22:51:18 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 package javaclients.chat;
@@ -19,7 +19,7 @@ import java.awt.*;
 
 
 /**
- * This client is a simple chat application using xmlBlaster 
+ * This client is a simple chat application using xmlBlaster
  * <p>
  * Usage:
  *    ${JacORB_HOME}/bin/jaco javaclients.chat.SimpleChat -name "nickname"
@@ -42,10 +42,10 @@ public class SimpleChat extends Frame implements BlasterCallbackOperations, Acti
    private TextArea output;
    private TextField input;
    private String args[];
- 
+
    public SimpleChat(String title, String args[]){
       super(title);
- 
+
       this.addWindowListener(
          new WindowAdapter() {
             public void windowClosing(WindowEvent event)
@@ -58,7 +58,7 @@ public class SimpleChat extends Frame implements BlasterCallbackOperations, Acti
          }
       );
 
-      this.args = args;          
+      this.args = args;
       initUI();
       pack();
    }
@@ -66,7 +66,7 @@ public class SimpleChat extends Frame implements BlasterCallbackOperations, Acti
 
    /** initialize UI */
    public void initUI() {
-      // MAIN-Frame 
+      // MAIN-Frame
       this.setLayout(new BorderLayout());
       fPanel = new Panel();
       this.add(fPanel);
@@ -87,13 +87,13 @@ public class SimpleChat extends Frame implements BlasterCallbackOperations, Acti
       input = new TextField(40);
       input.addActionListener(this);
       fPanel.add("South",input);
-      
+
       // Textfield for output (which comes from xmlBlaster callback)
       output = new TextArea("",10,50);
       add("South",output);
    }
- 
-   // event-handler 
+
+   // event-handler
    public void actionPerformed(ActionEvent ev) {
       String command = ev.getActionCommand();
       Object obj = ev.getSource();
@@ -111,7 +111,7 @@ public class SimpleChat extends Frame implements BlasterCallbackOperations, Acti
             connectButton.setLabel("Connect");
          }
       }
-      // publish new message 
+      // publish new message
       else if(command.equals("send") ||( (ev.getSource()) instanceof TextField )){
 
          //----------- Construct a message and publish it ---------
@@ -148,7 +148,7 @@ public class SimpleChat extends Frame implements BlasterCallbackOperations, Acti
             xmlKey = new XmlKeyBase(messageUnit.xmlKey);
             updateQoS = new UpdateQoS(qosArr[ii]);
             String tmp = updateQoS.printOn().toString();
-     
+
          } catch (XmlBlasterException e) {
             Log.error(ME, e.reason);
          }
@@ -170,12 +170,13 @@ public class SimpleChat extends Frame implements BlasterCallbackOperations, Acti
 
          //---------- Building a Callback server ----------------------
          // Getting the default POA implementation "RootPOA"
-         org.omg.PortableServer.POA poa =
+         org.omg.PortableServer.POA rootPOA =
             org.omg.PortableServer.POAHelper.narrow(corbaConnection.getOrb().resolve_initial_references("RootPOA"));
+         rootPOA.the_POAManager().activate();
 
          // Intializing my Callback interface:
          BlasterCallbackPOATie callbackTie = new BlasterCallbackPOATie(this);
-         BlasterCallback callback = BlasterCallbackHelper.narrow(poa.servant_to_reference( callbackTie ));
+         BlasterCallback callback = BlasterCallbackHelper.narrow(rootPOA.servant_to_reference( callbackTie ));
 
          //----------- Login to xmlBlaster -----------------------
          xmlBlaster = corbaConnection.login(ME, passwd, callback, qos);

@@ -3,7 +3,7 @@ Name:      ClientOid.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: ClientOid.java,v 1.4 2000/01/30 18:44:51 ruff Exp $
+Version:   $Id: ClientOid.java,v 1.5 2000/02/11 22:51:18 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -43,13 +43,13 @@ public class ClientOid
 
          //---------- Building a Callback server ----------------------
          // Getting the default POA implementation "RootPOA"
-         org.omg.PortableServer.POA poa =
+         org.omg.PortableServer.POA rootPOA =
             org.omg.PortableServer.POAHelper.narrow(corbaConnection.getOrb().resolve_initial_references("RootPOA"));
-
+         rootPOA.the_POAManager().activate();
 
          // Intializing my Callback interface:
          BlasterCallbackPOATie callbackTie = new BlasterCallbackPOATie(new BlasterCallbackImpl(ME));
-         BlasterCallback callback = BlasterCallbackHelper.narrow(poa.servant_to_reference( callbackTie ));
+         BlasterCallback callback = BlasterCallbackHelper.narrow(rootPOA.servant_to_reference( callbackTie ));
          Log.trace(ME, "Exported Callback Server interface" + stop.nice());
 
 

@@ -16,7 +16,7 @@
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash
 # Thanks to Heinrich Goetzger
-# $Revision: 1.32 $
+# $Revision: 1.33 $
 #-----------------------------------------------------------
 
 
@@ -114,7 +114,7 @@ if [ -d ${JacORB_HOME} ] ; then
       JacORB_LIB=${JacORB_HOME}/lib
    fi
    export JacORB_LIB
-   CLASSPATH=${JacORB_LIB}/jacorb.jar:${CLASSPATH}
+   CLASSPATH=${JacORB_LIB}/jacorb.jar:${JacORB_LIB}/idl.jar:${CLASSPATH}
    #CLASSPATH=${CLASSPATH}:${JacORB_LIB}
    # The following two entries are only useful if you have JacORB installed separately:
    # To use JacORB demo:
@@ -178,6 +178,8 @@ if [ ${JIKES_HOME:=""} != "" ] ; then
    if [ -d ${JIKES_HOME} ] ; then
       PATH=${PATH}:${JIKES_HOME}
       export PATH
+      # JIKESPATH=${CLASSPATH}
+      # export JIKESPATH
       ${ECHO} "$BLACK_LTGREEN      Using JIKES_HOME=${JIKES_HOME}  $ESC"
    else
       ${ECHO} "$BLACK_RED   The directory JIKES_HOME=$JIKES_HOME doesn't exist   $ESC"

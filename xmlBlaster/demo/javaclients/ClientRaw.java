@@ -3,7 +3,7 @@ Name:      ClientRaw.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code how to access xmlBlaster using CORBA
-Version:   $Id: ClientRaw.java,v 1.4 2000/01/30 18:44:51 ruff Exp $
+Version:   $Id: ClientRaw.java,v 1.5 2000/02/11 22:51:18 ruff Exp $
 ------------------------------------------------------------------------------*/
 package javaclients;
 
@@ -71,19 +71,21 @@ public class ClientRaw
 
          //---------- Building a Callback server ----------------------
          // Getting the default POA implementation "RootPOA"
-         org.omg.PortableServer.POA poa =
+         org.omg.PortableServer.POA rootPOA =
             org.omg.PortableServer.POAHelper.narrow(orb.resolve_initial_references("RootPOA"));
 
          // Intialize my Callback interface:
          BlasterCallbackPOATie callbackTie = new BlasterCallbackPOATie(new RawCallback(ME));
-         BlasterCallback callback = BlasterCallbackHelper.narrow(poa.servant_to_reference( callbackTie ));
+         BlasterCallback callback = BlasterCallbackHelper.narrow(rootPOA.servant_to_reference( callbackTie ));
 
+         rootPOA.the_POAManager().activate();
 
          //----------- Login to the server -----------------------
          String qos = "";
          try {
             String passwd = "some";
             xmlBlaster = authServer.login(loginName, passwd, callback, qos);
+            Log.info(ME, "Login done");
          } catch(XmlBlasterException e) {
             Log.warning(ME, "XmlBlasterException: " + e.reason);
          }
@@ -102,7 +104,7 @@ public class ClientRaw
             } catch(XmlBlasterException e) {
                Log.warning(ME, "XmlBlasterException: " + e.reason);
             }
-            Log.trace(ME, "Subscribe done, there should be no Callback" + stop.nice());
+            Log.info(ME, "Subscribe done, there should be no Callback" + stop.nice());
          }
 
 
@@ -120,23 +122,24 @@ public class ClientRaw
                             "</key>";
             String content = "Yeahh, i'm the new content";
             MessageUnit messageUnit = new MessageUnit(xmlKey, content.getBytes());
-            Log.trace(ME, "Publishing ...");
+            Log.info(ME, "Publishing ...");
             stop.restart();
             try {
                String publishOid = xmlBlaster.publish(messageUnit, "<qos></qos>");
-               Log.info(ME, "   Returned oid=" + publishOid);
+               Log.trace(ME, "Returned oid=" + publishOid);
             } catch(XmlBlasterException e) {
                Log.warning(ME, "XmlBlasterException: " + e.reason);
             }
-            Log.trace(ME, "Publishing done, there should be a callback now" + stop.nice());
+            Log.info(ME, "Publishing done, there should be a callback now" + stop.nice());
          }
 
+         delay(1000); // Wait some time ...
 
          ask("logout()");
 
 
          //----------- Logout --------------------------------------
-         Log.trace(ME, "Logout ...");
+         Log.info(ME, "Logout ...");
          try {
             authServer.logout(xmlBlaster);
          } catch(XmlBlasterException e) {
