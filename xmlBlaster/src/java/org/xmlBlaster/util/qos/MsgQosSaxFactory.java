@@ -705,7 +705,7 @@ public class MsgQosSaxFactory extends org.xmlBlaster.util.XmlQoSBase implements 
             long remainCached = msgQosData.getRemainingLife();
             if (remainCached > 0)
                sb.append("' remainingLife='").append(remainCached);
-            else if (msgQosData.getRemainingLifeStatic() > 0)
+            else if (msgQosData.getRemainingLifeStatic() >= 0)
                sb.append("' remainingLife='").append(msgQosData.getRemainingLifeStatic());
          }
          sb.append("'/>");

@@ -173,6 +173,7 @@ public final class MsgQosData extends QosData implements java.io.Serializable, C
       if (volatileFlag) {
          setLifeTime(0L);
          setForceDestroy(false);
+         setRemainingLifeStatic(0L); // not needed as server does set it
       }
       else {
          //setLifeTime(maxLifeTime);
