@@ -3,7 +3,7 @@ Name:      RmiConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: RmiConnection.java,v 1.4 2000/10/22 13:50:02 ruff Exp $
+Version:   $Id: RmiConnection.java,v 1.5 2000/10/22 13:58:26 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.rmi;
@@ -49,7 +49,7 @@ import java.applet.Applet;
  * <p />
  * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http
  *
- * @version $Revision: 1.4 $
+ * @version $Revision: 1.5 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class RmiConnection implements I_XmlBlasterConnection
@@ -494,9 +494,13 @@ public class RmiConnection implements I_XmlBlasterConnection
    {
       String text = "\n";
       text += "RmiConnection 'RMI' options:\n";
-      text += "   -rmi.registryPortCB Specify a port number where rmiregistry listens.\n";
+      text += "   -rmi.registryPort   Specify a port number where rmiregistry of the xmlBlaster server listens.\n";
       text += "                       Default is port "+DEFAULT_REGISTRY_PORT+", the port 0 switches this feature off.\n";
-      text += "   -rmi.hostnameCB     Specify a hostname where rmiregistry runs.\n";
+      text += "   -rmi.hostname       Specify a hostname where rmiregistry of the xmlBlaster server runs.\n";
+      text += "                       Default is the localhost.\n";
+      text += "   -rmi.registryPortCB Specify a port number where rmiregistry for the callback server listens.\n";
+      text += "                       Default is port "+DEFAULT_REGISTRY_PORT+", the port 0 switches this feature off.\n";
+      text += "   -rmi.hostnameCB     Specify a hostname where rmiregistry for the callback server runs.\n";
       text += "                       Default is the localhost.\n";
       text += "\n";
       return text;
