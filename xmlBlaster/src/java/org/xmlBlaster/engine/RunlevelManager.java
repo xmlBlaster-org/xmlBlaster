@@ -23,6 +23,7 @@ import java.util.Iterator;
  * This starts/stops xmlBlaster with different run levels. 
  * <p>
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>
+ * @see <a href="http://www.xmlblaster.org/xmlBlaster/doc/requirements/engine.runlevel.html">engine.runlevel requirement</a>
  */
 public final class RunlevelManager
 {
