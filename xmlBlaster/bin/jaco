@@ -8,6 +8,13 @@ JACO_PRG=$0
 if ! [ ${JacORB_HOME} ] ; then
    JacORB_BIN=`dirname "${JACO_PRG}"`
    JacORB_HOME=`dirname "${JacORB_BIN}"`
+   if [ -d ${JacORB_HOME}/lib ] ; then
+      # JacORB delivered with xmlBlaster
+      JacORB_LIB=${JacORB_HOME}/lib
+   else
+      # Original JacORB distribution
+      JacORB_LIB=${JacORB_HOME}/classes
+   fi
    #echo -e "\033[32;40m  Using JacORB_HOME=${JacORB_HOME}\033[0m"
 fi
 
@@ -28,10 +35,10 @@ fi
 
 if [ -f ${JDK_HOME}/lib/classes.zip ]; then
    echo -e "\033[32;40m  Running JacORB with JDK 1.1\033[0m"
-   java -native -Djava.compiler= -classpath "${JDK_HOME}/lib/classes.zip:${JacORB_HOME}/classes:${JacORB_HOME}/classes/jacorb.jar:${CLASSPATH}"  "$@"
+   java -native -Djava.compiler= -classpath "${JDK_HOME}/lib/classes.zip:${JacORB_LIB}:${JacORB_LIB}/jacorb.jar:${CLASSPATH}"  "$@"
 else
    echo -e "\033[32;40m  Running JacORB with JDK 1.2\033[0m"
-   java -native -Djava.compiler= -Xbootclasspath:"${JacORB_HOME}/classes:${JacORB_HOME}/classes/jacorb.jar:${JDK_HOME}/jre/lib/rt.jar:${CLASSPATH}"  "$@"
+   java -native -Djava.compiler= -Xbootclasspath:"${JacORB_LIB}:${JacORB_LIB}/jacorb.jar:${JDK_HOME}/jre/lib/rt.jar:${CLASSPATH}"  "$@"
 fi
 
 

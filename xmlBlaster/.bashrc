@@ -92,11 +92,13 @@ if [ -d ${JacORB_HOME} ] ; then
    export PATH
    if [ -f ${JacORB_HOME}/classes/jacorb.jar ] ; then
       # The original JacORB distribution is used
-      CLASSPATH=${JacORB_HOME}/classes/jacorb.jar:${CLASSPATH}:${JacORB_HOME}/classes
+      export JacORB_LIB=${JacORB_HOME}/classes
    else
       # The with xmlBlaster delivered JacORB distribution is used
-      CLASSPATH=${JacORB_HOME}/lib/jacorb.jar:${CLASSPATH}
+      export JacORB_LIB=${JacORB_HOME}/lib
    fi
+   CLASSPATH=${JacORB_LIB}/jacorb.jar:${CLASSPATH}
+   #CLASSPATH=${CLASSPATH}:${JacORB_LIB}
    export CLASSPATH
    echo -e "$BLACK_LTGREEN      Using JacORB_HOME=${JacORB_HOME}  $ESC"
 
