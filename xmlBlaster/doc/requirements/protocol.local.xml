@@ -1,0 +1,77 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='protocol.local' type='NEW' prio='HIGH' status="CLOSED">
+   <topic>XmlBlaster supports native client server communication in the same JVM</topic>
+   <description>
+      <p>
+      It is possible to start xmlBlaster clients with the runlevel manager of xmlBlaster.
+      Like this the client is started on xmlBlaster startup in the same JVM as the server
+      in a configurable sequence with other services (see our runlevel manager requirement).
+      </p>
+      <p>
+      If a client connects to XmlBlaster with the <code>XmlBlasterAccess</code> client interface
+      it can choose the communication protocol like Corba, SOCKET, XmlRpc and more.
+      But if the client runs in the same JVM we can avoid the communication over a socket
+      by choosing the <b>LOCAL</b> protocol plugin. This improves speed and 
+      avoids using OS resources like ports and threads.<br />
+      Switching the protocol is just a configuration setting, so any existing
+      client can choose to communicate locally. Note that the client must implement the
+      <code>I_Plugin</code> interface to be loadable as a plugin, this is described in
+      the <i>engine.runlevel</i> requirement.
+      </p>
+   </description>
+   <example lang="Java">
+   </example>
+
+   <configuration where="client">
+      <p>On <b>client side</b> we need to register the <b>LOCAL</b> protocol
+      plugin to be available in the Java client library.
+      </p>
+      <table border="1">
+         <tr>
+            <th>Property</th>
+            <th>Default / Example</th>
+            <th>Description</th>
+            <th>Implemented</th>
+         </tr>
+
+         <tr>
+            <td>ClientProtocolPlugin[LOCAL][1.0]</td>
+            <td>org.xmlBlaster.client.protocol.local.LocalConnection</td>
+            <td>Specify the plugin to get support of direct client/server communication
+            in the same JVM
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+         <tr>
+            <td>ClientCbServerProtocolPlugin[LOCAL][1.0]</td>
+            <td>org.xmlBlaster.client.protocol.local.LocalCallbackImpl</td>
+            <td>Specify the native callback plugin
+                </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+
+      </table>
+   </configuration>
+   <todo type="HTML">
+   <ol>
+      <li>
+      </li>
+   </ol>
+   </todo>
+   <see type="REQ">protocol</see>
+   <see type="API">org.xmlBlaster.client.protocol.local.LocalConnection</see>
+   <see type="API">org.xmlBlaster.client.protocol.local.LocalCallbackImpl</see>
+   <see type="API">javaclients.HelloWorldLocal</see>
+   <author>xmlBlaster@marcelruff.info</author>
+   <date>2003 06 28</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="OPEN">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">testsuite.</test>
+   </testcase>
+</requirement>
+
