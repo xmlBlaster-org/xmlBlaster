@@ -53,9 +53,7 @@ xmlBlaster: all
 
 xmlBlaster-console: all
 	@echo -e "\nStarting xmlBlaster server (without jit) ...\n"
-	xterm -bg yellow -fg black -sb -sl 4000 -geom 160x24 \
-	      -T "xmlBlaster server without JIT and ${BlasterSystemProperties} ${BlasterServerMemory}" \
-	      -e jaco -Djava.compiler= ${BlasterSystemProperties} ${BlasterServerMemory} org.xmlBlaster.Main &
+	jaco -Djava.compiler= ${BlasterSystemProperties} ${BlasterServerMemory} org.xmlBlaster.Main &
 
 testsuite:
 	@echo -e "\nStarting xmlBlaster test suite (without jit) ...\n"
