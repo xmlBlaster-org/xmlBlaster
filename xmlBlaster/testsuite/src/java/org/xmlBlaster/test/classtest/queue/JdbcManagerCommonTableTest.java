@@ -208,7 +208,12 @@ public class JdbcManagerCommonTableTest extends TestCase {
          entry = new DummyEntry(glob, PriorityEnum.NORM_PRIORITY, storageId, size, true);
          this.manager.addEntry(queueName, "Fritz", entry);
 
-         int numOfDel = this.manager.deleteEntries(queueName, "Fritz", entriesToDelete).length;
+         boolean[] tmpArr = this.manager.deleteEntries(queueName, "Fritz", entriesToDelete);
+         int numOfDel = 0;
+         for (int i=0; i < tmpArr.length; i++) {
+            if ( tmpArr[i] ) numOfDel++;
+         }
+
          assertEquals(me + " deleteEntries check", 2, numOfDel);
 
          retHolder = this.manager.deleteFirstEntries(queueName, "Fritz", 1L, 10000L);
