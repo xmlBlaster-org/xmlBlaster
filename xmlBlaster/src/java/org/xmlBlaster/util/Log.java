@@ -3,7 +3,7 @@ Name:      Log.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: Log.java,v 1.41 2000/03/21 14:33:51 ruff Exp $
+Version:   $Id: Log.java,v 1.42 2000/04/27 18:31:40 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 import java.io.*;
@@ -190,7 +190,7 @@ public class Log
     * If you now want to change the setting in xmlBlaster.properties it looks ugly:<br />
     * +calls=true      # Switch Log.calls() on<br />
     * info=true        # Switch Log.info() off (on commandline: -info)
-    * 
+    *
     */
    public static final void setLogLevel(String[] args)
    {
@@ -648,42 +648,52 @@ public class Log
    */
 class LogFile implements LogListener
 {
+   private String ME = "LogFile";
    private String fileName = "xmlBlaster.log";
    private int maxLogFileLines = 50000;   // lines per file
    private int numLogLines = 0;
    private java.io.File logFile = null;
-   private boolean first = true;
+   private byte[] newLine = null;
 
    public LogFile(String fileName)
    {
       if (fileName != null && fileName.length() > 1) this.fileName = fileName;
+      String tmp = new String("\n");
+      newLine = tmp.getBytes();
       maxLogFileLines = Integer.parseInt(Property.getProperty("Log.maxFileLines", "" + maxLogFileLines));   // in lines per file
       Log.info("LogFile", "Logging output is sent to " + fileName);
       newFile();
    }
 
    /**
-      * Event fired by Log.java through interface LogListener.
-      * <p />
-      * Log output into a file<br />
-      * If the number of lines is too big, save file with extension .bak
-      * and start a new one
-      */
+    * Event fired by Log.java through interface LogListener.
+    * <p />
+    * Log output into a file<br />
+    * If the number of lines is too big, save file with extension .bak
+    * and start a new one
+    */
    public void log(String str)
    {
       if (numLogLines > maxLogFileLines) newFile();
       numLogLines++;
       try {
-         FileUtil.appendToFile(fileName, str + "\n");
-      } catch (Exception e) {
-         if (first) { first = false; System.out.println("ERROR in LogFile: Can't write to file " + fileName); }
+         boolean append = true;
+         FileOutputStream to = new FileOutputStream(fileName, true);
+         to.write(str.getBytes());
+         to.write(newLine);
+         to.close();
+      }
+      catch (Exception e) {
+         Log.addLogListener(null);
+         Log.error(ME, "Can't write to file " + fileName + ": " + e.toString());
+         Log.info(ME, "Resetting logging output to stdout");
          System.out.println(str);
       }
    }
 
    /**
-      * Create the new logfile, save an existing with ".bak" extension.
-      */
+    * Create the new logfile, save an existing with ".bak" extension.
+    */
    private void newFile()
    {
       String bakFile = fileName + "bak";
