@@ -16,6 +16,9 @@ public class Constants
 {
    private static final String ME = "Constants";
 
+   public static final String DEFAULT_SECURITYPLUGIN_TYPE = "htpasswd";
+   public static final String DEFAULT_SECURITYPLUGIN_VERSION = "1.0";
+
    public final static long MINUTE_IN_MILLIS = 1000L*60;
    public final static long HOUR_IN_MILLIS = MINUTE_IN_MILLIS*60;
    public final static long DAY_IN_MILLIS = HOUR_IN_MILLIS * 24;
