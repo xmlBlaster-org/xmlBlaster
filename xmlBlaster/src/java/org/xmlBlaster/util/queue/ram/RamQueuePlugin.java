@@ -196,10 +196,13 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
    public long clear() {
       synchronized(this) {
          long ret = (long)this.storage.size();
-         if (this.notifiedAboutAddOrRemove) {
-            // Take a copy to avoid java.util.ConcurrentModificationException
-            I_QueueEntry[] entries = (I_QueueEntry[])this.storage.toArray(new I_QueueEntry[this.storage.size()]);
-            for (int ii=0; ii<entries.length; ii++) {
+
+         // Take a copy to avoid java.util.ConcurrentModificationException
+         I_QueueEntry[] entries = (I_QueueEntry[])this.storage.toArray(new I_QueueEntry[this.storage.size()]);
+
+         for (int ii=0; ii<entries.length; ii++) {
+            entries[ii].setStored(false);
+            if (this.notifiedAboutAddOrRemove) {
                try {
                   entries[ii].removed(this.storageId);
                }
@@ -208,6 +211,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
                }
             }
          }
+
          this.storage.clear();
          this.sizeInBytes = 0L;
          this.persistentSizeInBytes = 0L;
@@ -242,6 +246,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
                this.numOfPersistentEntries--;
                this.persistentSizeInBytes -= entry.getSizeInBytes();
             }
+            entry.setStored(false); // tell the entry it has been removed from the storage ...
             if (this.notifiedAboutAddOrRemove) {
                entry.removed(this.storageId);
             }
@@ -458,6 +463,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
             if (this.notifiedAboutAddOrRemove) {
                queueEntries[j].removed(this.storageId);
             }
+            queueEntries[j].setStored(false); // tell the entry it has been removed from the storage ...
             if (this.storage.remove(queueEntries[j])) {
                I_Entry entry = queueEntries[j];
                this.sizeInBytes -= entry.getSizeInBytes();
@@ -511,6 +517,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
             if (this.notifiedAboutAddOrRemove) {
                entry.removed(this.storageId);
             }
+            entry.setStored(false); // tell the entry it has been removed from the storage ...
             if (this.storage.remove(entry)) {
                this.sizeInBytes -= entry.getSizeInBytes();
                if (entry.isPersistent()) {
@@ -555,6 +562,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
             if (this.notifiedAboutAddOrRemove) {
                entry.removed(this.storageId);
             }
+            entry.setStored(false); // tell the entry it has been removed from the storage ...
             if (this.storage.remove(entry)) {
                this.sizeInBytes -= entry.getSizeInBytes();
                if (entry.isPersistent()) {
@@ -604,6 +612,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
       synchronized(this) {
          if (!this.storage.contains(entry)) {
             if (this.storage.add(entry)) {
+               entry.setStored(true);
                this.sizeInBytes += entry.getSizeInBytes();
                if (entry.isPersistent()) {
                   this.numOfPersistentEntries++;
@@ -665,6 +674,7 @@ public final class RamQueuePlugin implements I_Queue, I_StoragePlugin
             I_QueueEntry entry = msgArr[i];
             if (!this.storage.contains(entry)) {
                if (this.storage.add(entry)) {
+   	          entry.setStored(true);
                   this.sizeInBytes += entry.getSizeInBytes();
                   if (entry.isPersistent()) {
                      this.numOfPersistentEntries++;

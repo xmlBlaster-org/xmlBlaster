@@ -13,6 +13,7 @@ import org.xmlBlaster.util.queue.jdbc.JdbcConnectionPool;
 import org.xmlBlaster.util.queue.StorageId;
 import org.xmlBlaster.util.queue.I_Queue;
 import org.xmlBlaster.util.queue.I_QueueEntry;
+import org.xmlBlaster.util.queue.I_StorageProblemListener;
 import org.xmlBlaster.util.queuemsg.MsgQueueEntry;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.MsgUnit;
@@ -390,7 +391,9 @@ public class CacheQueueTest extends TestCase {
       long transientNumOfBytes  = 0L;
       long persistentNumOfBytes  = 0L;
 
-      int numOfEntries = 10;
+      int numOfEntries = 20;
+      int entries1 = 5;
+      int entries2 = 10;
 
       this.queue.clear();
       transientNumOfBytes = 100 * numOfTransientEntries;
@@ -400,15 +403,52 @@ public class CacheQueueTest extends TestCase {
       PriorityEnum prio = PriorityEnum.toPriorityEnum(4);
 
       boolean persistent = false;
-      for (int i=0; i < entries.length; i++) {
+      for (int i=0; i < numOfEntries; i++) {
          persistent = (i % 2) == 0; // even are persistent uneven are transient
-         DummyEntry entry = new DummyEntry(glob, prio, this.queue.getStorageId(), 80, persistent);
+         entries[i] = new DummyEntry(glob, prio, this.queue.getStorageId(), 80, persistent);
       }
 
       // do the test here ....
-      for (int i=0; i < entries.length; i++)
+      for (int i=0; i < entries1; i++) {
          this.queue.put(entries[i], false);
 //         assertEquals(ME + " number of entries after putting transients is wrong ", transients.length, queue.getNumOfEntries());
+      }
+
+      CacheQueueInterceptorPlugin cacheQueue = (CacheQueueInterceptorPlugin)this.queue;
+      cacheQueue.storageUnavailable(I_StorageProblemListener.AVAILABLE);
+
+      for (int i=entries1; i < entries2; i++) {
+         this.queue.put(entries[i], false);
+      }
+
+      ArrayList list = this.queue.peek(-1, -1L);
+      assertEquals(ME + " number of entries when retrieving is wrong ", entries2, list.size());
+      for (int i=0; i < list.size(); i++) {
+         long uniqueId = ((I_QueueEntry)list.get(i)).getUniqueId();
+         assertEquals(ME + " entry sequence is wrong ", entries[i].getUniqueId(), uniqueId);
+      }
+      long ret = this.queue.removeRandom( (I_QueueEntry[])list.toArray(new I_QueueEntry[list.size()]) );
+      assertEquals(ME + " number of entries removed is wrong ", (long)entries2, ret);
+
+      list = this.queue.peek(-1, -1L);
+      assertEquals(ME + " number of entries peeked after removal is wrong ", 0, list.size());
+
+      long num = this.queue.getNumOfEntries();
+      assertEquals(ME + " number of entries after removal is wrong ", 0L, num);
+
+      cacheQueue.storageAvailable(I_StorageProblemListener.UNAVAILABLE);
+      list = this.queue.peek(-1, -1L);
+      assertEquals(ME + " number of entries peeked after reconnecting is wrong ", 0, list.size());
+
+      num = this.queue.getNumOfEntries();
+      assertEquals(ME + " number of entries after reconnecting is wrong ", 0L, num);
+
+/*
+      for (int i=entries2; i < numOfEntries; i++) {
+         this.queue.put(entries[i], false);
+      }
+*/
+
    }
 
 
@@ -424,6 +464,10 @@ public class CacheQueueTest extends TestCase {
 
       long startTime = System.currentTimeMillis();
 
+      testSub.setUp();
+      testSub.testAvailability();
+      testSub.tearDown();
+
 /*
       testSub.setUp();
       testSub.tearDown();
@@ -434,10 +478,6 @@ public class CacheQueueTest extends TestCase {
 */
       testSub.setUp();
       testSub.testPutPeekRemove();
-      testSub.tearDown();
-
-      testSub.setUp();
-      testSub.testAvailability();
       testSub.tearDown();
 
       long usedTime = System.currentTimeMillis() - startTime;

@@ -62,12 +62,23 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
    private CacheControlParam controlParam;
    private PluginInfo pluginInfo;
 
+   private I_QueueEntry referenceEntry;
+
    /**
     * @see I_StorageProblemListener#storageUnavailable(int)
     */
    public void storageUnavailable(int oldStatus) {
-      this.log.call(ME, "storageUnavailable");
+      if (this.log.CALL) this.log.call(ME, "storageUnavailable");
       this.isConnected = false;
+      // we could optimize this by providing a peekLast method to the I_Queue
+      try {
+         ArrayList lst = this.transientQueue.peek(-1, -1L);
+         if (lst.size() < 1) this.referenceEntry = null;
+         else this.referenceEntry = (I_QueueEntry)lst.get(lst.size()-1);
+      }
+      catch (XmlBlasterException ex) {
+         this.log.error(ME, "storageUnavailable: exception occured when peeking the transient queue: " + ex.getMessage());
+      }
    }
 
 
@@ -76,7 +87,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
     */
    public void storageAvailable(int oldStatus) {
       if (oldStatus == I_StorageProblemListener.UNDEF) return;
-      this.log.call(ME, "storageAvailable");
+      if (this.log.CALL) this.log.call(ME, "storageAvailable");
      /* remove all obsolete messages from the persitence. Obsolete are the
       * entries which are lower (lower priority and older) than the lowest
       * entry in the transient storage.
@@ -86,9 +97,34 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
 
       try {
          synchronized(this.deleteDeliveredMonitor) {
-            I_QueueEntry limitEntry = this.transientQueue.peek();
-            ArrayList list = this.persistentQueue.peekWithLimitEntry(limitEntry);
+            boolean isInclusive = true; // if the reference is the original one then it is inclusive, if it is a new one then it is exclusive
+            I_QueueEntry limitEntry = this.referenceEntry;
+            if (this.log.TRACE) {
+               if (limitEntry == null) this.log.trace(ME, "storageAvailable: the reference entry is null");
+               else this.log.trace(ME, "storageAvailable: the reference entry is '" + limitEntry.getUniqueId() + "' and its flag 'stored' is '" + limitEntry.isStored() + "'");
+            }
+            ArrayList list = null;
+            this.referenceEntry = null;
+
+            if (limitEntry == null || limitEntry.isStored()) {
+               isInclusive = false;
+               limitEntry = this.transientQueue.peek();
+               if (this.log.TRACE) {
+                  if (limitEntry == null) this.log.trace(ME, "storageAvailable: the new reference entry is null");
+                  else this.log.trace(ME, "storageAvailable: the new reference entry is '" + limitEntry.getUniqueId() + "'");
+               }
+            }
+            if (limitEntry == null) { // then ram queue was empty when it lost connection and is empty now
+               isInclusive = false;
+               list = this.persistentQueue.peek(-1, -1L);
+            }
+            else list = this.persistentQueue.peekWithLimitEntry(limitEntry);
+            if (this.log.TRACE) this.log.trace(ME, "storageAvailable: '" + list.size() + "' entries removed from persistence");
             this.persistentQueue.removeRandom((I_Entry[])list.toArray(new I_Entry[list.size()]));
+            if (isInclusive) {
+               this.persistentQueue.take();
+               if (this.log.TRACE) this.log.trace(ME, "storageAvailable: the limit was inclusive: removing one further entry from the persitent storage");
+            }
          }
 
          // add all new persistent entries to the persistent storage ...
@@ -136,6 +172,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
          glob = ((QueuePropertyBase)userData).getGlobal();
          this.log = glob.getLog("queue");
          this.ME = this.getClass().getName() + "-" + uniqueQueueId;
+         if (this.log.CALL) this.log.call(ME, "initialized");
          this.queueId = uniqueQueueId;
 
          QueuePluginManager pluginManager = glob.getQueuePluginManager();

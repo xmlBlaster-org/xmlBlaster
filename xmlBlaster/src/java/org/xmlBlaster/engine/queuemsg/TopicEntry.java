@@ -51,6 +51,8 @@ public final class TopicEntry implements I_MapEntry
    private MsgUnit msgUnit;
    private final long immutableSizeInBytes;
 
+   private boolean stored = false;
+
    /**
     * Use this constructor if a new message object is fed by method publish(). 
     * <p />
@@ -244,6 +246,22 @@ public final class TopicEntry implements I_MapEntry
    public boolean isExpired() {
       return false;
    }
+
+   /**
+    * @see org.xmlBlaster.util.queue.I_Entry#setStored(boolean)
+    */
+   public final void setStored(boolean stored) {
+      this.stored = stored;
+   }
+
+
+   /**
+    * @see org.xmlBlaster.util.queue.I_Entry#isStored()
+    */
+   public final boolean isStored() {
+      return this.stored;
+   }
+
 
    /**
     * Measure size for XML-ASCII versus java.io.Serializable persistence. 

@@ -75,6 +75,8 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
    private MsgUnit msgUnit;
    private final long immutableSizeInBytes;
 
+   private boolean stored = false;
+
    /**
     * Use this constructor if a new message object is fed by method publish(). 
     * <p />
@@ -473,6 +475,20 @@ public final class MsgUnitWrapper implements I_MapEntry, I_Timeout
          return "DESTROYED";
       }
       return "UNDEF";
+   }
+
+   /**
+    * @see org.xmlBlaster.util.queue.I_Entry#setStored(boolean)
+    */
+   public final void setStored(boolean stored) {
+      this.stored = stored;
+   }
+
+   /**
+    * @see org.xmlBlaster.util.queue.I_Entry#isStored()
+    */
+   public final boolean isStored() {
+      return this.stored;
    }
 
    /**

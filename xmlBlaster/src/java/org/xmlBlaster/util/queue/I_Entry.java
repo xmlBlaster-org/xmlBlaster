@@ -63,4 +63,18 @@ public interface I_Entry extends java.io.Serializable
     * Notification if this entry is removed from storage
     */
    void removed(StorageId storageId) throws XmlBlasterException;
+
+   /**
+    * to be invoked with 'true' when the entry is put in a storage and with 'false' when the entry is
+    * removed from the storage.
+    * @param stored 'true' if the entry will be put into the storage, 'false' if it is removed.
+    */
+   void setStored(boolean stored);
+
+   /**
+    * @return boolean 'true' if the entry is still in the storage, 'false' if the entry has been removed
+    *         or if it has not been put in the storage yet.
+    */
+   boolean isStored();
+
 }

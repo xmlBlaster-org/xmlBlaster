@@ -55,6 +55,8 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
    /** Which method we invoke, e.g. "update" or "publish" */
    protected final String entryType;
 
+   private boolean stored = false;
+
    /**
     * @param methodName use methodName as entryType
     */
@@ -413,5 +415,20 @@ public abstract class MsgQueueEntry implements I_QueueEntry, Cloneable
       }
       return this.logId;
    }
+
+   /**
+    * @see org.xmlBlaster.util.queue.I_Entry#setStored(boolean)
+    */
+   final public void setStored(boolean stored) {
+      this.stored = stored;
+   }
+
+   /**
+    * @see org.xmlBlaster.util.queue.I_Entry#isStored()
+    */
+   final public boolean isStored() {
+      return this.stored;
+   }
+
 }
 

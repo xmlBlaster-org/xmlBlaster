@@ -22,7 +22,7 @@ import org.xmlBlaster.util.queue.I_StorageProblemListener;
 
 import java.util.TreeMap;
 import java.util.Map;
-
+import java.util.Iterator; 
 
 /**
  * Mapping messages in RAM only. 
@@ -152,6 +152,7 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
             */
          }
          
+         entry.setStored(true);
          this.sizeInBytes += entry.getSizeInBytes();
          if (entry.isPersistent()) {
             this.numOfPersistentEntries++;
@@ -172,6 +173,7 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
             this.numOfPersistentEntries--;
             this.persistentSizeInBytes -= entry.getSizeInBytes();
          }
+         entry.setStored(false);
          this.sizeInBytes -= entry.getSizeInBytes();
          return 1;
       }
@@ -188,6 +190,12 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
       if (log.CALL) log.call(ME, "clear()");
       synchronized(this.storage) {
          long ret = (long)this.storage.size();
+
+         Iterator iter = this.storage.values().iterator();
+         while (iter.hasNext()) {
+            ((I_MapEntry)iter.next()).setStored(false);
+         }
+
          this.storage.clear();
          this.sizeInBytes = 0L;
          this.persistentSizeInBytes = 0L;
