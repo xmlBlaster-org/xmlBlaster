@@ -19,6 +19,8 @@ Howto run the html examples with persistent http connection:
 
 4. Start xmlBlaster
 
+   jaco org.xmlBlaster.Main
+
 
 5. Start a publisher, so that we have some dynamic data:
 	
@@ -30,7 +32,13 @@ Howto run the html examples with persistent http connection:
    http://localhost/systemInfo/systemInfo.html?ActionType=login&loginName=martin&passwd=secret
 
 
+Start it in the background on Linux:
+====================================
 
-jserv > /dev/null 2>&1 &
-java org.xmlBlaster.Main -logFile /tmp/xmlBlaster.log  -useKeyboard false  > /dev/null 2>&1 &
-java demo.html.systemInfo.SystemInfoPublisher -info false > /dev/null 2>&1 &
+   java org.xmlBlaster.Main -Xms12M -Xmx32M -logFile /tmp/xmlBlaster.log  -useKeyboard false  > /tmp/xmlBlaster.log 2>&1 &
+
+   #jserv > /tmp/jserv.log 2>&1 &
+	CLASSPATH=$CLASSPATH:/usr/lib/apache/ApacheJServ.jar
+   java -Xms12M -Xmx32M org.apache.jserv.JServ /etc/httpd/conf/jserv/jserv.properties > /tmp/jserv.log 2>&1 & 
+
+   java demo.html.systemInfo.SystemInfoPublisher -info false > /tmp/SystemInfoPublisher.log 2>&1 &
