@@ -23,7 +23,7 @@ Comment:   Default implementation of the POA_serverIdl::BlasterCallback.
   #include "generated/xmlBlasterC.h"
   #include "generated/xmlBlasterS.h"
 #else
-  #include <generated/xmlBlaster.h>
+  #include <generated/xmlBlaster.h>	 // OMNIORB: use -Wbh=.h to force this extension
 #endif
 
 
