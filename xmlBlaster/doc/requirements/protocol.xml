@@ -46,24 +46,24 @@
       Example entry to xmlBlasterPlugins.xml for Corba, RMI and XMLRPC etc. drivers:
       </p>
      <table border="1"><tr><td><pre>
-   &lt;plugin id='protocol:SOCKET' className='org.xmlBlaster.protocol.socket.SocketDriver'>
+   &lt;plugin id='SOCKET' className='org.xmlBlaster.protocol.socket.SocketDriver'>
       &lt;action do='LOAD' onStartupRunlevel='3' sequence='1' 
               onFail='resource.configuration.pluginFailed'/>
       &lt;action do='STOP' onShutdownRunlevel='2' sequence='5'/>   
    &lt;/plugin>
 
-   &lt;plugin id='protocol:IOR' className='org.xmlBlaster.protocol.corba.CorbaDriver'>
+   &lt;plugin id='IOR' className='org.xmlBlaster.protocol.corba.CorbaDriver'>
       &lt;action do='LOAD' onStartupRunlevel='3' sequence='2'
               onFail='resource.configuration.pluginFailed'/>
       &lt;action do='STOP' onShutdownRunlevel='2' sequence='4'/>   
    &lt;/plugin>
 
-   &lt;plugin id='protocol:XMLRPC' className='org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver'>
+   &lt;plugin id='XMLRPC' className='org.xmlBlaster.protocol.xmlrpc.XmlRpcDriver'>
       &lt;action do='LOAD' onStartupRunlevel='3' sequence='3'/> 
       &lt;action do='STOP' onShutdownRunlevel='2' sequence='3'/>   
    &lt;/plugin>
 
-   &lt;plugin id='protocol:RMI' className='org.xmlBlaster.protocol.rmi.RmiDriver'>
+   &lt;plugin id='RMI' className='org.xmlBlaster.protocol.rmi.RmiDriver'>
       &lt;action do='LOAD' onStartupRunlevel='3' sequence='4' />
       &lt;action do='STOP' onShutdownRunlevel='2' sequence='2'/>   
    &lt;/plugin>
@@ -77,6 +77,52 @@
       your callback wishes.<br />
       See requirement 'engine.qos.login.callback' for further directions.
       </p>
+
+      <br />
+      <p><b>Protocol specific syntax overview</b></p>
+      <p>The following table shows the URL syntax of the different supported
+      protocols</p>
+     <table border="1">
+       <tr><th>Protocol</th><th>Address syntax</th><th>Example</th><th>Comment</th></tr>
+       <tr>
+         <td>bootstrap</td>
+         <td>xmlBlaster://<i>host</i>:<i>port</i></td>
+         <td>xmlBlaster://127.168.1.1:3412</td>
+         <td>The xmlBlaster internal bootstrap http server, currently only used by the
+             CORBA protocol plugin to find the server IOR</td>
+       </tr>
+       <tr>
+         <td>IOR</td>
+         <td>see CORBA standard</td>
+         <td>IOR:00012340034...</td>
+         <td>The CORBA inter operable reference, usually this is loaded initially by our bootstrap http server
+             but you can uses a Naming Service or an ior-file.</td>
+       </tr>
+       <tr>
+         <td>XMLRPC</td>
+         <td>http://<i>host</i>:<i>port</i>/</td>
+         <td>http://127.168.1.1:8080/</td>
+         <td>The XmlRpc URL.</td>
+       </tr>
+       <tr>
+         <td>SOCKET</td>
+         <td>socket://<i>host</i>:<i>port</i></td>
+         <td>socket://127.168.1.1:7608</td>
+         <td>The URL address markup of our proprietary SOCKET protocol.</td>
+       </tr>
+       <tr>
+         <td>RMI</td>
+         <td>rmi://<i>host</i>:<i>registryPort</i>/I_AuthServer</td>
+         <td>rmi://127.168.1.1:1099/I_AuthServer</td>
+         <td>The RMI registry lookup and default name entry.</td>
+       </tr>
+       <tr>
+         <td>EMAIL</td>
+         <td>see the email RFC</td>
+         <td>joe@mars.univers</td>
+         <td>The email specific addressing.</td>
+       </tr>
+      </table>
    </description>
    <configuration where="server">
       <!--table border="1">
@@ -95,6 +141,8 @@
    <see type="REQ">protocol.corba.JacORB</see>
    <see type="REQ">protocol.corba.orbacus</see>
    <see type="REQ">protocol.corba.NameService</see>
+   <see type="REQ">protocol.xmlrpc</see>
+   <see type="REQ">protocol.rmi</see>
    <see type="REQ">protocol.email</see>
    <see type="REQ">protocol.soap</see>
    <see type="REQ">protocol.jms</see>
@@ -106,7 +154,7 @@
    <hacker>xmlBlaster@marcelruff.info</hacker>
    <effort>4</effort>
    <date>2000 06 06</date>
-   <revision>$Revision: 1.13 $</revision>
+   <revision>$Revision: 1.14 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>This is tested implicit by all testsuite tests</comment>
