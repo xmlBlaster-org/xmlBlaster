@@ -157,7 +157,7 @@ public class TimeoutTest extends TestCase {
       Dummy2 dummy2 = new Dummy2();
       long start = System.currentTimeMillis();
       for (int ii = 0; ii < numTimers; ii++) {
-         timeout.addTimeoutListener(dummy2, 4000L, "timer-" + ii);
+         timeout.addTimeoutListener(dummy2, 6000L, "timer-" + ii);
       }
       assertEquals("Expected " + numTimers + " instead of " + timeout.getSize() + " active timers", numTimers, timeout.getSize());
 
