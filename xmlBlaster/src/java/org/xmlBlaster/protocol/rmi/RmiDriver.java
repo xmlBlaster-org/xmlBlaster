@@ -3,7 +3,7 @@ Name:      RmiDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   RmiDriver class to invoke the xmlBlaster server using RMI.
-Version:   $Id: RmiDriver.java,v 1.31 2003/03/13 15:42:29 ruff Exp $
+Version:   $Id: RmiDriver.java,v 1.32 2003/03/13 15:54:03 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
@@ -291,7 +291,7 @@ public class RmiDriver implements I_Driver
                log.warn(ME, "Removed another entry while binding authentication RMI server to registry with name '" + authBindName + "'");
             }
             catch(Exception e2) {
-               log.error(ME+".RmiRegistryFailed", "RMI registry of '" + authBindName + "' failed: " + e2.toString());
+               if (log.TRACE) log.trace(ME+".RmiRegistryFailed", "RMI registry of '" + authBindName + "' failed: " + e2.toString());
                throw new XmlBlasterException(ME+".RmiRegistryFailed", "RMI registry of '" + authBindName + "' failed: " + e2.toString());
             }
          } catch (Exception e) {
