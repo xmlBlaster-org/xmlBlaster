@@ -64,3 +64,11 @@ This is how junit is build new:
 
    Add the test.jar file to the xmlBlaster/lib directory
 
+
+
+Building html files with syntax highlighting from java source
+_____________________________________________________________
+
+   The xmlBlaster/doc/requirement html files have links
+   on the testsuite examples.
+   Type 'make html' to generate the html files.
