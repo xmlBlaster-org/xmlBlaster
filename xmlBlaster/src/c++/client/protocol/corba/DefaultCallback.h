@@ -81,6 +81,7 @@ namespace org {
       }
 
       ~DefaultCallback() {
+         //log_.trace(me(), "DEBUG ONLY: entering ~DefaultCallback");
          //      delete boss_; MUST BE DELETED OUTSIDE 
          // BECAUSE IT IS NOT OWNED BY THIS OBJECT
       }

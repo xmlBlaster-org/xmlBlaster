@@ -168,7 +168,7 @@ namespace client { namespace protocol { namespace corba {
 
    /**
     * Returns the naming service reference
-    * Caller needs to free instance.
+    * Caller needs to free instance (typically by assigning it to a _var).
     */
    CosNaming::NamingContext_ptr getNamingService() {
       return CosNaming::NamingContext::_duplicate(static_cast<CosNaming::NamingContext_ptr>(namingContext_.in()));
