@@ -94,7 +94,10 @@ public interface I_XmlBlasterConnection extends I_Plugin
 
    public void shutdown() throws XmlBlasterException;
 
-   /** Reset the driver on problems */
+   /** 
+    * Reset the driver on problems. 
+    * This method is called by the dispatcher framework on transition to POLLING
+    */
    public void resetConnection();
 
    public boolean isLoggedIn();
