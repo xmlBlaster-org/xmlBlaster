@@ -36,7 +36,7 @@ namespace org { namespace xmlBlaster {
     * but if you need other handling of callbacks, take a copy
     * of this Callback implementation and add your own code.
     */
-   class DefaultCallback : public virtual POA_clientIdl::BlasterCallback {
+   class Dll_Export DefaultCallback : public virtual POA_clientIdl::BlasterCallback {
 
    protected:
       util::Log log_;

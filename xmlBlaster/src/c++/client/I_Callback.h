@@ -23,10 +23,10 @@ namespace org { namespace xmlBlaster {
     * You may use this, if you don't want to program with the rawer CORBA 
     * BlasterCallback.update()
     *
-    * @version $Revision: 1.10 $
-    * @author $Author: ruff $
+    * @version $Revision: 1.11 $
+    * @author $Author: johnson $
     */
-   class I_Callback {
+   class Dll_Export I_Callback {
       /**
        * This is the callback method invoked from CorbaConnection
        * informing the client in an asynchronous mode about a new message.
