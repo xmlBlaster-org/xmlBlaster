@@ -113,7 +113,7 @@
    <see type="API">org.xmlBlaster.client.protocol.XmlBlasterConnection</see>
    <author>ruff@swand.lake.de</author>
    <date>2000 02 24</date>
-   <revision>$Revision: 1.11 $</revision>
+   <revision>$Revision: 1.12 $</revision>
    <testcase status="CLOSED">
       <name>ruff@swand.lake.de</name>
       <comment>
@@ -122,6 +122,7 @@
       </comment>
       <test tool="SUITE">testsuite.org.xmlBlaster.TestFailSave</test>
       <test tool="SUITE">testsuite.org.xmlBlaster.TestInvocationRecorder</test>
+      <test tool="SUITE">testsuite.org.xmlBlaster.TestFailSaveAsync</test>
       <test tool="SUITE">classtest.FileIOTest</test>
       <test tool="SUITE">classtest.InvocationRecorderTest</test>
    </testcase>
