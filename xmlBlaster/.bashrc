@@ -25,6 +25,7 @@ OS="`uname -s`"
 if [ ${OS} = "Linux" ]; then
    ECHO="echo -e"
 elif [ ${OS} = "SunOS" ]; then
+   # Works only with bash on SunOS. Bourne shell and ksh ignore '-e'
    ECHO="echo -e"
 else
    ECHO="echo"
@@ -156,7 +157,7 @@ if [ "x${JDK_HOME}" != "x" ] ; then
          CLASSPATH=${CLASSPATH}:${JDK_HOME}/jre/lib/rt.jar
          export CLASSPATH
       fi
-      PATH=${PATH}:${JDK_HOME}/bin
+      PATH=${JDK_HOME}/bin:${PATH}
       export PATH
    else
       ${ECHO} "$BLACK_RED   The directory JDK_HOME=$JDK_HOME doesn't exist   $ESC"
