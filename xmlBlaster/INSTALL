@@ -1,123 +1,136 @@
-How to install and compile xmlBlaster
-====================================
+#################################################################
+#                                                               #
+#                     xmlBlaster 0.63                           #
+#                                                               #  
+#################################################################
 
-You need JDK 1.2 or better to run xmlBlaster.
+                        Required
+-----------------------------------------------------------------
 
-
-Quick setup of xmlBlaster:
---------------------------
-
-If you use sh, ksh or bash, you may chose to source
-the xmlBlaster/.bashrc into your environment, for example
-write this into your .profile file:
-
-   export JDK_HOME=/usr/local/jdk
-   export JacORB_HOME=/usr/local/JacORB
-   export XMLBLASTER_HOME=${HOME}/xmlBlaster
-   export MICO_HOME=/usr/local/mico           (optional)
-   export JIKES_HOME=/usr/local/jikes         (optional)
-   . ${XMLBLASTER_HOME}/.bashrc
-
-and after a new login type 'make all' in the XMLBLASTER_HOME directory.
-See step 5.) below how to start xmlBlaster.
+   - JDK 1.2 or later
+   - a 'make' utility recommended. For DOS/Windows, e.g.
+     M$ "nmake" which comes with Visual C++ or cygwin's make)
+   - JacOrb (CORBA)
+   - XSL processor
 
 
-Manual setup of xmlBlaster:
----------------------------
+                        Environment
+-----------------------------------------------------------------
 
-1) Install the JacORB CORBA library first (JacORB1_0-beta13):
+1. Extend your CLASSPATH environment variable. 
 
-     http://www.inf.fu-berlin.de/~brose/jacorb/
-
-   Set the environment for JacORB home directory, so that
-   the xmlBlaster Makefile (Makefile.Include) can find it:
-
+     export JDK_HOME=/usr/local/jdk
      export JacORB_HOME=/usr/local/JacORB
+     export XMLBLASTER_HOME=${HOME}/xmlBlaster 
 
+   or csh, tcsh :
 
-2) Set the environment to the xmlBlaster directory
+     setenv JDK_HOME /usr/local/jdk
+     setenv JacORB_HOME /usr/local/JacORB
+     setenv XMLBLASTER_HOME ${HOME}/xmlBlaster
 
-   For example using the sh, ksh or bash:
+2. If you use sh, ksh or bash, you may chose to source the
+   $HOME/xmlBlaster-path/.bashrc into your environment.
 
-     export XMLBLASTER_HOME=$HOME/xmlBlaster
+      source  $XMLBLASTER_HOME/.bashrc
 
-   or using the csh, tcsh:
-
-     setenv XMLBLASTER_HOME $HOME/xmlBlaster
-
-
-3) If you want to compile the stuff, the CLASSPATH has to
-   point to jar files, to the sources (.java) and to the binaries (.class):
+   or you must set for bash-shell:
 
      export CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/classes
      export CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/src/java
      export CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/omquery.jar
      export CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/xtdash.jar
-     export CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/xml.jar        (xml-tr2.zip - http://developer.java.sun.com/developer/products/xml/)
+     export CLASSPATH=${CLASSPATH}:${XMLBLASTER_HOME}/lib/xml.jar
+
+   Or you can do this automatically from your statup shell script.
+   After a new login type 'make all' in the XMLBLASTER_HOME directory.
 
 
-4) Compile xmlBlaster:
+related links:
+--------------
+JacORB1_0-beta13 : http://www.inf.fu-berlin.de/~brose/jacorb/
+xml-tr2.zip      : http://developer.java.sun.com/developer/products/xml/
 
-   a) Edit $XMLBLASTER_HOME/Makefile.Include and customize it to your environment
+
+                         Compile 
+------------------------------------------------------------------
+After you have set environment variables do a new login and type
+
+   make all
+
+in the XMLBLASTER_HOME directory. If you type make you get a usage 
+of all make options.
+
+Usage :
+
+    make all       --> makes everything new
+    make clean     --> deletes all classes
+    make distclean --> deletes all classes/doc/jar
+    make javadoc   --> call 'make javadoc' in xmlBlaster root dir
+    make demo      --> makes everything new and starts a demo
+    make test      --> makes everything new and starts a test scenario
+    make jar       --> makes jar files of all packages into directory $(JAR_DIR)
+
+
+
+                      Start xmlBlaster
+-------------------------------------------------------------------
+You have three options to start the xmlBlaster-Server.
+
+1. xmlBlaster with builtin HTTP-Server on localhost, port=7609 which to pass the server IOR
+   (This is the Default-Startup)
+
+     jaco org.xmlBlaster.Main
+
+   and a testclient
     
-   b) Go to the home directory of xmlBlaster and type:
-
-     make all
-
-
-5) Try the xmlBlaster server
-   a) Start the xmlBlaster server
-	   - jaco is the java wrapper from JacORB
-		- this uses the built in http server on localhost, port=7609 to pass the server IOR
-
-       ${JacORB_HOME}/bin/jaco org.xmlBlaster.Main
-
-   b) Start the client (or many of those):
-
-       ${JacORB_HOME}/bin/jaco testsuite.org.xmlBlaster.ClientGet
-
-
-   Good. You have done it!
-
-
-   A variant using the xmlBlaster built in http server (localhost / 7609 is default):
-       ${JacORB_HOME}/bin/jaco org.xmlBlaster.Main -iorPort 7609
-		 ${JacORB_HOME}/bin/jaco testsuite.org.xmlBlaster.ClientGet -iorHost localhost -iorPort 7609
-
-	A variant using a file to pass the server IOR:
-       ${JacORB_HOME}/bin/jaco org.xmlBlaster.Main -iorFile /tmp/NS_Ref
-       ${JacORB_HOME}/bin/jaco testsuite.org.xmlBlaster.ClientGet -iorFile /tmp/NS_Ref
-
-   Variant using a name service and a local web server to publish the name service
-   (edit ${HOME}/.jacorb_properties accordingly e.g. jacorb.NameServerURL=http://localhost:80/NS_Ref):
-       rm /tmp/NS_db;  ${JacORB_HOME}/bin/ns  /usr/local/httpd/htdocs/NS_Ref  /tmp/NS_db
-       ${JacORB_HOME}/bin/jaco org.xmlBlaster.Main
-       ${JacORB_HOME}/bin/jaco testsuite.org.xmlBlaster.ClientXml
+     jaco testsuite.org.xmlBlaster.ClientGet
 
 
 
+2. A variant using the xmlBlaster built in http server (localhost / 7609 is default)
+
+     jaco org.xmlBlaster.Main -iorPort 7609
+
+   and a testclient
+
+     jaco testsuite.org.xmlBlaster.ClientGet -iorHost localhost -iorPort 7609
+
+
+
+3. A variant using a file to pass the server IOR:
+
+      jaco org.xmlBlaster.Main -iorFile /tmp/NS_Ref
+
+   and a testclient
+
+     jaco testsuite.org.xmlBlaster.ClientGet -iorFile /tmp/NS_Ref
+
+
+
+4. Variant using a name service and a local web server to publish the name service.
+   Edit ${HOME}/.jacorb_properties accordingly e.g. jacorb.NameServerURL=http://localhost:80/NS_Ref):
+
+     rm /tmp/NS_db;  ${JacORB_HOME}/bin/ns  /usr/local/httpd/htdocs/NS_Ref  /tmp/NS_db
+
+     jaco org.xmlBlaster.Main
+
+     jaco testsuite.org.xmlBlaster.ClientXml
+
+
+                             Testsuite
 -------------------------------------------------------------------------
-For developers
+undefined
 
- 1.) If you use the testsuite goodies you must set the path to the
-     testsuite- bin directory.
-
-    sh, ksh or bash:
-
-     export PATH=$PATH:$XMLBLASTER_HOME/testsuite/bin
-
-
- 2.) To generate the javadoc API of xmlBlaster type in the xmlBlaster home directory:
-
-    make javadoc
+#################################################################
+#                                                               #
+#                     xmlBlaster client                         #
+#                                                               #
+#################################################################
 
 
- 3.) To generate a xmlBlaster.jar file type in the xmlBlaster home directory:
-
-    make jar
-
-
---------- C++ -----------------------------------------------------------
+                             C++ - client
+-------------------------------------------------------------------------
 C++ clients with MICO 2.3.0 (http://www.mico.org)
 
 1) Install MICO
@@ -131,8 +144,8 @@ C++ clients with MICO 2.3.0 (http://www.mico.org)
 3) cd ${XMLBLASTER_HOME}/testsuite/c++
    and follow the instructions in ${XMLBLASTER_HOME}/testsuite/c++/README
 
-
---------- PERL ----------------------------------------------------------
+                            Perl - client
+-------------------------------------------------------------------------
 Perl clients with COPE 0.50_51 (http://www.lunatech.com/research/corba/cope/)
 You need MICO first
 AWARE: The current COPE Version 0.50_51 has problems with oneway methods
@@ -160,8 +173,8 @@ AWARE: The current COPE Version 0.50_51 has problems with oneway methods
 4) idl2perl -imp xmlBlaster.idl
 
 
-
---------- TCL -----------------------------------------------------------
+                         Tcl - Client
+-----------------------------------------------------------------------
 There are two ways for Tcl clients to access xmlBlaster:
 
 a) Using Tcl clients with TclMico http://www.mico.org/
@@ -222,8 +235,8 @@ Here a description to setup TclJava (b):
     ./configure --with-jikes --with-jdk=/usr/local/jdk --with-tcl=/www/tcl8.2 --prefix=/www/tclJava
 
 
-
---------- PYTHON --------------------------------------------------------
+                           Python - Client
+-------------------------------------------------------------------------
 Python clients with Fnorb-1.01 http://www.dstc.edu.au/Products/Fnorb/
    fnorb-1.01.tar.gz
    cd src
@@ -232,3 +245,5 @@ Python clients with Fnorb-1.01 http://www.dstc.edu.au/Products/Fnorb/
    export PATH=$PATH:$FNORB_HOME/Fnorb/script 
    export PYTHONPATH=$PYTHONPATH:$FNORB_HOME 
 
+-------------------------------------------------------------------------
+Manuel + Marcel, December 1999
