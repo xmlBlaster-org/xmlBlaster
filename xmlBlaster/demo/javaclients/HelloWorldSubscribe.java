@@ -70,7 +70,7 @@ public class HelloWorldSubscribe implements I_Callback
    private String updateExceptionErrorCode;
    private String updateExceptionMessage;
    private String updateExceptionRuntime;
-	private int maxContentLength;
+        private int maxContentLength;
 
    public HelloWorldSubscribe(Global glob) {
       this.glob = glob;
@@ -78,6 +78,7 @@ public class HelloWorldSubscribe implements I_Callback
       I_XmlBlasterAccess con = null;
       boolean disconnect = glob.getProperty().get("disconnect", true);
       try {
+         boolean persistentConnection = glob.getProperty().get("persistentConnection", false);
          boolean interactive = glob.getProperty().get("interactive", true);
          this.interactiveUpdate = glob.getProperty().get("interactiveUpdate", false);
          this.updateSleep = glob.getProperty().get("updateSleep", 0L);
@@ -88,6 +89,7 @@ public class HelloWorldSubscribe implements I_Callback
          String domain = glob.getProperty().get("domain", "");
          String xpath = glob.getProperty().get("xpath", "");
          boolean multiSubscribe = glob.getProperty().get("multiSubscribe", true);
+         boolean persistentSubscribe = glob.getProperty().get("persistentSubscribe", false);
          boolean local = glob.getProperty().get("local", true);
          boolean initialUpdate = glob.getProperty().get("initialUpdate", true);
          boolean wantContent = glob.getProperty().get("wantContent", true);
@@ -123,6 +125,7 @@ public class HelloWorldSubscribe implements I_Callback
          }
 
          log.info(ME, "Used settings are:");
+         log.info(ME, "   -persistentConnection " + persistentConnection);
          log.info(ME, "   -interactive       " + interactive);
          log.info(ME, "   -interactiveUpdate " + this.interactiveUpdate);
          log.info(ME, "   -updateSleep       " + this.updateSleep);
@@ -133,6 +136,7 @@ public class HelloWorldSubscribe implements I_Callback
          log.info(ME, "   -domain            " + domain);
          log.info(ME, "   -xpath             " + xpath);
          log.info(ME, "   -multiSubscribe    " + multiSubscribe);
+         log.info(ME, "   -persistentSubscribe " + persistentSubscribe);
          log.info(ME, "   -local             " + local);
          log.info(ME, "   -initialUpdate     " + initialUpdate);
          log.info(ME, "   -historyNumUpdates " + historyNumUpdates);
@@ -150,6 +154,7 @@ public class HelloWorldSubscribe implements I_Callback
          // ConnectQos checks -session.name and -passwd from command line
          log.info(ME, "============= CreatingConnectQos");
          ConnectQos qos = new ConnectQos(glob);
+         qos.setPersistent(persistentConnection);
          log.info(ME, "ConnectQos is " + qos.toXml());
          ConnectReturnQos crq = con.connect(qos, this);  // Login to xmlBlaster, register for updates
          log.info(ME, "Connect success as " + crq.toXml());
@@ -172,6 +177,7 @@ public class HelloWorldSubscribe implements I_Callback
          SubscribeQos sq = new SubscribeQos(glob);
          sq.setWantInitialUpdate(initialUpdate);
          sq.setMultiSubscribe(multiSubscribe);
+         sq.setPersistent(persistentSubscribe);
          sq.setWantLocal(local);
          sq.setWantContent(wantContent);
          
