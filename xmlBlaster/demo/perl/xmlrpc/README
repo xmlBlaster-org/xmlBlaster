@@ -41,8 +41,13 @@ For Perl XML-RPC implementations see:
    http://www.xmlrpc.com/directory/1568/implementations
 
 Ken McLeod has implemented XML-RPC for Perl
-   http://www.perlware.com/products/xmlrpc/
-
+   http://search.cpan.org/CPAN/authors/id/K/KM/KMACLEOD/Frontier-RPC-0.06.tar.gz
+   Unpack it and do:
+        perl Makefile.PL
+        make
+        make test
+        make install
+     
 Get more informations about INSTALLATION at
    http://xmlrpc-c.sourceforge.net/xmlrpc-howto/xmlrpc-howto-perl.html
 -------------------------------------------------------------------
