@@ -3,7 +3,7 @@ Name:      TestSubMulti.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSubMulti.java,v 1.1 2002/01/29 19:22:44 ruff Exp $
+Version:   $Id: TestSubMulti.java,v 1.2 2002/01/30 17:35:28 ruff Exp $
 ------------------------------------------------------------------------------*/
 package testsuite.org.xmlBlaster;
 
@@ -37,16 +37,15 @@ import test.framework.*;
  * <p>
  * Invoke examples:<br />
  * <pre>
- *    jaco test.textui.TestRunner testsuite.org.xmlBlaster.TestSubMulti
- *    jaco test.ui.TestRunner testsuite.org.xmlBlaster.TestSubMulti
+ *    java test.textui.TestRunner testsuite.org.xmlBlaster.TestSubMulti
+ *    java test.ui.TestRunner testsuite.org.xmlBlaster.TestSubMulti
  * </pre>
  */
 public class TestSubMulti extends TestCase implements I_Callback
 {
    private static String ME = "Tim";
-   private boolean messageArrived = false;
 
-   private String publishOid = "dummy";
+   private String publishOid = "";
    private XmlBlasterConnection con;
    private String senderName;
    private String senderContent;
@@ -55,7 +54,7 @@ public class TestSubMulti extends TestCase implements I_Callback
 
    private int numReceived = 0;         // error checking
    private final String contentMime = "text/xml";
-   private final String contentMimeExtended = "1.0";
+   private final String contentMimeExtended = "action";
 
    /**
     * Constructs the TestSubMulti object.
@@ -142,7 +141,7 @@ public class TestSubMulti extends TestCase implements I_Callback
       if (Log.TRACE) Log.trace(ME, "Publishing a message ...");
       numReceived = 0;
 
-      PublishKeyWrapper key = new PublishKeyWrapper("", "text/xml", "action");
+      PublishKeyWrapper key = new PublishKeyWrapper("", contentMime, contentMimeExtended);
       key.wrap("<location dest='agent-192.168.10.218' driver='PSD1'></location>");
       PublishQosWrapper qos = new PublishQosWrapper();
       senderContent = "some content";
@@ -202,13 +201,11 @@ public class TestSubMulti extends TestCase implements I_Callback
       // Test requirement "engine.qos.update.rcvTimestamp":
       assert("sentTimestamp="+sentTimestamp+" not in hamony with rcvTimestamp="+updateQoS.getRcvTimestamp(),
              sentTimestamp<updateQoS.getRcvTimestamp() && (sentTimestamp+1000)>updateQoS.getRcvTimestamp());
-
-      messageArrived = true;
    }
 
 
    /**
-    * Little helper, waits until the variable 'messageArrive' is set
+    * Little helper, waits until the variable 'numReceived==2' is set
     * to true, or returns when the given timeout occurs.
     * @param timeout in milliseconds
     */
@@ -217,7 +214,7 @@ public class TestSubMulti extends TestCase implements I_Callback
       long pollingInterval = 50L;  // check every 0.05 seconds
       if (timeout < 50)  pollingInterval = timeout / 10L;
       long sum = 0L;
-      while (!messageArrived) {
+      while (numReceived < 2) {
          try {
             Thread.currentThread().sleep(pollingInterval);
          }
@@ -229,7 +226,6 @@ public class TestSubMulti extends TestCase implements I_Callback
             break;
          }
       }
-      messageArrived = false;
    }
 
 
