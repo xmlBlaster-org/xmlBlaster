@@ -17,7 +17,7 @@ import org.xmlBlaster.util.def.ErrorCode;
  * @author <a href="mailto:Konrad.Krafft@doubleslash.de">Konrad Krafft</a>
  * @author <a href="mailto:xmlBlaster@marcelruff.info">Marcel Ruff</a>
  */
-public class PluginInfo {
+public class PluginInfo implements I_PluginConfig {
    private Global glob;
    private LogChannel log;
    private String ME;
@@ -292,5 +292,10 @@ org.xmlBlaster.util.queue.cache.CacheQueueInterceptorPlugin,persistentQueue=JDBC
    public String toString() {
       return (this.propertyKey == null) ? this.propertyName+"["+getType()+"]["+getVersion()+"]" : this.propertyKey;
    }
+   
+   public String getPrefix() {
+      return "plugin/" + getType() + "/";
+   }
+   
 }
 
