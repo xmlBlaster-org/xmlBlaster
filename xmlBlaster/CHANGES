@@ -1,5 +1,7 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
- 
+
+ o The msgStore cache implementation supports now LRU (last recently used) lookup
+
  o added setter and getter for subject queue property in ConnectQos
 
  o added a shuffler thread to forward entries from SubjectQueue to
