@@ -28,11 +28,15 @@ public class PublishSame
    private I_XmlBlasterAccess con = null;
    private ConnectReturnQos conRetQos = null;
    private boolean connected;
+   private int bulkSize = 100;
+   private boolean interactive = true;
 
    public PublishSame(final Global glob) {
       
       log = glob.getLog(null);
       long lCount = 0L;
+      bulkSize = glob.getProperty().get("bulkSize", bulkSize);
+      interactive = glob.getProperty().get("interactive", interactive);
 
       try {
          con = glob.getXmlBlasterAccess();
@@ -56,15 +60,21 @@ public class PublishSame
             xmlKey =  "<key oid='OneMessage'> <topic id='aaaa'/> </key>";
             con.publish(new MsgUnit(xmlKey,b,qw.toXml()));
             // System.out.println(new Timestamp(System.currentTimeMillis())+":"+lCount);
-            if ((lCount % 100L) == 0) {
-               log.info(ME, "Sent " + lCount + " identical messages, enter return to continue, enter 'q' to quit");
+            if ((lCount % bulkSize) == 0) {
                try {
-                  BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-                  String line = in.readLine(); // Blocking in I/O
-                  if (line == null) continue;
-                  line = line.trim();
-                  if (line.toLowerCase().equals("q")) {
-                     break;
+                  if (interactive) {
+                     log.info(ME, "Sent " + lCount + " identical messages, enter return to continue, enter 'q' to quit");
+                     BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+                     String line = in.readLine(); // Blocking in I/O
+                     if (line == null) continue;
+                     line = line.trim();
+                     if (line.toLowerCase().equals("q")) {
+                        break;
+                     }
+                  }
+                  else {
+                     log.info(ME, "Sent " + lCount + " identical messages, sleeping 10 sec");
+                     Thread.currentThread().sleep(10000);
                   }
                }
                catch(Exception e) {
