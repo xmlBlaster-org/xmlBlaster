@@ -115,6 +115,8 @@ ConnectReturnQos XmlBlasterAccess::connect(const ConnectQos& qos, I_Callback *cl
    connectReturnQos_ = connection_->connect(connectQos_);
 
    ME = string("XmlBlasterAccess-") + connectReturnQos_.getSessionQos().getAbsoluteName();
+
+   setServerNodeId(connectReturnQos_.getSessionQos().getClusterNodeId());
    
    // Is done in ConnectionsHandler.cpp
    //global_.setId(connectReturnQos_.getSessionQos().getAbsoluteName());
