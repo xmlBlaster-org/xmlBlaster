@@ -222,6 +222,7 @@ final public class Authenticate implements I_Authenticate
          // --- compose an answer -----------------------------------------------
          ConnectReturnQos returnQos = new ConnectReturnQos(glob, connectQos);
          returnQos.setSessionId(sessionId); // securityInfo is not coded yet !
+         returnQos.setPublicSessionId(""+sessionInfo.getInstanceId());
 
          // Now some nice logging ...
          StringBuffer sb = new StringBuffer(256);
