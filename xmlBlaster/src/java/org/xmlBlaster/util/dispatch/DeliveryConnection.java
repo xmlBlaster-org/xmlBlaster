@@ -282,6 +282,7 @@ abstract public class DeliveryConnection implements I_Timeout
       synchronized (this) {
          if (isDead()) {   // ignore, not possible
             log.warn(ME, "Connection transition " + oldState.toString() + " -> " + state.toString() + " for " + myId + ": We ignore it.");
+            //Thread.currentThread().dumpStack();
             return;
          }
 
