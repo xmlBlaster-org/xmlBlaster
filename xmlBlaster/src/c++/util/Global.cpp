@@ -3,7 +3,7 @@ Name:      Global.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Create unique timestamp
-Version:   $Id: Global.cpp,v 1.52 2004/01/16 18:52:40 ruff Exp $
+Version:   $Id: Global.cpp,v 1.53 2004/01/19 14:53:08 ruff Exp $
 ------------------------------------------------------------------------------*/
 #include <client/protocol/CbServerPluginManager.h>
 #include <util/dispatch/DispatchManager.h>
@@ -28,16 +28,22 @@ Version:   $Id: Global.cpp,v 1.52 2004/01/16 18:52:40 ruff Exp $
 #if defined(__GNUC__) || defined(__ICC)
    // To support query state with 'ident libxmlBlasterClient.so' or 'what libxmlBlasterClient.so'
    // or 'strings libxmlBlasterClient.so  | grep Global.cpp'
-   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.52 2004/01/16 18:52:40 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  __attribute__ ((unused)) =  "@(#) $Id: Global.cpp,v 1.53 2004/01/19 14:53:08 ruff Exp $ xmlBlaster @version@";
 #elif defined(__SUNPRO_CC)
-   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.52 2004/01/16 18:52:40 ruff Exp $ xmlBlaster @version@";
+   static const char *rcsid_GlobalCpp  =  "@(#) $Id: Global.cpp,v 1.53 2004/01/19 14:53:08 ruff Exp $ xmlBlaster @version@";
 #endif
 
 namespace org { namespace xmlBlaster { namespace util {
 
-std::string lexical_cast(bool arg)
+/** Specialization for bool to return "true" instead of "1", see lexical_cast.h */
+template<> std::string lexical_cast(bool arg)
 {
-	return (arg) ? "true" : "false";
+   return (arg) ? "true" : "false";
+}
+/** Specialization for bool to return "true" instead of "1", see lexical_cast.h */
+template<> const char * lexical_cast(bool arg)
+{
+   return (arg) ? "true" : "false";
 }
 
 using namespace std;
