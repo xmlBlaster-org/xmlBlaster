@@ -240,7 +240,7 @@ catch (XmlBlasterException ex) {
 
          <tr>
             <td>XmlBlasterException.logFormat.internal</td>
-            <td>Dumps extended inforamtions including the stack trace</td>
+            <td>Dumps extended informations including the stack trace</td>
             <td>Allows to format the returned exception text when <i>exception.getMessage()</i> is invoked
             specifically for <i>internal</i> exceptions.
             </td>
@@ -307,7 +307,7 @@ catch (XmlBlasterException ex) {
    
    <date>2002 09 24</date>
    
-   <revision>$Revision: 1.15 $</revision>
+   <revision>$Revision: 1.16 $</revision>
 
    <testcase status="OPEN">
       <name>-</name>
