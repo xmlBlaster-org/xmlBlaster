@@ -232,6 +232,23 @@ string XmlBlasterAccess::ping()
    return connection_->ping("<qos/>");
 }
 
+long XmlBlasterAccess::flushQueue()
+{
+   if (!connection_) {
+      throw XmlBlasterException(INTERNAL_NULLPOINTER, ME + "::flushQueue", "no connection exists when trying to flush the queue: try to connect to xmlBlaster first");
+   }
+   return connection_->flushQueue();
+}
+
+MsgQueue XmlBlasterAccess::getCopyOfQueue(bool eraseOriginalQueueEntries)
+{
+   if (!connection_) {
+      throw XmlBlasterException(INTERNAL_NULLPOINTER, ME + "::getCopyOfQueue", "no connection exists when trying to flush the queue: try to connect to xmlBlaster first");
+   }
+   return connection_->getCopyOfQueue(eraseOriginalQueueEntries);
+}
+
+
 
 }}} // namespaces
 
@@ -240,9 +257,11 @@ string XmlBlasterAccess::ping()
 
 #include <util/PlatformUtils.hpp>
 #include <util/Timestamp.h>
+#include <util/thread/Thread.h>
 
 using namespace std;
 using namespace org::xmlBlaster::client;
+using namespace org::xmlBlaster::util::thread;
 
 int main(int args, char* argv[])
 {
@@ -291,13 +310,12 @@ int main(int args, char* argv[])
        log.info("", "Successfully published a message to xmlBlaster");
        log.info("", "Sleeping");
        Timestamp delay = 10000000000ll; // 10 seconds
-       TimestampFactory::getInstance().sleep(delay);
+       Thread::sleep(delay);
    }
    catch (XmlBlasterException &ex) {
       std::cout << ex.toXml() << std::endl;
    }
    return 0;
 }
-
 
 #endif

@@ -14,7 +14,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * <pre>
  *   &lt;qos>
  *     &lt;state id='OK' info='QUEUED[bilbo]'/>
- *     &lt;key oid='HelloWorld'/>
+ *     &lt;key oid='HelloWorld'/>
  *  &lt;/qos>
  * </pre>
  * @see org.xmlBlaster.test.classtest.qos.StatusQosFactoryTest
@@ -51,6 +51,8 @@ public:
     */
    PublishReturnQos(Global& global, const StatusQosData& data);
 
+   PublishReturnQos(Global& global);
+
    PublishReturnQos(const PublishReturnQos& data);
 
    PublishReturnQos operator =(const PublishReturnQos& data);
@@ -60,6 +62,11 @@ public:
     * @return "OK", "ERROR" etc. See Constants::java
     */
    string getState() const;
+
+   /**
+    * Sets the state (used when queuing messages and giving back the status to the client
+    */
+    void setState(const string& state);
 
    /**
     * Access state of message on update().
@@ -72,6 +79,11 @@ public:
     * @return The unique identifier of a message
     */
    string getKeyOid() const;
+
+   /**
+    * Sets the soid (used when queuing messages and giving back the status to the client
+    */
+    void setKeyOid(const string& oid);
 
    /**
     * Dump state of this object into a XML ASCII string.

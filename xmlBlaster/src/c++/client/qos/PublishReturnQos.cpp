@@ -17,6 +17,11 @@ namespace org { namespace xmlBlaster { namespace client { namespace qos {
    {
    }
 
+   PublishReturnQos::PublishReturnQos(Global& global)
+      : ME("PublishReturnQos"), global_(global), data_(global)
+   {
+   }
+
    PublishReturnQos::PublishReturnQos(const PublishReturnQos& data)
      : ME(data.ME), global_(data.global_), data_(data.data_)
    {
@@ -32,6 +37,11 @@ namespace org { namespace xmlBlaster { namespace client { namespace qos {
       return data_.getState();
    }
 
+   void PublishReturnQos::setState(const string& state)
+   {
+      data_.setState(state);
+   }
+
    string PublishReturnQos::getStateInfo() const
    {
       return data_.getStateInfo();
@@ -40,6 +50,11 @@ namespace org { namespace xmlBlaster { namespace client { namespace qos {
    string PublishReturnQos::getKeyOid() const
    {
       return data_.getKeyOid();
+   }
+
+   void PublishReturnQos::setKeyOid(const string& oid)
+   {
+      data_.setKeyOid(oid);
    }
 
    string PublishReturnQos::toXml(const string& extraOffset) const

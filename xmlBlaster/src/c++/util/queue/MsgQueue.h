@@ -47,8 +47,13 @@ private:
    StorageType   storage_;
    long          numOfBytes_;
    Mutex         accessMutex_;
+
 public:
    MsgQueue(Global& global, const QueueProperty& property);
+
+   MsgQueue(const MsgQueue& queue);
+
+   MsgQueue& operator =(const MsgQueue& queue);
    
    ~MsgQueue();
     
@@ -60,7 +65,6 @@ public:
     * the queue.
     */
    void put(MsgQueueEntry *entry);
-
 
    void put(const PublishQueueEntry& entry);
 
@@ -79,7 +83,17 @@ public:
     * Deletes the entries specified in the vector in the argument list. If this vector is empty or if
     * the queue is empty, zero (0) is returned, otherwise it returns the number of entries really deleted.
     */
-   long randomRemove(const vector<EntryType>& entries);
+   long randomRemove(vector<EntryType>::const_iterator start, vector<EntryType>::const_iterator end);
+
+   /**
+    * Clears (removes all entries) this queue
+    */
+    void clear();
+
+    /**
+     * returns true if the queue is empty, false otherwise
+     */					 
+     bool empty() const;
 
 };
 

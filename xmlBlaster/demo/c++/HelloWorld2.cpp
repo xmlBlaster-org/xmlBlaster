@@ -38,9 +38,10 @@ public:
    {
    }
 
-   void reConnected()
+   bool reConnected()
    {
       log_.info(ME, "reconnected");
+      return true;
    }
 
    void lostConnection()
@@ -48,7 +49,7 @@ public:
       log_.info(ME, "lost connection");
    }
 
-   void goingToPoll()
+   void toPolling()
    {
       log_.info(ME, "going to poll modus");
    }

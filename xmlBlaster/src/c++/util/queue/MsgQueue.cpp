@@ -19,6 +19,28 @@ MsgQueue::MsgQueue(Global& global, const QueueProperty& property)
    numOfBytes_ = 0;
 }
 
+
+MsgQueue::MsgQueue(const MsgQueue& queue)
+   : ME("MsgQueue"), 
+     global_(queue.global_), 
+     log_(queue.log_), 
+     property_(queue.property_), 
+     storage_(queue.storage_), 
+     accessMutex_()
+{
+   numOfBytes_ = queue.numOfBytes_;
+}
+
+MsgQueue& MsgQueue::operator =(const MsgQueue& queue)
+{
+   Lock lock(queue.accessMutex_);
+   property_   = queue.property_;
+   storage_    = queue.storage_;
+   numOfBytes_ = queue.numOfBytes_;
+   return *this;
+
+}
+
 MsgQueue::~MsgQueue()
 {
    if (!storage_.empty()) {
@@ -87,13 +109,13 @@ vector<EntryType> MsgQueue::peekWithSamePriority(long maxNumOfEntries, long maxN
 }
 
 
-long MsgQueue::randomRemove(const vector<EntryType>& entries) 
+long MsgQueue::randomRemove(vector<EntryType>::const_iterator start, vector<EntryType>::const_iterator end) 
 {
    Lock lock(accessMutex_);
-   if (entries.empty() || storage_.empty()) return 0;
-   vector<EntryType>::const_iterator iter = entries.begin();
+   if (start == end || storage_.empty()) return 0;
+   vector<EntryType>::const_iterator iter = start;
    long count = 0;
-   while (iter != entries.end()) {
+   while (iter != end) {
       long entrySize = (*iter)->getSizeInBytes();
       if (storage_.empty()) return 0;
       int help = storage_.erase(*iter);
@@ -105,6 +127,20 @@ long MsgQueue::randomRemove(const vector<EntryType>& entries)
    }
    return count;
 }
+
+void MsgQueue::clear()
+{
+   Lock lock(accessMutex_);
+   storage_.erase(storage_.begin(), storage_.end());
+   numOfBytes_ = 0;
+}
+
+
+bool MsgQueue::empty() const
+{
+   return storage_.empty();
+}
+
 
 }}}} // namespace
 

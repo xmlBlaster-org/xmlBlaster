@@ -8,6 +8,7 @@ Comment:   Testing the Timeout Features
 #include <util/ReferenceHolder.h>
 #include <util/queue/PublishQueueEntry.h>
 #include <util/queue/ConnectQueueEntry.h>
+
 #include <iostream>
 #include <string>
 #include <util/Log.h>
@@ -149,6 +150,23 @@ public:
 
    void tearDown() {
    }
+
+   bool reConnected()
+   {
+      log_.info(ME, "reconnected");
+      return true;
+   }
+
+   void lostConnection()
+   {
+      log_.info(ME, "lost connection");
+   }
+
+   void toPolling()
+   {
+      log_.info(ME, "going to poll modus");
+   }
+
 
 };
    

@@ -23,11 +23,15 @@ Comment:   Handles the I_XmlBlasterConnections
 #include <util/XmlBlasterException.h>
 #include <util/thread/Thread.h>
 #include <util/I_Timeout.h>
+#include <util/queue/MsgQueue.h>
+#include <util/queue/PublishQueueEntry.h>
+#include <util/queue/ConnectQueueEntry.h>
 
 using namespace org::xmlBlaster::client::protocol;
 using namespace org::xmlBlaster::client;
 using namespace org::xmlBlaster::util::thread;
 using namespace org::xmlBlaster::util;
+using namespace org::xmlBlaster::util::queue;
 
 namespace org { namespace xmlBlaster { namespace util { namespace dispatch {
 
@@ -54,6 +58,7 @@ private:
    int                     retries_;
    int                     currentRetry_;
    Timestamp               timestamp_;
+   MsgQueue*               queue_;
 
 public:
    ConnectionsHandler(Global& global, DeliveryManager& deliveryManager);
@@ -122,7 +127,27 @@ public:
 
    void timeout(void *userData);
 
+   /**
+    * Flushes all entries in the queue, i.e. the entries of the queue are sent to xmlBlaster.
+    * If the queue is empty or NULL, then 0 is returned. If the state is in POLLING or DEAD, then -1 is
+    * returned.. This method blocks until all entries in the queue have been sent.
+    */
+   long flushQueue();
+
+   /**
+    * Creates and returns a copy of the client queue. if 'eraseOriginalQueueEntries' is 'true', then the
+    * original queue (the client queue) is cleared.
+    */
+   MsgQueue getCopyOfQueue(bool eraseOriginalQueueEntries=true);
+
+
+protected:
+   /** only used inside the class to avoid deadlock */
+   long flushQueueUnlocked();
+   PublishReturnQos queuePublish(const MessageUnit& msgUnit);
+
 };
+
 
 }}}} // namespaces
 
