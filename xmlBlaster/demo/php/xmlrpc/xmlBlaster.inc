@@ -187,6 +187,43 @@ class xmlBlaster {
 
         }//get
 
+
+        function publish( $key, $content, $qos ){
+
+                dbgprint( "xmlBlaster::publish()");
+
+                $rpcmsg = new xmlrpcmsg( "xmlBlaster.publish", array(
+                                                        new xmlrpcval( $this->sessionId(), "string" ) ,
+                                                        new xmlrpcval( $key, "string" ) ,
+                                                        new xmlrpcval( $content, "base64" ) ,
+                                                        new xmlrpcval( $qos, "string" ) ,
+                                                        ) );
+                $result = $this->client->send( $rpcmsg );
+
+                // check if xml-rpc error
+
+                if( $result->faultCode() ){
+                        // a xml-rpc error occured
+                        $res = xmlrpc_decode( $result->faultString() );
+                        dbgprint( "ERROR xmlBlaster::publish() xml-rpc ERROR = $res" );
+                        return array( 'ERROR', $res );
+                }
+
+                $res = xmlrpc_decode( $result->value() );
+
+                // check if xmlBlaster error
+
+                if( gettype($res)=='array' && isset($res['faultString']) ){
+                        dbgprint( "ERROR xmlBlaster::publish() xmlBlaster ERROR = [".$res['faultString'] ."]" );
+                        return array( 'ERROR', $res['faultString'] );
+                }
+
+                return array('OK','no error') ;
+
+        }//publish
+
+
+
 }//class xmlBlaster
 
 class messageUnit {

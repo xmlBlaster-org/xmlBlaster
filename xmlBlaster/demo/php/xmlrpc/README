@@ -47,3 +47,5 @@ CHANGES :
         \ to the single quotes this must be removed.
         - Clarified the README a little (needs more work) based on the
           shortcomings I noticed. PB
+2005-01-13 laghi@swissinfo.org
+        - added publish
