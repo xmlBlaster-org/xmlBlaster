@@ -1,9 +1,16 @@
 Howto run the html examples with persistent http connection:
 ============================================================
 
-1. Run 'build.bat deploy_war'
-   Assumes tomcat in $HOME/jakarta_tomcat and creates
+1. Run
+      'build.bat deploy_war'  (Windows)
+      'build.sh deploy_war'   (UNIX)
+
+   This assumes tomcat in $HOME/jakarta_tomcat and creates
    $HOME/jakarta_tomcat/webapps/xmlBlaster.war
+
+   If you have another installation directory, set it like
+      set TOMCAT_HOME=C:/tomcat
+   this will be recognized by build.xml
 
 2. Start xmlBlaster
 
@@ -42,6 +49,8 @@ Start it in the background on Linux:
 
 Using tomcat 3.2.4 serlvet enginge (http://jakarta.apache.org):
 ===============================================================
+
+These are optional tasks:
 
 - tomcat/conf/server.xml:
         <Context path="/xmlBlaster"
