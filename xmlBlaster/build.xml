@@ -2090,17 +2090,17 @@ TODO
              06/16/2003  02:34 PM         1,098,054 xmlBlasterClient.lib
              06/16/2003  02:34 PM         7,220,224 xmlBlasterClient.pdb
              06/16/2003  02:34 PM             2,957 xmlBlasterClient.rsp
-            ->
+            -->
             <!-- C
              06/23/2003  12:14 PM            73,728 xmlBlasterClientC.dll
              06/23/2003  12:14 PM           175,104 xmlBlasterClientC.pdb
             -->
-            <libset dir="${lib.dir}" libs="xmlBlasterClientC" />  <!-- xmlBlasterClientC.dll -->
-            <libset dir="${lib.dir}" libs="xmlBlasterClientC.dll" />  <!-- xmlBlasterClientC.dll -->
+            <libset casesensitive="false" dir="${lib.dir}" libs="xmlBlasterClientC" />  <!-- xmlBlasterClientC.dll -->
+            <libset casesensitive="false" dir="${lib.dir}" libs="xmlBlasterClientC.dll" />  <!-- xmlBlasterClientC.dll -->
             <libset dir="${src.c.dir}/socket" libs="pthreadVC" />
             <syslibset libs="ws2_32" />
-            <libset dir="${lib.dir.absolute}" libs="xmlBlasterClientC" />  <!-- xmlBlasterClientC.dll -->
-            <libset dir="${lib.dir.absolute}" libs="xmlBlasterClientC.dll" />  <!-- xmlBlasterClientC.dll -->
+            <libset casesensitive="false" dir="${lib.dir.absolute}" libs="xmlBlasterClientC" />  <!-- xmlBlasterClientC.dll -->
+            <libset casesensitive="false" dir="${lib.dir.absolute}" libs="xmlBlasterClientC.dll" />  <!-- xmlBlasterClientC.dll -->
             <!-- [cc] link /NOLOGO /DEBUG /INCREMENTAL:NO /OUT:LogRedirect.exe '"..\..\..\..\..\..\Program Files\Microsoft Visual Studio .NET 2003\Vc7\PlatformS
                  DK\Lib\WS2_32.Lib"' ..\..\..\..\src\c\socket\pthreadVC.lib ..\..\..\..\build\obj\LogRedirect.obj
             -->
