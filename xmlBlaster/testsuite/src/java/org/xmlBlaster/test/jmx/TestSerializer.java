@@ -25,7 +25,7 @@ public class TestSerializer  extends TestCase{
 
    protected void setUp()
    {
-     this.glob = new Global().instance();
+     this.glob = Global.instance();
      this.log = this.glob.getLog("test");
    }
 

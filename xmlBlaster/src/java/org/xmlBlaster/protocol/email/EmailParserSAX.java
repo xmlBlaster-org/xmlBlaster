@@ -16,7 +16,7 @@ import org.xmlBlaster.protocol.I_XmlBlaster;
 import org.xmlBlaster.engine.qos.ConnectQosServer;
 import org.xmlBlaster.engine.qos.ConnectReturnQosServer;
 import org.xmlBlaster.util.MsgUnitRaw;
-import org.xmlBlaster.engine.Global;
+import org.xmlBlaster.util.Global;
 
 /**
  * Title:

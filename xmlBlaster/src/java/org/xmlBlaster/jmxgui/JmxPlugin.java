@@ -29,7 +29,7 @@ public abstract class JmxPlugin extends javax.swing.JPanel{
 
   public JmxPlugin() {
     super();
-//    ConnectorClient cc = new ConnectorClient(new Global().instance());
+//    ConnectorClient cc = new ConnectorClient(Global.instance());
   }
 
   public JmxPlugin(ConnectorClient cc ) {

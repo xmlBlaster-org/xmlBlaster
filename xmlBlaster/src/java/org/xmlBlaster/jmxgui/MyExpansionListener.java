@@ -38,7 +38,7 @@ public class MyExpansionListener implements TreeSelectionListener {
 
   public MyExpansionListener(MainFrame parentFrame, Global glob) {
 //    this.connectorClient = connectorClient;
-    if (glob == null) glob = new Global().instance();
+    if (glob == null) glob = Global.instance();
     log = glob.getLog("jmxGUI");
     cc = new ComponentController(glob);
     this.parentFrame = parentFrame;

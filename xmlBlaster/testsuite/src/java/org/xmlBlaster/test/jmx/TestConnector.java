@@ -49,7 +49,7 @@ public class TestConnector  extends TestCase implements I_Callback {
 
    protected void setUp()
    {
-     if (this.glob == null) this.glob = new Global().instance();
+     if (this.glob == null) this.glob = Global.instance();
      this.log = this.glob.getLog("test");
      log.info(ME,"setUp of TestConnector...");
      //connect to embedded xmlBlaster

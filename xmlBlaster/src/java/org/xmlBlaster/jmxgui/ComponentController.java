@@ -31,7 +31,7 @@ public class ComponentController {
   private static String ME = "ComponentController";
 
   public ComponentController(Global glob) {
-    if (glob == null) glob = new Global().instance();
+    if (glob == null) glob = Global.instance();
     xmlUtil = new XmlUtil();
     log = glob.getLog("jmxGUI");
     hObjects = new Hashtable();
