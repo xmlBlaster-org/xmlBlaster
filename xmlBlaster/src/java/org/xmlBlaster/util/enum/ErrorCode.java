@@ -118,7 +118,7 @@ public final class ErrorCode implements java.io.Serializable
    public static final ErrorCode RESOURCE_TOO_MANY_THREADS = new ErrorCode("resource.tooManyThreads",
          "The number of threads used is exceeded, try increasing the number of threads in the properties",
          new ResourceInfo[] {
-            new ResourceInfo(ResourceInfo.REQ, "Increasing the number of threads", "queue.jdbc")
+            new ResourceInfo(ResourceInfo.REQ, "Increasing the number of threads", "queue.jdbc.commontable")
          }
       );
 
