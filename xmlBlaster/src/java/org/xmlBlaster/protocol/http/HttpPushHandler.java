@@ -3,7 +3,7 @@ Name:      HttpPushHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: HttpPushHandler.java,v 1.32 2000/07/12 12:55:27 ruff Exp $
+Version:   $Id: HttpPushHandler.java,v 1.33 2000/07/13 09:47:30 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -91,14 +91,15 @@ public class HttpPushHandler
       this.req = req;
       this.res = res;
       this.sessionId = sessionId;
-      this.ME  = "HttpPushHandler-" + req.getRemoteAddr() + "-" + loginName + "-" + sessionId;
+      String browserId = req.getRemoteAddr() + "-" + loginName + "-" + sessionId;
+      this.ME  = "HttpPushHandler-" + browserId;
       initialize(null, null);
 
       pushQueue = new Vector();
       setBrowserIsReady(true);
 
       Log.trace(ME,"Creating PingThread ...");
-      pingThread = new HttpPingThread( this, PING_INTERVAL, loginName );
+      pingThread = new HttpPingThread(this, PING_INTERVAL, browserId);
    }
 
 
@@ -214,6 +215,7 @@ public class HttpPushHandler
     */
    public void setClosed(boolean closed)
    {
+      if (Log.TRACE) Log.trace(ME, "Setting closed from " + this.closed + " to " + closed);
       this.closed = closed;
    }
 
@@ -525,11 +527,18 @@ public class HttpPushHandler
       private int waitForPong = 0;
       private long counter = 0L;
 
-      /** Response from the browser on our ping */
+      /**
+       * Response from the browser on our ping. 
+       * <p />
+       * Sometimes the browser is fine but suddenly a pong is missing,
+       * for example ... "refresh-2084", "refresh-2086", ...<br />
+       * Number 2085 was just missing in the logs.<br />
+       * So we reset the waitForPong counter, and accept a sometimes missing pong.
+       */
       public void pong()
       {
-         waitForPong--;
-         if (waitForPong < 0) waitForPong=0;
+         if (Log.TRACE) Log.trace(ME, "Received pong, current waitForPong=" + waitForPong + ", counter=" + counter);
+         waitForPong = 0; // not waitForPong--; if (waitForPong<0) waitForPong=0; since we don't care about delay, we are happy if the browser does respond somehow
       }
 
       public void stopThread()
@@ -561,25 +570,26 @@ public class HttpPushHandler
 
             try {
                //if (false) {  //// Switched off !!!!!
-               if (waitForPong > 2) {  // Allow two pongs delay over slow connections
+               if (waitForPong > 2) {  // Allow three pongs delay over slow connections
                // This ping doesn't work over the internet??????
-                  Log.warning(ME, "Browser seems to have disappeared, no response for my ping. Closing connection.");
+                  Log.warning(ME, "Browser seems to have disappeared, no response for my ping=" + counter + ", missing " + waitForPong + " responses. Closing connection.");
                   pushHandler.cleanup();
                   stopThread();
                }
                else {
-                  if (Log.TRACE) Log.trace(ME,"pinging the Browser ...");
-                  pushHandler.ping("refresh-" + counter);
+                  String text = "refresh-" + counter;
+                  if (Log.TRACE) Log.trace(ME,"Sending ping '" + text + "'  to browser ...");
+                  pushHandler.ping(text);
                   waitForPong++;
                }
             } catch(Exception e) {
                //error handling: browser closed connection.
-               Log.warning(ME,"You tried to ping a browser who is not interested. Close HttpPushHandler.");
+               Log.warning(ME,"You tried to ping=" + counter + " a browser who is not interested. Close HttpPushHandler.");
                pushHandler.cleanup();
                stopThread();
             }
          }
-         Log.trace(ME, "Ping thread dies ...");
+         if (Log.TRACE) Log.trace(ME, "Ping thread dies ...");
       }
    } // class PingThread
 
