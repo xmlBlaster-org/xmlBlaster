@@ -69,6 +69,7 @@ public class XmlRpcCallbackServer implements I_CallbackServer
    public void initialize(Global glob, String name, I_CallbackExtended client) throws XmlBlasterException
    {
       this.ME = "XmlRpcCallbackServer-" + name;
+      this.glob = glob;
       this.client = client;
       this.loginName = name;
       createCallbackServer();
