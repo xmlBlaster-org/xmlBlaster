@@ -3,7 +3,7 @@ Name:      HttpPushHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: HttpPushHandler.java,v 1.34 2000/09/15 17:16:18 ruff Exp $
+Version:   $Id: HttpPushHandler.java,v 1.35 2000/11/04 20:21:14 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 
@@ -257,10 +257,16 @@ public class HttpPushHandler
    private boolean doesHandleMultipart() throws IOException
    {
       String browser = req.getHeader("User-Agent");
+
+      // netscape 4.74:                   "Mozilla/4.74 [de] (X11; U; Linux 2.2.16 i686)"
+      // opera 4.0b2 (Identify as Opera): "Mozilla/ (Linux; U) Opera 4.01  [en]"
+
       boolean doesMulti = false;
       if (browser == null)
          doesMulti = false;
-      else if (browser.indexOf("Mozilla") != -1 && browser.indexOf("MSIE") == -1)
+      else if (browser.indexOf("Mozilla") != -1 &&
+               browser.indexOf("MSIE") == -1  &&
+               browser.indexOf("Opera") == -1)
          doesMulti = true;
 
       if (doesMulti)
