@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.32 2000/02/28 18:39:15 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.33 2000/02/29 08:12:38 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
@@ -29,9 +29,10 @@ import java.util.Properties;
  * <p>
  * There is a constructor for applets, and standalone Java clients.
  * <p />
- * If you need some fails save clients, you can invoke the xmlBlaster CORBA methods
+ * If you need a fails save client, you can invoke the xmlBlaster CORBA methods
  * through this class as well (for example use corbaConnection.publish() instead of the direct
- * CORBA server.publish()).<br />
+ * CORBA server.publish()).
+ * <p />
  * You need to call initFailSave(), to switch this on, and pass it your implementation of I_ConnectionProblems.<br />
  * If suddenly the xmlBlaster server disappears, CorbaConnection
  * queues your messages locally, and starts polling to find the server again. You will get
@@ -43,18 +44,16 @@ import java.util.Properties;
  * to xmlBlaster.<br />
  * One drawback is, that the return values of your requests are lost, since you were none blocking
  * continuing during the connection was lost.
- * <br />
+ * <p />
  * When your client starts up, and login to xmlBlaster fails, the login will block
  * until the polling resolves xmlBlaster.
- * <br />
+ * <p />
  * You can have a look at xmlBlaster/testsuite/org/xmlBlaster/TestFailSave.java to find out how it works
- * <br />
+ * <p />
  * You should set jacorb.retries=0  in $HOME/.jacorb_properties if you use the fail save mode
  * <p />
- * Invoke: jaco -Djava.compiler= test.textui.TestRunner testsuite.org.xmlBlaster.TestSub
- * <p />
  * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http
- * @version $Revision: 1.32 $
+ * @version $Revision: 1.33 $
  * @author $Author: ruff $
  */
 public class CorbaConnection implements ServerOperations
