@@ -22,6 +22,8 @@ PACKGS = org.xmlBlaster \
 			org.xmlBlaster.engine.persistence \
 			org.xmlBlaster.engine.persistence.filestore \
 			org.xmlBlaster.engine.persistence.mudb \
+			org.xmlBlaster.j2ee.k2 \
+			org.xmlBlaster.j2ee.k2.client \
 			org.xmlBlaster.authentication \
 			org.xmlBlaster.client \
 			org.xmlBlaster.client.protocol \
