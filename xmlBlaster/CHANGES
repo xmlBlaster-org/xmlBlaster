@@ -3,6 +3,8 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 Changes for 0.xxx [xxxxxxxxxx]
 ==============================
 
+ o Ported chess demo to batik 1.5, cleanup of event queue
+
  o Moved getJdbcQueueManagerCommonTable from util.Global to JdbcQueueCommonTablePlugin so that the 
    manager is not referenced outside the plugin it serves. Moved also wipeOutDB from Global to the
    queue plugin).
