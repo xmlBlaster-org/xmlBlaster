@@ -909,6 +909,9 @@ public final class TopicHandler implements I_Timeout
       Set removeSet = null;
       for (int ii=0; ii<subInfoArr.length; ii++) {
          SubscriptionInfo sub = subInfoArr[ii];
+         if (!sub.getQueryQosData().getWantLocal() && 
+              sub.getSessionInfo().getSessionName().equalsAbsolute(msgUnitWrapper.getMsgQosData().getSender()))
+            continue;
          MsgUnitWrapper[] msgUnitWrapperArr = { msgUnitWrapper };
          if (invokeCallback(publisherSessionInfo, sub, msgUnitWrapperArr) == 0) {
             if (removeSet == null) removeSet = new HashSet();
