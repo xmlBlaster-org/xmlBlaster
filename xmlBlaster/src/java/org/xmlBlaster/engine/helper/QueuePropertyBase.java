@@ -2,8 +2,6 @@
 Name:      QueueProperty.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
-Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.java,v 1.5 2002/11/26 12:38:45 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
 
@@ -12,6 +10,8 @@ import org.xmlBlaster.util.Global;
 import org.xml.sax.Attributes;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.ErrorCode;
+import org.xmlBlaster.engine.helper.Constants;
 
 
 /**
@@ -20,13 +20,18 @@ import org.xmlBlaster.util.XmlBlasterException;
  * See ConnectQos for XML syntax.
  * @see org.xmlBlaster.util.ConnectQos
  */
-public abstract class QueuePropertyBase
+public abstract class QueuePropertyBase implements Cloneable
 {
    private static final String ME = "QueuePropertyBase";
    protected final Global glob;
    protected final LogChannel log;
 
-   /** The queue plugin type "CACHE" "RAM" "JDBC" */
+   private String propertyPrefix = "";
+
+   /** Allows to mark that a (RAM) queue is running in a cache configuration */
+   private boolean isCacheQueue = false;
+
+   /** The queue plugin type "CACHE" "RAM" "JDBC" or others */
    public static String DEFAULT_type = "CACHE";
    protected String type;
 
@@ -42,25 +47,25 @@ public abstract class QueuePropertyBase
    public static final long DEFAULT_maxMsgCacheDefault = 1000L;
    protected long maxMsgCacheDefault;
 
-   /** The max setting allowed for queue maxSize in Bytes is adjustable with property "queue.maxSize=4194304" (4 MBytes is default) */
-   public static final long DEFAULT_sizeDefault = 10485760L; // 10 MB
-   protected long maxSizeDefault;
+   /** The max setting allowed for queue max size in bytes is adjustable with property "queue.maxBytes=4194304" (4 MBytes is default) */
+   public static final long DEFAULT_bytesDefault = 10485760L; // 10 MB
+   protected long maxBytesDefault;
 
-   /** The max setting allowed for queue maxSizeCache in Bytes is adjustable with property "queue.maxSizeCache=4000" (4 MBytes is default) */
-   public static final long DEFAULT_sizeCacheDefault = 2097152L; // 2 MB
-   protected long maxSizeCacheDefault;
+   /** The max setting allowed for queue max size of cache in bytes is adjustable with property "queue.maxBytesCache=4000000" (4 MBytes is default) */
+   public static final long DEFAULT_bytesCacheDefault = 2097152L; // 2 MB
+   protected long maxBytesCacheDefault;
 
-   /** The default settings (as a ratio relative to the maxSizeCache) for the storeSwapLevel */
+   /** The default settings (as a ratio relative to the maxBytesCache) for the storeSwapLevel */
    public static final double DEFAULT_storeSwapLevelRatio = 0.70;
 
-   /** The default settings (as a ratio relative to the maxSizeCache) for the storeSwapSize */
-   public static final double DEFAULT_storeSwapSizeRatio = 0.25;
+   /** The default settings (as a ratio relative to the maxBytesCache) for the storeSwapBytes */
+   public static final double DEFAULT_storeSwapBytesRatio = 0.25;
 
-   /** The default settings (as a ratio relative to the maxSizeCache) for the storeSwapLevel */
+   /** The default settings (as a ratio relative to the maxBytesCache) for the storeSwapLevel */
    public static final double DEFAULT_reloadSwapLevelRatio = 0.30;
 
-   /** The default settings (as a ratio relative to the maxSizeCache) for the storeSwapSize */
-   public static final double DEFAULT_reloadSwapSizeRatio = 0.25;
+   /** The default settings (as a ratio relative to the maxBytesCache) for the storeSwapBytes */
+   public static final double DEFAULT_reloadSwapBytesRatio = 0.25;
 
    /** The min span of life is one second, changeable with property e.g. "queue.expires.min=2000" milliseconds */
    public static final long DEFAULT_minExpires = 1000L;
@@ -80,24 +85,24 @@ public abstract class QueuePropertyBase
    /** The max. capacity of the queue in number of entries */
    protected long maxMsg;
    /** The max. capacity of the queue in Bytes */
-   protected long maxSize;
+   protected long maxBytes;
    /** The max. capacity of the cache of the queue in number of entries */
    protected long maxMsgCache;
 
    /** The settings for the storeSwapLevel */
    protected long storeSwapLevel;
 
-   /** The settings for the storeSwapSize */
-   protected long storeSwapSize;
+   /** The settings for the storeSwapBytes */
+   protected long storeSwapBytes;
 
    /** The settings for the storeSwapLevel */
    protected long reloadSwapLevel;
 
-   /** The settings for the storeSwapSize */
-   protected long reloadSwapSize;
+   /** The settings for the storeSwapBytes */
+   protected long reloadSwapBytes;
 
    /** The max. capacity of the queue in Bytes for the cache */
-   protected long maxSizeCache;
+   protected long maxBytesCache;
 
    /** Error handling when queue is full: Constants.ONOVERFLOW_DEADMESSAGE | Constants.ONOVERFLOW_DISCARDOLDEST */
    public static final String DEFAULT_onOverflow = Constants.ONOVERFLOW_DEADMESSAGE;
@@ -117,8 +122,7 @@ public abstract class QueuePropertyBase
     * @param nodeId    If not null, the command line properties will look for prop[nodeId] as well,
     * e.g. -queue.maxMsg and -queue.maxMsg[heron] will be searched
     */
-   public QueuePropertyBase(Global glob, String nodeId)
-   {
+   public QueuePropertyBase(Global glob, String nodeId) {
       if (glob == null) {
          Thread.currentThread().dumpStack();
          this.glob = new Global();
@@ -143,9 +147,37 @@ public abstract class QueuePropertyBase
    }  */
 
    /**
-    * Configure property settings, add your own defaults in the derived class
+    * @return The prefix for properties e.g. "history" -> "-history.queue.maxMsg"
     */
-   protected void initialize() {
+   public String getPropertyPrefix() {
+      return this.propertyPrefix;
+   }
+
+   /**
+    * The command line prefix to configure the queue or msgstore
+    * @return e.g. "msgstore." or "history.queue."
+    */
+   public String getPrefix() {
+      return (this.propertyPrefix.length() > 0) ? this.propertyPrefix+"."+getRootTagName()+"." : getRootTagName()+".";
+   }
+
+   /**
+    * Helper for logging output, creates the property key for configuration (the command line property). 
+    * @param prop e.g. "maxMsg"
+    * @return e.g. "-history.queue.maxMsg" or "-history.queue.maxMsgCache"
+    */
+   public String getPropName(String token) {
+      return "-" + getPrefix() + token + (isCacheQueue() ? "Cache" : "");
+   }
+
+   /**
+    * Configure property settings, add your own defaults in the derived class
+    * @param propertyPrefix e.g. "history" or "cb"
+    */
+   protected void initialize(String propertyPrefix) {
+      this.propertyPrefix = (propertyPrefix == null) ? "" : propertyPrefix;
+      String prefix = getPrefix();
+
       // Do we need this range settings?
       setMinExpires(glob.getProperty().get("queue.expires.min", DEFAULT_minExpires));
       setMaxExpires(glob.getProperty().get("queue.expires.max", DEFAULT_maxExpires)); // Long.MAX_VALUE);
@@ -162,6 +194,39 @@ public abstract class QueuePropertyBase
       catch (XmlBlasterException ex) {
          this.log.error(ME, "initialize: could not set the default plugin to what indicated by queue.defaultPlugin");
       }
+                                
+      // prefix is e.g. "cb.queue." or "msgstore"
+
+      setMaxMsgUnchecked(glob.getProperty().get(prefix+"maxMsg", DEFAULT_maxMsgDefault));
+      setMaxMsgCacheUnchecked(glob.getProperty().get(prefix+"maxMsgCache", DEFAULT_maxMsgCacheDefault));
+      setMaxBytesUnchecked(glob.getProperty().get(prefix+"maxBytes", DEFAULT_bytesDefault));
+      setMaxBytesCacheUnchecked(glob.getProperty().get(prefix+"maxBytesCache", DEFAULT_bytesCacheDefault));
+      setStoreSwapLevel(glob.getProperty().get(prefix+"storeSwapLevel", (long)(DEFAULT_storeSwapLevelRatio*this.maxBytesCache)));
+      setStoreSwapBytes(glob.getProperty().get(prefix+"storeSwapBytes", (long)(DEFAULT_storeSwapBytesRatio*this.maxBytesCache)));
+      setReloadSwapLevel(glob.getProperty().get(prefix+"reloadSwapLevel", (long)(DEFAULT_reloadSwapLevelRatio*this.maxBytesCache)));
+      setReloadSwapBytes(glob.getProperty().get(prefix+"reloadSwapBytes", (long)(DEFAULT_reloadSwapBytesRatio*this.maxBytesCache)));
+      setExpires(glob.getProperty().get(prefix+"expires", DEFAULT_maxExpires));
+      setOnOverflow(glob.getProperty().get(prefix+"onOverflow", DEFAULT_onOverflow));
+      setOnFailure(glob.getProperty().get(prefix+"onFailure", DEFAULT_onFailure));
+      setType(glob.getProperty().get(prefix+"type", DEFAULT_type));
+      setVersion(glob.getProperty().get(prefix+"version", DEFAULT_version));
+      if (nodeId != null) {
+         setMaxMsgUnchecked(glob.getProperty().get(prefix+"maxMsg["+nodeId+"]", getMaxMsg()));
+         setMaxMsgCacheUnchecked(glob.getProperty().get(prefix+"maxMsgCache["+nodeId+"]", getMaxMsgCache()));
+         setMaxBytesUnchecked(glob.getProperty().get(prefix+"maxBytes["+nodeId+"]", getMaxBytes()));
+         setMaxBytesCacheUnchecked(glob.getProperty().get(prefix+"maxBytesCache["+nodeId+"]", getMaxBytesCache()));
+         setStoreSwapLevel(glob.getProperty().get(prefix+"storeSwapLevel["+nodeId+"]", getStoreSwapLevel()));
+         setStoreSwapBytes(glob.getProperty().get(prefix+"storeSwapBytes["+nodeId+"]", getStoreSwapBytes()));
+         setReloadSwapLevel(glob.getProperty().get(prefix+"reloadSwapLevel["+nodeId+"]", getReloadSwapLevel()));
+         setReloadSwapBytes(glob.getProperty().get(prefix+"reloadSwapBytes["+nodeId+"]", getReloadSwapBytes()));
+         setExpires(glob.getProperty().get(prefix+"expires["+nodeId+"]", getExpires()));
+         setOnOverflow(glob.getProperty().get(prefix+"onOverflow["+nodeId+"]", getOnOverflow()));
+         setOnFailure(glob.getProperty().get(prefix+"onFailure["+nodeId+"]", getOnFailure()));
+         setType(glob.getProperty().get(prefix+"type["+nodeId+"]", getType()));
+         setVersion(glob.getProperty().get(prefix+"version["+nodeId+"]", getVersion()));
+      }
+      
+      checkConsistency();
    }
 
    protected void setMaxExpires(long maxExpires) { this.maxExpires = maxExpires; }
@@ -180,6 +245,10 @@ public abstract class QueuePropertyBase
          this.relating = Constants.RELATING_SUBJECT;
       else if (Constants.RELATING_CLIENT.equalsIgnoreCase(relating))
          this.relating = Constants.RELATING_CLIENT;
+      else if (Constants.RELATING_HISTORY.equalsIgnoreCase(relating))
+         this.relating = Constants.RELATING_HISTORY;
+      else if (Constants.RELATING_TOPICCACHE.equalsIgnoreCase(relating))
+         this.relating = Constants.RELATING_TOPICCACHE;
       else {
          log.warn(ME, "Ignoring relating=" + relating);
          Thread.currentThread().dumpStack();
@@ -198,18 +267,15 @@ public abstract class QueuePropertyBase
     * Span of life of this queue.
     * @return Expiry time in milliseconds or 0L if forever
     */
-   public final long getExpires()
-   {
+   public final long getExpires() {
       return expires;
    }
-
 
    /**
     * Span of life of this queue.
     * @param Expiry time in milliseconds
     */
-   public final void setExpires(long expires)
-   {
+   public final void setExpires(long expires) {
       if (maxExpires <= 0L)
          this.expires = expires;
       else if (expires > 0L && maxExpires > 0L && expires > maxExpires)
@@ -221,14 +287,12 @@ public abstract class QueuePropertyBase
          this.expires = minExpires;
    }
 
-
    /**
     * Max number of messages for this queue.
     * <br />
     * @return number of messages
     */
-   public final long getMaxMsg()
-   {
+   public final long getMaxMsg() {
       return this.maxMsg;
    }
 
@@ -237,11 +301,13 @@ public abstract class QueuePropertyBase
     * <br />
     * @param maxMsg
     */
-   public final void setMaxMsg(long maxMsg)
-   {
+   public final void setMaxMsg(long maxMsg) {
+      setMaxMsgUnchecked(maxMsg);
+      checkConsistency();
+   }
+   private final void setMaxMsgUnchecked(long maxMsg) {
       this.maxMsg = maxMsg;
    }
-
 
    /**
     * The plugin type. 
@@ -284,8 +350,7 @@ public abstract class QueuePropertyBase
     * <br />
     * @return number of messages
     */
-   public final long getMaxMsgCache()
-   {
+   public final long getMaxMsgCache() {
       return this.maxMsgCache;
    }
 
@@ -294,20 +359,21 @@ public abstract class QueuePropertyBase
     * <br />
     * @param maxMsg
     */
-   public final void setMaxMsgCache(long maxMsgCache)
-   {
+   public final void setMaxMsgCache(long maxMsgCache) {
+      this.maxMsgCache = maxMsgCache;
+      checkConsistency();
+   }
+   private final void setMaxMsgCacheUnchecked(long maxMsgCache) {
       this.maxMsgCache = maxMsgCache;
    }
-
 
    /**
     * Max message queue size.
     * <br />
     * @return Get max. message queue size in Bytes
     */
-   public final long getMaxSize()
-   {
-      return this.maxSize;
+   public final long getMaxBytes() {
+      return this.maxBytes;
    }
 
    /**
@@ -315,9 +381,12 @@ public abstract class QueuePropertyBase
     * <br />
     * @return Set max. message queue size in Bytes
     */
-   public final void setMaxSize(long maxSize)
-   {
-      this.maxSize = maxSize;
+   public final void setMaxBytes(long maxBytes) {
+      this.maxBytes = maxBytes;
+      checkConsistency();
+   }
+   private final void setMaxBytesUnchecked(long maxBytes) {
+      this.maxBytes = maxBytes;
    }
 
 
@@ -326,9 +395,8 @@ public abstract class QueuePropertyBase
     * <br />
     * @return Get max. message queue size in Bytes
     */
-   public final long getMaxSizeCache()
-   {
-      return this.maxSizeCache;
+   public final long getMaxBytesCache() {
+      return this.maxBytesCache;
    }
 
 
@@ -337,8 +405,7 @@ public abstract class QueuePropertyBase
     * <br />
     * @return Get storeSwapLevel in bytes.
     */
-   public final long getStoreSwapLevel()
-   {
+   public final long getStoreSwapLevel() {
       return this.storeSwapLevel;
    }
 
@@ -347,29 +414,26 @@ public abstract class QueuePropertyBase
     * <br />
     * @param Set storeSwapLevel in bytes.
     */
-   public final void setStoreSwapLevel(long storeSwapLevel)
-   {
+   public final void setStoreSwapLevel(long storeSwapLevel) {
       this.storeSwapLevel = storeSwapLevel;
    }
 
    /**
-    * Gets the storeSwapSize for the queue (only used on cache queues).
+    * Gets the storeSwapBytes for the queue (only used on cache queues).
     * <br />
-    * @return Get storeSwapSize in bytes.
+    * @return Get storeSwapBytes in bytes.
     */
-   public final long getStoreSwapSize()
-   {
-      return this.storeSwapSize;
+   public final long getStoreSwapBytes() {
+      return this.storeSwapBytes;
    }
 
    /**
-    * Sets the storeSwapSize for the queue (only used on cache queues).
+    * Sets the storeSwapBytes for the queue (only used on cache queues).
     * <br />
-    * @param Set storeSwapSize in bytes.
+    * @param Set storeSwapBytes in bytes.
     */
-   public final void setStoreSwapSize(long storeSwapSize)
-   {
-      this.storeSwapSize = storeSwapSize;
+   public final void setStoreSwapBytes(long storeSwapBytes) {
+      this.storeSwapBytes = storeSwapBytes;
    }
 
    /**
@@ -377,8 +441,7 @@ public abstract class QueuePropertyBase
     * <br />
     * @return Get reloadSwapLevel in bytes.
     */
-   public final long getReloadSwapLevel()
-   {
+   public final long getReloadSwapLevel() {
       return this.reloadSwapLevel;
    }
 
@@ -387,29 +450,26 @@ public abstract class QueuePropertyBase
     * <br />
     * @param Set reloadSwapLevel in bytes.
     */
-   public final void setReloadSwapLevel(long reloadSwapLevel)
-   {
+   public final void setReloadSwapLevel(long reloadSwapLevel) {
       this.reloadSwapLevel = reloadSwapLevel;
    }
 
    /**
-    * Gets the reloadSwapSize for the queue (only used on cache queues).
+    * Gets the reloadSwapBytes for the queue (only used on cache queues).
     * <br />
-    * @return Get reloadSwapSize in bytes.
+    * @return Get reloadSwapBytes in bytes.
     */
-   public final long getReloadSwapSize()
-   {
-      return this.reloadSwapSize;
+   public final long getReloadSwapBytes() {
+      return this.reloadSwapBytes;
    }
 
    /**
-    * Sets the reloadSwapSize for the queue (only used on cache queues).
+    * Sets the reloadSwapBytes for the queue (only used on cache queues).
     * <br />
-    * @param Set reloadSwapSize in bytes.
+    * @param Set reloadSwapBytes in bytes.
     */
-   public final void setReloadSwapSize(long reloadSwapSize)
-   {
-      this.reloadSwapSize = reloadSwapSize;
+   public final void setReloadSwapBytes(long reloadSwapBytes) {
+      this.reloadSwapBytes = reloadSwapBytes;
    }
 
    /**
@@ -417,9 +477,12 @@ public abstract class QueuePropertyBase
     * <br />
     * @return Set max. message queue size in Bytes
     */
-   public final void setMaxSizeCache(long maxSizeCache)
-   {
-      this.maxSizeCache = maxSizeCache;
+   public final void setMaxBytesCache(long maxBytesCache) {
+      this.maxBytesCache = maxBytesCache;
+      checkConsistency();
+   }
+   private final void setMaxBytesCacheUnchecked(long maxBytesCache) {
+      this.maxBytesCache = maxBytesCache;
    }
 
 
@@ -428,8 +491,7 @@ public abstract class QueuePropertyBase
     *
     * @param onOverflow The callback onOverflow, e.g. "et@mars.univers"
     */
-   public final void setOnOverflow(String onOverflow)
-   {
+   public final void setOnOverflow(String onOverflow) {
       /*
       if (Constants.ONOVERFLOW_BLOCK.equalsIgnoreCase(onOverflow)) {
          this.onOverflow = Constants.ONOVERFLOW_BLOCK;
@@ -442,11 +504,11 @@ public abstract class QueuePropertyBase
          this.onOverflow = Constants.ONOVERFLOW_DISCARDOLDEST;
 
          this.onOverflow = Constants.ONOVERFLOW_DEADMESSAGE; // TODO !!!
-         log.error(ME, "queue onOverflow='" + Constants.ONOVERFLOW_DISCARDOLDEST + "' is not implemented, switching to " + this.onOverflow + " mode");
+         log.error(ME, getRootTagName() + " onOverflow='" + Constants.ONOVERFLOW_DISCARDOLDEST + "' is not implemented, switching to " + this.onOverflow + " mode");
       }
       else {
          this.onOverflow = Constants.ONOVERFLOW_DEADMESSAGE;
-         log.warn(ME, "The queue onOverflow attribute is invalid '" + onOverflow + "', setting to '" + this.onOverflow + "'");
+         log.warn(ME, "The " + getRootTagName() + " onOverflow attribute is invalid '" + onOverflow + "', setting to '" + this.onOverflow + "'");
       }
    }
 
@@ -454,8 +516,7 @@ public abstract class QueuePropertyBase
     * Returns the onOverflow.
     * @return e.g. "IOR:00001100022...." or "et@universe.com"
     */
-   public final String getOnOverflow()
-   {
+   public final String getOnOverflow() {
       return onOverflow;
    }
 
@@ -478,7 +539,7 @@ public abstract class QueuePropertyBase
       if (Constants.ONOVERFLOW_DEADMESSAGE.equalsIgnoreCase(onFailure))
          this.onFailure = Constants.ONOVERFLOW_DEADMESSAGE;
       else {
-         log.warn(ME, "The queue onFailure attribute is invalid '" + onFailure + "', setting to 'deadMessage'");
+         log.warn(ME, "The " + getRootTagName() + " onFailure attribute is invalid '" + onFailure + "', setting to 'deadMessage'");
          this.onFailure = Constants.ONOVERFLOW_DEADMESSAGE;
       }
    }
@@ -507,7 +568,13 @@ public abstract class QueuePropertyBase
       return addressArr;
    }
 
+   public boolean isCacheQueue() {
+      return this.isCacheQueue;
+   }
 
+   public void setCacheQueue(boolean isCacheQueue) {
+      this.isCacheQueue = isCacheQueue;
+   }
 
    /**
     * Called for queue start tag
@@ -523,9 +590,9 @@ public abstract class QueuePropertyBase
             else if (attrs.getQName(ii).equalsIgnoreCase("maxMsg")) {
                String tmp = attrs.getValue(ii).trim();
                try {
-                  setMaxMsg(new Long(tmp).longValue());
+                  setMaxMsgUnchecked(new Long(tmp).longValue());
                } catch (NumberFormatException e) {
-                  log.error(ME, "Wrong format of <queue maxMsg='" + tmp + "'>, expected a long, using default.");
+                  log.error(ME, "Wrong format of <" + getRootTagName() + " maxMsg='" + tmp + "'>, expected a long, using default.");
                }
             }
             else if (attrs.getQName(ii).equalsIgnoreCase("type")) {
@@ -537,25 +604,25 @@ public abstract class QueuePropertyBase
             else if (attrs.getQName(ii).equalsIgnoreCase("maxMsgCache")) {
                String tmp = attrs.getValue(ii).trim();
                try {
-                  setMaxMsgCache(new Long(tmp).longValue());
+                  setMaxMsgCacheUnchecked(new Long(tmp).longValue());
                } catch (NumberFormatException e) {
-                  log.error(ME, "Wrong format of <queue maxMsgCache='" + tmp + "'>, expected an long, using default.");
+                  log.error(ME, "Wrong format of <" + getRootTagName() + " maxMsgCache='" + tmp + "'>, expected an long, using default.");
                }
             }
-            else if (attrs.getQName(ii).equalsIgnoreCase("maxSize")) {
+            else if (attrs.getQName(ii).equalsIgnoreCase("maxBytes")) {
                String tmp = attrs.getValue(ii).trim();
                try {
-                  setMaxSize(new Long(tmp).longValue());
+                  setMaxBytesUnchecked(new Long(tmp).longValue());
                } catch (NumberFormatException e) {
-                  log.error(ME, "Wrong format of <queue maxSize='" + tmp + "'>, expected a long in bytes, using default.");
+                  log.error(ME, "Wrong format of <" + getRootTagName() + " maxBytes='" + tmp + "'>, expected a long in bytes, using default.");
                }
             }
-            else if (attrs.getQName(ii).equalsIgnoreCase("maxSizeCache")) {
+            else if (attrs.getQName(ii).equalsIgnoreCase("maxBytesCache")) {
                String tmp = attrs.getValue(ii).trim();
                try {
-                  setMaxSizeCache(new Long(tmp).longValue());
+                  setMaxBytesCacheUnchecked(new Long(tmp).longValue());
                } catch (NumberFormatException e) {
-                  log.error(ME, "Wrong format of <queue maxSizeCache='" + tmp + "'>, expected a long in bytes, using default.");
+                  log.error(ME, "Wrong format of <" + getRootTagName() + " maxBytesCache='" + tmp + "'>, expected a long in bytes, using default.");
                }
             }
             else if (attrs.getQName(ii).equalsIgnoreCase("storeSwapLevel")) {
@@ -563,15 +630,15 @@ public abstract class QueuePropertyBase
                try {
                   setStoreSwapLevel(new Long(tmp).longValue());
                } catch (NumberFormatException e) {
-                  log.error(ME, "Wrong format of <queue storeSwapLevel='" + tmp + "'>, expected a long in bytes, using default.");
+                  log.error(ME, "Wrong format of <" + getRootTagName() + " storeSwapLevel='" + tmp + "'>, expected a long in bytes, using default.");
                }
             }
-            else if (attrs.getQName(ii).equalsIgnoreCase("storeSwapSize")) {
+            else if (attrs.getQName(ii).equalsIgnoreCase("storeSwapBytes")) {
                String tmp = attrs.getValue(ii).trim();
                try {
-                  setStoreSwapSize(new Long(tmp).longValue());
+                  setStoreSwapBytes(new Long(tmp).longValue());
                } catch (NumberFormatException e) {
-                  log.error(ME, "Wrong format of <queue storeSwapSize='" + tmp + "'>, expected a long in bytes, using default.");
+                  log.error(ME, "Wrong format of <" + getRootTagName() + " storeSwapBytes='" + tmp + "'>, expected a long in bytes, using default.");
                }
             }
             else if (attrs.getQName(ii).equalsIgnoreCase("reloadSwapLevel")) {
@@ -579,15 +646,15 @@ public abstract class QueuePropertyBase
                try {
                   setReloadSwapLevel(new Long(tmp).longValue());
                } catch (NumberFormatException e) {
-                  log.error(ME, "Wrong format of <queue reloadSwapLevel='" + tmp + "'>, expected a long in bytes, using default.");
+                  log.error(ME, "Wrong format of <" + getRootTagName() + " reloadSwapLevel='" + tmp + "'>, expected a long in bytes, using default.");
                }
             }
-            else if (attrs.getQName(ii).equalsIgnoreCase("reloadSwapSize")) {
+            else if (attrs.getQName(ii).equalsIgnoreCase("reloadSwapBytes")) {
                String tmp = attrs.getValue(ii).trim();
                try {
-                  setReloadSwapSize(new Long(tmp).longValue());
+                  setReloadSwapBytes(new Long(tmp).longValue());
                } catch (NumberFormatException e) {
-                  log.error(ME, "Wrong format of <queue reloadSwapSize='" + tmp + "'>, expected a long in bytes, using default.");
+                  log.error(ME, "Wrong format of <" + getRootTagName() + " reloadSwapBytes='" + tmp + "'>, expected a long in bytes, using default.");
                }
             }
             else if (attrs.getQName(ii).equalsIgnoreCase("expires")) {
@@ -595,7 +662,7 @@ public abstract class QueuePropertyBase
                try {
                   setExpires(new Long(tmp).longValue());
                } catch (NumberFormatException e) {
-                  log.error(ME, "Wrong format of <queue expires='" + tmp + "'>, expected a long in milliseconds, using default.");
+                  log.error(ME, "Wrong format of <" + getRootTagName() + " expires='" + tmp + "'>, expected a long in milliseconds, using default.");
                }
             }
             else if (attrs.getQName(ii).equalsIgnoreCase("onOverflow")) {
@@ -605,23 +672,77 @@ public abstract class QueuePropertyBase
                setOnFailure(attrs.getValue(ii).trim());
             }
             else
-               log.warn(ME, "Ignoring unknown attribute '" + attrs.getQName(ii) + "' in connect QoS <queue>");
+               log.warn(ME, "Ignoring unknown attribute '" + attrs.getQName(ii) + "' in connect QoS <" + getRootTagName() + ">");
          }
       }
       else {
-         log.warn(ME, "Missing 'relating' attribute in connect QoS <queue>");
+         log.warn(ME, "Missing 'relating' attribute in connect QoS <" + getRootTagName() + ">");
       }
+      checkConsistency();
    }
 
+   public String usage() {
+      return usage("Control the "+this.propertyPrefix+" queue properties:");
+   }
+
+   /**
+    * Defaults to queue for &lt;queue ...>
+    */
+   public String getRootTagName() {
+      return "queue";
+   }
+
+   /**
+    * Get a usage string for queue configuration (in xmlBlaster.properties or on command line)
+    */
+   protected String usage(String headerline) {
+      String prefix = getPrefix();
+      String text = "";
+      text += headerline + "\n";
+      text += "   -"+prefix+"maxMsg       The maximum allowed number of messages [" + DEFAULT_maxMsgDefault + "].\n";
+      text += "   -"+prefix+"maxMsgCache  The maximum allowed number of messages in the cache [" + DEFAULT_maxMsgDefault + "].\n";
+      text += "   -"+prefix+"maxBytes      The maximum size in bytes of the storage [" + DEFAULT_bytesDefault + "].\n";
+      text += "   -"+prefix+"maxBytesCache The maximum size in bytes in the cache [" + DEFAULT_bytesCacheDefault + "].\n";
+    //text += "   -"+prefix+"expires  If not otherwise noted a queue dies after these milliseconds [" + DEFAULT_expiresDefault + "].\n";
+    //text += "   -"+prefix+"onOverflow What happens if queue is full. " + Constants.ONOVERFLOW_BLOCK + " | " + Constants.ONOVERFLOW_DEADMESSAGE + " [" + DEFAULT_onOverflow + "]\n";
+      text += "   -"+prefix+"onOverflow What happens if storage is full [" + DEFAULT_onOverflow + "]\n";
+      text += "   -"+prefix+"onFailure  Error handling when storage failed [" + DEFAULT_onFailure + "]\n";
+      text += "   -"+prefix+"type       The plugin type [" + DEFAULT_type + "]\n";
+      text += "   -"+prefix+"version    The plugin version [" + DEFAULT_version + "]\n";
+      return text;
+   }
+
+   /**
+    * Should be called after parsing
+    */
+   public final void checkConsistency() { // throws XmlBlasterException {
+      //if (getType() == null) {
+      //   throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "Type may not be null in " + toXml());
+      //}
+      /*
+      if (DEFAULT_maxMsgCacheDefault > DEFAULT_maxMsgDefault) {
+         log.warn(ME, "DEFAULT_maxMsgCacheDefault=" + DEFAULT_maxMsgCacheDefault + " is bigger than DEFAULT_maxMsgDefault=" + DEFAULT_maxMsgDefault + ", we reduce DEFAULT_maxMsgCacheDefault to DEFAULT_maxMsgDefault and continue.");
+      }
+      if (DEFAULT_bytesCacheDefault > DEFAULT_bytesDefault) {
+         log.warn(ME, "DEFAULT_bytesCacheDefault=" + DEFAULT_bytesCacheDefault + " is bigger than DEFAULT_bytesDefault=" + DEFAULT_bytesDefault + ", we reduce DEFAULT_bytesCacheDefault to DEFAULT_bytesDefault and continue.");
+      }
+      */
+      if (getMaxMsgCache() > getMaxMsg()) {
+         log.warn(ME, "maxMsgCache=" + getMaxMsgCache() + " is bigger than maxMsg=" + getMaxMsg() + ", we reduce maxMsgCache to maxMsg and continue.");
+         this.maxMsgCache = getMaxMsg();
+      }
+      if (getMaxBytesCache() > getMaxBytes()) {
+         log.warn(ME, "maxBytesCache=" + getMaxBytesCache() + " is bigger than maxBytes=" + getMaxBytes() + ", we reduce maxBytesCache to maxBytes and continue.");
+         this.maxBytesCache = getMaxBytes();
+      }
+   }
 
    /**
     * Dump state of this object into a XML ASCII string.
     */
-   public final String toXml()
-   {
+   public final String toXml() {
       return toXml((String)null);
    }
-
 
    /**
     * Dump state of this object into a XML ASCII string.
@@ -629,16 +750,13 @@ public abstract class QueuePropertyBase
     * @param extraOffset indenting of tags for nice output
     * @return The xml representation
     */
-   public final String toXml(String extraOffset)
-   {
+   public final String toXml(String extraOffset) {
       StringBuffer buf = new StringBuffer(256);
-      String offset = "\n   ";
-      if (extraOffset != null) offset += extraOffset;
-      else extraOffset = "";
+      if (extraOffset == null) extraOffset = "";
+      String offset = Constants.OFFSET + extraOffset;
 
-      buf.append(offset).append("<!-- QueuePropertyBase -->");
-
-      buf.append(offset).append("<queue relating='").append(getRelating());
+      // open <queue ...
+      buf.append(offset).append("<").append(getRootTagName()).append(" relating='").append(getRelating());
       if (DEFAULT_type != getType())
          buf.append("' type='").append(getType());
       if (DEFAULT_version != getVersion())
@@ -647,14 +765,14 @@ public abstract class QueuePropertyBase
          buf.append("' maxMsg='").append(getMaxMsg());
       if (DEFAULT_maxMsgCacheDefault != getMaxMsgCache())
          buf.append("' maxMsgCache='").append(getMaxMsgCache());
-      if (DEFAULT_sizeDefault != getMaxSize())
-         buf.append("' maxSize='").append(getMaxSize());
-      if (DEFAULT_sizeCacheDefault != getMaxSizeCache())
-         buf.append("' maxSizeCache='").append(getMaxSizeCache());
+      if (DEFAULT_bytesDefault != getMaxBytes())
+         buf.append("' maxBytes='").append(getMaxBytes());
+      if (DEFAULT_bytesCacheDefault != getMaxBytesCache())
+         buf.append("' maxBytesCache='").append(getMaxBytesCache());
       buf.append("' storeSwapLevel='").append(getStoreSwapLevel());
-      buf.append("' storeSwapSize='").append(getStoreSwapSize());
+      buf.append("' storeSwapBytes='").append(getStoreSwapBytes());
       buf.append("' reloadSwapLevel='").append(getReloadSwapLevel());
-      buf.append("' reloadSwapSize='").append(getReloadSwapSize());
+      buf.append("' reloadSwapBytes='").append(getReloadSwapBytes());
       if (DEFAULT_expires != getExpires())
          buf.append("' expires='").append(getExpires());
       if (DEFAULT_onOverflow != getOnOverflow())
@@ -666,9 +784,9 @@ public abstract class QueuePropertyBase
          buf.append("'>");
          for (int ii=0; ii<addressArr.length; ii++) {
             AddressBase ad = addressArr[ii];
-            buf.append(ad.toXml(extraOffset+"   "));
+            buf.append(ad.toXml(extraOffset+Constants.INDENT));
          }
-         buf.append(offset).append("</queue>");
+         buf.append(offset).append("</").append(getRootTagName()).append(">");  // closing </queue>
       }
       else
          buf.append("'/>");
@@ -681,6 +799,19 @@ public abstract class QueuePropertyBase
     */
    public Global getGlobal() {
       return this.glob;
+   }
+
+   /**
+    * Returns a shallow clone, you can change savely all basic or immutable types
+    * like boolean, String, int.
+    */
+   public Object clone() {
+      try {
+         return super.clone();
+      }
+      catch (CloneNotSupportedException e) {
+         return null;
+      }
    }
 }
 
