@@ -50,7 +50,6 @@ public class TestHistoryZero extends TestCase {
    private EmbeddedXmlBlaster serverThread;
 
    private MsgInterceptor updateInterceptor;
-   private I_XmlBlasterAccess con;
    private String senderName;
 
    private final String contentMime = "text/plain";
@@ -84,7 +83,7 @@ public class TestHistoryZero extends TestCase {
       serverThread = EmbeddedXmlBlaster.startXmlBlaster(this.serverGlobal);
       log.info(ME, "XmlBlaster is ready for testing on bootstrapPort " + serverPort);
       try {
-         con = glob.getXmlBlasterAccess(); // Find orb
+         I_XmlBlasterAccess con = glob.getXmlBlasterAccess(); // Find orb
 
          String passwd = "secret";
          ConnectQos connectQos = new ConnectQos(glob, senderName, passwd); // == "<qos>...</qos>";
@@ -116,6 +115,7 @@ public class TestHistoryZero extends TestCase {
                       "</key>";
 
       String qos = "<qos><forceDestroy>true</forceDestroy></qos>";
+      I_XmlBlasterAccess con = this.glob.getXmlBlasterAccess();
       try {
          EraseReturnQos[] arr = con.erase(xmlKey, qos);
 
@@ -134,7 +134,7 @@ public class TestHistoryZero extends TestCase {
          Util.resetPorts(this.serverGlobal);
          Util.resetPorts(glob);
          this.glob = null;
-         this.con = null;
+         con = null;
          Global.instance().shutdown();
       }
    }
@@ -155,13 +155,14 @@ public class TestHistoryZero extends TestCase {
          TopicProperty topicProp = new TopicProperty(this.glob);
          HistoryQueueProperty historyQueueProp = topicProp.getHistoryQueueProperty();
          historyQueueProp.setMaxEntries(numHistory);
-         historyQueueProp.setMaxEntriesCache(1);
+         // TODO TEST THE maxEntriesCache != entriesCache. First specify the required behaviour.
+         historyQueueProp.setMaxEntriesCache(numHistory);
          qosWrapper.setTopicProperty(topicProp);               
       }
       
       MsgUnit msgUnit = new MsgUnit(xmlKey, content.getBytes(), qosWrapper.toXml());
 
-      con.publish(msgUnit);
+      this.glob.getXmlBlasterAccess().publish(msgUnit);
       log.info(ME, "Success: Publishing of " + oid + " done");
    }
 
@@ -201,7 +202,6 @@ public class TestHistoryZero extends TestCase {
             assertTrue("an exception should not occur here", false);
          }   
       }
-
       doGet("historyZeroA", 0);
       doGet("historyZeroB", 0);
       doGet("historyZeroC", 1);
