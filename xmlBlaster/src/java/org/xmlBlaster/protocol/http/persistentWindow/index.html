@@ -27,12 +27,12 @@
           */
          function ping(state) {
             if (state == "loginSucceeded") {
-               Log.trace("Received ping for successful login");
+               Log.info("Received ping for successful login");
                self.opener.loginSucceeded(self); // callback my opener that the connection is established
             }
             else {
                // Response to servlet that we are alive ...
-               Log.warning("Received ping '" + state + "', sending pong back to servlet");
+               if (Log.TRACE) Log.trace("Received ping '" + state + "', sending pong back to servlet");
                // Sending the state is for debugging only (or for proxies to let it through?)
                self.frames["pingFrame"].location.reload(true);
                // self.frames["pingFrame"].location.href="/servlet/BlasterHttpProxyServlet?ActionType=pong";
@@ -59,7 +59,7 @@
           */
          function browserReady()
          {
-            Log.trace("Sending browserReady() to serlvet");
+            if (Log.TRACE) Log.trace("Sending browserReady() to serlvet");
             self.frames["controlFrame"].location.reload(true);
             self.frames["controlFrame"].location.href="/servlet/BlasterHttpProxyServlet?ActionType=browserReady";
          }
