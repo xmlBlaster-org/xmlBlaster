@@ -1,7 +1,7 @@
 Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
-Changes for 0.xxx [xxxxxxxxxx]
-==============================
+Changes for 0.85beta [2003-09-24]
+=================================
 
  o Changed all getBytes to getBinaryStream in JdbcManagerCommonTable and changed signature of I_EntryFactory.createEntry
    to take an input stream (due to problems with Oracle 9i and BLOB)

@@ -44,12 +44,11 @@ NEXT RELEASES:
 As we have reached the minor version number '9' the next
 release is the long waited stable release 0.85.
 
-For 0.85 we probably will finish the native plugin example and
-add C++ SOCKET protocol support, if possible the JMX support
-will be finished as well.
+This is the 0.85 beta release.
 
-
-The planned features of release 0.9 are an open issue.
+For 0.85 we try to resolve the JacORB deadlock
+bug which occurres in seldom circumstances
+during login,
 
 enjoy,
 
