@@ -17,6 +17,7 @@ import org.xmlBlaster.util.qos.address.AddressBase;
 import org.xmlBlaster.util.qos.storage.CbQueueProperty;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
 import org.xmlBlaster.engine.admin.I_AdminSession;
+import org.xmlBlaster.engine.SubscriptionInfo;
 import org.xmlBlaster.authentication.SubjectInfo;
 import org.xmlBlaster.authentication.plugins.I_Session;
 import org.xmlBlaster.util.Timestamp;
@@ -438,6 +439,22 @@ public class SessionInfo implements I_Timeout, I_AdminSession
    public final long getCbQueueMaxMsgs() {
       if (this.sessionQueue == null) return 0L;
       return this.sessionQueue.getMaxNumOfEntries();
+   }
+
+   public final String getSubscribeList() throws XmlBlasterException {
+      SubscriptionInfo[] subs = glob.getRequestBroker().getClientSubscriptions().getSubscriptions(this);
+      if (subs.length < 1)
+         return "";
+      StringBuffer sb = new StringBuffer(subs.length * 30);
+      for (int i=0; i<subs.length; i++) {
+         if (subs[i].isCreatedByQuerySubscription()) {
+            continue;
+         }
+         if (sb.length() > 0)
+            sb.append(",");
+         sb.append(subs[i].getSubscriptionId());
+      }
+      return sb.toString();
    }
 
    public final String getKillSession() throws XmlBlasterException {
