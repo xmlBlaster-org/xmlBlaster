@@ -3,7 +3,7 @@ Name:      XmlKey.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKey.java,v 1.5 1999/12/09 13:28:37 ruff Exp $
+Version:   $Id: XmlKey.java,v 1.6 1999/12/09 14:18:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -12,7 +12,7 @@ import org.xmlBlaster.serverIdl.XmlBlasterException;
 
 
 /**
- * This class encapsulates the Message meta data and unique identifier. 
+ * This class encapsulates the Message meta data and unique identifier.
  * <p />
  * A typical <b>publish</b> key could look like this:<br />
  * <pre>
@@ -35,7 +35,7 @@ import org.xmlBlaster.serverIdl.XmlBlasterException;
  * <br />
  * In this example you would subscribe on message 4711.
  * <p />
- * A typical <b>subscribe</b> using a query syntax could look like this:<br />
+ * A typical <b>subscribe</b> using XPath query syntax could look like this:<br />
  * <pre>
  *     &lt;key oid='' queryType='XPATH'>
  *        //DRIVER[@id='FileProof']
@@ -43,10 +43,12 @@ import org.xmlBlaster.serverIdl.XmlBlasterException;
  * </pre>
  * <br />
  * In this example you would subscribe on all DRIVERs which have the attribute 'FileProof'
- * 
+ *
  * @see org.xmlBlaster.util.XmlKeyBase
- * @see xmlBlaster/src/dtd/XmlKey.xml
- * @see http://www.w3.org/TR/xpath
+ * <p />
+ * see xmlBlaster/src/dtd/XmlKey.xml
+ * <p />
+ * see http://www.w3.org/TR/xpath
  */
 public class XmlKey extends org.xmlBlaster.util.XmlKeyBase
 {
