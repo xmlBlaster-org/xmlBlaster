@@ -3,7 +3,7 @@ Name:      TestCallbackConfig.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Login/logout test for xmlBlaster
-Version:   $Id: TestCallbackConfig.java,v 1.7 2003/01/06 11:35:07 ruff Exp $
+Version:   $Id: TestCallbackConfig.java,v 1.8 2003/01/13 11:33:58 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.test.qos;
 
@@ -12,6 +12,7 @@ import org.jutils.init.Args;
 import org.jutils.time.StopWatch;
 
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.DisconnectQos;
 import org.xmlBlaster.util.Global;
@@ -23,6 +24,9 @@ import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.qos.address.CallbackAddress;
+import org.xmlBlaster.test.Msg;
+import org.xmlBlaster.test.Msgs;
+import org.xmlBlaster.test.MsgInterceptor;
 
 import org.xmlBlaster.test.Util;
 import junit.framework.*;
@@ -34,20 +38,17 @@ import junit.framework.*;
  * This client may be invoked multiple time on the same xmlBlaster server,
  * as it cleans up everything after his tests are done.
  */
-public class TestCallbackConfig extends TestCase implements I_Callback
+public class TestCallbackConfig extends TestCase
 {
    private static String ME = "TestCallbackConfig";
    private final Global glob;
    private final LogChannel log;
    private String name;
    private String passwd = "secret";
-   private int numReceived = 0;         // error checking
-
-   private boolean isDeadMessage = false;
-   private String subscribeDeadMessageOid = null;
    private XmlBlasterConnection con = null;
    private String publishOid = null;
    private String cbSessionId = "topSecret";
+   private MsgInterceptor updateInterceptor;
 
    /**
     * Constructs the TestCallbackConfig object.
@@ -55,8 +56,7 @@ public class TestCallbackConfig extends TestCase implements I_Callback
     * @param testName   The name used in the test suite
     * @param name       The name to login to the xmlBlaster
     */
-   public TestCallbackConfig(Global glob, String testName, String name)
-   {
+   public TestCallbackConfig(Global glob, String testName, String name) {
        super(testName);
        this.glob = glob;
        this.log = this.glob.getLog("test");
@@ -68,8 +68,7 @@ public class TestCallbackConfig extends TestCase implements I_Callback
     * <p />
     * Connect to xmlBlaster and login as admin, subscribe to dead letters
     */
-   protected void setUp()
-   {
+   protected void setUp() {
       Util.resetPorts();
       Util.resetPorts(glob);
       try {
@@ -87,13 +86,15 @@ public class TestCallbackConfig extends TestCase implements I_Callback
          cbProps.setPtpAllowed(true);
          qos.addCallbackAddress(cbProps);
 
-         con.connect(qos, this);
+         this.updateInterceptor = new MsgInterceptor(this.glob, this.log, null);
+         con.connect(qos, this.updateInterceptor); // Login to xmlBlaster and collect update messages with interceptor
       }
       catch (Exception e) {
          log.error(ME, e.toString() + " \n" + glob.getProperty().toXml() + " GLOBAL.INSTANCE:\n" + Global.instance().getProperty().toXml());
          e.printStackTrace();
          assertTrue(e.toString(), false);
       }
+      this.updateInterceptor.getMsgs().clear();
    }
 
    /**
@@ -101,8 +102,7 @@ public class TestCallbackConfig extends TestCase implements I_Callback
     * <p />
     * cleaning up .... erase() the previous message OID and logout
     */
-   protected void tearDown()
-   {
+   protected void tearDown() {
       try {
          if (con != null) {
             EraseReturnQos[] strArr = con.erase("<key oid='" + publishOid + "'/>", null);
@@ -118,8 +118,7 @@ public class TestCallbackConfig extends TestCase implements I_Callback
 
    /**
     */
-   public void testCbSessionId()
-   {
+   public void testCbSessionId() {
       log.info(ME, "testCbSessionId() ...");
       try {
          con.subscribe("<key oid='testCallbackMsg'/>", null);
@@ -128,7 +127,10 @@ public class TestCallbackConfig extends TestCase implements I_Callback
 
          log.info(ME, "Success: Publishing done, returned oid=" + publishOid);
 
-         waitOnUpdate(2000L, 1);
+         assertEquals("returned oid", "testCallbackMsg", publishOid);
+         assertEquals("numReceived after publishing", 1, this.updateInterceptor.waitOnUpdate(2000L, publishOid, Constants.STATE_OK));
+         assertEquals("", 1, this.updateInterceptor.getMsgs().getMsgs().length);
+         assertEquals("", this.cbSessionId, this.updateInterceptor.getMsgs().getMsgs()[0].getCbSessionId());
       }
       catch (Exception e) {
          log.error(ME, e.toString());
@@ -137,54 +139,10 @@ public class TestCallbackConfig extends TestCase implements I_Callback
       log.info(ME, "Success in testCbSessionId()");
    }
 
-
-   /**
-    * This is the callback method invoked from xmlBlaster
-    * delivering us a new asynchronous message. 
-    * @see org.xmlBlaster.client.I_Callback#update(String, UpdateKey, byte[], UpdateQos)
-    */
-   public String update(String cbSessionId, UpdateKey updateKey, byte[] content, UpdateQos updateQos)
-   {
-      log.info(ME, "Receiving update of a message " + updateKey.getOid());
-      numReceived++;
-      if (!this.cbSessionId.equals(cbSessionId))
-         log.error(ME, "Invalid cbSessionId");
-      assertEquals("Invalid cbSessionId", this.cbSessionId, cbSessionId);
-      return "";
-   }
-
-
-   /**
-    * Little helper, waits until the wanted number of messages are arrived
-    * or returns when the given timeout occurs.
-    * <p />
-    * @param timeout in milliseconds
-    * @param numWait how many messages to wait
-    */
-   private void waitOnUpdate(final long timeout, final int numWait)
-   {
-      long pollingInterval = 50L;  // check every 0.05 seconds
-      if (timeout < 50)  pollingInterval = timeout / 10L;
-      long sum = 0L;
-      // check if too few are arriving
-      while (numReceived < numWait) {
-         try { Thread.currentThread().sleep(pollingInterval); } catch( InterruptedException i) {}
-         sum += pollingInterval;
-         assertTrue("Timeout of " + timeout + " occurred without update", sum <= timeout);
-      }
-
-      // check if too many are arriving
-      try { Thread.currentThread().sleep(timeout); } catch( InterruptedException i) {}
-      assertEquals("Wrong number of messages arrived", numWait, numReceived);
-
-      numReceived = 0;
-   }
-
    /**
     * Method is used by TestRunner to load these tests
     */
-   public static Test suite()
-   {
+   public static Test suite() {
        TestSuite suite= new TestSuite();
        String loginName = "Tim";
        suite.addTest(new TestCallbackConfig(new Global(), "testCbSessionId", "Tim"));
@@ -199,8 +157,7 @@ public class TestCallbackConfig extends TestCase implements I_Callback
     *  java org.xmlBlaster.test.qos.TestCallbackConfig
     * </pre>
     */
-   public static void main(String args[])
-   {
+   public static void main(String args[]) {
       TestCallbackConfig testSub = new TestCallbackConfig(new Global(args), "TestCallbackConfig", "Tim");
       testSub.setUp();
       testSub.testCbSessionId();
