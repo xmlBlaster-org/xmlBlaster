@@ -126,6 +126,7 @@
                   <xsd:enumeration value="REQ"/>
                   <xsd:enumeration value="OTHER"/>
                   <xsd:enumeration value="INTERNET"/>
+                  <xsd:enumeration value="LOCAL"/>
                </xsd:restriction>
             </xsd:simpleType>
          </xsd:attribute>

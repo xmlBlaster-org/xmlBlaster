@@ -73,8 +73,10 @@
       1 is the first slave and stratum=2 would be bilbo in the above picture.
       </p>
       <b>
-      This feature is fully implemented and ready for production use.
+      This feature is implemented for Publish/Subscribe and ready for production use. PtP routing
+      is not implemented.
       </b>
+      <br />
       </li>
       <li><h4>Availability (Failover):</h4><br />
       An xmlBlaster slave may adopt the master role for selective message types
@@ -118,8 +120,10 @@
       caches "STOCK_EXCHANGE" as well.
       </p>
       <b>
-      This feature is fully implemented and ready for production use.
+      This feature is implemented for Publish/Subscribe and ready for production use. PtP routing
+      is not implemented.
       </b>
+      <br />
       </li>
       <li><h4>Load balancing:</h4><br />
       An xmlBlaster cluster allows to have more than one master server for
@@ -307,6 +311,11 @@
       </ul>
    </description>
 
+   <example lang="JAVA" type="HTML">
+   <p>
+     Please visit <i>xmlBlaster/demo/javaclients/cluster</i> for demos.
+   </p>
+   </example>
 
    <example lang="XML" type="HTML">
       Here are xmlBlaster internal messages which support clustering:
@@ -314,26 +323,28 @@
       <table border="1">
          <tr><td>1</td><td>Mapping of a cluster node ID to a physical xmlBlaster instance</td></tr>
          <tr><td>key</td><td><pre>
-   &lt;key oid='__sys__cluster.node.info[heron]'>
-      &lt;__sys__cluster.node.info/>
-   &lt;/key>
+&lt;key oid='__sys__cluster.node.info[heron]'>
+   &lt;__sys__cluster.node.info/>
+&lt;/key>
          </pre></td></tr>
          <tr><td>content</td><td><pre>
-   <!-- In future we could distinguish normal clients, slave clients
-        and address based maxConnections -->
+<!-- In future we could distinguish normal clients, slave clients
+      and address based maxConnections -->
 
-   &lt;clusternode id='heron' maxConnections='800'>
-      &lt;info>
-         &lt;address type='IOR'>IOR:00044550005...&lt;/address>
-         &lt;address type='XML-RPC' maxConnections='20'>http://www.mars.edu/RPC2&lt;/address>
-         &lt;callback type='XML-RPC'>http://www.mars.universe:8081/RPC2&lt;/callback>
-         &lt;backupnode>
-            &lt;clusternode id='avalon'/>  &lt;!-- first failover node -->
-            &lt;clusternode id='golan'/>   &lt;!-- second backup node -->
-         &lt;/backupnode>
-         &lt;nameservice>true&lt;/nameservice>
-      &lt;/info>
-   &lt;/clusternode>
+&lt;clusternode id='heron' maxConnections='800'>
+   &lt;info>
+      &lt;address type='IOR'>IOR:00044550005...&lt;/address>
+      &lt;address type='XML-RPC' maxConnections='20'>
+         http://www.mars.edu/RPC2
+      &lt;/address>
+      &lt;callback type='XML-RPC'>http://www.mars.universe:8081/RPC2&lt;/callback>
+      &lt;backupnode>
+         &lt;clusternode id='avalon'/>  &lt;!-- first failover node -->
+         &lt;clusternode id='golan'/>   &lt;!-- second backup node -->
+      &lt;/backupnode>
+      &lt;nameservice>true&lt;/nameservice>
+   &lt;/info>
+&lt;/clusternode>
          </pre></td></tr>
       </table>
       </p>
@@ -342,63 +353,75 @@
       <table border="1">
          <tr><td>2</td><td>Determine the master: Mapping of messages to cluster node IDs<br />See <i>NodeDomainInfo.java</i> and plugin <i>DomainToMaster.java</i></td><td>Comments</td></tr>
          <tr><td>2a) key</td><td><pre>
-   &lt;key oid='__sys__cluster.node.master[heron]'>
-      &lt;__sys__cluster.node.master/>
-   &lt;/key>
+&lt;key oid='__sys__cluster.node.master[heron]'>
+   &lt;__sys__cluster.node.master/>
+&lt;/key>
          </pre></td>
          <td> </td>
          </tr>
          <tr><td>content</td><td><pre>
-   // This is a master for domainless messages, football and rugby
-   &lt;clusternode id='heron'>
-      &lt;master stratum='0' acceptOtherDefault='true'>
-         &lt;key queryType='DOMAIN' domain='football'/>
-         &lt;key queryType='DOMAIN' domain='rugby'/>
-      &lt;/master>
-   &lt;/clusternode>
+// This is a master for domainless messages and
+// for football and rugby
+&lt;clusternode id='heron'>
+   &lt;master stratum='0' acceptOtherDefault='true'>
+      &lt;key queryType='DOMAIN' domain='football'/>
+      &lt;key queryType='DOMAIN' domain='rugby'/>
+   &lt;/master>
+&lt;/clusternode>
          </pre></td>
          <td>This cluster node is the master of the domain 'football' and 'rugby'.
          Messages without a domain specified are treated locally as well.</td>
          </tr>
 
          <tr><td>2b) key</td><td><pre>
-   &lt;key oid='__sys__cluster.node.master[frodo]'>
-      &lt;__sys__cluster.node.master/>
-   &lt;/key>
+&lt;key oid='__sys__cluster.node.master[frodo]'>
+   &lt;__sys__cluster.node.master/>
+&lt;/key>
          </pre></td>
          <td> </td>
          </tr>
          <tr><td>content</td><td><pre>
-   // This is a slave for everything
-   &lt;clusternode id='frodo'>
-      &lt;master stratum='0' acceptDefault='false'/>
-                                     &lt;!-- forward empty domains -->
-      ...
+// frodo is a slave for everything
+&lt;clusternode id='frodo'>
+   &lt;master stratum='0' acceptDefault='false'/>
+                      &lt;!-- forward empty domains -->
+   ...
+
+// heron is master for everything (domain '*')
+cluster.node[heron]=\
+   &lt;clusternode id='heron'>\
+      &lt;info>\
+         &lt;address type='IOR' hostname='' port='7600'/>\
+      &lt;/info>\
+      &lt;master type='DomainToMaster'>\
+         &lt;key queryType='DOMAIN' domain='*'/>\
+      &lt;/master>\
+   &lt;/clusternode>
          </pre></td>
          <td>Messages without a domain specified are normally treated
          by its local xmlBlaster node. Here this is switched off</td>
          </tr>
 
          <tr><td>2c) key</td><td><pre>
-   &lt;key oid='__sys__cluster.node.master[bilbo]'>
-      &lt;__sys__cluster.node.master/>
-   &lt;/key>
+&lt;key oid='__sys__cluster.node.master[bilbo]'>
+   &lt;__sys__cluster.node.master/>
+&lt;/key>
          </pre></td>
          <td> </td>
          </tr>
          <tr><td>content</td><td><pre>
-   // Bilbo is master of RECIPIES and local clients,
-   // but slave for everything else
-   &lt;clusternode id='0'>
-      &lt;master stratum='0'>
-         &lt;key queryType='DOMAIN' domain=''/>
-         &lt;key queryType='DOMAIN' domain='RECIPIES'/>
-      &lt;/master>
+// Bilbo is master of RECIPIES and local clients,
+// but slave for everything else
+&lt;clusternode id='0'>
+   &lt;master stratum='0'>
+      &lt;key queryType='DOMAIN' domain=''/>
+      &lt;key queryType='DOMAIN' domain='RECIPIES'/>
+   &lt;/master>
 
-      // refid points to a node one stratum closer to master
-      &lt;master stratum='2' refid='frodo' />
-      &lt;/master>
-   &lt;/clusternode>
+   // refid points to a node one stratum closer to master
+   &lt;master stratum='2' refid='frodo' />
+   &lt;/master>
+&lt;/clusternode>
          </pre></td>
          <td>Bilbo is slave of a slave for heron messages.
          Therefore it is stratum = 2 (two steps from the master).
@@ -407,24 +430,25 @@
          </tr>
 
          <tr><td>2d) key</td><td><pre>
-   &lt;key oid='__sys__cluster.node.master[heron]'>
-      &lt;__sys__cluster.node.master/>
-   &lt;/key>
+&lt;key oid='__sys__cluster.node.master[heron]'>
+   &lt;__sys__cluster.node.master/>
+&lt;/key>
          </pre></td>
          <td> </td>
          </tr>
          <tr><td>content</td><td><pre>
-   // The master is determined in a generic way (no explicit domain)
-   &lt;clusternode id='heron'>
-      &lt;master>
-         &lt;key queryType='EXACT' oid='radar.track'/>
-         &lt;key queryType='XPATH'> //STOCK_EXCHANGE &lt;/key>
-         &lt;filter type='ContentLength'>
-                        &lt;!-- Use your I_AccessFilter plugin -->
-           8000         &lt;!-- Msg contents smaller 8000 bytes only -->
-         &lt;/filter>
-      &lt;/master>
-   &lt;/clusternode>
+// The master is determined in a generic way
+// (no explicit domain)
+&lt;clusternode id='heron'>
+   &lt;master>
+      &lt;key queryType='EXACT' oid='radar.track'/>
+      &lt;key queryType='XPATH'> //STOCK_EXCHANGE &lt;/key>
+      &lt;filter type='ContentLength'>
+              &lt;!-- Use your I_AccessFilter plugin -->
+         8000 &lt;!-- Msg contents smaller 8000 bytes only -->
+      &lt;/filter>
+   &lt;/master>
+&lt;/clusternode>
          </pre></td>
          <td>Approach without domains. Every message is filtered
          with the given rules. If one of the rules matches, we are the master
@@ -432,20 +456,20 @@
          </tr>
 
          <tr><td>2e) key</td><td><pre>
-   &lt;key oid='__sys__cluster.node.master[heron]'>
-      &lt;__sys__cluster.node.master/>
-   &lt;/key>
+&lt;key oid='__sys__cluster.node.master[heron]'>
+   &lt;__sys__cluster.node.master/>
+&lt;/key>
          </pre></td>
          <td> </td>
          </tr>
          <tr><td>content</td><td><pre>
-   // The master is determined with a customer plugin
-   // (no explicit domain)
-   &lt;clusternode id='heron'>
-      &lt;master>
-         Java plugin (implements I_MapMsgToMasterId)
-      &lt;/master>
-   &lt;/clusternode>
+// The master is determined with a customer plugin
+// (no explicit domain)
+&lt;clusternode id='heron'>
+   &lt;master>
+      Java plugin (implements I_MapMsgToMasterId)
+   &lt;/master>
+&lt;/clusternode>
          </pre></td>
          <td>Approach without domains. Every message is filtered by
          a user supplied plugin. The plugin looks into the
@@ -468,19 +492,19 @@
       <table border="1">
          <tr><td>3</td><td>The current status of a cluster node</td></tr>
          <tr><td>key</td><td><pre>
-   &lt;key oid='__sys__cluster.node.state[heron]'>
-      &lt;__sys__cluster.node.state/>
-   &lt;/key>
+&lt;key oid='__sys__cluster.node.state[heron]'>
+   &lt;__sys__cluster.node.state/>
+&lt;/key>
          </pre></td></tr>
          <tr><td>content</td><td><pre>
-   &lt;clusternode id='heron'>
-      &lt;state>
-         &lt;cpu id='0' idle='40'/>   &lt;!-- currently 60% load on first CPU -->
-         &lt;cpu id='1' idle='44'/>
-         &lt;ram free='12000'/>       &lt;!-- xmlBlaster server has 12 MB free memory -->
-         &lt;performance bogomips='1205.86' idleIndex='20'/>
-      &lt;/state>
-   &lt;/clusternode>
+&lt;clusternode id='heron'>
+   &lt;state>
+      &lt;cpu id='0' idle='40'/>   &lt;!-- currently 60% load on first CPU -->
+      &lt;cpu id='1' idle='44'/>
+      &lt;ram free='12000'/>       &lt;!-- xmlBlaster server has 12 MB free memory -->
+      &lt;performance bogomips='1205.86' idleIndex='20'/>
+   &lt;/state>
+&lt;/clusternode>
          </pre></td></tr>
       </table>
       We need to investigate how other clusters communicate their
@@ -494,14 +518,14 @@
       <table border="1">
          <tr><td> </td><td>Quality of Service (QoS) of a published message traversing a cluster</td><td>Comments</td></tr>
          <tr><td>qos</td><td><pre>
-   &lt;qos>
-      &lt;sender>joe&lt;/sender>
-      &lt;route>
-         &lt;node id='bilbo' stratum='2' timestamp='34460239640'/>
-         &lt;node id='frodo' stratum='1' timestamp='34460239661'/>
-         &lt;node id='heron' stratum='0' timestamp='34460239590'/>
-      &lt;/route>
-   &lt;/qos>
+&lt;qos>
+   &lt;sender>joe&lt;/sender>
+   &lt;route>
+      &lt;node id='bilbo' stratum='2' timestamp='34460239640'/>
+      &lt;node id='frodo' stratum='1' timestamp='34460239661'/>
+      &lt;node id='heron' stratum='0' timestamp='34460239590'/>
+   &lt;/route>
+&lt;/qos>
          </pre></td>
          <td>A message published to <i>bilbo</i> found its way over <i>frodo</i> to the master <i>heron</i>.
          </td>
@@ -512,50 +536,50 @@
       This shows more complete the syntax of the configuration possibilities:
       </p>
       <pre>
-   &lt;clusternode id='heron.mycomp.com'>
-      &lt;info>
-         &lt;address type='IOR'>
-            IOR:09456087000
-         &lt;/address>
-         &lt;address type='XML-RPC'>
-            http://www.mycomp.com/XMLRPC/
-         &lt;/address>
-         &lt;callback type='RMI'>
-            rmi://mycomp.com
-         &lt;/callback>
-         &lt;backupnode>
-            &lt;clusternode id='aragon.mycomp.com'/>
-            &lt;clusternode id='bilbo.mycomp.com'/>
-         &lt;/backupnode>
-      &lt;/info>
-      
-      &lt;master type='DomainToMaster' version='0.9'>
-         &lt;![CDATA[
-            &lt;key domain='RUGBY'/>
-            &lt;key type='XPATH'>//STOCK&lt;/key>
-         ]]&gt;
-      &lt;/master>
-      &lt;master stratum='1' refId='frodo' type='MyOwnMapperPlugin' version='2.0'>
-         &lt;![CDATA[My own rule]]&gt;
-      &lt;/master>
+&lt;clusternode id='heron.mycomp.com'>
+   &lt;info>
+      &lt;address type='IOR'>
+         IOR:09456087000
+      &lt;/address>
+      &lt;address type='XML-RPC'>
+         http://www.mycomp.com/XMLRPC/
+      &lt;/address>
+      &lt;callback type='RMI'>
+         rmi://mycomp.com
+      &lt;/callback>
+      &lt;backupnode>
+         &lt;clusternode id='aragon.mycomp.com'/>
+         &lt;clusternode id='bilbo.mycomp.com'/>
+      &lt;/backupnode>
+   &lt;/info>
+   
+   &lt;master type='DomainToMaster' version='0.9'>
+      &lt;![CDATA[
+         &lt;key domain='RUGBY'/>
+         &lt;key type='XPATH'>//STOCK&lt;/key>
+      ]]&gt;
+   &lt;/master>
+   &lt;master stratum='1' refId='frodo' type='MyOwnMapperPlugin' version='2.0'>
+      &lt;![CDATA[My own rule]]&gt;
+   &lt;/master>
 
-      &lt;state>
-         &lt;cpu id='0' idle='40'/>
-         &lt;cpu id='1' idle='44'/>
-         &lt;ram free='12000'/>
-      &lt;/state>
-   &lt;/clusternode>
+   &lt;state>
+      &lt;cpu id='0' idle='40'/>
+      &lt;cpu id='1' idle='44'/>
+      &lt;ram free='12000'/>
+   &lt;/state>
+&lt;/clusternode>
       </pre>
       The return QoS value of a published message is if everything is OK as usual
       <pre>
-   &lt;qos>&lt;state id='OK'/>&lt;/qos>
+&lt;qos>&lt;state id='OK'/>&lt;/qos>
       </pre>
       If the message can't be forwarded to the master node, it is tailed back
       by your local xmlBlaster node and flushed on reconnect to the master.
       The publish return QoS indicates the situation with a "FORWARD_WARNING"
       response:
       <pre>
-   &lt;qos>&lt;state id='FORWARD_WARNING'/>&lt;/qos>
+&lt;qos>&lt;state id='FORWARD_WARNING'/>&lt;/qos>
       </pre>
 
    </example>
@@ -633,7 +657,7 @@
 &lt;clusternode id='heron'>
    &lt;master type='DomainToMaster'>
       &lt;![CDATA[
-         &lt;key domain='RUGBY_NEWS'/>
+      &lt;key domain='RUGBY_NEWS'/>
       ]]&gt;
    &lt;/master>
 &lt;/clusternode>
@@ -655,7 +679,7 @@
    &lt;/info>
    &lt;master type='DomainToMaster'>
       &lt;![CDATA[
-         &lt;key domain='RUGBY_NEWS'/>
+      &lt;key domain='RUGBY_NEWS'/>
       ]]&gt;
    &lt;/master>
 &lt;/clusternode>
@@ -706,12 +730,13 @@
    <see type="API">org.xmlBlaster.engine.cluster.simpledomain.DomainToMaster</see>
    <see type="API">org.xmlBlaster.engine.cluster.simpledomain.RoundRobin</see>
    <see type="REQ">util.property</see>
+   <see type="LOCAL">../../demo/javaclients/cluster/README</see>
 
    <author>ruff@swand.lake.de</author>
    <author>Heinrich.Goetzger@exploding-systems.de</author>
    <author>Michele.Laghi@swisscom.com</author>
    <date>2002 05 12</date>
-   <revision>$Revision: 1.32 $</revision>
+   <revision>$Revision: 1.33 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>Tests a cluster setup as described in this requirement</comment>
@@ -719,7 +744,6 @@
       <test tool="SUITE">clustertest.SubscribeTest</test>
       <test tool="SUITE">clustertest.SubscribeXPathTest</test>
       <test tool="SUITE">clustertest.EraseTest</test>
-      <test tool="SUITE">clustertest.DirtyReadTest</test>
       <test tool="SUITE">clustertest.DirtyReadTest</test>
    </testcase>
 </requirement>

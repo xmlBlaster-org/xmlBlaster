@@ -5,7 +5,7 @@ Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Generating a detailed html view for one requirement
 See:       xmlBlaster/doc/requirements/requirement.dtd
-Version:   $Id: detail.xsl,v 1.18 2002/06/17 09:04:40 ruff Exp $
+Version:   $Id: detail.xsl,v 1.19 2002/08/10 18:56:04 ruff Exp $
 Author:    ruff@swand.lake.de
 -->
 
@@ -35,7 +35,7 @@ Author:    ruff@swand.lake.de
 
    <body>
 
-   <!-- p class="sideend"> Last updated $Date: 2002/06/17 09:04:40 $ $Author: ruff $ </p -->
+   <!-- p class="sideend"> Last updated $Date: 2002/08/10 18:56:04 $ $Author: ruff $ </p -->
    <table width="700" border="1">
    <tr>
       <td>
@@ -175,6 +175,17 @@ Author:    ruff@swand.lake.de
                </a>
                </td>
             </xsl:if>
+
+            <xsl:if test="@type='LOCAL'">
+               <td class="reqId">See distribution</td>
+               <td>
+               <a>
+                  <xsl:attribute name="href"><xsl:value-of select="."/></xsl:attribute>
+                  <xsl:value-of select="."/>
+               </a>
+               </td>
+            </xsl:if>
+
 
          </tr>
       </xsl:for-each>
