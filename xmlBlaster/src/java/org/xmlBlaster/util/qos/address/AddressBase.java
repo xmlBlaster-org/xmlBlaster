@@ -151,13 +151,14 @@ public abstract class AddressBase
          this.nodeId = glob.getId();
       }
       */
-      if (log.TRACE) log.trace(ME, "this.nodeId=" + this.nodeId + " context=" + context + " className=" + className + " instanceName=" + this.instanceName);
       // SOCKET, IOR, XMLRPC, RMI, ...
       this.type.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "protocol");
 
       // dispatch/callback/plugin/socket/hostname
       // dispatch/connection/plugin/ior/localPort
-      envPrefix = "plugin/"+this.type.getValue().toLowerCase()+"/";
+      this.envPrefix = "plugin/"+this.type.getValue().toLowerCase()+"/";
+      if (log.TRACE) log.trace(ME, "type=" + this.type.getValue() + " nodeId=" + this.nodeId + " context=" + context +
+                         " className=" + className + " instanceName=" + this.instanceName + " envPrefix=" + this.envPrefix);
 
       this.bootstrapHostname.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "bootstrapHostname");
       this.bootstrapPort.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, "bootstrapPort");
@@ -213,7 +214,7 @@ public abstract class AddressBase
             return tmp;
          }
       }
-      tmp.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, envPrefix+key);
+      tmp.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, this.envPrefix+key);
       return tmp;
    }
 
@@ -230,7 +231,7 @@ public abstract class AddressBase
             return tmp;
          }
       }
-      tmp.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, envPrefix+key);
+      tmp.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, this.envPrefix+key);
       return tmp;
    }
 
@@ -247,7 +248,7 @@ public abstract class AddressBase
             return tmp;
          }
       }
-      tmp.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, envPrefix+key);
+      tmp.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, this.envPrefix+key);
       return tmp;
    }
 
@@ -264,7 +265,7 @@ public abstract class AddressBase
             return tmp;
          }
       }
-      tmp.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, envPrefix+key);
+      tmp.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, this.envPrefix+key);
       return tmp;
    }
 
@@ -274,7 +275,7 @@ public abstract class AddressBase
     */
    public String getEnvLookupKey(String key) {
       PropString tmp = new PropString("");
-      String k = tmp.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, envPrefix+key);
+      String k = tmp.setFromEnv(this.glob, this.nodeId, context, className, this.instanceName, this.envPrefix+key);
       if (k != null && k.length() > 0)
          return k;
       return key;
@@ -913,6 +914,12 @@ public abstract class AddressBase
       String offset = Constants.OFFSET + extraOffset;
 
       sb.append(offset).append("<").append(rootTag).append(" type='").append(getType()).append("'");
+      // For debugging only:
+      //sb.append(" nodeId='").append(this.nodeId).append("'");
+      //sb.append(" context='").append(this.context).append("'");
+      //sb.append(" className='").append(this.className).append("'");
+      //sb.append(" instanceName='").append(this.instanceName).append("'");
+      //sb.append(" envPrefix='").append(this.envPrefix).append("'");
       if (this.version.isModified())
           sb.append(" version='").append(getVersion()).append("'");
       if (this.bootstrapHostname.isModified())
