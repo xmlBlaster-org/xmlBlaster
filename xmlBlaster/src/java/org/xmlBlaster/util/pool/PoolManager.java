@@ -240,7 +240,7 @@ public final class PoolManager
    * <p />
    * The life span is set to the default value of the pool.
    * <p />
-   * @parameter instanceId See description in other reserve() method.
+   * @param instanceId See description in other reserve() method.
    * @exception XmlBlasterException Error with random generator
    */
    public ResourceWrapper reserve(String instanceId) throws XmlBlasterException {

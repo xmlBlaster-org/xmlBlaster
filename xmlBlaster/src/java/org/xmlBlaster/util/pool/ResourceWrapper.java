@@ -181,7 +181,7 @@ public class ResourceWrapper implements I_Timeout
    * A timeout occurred.
    * <p />
    * This method is a callback through interface I_Timeout.
-   * @parameter The timeout type, BUSY_TO_IDLE_TIMEOUT or IDLE_TO_ERASE_TIMEOUT
+   * @param The timeout type, BUSY_TO_IDLE_TIMEOUT or IDLE_TO_ERASE_TIMEOUT
    */
    public void timeout(Object obj) {
       //System.out.println("\nTIMEOUT for:" + this.instanceId);
