@@ -3,7 +3,7 @@ Name:      CbConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: CbConnection.java,v 1.8 2002/08/23 21:29:25 ruff Exp $
+Version:   $Id: CbConnection.java,v 1.9 2002/09/09 13:35:44 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.callback;
@@ -214,6 +214,7 @@ public class CbConnection implements I_Timeout
             return null;
          }
          
+         if (log.TRACE) log.trace(ME, "Before update " + msg.length + " acknowledged messages ...");
          String[] returnVal = cbDriver.sendUpdate(msg);
          if (log.TRACE) log.trace(ME, "Success, sent " + msg.length + " acknowledged messages, return value #1 is '" + returnVal[0] + "'");
          return returnVal;

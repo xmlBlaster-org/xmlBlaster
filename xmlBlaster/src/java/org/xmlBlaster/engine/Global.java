@@ -3,7 +3,7 @@ Name:      Global.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling global data
-Version:   $Id: Global.java,v 1.22 2002/08/16 11:37:42 ruff Exp $
+Version:   $Id: Global.java,v 1.23 2002/09/09 13:35:44 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -100,6 +100,12 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
       //Thread.currentThread().dumpStack();
    }
 
+   public Global(Properties p) {
+      super(p);
+      initThis();
+      // The util.Global base class can't initiliaze it, as this class is initialized later and overwrites with null
+   }
+
    /**
     * If you have a util.Global and need a engine.Global. 
     * <p />
@@ -125,14 +131,13 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    }
 
    private void initThis() {
-      String id = getProperty().get("cluster.node.id", (String)null);
-      if (id == null && getBootstrapAddress().getPort() > 0) {
-         id = getBootstrapAddress().getAddress();
+      String myId = getProperty().get("cluster.node.id", (String)null);
+      if (myId == null && getBootstrapAddress().getPort() > 0) {
+         myId = getBootstrapAddress().getAddress();
       }
-      if (id != null) {
-         nodeId = new NodeId(id);
-         super.setId(nodeId.toString());
-         log.info(ME, "Setting xmlBlaster instance name (-cluster.node.id) to '" + nodeId.toString() + "'");
+      if (myId != null) {
+         setId(myId);
+         log.info(ME, "Setting xmlBlaster instance name (-cluster.node.id) to '" + getId() + "'");
       }
       getRunlevelManager().addRunlevelListener(this);
    }
@@ -495,7 +500,7 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
    public String getDump() throws XmlBlasterException {
       StringBuffer sb = new StringBuffer(10000);
       sb.append("<xmlBlaster id='").append(getId()).append("'");
-      sb.append(" version='").append(getVersion()).append("'");
+      sb.append(" version='").append(getVersion()).append("' counter='").append(counter).append("'");
       sb.append("\n   ");
       sb.append(" buildTimestamp='").append(getBuildTimestamp()).append("'");
       sb.append(" buildJavaVendor='").append(getBuildJavaVendor()).append("'");
@@ -504,8 +509,12 @@ public final class Global extends org.xmlBlaster.util.Global implements I_Runlev
       sb.append(" dumpTimestamp='").append(org.jutils.time.TimeHelper.getDateTimeDump(0)).append("'");
       //sb.append(" ='").append(get()).append("'");
       sb.append(">");
-      sb.append(getAuthenticate().toXml());
-      sb.append(getAuthenticate().getXmlBlaster().toXml());
+      if (getAuthenticate() != null) {
+         sb.append(getAuthenticate().toXml());
+         if (getAuthenticate().getXmlBlaster() != null) {
+            sb.append(getAuthenticate().getXmlBlaster().toXml());
+         }
+      }
       sb.append("</xmlBlaster>");
       return sb.toString();
    }
