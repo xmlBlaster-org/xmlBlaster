@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.65 2003/05/21 20:21:19 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.66 2003/05/22 18:53:51 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -536,11 +536,13 @@ public class CorbaDriver implements I_Driver
     * Converts the internal CORBA XmlBlasterException to the util.XmlBlasterException. 
     */
    public static final org.xmlBlaster.util.XmlBlasterException convert(Global glob, org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException eCorba) {
+      boolean isServerSide = !glob.isServerSide();
       org.xmlBlaster.util.XmlBlasterException ex = 
          new XmlBlasterException(glob, ErrorCode.toErrorCode(eCorba.errorCodeStr),
                                eCorba.node, eCorba.location, eCorba.lang, eCorba.message, eCorba.versionInfo,
                                Timestamp.valueOf(eCorba.timestampStr),
-                               eCorba.stackTrace, eCorba.embeddedMessage, eCorba.transactionInfo);
+                               eCorba.stackTrace, eCorba.embeddedMessage,
+                               eCorba.transactionInfo, isServerSide);
       return ex;
    }
 
@@ -559,7 +561,8 @@ public class CorbaDriver implements I_Driver
                  eUtil.getStackTraceStr(),
                  eUtil.getEmbeddedMessage(),
                  eUtil.getTransactionInfo(),
-                 ""); // transform native exception to Corba exception
+                 ""
+                 /*eUtil.isServerSide() IS MISSING */); // transform native exception to Corba exception
    }
 
    /**
