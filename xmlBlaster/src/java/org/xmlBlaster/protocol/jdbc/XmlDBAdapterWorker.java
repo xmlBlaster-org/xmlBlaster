@@ -6,7 +6,7 @@
  * Project:   xmlBlaster.org
  * Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * Comment:   The thread that does the actual connection and interaction
- * Version:   $Id: XmlDBAdapterWorker.java,v 1.2 2000/02/23 10:08:01 ruff Exp $
+ * Version:   $Id: XmlDBAdapterWorker.java,v 1.3 2000/06/03 12:32:36 ruff Exp $
  * ------------------------------------------------------------------------------
  */
 
@@ -105,7 +105,7 @@ public class XmlDBAdapterWorker extends Thread {
     */
    private XmlDocument queryDB(ConnectionDescriptor descriptor)
            throws SQLException {
-
+      if (Log.CALLS) Log.calls(ME, "Entering queryDB() ...");
       Connection  conn = null;
       Statement   s = null;
       ResultSet   rs = null;
@@ -119,11 +119,14 @@ public class XmlDBAdapterWorker extends Thread {
          String   command = descriptor.getCommand();
 
          if (descriptor.getInteraction().equalsIgnoreCase("update")) {
+            Log.info(ME, "Trying DB update ...");
+
             int   rowsAffected = s.executeUpdate(command);
 
             doc = createUpdateDocument(rowsAffected, descriptor);
          }
          else {
+            Log.info(ME, "Trying DB select ...");
             rs = s.executeQuery(command);
             doc =
                DBAdapterUtils.createDocument(descriptor.getDocumentrootnode(),
@@ -263,9 +266,11 @@ public class XmlDBAdapterWorker extends Thread {
 
       ConnectionDescriptor descriptor = null;
 
+      Log.trace(ME, "Get connection ...");
       descriptor = new ConnectionDescriptor(document);
 
       try {
+         Log.trace(ME, "Access DB ...");
          document = queryDB(descriptor);
       }
       catch (Exception e) {
