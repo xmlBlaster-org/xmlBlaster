@@ -3,7 +3,7 @@ Name:      XmlRpcHttpClient.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code to post a xml-rpc message thru the HTTP protocol
-Version:   $Id: XmlRpcHttpClient.java,v 1.4 2000/10/13 08:26:29 ruff Exp $
+Version:   $Id: XmlRpcHttpClient.java,v 1.5 2000/10/13 08:34:11 ruff Exp $
 Author:    "Michele Laghi" <michele.laghi@attglobal.net>
 ------------------------------------------------------------------------------*/
 
@@ -172,7 +172,7 @@ public class XmlRpcHttpClient extends XmlBlasterProxy
          // protocol transparently ...
          Log.info(ME, "Going to invoke xmlBlaster using XmlRpc-XmlBlasterProxy");
 
-         String qos = "<qos><callback type='XML-RPC'>http://localhost:8081</callback></qos>";
+         String qos = "<qos><callback type='XML-RPC'>http://" + getLocalIP() + ":" + cb_port + "</callback></qos>";
          String sessionId = "Session1";
 
          String loginAnswer = client.login("LunaMia", "silence", qos, sessionId);
@@ -212,6 +212,27 @@ public class XmlRpcHttpClient extends XmlBlasterProxy
    }
 
    /**
+    * You can specify the local IP address with e.g. -xmlrpc.cb_host 192.168.10.12
+    * on command line.
+    * @return The local IP address, defaults to '127.0.0.1' if not known.
+    */
+   public static String getLocalIP()
+   {
+      String ip_addr = XmlBlasterProperty.get("xmlrpc.cb_host", (String)null);
+      if (ip_addr == null) {
+         try {
+            ip_addr = java.net.InetAddress.getLocalHost().getHostAddress(); // e.g. "202.100.100.12"
+         } catch (java.net.UnknownHostException e) {
+            Log.warn(ME, "Can't determine local IP address, try e.g. '-xmlrpc.cb_host 192.168.10.12' on command line: " + e.toString());
+         }
+         if (ip_addr == null) ip_addr = "127.0.0.1";
+      }
+      return ip_addr;
+   }
+
+
+
+   /**
     * Command line usage.
     */
    private static void usage()
@@ -222,6 +243,7 @@ public class XmlRpcHttpClient extends XmlBlasterProxy
       Log.plain(ME, "   -h                  Show the complete usage.");
       Log.plain(ME, "   -xmlrpc.host        The XML-RPC web server host [localhost].");
       Log.plain(ME, "   -xmlrpc.port        The XML-RPC web server port [8080].");
+      Log.plain(ME, "   -xmlrpc.cb_host     My XML-RPC callback web server host (e.g. for multi homed hosts) [localhost].");
       Log.plain(ME, "   -xmlrpc.cb_port     My XML-RPC callback web server port [8081].");
       Log.usage();
       Log.plain(ME, "----------------------------------------------------------");
