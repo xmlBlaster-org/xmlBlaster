@@ -69,7 +69,8 @@ ConnectReturnQos XmlBlasterAccess::connect(const ConnectQos& qos, I_Callback *cl
    string typeVersion = global_.getProperty().getStringProperty("queue/defaultPlugin", "CACHE,1.0");
    string queueId = string("client:") + getId();
    updateClient_ = clientAddr;
-   if (!cbServer_) createDefaultCbServer();
+   //if (!cbServer_) createDefaultCbServer();
+   createDefaultCbServer();
 
    if (log_.trace()) log_.trace(ME, string("::connect. CbServer done"));
    // currently the simple version will do it ...
@@ -100,7 +101,9 @@ void XmlBlasterAccess::createDefaultCbServer()
 
    CbQueueProperty prop = connectQos_.getSessionCbQueueProperty(); // Creates a default property for us if none is available
    CallbackAddress addr = prop.getCurrentCallbackAddress(); // c++ may not return null
-   cbServer_ = initCbServer(getLoginName(), addr.getType(), addr.getVersion());
+
+   if(!cbServer_)
+     cbServer_ = initCbServer(getLoginName(), addr.getType(), addr.getVersion());
 
    addr.setAddress(cbServer_->getCbAddress());
    addr.setType(cbServer_->getCbProtocol());
