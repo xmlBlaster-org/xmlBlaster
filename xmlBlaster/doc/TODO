@@ -1,3 +1,5 @@
+- cvsweb access using  http://www.lyra.org/viewcvs/
+
 - Xmldb Transaction support, based on
   Java(tm) Transaction Service (JTS) 1.0 Specification.
   The xmldb should have Isolation Level 0-3.
@@ -150,4 +152,4 @@ xmlBlaster homepage
      http://www.hpc.uh.edu/fvwm/archive/
 
 - Documentation formatting from XML to PDF (XSL-FO):  Unicorn Formatting Objects (UFO)
-  http://www.unicorn-enterprises.com/ 
+  http://www.unicorn-enterprises.com/
