@@ -6,6 +6,7 @@ Changes for x.xxx [xxx, xx xxxx]
 TODO:
 
 * Renew lease for msg queue automatically on usage
+* Test message lifecycle (some implementation is missing)
 * RMI update() variant with string return
 * PtP with session destination
 * RequestBroker.get() the return QoS should be merged with UpdateQos
@@ -13,9 +14,30 @@ TODO:
 * Test (implement?) forceUpdate=false with same content
 * Remove thread save gap in RequestBroker:publish()
 * Test: C++, Perl, HTTP, different protocol drivers ...
-* Test message lifecycle (some implementation is missing)
 
 DONE:
+  - CORBA changes in xmlBlaster.idl
+
+    The xmlBlaster server:
+     Added:
+       oneway void publishOneway(in MessageUnitArr msgUnitArr);
+       string ping(in string qos);
+     Removed:
+       boolean ping()
+  
+    The authentication server:
+     Added:
+       string ping(in string qos);
+  
+    The callback server:
+     Added:
+       oneway void updateOneway(in string sessionId, in serverIdl::MessageUnitArr msgUnitArr);
+       string ping(in string qos);
+     Changed:
+       The update() is changed to return a String[].
+
+
+
   - The update() method changed incompatible!
     The first argument now returns the callback sessionId.
     This is the id you passed on registering your callback server
