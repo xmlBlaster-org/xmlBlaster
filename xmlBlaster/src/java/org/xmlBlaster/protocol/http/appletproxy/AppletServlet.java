@@ -116,7 +116,7 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
     * successful login.
     * <p />
     */
-   public void doGet(HttpServletRequest req, HttpServletResponse res) throws ServletException, IOException
+   public void doGetFake(HttpServletRequest req, HttpServletResponse res, String actionType) throws ServletException, IOException
    {
       res.setContentType("text/plain");
       String errorText="";
@@ -124,8 +124,7 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
       LogChannel log = this.initialGlobal.getLog("servlet");
       if (log.CALL) log.call(this.getClass().getName(), "Entering doGet() ... " + Memory.getStatistic());
 
-      String actionType = getParameter(req, "ActionType", (String)null);
-      if (actionType == null) {
+      if (actionType.equalsIgnoreCase("NONE")) {
          String str = "Please call servlet with some ActionType";
          log.error(ME, str);
          XmlBlasterException x = new XmlBlasterException(this.initialGlobal, ErrorCode.USER_CONFIGURATION, ME, str);
@@ -223,7 +222,7 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
             pushHandler = null;
             log.info(ME, "Persistent HTTP connection lost, leaving doGet() ....");
          }
-         else if (actionType.equals("dummyToCreateASessionId")) {
+         else if (actionType.equals(I_XmlBlasterAccessRaw.CREATE_SESSIONID_NAME)) {
             //------------------ first request from applet --------------------------
             log.info(ME, "doGet: dummyToCreateASessionId");
             writeResponse(res, "dummyToCreateASessionId", "OK-"+System.currentTimeMillis());
@@ -246,21 +245,6 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
                log.error(ME, "Caught XmlBlaster Exception for actionType '" + actionType + "': " + e.getMessage());
                return;
             }
-         }
-         else if (I_XmlBlasterAccessRaw.PUBLISH_NAME.equalsIgnoreCase(actionType)) { // "publish"
-            doPost(req, res);
-         }
-         else if (I_XmlBlasterAccessRaw.SUBSCRIBE_NAME.equalsIgnoreCase(actionType)) { // "subscribe"
-            doPost(req, res);
-         }
-         else if (I_XmlBlasterAccessRaw.UNSUBSCRIBE_NAME.equalsIgnoreCase(actionType)) { // "unSubscribe"
-            doPost(req, res);
-         }
-         else if (I_XmlBlasterAccessRaw.GET_NAME.equalsIgnoreCase(actionType)) { // "get"
-            doPost(req, res);
-         }
-         else if (I_XmlBlasterAccessRaw.ERASE_NAME.equalsIgnoreCase(actionType)) { // "erase"
-            doPost(req, res);
          }
          else if (actionType.equals(I_XmlBlasterAccessRaw.DISCONNECT_NAME)) {
             log.info(ME, "Logout arrived ...");
@@ -314,8 +298,11 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
 
       String actionType = getParameter(req, "ActionType", "NONE");
       System.err.println("Received actionType=" + actionType);
-      if (actionType.equalsIgnoreCase(I_XmlBlasterAccessRaw.CONNECT_NAME) || actionType.equalsIgnoreCase(I_XmlBlasterAccessRaw.DISCONNECT_NAME)) { // "connect", "disconnect"
-         doGet(req, res);
+      if (actionType.equalsIgnoreCase(I_XmlBlasterAccessRaw.CONNECT_NAME) || 
+          actionType.equalsIgnoreCase(I_XmlBlasterAccessRaw.DISCONNECT_NAME) ||
+          actionType.equalsIgnoreCase(I_XmlBlasterAccessRaw.PONG_NAME) ||
+         actionType.equalsIgnoreCase(I_XmlBlasterAccessRaw.CREATE_SESSIONID_NAME)) { // "connect", "disconnect"
+         doGetFake(req, res, actionType);
          return;
       }
 
@@ -487,6 +474,18 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
       }
    }
 
+
+
+
+
+
+
+
+
+
+
+
+
    /**
     * Setting the system properties.
     * <p />
@@ -525,6 +524,7 @@ public class AppletServlet extends HttpServlet implements org.jutils.log.Logable
          System.setProperties(props);
       }
    }
+
 
    /**
     * @see #writeResponse(HttpServletResponse, String, text)

@@ -77,8 +77,8 @@ public class PersistentRequest extends Thread {
     */
    public void run(){
       try{
-         this.xmlBlasterAccess.request("?ActionType=dummyToCreateASessionId",
-                           XmlBlasterAccessRawBase.GET, !XmlBlasterAccessRawBase.ONEWAY);
+         this.xmlBlasterAccess.postRequest("ActionType=dummyToCreateASessionId",
+                           !XmlBlasterAccessRawBase.ONEWAY);
 
          /*
           NOTE: We are sending the paramters encoded into the URL because i don't
@@ -138,16 +138,14 @@ public class PersistentRequest extends Thread {
                if (qos.indexOf("loginSucceeded") != -1) {
                   this.connectReturnQos = "<qos/>";
                   this.xmlBlasterAccess.isConnected(true);
-                  this.xmlBlasterAccess.request("?ActionType=pong",
-                                   XmlBlasterAccessRawBase.GET, !XmlBlasterAccessRawBase.ONEWAY);
+                  this.xmlBlasterAccess.postRequest("ActionType=pong", !XmlBlasterAccessRawBase.ONEWAY);
                }
                else { // An ordinary ping arrived
                   if (!this.xmlBlasterAccess.isConnected()) {
                      // Don't send pong, we have not yet connected and our sessionId would be invalid
                      continue;
                   }
-                  this.xmlBlasterAccess.request("?ActionType=pong",
-                                   XmlBlasterAccessRawBase.GET, !XmlBlasterAccessRawBase.ONEWAY);
+                  this.xmlBlasterAccess.postRequest("ActionType=pong", !XmlBlasterAccessRawBase.ONEWAY);
                }
             }
             else if (I_XmlBlasterAccessRaw.UPDATE_NAME.equals(method)) { // "update"

@@ -3,7 +3,6 @@ package org.xmlBlaster.client.protocol.http.common;
 import java.io.ByteArrayInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Hashtable;
 import java.util.Vector;
 
@@ -30,8 +29,6 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
    private PersistentRequest persistentHttpConnection;
    private I_CallbackRaw callback;
    public static final boolean ONEWAY = true;
-   public static final boolean POST = true;
-   public static final boolean GET = false;
    private boolean isConnected = false;
    protected Hashtable properties = new Hashtable();
    protected I_Log logListener;
@@ -161,14 +158,14 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
       log("DEBUG", "subscribe(key="+xmlKey+")");
       String keyEnc = encode(xmlKey, "UTF-8");
       String qosEnc = encode(qos, "UTF-8");
-      return (Hashtable)request("ActionType=subscribe&key="+keyEnc+"&qos="+qosEnc, POST, !ONEWAY);
+      return (Hashtable)postRequest("ActionType=subscribe&key="+keyEnc+"&qos="+qosEnc, !ONEWAY);
    }
 
    public Msg[] get(java.lang.String xmlKey, java.lang.String qos) throws Exception {
       log("DEBUG", "get(key="+xmlKey+")");
       String keyEnc = encode(xmlKey, "UTF-8");
       String qosEnc = encode(qos, "UTF-8");
-      Vector list = (Vector)request("ActionType=get&key="+keyEnc+"&qos="+qosEnc, POST, !ONEWAY);
+      Vector list = (Vector)postRequest("ActionType=get&key="+keyEnc+"&qos="+qosEnc, !ONEWAY);
       Msg[] msgs = new Msg[list.size()/3];
       for (int i=0; i<list.size()/3; i++) {
          log("DEBUG", "Synchronous get is not implented");
@@ -184,7 +181,7 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
       log("DEBUG", "unSubscribe(key="+xmlKey+")");
       String keyEnc = encode(xmlKey, "UTF-8");
       String qosEnc = encode(qos, "UTF-8");
-      return (Hashtable[])request("ActionType=unSubscribe&key="+keyEnc+"&qos="+qosEnc, POST, !ONEWAY);
+      return (Hashtable[])postRequest("ActionType=unSubscribe&key="+keyEnc+"&qos="+qosEnc, !ONEWAY);
    }
 
    public Hashtable publish(String xmlKey, byte[] content, String qos) throws Exception {
@@ -192,21 +189,21 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
       String keyEnc = encode(xmlKey, "UTF-8");
       String qosEnc = encode(qos, "UTF-8");
       byte[] serial = encodeBase64(content);
-      return (Hashtable)request("ActionType=publish&key="+keyEnc+"&qos="+qosEnc+"&content="+new String(serial), POST, !ONEWAY);
+      return (Hashtable)postRequest("ActionType=publish&key="+keyEnc+"&qos="+qosEnc+"&content="+new String(serial), !ONEWAY);
    }
 
    public Hashtable[] erase(java.lang.String xmlKey, java.lang.String qos) throws Exception {
       log("DEBUG", "erase(key="+xmlKey+")");
       String keyEnc = encode(xmlKey, "UTF-8");
       String qosEnc = encode(qos, "UTF-8");
-      return (Hashtable[])request("ActionType=erase&key="+keyEnc+"&qos="+qosEnc, POST, !ONEWAY);
+      return (Hashtable[])postRequest("ActionType=erase&key="+keyEnc+"&qos="+qosEnc, !ONEWAY);
    }
 
    public void disconnect(String qos) {
       log("DEBUG", "disconnect()");
       String qosEnc = encode(qos, "UTF-8");
       try {
-         request("ActionType=disconnect&qos="+qosEnc, POST, !ONEWAY);
+         postRequest("ActionType=disconnect&qos="+qosEnc, !ONEWAY);
          log("INFO", "Successfully disconnected from xmlBlaster");
       }
       catch (Exception e) {
@@ -221,8 +218,9 @@ public abstract class XmlBlasterAccessRawBase implements I_XmlBlasterAccessRaw
     * @param oneway true for requests returning void
     * @return The returned value for the given request, "" on error or for oneway messages
     */
-   public Object request(String request, boolean doPost, boolean oneway) throws Exception {
+   Object postRequest(String request, boolean oneway) throws Exception {
       try {
+         boolean doPost = true;
          // applet.getAppletContext().showDocument(URL url, String target);
          //String url = (doPost) ? this.xmlBlasterServletUrl : this.xmlBlasterServletUrl + request;
          String url = (doPost) ? this.xmlBlasterServletUrl + "?" + request : this.xmlBlasterServletUrl + request;
