@@ -225,7 +225,8 @@ static int runCallbackServer(CallbackServerUnparsed *cb)
       msgUnitArr = parseMsgUnitArr(socketDataHolder.blob.dataLen, socketDataHolder.blob.data);
 
       if (cb->logLevel>=LOG_TRACE) cb->log(cb->logLevel, LOG_TRACE, __FILE__,
-         "Received callback methodName=%s", socketDataHolder.methodName);
+         "Received requestId '%s' callback %s()",
+         socketDataHolder.requestId, socketDataHolder.methodName);
 
       success = true;
       
@@ -239,7 +240,8 @@ static int runCallbackServer(CallbackServerUnparsed *cb)
                strcmp(socketDataHolder.methodName, XMLBLASTER_UPDATE_ONEWAY) == 0) {
          if (cb->update != 0) { /* Client has registered to receive callback messages? */
             if (cb->logLevel>=LOG_TRACE) cb->log(cb->logLevel, LOG_TRACE, __FILE__,
-               "Calling client update() ...");
+               "Calling client %s() for requestId '%s' ...",
+               socketDataHolder.methodName, socketDataHolder.requestId);
             success = cb->update(msgUnitArr, cb->updateUserData, &xmlBlasterException);
          }
       }
