@@ -41,10 +41,10 @@ public:
    HelloWorld2(Global& glob) 
    : ME("HelloWorld2"),
      global_(glob), 
-     log_(glob.getLog("demo"))      // all logs written in this class are written to the
-   {                                  // log channel called 'demo'. To see the traces of this
-                                      // channel invoke -trace[demo] true on the command line,
-                                      // then it will only switch on the traces for the demo channel
+     log_(glob.getLog("HelloWorld2")) // all logs written in this class are written to the
+   {                       // log channel called 'HelloWorld2'. To see the traces of this
+                           // channel invoke -trace[HelloWorld2] true on the command line,
+                           // then it will only switch on the traces for the demo channel
       log_.info(ME, "Trying to connect to xmlBlaster with C++ client lib " + Global::getVersion() +
                     " from " + Global::getBuildTimestamp());
    }
@@ -184,11 +184,12 @@ int main(int args, char ** argv)
    glob.getLog().info("HelloWorld2", intro);
 
    if (glob.wantsHelp()) {
-      glob.getLog().plain("", Global::usage());
-      glob.getLog().plain("", " -sleep              Sleep after publishing [1000 millisec]\n");
-      glob.getLog().plain("", "Example:\n");
-      glob.getLog().plain("", "HelloWorld2 -trace true -sleep 2000");
-      glob.getLog().plain("", "HelloWorld2 -dispatch/connection/delay 10000 -sleep 2000000");
+      cout << Global::usage() << endl;
+      cout << endl << "HelloWorld2";
+      cout << endl << "   -sleep              Sleep after publishing [1000 millisec]" << endl;
+      cout << endl << "Example:" << endl;
+      cout << endl << "HelloWorld2 -trace true -sleep 2000";
+      cout << endl << "HelloWorld2 -dispatch/connection/delay 10000 -sleep 2000000" << endl << endl;
       org::xmlBlaster::util::Object_Lifetime_Manager::fini();
       return 1;
    }
