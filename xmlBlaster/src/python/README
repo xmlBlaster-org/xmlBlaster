@@ -1,6 +1,4 @@
-"""
-ver080403
-spex66@gmx.net
+doc = """
 
  8888888b.           888888b.   888                   888
  888   Y88b          888  "88b  888                   888
@@ -13,39 +11,99 @@ spex66@gmx.net
                  888
             Y8b d88P
              "Y88P"
+
+=======================================================
+THE ABSTRACT
              
-pyBlaster.py
+pyBlaster
 	The Python way ("The first steps" :-)) to use www.XMLBLASTER.org
+	
+	A Python module that provides the complete XMLBLASTER interface for XML-RPC 
+	This means for asynchronous updates (callbacks), too!
+	
+	Fredrik Lundh has provided the excellent XML-RPC library for Python.
+	   http://www.pythonware.com/products/xmlrpc/
 
-Have fun and thanks to the xmlblaster-team!
 
-1st Step
-    XmlBlasterClient
-        Implementation of the complete(?) xmlrpc client interface
-        With just a little beautifying of the method-signatures
 
-2nd Step        
-    XmlBlasterCallbackClient    
-        Specialisation of XmlBlasterClient with additional 
-        threaded xmlrpc server implementation
+Have fun and thanks to the XMLBLASTER-team!
+		http://www.xmlblaster.org
+
+		
+Peter Arwanitis
+spex66 @ gmx . net
+(=PA=)
+
+=======================================================
+THE DETAILS
+
+Core file
+	pyBlaster.py
+
+		My 1st Step:
+			class XmlBlasterClient
+				Implementation of the complete(?) XML-RPC client interface
+				With just a little beautifying of the method-signatures
+
+		My 2nd Step:        
+			class XmlBlasterCallbackClient
+				Specialisation of XmlBlasterClient with additional 
+				threaded XML-RPC server implementation
         
 
-Based on (if you have an uptodate installation, delete te local file)
-    xmlrpclib Version 1.0.1/ SimpleXMLRPCServer from http://www.pythonware.com
+Based on (if you have an uptodate installation, delete the provided files)
+    xmlrpclib.py / SimpleXMLRPCServer.py ( Version 1.0.1 )
     
-Additional
-    BaseService             class to handle threads
-    ThreadedXMLRPCServer    mixin class SimpleXMLRPCServer & BaseService
-                            to build an threaded XMLRPCServer
+Additional core files
+    BaseService.py             class to comfortable handle threads
+    						   found in the Narval project from LOGILAB
+    						   http://www.logilab.org
+    ThreadedXMLRPCServer.py    mixin class SimpleXMLRPCServer & BaseService
+                               to build an threaded XMLRPCServer
                             
-    ShellService            mixin class BaseService & InteractiveConsole
-                            to serve an interactive Python prompt for 
-                            debugging and testing
+Optional files
+    ShellService.py            mixin class BaseService & InteractiveConsole
+                               to serve an interactive Python prompt (shell) 
+                               for debugging and testing 
 
-Usage and test (batteries included):
+
+=======================================================
+THE INSTALLATION
+
+Put the pyBlaster directory (its an python package) into your 
+python/Lib/site-packages (or use it direct from the directory)
+
+
+=======================================================
+THE USAGE 
+
+Read the XMLBLASTER documentation / requirements, especially for the
+"quality of service QoS" options.
+
+In your python project:
+
+# import
+from pyBlaster import pyBlaster
+
+# build an instance
+xb = pyBlaster.XmlBlasterCallbackClient()
+
+# start server / use client
+# its up to you, thats all!
+
+=======================================================
+THE TEST
+
+Developed under Python 2.2.2 with the XML-RPC update from pythonware
+
+Success stories from Jython and other CPython version are appreciated!
+
+Test (batteries included):
     start pyBlaster.py in a shell and have a look at the help text
     start pyBlaster.py in more than one shell and experiment interactive
     	  with publish / subcribe / get <-- this is the python way :)
     
-        
+
+
+(=PA=)        
 """
