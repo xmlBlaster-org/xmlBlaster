@@ -1,6 +1,8 @@
 // xmlBlaster/demo/javaclients/HelloWorldPublish.java
 package javaclients;
 
+import java.util.Map;
+import java.util.Iterator;
 import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
@@ -60,6 +62,12 @@ import org.xmlBlaster.client.I_ConnectionHandler;
  *
  *Send a PtP message:
  * java javaclients.HelloWorldPublish -destination jack/17 -forceQueuing true -persistent true -subscribeable true
+ *
+ *Add some client properties which will be send in the qos to the receivers:
+ * java javaclients.HelloWorldPublish -clientProperty[transactionId] 0x23345 -clientProperty[myName] jack
+ *creates a publish Qos containing:
+ *   &lt;clientProperty name='transactionId'>0x23345&lt;/clientProperty>
+ *   &lt;clientProperty name='myName'>jack&lt;/clientProperty>
  * </pre>
  * <p>
  * If interactive is false, the sleep gives the number of millis to sleep before publishing the next message.
@@ -106,6 +114,7 @@ public class HelloWorldPublish
          boolean disconnect = glob.getProperty().get("disconnect", true);
          final boolean eraseTailback = glob.getProperty().get("eraseTailback", false);
          int contentSize = glob.getProperty().get("contentSize", -1); // 2000000);
+         Map clientPropertyMap = glob.getProperty().get("clientProperty", (Map)null);
 
          if (historyMaxMsg < 1 && !glob.getProperty().propertyExists("destroyDelay"))
             destroyDelay = 24L*60L*60L*1000L; // Increase destroyDelay to one day if no history queue is used
@@ -133,6 +142,13 @@ public class HelloWorldPublish
          log.info(ME, "   -persistent     " + persistent);
          log.info(ME, "   -lifeTime       " + org.jutils.time.TimeHelper.millisToNice(lifeTime));
          log.info(ME, "   -forceDestroy   " + forceDestroy);
+         if (clientPropertyMap != null) {
+            Iterator it = clientPropertyMap.keySet().iterator();
+            while (it.hasNext()) {
+               String key = (String)it.next();
+               log.info(ME, "   -clientProperty["+key+"]   " + clientPropertyMap.get(key).toString());
+            }
+         }
          log.info(ME, " Topic settings");
          log.info(ME, "   -readonly       " + readonly);
          log.info(ME, "   -destroyDelay   " + org.jutils.time.TimeHelper.millisToNice(destroyDelay));
@@ -204,6 +220,14 @@ public class HelloWorldPublish
             pq.setLifeTime(lifeTime);
             pq.setForceDestroy(forceDestroy);
             pq.setSubscribeable(subscribeable);
+            if (clientPropertyMap != null) {
+               Iterator it = clientPropertyMap.keySet().iterator();
+               while (it.hasNext()) {
+                  String key = (String)it.next();
+                  pq.setClientProperty(key, clientPropertyMap.get(key).toString());
+               }
+               pq.getData().setClientProperty("ALONG", (new Long(12)));
+            }
             
             if (i == 0) {
                TopicProperty topicProperty = new TopicProperty(glob);
