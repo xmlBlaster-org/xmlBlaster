@@ -120,16 +120,19 @@ void ConnectQosFactory::startElement(const XMLCh* const name, AttributeList& att
    }
 
    if (SaxHandlerBase::caseCompare(name, "ptp")) {
+      connectQos_.setPtp(true);
       character_.erase();
       return;
    }
 
-   if (SaxHandlerBase::caseCompare(name, "isClusterNode")) {
+   if (SaxHandlerBase::caseCompare(name, "clusterNode")) {
+      connectQos_.setClusterNode(true);
       character_.erase();
       return;
    }
 
    if (SaxHandlerBase::caseCompare(name, "duplicateUpdates")) {
+      connectQos_.setDuplicateUpdates(true);
       character_.erase();
       return;
    }
@@ -197,7 +200,7 @@ void ConnectQosFactory::endElement(const XMLCh* const name) {
       return;
    }
 
-   if (SaxHandlerBase::caseCompare(name, "isClusterNode")) {
+   if (SaxHandlerBase::caseCompare(name, "clusterNode")) {
       connectQos_.setClusterNode(getBoolFromString(character_));
       return;
    }

@@ -204,7 +204,7 @@ string ConnectQosData::toXml(const string& extraOffset)
    ret += offset + string("   <ptp>") + getBoolAsString(ptp_)  + string("</ptp>");
 
    if (isClusterNode())
-      ret += offset + string("   <isClusterNode>") + getBoolAsString(isClusterNode()) + string("</isClusterNode>");
+      ret += offset + string("   <clusterNode>") + getBoolAsString(isClusterNode()) + string("</clusterNode>");
 
       if (isDuplicateUpdates() == false)
          ret += offset + string("   <duplicateUpdates>") + getBoolAsString(isDuplicateUpdates()) + string("</duplicateUpdates>");
