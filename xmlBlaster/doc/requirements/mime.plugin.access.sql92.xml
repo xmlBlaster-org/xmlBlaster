@@ -68,80 +68,80 @@
         <table width="80%" border="1" BGCOLOR="#ffffaa">
           <tr>
             <td BGCOLOR="#ffffff">
-        	<b>Literals:</b>
-        	<ul>
-        	  <li>A string literal is enclosed in single quotes with an included
-        	      single quote represented by doubled single quote such as 'literal'
-        	      and 'literal''s'; like Java <i>String</i> literals these use the
-        	      unicode character encoding.
-        	  </li>
-        	  <li>An exact numeric literal is a numeric value without a decimal point
-        	      such as 57, -957, +62; numbers in the range of Java <i>long</i> are
-        	      supported. Exact numeric literals use the Java integer literal syntax.
-        	  </li>
-        	  <li>An approximate numeric literal is a numeric value in scientific
-        	      notation such as 7E3, -57.9E2 or a numeric value with a decimal such
-        	      as 7., -95.7, +6.2; numbers in the range of Java <i>double</i>
-        	      are supported. Approximate literals use the Java floating point
-        	      literal syntax.
-        	  </li>
-        	  <li>The boolean literals <i>TRUE </i>and <i>FALSE</i>.</li>
-        	</ul>
-        	<br/>
+                <b>Literals:</b>
+                <ul>
+                  <li>A string literal is enclosed in single quotes with an included
+                      single quote represented by doubled single quote such as 'literal'
+                      and 'literal''s'; like Java <i>String</i> literals these use the
+                      unicode character encoding.
+                  </li>
+                  <li>An exact numeric literal is a numeric value without a decimal point
+                      such as 57, -957, +62; numbers in the range of Java <i>long</i> are
+                      supported. Exact numeric literals use the Java integer literal syntax.
+                  </li>
+                  <li>An approximate numeric literal is a numeric value in scientific
+                      notation such as 7E3, -57.9E2 or a numeric value with a decimal such
+                      as 7., -95.7, +6.2; numbers in the range of Java <i>double</i>
+                      are supported. Approximate literals use the Java floating point
+                      literal syntax.
+                  </li>
+                  <li>The boolean literals <i>TRUE </i>and <i>FALSE</i>.</li>
+                </ul>
+                <br/>
             </td>
           </tr>
           <tr>
             <td BGCOLOR="#ffffff">
                 <b>Identifiers:</b>
-        	<ul>
-        	  <li>Identifiers use the Java identifier syntax. They are case sensitive.
-        	  </li>
-        	  <li>Identifiers cannot be the names <i>NULL</i>, <i>TRUE</i>, or
-        	      <i>FALSE</i>.
-        	  </li>
-        	  <li>Identifiers cannot be <i>NOT, AND, OR, BETWEEN, LIKE, IN</i>, and
-        	      <i>IS</i>.
-        	  </li>
-        	</ul>
-        	<br/>
+                <ul>
+                  <li>Identifiers use the Java identifier syntax. They are case sensitive.
+                  </li>
+                  <li>Identifiers cannot be the names <i>NULL</i>, <i>TRUE</i>, or
+                      <i>FALSE</i>.
+                  </li>
+                  <li>Identifiers cannot be <i>NOT, AND, OR, BETWEEN, LIKE, IN</i>, and
+                      <i>IS</i>.
+                  </li>
+                </ul>
+                <br/>
             </td>
           </tr>
           <tr>
             <td BGCOLOR="#ffffff">
-        	<b>Expressions:</b>
-        	<ul>
-        	  <li>A selector is a conditional expression; a selector that evaluates to
-        	      true matches; a selector that evaluates to false or unknown does not
-        	      match.
-        	  </li>
-        	  <li>Arithmetic expressions are composed of themselves, arithmetic
-        	      operations, identifiers with numeric values and numeric literals.
-        	  </li>
-        	  <li>Conditional expressions are composed of themselves, comparison
-        	      operations, logical operations, identifiers with boolean values and
-        	      boolean literals.
-        	  </li>
-        	  <li>Standard bracketing () for ordering expression evaluation is
-        	      supported.
-        	  </li>
-        	  <li>Logical operators in precedence order: NOT, AND, OR.</li>
-        	  <li>Comparison operators: =, >, >=, &lt;, &lt;=, &lt;> (not equal). (for not 
-        	      equal we support also != and ^= which is not defined in jms)
-        	    <ul>
-        	      <li>Only <i>like </i>type values can be compared. One exception is that it
-        	          is valid to compare exact numeric values and approximate numeric
-        	          values (the type conversion required is defined by the rules of Java
-        	          numeric promotion). If the comparison of non-like type values is
-        	          attempted, the selector is always false.
-        	      </li>
-        	      <li>In jms <i>String</i> and <i>Boolean</i> comparison is restricted to = and
-        	          &lt;>. Two strings are equal if and only if they contain the same
-        	          sequence of characters. Here xmlBlaster has an own extention. Also comparisons
-        	          between <i>String</i> is allowed. (For example 'London' &lt; 'Paris': alphabetical comparison).
-        	      </li>
-        	    </ul>
-        	  </li>
-        	  <li>Arithmetic operators in precedence order:
+                <b>Expressions:</b>
+                <ul>
+                  <li>A selector is a conditional expression; a selector that evaluates to
+                      true matches; a selector that evaluates to false or unknown does not
+                      match.
+                  </li>
+                  <li>Arithmetic expressions are composed of themselves, arithmetic
+                      operations, identifiers with numeric values and numeric literals.
+                  </li>
+                  <li>Conditional expressions are composed of themselves, comparison
+                      operations, logical operations, identifiers with boolean values and
+                      boolean literals.
+                  </li>
+                  <li>Standard bracketing () for ordering expression evaluation is
+                      supported.
+                  </li>
+                  <li>Logical operators in precedence order: NOT, AND, OR.</li>
+                  <li>Comparison operators: =, >, >=, &lt;, &lt;=, &lt;> (not equal). (for not 
+                      equal we support also != and ^= which is not defined in jms)
+                    <ul>
+                      <li>Only <i>like </i>type values can be compared. One exception is that it
+                          is valid to compare exact numeric values and approximate numeric
+                          values (the type conversion required is defined by the rules of Java
+                          numeric promotion). If the comparison of non-like type values is
+                          attempted, the selector is always false.
+                      </li>
+                      <li>In jms <i>String</i> and <i>Boolean</i> comparison is restricted to = and
+                          &lt;>. Two strings are equal if and only if they contain the same
+                          sequence of characters. Here xmlBlaster has an own extention. Also comparisons
+                          between <i>String</i> is allowed. (For example 'London' &lt; 'Paris': alphabetical comparison).
+                      </li>
+                    </ul>
+                  </li>
+                  <li>Arithmetic operators in precedence order:
                <ul>
                  <li>+, - unary</li>
                  <li>*, / multiplication and division</li>
@@ -149,72 +149,72 @@
                  <li>Arithmetic operations use Java numeric promotion.</li>
                  <li>For arithmetic operations a NULL term is considered 0 (zero).(own xmlBlaster non jms specification)</li>
                </ul>
-        	  </li>
+                  </li>
         
-        	  <li><i>arithmetic-expr1 </i>[NOT] BETWEEN <i>arithmetic-expr2 </i>AND<i>
-        	      arithmetic-expr3</i> comparison operator
-        	    <ul>
-        	      <li>age BETWEEN 15 and 19 is equivalent to age >= 15 AND age &lt;= 19
-        	      </li>
-        	      <li>age NOT BETWEEN 15 and 19 is equivalent to age &lt; 15 OR age > 19
-        	      </li>
-        	    </ul>
-        	  </li>
-        	  <li>
-        	    <i>identifier </i>[NOT] IN (<i>string-literal1, string-literal2,...</i>)<br/>
-        	      comparison operator where identifier has a <i>String</i> or NULL value.
-        	      <ul>
-        	        <li>Country IN ('UK', 'US', 'France') is true for 'UK' and false for
-        	            'Peru'. It is equivalent to the expression (Country = ' UK') OR
-        	            (Country = ' US') OR (Country = ' France')
-        	        </li>
-        	        <li>Country NOT IN (' UK', 'US', 'France') is false for 'UK' and true
-        	            for 'Peru'. It is equivalent to the expression NOT ((Country = 'UK')
-        	            OR (Country = 'US') OR (Country = 'France'))
-        	        </li>
-        	        <li>If <i>identifier </i>of an IN or NOT IN operation is NULL the value
-        	            of the operation is always false.
-        	        </li>
-        	      </ul>
-        	  </li>
+                  <li><i>arithmetic-expr1 </i>[NOT] BETWEEN <i>arithmetic-expr2 </i>AND<i>
+                      arithmetic-expr3</i> comparison operator
+                    <ul>
+                      <li>age BETWEEN 15 and 19 is equivalent to age >= 15 AND age &lt;= 19
+                      </li>
+                      <li>age NOT BETWEEN 15 and 19 is equivalent to age &lt; 15 OR age > 19
+                      </li>
+                    </ul>
+                  </li>
+                  <li>
+                    <i>identifier </i>[NOT] IN (<i>string-literal1, string-literal2,...</i>)<br/>
+                      comparison operator where identifier has a <i>String</i> or NULL value.
+                      <ul>
+                        <li>Country IN ('UK', 'US', 'France') is true for 'UK' and false for
+                            'Peru'. It is equivalent to the expression (Country = ' UK') OR
+                            (Country = ' US') OR (Country = ' France')
+                        </li>
+                        <li>Country NOT IN (' UK', 'US', 'France') is false for 'UK' and true
+                            for 'Peru'. It is equivalent to the expression NOT ((Country = 'UK')
+                            OR (Country = 'US') OR (Country = 'France'))
+                        </li>
+                        <li>If <i>identifier </i>of an IN or NOT IN operation is NULL the value
+                            of the operation is always false.
+                        </li>
+                      </ul>
+                  </li>
         
-        	  <li><i>identifier </i>[NOT] LIKE <i>pattern-value</i> [ESCAPE<i>escape-character</i>]<br/>
-        	    comparison operator, where <i>identifier</i> has a <i>String</i> value; <i>pattern-value</i> 
-        	    is a string literal where '_' stands for any single character; '%' stands for any sequence 
-        	    of characters (including the empty sequence); and all other characters stand for
-        	    themselves. The optional <i>escape-character</i> is a single character string literal whose
-        	    character is used to escape the special meaning of the '_' and '%' in <i>pattern-value</i>.
+                  <li><i>identifier </i>[NOT] LIKE <i>pattern-value</i> [ESCAPE<i>escape-character</i>]<br/>
+                    comparison operator, where <i>identifier</i> has a <i>String</i> value; <i>pattern-value</i> 
+                    is a string literal where '_' stands for any single character; '%' stands for any sequence 
+                    of characters (including the empty sequence); and all other characters stand for
+                    themselves. The optional <i>escape-character</i> is a single character string literal whose
+                    character is used to escape the special meaning of the '_' and '%' in <i>pattern-value</i>.
                <ul>
                  <li><i>phone LIKE '12%3'</i> is true for '123', '12993' and false for '1234'</li>
                  <li><i>word LIKE 'l_se'</i> is true for 'lose' and false for 'loose'</li>
                  <li><i>underscored LIKE '\_%' ESCAPE '\'</i> is true for '_foo' and false for 'bar'</li>
                  <li><i>phone NOT LIKE '12%3'</i> is false for '123' and '12993' and true for '1234'</li>
                  <li>If <i>identifier</i> of a LIKE or NOT LIKE operation is NULL the value of 
-        	          the operation is false.
+                          the operation is false.
                  </li>
                </ul>
-        	  </li>
+                  </li>
         
-        	  <li>Regex expressions,<br/>
-        	     where <i>identifier</i> has a <i>String</i>.<b>Note that this is an xmlBlaster specific 
-        	     extention not specified by jms.</b>
-        	    <ul>
-        	      <li><i>phone REGEX '12.*3'</i> is true for '123', '12993' and false for '1234'</li>
-        	      <li><i>word REGEX 'l.se'</i> is true for 'lose' and false for 'loose'</li>
-        	    </ul>
-        	  </li>
+                  <li>Regex expressions,<br/>
+                     where <i>identifier</i> has a <i>String</i>.<b>Note that this is an xmlBlaster specific 
+                     extention not specified by jms.</b>
+                    <ul>
+                      <li><i>phone REGEX '12.*3'</i> is true for '123', '12993' and false for '1234'</li>
+                      <li><i>word REGEX 'l.se'</i> is true for 'lose' and false for 'loose'</li>
+                    </ul>
+                  </li>
         
-        	  <li><i>identifier</i> IS NULL<br/>
-        	    comparison operator tests for a null header field value, or a missing property value.
-        	    <ul>
-        	      <li><i>prop_name</i> IS NULL</li>
-        	      <li><i>identifier</i> IS NOT NULL comparison operator tests for the
-        	          existence of a non null header field value or property value.
-        	      </li>
-        	      <li><i>prop_name</i> IS NOT NULL</li>
-        	    </ul>
-        	  </li>
-        	</ul>
+                  <li><i>identifier</i> IS NULL<br/>
+                    comparison operator tests for a null header field value, or a missing property value.
+                    <ul>
+                      <li><i>prop_name</i> IS NULL</li>
+                      <li><i>identifier</i> IS NOT NULL comparison operator tests for the
+                          existence of a non null header field value or property value.
+                      </li>
+                      <li><i>prop_name</i> IS NOT NULL</li>
+                    </ul>
+                  </li>
+                </ul>
             </td>
           </tr>
         </table>
@@ -271,6 +271,22 @@
 </xmlBlaster>
       ]]>
       </pre>
+   </example>
+
+   <example lang="CPP" type="HTML">
+      <p>Here an example with the C++ command line clients:
+      </p>
+      <pre>
+java org.xmlBlaster.Main
+
+PublishDemo -clientProperty.key phone -clientProperty.value 1200003
+
+SubscribeDemo -filter.type Sql92Filter -filter.query "phone LIKE '12%3'" 
+      </pre>
+      <p>
+      If you change the publisher <tt>-clientProperty.value</tt> to for example <tt>'1000003'</tt> the subscriber won't receive
+      the message.
+      </p>
    </example>
 
    <configuration where="server">
