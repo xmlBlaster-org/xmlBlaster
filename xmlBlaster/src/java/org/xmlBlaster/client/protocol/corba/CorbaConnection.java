@@ -791,7 +791,7 @@ public final class CorbaConnection implements I_XmlBlasterConnection, I_Plugin
       text += " For JacORB only:\n";
       text += "   java -DOAIAddr=<ip> Use '-dispatch/callback/plugin/ior/hostname'\n";
       text += "   java -DOAPort=<nr>  Use '-dispatch/callback/plugin/ior/port'\n";
-      text += "   java -Djacorb.verbosity=3  Switch CORBA debugging on\n";
+      text += "   java -Djacorb.log.default.verbosity=3  Switch CORBA debugging on\n";
       text += "   java ... -ORBInitRef NameService=corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root\n";
       text += "   java -DORBInitRef.NameService=corbaloc:iiop:localhost:7608/StandardNS/NameServer-POA/_root\n";
       text += "\n";
