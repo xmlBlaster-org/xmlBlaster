@@ -8,7 +8,7 @@
 #------------------------------------------------------------------------------
 include $(XMLBLASTER_HOME)/Makefile.Include
 CLASS_DIR = $(CLASS_TOP_DIR)/org/xmlBlaster/protocol/corba
-SRC_JAVA_DIR = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster.protocol.corba
+SRC_JAVA_DIR = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster/protocol/corba
 #------------------------------------------------------------------------------
 
 
