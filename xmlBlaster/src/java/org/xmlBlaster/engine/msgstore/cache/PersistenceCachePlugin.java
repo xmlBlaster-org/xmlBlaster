@@ -401,6 +401,8 @@ public class PersistenceCachePlugin implements I_Plugin, I_ConnectionListener, I
    }
 
    /**
+    * TODO !!!: This method should be changed to an iterator approach
+    * as if we have swapped messages they won't fit to memory. 
     * @see I_Map#getAll()
     */
    public I_MapEntry[] getAll() throws XmlBlasterException {
@@ -409,7 +411,13 @@ public class PersistenceCachePlugin implements I_Plugin, I_ConnectionListener, I
          //log.error(ME, "getAll() DEBUG ONLY: numSwapped=" + numSwapped() + " transient=" + this.transientStore.getNumOfEntries() + " persistentStore=" + this.persistentStore.getNumOfEntries());
          //log.error(ME, "getAll() DEBUG ONLY: " + toXml(""));
 
-         if (numSwapped() > 0 || this.persistentStore.getNumOfEntries() > this.transientStore.getNumOfEntries() ) {
+         /* !!!!
+           I'm not shure if this conditions is enough for all cases
+           so we do the save way if (true)
+           For topicStore this is OK 
+         */
+         //if (numSwapped() > 0 || this.persistentStore.getNumOfEntries() > this.transientStore.getNumOfEntries() ) {
+         if (true) {
             java.util.Map map = new java.util.TreeMap(); // To suppress same entry twice and to be sorted (sorted is not yet specified to be necessary)
 
             I_MapEntry[] ramEntries = this.transientStore.getAll();
