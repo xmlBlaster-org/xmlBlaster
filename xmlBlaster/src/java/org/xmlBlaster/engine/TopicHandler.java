@@ -246,7 +246,7 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
       startupHistoryQueue();
 
       if (isUnconfigured()) { // Startup of topic
-         if (!hasCacheEntries() && !hasSubscribers()) {
+         if (!hasCacheEntries() && !hasExactSubscribers()) {
             toUnreferenced(true);
          }
          else {
@@ -879,7 +879,7 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
       
       // if it was a volatile message we need to check unreferenced state
       synchronized (this) {
-         if (!hasCacheEntries() && !hasSubscribers()) {
+         if (!hasCacheEntries() && !hasExactSubscribers()) {
             try {
                if (isSoftErased()) {
                   toDead(this.creatorSessionName, false);
@@ -1017,7 +1017,7 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
       }
 
       synchronized (this) {
-         if (!hasCacheEntries() && !hasSubscribers()) {
+         if (!hasCacheEntries() && !hasExactSubscribers()) {
             if (isUnconfigured())
                toDead(this.creatorSessionName, false);
             else {
