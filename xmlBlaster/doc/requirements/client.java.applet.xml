@@ -61,12 +61,16 @@
 
    <example type="HTML">
    <p>You can try the persistent http online applet demo first:</p>
-   <p>
-   <a href="http://www.xmlblaster.org:8080/xmlBlaster/SystemInfoApplet.html" target="others">
-   Online persistent HTTP applet demo</a><br />
-   <a href="http://www.xmlblaster.org:8080/xmlBlaster/index.html" target="others">
-   Overview of online persistent HTTP examples.</a>
-   </p>
+   <ol>
+      <li><a href="http://www.xmlblaster.org:8080/xmlBlaster/HelloWorld3.html" target="others">
+      The online HelloWorld3 applet demo</a></li>
+
+      <li><a href="http://www.xmlblaster.org:8080/xmlBlaster/SystemInfoApplet.html" target="others">
+      The online persistent HTTP system info applet demo</a></li>
+
+      <li><a href="http://www.xmlblaster.org:8080/xmlBlaster/index.html" target="others">
+      Overview of online persistent HTTP examples.</a></li>
+   </ol>
    <p>
    The applet demo is currently only tested in mozilla 1.6 with a squid proxy.
    Other browsers may or may not work but support will follow.
@@ -295,7 +299,7 @@ http://localhost:8080/xmlBlaster/SystemInfoApplet.html
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2003 11 16</date>
-   <revision>$Revision: 1.2 $</revision>
+   <revision>$Revision: 1.3 $</revision>
 
    <testcase status="OPEN">
       <name>-</name>
