@@ -22,6 +22,8 @@ Security.Server.Plugin[simple][1.0]=org.xmlBlaster.authentication.plugins.simple
 Security.Server.Plugin[gui][1.0]=org.xmlBlaster.authentication.plugins.demo.Manager
 Security.Server.Plugin[a2Blaster][1.0]=org.xmlBlaster.authentication.plugins.a2Blaster.Manager
 Security.Server.Plugin[ldap][1.0]=org.xmlBlaster.authentication.plugins.ldap.Manager
+Security.Server.Plugin[htpasswd][1.0]=org.xmlBlaster.authentication.plugins.htpasswd.Manager
+Security.Server.Plugin.htpasswd.secretfile=${user.home}${file.separator}xmlBlaster.htpasswd
 
 # Force on client side a specified plugin (as default)
 # Only if you access xmlBlaster with java clients and
@@ -32,6 +34,7 @@ Security.Client.Plugin[gui][1.0]=org.xmlBlaster.authentication.plugins.demo.Clie
 Security.Client.Plugin[simple][1.0]=org.xmlBlaster.authentication.plugins.simple.ClientPlugin
 Security.Client.Plugin[a2Blaster][1.0]=org.xmlBlaster.authentication.plugins.a2Blaster.ClientPlugin
 Security.Client.Plugin[ldap][1.0]=org.xmlBlaster.authentication.plugins.ldap.ClientPlugin
+Security.Client.Plugin[htpasswd][1.0]=org.xmlBlaster.authentication.plugins.htpasswd.ClientPlugin
 #------------------------------------------------------------------------------
 
 
