@@ -3,6 +3,7 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.x [] (cvs main branch)
 ==================
+ o changed the admin interface to take a key and a qos (this affects only get)
 
  o C++ client library got support for a client side persistent queue, see
     http://www.xmlblaster.org/xmlBlaster/doc/requirements/client.cpp.queue.html
