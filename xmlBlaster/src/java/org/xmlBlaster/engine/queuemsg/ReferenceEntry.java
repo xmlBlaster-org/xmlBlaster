@@ -182,9 +182,9 @@ public class ReferenceEntry extends MsgQueueEntry
       return this.msgUnitWrapperUniqueId;
    }
 
-   public long getSizeInBytes() {
-      return super.getSizeInBytes() + 16; // This is a guess only, we have only a reference on the real data
-   }
+   //public long getSizeInBytes() {
+   //   return 180; // This is a guess only, we have only a reference on the real data
+   //}
 
    public String getKeyOid() {
       return this.keyOid;
