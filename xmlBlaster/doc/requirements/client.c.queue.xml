@@ -36,10 +36,8 @@
      To use the persistent queue you need to download SQLite and compile it for
      your platform, our C compilation needs <code>sqlite.h</code> for compilation
      and <code>libsqlite.so</code> for linking (on Windows it is a dll).
-     SQLite version 2.8.13 which must be newer to March 2004 is needed to have
-     the blob encoding feature. It's best to use the newest from cvs:
-     <code>cvs -d :pserver:anonymous@www.sqlite.org:/sqlite checkout -r version_2 sqlite</code>.
-     The cvs access is described at the <a href="http://www.sqlite.org" target="OTHERS">SQLite homepage</a>.
+     SQLite version 2.8.14 or higher is needed to have
+     the blob encoding feature.
      </p>
 
      <h2>Compilation with ant</h2>
@@ -58,9 +56,15 @@ sqlite.lib.dir=/opt/sqlite-bin/lib
      This expects <code>/opt/sqlite-bin/include/sqlite.h</code> and <code>/opt/sqlite-bin/lib/libsqlite.so*</code>
      for the above UNIX example.
      </p>
-     <p>NOTE: For Windows you can download the ready compiled sqlite library
-     <a href="http://www.xmlblaster.org/sqlite-win-bin-2.8.13-cvs.zip">sqlite-win-bin-2.8.13-cvs.zip</a>
-     from xmlBlaster.org, unzip it for example to C:\sqlite and add these lines to build.properties)
+     <p>NOTE: For Windows you can download the ready compiled sqlite library.
+     Creation of an import library from the sqlitedll.zip (http://www.sqlite.org/sqlitedll.zip)
+     for MS Visual C++ is achieved by the following command:
+     </p>
+     <pre>
+LIB /DEF:sqlite.def
+     </pre>
+     <p>
+     This makes the files sqlite.lib and sqlite.exp files. The sqlite.lib can then be used to link your programs against the SQLite DLL. 
      </p>
      <pre>
 # Windows example:
@@ -254,7 +258,7 @@ TestQueue
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2004 04 09</date>
-   <revision>$Revision: 1.11 $</revision>
+   <revision>$Revision: 1.12 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
