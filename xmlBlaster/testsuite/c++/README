@@ -26,10 +26,9 @@ Using BOA (clientBOA.cc):
          jaco org.xmlBlaster.Main -iorFile /tmp/ior.dat
 
 
-4) And connect with the C++ client
+4) And connect with the C++ client (cd $XMLBLASTER_HOME/testsuite/c++/bin)
 
-         ./clientBOA `cat /tmp/ior.dat`
-
+         ./TestGet  -ior `cat /tmp/ior.dat`
 
 
 Using POA (clientPOA.cc) with a naming service:
