@@ -1,6 +1,15 @@
 import java.io.*;
 import java.net.*;
 
+/*
+Request:
+ GET http://192.168.1.2:8888/index.html?crap=1014212221 HTTP/1.1
+
+Response:
+ Cache-Control: no-cache, no-store, must-revalidate
+ Expires: 0
+ Proxy-Connection: close
+*/
 public class EchoClient extends HttpReader {
 
    public EchoClient(String proxyHost, int port, String destinationUrl) throws IOException {
@@ -12,31 +21,42 @@ public class EchoClient extends HttpReader {
 
       try {
          echoSocket = new Socket(proxyHost, port);
+         echoSocket.setTcpNoDelay(true);
+         echoSocket.setSoLinger(true, 2000);
+         //echoSocket.setSoTimeout(1000*60*);
+         echoSocket.setKeepAlive(true); // JDK 1.3
          System.out.println("\n*** Connected to proxy=" + proxyHost + " on proxyPort=" + port + " accessing " + destinationUrl);
          out = new PrintWriter(echoSocket.getOutputStream(), true);
          in = new BufferedInputStream(echoSocket.getInputStream());
-         int count = 20;
+         int count = 10;
          for (int ii=0; ii<count; ii++) {
             if ((count % 10) == 9) {
-               try { Thread.currentThread().sleep(5000); } catch(Exception e) { }
+               try { Thread.currentThread().sleep(20); } catch(Exception e) { }
             }
             System.out.println("\nSending POST #" + ii);
-            String resp = "UAL #" + ii%10;
+            String resp = "        16UAL #" + ii%10;
             String header = getPostHeader(destinationUrl, resp.length());
             out.print(header);
             out.print(resp);
             out.flush();
 
-            System.out.println("\n*** Waiting for data [" + new java.util.Date().toString() + "]");
-            byte[] data = read(in);
-            System.out.println("*** Received: '" + new String(data) + "'");
+            // +1 for the response
+            for (int jj=0; jj<COUNT_CB+1; jj++) {
+               System.out.println("\n*** Waiting for data " + (ii+1)*jj + " [" + new java.util.Date().toString() + "]");
+               byte[] data = read(in);
+               System.out.println("*** Received: '" + new String(data) + "'");
+            }
+            try { Thread.currentThread().sleep(500); } catch(Exception e) { }
          }
          /*
          while (true) {
             System.out.println("\n*** Waiting for callback data");
             byte[] data = read(in);
             System.out.println("*** Received Callback: '" + new String(data) + "'");
-         } */
+         }
+         */
+      } catch (NumberFormatException e) {
+         System.err.println("The message is corrupted, can't parse content length: " + e.toString());
       } catch (UnknownHostException e) {
          System.err.println("Don't know about proxyHost: " + proxyHost);
       } catch (IOException e) {
