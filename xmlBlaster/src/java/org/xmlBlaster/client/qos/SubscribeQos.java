@@ -10,6 +10,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.engine.mime.Query;
 import org.xmlBlaster.engine.helper.AccessFilterQos;
+import org.xmlBlaster.util.qos.HistoryQos;
 
 /**
  * This class encapsulates the QoS (quality of service) of a subscribe() request. 
@@ -24,6 +25,7 @@ import org.xmlBlaster.engine.helper.AccessFilterQos;
  *   &lt;initialUpdate>false&lt;/initialUpdate>;
  *   &lt;filter type='myPlugin' version='1.0'>a!=100&lt;/filter>
  *                                  &lt;!-- Filters messages i have subscribed as implemented in your plugin -->
+ *   &lt;history numEntries='20'/>  &lt;!-- Default is to deliver the current entry (numEntries='1'), '-1' deliver all -->
  *&lt;/qos>
  * </pre>
  * <p />
@@ -91,6 +93,13 @@ public final class SubscribeQos
     */
    public void addAccessFilter(AccessFilterQos filter) {
       this.queryQosData.addAccessFilter(filter);
+   }
+
+   /**
+    * Query historical messages. 
+    */
+   public void setHistoryQos(HistoryQos historyQos) {
+      this.queryQosData.setHistoryQos(historyQos);
    }
 
    /**

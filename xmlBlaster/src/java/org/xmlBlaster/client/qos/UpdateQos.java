@@ -45,7 +45,7 @@ import org.xmlBlaster.util.qos.MsgQosData;
  * The receive timestamp can be delivered in human readable form as well
  * by setting on server command line:
  * <pre>
- *   -cb.recieveTimestampHumanReadable true
+ *   -cb.receiveTimestampHumanReadable true
  *
  *   &lt;rcvTimestamp nanos='1015959656372000000'>
  *     2002-03-12 20:00:56.372

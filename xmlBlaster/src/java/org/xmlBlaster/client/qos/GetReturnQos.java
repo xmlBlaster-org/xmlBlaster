@@ -37,7 +37,7 @@ import org.xmlBlaster.util.qos.MsgQosData;
  *     &lt;/route>
  *  &lt;/qos>
  * </pre>
- * @author ruff@swand.lake.de
+ * @author xmlBlaster@marcelruff.info
  */
 public final class GetReturnQos
 {

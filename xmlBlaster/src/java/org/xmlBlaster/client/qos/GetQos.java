@@ -10,6 +10,7 @@ import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.qos.QueryQosData;
 import org.xmlBlaster.engine.mime.Query;
 import org.xmlBlaster.engine.helper.AccessFilterQos;
+import org.xmlBlaster.util.qos.HistoryQos;
 
 /**
  * This class encapsulates the QoS (quality of service) of a get() request. 
@@ -21,6 +22,7 @@ import org.xmlBlaster.engine.helper.AccessFilterQos;
  *   &lt;content>false&lt;/content> &lt;!-- Don't return me the content data (notify only) -->
  *   &lt;filter type='myPlugin' version='1.0'>a!=100&lt;/filter>
  *                                  &lt;!-- MIME access filters plugin -->
+ *   &lt;history numEntries='20'/>  &lt;!-- Default is to deliver the current entry (numEntries='1'), '-1' deliver all -->
  *&lt;/qos>
  * </pre>
  * <p />
@@ -67,6 +69,13 @@ public final class GetQos
     */
    public void addAccessFilter(AccessFilterQos filter) {
       this.queryQosData.addAccessFilter(filter);
+   }
+
+   /**
+    * Query historical messages. 
+    */
+   public void setHistoryQos(HistoryQos historyQos) {
+      this.queryQosData.setHistoryQos(historyQos);
    }
 
    /**

@@ -11,6 +11,7 @@ import org.xmlBlaster.util.SessionName;
 import org.xmlBlaster.util.enum.PriorityEnum;
 import org.xmlBlaster.util.qos.MsgQosData;
 import org.xmlBlaster.engine.helper.Destination;
+import org.xmlBlaster.util.qos.TopicProperty;
 
 
 /**
@@ -23,7 +24,7 @@ import org.xmlBlaster.engine.helper.Destination;
  * <pre>
  *  &lt;qos>
  *     &lt;priority>5&lt;/priority>
- *     &lt;expiration lifeTime='60000'/>
+ *     &lt;expiration lifeTime='60000' forceDestroy='false'/>
  *     &lt;isDurable />  &lt;!-- The message shall be recoverable if xmlBlaster crashes -->
  *     &lt;forceUpdate>true&lt;/forceUpdate>
  *     &lt;readonly />
@@ -158,6 +159,14 @@ public final class PublishQos
    }
 
    /**
+    * @param forceDestroy true Force message destroy on message expire<br />
+    *        false On message expiry messages which are already in callback queues are delivered.
+    */
+   public void setForceDestroy(boolean forceDestroy) {
+      msgQosData.setForceDestroy(forceDestroy);
+   }
+
+   /**
     * Add a destination where to send the message.
     * <p />
     * Note you can invoke this multiple times to send to multiple destinations.
@@ -204,6 +213,13 @@ public final class PublishQos
 
    public String getStateInfo() {
       return this.msgQosData.getStateInfo();
+   }
+
+   /**
+    * Administer/configure the message topic. 
+    */
+   public void setTopicProperty(TopicProperty topicProperty) {
+      this.msgQosData.setTopicProperty(topicProperty);
    }
 
    /**
