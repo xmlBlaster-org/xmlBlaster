@@ -70,6 +70,42 @@
             <td><img src="ok.gif" border="0" alt="yes" /></td>
          </tr>
          <tr>
+            <td>get client/joe/?sessionList</td>
+            <td><pre>
+/node/heron/client/joe/?sessionList=1
+            </pre></td>
+            <td><code>joe</code> is logged in once and has the public session id <code>1</code>
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>get client/joe/?subjectQueueNumMsgs</td>
+            <td><pre>
+/node/heron/client/joe/?subjectQueueNumMsgs=780
+            </pre></td>
+            <td>There are 780 messages in the subject queue of <code>joe</code>
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>get client/joe/1/?cbQueueNumMsgs</td>
+            <td><pre>
+/node/heron/client/joe/1/?cbQueueNumMsgs=5
+            </pre></td>
+            <td>There are 5 messages in the callback queue of the login session <code>1</code> of user <code>joe</code>
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
+            <td>get client/joe/1/?numUpdates</td>
+            <td><pre>
+/node/heron/client/joe/1/?numUpdates=7537
+            </pre></td>
+            <td>The login session <code>1</code> of user <code>joe</code> has delivered 7537 messages to the callback client up to now
+            </td>
+            <td><img src="ok.gif" border="0" alt="yes" /></td>
+         </tr>
+         <tr>
             <td>get topic/?Hello</td>
             <td>
                <pre><![CDATA[
@@ -306,7 +342,7 @@ org.xmlBlaster.engine.admin.extern.TelnetGateway >>
    
    <date>2002 05 09</date>
    
-   <revision>$Revision: 1.21 $</revision>
+   <revision>$Revision: 1.22 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
