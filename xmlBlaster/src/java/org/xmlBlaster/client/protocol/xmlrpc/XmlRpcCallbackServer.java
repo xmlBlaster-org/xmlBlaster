@@ -171,9 +171,16 @@ public class XmlRpcCallbackServer implements I_CallbackServer
     */
    public boolean shutdownCb()
    {
-      if (webServer != null)
-         webServer.removeHandler("$default");
-      webServer.shutdown();
+      if (webServer != null) {
+         try { 
+            webServer.removeHandler("$default");
+            webServer.shutdown();
+         }
+         catch(Throwable e) {
+            log.warn(ME, "Problems during shutdown of XML-RPC callback web server: " + e.toString());
+            return false;
+         }
+      }
       log.info(ME, "The XML-RPC callback server is shutdown.");
       return true;
    }
