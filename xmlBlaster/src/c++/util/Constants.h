@@ -26,13 +26,15 @@ class Constants {
 
    public:
 
-   static const char * const DEFAULT_SECURITYPLUGIN_TYPE = "htpasswd";
-   static const char * const DEFAULT_SECURITYPLUGIN_VERSION = "1.0";
+   static const char * const DEFAULT_SECURITYPLUGIN_TYPE;
+   static const char * const DEFAULT_SECURITYPLUGIN_VERSION;
 
-   static const long MINUTE_IN_MILLIS = 1000L*60;
-   static const long HOUR_IN_MILLIS = MINUTE_IN_MILLIS*60;
-   static const long DAY_IN_MILLIS = HOUR_IN_MILLIS * 24;
-   static const long WEEK_IN_MILLIS = DAY_IN_MILLIS * 7;
+   enum {
+      MINUTE_IN_MILLIS = 1000L*60,
+      HOUR_IN_MILLIS = MINUTE_IN_MILLIS*60,
+      DAY_IN_MILLIS = HOUR_IN_MILLIS * 24,
+      WEEK_IN_MILLIS = DAY_IN_MILLIS * 7
+   };
 
 
    /**
@@ -45,7 +47,9 @@ class Constants {
     *  #                          Marcel Ruff <ruff@swand.lake.de> February 2002
     * </pre>
     */
-   static const int XMLBLASTER_PORT = 3412;
+   enum {
+      XMLBLASTER_PORT = 3412
+   };
 
    /**
     * The xmlBlaster SNMP node 11662 registered at IANA. 
@@ -55,13 +59,15 @@ class Constants {
     * @return 11662
     * @see <a href="http://www.iana.org/assignments/enterprise-numbers" target="others">PRIVATE ENTERPRISE NUMBERS</a>
     */
-   static const int XMLBLASTER_SNMP = 11662;
+   enum {
+      XMLBLASTER_SNMP = 11662
+   };
 
    /**
     * The xmlBlaster SNMP node 1.3.6.1.4.1.11662 as registered at IANA. 
     * @return a long array containing the SNMP hierarchy to xmlBlaster
     */
-   static const long XMLBLASTER_OID_ROOT[] = { 1, 3, 6, 1, 4, 1, Constants::XMLBLASTER_SNMP }; // 11662
+   static const long XMLBLASTER_OID_ROOT[];
 
    enum MessagePriority {
       /**
@@ -132,63 +138,63 @@ class Constants {
    // Status id, on error usually an exception is thrown so we don't need "ERROR":
 
    /** The returned message status if OK */
-   static const char * const STATE_OK = "OK";
-   static const char * const RET_OK = "<qos><state id='OK'/></qos>";
+   static const char * const STATE_OK;
+   static const char * const RET_OK;
 
    /** The returned message status if message timeout occured (but not erased) */
-   static const char * const STATE_TIMEOUT = "TIMEOUT";
+   static const char * const STATE_TIMEOUT;
    /** The returned message status if message is explicitly erased by a call to erase() */
-   static const char * const STATE_ERASED = "ERASED";
+   static const char * const STATE_ERASED;
    /** The returned message status if message couldn't be forwarded to the master cluster node */
-   static const char * const STATE_FORWARD_ERROR = "FORWARD_ERROR";
+   static const char * const STATE_FORWARD_ERROR;
 
    /** Additional info for state. 
        The returned message status if message couldn't be forwarded to the master cluster node but
        is in the tail back queue to be delivered on reconnect or on client side message
        recording.
    */
-   static const char * const INFO_QUEUED = "QUEUED";
+   static const char * const INFO_QUEUED;
 
    /** Type of a message queue */
-   static const char * const RELATING_SESSION = "session";
+   static const char * const RELATING_SESSION;
    /** Type of a message queue */
-   static const char * const RELATING_SUBJECT = "subject";
+   static const char * const RELATING_SUBJECT;
    /** Type of a message queue */
-   static const char * const RELATING_UNRELATED = "unrelated";
+   static const char * const RELATING_UNRELATED;
 
    /** message queue onOverflow handling, default is blocking until queue takes messages again */
-   static const char * const ONOVERFLOW_BLOCK = "block";
+   static const char * const ONOVERFLOW_BLOCK;
    /** message queue onOverflow handling */
-   static const char * const ONOVERFLOW_DEADLETTER = "deadLetter";
+   static const char * const ONOVERFLOW_DEADLETTER;
    /** message queue onOverflow handling */
-   static const char * const ONOVERFLOW_DISCARD = "discard";
+   static const char * const ONOVERFLOW_DISCARD;
    /** message queue onOverflow handling */
-   static const char * const ONOVERFLOW_DISCARDOLDEST = "discardOldest";
+   static const char * const ONOVERFLOW_DISCARDOLDEST;
    /** message queue onOverflow handling */
-   static const char * const ONOVERFLOW_EXCEPTION = "exception";
+   static const char * const ONOVERFLOW_EXCEPTION;
 
    /** If callback fails more often than is configured the login session is destroyed */
-   static const char * const ONEXHAUST_KILL_SESSION = "killSession";
+   static const char * const ONEXHAUST_KILL_SESSION;
 
 
    /** Praefix to create a sessionId */
-   static const char * const SESSIONID_PRAEFIX = "sessionId:";
-   static const char * const SUBSCRIPTIONID_PRAEFIX = "__subId:";
+   static const char * const SESSIONID_PRAEFIX;
+   static const char * const SUBSCRIPTIONID_PRAEFIX;
 
-   static const char * const INTERNAL_OID_PRAEFIX = "__sys__";
-   static const char * const INTERNAL_OID_CLUSTER_PRAEFIX = "__sys__cluster";
+   static const char * const INTERNAL_OID_PRAEFIX;
+   static const char * const INTERNAL_OID_CLUSTER_PRAEFIX;
 
    /** JDBC access messages */
-   static const char * const JDBC_OID = "__sys__jdbc";
+   static const char * const JDBC_OID;
 
    /** message queue onOverflow handling */
-   static const char * const OID_DEAD_LETTER = "__sys__deadLetter";
+   static const char * const OID_DEAD_LETTER;
 
    /** XmlKey queryType enum */
-   static const char * const XPATH = "XPATH";
-   static const char * const EXACT = "EXACT";
-   static const char * const DOMAIN = "DOMAIN";
-   static const char * const REGEX = "REGEX";
+   static const char * const XPATH;
+   static const char * const EXACT;
+   static const char * const DOMAIN;
+   static const char * const REGEX;
 
 };
 
