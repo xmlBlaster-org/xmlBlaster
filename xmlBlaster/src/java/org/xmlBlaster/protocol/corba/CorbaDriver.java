@@ -3,7 +3,7 @@ Name:      CorbaDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   CorbaDriver class to invoke the xmlBlaster server using CORBA.
-Version:   $Id: CorbaDriver.java,v 1.63 2003/04/17 13:30:33 ruff Exp $
+Version:   $Id: CorbaDriver.java,v 1.64 2003/04/17 17:51:13 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
 
@@ -308,7 +308,7 @@ public class CorbaDriver implements I_Driver
                }
                else {
                   usage();
-                  log.error(ME, "You switched off the internal http server and you didn't specify a file name for IOR dump!");
+                  log.error(ME, "You switched off the internal http server and you didn't specify a file name for IOR dump nor a Naming Service was found!");
                }
             } catch (org.omg.CORBA.COMM_FAILURE e) {
                namingContextExt = null;
