@@ -58,6 +58,8 @@ Else add it manually.
   <typedef name="defineset" classname="net.sf.antcontrib.cpptasks.types.DefineSet" />
   <typedef name="libset" classname="net.sf.antcontrib.cpptasks.types.LibrarySet" />
   <taskdef name="foreach" classname="org.apache.tools.ant.taskdefs.contrib.ForEach" />
+  <taskdef name="osfamily" classname="org.apache.tools.ant.taskdefs.contrib.OsFamily" />
+  <taskdef name="switch" classname="org.apache.tools.ant.taskdefs.contrib.Switch" />
 
   <property file="build.properties"/>
 
@@ -146,6 +148,8 @@ Else add it manually.
   <!-- =================================================================== -->
   <target name="prepare">
     <mkdir dir="${build.dir}"/>
+    <osfamily property="os.family" />
+    <echo message=" OS_FAMILY     = ${os.family}"/>  <!-- "unix", "dos", "mac" "windows" -->
   </target>
 
   <!-- =================================================================== -->
@@ -304,7 +308,7 @@ Else add it manually.
   <!-- =================================================================== -->
   <!-- Creates a web archive (.war) to deploy to a modern servlet engine   -->
   <!-- =================================================================== -->
-  <target name="deploy_war">
+  <target name="deploy_war" depends="prepare">
      <echo message="Please run 'build.sh all' before if you have changed some code"/>
      <mkdir dir="${build.war}"/>
      <copy file="${doc.dir}/howto/xmlBlaster.css" tofile="${build.war}/xmlBlaster.css"/>
@@ -453,20 +457,22 @@ Else add it manually.
   <!-- Corba/C++ integration - create libxmlBlasterClient.sl (dll)         -->
   <!-- See http://sourceforge.net/projects/ant-contrib/                    -->
   <!-- =================================================================== -->
-  <target name="cpp-lib">
+  <target name="cpp-lib" depends="prepare">
 
      <echo message="Adjust following settings in build.properties if necessary:"/>
+     <!-- echo message=" STL_HOME      = ${STL_HOME}"/ -->
      <echo message=" XMLCPP_HOME   = ${XMLCPP_HOME}"/>
      <echo message=" XMLCPP_VER    = ${XMLCPP_VER}"/>
      <echo message=" CORBACPP_HOME = ${CORBACPP_HOME}"/>
      <echo message=" CORBACPP_VER  = ${CORBACPP_VER}"/>
 
+
      <!-- A typical idl CORBA compile:
        /opt/mico/bin/idl - -poa - -c++-suffix cpp /home/xmlblast/xmlBlaster/src/java/org/xmlBlaster/protocol/corba/xmlBlaster.idl
      -->
-     <!-- exec dir="${src.cpp.dir}/generated" executable="${CORBACPP_HOME}/bin/idl" os="Linux" -->
-     <exec dir="${src.cpp.dir}/generated" executable="${CORBACPP_HOME}/bin/idl">
-        <env key="PATH" path="${CORBACPP_HOME}/bin"/>
+     <exec dir="${src.cpp.dir}/generated" executable="${CORBACPP_HOME}/bin/idl" os="Linux" failonerror="true">
+     <!--exec dir="${src.cpp.dir}/generated" executable="${CORBACPP_HOME}/win32-bin/idl" os="Windows NT" failonerror="true" -->
+        <!-- env key="PATH" path="${CORBACPP_HOME}/bin"/ -->
         <env key="LD_LIBRARY_PATH" path="${CORBACPP_HOME}/lib" /> <!-- Linux -->
         <env key="SHLIB_PATH" path="${CORBACPP_HOME}/lib" />      <!-- HPUX,SOLARIS -->
         <env key="LIBPATH" path="${CORBACPP_HOME}/lib" />         <!-- AIX -->
@@ -475,6 +481,32 @@ Else add it manually.
         <arg line="../../../${idl.dir}/xmlBlaster.idl"/>
      </exec>
      <!-- exec dir="${src}" executable="${CORBACPP_HOME}/bin/idl" os="Windows 2000" output="dir.txt" -->
+
+
+      <switch value="${os.family}" caseinsensitive="false">
+         <case value="unix">
+            <antcall target="setUnixCpp" />
+         </case>
+         <default value="dummy">
+            <antcall target="setWinCpp" />
+         </default>
+      </switch>
+      <switch value="${os.family}" caseinsensitive="false">
+         <case value="unix">
+            <property name="linkerarg.1" value="-fpic" />
+         </case>
+         <default value="dummy">
+            <property name="linkerarg.1" value="/MT" />
+         </default>
+      </switch>
+      <switch value="${os.family}" caseinsensitive="false">
+         <case value="unix">
+            <property name="warnlevel" value="-Wall" />
+         </case>
+         <default value="dummy">
+            <property name="warnlevel" value="/W3" />
+         </default>
+      </switch>
 
 
      <!-- A typical compile:
@@ -487,26 +519,41 @@ Else add it manually.
            /opt/local/xmlBlaster/src/c++/client/CorbaConnection.o /opt/local/xmlBlaster/src/c++/util/CompatibleCorba.o /opt/local/xmlBlaster/src/c++/util/Log.o /opt/local/xmlBlaster/src/c++/generated/xmlBlaster.o
      -->
      <!-- Build a shared library -->
-     <cc debug="true" link="shared"
-         outfile="${lib.dir}/xmlBlasterClient"
-         objdir="${build.dir}/obj"
-         >
+     <cc debug="true" link="shared" outfile="${lib.dir}/xmlBlasterClient" objdir="${build.dir}/obj">
+
+        <compiler name="msvc" if="BUILD_WINDOWS"> <!-- is set in build.bat -->
+           <defineset define="DLL_EXPORT"/>
+        </compiler>
+        <compiler name="gcc" if="BUILD_UNIX"> <!-- is set in build.sh -->
+           <defineset><define name="dummyX" value="1" /></defineset>
+        </compiler>
+
         <fileset dir="${src.cpp.dir}/generated" includes="*.cpp"/>
         <fileset dir="${src.cpp.dir}/util" includes="*.cpp" />
         <fileset dir="${src.cpp.dir}/client" includes="*.cpp" />
         <includepath location="${src.cpp.dir}" />
+        <!-- sysincludepath location="${STL_HOME}/stlport" / -->
         <sysincludepath location="${CORBACPP_HOME}/include" />
         <sysincludepath location="${XMLCPP_HOME}/include" />
         <defineset>
            <define name="MICO" value="1" />
            <!-- undefine name="UNWANTEDDEF" / -->
         </defineset>
-        <linkerarg value="-fpic" />
-        <linkerarg value="-Wall" />
-        <linkerarg value="-Wstrict-prototypes" />
+        <linkerarg value="${linkerarg.1}" />
+        <linkerarg value="${warnlevel}" />
+        <!-- linkerarg value="-Wstrict-prototypes" />
         <linkerarg value="-Wimplicit-int" />
-        <linkerarg value="-Werror-implicit-function-declaration" />
+        <linkerarg value="-Werror-implicit-function-declaration" / -->
      </cc>
+  </target>
+
+  <target name="setUnixCpp">
+     <!-- echo message="Doing UNIX stuff ..."/ -->
+     <!-- <property name="linkerarg.1" value="-fpic"/>  Seems to have scope in this target only! -->
+  </target>
+
+  <target name="setWinCpp">
+     <echo message="Please add the binary directory of ${CORBACPP_HOME} to your path environment"/>
   </target>
 
 
@@ -524,8 +571,11 @@ Else add it manually.
                     -L/opt/local/mico/lib -lmico2.3.6 -lpthread
                     -L/opt/local/mico/lib -lmicocoss2.3.6
                     -L/home/xmlblast/xmlBlaster/lib -lxmlBlasterClient -lstdc++
+
+      Using STLport 4.5.1 gives a problem when linking an executable (on Linux):
+          /home/xmlblast/xmlBlaster/lib/libxmlBlasterClient.so: undefined reference to `CORBA::UserException::_print(_STL::basic_ostream<char, _STL::char_traits<char> > &) const'
   -->
-  <target name="cpp-test"> <!-- depends="cpp-lib" -->
+  <target name="cpp-test" depends="prepare"> <!-- depends="prepare,cpp-lib" -->
      <foreach list="TestGet,TestSub,TestLogin,RamTest,clientPOA" target="compileCppExe" param="exeName" delimiter="," />
   </target>
 
@@ -533,6 +583,8 @@ Else add it manually.
      <echo message="Compiling of C++ test client '${testsuite.dir}/c++/bin/${exeName}' ..."/>
 
      <libset id="libs" libs="mico${CORBACPP_VER}, micocoss${CORBACPP_VER}, xerces-c${XMLCPP_VER}, xmlBlasterClient, pthread, dl, stdc++">
+        <!-- libstlport_gcc, -->
+        <!-- libpath location="${STL_HOME}/lib"/ -->
         <libpath location="${CORBACPP_HOME}/lib"/>
         <libpath location="${XMLCPP_HOME}/lib"/>
         <libpath location="${lib.dir}"/>
@@ -547,6 +599,7 @@ Else add it manually.
         <compiler name="gcc"/>
         <fileset dir="${testsuite.dir}/c++" includes="${exeName}.cpp"/>
         <includepath location="${src.cpp.dir}" />
+        <!-- sysincludepath location="${STL_HOME}/stlport" / -->
         <sysincludepath location="${CORBACPP_HOME}/include" />
         <sysincludepath location="${XMLCPP_HOME}/include" />
         <libset refid="libs"/>
@@ -566,7 +619,7 @@ Else add it manually.
   <!-- =================================================================== -->
   <!-- Cleans everything                                                   -->
   <!-- =================================================================== -->
-   <target name="clean">
+   <target name="clean" depends="prepare">
       <delete dir="${build.dir}"/>
       <delete dir=".c_dependency_cache"/>
       <delete includeEmptyDirs="true">
