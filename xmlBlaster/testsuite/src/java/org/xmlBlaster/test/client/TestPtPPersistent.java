@@ -141,6 +141,7 @@ public class TestPtPPersistent extends TestCase  {
       MsgUnit msgUnit = new MsgUnit(key, content, qos);
 
       con.publish(msgUnit);
+      System.gc(); // to make sure possbile weak references are cleaned up on the server side
       log.info(ME, "Success: Publishing of " + content + " done");
    }
 
