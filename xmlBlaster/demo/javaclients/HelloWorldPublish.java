@@ -31,7 +31,9 @@ import org.xmlBlaster.client.qos.EraseQos;
 import org.xmlBlaster.client.qos.EraseReturnQos;
 import org.xmlBlaster.client.qos.UnSubscribeQos;
 import org.xmlBlaster.client.I_XmlBlasterAccess;
-
+import org.xmlBlaster.client.I_ConnectionStateListener;
+import org.xmlBlaster.util.dispatch.ConnectionStateEnum;
+import org.xmlBlaster.client.I_ConnectionHandler;
 
 /**
  * This client connects to xmlBlaster and publishes a configurable amount of messages. 
@@ -98,6 +100,7 @@ public class HelloWorldPublish
          String destination = glob.getProperty().get("destination", (String)null);
          boolean erase = glob.getProperty().get("erase", true);
          boolean disconnect = glob.getProperty().get("disconnect", true);
+         final boolean eraseTailback = glob.getProperty().get("eraseTailback", false);
          int contentSize = glob.getProperty().get("contentSize", -1); // 2000000);
 
          if (historyMaxMsg < 1 && !glob.getProperty().propertyExists("destroyDelay"))
@@ -109,6 +112,7 @@ public class HelloWorldPublish
          log.info(ME, "   -oneway         " + oneway);
          log.info(ME, "   -erase          " + erase);
          log.info(ME, "   -disconnect     " + disconnect);
+         log.info(ME, "   -eraseTailback  " + eraseTailback);
          log.info(ME, " Pub/Sub settings");
          log.info(ME, "   -numPublish     " + numPublish);
          log.info(ME, "   -oid            " + oid);
@@ -139,6 +143,34 @@ public class HelloWorldPublish
 
          I_XmlBlasterAccess con = glob.getXmlBlasterAccess();
 
+         // Handle lost server explicitly
+         con.registerConnectionListener(new I_ConnectionStateListener() {
+               
+               public void reachedAlive(ConnectionStateEnum oldState,
+                                        I_XmlBlasterAccess connection) {
+                  /*
+                  ConnectReturnQos conRetQos = connection.getConnectReturnQos();
+                  log.info(ME, "I_ConnectionStateListener: We were lucky, connected to " +
+                     connection.getGlobal().getId() + " as " + conRetQos.getSessionName());
+                     */
+                  if (eraseTailback) {
+                     log.info(ME, "Destroying " + connection.getQueue().getNumOfEntries() +
+                                  " client side tailback messages");
+                     connection.getQueue().clear();
+                  }
+               }
+               public void reachedPolling(ConnectionStateEnum oldState,
+                                          I_XmlBlasterAccess connection) {
+                  log.warn(ME, "I_ConnectionStateListener: No connection to " +
+                          connection.getGlobal().getId() + ", we are polling ...");
+               }
+               public void reachedDead(ConnectionStateEnum oldState,
+                                       I_XmlBlasterAccess connection) {
+                  log.warn(ME, "I_ConnectionStateListener: Connection to " +
+                          connection.getGlobal().getId() + " is DEAD");
+               }
+            });
+   
          // ConnectQos checks -session.name and -passwd from command line
          log.info(ME, "============= CreatingConnectQos");
          ConnectQos qos = new ConnectQos(glob);
