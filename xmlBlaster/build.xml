@@ -271,7 +271,7 @@ TODO
       <compilerarg value="-pedantic" />
       <compilerarg value="-Wno-long-long" />  <!-- with -pedantic: to suppress warning: ANSI C does not support `long long', C99 supports it -->
       <compilerarg value="-D_REENTRANT" />
-      <compilerarg value="-rdynamic" unless="sun"/>  <!-- To show symbols of a backtrace (see XmlBlasterException.cpp, msgUtil.c) -->
+      <compilerarg value="-rdynamic" if="linux"/>  <!-- To show symbols of a backtrace (see XmlBlasterException.cpp, msgUtil.c) -->
       <compilerarg value="-export-dynamic" /> <!-- To show symbols of a backtrace (see XmlBlasterException.cpp, msgUtil.c) -->
       <compilerarg value="${gcc.enableStackTrace}" /> <!-- To show symbols of a backtrace (see XmlBlasterException.cpp, msgUtil.c) -->
       <compilerarg value="-D${thread.impl}" />
@@ -2963,12 +2963,12 @@ TODO
          </defineset>
 
          <linker name="gcc" if="use-gcc">
-            <linkerarg value="-Wl,-rpath=${lib.dir.absolute}:${sqlite.lib.dir}:${zlib.lib.dir}" unless="sun"/>
+            <linkerarg value="-Wl,-rpath=${lib.dir.absolute}:${sqlite.lib.dir}:${zlib.lib.dir}" if="linux"/>
             <libset dir="${lib.dir}" libs="${c.lib.name}" />  <!-- libxmlBlasterClientC.so -->
             <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE" />  <!-- libsqlite.so -->
             <libset dir="${zlib.lib.dir}" libs="${zlib.lib.name}" if="XMLBLASTER_ZLIB"/>
             <syslibset dir="/lib" libs="socket" if="sun"/>
-            <syslibset dir="/lib" libs="dl" if="unix"/>
+            <!-- syslibset dir="/lib" libs="dl" unless="unix"/ -->
             <syslibset dir="/usr/lib" libs="pthread" if="unix"/>
             <!-- syslibset dir="/usr/lib" libs="socket" if="unix"/ -->
          </linker>
