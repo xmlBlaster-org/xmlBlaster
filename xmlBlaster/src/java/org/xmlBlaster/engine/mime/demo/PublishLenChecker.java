@@ -3,7 +3,7 @@ Name:      PublishLenChecker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Interface hiding the real callback protocol
-Version:   $Id: PublishLenChecker.java,v 1.14 2003/03/22 12:27:58 laghi Exp $
+Version:   $Id: PublishLenChecker.java,v 1.15 2003/06/20 08:52:21 ruff Exp $
 Author:    xmlBlaster@marcelruff.info
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.mime.demo;
@@ -12,6 +12,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.authentication.SubjectInfo;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.MsgUnit;
@@ -118,23 +119,15 @@ public class PublishLenChecker implements I_Plugin, I_PublishFilter
    }
 
    /**
-    * Check if the filter rule matches for this message. 
-    * @param publisher The subject object describing the publisher
-    * @param msgUnit The message to check
+    * Check if the filter rule matches for this message.
+    * Please read the I_PublisheFilter.intercept() Javadoc.
     * @return "" or "OK": The message is accepted<br />
-    *         Any other string: The message is rejected and your string is passed back to the publisher.
-    * @exception XmlBlasterException Is thrown on problems, for example if the MIME type
-    *            does not fit to message content.<br />
-    *            Take care throwing an exception, as the
-    *            exception is routed back to the publisher.
-    *            If the publish() had many messages (a MsgUnit[]), all other messages are lost
-    *            as well.
-    *            Probably it is best to return 'ERROR' instead and log the situation.
+    * @see I_PublisheFilter#intercept(SubjectInfo, MsgUnit)
     */
    public String intercept(SubjectInfo publisher, MsgUnit msgUnit) throws XmlBlasterException {
       if (msgUnit == null) {
          Thread.currentThread().dumpStack();
-         throw new XmlBlasterException(ME, "Illegal argument in intercept() call - msgUnit is null");
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal argument in intercept() call - msgUnit is null");
       }
 
       if (msgUnit.getKeyData().isInternal())
@@ -145,7 +138,7 @@ public class PublishLenChecker implements I_Plugin, I_PublishFilter
 
          if (msgUnit.getContent().length == THROW_EXCEPTION_FOR_LEN) {
             log.info(ME, "Test what happens if we throw an exception");
-            throw new XmlBlasterException(ME, "Test what happens if we throw an exception");
+            throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Test what happens if we throw an exception");
          }
          if (msgUnit.getContent().length > maxLen) {
             log.info(ME, "Message REJECTED, msgLen=" + msgUnit.getContent().length + " max allowed=" + maxLen);
@@ -162,7 +155,7 @@ public class PublishLenChecker implements I_Plugin, I_PublishFilter
       catch (Throwable e) {
          String tmp = "Can't filter message because of an unexpected problem: " + e.toString();
          log.error(ME, tmp);
-         throw new XmlBlasterException(ME, tmp);
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, tmp);
       }
    }
 

@@ -10,6 +10,7 @@ import org.jutils.log.LogChannel;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.MsgUnit;
@@ -131,7 +132,7 @@ public class GnuRegexFilter implements I_Plugin, I_AccessFilter
    public boolean match(SessionInfo publisher, SessionInfo receiver, MsgUnit msgUnit, Query query) throws XmlBlasterException {
       if (msgUnit == null) {
          Thread.currentThread().dumpStack();
-         throw new XmlBlasterException(ME, "Illegal argument in regex match() call");
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal argument in regex match() call");
       }
 
       RE expression;
@@ -141,7 +142,7 @@ public class GnuRegexFilter implements I_Plugin, I_AccessFilter
             query.setPreparedQuery(expression); // for better performance we remember the regex expression
          } catch (gnu.regexp.REException e) {
             log.error(ME, "Can't compile regular filter expression '" + query + "':" + e.toString());
-            throw new XmlBlasterException(ME, "Can't compile regular filter expression '" + query + "':" + e.toString());
+            throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME, "Can't compile regular filter expression '" + query + "':" + e.toString());
          }
       }
       else

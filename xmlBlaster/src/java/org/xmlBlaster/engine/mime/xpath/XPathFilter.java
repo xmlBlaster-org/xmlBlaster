@@ -11,6 +11,7 @@ import org.xmlBlaster.util.Timestamp;
 import org.xmlBlaster.util.plugin.I_Plugin;
 import org.xmlBlaster.util.plugin.PluginInfo;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.authentication.SessionInfo;
 import org.xmlBlaster.util.enum.Constants;
 import org.xmlBlaster.util.MsgUnit;
@@ -141,7 +142,7 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
    public boolean match(SessionInfo publisher, SessionInfo receiver, MsgUnit msgUnit, Query query) throws XmlBlasterException {
       if (msgUnit == null) {
          Thread.currentThread().dumpStack();
-         throw new XmlBlasterException(ME, "Illegal argument in xpath match() call");
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal argument in xpath match() call");
       }
       
       DOMXPath expression;
@@ -151,7 +152,7 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
             query.setPreparedQuery(expression); 
          } catch (JaxenException e) {
             log.error(ME, "Can't compile XPath filter expression '" + query + "':" + e.toString());
-            throw new XmlBlasterException(ME, "Can't compile XPath filter expression '" + query + "':" + e.toString());
+            throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME, "Can't compile XPath filter expression '" + query + "':" + e.toString());
          }
       }
       else
@@ -170,7 +171,7 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
          return match;
       }catch (JaxenException e) {
          log.error(ME, "Error in querying dom tree with query " + query + ": " + e.toString());
-         throw new XmlBlasterException(ME, "Error in querying dom tree with query " + query + ": " + e.toString());
+         throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME, "Error in querying dom tree with query " + query + ": " + e.toString());
       }
    }
    
@@ -232,11 +233,11 @@ public class XPathFilter implements I_Plugin, I_AccessFilter {
                s.getColumnNumber() +
                " in systemID" + s.getSystemId();
          }
-         throw new XmlBlasterException(ME,"Could not parse xml: " + reason);
+         throw new XmlBlasterException(glob, ErrorCode.USER_MESSAGE_INVALID, ME,"Could not parse xml: " + reason);
       }  catch (javax.xml.parsers.ParserConfigurationException ex) {
-         throw new XmlBlasterException(ME,"Could not setup parser " + ex);
+         throw new XmlBlasterException(glob, ErrorCode.RESOURCE_CONFIGURATION, ME, "Could not setup parser: " + ex);
       } catch (java.io.IOException ex) {
-         throw new XmlBlasterException(ME,"Could not read xml " + ex);
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "Could not read xml " + ex);
       }
       
    } // end of try-catch

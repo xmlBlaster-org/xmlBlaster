@@ -120,18 +120,17 @@ public class ContentLenFilter implements I_Plugin, I_AccessFilter
 
    /**
     * Check if the filter rule matches for this message. 
-    * @param publisher The session object describing the publisher
-    * @param receiver The session object describing the receiver
     * @param msgUnit The message to check
     * @param query   The max. message length as given by the subscriber/getter.<br />
     *                If null we use 1 MByte as max size
     * @return true   If message is not too long
     * @exception see I_AccessFilter#match()
+    * @see I_AccessFilter#match(SessionInfo, SessionInfo, MsgUnit, Query)
     */
    public boolean match(SessionInfo publisher, SessionInfo receiver, MsgUnit msgUnit, Query query) throws XmlBlasterException {
       if (msgUnit == null) {
          Thread.currentThread().dumpStack();
-         throw new XmlBlasterException(ME, "Illegal argument in match() call");
+         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Illegal argument in match() call");
       }
 
       try {
@@ -169,7 +168,7 @@ public class ContentLenFilter implements I_Plugin, I_AccessFilter
       }
       catch (Throwable e) {
          log.error(ME, "Can't filter message, your filter string '" + query + "' is illegal, expected a max size integer: " + e.toString());
-         throw new XmlBlasterException(glob, ErrorCode.INTERNAL_ILLEGALARGUMENT, ME, "Can't filter message, your filter string '" + query + "' is illegal, expected a max size integer", e);
+         throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME, "Can't filter message, your filter string '" + query + "' is illegal, expected a max size integer", e);
       }
    }
 
