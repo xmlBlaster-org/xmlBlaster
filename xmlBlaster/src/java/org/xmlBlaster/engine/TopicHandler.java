@@ -1892,6 +1892,7 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
                   pq.setSender(sessionName);
                   pq.addDestination(new Destination(sub.getSessionInfo().getSessionName()));
                   pq.addClientProperty("__oid", getUniqueKey());
+                  pq.addClientProperty("__subscriptionId", sub.getSubSourceSubscriptionId());
                   if (i==0) {
                      TopicProperty topicProperty = new TopicProperty(glob);
                      //topicProperty.setDestroyDelay(destroyDelay);
@@ -1990,7 +1991,7 @@ public final class TopicHandler implements I_Timeout//, I_ChangeCallback
             }
             else {
                toSoftErased(sessionInfo); // kills all history entries, notify subscribers
-               long numMsgUnitStore = this.msgUnitCache.getNumOfEntries();
+               long numMsgUnitStore = (this.msgUnitCache==null) ? 0L : this.msgUnitCache.getNumOfEntries();
                if (numMsgUnitStore < 1) { // has no callback references?
                   toDead(sessionInfo.getSessionName(), eraseQos.getForceDestroy());
                   return;
