@@ -19,8 +19,8 @@ public class AllTests {
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.GlobalTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.GlobalLogTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.SessionNameTest.class));
-      suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.XmlKeySaxTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.FileIOTest.class));
+      suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.TimestampTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.TimeoutTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.InvocationRecorderTest.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.classtest.PublishRetQosTest.class));
@@ -33,6 +33,7 @@ public class AllTests {
       suite.addTest(org.xmlBlaster.test.classtest.key.AllTests.suite());
       suite.addTest(org.xmlBlaster.test.classtest.qos.AllTests.suite());
       suite.addTest(org.xmlBlaster.test.classtest.queue.AllTests.suite());
+      suite.addTest(org.xmlBlaster.test.classtest.msgstore.AllTests.suite());
       return suite;
    }
 }
