@@ -33,14 +33,119 @@ static char * const int64StrX = int64StrX_;   /* a second one */
          }\
       } while (0)
 
+#define mu_assert_checkWantException(message, exception) \
+      do {\
+         if (*exception.errorCode == 0) {\
+            sprintf(MU_ASSERT_TEXT, "[TEST FAIL]%s:%d %s: Missing exception", __FILE__, __LINE__, message);\
+            return MU_ASSERT_TEXT;\
+         }\
+         else {\
+            char out[1024];\
+            printf("OK, expected exception: %s\n", getExceptionStr(out, 1024, &exception));\
+         }\
+      } while (0)
+
 
 /**
  * Invoke: TestQueue -logLevel TRACE
  */
 static const char * test_illegal()
 {
+   ExceptionStruct exception;
+   QueueEntry queueEntry;
+   QueueEntryArr *entries = 0;
+   QueueProperties queueProperties;
+   I_Queue *queueP = 0;
+   const char *dbName = "xmlBlasterClient-C-Test.db";
+   int32_t numRemoved;
+
+   printf("-----------------------------------------\n");
+   printf("Testing test_illegal ...\n");
+   unlink(dbName); /* Delete old db file */
+
+   memset(&queueProperties, 0, sizeof(QueueProperties));
+
+   queueP = createQueue(0, 0, 0, 0);
+   mu_assert("create() Wrong properties", queueP == 0);
+
+   queueP = createQueue(&queueProperties, 0, 0, &exception);
+   mu_assert_checkWantException("create()", exception);
+
+   strncpy0(queueProperties.dbName, dbName, QUEUE_DBNAME_MAX);
+   strncpy0(queueProperties.nodeId, "clientJoe1081594557415", QUEUE_ID_MAX);
+   strncpy0(queueProperties.queueName, "connection_clientJoe", QUEUE_ID_MAX);
+   strncpy0(queueProperties.tablePrefix, "XB_", QUEUE_PREFIX_MAX);
+   queueProperties.maxNumOfEntries = 0;
+   queueProperties.maxNumOfBytes = 0;
+   queueP = createQueue(&queueProperties, 0, 0, &exception);
+   mu_assert_checkWantException("create()", exception);
+
+   queueProperties.maxNumOfEntries = 10;
+   queueProperties.maxNumOfBytes = 100;
+   queueP = createQueue(&queueProperties, 0, 0, &exception);
+   mu_assert("create()", queueP != 0);
+   mu_assert_checkException("create()", exception);
+
+   queueP->put(0, 0, 0);
+   queueP->put(0, 0, &exception);
+   mu_assert_checkWantException("put()", exception);
+
+   queueP->put(queueP, 0, &exception);
+   mu_assert_checkWantException("put()", exception);
+
+   memset(&queueEntry, 0, sizeof(QueueEntry));
+   queueP->put(queueP, &queueEntry, &exception);
+   mu_assert_checkWantException("put()", exception);
+
+   entries = queueP->peekWithSamePriority(0, 0, 0, 0);
+   entries = queueP->peekWithSamePriority(0, 0, 0, &exception);
+   mu_assert_checkWantException("peekWithSamePriority()", exception);
+
+   entries = queueP->peekWithSamePriority(queueP, -1, -1, &exception);
+   mu_assert_checkException("peekWithSamePriority()", exception);
+   mu_assert("peekWithSamePriority() entries", entries != 0);
+   mu_assertEqualsInt("peekWithSamePriority() entries", 0, entries->len);
+   mu_assert("peekWithSamePriority() entries", entries->queueEntryArr == 0);
+   freeQueueEntryArr(entries);
+
+   numRemoved = queueP->randomRemove(0, 0, 0);
+   numRemoved = queueP->randomRemove(0, 0, &exception);
+   mu_assert_checkWantException("randomRemove()", exception);
+   numRemoved = queueP->randomRemove(queueP, 0, &exception);
+   mu_assert_checkException("randomRemove()", exception);
+
+   numRemoved = queueP->randomRemove(queueP, entries, &exception);
+   mu_assert_checkException("randomRemove()", exception);
+   mu_assertEqualsInt("numRemoved", 0, (int)numRemoved);
+
+   entries = (QueueEntryArr *)calloc(1, sizeof(QueueEntryArr));;
+   numRemoved = queueP->randomRemove(queueP, entries, &exception);
+   mu_assert_checkException("randomRemove()", exception);
+   mu_assertEqualsInt("numRemoved", 0, (int)numRemoved);
+   freeQueueEntryArr(entries);
+
+   mu_assertEqualsBool("put() empty", true, queueP->empty(queueP));
+   queueP->clear(0, 0);
+   queueP->clear(0, &exception);
+   mu_assert_checkWantException("clear()", exception);
+   queueP->clear(queueP, &exception);
+   mu_assert_checkException("clear()", exception);
+
+   queueP->empty(0);
+
+   mu_assertEqualsInt("numOfEntries", 0, queueP->getNumOfEntries(queueP));
+   mu_assertEqualsInt("numOfBytes", 0, (int)queueP->getNumOfBytes(queueP));
+
+   mu_assertEqualsInt("numOfEntries", -1, queueP->getNumOfEntries(0));
+   mu_assertEqualsInt("numOfBytes", -1, (int)queueP->getNumOfBytes(0));
+
+   freeQueue(queueP);
+   printf("Testing test_illegal DONE\n");
+   printf("-----------------------------------------\n");
    return 0;
 }
+
+/* TODO: Test overflow */
 
 static const char * test_queue()
 {
@@ -64,8 +169,6 @@ static const char * test_queue()
    strncpy0(queueProperties.tablePrefix, "XB_", QUEUE_PREFIX_MAX);
    queueProperties.maxNumOfEntries = 10000000L;
    queueProperties.maxNumOfBytes = 1000000000LL;
-
-   if (argc || argv) {} /* to avoid compiler warning */
 
    queueP = createQueue(&queueProperties, xmlBlasterDefaultLogging, LOG_TRACE, &exception);
    mu_assert("create()", queueP != 0);
@@ -362,6 +465,7 @@ int main(int argc_, char **argv_)
    const char *result;
    argc = argc_;
    argv = argv_;
+   if (argc || argv) {} /* to avoid compiler warning */
 
    result = all_tests();
 
