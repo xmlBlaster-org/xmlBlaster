@@ -69,7 +69,7 @@ public final class PriorizedDeliveryPlugin implements I_MsgDeliveryInterceptor, 
    private Global glob;
    private LogChannel log;
    private ConfigurationParser parser = null;
-   private final String configPropertyKey = "PriorizedDeliveryPlugin.config";
+   public static final String CONFIG_PROPERTY_KEY = "PriorizedDeliveryPlugin/config";
    private String specificConfigPropertyKey = null;
    private boolean hasSpecificConf = false;
 
@@ -106,12 +106,12 @@ public final class PriorizedDeliveryPlugin implements I_MsgDeliveryInterceptor, 
       this.QUEUE_ACTION = new DispatchAction(glob, DispatchAction.QUEUE); // Initialize this constant for later usage
 
       // Subscribe for configuration properties
-      // "PriorizedDeliveryPlugin.config[Priority,1.0]" has precedence over "PriorizedDeliveryPlugin.config"
+      // "PriorizedDeliveryPlugin/config[Priority,1.0]" has precedence over "PriorizedDeliveryPlugin/config"
 
       // Note: This fires an initial event to statusChanged("startup")
 
-      this.specificConfigPropertyKey = this.configPropertyKey + "[" + typeVersion + "]";
-      this.glob.getProperty().addPropertyChangeListener(this.configPropertyKey, "startup", this);
+      this.specificConfigPropertyKey = this.CONFIG_PROPERTY_KEY + "[" + typeVersion + "]";
+      this.glob.getProperty().addPropertyChangeListener(this.CONFIG_PROPERTY_KEY, "startup", this);
       this.glob.getProperty().addPropertyChangeListener(this.specificConfigPropertyKey, "startup", this);
       log.info(ME, "Succefully initialized");
    }
@@ -126,11 +126,11 @@ public final class PriorizedDeliveryPlugin implements I_MsgDeliveryInterceptor, 
          changeManagerState(deliveryManager, deliveryManager.getDeliveryConnectionsHandler().getState(), false);
       }
       //flushHoldbackQueue(managerEntry);
-      log.info(ME, "Stored deliveryManager=" + deliveryManager + ", deliveryManagerEntryMap.size()=" + deliveryManagerEntryMap.size());
+      log.info(ME, "Stored deliveryManager=" + deliveryManager.getId() + ", deliveryManagerEntryMap.size()=" + deliveryManagerEntryMap.size());
    }
 
    /**
-    * Invoked when the configuration <i>PriorizedDeliveryPlugin.config</i> has changed. 
+    * Invoked when the configuration <i>PriorizedDeliveryPlugin/config</i> has changed. 
     * Supports changing configuration in hot operation.
     */
    public void propertyChanged(PropertyChangeEvent ev) {
@@ -147,7 +147,7 @@ public final class PriorizedDeliveryPlugin implements I_MsgDeliveryInterceptor, 
       if (this.specificConfigPropertyKey.equals(ev.getKey())) 
          hasSpecificConf = true;
 
-      if (hasSpecificConf && this.configPropertyKey.equals(ev.getKey()))
+      if (hasSpecificConf && this.CONFIG_PROPERTY_KEY.equals(ev.getKey()))
          return;  // Ignore unspecific configuration
 
       synchronized (this) {
@@ -223,7 +223,7 @@ public final class PriorizedDeliveryPlugin implements I_MsgDeliveryInterceptor, 
     * <p>
     * Enforced by I_Notify
     * </p>
-    * On initialize: addPropertyChangeListener(this.configPropertyKey, "startup", this);
+    * On initialize: addPropertyChangeListener(this.CONFIG_PROPERTY_KEY, "startup", this);
     * an initial event is fired an calls this method to initialize all attributes here
     */
    public final void statusChanged(String status) {
@@ -546,7 +546,7 @@ public final class PriorizedDeliveryPlugin implements I_MsgDeliveryInterceptor, 
       synchronized (this) {
          if (isShutdown) return;
 
-         glob.getProperty().removePropertyChangeListener(configPropertyKey, this);
+         glob.getProperty().removePropertyChangeListener(CONFIG_PROPERTY_KEY, this);
 
          DeliveryManagerEntry[] arr = getDeliveryManagerEntryArr();
          for(int i=0; i<arr.length; i++) {
