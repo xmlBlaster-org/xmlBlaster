@@ -161,7 +161,7 @@ public class XmlKeyBase
          // perhaps we should make it configurable through a property file !!!
          // Example: xmlKey_literal="Airport.*" as a regular expression
 
-         Log.error(ME+".XML", "Invalid XmlKey syntax, only XML syntax beginning with \"<\" is supported");
+         if (Log.DUMP) Log.dump(ME+".XML", "Invalid XmlKey syntax, only XML syntax beginning with \"<\" is supported: '" + this.xmlKey_literal + "'");
          throw new XmlBlasterException(ME+".XML", "Invalid XmlKey syntax, only XML syntax beginning with \"<\" is supported");
 
       }
