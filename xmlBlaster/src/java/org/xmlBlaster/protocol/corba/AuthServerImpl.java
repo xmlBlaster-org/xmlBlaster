@@ -3,7 +3,7 @@ Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: AuthServerImpl.java,v 1.10 2000/09/15 17:16:18 ruff Exp $
+Version:   $Id: AuthServerImpl.java,v 1.11 2001/08/19 23:07:54 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.corba;
@@ -18,6 +18,7 @@ import org.xmlBlaster.authentication.Authenticate;
 import org.xmlBlaster.authentication.ClientQoS;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
 import org.xmlBlaster.engine.xml2java.*;
+import org.xmlBlaster.engine.helper.ServerRef;
 
 import org.omg.PortableServer.*;
 
@@ -30,20 +31,20 @@ import org.omg.PortableServer.*;
 //public class AuthServerImpl extends ServerPOA {            // inheritance approach
 public class AuthServerImpl implements AuthServerOperations {    // tie approach
 
-   private final String ME = "AuthServerImpl";
-   private org.omg.CORBA.ORB orb;
-   private Authenticate authenticate;
+   private final static String      ME = "AuthServerImpl";
+   private              org.omg.CORBA.ORB             orb;
+   private              Authenticate         authenticate;
    /**  This specialized POA controlles the xmlBlaster server */
-   private final String xmlBlasterPOA_name = "xmlBlaster-POA";
+   private final        String          xmlBlasterPOA_name = "xmlBlaster-POA";
    /** We use our own, customized POA */
-   private POA xmlBlasterPOA;
+   private              POA                  xmlBlasterPOA;
    /** The root POA */
-   private org.omg.PortableServer.POA rootPOA;
+   private              org.omg.PortableServer.POA rootPOA;
    // USING TIE:
    // private ServerPOATie xmlBlasterServant;  // extends org.omg.PortableServer.Servant
    // NOT TIE
    /** extends org.omg.PortableServer.Servant */
-   private ServerImpl xmlBlasterServant;
+   private              ServerImpl       xmlBlasterServant;
 
    /**
     * One instance implements a server.
@@ -172,6 +173,58 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
       }
    }
 
+   /**
+    * If qos_literal transports another sessionId (e.g. from a2Blaster)
+    * we leave this untouched.
+    * This CORBA sessionId (transported hidden in the IOR) is used as well
+    */
+   public String init(String qos_literal) throws XmlBlasterException
+   {
+      LoginReturnQoS returnQoS = null;
+      String sessionId = null;
+
+      StopWatch stop = null; if (Log.TIME) stop = new StopWatch();
+
+      org.omg.CORBA.Object certificatedServerRef = null;
+      try {
+         // set up a association between the new created object reference (oid is sufficient)
+         // and the callback object reference
+         certificatedServerRef = xmlBlasterPOA.create_reference(ServerHelper.id());
+         sessionId = getSessionId(certificatedServerRef);
+         // The bytes at IOR position 234 and 378 are increased (there must be the object_id)
+      } catch (Exception e) {
+         e.printStackTrace();
+         Log.error(ME+".Corba", e.toString());
+         throw new XmlBlasterException(ME + ".Corba.initFailed", "init failed: " + e.toString());
+      }
+
+      try {
+         returnQoS = authenticate.init(qos_literal, sessionId);
+
+         org.xmlBlaster.protocol.corba.serverIdl.Server xmlBlaster = org.xmlBlaster.protocol.corba.serverIdl.ServerHelper.narrow(certificatedServerRef);
+         String serverIOR = orb.object_to_string(xmlBlaster);
+         returnQoS.setServerRef(new ServerRef("IOR", serverIOR));
+      }
+      catch (org.xmlBlaster.util.XmlBlasterException e) {
+         throw new XmlBlasterException(e.id, e.reason); // transform native exception to Corba exception
+      }
+
+      if (Log.TIME) Log.time(ME, "Elapsed time in login()" + stop.nice());
+      if (Log.DUMP) Log.dump(ME, "Returning from login-init()" + returnQoS.toXml());
+
+      return returnQoS.toXml();
+   }
+
+   public void disconnect(String sessionId, String qos_literal) throws XmlBlasterException {
+      if (Log.CALL) Log.call(ME, "Entering disconnect()");
+      try {
+         authenticate.disconnect(sessionId, qos_literal); // throws XmlBlasterException (eg if not connected (init not called, timeout etc.) or someone else than the session owner called disconnect!)
+      }
+      catch (org.xmlBlaster.util.XmlBlasterException e) {
+         throw new XmlBlasterException(e.id, e.reason); // transform native exception to Corba exception
+      }
+      if (Log.CALL) Log.call(ME, "Exiting disconnect()");
+   }
 
    /**
     * Logout of a client.
@@ -200,10 +253,16 @@ public class AuthServerImpl implements AuthServerOperations {    // tie approach
          sessionId = ServerImpl.convert(oid);
          if (Log.TRACE) Log.trace(ME, "POA oid=<" + sessionId + ">");
       } catch (Exception e) {
-         Log.error(ME+".Unknown", "Sorry, you are not known with CORBA, no logout possible");
+         Log.error(ME+".Unknown", "Sorry, you are unknown. No logout possible.");
          throw new XmlBlasterException("CorbaUnknown", "Sorry, you are not known with CORBA");
       }
       return sessionId;
+   }
+
+   private String addToQoS(String qos, String add) {
+      qos = qos.substring(0, qos.lastIndexOf("</qos>"));
+      qos += add + "\n</qos>\n";
+      return qos;
    }
 }
 

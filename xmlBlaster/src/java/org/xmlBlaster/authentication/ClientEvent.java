@@ -1,9 +1,9 @@
 /*------------------------------------------------------------------------------
 Name:      ClientEvent.java
 Project:   xmlBlaster.org
-Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
+Co  pyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Listens on clientRemove and clientAdded events
-Version:   $Id: ClientEvent.java,v 1.3 1999/12/09 13:28:36 ruff Exp $
+Version:   $Id: ClientEvent.java,v 1.4 2001/08/19 23:07:53 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -14,7 +14,7 @@ import org.xmlBlaster.engine.ClientInfo;
  * An event which indicates that a client did a login or logout.
  * It carries the ClientInfo reference inside
  *
- * @version $Id: ClientEvent.java,v 1.3 1999/12/09 13:28:36 ruff Exp $
+ * @version $Id: ClientEvent.java,v 1.4 2001/08/19 23:07:53 ruff Exp $
  * @author Marcel Ruff
  */
 public class ClientEvent extends java.util.EventObject

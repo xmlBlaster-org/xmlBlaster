@@ -3,7 +3,7 @@ Name:      I_XmlBlaster.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native Interface to xmlBlaster
-Version:   $Id: I_XmlBlaster.java,v 1.6 2000/11/12 13:22:05 ruff Exp $
+Version:   $Id: I_XmlBlaster.java,v 1.7 2001/08/19 23:07:54 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol;
@@ -28,8 +28,10 @@ public interface I_XmlBlaster
     * Subscribe to messages.
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
+    * @deprecated unsecure
     */
-   public String subscribe(String sessionId, XmlKey xmlKey, SubscribeQoS subscribeQoS) throws XmlBlasterException;
+//   public String subscribe(String sessionId, XmlKey xmlKey, SubscribeQoS subscribeQoS) throws XmlBlasterException;
+
    /**
     * Subscribe to messages.
     * <p />
@@ -44,8 +46,10 @@ public interface I_XmlBlaster
     * If you have parsed the xml string already, use this method.
     *
     * @see org.xmlBlaster.engine.RequestBroker
+    * @deprecated unsecure
     */
-   public void unSubscribe(String sessionId, XmlKey xmlKey, UnSubscribeQoS unSubscribeQoS) throws XmlBlasterException;
+//   public void unSubscribe(String sessionId, XmlKey xmlKey, UnSubscribeQoS unSubscribeQoS) throws XmlBlasterException;
+
    /**
     * Unsubscribe from messages.
     * <p />
@@ -64,8 +68,10 @@ public interface I_XmlBlaster
     * to avoid double parsing.
     *
     * @see org.xmlBlaster.engine.RequestBroker
+    * @deprecated unsecure
     */
-   public String publish(String sessionId, XmlKey xmlKey, MessageUnit msgUnit, PublishQoS publishQoS) throws XmlBlasterException;
+//   public String publish(String sessionId, XmlKey xmlKey, MessageUnit msgUnit, PublishQoS publishQoS) throws XmlBlasterException;
+
    /**
     * Publish a message.
     * <p />
@@ -90,8 +96,10 @@ public interface I_XmlBlaster
     * Delete messages.
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
+    * @deprecated unsecure
     */
-   public String[] erase(String sessionId, XmlKey xmlKey, EraseQoS qoS) throws XmlBlasterException;
+//   public String[] erase(String sessionId, XmlKey xmlKey, EraseQoS qoS) throws XmlBlasterException;
+
    /**
     * Delete messages.
     * <p />
@@ -104,8 +112,10 @@ public interface I_XmlBlaster
     * Synchronous access a message.
     * <p />
     * @see org.xmlBlaster.engine.RequestBroker
+    * @deprecated unsecure
     */
-   public MessageUnit[] get(String sessionId, XmlKey xmlKey, GetQoS getQoS) throws XmlBlasterException;
+//   public MessageUnit[] get(String sessionId, XmlKey xmlKey, GetQoS getQoS) throws XmlBlasterException;
+
    /**
     * Synchronous access a message.
     * <p />

@@ -3,7 +3,7 @@ Name:      AuthenticationInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the authentication data
-Version:   $Id: AuthenticationInfo.java,v 1.14 2000/09/15 17:16:13 ruff Exp $
+Version:   $Id: AuthenticationInfo.java,v 1.15 2001/08/19 23:07:53 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
 
@@ -65,7 +65,7 @@ public class AuthenticationInfo
     * It is currently the byte[] oid from the POA active object map.
     * @return oid
     */
-   public final String getUniqueKey() throws XmlBlasterException
+   public final String getUniqueKey()
    {
       return sessionId;
    }
@@ -73,10 +73,16 @@ public class AuthenticationInfo
 
    /**
     * Access the unique login name of a client.
+    * <br /> 
+    * If not known, its unique key (sessionId) is delivered
     * @return loginName
+    * @todo The sessionId is a security risk, what else
+    *        can we use? !!!
     */
    public final String getLoginName()
    {
+      if (loginName == null)
+         return getUniqueKey();
       return loginName;
    }
 

@@ -3,7 +3,7 @@ Name:      CorbaCallbackServer.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaCallbackServer.java,v 1.6 2001/02/15 21:11:23 ruff Exp $
+Version:   $Id: CorbaCallbackServer.java,v 1.7 2001/08/19 23:07:54 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -19,6 +19,8 @@ import org.xmlBlaster.protocol.corba.CorbaDriver;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallback;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackPOATie;
 import org.xmlBlaster.protocol.corba.clientIdl.BlasterCallbackHelper;
+import org.xmlBlaster.client.PluginManager;
+import org.xmlBlaster.authentication.plugins.I_SecurityClientHelper;
 
 
 /**
@@ -39,6 +41,8 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
    private final I_CallbackExtended boss;
    private final String loginName;
 
+   private PluginManager  secPlgnMgr = null;
+   private I_SecurityClientHelper secPlgn = null;
 
    /**
     * Construct a CORBA callback server for xmlBlaster, used by java/corba clients.
@@ -53,6 +57,13 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
       this.boss = boss;
       this.loginName = name;
       this.orb = orb;
+      secPlgnMgr = PluginManager.getInstance();
+      try {
+         secPlgn = secPlgnMgr.getCurrentClientPlugin();
+      }
+      catch (Exception e) {
+         Log.error(ME+".init(String, String)", "Security plugin initialization failed. Reason: "+e.toString());
+      }
       createCallbackServer();
       Log.info(ME, "Success, created CORBA callback server for " + loginName);
    }
@@ -162,7 +173,17 @@ public class CorbaCallbackServer implements org.xmlBlaster.protocol.corba.client
 
       try {
          // convert Corba to internal MessageUnit and call update() ...
-         boss.update(loginName, CorbaDriver.convert(msgUnitArr));
+         MessageUnit[] localMsgUnitArr = CorbaDriver.convert(msgUnitArr);
+         if(secPlgn!=null) {
+            MessageUnit[] mu = new MessageUnit[localMsgUnitArr.length];
+            for (int i=0; i<localMsgUnitArr.length; i++) {
+               mu[i] = secPlgn.importMessage(localMsgUnitArr[i]);
+            }
+            boss.update(loginName, mu);
+         }
+         else {
+            boss.update(loginName, localMsgUnitArr);
+         }
       }
       catch(XmlBlasterException e) {  // TODO: remove CORBA "oneway" and send Exception back to xmlBlaster.
          Log.error(ME, "Delivering message to client failed, message is lost.");

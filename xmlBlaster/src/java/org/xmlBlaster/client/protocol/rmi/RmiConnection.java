@@ -3,7 +3,7 @@ Name:      RmiConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: RmiConnection.java,v 1.10 2001/02/14 00:46:47 ruff Exp $
+Version:   $Id: RmiConnection.java,v 1.11 2001/08/19 23:07:54 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.rmi;
@@ -23,6 +23,7 @@ import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.util.XmlBlasterSecurityManager;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.engine.xml2java.LoginReturnQoS;
 
 import java.rmi.RemoteException;
 import java.rmi.Naming;
@@ -50,7 +51,7 @@ import java.applet.Applet;
  * <p />
  * If you want to connect from a servlet, please use the framework in xmlBlaster/src/java/org/xmlBlaster/protocol/http
  *
- * @version $Revision: 1.10 $
+ * @version $Revision: 1.11 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class RmiConnection implements I_XmlBlasterConnection
@@ -64,6 +65,7 @@ public class RmiConnection implements I_XmlBlasterConnection
    protected String loginName = null;
    private String passwd = null;
    protected LoginQosWrapper loginQos = null;
+   protected LoginReturnQoS loginReturnQoS = null;
 
    /** The RMI interface which we implement to allow callbacks */
    private RmiCallbackServer callback = null; //I_XmlBlasterCallback
@@ -206,6 +208,39 @@ public class RmiConnection implements I_XmlBlasterConnection
 
 
    /**
+    * @param qos Has all credentials
+    */
+   public void init(LoginQosWrapper qos, I_CallbackExtended client) throws XmlBlasterException, ConnectionException
+   {
+      if (qos == null)
+         throw new XmlBlasterException(ME+".init()", "Please specify a valid QoS");
+
+      this.ME = "RmiConnection-" + qos.getUserId();
+      if (Log.CALL) Log.call(ME, "init() ...");
+      if (blasterServer != null) {
+         Log.warn(ME, "You are already logged in.");
+         return;
+      }
+
+      this.loginQos = qos;
+      this.loginName = loginName;
+      this.passwd = null;
+
+      if (client != null) {
+         try {
+            this.callback = new RmiCallbackServer(loginName, client);
+         }
+         catch (RemoteException e) {
+            Log.error(ME, "Creation of RmiCallbackServer failed: " + e.toString());
+            throw new XmlBlasterException("RmiDriverFailed", e.toString());
+         }
+         loginQos.addCallbackAddress(this.callback.getCallbackHandle());
+      }
+
+      loginRaw();
+   }
+
+   /**
     * Login to the server, using the default BlasterCallback implementation.
     * <p />
     * If you do multiple logins with the same I_Callback implementation, the loginName
@@ -264,7 +299,15 @@ public class RmiConnection implements I_XmlBlasterConnection
       if (Log.CALL) Log.call(ME, "loginRaw(" + loginName + ") ...");
       try {
          initRmiClient();
-         sessionId = authServer.login(loginName, passwd, loginQos.toXml());
+         String qos = null;
+         if (passwd == null) {
+            qos = authServer.init(loginQos.toXml());
+            loginReturnQoS = new LoginReturnQoS(qos);
+            sessionId = loginReturnQoS.getSessionId();
+         }
+         else {
+            sessionId = authServer.login(loginName, passwd, loginQos.toXml());
+         }
          if (Log.TRACE) Log.trace(ME, "Success, login for " + loginName);
          if (Log.DUMP) Log.dump(ME, loginQos.toXml());
       } catch(RemoteException e) {
@@ -290,14 +333,21 @@ public class RmiConnection implements I_XmlBlasterConnection
     * The callback server is removed as well, releasing all RMI threads.
     * Note that this kills the server ping thread as well (if in fail save mode)
     * @return true successfully logged out
-    *         false failure on logout
+    *         false failure on gout
     */
    public boolean logout()
    {
       if (Log.CALL) Log.call(ME, "logout() ...");
 
       try {
-         if (authServer != null) authServer.logout(sessionId);
+         if (authServer != null) {
+            if(passwd==null) {
+               authServer.disconnect(sessionId, "");
+            }
+            else {
+               authServer.logout(sessionId);
+            }
+         }
          shutdown(); // the callback server
          init();
          return true;
@@ -315,7 +365,7 @@ public class RmiConnection implements I_XmlBlasterConnection
 
 
    /**
-    * Shut down the callback server. 
+    * Shut down the callback server.
     * Is called by logout()
     */
    public boolean shutdown()

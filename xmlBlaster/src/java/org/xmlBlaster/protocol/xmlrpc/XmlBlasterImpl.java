@@ -3,7 +3,6 @@ Name:      XmlBlasterImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the xmlBlaster interface for xml-rpc.
-Version:   $Id: XmlBlasterImpl.java,v 1.10 2001/07/03 20:34:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.xmlrpc;
 
@@ -105,18 +104,18 @@ public class XmlBlasterImpl
     * @see xmlBlaster.idl
     */
    public String publish (String sessionId, String xmlKey_literal, String content,
-         String publishQoS_literal)
+                          String publishQoS_literal)
       throws XmlBlasterException
    {
       if (Log.CALL) Log.call(ME, "Entering publish() ....");
 
       MessageUnit msgUnit = new MessageUnit(xmlKey_literal, content.getBytes(), publishQoS_literal);
 
-      // convert the xml literal strings
-      XmlKey xmlKey = new XmlKey(xmlKey_literal, true);
-      PublishQoS publishQoS = new PublishQoS(publishQoS_literal);
+//      // convert the xml literal strings
+//      XmlKey xmlKey = new XmlKey(xmlKey_literal, true);
+//      PublishQoS publishQoS = new PublishQoS(publishQoS_literal);
 
-      String retVal = blasterNative.publish(sessionId, xmlKey, msgUnit, publishQoS);
+      String retVal = blasterNative.publish(sessionId, msgUnit);
       return retVal;
    }
 
@@ -132,11 +131,11 @@ public class XmlBlasterImpl
       MessageUnit msgUnit = ProtoConverter.vector2MessageUnit(msgUnitWrap);
 
       // convert the xml literal strings
-      XmlKey xmlKey = new XmlKey(msgUnit.getXmlKey(), true);
-      PublishQoS publishQoS = new PublishQoS(msgUnit.getQos());
+      //XmlKey xmlKey = new XmlKey(msgUnit.getXmlKey(), true);
+      //PublishQoS publishQoS = new PublishQoS(msgUnit.getQos());
 
-      String retVal = blasterNative.publish(sessionId, xmlKey, msgUnit, publishQoS);
-      // String retVal = blasterNative.publish(sessionId, msgUnit);
+      // String retVal = blasterNative.publish(sessionId, xmlKey, msgUnit, publishQoS);
+      String retVal = blasterNative.publish(sessionId, msgUnit);
       return retVal;
    }
 

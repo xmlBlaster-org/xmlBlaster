@@ -3,7 +3,7 @@ Name:      RequestBroker.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: RequestBroker.java,v 1.90 2001/03/27 19:29:49 ruff Exp $
+Version:   $Id: RequestBroker.java,v 1.91 2001/08/19 23:07:54 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -32,7 +32,7 @@ import java.io.*;
  * <p>
  * Most events are fired from the RequestBroker
  *
- * @version $Revision: 1.90 $
+ * @version $Revision: 1.91 $
  * @author ruff@swand.lake.de
  */
 public class RequestBroker implements I_ClientListener, MessageEraseListener
@@ -613,7 +613,7 @@ public class RequestBroker implements I_ClientListener, MessageEraseListener
    /**
     * Write-Access method to publish a new message from a data source.
     * <p />
-    * There are to MoM styles supported:
+    * There are two MoM styles supported:
     * <p />
     * <ul>
     * <li>PubSub style:<br />

@@ -3,7 +3,7 @@ Name:      MessageUnit.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Container for a message.
-Version:   $Id: MessageUnit.java,v 1.2 2000/11/12 13:21:25 ruff Exp $
+Version:   $Id: MessageUnit.java,v 1.3 2001/08/19 23:07:54 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.helper;
@@ -28,6 +28,11 @@ public class MessageUnit implements java.io.Serializable
       this.content = content;
       this.qos = qos;
    }
+
+   public void setKey(String xmlKey){
+      this.xmlKey = xmlKey;
+   }
+
    public String getXmlKey() {
       return xmlKey;
    }

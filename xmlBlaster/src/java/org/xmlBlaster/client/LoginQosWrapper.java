@@ -3,13 +3,16 @@ Name:      LoginQosWrapper.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlQoS
-Version:   $Id: LoginQosWrapper.java,v 1.7 2001/01/30 14:05:29 ruff Exp $
+Version:   $Id: LoginQosWrapper.java,v 1.8 2001/08/19 23:07:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client;
 
 import org.xmlBlaster.util.Log;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.client.PluginManager;
+import org.xmlBlaster.authentication.plugins.I_SecurityClientHelper;
+import org.xmlBlaster.authentication.plugins.I_SecurityInitQoSWrapper;
 import java.util.Vector;
 
 
@@ -19,7 +22,7 @@ import java.util.Vector;
  * So you don't need to type the 'ugly' XML ASCII string by yourself.
  * After construction access the ASCII-XML string with the toXml() method.
  * <br />
- * A typical <b>publish</b> qos could look like this:<br />
+ * A typical <b>login</b> qos could look like this:<br />
  * <pre>
  *     &lt;qos>
  *        &lt;noPtP />
@@ -34,11 +37,24 @@ import java.util.Vector;
  * This is generated automatically from the XmlBlasterConnection class when instantiating
  * the callback driver.
  * <p />
+ * A typical login sequence looks like this:
+ * <pre>
+ *   &lt;securityService type="simple" version="1.0">
+ *      &lt;![CDATA[
+ *         &lt;user>name&lt;/user>
+ *         &lt;passwd>passwd&lt;/passwd>
+ *      ]]>
+ *   &lt;/securityService>
+ * </pre>
+ * <p />
  * see xmlBlaster/src/dtd/XmlQoS.xml
  */
 public class LoginQosWrapper extends QosWrapper
 {
    private String ME = "LoginQosWrapper";
+
+   public static final int EXCLUDE_SECURITY = 1;
+   public static final int DEFAULT = 0;
 
    // <callback type="IOR>IOR:000122200..."</callback>
    protected Vector addressVec = new Vector();
@@ -46,6 +62,8 @@ public class LoginQosWrapper extends QosWrapper
    /** PtP messages wanted? */
    protected boolean noPtP = false; // <noPtP />    <!-- Don't send me any PtP messages (prevents spamming) -->
 
+   private PluginManager pMgr;
+   private I_SecurityClientHelper plugin;
 
    /**
     * Default constructor for clients without asynchronous callbacks.
@@ -54,6 +72,21 @@ public class LoginQosWrapper extends QosWrapper
    {
    }
 
+   private I_SecurityClientHelper getPlugin()
+   {
+      if (plugin==null) {
+         if (pMgr==null) pMgr=PluginManager.getInstance();
+         try {
+            plugin=pMgr.getCurrentClientPlugin();
+         }
+         catch (Exception e) {
+            Log.error(ME+".LoginQosWrapper", "Security plugin initialization failed. Reason: "+e.toString());
+            Log.error(ME+".LoginQosWrapper", "No plugin. Trying to continue without the plugin.");
+         }
+      }
+
+      return plugin;
+   }
 
    /**
     * Default constructor for transient PtP messages.
@@ -108,6 +141,35 @@ public class LoginQosWrapper extends QosWrapper
       addressVec.addElement(callback);
    }
 
+   public I_SecurityInitQoSWrapper getSecurityInitQoSWrapper()
+   {
+      return getPlugin().getSecurityInitQoSWrapper();
+   }
+
+   public String getSecurityPluginType()
+   {
+      I_SecurityInitQoSWrapper i = getSecurityInitQoSWrapper();
+      if (i != null)
+         return i.getSecurityPluginType();
+      return null;
+   }
+
+   public String getSecurityPluginVersion()
+   {
+      I_SecurityInitQoSWrapper i = getSecurityInitQoSWrapper();
+      if (i != null)
+         return i.getSecurityPluginVersion();
+      return null;
+   }
+
+   public String getUserId()
+   {
+      I_SecurityInitQoSWrapper i=getSecurityInitQoSWrapper();
+      if (i==null)
+         return "NoLoginName";
+      else
+         return i.getUserId();
+   }
 
    /**
     * Converts the data into a valid XML ASCII string.
@@ -122,13 +184,23 @@ public class LoginQosWrapper extends QosWrapper
    /**
     * Dump state of this object into a XML ASCII string.
     * <br>
+    * The default is to include the security string
     * @return internal state of the RequestBroker as a XML ASCII string
     */
    public final String toXml()
    {
-      return toXml((String)null);
+      return toXml(LoginQosWrapper.DEFAULT);
    }
 
+   public final String toXml(int opt)
+   {
+      return toXml((String)null, opt);
+   }
+
+   public final String toXml(String extraOffset)
+   {
+      return toXml((String)null, EXCLUDE_SECURITY);
+   }
 
    /**
     * Dump state of this object into a XML ASCII string.
@@ -136,8 +208,13 @@ public class LoginQosWrapper extends QosWrapper
     * @param extraOffset indenting of tags for nice output
     * @return internal state of the RequestBroker as a XML ASCII string
     */
-   public final String toXml(String extraOffset)
+   public final String toXml(String extraOffset, int opt)
    {
+      I_SecurityInitQoSWrapper secInitQoSWrapper = null;
+
+      if(plugin!=null) {
+         secInitQoSWrapper = getPlugin().getSecurityInitQoSWrapper();
+      }
       StringBuffer sb = new StringBuffer();
       String offset = "\n   ";
       if (extraOffset == null) extraOffset = "";
@@ -150,8 +227,13 @@ public class LoginQosWrapper extends QosWrapper
          CallbackAddress ad = (CallbackAddress)addressVec.elementAt(ii);
          sb.append(ad.toXml("   ")).append("\n");
       }
+      if(opt!=EXCLUDE_SECURITY) {
+         // For example DefaultClientInitQoSWrapper with <securityService ...
+         if(secInitQoSWrapper!=null) sb.append(secInitQoSWrapper.toXml(offset)); // includes the qos of the ClientSecurityHelper
+      }
       sb.append("</qos>");
 
       return sb.toString();
    }
+
 }

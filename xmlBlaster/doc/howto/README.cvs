@@ -35,9 +35,9 @@ Merge the branch again with the main development:
       mv  xmlBlaster  xmlBlaster.xmlBlasterV08   -> save MyHackV08 branch
       cvs checkout xmlBlaster                    -> get the current main branch as a working copy to merge
       cd xmlBlaster
-      cvs update -j MyHackV08      -> merge all from the branch into the main code
-                                   -> resolve possible conflicts
-                                   -> compile and test it
+      cvs update -d -P -j MyHackV08 -> merge all from the branch into the main code
+                                    -> resolve possible conflicts
+                                    -> compile and test it
 
    3) Then publish it for everybody:
       cvs commit

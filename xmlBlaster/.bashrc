@@ -22,7 +22,6 @@
 #
 # Tested on Linux, HPUX and Solaris with sh, ksh and bash.
 # Thanks to Heinrich Goetzger
-# $Revision: 1.81 $
 #-----------------------------------------------------------
 
 
@@ -75,15 +74,19 @@ if [ -d ${XMLBLASTER_HOME} ]; then
    ${ECHO} "$BLACK_LTGREEN   Welcome to xmlBlaster.org   $ESC"
    ${ECHO} "$BLACK_LTGREEN      Using XMLBLASTER_HOME=${XMLBLASTER_HOME}  $ESC"
 
+   #a2Blaster - authentication and authorisation service 
+   CLASSPATH=${XMLBLASTER_HOME}/lib/a2Blaster.jar:${CLASSPATH}   
+   
+   #jdbc
+   #CLASSPATH=${XMLBLASTER_HOME}/lib/jdbc7.0-1.2.jar:${CLASSPATH}
+   #CLASSPATH=/home/a2blaster/a2Blaster/lib/a2Blaster.jar:${CLASSPATH} 
    #CLASSPATH=${XMLBLASTER_HOME}/lib/xerces.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/parser.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/jaxp.jar:${CLASSPATH}
-
-   # jutils.jar must be extracted and included in xmlBlaster.jar
-   if [ -f ${XMLBLASTER_HOME}/lib/jutils.jar ]; then
+	# jutils.jar is now included in xmlBlaster.jar
+   #if [ -f ${XMLBLASTER_HOME}/lib/jutils.jar ]; then
       CLASSPATH=${XMLBLASTER_HOME}/lib/jutils.jar:${CLASSPATH}
-   fi
-
+   #fi
    CLASSPATH=${XMLBLASTER_HOME}/lib/xtdash.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/omquery.jar:${CLASSPATH}
    CLASSPATH=${XMLBLASTER_HOME}/lib/test.jar:${CLASSPATH}

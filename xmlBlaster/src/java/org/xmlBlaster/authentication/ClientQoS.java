@@ -3,7 +3,7 @@ Name:      ClientQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling login QoS (quality of service), knows how to parse with SAX
-Version:   $Id: ClientQoS.java,v 1.12 2001/02/14 00:52:59 ruff Exp $
+Version:   $Id: ClientQoS.java,v 1.13 2001/08/19 23:07:53 ruff Exp $
 Author:    ruff@swand.lake.de
 -----------------------------------------------------------------------------*/
 package org.xmlBlaster.authentication;
@@ -34,10 +34,16 @@ public class ClientQoS extends org.xmlBlaster.util.XmlQoSBase implements Seriali
    private CallbackAddress tmpAddr = null;
    transient private CallbackAddress[] addressArr = null;
    private Vector addressVec = new Vector();  // <callback type="IOR">IOR:000122200...</callback>
+   private String securityPluginType = null;
+   private String securityPluginVersion = null;
+   private String securityPluginData = null;
+   private String sessionId = null;
 
    private boolean inBurstMode = false;
    private boolean inCompress = false;
    private boolean inPtpAllowed = false;
+   private boolean inSecurityService = false;
+   private boolean inSessionId = false;
 
    /**
     * Constructs the specialized quality of service object for a publish() call.
@@ -75,6 +81,58 @@ public class ClientQoS extends org.xmlBlaster.util.XmlQoSBase implements Seriali
       addressArr = null; // reset to be recalculated on demand
    }
 
+
+   /**
+    * Set SecurityPlugin specific information.
+    * <p/>
+    * @param String The type of the used plugin
+    * @param String The version of the used plugin
+    * @param String The content.
+    */
+   public void setSecurityPlugin(String type, String version, String content) {
+      this.securityPluginType=type;
+      this.securityPluginVersion=version;
+      this.securityPluginData=content;
+   }
+
+
+   /**
+    * Return the type of the referenced SecurityPlugin.
+    * <p/>
+    * @return String
+    */
+   public String getSecurityPluginType() {
+      return securityPluginType;
+   }
+
+
+   /**
+    * Return the version of the referenced SecurityPlugin.
+    * <p/>
+    * @return String
+    */
+   public String getSecurityPluginVersion() {
+      return securityPluginVersion;
+   }
+
+
+   /**
+    * Return the SecurityPlugin specific information.
+    * <p/>
+    * @return String
+    */
+   public String getSecurityPluginData() {
+      return securityPluginData;
+   }
+
+   public void setSessionId(String id) {
+      if(id.equals("")) id = null;
+      sessionId = id;
+   }
+
+   public String getSessionId() {
+      return sessionId;
+   }
 
    /**
     * Start element, event from SAX parser.
@@ -196,6 +254,38 @@ public class ClientQoS extends org.xmlBlaster.util.XmlQoSBase implements Seriali
          return;
       }
 
+      if (name.equalsIgnoreCase("securityService")) {
+         inSecurityService = true;
+         boolean existsTypeAttr = false;
+         boolean existsVersionAttr = false;
+         if (attrs != null) {
+            int len = attrs.getLength();
+            int ii=0;
+            for (ii = 0; ii < len; ii++) {
+               if (attrs.getQName(ii).equalsIgnoreCase("type")) {
+                  existsTypeAttr = true;
+                  securityPluginType = attrs.getValue(ii).trim();
+               }
+               else if (attrs.getQName(ii).equalsIgnoreCase("version")) {
+                  existsVersionAttr = true;
+                  securityPluginVersion = attrs.getValue(ii).trim();
+               }
+            }
+         }
+         if (!existsTypeAttr) Log.error(ME, "Missing 'type' attribute in login-qos <securityService>");
+         if (!existsVersionAttr) Log.error(ME, "Missing 'version' attribute in login-qos <securityService>");
+         character.setLength(0);
+
+         return;
+      }
+
+      if (name.equalsIgnoreCase("sessionId")) {
+         inSessionId = true;
+         character.setLength(0);
+
+         return;
+      }
+
    }
 
 
@@ -242,9 +332,20 @@ public class ClientQoS extends org.xmlBlaster.util.XmlQoSBase implements Seriali
          }
          else
             Log.error(ME, "Internal problem, ignoring <PtP> element");
-         character.setLength(0);
+            character.setLength(0);
          return;
       }
+
+      if (name.equalsIgnoreCase("securityService")) {
+        inSecurityService = false;
+        securityPluginData = "<securityService type=\""+getSecurityPluginType()+"\" version=\""+getSecurityPluginVersion()+"\">"+character.toString().trim()+"</securityService>";
+      }
+
+      if (name.equalsIgnoreCase("sessionId")) {
+        inSessionId = false;
+        setSessionId(character.toString().trim());
+      }
+
    }
 
    /**
@@ -273,6 +374,16 @@ public class ClientQoS extends org.xmlBlaster.util.XmlQoSBase implements Seriali
       CallbackAddress[] addr = getCallbackAddresses();
       for (int ii=0; ii<addr.length; ii++)
          sb.append(addr[ii].toXml(extraOffset + "   "));
+      if(sessionId!=null) {
+         sb.append(offset +"   <sessionId>" + getSessionId() + "</sessionId>");
+      }
+      if(securityPluginType!=null) {
+         sb.append(offset + "   <securityService type=\""
+                          + getSecurityPluginType() + "\" version=\""
+                          + getSecurityPluginVersion() + "\">");
+         sb.append(offset + "      " + getSecurityPluginData());
+         sb.append(offset + "   </securityService>");
+      }
       sb.append(offset + "</qos>");
 
       return sb.toString();
@@ -301,6 +412,13 @@ public class ClientQoS extends org.xmlBlaster.util.XmlQoSBase implements Seriali
             "      http:/www.mars.universe:8080/RPC2\n" +
             "   </callback>\n" +
             "   <offlineQueuing timeout='3600' />\n" +
+            "   <sessionId>anId</sessionId>" +
+            "   <securityService type=\"simple\" version=\"1.0\">\n" +
+            "      <![CDATA[\n" +
+            "         <user>aUser</user>\n" +
+            "         <passwd>theUsersPwd</passwd>\n" +
+            "      ]]>\n" +
+            "   </securityService>\n" +
             "</qos>\n";
 
          ClientQoS qos = new ClientQoS(xml);

@@ -3,7 +3,6 @@ Name:      ClientInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling the Client data
-Version:   $Id: ClientInfo.java,v 1.47 2001/08/10 09:45:29 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
@@ -15,10 +14,12 @@ import org.xmlBlaster.engine.xml2java.XmlKey;
 import org.xmlBlaster.engine.callback.CbInfo;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.authentication.AuthenticationInfo;
+import org.xmlBlaster.authentication.plugins.I_SessionSecurityContext;
 import org.xmlBlaster.engine.helper.Destination;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.XmlBlasterProperty;
+import org.xmlBlaster.util.PluginLoader;
 
 import java.util.*;
 
@@ -35,19 +36,19 @@ import java.util.*;
  * It also contains a message queue, where messages are stored
  * until they are delivered at the next login of this client.
  *
- * @version $Revision: 1.47 $
  * @author $Author: ruff $
  */
 public class ClientInfo
 {
-   public static long sentMessages = 0L;
-   private String ME = "ClientInfo";
-   private String loginName = null;            // the unique client identifier
-   private AuthenticationInfo authInfo = null; // all client informations
+   public  static long sentMessages = 0L;
+   private        String                   ME = "ClientInfo";
+   private        String            loginName = null; // the unique client identifier
+   private        AuthenticationInfo authInfo = null; // all client informations
+   private        I_SessionSecurityContext sessionSecurityCtx = null;
    /** Holding the callback connections */
-   private CbInfo cbInfo = new CbInfo();
+   private        CbInfo        cbInfo = new CbInfo();
    private static long instanceCounter = 0L;
-   private long instanceId = 0L;
+   private        long      instanceId = 0L;
 
    /**
     * All MessageUnit which can't be delivered to the client (if he is not logged in)
@@ -63,8 +64,18 @@ public class ClientInfo
     * <p />
     * @param authInfo the AuthenticationInfo with the login informations for this client
     */
-   public ClientInfo(AuthenticationInfo authInfo) throws XmlBlasterException
+   public ClientInfo(AuthenticationInfo authInfo, I_SessionSecurityContext sessionSecurityCtx)
+          throws XmlBlasterException
    {
+      if (sessionSecurityCtx==null) {
+Log.error(ME+".illegalArgument",
+          "ClientInfo(sessionSecurityCtx==null);" +
+          " // a correct security manager must be set!!!");
+         throw new XmlBlasterException(ME+".illegalArgument",
+                                       "ClientInfo(sessionSecurityCtx==null);" +
+                                       " // the correct session context must be set!!!");
+      }
+      this.sessionSecurityCtx = sessionSecurityCtx;
       instanceId = instanceCounter;
       instanceCounter++;
       if (Log.CALL) Log.trace(ME, "Creating new ClientInfo " + authInfo.toString());
@@ -79,8 +90,9 @@ public class ClientInfo
     */
    public ClientInfo(String loginName)
    {
-      instanceId = instanceCounter;
-      instanceCounter++;
+      instanceId = instanceCounter++;
+      PluginLoader pLdr = PluginLoader.getInstance();
+      this.sessionSecurityCtx = pLdr.getDummySecurityManager().reserveSessionSecurityContext(loginName);
       if (Log.CALL) Log.trace(ME, "Creating new empty ClientInfo for " + loginName);
       this.loginName = loginName;
    }
@@ -252,6 +264,9 @@ public class ClientInfo
          buf.append("      ").append(subscriptionId);
          buf.append("\n   </subscriptionId>\n");
       }
+
+// wkl to be implemented
+// append information of the server userSessionSecurityContext etc.
       buf.append("</qos>");
       return buf.toString();
    }
@@ -301,10 +316,16 @@ public class ClientInfo
 
    /**
     * Access the unique login name of a client.
+    * <br />
+    * If not known, its unique key (sessionId) is delivered
     * @return loginName
+    * @todo The sessionId is a security risk, what else
+    *        can we use? !!!
     */
    public final String getLoginName()
    {
+      if (loginName == null)
+         return authInfo.getLoginName();
       return loginName;
    }
 
@@ -319,6 +340,14 @@ public class ClientInfo
       return authInfo;
    }
 
+
+   public I_SessionSecurityContext getSessionSecurityContext() {
+      return sessionSecurityCtx;
+   }
+
+   public void setSessionSecurityContext(I_SessionSecurityContext ctx) {
+      this.sessionSecurityCtx = ctx;
+   }
 
    /**
     * The unique login name.

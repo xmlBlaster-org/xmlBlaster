@@ -3,7 +3,6 @@ Name:      XmlBlasterConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP/RMI or XML-RPC
-Version:   $Id: XmlBlasterConnection.java,v 1.10 2001/08/18 09:45:16 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol;
@@ -16,6 +15,7 @@ import org.xmlBlaster.client.protocol.rmi.RmiConnection;
 import org.xmlBlaster.client.protocol.xmlrpc.XmlRpcConnection;
 
 import org.xmlBlaster.client.BlasterCache;
+import org.xmlBlaster.client.PluginManager;
 import org.xmlBlaster.client.I_ConnectionProblems;
 import org.xmlBlaster.client.I_CallbackRaw;
 import org.xmlBlaster.client.I_Callback;
@@ -28,6 +28,8 @@ import org.xmlBlaster.util.I_InvocationRecorder;
 import org.xmlBlaster.util.InvocationRecorder;
 import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.MessageUnit;
+import org.xmlBlaster.authentication.plugins.I_SecurityClientHelper;
+import org.xmlBlaster.authentication.plugins.I_SecurityInitQoSWrapper;
 
 import java.applet.Applet;
 
@@ -69,8 +71,11 @@ import java.applet.Applet;
  * <p />
  * The interface I_CallbackRaw/I_Callback/I_CallbackExtenden are enforced by AbstractCallbackExtended
  * is for the InvocationRecorder to playback locally queued messages and for the protocol drivers.
+ * <p />
+ * If a client side security plugin is specified in xmlBlaster.properties
+ * or on command line, this will be enforced here. All xmlBlaster invocations
+ * will be intercepted with your supplied plugin.
  *
- * @version $Revision: 1.10 $
  * @author $Author: ruff $
  */
 public class XmlBlasterConnection extends AbstractCallbackExtended implements I_InvocationRecorder
@@ -116,10 +121,17 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    private String[] dummySArr = new String[0];
    private String dummyS = "";
 
-   /** Cache **/
+   /** Cache */
    private BlasterCache cache = null;
 
    private Object pollingMonitor = new Object();
+
+   /** Client side helper classes to load the authentication xml string */
+   private String            secMechanism = null;
+   private String              secVersion = null;
+   private PluginManager       secPlgnMgr = null;
+   private I_SecurityClientHelper secPlgn = null;
+
    /**
     * Client access to xmlBlaster for client applications.
     * <p />
@@ -134,7 +146,9 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     */
    public XmlBlasterConnection() throws XmlBlasterException
    {
-      initDriver(args, null);
+      initArgs(args);
+      initSecuritySettings();
+      initDriver(null);
    }
 
    /**
@@ -158,11 +172,13 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     */
    public XmlBlasterConnection(String[] args) throws XmlBlasterException
    {
-      initDriver(args, null);
+      initArgs(args);
+      initSecuritySettings();
+      initDriver(null);
    }
 
    /**
-    * CORBA client access to xmlBlaster for <strong>normal client applications</strong>.
+    * Client access to xmlBlaster for <strong>normal client applications</strong>.
     * <p />
     * @param arg  parameters given on command line
     * @param protocol e.g. "IOR", "RMI", "XML-RPC"
@@ -170,11 +186,32 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
     */
    public XmlBlasterConnection(String[] args, String driverType) throws XmlBlasterException
    {
-      initDriver(args, driverType);
+      initArgs(args);
+      initSecuritySettings();
+      initDriver(driverType);
    }
 
 
-   private void initDriver(String[] args, String driverType) throws XmlBlasterException
+   /**
+    * Client access to xmlBlaster for <strong>normal client applications</strong>.
+    * <p />
+    * @param arg  parameters given on command line
+    * @param protocol e.g. "IOR", "RMI", "XML-RPC"
+    *                 IOR is the CORBA driver.
+    * @param secMechanism Force the given authentication schema, e.g. a2Blaster
+    * @param secVersion   The version number, "1.0"
+    */
+   public XmlBlasterConnection(String[] args, String driverType, String secMechanism, String secVersion) throws XmlBlasterException
+   {
+      this.secMechanism = secMechanism;
+      this.secVersion = secVersion;
+      initArgs(args);
+      initSecuritySettings();
+      initDriver(driverType);
+   }
+
+
+   private void initArgs(String[] args)
    {
       this.args = args;
       if (this.args == null)
@@ -187,7 +224,38 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
             Log.warn(ME, e.toString());
          }
       }
+   }
 
+   /**
+    * Initializes the little client helper framework for authentication.
+    * <p />
+    * The goal is a proper loginQoS xml string for authentication.
+    * See xmlBlaster.properties:
+    * <pre>
+    *   Security.Client.ForcePlugin=gui,1.0
+    *   Security.Client.Plugin[gui][1.0]=org.xmlBlaster.authentication.plugins.gui.ClientSecurityHelper
+    * </pre>
+    */
+   private void initSecuritySettings()
+   {
+      secPlgnMgr = PluginManager.getInstance();
+      try {
+         secPlgn      = secPlgnMgr.getClientPlugin(secMechanism, secVersion);
+         secMechanism = secPlgnMgr.getType();
+         secVersion   = secPlgnMgr.getVersion();
+         Log.info(ME+".initSecuritySettings()", "Loaded security plugin=" + secMechanism + " version=" + secVersion);
+      }
+      catch (Exception e) {
+         Log.error(ME+".init(String, String)", "Security plugin initialization failed. Reason: "+e.toString());
+         secPlgn=null;
+      }
+   }
+
+   /**
+    * Load the desired protocol driver like CORBA or RMI driver.
+    */
+   private void initDriver(String driverType) throws XmlBlasterException
+   {
       if (driverType == null) driverType = XmlBlasterProperty.get("client.protocol", "IOR");
 
       Log.info(ME, "Using 'client.protocol=" + driverType + "' to access xmlBlaster");
@@ -197,14 +265,13 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       else if (driverType.equalsIgnoreCase("RMI"))
          driver = new RmiConnection(this.args);
       else if (driverType.equalsIgnoreCase("XML-RPC"))
-         driver = new XmlRpcConnection();
+         driver = new XmlRpcConnection(this.args);
       else {
          String text = "Unknown protocol '" + driverType + "' to access xmlBlaster, use IOR, RMI or XML-RPC.";
          Log.error(ME, text);
          throw new XmlBlasterException(ME+".UnknownDriver", text);
       }
    }
-
 
    /**
     * CORBA client access to xmlBlaster for <strong>applets</strong>.
@@ -239,7 +306,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       else if (driverType.equalsIgnoreCase("RMI"))
          driver = new RmiConnection(ap);
       else if (driverType.equalsIgnoreCase("XML-RPC"))
-         driver = new XmlRpcConnection();
+         driver = new XmlRpcConnection(ap);
       else {
          String text = "Unknown protocol '" + driverType + "' to access xmlBlaster, use IOR, RMI or XML-RPC.";
          Log.error(ME, text);
@@ -349,6 +416,24 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       this.ME = "XmlBlasterConnection-" + loginName;
       this.updateClient = client;
       if (Log.CALL) Log.call(ME, "login() ...");
+
+      if (qos == null)
+         qos = new LoginQosWrapper();
+
+      if(secPlgn!=null) {
+         I_SecurityInitQoSWrapper qosWrapper = qos.getSecurityInitQoSWrapper();
+         if(qosWrapper!=null) {
+            // We switch to init() variant ....
+            qosWrapper.setUserId(loginName);
+            qosWrapper.setCredential(passwd);
+            init(qos, client);
+            return;
+         }
+         else {
+            Log.error(ME+".login(...)", "Incorrect I_SecurityQoSWrapper.getSecurityInitQoSWrapper() implementation. Reason: Return value is null!");
+         }
+      }
+
       try {
          // 'this' forces to invoke our update() method which we then delegate to the updateClient
          driver.login(loginName, passwd, qos, (client != null) ? this : null);
@@ -368,13 +453,67 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
 
 
    /**
+    * Login to the server, specify your own callback and authentication schema
+    * in the qos.
+    * <p />
+    * Note that no asynchronous subscribe() method is available if you don't
+    * specify a callback in 'qos'.
+    *
+    * Don't forget to authenticate yourself in the qos as well, e.g.
+    * with loginName/Password schema:
+    * <pre>
+    *    &lt;qos>\n" +
+    *       &lt;callback type='IOR'>\n" +
+    *          &lt;PtP>true&lt;/PtP>\n" +
+    *          IOR:00011200070009990000....\n" +
+    *          &lt;compress type='gzip' minSize='1000' />\n" +
+    *          &lt;burstMode collectTime='400' />\n" +
+    *       &lt;/callback>\n" +
+    *       &lt;securityService type=\"simple\" version=\"1.0\">\n" +
+    *          &lt;![CDATA[\n" +
+    *             &lt;user>aUser&lt;/user>\n" +
+    *             &lt;passwd>theUsersPwd&lt;/passwd>\n" +
+    *          ]]>\n" +
+    *       &lt;/securityService>\n" +
+    *    &lt;/qos>\n";
+    * </pre>
+    * @param qos       The Quality of Service for this client,
+    *                  you have to pass at least the authentication tags
+    * @exception       XmlBlasterException if login fails
+    */
+   public void init(LoginQosWrapper qos, I_Callback client) throws XmlBlasterException
+   {
+      if (qos.getSecurityPluginType() == null || qos.getSecurityPluginType().length() < 1)
+         throw new XmlBlasterException(ME+".authentication", "Please add your authentication in your login QoS");
+
+      this.ME = "XmlBlasterConnection-" + qos.getSecurityPluginType();
+      this.updateClient = client;
+      if (Log.CALL) Log.call(ME, "init() ...");
+      try {
+         // 'this' forces to invoke our update() method which we then delegate to the updateClient
+         driver.init(qos, (client != null) ? this : null);
+         numLogins++;
+      }
+      catch(ConnectionException e) {
+         if (Log.TRACE) Log.trace(ME, "Login failed, numLogins=" + numLogins + ". Authentication string is\n" + qos.toXml());
+         if (numLogins == 0)
+            startPinging();
+         throw new XmlBlasterException(e);
+      }
+      if (isReconnectPolling && numLogins > 0)
+         clientProblemCallback.reConnected();
+
+      startPinging();
+   }
+
+   /**
     * Login to the server.
     * <p />
     * For internal use only.
     * The qos needs to be set up correctly if you wish a callback
     * @exception       XmlBlasterException if login fails
     */
-   public void loginRaw() throws XmlBlasterException
+   private void loginRaw() throws XmlBlasterException
    {
       if (Log.CALL) Log.call(ME, "loginRaw() ...");
       try {
@@ -551,6 +690,19 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    }
 
 
+   private final String subscribeRaw(String xmlKey, String qos) throws XmlBlasterException, ConnectionException
+   {
+      if (secPlgn!=null) { // with security Plugin: interceptor
+         MessageUnit mu = secPlgn.exportMessage(new MessageUnit(xmlKey, (byte[])null, qos));
+         return secPlgn.importMessage(
+                     driver.subscribe(mu.xmlKey, mu.qos));
+      }
+      else { // without security plugin
+         return driver.subscribe(xmlKey, qos);
+      }
+   }
+
+
    /**
     * Enforced by I_InvocationRecorder interface (fail save mode).
     * see explanations of publish() method.
@@ -560,7 +712,7 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    {
       if (Log.CALL) Log.call(ME, "subscribe() ...");
       try {
-         return driver.subscribe(xmlKey, qos);
+         return subscribeRaw(xmlKey, qos);
       } catch(XmlBlasterException e) {
          throw e;
       } catch(ConnectionException e) {
@@ -579,7 +731,13 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    {
       if (Log.CALL) Log.call(ME, "unSubscribe() ...");
       try {
-         driver.unSubscribe(xmlKey, qos);
+         if (secPlgn!=null) { // with security Plugin
+            MessageUnit mu = secPlgn.exportMessage(new MessageUnit(xmlKey, (byte[])null, qos));
+            driver.unSubscribe(mu.xmlKey, mu.qos);
+         }
+         else { // without security plugin
+            driver.unSubscribe(xmlKey, qos);
+         }
       } catch(XmlBlasterException e) {
          throw e;
       } catch(ConnectionException e) {
@@ -603,7 +761,13 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    {
       if (Log.TRACE) Log.trace(ME, "Publishing ...");
       try {
-         return driver.publish(msgUnit);
+         if (secPlgn!=null) {
+            MessageUnit mu = secPlgn.exportMessage(msgUnit);
+            return secPlgn.importMessage(driver.publish(mu));
+         }
+         else {
+            return driver.publish(msgUnit);
+         }
       } catch(XmlBlasterException e) {
          if (Log.TRACE) Log.trace(ME, "XmlBlasterException: " + e.reason);
          throw e;
@@ -623,7 +787,14 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    {
       if (Log.CALL) Log.call(ME, "publishArr() ...");
       try {
-         return driver.publishArr(msgUnitArr);
+         if (secPlgn!=null) { // security plugin allows e.g. crypting of messages ...
+            MessageUnit mu[] = exportAll(msgUnitArr);
+            String[] result = driver.publishArr(mu);
+            return importAll(result);
+         }
+         else { // security plugin not available
+            return driver.publishArr(msgUnitArr);
+         }
       } catch(XmlBlasterException e) {
          if (Log.TRACE) Log.trace(ME, "XmlBlasterException: " + e.reason);
          throw e;
@@ -643,7 +814,14 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
    {
       if (Log.CALL) Log.call(ME, "erase() ...");
       try {
-         return driver.erase(xmlKey, qos);
+         if (secPlgn!=null) {
+            MessageUnit  mu = secPlgn.exportMessage(new MessageUnit(xmlKey, (byte[])null, qos));
+            String[] result = driver.erase(mu.xmlKey, mu.qos);
+            return importAll(result);
+         }
+         else {
+            return driver.erase(xmlKey, qos);
+         }
       } catch(XmlBlasterException e) {
          if (Log.TRACE) Log.trace(ME, "XmlBlasterException: " + e.reason);
          throw e;
@@ -652,6 +830,20 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
          handleConnectionException(e);
       }
       return dummySArr;
+   }
+
+
+   private final MessageUnit[] getRaw(String xmlKey, String qos) throws XmlBlasterException, ConnectionException
+   {
+      MessageUnit[] units = null;
+      if (secPlgn!=null) {
+         MessageUnit mu = secPlgn.exportMessage(new MessageUnit(xmlKey, (byte[])null, qos));
+         units = importAll(driver.get(mu.xmlKey, mu.qos));
+      }
+      else {
+         units = driver.get(xmlKey, qos);
+      }
+      return units;
    }
 
 
@@ -669,14 +861,15 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
             units = cache.get( xmlKey, qos );
             //not found in cache
             if( units == null ) {
-               units = driver.get(xmlKey, qos);              //get messages from xmlBlaster (synchronous)
-               String subId = driver.subscribe(xmlKey, qos); //subscribe to this messages (asynchronous)
-               cache.newEntry(subId, xmlKey, units);         //fill messages to cache
+               units = getRaw(xmlKey, qos);              //get messages from xmlBlaster (synchronous)
+               String subId = subscribeRaw(xmlKey, qos); //subscribe to this messages (asynchronous)
+               cache.newEntry(subId, xmlKey, units);     //fill messages to cache
                Log.info(ME,"New Entry in Cache created (subId="+subId+")");
             }
          }
-         else
-            units = driver.get(xmlKey, qos);
+         else {
+            units = getRaw(xmlKey, qos);
+         }
          return units;
       } catch(XmlBlasterException e) {
          if (Log.TRACE) Log.trace(ME, "XmlBlasterException: " + e.reason);
@@ -689,6 +882,42 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       return dummyMArr;
    }
 
+
+   private String[] importAll(String[] contentArr) throws XmlBlasterException
+   {
+      String tmp[] = new String[contentArr.length];
+      for(int i=0; i<contentArr.length; i++) {
+        tmp[i]=secPlgn.importMessage(contentArr[i]);
+      }
+      return tmp;
+   }
+
+   private String[] exportAll(String[] contentArr) throws XmlBlasterException
+   {
+      String tmp[] = new String[contentArr.length];
+      for(int i=0; i<contentArr.length; i++) {
+        tmp[i]=secPlgn.importMessage(contentArr[i]);
+      }
+      return tmp;
+   }
+
+   private MessageUnit[] importAll(MessageUnit[] msgUnitArr) throws XmlBlasterException
+   {
+      MessageUnit mu[] = new MessageUnit[msgUnitArr.length];
+      for(int i=0; i<msgUnitArr.length; i++) {
+        mu[i]=secPlgn.importMessage(msgUnitArr[i]);
+      }
+      return mu;
+   }
+
+   private MessageUnit[] exportAll(MessageUnit[] msgUnitArr) throws XmlBlasterException
+   {
+      MessageUnit mu[] = new MessageUnit[msgUnitArr.length];
+      for(int i=0; i<msgUnitArr.length; i++) {
+        mu[i]=secPlgn.exportMessage(msgUnitArr[i]);
+      }
+      return mu;
+   }
 
    /**
     * Check server.
@@ -712,7 +941,6 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       }
       return ; // never reached, there is always an exception thrown
    }
-
 
    public int queueSize()
    {
@@ -833,6 +1061,8 @@ public class XmlBlasterConnection extends AbstractCallbackExtended implements I_
       text += "Choose a connection protocol:\n";
       text += "   -client.protocol    Specify a protocol to talk with xmlBlaster, 'IOR' or 'RMI' or 'XML-RPC'.\n";
       text += "                       Current setting is '" + XmlBlasterProperty.get("client.protocol", "IOR") + "'.\n";
+      text += "   -Security.Client.ForcePlugin \"gui,1.0\"\n";
+      text += "                       Force the given authentication schema, here the GUI is enforced\n";
       Log.plain(text);
       Log.plain(CorbaConnection.usage());
       Log.plain(RmiConnection.usage());

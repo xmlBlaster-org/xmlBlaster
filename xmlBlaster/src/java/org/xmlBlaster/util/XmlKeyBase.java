@@ -3,7 +3,6 @@ Name:      XmlKeyBase.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling one xmlKey, knows how to parse it with SAX
-Version:   $Id: XmlKeyBase.java,v 1.43 2001/05/18 15:41:33 freidlin Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.util;
 

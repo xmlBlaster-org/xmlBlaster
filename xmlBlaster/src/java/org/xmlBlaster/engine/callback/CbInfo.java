@@ -3,7 +3,7 @@ Name:      CbInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding messages waiting on client callback.
-Version:   $Id: CbInfo.java,v 1.2 2001/01/30 14:12:19 ruff Exp $
+Version:   $Id: CbInfo.java,v 1.3 2001/08/19 23:07:54 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.callback;
@@ -15,6 +15,7 @@ import org.xmlBlaster.engine.helper.CallbackAddress;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.engine.ClientInfo;
 import org.xmlBlaster.engine.MessageUnitWrapper;
+import org.xmlBlaster.authentication.plugins.I_SessionSecurityContext;
 import org.xmlBlaster.util.XmlBlasterProperty;
 import java.util.Hashtable;
 import java.util.StringTokenizer;
@@ -30,6 +31,7 @@ public class CbInfo
    private I_CallbackDriver[] callbackDrivers = null;
    /** Map holding the Class of all protocol I_CallbackDriver.java implementations, e.g. CallbackCorbaDriver */
    private static Hashtable protocols = null;
+
 
    public CbInfo()
    {
@@ -58,7 +60,7 @@ public class CbInfo
             }
 
 
-            try {                      
+            try {
                callbackDrivers[ii] = (I_CallbackDriver)cl.newInstance();
                callbackDrivers[ii].init(cbArr[ii]);
                if (Log.TRACE) Log.trace(ME, "Created callback driver for protocol '" + cbArr[ii].getType() + "'");
@@ -95,8 +97,18 @@ public class CbInfo
    /** Send the messages back to the client, using all available drivers */
    public void sendUpdate(ClientInfo clientInfo, MessageUnitWrapper msgUnitWrapper, MessageUnit[] arr) throws XmlBlasterException
    {
+      I_SessionSecurityContext sessionSecCtx = clientInfo.getSessionSecurityContext();
+      if (sessionSecCtx==null) {
+         throw new XmlBlasterException(ME+".accessDenied", "No session security context!");
+      }
+
+      MessageUnit[] msgUnitArr = new MessageUnit[arr.length];
+      for (int i=0; i<arr.length; i++) {
+         msgUnitArr[i] = sessionSecCtx.exportMessage(arr[i]);
+      }
+
       for (int ii=0; ii<callbackDrivers.length; ii++) {
-         callbackDrivers[ii].sendUpdate(clientInfo, msgUnitWrapper, arr);
+         callbackDrivers[ii].sendUpdate(clientInfo, msgUnitWrapper, msgUnitArr);
       }
    }
 
@@ -152,7 +164,7 @@ public class CbInfo
 
 
    /**
-    * Stop all callback drivers of this client. 
+    * Stop all callback drivers of this client.
     */
    public void shutdown()
    {

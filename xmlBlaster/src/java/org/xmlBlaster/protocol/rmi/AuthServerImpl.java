@@ -3,7 +3,7 @@ Name:      AuthServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Authentication access for RMI clients.
-Version:   $Id: AuthServerImpl.java,v 1.6 2000/09/15 17:16:20 ruff Exp $
+Version:   $Id: AuthServerImpl.java,v 1.7 2001/08/19 23:07:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.rmi;
 
@@ -13,6 +13,7 @@ import org.jutils.time.StopWatch;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.protocol.I_Driver;
 import org.xmlBlaster.authentication.Authenticate;
+import org.xmlBlaster.engine.xml2java.LoginReturnQoS;
 
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
@@ -45,11 +46,11 @@ public class AuthServerImpl extends UnicastRemoteObject implements org.xmlBlaste
    /**
     * Does a login, returns a handle to xmlBlaster interface.
     * <p />
-    * TODO: Allow passing an external sessionId in qos?
     * @param loginName The unique login name
     * @param password
     * @return sessionId The unique ID for this client
     * @exception XmlBlasterException If user is unknown
+    * @deprecated
     */
    public String login(String loginName, String password, String qos_literal)
                         throws RemoteException, XmlBlasterException
@@ -77,12 +78,50 @@ public class AuthServerImpl extends UnicastRemoteObject implements org.xmlBlaste
       }
    }
 
+   /**
+    * Login to xmlBlaster.
+    * @parameter qos_literal See LoginQosWrapper.java
+    * @return The xml string from LoginReturnQoS.java<br />
+    *         We could return the LoginReturnQoS object as well, but adding
+    *         attributes to this object would force clients to install the new class
+    *         declaration. In future we could use the Jini apporach here.
+    * @see org.xmlBlaster.client.LoginQosWrapper
+    * @see org.xmlBlaster.engine.xml2java.LoginReturnQoS
+    */
+   public String init(String qos_literal)
+                        throws RemoteException, XmlBlasterException
+   {
+      String returnValue = null;
+      String sessionId = null;
+      if (Log.CALL) Log.call(ME, "Entering init(qos=" + qos_literal + ")");
+
+      StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
+      try {
+         LoginReturnQoS qos = authenticate.init(qos_literal, sessionId);
+         returnValue = qos.toXml();
+         if (Log.TIME) Log.time(ME, "Elapsed time in login()" + stop.nice());
+      }
+      catch (org.xmlBlaster.util.XmlBlasterException e) {
+         throw new XmlBlasterException(e.id, e.reason); // transform native exception to Corba exception
+      }
+
+      return returnValue;
+   }
+
+   public void disconnect(final String sessionId, String qos_literal)
+                        throws RemoteException, XmlBlasterException
+   {
+      if (Log.CALL) Log.call(ME, "Entering logout()");
+      authenticate.disconnect(sessionId, qos_literal);
+      if (Log.CALL) Log.call(ME, "Exiting logout()");
+   }
 
    /**
     * Does a logout.
     * <p />
     * @param sessionId The client sessionId
     * @exception XmlBlasterException If sessionId is invalid
+    * @deprecated
     */
    public void logout(final String sessionId)
                         throws RemoteException, XmlBlasterException

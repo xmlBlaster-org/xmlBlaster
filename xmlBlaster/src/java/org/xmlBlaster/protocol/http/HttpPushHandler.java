@@ -3,7 +3,6 @@ Name:      HttpPushHandler.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling callback over http
-Version:   $Id: HttpPushHandler.java,v 1.37 2001/05/18 15:41:33 freidlin Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.http;
 

@@ -3,7 +3,7 @@ Name:      I_XmlBlasterConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Native Interface to xmlBlaster
-Version:   $Id: I_XmlBlasterConnection.java,v 1.3 2001/05/06 07:56:53 ruff Exp $
+Version:   $Id: I_XmlBlasterConnection.java,v 1.4 2001/08/19 23:07:54 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol;
@@ -33,6 +33,18 @@ import org.xmlBlaster.client.LoginQosWrapper;
  */
 public interface I_XmlBlasterConnection
 {
+   /**
+    * init() is a login or authentication as well, the authentication schema
+    * is transported in the qos.
+    * It is more general then the login() method, since it allows
+    * to transport any authentication info in the xml based qos.
+    *
+    * @param qos The authentication and other informations
+    * @param client A handle to your callback if desired or null
+    */
+   public void init(LoginQosWrapper qos, I_CallbackExtended client) throws XmlBlasterException, ConnectionException;
+   //public void disconnect(in string sessionId, in serverIdl::XmlType qos)
+
    public void login(String loginName, String passwd, LoginQosWrapper qos, I_CallbackExtended client) throws XmlBlasterException, ConnectionException;
 
    public void loginRaw() throws XmlBlasterException, ConnectionException;

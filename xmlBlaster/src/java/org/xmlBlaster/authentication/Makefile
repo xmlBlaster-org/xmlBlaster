@@ -13,6 +13,7 @@ SRC_JAVA_DIR = $(SRC_JAVA_TOP_DIR)/org/xmlBlaster/authentication
 
 
 #------------------------------------------------------------------------------
+SUB_DIRS = plugins
 LOCAL_FILES   := $(patsubst %.java,$(CLASS_DIR)/%.class,$(wildcard *.java))
 #------------------------------------------------------------------------------
 
@@ -20,7 +21,7 @@ LOCAL_FILES   := $(patsubst %.java,$(CLASS_DIR)/%.class,$(wildcard *.java))
 $(CLASS_DIR)/%.class : $(SRC_JAVA_DIR)/%.java
 	$(JAVAC) $(SRC_JAVA_DIR)/$(notdir $<)
 
-all: 	precond java
+all: 	all_SUB_DIRS precond java
 
 precond:
 	$(MKDIR_RECURSIVE) $(CLASS_DIR)

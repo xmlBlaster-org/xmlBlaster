@@ -3,7 +3,7 @@ Name:      CorbaConnection.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Helper to connect to xmlBlaster using IIOP
-Version:   $Id: CorbaConnection.java,v 1.16 2001/02/15 21:11:23 ruff Exp $
+Version:   $Id: CorbaConnection.java,v 1.17 2001/08/19 23:07:54 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.client.protocol.corba;
@@ -12,6 +12,7 @@ import org.xmlBlaster.client.protocol.I_XmlBlasterConnection;
 import org.xmlBlaster.client.protocol.ConnectionException;
 import org.xmlBlaster.client.LoginQosWrapper;
 import org.xmlBlaster.client.protocol.I_CallbackExtended;
+import org.xmlBlaster.authentication.plugins.InitResultQoSWrapper;
 
 import org.xmlBlaster.util.Log;
 import org.jutils.io.FileUtil;
@@ -22,6 +23,7 @@ import org.xmlBlaster.util.XmlBlasterProperty;
 import org.xmlBlaster.engine.helper.MessageUnit;
 import org.xmlBlaster.protocol.corba.CorbaDriver;
 import org.xmlBlaster.protocol.corba.serverIdl.Server;
+import org.xmlBlaster.protocol.corba.serverIdl.ServerHelper;
 import org.xmlBlaster.protocol.corba.authenticateIdl.AuthServer;
 import org.xmlBlaster.protocol.corba.authenticateIdl.AuthServerHelper;
 
@@ -64,7 +66,7 @@ import java.io.IOException;
  * first time the ORB is created.<br />
  * This will be fixed as soon as possible.
  *
- * @version $Revision: 1.16 $
+ * @version $Revision: 1.17 $
  * @author <a href="mailto:ruff@swand.lake.de">Marcel Ruff</a>.
  */
 public class CorbaConnection implements I_XmlBlasterConnection
@@ -88,10 +90,11 @@ public class CorbaConnection implements I_XmlBlasterConnection
    protected Server xmlBlaster = null;
    /** Our default implementation for a Corba callback server */
    protected CorbaCallbackServer callback = null;
-   protected String loginName = null;
-   private String passwd = null;
+   protected String loginName = ""; //null;
+   private   String passwd = null; //null;
    protected LoginQosWrapper loginQos = null;
 
+   private   String               sessionId = null;
 
    /**
     * CORBA client access to xmlBlaster for <strong>normal client applications</strong>.
@@ -115,6 +118,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
          }
          orb = org.omg.CORBA.ORB.init(args, null);
       }
+      init();
    }
 
 
@@ -154,14 +158,33 @@ public class CorbaConnection implements I_XmlBlasterConnection
       Log.info(ME, "Using ORB=" + orbClassName + " and ORBSingleton=" + orbSingleton);
 
       orb = org.omg.CORBA.ORB.init(ap, props);
+
+      init();
    }
 
    public void init()
    {
-      authServer = null;
-      xmlBlaster = null;
+      authServer   = null;
+      xmlBlaster   = null;
    }
 
+   /* DELETE it:
+   public void init(String secMechanism, String secVersion) throws Exception
+   {
+      authServer        = null;
+      xmlBlaster        = null;
+      this.secMechanism = secMechanism;
+      this.secVersion   = secVersion;
+      secPlgnMgr = PluginManager.getInstance();
+      try {
+         secPlgn = secPlgnMgr.getClientPlugin(secMechanism, secVersion);
+      }
+      catch (Exception e) {
+         Log.error(ME+".init(String, String)", "Security plugin initialization failed. Reason: "+e.toString());
+         throw e;
+      }
+   }
+   */
 
    /**
     * Accessing the orb handle.
@@ -394,6 +417,7 @@ public class CorbaConnection implements I_XmlBlasterConnection
     * @param loginName The login name for xmlBlaster
     * @param passwd    The login password for xmlBlaster
     * @param qos       The Quality of Service for this client (the callback tag will be added automatically if client!=null)
+    *                  The authentication tags should be set already if security manager is switched on
     * @param client    Your implementation of I_CallbackExtended, or null if you don't want any updates.
     * @exception       XmlBlasterException if login fails
     */
@@ -406,12 +430,55 @@ public class CorbaConnection implements I_XmlBlasterConnection
          return;
       }
 
-      this.loginName = loginName;
-      this.passwd = passwd;
+      this.loginName=loginName;
+      this.passwd=passwd;
+
       if (qos == null)
          this.loginQos = new LoginQosWrapper();
       else
          this.loginQos = qos;
+
+      if (client != null) {
+         this.callback = new CorbaCallbackServer(loginName, client, orb);
+         loginQos.addCallbackAddress(this.callback.getCallbackIOR());
+      }
+
+      loginRaw();
+   }
+
+
+   /**
+    * Login to the server, using the default BlasterCallback implementation.
+    * <p />
+    * If you do multiple logins with the same I_Callback implementation, the loginName
+    * which is delivered with the update() method may be used to dispatch the message
+    * to the correct client.
+    * <p />
+    * WARNING: <strong>The qos gets added a <pre>&lt;callback type='IOR'></pre> tag,
+    *          so don't use it for a second login, otherwise a second callback is inserted !</strong>
+    *
+    * @param loginName The login name for xmlBlaster
+    * @param passwd    The login password for xmlBlaster
+    * @param qos       The Quality of Service for this client (the callback tag will be added automatically if client!=null)
+    *                  The authentication tags should be set already if security manager is switched on
+    * @param client    Your implementation of I_CallbackExtended, or null if you don't want any updates.
+    * @exception       XmlBlasterException if login fails
+    */
+   public void init(LoginQosWrapper qos, I_CallbackExtended client) throws XmlBlasterException, ConnectionException
+   {
+      if (qos == null)
+         throw new XmlBlasterException(ME+".init()", "Please specify a valid QoS");
+
+      this.ME = "CorbaConnection-" + qos.getUserId();
+      if (Log.CALL) Log.call(ME, "init() ...");
+      if (xmlBlaster != null) {
+         Log.warn(ME, "You are already logged in.");
+         return;
+      }
+
+      this.loginQos = qos;
+      this.loginName=qos.getUserId();
+      this.passwd=null; // not necessary here
 
       if (client != null) {
          this.callback = new CorbaCallbackServer(loginName, client, orb);
@@ -432,9 +499,21 @@ public class CorbaConnection implements I_XmlBlasterConnection
    public void loginRaw() throws XmlBlasterException, ConnectionException
    {
       if (Log.CALL) Log.call(ME, "loginRaw(" + loginName + ") ...");
+
       try {
          AuthServer authServer = getAuthenticationService();
-         xmlBlaster = authServer.login(loginName, passwd, loginQos.toXml());
+         if (passwd != null) {
+            Log.warn(ME, "No security Plugin. Switched back to the old login scheme!");
+            xmlBlaster = authServer.login(loginName, passwd, loginQos.toXml(LoginQosWrapper.EXCLUDE_SECURITY));
+         }
+         else {
+            String retQoS = authServer.init(loginQos.toXml());
+            InitResultQoSWrapper wrapper = new InitResultQoSWrapper(retQoS);
+            sessionId = wrapper.getSessionId();
+            String xmlBlasterIOR = wrapper.getXmlBlasterIOR();
+
+            xmlBlaster = ServerHelper.narrow(orb.string_to_object(xmlBlasterIOR));
+         }
          if (Log.TRACE) Log.trace(ME, "Success, login for " + loginName);
          if (Log.DUMP) Log.dump(ME, loginQos.toXml());
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
@@ -474,7 +553,12 @@ public class CorbaConnection implements I_XmlBlasterConnection
       }
 
       try {
-         authServer.logout(xmlBlaster);
+         if(sessionId==null) {
+            authServer.logout(xmlBlaster);
+         }
+         else {
+            authServer.disconnect(sessionId,""); // secPlgn.exportMessage(""));
+         }
          shutdown(); // the callback server
          // Thread leak !!!
          // orb.shutdown(true);
@@ -651,6 +735,8 @@ public class CorbaConnection implements I_XmlBlasterConnection
    public final String[] erase(String xmlKey, String qos) throws XmlBlasterException, ConnectionException
    {
       if (Log.CALL) Log.call(ME, "erase() ...");
+      if (xmlKey==null) xmlKey = "";
+      if (qos==null) qos = "";
       try {
          return getXmlBlaster().erase(xmlKey, qos);
       } catch(org.xmlBlaster.protocol.corba.serverIdl.XmlBlasterException e) {
@@ -676,7 +762,6 @@ public class CorbaConnection implements I_XmlBlasterConnection
          throw new ConnectionException(ME+".InvokeError", e.toString());
       }
    }
-
 
    /**
     * Check server.

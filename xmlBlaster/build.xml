@@ -404,8 +404,11 @@ Else add it manually.
          <fileset dir="${lib.dir}" includes="${name}.jar,demo.jar,testsuite.jar,${name}-${version}.jar,xmlBlasterK2.rar,JmsAdapter.jar"/>
       </delete>
 
-      <!-- delete>
+      <delete>
          <fileset dir="${build.dir}"/>
+      </delete>
+
+      <!-- delete>
          <fileset dir="${classes.dir}/org"/>
          <fileset dir="${classes.dir}/html"/>
          <fileset dir="${classes.dir}/javaclients"/>
@@ -413,7 +416,7 @@ Else add it manually.
          <fileset dir="${classes.dir}/doc"/>
          <fileset dir="${classes.dir}" includes="DomQueryTest.class"/>
          <fileset dir="${classes.dir}" includes="XtOmQueryTest.class"/>
-         // <fileset dir="${req.dir}" includes="*.class"/>
+         <fileset dir="${req.dir}" includes="*.class"/>
          <fileset dir="${classes.webinf.dir}/org"/>
          <fileset dir="${classes.webinf.dir}/html"/>
          <fileset dir="${lib.dir}" includes="${name}.jar,demo.jar,testsuite.jar,${name}-${version}.jar,xmlBlasterK2.rar,JmsAdapter.jar"/>

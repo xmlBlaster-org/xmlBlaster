@@ -13,7 +13,7 @@ Compile:   JacORB Java 1.2:
            COPE Perl:
               idl2perl -imp xmlBlaster.idl
 Author:    ruff@swand.lake.de
-Version:   $Id: xmlBlaster.idl,v 1.1 2000/06/25 18:29:18 ruff Exp $
+Version:   $Id: xmlBlaster.idl,v 1.2 2001/08/19 23:07:54 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #ifndef _xmlBlaster_IDL_
@@ -310,28 +310,60 @@ module authenticateIdl
        * <p>
        * This is a factory for server interfaces
        *
+       * @deprecated      {@link #init(in serverIdl::XmlType)}
        * @param loginName A unique name
        * @param passwd    Password - Not yet necessary
-       * @param qos       Quality of Service, flags for additional client informations
-       *                  like client certificate (X.509), timeout etc.
-       *                  Typically it contains the IOR reference to the BlasterCallback
-       *                  interface or other protocol addresses like email or http URL
+       * @param qos       Quality of Service, flags for additional client
+       *                  information like client certificate (X.509), timeout etc.
+       *                  Typically it contains the IOR reference to the
+       *                  BlasterCallback interface or other protocol addresses
+       *                  like email or http URL
        *
        * @see             xmlBlaster/src/dtd/XmlQoS.xml and dtd for qos examples
-       * @return if the login is successful, the xmlBlaster server interface is returned
-       * @exception if the login fails
+       * @return          if the login is successful, the xmlBlaster server
+       *                  interface is returned
+       * @exception XmlBlasterException if the login fails
        */
       serverIdl::Server login(in string loginName, in string passwd,
                               in serverIdl::XmlType qosClient)
                               raises (serverIdl::XmlBlasterException);
 
+      /**
+       * Initializes a new xmlBlaster session. (Successor of login( ... ); )
+       * <p>
+       * @param qos       Quality of Service, flags for additional client
+       *                  information like client certificate (X.509), timeout etc.
+       *                  Typically it contains the IOR reference to the
+       *                  BlasterCallback interface or other protocol addresses
+       *                  like email or http URL
+       * @return qos      information like sessionId, keys, ...
+       * @exception XmlBlasterException if the login fails
+       * @see             xmlBlaster/src/dtd/XmlQoS.xml and dtd for qos examples
+       */
+      serverIdl::XmlType init(in serverIdl::XmlType qos)
+                              raises (serverIdl::XmlBlasterException);
 
       /**
        * Logout from server
        *
-       * @param The server interface handle from the login() method
+       * @deprecated      {@link disconnect(in serverIdl::XmlType) }
+       * @param xmlBlaster The server interface handle from the login() method
+       * @see #disconnect(in serverIdl::XmlType)
        */
-      void logout(in serverIdl::Server xmlBlaster) raises (serverIdl::XmlBlasterException);
+      void logout(in serverIdl::Server xmlBlaster)
+                  raises (serverIdl::XmlBlasterException);
+
+      /**
+       * Disconnects the client from the xmlBlaster and closes the session.
+       * <br>(Counterpart of init( ... ); )
+       * <p>
+       * @deprecated      Replaced by disconnect(in serverIdl::XmlType qosDisconnect
+       * @param sessionId The server interface handle returned in the init qos.
+       * @param qos       An optional signature etc.
+       */
+      void disconnect(in string sessionId, in serverIdl::XmlType qos)
+                      raises (serverIdl::XmlBlasterException);
+
    };
 
 
