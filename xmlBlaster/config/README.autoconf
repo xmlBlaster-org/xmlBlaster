@@ -1,0 +1,27 @@
+The xmlBlaster-autoconf.tar.gz is a autoconf patch for the CVS tree to let us
+use the gnu auto-tools.  
+
+What 'configure' does:
+    It will configure the CVS tree to build all the java files into 
+    class files and make the jar file (xmlBlaster.jar) placing the final
+    jar file in $XMLBLASTER_HOME/lib
+    
+What 'configure' does not:
+    It does not build anything other than java files yet.  No C++ files,
+    no javadoc, and I doubt 'make install' will do anything useful.
+
+To try it out:
+    cd $XMLBLASTER_HOME
+    gunzip < config/xmlBlaster-autoconf.tar.gz | tar xvf -
+    configure
+        (if you do not have $JAVA_HOME set, you can specify the configure
+         option --with-jdk-home=DIR)
+    gmake
+    
+To get rid of it:
+    gmake clean
+    find . -name Makefile\* -exec rm -f {} \;
+    rm config.* configure.in configure install-sh missing mkinstalldirs *.m4
+    cvs update
+
+If you have errors please let me know: coryb@csd.sgi.com
