@@ -49,7 +49,7 @@
      <h2>Online demo</h2>
      <p>
      If your mobile supports MIDlets, try it online with this URL:
-     <code>http://www.xmlblaster.org/xmlBlaster/demo/j2me/SystemInfo.jad</code>
+     <code>http://www.xmlblaster.org:8080/xmlBlaster/j2me/SystemInfo.jad</code>
      </p>
    </description>
 
@@ -66,8 +66,8 @@
    If you have access to an embedded device which supports j2me (and more precisely CLDC-1.1 and
    MIDP-2.0 profile) you can download the precompiled demo application directly from the xmlBlaster server:<br/>
    <ul>
-     <li><a href="http://www.xmlBlaster.org/xmlBlaster/demo/j2me/SystemInfo.jad">SystemInfo.jad</a></li>
-     <li><a href="http://www.xmlBlaster.org/xmlBlaster/demo/j2me/SystemInfo.jar">SystemInfo.jar</a></li>
+     <li><a href="http://www.xmlblaster.org:8080/xmlBlaster/j2me/SystemInfo.jad">SystemInfo.jad</a></li>
+     <li><a href="http://www.xmlblaster.org:8080/xmlBlaster/j2me/SystemInfo.jar">SystemInfo.jar</a></li>
    </ul>
    </p>
    And you can then run the application (check/adjust the URL in SystemInfo.jad before).
@@ -167,7 +167,7 @@ servletUrl: <font color="red">http://localhost:8080/xmlBlaster/AppletServlet</fo
    </p>
    <pre>
    mkdir $TOMCAT_HOME/webapps/xmlBlaster/j2me
-   cp xmlBlaster/demo/j2me/SystemInfo.ja? $TOMCAT_HOME/webapps/xmlBlaster/j2me
+   cp ${XMLBLASTER_HOME}/demo/j2me/SystemInfo.ja? $TOMCAT_HOME/webapps/xmlBlaster/j2me
    </pre>
 
    <h2>
@@ -228,7 +228,7 @@ AddType application/java-archive .jar
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:laghi@swissinfo.org">Michele Laghi</a></author>
    <date>2004 04 01</date>
-   <revision>$Revision: 1.9 $</revision>
+   <revision>$Revision: 1.10 $</revision>
 
    <testcase status="OPEN">
       <name>-</name>
