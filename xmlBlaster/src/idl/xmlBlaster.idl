@@ -11,7 +11,7 @@ Compile:   JacORB:
              /usr/local/vbroker/bin/idl2java -root_dir ${XMLBLASTER_HOME}/src/java xmlBlaster.idl
            Mico:
              /usr/local/mico/bin/idl --poa --no-boa xmlBlaster.idl
-Version:   $Id: xmlBlaster.idl,v 1.15 1999/11/16 18:57:38 ruff Exp $
+Version:   $Id: xmlBlaster.idl,v 1.16 1999/11/16 19:00:00 ruff Exp $
 ================================================================================
 */
 
@@ -42,6 +42,8 @@ module serverIdl
     *
     * @param xmlKey  Unique message key with index attributes
     * @param content The data itself (XML data, java objects, jpeg pictures ...)
+    *
+    * @see onMessage() method in JMS
     */
    struct MessageUnit {
       XmlType xmlKey;
@@ -75,7 +77,7 @@ module clientIdl
    interface BlasterCallback
    {
       /**
-       * This update is invoked when the server calls back to the client. 
+       * This update is invoked when the server calls back to the client.
        *
        * oneway is choosen because of:
        *
@@ -179,6 +181,9 @@ module serverIdl
        * @param qos     Quality of Service, flags to control subscritpion<br>
        *                See qosSubscribe.dtd for a description
        *                HACK: Specify the ClientCallback String IOR here!!!
+       *
+       * @see addListener in Java event model
+       * @see addObserver in Java observer pattern
        */
       //oneway
       void subscribe(in XmlType xmlKey, in XmlType qos)
