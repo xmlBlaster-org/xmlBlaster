@@ -25,6 +25,7 @@ namespace org { namespace xmlBlaster { namespace util { namespace parser {
  * To get a reference to the singleton instance you must invoke getFactory(...).
  */
 class Dll_Export ParserFactory {
+   friend class Sax2Parser; // g++ 2.95.3 warning: `class org::xmlBlaster::util::parser::ParserFactory' only defines private constructors and has no friends
 
    private:
    const std::string ME;
