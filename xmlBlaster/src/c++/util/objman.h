@@ -29,7 +29,7 @@ extern "C"
   void object_manager_cleanup();
 };
 
-//namespace org { namespace xmlBlaster { namespace util {
+namespace org { namespace xmlBlaster { namespace util {
 
 class Cleanup_Adaptor
 {
@@ -200,7 +200,7 @@ private:
   static managed_list managed_objects_list_;
 };
 
-//}}}; //namespace
+}}}; //namespace
 
 #endif
 

@@ -8,6 +8,8 @@ using namespace org::xmlBlaster::client::protocol;
 using namespace org::xmlBlaster::util::dispatch;
 using namespace org::xmlBlaster::util;
 
+namespace org { namespace xmlBlaster { namespace util {
+
 #define PREALLOCATE_OBJECT(TYPE, ID)\
 {\
   TYPE* t = new TYPE;\
@@ -128,4 +130,4 @@ int Object_Lifetime_Manager::shutdown ()
   return 0;
 }
 
-//}}}; // namespace
+}}}; // namespace
