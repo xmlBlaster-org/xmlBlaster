@@ -2,6 +2,7 @@
   
 Changes for 0.77 [?, 2000]
 ===============================
+   - Bugfix in CorbaConnection.java: Cleanup for Callback server added.
 
    - Changed XML parser to jaxp 1.0.1 and added servlet support
 	  to xtdash.jar (from original xt.jar).
