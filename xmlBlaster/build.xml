@@ -151,6 +151,7 @@ TODO
    <property name="cpp.debug" value="true" />
    <property name="chmod.fail" value="true" />
 
+   <property name="CPP_LINK" value="shared"/>  <!-- link a shared (DLL) C++ client library xmlBlaster/lib/libxmlBlaster.so -->
    <property name="src.cpp.dir" value="./src/c++"/>
    <property name="CORBACPP_VER" value=""/> <!-- 2.3.7 -->
    <property name="CORBACPP_HOME" value="/opt/ACE_wrappers/TAO"/> <!-- /opt/local/mico -->
@@ -158,6 +159,7 @@ TODO
    <property name="XMLCPP_HOME" value="/opt/local/xerces-c-src${XMLCPP_VER}"/>
    <property name="thread.impl" value="OMNITHREAD" /> <!-- Default setting is OMNITHREAD -->
    <property name="corba.product" value="TAO" /> <!-- Setting default CORBA to "TAO" -->
+   <property name="ORBIX_LIBS" value="it_art,it_ifc,it_naming,it_poa" /> <!-- The necessary libs for ORBIX C++ clients -->
 
    <compiler id="base-msvc" name="msvc" if="use-msvc">
       <defineset><define name="_WINDOWS" value="1" /></defineset>
@@ -223,8 +225,8 @@ TODO
    </compiler>
 
   <compiler id="CC" name="CC" if="use-CC"> <!-- SunOS 5.8 C++ 5.3 -->
-    <compilerarg value="-Kpic"/>
-    <compilerarg value="-Bdynamic"/>
+    <!-- compilerarg value="-Kpic"/ -->  <!-- defaults to -KPIC (-xcode=pic32) for CC -->
+    <!-- compilerarg value="-Bdynamic"/ --> <!-- is default for CC -->
   </compiler>
 
 
@@ -1460,7 +1462,8 @@ TODO
       <!-- Below we exclude Global.cpp from compilation and compile Global_CopyByAnt.cpp with the current version etc. instead -->
       <copy file="${src.cpp.dir}/util/Global.cpp" tofile="${src.cpp.dir}/util/Global_CopyByAnt.cpp" filtering="true" overwrite="true" />
 
-      <cc debug="${cpp.debug}" link="shared"
+      <!-- CPP_LINK==shared links a shared library xmlBlaster/lib/libxmlBlaster.so -->
+      <cc debug="${cpp.debug}" link="${CPP_LINK}"
           outfile="${lib.dir}/xmlBlasterClient" objdir="${build.dir}/obj"
           multithreaded="true" exceptions="true">
          <compiler refid="gcc"/>
@@ -1533,7 +1536,7 @@ TODO
             <syslibset libs="ws2_32" if="MICO,windows" />
 
             <!-- ORBIX -->
-            <libset dir="${CORBACPP_HOME}/asp/${CORBACPP_VER}/lib" libs="it_art,it_dynany,it_event,it_event_psk,it_genie,it_ifc,it_lease,it_load_balancing,it_location,it_message_routing,it_message_routing_psk,it_naming,it_naming_admin,it_notify,it_notify_psk,it_ots,it_ots_psk,it_poa,it_portable_interceptor,it_pss,it_pss_r,it_trader,it_trader_psk,it_xa" if="ORBIX" />
+            <libset dir="${CORBACPP_HOME}/asp/${CORBACPP_VER}/lib" libs="${ORBIX_LIBS}" if="ORBIX" />
 
             <!-- XERCES XML parser -->
             <libset dir="${XMLCPP_HOME}/lib" libs="xerces-c${XMLCPP_VER}" if="windows" />
@@ -1651,7 +1654,7 @@ TODO
             <libset dir="${CORBACPP_HOME}/lib" libs="mico${CORBACPP_VER},micocoss${CORBACPP_VER}" if="MICO" />
 
             <!-- ORBIX -->
-            <libset dir="${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/lib" libs="it_art,it_dynany,it_event,it_event_psk,it_genie,it_ifc,it_lease,it_load_balancing,it_location,it_message_routing,it_message_routing_psk,it_naming,it_naming_admin,it_notify,it_notify_psk,it_ots,it_ots_psk,it_poa,it_portable_interceptor,it_pss,it_pss_r,it_trader,it_trader_psk,it_xa" if="ORBIX" />
+            <libset dir="${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/lib" libs="${ORBIX_LIBS}" if="ORBIX" />
 
             <!-- XERCES XML parser -->
             <libset dir="${XMLCPP_HOME}/lib" libs="xerces-c${XMLCPP_VER}" />
@@ -1678,7 +1681,7 @@ TODO
             <libset dir="${CORBACPP_HOME}/win32-bin/lib" libs="mico${CORBACPP_VER},micocoss${CORBACPP_VER}" if="MICO,windows" />
 
             <!-- ORBIX -->
-            <libset dir="${CORBACPP_HOME}/asp/${CORBACPP_VER}/lib" libs="it_art,it_dynany,it_event,it_event_psk,it_genie,it_ifc,it_lease,it_load_balancing,it_location,it_message_routing,it_message_routing_psk,it_naming,it_naming_admin,it_notify,it_notify_psk,it_ots,it_ots_psk,it_poa,it_portable_interceptor,it_pss,it_pss_r,it_trader,it_trader_psk,it_xa" if="ORBIX" />
+            <libset dir="${CORBACPP_HOME}/asp/${CORBACPP_VER}/lib" libs="${ORBIX_LIBS}" if="ORBIX" />
 
             <!-- XERCES XML parser -->
             <libset dir="${XMLCPP_HOME}/lib" libs="xerces-c${XMLCPP_VER}" if="windows" />
@@ -1689,9 +1692,11 @@ TODO
 
          <linker name="bcc"  if="use-bcc" />
 
-         <linker name="CC">
+         <linker name="CC"> <!-- SunOS -->
+            <!-- purify CC -i -ldl -lpthread -lsocket -lposix4 -lnsl ... -->
+
             <!-- ORBIX -->
-            <libset dir="${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/lib" libs="it_art,it_dynany,it_event,it_event_psk,it_genie,it_ifc,it_lease,it_load_balancing,it_location,it_message_routing,it_message_routing_psk,it_naming,it_naming_admin,it_notify,it_notify_psk,it_ots,it_ots_psk,it_poa,it_portable_interceptor,it_pss,it_pss_r,it_trader,it_trader_psk,it_xa" if="ORBIX" />
+            <libset dir="${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/lib" libs="${ORBIX_LIBS}" if="ORBIX" />
 
             <!-- XERCES XML parser -->
             <libset dir="${XMLCPP_HOME}/lib" libs="xerces-c${XMLCPP_VER}" />
@@ -1701,11 +1706,12 @@ TODO
 
             <linkerarg value="-i"/>
             <linkerarg value="-lpthread"/>
-            <linkerarg value="-L${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/lib" if="ORBIX" />
-            <linkerarg value="-L${XMLCPP_HOME}/lib" />
-            <linkerarg value="-L${lib.dir.absolute}" />
+            <!-- linkerarg value="-L${CORBACPP_HOME}/${CORBACPP_VER}/${CXX}/lib" if="ORBIX" / -->
+            <!-- linkerarg value="-L${XMLCPP_HOME}/lib" / -->
+            <!-- linkerarg value="-L${lib.dir.absolute}" / -->
             <linkerarg value="-L${CORBACPP_HOME}/shlib/posix" if="ORBIX" />
-            <linkerarg value="-R ${CORBACPP_HOME}/shlib:${CORBACPP_HOME}/shlib/posix:/data/xmlBlaster/orbix_build:${XMLCPP_HOME}/lib" if="ORBIX" />
+            <!-- Burn .so path into executables: -->
+            <linkerarg value="-R ${CORBACPP_HOME}/shlib:${CORBACPP_HOME}/shlib/posix:${lib.dir.absolute}:${XMLCPP_HOME}/lib" if="ORBIX" />
 
             <syslibset dir="/lib" libs="dl" />
          </linker>
