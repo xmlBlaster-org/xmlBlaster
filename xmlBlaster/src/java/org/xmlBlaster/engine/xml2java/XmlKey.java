@@ -270,7 +270,7 @@ public final class XmlKey
     */
    public org.w3c.dom.Node getRootNode() throws XmlBlasterException {
       loadDomTree();
-      return xmlToDom.getRootNode();
+      return this.xmlToDom.getRootNode();
    }
 
    /**
@@ -278,21 +278,24 @@ public final class XmlKey
     */
    public org.w3c.dom.Document getXmlDoc() throws XmlBlasterException {
       loadDomTree();
-      return xmlToDom.getXmlDoc();
+      return this.xmlToDom.getXmlDoc();
    }
 
    /**
     * Fills the DOM tree, and assures that a valid <pre>&lt;key oid="..."></pre> is used.
     */
    private synchronized void loadDomTree() throws XmlBlasterException {
-      if (xmlToDom != null)
+      if (this.xmlToDom != null)
          return;       // DOM tree is already loaded
 
       if (keyType == ASCII_TYPE)
          return;       // no XML -> no DOM
 
-      xmlToDom = new XmlToDom(glob, this.keyData.toXml());
-      org.w3c.dom.Node node = xmlToDom.getRootNode();
+      this.xmlToDom = new XmlToDom(glob, this.keyData.toXml());
+      org.w3c.dom.Node node = this.xmlToDom.getRootNode();
+
+      //log.error(ME, "DEBUG ONLY: Doing DOM parse");
+      //Thread.currentThread().dumpStack();
 
       // Finds the <key oid="..." queryType="..."> attributes, or inserts a unique oid if empty
       if (node == null) {
@@ -340,7 +343,7 @@ public final class XmlKey
     */
    public final void mergeRootNode(I_MergeDomNode merger) throws XmlBlasterException {
       loadDomTree();
-      xmlToDom.mergeRootNode(merger);
+      this.xmlToDom.mergeRootNode(merger);
    }
 
    /**
@@ -381,7 +384,9 @@ public final class XmlKey
    }
 
    /**
-    * We need this to allow checking if an existing XPath subscription matches this new message type.
+    * We need this to allow checking if an existing XPath subscription matches this new message type. 
+    * <p/>
+    * Note that we manipulate the XML key and add a surrounding root node &lt;xmlBlaster>
     * @param xpath The XPath query, check if it matches to this xmlKey
     * @return true if this message meta data matches the XPath query
     */
@@ -389,6 +394,7 @@ public final class XmlKey
       String xmlKey_literal = this.keyData.toXml();
       if (xmlKeyDoc == null) {
          try {
+            //log.error(ME, "DEBUG ONLY: Creating tiny DOM tree and a query manager ...");
             if (log.TRACE) log.trace(ME, "Creating tiny DOM tree and a query manager ...");
             // Add the <xmlBlaster> root element ...
             String tmp = StringHelper.replaceFirst(xmlKey_literal, "<key", "<xmlBlaster><key") + "</xmlBlaster>";
