@@ -637,7 +637,8 @@ Else add it manually.
   <!-- =================================================================== -->
    <target name="clean">
       <delete dir="${build.dir}"/>
-      <delete>
+      <delete dir=".c_dependency_cache"/>
+      <delete includeEmptyDirs="true">
          <fileset dir="${lib.dir}" includes="${name}.jar,demo.jar,testsuite.jar,${name}-${version}.jar,xmlBlasterK2.rar,JmsAdapter.jar"/>
          <!-- fileset dir="${req.dir}" includes="*.class"/ -->
          <fileset dir="${src.cpp.dir}/generated" includes="*.o, *.cc, *.cpp, *.h"/>
