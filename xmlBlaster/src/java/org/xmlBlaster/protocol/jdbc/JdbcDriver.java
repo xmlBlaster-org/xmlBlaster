@@ -3,7 +3,7 @@ Name:      JdbcDriver.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   JdbcDriver class to invoke the xmlBlaster server in the same JVM.
-Version:   $Id: JdbcDriver.java,v 1.42 2003/03/26 08:19:29 ruff Exp $
+Version:   $Id: JdbcDriver.java,v 1.43 2003/04/03 09:04:17 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol.jdbc;
 
@@ -52,7 +52,7 @@ public class JdbcDriver implements I_Driver, I_Publish
    /** The authentication session identifier */
    private String sessionId = null;
    /** JDBC connection pooling, a pool for every user */
-   private static NamedConnectionPool namedPool = null;
+   private NamedConnectionPool namedPool = null;
    /** key under which my callback is registered */
    private String cbRegistrationKey = null;
 
