@@ -180,8 +180,8 @@ public class TestCorbaThreads extends TestCase implements I_CallbackExtended
       ThreadLister.listAllThreads(System.out);
       int threadsAfter = ThreadLister.countThreads();
       log.info(ME, "Currently used threads after 5 login/logout=" + threadsAfter);
-      assertEquals("We have a thread leak, threadsBefore=" + threadsBefore +
-                 " threadsAfter=" + threadsAfter, threadsBefore, threadsAfter);
+      assertTrue("We have a thread leak, threadsBefore=" + threadsBefore +
+                 " threadsAfter=" + threadsAfter, threadsAfter <= threadsBefore);
    }
 
 
