@@ -177,7 +177,7 @@ public class CallbackSocketDriver implements I_CallbackDriver /* which extends I
     * @return true if the plugin is still alive, false otherwise
     */
    public boolean isAlive() {
-      return this.handler != null;
+      return this.handler != null && !this.handler.isShutdown();
    }
 
 
