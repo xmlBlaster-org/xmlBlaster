@@ -76,7 +76,7 @@ static bool initConnection(XmlBlasterAccessUnparsed *xb, int argc, char** argv)
 
    char serverHostName[256];
 
-# if WIN32
+#  ifdef _WINDOWS
    WORD wVersionRequested;
    WSADATA wsaData;
    int err;
@@ -114,7 +114,7 @@ static bool initConnection(XmlBlasterAccessUnparsed *xb, int argc, char** argv)
    memset((char *)&xmlBlasterAddr, 0, sizeof(xmlBlasterAddr));
    xmlBlasterAddr.sin_family=AF_INET;
 
-# if WIN32_NOT_YET_PORTED // Windows gethostbyname is deprecated
+# if _WINDOWS_NOT_YET_PORTED // Windows gethostbyname is deprecated
    const struct addrinfo hints;
    struct addrinfo** res;
    int getaddrinfo(serverHostName, servTcpPort, &hints, res);
@@ -133,7 +133,7 @@ static bool initConnection(XmlBlasterAccessUnparsed *xb, int argc, char** argv)
          xmlBlasterAddr.sin_port = portP->s_port;
       else
          xmlBlasterAddr.sin_port = htons(atoi(servTcpPort));
-      xb->socketToXmlBlaster = socket(AF_INET, SOCK_STREAM, 0);
+      xb->socketToXmlBlaster = (int)socket(AF_INET, SOCK_STREAM, 0);
       if (xb->socketToXmlBlaster != -1) {
          int ret=0;
          if ((ret=connect(xb->socketToXmlBlaster, (struct sockaddr *)&xmlBlasterAddr, sizeof(xmlBlasterAddr))) != -1) {
@@ -310,7 +310,8 @@ static bool getResponse(XmlBlasterAccessUnparsed *xb, ResponseHolder *responseHo
    memset(responseHolder, 0, sizeof(ResponseHolder));
 
    // read the first 10 bytes to determine the length
-   numRead = recv(xb->socketToXmlBlaster, msgLenPtr, MSG_LEN_FIELD_LEN, 0);
+   //numRead = recv(xb->socketToXmlBlaster, msgLenPtr, MSG_LEN_FIELD_LEN, 0);
+   numRead = readn(xb->socketToXmlBlaster, msgLenPtr, MSG_LEN_FIELD_LEN);
    if (numRead != MSG_LEN_FIELD_LEN) {
       strncpy0(exception->errorCode, "user.connect", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       sprintf(exception->message, "xmlBlasterClient: ERROR Received numRead=%d header bytes but expected %d", numRead, MSG_LEN_FIELD_LEN);
@@ -324,7 +325,8 @@ static bool getResponse(XmlBlasterAccessUnparsed *xb, ResponseHolder *responseHo
    // read the complete message
    rawMsg = (char *)calloc(responseHolder->msgLen, sizeof(char));
    memcpy(rawMsg, msgLenPtr, MSG_LEN_FIELD_LEN);
-   numRead = recv(xb->socketToXmlBlaster, rawMsg+MSG_LEN_FIELD_LEN, (int)responseHolder->msgLen-MSG_LEN_FIELD_LEN, 0);
+   //numRead = recv(xb->socketToXmlBlaster, rawMsg+MSG_LEN_FIELD_LEN, (int)responseHolder->msgLen-MSG_LEN_FIELD_LEN, 0);
+   numRead = readn(xb->socketToXmlBlaster, rawMsg+MSG_LEN_FIELD_LEN, (int)responseHolder->msgLen-MSG_LEN_FIELD_LEN);
    if (numRead != (responseHolder->msgLen-MSG_LEN_FIELD_LEN)) {
       strncpy0(exception->errorCode, "user.response", XMLBLASTEREXCEPTION_ERRORCODE_LEN);
       sprintf(exception->message, "xmlBlasterClient: ERROR Received numRead=%d message bytes but expected %u", numRead, (responseHolder->msgLen-MSG_LEN_FIELD_LEN));

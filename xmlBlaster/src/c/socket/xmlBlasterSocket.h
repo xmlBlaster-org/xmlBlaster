@@ -64,7 +64,7 @@ enum XMLBLASTER_MSG_TYPE_ENUM {
 #define XMLBLASTER_VERSION 49
 
 
-extern int readn(int fd, char *ptr, int nbytes);
+extern size_t readn(int fd, char *ptr, size_t nbytes);
 extern int getLength(char *data);
 extern int isListening();
 extern void shutdownCallbackServer();

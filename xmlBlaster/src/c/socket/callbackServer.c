@@ -13,22 +13,21 @@ Compile:   gcc -Wall -DUSE_MAIN -o callbackServer callbackServer.c
 
 #define NSTRS       3           /* no. of strings  */
 
-# if WIN32
-static SOCKET sock_fd = -1;
-# else
+#ifdef _WINDOWS
+#	define socklen_t int
+#endif
 static int sock_fd = -1;
-# endif
 
 /**
  * Read the given amount of bytes
  * @return number of bytes read
  */
-int readn(int fd, char *ptr, int nbytes)
+size_t readn(int fd, char *ptr, size_t nbytes)
 {
-   int nleft, nread;
+   size_t nleft, nread;
    nleft = nbytes;
    while(nleft > 0) {
-      nread = recv(fd, ptr, nleft, 0);
+      nread = recv(fd, ptr, (int)nleft, 0);
       if (nread < 0)
          return nread; /* error, return < 0 */
       else if (nread == 0)
@@ -45,11 +44,7 @@ int readn(int fd, char *ptr, int nbytes)
  */
 void initCallbackServer(callbackData *cbArgs)
 {
-#  if WIN32
-   SOCKET ns;
-#  else
    int ns;
-#  endif
    int keyLen, qosLen;
    socklen_t cli_len;
    char *pp;
@@ -58,7 +53,7 @@ void initCallbackServer(callbackData *cbArgs)
    struct sockaddr_in serv_addr, cli_addr;
    char msgLengthP[MSG_LEN_FIELD_LEN+1];
    char msgFlagP[MSG_FLAG_FIELD_LEN+1];
-   int numRead, msgLength;
+   size_t numRead, msgLength;
    MsgUnit messageUnit;
 
    char serverHostName[256];
@@ -72,7 +67,7 @@ void initCallbackServer(callbackData *cbArgs)
    /*
     * Get a socket to work with.
     */
-   if ((sock_fd = socket(AF_INET, SOCK_STREAM, 0)) < 0) {
+   if ((sock_fd = (int)socket(AF_INET, SOCK_STREAM, 0)) < 0) {
        perror("callbackServer: socket");
        return;
    }
@@ -109,7 +104,7 @@ void initCallbackServer(callbackData *cbArgs)
     * contain the address of the client.
     */
    cli_len = (socklen_t)sizeof(cli_addr);
-   if ((ns = accept(sock_fd, (struct sockaddr *)&cli_addr, &cli_len)) < 0) {
+   if ((ns = (int)accept(sock_fd, (struct sockaddr *)&cli_addr, &cli_len)) < 0) {
        perror("callbackServer: accept");
        return;
    }
@@ -120,11 +115,7 @@ void initCallbackServer(callbackData *cbArgs)
        * Then we read callback messages ...
        * The first 10 bytes are the message length (as a string)
        */
-#          ifdef WIN32
-      numRead = recv(ns, msgLengthP, MSG_LEN_FIELD_LEN, 0);
-#     else
       numRead = readn(ns, msgLengthP, MSG_LEN_FIELD_LEN);
-#     endif
       if (numRead != MSG_LEN_FIELD_LEN) {
          if (XMLBLASTER_DEBUG) printf("callbackServer: ERROR Callback data 'length' from xmlBlaster is corrupted");
          return;
@@ -191,7 +182,7 @@ int isListening()
 void shutdownCallbackServer()
 {
    if (isListening()) {
-#  ifdef WIN32
+#  ifdef _WINDOWS
       closesocket(sock_fd);
 #  else
       close(sock_fd);

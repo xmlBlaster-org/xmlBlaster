@@ -35,7 +35,7 @@ cd xmlBlaster/demo/c/socket   (see client.c)
 
 Linux:    gcc -Wall -g -Isocket -I. -o client *.c socket/*.c -lpthread
 
-Windows:  cl /MT /W3 /Wp64 -D_WINDOWS client.c msgUtil.c socket\*.c ws2_32.lib
+Windows:  cl /MT /W3 /Wp64 -D_WINDOWS -I. client.c msgUtil.c socket\*.c ws2_32.lib
 
 
 Now start xmlBlaster:

@@ -37,11 +37,7 @@ typedef bool  ( * IsConnected)(XmlBlasterAccessUnparsed *xb);
  * All client access to xmlBlaster goes over this struct and its function pointers. 
  */
 struct XmlBlasterAccessUnparsedStruct {
-#  if WIN32
-      SOCKET socketToXmlBlaster;
-#  else
-      int socketToXmlBlaster;
-#  endif
+   int socketToXmlBlaster;
    long requestId;
    char secretSessionId[MAX_SECRETSESSIONID_LEN];
    bool isInitialized;

@@ -14,10 +14,10 @@ Date:      05/2003
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
-#include <unistd.h>
 #include <sys/types.h>
 #ifdef _WINDOWS
 #else
+#  include <unistd.h>
 #  include <pthread.h>
 #endif
 #include "xmlBlasterAccessUnparsed.h"
