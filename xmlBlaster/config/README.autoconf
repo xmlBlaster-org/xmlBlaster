@@ -1,10 +1,10 @@
 The xmlBlaster-autoconf.tar.gz is a autoconf patch for the CVS tree to let us
-use the gnu auto-tools.  
+test the gnu auto-tools.  
 
 What 'configure' does:
     It will configure the CVS tree to build all the java files into 
-    class files and make the jar file (xmlBlaster.jar) placing the final
-    jar file in $XMLBLASTER_HOME/lib
+    class files (under the classes directory) and make the jar file (
+    xmlBlaster.jar) placing the final jar file in $XMLBLASTER_HOME/lib
     
 What 'configure' does not:
     It does not build anything other than java files yet.  No C++ files,
