@@ -122,7 +122,7 @@ public final class PriorityEnum implements java.io.Serializable
    }
 
    /**
-    * The minimum priority of a message (0).
+    * The minimum priority of a message (0 or MIN).
     */
    public static final PriorityEnum MIN_PRIORITY = new PriorityEnum(0);
 
@@ -137,7 +137,7 @@ public final class PriorityEnum implements java.io.Serializable
    public static final PriorityEnum MIN2_PRIORITY = new PriorityEnum(2);
 
    /**
-    * The lower priority of a message (3).
+    * The lower priority of a message (3 or LOW).
     */
    public static final PriorityEnum LOW_PRIORITY = new PriorityEnum(3);
 
@@ -147,7 +147,7 @@ public final class PriorityEnum implements java.io.Serializable
    public static final PriorityEnum LOW4_PRIORITY = new PriorityEnum(4);
 
    /**
-    * The default priority of a message (5).
+    * The default priority of a message (5 or NORM).
     */
    public static final PriorityEnum NORM_PRIORITY = new PriorityEnum(5);
 
@@ -157,7 +157,7 @@ public final class PriorityEnum implements java.io.Serializable
    public static final PriorityEnum NORM6_PRIORITY = new PriorityEnum(6);
 
    /**
-    * The higher priority of a message (7).
+    * The higher priority of a message (7 or HIGH).
     */
    public static final PriorityEnum HIGH_PRIORITY = new PriorityEnum(7);
 
@@ -167,7 +167,7 @@ public final class PriorityEnum implements java.io.Serializable
    public static final PriorityEnum HIGH8_PRIORITY = new PriorityEnum(8);
 
    /**
-    * The maximum priority of a message (9).
+    * The maximum priority of a message (9 or MAX).
     */
    public static final PriorityEnum MAX_PRIORITY = new PriorityEnum(9);
 
