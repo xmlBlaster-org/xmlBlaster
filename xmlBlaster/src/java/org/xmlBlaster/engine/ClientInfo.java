@@ -255,9 +255,8 @@ public class ClientInfo
       StringBuffer buf = new StringBuffer();
       buf.append("\n<qos>\n");
 
-      buf.append("   <state>");  // !!! not yet supported
-      buf.append("      OK");    // OK | EXPIRED | ERASED
-      buf.append("   </state>");
+      // OK | EXPIRED | ERASED !!! not yet supported
+      buf.append("   <state>").append("OK").append("</state>\n");
 
       if (msgUnitWrapper != null) {
          buf.append("   <sender>\n");
@@ -269,10 +268,12 @@ public class ClientInfo
          buf.append("      ").append(subscriptionId);
          buf.append("\n   </subscriptionId>\n");
       }
+      buf.append("   ").append(msgUnitWrapper.getXmlRcvTimestamp()).append("\n");
       if (max > 0) {
          buf.append("   <queue index='").append(index).append("' size='").append(max).append("'>\n");
          buf.append("   </queue>\n");
       }
+
 
 // wkl to be implemented
 // append information of the server userSession etc.
