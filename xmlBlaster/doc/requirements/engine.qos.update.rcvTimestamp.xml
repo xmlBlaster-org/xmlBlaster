@@ -1,0 +1,46 @@
+<?xml version='1.0' encoding='ISO-8859-1' ?>
+<!DOCTYPE requirement SYSTEM "requirement.dtd">
+
+<requirement id='engine.qos.update.rcvTimestamp' type='NEW' prio='LOW' status="CLOSED">
+   <topic>XmlBlaster sends the creation date of a message in the qos arguments of an update</topic>
+   <description>
+      The timestamp when the latest modification (or creation) of a
+      message occurred is timestamped by the xmlBlaster server. This
+      is typically done when a publish() call enters the server.
+      This timstamp is delivered in the qos argument of the update.
+      The value is the amount of time in milliseconds elapsed since midnight, January 1, 1970 UTC.
+      Additionally the same time is delivered in a human readable form (SQL style formatted).
+      The 'nanos' value is currently not supported.
+   </description>
+   <example lang="any">
+   <![CDATA[<qos> <!-- UpdateQoS -->
+      <state>
+         OK
+      </state>
+      <sender>
+         ClientSub
+      </sender>
+      <subscriptionId>
+         Subscription-IIOP:0310342B2937014A014734-192.168.1.2-7609-1007766859844-7
+      </subscriptionId>
+      <rcvTimestamp millis='1007766860935' nanos='0'>
+         2001-12-08 00:14:20.935
+      </rcvTimestamp>
+   </qos>]]>
+   </example>
+   <see type="REQ">engine.qos.update.queue</see>
+   <see type="REQ">engine.qos.update.sender</see>
+   <see type="REQ">engine.qos.update.state</see>
+   <see type="REQ">engine.qos.update.subscriptionId</see>
+   <see type="API">org.xmlBlaster.client.UpdateQoS</see>
+   <see type="API">org.xmlBlaster.client.UpdateKey</see>
+   <author>ruff@swand.lake.de</author>
+   <date>2000 03 02</date>
+   <revision>$Revision: 1.1 $</revision>
+   <testcase status="CLOSED">
+      <name>-</name>
+      <comment>-</comment>
+      <test tool="SUITE">testsuite.org.xmlBlaster.TestSub</test>
+   </testcase>
+</requirement>
+
