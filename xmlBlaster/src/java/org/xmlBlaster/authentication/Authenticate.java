@@ -470,7 +470,7 @@ final public class Authenticate implements I_RunlevelListener
 
          boolean forceShutdownEvenIfEntriesExist = false;
          
-         resetSessionInfo(sessionInfo, disconnectQos.deleteSubjectQueue(), forceShutdownEvenIfEntriesExist);
+         resetSessionInfo(sessionInfo, disconnectQos.deleteSubjectQueue(), forceShutdownEvenIfEntriesExist, true);
 
          if (disconnectQos.clearSessions() == true && subjectInfo.getNumSessions() > 0) {
             SessionInfo[] sessions = subjectInfo.getSessions();
@@ -651,8 +651,10 @@ final public class Authenticate implements I_RunlevelListener
     * @param sessionInfo 
     * @param clearQueue Shall the message queue of the client be destroyed as well on last session logout?
     * @param forceShutdownEvenIfEntriesExist on last session
-    */
-   private void resetSessionInfo(SessionInfo sessionInfo, boolean clearQueue, boolean forceShutdownEvenIfEntriesExist) throws XmlBlasterException
+    * @param isDisconnecting true if this method is invoked while explicitly disconnecting a session, false
+    *        otherwise. It is used to determine if the session queue (callback queue) has to be cleared or not.
+    *    */
+   private void resetSessionInfo(SessionInfo sessionInfo, boolean clearQueue, boolean forceShutdownEvenIfEntriesExist, boolean isDisconnecting) throws XmlBlasterException
    {
       firePreRemovedClientEvent(sessionInfo);
       String secretSessionId = sessionInfo.getSecretSessionId();
@@ -682,7 +684,7 @@ final public class Authenticate implements I_RunlevelListener
       
       // in future we could for positive sessionId avoid to clear session queue
       sessionInfo.shutdown();
-      sessionInfo.getSessionQueue().clear();
+      if (isDisconnecting) sessionInfo.getSessionQueue().clear();
       
       sessionInfo = null;
       log.info(ME, "loginNameSubjectInfoMap has " + getNumSubjects() +
@@ -892,7 +894,7 @@ final public class Authenticate implements I_RunlevelListener
                try {
                   boolean clearQueue = false;
                   boolean forceShutdownEvenIfEntriesExist = true;
-                  resetSessionInfo(sessionInfoArr[ii], clearQueue, forceShutdownEvenIfEntriesExist);
+                  resetSessionInfo(sessionInfoArr[ii], clearQueue, forceShutdownEvenIfEntriesExist, false);
                }
                catch (Throwable e) {
                   log.error(ME, "Problem on session shutdown, we ignore it: " + e.getMessage());
