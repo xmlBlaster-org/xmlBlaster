@@ -36,16 +36,16 @@ Module HelloWorld3
                  ", content=" & msg.getContentStr() & _
                  ", state=" & msg.getQos().getState() & _
                  ", myAge=" & age)
-         
-         ' Access the raw content bytes ...
-         'Dim len As Int32 = msg.getContent().length
-         'Dim str As String
-         'Dim contentSBytes As SByte()
-         'contentSBytes = msg.getContent()
-         'Dim contentBytes As Byte() = New Byte(contentSBytes.Length)
-         'Buffer.BlockCopy(contentSBytes, 0, contentBytes, 0, contentSBytes.Length)
-         'str = System.Text.Encoding.ASCII.GetString(contentBytes)
-         'MsgBox("Success, message arrived:" & str) 
+
+         ' Dim len As Int32 = msg.getContent().length
+         ' How to pass a byte[]:
+         Dim str As String
+         Dim contentSBytes As SByte()
+         contentSBytes = msg.getContent()
+         Dim contentBytes As Byte() = New Byte(contentSBytes.Length) {}
+         Buffer.BlockCopy(contentSBytes, 0, contentBytes, 0, contentSBytes.Length)
+         str = System.Text.Encoding.ASCII.GetString(contentBytes)
+         MsgBox("Success, message arrived:" & str)
 
          xmlBlaster.setUpdateReturn("<qos><state id='OK'/></qos>")
       Catch e As SystemException
