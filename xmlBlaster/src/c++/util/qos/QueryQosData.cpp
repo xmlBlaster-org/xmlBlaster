@@ -45,6 +45,7 @@ void QueryQosData::init()
    multiSubscribe_ = true;
    local_          = true;
    initialUpdate_  = true;
+   updateOneway_   = false;
    notify_         = true;
 }
 
@@ -58,6 +59,7 @@ void QueryQosData::copy(const QueryQosData& data)
    multiSubscribe_ = data.multiSubscribe_;
    local_          = data.local_;
    initialUpdate_  = data.initialUpdate_;
+   updateOneway_   = data.updateOneway_;
    notify_         = data.notify_;
 }
 
@@ -75,6 +77,7 @@ QueryQosData::QueryQosData(Global& global)
       multiSubscribe_(true),
       local_(true),
       initialUpdate_(true),
+      updateOneway_(false),
       notify_(true),
       filters_(),
       historyQos_(global)
@@ -99,6 +102,23 @@ void QueryQosData::setWantInitialUpdate(bool initialUpdate)
 bool QueryQosData::getWantInitialUpdate() const
 {
    return initialUpdate_;
+}
+
+/**
+ * Do we want the callback messages of this subscription as oneway with <tt>updateOneway()</tt> or with
+ * the acknowledged <tt>update()</tt>. 
+ * @param updateOneway Defaults to false. 
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html">The interface.subscribe requirement</a>
+ * @see QueryQosData#setWantUpdateOneway(boolean)
+ */
+void QueryQosData::setWantUpdateOneway(bool updateOneway)
+{
+   updateOneway_ = updateOneway;
+}
+
+bool QueryQosData::getWantUpdateOneway() const
+{
+   return updateOneway_;
 }
 
 void QueryQosData::setWantNotify(bool notify)
@@ -256,6 +276,7 @@ string QueryQosData::toXml(const string& extraOffset) const
    if (!multiSubscribe_) ret += offset + " <multiSubscribe>false</multiSubscribe>";
    if (!local_) ret += offset + " <local>false</local>";
    if (!initialUpdate_) ret += offset + " <initialUpdate>false</initialUpdate>";
+   if (updateOneway_) ret += offset + " <updateOneway/>";
    if (!notify_) ret += offset + " <notify>false</notify>";
    if (isPersistent())
       ret += offset + " <persistent/>";

@@ -15,6 +15,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  *   &lt;content>false&lt;/content> &lt;!-- Don't send me the content data on updates (notify only) -->
  *   &lt;local>false&lt;/local>     &lt;!-- Inhibit the delivery of messages to myself if i have published it -->
  *   &lt;initialUpdate>false&lt;/initialUpdate>;
+ *   &lt;updateOneway>false&lt;/updateOneway>;
  *   &lt;filter type='myPlugin' version='1.0'>a!=100&lt;/filter>
  *                                  &lt;!-- Filters messages i have subscribed as implemented in your plugin -->
  *   &lt;history numEntries='20'/>  &lt;!-- Default is to deliver the current entry (numEntries='1'), '-1' deliver all -->
@@ -56,6 +57,15 @@ public:
     * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.subscribe.initialUpdate.html">The engine.qos.subscribe.initialUpdate requirement</a>
     */
    void setWantInitialUpdate(bool initialUpdate);
+
+   /**
+    * Do we want the callback messages of this subscription as oneway with <tt>updateOneway()</tt> or with
+    * the acknowledged <tt>update()</tt>. 
+    * @param updateOneway Defaults to false. 
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html">The interface.subscribe requirement</a>
+    * @see QueryQosData#setWantUpdateOneway(boolean)
+    */
+   void setWantUpdateOneway(bool updateOneway);
 
    /**
     * Allow to subscribe multiple times to the same query/oid

@@ -64,6 +64,9 @@ class Dll_Export QueryQosData : public QosData
    /** send on subscribe an initial update with the current message */
    bool initialUpdate_;
 
+   /** Deliver callback messages with <tt>updateOneway()</tt> */
+   bool updateOneway_;
+
    /** for subscribe(): Notify the subscribers on erase? */
    bool notify_;
 
@@ -105,6 +108,17 @@ public:
    void setWantInitialUpdate(bool initialUpdate);
 
    bool getWantInitialUpdate() const;
+
+   /**
+    * Do we want the callback messages of this subscription as oneway with <tt>updateOneway()</tt> or with
+    * the acknowledged <tt>update()</tt>. 
+    * @param updateOneway Defaults to false. 
+    * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html">The interface.subscribe requirement</a>
+    * @see QueryQosData#setWantUpdateOneway(boolean)
+    */
+   void setWantUpdateOneway(bool updateOneway);
+
+   bool getWantUpdateOneway() const;
 
    void setWantNotify(bool notify);
 

@@ -57,6 +57,24 @@ void SubscribeQos::setWantInitialUpdate(bool initialUpdate)
    data_.setWantInitialUpdate(initialUpdate);
 }
 
+/**
+ * Do we want the callback messages of this subscription as oneway with <tt>updateOneway()</tt> or with
+ * the acknowledged <tt>update()</tt>. 
+ * @param updateOneway Defaults to false. 
+ * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.subscribe.html">The interface.subscribe requirement</a>
+ * @see QueryQosData#setWantUpdateOneway(boolean)
+ */
+void SubscribeQos::setWantUpdateOneway(bool updateOneway)
+{
+   data_.setWantUpdateOneway(updateOneway);
+}
+
+/**
+ * Are multiple subscribes allowed?
+ * Defaults to true. 
+ * @return true Multiple subscribes deliver multiple updates
+ *         false Ignore more than one subscribes on same oid
+ */
 void SubscribeQos::setMultiSubscribe(bool multiSubscribe)
 {
    data_.setMultiSubscribe(multiSubscribe);
