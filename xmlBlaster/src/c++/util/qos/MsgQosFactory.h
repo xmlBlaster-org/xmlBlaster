@@ -21,7 +21,7 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 #include <util/parser/XmlHandlerBase.h>
 #include <util/Destination.h>
 #include <util/qos/MsgQosData.h>
-#include <util/qos/SessionQos.h>
+#include <util/SessionName.h>
 #include <util/cluster/RouteInfo.h>
 #include <string>
 #include <util/qos/storage/QueuePropertyFactory.h>

@@ -307,7 +307,7 @@ void MsgQosFactory::endElement(const string &name)
       inDestination_ = false;
       StringTrim::trim(character_); // The address or XPath query string
       if (!character_.empty()) {
-         destination_.setDestination(SessionQos(global_, character_)); // set address or XPath query string if it is before the forceQueuing tag
+         destination_.getDestination()->setAbsoluteName(character_); // set address or XPath query string if it is before the forceQueuing tag
          character_.erase();
       }
       msgQosDataP_->addDestination(destination_);
@@ -317,7 +317,7 @@ void MsgQosFactory::endElement(const string &name)
    if(name.compare("sender") == 0) {
       inSender_ = false;
       StringTrim::trim(character_);
-      msgQosDataP_->setSender(SessionQos(global_, character_));
+      msgQosDataP_->getSender()->setAbsoluteName(character_);
       // if (log.trace()) log.trace(ME, "Found message sender login name = " + msgQosData.getSender());
       character_.erase();
       return;

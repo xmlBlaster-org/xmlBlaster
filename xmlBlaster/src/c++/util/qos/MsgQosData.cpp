@@ -64,6 +64,11 @@ void MsgQosData::init()
 void MsgQosData::copy(const MsgQosData& data)
 {
    QosData::copy(data);
+
+   SessionName *p = new SessionName(global_, data.getSender()->getAbsoluteName());
+   SessionNameRef r(p);
+   sender_ = r;
+
    subscriptionId_ = data.subscriptionId_;
    subscribable_ = data.subscribable_;
    redeliver_ = data.redeliver_;
@@ -89,7 +94,7 @@ MsgQosData::MsgQosData(Global& global, const string& serialData)
      subscribable_(Prop<bool>(DEFAULT_isSubscribable)),
      forceUpdate_(Prop<bool>(DEFAULT_forceUpdate)),
      forceDestroy_(Prop<bool>(DEFAULT_forceDestroy)),
-     sender_(SessionQos(global)),
+     sender_(new SessionName(global)),
      destinationList_()
 {
    init();
@@ -98,7 +103,7 @@ MsgQosData::MsgQosData(Global& global, const string& serialData)
 
 MsgQosData::MsgQosData(const MsgQosData& data)
    : QosData(data),
-     sender_(data.sender_),
+     sender_(0),
      destinationList_(data.destinationList_)
 {
    copy(data);
@@ -107,7 +112,7 @@ MsgQosData::MsgQosData(const MsgQosData& data)
 MsgQosData& MsgQosData::operator=(const MsgQosData& data)
 {
    QosData::copy(data);
-   sender_ = data.sender_;
+   //sender_ = data.sender_;
    destinationList_ = data.destinationList_;
    copy(data);
    return *this;
@@ -210,7 +215,7 @@ bool MsgQosData::isForceUpdate() const
  * Access sender unified naming object.
  * @return sessionName of sender or null if not known
  */
-SessionQos MsgQosData::getSender() const
+SessionNameRef MsgQosData::getSender() const
 {
    return sender_;
 }
@@ -219,9 +224,9 @@ SessionQos MsgQosData::getSender() const
  * Access sender name.
  * @param loginName of sender
  */
-void MsgQosData::setSender(const SessionQos& senderSessionQos) const
+void MsgQosData::setSender(org::xmlBlaster::util::SessionNameRef sender) const
 {
-   sender_ = senderSessionQos;
+   sender_ = sender;
 }
 
 /**
@@ -449,7 +454,7 @@ string MsgQosData::toXml(const string& extraOffset) const
       iter++;
    }
 
-   ret += offset + " <sender>" + sender_.getAbsoluteName() + "</sender>";
+   ret += offset + " <sender>" + sender_->getAbsoluteName() + "</sender>";
 
    if (NORM_PRIORITY != priority_)
       ret += offset + " <priority>" + lexical_cast<std::string>(priority_) + "</priority>";

@@ -22,64 +22,50 @@ using namespace std;
 /*---------------------------- SessionQosData --------------------------------*/
 
 SessionQosData::SessionQosData(Global& global, const string& defaultUserName, long publicSessionId)
-    : ReferenceCounterBase(), ME("SessionQosData"), global_(global)
+    : ReferenceCounterBase(), ME("SessionQosData"), global_(global), sessionName_(0)
 {
-   initialize("", defaultUserName, publicSessionId);   
+   initialize();   
+   SessionName *p = new SessionName(global, defaultUserName, publicSessionId);
+   SessionNameRef r(p);
+   sessionName_ = r;
 }
 
 SessionQosData::SessionQosData(Global& global, const string& absoluteName)
-    : ReferenceCounterBase(), ME("SessionQosData"), global_(global)
+    : ReferenceCounterBase(), ME("SessionQosData"), global_(global), sessionName_(0)
 {
-   initialize(absoluteName, "", 0);
+   initialize();
+   SessionName *p = new SessionName(global, absoluteName);
+   SessionNameRef r(p);
+   sessionName_ = r;
 }
 
 
 void SessionQosData::copy(const SessionQosData& data)
 {
+   SessionName *p = new SessionName(global_, data.sessionName_->getAbsoluteName());
+   SessionNameRef r(p);
+   sessionName_ = r;
+
    timeout_       = data.timeout_;
    maxSessions_   = data.maxSessions_;
    clearSessions_ = data.clearSessions_;
    reconnectSameClientOnly_ = data.reconnectSameClientOnly_;
    sessionId_     = data.sessionId_;
-   clusterNodeId_ = data.clusterNodeId_;
-   subjectId_     = data.subjectId_;
-   pubSessionId_  = data.pubSessionId_;
 }
 
 
-void SessionQosData::initialize(const string& absoluteName, const string& defaultUserName, long publicSessionId)
+void SessionQosData::initialize()
 {
-   pubSessionId_ = publicSessionId;
    timeout_ = global_.getProperty().getLongProperty("session.timeout", 86400000);
    maxSessions_ = global_.getProperty().getIntProperty("session.maxSessions", 10);
    clearSessions_ = global_.getProperty().getBoolProperty("session.clearSessions", false);
    reconnectSameClientOnly_ = global_.getProperty().getBoolProperty("session.reconnectSameClientOnly", false);
    sessionId_ = global_.getProperty().getStringProperty("session.secretSessionId", "");
-
-   if (!absoluteName.empty()) {
-      setAbsoluteName(absoluteName);
-      return;
-   }
-
-   string name = global_.getProperty().getStringProperty("session.name", "");
-   if (!name.empty()) {
-      setAbsoluteName(name);
-      return;
-   }
-
-   clusterNodeId_ = global_.getProperty().getStringProperty("session.clusterNodeId", "");
-
-   if (!defaultUserName.empty()) {
-      subjectId_ = defaultUserName;
-      return;
-   }
-
-   string subjectId = global_.getProperty().getStringProperty("USER", "guest");
-   subjectId_ = global_.getProperty().getStringProperty("user", subjectId);
 }
 
 
-SessionQosData::SessionQosData(const SessionQosData& data) : ReferenceCounterBase(), ME(data.ME), global_(data.global_)
+SessionQosData::SessionQosData(const SessionQosData& data) :
+         ReferenceCounterBase(), ME(data.ME), global_(data.global_), sessionName_(0)
 {
    copy(data);
 }
@@ -91,96 +77,54 @@ SessionQosData& SessionQosData::operator =(const SessionQosData& data)
 }
 
 
+SessionNameRef SessionQosData::getSessionName()
+{
+   return sessionName_;
+}
+
 void SessionQosData::setAbsoluteName(const string& name)
 {
-   pubSessionId_ = 0; // resets the value if previously set
-   string relative = "";
-   if (name.empty())
-      throw XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::setAbsoluteName", "the absolute name is empty");
-
-   if (name[0] == '/') { // then it is an absolute name
-      StringStripper stripper("/");
-      vector<std::string> help = stripper.strip(name);
-      help.erase(help.begin()); // since it is empty for sure.
-      if (help.size() < 4) 
-         throw XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::setAbsoluteName", "the absolute name '" + name + "' is not allowed");
-      if (help[0] == "node") clusterNodeId_ = help[1];
-      else throw XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::setAbsoluteName", "the absolute name '" + name + "' is not allowed. It should start with '/node'");
-      if (help[2] != "client") 
-         throw XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::setAbsoluteName", "the absolute name '" + name + "' is not allowed. '/client' is missing");
-   
-      for (size_t i=3; i < help.size(); i++) {
-         relative += help[i];
-        if ( i < help.size()-1) relative += "/";
-      }
-   }
-   else relative = name;
-
-   StringStripper relStripper("/");
-   vector<std::string> relHelp = relStripper.strip(relative);
-   if (relHelp.empty()) {
-      throw XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::setAbsoluteName", "there is no relative name information: '" + name + "' is not allowed");
-   }
-
-   size_t ii = 0;
-   if ( relHelp.size() > ii ) {
-      string tmp = relHelp[ii++];
-      if ( tmp == "client" ) {
-         if ( relHelp.size() > ii ) {
-            subjectId_ = relHelp[ii++];
-         }
-         else {
-            throw XmlBlasterException(USER_ILLEGALARGUMENT, ME + "::setAbsoluteName", "there is no relative name information: '" + name + "' is not allowed");
-         }
-      }
-      else subjectId_ = tmp;
-   }
-   if ( relHelp.size() > ii ) {
-      pubSessionId_ = lexical_cast<long>(relHelp[ii]);
-   }
+   sessionName_->setAbsoluteName(name);
 }
 
 string SessionQosData::getRelativeName() const
 {
-   string ret = string("client/") + subjectId_;
-   if (pubSessionId_ != 0) ret += string("/") + lexical_cast<std::string>(pubSessionId_);
-   return ret;
+   return sessionName_->getRelativeName();
 }
 
 string SessionQosData::getAbsoluteName() const
 {
-   if (clusterNodeId_.empty()) return getRelativeName();
-   return string("/node/") + clusterNodeId_ + string("/") + getRelativeName();
+   return sessionName_->getAbsoluteName();
 }
 
 string SessionQosData::getClusterNodeId() const
 {
-   return clusterNodeId_;
+   return sessionName_->getClusterNodeId();
 }
 
 void SessionQosData::setClusterNodeId(const string& clusterNodeId)
 {
-   clusterNodeId_ = clusterNodeId;
+   return sessionName_->setClusterNodeId(clusterNodeId);
 }
 
 string SessionQosData::getSubjectId() const
 {
-   return subjectId_;
+   return sessionName_->getSubjectId();
 }
 
 void SessionQosData::setSubjectId(const string& subjectId)
 {
-    subjectId_ = subjectId;
+   return sessionName_->setSubjectId(subjectId);
 }
 
 long SessionQosData::getPubSessionId() const
 {
-   return pubSessionId_;
+   return sessionName_->getPubSessionId();
 }
 
 void SessionQosData::setPubSessionId(const long pubSessionId)
 {
-   pubSessionId_ = pubSessionId;
+   return sessionName_->setPubSessionId(pubSessionId);
 }
 
 long SessionQosData::getTimeout() const

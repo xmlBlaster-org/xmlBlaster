@@ -12,6 +12,7 @@ Comment:   Factory for SessionQosData (for org::xmlBlaster::util::qos::ConnectRe
 #include <string>
 #include <util/XmlQoSBase.h>
 #include <util/StringTrim.h>
+#include <util/SessionName.h>
 
 /**
  *
@@ -36,17 +37,15 @@ private:
    int          maxSessions_;
    bool         clearSessions_;
    bool         reconnectSameClientOnly_;
-   std::string  sessionId_;
-   std::string  clusterNodeId_;
-   std::string  subjectId_;
-   long         pubSessionId_;
+   std::string  sessionId_; // secret !
+   SessionNameRef  sessionName_;
    org::xmlBlaster::util::Global& global_;
 
    friend class SessionQosFactory;
 
    void copy(const SessionQosData& data);
 
-   void initialize(const std::string& absoluteName, const std::string& defaultUserName, long publicSessionId);
+   void initialize();
 
 public:
    /**
@@ -89,6 +88,7 @@ public:
    /**
     * Sets the absolute name. Note that you can overwrite the nodeId here. It returns 'true' if the
     * name was absolute, 'false' otherwise.
+    * This is a convenience access for getSessionName()->setAbsoluteName(name)
     */
    void setAbsoluteName(/*const std::string nodeId="",*/ const std::string& name);
    std::string getRelativeName() const;
@@ -99,6 +99,11 @@ public:
    void setSubjectId(const std::string& subjectId);
    long getPubSessionId() const;
    void setPubSessionId(const long pubSessionId);
+   /**
+    * Your changes outside change the internal sessionName. 
+    * @return A reference counted SessionName. 
+    */
+   SessionNameRef getSessionName();
 
    std::string getSecretSessionId() const;
    void setSecretSessionId(const std::string& sessionId);

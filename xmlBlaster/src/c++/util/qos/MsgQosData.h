@@ -28,14 +28,14 @@ Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
  * @author laghi@swissinfo.org
  */
 
-#ifndef _UTIL_QOS_MSGQOSDATA_H
-#define _UTIL_QOS_MSGQOSDATA_H
+#ifndef _XMLBLASTER_UTIL_QOS_MSGQOSDATA_H
+#define _XMLBLASTER_UTIL_QOS_MSGQOSDATA_H
 
 #include <util/xmlBlasterDef.h>
 #include <util/qos/QosData.h>
 
 #include <util/Destination.h>
-#include <util/qos/SessionQos.h>
+#include <util/SessionName.h>
 #include <util/qos/TopicProperty.h>
 #include <util/PriorityEnum.h>
 #include <util/cluster/RouteInfo.h>
@@ -101,7 +101,7 @@ private:
    long remainingLifeStatic_; // = -1;
 
    /** the sender (publisher) of this message (unique loginName) */
-   mutable org::xmlBlaster::util::qos::SessionQos sender_;
+   mutable org::xmlBlaster::util::SessionNameRef sender_;
 
    /** The priority of the message */
    org::xmlBlaster::util::PriorityEnum priority_; // = org::xmlBlaster::util::PriorityEnum.NORM_PRIORITY;
@@ -209,13 +209,13 @@ public:
     * Access sender unified naming object.
     * @return sessionName of sender or null if not known
     */
-   org::xmlBlaster::util::qos::SessionQos getSender() const;
+   org::xmlBlaster::util::SessionNameRef getSender() const;
 
    /**
     * Access sender name.
     * @param loginName of sender
     */
-   void setSender(const org::xmlBlaster::util::qos::SessionQos& senderSessionQos) const;
+   void setSender(org::xmlBlaster::util::SessionNameRef sender) const;
 
    /**
     * Set > 0 if the message probably is redelivered (number of retries). 
