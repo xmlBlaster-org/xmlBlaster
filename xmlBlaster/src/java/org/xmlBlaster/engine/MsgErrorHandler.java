@@ -33,7 +33,7 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
    private final String ME;
    private final Global glob;
    private final LogChannel log;
-   private final SessionInfo sessionInfo;
+   private /*final -> shutdown*/ SessionInfo sessionInfo;
 
    /**
     */
@@ -160,6 +160,7 @@ public final class MsgErrorHandler implements I_MsgErrorHandler
    }
 
    public void shutdown() {
+      this.sessionInfo = null;
    }
 }
 
