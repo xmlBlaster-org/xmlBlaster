@@ -3,7 +3,7 @@ Name:      Main.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: Main.java,v 1.81 2002/05/09 14:53:58 ruff Exp $
+Version:   $Id: Main.java,v 1.82 2002/05/09 15:13:32 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -317,7 +317,7 @@ public class Main
     */
    public void createRemoteConsole()
    {
-      int port = glob.getProperty().get("remoteconsole.port", 2702);
+      int port = glob.getProperty().get("remoteconsole.port", 0); // 2702;
       if (port > 1000) {
          RemoteServer rs = new RemoteServer();
          rs.setServer_port(port);
@@ -516,7 +516,7 @@ public class Main
       Log.plain(ME, "   -useKeyboard false  Switch off keyboard input, to allow xmlBlaster running in background.");
       Log.plain(ME, "   -useKeyboard false  Switch off keyboard input, to allow xmlBlaster running in background.");
       Log.plain(ME, "   -doBlocking  false  Switch off blocking, the main method is by default never returning.");
-      Log.plain(ME, "   -remoteconsole.port If given port > 1000, a server is started which is available with telnet [2702].");
+      Log.plain(ME, "   -remoteconsole.port If given port > 1000, a server is started which is available with telnet [0].");
       Log.plain(ME, "----------------------------------------------------------");
       Log.plain(ME, "Example:");
       Log.plain(ME, "   java org.xmlBlaster.Main -port 3412");
