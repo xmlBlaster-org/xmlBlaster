@@ -19,10 +19,14 @@ import org.xmlBlaster.engine.msgstore.I_Map;
 import org.xmlBlaster.engine.msgstore.I_MapEntry;
 import org.xmlBlaster.engine.msgstore.I_ChangeCallback;
 import org.xmlBlaster.util.queue.I_StorageProblemListener;
+import org.xmlBlaster.util.Timestamp;
 
+import java.util.TreeSet;
+import java.util.Set;
 import java.util.TreeMap;
 import java.util.Map;
 import java.util.Iterator; 
+import java.util.Comparator;
 
 /**
  * Mapping messages in RAM only. 
@@ -35,6 +39,7 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
    private String ME = "MapPlugin";
    private StorageId mapId;
    private Map storage;
+   private Set lruSet;                 // We could use a LinkedList for LRU but random access is slow
    private QueuePropertyBase property; // org.xmlBlaster.util.qos.storage.MsgUnitStoreProperty;
    private Global glob;
    private LogChannel log;
@@ -64,7 +69,9 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
 
       if (property.getMaxEntries() > Integer.MAX_VALUE) throw new XmlBlasterException(this.glob, ErrorCode.RESOURCE_CONFIGURATION_PLUGINFAILED, ME + ".initialize: The maximum number of messages is too big");
       
-      this.storage = new TreeMap(); // Note: A HashMap works fine as well, but then there is no sorting with getAll() -> do we need it?
+      this.storage = new TreeMap();
+      this.lruSet = new TreeSet(new LruComparator());
+
       this.isShutdown = false;
    }
 
@@ -100,8 +107,17 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
       final String key = ""+uniqueId;
       if (log.CALL) log.call(ME, "get(" + key + ")");
       synchronized (this.storage) {
-         return (I_MapEntry)this.storage.get(key);
+         I_MapEntry entry = (I_MapEntry)this.storage.get(key);
+	 touch(entry);
+         return entry;
       }
+   }
+
+   private void touch(I_MapEntry entry) {
+      if (entry == null) return;
+      this.lruSet.remove(entry);
+      entry.setSortTimestamp(new Timestamp());
+      this.lruSet.add(entry);
    }
 
    /**
@@ -110,6 +126,7 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
    public I_MapEntry[] getAll() throws XmlBlasterException {
       if (log.CALL) log.call(ME, "getAll()");
       synchronized (this.storage) {
+         // sortTimestamp remains as all entries are touched
          return (I_MapEntry[])this.storage.values().toArray(new I_MapEntry[this.storage.size()]);
       }
    }
@@ -142,6 +159,7 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
 
          if (old != null) { // I_Map#put(I_MapEntry) spec says that the old entry is not updated!
             this.storage.put(key, old);
+	    touch((I_MapEntry)old);
             return 0;
             /*
             this.sizeInBytes -= old.getSizeInBytes();
@@ -151,6 +169,8 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
             }
             */
          }
+         entry.setSortTimestamp(new Timestamp());
+         this.lruSet.add(entry);
          
          entry.setStored(true);
          this.sizeInBytes += entry.getSizeInBytes();
@@ -163,8 +183,10 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
    }
 
    public int remove(final I_MapEntry mapEntry) throws XmlBlasterException {
+      if (mapEntry == null) return 0;
       if (log.CALL) log.call(ME, "remove(" + mapEntry.getLogId() + ")");
       synchronized (this.storage) {
+         this.lruSet.remove(mapEntry);
          I_MapEntry entry = (I_MapEntry)this.storage.remove(mapEntry.getUniqueIdStr());
          if (entry == null)
             return 0;
@@ -186,6 +208,35 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
       throw new XmlBlasterException(glob, ErrorCode.INTERNAL_NOTIMPLEMENTED, ME, "removeTransient() is not implemented");
    }
 
+   /**
+    * @see I_Map#removeOldest()
+    */
+   public I_MapEntry removeOldest() throws XmlBlasterException {
+      synchronized (this.storage) {
+         I_MapEntry oldest = null;
+         Iterator it = this.lruSet.iterator();
+         if (it.hasNext()) {
+            oldest = (I_MapEntry)it.next();
+         }
+         if (oldest != null) {
+            remove(oldest);
+            return oldest;
+         }
+
+         if (this.storage.size() > 0) {
+            log.error(ME+".removeOldest", "LRU cache has no entries, we remove an arbitrary entry from cache");
+            it = this.storage.values().iterator();
+            if (it.hasNext()) {
+               I_MapEntry entry = (I_MapEntry)it.next();
+               remove(entry);
+               return entry;
+            }
+         }
+
+         return null;
+      }
+   }
+
    public long clear() {
       if (log.CALL) log.call(ME, "clear()");
       synchronized(this.storage) {
@@ -196,6 +247,7 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
             ((I_MapEntry)iter.next()).setStored(false);
          }
 
+         this.lruSet.clear();
          this.storage.clear();
          this.sizeInBytes = 0L;
          this.persistentSizeInBytes = 0L;
@@ -221,21 +273,27 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
     * @see I_Map#getNumOfPersistentEntries()
     */
    public long getNumOfPersistentEntries() {
-      return this.numOfPersistentEntries;
+      synchronized(this.storage) {
+         return this.numOfPersistentEntries;
+      }
    }
 
    /**
     * @see I_Map#getNumOfBytes()
     */
    public long getNumOfBytes() {
-      return this.sizeInBytes;
+      synchronized(this.storage) {
+         return this.sizeInBytes;
+      }
    }
 
    /**
     * @see I_Map#getNumOfPersistentBytes()
     */
    public long getNumOfPersistentBytes() {
-      return this.persistentSizeInBytes;
+      synchronized(this.storage) {
+         return this.persistentSizeInBytes;
+      }
    }
 
    /**
@@ -255,6 +313,7 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
             //throw new XmlBlasterException(ME, reason);
             //handleFailure !!!
          }
+         this.lruSet.clear();
          isShutdown = true;
       }
       if (log.CALL) log.call(ME, "shutdown() of topic cache " + this.getStorageId());
@@ -367,6 +426,24 @@ public final class MapPlugin implements I_Map, I_StoragePlugin
       }
    }
 
+   /**
+    * Sorts the entries in the the last recent added order (no real LRU). 
+    */
+   class LruComparator implements Comparator, java.io.Serializable
+   {
+      // We compare the MsgUnitWrapper by its cache entry timestamp
+      public final int compare(Object o1, Object o2) {
+         I_MapEntry id1 = (I_MapEntry)o1;
+         I_MapEntry id2 = (I_MapEntry)o2;
+         if (id1.getSortTimestamp().getTimestamp() > id2.getSortTimestamp().getTimestamp()) {
+            return 1;
+         }
+         else if (id1.getSortTimestamp().getTimestamp() < id2.getSortTimestamp().getTimestamp()) {
+            return -1;
+         }
+         return 0;
+      }
+   }
 
    /**
     * java org.xmlBlaster.engine.msgstore.ram.MapPlugin
