@@ -97,13 +97,15 @@ public class Uri
       String offset = "\n";
       StringBuffer sb = new StringBuffer(512);
       sb.append(offset).append("<uri id='").append(uriStr).append("'>");
-      sb.append(offset).append("  <userInfo>").append(url.getUserInfo()).append("</userInfo>");
       //sb.append(offset).append("  <password>").append(password).append("</password>");
       sb.append(offset).append("  <host>").append(url.getHost()).append("</host>");
       sb.append(offset).append("  <port>").append(url.getPort()).append("</port>");
+      /* Does not compile with JDK 1.2.2:
+      sb.append(offset).append("  <userInfo>").append(url.getUserInfo()).append("</userInfo>");
       sb.append(offset).append("  <authority>").append(url.getAuthority()).append("</authority>");
       sb.append(offset).append("  <path>").append(url.getPath()).append("</path>");
       sb.append(offset).append("  <query>").append(url.getQuery()).append("</query>");
+      **/
       sb.append(offset).append("  <fragment>").append(url.getRef()).append("</fragment>");
       sb.append(offset).append("</uri>");
       return sb.toString();
