@@ -3,7 +3,7 @@ Name:      ClientSubscriptions.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling subscriptions, collected for each Client
-Version:   $Id: ClientSubscriptions.java,v 1.11 2000/01/24 11:13:30 ruff Exp $
+Version:   $Id: ClientSubscriptions.java,v 1.12 2000/02/03 07:30:26 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine;
 
@@ -22,7 +22,7 @@ import java.io.*;
  * Handling subscriptions, collected for each Client.
  * <p />
  * The interface SubscriptionListener informs about subscribe/unsubscribe events
- * @version: $Id: ClientSubscriptions.java,v 1.11 2000/01/24 11:13:30 ruff Exp $
+ * @version: $Id: ClientSubscriptions.java,v 1.12 2000/02/03 07:30:26 ruff Exp $
  * @author Marcel Ruff
  */
 public class ClientSubscriptions implements ClientListener, SubscriptionListener, MessageEraseListener
@@ -355,7 +355,7 @@ public class ClientSubscriptions implements ClientListener, SubscriptionListener
             SubscriptionInfo sub = (SubscriptionInfo)iterator.next();
             if (sub.getClientInfo().getUniqueKey().equals(uniqueKey) && subscriptionInfoUniqueKey == null ||
                 subscriptionInfoUniqueKey == sub.getUniqueKey()) {
-               vec.add(sub);
+               vec.addElement(sub);
             }
          }
          for (int ii=0; ii<vec.size(); ii++) {

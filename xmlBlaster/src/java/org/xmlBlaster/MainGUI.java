@@ -3,7 +3,7 @@ Name:      MainGUI.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Main class to invoke the xmlBlaster server
-Version:   $Id: MainGUI.java,v 1.19 2000/02/01 15:38:09 ruff Exp $
+Version:   $Id: MainGUI.java,v 1.20 2000/02/03 07:30:25 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster;
 
@@ -465,9 +465,9 @@ public class MainGUI extends Frame implements Runnable, org.xmlBlaster.util.LogL
     * Create Checkboxes to adjust the logging levels
     * @return container with checkboxes
     */
-   private Container createLogLevelBoxes()
+   private Panel createLogLevelBoxes()
    {
-      Container container = new Container();
+      Panel container = new Panel();
       container.setLayout(new GridLayout(1, 7));
 
       Checkbox error = new Checkbox("ERROR", null, true);

@@ -135,8 +135,14 @@ fi
 #-------- Checking JDK version -
 if [ ${JDK_HOME} ] ; then
    if [ -d ${JDK_HOME} ] ; then
-      CLASSPATH=${CLASSPATH}:${JDK_HOME}/jre/lib/rt.jar
-      export CLASSPATH
+		if [ -f ${JDK_HOME}/lib/classes.zip ]; then
+			# JDK 1.1.x
+		   CLASSPATH=${XMLBLASTER_HOME}/lib/collections.jar:${CLASSPATH}
+		else
+			# JDK 1.2
+	      CLASSPATH=${CLASSPATH}:${JDK_HOME}/jre/lib/rt.jar
+   	   export CLASSPATH
+		fi
       PATH=${PATH}:${JDK_HOME}/bin
       export PATH
    else
