@@ -30,9 +30,24 @@
     <description>Persistent HTTP connection demo servlet</description>
     <servlet-class>org.xmlBlaster.protocol.http.BlasterHttpProxyServlet</servlet-class>
     <init-param>
+      <param-name>info</param-name>
+      <param-value>true</param-value>
+      <description>dumps messages</description>
+    </init-param>
+    <init-param>
       <param-name>trace</param-name>
       <param-value>false</param-value>
       <description>sets the trace</description>
+    </init-param>
+    <init-param>
+      <param-name>time</param-name>
+      <param-value>false</param-value>
+      <description>dump some performance timestamps</description>
+    </init-param>
+    <init-param>
+      <param-name>call</param-name>
+      <param-value>false</param-value>
+      <description>trace some method invocations</description>
     </init-param>
     <init-param>
       <param-name>dump</param-name>
