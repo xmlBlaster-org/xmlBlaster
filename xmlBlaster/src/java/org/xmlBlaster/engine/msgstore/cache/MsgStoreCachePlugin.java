@@ -524,7 +524,12 @@ public class MsgStoreCachePlugin implements I_Plugin, I_ConnectionListener, I_Ma
       if (extraOffset == null) extraOffset = "";
       String offset = Constants.OFFSET + extraOffset;
 
-      sb.append(offset).append("<MsgStoreCachePlugin id='").append(getStorageId().getId()).append("'>");
+      sb.append(offset).append("<MsgStoreCachePlugin id='").append(getStorageId().getId());
+      sb.append("' type='").append(getType());
+      sb.append("' version='").append(getVersion());
+      sb.append("' numOfEntries='").append(getNumOfEntries());
+      sb.append("' numOfBytes='").append(getNumOfBytes());
+      sb.append("'>");
       sb.append(this.transientStore.toXml(extraOffset+Constants.INDENT));
       if (this.persistentStore != null)
          sb.append(this.persistentStore.toXml(extraOffset+Constants.INDENT));

@@ -253,7 +253,11 @@ public final class MapPlugin implements I_Map, I_Plugin
       String offset = Constants.OFFSET + extraOffset;
 
       sb.append(offset).append("<MapPlugin id='").append(getStorageId().getId());
-      sb.append("' currMsgs='").append(getNumOfEntries()).append("' maxNumOfEntries='").append(getMaxNumOfEntries()).append("'>");
+      sb.append("' type='").append(getType());
+      sb.append("' version='").append(getVersion());
+      sb.append("' numOfEntries='").append(getNumOfEntries());
+      sb.append("' numOfBytes='").append(getNumOfBytes());
+      sb.append("'>");
       sb.append(property.toXml(extraOffset+Constants.INDENT));
       sb.append(offset).append("</MapPlugin>");
 
