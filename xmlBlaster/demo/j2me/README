@@ -1,0 +1,30 @@
+
+1) start a tomcat  (to have the applet proxy running)
+
+2) build the servlet (the applet proxy). It will install itself into tomcat:
+
+build  -DTOMCAT_HOME=/home/michele/jakarta/jakarta-tomcat-5.0.19 deploy_war
+
+3) start an xmlBlaster instance (keep 8080 clear for tomcat):
+
+java org.xmlBlaster.Main -plugin/xmlrpc/port 8089
+
+4) start the publisher:
+
+java http.dhtml.systemInfo.SystemInfoPublisher
+
+
+5) Download the j2me wireless toolkit 2.1 (you will find it at the url
+http://java.sun.com/products/j2mewtoolkit/download-2_1.html)
+
+6) install it in let's say $WTK21 then
+
+7) cd $WTK21/bin
+
+8) and start the emulator and a cellular phone will pop up in your screen:
+
+emulator -Xdescriptor:${XMLBLASTER_HOME}/demo/j2me/SystemInfo.jad
+
+Start to play with the xmlBlaster client.
+
+
