@@ -3,7 +3,7 @@ Name:      AddressBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding connect address and callback address string including protocol
-Version:   $Id: AddressBase.cpp,v 1.11 2003/03/25 07:48:13 ruff Exp $
+Version:   $Id: AddressBase.cpp,v 1.12 2003/03/26 22:28:13 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -451,7 +451,7 @@ void AddressBase::setMinSize(long minSize)
  * <pre>
  * DispatchPlugin[Priority][1.0]=org.xmlBlaster.util.dispatch.plugins.prio.PriorizedDeliveryPlugin
  * DispatchPlugin[SlowMotion][1.0]=org.xmlBlaster.util.dispatch.plugins.motion.SlowMotion
- * DispatchPlugin.defaultPlugin=Priority,1.0
+ * DispatchPlugin/defaultPlugin=Priority,1.0
  * </pre>
  * </p>
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/delivery.control.plugin.html">The delivery.control.plugin requirement</a>

@@ -3,7 +3,7 @@ Name:      QueuePropertyBase.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback queue properties
-Version:   $Id: QueuePropertyBase.cpp,v 1.15 2003/03/25 07:48:13 ruff Exp $
+Version:   $Id: QueuePropertyBase.cpp,v 1.16 2003/03/26 22:28:13 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 
@@ -122,7 +122,7 @@ void QueuePropertyBase::initialize(const string& propertyPrefix)
          setMaxExpires(global_.getProperty().getTimestampProperty(string("queue.expires.max[")+nodeId_+string("]"), getMaxExpires())); // Long.MAX_VALUE);
       }
 
-//         PluginInfo pluginInfo = new PluginInfo(glob, null, global_.getProperty().get("queue.defaultPlugin", DEFAULT_type));
+//         PluginInfo pluginInfo = new PluginInfo(glob, null, global_.getProperty().get("queue/defaultPlugin", DEFAULT_type));
 //         DEFAULT_type = pluginInfo.getType();
 //         DEFAULT_version = pluginInfo.getVersion();
    }

@@ -3,7 +3,7 @@ Name:      CallbackAddress.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding callback address string and protocol string
-Version:   $Id: CallbackAddress.cpp,v 1.5 2003/02/18 21:24:26 laghi Exp $
+Version:   $Id: CallbackAddress.cpp,v 1.6 2003/03/26 22:28:13 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 #include <util/qos/address/CallbackAddress.h>
@@ -31,7 +31,7 @@ inline void CallbackAddress::initialize()
    setMinSize(global_.getProperty().getLongProperty("cb.compress.minSize", DEFAULT_minSize));
    setPtpAllowed(global_.getProperty().getBoolProperty("cb.ptpAllowed", DEFAULT_ptpAllowed));
    setSecretSessionId(global_.getProperty().getStringProperty("cb.sessionId", DEFAULT_sessionId));
-   setDispatchPlugin(global_.getProperty().getStringProperty("cb.DispatchPlugin.defaultPlugin", DEFAULT_dispatchPlugin));
+   setDispatchPlugin(global_.getProperty().getStringProperty("cb.DispatchPlugin/defaultPlugin", DEFAULT_dispatchPlugin));
    if (nodeId_ != "") {
       setPort(global_.getProperty().getIntProperty("cb.port["+nodeId_+"]", getPort()));
       setType(global_.getProperty().getStringProperty("cb.protocol["+nodeId_+"]", getType()));
@@ -46,7 +46,7 @@ inline void CallbackAddress::initialize()
       setMinSize(global_.getProperty().getLongProperty("cb.compress.minSize["+nodeId_+"]", minSize_));
       setPtpAllowed(global_.getProperty().getBoolProperty("cb.ptpAllowed["+nodeId_+"]", ptpAllowed_));
       setSecretSessionId(global_.getProperty().getStringProperty("cb.sessionId["+nodeId_+"]", sessionId_));
-      setDispatchPlugin(global_.getProperty().getStringProperty("cb.DispatchPlugin.defaultPlugin["+nodeId_+"]", dispatchPlugin_));
+      setDispatchPlugin(global_.getProperty().getStringProperty("cb.DispatchPlugin/defaultPlugin["+nodeId_+"]", dispatchPlugin_));
    }
 }
 
@@ -125,7 +125,7 @@ string CallbackAddress::usage()
    help = "false";
    if (DEFAULT_ptpAllowed) help = "true";
    text += string("   -cb.ptpAllowed      PtP messages wanted? false prevents spamming [") + help + string("]\n");
-   //text += "   -cb.DispatchPlugin.defaultPlugin  Specify your specific dispatcher plugin [" + CallbackAddress.DEFAULT_dispatchPlugin + "]\n";
+   //text += "   -cb.DispatchPlugin/defaultPlugin  Specify your specific dispatcher plugin [" + CallbackAddress.DEFAULT_dispatchPlugin + "]\n";
    return text;
 }
 

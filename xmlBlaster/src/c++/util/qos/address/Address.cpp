@@ -3,7 +3,7 @@ Name:      Address.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Holding address string and protocol string
-Version:   $Id: Address.cpp,v 1.7 2003/03/25 09:40:47 ruff Exp $
+Version:   $Id: Address.cpp,v 1.8 2003/03/26 22:28:13 ruff Exp $
 ------------------------------------------------------------------------------*/
 
 /**
@@ -45,7 +45,7 @@ inline void Address::initialize()
    setMinSize(global_.getProperty().getLongProperty("compress.minSize", DEFAULT_minSize));
    setPtpAllowed(global_.getProperty().getBoolProperty("ptpAllowed", DEFAULT_ptpAllowed));
    setSecretSessionId(global_.getProperty().getStringProperty("sessionId", DEFAULT_sessionId));
-   setDispatchPlugin(global_.getProperty().getStringProperty("DispatchPlugin.defaultPlugin", DEFAULT_dispatchPlugin));
+   setDispatchPlugin(global_.getProperty().getStringProperty("DispatchPlugin/defaultPlugin", DEFAULT_dispatchPlugin));
    if (nodeId_ != "") {
       setPort(global_.getProperty().getIntProperty("port["+nodeId_+"]", getPort()));
       setPort(global_.getProperty().getIntProperty("client.port["+nodeId_+"]", getPort())); // this is stronger (do we need it?)
@@ -61,7 +61,7 @@ inline void Address::initialize()
       setMinSize(global_.getProperty().getLongProperty("compress.minSize["+nodeId_+"]", getMinSize()));
       setPtpAllowed(global_.getProperty().getBoolProperty("ptpAllowed["+nodeId_+"]", isPtpAllowed()));
       setSecretSessionId(global_.getProperty().getStringProperty("sessionId["+nodeId_+"]", getSecretSessionId()));
-      setDispatchPlugin(global_.getProperty().getStringProperty("DispatchPlugin.defaultPlugin["+nodeId_+"]", dispatchPlugin_));
+      setDispatchPlugin(global_.getProperty().getStringProperty("DispatchPlugin/defaultPlugin["+nodeId_+"]", dispatchPlugin_));
    }
 
    // TODO: This is handled in ClientQueueProperty.java already ->
@@ -145,7 +145,7 @@ string Address::usage()
    text += string("   -retries            How often to retry if connection fails (-1 is forever) [" + lexical_cast<string>(defaultRetries_) + "]\n");
    text += string("   -delay              Delay between connection retries in milliseconds [" + lexical_cast<string>(defaultDelay_) + "]\n");
    text += string("                       A delay value > 0 switches fails save mode on, 0 switches it off\n");
- //text += "   -DispatchPlugin.defaultPlugin  Specify your specific dispatcher plugin [" + CallbackAddress.DEFAULT_dispatchPlugin + "]\n";
+ //text += "   -DispatchPlugin/defaultPlugin  Specify your specific dispatcher plugin [" + CallbackAddress.DEFAULT_dispatchPlugin + "]\n";
  //text += "   -compress.type      With which format message be compressed on callback [" + Address.DEFAULT_compressType + "]\n";
  //text += "   -compress.minSize   Messages bigger this size in bytes are compressed [" + Address.DEFAULT_minSize + "]\n";
    return text;
