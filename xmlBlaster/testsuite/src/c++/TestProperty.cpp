@@ -25,7 +25,14 @@ static int dosetenv(const char *key, const char *value)
       string str = string(key) + "=" + value;
       return _putenv(str.c_str());
 #  else
+
+# ifdef __sun__
+      string str = string(key) + "=" + value;
+      return putenv((char*)str.c_str()); // for SOLARIS
+# else
       return setenv(key, value, 1); // for UNIX
+#endif
+
 #  endif
 }
 
