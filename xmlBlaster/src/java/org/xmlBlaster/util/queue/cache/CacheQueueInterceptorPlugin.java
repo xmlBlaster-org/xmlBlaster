@@ -718,7 +718,7 @@ public class CacheQueueInterceptorPlugin implements I_Queue, I_StoragePlugin, I_
                list = this.persistentQueue.peek((int)freeEntries, freeBytes);
             }
             catch (XmlBlasterException ex) {
-               this.log.error(ME, "could not read back data from persistence: Problably the DB is down or lost connection.");
+               this.log.error(ME, "could not read back data from persistence: " + ex.getMessage());
             }
 
             if (list == null || list.size() < 1) {
