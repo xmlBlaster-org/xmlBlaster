@@ -29,6 +29,11 @@ PRIORITY=
 # Do not modify anything beyond this point
 #-----------------------------------------------------------------------------
 
+# Source function library.
+if [ -x /etc/rc.d/init.d/functions ]; then
+. /etc/rc.d/init.d/functions
+fi
+
 # Get to the actual location of this script
 #SCRIPT_DIR=`dirname $0`
 #SCRIPT=`$SCRIPT_DIR/realpath $0`
@@ -73,7 +78,13 @@ start() {
         # your app runs, you could use nice here:
         # exec nice -$PRIORITY $WRAPPER_CMD $WRAPPER_CONF &
         # See "man nice" for more details.
-        exec $WRAPPER_CMD $WRAPPER_CONF &
+        if [ -x /etc/rc.d/init.d/functions ]; then
+            daemon $WRAPPER_CMD $WRAPPER_CONF 
+        else
+            su - -c "$WRAPPER_CMD $WRAPPER_CONF"
+        fi
+        #exec $WRAPPER_CMD $WRAPPER_CONF &
+        echo
     else
         echo "$APP_LONG_NAME is already running."
         exit 1

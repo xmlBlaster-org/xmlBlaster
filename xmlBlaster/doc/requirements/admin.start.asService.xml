@@ -25,8 +25,7 @@
          The contents of the lib directory from the wrapper distribution should be copied to the lib directory
          of the xmlBlaster distribution.
          <li>Copy wrapper.exe from wrapper/bin to xmlBlaster/bin</li>
-         The contents of the lib directory from the wrapper distribution should be copied to the lib directory
-         of the xmlBlaster distribution.
+         This is the java service monitor program.
          <li>Modify the wrapper.conf file</li>
          This file is in the config subdirectory. See the documentation in the file wrapper.conf.template
          for instructions on how
@@ -43,11 +42,14 @@
          Make sure you grap the Linux version of the library. It will contain the needed executables and shared
          libraries
          needed to launch xmlBlaster as a service.
+         <li>Copy wrapper/lib to xmlBlaster/lib</li>
+         The contents of the lib directory from the wrapper distribution should be copied to the lib directory
+         of the xmlBlaster distribution.
+         <li>Copy wrapper from wrapper/bin to xmlBlaster/bin</li>
+         This is the java service monitor program.
          <li>Modify the wrapper.conf file</li>
          This file is in the config subdirectory. See the documentation in this file for instructions on how
          to edit it.
-         <li>Modify the startup file</li>
-         These files are in the rc subdirectory.
       </ol>
    </configuration>
 
@@ -56,7 +58,7 @@
 
    <author>drrobison@openroadsconsulting.com</author>
    <date>2002 12 20</date>
-   <revision>$Revision: 1.3 $</revision>
+   <revision>$Revision: 1.4 $</revision>
    <testcase status="OPEN">
       <name>-</name>
       <comment>-</comment>
