@@ -1,10 +1,30 @@
 The Java package structure for xmlBlaster
 =========================================
+$id:$
 
-- The 'impl' section is the implementation of xmlBlaster
+- The 'broker' section is the implementation of xmlBlaster
 
-- The 'interf' section is what a client is seeing,
-  the different protocols are the only way to access xmlBlaster
+  * The xml2java contains the java classes which parse the xml
+    messages. The will be removed as soon as the Java-XML mapping
+    is specified and performing open source tools are available
+    to do this task automatically.
+
+- The 'protocol' section is how the client can access xmlBlaster
+  and how the xmlBlaster can callback to the client.
+  These different protocols are the only way to access xmlBlaster
+
+  * The iiop protocol contains the formal description of the
+    xmlBlaster interface (see xmlBlaster.idl)
+
+  * the http protocol contains a servlet doing a browser callback
+    over http.
+
+    * The javascript package contains Javascript code which
+    is included in the browser html page, to handle
+    login/logout/publish/subscribe/update etc.
+
+    * The applet package contains some serialization helpers
+    for applets.
 
 - The 'client' section are utilities which a Java based client
   needs always again,
@@ -14,72 +34,47 @@ The Java package structure for xmlBlaster
 
 - The 'util' section contains general helper classes
   They may be used by anybody.
-  
 
 
-org.xmlBlaster + impl -+- broker -+- qos
-               |       |          |
-               |       |          +- persistence -+- filestore
-               |       |          |               |
-               |       |          |               +- xmldb
-               |       |          |
-               |       |          +- transaction -+- jts
-               |       |          |
-               |       |          +- routing
+
+org.xmlBlaster + broker+- xml2java
                |       |
-               |       +- login --+- native
-               |       |          |
-               |       |          +- ldap (delegation)
-               |       |          |
-               |       |          +- jdbc (delegation)
+               |       +- persistence -+- filestore
+               |       |               |
+               |       |               +- xmldb
                |       |
-               |       +- acl ----+- native
-               |                  |
-               |                  +- ldap (delegation)
-               |                  |
-               |                  +- jdbc (delegation)
-               |        
-               +- interf -+- corba -+- broker
-               |          |         |
-               |          |         +- login
-               |          |         |
-               |          |         +- acl  
+               |       +- transaction -+- jts
+               |       |
+               |       +- routing
+               |
+               +- login --+- native
                |          |
-               |          +- rmi ---+- broker
-               |          |         |
-               |          |         +- login
-               |          |         |
-               |          |         +- acl  
+               |          +- ldap (delegation)
                |          |
-               |          +- native-+- broker
-               |          |         |
-               |          |         +- login
-               |          |         |
-               |          |         +- acl  
+               |          +- jdbc (delegation)
+               |
+               +- acl ----+- native
                |          |
-               |          +- email -+- broker
-               |          |         |
-               |          |         +- login
-               |          |         |
-               |          |         +- acl  
+               |          +- ldap (delegation)
                |          |
-               |          +- wap ---+- broker
-               |          |         |
-               |          |         +- login
-               |          |         |
-               |          |         +- acl  
+               |          +- jdbc (delegation)
+               |
+               +- protocol+- iiop
                |          |
-               |          +- http --+- broker
-               |          |         |
-               |          |         +- login
-               |          |         |
-               |          |         +- acl  
+               |          +- rmi
                |          |
-               |          +- ftp ---+- broker
-               |                    |
-               |                    +- login
-               |                    |
-               |                    +- acl  
+               |          +- native
+               |          |
+               |          +- email
+               |          |
+               |          +- wap
+               |          |
+               |          +- http -+- javascript
+               |          |        |
+               |          |        +- applet
+               |          |
+               |          +- ftp
+               |
                |
                +- client -+- helper
                |          |
