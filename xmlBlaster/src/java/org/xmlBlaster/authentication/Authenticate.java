@@ -313,26 +313,25 @@ final public class Authenticate implements I_RunlevelListener
          I_Subject subjectCtx = sessionCtx.getSubject();
          SessionName subjectName = new SessionName(glob, connectQos.getSessionName(), 0L); // Force to be of type subject (no public session ID)
 
+         boolean subjectIsAlive = false;
          synchronized(this.loginNameSubjectInfoMap) { // Protect against two simultaneous logins
             subjectInfo = (SubjectInfo)this.loginNameSubjectInfoMap.get(subjectName.getLoginName());
             //log.error(ME, "DEBUG ONLY, subjectName=" + subjectName.toString() + " loginName=" + subjectName.getLoginName() + " state=" + toXml());
             if (subjectInfo == null) {
                subjectInfo = new SubjectInfo(getGlobal(), this, subjectName); // registers itself in loginNameSubjectInfoMap
             }
+
+            subjectIsAlive = subjectInfo.isAlive();
+            if (!subjectInfo.isAlive()) {
+               subjectInfo.toAlive(subjectCtx, connectQos.getSubjectQueueProperty());
+            }
          } // synchronized(this.loginNameSubjectInfoMap)
 
-         // This sync gap is no problem for SubjectInfo if somebody else does a subjectInfo.shutdown()
-         // since the subjectInfo does a transition from DEAD to ALIVE below
-
          synchronized(subjectInfo) {
-            if (subjectInfo.isAlive()) {
+            if (subjectIsAlive) {
                // TODO: Reconfigure subject queue only when queue relating='subject' was used
                subjectInfo.setCbQueueProperty(connectQos.getSubjectQueueProperty()); // overwrites only if not null
             }
-            else {
-               subjectInfo.toAlive(subjectCtx, connectQos.getSubjectQueueProperty());
-            }
-
             // Check if client does a relogin and wants to destroy old sessions
             if (connectQos.getSessionQos().clearSessions() == true && subjectInfo.getNumSessions() > 0) {
                SessionInfo[] sessions = subjectInfo.getSessions();
