@@ -3,7 +3,7 @@ Name:      ServerImpl.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Implementing the CORBA xmlBlaster-server interface
-Version:   $Id: ServerImpl.java,v 1.27 1999/12/09 13:28:37 ruff Exp $
+Version:   $Id: ServerImpl.java,v 1.28 2000/01/07 20:32:38 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.serverIdl;
 
@@ -23,7 +23,7 @@ import java.util.*;
 
 
 /**
- * Implements the xmlBlaster server CORBA interface. 
+ * Implements the xmlBlaster server CORBA interface.
  * <p />
  * @see xmlBlaster.idl
  * @see org.xmlBlaster.engine.RequestBroker
@@ -169,9 +169,9 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
     * @return content
     * @see xmlBlaster.idl
     */
-   public MessageUnit[] get(String xmlKey_literal, String qos_literal) throws XmlBlasterException
+   public MessageUnitContainer[] get(String xmlKey_literal, String qos_literal) throws XmlBlasterException
    {
-      if (Log.CALLS) Log.calls(ME, "Entering unSubscribe(xmlKey=" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
+      if (Log.CALLS) Log.calls(ME, "Entering get(xmlKey=" + xmlKey_literal/* + ", qos=" + qos_literal*/ + ") ...");
       if (Log.DUMP) Log.dump(ME, "-------START-get()---------\n" + requestBroker.printOn().toString());
       StopWatch stop=null; if (Log.TIME) stop = new StopWatch();
 
@@ -179,12 +179,12 @@ public class ServerImpl extends ServerPOA {            // inheritance approach
 
       XmlKey xmlKey = new XmlKey(xmlKey_literal);
       GetQoS xmlQoS = new GetQoS(qos_literal);
-      MessageUnit[] messageUnitArr = requestBroker.get(clientInfo, xmlKey, xmlQoS);
+      MessageUnitContainer[] messageUnitContainerArr = requestBroker.get(clientInfo, xmlKey, xmlQoS);
 
       if (Log.TIME) Log.time(ME, "Elapsed time in get()" + stop.nice());
       if (Log.DUMP) Log.dump(ME, "-------END-get()---------\n" + requestBroker.printOn().toString());
 
-      return messageUnitArr;
+      return messageUnitContainerArr;
    }
 
 
