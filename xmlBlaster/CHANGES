@@ -2,6 +2,21 @@ Release notes for xmlBlaster    (http://www.xmlBlaster.org)
 
 Changes for 0.xxx [xxx, xx xxxx]
 ================================
+  - Added SVG sample code for persistent http callback, see
+
+      demo/http/svg/systemInfo
+
+  - Ported persistent http callback framework to tomcat 3.2.4, use
+
+      build.sh deploy_war
+
+  - Added C++ support in build.xml, to compile the
+    xmlBlaster C++ client helper shared library (dll) type:
+
+       build.sh cpp-lib
+
+  - Changed C++ file extension .cc to .cpp
+
   - Added a message receive timestamp in update QoS, see:
     http://www.xmlBlaster.org/xmlBlaster/doc/requirements/engine.qos.update.rcvTimestamp.html
 
