@@ -1,7 +1,7 @@
 MIDlet-1: SystemInfo, SystemInfo.png, SystemInfoMidlet
 MIDlet-Info-URL: http://www.xmlBlaster.org
 MIDlet-Jar-Size: @@jarFileSize@@ 
-MIDlet-Jar-URL: SystemInfo.jar
+MIDlet-Jar-URL: @@SystemInfo.jar@@
 MIDlet-Name: SystemInfo
 MIDlet-Vendor: www.xmlBlaster.org
 MIDlet-Version: 1.0
