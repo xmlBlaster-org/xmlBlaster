@@ -3,7 +3,7 @@ Name:      TestSub.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.cpp,v 1.22 2003/05/21 20:21:33 ruff Exp $
+Version:   $Id: TestSub.cpp,v 1.23 2003/05/22 08:10:37 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #include "TestSuite.h"
@@ -429,7 +429,6 @@ int main(int args, char *argc[])
       testSub.testPublishAfterSubscribeXPath();
       testSub.tearDown();
       Thread::sleepSecs(1);
-      org::xmlBlaster::util::Object_Lifetime_Manager::fini();
    }
    catch (XmlBlasterException& ex) {
       std::cout << ex.toXml() << std::endl;
@@ -454,6 +453,7 @@ int main(int args, char *argc[])
       cout << e.toXml() << endl;
    }
 
+   org::xmlBlaster::util::Object_Lifetime_Manager::fini();
    return 0;
 }
 
