@@ -2,6 +2,9 @@ Release notes for xmlBlaster @version@ (http://www.xmlBlaster.org)
 
 Changes for 0.xxx [xx, xxx 2003]
 ================================
+ o BUGIFX in cluster configuration, switch off naming service and
+   setting other address parameters is now possible from configuration file.
+   Reported by Michael Atighetchi.
 
  o BUGFIX clustering for get() by Michael Atighetchi.
    A node X was only forwarding get requests to other nodes if a subscription
