@@ -27,6 +27,11 @@ Comment:   Default handling of Sax callbacks
 
 using namespace std;
 
+#if defined(XERCES_HAS_CPP_NAMESPACE)
+	// Since Xerces 2.2 namespace is introduced:
+   XERCES_CPP_NAMESPACE_USE
+#endif
+
 namespace org { namespace xmlBlaster {
 namespace util {
     

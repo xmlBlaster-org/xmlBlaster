@@ -10,6 +10,11 @@
 
 using namespace org::xmlBlaster::util;
 
+#if defined(XERCES_HAS_CPP_NAMESPACE)
+	// Since Xerces 2.2 namespace is introduced:
+   XERCES_CPP_NAMESPACE_USE
+#endif
+
 /**
  *
  * Required Library Initailization.
