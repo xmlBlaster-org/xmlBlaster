@@ -3,7 +3,7 @@ Name:      TestSub.cpp
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Demo code for a client using xmlBlaster
-Version:   $Id: TestSub.cpp,v 1.13 2002/08/12 07:24:19 ruff Exp $
+Version:   $Id: TestSub.cpp,v 1.14 2002/08/15 16:26:47 ruff Exp $
 -----------------------------------------------------------------------------*/
 
 #include <boost/lexical_cast.hpp>
@@ -50,6 +50,11 @@ private:
    string contentMime_; // = "text/xml";
    string contentMimeExtended_; //  = "1.0";
 
+   /** Publish tests */
+   enum TestType {
+      TEST_ONEWAY, TEST_PUBLISH, TEST_ARRAY
+   };
+
    /**
     * Constructs the TestSub object.
     * <p />
@@ -57,7 +62,7 @@ private:
     * @param loginName The name to login to the xmlBlaster
     */
  public:
-   TestSub(const string &testName, const string &loginName) : log_() {
+   TestSub(const string &loginName) : log_() {
       senderName_          = loginName;
       receiverName_        = loginName;
       numReceived_         = 0;
@@ -160,7 +165,7 @@ private:
     * TEST: Construct a message and publish it. <p />
     * The returned publishOid is checked
     */
-   void testPublishCorbaMethods(bool testOneway) {
+   void testPublishCorbaMethods(TestType testType) {
       if (log_.TRACE) log_.trace(me(), "Publishing a message (old style) ...");
       numReceived_ = 0;
       string xmlKey = string("<?xml version='1.0' encoding='ISO-8859-1' ?>\n")+
@@ -180,7 +185,7 @@ private:
       try {
          msgUnit.qos = "<qos></qos>";
 
-         if (testOneway) {
+         if (testType == TEST_ONEWAY) {
             serverIdl::MessageUnitArr_var msgUnitArr = new serverIdl::MessageUnitArr;
             msgUnitArr->length(1);
             msgUnitArr[0] = msgUnit;
@@ -188,7 +193,7 @@ private:
             //delete msgUnitArr;
             log_.info(me(), string("Success: Publishing oneway done (old style)"));
          }
-         else {
+         else if (testType == TEST_PUBLISH) {
             string tmp = senderConnection_->publish(msgUnit);
             if (tmp.find(publishOid_) == string::npos) {
                log_.error(me(), "Wrong publishOid: " + tmp);
@@ -196,6 +201,14 @@ private:
             }
             log_.info(me(), string("Success: Publishing with ACK done (old style), returned oid=") +
                       publishOid_);
+         }
+         else {
+            serverIdl::MessageUnitArr_var msgUnitArr = new serverIdl::MessageUnitArr;
+            msgUnitArr->length(1);
+            msgUnitArr[0] = msgUnit;
+            senderConnection_->publishArr(msgUnitArr);
+            //delete msgUnitArr;
+            log_.info(me(), string("Success: Publishing array done (old style)"));
          }
       }
       catch(serverIdl::XmlBlasterException &e) {
@@ -209,7 +222,7 @@ private:
     * TEST: Construct a message and publish it. <p />
     * The returned publishOid is checked
     */
-   void testPublishSTLMethods(bool testOneway) {
+   void testPublishSTLMethods(TestType testType) {
       if (log_.TRACE) log_.trace(me(), "Publishing a message (the STL way) ...");
       numReceived_ = 0;
       string xmlKey = string("<?xml version='1.0' encoding='ISO-8859-1' ?>\n")+
@@ -222,13 +235,13 @@ private:
          "</key>";
       util::MessageUnit msgUnit(xmlKey, senderContent_);
       try {
-         if (testOneway) {
+         if (testType == TEST_ONEWAY) {
             vector<util::MessageUnit> msgVec;
             msgVec.push_back(msgUnit);
             senderConnection_->publishOneway(msgVec);
             log_.info(me(), string("Success: Publishing oneway done (the STL way)"));
          }
-         else {
+         else if (testType == TEST_PUBLISH) {
             string tmp = senderConnection_->publish(msgUnit);
             if (tmp.find(publishOid_) == string::npos) {
                log_.error(me(), "Wrong publishOid: " + tmp);
@@ -236,6 +249,13 @@ private:
             }
             log_.info(me(), string("Success: Publishing with ACK done (the STL way), returned oid=") +
                       publishOid_);
+         }
+         else {
+            vector<util::MessageUnit> msgVec;
+            msgVec.push_back(msgUnit);
+            vector<string> retArr = senderConnection_->publishArr(msgVec);
+            log_.info(me(), string("Success: Publishing array of size " + lexical_cast<string>(retArr.size())
+                                   + " done (the STL way)"));
          }
       }
       catch(serverIdl::XmlBlasterException &e) {
@@ -254,35 +274,49 @@ private:
       waitOnUpdate(1000L);
       // Wait some time for callback to arrive ...
       if (numReceived_ != 0) {
-         log_.error(me(), "numReceived after subscribe");
+         log_.error(me(), "numReceived after subscribe = " + lexical_cast<string>(numReceived_));
          assert(0);
       }
 
-      testPublishCorbaMethods(true);
+      testPublishCorbaMethods(TEST_ONEWAY);
       waitOnUpdate(2000L);
       if (numReceived_ != 1) {
-         log_.error(me(),"numReceived after publishing oneway");
+         log_.error(me(),"numReceived after publishing oneway = " + lexical_cast<string>(numReceived_));
          assert(0);
       }
 
-      testPublishCorbaMethods(false);
+      testPublishCorbaMethods(TEST_PUBLISH);
       waitOnUpdate(2000L);
       if (numReceived_ != 1) {
-         log_.error(me(),"numReceived after publishing with ACK");
+         log_.error(me(),"numReceived after publishing with ACK = " + lexical_cast<string>(numReceived_));
          assert(0);
       }
 
-      testPublishSTLMethods(true);
+      testPublishCorbaMethods(TEST_ARRAY);
       waitOnUpdate(2000L);
       if (numReceived_ != 1) {
-         log_.error(me(),"numReceived after publishing STL oneway");
+         log_.error(me(),"numReceived after publishing with ACK = " + lexical_cast<string>(numReceived_));
          assert(0);
       }
 
-      testPublishSTLMethods(false);
+      testPublishSTLMethods(TEST_ONEWAY);
       waitOnUpdate(2000L);
       if (numReceived_ != 1) {
-         log_.error(me(),"numReceived after publishing STL with ACK");
+         log_.error(me(),"numReceived after publishing STL oneway = " + lexical_cast<string>(numReceived_));
+         assert(0);
+      }
+
+      testPublishSTLMethods(TEST_PUBLISH);
+      waitOnUpdate(2000L);
+      if (numReceived_ != 1) {
+         log_.error(me(),"numReceived after publishing STL with ACK = " + lexical_cast<string>(numReceived_));
+         assert(0);
+      }
+    
+      testPublishSTLMethods(TEST_ARRAY);
+      waitOnUpdate(2000L);
+      if (numReceived_ != 1) {
+         log_.error(me(),"numReceived after publishing STL with ACK = " + lexical_cast<string>(numReceived_));
          assert(0);
       }
    }
@@ -307,10 +341,17 @@ private:
                void *content, long contentSize,
                UpdateQos &updateQos) {
       log_.info(me(), string("Receiving update of message oid=") +
-                updateKey.getUniqueKey() + " state=" + updateQos.getState() + " ...");
+                updateKey.getUniqueKey() + " state=" + updateQos.getState() +
+                " authentication sessionId=" + sessionId + " ...");
       numReceived_ ++;
 
       string contentStr(static_cast<char *>(content), contentSize);
+
+      if (updateQos.getState() != util::Constants::STATE_OK &&
+          updateQos.getState() != util::Constants::STATE_ERASED) {
+         log_.error(me(), "Unexpected message state=" + updateQos.getState());
+         assert(0);
+      }
 
       if (senderName_ != updateQos.getSender()) {
          log_.error(me(), "Wrong Sender");
@@ -394,7 +435,7 @@ int main(int args, char *argc[]) {
            << endl;
       return 1;
    }
-   org::xmlBlaster::TestSub *testSub = new org::xmlBlaster::TestSub("TestSub", "Tim");
+   org::xmlBlaster::TestSub *testSub = new org::xmlBlaster::TestSub("Tim");
    testSub->setUp(args, argc);
    testSub->testPublishAfterSubscribeXPath();
    testSub->tearDown();
