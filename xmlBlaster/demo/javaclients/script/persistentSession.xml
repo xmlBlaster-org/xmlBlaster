@@ -1,3 +1,8 @@
+<!--
+   here an example on how to invoke this script:
+   java javaclients.script.XmlScript -requestFile persistentSession.xml
+-->
+
 <xmlBlaster>
 
   <connect>
