@@ -284,7 +284,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
       this.publishLoginEvent = glob.getProperty().get("loginEvent", true);
       if (this.publishLoginEvent) {
          // Key '__sys__Login' for login event (allows you to subscribe on new clients which do a login)
-         org.xmlBlaster.client.key.PublishKey publishKey = new org.xmlBlaster.client.key.PublishKey(glob, "__sys__Login", "text/plain");
+         org.xmlBlaster.client.key.PublishKey publishKey = new org.xmlBlaster.client.key.PublishKey(glob, Constants.EVENT_OID_LOGIN/*"__sys__Login"*/, "text/plain");
          this.xmlKeyLoginEvent = publishKey.getData();
          this.publishQosLoginEvent = new PublishQosServer(glob, publishQos.getData().toXml(), false); // take copy
       }
@@ -292,7 +292,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
       this.publishLogoutEvent = glob.getProperty().get("logoutEvent", true);
       if (this.publishLogoutEvent) {
          // Key '__sys__Logout' for logout event (allows you to subscribe on clients which do a logout)
-         org.xmlBlaster.client.key.PublishKey publishKey = new org.xmlBlaster.client.key.PublishKey(glob, "__sys__Logout", "text/plain");
+         org.xmlBlaster.client.key.PublishKey publishKey = new org.xmlBlaster.client.key.PublishKey(glob, Constants.EVENT_OID_LOGOUT/*"__sys__Logout"*/, "text/plain");
          this.xmlKeyLogoutEvent = publishKey.getData();
          this.publishQosLogoutEvent = new PublishQosServer(glob, publishQos.getData().toXml(), false);
       }
@@ -300,7 +300,7 @@ public final class RequestBroker implements I_ClientListener, /*I_AdminNode,*/ R
       this.publishUserList = glob.getProperty().get("userListEvent", true);
       if (this.publishUserList) {
          // Key '__sys__UserList' for login/logout event
-         org.xmlBlaster.client.key.PublishKey publishKey = new org.xmlBlaster.client.key.PublishKey(glob, "__sys__UserList", "text/plain");
+         org.xmlBlaster.client.key.PublishKey publishKey = new org.xmlBlaster.client.key.PublishKey(glob, Constants.EVENT_OID_USERLIST/*"__sys__UserList"*/, "text/plain");
          publishKey.setClientTags("<__sys__internal/>");
          this.xmlKeyUserListEvent = publishKey.getData();
       }
