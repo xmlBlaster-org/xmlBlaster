@@ -5,14 +5,16 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.key.MsgKeyData;
 import org.xmlBlaster.util.key.I_MsgKeyFactory;
-import org.xmlBlaster.util.key.MsgKeySaxFactory;
 import org.xmlBlaster.client.key.GetReturnKey;
 import org.xmlBlaster.client.key.PublishKey;
 import org.xmlBlaster.client.key.UpdateKey;
 import org.xmlBlaster.util.enum.Constants;
-import org.xmlBlaster.util.qos.AccessFilterQos;
 
 import junit.framework.*;
+
+import org.custommonkey.xmlunit.XMLTestCase;
+import org.custommonkey.xmlunit.XMLUnit;
+
 
 /**
  * Test I_MsgKeyFactory implementations. 
@@ -23,7 +25,7 @@ import junit.framework.*;
  * @see org.xmlBlaster.util.key.MsgKeySaxFactory
  * @see <a href="http://www.xmlBlaster.org/xmlBlaster/doc/requirements/interface.html" target="others">the xmlBlaster access interface requirement</a>
  */
-public class MsgKeyFactoryTest extends TestCase {
+public class MsgKeyFactoryTest extends XMLTestCase {
    private String ME = "MsgKeyFactoryTest";
    protected final Global glob;
    protected final LogChannel log;
@@ -38,6 +40,7 @@ public class MsgKeyFactoryTest extends TestCase {
       this.glob = glob;
       this.log = glob.getLog("test");
       this.factory = IMPL[currImpl];
+      XMLUnit.setIgnoreWhitespace(true);
    }
 
    protected void setUp() {
@@ -272,6 +275,30 @@ public class MsgKeyFactoryTest extends TestCase {
       System.out.println("***MsgKeyFactoryTest: UpdateKey [SUCCESS]");
    }
 
+   /**
+    * Tests client side PublishKey. 
+    */
+   public void testEmbeddedKeyTag() {
+      System.out.println("***MsgKeyFactoryTest: embeddedKeyTag ...");
+      
+      try {
+         String keyLiteral = "<key oid='oid' ><client><xkey><xqos><xkey>xxx</xkey></xqos></xkey></client></key>";
+         MsgKeyData key = factory.readObject(keyLiteral);
+         this.log.info(ME, "testEmbeddedKeyTag: key (should)='" + keyLiteral);
+         this.log.info(ME, "testEmbeddedKeyTag: key (is)    ='" + key.toXml());         
+         assertXMLEqual(keyLiteral, key.toXml());
+         keyLiteral = "<key oid='oid' ><client><key><qos><key>xxx</key></qos></key></client></key>";
+         key = factory.readObject(keyLiteral);
+         this.log.info(ME, "testEmbeddedKeyTag: key (should)='" + keyLiteral);
+         this.log.info(ME, "testEmbeddedKeyTag: key (is)    ='" + key.toXml());
+         assertXMLEqual(keyLiteral, key.toXml());
+      }
+      catch (Throwable e) {
+         System.out.println("Test failed: " + e.toString());
+      }
+      System.out.println("***MsgKeyFactoryTest: EmbeddedKeyTag [SUCCESS]");
+   }
+
    protected void tearDown() {
    }
 
@@ -289,6 +316,7 @@ public class MsgKeyFactoryTest extends TestCase {
          suite.addTest(new MsgKeyFactoryTest(glob, "testPublishKey", i));
          suite.addTest(new MsgKeyFactoryTest(glob, "testUpdateKey", i));
          suite.addTest(new MsgKeyFactoryTest(glob, "testGetReturnKey", i));
+         suite.addTest(new MsgKeyFactoryTest(glob, "testEmbeddedKeyTag", i));
       }
       return suite;
    }
@@ -309,6 +337,7 @@ public class MsgKeyFactoryTest extends TestCase {
          testSub.testPublishKey();
          testSub.testUpdateKey();
          testSub.testGetReturnKey();
+         testSub.testEmbeddedKeyTag();
          testSub.tearDown();
       }
    }

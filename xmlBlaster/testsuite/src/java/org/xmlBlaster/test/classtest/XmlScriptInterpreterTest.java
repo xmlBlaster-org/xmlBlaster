@@ -223,8 +223,8 @@ public class XmlScriptInterpreterTest extends XMLTestCase {
    }
 
    protected void testPublish() throws Exception {
-      // String keyRef = "<key oid='MyMessageOid' contentMime='text/xml'><some><qos type='xxx'><content /></qos><key>xxx</key></some></key>";
-      String keyRef = "<key oid='MyMessageOid' contentMime='text/xml'><some><qos type='xxx'><content /></qos>xxx</some></key>";
+      String keyRef = "<key oid='MyMessageOid' contentMime='text/xml'><some><qos type='xxx'><content /></qos><key>xxx</key></some></key>";
+      // String keyRef = "<key oid='MyMessageOid' contentMime='text/xml'><some><qos type='xxx'><content /></qos>xxx</some></key>";
       String qosRef = "<qos><priority>HIGH</priority></qos>";
       String contentRef = "<some><content>Hello World</content><qos></qos><key><key><qos><qos></qos></qos></key></key></some>";
       

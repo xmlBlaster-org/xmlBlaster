@@ -102,22 +102,23 @@ public final class MsgKeySaxFactory extends SaxHandlerBase implements I_MsgKeyFa
    public final void startElement(String uri, String localName, String name, Attributes attrs) {
       if (name.equalsIgnoreCase("key")) {
          inKey++;
-         if (inKey > 1) return; // ignore nested key tags
-         if (attrs != null) {
-            String tmp = attrs.getValue("oid");
-            if (tmp != null) msgKeyData.setOid(tmp.trim());
-            tmp = attrs.getValue("queryType");
-            // Only for msg keys:
-            //if (tmp != null) msgKeyData.setQueryType(tmp.trim());
-            tmp = attrs.getValue("contentMime");
-            if (tmp != null) msgKeyData.setContentMime(tmp.trim());
-            tmp = attrs.getValue("contentMimeExtended");
-            if (tmp != null) msgKeyData.setContentMimeExtended(tmp.trim());
-            tmp = attrs.getValue("domain");
-            if (tmp != null) msgKeyData.setDomain(tmp.trim());
+         if (inKey < 2) {
+            if (attrs != null) {
+               String tmp = attrs.getValue("oid");
+               if (tmp != null) msgKeyData.setOid(tmp.trim());
+               tmp = attrs.getValue("queryType");
+               // Only for msg keys:
+               //if (tmp != null) msgKeyData.setQueryType(tmp.trim());
+               tmp = attrs.getValue("contentMime");
+               if (tmp != null) msgKeyData.setContentMime(tmp.trim());
+               tmp = attrs.getValue("contentMimeExtended");
+               if (tmp != null) msgKeyData.setContentMimeExtended(tmp.trim());
+               tmp = attrs.getValue("domain");
+               if (tmp != null) msgKeyData.setDomain(tmp.trim());
+            }
+            character.setLength(0);
+            return;
          }
-         character.setLength(0);
-         return;
       }
       if (inKey > 0) {
          String nameSpaceStr = null;
@@ -153,17 +154,15 @@ public final class MsgKeySaxFactory extends SaxHandlerBase implements I_MsgKeyFa
    public void endElement(String uri, String localName, String name) {
       if (name.equalsIgnoreCase("key")) {
          inKey--;
-         if (inKey > 0) return; // ignore nested key tags
-
-         String tmp = character.toString().trim(); // Child tags
-         if (tmp.length() > 0) {
-            msgKeyData.setClientTags(tmp);
+         if (inKey < 1) {
+            String tmp = character.toString().trim(); // Child tags
+            if (tmp.length() > 0) {
+               msgKeyData.setClientTags(tmp);
+            }
+            character.setLength(0);
          }
-         character.setLength(0);
       }
-
-      if (inKey > 0)
-         character.append("</"+name+">");
+      if (inKey > 0) character.append("</"+name+">");
    }
 
    /* Report the start of a CDATA section. (interface LexicalHandler) */
