@@ -3,7 +3,7 @@ Name:      PublishQoS.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Handling QoS (quality of service), knows how to parse it with SAX
-Version:   $Id: PublishQoS.java,v 1.15 2000/12/12 08:52:33 ruff Exp $
+Version:   $Id: PublishQoS.java,v 1.16 2001/01/30 14:02:04 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.xml2java;
@@ -12,6 +12,7 @@ import org.xmlBlaster.util.Log;
 
 import org.xmlBlaster.engine.helper.Destination;
 import org.xmlBlaster.util.XmlBlasterException;
+import org.xmlBlaster.util.XmlBlasterProperty;
 
 import org.xml.sax.*;
 import org.xml.sax.helpers.*;
@@ -43,6 +44,8 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
    // helper flags for SAX parsing
    private boolean inDestination = false; // parsing inside <destination> ?
    private boolean inSender = false; // parsing inside <sender> ?
+   private boolean inExpires = false; // parsing inside <expires> ?
+   private boolean inErase = false; // parsing inside <erase> ?
 
    /** Internal use only, is this message sent from the persistence layer? */
    private boolean fromPersistenceStore = false;
@@ -53,6 +56,11 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
    private boolean forceUpdate = false;
    private boolean readonly = false;
    private boolean forceQueuing = false;
+
+   /** Expires after given milliseconds, clients will get a notify about expiration. Default is no expiration (similar to pass 0 milliseconds) */
+   private long expires = 0L;
+   /** Message is erased after given milliseconds, clients will get a notify about expiration. Default is no erasing (similar to pass 0 milliseconds) */
+   private long erase = 0L;
 
    /** the sender (publisher) of this message (unique loginName) */
    private String sender = null;
@@ -202,6 +210,21 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
       this.fromPersistenceStore = fromPersistenceStore;
    }
 
+   /**
+    * @return Milliseconds until message will be automatically erased
+    */
+   public long getEraseTimeout()
+   {
+      return erase;
+   }
+
+   /**
+    * @return Milliseconds until message expires
+    */
+   public long getExpires()
+   {
+      return expires;
+   }
 
    /**
     * Get all the destinations of this message.
@@ -272,6 +295,34 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
          return;
       }
 
+      if (name.equalsIgnoreCase("expires")) {
+         if (!inQos)
+            return;
+         inExpires = true;
+         if (attrs != null) {
+            int len = attrs.getLength();
+            for (int i = 0; i < len; i++) {
+               Log.warn(ME, "Ignoring sent <expires> attribute " + attrs.getName(i) + "=" + attrs.getValue(i).trim());
+            }
+            // if (Log.TRACE) Log.trace(ME, "Found expires tag");
+         }
+         return;
+      }
+
+      if (name.equalsIgnoreCase("erase")) {
+         if (!inQos)
+            return;
+         inErase = true;
+         if (attrs != null) {
+            int len = attrs.getLength();
+            for (int i = 0; i < len; i++) {
+               Log.warn(ME, "Ignoring sent <erase> attribute " + attrs.getName(i) + "=" + attrs.getValue(i).trim());
+            }
+            // if (Log.TRACE) Log.trace(ME, "Found erase tag");
+         }
+         return;
+      }
+
       if (name.equalsIgnoreCase("ForceQueuing")) {
          if (!inDestination)
             return;
@@ -331,6 +382,33 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
          character.setLength(0);
          return;
       }
+
+      if(name.equalsIgnoreCase("expires")) {
+         inExpires = false;
+         String tmp = character.toString().trim();
+         try {
+            expires = new Long(tmp).longValue();
+         } catch (NumberFormatException e) {
+            Log.error(ME, "Wrong format of <expires>" + tmp + "</expires>, expected a long in milliseconds.");
+         }
+         // if (Log.TRACE) Log.trace(ME, "Found message expires login name = " + expires);
+         character.setLength(0);
+         return;
+      }
+
+      if(name.equalsIgnoreCase("erase")) {
+         inErase = false;
+         String tmp = character.toString().trim();
+         try {
+            erase = new Long(tmp).longValue();
+         } catch (NumberFormatException e) {
+            Log.error(ME, "Wrong format of <erase>" + tmp + "</erase>, expected a long in milliseconds.");
+         }
+         // if (Log.TRACE) Log.trace(ME, "Found message erase login name = " + erase);
+         character.setLength(0);
+         return;
+      }
+
    }
 
 
@@ -358,14 +436,8 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
       if (extraOffset == null) extraOffset = "";
       offset += extraOffset;
 
-      sb.append(offset + "<" + ME + ">");
+      sb.append(offset + "<qos> <!-- " + ME + " -->");
 
-      if (isDurable())
-         sb.append(offset + "   <isDurable />");
-      if (forceUpdate())
-         sb.append(offset + "   <forceUpdate />");
-      if (readonly())
-         sb.append(offset + "   <readonly />");
       if (destinationVec == null) {
          sb.append(offset + "   <Pub_Sub_style />");
       }
@@ -380,9 +452,67 @@ public class PublishQoS extends org.xmlBlaster.util.XmlQoSBase implements Serial
          sb.append(offset + "      " + sender);
          sb.append(offset + "   </sender>");
       }
+      sb.append(offset + "   <expires>").append(getExpires()).append("</expires>");
+      sb.append(offset + "   <erase>").append(getEraseTimeout()).append("</erase>");
 
-      sb.append(offset + "</" + ME + ">\n");
+      if (isDurable())
+         sb.append(offset + "   <isDurable />");
+      if (forceUpdate())
+         sb.append(offset + "   <forceUpdate />");
+      if (readonly())
+         sb.append(offset + "   <readonly />");
+
+      sb.append(offset + "</qos>\n");
 
       return sb.toString();
+   }
+
+
+   /** For testing: java org.xmlBlaster.engine.xml2java.PublishQoS */
+   public static void main(String[] args)
+   {
+      try {
+         XmlBlasterProperty.init(args);
+         String xml = 
+            "<qos>\n" +
+            "   <destination queryType='EXACT'>\n" +
+            "      Tim\n" +
+            "      <ForceQueuing />\n" +
+            "   </destination>\n" +
+            "   <destination queryType='EXACT'>\n" +
+            "      <ForceQueuing timeout='12000' />\n" +
+            "      Ben\n" +
+            "   </destination>\n" +
+            "   <destination queryType='XPATH'>\n" +
+            "      //[GROUP='Manager']\n" +
+            "   </destination>\n" +
+            "   <destination queryType='XPATH'>\n" +
+            "      //ROLE/[@id='Developer']\n" +
+            "   </destination>\n" +
+            "   <sender>\n" +
+            "      Gesa\n" +
+            "   </sender>\n" +
+            "   <expires>\n" +
+            "      12000\n" +
+            "   </expires>\n" +
+            "   <erase>\n" +
+            "      24000\n" +
+            "   </erase>\n" +
+            "   <isDurable />\n" +
+            "   <forceUpdate />\n" +
+            "   <readonly />\n" +
+            /*
+            "   <defaultContent>\n" +
+            "      Empty\n" +
+            "   </defaultContent>\n" +
+            */
+            "</qos>\n";
+
+         PublishQoS qos = new PublishQoS(xml);
+         System.out.println(qos.toXml());
+      }
+      catch(Throwable e) {
+         Log.error("TestFailed", e.toString());
+      }
    }
 }
