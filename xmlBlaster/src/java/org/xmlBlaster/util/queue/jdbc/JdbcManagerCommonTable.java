@@ -32,6 +32,8 @@ import java.util.ArrayList;
 import java.util.TreeSet;
 import java.util.HashSet;
 import java.util.WeakHashMap;
+import java.io.ByteArrayInputStream;
+
 
 /**
  * Delegate class which takes care of SQL specific stuff for the JdbcQueuePlugin
@@ -738,7 +740,11 @@ public class JdbcManagerCommonTable implements I_StorageProblemListener, I_Stora
          if (persistent == true) preStatement.setString(3, "T");
          else preStatement.setString(3, "F");
          preStatement.setLong(4, sizeInBytes);
-         preStatement.setBytes(5, blob);
+         
+         ByteArrayInputStream blob_stream = new ByteArrayInputStream(blob);
+         preStatement.setBinaryStream(5, blob_stream,(int)sizeInBytes);
+         // preStatement.setBytes(5, blob);
+
          preStatement.setLong(6, dataId);
          preStatement.setString(7, nodeId);
          preStatement.setString(8, queueName);
