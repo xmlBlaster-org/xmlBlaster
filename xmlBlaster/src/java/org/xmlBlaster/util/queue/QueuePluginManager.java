@@ -68,7 +68,7 @@ public class QueuePluginManager extends PluginManagerBase
    }
 
    /**
-    * Return a specific MIME based message filter plugin. 
+    * Return a specific queue implementation plugin from cache (on first request create it). 
     * <p/>
     * @param String The type of the requested plugin, pass 'undef' to suppress using a queue.
     * @param String The version of the requested plugin.
@@ -90,7 +90,7 @@ public class QueuePluginManager extends PluginManagerBase
       */
 
       // create a new one ...
-      plugin = (I_Queue)super.instantiatePlugin(pluginInfo);
+      plugin = (I_Queue)super.instantiatePlugin(pluginInfo, false);
       plugin.initialize(uniqueQueueId, props);
 
       return plugin;

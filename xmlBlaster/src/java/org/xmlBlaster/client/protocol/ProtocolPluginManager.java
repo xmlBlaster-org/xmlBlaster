@@ -81,7 +81,7 @@ public class ProtocolPluginManager extends PluginManagerBase
 
       // We need a new instance every time! (no caching in base class)
       PluginInfo pluginInfo = new PluginInfo(glob, this, type, version);
-      I_XmlBlasterConnection driver = (I_XmlBlasterConnection)super.instantiatePlugin(pluginInfo);
+      I_XmlBlasterConnection driver = (I_XmlBlasterConnection)super.instantiatePlugin(pluginInfo, false);
       return driver;
    }
 

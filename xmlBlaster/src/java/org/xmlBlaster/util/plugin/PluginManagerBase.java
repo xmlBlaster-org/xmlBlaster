@@ -102,8 +102,8 @@ abstract public class PluginManagerBase implements I_PluginManager{
          plug = getFromPluginCache(pluginInfo.getClassName());
          if (plug!=null) return plug;
 
-         // not in hash, instanciate plugin
-         plug = instantiatePlugin(pluginInfo);
+         // not in hash, instantiate plugin
+         plug = instantiatePlugin(pluginInfo, true);
       }
 
       return plug;
@@ -164,18 +164,24 @@ abstract public class PluginManagerBase implements I_PluginManager{
    }
 
    /**
-    * Loads a plugin.
-    * <p/>
-    * @param String[] The first element of this array contains the class name
-    *                 e.g. org.xmlBlaster.authentication.plugins.Manager<br />
-    *                 Following elements are arguments for the plugin. (Like in c/c++ the command-line arguments.)
-    * @return I_Plugin or null if plugin type is set to "undef"
-    * @exception XmlBlasterException Thrown if loading or initializing failed.
+    * Create a plugin instance <b>without</b> caching it. 
+    *
+    * @see #instantiatePlugin(PluginInfo, boolean false)
     */
    protected I_Plugin instantiatePlugin(PluginInfo pluginInfo) throws XmlBlasterException {
       return instantiatePlugin(pluginInfo, false);
    }
 
+   /**
+    * Loads a plugin.
+    *
+    * @param pluginInfo Contains the plugin information
+    * @param usePluginCache If true the plugin is remembered in our cache and e.g. retrievable with getPluginObject()
+    *
+    * @return I_Plugin or null if plugin type is set to "undef"
+    *
+    * @exception XmlBlasterException Thrown if loading or initializing failed.
+    */
    protected I_Plugin instantiatePlugin(PluginInfo pluginInfo, boolean usePluginCache) throws XmlBlasterException
    {
       // separate parameter and plugin name

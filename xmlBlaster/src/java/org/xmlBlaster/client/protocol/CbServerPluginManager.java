@@ -81,7 +81,7 @@ public class CbServerPluginManager extends PluginManagerBase
 
       // We need a new instance every time! (no caching in base class)
       PluginInfo pluginInfo = new PluginInfo(glob, this, type, version);
-      I_CallbackServer driver = (I_CallbackServer)super.instantiatePlugin(pluginInfo);
+      I_CallbackServer driver = (I_CallbackServer)super.instantiatePlugin(pluginInfo, false);
       return driver;
    }
 

@@ -545,6 +545,7 @@ public final class PriorizedDeliveryPlugin implements I_MsgDeliveryInterceptor, 
 
          glob.getProperty().removePropertyChangeListener(configPropertyKey, this);
 
+         /*
          DeliveryManagerEntry[] arr = getDeliveryManagerEntryArr();
          for(int i=0; i<arr.length; i++) {
             shutdown(arr[i].getDeliveryManager());
@@ -552,6 +553,7 @@ public final class PriorizedDeliveryPlugin implements I_MsgDeliveryInterceptor, 
          if (this.deliveryManagerEntryMap.size() > 0) {
             log.error(ME, "Internal cleanup error in deliveryManagerEntryMap");
          }
+         */
          this.deliveryManagerEntryMap.clear();
          
          this.xmlBlasterClient.shutdown(this);

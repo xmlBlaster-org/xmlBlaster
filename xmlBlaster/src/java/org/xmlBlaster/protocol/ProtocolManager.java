@@ -3,7 +3,7 @@ Name:      ProtocolManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   ProtocolManager which loads protocol plugins
-Version:   $Id: ProtocolManager.java,v 1.11 2002/12/20 15:29:43 ruff Exp $
+Version:   $Id: ProtocolManager.java,v 1.12 2002/12/29 13:04:25 ruff Exp $
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.protocol;
 
@@ -154,10 +154,12 @@ public class ProtocolManager extends PluginManagerBase implements I_RunlevelList
 
    /**
     * Return a specific plugin. 
-    * <p/>
+    * <p>
+    * The protocol driver is only instantiated once 
+    * </p>
     * @param String The type of the requested plugin.
     * @param String The version of the requested plugin.
-    * @return The load balancer for this type and version or null if none is specified
+    * @return The plugin for this type and version or null if none is specified
     */
    public I_Driver getPlugin(String type, String version) throws XmlBlasterException {
       return (I_Driver)getPluginObject(type, version);

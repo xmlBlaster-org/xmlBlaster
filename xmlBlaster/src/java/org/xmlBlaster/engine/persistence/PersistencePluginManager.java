@@ -49,7 +49,7 @@ public class PersistencePluginManager extends PluginManagerBase
    }
 
    /**
-    * Return a specific persistence plugin
+    * Return a specific persistence plugin from cache (on first request create it). 
     * <p/>
     * @param String The type of the requested plugin.
     * @param String The version of the requested plugin.

@@ -91,7 +91,7 @@ public class CbProtocolManager extends PluginManagerBase
 
       // We need a new instance every time! (no caching in base class)
       PluginInfo pluginInfo = new PluginInfo(glob, this, type, version);
-      I_CallbackDriver driver = (I_CallbackDriver)super.instantiatePlugin(pluginInfo);
+      I_CallbackDriver driver = (I_CallbackDriver)super.instantiatePlugin(pluginInfo, false);
       return driver;
    }
 

@@ -59,7 +59,7 @@ public class MsgStorePluginManager extends PluginManagerBase
    }
 
    /**
-    * Return a specific MIME based message filter plugin. 
+    * Return a new created storage plugin. 
     * <p/>
     * @param String The type of the requested plugin, pass 'undef' to suppress using a storage.
     * @param String The version of the requested plugin.
@@ -74,7 +74,7 @@ public class MsgStorePluginManager extends PluginManagerBase
       if (pluginInfo.ignorePlugin())
          return null;
 
-      I_Map plugin = (I_Map)super.instantiatePlugin(pluginInfo);
+      I_Map plugin = (I_Map)super.instantiatePlugin(pluginInfo, false);
       plugin.initialize(uniqueQueueId, props);
 
       return plugin;

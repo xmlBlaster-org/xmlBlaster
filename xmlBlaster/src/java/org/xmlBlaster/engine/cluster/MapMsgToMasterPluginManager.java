@@ -3,7 +3,7 @@ Name:      MapMsgToMasterPluginManager.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Code for a plugin manager for persistence
-Version:   $Id: MapMsgToMasterPluginManager.java,v 1.11 2002/12/20 15:29:15 ruff Exp $
+Version:   $Id: MapMsgToMasterPluginManager.java,v 1.12 2002/12/29 13:04:24 ruff Exp $
 Author:    goetzger@gmx.net
 ------------------------------------------------------------------------------*/
 package org.xmlBlaster.engine.cluster;
@@ -53,7 +53,7 @@ public class MapMsgToMasterPluginManager extends PluginManagerBase {
    }
 
    /**
-    * Return a specific MIME based message plugin. 
+    * Return a specific MIME based message plugin from cache (initialize it on first request). 
     * <p/>
     * @param String The type of the requested plugin.
     * @param String The version of the requested plugin.

@@ -57,7 +57,9 @@ public class PluginManager extends PluginManagerBase {
    /**
     * Return a specific SecurityManager, suitable to handle the requested
     * security mechanisms.
-    * <p/>
+    * <p>
+    * Only one instance is created, further requests return the cached instance
+    * </p>
     * @param String The type of the requested plugin.
     * @param String The version of the requested plugin.
     * @return I_Manager The security manager which is suitable to handle the request.
