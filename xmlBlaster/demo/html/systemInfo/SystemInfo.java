@@ -3,7 +3,7 @@ Name:      SystemInfo.java
 Project:   xmlBlaster.org
 Copyright: xmlBlaster.org, see xmlBlaster-LICENSE file
 Comment:   Servlet to monitor system load on web server
-Version:   $Id: SystemInfo.java,v 1.1 2000/05/03 13:31:20 ruff Exp $
+Version:   $Id: SystemInfo.java,v 1.2 2000/05/03 17:32:35 ruff Exp $
 Author:    ruff@swand.lake.de
 ------------------------------------------------------------------------------*/
 package demo.html.systemInfo;
@@ -29,11 +29,15 @@ import java.io.*;
  *   <code>servlet.SystemInfo.code=demo.html.systemInfo.SystemInfo</code>
  *
  * jaco org.xmlBlaster.client.feeder.PublishFile -content 56 -xmlKey "<key oid=\"cpuinfo\" contentMime=\"text/plain\" contentMimeExtended=\"systemInfo\"><TestTag></TestTag> </key>" -xmlQos "<qos><ForceUpdate/></qos>"
+ * java org.xmlBlaster.client.feeder.PublishFile -content 44 -xmlKey "<key oid=\"meminfo\" contentMime=\"text/plain\" contentMimeExtended=\"systemInfo\"><TestTag></TestTag> </key>" -xmlQos "<qos><ForceUpdate/></qos>"
  */
 public class SystemInfo extends HttpServlet
 {
    private static final String ME          = "SystemInfo";
    private static final int closeTime      = 1000;
+   private CorbaConnection corbaConnection = null;
+   private Object monitor = new Object();
+
 
    public void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException
    {
@@ -60,25 +64,25 @@ public class SystemInfo extends HttpServlet
             htmlOutput("Please call servlet with some ActionType e.g. servlet/SystemInfo?ActionType=cpuinfo", response);
             return;
          }
-         else if (actionType.equals("cpuinfo")) {
-            Log.info(ME,"Got request for cpuinfo, sessionId=" + sessionId + " ...");
-            CorbaConnection corbaConnection = BlasterHttpProxy.getCorbaConnection(sessionId);
-            corbaConnection.initCache(100);
 
-            SubscribeKeyWrapper xmlKey = new SubscribeKeyWrapper("cpuinfo");
-            SubscribeQosWrapper xmlQos = new SubscribeQosWrapper();
-
-            MessageUnitContainer[] msgUnitArr = corbaConnection.get(xmlKey.toXml(), xmlQos.toXml());
-            if (msgUnitArr.length == 1) {
-               output = new String(msgUnitArr[0].msgUnit.content);
-               Log.info(ME, "Accessed cpuinfo=" + output);
+         synchronized (monitor) {
+            if (corbaConnection == null) {
+               corbaConnection = BlasterHttpProxy.getCorbaConnection(sessionId);
+               corbaConnection.initCache(100);
             }
          }
-         else if( actionType.equals("meminfo")) {
-            Log.info(ME,"Got request for meminfo ...");
-         }
-         else {
-            Log.error(ME, "Unsupported actionType '"+actionType+"'.");
+
+         // Expecting actionType = "cpuinfo" or "meminfo" but it could be
+         // any valid key oid.
+         Log.info(ME,"Got request for " + actionType + ", sessionId=" + sessionId + " ...");
+
+         SubscribeKeyWrapper xmlKey = new SubscribeKeyWrapper(actionType);
+         SubscribeQosWrapper xmlQos = new SubscribeQosWrapper();
+
+         MessageUnitContainer[] msgUnitArr = corbaConnection.get(xmlKey.toXml(), xmlQos.toXml());
+         if (msgUnitArr.length == 1) {
+            output = new String(msgUnitArr[0].msgUnit.content);
+            Log.info(ME, "Accessed " + actionType + "=" + output);
          }
       }
       catch (XmlBlasterException e) {
@@ -120,7 +124,7 @@ public class SystemInfo extends HttpServlet
 
 
    /**
-    * Report an error to the browser, which displays it in an alert() message. 
+    * Report an error to the browser, which displays it in an alert() message.
     * @param sessionId The browser
     * @param error The text to display
     */
