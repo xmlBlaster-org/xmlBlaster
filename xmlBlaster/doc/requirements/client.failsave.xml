@@ -125,7 +125,10 @@ catch (XmlBlasterException e) {
          <tr>
             <td>queue.maxMsg</td>
             <td>1000</td>
-            <td>The maximum allowed number of messages in this queue</td>
+            <td>The maximum allowed number of messages in this queue<br />
+                0 switches recording of invocations (tail back messages) off.<br />
+                -1 sets it to unlimited.
+            </td>
             <td>yes</td>
          </tr>
       </table>
@@ -137,7 +140,7 @@ catch (XmlBlasterException e) {
    <author>ruff@swand.lake.de</author>
    <hacker>ruff@swand.lake.de</hacker>
    <date>2000 02 23</date>
-   <revision>$Revision: 1.12 $</revision>
+   <revision>$Revision: 1.13 $</revision>
    <testcase status="CLOSED">
       <name>-</name>
       <comment>-</comment>
