@@ -109,9 +109,8 @@ bool useThisSocket(CallbackServerUnparsed *cb, int socketToUse, int socketToUseU
 void freeCallbackServerUnparsed(CallbackServerUnparsed *cb)
 {
    if (cb != 0) {
-      cb->stopListenLoop = true;
-      freeProperties(cb->props);
       shutdownCallbackServer(cb);
+      freeProperties(cb->props);
       free(cb);
    }
 }
@@ -675,14 +674,14 @@ static void closeAcceptSocket(CallbackServerUnparsed *cb)
 }
 
 /**
- * Used internally only to close the socket, it blocks until the thread is dead.
+ * Used internally only to close the socket, calling multiple times makes no harm
  */
 static void shutdownCallbackServer(CallbackServerUnparsed *cb)
 {
    if (cb == 0) return;
 
    if (cb->logLevel>=LOG_TRACE) cb->log(cb->logUserP, cb->logLevel, LOG_TRACE, __FILE__,
-         "Shutdown callback server stopListenLoop=%d, reusingConnectionSocket=%d", (int)cb->stopListenLoop, (int)cb->reusingConnectionSocket);
+         "Shutdown callback server stopListenLoop=%s (changes now to true), reusingConnectionSocket=%s", (cb->stopListenLoop?"true":"false"), (cb->reusingConnectionSocket?"true":"false"));
 
    cb->stopListenLoop = true;
 
