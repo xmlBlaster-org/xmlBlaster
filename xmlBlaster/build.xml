@@ -1759,6 +1759,10 @@ TODO
 
       <echo message=" LOG4CPLUS_OS_EXCLUDES=${LOG4CPLUS_OS_EXCLUDES}"/>
 
+      <condition property="ICC_HOME" value="${env.ICC_HOME}">
+         <isset property="env.ICC_HOME"/> <!-- Path to Intel icc installation for rpath setting (to not need LD_LIBRARY_PATH setting) -->
+      </condition>
+
       <condition property="cpp.compiler" value="GNU g++">
          <isset property="use-gcc"/>
       </condition>
@@ -2437,6 +2441,7 @@ TODO
             <linkerarg value="-Wl,-rpath=${XMLCPP_HOME}/lib" />
             <linkerarg value="-Wl,-rpath=${lib.dir.absolute}" />
             <linkerarg value="-Wl,-rpath=${sqlite.lib.dir}" if="XMLBLASTER_PERSISTENT_QUEUE" />
+            <linkerarg value="-Wl,-rpath=${ICC_HOME}/lib" if="ICC_HOME" />
 
             <!-- TAO -->
             <libset dir="${CORBACPP_HOME}/../ace" libs="ACE" if="TAO" />
@@ -2688,9 +2693,10 @@ TODO
          </linker>
 
          <linker name="icc" if="use-icc">
-            <linkerarg value="-Wl,-rpath=${lib.dir.absolute}:${sqlite.lib.dir}" />
+            <linkerarg value="-Wl,-rpath=${lib.dir.absolute}:${sqlite.lib.dir}:${ICC_HOME}/lib" />
             <libset dir="${lib.dir}" libs="xmlBlasterClientC" />  <!-- libxmlBlasterClientC.so -->
             <libset dir="${sqlite.lib.dir}" libs="sqlite" if="XMLBLASTER_PERSISTENT_QUEUE" />  <!-- libsqlite.so -->
+            <libset dir="${ICC_HOME}/lib" libs="imf" if="ICC_HOME" />
             <syslibset dir="/lib" libs="dl" if="unix"/>
             <syslibset dir="/usr/lib" libs="pthread" if="unix"/>
          </linker>
