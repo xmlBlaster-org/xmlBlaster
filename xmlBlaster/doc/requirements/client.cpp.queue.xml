@@ -128,7 +128,7 @@ sqlite> .exit
 
    <configuration where="client">
       <p><a NAME="config"></a>
-      These configurations are tested:
+      Tested configurations:
       </p>
       <table border="1">
        <tr>
@@ -136,7 +136,6 @@ sqlite> .exit
        <th>OS</th>
        <th>Compiler</th>
        <th>xml Blaster Vers.</th>
-       <th>Thread library</th>
        <th>Date</th>
        <th>Author</th>
        <th>Comment</th>
@@ -147,7 +146,6 @@ sqlite> .exit
        <td>Linux 2.6.4</td>
        <td><a href="http://gcc.gnu.org/" target="others">g++ and gcc 3.3.3</a></td>
        <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.901+</a></td>
-       <td><a href="http://www.gnu.org/software/libc/" target="others">pthread</a></td>
        <td>2004-05-04</td>
        <td><a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
        <td><font size="-2">build cpp</font></td>
@@ -158,10 +156,19 @@ sqlite> .exit
        <td>Linux 2.6.4</td>
        <td><a href="http://www.intel.com/software/products/compilers/clin/" target="others">Intel(R) C++ Compiler for 32-bit, Version 8.0 (icc)</a></td>
        <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.901+</a></td>
-       <td><a href="http://www.gnu.org/software/libc/" target="others">pthread</a></td>
        <td>2004-05-04</td>
        <td><a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
        <td><font size="-2">build -Duse-icc=true cpp</font></td>
+       </tr>
+
+       <tr>
+       <td>3</td>
+       <td>WindowsXP</td>
+       <td>VC++ 7 (Jan.2003) and VC++ STL</td>
+       <td><a href="http://www.xmlBlaster.org/xmlBlaster/CHANGES">0.903</a></td>
+       <td>2004-05-16</td>
+       <td><a href="mailto:xmlBlaster@marcelruff.info">Marcel</a></td>
+       <td><font size="-2">build -Duse-msvc=true cpp</font></td>
        </tr>
 
       </table>
@@ -261,7 +268,7 @@ TestQueue
 <!--   <see type="REQ">cluster</see> -->
    <author><a href="mailto:mr@marcelruff.info">Marcel Ruff</a></author>
    <date>2004 04 09</date>
-   <revision>$Revision: 1.4 $</revision>
+   <revision>$Revision: 1.5 $</revision>
 
    <testcase status="CLOSED">
       <name>-</name>
