@@ -61,7 +61,7 @@ XmlBlasterAccess::~XmlBlasterAccess()
       cbServer_ = NULL;
    }
    if (connection_) {
-	   if (log_.trace()) log_.trace(ME, "destructor: going to delete the connection");
+           if (log_.trace()) log_.trace(ME, "destructor: going to delete the connection");
       connection_->shutdown();
       delete connection_;
       connection_ = NULL;
@@ -166,18 +166,25 @@ void XmlBlasterAccess::leaveServer(const StringMap &map)
    if (!isConnected()) {
       throw XmlBlasterException(USER_NOT_CONNECTED, ME + "::leaveServer", "You are not connected to the xmlBlaster");
    }
+   
    if (cbServer_) {
-	   if (log_.trace()) log_.trace(ME, "destructor: going to delete the callback connection");
+      if (log_.trace()) log_.trace(ME, "destructor: going to delete the callback connection");
       cbServer_->shutdownCb();
-
+   }
+   
+   if (connection_) {
+      if (log_.trace()) log_.trace(ME, "destructor: going to delete the connection");
+      connection_->shutdown();
+   }
+   
+   if (cbServer_) {
       CbQueueProperty prop = connectQos_.getSessionCbQueueProperty(); // Creates a default property for us if none is available
       CallbackAddress addr = prop.getCurrentCallbackAddress(); // c++ may not return null
       global_.getCbServerPluginManager().releasePlugin( instanceName_, addr.getType(), addr.getVersion() );
       cbServer_ = NULL;
    }
+   
    if (connection_) {
-	   if (log_.trace()) log_.trace(ME, "destructor: going to delete the connection");
-      connection_->shutdown();
       delete connection_;
       connection_ = NULL;
    }
