@@ -6,6 +6,7 @@ import org.xmlBlaster.util.Global;
 import org.xmlBlaster.util.MsgUnit;
 import org.xmlBlaster.util.XmlBlasterException;
 import org.xmlBlaster.util.enum.Constants;
+import org.xmlBlaster.util.enum.ErrorCode;
 import org.xmlBlaster.util.qos.HistoryQos;
 import org.xmlBlaster.client.qos.ConnectQos;
 import org.xmlBlaster.client.qos.ConnectReturnQos;
@@ -65,6 +66,9 @@ public class HelloWorldSubscribe implements I_Callback
    private int updateCounter;
    private boolean interactiveUpdate;
    private long updateSleep;
+   private String updateExceptionErrorCode;
+   private String updateExceptionMessage;
+   private String updateExceptionRuntime;
 
    public HelloWorldSubscribe(Global glob) {
       this.glob = glob;
@@ -75,6 +79,9 @@ public class HelloWorldSubscribe implements I_Callback
          boolean interactive = glob.getProperty().get("interactive", true);
          this.interactiveUpdate = glob.getProperty().get("interactiveUpdate", false);
          this.updateSleep = glob.getProperty().get("updateSleep", 0L);
+         this.updateExceptionErrorCode = glob.getProperty().get("updateException.errorCode", (String)null);
+         this.updateExceptionMessage = glob.getProperty().get("updateException.message", (String)null);
+         this.updateExceptionRuntime = glob.getProperty().get("updateException.runtime", (String)null);
          String oid = glob.getProperty().get("oid", "");
          String domain = glob.getProperty().get("domain", "");
          String xpath = glob.getProperty().get("xpath", "");
@@ -106,10 +113,19 @@ public class HelloWorldSubscribe implements I_Callback
             this.interactiveUpdate = false;
          }
 
+         if (this.updateExceptionErrorCode != null && this.updateExceptionRuntime != null) {
+            log.warn(ME, "You can't throw a runtime and an XmlBlasterException simultaneous, please check your settings " +
+                          " -updateException.errorCode and -updateException.runtime");
+            this.updateExceptionRuntime = null;
+         }
+
          log.info(ME, "Used settings are:");
          log.info(ME, "   -interactive       " + interactive);
          log.info(ME, "   -interactiveUpdate " + this.interactiveUpdate);
          log.info(ME, "   -updateSleep       " + this.updateSleep);
+         log.info(ME, "   -updateException.errorCode " + this.updateExceptionErrorCode);
+         log.info(ME, "   -updateException.message   " + this.updateExceptionMessage);
+         log.info(ME, "   -updateException.runtime   " + this.updateExceptionRuntime);
          log.info(ME, "   -oid               " + oid);
          log.info(ME, "   -domain            " + domain);
          log.info(ME, "   -xpath             " + xpath);
@@ -216,7 +232,7 @@ public class HelloWorldSubscribe implements I_Callback
    }
 
    public String update(String cbSessionId, UpdateKey updateKey, byte[] content,
-                        UpdateQos updateQos) {
+                        UpdateQos updateQos) throws XmlBlasterException {
       ++updateCounter;
       System.out.println("");
       System.out.println("============= START #" + updateCounter + " '" + updateKey.getOid() + "' =======================");
@@ -246,6 +262,25 @@ public class HelloWorldSubscribe implements I_Callback
          try { System.in.read(); } catch(java.io.IOException e) {}
          log.info(ME, "Returning update() - control goes back to server");
       }
+
+      if (this.updateExceptionErrorCode != null) {
+         log.info(ME, "Throwing XmlBlasterException with errorCode='" + this.updateExceptionErrorCode + "' back to server ...");
+         ErrorCode errorCode;
+         try {
+            errorCode = ErrorCode.toErrorCode(this.updateExceptionErrorCode);
+         }
+         catch (IllegalArgumentException e) {
+            log.error(ME, "Please supply a valid exception errorCode (see ErrorCode.java) for instead of -updateException.errorCode " + this.updateExceptionErrorCode + "");
+            return Constants.RET_OK; // "<qos><state id='OK'/></qos>";
+         }
+         throw new XmlBlasterException(updateKey.getGlobal(), errorCode, ME, this.updateExceptionMessage); 
+      }
+
+      if (this.updateExceptionRuntime != null) {
+         log.info(ME, "Throwing RuntimeException '" + this.updateExceptionRuntime + "'");
+         throw new RuntimeException(this.updateExceptionRuntime);
+      }
+
       return Constants.RET_OK; // "<qos><state id='OK'/></qos>";
    }
 
