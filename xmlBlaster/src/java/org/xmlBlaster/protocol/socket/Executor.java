@@ -458,7 +458,7 @@ public abstract class Executor implements ExecutorBase
     * use this method to free blocking threads which wait on responses
     */
    public final void freePendingThreads() {
-      if (log != null && log.TRACE) log.trace(ME, "Freeing " + latchSet.size() + " pending threads (waiting on responses) from their ugly blocking situation");
+      if (log != null && log.TRACE) log.trace(ME, "Freeing " + ((latchSet==null) ? 0 : latchSet.size()) + " pending threads (waiting on responses) from their ugly blocking situation");
       if (latchSet != null) {
          while (true) {
             Latch l = null;
