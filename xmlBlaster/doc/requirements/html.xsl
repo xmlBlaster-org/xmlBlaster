@@ -5,7 +5,15 @@
                 exclude-result-prefixes="#default">
 
 <xsl:output method="html"/>
+
 <xsl:template match="/">
+	<html>
+	<head>
+	   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1" />
+	   <title>xmlBlaster - Requirements</title>
+	</head>
+
+	<body>
    <TABLE BORDER="1" cellpadding="6">
       <THEAD>
          <TR>
@@ -22,7 +30,10 @@
          </TR>
       </xsl:for-each>
    </TABLE>
+	</body>
+	</html>
 </xsl:template>
+
 
 </xsl:stylesheet>
 
