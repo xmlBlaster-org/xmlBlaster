@@ -51,6 +51,9 @@ import junit.framework.*;
 public class TestPersistentSession extends TestCase implements I_ConnectionStateListener, I_Callback
 {
    private static String ME = "TestPersistentSession";
+   private static final boolean TRANSIENT = false;
+   private static final boolean PERSISTENT = true;
+   
    private Global glob;
    private LogChannel log;
 
@@ -70,7 +73,8 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
    private boolean persistent = true;
    private boolean failsafeCallback = true;
    private boolean exactSubscription = false;
-   private int numSubscribers = 1;
+   private boolean initialUpdates = true;
+   private int numSubscribers = 4;
 
    public TestPersistentSession(String testName) {
       this(null, testName);
@@ -169,14 +173,15 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
    /**
     * TEST: Subscribe to messages with XPATH.
     */
-   public void doSubscribe(int num, boolean isExact) {
+   public void doSubscribe(int num, boolean isExact, boolean isPersistent) {
       try {
          SubscribeKey key = null;
          if (isExact)  key = new SubscribeKey(this.glob, "Message-1");
          else key = new SubscribeKey(this.glob, "//TestPersistentSession-AGENT", "XPATH");
 
          SubscribeQos qos = new SubscribeQos(this.glob); // "<qos><persistent>true</persistent></qos>";
-         qos.setPersistent(this.persistent);
+         qos.setPersistent(isPersistent);
+         if (this.initialUpdates) qos.setWantInitialUpdate(true);
          qos.setWantNotify(false); // to avoig getting erased messages
 
          this.updateInterceptors[num] = new MsgInterceptor(this.glob, log, null); // Collect received msgs
@@ -224,7 +229,10 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
    public void testPersistentSession(boolean doStop) {
       //doSubscribe(); -> see reachedAlive()
       log.info(ME, "Going to publish " + numPublish + " messages, xmlBlaster will be down for message 3 and 4");
-      doSubscribe(0, this.exactSubscription);
+      // 
+      doSubscribe(0, this.exactSubscription, TRANSIENT);
+      doSubscribe(1, this.exactSubscription, PERSISTENT);
+      
       for (int i=0; i<numPublish; i++) {
          try {
             if (i == numStop) { // 3
@@ -252,16 +260,24 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
                
                // Message-4 We need to wait until the client reconnected (reconnect interval)
                // Message-5
-               assertEquals("", 2, this.updateInterceptors[0].waitOnUpdate(reconnectDelay*4L, 2));
-               // for (int j=0; j < this.numSubscribers; j++) 
-               this.updateInterceptors[0].clear();
+               assertEquals("", 2, this.updateInterceptors[1].waitOnUpdate(reconnectDelay*2L, 2));
+               assertEquals("", 2, this.updateInterceptors[3].waitOnUpdate(reconnectDelay*2L, 2));
+               
+               for (int j=0; j < this.numSubscribers; j++) this.updateInterceptors[j].clear();
             }
             doPublish(i+1);
-            if (i < numStop || i >= numStart ) {
-               assertEquals("", 1, this.updateInterceptors[0].waitOnUpdate(8000L, 1));
+            if (i == 0) {
+               doSubscribe(2, this.exactSubscription, TRANSIENT);
+               doSubscribe(3, this.exactSubscription, PERSISTENT);
             }
-            // for (int j=0; j < this.numSubscribers; j++) 
-            this.updateInterceptors[0].clear();
+
+            if (i < numStop || i >= numStart ) {
+               int n = 1;
+               if (i == 0 && !this.initialUpdates) n = 0;
+               assertEquals("", 1, this.updateInterceptors[1].waitOnUpdate(4000L, 1));
+               assertEquals("", 1, this.updateInterceptors[3].waitOnUpdate(4000L, n));
+            }
+            for (int j=0; j < this.numSubscribers; j++) this.updateInterceptors[j].clear();
          }
          catch(XmlBlasterException e) {
             if (e.getErrorCode() == ErrorCode.COMMUNICATION_NOCONNECTION_POLLING)
@@ -323,11 +339,10 @@ public class TestPersistentSession extends TestCase implements I_ConnectionState
       testSub.setUp();
       testSub.testPersistentSessionWithStop();
       testSub.tearDown();
-      /*
+
       testSub.setUp();
       testSub.testPersistentSessionWithRunlevelChange();
       testSub.tearDown();
-      */
    }
 }
 

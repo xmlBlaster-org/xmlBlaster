@@ -31,6 +31,7 @@ public class AllTests
       suite.addTest(new TestSuite(org.xmlBlaster.test.client.TestXmlBlasterAccessMultiThreaded.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.client.TestTailback.class));
       suite.addTest(new TestSuite(org.xmlBlaster.test.client.TestLocalProtocol.class));
-      return suite;
+      suite.addTest(new TestSuite(org.xmlBlaster.test.client.TestPersistentSession.class)); 
+     return suite;
    }
 }
