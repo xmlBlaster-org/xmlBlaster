@@ -173,7 +173,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
     *        callback messages will be routed to your updateListener.update() method. 
     * @see org.xmlBlaster.client.I_XmlBlasterAccess#connect(ConnectQos, I_Callback)
     */
-   public ConnectReturnQos connect(ConnectQos qos, I_Callback updateListener) throws XmlBlasterException {
+   public synchronized ConnectReturnQos connect(ConnectQos qos, I_Callback updateListener) throws XmlBlasterException {
       
       this.connectQos = (qos==null) ? new ConnectQos(glob) : qos;
 
@@ -188,6 +188,10 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
          StorageId queueId = new StorageId("client", getId());
          this.clientQueue = glob.getQueuePluginManager().getPlugin(prop.getType(), prop.getVersion(), queueId,
                                                 this.connectQos.getClientQueueProperty());
+         if (this.clientQueue == null) {
+            String text = "The client queue plugin is not found with this configuration, please check your connect QoS: " + prop.toXml();
+            throw new XmlBlasterException(glob, ErrorCode.USER_CONFIGURATION, ME, text);
+         }
 
          this.msgErrorHandler = new ClientErrorHandler(glob, this);
 
@@ -215,7 +219,7 @@ public final class XmlBlasterAccess extends AbstractCallbackExtended
       }
       catch (Throwable e) {
          shutdown(null, false, true, true);
-         throw XmlBlasterException.convert(glob, ME, "Connection failed", e);
+         throw XmlBlasterException.convert(glob, ErrorCode.INTERNAL_UNKNOWN, ME, "Connection failed", e);
       }
 
       if (isAlive()) {
