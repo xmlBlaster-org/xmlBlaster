@@ -1,20 +1,20 @@
 From - Thu Dec  2 16:34:26 1999
 Return-Path: <cope-request@lunatech.com>
 Received: from localhost (root@localhost [127.0.0.1])
-	by swand.lake.de (8.9.3/8.9.3) with ESMTP id QAA05821
-	for <ruff@swand.lake.de>; Thu, 2 Dec 1999 16:24:51 +0100
+        by swand.lake.de (8.9.3/8.9.3) with ESMTP id QAA05821
+        for <xmlBlaster@marcelruff.info>; Thu, 2 Dec 1999 16:24:51 +0100
 Received: from ferry.lake.de
-	by localhost with POP3 (fetchmail-5.0.3)
-	for ruff@swand.lake.de (multi-drop); Thu, 02 Dec 1999 16:24:51 +0100 (MET)
+        by localhost with POP3 (fetchmail-5.0.3)
+        for xmlBlaster@marcelruff.info (multi-drop); Thu, 02 Dec 1999 16:24:51 +0100 (MET)
 Received: from fw.lunatech.com (smtp-user@fw.lunatech.com [194.151.25.136])
-	by ferry.lake.de (8.9.3/8.9.3) with ESMTP id QAA27316
-	for <ruff@swand.lake.de>; Thu, 2 Dec 1999 16:13:25 +0100
+        by ferry.lake.de (8.9.3/8.9.3) with ESMTP id QAA27316
+        for <xmlBlaster@marcelruff.info>; Thu, 2 Dec 1999 16:13:25 +0100
 Received: from tanglefoot.lunatech.com (root@tanglefoot.lunatech.com [193.172.191.161])
-	by fw.lunatech.com (8.9.3/8.9.1/Debian/GNU) with ESMTP id QAA19244;
-	Thu, 2 Dec 1999 16:00:50 +0100
+        by fw.lunatech.com (8.9.3/8.9.1/Debian/GNU) with ESMTP id QAA19244;
+        Thu, 2 Dec 1999 16:00:50 +0100
 Received: (from list@localhost)
-	by tanglefoot.lunatech.com (8.9.3/8.9.3/Debian/GNU) id QAA09920;
-	Thu, 2 Dec 1999 16:00:44 +0100
+        by tanglefoot.lunatech.com (8.9.3/8.9.3/Debian/GNU) id QAA09920;
+        Thu, 2 Dec 1999 16:00:44 +0100
 Resent-Date: Thu, 2 Dec 1999 16:00:44 +0100
 From: Pekka Ahmavuo <pekka@netland.fi>
 Message-Id: <199912021500.RAA07651@netland.fi>
